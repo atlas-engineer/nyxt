@@ -21,7 +21,8 @@
        "M-]" 'select-next-source
        "M-[" 'select-previous-source
        "return" 'return-selection
-       "C-return" 'return-input
+       "C-return" 'return-input         ; TODO: Bind to shift-return instead?
+       "M-return" 'run-action       ; TODO: Also bind to C-return?
        "C-space" 'prompt-buffer-toggle-mark
        "shift-space" 'prompt-buffer-toggle-mark-backwards
        "M-space" 'prompt-buffer-toggle-mark
@@ -117,7 +118,7 @@ If STEPS is negative, go to previous pages instead."
 If STEPS is negative, go to next pages instead."
   (select-next-page :prompt-buffer prompt-buffer :steps (- steps)))
 
-(define-command return-selection (&optional (prompt-buffer (current-prompt-buffer)))
+(define-command return-selection (&optional (prompt-buffer (current-prompt-buffer))) ; TODO: Replace by an action which returns the selection as is.
   "Have the PROMT-BUFFER return the selection, then quit."
   (prompter:return-selection (prompter prompt-buffer))
   (hide-prompt-buffer prompt-buffer))
@@ -126,6 +127,26 @@ If STEPS is negative, go to next pages instead."
   "Have the PROMT-BUFFER return the selection, then quit."
   (prompter:return-input (prompter prompt-buffer))
   (hide-prompt-buffer prompt-buffer))
+
+(defun prompt-buffer-actions (&optional (window (current-window)))
+  (sera:and-let* ((first-prompt-buffer (first (nyxt::active-minibuffers window))))
+    (prompter:actions (prompter first-prompt-buffer))))
+
+;; TODO: Should actions be commands?
+;; TODO: What should action properties be?  Docstring, bindings?
+(define-class action-source (prompter:prompter-source)
+  ((prompter:name "List of actions")
+   (prompter:initial-suggestions (prompt-buffer-actions))))
+
+(define-command run-action (&optional (prompt-buffer (current-prompt-buffer)))
+  "Prompt for an action to run over PROMPT-BUFFER selection."
+  (let ((action (prompt
+                 :prompter (list
+                            :prompt "Action to run on selection"
+                            :sources (list (make-instance 'action-source))))))
+    (when action
+      (prompter:run-action (prompter prompt-buffer) action)
+      (hide-prompt-buffer prompt-buffer))))
 
 (define-command cancel-input (&optional (prompt-buffer (current-prompt-buffer)))
   "Close the prompt-buffer without further action."

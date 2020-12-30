@@ -834,15 +834,19 @@ to the currently active buffer."
       (mapcar #'buffer-delete buffers-to-delete))))
 
 (export-always 'buffer-load)
-(declaim (ftype (function ((or quri:uri string) &key (:buffer buffer)) t) buffer-load))
+(declaim (ftype (function ((or quri:uri string history-entry) &key (:buffer buffer)) t)
+                buffer-load))
 (defun buffer-load (input-url &key (buffer (current-buffer)))
   "Load INPUT-URL in BUFFER.
 If INPUT-URL is a string, it's transformed to a `quri:uri' by `parse-url'.
 URL is then transformed by BUFFER's `buffer-load-hook'."
-  (let ((url (if (stringp input-url)
-                 (parse-url input-url)
-                 input-url)))
-
+  (let ((url (typecase input-url
+               (string
+                (parse-url input-url))
+               (history-entry
+                (url input-url))
+               (t
+                input-url))))
     (let ((new-url
            (handler-case
                (hooks:run-hook (slot-value buffer 'buffer-load-hook) url)
@@ -892,7 +896,9 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
    (prompter:initial-suggestions (history-initial-suggestions))
    (prompter:multi-selection-p t)       ; TODO: Disable once tested OK.
    (prompter:history (minibuffer-set-url-history *browser*))
-   (prompter:must-match-p nil)))
+   (prompter:must-match-p nil)
+   (prompter:actions '(buffer-load
+                       new-buffer-load))))
 
 (define-class new-url-source (prompter:prompter-source)
   ((prompter:name "New URL")
@@ -902,36 +908,24 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
    ;; TODO: Remove slots that are set to default value.
    (prompter:multi-selection-p nil)
    (prompter:history (minibuffer-set-url-history *browser*))
-   (prompter:must-match-p nil)))
+   (prompter:must-match-p nil)
+   (prompter:actions '(buffer-load
+                       new-buffer-load))))
 
-(define-command set-url2 (&key new-buffer-p prefill-current-url-p)
+(define-command set-url2 (&key prefill-current-url-p)
   "Set the URL for the current buffer, completing with history."
   ;; TODO: Do we still need to add current URL to history?
   (sera:and-let* ((history (minibuffer-set-url-history *browser*)))
     (containers:insert-item history (url (current-buffer))))
-  (let ((url (prompt
-              :prompter (list
-                         :prompt (format nil "Open URL in ~A buffer"
-                                         (if new-buffer-p
-                                             "new"
-                                             "current"))
-                         :input (if prefill-current-url-p
-                                    (object-string (url (current-buffer))) "")
-                         :sources (list (make-instance 'new-url-source)
-                                        (make-instance 'global-history-source)))
-              ;; :default-modes '(set-url-mode minibuffer-mode) ; TODO: Replace this with a prompter action or filter.
-              )))
-
-    (when (typep url 'history-entry)
-      ;; In case prompt-minibuffer returned a string upon
-      ;; must-match-p.
-      (setf url (url url)))
-    (buffer-load url :buffer (if new-buffer-p
-                                 ;; Make empty buffer, or else there might be
-                                 ;; a race condition between the URL that's
-                                 ;; loaded and the default one.
-                                 (make-buffer-focus :url "")
-                                 (current-buffer)))))
+  (prompt
+   :prompter (list
+              :prompt "Open URL"
+              :input (if prefill-current-url-p
+                         (object-string (url (current-buffer))) "")
+              :sources (list (make-instance 'new-url-source)
+                             (make-instance 'global-history-source)))
+   ;; :default-modes '(set-url-mode minibuffer-mode) ; TODO: Replace this with a prompter action or filter.
+   ))
 
 (define-command set-url-from-current-url ()
   "Set the URL for the current buffer, pre-filling in the current URL."
