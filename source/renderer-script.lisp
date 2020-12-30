@@ -78,6 +78,7 @@ The function can be passed ARGS."
                       (|insertAdjacentHTML| "afterbegin"
                                             (ps:lisp style)))))))
 
+(export-always 'with-current-html-buffer)
 (defmacro with-current-html-buffer ((buffer-var title mode) &body body)
   "Switch to a buffer in MODE displaying CONTENT.
 If a buffer in MODE with TITLE exists, reuse it, otherwise create a new buffer.

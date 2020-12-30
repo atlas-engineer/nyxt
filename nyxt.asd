@@ -95,6 +95,7 @@
                (:file "help-mode")
                (:file "message-mode")
                (:file "application-mode")
+               (:file "history-tree-mode")
                (:file "web-mode")
                (:file "reading-line-mode")
                (:file "style-mode")

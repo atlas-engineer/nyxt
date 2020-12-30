@@ -300,79 +300,6 @@ Otherwise go forward to the only child."
     (when input
       (set-url-from-history input))))
 
-(define-command buffer-history-tree (&optional (buffer (current-buffer)))
-  "Open a new buffer displaying the whole history tree of a buffer."
-  (let* ((buffer-name (format nil "*History-~a*" (id buffer)))
-         (output-buffer (or (find-if (lambda (b) (string= buffer-name (title b)))
-                                     (buffer-list))
-                            (nyxt/help-mode:help-mode
-                             :activate t :buffer (make-internal-buffer :title buffer-name))))
-         (history (get-data (history-path buffer)))
-         (tree `(:ul ,(htree:map-tree
-                       #'(lambda (node)
-                           `(:li (:a :href ,(object-string (url (htree:data node)))
-                                  ,(let ((title (or (match (title (htree:data node))
-                                                      ((guard e (not (str:emptyp e))) e))
-                                                    (object-display (url (htree:data node))))))
-                                     (if (eq node (htree:current history))
-                                         `(:b ,title)
-                                         title)))))
-                       (gethash (id buffer) (buffer-local-histories-table history))
-                       :include-root t
-                       :collect-function #'(lambda (a b) `(,@a ,(when b `(:ul ,@b)))))))
-         (tree-style
-                (cl-css:css
-                 '((body
-                    :line-height "initial")
-                   (* :margin 0
-                      :padding 0
-                      :list-style "none")
-                   ("ul li"
-                    :margin-left "15px"
-                    :position "relative"
-                    :padding-left "5px")
-                   ("ul li::before"
-                    :content "' '"
-                    :position "absolute"
-                    :width "1px"
-                    :background-color "#000"
-                    :top "5px"
-                    :bottom "-12px"
-                    :left "-10px")
-                   ("body > ul > li:first-child::before"
-                    :top "12px")
-                   ("ul li:not(:first-child):last-child::before"
-                    :display "none")
-                   ("ul li:only-child::before"
-                    :display "list-item"
-                    :content "' '"
-                    :position "absolute"
-                    :width "1px"
-                    :background-color "#000"
-                    :top "5px"
-                    :bottom "7px"
-                    :height "7px"
-                    :left "-10px")
-                   ("ul li::after"
-                    :content "' '"
-                    :position "absolute"
-                    :left "-10px"
-                    :width "10px"
-                    :height "1px"
-                    :background-color "#000"
-                    :top "12px"))))
-         (content (markup:markup
-                   (:body (:h1 "History")
-                          (:style (style output-buffer))
-                          (:style (markup:raw tree-style))
-                          (:div (markup:raw
-                                 (markup:markup*
-                                  tree))))))
-         (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                      (ps:lisp content)))))
-    (ffi-buffer-evaluate-javascript-async output-buffer insert-content)
-    (set-current-buffer output-buffer)))
-
 (defun integer->unicode-geometric (string-integer)
   "Geometric blocks within the unicode table are from position 9632 (x25A0) to
   9727 (x25FF) with a total of 95 shapes."
@@ -380,84 +307,62 @@ Otherwise go forward to the only child."
       ""
       (format nil "&#x~X; " (+ 9631 (mod (parse-integer string-integer) 95)))))
 
+(define-command buffer-history-tree (&optional (buffer (current-buffer)))
+  "Open a new buffer displaying the whole history tree of a buffer."
+  (with-current-html-buffer (output-buffer (format nil "*History-~a*" (id buffer))
+                                                 'nyxt/history-tree-mode:history-tree-mode)
+    (let* ((markup:*auto-escape* nil)
+           (history (get-data (history-path buffer)))
+           (tree `(:ul ,(htree:map-tree
+                         #'(lambda (node)
+                             `(:li (:a :href ,(object-string (url (htree:data node)))
+                                       ,(integer->unicode-geometric (id (htree:data node)))
+                                       ,(let ((title (or (match (title (htree:data node))
+                                                           ((guard e (not (str:emptyp e))) e))
+                                                         (object-display (url (htree:data node))))))
+                                          (if (eq node (htree:current history))
+                                              `(:b ,title)
+                                              title)))))
+                         (gethash (id buffer) (buffer-local-histories-table history))
+                         :include-root t
+                         :collect-function #'(lambda (a b) `(,@a ,(when b `(:ul ,@b))))))))
+      (markup:markup
+       (:body (:h1 "History")
+              (:style (style output-buffer))
+              (:style (style (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode)))
+              (:div (markup:raw
+                     (markup:markup*
+                      tree))))))))
+
 (define-command history-tree ()
   "Open a new buffer displaying the whole history tree."
-  (let* ((markup:*auto-escape* nil)
-         (buffer-name (format nil "*History*"))
-         (output-buffer (or (find-if (lambda (b) (string= buffer-name (title b)))
-                                     (buffer-list))
-                            (nyxt/help-mode:help-mode
-                             :activate t :buffer (make-internal-buffer :title buffer-name))))
-         (history (let ((dummy-buffer (make-buffer)))
-                    (prog1
-                        (get-data (history-path dummy-buffer))
-                      (delete-buffer :id (id dummy-buffer)))))
-         (tree `(:ul ,(htree:map-tree
-                       #'(lambda (node)
-                           `(:li (:a :href ,(object-string (url (htree:data node)))
-                                     ,(integer->unicode-geometric (id (htree:data node)))
-                                     ,(let ((title (or (match (title (htree:data node))
-                                                         ((guard e (not (str:emptyp e))) e))
-                                                       (object-display (url (htree:data node))))))
-                                        (if (eq node (htree:current history))
-                                            `(:b ,title)
-                                            title)))))
-                       (htree:root history)
-                       :include-root t
-                       :collect-function #'(lambda (a b) `(,@a ,(when b `(:ul ,@b)))))))
-         (tree-style
-           (cl-css:css
-            '((body
-               :line-height "initial")
-              (* :margin 0
-                 :padding 0
-                 :list-style "none")
-              ("ul li"
-               :margin-left "15px"
-               :position "relative"
-               :padding-left "5px")
-              ("ul li::before"
-               :content "' '"
-               :position "absolute"
-               :width "1px"
-               :background-color "#000"
-               :top "5px"
-               :bottom "-12px"
-               :left "-10px")
-              ("body > ul > li:first-child::before"
-               :top "12px")
-              ("ul li:not(:first-child):last-child::before"
-               :display "none")
-              ("ul li:only-child::before"
-               :display "list-item"
-               :content "' '"
-               :position "absolute"
-               :width "1px"
-               :background-color "#000"
-               :top "5px"
-               :bottom "7px"
-               :height "7px"
-               :left "-10px")
-              ("ul li::after"
-               :content "' '"
-               :position "absolute"
-               :left "-10px"
-               :width "10px"
-               :height "1px"
-               :background-color "#000"
-               :top "12px"))))
-         (content (markup:markup
-                   (:body (:h1 "History")
-                          (:style (style output-buffer))
-                          (:style (markup:raw tree-style))
-                          (:div (markup:raw
-                                 (markup:markup*
-                                  tree))))))
-         (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)
-                                      (ps:lisp content)))))
-    (print content)
-    (ffi-buffer-evaluate-javascript-async output-buffer insert-content)
-    (set-current-buffer output-buffer)))
+  (nyxt::with-current-html-buffer (output-buffer "*History*"
+                                                 'nyxt/history-tree-mode:history-tree-mode)
+    (let* ((markup:*auto-escape* nil)
+           (history (let ((dummy-buffer (make-buffer)))
+                      (prog1
+                          (get-data (history-path dummy-buffer))
+                        (delete-buffer :id (id dummy-buffer)))))
+           (tree `(:ul ,(htree:map-tree
+                         #'(lambda (node)
+                             `(:li (:a :href ,(object-string (url (htree:data node)))
+                                       ,(integer->unicode-geometric (id (htree:data node)))
+                                       ,(let ((title (or (match (title (htree:data node))
+                                                           ((guard e (not (str:emptyp e))) e))
+                                                         (object-display (url (htree:data node))))))
+                                          (if (eq node (htree:current history))
+                                              `(:b ,title)
+                                              title)))))
+                         (htree:root history)
+                         :include-root t
+                         :collect-function #'(lambda (a b) `(,@a ,(when b `(:ul ,@b))))))))
+      (markup:markup
+       (:body (:h1 "History")
+              (:style (style output-buffer))
+              (:style (style (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode)))
+              (:div (markup:raw
+                     (markup:markup*
+                      tree))))))))
 
 (define-command paste ()
   "Paste from clipboard into active-element."
