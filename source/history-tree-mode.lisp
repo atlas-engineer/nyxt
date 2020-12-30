@@ -1,6 +1,6 @@
 (uiop:define-package :nyxt/history-tree-mode
   (:use :common-lisp :trivia :nyxt)
-  (:documentation "Mode for history-trees and logs"))
+  (:documentation "Mode for history-trees."))
 (in-package :nyxt/history-tree-mode)
 
 (define-mode history-tree-mode ()
