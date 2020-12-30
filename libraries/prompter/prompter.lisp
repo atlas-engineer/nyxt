@@ -231,24 +231,11 @@ If STEPS is negative, go forward and selection first suggestion."
       (and (not (must-match-p prompter))
            (slot-value prompter 'input))))
 
-(export-always 'return-selection)
-(defun return-selection (prompter)
-  "Send selection to PROMPTER's `result-channel'.
-The selection is the collection of marked suggestions across all sources.
-If there is no marked suggestion, send the currently selected suggestion
-instead."
-  (calispel:! (result-channel prompter) (resolve-selection prompter)))
-
-(export-always 'return-input)
-(defun return-input (prompter)
-  "Send input to PROMPTER's `result-channel'."
-  (calispel:! (result-channel prompter) (input prompter)))
-
 (export-always 'actions)
 (defun actions (prompter)
   "Return the list of contextual actions.
 Without marks, it's the list of actions for the current source.
-With marks, it's the intersection of the action of the sources containing the
+With marks, it's the intersection of the actions of the sources that contain the
 marked elements."
   (let ((marked-sources
           (remove-if (complement #'marked-suggestions) (sources prompter))))
@@ -258,12 +245,22 @@ marked elements."
                                        (sources prompter)))
         (slot-value (selected-source prompter) 'actions))))
 
-(export-always 'run-action)
-(defun run-action (prompter action)
-  "Call action over selection and send the results to PROMPTER's `result-channel'."
+(export-always 'return-selection)
+(defun return-selection (prompter &optional (action (default-action prompter)))
+  "Call action over selection and send the results to PROMPTER's `result-channel'.
+The selection is the collection of marked suggestions across all sources.
+If there is no marked suggestion, send the currently selected suggestion
+instead."
+  (unless action
+    (setf action #'identity))
   ;; TODO: Catch conditions.
   (let ((action-result (funcall action (resolve-selection prompter))))
     (calispel:! (result-channel prompter) action-result)))
+
+(export-always 'return-input)
+(defun return-input (prompter)
+  "Send input to PROMPTER's `result-channel'."
+  (calispel:! (result-channel prompter) (input prompter)))
 
 (export-always 'next-ready-p)
 (defun next-ready-p (prompter &optional timeout)
@@ -333,3 +330,6 @@ suggestions."
 (defun all-marked-suggestions (prompter)
   "Return the list of the marked suggestion values in the prompter."
   (alex:mappend #'marked-suggestions (sources prompter)))
+
+(defun default-action (prompter)
+  (first (slot-value (selected-source prompter) 'actions)))
