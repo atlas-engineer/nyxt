@@ -231,7 +231,7 @@ If 0, there is no limit.")
                         "Allow marking multiple candidates when this attribute is
 present.")
 
-     (resume nil                        ; TODO: Implement.
+     (resume nil                        ; TODO: Implement, rename.
              :type (or null function)
              :documentation
              "Function called with the source as argument when the prompter is

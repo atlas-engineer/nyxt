@@ -85,7 +85,7 @@ It can be a function of one argument, the prompter, which returns a string.")
                      :type calispel:channel
                      :documentation
                      "Channel to which the selection is sent on exit.
-Also listen to `interrupt-channel' to know if the minibuffer is quitted.")
+Caller should also listen to `interrupt-channel' to know if the minibuffer is quitted.")
      (interrupt-channel (make-channel 1)
                         :type calispel:channel
                         :documentation
@@ -95,7 +95,13 @@ See also `result-channel'.")
      (sync-queue nil
                  :type (or null sync-queue)
                  :export nil
-                 :documentation "See `sync-queue' class documentation."))
+                 :documentation "See `sync-queue' class documentation.")
+
+     (returned-p nil
+                 :type boolean
+                 :documentation
+                 "If non-nil, prompter has returned.
+This is useful to know if prompter was cancelled or not."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
     (:accessor-name-transformer #'class*:name-identity)
@@ -146,7 +152,7 @@ compution is not finished.")))
 `after-destructor'.
 Signal destruction by sending a value to PROMPTER's `interrupt-channel'."
   (maybe-funcall (before-destructor prompter))
-  (mapc (lambda (source) (maybe-funcall (destructor source) source))
+  (mapc (lambda (source) (maybe-funcall (destructor source) prompter source))
         (sources prompter))
   (maybe-funcall (after-destructor prompter))
   ;; TODO: Interrupt before or after desctructor?
@@ -273,12 +279,14 @@ instead."
   (unless action
     (setf action #'identity))
   ;; TODO: Catch conditions.
+  (setf (returned-p prompter) t)
   (let ((action-result (funcall action (resolve-selection prompter))))
     (calispel:! (result-channel prompter) action-result)))
 
 (export-always 'return-input)
 (defun return-input (prompter)
   "Send input to PROMPTER's `result-channel'."
+  (setf (returned-p prompter) t)
   (calispel:! (result-channel prompter) (input prompter)))
 
 (export-always 'next-ready-p)
