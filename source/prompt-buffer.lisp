@@ -162,7 +162,7 @@ Return source as second value."
 (export-always 'hide-prompt-buffer)
 (defun hide-prompt-buffer (prompt-buffer) ; TODO: Rename `hide'
   "Hide PROMPT-BUFFER and display next active one, if any."
-  (prompter:destructor (nyxt:prompter prompt-buffer))
+  (prompter:destroy (nyxt:prompter prompt-buffer))
   ;; Note that PROMPT-BUFFER is not necessarily first in the list, e.g. a new
   ;; prompt-buffer was invoked before the old one reaches here.
   (alex:deletef (active-minibuffers (current-window)) prompt-buffer)
