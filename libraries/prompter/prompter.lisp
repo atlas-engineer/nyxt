@@ -289,6 +289,11 @@ instead."
   (setf (returned-p prompter) t)
   (calispel:! (result-channel prompter) (input prompter)))
 
+(export-always 'toggle-follow)
+(defun toggle-follow (prompter &optional (source (selected-source prompter)))
+  "Toggle `follow-p' in SOURCE."
+  (setf (follow-p source) (not (follow-p source))))
+
 (export-always 'next-ready-p)
 (defun next-ready-p (prompter &optional timeout)
   "Block and return next PROMPTER ready source.
