@@ -155,8 +155,8 @@ when input is modified, after filtering the suggestions.")
                      :documentation "A predicate used to sort the suggestions once
 filtered.  The predicate works the same as the `sort' predicate.")
 
-     (actions '()
-              :type (or null (cons function)) ; TODO: Accept function symbols?  Commands?
+     (actions '(identity)
+              :type (cons (or function symbol)) ; TODO: Accept function symbols?  Commands?
               :accessor nil
               :export nil
               :documentation "List of functions that can be run on suggestions
@@ -250,7 +250,7 @@ Also see `follow-delay'.")
                    "Execute `persistent-action' after this delay when `follow' is
 non-nil.")
 
-     (must-match-p :always
+     (must-match-p :always ; TODO: Remove and use dedicated source instead?  Then remove `return-input'.
                    :type (or must-match-choices null)
                    :documentation
                    "Control what to do when input does not match anything.
