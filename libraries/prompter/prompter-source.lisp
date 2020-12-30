@@ -9,7 +9,6 @@
 ;; TODO: User classes?  Probably useful mostly for `prompter-source' since
 ;; they may be defined globally.  Conversely, `prompter' is mostly used
 ;; locally.
-;; TODO: Implement prompter actions.
 
 (deftype must-match-choices ()
   `(or (eql :always)
@@ -87,7 +86,7 @@ another.")
                   "Function called with the source as argument.
 It is useful for instance to create the list of `initial-suggestions'.")
 
-     (destructor nil
+     (destructor nil                    ; TODO: Use it.
                  :type (or null function)
                  :documentation
                  "Function called with the source as parameter to clean it up.
@@ -116,7 +115,7 @@ See `ready-notifier' to know when the list is final.
 See `update-notifier' to know when it has been updated, to avoid polling the
 list.")
 
-     (marked-suggestions '()            ; TODO: Implement.
+     (marked-suggestions '()
                          :documentation
                          "The list of suggestions which have been marked by the user.
 Marking is only allowed when `multi-selection-p' is non-nil.
@@ -156,7 +155,7 @@ when input is modified, after filtering the suggestions.")
                      :documentation "A predicate used to sort the suggestions once
 filtered.  The predicate works the same as the `sort' predicate.")
 
-     (actions '()                       ; TODO: Implement!
+     (actions '()
               :type (or null (cons function)) ; TODO: Accept function symbols?  Commands?
               :accessor nil
               :export nil
@@ -223,7 +222,7 @@ is done and the source was sent to the `ready-channel'.")
                     :documentation "Thread where the `filter-preprocessor', `filter' and
 `filter-postprocessor' are run.  We store it in a slot so that we can terminate it.")
 
-     (suggestion-limit 0                ; TODO: Implement!
+     (suggestion-limit 0                ; TODO: Implement.
                        :documentation
                        "Don't display more suggestions than this.
 If 0, there is no limit.")
@@ -278,7 +277,20 @@ It can be a function of one argument, the prompter, which returns a string."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
     (:accessor-name-transformer #'class*:name-identity)
-    (:documentation "TODO: Complete me.")))
+    (:documentation "A prompter source instance is meant to be used by a
+`prompter' object.  See its `sources' slot.  A source is a consistent collection
+of suggestions, filters, actions.
+
+When a `prompter' `input' is set, the `update' function is called over all
+sources.  This function pipelines `initial-suggestions' through
+`filter-preprocessor', `filter', and finally `filter-postprocessor'.  If any of
+these functions is nil, it's equivalent to passing the suggestions unchanged.
+
+`filter-preprocessor' and `filter-postprocessor' are passed the whole list of
+suggestions; they only set the `suggestions' once they are done.  Conversely,
+`filter' is passed one suggestion at a time and it updates `suggestions' on each
+call.")))
+
 
 (export-always 'make-source)
 (define-function make-source            ; TODO: Useless?
