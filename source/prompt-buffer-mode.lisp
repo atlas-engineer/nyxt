@@ -170,10 +170,11 @@ select next."
   (when (prompter:multi-selection-p (current-source))
     (multiple-value-bind (suggestion source)
         (current-suggestion)
-      (with-accessors ((marked-suggestions prompter:marked-suggestions)) source
-        (match (find (prompter:value suggestion) marked-suggestions)
-          ((guard n n) (setf marked-suggestions (delete (prompter:value suggestion) marked-suggestions)))
-          (_ (push (prompter:value suggestion) marked-suggestions)))))
+      (let ((suggestion-value (prompter:value suggestion)))
+        (with-accessors ((marked-suggestions prompter:marked-suggestions)) source
+          (match (find suggestion-value marked-suggestions)
+            ((guard n n) (setf marked-suggestions (delete suggestion-value marked-suggestions)))
+            (_ (push suggestion-value marked-suggestions))))))
     (match direction
       (:forward (select-next prompt-buffer))
       (:backward (select-previous prompt-buffer)))))

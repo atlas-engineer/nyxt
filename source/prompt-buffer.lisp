@@ -138,6 +138,7 @@ A prompt query is typically done as follows:
 (export-always 'current-suggestion)
 (defun current-suggestion (&optional (prompt-buffer (current-prompt-buffer)))
   "Return selected prompt-buffer suggestion.
+To access the actual value, call `prompter:value' over the returned suggestion.
 Return source as second value."
   (prompter:selected-suggestion (prompter prompt-buffer)))
 
