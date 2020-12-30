@@ -24,6 +24,7 @@
        "C-return" 'return-input         ; TODO: Bind to shift-return instead?
        "M-return" 'return-selection-over-action       ; TODO: Also bind to C-return?
        "C-j" 'run-persistent-action
+       "C-c C-f" 'toggle-follow
        "C-space" 'prompt-buffer-toggle-mark
        "shift-space" 'prompt-buffer-toggle-mark-backwards
        "M-space" 'prompt-buffer-toggle-mark
@@ -164,6 +165,10 @@ If STEPS is negative, go to next pages instead."
 (define-command cancel-input (&optional (prompt-buffer (current-prompt-buffer))) ; TODO: Rename.
   "Close the prompt-buffer without further action."
   (hide-prompt-buffer prompt-buffer))
+
+(define-command toggle-follow (&optional (prompt-buffer (current-prompt-buffer)))
+  "Close the prompt-buffer without further action."
+  (prompter:toggle-follow (prompter prompt-buffer)))
 
 (define-command prompt-buffer-toggle-mark (&key
                                            (prompt-buffer (current-prompt-buffer))
