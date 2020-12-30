@@ -157,26 +157,31 @@ when input is modified, after filtering the suggestions.")
 filtered.  The predicate works the same as the `sort' predicate.")
 
      (actions '()                       ; TODO: Implement!
-              :type list)
+              :type (or null (cons function)) ; TODO: Accept function symbols?  Commands?
+              :accessor nil
+              :export nil
+              :documentation "List of functions that can be run on suggestions
+of this source.")
 
-     (persistent-action nil
+     (persistent-action nil             ; TODO: Implement.
                         :type (or null function)
                         :documentation
-                        "Function called with the selected candidate.")
+                        "Function called over the selection without returning
+from the prompter.")
 
-     (persistent-help ""
+     (persistent-help ""                ; TODO: Implement.
                       :type (or string function)
                       :documentation
                       "A string to explain persistent-action of this source. It also
 accepts a function which takes the source as argument.")
 
-     (multiline nil
+     (multiline nil                     ; TODO: Unused?
                 :type (or boolean integer)
                 :documentation
                 "If non-nil, each candidate can span over multiple lines.
 If an integer, it specifies the maximum number of lines allow per candidate.")
 
-     (requires-pattern 0
+     (requires-pattern 0                ; TODO: Use!
                        :documentation
                        "Compute and display suggestions only if the pattern has
 at least this number of characters.  When 0, always compute and display
@@ -229,7 +234,7 @@ If 0, there is no limit.")
                         "Allow marking multiple candidates when this attribute is
 present.")
 
-     (resume nil
+     (resume nil                        ; TODO: Implement.
              :type (or null function)
              :documentation
              "Function called with the source as argument when the prompter is
@@ -243,7 +248,7 @@ Also see `follow-delay'.")
 
      (follow-delay 0.0                  ; TODO: Implement.
                    :documentation
-                   "Execute `persistent-action' after this delay when `follow' i
+                   "Execute `persistent-action' after this delay when `follow' is
 non-nil.")
 
      (must-match-p :always
@@ -265,7 +270,7 @@ If nil, no history is used.")
              :documentation
              "Keymap specific to this source.")
 
-     (help-message ""
+     (help-message ""                   ; TODO: Use.
                    :type (or string function)
                    :documentation
                    "Help message for this source.
