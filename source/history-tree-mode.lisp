@@ -16,6 +16,14 @@
         :color "black")
        ("a:hover"
         :color "gray")
+       (".current-buffer a"
+        :color "black")
+       (".current-buffer a:hover"
+        :color "gray")
+       (".other-buffer a"
+        :color "gray")
+       (".other-buffer a:hover"
+        :color "lightgray")
        (li
         :white-space "nowrap")
        ("ul li"
