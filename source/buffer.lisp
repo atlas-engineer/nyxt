@@ -723,7 +723,13 @@ proceeding."
   ((prompter:name "Buffer list")
    ;; For commodity, the current buffer shouldn't be the first one on the list.
    (prompter:initial-suggestions (buffer-initial-suggestions :current-is-last-p t))
-   (prompter:actions '(set-current-buffer))))
+   (prompter:actions '(set-current-buffer))
+   (prompter:persistent-action #'set-current-buffer)
+   (prompter:destructor (let ((buffer (current-buffer)))
+                           (lambda (source)
+                             (declare (ignore source))
+                             (unless (eq buffer (current-buffer))
+                               (set-current-buffer buffer)))))))
 
 (define-command switch-buffer2 ()
   "Switch the active buffer in the current window."
