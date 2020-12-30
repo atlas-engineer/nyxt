@@ -526,6 +526,10 @@ title into accound as it may vary from one load to the next."
 (defmethod object-display ((buffer buffer))
   (format nil "~a  ~a" (title buffer) (object-display (url buffer))))
 
+(defmethod prompter:object-properties ((buffer buffer))
+  (list :default (url buffer)
+        :title (title buffer)))
+
 (define-command make-buffer (&key (title "") modes (url ""))
   "Create a new buffer.
 MODES is a list of mode symbols.
@@ -708,6 +712,25 @@ proceeding."
                      ;; For commodity, the current buffer shouldn't be the first one on the list.
                      :suggestion-function (buffer-suggestion-filter :current-is-last-p t))))
         (set-current-buffer buffer))))
+
+(defun buffer-initial-suggestions (&key current-is-last-p domain)
+  (let ((buffers (buffer-list :sort-by-time t :domain domain)))
+    (when current-is-last-p
+      (setf buffers (alex:rotate buffers -1)))
+    buffers))
+
+(define-class buffer-source (prompter:prompter-source)
+  ((prompter:name "Buffer list")
+   ;; For commodity, the current buffer shouldn't be the first one on the list.
+   (prompter:initial-suggestions (buffer-initial-suggestions :current-is-last-p t))
+   (prompter:actions '(set-current-buffer))))
+
+(define-command switch-buffer2 ()
+  "Switch the active buffer in the current window."
+  (prompt
+   :prompter (list
+              :prompt "Switch to buffer"
+              :sources (list (make-instance 'buffer-source)))))
 
 (define-command switch-buffer-domain (&key domain (buffer (current-buffer)))
   "Switch the active buffer in the current window from the current domain."
