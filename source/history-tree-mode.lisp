@@ -12,6 +12,10 @@
        (* :margin 0
           :padding 0
           :list-style "none")
+       (a
+        :color "black")
+       ("a:hover"
+        :color "gray")
        (li
         :white-space "nowrap")
        ("ul li"
