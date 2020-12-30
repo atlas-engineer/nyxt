@@ -133,10 +133,18 @@ If STEPS is negative, go to next pages instead."
     (prompter:actions (prompter first-prompt-buffer))))
 
 ;; TODO: Should actions be commands?
-;; TODO: What should action properties be?  Docstring, bindings?
+(defun action-properties (action)
+  "Return the name and documentation properties of the given ACTION symbol."
+  ;; TODO: Return bindings.
+  (flet ((first-line (string)
+           (first (str:split (string #\newline) string))))
+    `(:name ,(symbol-name action)
+      :documentation ,(first-line (documentation action 'function)))))
+
 (define-class action-source (prompter:prompter-source)
   ((prompter:name "List of actions")
-   (prompter:initial-suggestions (prompt-buffer-actions))))
+   (prompter:initial-suggestions (prompt-buffer-actions))
+   (prompter:suggestion-property-function #'action-properties)))
 
 (define-command return-selection-over-action (&optional (prompt-buffer (current-prompt-buffer)))
   "Prompt for an action to run over PROMPT-BUFFER selection."
