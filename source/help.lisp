@@ -541,10 +541,10 @@ the "
          (list-history (&key (separator " → ") (limit 20))
            (let* ((path (history-path (current-buffer)))
                   (history (when (get-data path)
-                             (sort (alex:hash-table-values (get-data path))
+                             (sort (htree:all-nodes (get-data path))
                                    #'local-time:timestamp>
-                                   :key #'last-access))))
-             (loop for item in (sera:take limit history)
+                                   :key (lambda (i) (last-access (htree:data i)))))))
+             (loop for item in (mapcar #'htree:data (sera:take limit history))
                    collect (markup:markup
                             (:li (title item) (unless (str:emptyp (title item)) separator)
                                  (:a :href (object-string (url item))
