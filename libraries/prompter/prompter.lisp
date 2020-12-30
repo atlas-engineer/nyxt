@@ -36,7 +36,7 @@ A new object is created on every new input."))
               :type (or null (cons prompter-source))
               :documentation "List of `prompter-source's.")
 
-     (selection '() ; TODO: Add method to update `selection'.
+     (selection '()   ; TODO: Unexport, rename `result' to `selection'.
                 ;; TODO: Index by (source-index suggestion-index) instead?
                 ;; TODO: Use structure?
                 :type list
@@ -223,23 +223,46 @@ If STEPS is negative, go forward and selection first suggestion."
           (list last-source
                 (1- (length (suggestions last-source)))))))
 
+(defun result (prompter)
+  (or (mapcar #'value (all-marked-suggestions prompter))
+      (value (selected-suggestion prompter))
+      ;; TODO: What if there is no result?
+      (and (not (must-match-p prompter))
+           (slot-value prompter 'input))))
+
 (export-always 'return-selection)
 (defun return-selection (prompter)
   "Send selection to PROMPTER's `result-channel'.
 The selection is the collection of marked suggestions across all sources.
 If there is no marked suggestion, send the currently selected suggestion
 instead."
-  (let ((result (or (mapcar #'value (alex:mappend #'marked-suggestions (sources prompter)))
-                    (value (selected-suggestion prompter))
-                    ;; TODO: What if there is no result?
-                    (and (not (must-match-p prompter))
-                         (slot-value prompter 'input)))))
-    (calispel:! (result-channel prompter) result)))
+  (calispel:! (result-channel prompter) (result prompter)))
 
 (export-always 'return-input)
 (defun return-input (prompter)
   "Send input to PROMPTER's `result-channel'."
   (calispel:! (result-channel prompter) (input prompter)))
+
+(export-always 'actions)
+(defun actions (prompter)
+  "Return the list of contextual actions.
+Without marks, it's the list of actions for the current source.
+With marks, it's the intersection of the action of the sources containing the
+marked elements."
+  (let ((marked-sources
+          (remove-if (complement #'marked-suggestions) (sources prompter))))
+    (if marked-sources
+        (reduce #'intersection (mapcar (lambda (source)
+                                         (slot-value source 'actions))
+                                       (sources prompter)))
+        (slot-value (selected-source prompter) 'actions))))
+
+(export-always 'run-action)
+(defun run-action (prompter action)
+  "Call action over selection and send the results to PROMPTER's `result-channel'."
+  ;; TODO: Catch conditions.
+  (let ((action-result (funcall action (result prompter))))
+    (calispel:! (result-channel prompter) action-result)))
 
 (export-always 'next-ready-p)
 (defun next-ready-p (prompter &optional timeout)
