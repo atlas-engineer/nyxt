@@ -204,20 +204,31 @@ search.")
 (define-command history-backwards (&optional (buffer (current-buffer)))
   "Go to parent URL in history."
   (with-data-access (history (history-path buffer))
-    (if (eq (htree:root history) (htree:current history))
-        (echo "No backward history.")
-        (set-url-from-history (htree:parent (htree:current history)) buffer))))
+    (let ((parents (remove-if #'(lambda (node)
+                                  (and (conservative-history-movement buffer)
+                                       (string/= (id (htree:data node)) (id buffer))))
+                              (htree:parent-nodes history))))
+      (if parents
+          (set-url-from-history (first parents) buffer)
+          (echo "No backward history.")))))
 
 (define-command history-forwards (&optional (buffer (current-buffer)))
   "Go to forward URL in history."
   (with-data-access (history (history-path buffer))
-    (if (htree:children-nodes history)
-        (set-url-from-history (first (htree:children (htree:current history))) buffer)
-        (echo "No forward history."))))
+    (let* ((children (remove-if #'(lambda (node)
+                                    (and (conservative-history-movement buffer)
+                                         (string/= (id (htree:data node)) (id buffer))))
+                                (htree:children-nodes history))))
+      (if children
+          (set-url-from-history (first children) buffer)
+          (echo "No forward history.")))))
 
 (defun history-backwards-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all parent URLs."
-  (let ((parents (htree:parent-nodes (get-data (history-path buffer)))))
+  (let ((parents (remove-if #'(lambda (node)
+                                (and (conservative-history-movement buffer)
+                                     (string/= (id (htree:data node)) (id buffer))))
+                            (htree:parent-nodes (get-data (history-path buffer))))))
     (lambda (minibuffer)
       (if parents
           (fuzzy-match (input-buffer minibuffer) parents)
@@ -233,7 +244,10 @@ search.")
 
 (defun history-forwards-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over forward-children URL."
-  (let ((children (htree:forward-children-nodes (get-data (history-path buffer)))))
+  (let ((children (remove-if #'(lambda (node)
+                                 (and (conservative-history-movement buffer)
+                                      (string/= (id (htree:data node)) (id buffer))))
+                             (htree:forward-children-nodes (get-data (history-path buffer))))))
     (lambda (minibuffer)
       (if children
           (fuzzy-match (input-buffer minibuffer) children)
@@ -256,7 +270,10 @@ Otherwise go forward to the only child."
 
 (defun history-forwards-all-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over children URL from all branches."
-  (let ((children (htree:children-nodes (get-data (history-path buffer)))))
+  (let ((children (remove-if #'(lambda (node)
+                                 (and (conservative-history-movement buffer)
+                                      (string/= (id (htree:data node)) (id buffer))))
+                             (htree:children-nodes (get-data (history-path buffer))))))
     (lambda (minibuffer)
       (if children
           (fuzzy-match (input-buffer minibuffer) children)
@@ -272,8 +289,10 @@ Otherwise go forward to the only child."
 
 (defun history-all-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all history URLs."
-  (let ((urls (htree:all-nodes
-               (get-data (history-path buffer)))))
+  (let ((urls (remove-if #'(lambda (node)
+                             (and (conservative-history-movement buffer)
+                                  (string/= (id (htree:data node)) (id buffer))))
+                         (htree:all-nodes (get-data (history-path buffer))))))
     (lambda (minibuffer)
       (if urls
           (fuzzy-match (input-buffer minibuffer) urls)
