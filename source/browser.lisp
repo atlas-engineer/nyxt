@@ -564,10 +564,6 @@ sometimes yields the wrong reasult."
 (defun set-current-buffer (buffer)
   "Set the active buffer for the active window."
   (unless (eq 'minibuffer (class-name (class-of buffer)))
-    (with-data-access (history (history-path buffer)
-                       :default (htree:make))
-      (when (current-history-node buffer)
-          (setf (htree:current history) (current-history-node buffer))))
     (if (current-window)
         (window-set-active-buffer (current-window) buffer)
         (make-window buffer))

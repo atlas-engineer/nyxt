@@ -661,6 +661,10 @@ proceeding."
   (setf (last-access (active-buffer window)) (local-time:now))
   (let ((window-with-same-buffer (find buffer (delete window (window-list))
                                        :key #'active-buffer)))
+    (with-data-access (history (history-path buffer)
+                       :default (htree:make))
+      (when (current-history-node buffer)
+        (setf (htree:current history) (current-history-node buffer))))
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
         (let ((temp-buffer (make-dummy-buffer))
               (old-buffer (active-buffer window)))
