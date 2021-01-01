@@ -49,6 +49,11 @@ It changes every time a node is added or deleted."))
 (defun make ()
   (make-instance 'history-tree))
 
+(defmethod (setf current) (value (history history-tree))
+  (if value
+      (setf (slot-value history 'current) value)
+      (error "Attempted to set current history-tree node to NIL.")))
+
 
 
 (deftype positive-integer ()
