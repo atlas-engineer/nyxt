@@ -29,6 +29,9 @@ See the `data-path' class and the `expand-path' function.")
                          :type (or null htree:node)
                          :documentation "The history node that this buffer history is currently on.
 Used to make sure children buffers properly branch from parent buffers in global history.")
+   (conservative-history-movement nil
+                                  :type boolean
+                                  :documentation "Whether history navigation is restricted by buffer-local history.")
    (modes :initform '()
           :documentation "The list of mode instances.
 Modes are instantiated after the `default-modes' slot, with `initialize-modes'
