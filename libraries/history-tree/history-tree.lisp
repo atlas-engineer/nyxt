@@ -318,18 +318,17 @@ Search is done with the help of TEST argument."
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'delete-data))
 (defmethod delete-data (data (history history-tree) &key (test #'equal) rebind-children-p)
-  "Delete node matching DATA from HISTORY and return the node.
+  "Delete node(s) matching DATA from HISTORY and return the last deleted node.
 If the node has children itself, and REBIND-CHILDREN-P is not nil, these
 will become children of the node's parent. Search is done with the
 help of TEST argument."
-  ;; TODO: This (block ... (map-tree ... (return-from ...))) repeats. Abstract it?
-  (block delete
+  (let ((last-deleted nil))
     (do-tree (node history)
       (when (funcall test data (data node))
-        (setf (children (parent node))
-              (append (when rebind-children-p (children node))
-                      (remove node (children (parent node)))))
-        (return-from delete node)))))
+        (setf (children (parent node)) (append (when rebind-children-p (children node))
+                                               (remove node (children (parent node))))
+              last-deleted node)))
+    last-deleted))
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
