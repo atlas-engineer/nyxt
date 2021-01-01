@@ -143,10 +143,16 @@ Example:
             :initial-value %slot-default))))")
    (default-new-buffer-url (quri:uri "https://nyxt.atlas.engineer/start")
                            :documentation "The URL set to a new blank buffer opened by Nyxt.")
-   (clean-dead-history-p nil
-                         :type boolean
-                         :documentation "Whether the buffer-local history will be deleted
-from the global history tree on buffer deletion.")
+   (buffer-deletion-history-treatment :rebind
+                                      :type (member :delete :clean :rebind)
+                                      :documentation "What happens to buffer-local history on buffer deletion.
+If :CLEAN, all the nodes belonging to the buffer will have their `id's cleared.
+If :REBIND, and there are children buffers, all the nodes belonging to
+the buffer will be rebound to the most recent child buffer.
+If :REBIND, and there are no children buffers, behave as :CLEAN.
+If :DELETE, and there are no children buffer, all the nodes belonging
+to the buffer will be deleted.
+If :DELETE, and there are children buffers, behave as :REBIND.")
    (scroll-distance 50
                     :documentation "The distance scroll-down or scroll-up will scroll.")
    (horizontal-scroll-distance 50
@@ -560,28 +566,30 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     buffers))
 
 (defmethod buffer-local-history-clean ((buffer buffer))
-  "Delete the BUFFER-local history in case it has no children in other buffers.
-Rebinds the history to the oldest child otherwise."
+  "Clean buffer-local history based on BUFFER's `buffer-deletion-history-treatment'."
   (with-data-access (history (history-path buffer))
-    (let* ((root (gethash (id buffer) (buffer-local-histories-table history)))
-           (buffer-history (htree:node-children root))
-           (buffer-native-history (remove-if (alex:curry #'string/= (id buffer)) buffer-history
-                                             :key (alex:compose #'id #'data)))
-           (children (set-difference buffer-history buffer-native-history
-                                     :test #'equals :key #'data))
-           (most-recent-child (first (sort children #'local-time:timestamp>
-                                           :key (alex:compose #'last-access #'data)))))
-      (if children
-          (dolist (native-node buffer-native-history)
-            (setf (id (data native-node)) (id most-recent-child)))
-          (htree:delete-data (htree:data root) history :test #'equals)))))
-
-(defmethod buffer-local-history-clean-ids ((buffer buffer))
-  "Clean the `id's of all the nodes belonging to the buffer."
-  (with-data-access (history (history-path buffer))
-    (htree:do-tree (node history)
-      (when (string= (id buffer) (id (htree:data node)))
-        (setf (id (htree:data node)) "")))))
+    (let* ((treatment (buffer-deletion-history-treatment buffer))
+           (most-recent-child (block search
+                                (htree:do-tree (node history)
+                                  (when (and (htree:parent node)
+                                             (htree:data node)
+                                             (string= (id (htree:data (htree:parent node))) (id buffer))
+                                             (string/= (id (htree:data node)) (id buffer)))
+                                    (return-from search node)))))
+           (most-recent-id (ignore-errors (id (htree:data most-recent-child)))))
+      (flet ((history-set-ids (old-id new-id)
+               (htree:do-tree (node history)
+                 (when (string= old-id (id (htree:data node)))
+                   (setf (id (htree:data node)) new-id)))))
+        (cond
+          ((and (eq treatment :delete) (not most-recent-child))
+           (htree:delete-data nil history
+                              :test #'(lambda (null data)
+                                        (declare (ignore null))
+                                        (string= (id data) (id buffer)))))
+          ((and (member treatment '(:delete :rebind)) most-recent-child)
+           (history-set-ids (id buffer) most-recent-id))
+          (t (history-set-ids (id buffer) "")))))))
 
 (declaim (ftype (function (buffer)) add-to-recent-buffers))
 (defun add-to-recent-buffers (buffer)
@@ -601,9 +609,7 @@ Rebinds the history to the oldest child otherwise."
         (window-set-active-buffer parent-window
                                   replacement-buffer)))
     (ffi-buffer-delete buffer)
-    (if (clean-dead-history-p buffer)
-        (buffer-local-history-clean buffer)
-        (buffer-local-history-clean-ids buffer))
+    (buffer-local-history-clean buffer)
     (buffers-delete (id buffer))
     (add-to-recent-buffers buffer)
     (store (data-profile buffer) (history-path buffer))))
