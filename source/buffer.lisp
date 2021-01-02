@@ -374,7 +374,6 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                ("#tabs::-webkit-scrollbar"
                 :display "none")
                (.tab
-                :color "rgb(250, 250, 250)"
                 :white-space "nowrap"
                 :text-decoration "none"
                 :padding-left "5px"
@@ -390,7 +389,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                 :overflow-x "hidden"
                 :white-space "nowrap")
                (.button
-                :color "rgb(230, 230, 230)"
+                :color "rgb(250, 250, 250)"
                 :text-decoration "none"
                 :padding-left "2px"
                 :padding-right "2px"
