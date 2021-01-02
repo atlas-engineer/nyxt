@@ -374,7 +374,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                ("#tabs::-webkit-scrollbar"
                 :display "none")
                (.tab
-                :color "rgb(220, 220, 220)"
+                :color "rgb(250, 250, 250)"
                 :white-space "nowrap"
                 :text-decoration "none"
                 :padding-left "5px"
