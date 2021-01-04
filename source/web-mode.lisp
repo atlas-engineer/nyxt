@@ -28,6 +28,10 @@
 Example: DuckDuckGo redirections should be ignored or else going backward in
 history after consulting a result reloads the result, not the duckduckgo
 search.")
+   (prompting-history-forwards-p t
+                                :type boolean
+                                :documentation "Whether `history-forwards' is asking the user
+which history branch to pick when there are several.")
    (keymap-scheme
     (define-scheme "web"
       scheme:cua
@@ -228,14 +232,31 @@ search.")
           (set-url-from-history (first parents) buffer)
           (echo "No backward history.")))))
 
+(defun history-direct-children-suggestion-filter (&optional (buffer (current-buffer)))
+  "Suggestion function over children URLs."
+  (let ((children (conservative-history-filter
+                   buffer (htree:children (htree:current (get-data (history-path buffer)))))))
+    (lambda (minibuffer)
+      (if children
+          (fuzzy-match (input-buffer minibuffer) children)
+          (error "Cannot navigate forwards.")))))
+
 (define-command history-forwards (&optional (buffer (current-buffer)))
   "Go to forward URL in history."
   (with-data-access (history (history-path buffer))
     (let ((children (conservative-history-filter
                      buffer (htree:children (htree:current (get-data (history-path buffer)))))))
-      (if children
-          (set-url-from-history (first children) buffer)
-          (echo "No forward history.")))))
+      (cond
+        ((zerop (length children))
+         (echo "No forward history."))
+        ((or (sera:single children)
+             (not (prompting-history-forwards-p (find-mode buffer 'web-mode))))
+         (set-url-from-history (first children) buffer))
+        (t (set-url-from-history (prompt-minibuffer
+                                  :input-prompt "History branch to follow"
+                                  :suggestion-function (history-direct-children-suggestion-filter
+                                                        buffer))
+                                 buffer))))))
 
 (defun history-backwards-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all parent URLs."
