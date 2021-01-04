@@ -201,13 +201,16 @@ search.")
                 (id (htree:data history-node)) (id buffer))
           (buffer-load (url (htree:data history-node)))))))
 
+(defun conservative-history-filter (buffer nodes)
+  (remove-if #'(lambda (node)
+                 (and (conservative-history-movement buffer)
+                      (string/= (id (htree:data node)) (id buffer))))
+             nodes))
+
 (define-command history-backwards (&optional (buffer (current-buffer)))
   "Go to parent URL in history."
   (with-data-access (history (history-path buffer))
-    (let ((parents (remove-if #'(lambda (node)
-                                  (and (conservative-history-movement buffer)
-                                       (string/= (id (htree:data node)) (id buffer))))
-                              (htree:parent-nodes history))))
+    (let ((parents (conservative-history-filter buffer (htree:parent-nodes history))))
       (if parents
           (set-url-from-history (first parents) buffer)
           (echo "No backward history.")))))
@@ -215,20 +218,16 @@ search.")
 (define-command history-forwards (&optional (buffer (current-buffer)))
   "Go to forward URL in history."
   (with-data-access (history (history-path buffer))
-    (let* ((children (remove-if #'(lambda (node)
-                                    (and (conservative-history-movement buffer)
-                                         (string/= (id (htree:data node)) (id buffer))))
-                                (htree:children-nodes history))))
+    (let ((children (conservative-history-filter
+                     buffer (htree:children (htree:current (get-data (history-path buffer)))))))
       (if children
           (set-url-from-history (first children) buffer)
           (echo "No forward history.")))))
 
 (defun history-backwards-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all parent URLs."
-  (let ((parents (remove-if #'(lambda (node)
-                                (and (conservative-history-movement buffer)
-                                     (string/= (id (htree:data node)) (id buffer))))
-                            (htree:parent-nodes (get-data (history-path buffer))))))
+  (let ((parents (conservative-history-filter
+                  buffer (htree:parent-nodes (get-data (history-path buffer))))))
     (lambda (minibuffer)
       (if parents
           (fuzzy-match (input-buffer minibuffer) parents)
@@ -244,10 +243,8 @@ search.")
 
 (defun history-forwards-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over forward-children URL."
-  (let ((children (remove-if #'(lambda (node)
-                                 (and (conservative-history-movement buffer)
-                                      (string/= (id (htree:data node)) (id buffer))))
-                             (htree:forward-children-nodes (get-data (history-path buffer))))))
+  (let ((children (conservative-history-filter
+                   buffer (htree:forward-children-nodes (get-data (history-path buffer))))))
     (lambda (minibuffer)
       (if children
           (fuzzy-match (input-buffer minibuffer) children)
@@ -270,10 +267,8 @@ Otherwise go forward to the only child."
 
 (defun history-forwards-all-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over children URL from all branches."
-  (let ((children (remove-if #'(lambda (node)
-                                 (and (conservative-history-movement buffer)
-                                      (string/= (id (htree:data node)) (id buffer))))
-                             (htree:children-nodes (get-data (history-path buffer))))))
+  (let ((children (conservative-history-filter
+                   buffer (htree:children-nodes (get-data (history-path buffer))))))
     (lambda (minibuffer)
       (if children
           (fuzzy-match (input-buffer minibuffer) children)
@@ -289,10 +284,8 @@ Otherwise go forward to the only child."
 
 (defun history-all-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all history URLs."
-  (let ((urls (remove-if #'(lambda (node)
-                             (and (conservative-history-movement buffer)
-                                  (string/= (id (htree:data node)) (id buffer))))
-                         (htree:all-nodes (get-data (history-path buffer))))))
+  (let ((urls (conservative-history-filter
+               buffer (htree:all-nodes (get-data (history-path buffer))))))
     (lambda (minibuffer)
       (if urls
           (fuzzy-match (input-buffer minibuffer) urls)
