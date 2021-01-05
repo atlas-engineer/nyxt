@@ -81,7 +81,7 @@ strings."
           (last-access new-he) (local-time:format-timestring nil (last-access he)))
     (call-next-method new-he stream serialization-state)))
 
-(declaim (ftype (function (quri:uri &key (:title string) (:explicit t)) t) history-add))
+(declaim (ftype (function (quri:uri &key (:title string)) t) history-add))
 (defun history-add (uri &key (title ""))
   "Add URL to the global/buffer-local history.
 The `implicit-visits' count is incremented."
