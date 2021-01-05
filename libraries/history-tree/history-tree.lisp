@@ -310,7 +310,7 @@ First child comes first."
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'find-node))
-(defmethod find-node (item (history history-tree) &key (key #'identity) (test #'equal))
+(defun find-node (item history &key (key #'identity) (test #'equal))
   "Find a tree node matching ITEM (by TEST) in HISTORY and return it."
   (block search
     (do-tree (node history)
@@ -319,7 +319,7 @@ First child comes first."
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'remove-node))
-(defmethod remove-node (item (history history-tree) &key (key #'identity) (test #'equal))
+(defun remove-node (item history &key (key #'identity) (test #'equal))
   "Return all the nodes from HISTORY that didn't match ITEM (measured by TEST)."
   (let (result)
     (do-tree (node history)
