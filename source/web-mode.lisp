@@ -474,33 +474,11 @@ the 25A0-25FF range."
 
 (defmethod nyxt:on-signal-notify-uri ((mode web-mode) url)
   (declare (type quri:uri url))
-  (flet ((history-add (uri &key (title ""))
-           "Add URL to the global/buffer-local history.
-The `implicit-visits' count is incremented."
-           ;; `buffer-load' has its own data syncronization, so we assume that
-           ;; history is up-to-date there.  Using `with-data-access' here is not
-           ;; an option -- it will cause the new thread and the thread from
-           ;; `buffer-load' to mutually deadlock.
-           (let ((history (or (get-data (history-path (current-buffer)))
-                              (htree:make))))
-             (unless (url-empty-p uri)
-               (let* ((maybe-entry (make-instance 'history-entry
-                                                  :url uri :id (id (current-buffer))
-                                                  :title title))
-                      (node (htree:find-data maybe-entry history :ensure-p t :test 'equals))
-                      (entry (htree:data node)))
-                 (incf (nyxt::implicit-visits entry))
-                 (setf (nyxt::last-access entry) (local-time:now))
-                 ;; Always update the title since it may have changed since last visit.
-                 (setf (title entry) title)
-                 (setf (htree:current history) node
-                       (current-history-node (current-buffer)) node)))
-             (setf (get-data (history-path (current-buffer))) history))))
-    (unless (or (url-empty-p url)
-                (find-if (alex:rcurry #'str:starts-with? (object-string url))
-                         (history-blocklist mode)))
-      (with-current-buffer (buffer mode)
-        (history-add url :title (title (buffer mode))))))
+  (unless (or (url-empty-p url)
+              (find-if (alex:rcurry #'str:starts-with? (object-string url))
+                       (history-blocklist mode)))
+    (with-current-buffer (buffer mode)
+      (nyxt::history-add url :title (title (buffer mode)))))
 
   (store (data-profile (buffer mode)) (history-path (buffer mode)))
   url)
