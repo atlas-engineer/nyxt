@@ -70,7 +70,8 @@ after making the class."
 (defmethod s-serialization::serialize-sexp-internal ((he history-entry)
                                                      stream
                                                      serialization-state)
-  "Serialize `buffer-description' by turning the URL into a string."
+  "Serialize `history-entry' by turning the URL and the last-access into
+strings."
   (let ((new-he (make-instance 'history-entry
                                :title (title he)
                                :id (id he)
