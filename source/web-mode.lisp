@@ -469,7 +469,7 @@ Otherwise go forward to the only child."
 
 (defmethod nyxt:on-signal-notify-uri ((mode web-mode) url)
   (declare (type quri:uri url))
-  (flet ((history-add (uri &key title)
+  (flet ((history-add (uri &key (title ""))
            "Add URL to the global/buffer-local history.
 The `implicit-visits' count is incremented."
            ;; `buffer-load' has its own data syncronization, so we assume that
@@ -481,14 +481,13 @@ The `implicit-visits' count is incremented."
              (unless (url-empty-p uri)
                (let* ((maybe-entry (make-instance 'history-entry
                                                   :url uri :id (id (current-buffer))
-                                                  :title (or title "")))
+                                                  :title title))
                       (node (htree:find-data maybe-entry history :ensure-p t :test 'equals))
                       (entry (htree:data node)))
                  (incf (nyxt::implicit-visits entry))
                  (setf (nyxt::last-access entry) (local-time:now))
-                 (when title
-                   ;; Always update the title since it may have changed since last visit.
-                   (setf (title entry) title))
+                 ;; Always update the title since it may have changed since last visit.
+                 (setf (title entry) title)
                  (setf (htree:current history) node
                        (current-history-node (current-buffer)) node)))
              (setf (get-data (history-path (current-buffer))) history))))
