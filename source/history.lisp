@@ -81,6 +81,31 @@ strings."
           (last-access new-he) (local-time:format-timestring nil (last-access he)))
     (call-next-method new-he stream serialization-state)))
 
+(declaim (ftype (function (quri:uri &key (:title string) (:explicit t)) t) history-add))
+(defun history-add (uri &key (title ""))
+  "Add URL to the global/buffer-local history.
+The `implicit-visits' count is incremented."
+  ;; Warning: This should only be called from `web-mode''s `on-signal-notify-uri'.
+  ;; `buffer-load' has its own data syncronization, so we assume that
+  ;; history is up-to-date there.  Using `with-data-access' here is not
+  ;; an option -- it will cause the new thread and the thread from
+  ;; `buffer-load' to mutually deadlock.
+  (let ((history (or (get-data (history-path (current-buffer)))
+                     (htree:make))))
+    (unless (url-empty-p uri)
+      (let* ((maybe-entry (make-instance 'history-entry
+                                         :url uri :id (id (current-buffer))
+                                         :title title))
+             (node (htree:find-data maybe-entry history :ensure-p t :test 'equals))
+             (entry (htree:data node)))
+        (incf (implicit-visits entry))
+        (setf (last-access entry) (local-time:now))
+        ;; Always update the title since it may have changed since last visit.
+        (setf (title entry) title)
+        (setf (htree:current history) node
+              (current-history-node (current-buffer)) node)))
+    (setf (get-data (history-path (current-buffer))) history)))
+
 (define-command delete-history-entry ()
   "Delete queried history entries."
   (with-data-access (history (history-path (current-buffer)))
