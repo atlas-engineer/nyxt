@@ -28,14 +28,18 @@
 Example: DuckDuckGo redirections should be ignored or else going backward in
 history after consulting a result reloads the result, not the duckduckgo
 search.")
-   (prompting-history-forwards-p t
-                                :type boolean
-                                :documentation "Whether `history-forwards' is asking the user
-which history branch to pick when there are several.")
    (conservative-history-movement-p
     nil
     :type boolean
     :documentation "Whether history navigation is restricted by buffer-local history.")
+   (history-forwards-prompting-p
+    t
+    :type boolean
+    :documentation "Whether `history-forwards' is asking the user which history branch to pick when there are several.")
+   (history-forwards-to-dead-history-p
+    nil
+    :type boolean
+    :documentation "Whether `history-forwards' considers `id'-less history nodes.")
    (keymap-scheme
     (define-scheme "web"
       scheme:cua
@@ -236,31 +240,30 @@ which history branch to pick when there are several.")
           (set-url-from-history (first parents) buffer)
           (echo "No backward history.")))))
 
-(defun history-direct-children-suggestion-filter (&optional (buffer (current-buffer)))
-  "Suggestion function over children URLs."
-  (let ((children (conservative-history-filter
-                   buffer (htree:children (htree:current (get-data (history-path buffer)))))))
-    (lambda (minibuffer)
-      (if children
-          (fuzzy-match (input-buffer minibuffer) children)
-          (error "Cannot navigate forwards.")))))
+(defun dead-history-filter (web-mode)
+  #'(lambda (node)
+      (and (history-forwards-to-dead-history-p web-mode)
+           (str:emptyp (id (htree:data node))))))
 
 (define-command history-forwards (&optional (buffer (current-buffer)))
   "Go to forward URL in history."
   (with-data-access (history (history-path buffer))
-    (let ((children (remove-if (conservative-history-filter (find-mode buffer 'web-mode))
-                               (htree:children (htree:current (get-data (history-path buffer)))))))
-      (cond
-        ((zerop (length children))
-         (echo "No forward history."))
-        ((or (sera:single children)
-             (not (prompting-history-forwards-p (find-mode buffer 'web-mode))))
-         (set-url-from-history (first children) buffer))
-        (t (set-url-from-history (prompt-minibuffer
-                                  :input-prompt "History branch to follow"
-                                  :suggestion-function (history-direct-children-suggestion-filter
-                                                        buffer))
-                                 buffer))))))
+    (let* ((children (remove-if (alex:compose
+                                 (dead-history-filter (find-mode buffer 'web-mode))
+                                 (conservative-history-filter (find-mode buffer 'web-mode)))
+                                (htree:children (htree:current (get-data (history-path buffer))))))
+           (selected-child (if (or (< (length children) 2)
+                                   (not (history-forwards-prompting-p
+                                         (find-mode buffer 'web-mode))))
+                               (first children)
+                               (prompt-minibuffer
+                                :input-prompt "History branch to follow"
+                                :suggestion-function
+                                (lambda (minibuffer)
+                                  (fuzzy-match (input-buffer minibuffer) children))))))
+      (if selected-child
+          (set-url-from-history selected-child buffer)
+          (echo "No forward history.")))))
 
 (defun history-backwards-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all parent URLs."
