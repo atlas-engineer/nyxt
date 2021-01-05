@@ -341,11 +341,16 @@ Otherwise go forward to the only child."
       (set-url-from-history input))))
 
 (defun integer->unicode-geometric (string-integer)
-  "Geometric blocks within the unicode table are from position 9632 (x25A0) to
-  9727 (x25FF) with a total of 95 shapes."
-  (if (str:emptyp string-integer)
-      ""
-      (format nil "&#x~X; " (+ 9631 (mod (parse-integer string-integer) 95)))))
+  "Return geometric block corresponding to the STRING-INTEGER code-point within
+the 25A0-25FF range."
+  (let ((code-point (and (stringp string-integer)
+                      (parse-integer string-integer :junk-allowed t))))
+    (if code-point
+        (let* ((code-point-start #x25A0)
+               (code-point-end #x25FF)
+               (range (1+ (- code-point-end code-point-start))))
+          (format nil "&#x~X; " (+ code-point-start (mod code-point range))))
+        "")))
 
 (define-command buffer-history-tree (&optional (buffer (current-buffer)))
   "Open a new buffer displaying the whole history tree of a buffer."
