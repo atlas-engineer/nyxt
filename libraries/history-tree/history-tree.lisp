@@ -139,23 +139,22 @@ Test is done with the TEST argument."
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'add-child))
 (defmethod add-child (data (history history-tree) &key (test #'equal))
-  "Create a node for DATA and add it to the list of children in first position.
+  "Create or find a node holding DATA and set current node to it.
+Return (possibly new) current node.
 
-No node is created if data is in current node or already among the children, but
-the existing node data is updated to DATA (the TEST function does not
-necessarily mean the data is identical).
+If current node matches DATA (according to TEST), then we update its data to
+DATA (since the TEST function does not necessarily mean the data is identical).
 
-If there is no current element, this creates the first element of the tree.
+If DATA is found amond the children (according to TEST), the child is moved
+first among the children, its data is set to DATA and the current node is set to
+this child.
 
-Child is moved first in the list if it already exists.
-
-Current node is then updated to the first child if it holds DATA."
+If there is no current element, this creates the first element of the tree."
   (cond
     ((null (current history))
      (let ((new-node (make-node :data data)))
        (setf (root history) new-node)
-       (setf (current history) (root history))
-       new-node))
+       (setf (current history) (root history))))
     ((not (funcall test data (data (current history))))
      (let ((node (delete-child data history :test test)))
        (push (or (when node
@@ -163,11 +162,10 @@ Current node is then updated to the first child if it holds DATA."
                    node)
                  (make-node :data data :parent (current history)))
              (children (current history)))
-       (forward history)
-       (current history)))
+       (forward history)))
     (t
-     (setf (data (current history)) data)
-     (current history))))
+     (setf (data (current history)) data)))
+  (current history))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'add-children))
