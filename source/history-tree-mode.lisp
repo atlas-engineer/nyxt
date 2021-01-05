@@ -1,3 +1,6 @@
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
 (uiop:define-package :nyxt/history-tree-mode
   (:use :common-lisp :trivia :nyxt)
   (:documentation "Mode for history-trees."))
@@ -5,7 +8,9 @@
 
 (define-mode history-tree-mode ()
   "Mode for history-tree listing."
-  ((display-buffer-id-glyphs-p t :documentation "Whether to show unique glyphs matching buffer `id's along with buffer history entries.")
+  ((display-buffer-id-glyphs-p t
+                               :documentation "Whether to show unique glyphs
+matching buffer `id's along with buffer history entries.")
    (style
     (cl-css:css
      '((body
