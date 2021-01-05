@@ -569,13 +569,15 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   "Clean buffer-local history based on BUFFER's `buffer-deletion-history-treatment'."
   (with-data-access (history (history-path buffer))
     (let* ((treatment (buffer-deletion-history-treatment buffer))
-           (most-recent-child (block search
-                                (htree:do-tree (node history)
-                                  (when (and (htree:parent node)
-                                             (htree:data node)
-                                             (string= (id (htree:data (htree:parent node))) (id buffer))
-                                             (string/= (id (htree:data node)) (id buffer)))
-                                    (return-from search node)))))
+           (most-recent-child (htree:find-node
+                               nil history
+                               :test #'(lambda (null node)
+                                         (declare (ignore null))
+                                         (sera:and-let* ((parent (htree:parent node))
+                                                         (parent-data (htree:data parent))
+                                                         (data (htree:data node)))
+                                           (and (string= (id parent-data) (id buffer))
+                                                (string/= (id data) (id buffer)))))))
            (most-recent-id (ignore-errors (id (htree:data most-recent-child)))))
       (flet ((history-set-ids (old-id new-id)
                (htree:do-tree (node history)
