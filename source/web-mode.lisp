@@ -430,7 +430,7 @@ the 25A0-25FF range."
                             (:li (title item) (unless (str:emptyp (title item)) separator)
                                  (:a :href (object-string (url item))
                                      (object-string (url item)))))))))
-    (with-current-html-buffer (buffer "*History list*" 'nyxt/history-tree-mode:history-tree-mode)
+    (with-current-html-buffer (buffer "*History list*" 'nyxt/list-history-mode:list-history-mode)
       (markup:markup
        (:style (style buffer))
        (:style (cl-css:css
