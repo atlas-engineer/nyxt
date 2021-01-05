@@ -66,6 +66,7 @@ For instance, these are equal:
       (schemeless-uri= url1 url2)
       (the (values boolean &optional) (quri:uri= url1 url2))))
 
+(export-always 'equals)
 (defmethod equals ((e1 bookmark-entry) (e2 bookmark-entry))
   "Entries are equal if the hosts and the paths are equal.
 In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
