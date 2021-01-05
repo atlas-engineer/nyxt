@@ -27,22 +27,19 @@
       (setf (get-data path) nil))))
 
 (define-command restore-session-by-name ()
-  "Restore the session data from the file named by user input."
-  (sera:and-let* ((name (prompt-minibuffer
-                         :input-prompt "The name of the session to restore"
-                         :history (minibuffer-session-restore-history *browser*)
-                         :suggestion-function #'session-name-suggestion-filter))
-                  (path (make-instance 'history-data-path
-                                       :dirname (dirname (history-path (current-buffer)))
-                                       :basename name)))
-    (restore (data-profile (current-buffer)) path :restore-session-p t)
-    ;; TODO: Maybe modify `history-path' of all the buffers instead of polluting history?
-    (setf (get-data (history-path (current-buffer))) (get-data path))))
-
-(define-command replace-session-by-name ()
   "Delete all the buffers of the current session and restore the one chosen by user."
   (let ((old-buffers (buffer-list)))
+    ;; TODO: `store' current session just in case?
     (setf (get-data (history-path (current-buffer))) nil)
-    (restore-session-by-name)
-    (dolist (buffer old-buffers)
-      (buffer-delete buffer))))
+    (sera:and-let* ((name (prompt-minibuffer
+                           :input-prompt "The name of the session to restore"
+                           :history (minibuffer-session-restore-history *browser*)
+                           :suggestion-function #'session-name-suggestion-filter))
+                    (path (make-instance 'history-data-path
+                                         :dirname (dirname (history-path (current-buffer)))
+                                         :basename name)))
+      (restore (data-profile (current-buffer)) path :restore-session-p t)
+      (dolist (buffer old-buffers)
+        (buffer-delete buffer))
+      ;; TODO: Maybe modify `history-path' of all the buffers instead of polluting history?
+      (setf (get-data (history-path (current-buffer))) (get-data path)))))
