@@ -32,6 +32,10 @@ search.")
                                 :type boolean
                                 :documentation "Whether `history-forwards' is asking the user
 which history branch to pick when there are several.")
+   (conservative-history-movement-p
+    nil
+    :type boolean
+    :documentation "Whether history navigation is restricted by buffer-local history.")
    (keymap-scheme
     (define-scheme "web"
       scheme:cua
@@ -205,16 +209,16 @@ which history branch to pick when there are several.")
                 (id (htree:data history-node)) (id buffer))
           (buffer-load (url (htree:data history-node)))))))
 
-(defun conservative-history-filter (buffer nodes)
-  (remove-if #'(lambda (node)
-                 (and (conservative-history-movement buffer)
-                      (string/= (id (htree:data node)) (id buffer))))
-             nodes))
+(defun conservative-history-filter (web-mode)
+  #'(lambda (node)
+      (and (conservative-history-movement-p web-mode)
+           (string/= (id (htree:data node)) (id (buffer web-mode))))))
 
 (define-command history-backwards (&optional (buffer (current-buffer)))
   "Go to parent URL in history."
   (with-data-access (history (history-path buffer))
-    (let ((parents (conservative-history-filter buffer (htree:parent-nodes history))))
+    (let ((parents (remove-if (conservative-history-filter (find-mode buffer 'web-mode))
+                              (htree:parent-nodes history))))
       (if parents
           (set-url-from-history (first parents) buffer)
           (echo "No backward history.")))))
@@ -231,8 +235,8 @@ which history branch to pick when there are several.")
 (define-command history-forwards (&optional (buffer (current-buffer)))
   "Go to forward URL in history."
   (with-data-access (history (history-path buffer))
-    (let ((children (conservative-history-filter
-                     buffer (htree:children (htree:current (get-data (history-path buffer)))))))
+    (let ((children (remove-if (conservative-history-filter (find-mode buffer 'web-mode))
+                               (htree:children (htree:current (get-data (history-path buffer)))))))
       (cond
         ((zerop (length children))
          (echo "No forward history."))
@@ -247,8 +251,8 @@ which history branch to pick when there are several.")
 
 (defun history-backwards-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all parent URLs."
-  (let ((parents (conservative-history-filter
-                  buffer (htree:parent-nodes (get-data (history-path buffer))))))
+  (let ((parents (remove-if (conservative-history-filter (find-mode buffer 'web-mode))
+                            (htree:parent-nodes (get-data (history-path buffer))))))
     (lambda (minibuffer)
       (if parents
           (fuzzy-match (input-buffer minibuffer) parents)
@@ -264,8 +268,8 @@ which history branch to pick when there are several.")
 
 (defun history-forwards-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over forward-children URL."
-  (let ((children (conservative-history-filter
-                   buffer (htree:forward-children-nodes (get-data (history-path buffer))))))
+  (let ((children (remove-if (conservative-history-filter (find-mode buffer 'web-mode))
+                             (htree:forward-children-nodes (get-data (history-path buffer))))))
     (lambda (minibuffer)
       (if children
           (fuzzy-match (input-buffer minibuffer) children)
@@ -288,8 +292,8 @@ Otherwise go forward to the only child."
 
 (defun history-forwards-all-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over children URL from all branches."
-  (let ((children (conservative-history-filter
-                   buffer (htree:children-nodes (get-data (history-path buffer))))))
+  (let ((children (remove-if (conservative-history-filter (find-mode buffer 'web-mode))
+                             (htree:children-nodes (get-data (history-path buffer))))))
     (lambda (minibuffer)
       (if children
           (fuzzy-match (input-buffer minibuffer) children)
@@ -305,8 +309,8 @@ Otherwise go forward to the only child."
 
 (defun history-all-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all history URLs."
-  (let ((urls (conservative-history-filter
-               buffer (htree:all-nodes (get-data (history-path buffer))))))
+  (let ((urls (remove-if (conservative-history-filter (find-mode buffer 'web-mode))
+                         (htree:all-nodes (get-data (history-path buffer))))))
     (lambda (minibuffer)
       (if urls
           (fuzzy-match (input-buffer minibuffer) urls)
