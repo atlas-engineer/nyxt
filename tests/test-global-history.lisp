@@ -16,7 +16,7 @@
                         (make-instance 'history-data-path
                                        :basename "history"
                                        :dirname "/tmp/nyxt-history-test"))))
-        (history-add (quri:uri "http://example.org"))
+        (nyxt::history-add (quri:uri "http://example.org"))
         (is (htree:size (nyxt:get-data path))
             1
             "history has 1 entry")
@@ -28,7 +28,7 @@
           (is (title entry)
               ""
               "value has no title"))
-        (history-add (quri:uri "http://example.org") :title "foo")
+        (nyxt::history-add (quri:uri "http://example.org") :title "foo")
         (is (htree:size (nyxt:get-data path))
             1
             "history has still 1 entry after adding same URI")
@@ -36,7 +36,7 @@
           (is (title entry)
               "foo"
               "value now has title"))
-        (history-add (quri:uri "http://example.org/sub"))
+        (nyxt::history-add (quri:uri "http://example.org/sub"))
         (is (htree:size (nyxt:get-data path))
             2
             "history now has 2 entries")
