@@ -309,15 +309,33 @@ First child comes first."
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'find-node))
+(defmethod find-node (item (history history-tree) &key (key #'identity) (test #'equal))
+  "Find a tree node matching ITEM (by TEST) in HISTORY and return it."
+  (block search
+    (do-tree (node history)
+      (when (funcall test item (funcall key node))
+        (return-from search node)))))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'remove-node))
+(defmethod remove-node (item (history history-tree) &key (key #'identity) (test #'equal))
+  "Return all the nodes from HISTORY that didn't match ITEM (measured by TEST)."
+  (let (result)
+    (do-tree (node history)
+      (unless (funcall test item (funcall key node))
+        (push node result)))
+    result))
+
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'find-data))
 (defmethod find-data (data (history history-tree) &key (test #'equal) ensure-p)
   "Find a tree node matching DATA in HISTORY and return it.
 If ENSURE-P is non-nil, create this node when not found.
 Search is done with the help of TEST argument."
-  (let ((match (block search
-                 (do-tree (node history)
-                   (when (funcall test data (data node))
-                     (return-from search node))))))
+  (let ((match (find-node data history :test test :key #'data)))
+    ;; TODO: `add-child' changes `current'. Always change `current' on match?
     (or match (when ensure-p (add-child data history :test test)))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
