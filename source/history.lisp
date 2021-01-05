@@ -120,15 +120,12 @@ The `implicit-visits' count is incremented."
 (defmethod make-buffer-from-history ((root htree:node) (history htree:history-tree))
   "Create the buffer with the history starting from the ROOT.
 Open the latest child of ROOT."
-  (let* ((node (let ((latest root))
-                 (htree:do-tree (node history)
-                   (let ((node-data (htree:data node))
-                         (latest-data (htree:data latest)))
-                     (when (and (string= (id node-data) (id latest-data))
-                                (local-time:timestamp>= (last-access node-data)
-                                                        (last-access latest-data)))
-                       (setf latest node))))
-                 latest))
+  (let* ((node (first (sort (htree:remove-node (id (htree:data root))
+                                               history
+                                               :test #'string/=
+                                               :key (alex:compose #'id #'htree:data))
+                            #'local-time:timestamp>=
+                            :key (alex:compose #'last-access #'htree:data))))
          (entry (htree:data node))
          (buffer (make-buffer :url (ensure-url (url entry))
                               :load-url-p nil
