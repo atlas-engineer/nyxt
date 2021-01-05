@@ -170,8 +170,10 @@ If there is no current element, this creates the first element of the tree."
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'add-children))
 (defmethod add-children (children-data (history history-tree) &key (test #'equal))
-  "Add the HISTORY `current''s children for every piece of data in CHILDREN-DATA.
-Return the last child."
+  "Add CHILDREN-DATA to the HISTORY `current''s node.
+Each child is added with `add-child'.
+Return the (maybe new) current node, which holds the last piece of data in
+`children-data'."
   (add-child (first children-data) history :test test)
   (if (rest children-data)
       (add-children (rest children-data) (back history) :test test)
