@@ -145,7 +145,7 @@ Return (possibly new) current node.
 If current node matches DATA (according to TEST), then we update its data to
 DATA (since the TEST function does not necessarily mean the data is identical).
 
-If DATA is found amond the children (according to TEST), the child is moved
+If DATA is found among the children (according to TEST), the child is moved
 first among the children, its data is set to DATA and the current node is set to
 this child.
 
