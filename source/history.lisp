@@ -115,7 +115,7 @@ The `implicit-visits' count is incremented."
                     :history (minibuffer-set-url-history *browser*)
                     :multi-selection-p t)))
       (dolist (entry entries)
-        (htree:delete-data entry history :test #'equals :rebind-children-p t)))))
+        (htree:delete-data entry history :test #'eq :rebind-children-p t)))))
 
 (defmethod make-buffer-from-history ((root htree:node) (history htree:history-tree))
   "Create the buffer with the history starting from the ROOT.
