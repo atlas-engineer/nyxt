@@ -49,7 +49,8 @@ stdenv.mkDerivation {
                                                           pkgs.enchant.out
                                                           pkgs.glib-networking.out
                                                           pkgs.webkitgtk
-                                                          pkgs.gobjectIntrospection                                                          pkgs.gtk3
+                                                          pkgs.gobjectIntrospection
+                                                          pkgs.gtk3
                                                           pkgs.pango.out
                                                           pkgs.cairo.out
                                                           pkgs.gdk-pixbuf.out
