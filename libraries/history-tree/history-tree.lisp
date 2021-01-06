@@ -213,7 +213,7 @@ current node to the result of further traversal."
 (defmacro do-tree ((var tree) &body body)
   "Apply actions in BODY to all the nodes in a tree.
 Nodes are bound to VAR.
-If TREE is a node, if's passed right away,
+If TREE is a node, it's passed right away,
 if it is a tree, then the root is taken.
 
 Always return nil, as it is an explicitly imperative macro."
@@ -310,19 +310,21 @@ First child comes first."
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'find-node))
-(defun find-node (item history &key (key #'identity) (test #'equal))
-  "Find a tree node matching ITEM (by TEST) in HISTORY and return it."
+(defun find-node (item tree &key (key #'identity) (test #'equal))
+  "Find a tree node matching ITEM (by TEST) in TREE and return it.
+TREE can be a `history' or a `node'. "
   (block search
-    (do-tree (node history)
+    (do-tree (node tree)
       (when (funcall test item (funcall key node))
         (return-from search node)))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'remove-node))
-(defun remove-node (item history &key (key #'identity) (test #'equal))
-  "Return all the nodes from HISTORY that didn't match ITEM (measured by TEST)."
+(defun remove-node (item tree &key (key #'identity) (test #'equal))
+  "Return all the nodes from TREE that didn't match ITEM (measured by TEST).
+TREE can be a `history' or a `node'."
   (let (result)
-    (do-tree (node history)
+    (do-tree (node tree)
       (unless (funcall test item (funcall key node))
         (push node result)))
     result))
