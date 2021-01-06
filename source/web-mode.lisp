@@ -259,7 +259,7 @@ search.")
     (lambda (minibuffer)
       (if parents
           (fuzzy-match (input-buffer minibuffer) parents)
-          (error "Cannot navigate backwards.")))))
+          (echo "Cannot navigate backwards.")))))
 
 (define-command history-backwards-query ()
   "Query parent URL to navigate back to."
@@ -276,7 +276,7 @@ search.")
     (lambda (minibuffer)
       (if children
           (fuzzy-match (input-buffer minibuffer) children)
-          (error "Cannot navigate forwards.")))))
+          (echo "Cannot navigate forwards.")))))
 
 (define-command history-forwards-query ()
   "Query forward-URL to navigate to."
@@ -300,7 +300,7 @@ Otherwise go forward to the only child."
     (lambda (minibuffer)
       (if children
           (fuzzy-match (input-buffer minibuffer) children)
-          (error "Cannot navigate forwards.")))))
+          (echo "Cannot navigate forwards.")))))
 
 (define-command history-forwards-all-query ()
   "Query URL to forward to, from all child branches."
@@ -317,7 +317,7 @@ Otherwise go forward to the only child."
     (lambda (minibuffer)
       (if urls
           (fuzzy-match (input-buffer minibuffer) urls)
-          (error "No history.")))))
+          (echo "No history.")))))
 
 (define-command history-all-query ()
   "Query URL to go to, from the whole history."
