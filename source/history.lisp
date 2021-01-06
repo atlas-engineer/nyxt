@@ -236,17 +236,18 @@ instance of Nyxt."
                     (expand-path path))
               (setf (get-data path) history)
               (when restore-session-p
-                (sera:and-let* ((buffer-histories (buffer-local-histories-table history)))
-                  ;; Make the new buffers.
-                  (dolist (root (alex:hash-table-values buffer-histories))
-                    (make-buffer-from-history root history))
-                  ;; Switch to the last active buffer.
-                  (let* ((current-history-nodes (remove-if #'null (mapcar #'current-history-node
-                                                                          (buffer-list))))
-                         (latest-id (id (first (sort (mapcar #'htree:data current-history-nodes)
-                                                     #'local-time:timestamp>
-                                                     :key #'last-access)))))
-                    (when latest-id (switch-buffer :id latest-id))))))
+                (let ((buffer-histories (buffer-local-histories-table history)))
+                  (when (< 0 (hash-table-count buffer-histories))
+                    ;; Make the new buffers.
+                    (dolist (root (alex:hash-table-values buffer-histories))
+                      (make-buffer-from-history root history))
+                    ;; Switch to the last active buffer.
+                    (let* ((current-history-nodes (remove-if #'null (mapcar #'current-history-node
+                                                                            (buffer-list))))
+                           (latest-id (id (first (sort (mapcar #'htree:data current-history-nodes)
+                                                       #'local-time:timestamp>
+                                                       :key #'last-access)))))
+                      (when latest-id (switch-buffer :id latest-id)))))))
              (hash-table
               (echo "Importing deprecated global history of ~a URLs from ~s."
                     (hash-table-count history)
