@@ -569,12 +569,16 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   "Clean buffer-local history based on BUFFER's `buffer-deletion-history-treatment'."
   (with-data-access (history (history-path buffer))
     (let* ((treatment (buffer-deletion-history-treatment buffer))
-           (most-recent-child (first (sort (htree:remove-node
-                                            (id buffer)
-                                            (gethash (id buffer) (buffer-local-histories-table history))
-                                            :key (alex:compose #'id #'htree:data))
-                                           #'local-time:timestamp>=
-                                           :key (alex:compose #'last-access #'htree:data)))))
+           (most-recent-child (first
+                               (sort (remove-if
+                                      #'str:emptyp
+                                      (htree:remove-node
+                                       (id buffer)
+                                       (gethash (id buffer) (buffer-local-histories-table history))
+                                       :key (alex:compose #'id #'htree:data))
+                                      :key (alex:compose #'id #'htree:data))
+                                     #'local-time:timestamp>=
+                                     :key (alex:compose #'last-access #'htree:data)))))
       (flet ((history-set-ids (old-id new-id)
                (htree:do-tree (node history)
                  (when (string= old-id (id (htree:data node)))
