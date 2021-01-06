@@ -770,10 +770,12 @@ proceeding."
         (set-current-buffer (first matching-buffers))
         (switch-buffer-domain :domain domain))))
 
-(define-command make-buffer-focus (&key (url :default))
+(define-command make-buffer-focus (&key (url :default) nosave-buffer-p)
   "Switch to a new buffer.
 See `make-buffer'."
-  (let ((buffer (make-buffer :url url :child-p t)))
+  (let ((buffer (if nosave-buffer-p
+                    (make-nosave-buffer :url url)
+                    (make-buffer :url url :child-p t))))
     (set-current-buffer buffer)
     buffer))
 
