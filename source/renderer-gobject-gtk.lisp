@@ -100,14 +100,13 @@ data-manager will store the data separately for each buffer."))
       (gir:invoke (box-layout 'pack-end) status-container nil nil 0)
       (gir:invoke (status-container 'pack-start) (gtk-object status-buffer) t t 0)
       (gir:invoke (status-container 'set-size-request) -1 (height status-buffer))
+      ;; Minibuffer view
+      (setf minibuffer-view (make-web-view))
+      (gir:invoke (box-layout 'pack-end) minibuffer-container nil nil 0)
+      (gir:invoke (minibuffer-container 'pack-start) minibuffer-view t t 0)
+      (gir:invoke (minibuffer-container 'set-size-request) -1 0)
       
       (gir:invoke (gtk-object 'show-all)))
-
-    ;; (setf minibuffer-view (make-web-view))
-    ;; (gobject-gtk:gobject-gtk-box-pack-end box-layout minibuffer-container :expand nil)
-    ;; (gobject-gtk:gobject-gtk-box-pack-start minibuffer-container minibuffer-view :expand t)
-    ;; (setf (gobject-gtk:gobject-gtk-widget-size-request minibuffer-container)
-    ;;       (list -1 0))
 
     ;; (gobject-gtk:gobject-gtk-container-add gobject-gtk-object box-layout)
     ;; (setf (slot-value *browser* 'last-active-window) window)
