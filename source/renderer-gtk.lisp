@@ -495,10 +495,13 @@ Warning: This behaviour may change in the future."
       (funcall (input-dispatcher window) event sender window nil))))
 
 (defun make-data-manager (buffer)
-  (let ((path (expand-path (data-manager-path buffer))))
-    (apply #'make-instance `(webkit:webkit-website-data-manager
-                             ,@(when path `(:base-data-directory ,path))
-                             :is-ephemeral ,(not path)))))
+  (let* ((path (expand-path (data-manager-path buffer)))
+         (manager (apply #'make-instance `(webkit:webkit-website-data-manager
+                                           ,@(when path `(:base-data-directory ,path))
+                                           :is-ephemeral ,(not path)))))
+    #+webkit2-tracking
+    (webkit:webkit-website-data-manager-set-itp-enabled manager t)
+    manager))
 
 (defun make-context (&optional buffer)
   (let* ((context (if (and buffer
