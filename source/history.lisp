@@ -166,16 +166,10 @@ moment the PREFIX-URLS are inserted as is, not a `history-entry' objects since
 it would not be very useful."
   (with-data-access (hist (history-path (current-buffer)))
       (let* ((history (when hist
-                        (remove-duplicates
-                         (sort (htree:all-nodes-data hist)
-                               (lambda (x y)
-                                 (> (score-history-entry x)
-                                    (score-history-entry y))))
-                         :test #'quri:uri=
-                         :key #'url
-                         ;; This way duplicate entries with smaller score are excluded.
-                         ;; Can it lead to the-rich-get-richer-and-the-poor-get-poorer problems?
-                         :from-end t)))
+                        (sort (htree:all-nodes-data hist)
+                              (lambda (x y)
+                                (> (score-history-entry x)
+                                   (score-history-entry y))))))
           (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
      (when prefix-urls
        (setf history (append (mapcar #'quri:url-decode prefix-urls) history)))
