@@ -90,19 +90,18 @@ data-manager will store the data separately for each buffer."))
                                   (cffi:null-pointer)
                                   (cffi:null-pointer)
                                   0)
-      ;; Message View
+      ;; Message view
       (setf message-view (make-web-view))
       (gir:invoke (box-layout 'pack-end) message-container nil nil 0)
       (gir:invoke (message-container 'pack-start) message-view t t 0)
       (gir:invoke (message-container 'set-size-request) -1 (message-buffer-height window))
-
+      ;; Status area
+      (setf status-buffer (make-instance 'user-status-buffer))
+      (gir:invoke (box-layout 'pack-end) status-container nil nil 0)
+      (gir:invoke (status-container 'pack-start) (gtk-object status-buffer) t t 0)
+      (gir:invoke (status-container 'set-size-request) -1 (height status-buffer))
+      
       (gir:invoke (gtk-object 'show-all)))
-
-    ;; (setf status-buffer (make-instance 'user-status-buffer))
-    ;; (gobject-gtk:gobject-gtk-box-pack-end box-layout status-container :expand nil)
-    ;; (gobject-gtk:gobject-gtk-box-pack-start status-container (gobject-gtk-object status-buffer) :expand t)
-    ;; (setf (gobject-gtk:gobject-gtk-widget-size-request status-container)
-    ;;       (list -1 (height status-buffer)))
 
     ;; (setf minibuffer-view (make-web-view))
     ;; (gobject-gtk:gobject-gtk-box-pack-end box-layout minibuffer-container :expand nil)
@@ -147,6 +146,10 @@ data-manager will store the data separately for each buffer."))
                                                         (id buffer))))))
   (ffi-buffer-make buffer))
 
+(defmethod initialize-instance :after ((buffer status-buffer) &key)
+  (with-slots (gtk-object) buffer
+    (setf gtk-object (make-web-view))))
+
 ;; (defmethod web-context ((browser gobject-gtk-browser))
 ;;   (or (slot-value *browser* 'web-context)
 ;;       (setf (slot-value *browser* 'web-context) 
@@ -188,18 +191,6 @@ Such contexts are not needed for internal buffers."
   (let ((view (gir:invoke ((gir-webkit *browser*) "WebView" 'new))))
     (gir:invoke (view 'load_uri) "https://duckduckgo.com")
     view))
-
-;; (defmethod initialize-instance :after ((buffer status-buffer) &key)
-;;   (%within-renderer-thread-async
-;;    (lambda ()
-;;      (with-slots (gobject-gtk-object) buffer
-;;        (setf gobject-gtk-object (make-web-view))
-;;        (gobject:g-signal-connect
-;;         gobject-gtk-object "decide-policy"
-;;         (lambda (web-view response-policy-decision policy-decision-type-response)
-;;           (declare (ignore web-view))
-;;           (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)))))))
-
 
 
 ;; (define-ffi-method on-signal-destroy ((window gobject-gtk-window))
