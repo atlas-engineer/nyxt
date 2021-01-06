@@ -462,6 +462,16 @@ BUFFER's modes."
     (on-signal-notify-uri mode (url buffer)))
   (url buffer))
 
+(defmethod on-signal-notify-uri ((buffer internal-buffer) no-uri)
+  "Internal buffers don't load external resources and as such don't need URI
+change notifications.
+In particular, we don't want to register a URL in the history via the `web-mode'
+notification."
+  ;; TODO: We should not ignore this notification since it may be used by modes.
+  ;; In particular, we receive a legit notify::uri when clicking on an anchor URL.
+  (declare (ignore no-uri))
+  (url buffer))
+
 (export-always 'on-signal-notify-title)
 (defmethod on-signal-notify-title ((buffer buffer) no-title)
   "Set BUFFER's `title' slot, then dispatch `on-signal-notify-title' over the
