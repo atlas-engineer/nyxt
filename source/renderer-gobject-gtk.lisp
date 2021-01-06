@@ -45,6 +45,11 @@ data-manager will store the data separately for each buffer."))
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
+(define-class data-manager-data-path (data-path)
+  ((ref :initform "data-manager"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer #'class*:name-identity))
+
 (defmethod ffi-initialize ((browser gobject-gtk-browser) urls startup-timestamp)
   (log:debug "Initializing Gobject-GTK Interface")
   (gir:invoke ((gir-gtk browser) 'main))
@@ -59,41 +64,33 @@ data-manager will store the data separately for each buffer."))
                minibuffer-container minibuffer-view
                status-buffer status-container
                message-container message-view
-               id key-string-buffer)
-      window
+               id key-string-buffer) window
     (with-slots (gir-gtk) *browser*
       (setf id (get-unique-window-identifier *browser*))
-      (setf gtk-object
-            (gir:invoke (gir-gtk "Window" 'new)
-                        (gir:nget gir-gtk "WindowType" :toplevel)))
-      (let ((button (gir:invoke (gir-gtk "Button" 'new-with-label) "Hello, world!"))
-            (box (gir:invoke (gir-gtk "Box" 'new)
-                             (gir:nget gir-gtk "Orientation" :vertical)
-                             0)))
-        (gir:invoke (box 'add) button)
-        (gir:invoke (gtk-object 'add) box)
-        (gir:invoke (gtk-object 'show-all))))
-    ;; (setf gtk-object (make-instance 'gobject-gtk:gobject-gtk-window
-    ;;                                 :type :toplevel
-    ;;                                 :default-width 1024
-    ;;                                 :default-height 768))
-    ;; (setf box-layout (make-instance 'gobject-gtk:gobject-gtk-box
-    ;;                                 :orientation :vertical
-    ;;                                 :spacing 0))
-    ;; (setf minibuffer-container (make-instance 'gobject-gtk:gobject-gtk-box
-    ;;                                           :orientation :vertical
-    ;;                                           :spacing 0))
-    ;; (setf message-container (make-instance 'gobject-gtk:gobject-gtk-box
-    ;;                                        :orientation :vertical
-    ;;                                        :spacing 0))
-    ;; (setf status-container (make-instance 'gobject-gtk:gobject-gtk-box
-    ;;                                       :orientation :vertical
-    ;;                                       :spacing 0))
-    ;; (setf key-string-buffer (make-instance 'gobject-gtk:gobject-gtk-entry))
-    ;; (setf active-buffer (make-dummy-buffer))
-
-    ;; ;; Add the views to the box layout and to the window
-    ;; (gobject-gtk:gobject-gtk-box-pack-start box-layout (gobject-gtk-object active-buffer))
+      (setf gtk-object (gir:invoke (gir-gtk "Window" 'new)
+                                   (gir:nget gir-gtk "WindowType" :toplevel)))
+      (gir:invoke (gtk-object 'set-default-size) 1024 768)
+      (setf box-layout (gir:invoke (gir-gtk "Box" 'new)
+                                   (gir:nget gir-gtk "Orientation" :vertical) 0))
+      (setf minibuffer-container (gir:invoke (gir-gtk "Box" 'new)
+                                             (gir:nget gir-gtk "Orientation" :vertical) 0))
+      (setf message-container (gir:invoke (gir-gtk "Box" 'new)
+                                          (gir:nget gir-gtk "Orientation" :vertical) 0))
+      (setf status-container (gir:invoke (gir-gtk "Box" 'new)
+                                         (gir:nget gir-gtk "Orientation" :vertical) 0))
+      ;; Create a temporary active buffer
+      (setf active-buffer (make-dummy-buffer))
+      ;; Add the views to the box layout and to the window
+      (gir:invoke (box-layout 'pack-start) (gtk-object active-buffer) t t 0)
+      (gir:invoke (box-layout 'add) (gir:invoke (gir-gtk "Button" 'new-with-label) "Hello, world!"))
+      (gir:invoke (gtk-object 'add) box-layout)
+      (gir::g-signal-connect-data (gir::this-of gtk-object)
+                                  "destroy"
+                                  (cffi:foreign-symbol-pointer "gtk_main_quit")
+                                  (cffi:null-pointer)
+                                  (cffi:null-pointer)
+                                  0)
+      (gir:invoke (gtk-object 'show-all)))
 
     ;; (setf message-view (make-web-view))
     ;; (gobject-gtk:gobject-gtk-box-pack-end box-layout message-container :expand nil)
@@ -141,6 +138,14 @@ data-manager will store the data separately for each buffer."))
     ;;    nil))
     ))
 
+(defmethod initialize-instance :after ((buffer gobject-gtk-buffer) &key)
+  (let ((path (data-manager-path buffer)))
+    (setf (data-manager-path buffer)
+          (make-instance 'data-manager-data-path
+                         :dirname (pathname (str:concat (namestring (dirname path))
+                                                        "/nyxt-data-manager-"
+                                                        (id buffer))))))
+  (ffi-buffer-make buffer))
 
 ;; (defmethod web-context ((browser gobject-gtk-browser))
 ;;   (or (slot-value *browser* 'web-context)
@@ -151,22 +156,21 @@ data-manager will store the data separately for each buffer."))
 ;;   (declare (ignore browser))
 ;;   (funcall thunk))
 
-;; (defmacro define-ffi-method (name args &body body)
-;;   "Make a window."
-;;   (let* ((docstring (when (stringp (first body))
-;;                       (prog1
-;;                           (list (first body))
-;;                         (setf body (rest body)))))
-;;          (declares (when (and (listp (first body))
-;;                               (eq 'declare (first (first body))))
-;;                      (prog1
-;;                          (first body)
-;;                        (setf body (rest body))))))
-;;     `(defmethod ,name ,args
-;;        ,@docstring
-;;        ,declares
-;;        (progn
-;;          ,@body))))
+(defmacro define-ffi-method (name args &body body)
+  (let* ((docstring (when (stringp (first body))
+                      (prog1
+                          (list (first body))
+                        (setf body (rest body)))))
+         (declares (when (and (listp (first body))
+                              (eq 'declare (first (first body))))
+                     (prog1
+                         (first body)
+                       (setf body (rest body))))))
+    `(defmethod ,name ,args
+       ,@docstring
+       ,declares
+       (progn
+         ,@body))))
 
 ;; (define-ffi-method ffi-kill-browser ((browser gobject-gtk-browser))
 ;;   (unless *keep-alive*
@@ -380,14 +384,7 @@ data-manager will store the data separately for each buffer."))
 ;;       (set-cookie-policy cookie-manager (default-cookie-policy buffer)))
 ;;     context))
 
-;; (defmethod initialize-instance :after ((buffer gobject-gtk-buffer) &key)
-;;   (let ((path (data-manager-path buffer)))
-;;     (setf (data-manager-path buffer)
-;;           (make-instance 'data-manager-data-path
-;;                          :dirname (pathname (str:concat (namestring (dirname path))
-;;                                                         "/nyxt-data-manager-"
-;;                                                         (id buffer))))))
-;;   (ffi-buffer-make buffer))
+
 
 ;; (define-ffi-method ffi-buffer-uri ((buffer gobject-gtk-buffer))
 ;;   (quri:uri (webkit:webkit-web-view-uri (gobject-gtk-object buffer))))
@@ -564,75 +561,53 @@ data-manager will store the data separately for each buffer."))
 ;;   (setf (gobject-gtk:gobject-gtk-widget-size-request (message-container window))
 ;;         (list -1 height)))
 
-;; (define-ffi-method ffi-buffer-make ((buffer gobject-gtk-buffer))
-;;   "Initialize BUFFER's GOBJECT-GTK web view."
-;;   (setf (gobject-gtk-object buffer) (make-web-view
-;;                              :context-buffer (unless (internal-buffer-p buffer)
-;;                                                buffer)))
-;;   (ffi-buffer-enable-smooth-scrolling buffer t)
-;;   (gobject:g-signal-connect
-;;    (gobject-gtk-object buffer) "decide-policy"
-;;    (lambda (web-view response-policy-decision policy-decision-type-response)
-;;      (declare (ignore web-view))
-;;      (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)))
-;;   (gobject:g-signal-connect
-;;    (gobject-gtk-object buffer) "load-changed"
-;;    (lambda (web-view load-event)
-;;      (declare (ignore web-view))
-;;      (on-signal-load-changed buffer load-event)))
-;;   (gobject:g-signal-connect
-;;    (gobject-gtk-object buffer) "mouse-target-changed"
-;;    (lambda (web-view hit-test-result modifiers)
-;;      (declare (ignore web-view))
-;;      (on-signal-mouse-target-changed buffer hit-test-result modifiers)))
-;;   ;; Mouse events are captured by the web view first, so we must intercept them here.
-;;   (gobject:g-signal-connect
-;;    (gobject-gtk-object buffer) "button-press-event"
-;;    (lambda (web-view event) (declare (ignore web-view))
-;;      (on-signal-button-press-event buffer event)))
-;;   (gobject:g-signal-connect
-;;    (gobject-gtk-object buffer) "scroll-event"
-;;    (lambda (web-view event) (declare (ignore web-view))
-;;      (on-signal-scroll-event buffer event)))
-;;   ;; TODO: Capture button-release-event?
-;;   ;; TLS certificate handling
-;;   (gobject:g-signal-connect
-;;    (gobject-gtk-object buffer) "load-failed-with-tls-errors"
-;;    (lambda (web-view failing-uri certificate errors)
-;;      (declare (ignore web-view errors))
-;;      (on-signal-load-failed-with-tls-errors buffer certificate (quri:uri failing-uri))))
-;;   (gobject:g-signal-connect
-;;    (gobject-gtk-object buffer) "notify::uri"
-;;    (lambda (web-view param-spec)
-;;      (declare (ignore web-view param-spec))
-;;      (on-signal-notify-uri buffer nil)))
-;;   (gobject:g-signal-connect
-;;    (gobject-gtk-object buffer) "notify::title"
-;;    (lambda (web-view param-spec)
-;;      (declare (ignore web-view param-spec))
-;;      (on-signal-notify-title buffer nil)))
-;;   (gobject:g-signal-connect
-;;    (gobject-gtk-object buffer) "context-menu"
-;;    (lambda (web-view context-menu event hit-test-result)
-;;      (declare (ignore web-view event hit-test-result))
-;;      (let ((length (webkit:webkit-context-menu-get-n-items context-menu)))
-;;        (dolist (i (alex:iota length))
-;;          (let* ((item (webkit:webkit-context-menu-get-item-at-position context-menu i)))
-;;            ;; TODO: Remove "Download Linked File" item.
-;;            (match (webkit:webkit-context-menu-item-get-stock-action item)
-;;              ((or :webkit-context-menu-action-open-link-in-new-window
-;;                   :webkit-context-menu-action-download-link-to-disk
-;;                   :webkit-context-menu-action-download-image-to-disk
-;;                   :webkit-context-menu-action-download-video-to-disk
-;;                   :webkit-context-menu-action-download-audio-to-disk
-;;                   ;; TODO: Restore paste on GNU/Linux when fixed.
-;;                   ;; https://github.com/atlas-engineer/nyxt/issues/593
-;;                   #-darwin
-;;                   :webkit-context-menu-action-paste)
-;;               (webkit:webkit-context-menu-remove context-menu item))))))
-;;      ;; Return t to prevent the context menu from showing.
-;;      nil))
-;;   buffer)
+(define-ffi-method ffi-buffer-make ((buffer gobject-gtk-buffer))
+  "Initialize BUFFER's GOBJECT-GTK web view."
+  (setf (gtk-object buffer) 
+        (gir:invoke ((gir-webkit *browser*) "WebView" 'new)))
+  (gir:invoke ((gtk-object buffer) 'load_uri) "https://example.com")
+  ;; (ffi-buffer-enable-smooth-scrolling buffer t)
+  ;; (gobject:g-signal-connect
+  ;;  (gobject-gtk-object buffer) "decide-policy"
+  ;;  (lambda (web-view response-policy-decision policy-decision-type-response)
+  ;;    (declare (ignore web-view))
+  ;;    (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)))
+  ;; (gobject:g-signal-connect
+  ;;  (gobject-gtk-object buffer) "load-changed"
+  ;;  (lambda (web-view load-event)
+  ;;    (declare (ignore web-view))
+  ;;    (on-signal-load-changed buffer load-event)))
+  ;; (gobject:g-signal-connect
+  ;;  (gobject-gtk-object buffer) "mouse-target-changed"
+  ;;  (lambda (web-view hit-test-result modifiers)
+  ;;    (declare (ignore web-view))
+  ;;    (on-signal-mouse-target-changed buffer hit-test-result modifiers)))
+  ;; ;; Mouse events are captured by the web view first, so we must intercept them here.
+  ;; (gobject:g-signal-connect
+  ;;  (gobject-gtk-object buffer) "button-press-event"
+  ;;  (lambda (web-view event) (declare (ignore web-view))
+  ;;    (on-signal-button-press-event buffer event)))
+  ;; (gobject:g-signal-connect
+  ;;  (gobject-gtk-object buffer) "scroll-event"
+  ;;  (lambda (web-view event) (declare (ignore web-view))
+  ;;    (on-signal-scroll-event buffer event)))
+  ;; ;; TLS certificate handling
+  ;; (gobject:g-signal-connect
+  ;;  (gobject-gtk-object buffer) "load-failed-with-tls-errors"
+  ;;  (lambda (web-view failing-uri certificate errors)
+  ;;    (declare (ignore web-view errors))
+  ;;    (on-signal-load-failed-with-tls-errors buffer certificate (quri:uri failing-uri))))
+  ;; (gobject:g-signal-connect
+  ;;  (gobject-gtk-object buffer) "notify::uri"
+  ;;  (lambda (web-view param-spec)
+  ;;    (declare (ignore web-view param-spec))
+  ;;    (on-signal-notify-uri buffer nil)))
+  ;; (gobject:g-signal-connect
+  ;;  (gobject-gtk-object buffer) "notify::title"
+  ;;  (lambda (web-view param-spec)
+  ;;    (declare (ignore web-view param-spec))
+  ;;    (on-signal-notify-title buffer nil)))
+  buffer)
 
 ;; (define-ffi-method ffi-buffer-delete ((buffer gobject-gtk-buffer))
 ;;   (gobject-gtk:gobject-gtk-widget-destroy (gobject-gtk-object buffer)))
