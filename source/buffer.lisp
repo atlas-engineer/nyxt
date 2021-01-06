@@ -669,7 +669,8 @@ proceeding."
     (with-data-access (history (history-path buffer)
                        :default (htree:make))
       (when (current-history-node buffer)
-        (setf (htree:current history) (current-history-node buffer))))
+        (setf (htree:current history) (current-history-node buffer)
+              (id (htree:data (htree:current history))) (id buffer))))
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
         (let ((temp-buffer (make-dummy-buffer))
               (old-buffer (active-buffer window)))
