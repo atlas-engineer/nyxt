@@ -867,7 +867,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
 
 (define-command set-url (&key new-buffer-p prefill-current-url-p nosave-buffer-p)
   "Set the URL for the current buffer, completing with history."
-  (let ((history (minibuffer-set-url-history *browser*)))
+  (let ((history (unless nosave-buffer-p (minibuffer-set-url-history *browser*))))
     (when history
       (containers:insert-item history (url (current-buffer))))
     (let ((url (prompt-minibuffer
