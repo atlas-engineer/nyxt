@@ -82,14 +82,6 @@ data-manager will store the data separately for each buffer."))
       (setf active-buffer (make-dummy-buffer))
       ;; Add the views to the box layout and to the window
       (gir:invoke (box-layout 'pack-start) (gtk-object active-buffer) t t 0)
-      (gir:invoke (box-layout 'add) (gir:invoke (gir-gtk "Button" 'new-with-label) "Hello, world!"))
-      (gir:invoke (gtk-object 'add) box-layout)
-      (gir::g-signal-connect-data (gir::this-of gtk-object)
-                                  "destroy"
-                                  (cffi:foreign-symbol-pointer "gtk_main_quit")
-                                  (cffi:null-pointer)
-                                  (cffi:null-pointer)
-                                  0)
       ;; Message view
       (setf message-view (make-web-view))
       (gir:invoke (box-layout 'pack-end) message-container nil nil 0)
@@ -105,18 +97,22 @@ data-manager will store the data separately for each buffer."))
       (gir:invoke (box-layout 'pack-end) minibuffer-container nil nil 0)
       (gir:invoke (minibuffer-container 'pack-start) minibuffer-view t t 0)
       (gir:invoke (minibuffer-container 'set-size-request) -1 0)
+      ;; Add box layout to the view
+      (gir:invoke (gtk-object 'add) box-layout)
+      (setf (slot-value *browser* 'last-active-window) window)
+      (gir::g-signal-connect-data (gir::this-of gtk-object)
+                                  "destroy"
+                                  (cffi:foreign-symbol-pointer "gtk_main_quit")
+                                  (cffi:null-pointer)
+                                  (cffi:null-pointer)
+                                  0)
+      (gir:connect gtk-object 
+                   :key-press-event
+                   (lambda (widget event)
+                     (declare (ignore widget))
+                     (on-signal-key-press-event window event)))
       
       (gir:invoke (gtk-object 'show-all)))
-
-    ;; (gobject-gtk:gobject-gtk-container-add gobject-gtk-object box-layout)
-    ;; (setf (slot-value *browser* 'last-active-window) window)
-    ;; (gobject-gtk:gobject-gtk-widget-show-all gobject-gtk-object)
-    ;; (gobject:g-signal-connect
-    ;;  gobject-gtk-object "key_press_event"
-    ;;  (lambda (widget event) (declare (ignore widget))
-    ;;    #+darwin
-    ;;    (push-modifier *browser* event)
-    ;;    (on-signal-key-press-event window event)))
     ;; (gobject:g-signal-connect
     ;;  gobject-gtk-object "key_release_event"
     ;;  (lambda (widget event) (declare (ignore widget))
@@ -275,30 +271,32 @@ Such contexts are not needed for internal buffers."
 ;;           (character character))
 ;;       (setf (gobject-gtk:gobject-gtk-entry-text (key-string-buffer window)) ""))))
 
-;; (define-ffi-method on-signal-key-press-event ((sender gobject-gtk-window) event)
-;;   (let* ((keycode (gdk:gdk-event-key-hardware-keycode event))
-;;          (keyval (gdk:gdk-event-key-keyval event))
-;;          (keyval-name (gdk:gdk-keyval-name keyval))
-;;          (character (gdk:gdk-keyval-to-unicode keyval))
-;;          (printable-value (printable-p sender event))
-;;          (key-string (or printable-value
-;;                          (derive-key-string keyval-name character)))
-;;          (modifiers (funcall (modifier-translator *browser*)
-;;                              (key-event-modifiers event)
-;;                              event)))
-;;     (if modifiers
-;;         (log:debug key-string keycode character keyval-name modifiers)
-;;         (log:debug key-string keycode character keyval-name))
-;;     (if key-string
-;;         (progn
-;;           (alex:appendf (key-stack sender)
-;;                         (list (keymap:make-key :code keycode
-;;                                                :value key-string
-;;                                                :modifiers modifiers
-;;                                                :status :pressed)))
-;;           (funcall (input-dispatcher sender) event (active-buffer sender) sender printable-value))
-;;         ;; Do not forward modifier-only to renderer.
-;;         t)))
+(define-ffi-method on-signal-key-press-event ((sender gobject-gtk-window) event)
+  (print "PRESS EVENT")
+  ;; (let* ((keycode (gdk:gdk-event-key-hardware-keycode event))
+  ;;        (keyval (gdk:gdk-event-key-keyval event))
+  ;;        (keyval-name (gdk:gdk-keyval-name keyval))
+  ;;        (character (gdk:gdk-keyval-to-unicode keyval))
+  ;;        (printable-value (printable-p sender event))
+  ;;        (key-string (or printable-value
+  ;;                        (derive-key-string keyval-name character)))
+  ;;        (modifiers (funcall (modifier-translator *browser*)
+  ;;                            (key-event-modifiers event)
+  ;;                            event)))
+  ;;   (if modifiers
+  ;;       (log:debug key-string keycode character keyval-name modifiers)
+  ;;       (log:debug key-string keycode character keyval-name))
+  ;;   (if key-string
+  ;;       (progn
+  ;;         (alex:appendf (key-stack sender)
+  ;;                       (list (keymap:make-key :code keycode
+  ;;                                              :value key-string
+  ;;                                              :modifiers modifiers
+  ;;                                              :status :pressed)))
+  ;;         (funcall (input-dispatcher sender) event (active-buffer sender) sender printable-value))
+  ;;       ;; Do not forward modifier-only to renderer.
+  ;;       t))
+  )
 
 ;; (define-ffi-method on-signal-button-press-event ((sender gobject-gtk-buffer) event)
 ;;   (let* ((button (gdk:gdk-event-button-button event))
