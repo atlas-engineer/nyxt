@@ -90,13 +90,13 @@ data-manager will store the data separately for each buffer."))
                                   (cffi:null-pointer)
                                   (cffi:null-pointer)
                                   0)
-      (gir:invoke (gtk-object 'show-all)))
+      ;; Message View
+      (setf message-view (make-web-view))
+      (gir:invoke (box-layout 'pack-end) message-container nil nil 0)
+      (gir:invoke (message-container 'pack-start) message-view t t 0)
+      (gir:invoke (message-container 'set-size-request) -1 (message-buffer-height window))
 
-    ;; (setf message-view (make-web-view))
-    ;; (gobject-gtk:gobject-gtk-box-pack-end box-layout message-container :expand nil)
-    ;; (gobject-gtk:gobject-gtk-box-pack-start message-container message-view :expand t)
-    ;; (setf (gobject-gtk:gobject-gtk-widget-size-request message-container)
-    ;;       (list -1 (message-buffer-height window)))
+      (gir:invoke (gtk-object 'show-all)))
 
     ;; (setf status-buffer (make-instance 'user-status-buffer))
     ;; (gobject-gtk:gobject-gtk-box-pack-end box-layout status-container :expand nil)
@@ -181,14 +181,13 @@ data-manager will store the data separately for each buffer."))
 ;;   "We shouldn't store any `data-manager' data for `private-data-profile'."
 ;;   nil)
 
-;; (defun make-web-view (&key context-buffer)
-;;   "Return a web view instance.
-;; When passed a web buffer, create a buffer-local web context.
-;; Such contexts are not needed for internal buffers."
-;;   (if context-buffer
-;;       (make-instance 'webkit:webkit-web-view
-;;                      :web-context (make-context context-buffer))
-;;       (make-instance 'webkit:webkit-web-view)))
+(defun make-web-view (&key context-buffer)
+  "Return a web view instance.
+When passed a web buffer, create a buffer-local web context.
+Such contexts are not needed for internal buffers."
+  (let ((view (gir:invoke ((gir-webkit *browser*) "WebView" 'new))))
+    (gir:invoke (view 'load_uri) "https://duckduckgo.com")
+    view))
 
 ;; (defmethod initialize-instance :after ((buffer status-buffer) &key)
 ;;   (%within-renderer-thread-async
