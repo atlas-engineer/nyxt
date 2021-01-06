@@ -287,6 +287,18 @@ identifier for every hinted element."
 (defmethod %follow-hint-new-buffer ((hint hint))
   (echo "Unsupported operation for hint: can't open in new buffer."))
 
+(defmethod %follow-hint-new-nosave-buffer-focus ((link-hint link-hint))
+  (make-buffer-focus :url (url link-hint) :nosave-buffer-p t))
+
+(defmethod %follow-hint-new-nosave-buffer-focus ((hint hint))
+  (echo "Unsupported operation for hint: can't open in new buffer."))
+
+(defmethod %follow-hint-new-nosave-buffer ((link-hint link-hint))
+  (make-nosave-buffer :url (url link-hint)))
+
+(defmethod %follow-hint-new-nosave-buffer ((hint hint))
+  (echo "Unsupported operation for hint: can't open in new buffer."))
+
 (defmethod %copy-hint-url ((link-hint link-hint))
   (trivial-clipboard:text (url link-hint)))
 
@@ -342,6 +354,24 @@ visible active buffer."
                (lambda (result)
                  (%follow-hint-new-buffer-focus (first result))
                  (mapcar #'%follow-hint-new-buffer (rest result)))
+               :multi-selection-p t
+               :annotate-visible-only-p annotate-visible-only-p))
+
+(define-command follow-hint-new-nosave-buffer (&key annotate-visible-only-p)
+  "Show a set of element hints, and open the user inputted one in a new
+nosave buffer (not set to visible active buffer)."
+  (query-hints "Open element in new buffer"
+               (lambda (result) (mapcar #'%follow-hint-new-nosave-buffer result))
+               :multi-selection-p t
+               :annotate-visible-only-p annotate-visible-only-p))
+
+(define-command follow-hint-new-nosave-buffer-focus (&key annotate-visible-only-p)
+  "Show a set of element hints, and open the user inputted one in a new
+visible nosave active buffer."
+  (query-hints "Go to element in new buffer"
+               (lambda (result)
+                 (%follow-hint-new-nosave-buffer-focus (first result))
+                 (mapcar #'%follow-hint-new-nosave-buffer (rest result)))
                :multi-selection-p t
                :annotate-visible-only-p annotate-visible-only-p))
 

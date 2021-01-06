@@ -538,7 +538,8 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
     (unless (url-empty-p url)
       (if load-url-p
           (buffer-load url :buffer buffer)
-          (setf (url buffer) (quri:uri url))))))
+          (setf (url buffer) (quri:uri url))))
+    buffer))
 
 (declaim (ftype (function (browser &key (:title string)
                                    (:data-profile data-profile)
