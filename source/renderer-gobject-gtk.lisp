@@ -202,35 +202,26 @@ Such contexts are not needed for internal buffers."
 ;; (define-ffi-method ffi-window-unfullscreen ((window gobject-gtk-window))
 ;;   (gobject-gtk:gobject-gtk-window-unfullscreen (gobject-gtk-object window)))
 
-;; (defun derive-key-string (keyval character)
-;;   "Return string representation of a keyval.
-;; Return nil when key must be discarded, e.g. for modifiers."
-;;   (let ((result
-;;           (match keyval
-;;             ((or "Alt_L" "Super_L" "Control_L" "Shift_L"
-;;                  "Alt_R" "Super_R" "Control_R" "Shift_R"
-;;                  "ISO_Level3_Shift" "Arabic_switch")
-;;              ;; Discard modifiers (they usually have a null character).
-;;              nil)
-;;             ((guard s (str:contains? "KP_" s))
-;;              (str:replace-all "KP_" "keypad" s))
-;;             ;; With a modifier, "-" does not print, so we me must translate it
-;;             ;; to "hyphen" just like in `printable-p'.
-;;             ("minus" "hyphen")
-;;             ;; In most cases, return character and not keyval for punctuation.
-;;             ;; For instance, C-[ is not printable but the keyval is "bracketleft".
-;;             ;; ASCII control characters like Escape, Delete or BackSpace have a
-;;             ;; non-printable character (usually beneath #\space), so we use the
-;;             ;; keyval in this case.
-;;             ;; Even if space in printable, C-space is not so we return the
-;;             ;; keyval in this case.
-;;             (_ (if (or (char<= character #\space)
-;;                        (char= character #\Del))
-;;                    keyval
-;;                    (string character))))))
-;;     (if (< 1 (length result))
-;;         (str:replace-all "_" "" (string-downcase result))
-;;         result)))
+(defun derive-key-string (keyval character)
+  "Return string representation of a keyval.
+Return nil when key must be discarded, e.g. for modifiers."
+  (let ((result
+          (match keyval
+            ((or "Alt_L" "Super_L" "Control_L" "Shift_L"
+                 "Alt_R" "Super_R" "Control_R" "Shift_R"
+                 "ISO_Level3_Shift" "Arabic_switch")
+             ;; Discard modifiers (they usually have a null character).
+             nil)
+            ((guard s (str:contains? "KP_" s))
+             (str:replace-all "KP_" "keypad" s))
+            ("minus" "hyphen")
+            (_ (if (or (char<= character #\space)
+                       (char= character #\Del))
+                   keyval
+                   (string character))))))
+    (if (< 1 (length result))
+        (str:replace-all "_" "" (string-downcase result))
+        result)))
 
 (defun translate-modifiers (modifier-state &optional event)
   "Return list of modifiers fit for `keymap:make-key'.
@@ -271,6 +262,7 @@ See `gobject-gtk-browser's `modifier-translator' slot."
          (keycode (gir:field event "hardware_keycode"))
          (keyval (gir:field event "keyval"))
          (keyval-name (gir:invoke ((gir-gdk *browser*) 'keyval-name) keyval))
+         ;; character is sometimes an integer...?
          (character (gir:invoke ((gir-gdk *browser*) 'keyval-to-unicode) keyval))
          (printable-value (printable-p sender event))
          ;; (key-string (or printable-value
@@ -280,7 +272,6 @@ See `gobject-gtk-browser's `modifier-translator' slot."
          ;;                     event))
          )
     (print character)
-    (print printable-value)
 
     ;; (if modifiers
     ;;     (log:debug key-string keycode character keyval-name modifiers)
