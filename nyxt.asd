@@ -250,6 +250,8 @@
                (:file "text-buffer")))
 
 (asdf:defsystem nyxt/history-tree
+  :depends-on (local-time
+               nyxt/class-star)
   :pathname "libraries/history-tree/"
   :components ((:file "package")
                (:file "history-tree"))

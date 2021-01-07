@@ -3,49 +3,77 @@
 
 (in-package :history-tree)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'node)
-  (export '(parent children data)))
-(defclass node ()
-  ((parent :accessor parent
-           :initarg :parent
-           :initform nil
+(define-class node ()
+  ((parent nil
            :type (or null node))
-   (children :accessor children
-             :initarg :children
-             :initform nil
-             :type list
+   (children '()
              :documentation "List of nodes.")
-   (data :accessor data
-         :initarg :data
-         :initform nil
-         :documentation "Arbitrary data."))
+   (bindings (make-hash-table)
+             :documentation "The key is an owner, the value is a
+`binding'.  This slot also allows us to know to which owner a node belongs.")
+   (data nil
+         :type t
+         :documentation "Arbitrary data carried by the node."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity)
   (:documentation "Internal node of the history tree."))
 
 (defun make-node (&key data parent)
   (make-instance 'node :data data :parent parent))
 
+(define-class binding ()
+  ((parent-owner nil
+                 :type t
+                 :documentation "The owner in the parent node.
+Unless the parent was disowned by this `parent-owner',
 
+  (gethash PARENT-OWNER (bindings (parent NODE)))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'history-tree)
-  (export '(root current)))
-(defclass history-tree ()
-  ((root :accessor root
-         :initarg :root
-         :type (or null node)
-         :initform nil
-         :documentation "The root node.
-It only changes when deleted.")
-   (current :accessor current
+should return non-nil.")
+   (forward-child  nil
+                  :type (or null node)
+                  :documentation "Which of the `children' (in a `node') is the
+child to go forward to for this owner.")
+   (last-access (local-time:now)
+                :type (or local-time:timestamp string) ; Support `string' for easier deserialization.
+                :documentation "Timestamp of the last access to this node by the
+owner."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity)
+  (:documentation "The relation ship between an owner and the current node."))
+
+(define-class owner-header ()
+  ((origin nil             ; TODO: Rename to `root'?  Not to be confused with the htree root, but maybe it's convenient to have the same method name.
+           :type (or null node)
+           :documentation "The first node created for this owner.")
+   (current nil
             :type (or null node)
             :initform nil
             :documentation "The current node.
-It changes every time a node is added or deleted."))
-  (:documentation "History tree data structure."))
+It changes every time a node is added or deleted.")
+   (nodes (make-hash-table)
+          :type hash-table
+          :documentation "The set of all unique nodes visited by an owner."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity)
+  (:documentation "The high-level information about an owner."))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'make))
+(define-class history-tree ()
+  ((root nil
+         :type (or null node)
+         :documentation "The root node.
+It only changes when deleted.")
+   (owners (make-hash-table)
+           :type hash-table
+           :documentation "The key is an owner, the value is an `owner-header'."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity)
+  (:documentation "Staring point of the global history tree data structure."))
+
 (defun make ()
   (make-instance 'history-tree))
 
@@ -56,10 +84,10 @@ It changes every time a node is added or deleted."))
 
 
 
-(deftype positive-integer ()
+(deftype positive-integer ()            ; TODO: Remove if unused.
   `(integer 1 ,most-positive-fixnum))
 
-(deftype non-negative-integer ()
+(deftype non-negative-integer ()        ; TODO: Remove if unused.
   `(integer 0 ,most-positive-fixnum))
 
 

@@ -3,9 +3,11 @@
 
 (in-package :cl-user)
 
-(uiop:define-package :history-tree
-  (:nicknames :htree)
-  (:use :common-lisp)
+(uiop:define-package history-tree
+  (:nicknames #:htree)
+  (:use #:common-lisp)
+  (:import-from #:class-star #:define-class)
+  ;; TODO: Update documentation to reflect the Global History Tree structure.
   (:documentation "Library for the history-tree data structure.
 
 This data structure can be used to store the history of visited path with a file
