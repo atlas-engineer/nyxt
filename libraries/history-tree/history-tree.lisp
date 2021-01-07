@@ -23,15 +23,7 @@
   (make-instance 'node :data data :parent parent))
 
 (define-class binding ()
-  ((parent-owner nil
-                 :type t
-                 :documentation "The owner in the parent node.
-Unless the parent was disowned by this `parent-owner',
-
-  (gethash PARENT-OWNER (bindings (parent NODE)))
-
-should return non-nil.")
-   (forward-child  nil
+  ((forward-child  nil
                   :type (or null node)
                   :documentation "Which of the `children' (in a `node') is the
 child to go forward to for this owner.")
@@ -45,9 +37,17 @@ owner."))
   (:documentation "The relation ship between an owner and the current node."))
 
 (define-class owner-header ()
-  ((origin nil             ; TODO: Rename to `root'?  Not to be confused with the htree root, but maybe it's convenient to have the same method name.
+  ((origin nil ; TODO: Rename to `root'?  Not to be confused with the htree root, but maybe it's convenient to have the same method name.
            :type (or null node)
            :documentation "The first node created for this owner.")
+   (creator nil
+            :type t
+            :documentation "The owner in `origin's parent node that created this owner.
+Unless the parent was disowned by this `creator',
+
+  (gethash CREATOR (bindings (origin HEADER)))
+
+should return non-nil.")
    (current nil
             :type (or null node)
             :initform nil
