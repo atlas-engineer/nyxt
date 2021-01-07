@@ -93,6 +93,11 @@ It only changes when deleted.")
     (setf (current-owner-header history)
           (gethash owner (owners history)))))
 
+(declaim (ftype (function (history-tree) node) current-owner-node))
+(defun current-owner-node (history)
+  (and (current-owner-header history)
+       (current (current-owner-header history))))
+
 (deftype positive-integer ()            ; TODO: Remove if unused.
   `(integer 1 ,most-positive-fixnum))
 
