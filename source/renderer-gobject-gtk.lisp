@@ -5,7 +5,7 @@
 
 (define-class gobject-gtk-browser ()
   ((modifier-translator
-    'translate-modifiers
+    #'translate-modifiers
     :documentation "Function that returns a list of modifiers
 understood by `keymap:make-key'.")
    (gir-gtk (gir:ffi "Gtk"))
@@ -78,6 +78,8 @@ data-manager will store the data separately for each buffer."))
                                           (gir:nget gir-gtk "Orientation" :vertical) 0))
       (setf status-container (gir:invoke (gir-gtk "Box" 'new)
                                          (gir:nget gir-gtk "Orientation" :vertical) 0))
+      ;; Create a pseudo text entry widget to render special keys
+      (setf key-string-buffer (gir:invoke (gir-gtk "Entry" 'new)))
       ;; Create a temporary active buffer
       (setf active-buffer (make-dummy-buffer))
       ;; Add the views to the box layout and to the window
@@ -151,9 +153,9 @@ data-manager will store the data separately for each buffer."))
 ;;       (setf (slot-value *browser* 'web-context) 
 ;;             (make-instance 'webkit:webkit-web-context)))) ; TASK
 
-;; (defmethod ffi-within-renderer-thread ((browser gobject-gtk-browser) thunk)
-;;   (declare (ignore browser))
-;;   (funcall thunk))
+(defmethod ffi-within-renderer-thread ((browser gobject-gtk-browser) thunk)
+  (declare (ignore browser))
+  (funcall thunk))
 
 (defmacro define-ffi-method (name args &body body)
   (let* ((docstring (when (stringp (first body))
@@ -171,19 +173,15 @@ data-manager will store the data separately for each buffer."))
        (progn
          ,@body))))
 
-;; (define-ffi-method ffi-kill-browser ((browser gobject-gtk-browser))
-;;   (unless *keep-alive*
-;;     ;; TASK
-;;     ))
-
-;; (defmethod expand-data-path ((profile private-data-profile) (path data-manager-data-path))
-;;   "We shouldn't store any `data-manager' data for `private-data-profile'."
-;;   nil)
+(define-ffi-method ffi-kill-browser ((browser gobject-gtk-browser))
+  (unless *keep-alive*
+    (gir:invoke ((gir-gtk browser) 'main-quit))))
 
 (defun make-web-view (&key context-buffer)
   "Return a web view instance.
 When passed a web buffer, create a buffer-local web context.
 Such contexts are not needed for internal buffers."
+  (declare (ignore context-buffer))
   (let ((view (gir:invoke ((gir-webkit *browser*) "WebView" 'new))))
     (gir:invoke (view 'load_uri) "https://duckduckgo.com")
     view))
@@ -234,17 +232,16 @@ Such contexts are not needed for internal buffers."
 ;;         (str:replace-all "_" "" (string-downcase result))
 ;;         result)))
 
-;; (declaim (ftype (function (list &optional gdk:gdk-event) list) translate-modifiers))
-;; (defun translate-modifiers (modifier-state &optional event)
-;;   "Return list of modifiers fit for `keymap:make-key'.
-;; See `gobject-gtk-browser's `modifier-translator' slot."
-;;   (declare (ignore event))
-;;   (let ((plist '(:control-mask "control"
-;;                  :mod1-mask "meta"
-;;                  :shift-mask "shift"
-;;                  :super-mask "super"
-;;                  :hyper-mask "hyper")))
-;;     (delete nil (mapcar (lambda (mod) (getf plist mod)) modifier-state))))
+(defun translate-modifiers (modifier-state &optional event)
+  "Return list of modifiers fit for `keymap:make-key'.
+See `gobject-gtk-browser's `modifier-translator' slot."
+  (declare (ignore event))
+  (let ((plist '(:control-mask "control"
+                 :mod1-mask "meta"
+                 :shift-mask "shift"
+                 :super-mask "super"
+                 :hyper-mask "hyper")))
+    (delete nil (mapcar (lambda (mod) (getf plist mod)) modifier-state))))
 
 ;; (defun key-event-modifiers (key-event)
 ;;   (gdk:gdk-event-key-state key-event))
@@ -255,58 +252,55 @@ Such contexts are not needed for internal buffers."
 ;; (defun scroll-event-modifiers (scroll-event)
 ;;   (gdk:gdk-event-scroll-state scroll-event))
 
-;; (defmethod printable-p ((window gobject-gtk-window) event)
-;;   "Return the printable value of EVENT."
-;;   ;; Generate the result of the current keypress into the dummy
-;;   ;; key-string-buffer (a Gobject-GtkEntry that's never shown on screen) so that we
-;;   ;; can collect the printed representation of composed keypress, such as dead
-;;   ;; keys.
-;;   (gobject-gtk:gobject-gtk-entry-im-context-filter-keypress (key-string-buffer window) event)
-;;   (when (<= 1 (gobject-gtk:gobject-gtk-entry-text-length (key-string-buffer window)))
-;;     (prog1
-;;         (match (gobject-gtk:gobject-gtk-entry-text (key-string-buffer window))
-;;           ;; Special cases: these characters are not supported as is for keyspecs.
-;;           ;; See `self-insert' for the reverse translation.
-;;           (" " "space")
-;;           ("-" "hyphen")
-;;           (character character))
-;;       (setf (gobject-gtk:gobject-gtk-entry-text (key-string-buffer window)) ""))))
+(defmethod printable-p ((window gobject-gtk-window) event)
+  "Return the printable value of EVENT."
+  ;; Generate the result of the current keypress into a dummy
+  ;; (invisible) key-string-buffer so that we can collect the printed
+  ;; representation of composed keypress, such as dead keys.
+  (gir:invoke ((key-string-buffer window) 'im-context-filter-keypress) event)
+  (when (<= 1 (gir:invoke ((key-string-buffer window) 'get-text-length)))
+     (prog1
+         (match (gir:invoke ((key-string-buffer window) 'get-text))
+           (" " "space")
+           ("-" "hyphen")
+           (character character))
+       (gir:invoke ((key-string-buffer window) 'set-text) ""))))
 
 (define-ffi-method on-signal-key-press-event ((sender gobject-gtk-window) event)
-  (print "PRESS EVENT")
-  ;; (let* ((keycode (gdk:gdk-event-key-hardware-keycode event))
-  ;;        (keyval (gdk:gdk-event-key-keyval event))
-  ;;        (keyval-name (gdk:gdk-keyval-name keyval))
-  ;;        (character (gdk:gdk-keyval-to-unicode keyval))
-  ;;        (printable-value (printable-p sender event))
-  ;;        (key-string (or printable-value
-  ;;                        (derive-key-string keyval-name character)))
-  ;;        (modifiers (funcall (modifier-translator *browser*)
-  ;;                            (key-event-modifiers event)
-  ;;                            event)))
-  ;;   (if modifiers
-  ;;       (log:debug key-string keycode character keyval-name modifiers)
-  ;;       (log:debug key-string keycode character keyval-name))
-  ;;   (if key-string
-  ;;       (progn
-  ;;         (alex:appendf (key-stack sender)
-  ;;                       (list (keymap:make-key :code keycode
-  ;;                                              :value key-string
-  ;;                                              :modifiers modifiers
-  ;;                                              :status :pressed)))
-  ;;         (funcall (input-dispatcher sender) event (active-buffer sender) sender printable-value))
-  ;;       ;; Do not forward modifier-only to renderer.
-  ;;       t))
-  )
+  (let* ((event (gir::build-struct-ptr (gir:nget (gir-gdk *browser*) "EventKey") event))
+         (keycode (gir:field event "hardware_keycode"))
+         (keyval (gir:field event "keyval"))
+         (keyval-name (gir:invoke ((gir-gdk *browser*) 'keyval-name) keyval))
+         (character (gir:invoke ((gir-gdk *browser*) 'keyval-to-unicode) keyval))
+         (printable-value (printable-p sender event))
+         ;; (key-string (or printable-value
+         ;;                 (derive-key-string keyval-name character)))
+         ;; (modifiers (funcall (modifier-translator *browser*)
+         ;;                     (key-event-modifiers event)
+         ;;                     event))
+         )
+    (print character)
+    (print printable-value)
+
+    ;; (if modifiers
+    ;;     (log:debug key-string keycode character keyval-name modifiers)
+    ;;     (log:debug key-string keycode character keyval-name))
+    ;; (if key-string
+    ;;     (progn
+    ;;       (alex:appendf (key-stack sender)
+    ;;                     (list (keymap:make-key :code keycode
+    ;;                                            :value key-string
+    ;;                                            :modifiers modifiers
+    ;;                                            :status :pressed)))
+    ;;       (funcall (input-dispatcher sender) event (active-buffer sender) sender printable-value))
+    ;;     ;; Do not forward modifier-only to renderer.
+    ;;     t)
+    ))
 
 (define-ffi-method on-signal-key-release-event ((sender gobject-gtk-window) event)
-  "We don't handle key release events."
+  "Don't handle key release events."
   (declare (ignore event))
-  (if (active-minibuffers sender)
-      ;; Do not forward release event when minibuffer is up.
-      t
-      ;; Forward release event to the web view.
-      nil))
+  (if (active-minibuffers sender) t nil))
 
 ;; (define-ffi-method on-signal-button-press-event ((sender gobject-gtk-buffer) event)
 ;;   (let* ((button (gdk:gdk-event-button-button event))
@@ -380,7 +374,6 @@ Such contexts are not needed for internal buffers."
 ;;        :webkit-cookie-persistent-storage-text)
 ;;       (set-cookie-policy cookie-manager (default-cookie-policy buffer)))
 ;;     context))
-
 
 
 ;; (define-ffi-method ffi-buffer-uri ((buffer gobject-gtk-buffer))
@@ -513,9 +506,9 @@ Such contexts are not needed for internal buffers."
 ;;     (url (print-message (str:concat "→ " (quri:url-decode url :lenient t)))
 ;;          (setf (url-at-point buffer) (quri:uri url)))))
 
-;; (define-ffi-method ffi-window-make ((browser gobject-gtk-browser))
-;;   "Make a window."
-;;   (make-instance 'user-window))
+(define-ffi-method ffi-window-make ((browser gobject-gtk-browser))
+  "Make a window."
+  (make-instance 'user-window))
 
 ;; (define-ffi-method ffi-window-to-foreground ((window gobject-gtk-window))
 ;;   "Show window in foreground."
