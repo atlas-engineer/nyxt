@@ -61,6 +61,11 @@ It changes every time a node is added or deleted.")
   (:accessor-name-transformer #'class*:name-identity)
   (:documentation "The high-level information about an owner."))
 
+(defmethod (setf current) (value (header owner-header))
+  (if value
+      (setf (slot-value header 'current) value)
+      (error "Attempted to set current node to NIL for owner header ~a." header)))
+
 (define-class history-tree ()
   ((root nil
          :type (or null node)
@@ -68,7 +73,10 @@ It changes every time a node is added or deleted.")
 It only changes when deleted.")
    (owners (make-hash-table)
            :type hash-table
-           :documentation "The key is an owner, the value is an `owner-header'."))
+           :documentation "The key is an owner, the value is an `owner-header'.")
+   (current-owner-header nil
+                         :type t
+                         :documentation "Must be one of the `owners' values."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)
@@ -77,12 +85,13 @@ It only changes when deleted.")
 (defun make ()
   (make-instance 'history-tree))
 
-(defmethod (setf current) (value (history history-tree))
-  (if value
-      (setf (slot-value history 'current) value)
-      (error "Attempted to set current history-tree node to NIL.")))
-
-
+(declaim (ftype (function (history-tree t) owner-header) set-current-owner))
+(defun set-current-owner (history owner)
+  (let ((header (gethash owner (owners history))))
+    (unless header
+      (setf (gethash owner (owners history)) (make-instance 'owner-header)))
+    (setf (current-owner-header history)
+          (gethash owner (owners history)))))
 
 (deftype positive-integer ()            ; TODO: Remove if unused.
   `(integer 1 ,most-positive-fixnum))
