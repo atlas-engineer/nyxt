@@ -100,25 +100,26 @@ data-manager will store the data separately for each buffer."))
       ;; Add box layout to the view
       (gir:invoke (gtk-object 'add) box-layout)
       (setf (slot-value *browser* 'last-active-window) window)
+      (gir:connect gtk-object
+                   :key-press-event
+                   (lambda (widget event)
+                     (declare (ignore widget))
+                     (on-signal-key-press-event window event)))
+      (gir:connect gtk-object
+                   :key-release-event
+                   (lambda (widget event)
+                     (declare (ignore widget))
+                     (on-signal-key-release-event window event)))
+
+      ;; RM
       (gir::g-signal-connect-data (gir::this-of gtk-object)
                                   "destroy"
                                   (cffi:foreign-symbol-pointer "gtk_main_quit")
                                   (cffi:null-pointer)
                                   (cffi:null-pointer)
                                   0)
-      (gir:connect gtk-object 
-                   :key-press-event
-                   (lambda (widget event)
-                     (declare (ignore widget))
-                     (on-signal-key-press-event window event)))
       
       (gir:invoke (gtk-object 'show-all)))
-    ;; (gobject:g-signal-connect
-    ;;  gobject-gtk-object "key_release_event"
-    ;;  (lambda (widget event) (declare (ignore widget))
-    ;;    #+darwin
-    ;;    (pop-modifier *browser* event)
-    ;;    (on-signal-key-release-event window event)))
     ;; (gobject:g-signal-connect
     ;;  gobject-gtk-object "destroy"
     ;;  (lambda (widget) (declare (ignore widget))
@@ -297,6 +298,15 @@ Such contexts are not needed for internal buffers."
   ;;       ;; Do not forward modifier-only to renderer.
   ;;       t))
   )
+
+(define-ffi-method on-signal-key-release-event ((sender gobject-gtk-window) event)
+  "We don't handle key release events."
+  (declare (ignore event))
+  (if (active-minibuffers sender)
+      ;; Do not forward release event when minibuffer is up.
+      t
+      ;; Forward release event to the web view.
+      nil))
 
 ;; (define-ffi-method on-signal-button-press-event ((sender gobject-gtk-buffer) event)
 ;;   (let* ((button (gdk:gdk-event-button-button event))
