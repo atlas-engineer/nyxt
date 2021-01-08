@@ -325,10 +325,8 @@ Return nil if there is no `current-owner'."
   (when (current-owner history)
     (add-children children-data (current-owner history) :test test)))
 
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'map-tree))
-(defun map-tree (function tree &key flatten include-root (collect-function #'cons))
+(export-always 'map-tree)
+(defun map-tree (function tree &key flatten include-root (collect-function #'cons)) ; TODO: Edit?  Unexport?
   "Map the FUNCTION over the TREE.
 If TREE is a `htree:history-tree', start from it's root.
 If TREE is a `htree:node', start from it.
@@ -343,7 +341,7 @@ current node to the result of further traversal."
            (traverse (node)
              (when node
                (collect (funcall function node)
-                 ;; This lambda here because (apply #'identity ...) fails on empty arglist.
+                 ;; This lambda is here because (apply #'identity ...) fails on empty arglist.
                  (apply (if flatten #'append #'(lambda (&rest args) args))
                         (mapcar #'traverse (children node)))))))
     (let ((root (typecase tree
@@ -354,9 +352,8 @@ current node to the result of further traversal."
             (traverse root)
             (apply #'append (mapcar #'traverse (children root))))))))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'do-tree))
-(defmacro do-tree ((var tree) &body body)
+(export-always 'do-tree)
+(defmacro do-tree ((var tree) &body body) ; TODO: Edit? Unexport?
   "Apply actions in BODY to all the nodes in a tree.
 Nodes are bound to VAR.
 If TREE is a node, it's passed right away,
