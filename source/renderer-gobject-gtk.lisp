@@ -513,8 +513,6 @@ See `gobject-gtk-browser's `modifier-translator' slot."
 (define-ffi-method ffi-window-get-message-buffer-height ((window gobject-gtk-window))
   (gir:property (message-container window) 'height-request))
 
-
-
 (define-ffi-method ffi-buffer-make ((buffer gobject-gtk-buffer))
   "Initialize BUFFER's GOBJECT-GTK web view."
   (setf (gtk-object buffer) 
