@@ -74,6 +74,12 @@ It's updated every time a node is visited.")
       (setf (slot-value owner 'current) value)
       (error "Attempted to set current node to NIL for owner ~a." owner)))
 
+(declaim (ftype (function (owner) (or null (cons node))) owned-children))
+(defun owned-children (owner)
+  (remove-if (lambda (child)
+               (not (gethash owner (bindings child))))
+             (children owner)))
+
 (define-class history-tree ()
   ((root nil
          :type (or null node)
@@ -177,8 +183,8 @@ be chained."
 (export-always 'forward)
 (defmethod forward ((owner owner) &optional (count 1))
   "Go COUNT first-children down from the current OWNER node.
-Return (values OWNER (CURRENT OWNER)) so that `back', `forward' and
-`go-to-child' calls can be chained."
+Return (values OWNER (CURRENT OWNER)) so that `back' and `forward' calls can be
+chained."
   (check-type count 'positive-integer)
   (when (and (current owner)
              (children (current owner)))
@@ -189,31 +195,63 @@ Return (values OWNER (CURRENT OWNER)) so that `back', `forward' and
 
 (defmethod forward ((history history-tree) &optional (count 1))
   "Go COUNT first-children down from the current owner node.
-Return (values HISTORY CURRENT-NODE)) so that `back', `forward', and
-`go-to-child' calls can be chained."
+Return (values HISTORY CURRENT-NODE)) so that `back' and `forward' calls can be
+chained."
   (when (current-owner history)
-    (values history (nth-value 1) (forward (current-owner history) count))))
+    (values history (nth-value 1 (forward (current-owner history) count)))))
 
+(declaim (ftype (function (t owner &key (:test function)) (or null node)) find-child))
+(defun find-child (data owner &key (test #'equal)) ; TODO: Generalize?
+  "Return the direct child node of OWNER which matches DATA.
+Test is done with the TEST argument."
+  (find data
+        (children (current owner))
+        :key #'data
+        :test test))
 
+(declaim (ftype (function (t owner &key (:test function)) (or null node))
+                find-owned-child))
+(defun find-owned-child (data owner &key (test #'equal)) ; TODO: Generalize?
+  "Return the direct child node owned by OWNER which matches DATA.
+Test is done with the TEST argument."
+  (find data
+        (owned-children owner)
+        :key #'data
+        :test test))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'go-to-child))
+(export-always 'go-to-child)
+(defmethod go-to-child (data (owner owner) &key (test #'equal)
+                                             (child-finder #'find-child))
+  "Go to current OWNER node's direct child matching DATA.
+Test is done with the TEST argument.
+Return (values OWNER (current OWNER))."
+  (when (current owner)
+    (let ((match (find-child data owner :test test)))
+      (when match
+        (visit owner match))))
+  (values history (current history)))
+
+(export-always 'go-to-owned-child)
+(defmethod go-to-owned-child (data (owner owner) &key (test #'equal))
+  "Go to current OWNER node's direct owned child matching DATA.
+A child is owned if it has a binding with OWNER.
+Test is done with the TEST argument.
+Return (values OWNER (current OWNER))."
+  (go-to-child data owner :test test :child-finder #'find-owned-child))
+
 (defmethod go-to-child (data (history history-tree) &key (test #'equal))
   "Go to direct current node's child matching DATA.
+Test is done with the TEST argument. "
+  (when (current-owner history)
+    (go-to-child data (current-owner history) :test test)))
+
+(defmethod go-to-owned-child (data (history history-tree) &key (test #'equal))
+  "Go to current node's direct owned child matching DATA.
+A child is owned if it has a binding with current owner.
 Test is done with the TEST argument.
-Return (VALUES HISTORY (CURRENT HISTORY)) so that `back', `forward', and
-`go-to-child' calls can be chained."
-  (when (current history)
-    (let ((selected-child))
-      (setf (children (current history))
-            (delete-if (lambda (node)
-                         (when (funcall test (data node) data)
-                           (setf selected-child node)))
-                       (children (current history))))
-      (when selected-child
-        (push selected-child (children (current history)))
-        (forward history))))
-  (values history (current history)))
+Return (values OWNER (current OWNER))."
+  (when (current-owner history)
+    (go-to-owned-child data (current-owner history) :test test)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'delete-child))
