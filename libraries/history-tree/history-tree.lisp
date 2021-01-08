@@ -164,9 +164,6 @@ Return (values HISTORY NODE) so that calls to `visit' can be chained."
 (deftype positive-integer ()
   `(integer 1 ,most-positive-fixnum))
 
-(deftype non-negative-integer ()
-  `(integer 0 ,most-positive-fixnum))
-
 (export-always 'back)
 (defmethod back ((owner owner) &optional (count 1))
   "Go COUNT parent up from the current OWNER node.
@@ -550,19 +547,25 @@ help of TEST argument."
     last-deleted))
 
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'depth))
-;; (declaim (ftype (function (history-tree) non-negative-integer)
-;;                 depth))
-(defmethod depth ((history history-tree))
-  "Return the number of parents of the current node."
-  (length (parent-nodes history)))
+(deftype non-negative-integer ()
+  `(integer 0 ,most-positive-fixnum))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'size))
-;; (declaim (ftype (function (history-tree) non-negative-integer)
-;;                 size))
-(defmethod size ((history history-tree))
-  "Return the number of nodes."
+(export-always 'depth)
+(declaim (ftype (function ((or history-tree owner)) non-negative-integer) depth))
+(defun depth (history-or-owner)
+  "Return the number of parents of the current owner node."
+  (length (all-parents history-or-owner)))
+
+(export-always 'size)
+(defmethod size ((owner owner))
+  "Return the total number of nodes owned by OWNER."
+  (length (nodes owner)))
+
+(defmethod connected-size ((owner owner)) ; TODO: Prefer "connected" over "contiguous"?
+  "Return the total number of owned nodes connect to the current OWNER node."
+  (length (all-contiguous-owned-nodes owner)))
+
+(defmethod size ((history history-size))
+  "Return the total number of nodes."
   ;; TODO: This could be optimized with a SIZE slot, but is it worth it?
   (length (all-nodes history)))
