@@ -395,17 +395,17 @@ Always return nil, as it is an explicitly imperative macro."
   (when (current-owner history)
     (all-children (current-owner-node history))))
 
-(export-always 'all-owned-children)
-(defmethod all-owned-children ((owner owner))
+(export-always 'all-contiguous-owned-children)
+(defmethod all-contiguous-owned-children ((owner owner))
   "Return a list of all the children owned by OWNER, recursively."
   (map-tree #'identity (current owner) :flatten t
                                        :children-function #'owned-children))
 
-(defmethod all-owned-children ((history history))
+(defmethod all-contiguous-owned-children ((history history))
   "Return a list of all the children owned by HISTORY's current owner,
 recursively."
   (when (current-owner history)
-    (all-owned-children (current-owner history))))
+    (all-contiguous-owned-children (current-owner history))))
 
 (export-always 'all-parents)
 (defmethod all-parents ((node node))
@@ -427,21 +427,21 @@ First parent comes first in the resulting list."
   (when (current-owner history)
     (all-parents (current-owner-node history))))
 
-(export-always 'all-owned-parents)
-(defmethod all-owned-parents ((owner owner))
+(export-always 'all-contiguous-owned-parents)
+(defmethod all-contiguous-owned-parents ((owner owner))
   "Return a list of parents of owned by OWNER, starting from its current node,
 recursively.
 First parent comes first in the resulting list."
   (when (and (parent owner)
              (owned-p owned (parent owner)))
     (cons (parent owner)
-          (all-owned-parents (current owner)))))
+          (all-contiguous-owned-parents (current owner)))))
 
-(defmethod all-owned-parents ((history history))
+(defmethod all-contiguous-owned-parents ((history history))
   "Return a list of parents of owned by HISTORY current owner, starting from its
 current node, recursively.  First parent comes first in the resulting list."
   (when (current-owner history)
-    (all-owned-parents (current-owner history))))
+    (all-contiguous-owned-parents (current-owner history))))
 
 (export-always 'all-forward-children)
 (defmethod all-forward-children ((owner owner))
@@ -465,12 +465,16 @@ First child comes first in the resulting list."
     (when root
       (cons root (all-children root)))))
 
-(export 'all-owned-nodes)
-(defmethod all-owned-nodes ((owner owner))
+(defmethod all-nodes ((owner owner))
+  "Return a list of all OWNER nodes, in no particular order."
+  (nodes owner))
+
+(export 'all-contiguous-owned-nodes)
+(defmethod all-contiguous-owned-nodes ((owner owner))
   "Return a list of all owner nodes, in depth-first order."
-  (let ((owner-root (first (all-owned-parents owner))))
+  (let ((owner-root (first (all-contiguous-owned-parents owner))))
     (when owner-root
-      (cons owner-root (all-owned-children owner-root)))))
+      (cons owner-root (all-contiguous-owned-children owner-root)))))
 
 
 
