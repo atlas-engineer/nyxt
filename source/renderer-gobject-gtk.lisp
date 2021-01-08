@@ -187,14 +187,14 @@ Such contexts are not needed for internal buffers."
 ;;   (window-delete window))
 
 ;; (define-ffi-method ffi-window-delete ((window gobject-gtk-window))
-;;   "Delete a window object and remove it from the hash of windows."
+;;   "Delete a window object."
 ;;   (gobject-gtk:gobject-gtk-widget-destroy (gobject-gtk-object window)))
 
-;; (define-ffi-method ffi-window-fullscreen ((window gobject-gtk-window))
-;;   (gobject-gtk:gobject-gtk-window-fullscreen (gobject-gtk-object window)))
+(define-ffi-method ffi-window-fullscreen ((window gobject-gtk-window))
+  (gir:invoke ((gtk-object window) 'fullscreen)))
 
-;; (define-ffi-method ffi-window-unfullscreen ((window gobject-gtk-window))
-;;   (gobject-gtk:gobject-gtk-window-unfullscreen (gobject-gtk-object window)))
+(define-ffi-method ffi-window-unfullscreen ((window gobject-gtk-window))
+  (gir:invoke ((gtk-object window) 'unfullscreen)))
 
 (defun derive-key-string (keyval character)
   "Return string representation of a keyval.
@@ -513,8 +513,7 @@ See `gobject-gtk-browser's `modifier-translator' slot."
 (define-ffi-method ffi-window-get-message-buffer-height ((window gobject-gtk-window))
   (gir:property (message-container window) 'height-request))
 
-(define-ffi-method ffi-window-set-message-buffer-height ((window gobject-gtk-window) height)
-  (gir:invoke ((message-container window) 'set-size-request) -1 height))
+
 
 (define-ffi-method ffi-buffer-make ((buffer gobject-gtk-buffer))
   "Initialize BUFFER's GOBJECT-GTK web view."
