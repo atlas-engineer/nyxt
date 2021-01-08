@@ -253,71 +253,77 @@ Return (values OWNER (current OWNER))."
   (when (current-owner history)
     (go-to-owned-child data (current-owner history) :test test)))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'delete-child))
-(defmethod delete-child (data (history history-tree) &key (test #'equal))
-  "Delete child matching DATA and return the child.
-Test is done with the TEST argument."
-  (when (current history)
-    (let ((matching-node nil))
-      (setf (children (current history))
-            (delete-if (lambda (node)
-                         (when (funcall test (data node) data)
-                           (setf matching-node node)))
-                       (children (current history))))
-      matching-node)))
+;; (export-always 'delete-child)
+;; (defmethod delete-child (data (history history-tree) &key (test #'equal))
+;;   "Delete child matching DATA and return the child.
+;; Test is done with the TEST argument."
+;;   (when (current history)
+;;     (let ((matching-node nil))
+;;       (setf (children (current history))
+;;             (delete-if (lambda (node)
+;;                          (when (funcall test (data node) data)
+;;                            (setf matching-node node)))
+;;                        (children (current history))))
+;;       matching-node)))
 
 (export-always 'add-child)
-(defmethod add-child (data (header owner-header) &key (test #'equal) creator)
+(defmethod add-child (data (owner owner) &key (test #'equal) creator)
   "Create or find a node holding DATA and set current node to it.
-Return (possibly new) current node.
+Return the (possibly new) current node.
 
 If current node matches DATA (according to TEST), then we update its data to
 DATA (since the TEST function does not necessarily mean the data is identical).
 
-If DATA is found among the children (according to TEST), the HEADER
+If DATA is found among the children (according to TEST), the OWNER
 `forward-child' is set to the matching child, the child data is set to DATA and
-the HEADER current node is set to this child.
+the OWNER current node is set to this child.
 
 If there is no current element, this creates the first element of the tree.
-If CREATOR is provided, set the `creator' slot of HEADER."
+If CREATOR is provided, set the `creator' slot of OWNER."
   (cond
-    ((null (current header))
+    ((null (current owner))
      (let ((new-node (make-node :data data)))
-       (setf (origin header) new-node
-             (creator header) creator)
-       (visit header new-node)))
-    ((not (funcall test data (data (current header))))
-     (let ((node (delete-child data header :test test)))
+       (setf (origin owner) new-node
+             (creator owner) creator)
+       (visit owner new-node)))
+    ((not (funcall test data (data (current owner))))
+     (let ((node (find-child data owner :test test)))
        (if node
            (setf (data node) data)
-           (push (setf node (make-node :data data :parent (current header)))
-                 (children (current header))))
-       ;; TODO: Need to get OWNER.
-       (let ((binding (gethash owner (bindings (current header)))))
+           (push (setf node (make-node :data data :parent (current owner)))
+                 (children (current owner))))
+       (let ((binding (gethash owner (bindings (current owner)))))
          (setf (forward-child binding) node))
        (forward history)))
     (t
-     (setf (data (current header)) data)))
-  (current header))
+     (setf (data (current owner)) data)))
+  (current owner))
 
 (defmethod add-child (data (history history-tree) &key (test #'equal))
-  "Like `add-child' for `owner-header'.
-Return (possibly new) current node."
-  ;; TODO: Implement.
-  (current-owner-node history))
+  "Like `add-child' for the current `owner'.
+Return (possibly new) current node, or nil if there is no current owner."
+  (when (current-owner history)
+    (add-child data (current-owner history) :test test)))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'add-children))
-(defmethod add-children (children-data (history history-tree) &key (test #'equal))
-  "Add CHILDREN-DATA to the HISTORY `current''s node.
+(export 'add-children)
+(defmethod add-children (children-data (owner owner) &key (test #'equal))
+  "Add CHILDREN-DATA to the `owner''s node children.
 Each child is added with `add-child'.
 Return the (maybe new) current node, which holds the last piece of data in
 `children-data'."
-  (add-child (first children-data) history :test test)
+  (add-child (first children-data) owner :test test)
   (if (rest children-data)
-      (add-children (rest children-data) (back history) :test test)
-      (current history)))
+      (add-children (rest children-data) (back owner) :test test)
+      (current owner)))
+
+(defmethod add-children (children-data (history history-tree) &key (test #'equal))
+  "Add CHILDREN-DATA to the HISTORY `current-owner''s node children.
+Each child is added with `add-child'.
+Return the (maybe new) current node, which holds the last piece of data in
+`children-data'.
+Return nil if there is no `current-owner'."
+  (when (current-owner history)
+    (add-children children-data (current-owner history) :test test)))
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
