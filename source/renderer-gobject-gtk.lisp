@@ -107,12 +107,6 @@ data-manager will store the data separately for each buffer."))
                    (lambda (widget event)
                      (declare (ignore widget))
                      (on-signal-key-press-event window event)))
-      (gir:connect gtk-object
-                   :key-release-event
-                   (lambda (widget event)
-                     (declare (ignore widget))
-                     (on-signal-key-release-event window event)))
-
       ;; RM
       (gir::g-signal-connect-data (gir::this-of gtk-object)
                                   "destroy"
@@ -228,9 +222,9 @@ Return nil when key must be discarded, e.g. for modifiers."
 See `gobject-gtk-browser's `modifier-translator' slot."
   (declare (ignore event))
   (let ((modifiers (list)))
-    (dolist (mdef '((#b1    :shift)
-                    (#b100  :ctrl)
-                    (#b1000 :alt)))
+    (dolist (mdef '((#b1    "shift")
+                    (#b100  "control")
+                    (#b1000 "meta")))
       (destructuring-bind (int modifier)
           mdef
         (unless (zerop (logand int modifier-state))
@@ -284,11 +278,6 @@ See `gobject-gtk-browser's `modifier-translator' slot."
                                                :status :pressed)))
           (funcall (input-dispatcher sender) event (active-buffer sender) sender printable-value))
         t)))
-
-(define-ffi-method on-signal-key-release-event ((sender gobject-gtk-window) event)
-  "Don't handle key release events."
-  (declare (ignore event))
-  (if (active-minibuffers sender) t nil))
 
 ;; (define-ffi-method on-signal-button-press-event ((sender gobject-gtk-buffer) event)
 ;;   (let* ((button (gdk:gdk-event-button-button event))
@@ -503,9 +492,9 @@ See `gobject-gtk-browser's `modifier-translator' slot."
 ;;   (gobject-gtk:gobject-gtk-window-present (gobject-gtk-object window))
 ;;   (setf (slot-value *browser* 'last-active-window) window))
 
-;; (define-ffi-method ffi-window-set-title ((window gobject-gtk-window) title)
-;;   "Set the title for a window."
-;;   (setf (gobject-gtk:gobject-gtk-window-title (gobject-gtk-object window)) title))
+(define-ffi-method ffi-window-set-title ((window gobject-gtk-window) title)
+  "Set the title for a window."
+  (gir:invoke ((gtk-object window) 'set-title) title))
 
 ;; (define-ffi-method ffi-window-active ((browser gobject-gtk-browser))
 ;;   "Return the window object for the currently active window."
@@ -722,8 +711,10 @@ See `gobject-gtk-browser's `modifier-translator' slot."
 ;;      (setf (gdk:gdk-event-scroll-send-event event) t)))
 ;;   (gobject-gtk:gobject-gtk-main-do-event event))
 
-;; (define-ffi-method ffi-generated-input-event-p ((window gobject-gtk-window) event)
-;;   (gdk:gdk-event-send-event event))
+(define-ffi-method ffi-generated-input-event-p ((window gobject-gtk-window) event)
+  nil
+  ;(gdk:gdk-event-send-event event)
+  )
 
 ;; (define-ffi-method ffi-inspector-show ((buffer gobject-gtk-buffer))
 ;;   (setf (webkit:webkit-settings-enable-developer-extras
