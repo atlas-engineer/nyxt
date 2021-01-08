@@ -34,7 +34,7 @@ owner."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)
-  (:documentation "The relation ship between an owner and the current node."))
+  (:documentation "The relationship between an owner and the current node."))
 
 (define-class owner-header ()
   ((origin nil ; TODO: Rename to `root'?  Not to be confused with the htree root, but maybe it's convenient to have the same method name.
@@ -52,7 +52,7 @@ should return non-nil.")
             :type (or null node)
             :initform nil
             :documentation "The current node.
-It changes every time a node is added or deleted.")
+It's updated every time a node is visited.")
    (nodes (make-hash-table)
           :type hash-table
           :documentation "The set of all unique nodes visited by an owner."))
@@ -87,6 +87,7 @@ It only changes when deleted.")
 
 (declaim (ftype (function (history-tree t) owner-header) set-current-owner))
 (defun set-current-owner (history owner)
+  "OWNER is arbitrary data representing an owner, it's not a `owner-header' object."
   (let ((header (gethash owner (owners history))))
     (unless header
       (setf (gethash owner (owners history)) (make-instance 'owner-header)))
