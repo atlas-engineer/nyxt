@@ -270,7 +270,6 @@ Such contexts are not needed for internal buffers."
   (window-delete window))
 
 (define-ffi-method ffi-window-delete ((window gtk-window))
-  "Delete a window object and remove it from the hash of windows."
   (gtk:gtk-widget-destroy (gtk-object window)))
 
 (define-ffi-method ffi-window-fullscreen ((window gtk-window))
