@@ -3,6 +3,13 @@
 
 (in-package :history-tree)
 
+;; TODO: Unexport most (all?) slot writers.
+
+(defmacro export-always (symbols &optional (package nil package-supplied?)) ; From serapeum.
+  "Like `export', but also evaluated at compile time."
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (export ,symbols ,@(and package-supplied? (list package)))))
+
 (define-class node ()
   ((parent nil
            :type (or null node))
@@ -139,47 +146,53 @@ Return (values HISTORY NODE) so that calls to `visit' can be chained."
 (deftype positive-integer ()
   `(integer 1 ,most-positive-fixnum))
 
-(deftype non-negative-integer ()        ; TODO: Remove if unused.
+(deftype non-negative-integer ()
   `(integer 0 ,most-positive-fixnum))
 
-
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'back))
-;; TODO: Can we set ftype for methods return value?
-;; (declaim (ftype (function (history-tree &optional positive-integer))
-;;                 back))
-(defmethod back ((history history-tree) &optional (count 1))
-  "Go COUNT parent up from the current node.
-Return (VALUES HISTORY (CURRENT HISTORY)) so that `back' and `forward' calls can
+(export-always 'back)
+(defmethod back ((owner owner) &optional (count 1))
+  "Go COUNT parent up from the current OWNER node.
+Return (values OWNER (current OWNER)) so that `back' and `forward' calls can
 be chained."
-  (when (and (current history)
+  (check-type count 'positive-integer)
+  (when (and (current owner)
              (parent (current history)))
-    ;; Put former current node back in first position if it is not already
-    ;; there, e.g. if current node was set manually.
-    (let ((former-current (current history)))
-      (setf (current history) (parent (current history)))
-      (setf (children (current history))
-            (cons former-current
-                  (delete former-current (children (current history))))))
+    (let ((former-current (current owner)))
+      (visit owner (parent (current owner)))
+      ;; Put former current node back as forward-child if it is not already
+      ;; the case, e.g. if current node was set manually.
+      (setf (forward-child (current-binding owner))
+            former-current))
     (when (< 1 count)
-      (back history (1- count))))
-  (values history (current history)))
+      (back owner (1- count))))
+  (values owner (current owner)))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'forward))
-;; (declaim (ftype (function (history-tree &optional positive-integer))
-;;                 forward))
-(defmethod forward ((history history-tree) &optional (count 1))
-  "Go COUNT first-children down from the current node.
-Return (VALUES HISTORY (CURRENT HISTORY)) so that `back', `forward', and
+(defmethod back ((history history-tree) &optional (count 1))
+  "Go COUNT parent up from the current owner node.
+Return (VALUES HISTORY CURRENT-NODE) so that `back' and `forward' calls can
+be chained."
+  (when (current-owner history)
+    (values history (nth-value 1 (back (current-owner history) count)))))
+
+(export-always 'forward)
+(defmethod forward ((owner owner) &optional (count 1))
+  "Go COUNT first-children down from the current OWNER node.
+Return (values OWNER (CURRENT OWNER)) so that `back', `forward' and
 `go-to-child' calls can be chained."
-  (when (and (current history)
-             (children (current history)))
-    (setf (current history) (first (children (current history))))
+  (check-type count 'positive-integer)
+  (when (and (current owner)
+             (children (current owner)))
+    (visit (forward-child (current-binding owner)))
     (when (< 1 count)
-      (forward history (1- count))))
-  (values history (current history)))
+      (forward owner (1- count))))
+  (values owner (current owner)))
+
+(defmethod forward ((history history-tree) &optional (count 1))
+  "Go COUNT first-children down from the current owner node.
+Return (values HISTORY CURRENT-NODE)) so that `back', `forward', and
+`go-to-child' calls can be chained."
+  (when (current-owner history)
+    (values history (nth-value 1) (forward (current-owner history) count))))
 
 
 
@@ -216,36 +229,45 @@ Test is done with the TEST argument."
                        (children (current history))))
       matching-node)))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'add-child))
-(defmethod add-child (data (history history-tree) &key (test #'equal))
+(export-always 'add-child)
+(defmethod add-child (data (header owner-header) &key (test #'equal) creator)
   "Create or find a node holding DATA and set current node to it.
 Return (possibly new) current node.
 
 If current node matches DATA (according to TEST), then we update its data to
 DATA (since the TEST function does not necessarily mean the data is identical).
 
-If DATA is found among the children (according to TEST), the child is moved
-first among the children, its data is set to DATA and the current node is set to
-this child.
+If DATA is found among the children (according to TEST), the HEADER
+`forward-child' is set to the matching child, the child data is set to DATA and
+the HEADER current node is set to this child.
 
-If there is no current element, this creates the first element of the tree."
+If there is no current element, this creates the first element of the tree.
+If CREATOR is provided, set the `creator' slot of HEADER."
   (cond
-    ((null (current history))
+    ((null (current header))
      (let ((new-node (make-node :data data)))
-       (setf (root history) new-node)
-       (setf (current history) (root history))))
-    ((not (funcall test data (data (current history))))
-     (let ((node (delete-child data history :test test)))
-       (push (or (when node
-                   (setf (data node) data)
-                   node)
-                 (make-node :data data :parent (current history)))
-             (children (current history)))
+       (setf (origin header) new-node
+             (creator header) creator)
+       (visit header new-node)))
+    ((not (funcall test data (data (current header))))
+     (let ((node (delete-child data header :test test)))
+       (if node
+           (setf (data node) data)
+           (push (setf node (make-node :data data :parent (current header)))
+                 (children (current header))))
+       ;; TODO: Need to get OWNER.
+       (let ((binding (gethash owner (bindings (current header)))))
+         (setf (forward-child binding) node))
        (forward history)))
     (t
-     (setf (data (current history)) data)))
-  (current history))
+     (setf (data (current header)) data)))
+  (current header))
+
+(defmethod add-child (data (history history-tree) &key (test #'equal))
+  "Like `add-child' for `owner-header'.
+Return (possibly new) current node."
+  ;; TODO: Implement.
+  (current-owner-node history))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'add-children))
