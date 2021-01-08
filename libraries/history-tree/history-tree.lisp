@@ -505,6 +505,53 @@ First child comes first."
   (mapcar #'data (children-nodes history)))
 
 
+(defun first-hash-table-value (hash-table)
+  (with-hash-table-iterator (next-entry hash-table)
+    (nth-value 2 (next-entry))))
+
+(declaim (ftype (function (history-tree t) owner) delete-owner))
+(defun delete-owner (history owner-identifier)
+  "Return owner, or nil if there is no owner corresponding to OWNER-IDENTIFIER."
+  (let ((owner (owner owner-identifier history)))
+    (remhash owner-identifier (owners history))
+    (when (eq owner (current-owner history))
+      (setf (current-owner history)
+            (first-hash-table-value (owners history))))
+    (when owner
+      (mapc
+       (lambda (node)
+         (disown owner node))
+       (nodes owner)))
+    ;; TODO: Garbage-collect nodes where no recursive children has any owner.
+    ;; What should we do with them?  Store them in a stash in `history-tree'.
+    ;; If all nodes are always stored in this stash, then it's enough to just
+    ;; unbind the first top node without owned child.
+    ;;
+    ;; Or maybe we don't garbage-collect anything on owner deletion.
+    ;;
+    ;; The stash can NOT give us a convenient way to access all the unique node
+    ;; data, because the bindings allow 2 nodes with the same data to coexist in a set.
+    ;; Solution: node's `data' should be a class with 2 slots: `payload' and `nodes'.
+    ;; Then the `data' can be held in the stash only.
+    ;;
+    ;; We need to add a function to cleanup the stash.
+    ;; - If it has only disowned nodes _not in the tree_, easy.
+    ;; - If it has disowned nodes in the tree, we need to unbind all these nodes.
+    ;;   This problem does not exist with the alternative mentioned below.
+    ;; - It it has owned nodes, we need to disown them first.
+    ;;
+    ;; Function to cleanup the nodes owned by an owner?  Add 1 function to disown all
+    ;; nodes but the current nodes.  This can also be done node-by-node.  If
+    ;; done on current node, go to parent or child, and if there is none, remove
+    ;; owner.
+    ;;
+    ;; The drawback of the above is that it gets hard for the user to delete
+    ;; disowned nodes.
+    ;;
+    ;; Alternative: Browse the nodes of the deleted owner, unbind each disowned
+    ;; node, and for every owned node that has a disowned parent, rebind it to
+    ;; the root.  We lose more information this way, but it's easier.
+    owner))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'find-node))
