@@ -80,6 +80,22 @@ It's updated every time a node is visited.")
                (not (gethash owner (bindings child))))
              (children owner)))
 
+(defun owned-parent (owner)
+  "Return OWNER's parent if it's owned, nil otherwise."
+  (let ((parent (parent (current owner))))
+    (when (gethash owner (bindings parent))
+      parent)))
+
+(declaim (ftype (function (owner) binding) current-binding))
+(defun current-binding (owner)
+  (and (current owner)
+       (gethash owner (bindings (current owner)))))
+
+(declaim (ftype (function (owner node) (or null binding)) owned-p))
+(defun owned-p (owner node)
+  (and (bindings node)
+       (gethash owner (bindings node))))
+
 (define-class history-tree ()
   ((root nil
          :type (or null node)
@@ -120,11 +136,6 @@ the value is an `owner'.")
 (defun current-owner-node (history)
   (and (current-owner history)
        (current (current-owner history))))
-
-(declaim (ftype (function (owner) binding) current-binding))
-(defun current-binding (owner)
-  (and (current owner)
-       (gethash owner (bindings (current owner)))))
 
 ;; TODO: Add `gethash*' to set default value when not found?
 
