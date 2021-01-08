@@ -5,6 +5,7 @@
 
 ;; TODO: Unexport most (all?) slot writers.
 ;; TODO: Review docstrings.
+;; TODO: Is "Shared history tree" a better name than "Global history tree"?
 
 (defmacro export-always (symbols &optional (package nil package-supplied?)) ; From serapeum.
   "Like `export', but also evaluated at compile time."
@@ -96,6 +97,12 @@ It's updated every time a node is visited.")
 (defun owned-p (owner node)
   (and (bindings node)
        (gethash owner (bindings node))))
+
+(declaim (ftype (function (owner node) boolean) disown))
+(defun disown (owner node)
+  "Remove binding between OWNER and NODE.
+Return true if NODE was owned by OWNER, false otherwise."
+  (remhash owner (bindings node)))
 
 (define-class history-tree ()
   ((root nil
