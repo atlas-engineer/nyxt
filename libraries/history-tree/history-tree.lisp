@@ -4,6 +4,7 @@
 (in-package :history-tree)
 
 ;; TODO: Unexport most (all?) slot writers.
+;; TODO: Review docstrings.
 
 (defmacro export-always (symbols &optional (package nil package-supplied?)) ; From serapeum.
   "Like `export', but also evaluated at compile time."
@@ -379,62 +380,98 @@ Always return nil, as it is an explicitly imperative macro."
      nil))
 
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'node-children))
-(defun node-children (node)
+
+(export-always 'all-children)
+(defmethod all-children ((node node))
   "Return a list of all the children of the NODE, recursively."
   (map-tree #'identity node :flatten t))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'node-parents))
-(defun node-parents (node)
+(defmethod all-children ((owner owner))
+  "Return a list of all the children of OWNER, recursively."
+  (all-children (current owner)))
+
+(defmethod all-children ((history history-tree))
+  "Return a list of all the children of HISTORY's current owner, recursively."
+  (when (current-owner history)
+    (all-children (current-owner-node history))))
+
+(export-always 'all-owned-children)
+(defmethod all-owned-children ((owner owner))
+  "Return a list of all the children owned by OWNER, recursively."
+  (map-tree #'identity (current owner) :flatten t
+                                       :children-function #'owned-children))
+
+(defmethod all-owned-children ((history history))
+  "Return a list of all the children owned by HISTORY's current owner,
+recursively."
+  (when (current-owner history)
+    (all-owned-children (current-owner history))))
+
+(export-always 'all-parents)
+(defmethod all-parents ((node node))
   "Return a list of parents of NODE, recursively.
 First parent comes first in the resulting list."
-  (when node
-    (cons node
-          (node-parents (parent node)))))
+  (when (parent node)
+    (cons (parent node)
+          (all-parents (parent node)))))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'node-forward-children))
-(defun node-forward-children (node)
-  "Return a list of the first children of NODE, recursively.
-First child comes first in the resulting list."
-  (when node
-    (cons node
-          (node-forward-children (first (children node))))))
+(defmethod all-parents ((owner owner))
+  "Return a list of parents of OWNER current node, recursively.
+First parent comes first in the resulting list."
+  (when (current owner)
+    (all-parents (current owner))))
 
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'parent-nodes))
-(defmethod parent-nodes ((history history-tree))
+(defmethod all-parents ((history history-tree))
   "Return a list of all parents of the current node.
 First parent comes first in the resulting list."
-  (when (current history)
-    (node-parents (parent (current history)))))
+  (when (current-owner history)
+    (all-parents (current-owner-node history))))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'forward-children-nodes))
-(defmethod forward-children-nodes ((history history-tree))
-  "Return a list of the first children of the current node, recursively.
+(export-always 'all-owned-parents)
+(defmethod all-owned-parents ((owner owner))
+  "Return a list of parents of owned by OWNER, starting from its current node,
+recursively.
+First parent comes first in the resulting list."
+  (when (and (parent owner)
+             (owned-p owned (parent owner)))
+    (cons (parent owner)
+          (all-owned-parents (current owner)))))
+
+(defmethod all-owned-parents ((history history))
+  "Return a list of parents of owned by HISTORY current owner, starting from its
+current node, recursively.  First parent comes first in the resulting list."
+  (when (current-owner history)
+    (all-owned-parents (current-owner history))))
+
+(export-always 'all-forward-children)
+(defmethod all-forward-children ((owner owner))
+  "Return a list of the first children of OWNER, recursively.
 First child comes first in the resulting list."
-  (when (current history)
-    (node-forward-children (first (children (current history))))))
+  (when (and (current-binding owner)
+             (forward-child (current-binding owner)))
+    (cons (forward-child (current-binding owner))
+          (all-forward-children (forward-child (current-binding owner))))))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'children-nodes))
-(defmethod children-nodes ((history history-tree))
-  "Return a list of all the children of the current node.
-The nodes come in depth-first order."
-  (when (current history)
-    (node-children (current history))))
+(defmethod all-forward-children ((history history))
+  "Return a list of the first children of NODE, recursively.
+First child comes first in the resulting list."
+  (when (current-owner history)
+    (all-forward-children (current-owner history))))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'all-nodes))
+(export 'all-nodes)
 (defmethod all-nodes ((history history-tree))
   "Return a list of all nodes, in depth-first order."
   (let ((root (root history)))
     (when root
-      (cons root (node-children root)))))
+      (cons root (all-children root)))))
+
+(export 'all-owned-nodes)
+(defmethod all-owned-nodes ((owner owner))
+  "Return a list of all owner nodes, in depth-first order."
+  (let ((owner-root (first (all-owned-parents owner))))
+    (when owner-root
+      (cons owner-root (all-owned-children owner-root)))))
+
 
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
