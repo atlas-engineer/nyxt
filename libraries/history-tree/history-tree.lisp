@@ -9,7 +9,7 @@
    (children '()
              :documentation "List of nodes.")
    (bindings (make-hash-table)
-             :documentation "The key is an owner, the value is a
+             :documentation "The key is an `owner', the value is a
 `binding'.  This slot also allows us to know to which owner a node belongs.")
    (data nil
          :type t
@@ -36,7 +36,8 @@ owner."))
   (:accessor-name-transformer #'class*:name-identity)
   (:documentation "The relationship between an owner and the current node."))
 
-(define-class owner-header ()
+(define-class owner ()
+  ;; TODO: Add slot pointing to history an owner belongs to?
   ((origin nil ; TODO: Rename to `root'?  Not to be confused with the htree root, but maybe it's convenient to have the same method name.
            :type (or null node)
            :documentation "The first node created for this owner.")
@@ -45,7 +46,7 @@ owner."))
             :documentation "The owner in `origin's parent node that created this owner.
 Unless the parent was disowned by this `creator',
 
-  (gethash CREATOR (bindings (origin HEADER)))
+  (gethash CREATOR (bindings (origin OWNER)))
 
 should return non-nil.")
    (current nil
@@ -61,10 +62,10 @@ It's updated every time a node is visited.")
   (:accessor-name-transformer #'class*:name-identity)
   (:documentation "The high-level information about an owner."))
 
-(defmethod (setf current) (value (header owner-header))
+(defmethod (setf current) (value (owner owner))
   (if value
-      (setf (slot-value header 'current) value)
-      (error "Attempted to set current node to NIL for owner header ~a." header)))
+      (setf (slot-value owner 'current) value)
+      (error "Attempted to set current node to NIL for owner ~a." owner)))
 
 (define-class history-tree ()
   ((root nil
@@ -73,10 +74,11 @@ It's updated every time a node is visited.")
 It only changes when deleted.")
    (owners (make-hash-table)
            :type hash-table
-           :documentation "The key is an owner, the value is an `owner-header'.")
-   (current-owner-header nil
-                         :type t
-                         :documentation "Must be one of the `owners' values."))
+           :documentation "The key is an owner identifier (an artitrary balue),
+the value is an `owner'.")
+   (current-owner nil
+                  :type t
+                  :documentation "Must be one of the `owners' values."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)
@@ -85,21 +87,56 @@ It only changes when deleted.")
 (defun make ()
   (make-instance 'history-tree))
 
-(declaim (ftype (function (history-tree t) owner-header) set-current-owner))
-(defun set-current-owner (history owner)
-  "OWNER is arbitrary data representing an owner, it's not a `owner-header' object."
-  (let ((header (gethash owner (owners history))))
-    (unless header
-      (setf (gethash owner (owners history)) (make-instance 'owner-header)))
-    (setf (current-owner-header history)
-          (gethash owner (owners history)))))
+(export-always 'owner)
+(defun owner (history owner-identifier)
+  "Return the `owner' object identified by OWNER-IDENTIFIER in HISTORY."
+  (gethash owner-identifier (owners history)))
 
+(export-always 'set-current-owner)
+(declaim (ftype (function (history-tree t) owner) set-current-owner))
+(defun set-current-owner (history owner-identifier)
+  "OWNER-IDENTIFIER is arbitrary data representing an `owner'."
+  (let ((owner (owner history owner-identifier)))
+    (unless owner
+      (setf owner
+            (setf (gethash owner-identifier (owners history)) (make-instance 'owner))))
+    (setf (current-owner history) owner)))
+
+(export-always 'current-owner-node)
 (declaim (ftype (function (history-tree) node) current-owner-node))
 (defun current-owner-node (history)
-  (and (current-owner-header history)
-       (current (current-owner-header history))))
+  (and (current-owner history)
+       (current (current-owner history))))
 
-(deftype positive-integer ()            ; TODO: Remove if unused.
+(declaim (ftype (function (owner) binding) current-binding))
+(defun current-binding (owner)
+  (and (current owner)
+       (gethash owner (bindings (current owner)))))
+
+;; TODO: Add `gethash*' to set default value when not found?
+
+(defmethod visit ((owner owner) node)
+  "Return (values HEADER NODE) so that calls to `visit' can be chained."
+  (setf (gethash node (nodes owner)) t)
+  (setf (owner current) node)
+  (let ((binding (gethash owner (bindings node))))
+    (if binding
+        (setf (last-access binding) (local-time:now))
+        (setf (gethash owner (bindings node))
+              (make-instance 'binding))))
+  ;; TODO: If node is among the children, should we set all the forward children
+  ;; to ensure that calling `forward` from CURRENT would lead to NODE?
+  ;; What if there is no path owned by OWNER?
+  (values owner node))
+
+(defmethod visit ((history history-tree) node)
+  "Visit NODE with HISTORY's current owner.
+Return (values HISTORY NODE) so that calls to `visit' can be chained."
+  (values history
+          (when (current-owner history)
+            (nth-value 1 (back (current-owner history))))))
+
+(deftype positive-integer ()
   `(integer 1 ,most-positive-fixnum))
 
 (deftype non-negative-integer ()        ; TODO: Remove if unused.
