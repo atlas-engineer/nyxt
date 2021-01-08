@@ -337,7 +337,9 @@ Return nil if there is no `current-owner'."
     (add-children children-data (current-owner history) :test test)))
 
 (export-always 'map-tree)
-(defun map-tree (function tree &key flatten include-root (collect-function #'cons)) ; TODO: Edit?  Unexport?
+(defun map-tree (function tree &key flatten include-root ; TODO: Edit?  Unexport?
+                                 (collect-function #'cons)
+                                 children-function #'children)
   "Map the FUNCTION over the TREE.
 If TREE is a `htree:history-tree', start from it's root.
 If TREE is a `htree:node', start from it.
@@ -354,7 +356,7 @@ current node to the result of further traversal."
                (collect (funcall function node)
                  ;; This lambda is here because (apply #'identity ...) fails on empty arglist.
                  (apply (if flatten #'append #'(lambda (&rest args) args))
-                        (mapcar #'traverse (children node)))))))
+                        (mapcar #'traverse (funcall children-function node)))))))
     (let ((root (typecase tree
                   (htree:node tree)
                   (htree:history-tree (htree:root tree)))))
