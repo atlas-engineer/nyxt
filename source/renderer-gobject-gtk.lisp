@@ -231,15 +231,6 @@ See `gobject-gtk-browser's `modifier-translator' slot."
           (push modifier modifiers))))
     modifiers))
 
-;; (defun key-event-modifiers (key-event)
-;;   (gdk:gdk-event-key-state key-event))
-
-;; (defun button-event-modifiers (button-event)
-;;   (gdk-event-button-state button-event))
-
-;; (defun scroll-event-modifiers (scroll-event)
-;;   (gdk:gdk-event-scroll-state scroll-event))
-
 (defmethod printable-p ((window gobject-gtk-window) event)
   "Return the printable value of EVENT."
   ;; Generate the result of the current keypress into a dummy
