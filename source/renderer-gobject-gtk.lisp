@@ -508,9 +508,8 @@ See `gobject-gtk-browser's `modifier-translator' slot."
 ;; (define-ffi-method ffi-window-get-status-buffer-height ((window gobject-gtk-window))
 ;;   (nth-value 1 (gobject-gtk:gobject-gtk-widget-size-request (status-container window))))
 
-;; (define-ffi-method ffi-window-set-status-buffer-height ((window gobject-gtk-window) height)
-;;   (setf (gobject-gtk:gobject-gtk-widget-size-request (status-container window))
-;;         (list -1 height)))
+(define-ffi-method ffi-window-set-status-buffer-height ((window gobject-gtk-window) height)
+  (gir:invoke ((status-container window) 'set-size-request) -1 height))
 
 ;; (define-ffi-method ffi-window-get-message-buffer-height ((window gobject-gtk-window))
 ;;   (nth-value 1 (gobject-gtk:gobject-gtk-widget-size-request (message-container window))))
