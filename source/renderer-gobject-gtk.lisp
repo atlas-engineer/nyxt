@@ -5,7 +5,7 @@
 
 (define-class gobject-gtk-browser ()
   ((modifier-translator
-    #'translate-modifiers
+    'translate-modifiers
     :documentation "Function that returns a list of modifiers
 understood by `keymap:make-key'.")
    (gir-gtk (gir:ffi "Gtk"))
@@ -227,12 +227,15 @@ Return nil when key must be discarded, e.g. for modifiers."
   "Return list of modifiers fit for `keymap:make-key'.
 See `gobject-gtk-browser's `modifier-translator' slot."
   (declare (ignore event))
-  (let ((plist '(:control-mask "control"
-                 :mod1-mask "meta"
-                 :shift-mask "shift"
-                 :super-mask "super"
-                 :hyper-mask "hyper")))
-    (delete nil (mapcar (lambda (mod) (getf plist mod)) modifier-state))))
+  (let ((modifiers (list)))
+    (dolist (mdef '((#b1    :shift)
+                    (#b100  :ctrl)
+                    (#b1000 :alt)))
+      (destructuring-bind (int modifier)
+          mdef
+        (unless (zerop (logand int modifier-state))
+          (push modifier modifiers))))
+    modifiers))
 
 ;; (defun key-event-modifiers (key-event)
 ;;   (gdk:gdk-event-key-state key-event))
@@ -262,31 +265,25 @@ See `gobject-gtk-browser's `modifier-translator' slot."
          (keycode (gir:field event "hardware_keycode"))
          (keyval (gir:field event "keyval"))
          (keyval-name (gir:invoke ((gir-gdk *browser*) 'keyval-name) keyval))
-         ;; character is sometimes an integer...?
-         (character (gir:invoke ((gir-gdk *browser*) 'keyval-to-unicode) keyval))
+         (character (code-char (gir:invoke ((gir-gdk *browser*) 'keyval-to-unicode) keyval)))
          (printable-value (printable-p sender event))
-         ;; (key-string (or printable-value
-         ;;                 (derive-key-string keyval-name character)))
-         ;; (modifiers (funcall (modifier-translator *browser*)
-         ;;                     (key-event-modifiers event)
-         ;;                     event))
-         )
-    (print character)
-
-    ;; (if modifiers
-    ;;     (log:debug key-string keycode character keyval-name modifiers)
-    ;;     (log:debug key-string keycode character keyval-name))
-    ;; (if key-string
-    ;;     (progn
-    ;;       (alex:appendf (key-stack sender)
-    ;;                     (list (keymap:make-key :code keycode
-    ;;                                            :value key-string
-    ;;                                            :modifiers modifiers
-    ;;                                            :status :pressed)))
-    ;;       (funcall (input-dispatcher sender) event (active-buffer sender) sender printable-value))
-    ;;     ;; Do not forward modifier-only to renderer.
-    ;;     t)
-    ))
+         (key-string (or printable-value
+                         (derive-key-string keyval-name character)))
+         (modifiers (funcall (modifier-translator *browser*)
+                             (gir:field event "state")
+                             event)))
+    (if modifiers
+        (log:debug key-string keycode character keyval-name modifiers)
+        (log:debug key-string keycode character keyval-name))
+    (if key-string
+        (progn
+          (alex:appendf (key-stack sender)
+                        (list (keymap:make-key :code keycode
+                                               :value key-string
+                                               :modifiers modifiers
+                                               :status :pressed)))
+          (funcall (input-dispatcher sender) event (active-buffer sender) sender printable-value))
+        t)))
 
 (define-ffi-method on-signal-key-release-event ((sender gobject-gtk-window) event)
   "Don't handle key release events."
