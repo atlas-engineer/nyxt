@@ -7,6 +7,8 @@
 ;; TODO: Review docstrings.
 ;; TODO: Is "Shared history tree" a better name than "Global history tree"?
 
+;; TODO: Add forward and back functions to unowned nodes.
+
 (defmacro export-always (symbols &optional (package nil package-supplied?)) ; From serapeum.
   "Like `export', but also evaluated at compile time."
   `(eval-when (:compile-toplevel :load-toplevel :execute)
@@ -50,7 +52,10 @@ owner."))
   ((origin nil ; TODO: Rename to `root'?  Not to be confused with the htree root, but maybe it's convenient to have the same method name.
            :type (or null node)
            :documentation "The first node created for this owner.")
-   (creator nil
+   (creator nil                         ; TODO: Should it be an `owner' or an
+                                        ; identifier?  An identifier would allow
+                                        ; us to keep this information even afer
+                                        ; the creator `owner' is deleted.
             :type t
             :documentation "The owner in `origin's parent node that created this owner.
 Unless the parent was disowned by this `creator',
@@ -534,6 +539,8 @@ First child comes first."
     ;; Solution: node's `data' should be a class with 2 slots: `payload' and `nodes'.
     ;; Then the `data' can be held in the stash only.
     ;;
+    ;; Stash should use (make-hash-table :test 'equalp)
+    ;;
     ;; We need to add a function to cleanup the stash.
     ;; - If it has only disowned nodes _not in the tree_, easy.
     ;; - If it has disowned nodes in the tree, we need to unbind all these nodes.
@@ -549,7 +556,7 @@ First child comes first."
     ;; disowned nodes.
     ;;
     ;; Alternative: Browse the nodes of the deleted owner, unbind each disowned
-    ;; node, and for every owned node that has a disowned parent, rebind it to
+    ;; node, and for every (child) owned node that has a disowned parent, rebind it to
     ;; the root.  We lose more information this way, but it's easier.
     owner))
 
