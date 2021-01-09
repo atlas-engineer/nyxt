@@ -144,6 +144,7 @@
        ("cl-chanl" ,sbcl-chanl)
        ("cl-containers" ,sbcl-cl-containers)
        ("cl-css" ,sbcl-cl-css)
+       ("cl-custom-hash-table" ,sbcl-custom-hash-table)
        ("cl-json" ,sbcl-cl-json)
        ("cl-markup" ,sbcl-cl-markup)
        ("cl-ppcre" ,sbcl-cl-ppcre)

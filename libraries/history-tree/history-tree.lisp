@@ -22,6 +22,19 @@
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (export ,symbols ,@(and package-supplied? (list package)))))
 
+(define-class entry ()
+  ((key nil
+        :type (or null function)
+        :documentation "Function call over `value', the result is `equalp'ed to
+identify the data uniquely.")
+   (value nil
+          :type t
+          :documentation "List of nodes."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity)
+  (:documentation "Wrapped data as stored in `history-tree''s `entries'."))
+
 (define-class node ()
   ((parent nil
            :type (or null node))
@@ -30,9 +43,11 @@
    (bindings (make-hash-table)
              :documentation "The key is an `owner', the value is a
 `binding'.  This slot also allows us to know to which owner a node belongs.")
-   (data nil
-         :type t
-         :documentation "Arbitrary data carried by the node."))
+   (entry nil
+          :type entry
+          :documentation "Arbitrary data carried by the node.  This entry is
+mirrored as a key in `history-tree''s `entries' slot, and the node is added to
+the value list."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)
@@ -75,10 +90,7 @@ should return non-nil.")
             :type (or null node)
             :initform nil
             :documentation "The current node.
-It's updated every time a node is visited.")
-   (nodes (make-hash-table)
-          :type hash-table
-          :documentation "The set of all unique nodes visited by an owner."))
+It's updated every time a node is visited."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)
@@ -117,6 +129,45 @@ It's updated every time a node is visited.")
 Return true if NODE was owned by OWNER, false otherwise."
   (remhash owner (bindings node)))
 
+(defun entry-equal-p (a b)
+  (if (key a)
+      (equalp (funcall (key a) (value a))
+              (funcall (key b) (value b)))
+      (equalp (value a)
+              (value b))))
+
+(defun entry-equal-data-p (entry data)
+  (if (key entry)
+      (equalp (funcall (key entry) (value entry))
+              (funcall (key entry) data))
+      (equalp (value entry)
+              data)))
+
+(defun entry-hash (a)
+  (if (key a)
+      (sxhash (funcall (key a) (value a)))
+      (sxhash (value a))))
+
+(cl-custom-hash-table:define-custom-hash-table-constructor make-entry-hash-table
+  :test entry-equal-p
+  :hash-function entry-hash)
+
+(defun add-entry (history data)
+  "Add DATA to an `entry' in HISTORY `entries'.
+If DATA is already there, reset the `entry' value to DATA anyways.
+Return the new or existing `entry'."
+  (cl-custom-hash-table:with-custom-hash-table
+    (let ((new-entry (make-instance 'entry :value data :key (entry-key history))))
+      (multiple-value-bind (existing-entry found?)
+          (gethash new-entry (entries history))
+        (if found?
+            (progn
+              (setf (value existing-entry data))
+              existing-entry)
+            (progn
+              (setf (gethash new-entry) '())
+              new-entry))))))
+
 (define-class history-tree ()
   ((root nil
          :type (or null node)
@@ -128,7 +179,15 @@ It only changes when deleted.")
 the value is an `owner'.")
    (current-owner nil
                   :type t
-                  :documentation "Must be one of the `owners' values."))
+                  :documentation "Must be one of the `owners' values.")
+   (entries (make-entry-hash-table)
+            :type hash-table
+            :documentation "The key is an `entry', the value is the list of
+nodes that hold this data.")
+   ;; TODO: Add `hash-function' and `test'.
+   (entry-key nil                       ; TODO: Rename to `key'?
+              :type (or null function)
+              :documentation "The function used to access entries.")) ; TODO: Clarify this docstring.
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)
@@ -160,26 +219,23 @@ the value is an `owner'.")
 
 ;; TODO: Add `gethash*' to set default value when not found?
 
-(defmethod visit ((owner owner) node)
-  "Return (values HEADER NODE) so that calls to `visit' can be chained."
-  (setf (gethash node (nodes owner)) t)
-  (setf (owner current) node)
-  (let ((binding (gethash owner (bindings node))))
-    (if binding
-        (setf (last-access binding) (local-time:now))
-        (setf (gethash owner (bindings node))
-              (make-instance 'binding))))
-  ;; TODO: If node is among the children, should we set all the forward children
-  ;; to ensure that calling `forward` from CURRENT would lead to NODE?
-  ;; What if there is no path owned by OWNER?
-  (values owner node))
-
 (defmethod visit ((history history-tree) node)
   "Visit NODE with HISTORY's current owner.
 Return (values HISTORY NODE) so that calls to `visit' can be chained."
-  (values history
-          (when (current-owner history)
-            (nth-value 1 (back (current-owner history))))))
+  (let ((owner (owner history)))
+    (setf (gethash node (nodes owner)) t)
+    (setf (owner current) node)
+    (let ((binding (gethash owner (bindings node))))
+      (if binding
+          (setf (last-access binding) (local-time:now))
+          (setf (gethash owner (bindings node))
+                (make-instance 'binding))))
+    (cl-custom-hash-table:with-custom-hash-table
+      (pushnew owner (gethash (entry node) (entries history))))
+    ;; TODO: If node is among the children, should we set all the forward children
+    ;; to ensure that calling `forward` from CURRENT would lead to NODE?
+    ;; What if there is no path owned by OWNER?
+    (values history node)))
 
 (deftype positive-integer ()
   `(integer 1 ,most-positive-fixnum))
@@ -296,43 +352,42 @@ Return (values OWNER (current OWNER))."
 ;;       matching-node)))
 
 (export-always 'add-child)
-(defmethod add-child (data (owner owner) &key (test #'equal) creator)
+(defmethod add-child (data (history history-tree) &key creator)
   "Create or find a node holding DATA and set current node to it.
 Return the (possibly new) current node.
 
-If current node matches DATA (according to TEST), then we update its data to
-DATA (since the TEST function does not necessarily mean the data is identical).
+If current node matches DATA, then we update its data to DATA (since the
+`history-tree''s `entry-key' function does not necessarily mean the data is
+identical).
 
-If DATA is found among the children (according to TEST), the OWNER
-`forward-child' is set to the matching child, the child data is set to DATA and
-the OWNER current node is set to this child.
+If DATA is found among the children, the OWNER `forward-child' is set to the
+matching child, the child data is set to DATA and the OWNER current node is set
+to this child.
 
 If there is no current element, this creates the first element of the tree.
 If CREATOR is provided, set the `creator' slot of OWNER."
-  (cond
-    ((null (current owner))
-     (let ((new-node (make-node :data data)))
-       (setf (origin owner) new-node
-             (creator owner) creator)
-       (visit owner new-node)))
-    ((not (funcall test data (data (current owner))))
-     (let ((node (find-child data owner :test test)))
-       (if node
-           (setf (data node) data)
-           (push (setf node (make-node :data data :parent (current owner)))
-                 (children (current owner))))
-       (let ((binding (gethash owner (bindings (current owner)))))
-         (setf (forward-child binding) node))
-       (forward history)))
-    (t
-     (setf (data (current owner)) data)))
-  (current owner))
-
-(defmethod add-child (data (history history-tree) &key (test #'equal))
-  "Like `add-child' for the current `owner'.
-Return (possibly new) current node, or nil if there is no current owner."
-  (when (current-owner history)
-    (add-child data (current-owner history) :test test)))
+  (let ((owner (owner history)))
+    (cond
+      ((null (current owner))
+       (let ((new-node (make-node :data data)))
+         (setf (origin owner) new-node
+               (creator owner) creator)
+         (visit owner new-node)))
+      ((not (entry-equal-data-p (entry (current owner)) data))
+       (let ((key (entry (current owner)))
+             (node (find-child data owner)))
+         (if node
+             (setf (value (entry node)) data)
+             (let ((maybe-new-entry (add-entries history data)))
+               (push (setf node (make-node :entry maybe-new-entry
+                                           :parent (current owner)))
+                     (children (current owner)))))
+         (let ((binding (gethash owner (bindings (current owner)))))
+           (setf (forward-child binding) node))
+         (forward history)))
+      (t
+       (setf (value (entry node)) data)))
+    (current owner)))
 
 (export 'add-children)
 (defmethod add-children (children-data (owner owner) &key (test #'equal))
