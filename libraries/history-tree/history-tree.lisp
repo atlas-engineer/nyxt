@@ -53,8 +53,8 @@ the value list."))
   (:accessor-name-transformer #'class*:name-identity)
   (:documentation "Internal node of the history tree."))
 
-(defun make-node (&key data parent)
-  (make-instance 'node :data data :parent parent))
+(defun make-node (&key data parent entry) ; TODO: Useless?
+  (make-instance 'node :data data :parent parent :entry entry))
 
 (define-class binding ()
   ((forward-child  nil
@@ -88,9 +88,11 @@ Unless the parent was disowned by this `creator',
 should return non-nil.")
    (current nil
             :type (or null node)
-            :initform nil
             :documentation "The current node.
-It's updated every time a node is visited."))
+It's updated every time a node is visited.")
+   (nodes '()
+          :type (or null (cons node))
+          :documentation "The list of owned nodes."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)
@@ -113,10 +115,11 @@ It's updated every time a node is visited."))
     (when (gethash owner (bindings parent))
       parent)))
 
-(declaim (ftype (function (owner) binding) current-binding))
+(declaim (ftype (function (owner) (or null binding)) current-binding))
 (defun current-binding (owner)
   (and (current owner)
-       (gethash owner (bindings (current owner)))))
+       (the binding
+            (gethash owner (bindings (current owner))))))
 
 (declaim (ftype (function (owner node) (or null binding)) owned-p))
 (defun owned-p (owner node)
@@ -136,7 +139,7 @@ Return true if NODE was owned by OWNER, false otherwise."
       (equalp (value a)
               (value b))))
 
-(defun entry-equal-data-p (entry data)
+(defun data-equal-entry-p (data entry)
   (if (key entry)
       (equalp (funcall (key entry) (value entry))
               (funcall (key entry) data))
@@ -162,13 +165,13 @@ Return the new or existing `entry'."
           (gethash new-entry (entries history))
         (if found?
             (progn
-              (setf (value existing-entry data))
+              (setf (value existing-entry) data)
               existing-entry)
             (progn
-              (setf (gethash new-entry) '())
+              (setf (gethash new-entry (entries history)) '())
               new-entry))))))
 
-(define-class history-tree ()
+(define-class history-tree ()           ; TODO: Rename `history'?
   ((root nil
          :type (or null node)
          :documentation "The root node.
@@ -178,7 +181,7 @@ It only changes when deleted.")
            :documentation "The key is an owner identifier (an artitrary balue),
 the value is an `owner'.")
    (current-owner nil
-                  :type t
+                  :type (or null owner)
                   :documentation "Must be one of the `owners' values.")
    (entries (make-entry-hash-table)
             :type hash-table
@@ -193,16 +196,17 @@ nodes that hold this data.")
   (:accessor-name-transformer #'class*:name-identity)
   (:documentation "Staring point of the global history tree data structure."))
 
-(defun make ()
-  (make-instance 'history-tree))
+(defun make (&key entry-key)            ; TODO: Useless?
+  (make-instance 'history-tree :entry-key entry-key))
 
 (export-always 'owner)
+(declaim (ftype (function (history-tree t) (or null owner)) owner))
 (defun owner (history owner-identifier)
   "Return the `owner' object identified by OWNER-IDENTIFIER in HISTORY."
   (gethash owner-identifier (owners history)))
 
 (export-always 'set-current-owner)
-(declaim (ftype (function (history-tree t) owner) set-current-owner))
+;; (declaim (ftype (function (history-tree t) owner) set-current-owner)) ; TODO: Fix type.
 (defun set-current-owner (history owner-identifier)
   "OWNER-IDENTIFIER is arbitrary data representing an `owner'."
   (let ((owner (owner history owner-identifier)))
@@ -212,19 +216,19 @@ nodes that hold this data.")
     (setf (current-owner history) owner)))
 
 (export-always 'current-owner-node)
-(declaim (ftype (function (history-tree) node) current-owner-node))
+;; (declaim (ftype (function (history-tree) (or null node)) current-owner-node)) ; TODO: Fix type.
 (defun current-owner-node (history)
-  (and (current-owner history)
-       (current (current-owner history))))
+  (when (current-owner history)
+    (current (the owner (current-owner history)))))
 
 ;; TODO: Add `gethash*' to set default value when not found?
 
 (defmethod visit ((history history-tree) node)
   "Visit NODE with HISTORY's current owner.
 Return (values HISTORY NODE) so that calls to `visit' can be chained."
-  (let ((owner (owner history)))
+  (let ((owner (current-owner history)))
     (setf (gethash node (nodes owner)) t)
-    (setf (owner current) node)
+    (setf (current owner) node)
     (let ((binding (gethash owner (bindings node))))
       (if binding
           (setf (last-access binding) (local-time:now))
@@ -245,9 +249,9 @@ Return (values HISTORY NODE) so that calls to `visit' can be chained."
   "Go COUNT parent up from the current OWNER node.
 Return (values OWNER (current OWNER)) so that `back' and `forward' calls can
 be chained."
-  (check-type count 'positive-integer)
+  (check-type count positive-integer)
   (when (and (current owner)
-             (parent (current history)))
+             (parent (current owner)))
     (let ((former-current (current owner)))
       (visit owner (parent (current owner)))
       ;; Put former current node back as forward-child if it is not already
@@ -270,7 +274,7 @@ be chained."
   "Go COUNT first-children down from the current OWNER node.
 Return (values OWNER (CURRENT OWNER)) so that `back' and `forward' calls can be
 chained."
-  (check-type count 'positive-integer)
+  (check-type count positive-integer)
   (when (and (current owner)
              (children (current owner)))
     (visit (forward-child (current-binding owner)))
@@ -285,24 +289,23 @@ chained."
   (when (current-owner history)
     (values history (nth-value 1 (forward (current-owner history) count)))))
 
-(declaim (ftype (function (t owner &key (:test function)) (or null node)) find-child))
-(defun find-child (data owner &key (test #'equal)) ; TODO: Generalize?
-  "Return the direct child node of OWNER which matches DATA.
-Test is done with the TEST argument."
+(declaim (ftype (function (t owner) (or null node)) find-child))
+(defun find-child (data owner) ; TODO: Generalize?
+  "Return the direct child node of OWNER which matches DATA. "
   (find data
         (children (current owner))
-        :key #'data
-        :test test))
+        :key #'entry
+        :test #'data-equal-entry-p))
 
-(declaim (ftype (function (t owner &key (:test function)) (or null node))
+(declaim (ftype (function (t owner) (or null node))
                 find-owned-child))
-(defun find-owned-child (data owner &key (test #'equal)) ; TODO: Generalize?
+(defun find-owned-child (data owner) ; TODO: Generalize?
   "Return the direct child node owned by OWNER which matches DATA.
 Test is done with the TEST argument."
   (find data
         (owned-children owner)
-        :key #'data
-        :test test))
+        :key #'entry
+        :test #'data-equal-entry-p))
 
 (export-always 'go-to-child)
 (defmethod go-to-child (data (owner owner) &key (test #'equal)
@@ -311,10 +314,10 @@ Test is done with the TEST argument."
 Test is done with the TEST argument.
 Return (values OWNER (current OWNER))."
   (when (current owner)
-    (let ((match (find-child data owner :test test)))
+    (let ((match (funcall child-finder data owner :test test)))
       (when match
         (visit owner match))))
-  (values history (current history)))
+  (values owner (current owner)))
 
 (export-always 'go-to-owned-child)
 (defmethod go-to-owned-child (data (owner owner) &key (test #'equal))
@@ -366,19 +369,18 @@ to this child.
 
 If there is no current element, this creates the first element of the tree.
 If CREATOR is provided, set the `creator' slot of OWNER."
-  (let ((owner (owner history)))
+  (let ((owner (current-owner history)))
     (cond
       ((null (current owner))
        (let ((new-node (make-node :data data)))
          (setf (origin owner) new-node
                (creator owner) creator)
          (visit owner new-node)))
-      ((not (entry-equal-data-p (entry (current owner)) data))
-       (let ((key (entry (current owner)))
-             (node (find-child data owner)))
+      ((not (data-equal-entry-p data (entry (current owner))))
+       (let ((node (find-child data owner)))
          (if node
              (setf (value (entry node)) data)
-             (let ((maybe-new-entry (add-entries history data)))
+             (let ((maybe-new-entry (add-entry history data)))
                (push (setf node (make-node :entry maybe-new-entry
                                            :parent (current owner)))
                      (children (current owner)))))
@@ -386,7 +388,7 @@ If CREATOR is provided, set the `creator' slot of OWNER."
            (setf (forward-child binding) node))
          (forward history)))
       (t
-       (setf (value (entry node)) data)))
+       (setf (value (entry (current owner))) data)))
     (current owner)))
 
 (export 'add-children)
@@ -412,7 +414,7 @@ Return nil if there is no `current-owner'."
 (export-always 'map-tree)
 (defun map-tree (function tree &key flatten include-root ; TODO: Edit?  Unexport?
                                  (collect-function #'cons)
-                                 children-function #'children)
+                                 (children-function #'children))
   "Map the FUNCTION over the TREE.
 If TREE is a `htree:history-tree', start from it's root.
 If TREE is a `htree:node', start from it.
@@ -473,7 +475,7 @@ Always return nil, as it is an explicitly imperative macro."
   (map-tree #'identity (current owner) :flatten t
                                        :children-function #'owned-children))
 
-(defmethod all-contiguous-owned-children ((history history))
+(defmethod all-contiguous-owned-children ((history history-tree))
   "Return a list of all the children owned by HISTORY's current owner,
 recursively."
   (when (current-owner history)
@@ -505,11 +507,11 @@ First parent comes first in the resulting list."
 recursively.
 First parent comes first in the resulting list."
   (when (and (parent owner)
-             (owned-p owned (parent owner)))
+             (owned-p owner (parent owner)))
     (cons (parent owner)
           (all-contiguous-owned-parents (current owner)))))
 
-(defmethod all-contiguous-owned-parents ((history history))
+(defmethod all-contiguous-owned-parents ((history history-tree))
   "Return a list of parents of owned by HISTORY current owner, starting from its
 current node, recursively.  First parent comes first in the resulting list."
   (when (current-owner history)
@@ -524,7 +526,7 @@ First child comes first in the resulting list."
     (cons (forward-child (current-binding owner))
           (all-forward-children (forward-child (current-binding owner))))))
 
-(defmethod all-forward-children ((history history))
+(defmethod all-forward-children ((history history-tree))
   "Return a list of the first children of NODE, recursively.
 First child comes first in the resulting list."
   (when (current-owner history)
@@ -549,35 +551,37 @@ First child comes first in the resulting list."
       (cons owner-root (all-contiguous-owned-children owner-root)))))
 
 
+(defun node-value (node)
+  (value (entry node)))
 
 (export-always 'all-nodes-data)
 (defmethod all-nodes-data ((history history-tree))
   "Return a list of all nodes data, in depth-first order."
-  (mapcar #'data (all-nodes history)))
+  (mapcar #'node-value (all-nodes history)))
 
 (export-always 'parent-nodes-data)
 (defmethod parent-nodes-data ((history history-tree))
-  "Return a list of all nodes data.
+  "Return a list of all parent nodes data.
 First parent comes first."
-  (mapcar #'data (parent-nodes history)))
+  (mapcar #'node-value (all-parents history)))
 
 (export-always 'forward-children-nodes-data)
 (defmethod forward-children-nodes-data ((history history-tree))
   "Return a list of all forward children nodes data.
 First child comes first."
-  (mapcar #'data (forward-children-nodes history)))
+  (mapcar #'node-value (all-forward-children history)))
 
 (export-always 'children-nodes-data)
 (defmethod children-nodes-data ((history history-tree))
   "Return a list of all children nodes data, in depth-first order."
-  (mapcar #'data (children-nodes history)))
+  (mapcar #'node-value (all-children history)))
 
 
 (defun first-hash-table-value (hash-table)
   (with-hash-table-iterator (next-entry hash-table)
     (nth-value 2 (next-entry))))
 
-(declaim (ftype (function (history-tree t) owner) delete-owner))
+(declaim (ftype (function (history-tree t) (or null owner)) delete-owner))
 (defun delete-owner (history owner-identifier)
   "Return owner, or nil if there is no owner corresponding to OWNER-IDENTIFIER."
   (let ((owner (owner owner-identifier history)))
@@ -622,30 +626,30 @@ TREE can be a `history' or a `node'."
     result))
 
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'find-data))
-(defmethod find-data (data (history history-tree) &key (test #'equal) ensure-p)
-  "Find a tree node matching DATA in HISTORY and return it.
-If ENSURE-P is non-nil, create this node when not found.
-Search is done with the help of TEST argument."
-  (let ((match (find-node data history :test test :key #'data)))
-    ;; TODO: `add-child' changes `current'. Always change `current' on match?
-    (or match (when ensure-p (add-child data history :test test)))))
+;; (eval-when (:compile-toplevel :load-toplevel :execute)
+;;   (export 'find-data))
+;; (defmethod find-data (data (history history-tree) &key (test #'equal) ensure-p)
+;;   "Find a tree node matching DATA in HISTORY and return it.
+;; If ENSURE-P is non-nil, create this node when not found.
+;; Search is done with the help of TEST argument."
+;;   (let ((match (find-node data history :test test :key #'entry)))
+;;     ;; TODO: `add-child' changes `current'. Always change `current' on match?
+;;     (or match (when ensure-p (add-child data history :test test)))))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'delete-data))
-(defmethod delete-data (data (history history-tree) &key (test #'equal) rebind-children-p)
-  "Delete node(s) matching DATA from HISTORY and return the last deleted node.
-If the node has children itself, and REBIND-CHILDREN-P is not nil, these
-will become children of the node's parent. Search is done with the
-help of TEST argument."
-  (let ((last-deleted nil))
-    (do-tree (node history)
-      (when (funcall test data (data node))
-        (setf (children (parent node)) (append (when rebind-children-p (children node))
-                                               (remove node (children (parent node))))
-              last-deleted node)))
-    last-deleted))
+;; (eval-when (:compile-toplevel :load-toplevel :execute)
+;;   (export 'delete-data))
+;; (defmethod delete-data (data (history history-tree) &key (test #'equal) rebind-children-p)
+;;   "Delete node(s) matching DATA from HISTORY and return the last deleted node.
+;; If the node has children itself, and REBIND-CHILDREN-P is not nil, these
+;; will become children of the node's parent. Search is done with the
+;; help of TEST argument."
+;;   (let ((last-deleted nil))
+;;     (do-tree (node history)
+;;       (when (funcall test data (data node))
+;;         (setf (children (parent node)) (append (when rebind-children-p (children node))
+;;                                                (remove node (children (parent node))))
+;;               last-deleted node)))
+;;     last-deleted))
 
 
 (deftype non-negative-integer ()
@@ -666,7 +670,7 @@ help of TEST argument."
   "Return the total number of owned nodes connect to the current OWNER node."
   (length (all-contiguous-owned-nodes owner)))
 
-(defmethod size ((history history-size))
+(defmethod size ((history history-tree))
   "Return the total number of nodes."
   ;; TODO: This could be optimized with a SIZE slot, but is it worth it?
   (length (all-nodes history)))
