@@ -9,6 +9,14 @@
 
 ;; TODO: Add forward and back functions to unowned nodes.
 
+;; TODO: Custom hash?  We'd need an "update-entry" function that replace the key
+;; in `entries' and loops over all nodes to replace their entry.
+;; Better: Box the entry.
+;; Then we can remove the `test' argument and just use it in `make'.
+;; We can also rename `data' to `entry'.  Unless boxed?
+
+;; TODO: Thread safe?
+
 (defmacro export-always (symbols &optional (package nil package-supplied?)) ; From serapeum.
   "Like `export', but also evaluated at compile time."
   `(eval-when (:compile-toplevel :load-toplevel :execute)
@@ -527,37 +535,14 @@ First child comes first."
        (lambda (node)
          (disown owner node))
        (nodes owner)))
-    ;; TODO: Garbage-collect nodes where no recursive children has any owner.
-    ;; What should we do with them?  Store them in a stash in `history-tree'.
-    ;; If all nodes are always stored in this stash, then it's enough to just
-    ;; unbind the first top node without owned child.
+    ;; TODO: Garbage-collect owner-less branch.
     ;;
-    ;; Or maybe we don't garbage-collect anything on owner deletion.
+    ;; Delete nodes when whole branch is owner-less.  Indeed, otherwise we would
+    ;; lose information.  It's better to be as "immutable" as possible.
     ;;
-    ;; The stash can NOT give us a convenient way to access all the unique node
-    ;; data, because the bindings allow 2 nodes with the same data to coexist in a set.
-    ;; Solution: node's `data' should be a class with 2 slots: `payload' and `nodes'.
-    ;; Then the `data' can be held in the stash only.
-    ;;
-    ;; Stash should use (make-hash-table :test 'equalp)
-    ;;
-    ;; We need to add a function to cleanup the stash.
-    ;; - If it has only disowned nodes _not in the tree_, easy.
-    ;; - If it has disowned nodes in the tree, we need to unbind all these nodes.
-    ;;   This problem does not exist with the alternative mentioned below.
-    ;; - It it has owned nodes, we need to disown them first.
-    ;;
-    ;; Function to cleanup the nodes owned by an owner?  Add 1 function to disown all
-    ;; nodes but the current nodes.  This can also be done node-by-node.  If
-    ;; done on current node, go to parent or child, and if there is none, remove
-    ;; owner.
-    ;;
-    ;; The drawback of the above is that it gets hard for the user to delete
-    ;; disowned nodes.
-    ;;
-    ;; Alternative: Browse the nodes of the deleted owner, unbind each disowned
-    ;; node, and for every (child) owned node that has a disowned parent, rebind it to
-    ;; the root.  We lose more information this way, but it's easier.
+    ;; If we want to "free" disowned nodes or edit a given owner's history, the
+    ;; best approach is to copy its owned branches to new branches that are
+    ;; directly connected to the root.
     owner))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
