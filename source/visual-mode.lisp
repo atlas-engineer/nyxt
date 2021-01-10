@@ -15,9 +15,13 @@
       (list
        "up" 'backward-line
        "down" 'forward-line
-       "left" 'forward-char
+       "left" 'backward-char
        "right" 'forward-char
-       "escape" 'visual-mode)
+       "escape" 'visual-mode
+       "keypadend" 'end-line
+       "space" 'forward-char
+       "backspace" 'backward-char
+       "keypadhome" 'beginning-line)
       scheme:emacs
       (list
        "C-h" 'select-paragraph
@@ -42,18 +46,15 @@
        "l" 'forward-char
        "w" 'forward-word
        "$" 'end-line
-       "keypadend" 'end-line
-       "space" 'forward-char
-       "backspace" 'backward-char
        "0" 'beginning-line
-       "keypadhome" 'beginning-line
-       "v" 'visual-mode
+       "v" 'toggle-mark
        "C-c" 'visual-mode)))
+   (mark-set nil)
    (destructor
     (lambda (mode)
       (make-page-uneditable)
       (unlock-page-keypresses)
-      (defparameter *mark-set* nil)))
+      (setf (mark-set mode) nil)))
    (constructor
     (lambda (mode)
       (make-page-editable)
@@ -61,7 +62,7 @@
       (select-paragraph)
       ;; imitating visual mode in vim
       (if (equal (keymap-scheme-name (buffer mode)) scheme:vi-normal)
-        (defvar *mark-set* nil))))))
+          (setf (mark-set mode) t))))))
 
 (define-parenscript %add-paragraph-hints (&key annotate-visible-only-p)
   (defun qs (context selector)
@@ -278,8 +279,6 @@ identifier for every hinted element."
   "Add hints to text elements on the page and open a minibuffer for selecting them."
   (query-paragraph-hints "Set caret on element" #'%follow-hint :annotate-visible-only-p t))
 
-(defvar *mark-set* nil)
-
 (define-parenscript is-collapsed ()
   ;; returns "true" if mark's start and end are the same value
   (defun is-collapsed ()
@@ -289,19 +288,20 @@ identifier for every hinted element."
 
 (define-command toggle-mark ()
   "Toggle the mark."
-  (if (string= (is-collapsed) "true")
-    (progn
-      (setf *mark-set* (not *mark-set*))
-      (if *mark-set*
-        (echo "Mark set")
-        (echo "Mark deactivated")))
-    (pflet ((collapse-to-focus ()
-                               (let ((sel (ps:chain window (get-selection))))
-                                 (ps:chain sel
-                                           (collapse (ps:@ sel focus-node)
-                                                     (ps:@ sel focus-offset))))))
-      (collapse-to-focus)
-      (echo "Mark set"))))
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (if (string= (is-collapsed) "true")
+        (progn
+          (setf (mark-set mode) (not (mark-set mode)))
+          (if (mark-set mode)
+              (echo "Mark set")
+              (echo "Mark deactivated")))
+        (pflet ((collapse-to-focus ()
+                                   (let ((sel (ps:chain window (get-selection))))
+                                     (ps:chain sel
+                                               (collapse (ps:@ sel focus-node)
+                                                         (ps:@ sel focus-offset))))))
+               (collapse-to-focus)
+               (echo "Mark set")))))
 
 (define-parenscript caret-move (&key action direction scale (n 1))
   (let ((sel (ps:chain window (get-selection))))
