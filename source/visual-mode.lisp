@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/visual-mode
-    (:use :common-lisp :nyxt)
+  (:use :common-lisp :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:documentation "Visual mode."))
 (in-package :nyxt/visual-mode)
@@ -132,7 +132,7 @@ identifier for every hinted element."
     (if (or (ps:chain element offset-width)
             (ps:chain element offset-height)
             (ps:chain element (get-client-rects) length))
-      t nil))
+        t nil))
 
   (defun element-in-view-port-p (element)
     (ps:let* ((rect (ps:chain element (get-bounding-client-rect))))
@@ -140,7 +140,7 @@ identifier for every hinted element."
                (>= (ps:chain rect left) 0)
                (<= (ps:chain rect right) (ps:chain window inner-width))
                (<= (ps:chain rect bottom) (ps:chain window inner-height)))
-        t nil)))
+          t nil)))
 
   (defun object-create (element hint)
     (ps:create "type" "p" "hint" hint "identifier" hint "body" (ps:@ element |innerHTML|)))
@@ -178,9 +178,9 @@ identifier for every hinted element."
   (defun string-generate (n)
     "Generates a string from a number"
     (if (>= n 0)
-      (+ (string-generate (floor (- (/ n 26) 1)))
-         (code-char (+ 65
-                       (rem n 26)))) ""))
+        (+ (string-generate (floor (- (/ n 26) 1)))
+           (code-char (+ 65
+                         (rem n 26)))) ""))
 
   (add-stylesheet)
   (hints-add (qsa-text-nodes)))
@@ -312,80 +312,90 @@ identifier for every hinted element."
 
 (define-command forward-char ()
   "Move caret forward by a character."
-  (caret-move :action (if *mark-set*
-                        "extend"
-                        "move")
-              :direction "forward"
-              :scale "character"))
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (caret-move :action (if (mark-set mode)
+                            "extend"
+                            "move")
+                :direction "forward"
+                :scale "character")))
 
 (define-command backward-char ()
   "Move caret backward by a character."
-  (caret-move :action (if *mark-set*
-                        "extend"
-                        "move")
-              :direction "backward"
-              :scale "character"))
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (caret-move :action (if (mark-set mode)
+                            "extend"
+                            "move")
+                :direction "backward"
+                :scale "character")))
 
 (define-command forward-word ()
   "Move caret forward by a word."
-  (caret-move :action (if *mark-set*
-                        "extend"
-                        "move")
-              :direction "forward"
-              :scale "word"))
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (caret-move :action (if (mark-set mode)
+                            "extend"
+                            "move")
+                :direction "forward"
+                :scale "word")))
 
 (define-command backward-word ()
   "Move caret backward by a word."
-  (caret-move :action (if *mark-set*
-                        "extend"
-                        "move")
-              :direction "backward"
-              :scale "word"))
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (caret-move :action (if (mark-set mode)
+                            "extend"
+                            "move")
+                :direction "backward"
+                :scale "word")))
 
 (define-command forward-line ()
   "Move caret forward by a line."
-  (caret-move :action (if *mark-set*
-                        "extend"
-                        "move")
-              :direction "forward"
-              :scale "line"))
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (caret-move :action (if (mark-set mode)
+                            "extend"
+                            "move")
+                :direction "forward"
+                :scale "line")))
 
 (define-command backward-line ()
   "Move caret backward by a line."
-  (caret-move :action (if *mark-set*
-                        "extend"
-                        "move")
-              :direction "backward"
-              :scale "line"))
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (caret-move :action (if (mark-set mode)
+                            "extend"
+                            "move")
+                :direction "backward"
+                :scale "line")))
 
 (define-command beginning-line ()
   "Move caret to the beginning of the line."
-  (caret-move :action (if *mark-set*
-                        "extend"
-                        "move")
-              :direction "backward"
-              :scale "lineboundary"))
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (caret-move :action (if (mark-set mode)
+                            "extend"
+                            "move")
+                :direction "backward"
+                :scale "lineboundary")))
 
 (define-command end-line ()
   "Move caret to the end of the line."
-  (caret-move :action (if *mark-set*
-                        "extend"
-                        "move")
-              :direction "forward"
-              :scale "lineboundary"))
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (caret-move :action (if (mark-set mode)
+                            "extend"
+                            "move")
+                :direction "forward"
+                :scale "lineboundary")))
 
 (define-command forward-sentence ()
   "Move caret forward to next end of sentence."
-  (caret-move :action (if *mark-set*
-                        "extend"
-                        "move")
-              :direction "forward"
-              :scale "sentence"))
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (caret-move :action (if (mark-set mode)
+                            "extend"
+                            "move")
+                :direction "forward"
+                :scale "sentence")))
 
 (define-command backward-sentence ()
   "Move caret backward to start of sentence."
-  (caret-move :action (if *mark-set*
-                        "extend"
-                        "move")
-              :direction "backward"
-              :scale "sentence"))
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (caret-move :action (if (mark-set mode)
+                            "extend"
+                            "move")
+                :direction "backward"
+                :scale "sentence")))
