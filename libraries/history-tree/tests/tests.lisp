@@ -3,18 +3,36 @@
 
 (in-package :cl-user)
 (uiop:define-package history-tree-tests
-  (:use #:common-lisp))
+  (:use #:common-lisp)
+  (:import-from #:class-star #:define-class))
 (in-package :history-tree-tests)
 
 (prove:plan nil)
 
-(prove:subtest "Simple tree test"
+(prove:subtest "Single entry"
   (let ((history (htree:make))
         (url "http://example.org" ))
     (htree:set-current-owner history "a")
     (htree:add-child url history)
     (prove:is (htree:value (htree:entry (htree:current-owner-node history)))
               url)))
+
+(prove:subtest "Multiple entry"
+  (let ((history (htree:make))
+        (url1 "http://example.org")
+        (url2 "https://nyxt.atlas.engineer")
+        (url3 "http://en.wikipedia.org"))
+    (htree:set-current-owner history "a")
+    (htree:add-child url1 history)
+    (htree:add-child url2 history)
+    (htree:back history)
+    (htree:add-child url3 history)
+    (prove:is (htree:value (htree:entry (htree:current-owner-node history)))
+              url3)
+    (prove:is (htree:value (htree:entry (htree:parent (htree:current-owner-node history))))
+              url1)
+    ;; TODO: Go to other child.
+    ))
 
 ;; (defun make-tree1 ()
 ;;   (let ((tree (htree:make)))

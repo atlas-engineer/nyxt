@@ -9,6 +9,7 @@
 
 ;; TODO: Add forward and back functions to unowned nodes.
 ;; TODO: Default owner?  Makes sense for users who don't care about multiple owners.
+;; TODO: Add `with-owner' macro.
 ;; TODO: Thread safe?
 
 (defmacro export-always (symbols &optional (package nil package-supplied?)) ; From serapeum.
@@ -240,49 +241,39 @@ Return (values HISTORY NODE) so that calls to `visit' can be chained."
   `(integer 1 ,most-positive-fixnum))
 
 (export-always 'back)
-(defmethod back ((owner owner) &optional (count 1))
-  "Go COUNT parent up from the current OWNER node.
-Return (values OWNER (current OWNER)) so that `back' and `forward' calls can
-be chained."
-  (check-type count positive-integer)
-  (when (and (current owner)
-             (parent (current owner)))
-    (let ((former-current (current owner)))
-      (visit owner (parent (current owner)))
-      ;; Put former current node back as forward-child if it is not already
-      ;; the case, e.g. if current node was set manually.
-      (setf (forward-child (current-binding owner))
-            former-current))
-    (when (< 1 count)
-      (back owner (1- count))))
-  (values owner (current owner)))
-
 (defmethod back ((history history-tree) &optional (count 1))
   "Go COUNT parent up from the current owner node.
 Return (VALUES HISTORY CURRENT-NODE) so that `back' and `forward' calls can
 be chained."
-  (when (current-owner history)
-    (values history (nth-value 1 (back (current-owner history) count)))))
+  (let ((owner (current-owner history)))
+    (check-type count positive-integer)
+    (when (and owner
+               (current owner)
+               (parent (current owner)))
+      (let ((former-current (current owner)))
+        (visit history (parent (current owner)))
+        ;; Put former current node back as forward-child if it is not already
+        ;; the case, e.g. if current node was set manually.
+        (setf (forward-child (current-binding owner))
+              former-current))
+      (when (< 1 count)
+        (back history (1- count))))
+    (values history (current owner))))
 
 (export-always 'forward)
-(defmethod forward ((owner owner) &optional (count 1))
-  "Go COUNT first-children down from the current OWNER node.
-Return (values OWNER (CURRENT OWNER)) so that `back' and `forward' calls can be
-chained."
-  (check-type count positive-integer)
-  (when (and (current owner)
-             (children (current owner)))
-    (visit (forward-child (current-binding owner)))
-    (when (< 1 count)
-      (forward owner (1- count))))
-  (values owner (current owner)))
-
 (defmethod forward ((history history-tree) &optional (count 1))
   "Go COUNT first-children down from the current owner node.
 Return (values HISTORY CURRENT-NODE)) so that `back' and `forward' calls can be
 chained."
-  (when (current-owner history)
-    (values history (nth-value 1 (forward (current-owner history) count)))))
+  (check-type count positive-integer)
+  (let ((owner (current-owner history)))
+    (when (and owner
+               (current owner)
+               (children (current owner)))
+      (visit history (forward-child (current-binding owner)))
+      (when (< 1 count)
+        (forward history (1- count))))
+    (values history (current owner))))
 
 (declaim (ftype (function (t owner) (or null node)) find-child))
 (defun find-child (data owner) ; TODO: Generalize?
