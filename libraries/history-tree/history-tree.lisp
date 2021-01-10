@@ -44,7 +44,7 @@ identify the data uniquely.")
              :documentation "The key is an `owner', the value is a
 `binding'.  This slot also allows us to know to which owner a node belongs.")
    (entry nil
-          :type entry
+          :type (or null entry)
           :documentation "Arbitrary data carried by the node.  This entry is
 mirrored as a key in `history-tree''s `entries' slot, and the node is added to
 the value list."))
@@ -53,8 +53,8 @@ the value list."))
   (:accessor-name-transformer #'class*:name-identity)
   (:documentation "Internal node of the history tree."))
 
-(defun make-node (&key data parent entry) ; TODO: Useless?
-  (make-instance 'node :data data :parent parent :entry entry))
+(defun make-node (&key parent entry) ; TODO: Useless?
+  (make-instance 'node :parent parent :entry entry))
 
 (define-class binding ()
   ((forward-child  nil
@@ -196,6 +196,7 @@ nodes that hold this data.")
   (:accessor-name-transformer #'class*:name-identity)
   (:documentation "Staring point of the global history tree data structure."))
 
+(export 'make)
 (defun make (&key entry-key)            ; TODO: Useless?
   (make-instance 'history-tree :entry-key entry-key))
 
@@ -227,7 +228,7 @@ nodes that hold this data.")
   "Visit NODE with HISTORY's current owner.
 Return (values HISTORY NODE) so that calls to `visit' can be chained."
   (let ((owner (current-owner history)))
-    (setf (gethash node (nodes owner)) t)
+    (pushnew node (nodes owner))        ; TODO: Replace with hash-table to speedup?
     (setf (current owner) node)
     (let ((binding (gethash owner (bindings node))))
       (if binding
@@ -372,10 +373,10 @@ If CREATOR is provided, set the `creator' slot of OWNER."
   (let ((owner (current-owner history)))
     (cond
       ((null (current owner))
-       (let ((new-node (make-node :data data)))
+       (let ((new-node (make-node :entry (add-entry history data))))
          (setf (origin owner) new-node
                (creator owner) creator)
-         (visit owner new-node)))
+         (visit history new-node)))
       ((not (data-equal-entry-p data (entry (current owner))))
        (let ((node (find-child data owner)))
          (if node
