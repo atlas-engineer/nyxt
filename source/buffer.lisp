@@ -822,7 +822,11 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
       (when new-url
         (check-type new-url quri:uri)
         (setf url new-url)
-        (ffi-buffer-load buffer url)))))
+        (if (string= (quri:uri-scheme new-url) "javascript")
+            ;; TODO: Can be a source of inefficiency due to an always-checked conditional.
+            ;; Move somewhere (`request-resource'?) where the impact of conditional will be weaker?
+            (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url)))
+            (ffi-buffer-load buffer url))))))
 
 (define-command set-url (&key new-buffer-p prefill-current-url-p)
   "Set the URL for the current buffer, completing with history."

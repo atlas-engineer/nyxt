@@ -29,8 +29,8 @@ On errors, return URL."
   ;; List of URI schemes: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
   ;; Last updated 2020-08-26.
   (let ((valid-schemes
-          (cons
-           "lisp"                       ; For Nyxt's internal URLs.
+          (append
+           '("lisp" "javascript")              ; For Nyxt's internal URLs and not-standardised ones.
            '("aaa" "aaas" "about" "acap" "acct" "cap" "cid" "coap" "coap+tcp" "coap+ws"
              "coaps" "coaps+tcp" "coaps+ws" "crid" "data" "dav" "dict" "dns" "example" "file"
              "ftp" "geo" "go" "gopher" "h323" "http" "https" "iax" "icap" "im" "imap" "info"
