@@ -216,7 +216,6 @@ identifier for every hinted element."
 (defun paragraph-elements-from-json (elements-json)
   (loop for element in (cl-json:decode-json-from-string elements-json)
         collect (let ((object-type (cdr (assoc :type element))))
-                  (log:info element)
                   (cond ((equal "p" object-type)
                          (make-instance 'paragraph-hint
                                         :identifier (cdr (assoc :identifier element))
@@ -224,30 +223,16 @@ identifier for every hinted element."
                                         :body (plump:text (plump:parse (cdr (assoc :body element))))))))))
 
 
-(defun query-paragraph-hints (prompt function &key multi-selection-p annotate-visible-only-p)
-  (let* ((buffer (current-buffer))
-         minibuffer)
+(defun query-paragraph-hints (prompt function &key annotate-visible-only-p)
+  (let ((buffer (current-buffer)))
     (let ((elements-json (%add-paragraph-hints :annotate-visible-only-p annotate-visible-only-p)))
-      ;; TODO: Add offscreen hints in background from full document annotation
       (let ((result (prompt-minibuffer
                      :input-prompt prompt
                      :default-modes '(element-hint-mode minibuffer-mode)
                      :history nil
-                     :multi-selection-p multi-selection-p
                      :suggestion-function
                      (nyxt/web-mode::hint-suggestion-filter
                       (paragraph-elements-from-json elements-json))
-                     :changed-callback
-                     (let ((subsequent-call nil))
-                       (lambda ()
-                         ;; when the minibuffer initially appears, we don't
-                         ;; want update-selection-highlight-hint to scroll
-                         ;; but on subsequent calls, it should scroll
-                         (nyxt/web-mode::update-selection-highlight-hint
-                          :scroll subsequent-call
-                          :buffer buffer
-                          :minibuffer minibuffer)
-                         (setf subsequent-call t)))
                      :cleanup-function
                      (lambda ()
                        (with-current-buffer buffer
