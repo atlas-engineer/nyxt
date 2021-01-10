@@ -8,13 +8,7 @@
 ;; TODO: Is "Shared history tree" a better name than "Global history tree"?
 
 ;; TODO: Add forward and back functions to unowned nodes.
-
-;; TODO: Custom hash?  We'd need an "update-entry" function that replace the key
-;; in `entries' and loops over all nodes to replace their entry.
-;; Better: Box the entry.
-;; Then we can remove the `test' argument and just use it in `make'.
-;; We can also rename `data' to `entry'.  Unless boxed?
-
+;; TODO: Default owner?  Makes sense for users who don't care about multiple owners.
 ;; TODO: Thread safe?
 
 (defmacro export-always (symbols &optional (package nil package-supplied?)) ; From serapeum.
@@ -309,38 +303,35 @@ Test is done with the TEST argument."
         :test #'data-equal-entry-p))
 
 (export-always 'go-to-child)
-(defmethod go-to-child (data (owner owner) &key (test #'equal)
-                                             (child-finder #'find-child))
+(defmethod go-to-child (data (owner owner) &key (child-finder #'find-child))
   "Go to current OWNER node's direct child matching DATA.
-Test is done with the TEST argument.
 Return (values OWNER (current OWNER))."
   (when (current owner)
-    (let ((match (funcall child-finder data owner :test test)))
+    (let ((match (funcall child-finder data owner)))
       (when match
         (visit owner match))))
   (values owner (current owner)))
 
 (export-always 'go-to-owned-child)
-(defmethod go-to-owned-child (data (owner owner) &key (test #'equal))
+(defmethod go-to-owned-child (data (owner owner))
   "Go to current OWNER node's direct owned child matching DATA.
 A child is owned if it has a binding with OWNER.
-Test is done with the TEST argument.
 Return (values OWNER (current OWNER))."
-  (go-to-child data owner :test test :child-finder #'find-owned-child))
+  (go-to-child data owner :child-finder #'find-owned-child))
 
-(defmethod go-to-child (data (history history-tree) &key (test #'equal))
-  "Go to direct current node's child matching DATA.
-Test is done with the TEST argument. "
+(defmethod go-to-child (data (history history-tree) &key (child-finder #'find-child))
+  "Go to direct current node's child matching DATA."
   (when (current-owner history)
-    (go-to-child data (current-owner history) :test test)))
+    (go-to-child data (current-owner history)
+                 :child-finder child-finder)))
 
-(defmethod go-to-owned-child (data (history history-tree) &key (test #'equal))
+(defmethod go-to-owned-child (data (history history-tree))
   "Go to current node's direct owned child matching DATA.
 A child is owned if it has a binding with current owner.
-Test is done with the TEST argument.
 Return (values OWNER (current OWNER))."
   (when (current-owner history)
-    (go-to-owned-child data (current-owner history) :test test)))
+    (go-to-owned-child data (current-owner history)
+                       :child-finder #'find-owned-child)))
 
 ;; (export-always 'delete-child)
 ;; (defmethod delete-child (data (history history-tree) &key (test #'equal))
@@ -393,24 +384,24 @@ If CREATOR is provided, set the `creator' slot of OWNER."
     (current owner)))
 
 (export 'add-children)
-(defmethod add-children (children-data (owner owner) &key (test #'equal))
+(defmethod add-children (children-data (owner owner))
   "Add CHILDREN-DATA to the `owner''s node children.
 Each child is added with `add-child'.
 Return the (maybe new) current node, which holds the last piece of data in
 `children-data'."
-  (add-child (first children-data) owner :test test)
+  (add-child (first children-data) owner)
   (if (rest children-data)
-      (add-children (rest children-data) (back owner) :test test)
+      (add-children (rest children-data) (back owner))
       (current owner)))
 
-(defmethod add-children (children-data (history history-tree) &key (test #'equal))
+(defmethod add-children (children-data (history history-tree))
   "Add CHILDREN-DATA to the HISTORY `current-owner''s node children.
 Each child is added with `add-child'.
 Return the (maybe new) current node, which holds the last piece of data in
 `children-data'.
 Return nil if there is no `current-owner'."
   (when (current-owner history)
-    (add-children children-data (current-owner history) :test test)))
+    (add-children children-data (current-owner history))))
 
 (export-always 'map-tree)
 (defun map-tree (function tree &key flatten include-root ; TODO: Edit?  Unexport?
@@ -605,24 +596,22 @@ First child comes first."
     ;; directly connected to the root.
     owner))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'find-node))
-(defun find-node (item tree &key (key #'identity) (test #'equal))
-  "Find a tree node matching ITEM (by TEST) in TREE and return it.
+(export-always 'find-node)
+(defun find-node (item tree &key (key #'identity))
+  "Find a tree node matching ITEM in TREE and return it.
 TREE can be a `history' or a `node'. "
   (block search
     (do-tree (node tree)
-      (when (funcall test item (funcall key node))
+      (when (funcall (entry-key tree) item (funcall key node))
         (return-from search node)))))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'remove-node))
-(defun remove-node (item tree &key (key #'identity) (test #'equal))
-  "Return all the nodes from TREE that didn't match ITEM (measured by TEST).
+(export-always 'remove-node)
+(defun remove-node (item tree &key (key #'identity))
+  "Return all the nodes from TREE that didn't match ITEM.
 TREE can be a `history' or a `node'."
   (let (result)
     (do-tree (node tree)
-      (unless (funcall test item (funcall key node))
+      (unless (funcall (entry-key tree) item (funcall key node))
         (push node result)))
     result))
 
