@@ -75,7 +75,9 @@ identifier for every hinted element."
           ((equal "INPUT" (ps:@ element tag-name))
            (ps:create "type" "input" "hint" hint "identifier" hint))
           ((equal "TEXTAREA" (ps:@ element tag-name))
-           (ps:create "type" "textarea" "hint" hint "identifier" hint))))
+           (ps:create "type" "textarea" "hint" hint "identifier" hint))
+          ((equal "IMG" (ps:@ element tag-name))
+           (ps:create "type" "img" "hint" hint "identifier" hint "src" (ps:@ element src) "alt" (ps:@ element alt)))))
 
   (defun hints-add (elements)
     "Adds hints on elements"
@@ -115,7 +117,7 @@ identifier for every hinted element."
                          (rem n 26)))) ""))
 
   (add-stylesheet)
-  (hints-add (qsa document (list "a" "button" "input" "textarea"))))
+  (hints-add (qsa document (list "a" "button" "input" "textarea" "img"))))
 
 (define-parenscript remove-element-hints ()
   (defun hints-remove-all ()
@@ -199,29 +201,37 @@ identifier for every hinted element."
 (defun elements-from-json (elements-json)
   (loop for element in (cl-json:decode-json-from-string elements-json)
         collect (let ((object-type (cdr (assoc :type element))))
-                  (cond ((equal "link" object-type)
-                         (make-instance 'link-hint
-                                        :hint (cdr (assoc :hint element))
-                                        :identifier (cdr (assoc :hint element))
-                                        :url (cdr (assoc :href element))
-                                        :body (plump:text (plump:parse (cdr (assoc :body element))))))
-                        ((equal "button" object-type)
-                         (make-instance 'button-hint
-                                        :identifier (cdr (assoc :identifier element))
-                                        :hint (cdr (assoc :hint element))
-                                        :body (plump:text (plump:parse (cdr (assoc :body element))))))
-                        ((equal "input" object-type)
-                         (make-instance 'input-hint
-                                        :identifier (cdr (assoc :identifier element))
-                                        :hint (cdr (assoc :hint element))))
-                        ((equal "textarea" object-type)
-                         (make-instance 'textarea-hint
-                                        :identifier (cdr (assoc :identifier element))
-                                        :hint (cdr (assoc :hint element))))))))
+                  (str:string-case object-type
+                    ("link"
+                     (make-instance 'link-hint
+                                    :hint (alex:assoc-value element :hint)
+                                    :identifier (alex:assoc-value element :hint)
+                                    :url (alex:assoc-value element :href)
+                                    :body (plump:text (plump:parse (alex:assoc-value element :body)))))
+                    ("button"
+                     (make-instance 'button-hint
+                                    :identifier (alex:assoc-value element :identifier)
+                                    :hint (alex:assoc-value element :hint)
+                                    :body (plump:text (plump:parse (alex:assoc-value element :body)))))
+                    ("input"
+                     (make-instance 'input-hint
+                                    :identifier (alex:assoc-value element :identifier)
+                                    :hint (alex:assoc-value element :hint)))
+                    ("textarea"
+                     (make-instance 'textarea-hint
+                                    :identifier (alex:assoc-value element :identifier)
+                                    :hint (alex:assoc-value element :hint)))
+                    ("img"
+                     (make-instance 'image-hint
+                                    :identifier (alex:assoc-value element :identifier)
+                                    :url (alex:assoc-value element :src)
+                                    :alt (alex:assoc-value element :alt)
+                                    :hint (alex:assoc-value element :hint)))))))
 
 (define-class hint ()
   ((hint "")
    (identifier "")
+   ;; TODO: Move to `link-hint' or `button-hint'? Maybe add an intermediate class?
    (body ""
          :documentation "The body of the anchor tag."))
   (:accessor-name-transformer #'class*:name-identity))
@@ -235,6 +245,10 @@ identifier for every hinted element."
 (defclass input-hint (hint) ())
 
 (defclass textarea-hint (hint) ())
+
+(define-class image-hint (link-hint)
+  ((alt "" :documentation "Alternative text for the image."))
+  (:accessor-name-transformer #'class*:name-identity))
 
 (defmethod object-string ((link-hint link-hint))
   (url link-hint))
@@ -262,6 +276,12 @@ identifier for every hinted element."
 
 (defmethod object-display ((textarea-hint textarea-hint))
   (format nil "~a  Textarea" (hint textarea-hint)))
+
+(defmethod object-display ((image-hint image-hint))
+  (format nil "~a  ~a  ~a"
+          (hint image-hint)
+          (alt image-hint)
+          (quri:url-decode (url image-hint) :lenient t)))
 
 (defmethod %follow-hint ((link-hint link-hint))
   (buffer-load (url link-hint)))
