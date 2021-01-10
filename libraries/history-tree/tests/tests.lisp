@@ -167,4 +167,37 @@
 ;;     (prove:is (htree:data (htree:current tree))
 ;;               "http://example.root")))
 
+(define-class web-page ()
+  ((url "")
+   (title ""))
+  (:accessor-name-transformer #'class*:name-identity))
+
+(defun first-hash-table-key (hash-table)
+  (with-hash-table-iterator (next-entry hash-table)
+    (nth-value 1 (next-entry))))
+
+(prove:subtest "Compound entry uniqueness"
+  (let ((web-page1 (make-instance 'web-page :url "http://example.org"
+                                            :title "Example page") )
+        (web-page2 (make-instance 'web-page :url "http://example.org"
+                                            :title "Same page, another title")))
+    (let ((history (htree:make :entry-key #'url)))
+      (htree:set-current-owner history "a")
+      (htree:add-child web-page1 history)
+      (htree:add-child web-page2 history)
+      (prove:is (hash-table-count (htree:entries history))
+                1)
+      (prove:is (title (htree:value (first-hash-table-key (htree:entries history))))
+                "Same page, another title"))
+    (let ((history (htree:make)))
+      (htree:set-current-owner history "a")
+      (htree:add-child web-page1 history)
+      (htree:add-child web-page2 history)
+      (prove:is (hash-table-count (htree:entries history))
+                2)
+      (prove:is (sort (loop for key being the hash-keys in (htree:entries history)
+                                      collect (title (htree:value key)))
+                      #'string<)
+                (sort (mapcar #'title (list web-page1 web-page2)) #'string<)))))
+
 (prove:finalize)
