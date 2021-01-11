@@ -358,6 +358,13 @@ chained."
         (forward history (1- count))))
     (values history (current owner))))
 
+(export 'find-nodes)
+(defun find-nodes (history data)
+  "Return the nodes matching DATA."
+  (cl-custom-hash-table:with-custom-hash-table
+    (let ((new-entry (make-entry history data)))
+      (gethash new-entry (entries history)))))
+
 (declaim (ftype (function (t owner) (or null node)) find-child))
 (defun find-child (data owner) ; TODO: Generalize?
   "Return the direct child node of OWNER which matches DATA. "
