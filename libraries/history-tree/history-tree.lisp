@@ -260,7 +260,6 @@ Also see `test'."))
   (gethash owner-identifier (owners history)))
 
 (export-always 'set-current-owner)
-(declaim (ftype (function (history-tree t) owner) set-current-owner))
 (defun set-current-owner (history owner-identifier)
   "OWNER-IDENTIFIER is arbitrary data representing an `owner'."
   (let ((owner (owner history owner-identifier)))
@@ -268,18 +267,15 @@ Also see `test'."))
       (setf owner
             (setf (gethash owner-identifier (owners history)) (make-instance 'owner))))
     (setf (slot-value history 'current-owner-identifier) owner-identifier)
-    (the owner owner)))
+    owner))
 
 (export-always 'current-owner)
-(declaim (ftype (function (history-tree) owner) current-owner))
 (defun current-owner (history)
-  (the (values owner &optional) (owner history (current-owner-identifier history))))
+  (owner history (current-owner-identifier history)))
 
 (export-always 'current-owner-node)
-(declaim (ftype (function (history-tree) node) current-owner-node))
 (defun current-owner-node (history)
-  (the (values node &optional)
-       (current (current-owner history))))
+  (current (current-owner history)))
 
 (export-always 'with-current-owner)
 (defmacro with-current-owner ((history owner-identifier) &body body)
