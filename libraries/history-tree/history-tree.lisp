@@ -210,6 +210,7 @@ the value is an `owner'.")
    (current-owner-identifier (error "Owner identifier required")
                   :reader current-owner-identifier
                   :type t
+                  :export t
                   :documentation "Must be one of the `owners' keys.")
    (entries (make-entry-hash-table)
             :type hash-table
