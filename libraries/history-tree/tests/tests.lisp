@@ -180,4 +180,18 @@
                 (htree:value (htree:current-owner-node history)))
               url1)))
 
+(prove:subtest "Inter-owner relationships"
+  (let ((history (htree:make :current-owner-identifier "a"))
+        (url1 "http://example.org")
+        (url2 "https://nyxt.atlas.engineer"))
+    (htree:add-child url1 history)
+    (htree:set-current-owner history "b")
+    (htree:add-child url2 history :creator "a")
+    (prove:is (length (htree:nodes (htree:owner history "a")))
+              1)
+    (prove:is (length (htree:nodes (htree:owner history "b")))
+              1)
+    (prove:is (htree:parent (htree:current (htree:owner history "b")))
+              (htree:current (htree:owner history "a")))))
+
 (prove:finalize)
