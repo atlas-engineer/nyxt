@@ -176,7 +176,7 @@
 
 (prove:subtest "Compound entry uniqueness"
   (let ((web-page1 (make-instance 'web-page :url "http://example.org"
-                                            :title "Example page") )
+                                            :title "Example page"))
         (web-page2 (make-instance 'web-page :url "http://example.org"
                                             :title "Same page, another title")))
     (let ((history (htree:make :entry-key #'url)))
@@ -192,7 +192,7 @@
       (prove:is (hash-table-count (htree:entries history))
                 2)
       (prove:is (sort (loop for key being the hash-keys in (htree:entries history)
-                                      collect (title (htree:value key)))
+                            collect (title (htree:value key)))
                       #'string<)
                 (sort (mapcar #'title (list web-page1 web-page2)) #'string<)))))
 
