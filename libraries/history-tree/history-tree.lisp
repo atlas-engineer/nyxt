@@ -18,11 +18,11 @@
 (define-class entry ()
   ((key nil
         :type (or null function)
-        :documentation "Function call over `value', the result is `equalp'ed to
+        :documentation "Function called over `value', the result is `equalp'ed to
 identify the data uniquely.")
    (value nil
           :type t
-          :documentation "List of nodes."))
+          :documentation "Arbitrary data."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)
@@ -36,15 +36,17 @@ identify the data uniquely.")
    (bindings (make-hash-table)
              :documentation "The key is an `owner', the value is a
 `binding'.  This slot also allows us to know to which owner a node belongs.")
-   (entry nil
-          :type (or null entry)
-          :documentation "Arbitrary data carried by the node.  This entry is
-mirrored as a key in `history-tree''s `entries' slot, and the node is added to
-the value list."))
+   (entry (error "Entry required")
+          :type entry
+          :documentation "Arbitrary data (wrapped in an `entry' object) carried
+by the node.  `history-tree''s `entries' holds this `entry'-`node' association."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)
   (:documentation "Internal node of the history tree."))
+
+(defmethod value ((node node))
+  (value (entry node)))
 
 (defun make-node (&key parent entry) ; TODO: Useless?
   (make-instance 'node :parent parent :entry entry))
