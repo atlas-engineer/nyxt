@@ -343,9 +343,8 @@ See `gobject-gtk-browser's `modifier-translator' slot."
 ;;       (set-cookie-policy cookie-manager (default-cookie-policy buffer)))
 ;;     context))
 
-
-;; (define-ffi-method ffi-buffer-uri ((buffer gobject-gtk-buffer))
-;;   (quri:uri (webkit:webkit-web-view-uri (gobject-gtk-object buffer))))
+(define-ffi-method ffi-buffer-uri ((buffer gobject-gtk-buffer))
+  (gir:property (gtk-object buffer) 'uri))
 
 ;; (define-ffi-method ffi-buffer-title ((buffer gobject-gtk-buffer))
 ;;   (or (webkit:webkit-web-view-title (gobject-gtk-object buffer)) ""))
