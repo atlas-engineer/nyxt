@@ -117,11 +117,16 @@ It's updated every time a node is visited.")
       (setf (slot-value owner 'current) value)
       (error "Attempted to set current node to NIL for owner ~a." owner)))
 
-(declaim (ftype (function (owner) (or null (cons node))) owned-children))
+(declaim (ftype (function (owner) function) owned-children-lister))
+(defun owned-children-lister (owner)
+  "Return a function which lists the OWNER's owned children of the node argument."
+  (lambda (node)
+    (remove-if (complement (alexandria:curry #'owned-p owner))
+               (children node))))
+
 (defun owned-children (owner)
-  (remove-if (lambda (child)
-               (not (gethash owner (bindings child))))
-             (children owner)))
+  "Return the OWNER's owned children for the current node."
+  (funcall (owned-children-lister owner) (current owner) ))
 
 (defun owned-parent (owner)
   "Return OWNER's parent if it's owned, nil otherwise."
@@ -347,35 +352,20 @@ Test is done with the TEST argument."
         :test #'data-equal-entry-p))
 
 (export-always 'go-to-child)
-(defmethod go-to-child (data (owner owner) &key (child-finder #'find-child))
-  "Go to current OWNER node's direct child matching DATA.
-Return (values OWNER (current OWNER))."
-  (when (current owner)
-    (let ((match (funcall child-finder data owner)))
-      (when match
-        (visit owner match))))
-  (values owner (current owner)))
+(defmethod go-to-child (data (history history-tree) &key (child-finder #'find-child))
+  "Go to direct current node's child matching DATA.
+Return (values HISTORY (current-owner-node HISTORY))."
+  (let* ((owner (current-owner history))
+         (match (funcall child-finder data owner)))
+    (when match
+      (visit owner match))))
 
 (export-always 'go-to-owned-child)
-(defmethod go-to-owned-child (data (owner owner))
-  "Go to current OWNER node's direct owned child matching DATA.
-A child is owned if it has a binding with OWNER.
-Return (values OWNER (current OWNER))."
-  (go-to-child data owner :child-finder #'find-owned-child))
-
-(defmethod go-to-child (data (history history-tree) &key (child-finder #'find-child))
-  "Go to direct current node's child matching DATA."
-  (when (current-owner history)
-    (go-to-child data (current-owner history)
-                 :child-finder child-finder)))
-
 (defmethod go-to-owned-child (data (history history-tree))
   "Go to current node's direct owned child matching DATA.
 A child is owned if it has a binding with current owner.
 Return (values OWNER (current OWNER))."
-  (when (current-owner history)
-    (go-to-owned-child data (current-owner history)
-                       :child-finder #'find-owned-child)))
+  (go-to-child data (current-owner history) :child-finder #'find-owned-child))
 
 ;; (export-always 'delete-child)
 ;; (defmethod delete-child (data (history history-tree) &key (test #'equal))
@@ -428,24 +418,17 @@ If CREATOR is provided, set the `creator' slot of OWNER."
     (current owner)))
 
 (export 'add-children)
-(defmethod add-children (children-data (owner owner))
-  "Add CHILDREN-DATA to the `owner''s node children.
-Each child is added with `add-child'.
-Return the (maybe new) current node, which holds the last piece of data in
-`children-data'."
-  (add-child (first children-data) owner)
-  (if (rest children-data)
-      (add-children (rest children-data) (back owner))
-      (current owner)))
-
 (defmethod add-children (children-data (history history-tree))
   "Add CHILDREN-DATA to the HISTORY `current-owner''s node children.
 Each child is added with `add-child'.
 Return the (maybe new) current node, which holds the last piece of data in
 `children-data'.
 Return nil if there is no `current-owner'."
-  (when (current-owner history)
-    (add-children children-data (current-owner history))))
+  (let ((owner (current-owner history)))
+    (add-child (first children-data) owner)
+    (if (rest children-data)
+        (add-children (rest children-data) (back owner))
+        (current owner))))
 
 (export-always 'map-tree)
 (defun map-tree (function tree &key flatten include-root ; TODO: Edit?  Unexport?
@@ -496,26 +479,18 @@ Always return nil, as it is an explicitly imperative macro."
   "Return a list of all the children of the NODE, recursively."
   (map-tree #'identity node :flatten t))
 
-(defmethod all-children ((owner owner))
-  "Return a list of all the children of OWNER, recursively."
-  (all-children (current owner)))
-
 (defmethod all-children ((history history-tree))
   "Return a list of all the children of HISTORY's current owner, recursively."
-  (when (current-owner history)
-    (all-children (current-owner-node history))))
+  (all-children (current-owner-node history)))
 
 (export-always 'all-contiguous-owned-children)
-(defmethod all-contiguous-owned-children ((owner owner))
-  "Return a list of all the children owned by OWNER, recursively."
-  (map-tree #'identity (current owner) :flatten t
-                                       :children-function #'owned-children))
-
-(defmethod all-contiguous-owned-children ((history history-tree))
+(defmethod all-contiguous-owned-children ((history history-tree) &optional node)
   "Return a list of all the children owned by HISTORY's current owner,
 recursively."
-  (when (current-owner history)
-    (all-contiguous-owned-children (current-owner history))))
+  (let ((owner (current-owner history)))
+    (map-tree #'identity (or node (current owner))
+              :flatten t
+              :children-function (owned-children-lister owner))))
 
 (export-always 'all-parents)
 (defmethod all-parents ((node node))
@@ -525,92 +500,78 @@ First parent comes first in the resulting list."
     (cons (parent node)
           (all-parents (parent node)))))
 
-(defmethod all-parents ((owner owner))
-  "Return a list of parents of OWNER current node, recursively.
-First parent comes first in the resulting list."
-  (when (current owner)
-    (all-parents (current owner))))
-
 (defmethod all-parents ((history history-tree))
   "Return a list of all parents of the current node.
 First parent comes first in the resulting list."
-  (when (current-owner history)
-    (all-parents (current-owner-node history))))
+  (all-parents (current-owner-node history)))
 
 (export-always 'all-contiguous-owned-parents)
-(defmethod all-contiguous-owned-parents ((owner owner))
-  "Return a list of parents of owned by OWNER, starting from its current node,
-recursively.
-First parent comes first in the resulting list."
-  (when (and (parent owner)
-             (owned-p owner (parent owner)))
-    (cons (parent owner)
-          (all-contiguous-owned-parents (current owner)))))
-
 (defmethod all-contiguous-owned-parents ((history history-tree))
   "Return a list of parents of owned by HISTORY current owner, starting from its
 current node, recursively.  First parent comes first in the resulting list."
-  (when (current-owner history)
-    (all-contiguous-owned-parents (current-owner history))))
+  (labels ((node-contiguous-owned-parents (node)
+             (when (and (parent node)
+                        (owned-p (current-owner history) (parent node)))
+               (cons (parent node)
+                     (node-contiguous-owned-parents (parent node))))))
+    (node-contiguous-owned-parents (current-owner-node history))))
 
 (export-always 'all-forward-children)
-(defmethod all-forward-children ((owner owner))
-  "Return a list of the first children of OWNER, recursively.
-First child comes first in the resulting list."
-  (when (and (current-binding owner)
-             (forward-child (current-binding owner)))
-    (cons (forward-child (current-binding owner))
-          (all-forward-children (forward-child (current-binding owner))))))
-
 (defmethod all-forward-children ((history history-tree))
   "Return a list of the first children of NODE, recursively.
 First child comes first in the resulting list."
-  (when (current-owner history)
-    (all-forward-children (current-owner history))))
+  (let ((owner (current-owner history)))
+    (when (and (current-binding owner)
+               (forward-child (current-binding owner)))
+      (cons (forward-child (current-binding owner))
+            (all-forward-children (forward-child (current-binding owner)))))))
 
 (export 'all-nodes)
 (defmethod all-nodes ((history history-tree))
-  "Return a list of all nodes, in depth-first order."
-  (let ((root (root history)))
-    (when root
-      (cons root (all-children root)))))
-
-(defmethod all-nodes ((owner owner))
-  "Return a list of all OWNER nodes, in no particular order."
-  (nodes owner))
+  "Return a list of all current owner nodes, in unspecified order."
+  (nodes (current-owner history)))
 
 (export 'all-contiguous-owned-nodes)
-(defmethod all-contiguous-owned-nodes ((owner owner))
+(defmethod all-contiguous-owned-nodes ((history history-tree))
   "Return a list of all owner nodes, in depth-first order."
-  (let ((owner-root (first (all-contiguous-owned-parents owner))))
+  (let ((owner-root (first (last (all-contiguous-owned-parents history)))))
     (when owner-root
-      (cons owner-root (all-contiguous-owned-children owner-root)))))
+      (cons owner-root (all-contiguous-owned-children history owner-root)))))
 
 
-(defun node-value (node)
-  (value (entry node)))
+
+;; TODO: Delete these functions?
+(export-always 'all-data)
+(defmethod all-data ((history history-tree))
+  "Return a list of all entries data, in unspecified order."
+  (mapcar #'value (alexandria:hash-table-keys (entries history))))
 
 (export-always 'all-nodes-data)
 (defmethod all-nodes-data ((history history-tree))
   "Return a list of all nodes data, in depth-first order."
-  (mapcar #'node-value (all-nodes history)))
+  (mapcar #'value (all-nodes history)))
+
+(export-always 'all-contiguous-owned-nodes-data)
+(defmethod all-contiguous-owned-nodes-data ((history history-tree))
+  "Return a list of all nodes data, in depth-first order."
+  (mapcar #'value (all-contiguous-owned-nodes history)))
 
 (export-always 'parent-nodes-data)
 (defmethod parent-nodes-data ((history history-tree))
   "Return a list of all parent nodes data.
 First parent comes first."
-  (mapcar #'node-value (all-parents history)))
+  (mapcar #'value (all-parents history)))
 
 (export-always 'forward-children-nodes-data)
 (defmethod forward-children-nodes-data ((history history-tree))
   "Return a list of all forward children nodes data.
 First child comes first."
-  (mapcar #'node-value (all-forward-children history)))
+  (mapcar #'value (all-forward-children history)))
 
 (export-always 'children-nodes-data)
 (defmethod children-nodes-data ((history history-tree))
   "Return a list of all children nodes data, in depth-first order."
-  (mapcar #'node-value (all-children history)))
+  (mapcar #'value (all-children history)))
 
 
 (defun first-hash-table-value (hash-table)
@@ -690,10 +651,10 @@ TREE can be a `history' or a `node'."
   `(integer 0 ,most-positive-fixnum))
 
 (export-always 'depth)
-(declaim (ftype (function ((or history-tree owner)) non-negative-integer) depth))
-(defun depth (history-or-owner)
+(declaim (ftype (function (history-tree) non-negative-integer) depth))
+(defun depth (history)
   "Return the number of parents of the current owner node."
-  (length (all-parents history-or-owner)))
+  (length (all-parents history)))
 
 (export-always 'size)
 (defmethod size ((owner owner))

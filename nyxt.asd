@@ -250,7 +250,8 @@
                (:file "text-buffer")))
 
 (asdf:defsystem nyxt/history-tree
-  :depends-on (cl-custom-hash-table
+  :depends-on (alexandria
+               cl-custom-hash-table
                local-time
                nyxt/class-star)
   :pathname "libraries/history-tree/"
