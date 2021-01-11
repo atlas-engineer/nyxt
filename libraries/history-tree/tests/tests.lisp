@@ -80,19 +80,19 @@
               "http://example.root/A"
               "http://example.root/A2" "http://example.root/A1")))
 
-;; (prove:subtest
-;;     "Reorder the nodes."
-;;   (prove:is (htree:all-nodes-data
-;;              (htree:go-to-child
-;;                "http://example.root/A2"
-;;               (htree:go-to-child
-;;                "http://example.root/A"
-;;                (htree:back (make-tree1) 2))))
-;;             '("http://example.root"
-;;               "http://example.root/A"
-;;               "http://example.root/A2" "http://example.root/A1"
-;;               "http://example.root/B"
-;;               "http://example.root/B2" "http://example.root/B1")))
+(prove:subtest
+    "Visiting other branches should not reorder the nodes."
+  (prove:is (htree:all-contiguous-owned-nodes-data
+             (htree:go-to-child
+               "http://example.root/A2"
+              (htree:go-to-child
+               "http://example.root/A"
+               (htree:back (make-tree1) 2))))
+            '("http://example.root"
+              "http://example.root/B"
+              "http://example.root/B2" "http://example.root/B1"
+              "http://example.root/A"
+              "http://example.root/A2" "http://example.root/A1")))
 
 ;; (prove:subtest
 ;;     "Reorder manually set current node."
