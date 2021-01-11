@@ -286,8 +286,6 @@ Also see `test'."))
                               ,@body)
          (set-current-owner ,history ,old-owner-identifier)))))
 
-;; TODO: Add `gethash*' to set default value when not found?
-
 (defmethod visit ((history history-tree) node)
   "Visit NODE with HISTORY's current owner.
 Return (values HISTORY NODE) so that calls to `visit' can be chained."
