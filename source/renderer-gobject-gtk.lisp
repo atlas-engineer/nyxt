@@ -564,23 +564,9 @@ See `gobject-gtk-browser's `modifier-translator' slot."
 ;; (define-ffi-method ffi-buffer-delete ((buffer gobject-gtk-buffer))
 ;;   (gobject-gtk:gobject-gtk-widget-destroy (gobject-gtk-object buffer)))
 
-;; (define-ffi-method ffi-buffer-load ((buffer gobject-gtk-buffer) uri)
-;;   "Load URI in BUFFER.
-;; An optimization technique is to make use of the renderer history cache.
-;; For WebKit, if the URL matches an entry in the webkit-history then we fetch the
-;; page from the cache.
-
-;; We don't use the cache if URI matches BUFFER's URL since this means the user
-;; requested a reload."
-;;   ;; (declare (type quri:uri uri))
-;;   (let* ((history (webkit-history buffer))
-;;          (entry (or (find uri history :test #'quri:uri= :key #'webkit-history-entry-uri)
-;;                     (find uri history :test #'quri:uri= :key #'webkit-history-entry-original-uri))))
-;;     (if (and entry (not (quri:uri= uri (url buffer))))
-;;         (progn
-;;           (log:debug "Load URL from history entry ~a" entry)
-;;           (load-webkit-history-entry buffer entry))
-;;         (webkit:webkit-web-view-load-uri (gobject-gtk-object buffer) (object-string uri)))))
+(define-ffi-method ffi-buffer-load ((buffer gobject-gtk-buffer) uri)
+  "Load URI in BUFFER."
+  (gir:invoke ((gtk-object buffer) 'load_uri) (object-string uri)))
 
 ;; (defmethod ffi-buffer-evaluate-javascript ((buffer gobject-gtk-buffer) javascript)
 ;;   (%within-renderer-thread
