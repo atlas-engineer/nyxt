@@ -312,7 +312,7 @@ Return (values HISTORY NODE) so that calls to `visit' can be chained."
                (error "NODE and current owner node must be on the same branch"))
              (if (or (null node)
                      (find node current-node-parents))
-                 node
+                 (list node)
                  (cons node (nodes-with-common-parent (parent node) current-node-parents)))))
     (let* ((current-node (current-owner-node history))
            (current-node-parents (all-parents current-node))
