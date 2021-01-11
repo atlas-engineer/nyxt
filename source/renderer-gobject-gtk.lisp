@@ -346,8 +346,8 @@ See `gobject-gtk-browser's `modifier-translator' slot."
 (define-ffi-method ffi-buffer-uri ((buffer gobject-gtk-buffer))
   (gir:property (gtk-object buffer) 'uri))
 
-;; (define-ffi-method ffi-buffer-title ((buffer gobject-gtk-buffer))
-;;   (or (webkit:webkit-web-view-title (gobject-gtk-object buffer)) ""))
+(define-ffi-method ffi-buffer-title ((buffer gobject-gtk-buffer))
+  (gir:property (gtk-object buffer) 'title))
 
 ;; (define-ffi-method on-signal-load-failed-with-tls-errors ((buffer gobject-gtk-buffer) certificate url)
 ;;   "Return nil to propagate further (i.e. raise load-failed signal), T otherwise."
