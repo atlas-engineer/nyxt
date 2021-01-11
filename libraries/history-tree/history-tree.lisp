@@ -115,6 +115,7 @@ deleted.")
    (current nil
             :type (or null node)
             :reader current
+            :export t
             :documentation "The current node.
 It's updated every time a node is visited.")
    (nodes '()
@@ -401,19 +402,27 @@ If current node matches DATA, then we update its data to DATA (since the
 `history-tree''s `key' and `test' functions may identify two non-identical datum
 as equal).
 
-If DATA is found among the children, the OWNER `forward-child' is set to the
-matching child, the child data is set to DATA and the OWNER current node is set
-to this child.
+If DATA is found among the children, the current owner `forward-child' is set to
+the matching child, the child data is set to DATA and the owner current node is
+set to this child.
 
-If there is no current element, this creates the first element of the tree.
-If CREATOR is provided, set the `creator' slot of OWNER."
+If there is no current element, this creates the first element of the current
+owner.  If CREATOR is provided, set the `creator' slot of current owner and
+the first element parent is set to the current node of `creator'."
   (let ((owner (current-owner history)))
     (cond
       ((null (current owner))
-       (let ((new-node (make-node :entry (add-entry history data))))
+       (let* ((creator (and creator
+                            (owner history creator)
+                            creator))
+              (creator-node (with-current-owner (history creator)
+                                  (current-owner-node history)))
+              (new-node (make-node :entry (add-entry history data)
+                                   :parent creator-node)))
          (setf (origin owner) new-node
                (creator owner) creator)
          (visit history new-node)))
+
       ((not (data-equal-entry-p data (entry (current owner))))
        (let ((node (find-child data owner)))
          (if node
@@ -425,8 +434,10 @@ If CREATOR is provided, set the `creator' slot of OWNER."
          (let ((binding (gethash owner (bindings (current owner)))))
            (setf (forward-child binding) node))
          (forward history)))
+
       (t
        (setf (value (entry (current owner))) data)))
+
     (current owner)))
 
 (export 'add-children)
