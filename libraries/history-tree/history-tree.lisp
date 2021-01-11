@@ -7,8 +7,12 @@
 ;; TODO: Review docstrings.
 ;; TODO: Is "Shared history tree" a better name than "Global history tree"?
 
+;; TODO: Turn unique defmethod to defuns.
 ;; TODO: Add forward and back functions to unowned nodes.
 ;; TODO: Thread safe?
+
+;; TODO: Should we have different functions for finding nodes vs. "owned nodes",
+;; or pass an option as key argument?
 
 (defmacro export-always (symbols &optional (package nil package-supplied?)) ; From serapeum.
   "Like `export', but also evaluated at compile time."
@@ -617,15 +621,6 @@ TREE can be a `history' or a `node'."
     result))
 
 
-;; (eval-when (:compile-toplevel :load-toplevel :execute)
-;;   (export 'find-data))
-;; (defmethod find-data (data (history history-tree) &key (test #'equal) ensure-p)
-;;   "Find a tree node matching DATA in HISTORY and return it.
-;; If ENSURE-P is non-nil, create this node when not found.
-;; Search is done with the help of TEST argument."
-;;   (let ((match (find-node data history :test test :key #'entry)))
-;;     ;; TODO: `add-child' changes `current'. Always change `current' on match?
-;;     (or match (when ensure-p (add-child data history :test test)))))
 
 ;; (eval-when (:compile-toplevel :load-toplevel :execute)
 ;;   (export 'delete-data))
