@@ -98,20 +98,6 @@
               "http://example.root/A"
               "http://example.root/A2" "http://example.root/A1")))
 
-;; TODO: Irrelevant?
-;; (prove:subtest
-;;     "Reorder manually set current node."
-;;   (prove:is (htree:all-contiguous-owned-nodes-data
-;;              (let* ((history (make-tree2))
-;;                     (second-child (second (htree:children
-;;                                            (htree:current-owner-node (htree:back history))))))
-;;                (setf (htree:current-owner-node history) second-child)
-;;                (htree:back history)
-;;                history))
-;;             '("http://example.root"
-;;               "http://example.root/A"
-;;               "http://example.root/B")))
-
 (prove:subtest "Traverse parents."
   (prove:is (htree:parent-nodes-data
              (htree:back (make-tree1)))
@@ -139,24 +125,6 @@
     (htree:add-child "http://example.root/A" tree)
     (prove:is (htree:value (htree:current-owner-node tree))
               "http://example.root/A")))
-
-;; (defun trim-scheme (url)
-;;   (let ((delimiter "://"))
-;;     (subseq url (+ (length delimiter) (search delimiter url)))))
-
-;; (defun scheme-less-url= (url1 url2)
-;;   (string= (trim-scheme url1)
-;;            (trim-scheme url2)))
-
-;; (prove:subtest
-;;     "Update current node data."
-;;   (let ((tree (make-tree2)))
-;;     (htree:add-child "https://example.root/B" tree :test #'scheme-less-url=)
-;;     (prove:is (htree:data (htree:current tree))
-;;               "https://example.root/B")
-;;     (htree:back tree)
-;;     (prove:is (htree:data (htree:current tree))
-;;               "http://example.root")))
 
 (define-class web-page ()
   ((url "")
