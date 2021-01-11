@@ -297,10 +297,29 @@ Return (values HISTORY NODE) so that calls to `visit' can be chained."
                 (make-instance 'binding))))
     (cl-custom-hash-table:with-custom-hash-table
       (pushnew owner (gethash (entry node) (entries history))))
-    ;; TODO: If node is among the children, should we set all the forward children
-    ;; to ensure that calling `forward` from CURRENT would lead to NODE?
-    ;; What if there is no path owned by OWNER?
     (values history node)))
+
+(defmethod visit-all ((history history-tree) node)
+  "Like `visit' but on all nodes between the current node and NODE.
+This is only possible if the current node and NODE are on the same branch.
+If they are not, an error is raised.
+Return (values HISTORY NODE) so that calls to `visit' can be chained."
+  (labels ((nodes-with-common-parent (node current-node-parents)
+             (unless node
+               (error "NODE and current owner node must be on the same branch"))
+             (if (or (null node)
+                     (find node current-node-parents))
+                 node
+                 (cons node (nodes-with-common-parent (parent node) current-node-parents)))))
+    (let* ((current-node (current-owner-node history))
+           (current-node-parents (all-parents current-node))
+           (node-parents (nreverse (nodes-with-common-parent node current-node-parents)))
+           (common-parent (first node-parents)))
+      (dolist (node (nreverse (member common-parent (nreverse current-node-parents))))
+        (visit history node))
+      (dolist (node (rest node-parents)) ; Skip the first node since it's the common-parent and it's already visited.
+        (visit history node))
+      (values history node))))
 
 (deftype positive-integer ()
   `(integer 1 ,most-positive-fixnum))
