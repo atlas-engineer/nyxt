@@ -12,7 +12,6 @@
 (prove:subtest "Single entry"
   (let ((history (htree:make))
         (url "http://example.org" ))
-    (htree:set-current-owner history "a")
     (htree:add-child url history)
     (prove:is (htree:value (htree:entry (htree:current-owner-node history)))
               url)))
@@ -22,7 +21,6 @@
         (url1 "http://example.org")
         (url2 "https://nyxt.atlas.engineer")
         (url3 "http://en.wikipedia.org"))
-    (htree:set-current-owner history "a")
     (htree:add-child url1 history)
     (htree:add-child url2 history)
     (htree:back history)
@@ -182,7 +180,6 @@
         (web-page2 (make-instance 'web-page :url "http://example.org"
                                             :title "Same page, another title")))
     (let ((history (htree:make :entry-key #'url)))
-      (htree:set-current-owner history "a")
       (htree:add-child web-page1 history)
       (htree:add-child web-page2 history)
       (prove:is (hash-table-count (htree:entries history))
@@ -190,7 +187,6 @@
       (prove:is (title (htree:value (first-hash-table-key (htree:entries history))))
                 "Same page, another title"))
     (let ((history (htree:make)))
-      (htree:set-current-owner history "a")
       (htree:add-child web-page1 history)
       (htree:add-child web-page2 history)
       (prove:is (hash-table-count (htree:entries history))
