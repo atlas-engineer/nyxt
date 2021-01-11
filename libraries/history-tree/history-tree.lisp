@@ -176,6 +176,7 @@ It only changes when deleted.")
            :documentation "The key is an owner identifier (an artitrary balue),
 the value is an `owner'.")
    (current-owner (error "Owner required")
+                  :reader current-owner
                   :type owner
                   :documentation "Must be one of the `owners' values.")
    (entries (make-entry-hash-table)
@@ -215,7 +216,7 @@ nodes that hold this data.")
     (unless owner
       (setf owner
             (setf (gethash owner-identifier (owners history)) (make-instance 'owner))))
-    (setf (current-owner history) owner)))
+    (setf (slot-value history 'current-owner) owner)))
 
 (export-always 'current-owner-node)
 ;; (declaim (ftype (function (history-tree) (or null node)) current-owner-node)) ; TODO: Fix type.
@@ -422,8 +423,8 @@ current node to the result of further traversal."
                  (apply (if flatten #'append #'(lambda (&rest args) args))
                         (mapcar #'traverse (funcall children-function node)))))))
     (let ((root (typecase tree
-                  (htree:node tree)
-                  (htree:history-tree (htree:root tree)))))
+                  (node tree)
+                  (history-tree (root tree)))))
       (when root
         (if include-root
             (traverse root)
@@ -576,7 +577,7 @@ First child comes first."
   (let ((owner (owner owner-identifier history)))
     (remhash owner-identifier (owners history))
     (when (eq owner (current-owner history))
-      (setf (current-owner history)
+      (setf (slot-value history 'current-owner)
             (first-hash-table-value (owners history))))
     (when owner
       (mapc
