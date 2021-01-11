@@ -449,11 +449,10 @@ the first element parent is set to the current node of `creator'."
 
 (export 'add-children)
 (defmethod add-children (children-data (history history-tree))
-  "Add CHILDREN-DATA to the HISTORY `current-owner''s node children.
+  "Add CHILDREN-DATA to the HISTORY `current-owner''s.
 Each child is added with `add-child'.
 Return the (maybe new) current node, which holds the last piece of data in
-`children-data'.
-Return nil if there is no `current-owner'."
+`children-data'."
   (let ((owner (current-owner history)))
     (add-child (first children-data) owner)
     (if (rest children-data)
@@ -506,16 +505,17 @@ Always return nil, as it is an explicitly imperative macro."
 
 (export-always 'all-children)
 (defmethod all-children ((node node))
-  "Return a list of all the children of the NODE, recursively."
+  "Return a list of all the children of NODE, recursively."
   (map-tree #'identity node :flatten t))
 
 (defmethod all-children ((history history-tree))
-  "Return a list of all the children of HISTORY's current owner, recursively."
+  "Return a list of all the children of HISTORY's current owner node.
+Children may not all be owned by the current owner."
   (all-children (current-owner-node history)))
 
 (export-always 'all-contiguous-owned-children)
 (defmethod all-contiguous-owned-children ((history history-tree) &optional node)
-  "Return a list of all the children owned by HISTORY's current owner,
+  "Return a list of all the children of HISTORY's current owner node,
 recursively."
   (let ((owner (current-owner history)))
     (map-tree #'identity (or node (current owner))
@@ -532,13 +532,14 @@ First parent comes first in the resulting list."
 
 (defmethod all-parents ((history history-tree))
   "Return a list of all parents of the current node.
+Parents may not be owned by the current owner.
 First parent comes first in the resulting list."
   (all-parents (current-owner-node history)))
 
 (export-always 'all-contiguous-owned-parents)
 (defmethod all-contiguous-owned-parents ((history history-tree))
-  "Return a list of parents of owned by HISTORY current owner, starting from its
-current node, recursively.  First parent comes first in the resulting list."
+  "Return a list of parents of owned by HISTORY current owner node, recursively.
+First parent comes first in the resulting list."
   (labels ((node-contiguous-owned-parents (node)
              (when (and (parent node)
                         (owned-p (current-owner history) (parent node)))
@@ -558,14 +559,21 @@ First child comes first in the resulting list."
             (all-forward-children history
                                   (forward-child binding))))))
 
-(export 'all-nodes)
-(defmethod all-nodes ((history history-tree))
+(export 'all-current-owner-nodes)
+(defmethod all-current-owner-nodes ((history history-tree))
   "Return a list of all current owner nodes, in unspecified order."
   (nodes (current-owner history)))
 
+(export 'all-current-branch-nodes)
+(defmethod all-current-branch-nodes ((history history-tree))
+  "Return a list of all nodes that belong to the branch the current owner is on."
+  (let ((root (root (current-owner-node history))))
+    (cons root (all-children (root (current-owner-node history))))))
+
 (export 'all-contiguous-owned-nodes)
 (defmethod all-contiguous-owned-nodes ((history history-tree))
-  "Return a list of all owner nodes, in depth-first order."
+  "Return a list of all nodes contiguous to the current owner node, starting
+from the top-most parent, in depth-first order."
   (let ((owner-root (first (last (all-contiguous-owned-parents history)))))
     (when owner-root
       (cons owner-root (all-contiguous-owned-children history owner-root)))))
@@ -578,31 +586,39 @@ First child comes first in the resulting list."
   "Return a list of all entries data, in unspecified order."
   (mapcar #'value (alexandria:hash-table-keys (entries history))))
 
-(export-always 'all-nodes-data)
-(defmethod all-nodes-data ((history history-tree))
-  "Return a list of all nodes data, in depth-first order."
-  (mapcar #'value (all-nodes history)))
+(export-always 'all-current-owner-nodes-data)
+(defmethod all-current-owner-nodes-data ((history history-tree))
+  "Return a list of all the nodes data of the current owner."
+  (mapcar #'value (all-current-owner-nodes history)))
+
+(export-always 'all-current-branch-nodes-data)
+(defmethod all-current-branch-nodes-data ((history history-tree))
+  "Return a list of all the nodes data of the current branch."
+  (mapcar #'value (all-current-branch-nodes history)))
 
 (export-always 'all-contiguous-owned-nodes-data)
 (defmethod all-contiguous-owned-nodes-data ((history history-tree))
-  "Return a list of all nodes data, in depth-first order."
+  "Return a list of the data of all nodes contiguous to the current owner node,
+starting from the top-most parent, in depth-first order."
   (mapcar #'value (all-contiguous-owned-nodes history)))
 
-(export-always 'parent-nodes-data)
-(defmethod parent-nodes-data ((history history-tree))
-  "Return a list of all parent nodes data.
-First parent comes first."
+(export-always 'all-parents-data)
+(defmethod all-parents-data ((history history-tree))
+  "Return a list of the data of all parents of the current node.
+Parents may not be owned by the current owner.
+First parent data comes first in the resulting list."
   (mapcar #'value (all-parents history)))
 
-(export-always 'forward-children-nodes-data)
-(defmethod forward-children-nodes-data ((history history-tree))
-  "Return a list of all forward children nodes data.
-First child comes first."
+(export-always 'all-forward-children-data)
+(defmethod all-forward-children-data ((history history-tree))
+  "Return a list of the data of the forward children of NODE, recursively.
+First child comes first in the resulting list."
   (mapcar #'value (all-forward-children history)))
 
-(export-always 'children-nodes-data)
-(defmethod children-nodes-data ((history history-tree))
-  "Return a list of all children nodes data, in depth-first order."
+(export-always 'all-children-data)
+(defmethod all-children-data ((history history-tree))
+  "Return a list of the data of all the children of HISTORY's current owner node.
+Children may not all be owned by the current owner."
   (mapcar #'value (all-children history)))
 
 
@@ -694,6 +710,6 @@ Return owner, or nil if there is no owner corresponding to OWNER-IDENTIFIER."
   (length (all-contiguous-owned-nodes owner)))
 
 (defmethod size ((history history-tree))
-  "Return the total number of nodes."
+  "Return the total number of nodes for the current branch."
   ;; TODO: This could be optimized with a SIZE slot, but is it worth it?
-  (length (all-nodes history)))
+  (length (all-current-branch-nodes history)))
