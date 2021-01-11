@@ -358,7 +358,7 @@ Return (values HISTORY (current-owner-node HISTORY))."
   (let* ((owner (current-owner history))
          (match (funcall child-finder data owner)))
     (when match
-      (visit owner match))))
+      (visit history match))))
 
 (export-always 'go-to-owned-child)
 (defmethod go-to-owned-child (data (history history-tree))
