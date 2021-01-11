@@ -8,7 +8,6 @@
 ;; TODO: Is "Shared history tree" a better name than "Global history tree"?
 
 ;; TODO: Add forward and back functions to unowned nodes.
-;; TODO: Add `with-owner' macro.
 ;; TODO: Thread safe?
 
 (defmacro export-always (symbols &optional (package nil package-supplied?)) ; From serapeum.
@@ -175,10 +174,10 @@ It only changes when deleted.")
            :type hash-table
            :documentation "The key is an owner identifier (an artitrary balue),
 the value is an `owner'.")
-   (current-owner (error "Owner required")
-                  :reader current-owner
-                  :type owner
-                  :documentation "Must be one of the `owners' values.")
+   (current-owner-identifier (error "Owner identifier required")
+                  :reader current-owner-identifier
+                  :type t
+                  :documentation "Must be one of the `owners' keys.")
    (entries (make-entry-hash-table)
             :type hash-table
             :documentation "The key is an `entry', the value is the list of
@@ -200,7 +199,7 @@ nodes that hold this data.")
     (setf (gethash owner-identifier owners) initial-owner)
     (make-instance 'history-tree :entry-key entry-key
                                  :owners owners
-                                 :current-owner initial-owner)))
+                                 :current-owner-identifier owner-identifier)))
 
 (export-always 'owner)
 (declaim (ftype (function (history-tree t) (or null owner)) owner))
@@ -216,13 +215,24 @@ nodes that hold this data.")
     (unless owner
       (setf owner
             (setf (gethash owner-identifier (owners history)) (make-instance 'owner))))
-    (setf (slot-value history 'current-owner) owner)))
+    (setf (slot-value history 'current-owner-identifier) owner-identifier)))
+
+(export-always 'current-owner)
+(defun current-owner (history)
+  (owner history (current-owner-identifier history)))
 
 (export-always 'current-owner-node)
 ;; (declaim (ftype (function (history-tree) (or null node)) current-owner-node)) ; TODO: Fix type.
 (defun current-owner-node (history)
-  (when (current-owner history)
-    (current (the owner (current-owner history)))))
+  (current (the owner (current-owner history))))
+
+(export-always 'with-current-owner)
+(defmacro with-current-owner ((history owner-identifier) &body body)
+  (let  ((old-owner-identifier (gensym)))
+    `(let ((,old-owner-identifier (current-owner-identifier ,history)))
+       (unwind-protect (progn (set-current-owner ,history ,owner-identifier)
+                              ,@body)
+         (set-current-owner ,history ,old-owner-identifier)))))
 
 ;; TODO: Add `gethash*' to set default value when not found?
 
