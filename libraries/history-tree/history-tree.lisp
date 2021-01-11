@@ -8,9 +8,9 @@
 ;; TODO: Is "Shared history tree" a better name than "Global history tree"?
 
 ;; TODO: Turn unique defmethod to defuns.
-;; TODO: Add forward and back functions to unowned nodes.
 ;; TODO: Thread safe?
 
+;; TODO: Add forward and back functions to unowned nodes.
 ;; TODO: Should we have different functions for finding nodes vs. "owned nodes",
 ;; or pass an option as key argument?
 
@@ -69,6 +69,11 @@ by the node.  `history-tree''s `entries' holds this `entry'-`node' association."
 
 (defmethod value ((node node))
   (value (entry node)))
+
+(defmethod root ((node node))
+  (if (parent node)
+      (root (parent node))
+      node))
 
 (defun make-node (&key parent entry) ; TODO: Useless?
   (make-instance 'node :parent parent :entry entry))
@@ -147,6 +152,10 @@ It's updated every time a node is visited.")
   (and (bindings node)
        (gethash owner (bindings node))))
 
+(declaim (ftype (function (node) boolean) disowned-p))
+(defun disowned-p (node)
+  (null (bindings node)))
+
 (declaim (ftype (function (owner node) boolean) disown))
 (defun disown (owner node)
   "Remove binding between OWNER and NODE.
@@ -189,11 +198,7 @@ Return the new or existing `entry'."
               new-entry))))))
 
 (define-class history-tree ()           ; TODO: Rename `history'?
-  ((root nil
-         :type (or null node)
-         :documentation "The root node.
-It only changes when deleted.")
-   (owners (error "Owners need be initialized")
+  ((owners (error "Owners need be initialized")
            :type hash-table
            :documentation "The key is an owner identifier (an artitrary balue),
 the value is an `owner'.")
@@ -574,13 +579,54 @@ First child comes first."
   (mapcar #'value (all-children history)))
 
 
+
+(defun disowned-branch-nodes (node)
+  "Return list of all NODE's children (including NODE) if they are all disowned.
+Return nil otherwise."
+  (let ((disowned? t)
+        (children '()))
+    (block nil
+      (do-tree (child-node node)
+        (unless (disowned-p child-node)
+          (setf disowned? nil)
+          (return))
+        (push child-node children)))
+    (when disowned?
+      children)))
+
+(defun delete-node (history node)
+  (cl-custom-hash-table:with-custom-hash-table
+    (alexandria:deletef (gethash (entry node) (entries history)) node)))
+
+(defun delete-disowned-branch-nodes (history owner)
+  ;; We memoize the deleted nodes to avoid retraversing the branch for all the
+  ;; nodes that belong to the same branch.
+  (let ((deleted-nodes '()))
+    (labels ((garbage-collect (list-of-nodes)
+               (when list-of-nodes
+                 (let* ((node (first list-of-nodes))
+                        (root (root node)))
+                   (unless (find node deleted-nodes)
+                     (let ((disowned-nodes (disowned-branch-nodes root)))
+                       (when disowned-nodes
+                         (dolist (node deleted-nodes)
+                           (delete-node history node))
+                         (setf deleted-nodes
+                               (append disowned-nodes
+                                       deleted-nodes))))))
+                 (garbage-collect (rest list-of-nodes)))))
+      (garbage-collect (nodes owner)))))
+
 (defun first-hash-table-value (hash-table)
   (with-hash-table-iterator (next-entry hash-table)
     (nth-value 2 (next-entry))))
 
 (declaim (ftype (function (history-tree t) (or null owner)) delete-owner))
 (defun delete-owner (history owner-identifier)
-  "Return owner, or nil if there is no owner corresponding to OWNER-IDENTIFIER."
+  "Delete `owner' corresponding to OWNER-IDENTIFIER from HISTORY.
+For every branch `owner' has nodes on, remove all its nodes if the branch is
+without any owner.
+Return owner, or nil if there is no owner corresponding to OWNER-IDENTIFIER."
   (let ((owner (owner owner-identifier history)))
     (remhash owner-identifier (owners history))
     (when (eq owner (current-owner history))
@@ -591,14 +637,13 @@ First child comes first."
        (lambda (node)
          (disown owner node))
        (nodes owner)))
-    ;; TODO: Garbage-collect owner-less branch.
-    ;;
-    ;; Delete nodes when whole branch is owner-less.  Indeed, otherwise we would
-    ;; lose information.  It's better to be as "immutable" as possible.
+    ;; Delete nodes only when whole branch is owner-less.  Indeed, otherwise we would
+    ;; lose information for other owners.  It's better to be as "immutable" as possible.
     ;;
     ;; If we want to "free" disowned nodes or edit a given owner's history, the
     ;; best approach is to copy its owned branches to new branches that are
     ;; directly connected to the root.
+    (delete-disowned-branch-nodes history owner)
     owner))
 
 
