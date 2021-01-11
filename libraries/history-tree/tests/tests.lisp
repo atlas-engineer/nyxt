@@ -9,11 +9,35 @@
 
 (prove:plan nil)
 
+(defun make-tree1 ()
+  (let ((tree (htree:make)))
+    (dolist (url '(
+                   "http://example.root"
+                   "http://example.root/A"
+                   "http://example.root/A1"))
+      (htree:add-child url tree))
+    (htree:back tree)
+    (htree:add-child "http://example.root/A2" tree)
+    (htree:back tree 2)
+    (htree:add-child "http://example.root/B" tree)
+    (htree:add-child "http://example.root/B1" tree)
+    (htree:back tree)
+    (htree:add-child "http://example.root/B2" tree)
+    tree))
+
+;; (defun make-tree2 ()
+;;   (let ((tree (htree:make)))
+;;     (htree:add-child "http://example.root" tree)
+;;     (htree:add-child "http://example.root/A" tree)
+;;     (htree:back tree)
+;;     (htree:add-child "http://example.root/B" tree)
+;;     tree))
+
 (prove:subtest "Single entry"
   (let ((history (htree:make))
         (url "http://example.org" ))
     (htree:add-child url history)
-    (prove:is (htree:value (htree:entry (htree:current-owner-node history)))
+    (prove:is (htree:value (htree:current-owner-node history))
               url)))
 
 (prove:subtest "Multiple entry"
@@ -25,41 +49,17 @@
     (htree:add-child url2 history)
     (htree:back history)
     (htree:add-child url3 history)
-    (prove:is (htree:value (htree:entry (htree:current-owner-node history)))
+    (prove:is (htree:value (htree:current-owner-node history))
               url3)
-    (prove:is (htree:value (htree:entry (htree:parent (htree:current-owner-node history))))
+    (prove:is (htree:value (htree:parent (htree:current-owner-node history)))
               url1)
     ;; TODO: Go to other child.
     ))
 
-;; (defun make-tree1 ()
-;;   (let ((tree (htree:make)))
-;;     (dolist (url '(
-;;                    "http://example.root"
-;;                    "http://example.root/A"
-;;                    "http://example.root/A1"))
-;;       (htree:add-child url tree))
-;;     (htree:back tree)
-;;     (htree:add-child "http://example.root/A2" tree)
-;;     (htree:back tree 2)
-;;     (htree:add-child "http://example.root/B" tree)
-;;     (htree:add-child "http://example.root/B1" tree)
-;;     (htree:back tree)
-;;     (htree:add-child "http://example.root/B2" tree)
-;;     tree))
-
-;; (defun make-tree2 ()
-;;   (let ((tree (htree:make)))
-;;     (htree:add-child "http://example.root" tree)
-;;     (htree:add-child "http://example.root/A" tree)
-;;     (htree:back tree)
-;;     (htree:add-child "http://example.root/B" tree)
-;;     tree))
-
-;; (prove:subtest
-;;     "Simple tree tests."
-;;   (prove:is (htree:data (htree:current (make-tree1)))
-;;             "http://example.root/B2"))
+(prove:subtest
+    "Simple branching tree tests."
+  (prove:is (htree:value (htree:current-owner-node (make-tree1)))
+            "http://example.root/B2"))
 
 ;; (prove:subtest
 ;;     "History depth."
