@@ -10,6 +10,9 @@
 ;; TODO: Turn unique defmethod to defuns.
 ;; TODO: Thread safe?
 
+;; TODO: Add function to reparent all the branches of an owner.  Test owner
+;; deletion first.
+
 ;; TODO: Add forward and back functions to unowned nodes, maybe leveraging `visit-all'?
 ;; TODO: Should we have different functions for finding nodes vs. "owned nodes",
 ;; or pass an option as key argument?
