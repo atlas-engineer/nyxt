@@ -41,8 +41,6 @@ This is duplicated here so that it can be accessed from the `entry-equal-p' and
    (value nil
           :type t
           :documentation "Arbitrary data."))
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)
   (:documentation "Wrapped data as stored in `history-tree''s `entries'."))
 
@@ -70,6 +68,7 @@ by the node.  `history-tree''s `entries' holds this `entry'-`node' association."
   (:accessor-name-transformer #'class*:name-identity)
   (:documentation "Internal node of the history tree."))
 
+(export 'value)
 (defmethod value ((node node))
   (value (entry node)))
 
@@ -208,17 +207,17 @@ Return the new or existing `entry'."
            :documentation "The key is an owner identifier (an artitrary balue),
 the value is an `owner'.")
    (current-owner-identifier (error "Owner identifier required")
-                  :reader current-owner-identifier
-                  :type t
-                  :export t
-                  :documentation "Must be one of the `owners' keys.")
+                             :reader current-owner-identifier
+                             :type t
+                             :export t
+                             :documentation "Must be one of the `owners' keys.")
    (entries (make-entry-hash-table)
             :type hash-table
             :documentation "The key is an `entry', the value is the list of
 nodes that hold this data.")
    (key #'identity
-              :type function
-              :documentation "The result of this function is passed to `test'
+        :type function
+        :documentation "The result of this function is passed to `test'
 and `hash-function'.  It is useful to uniquely identify (i.e. avoid
 duplications) objects from one of their slots.")
    (test #'equalp
@@ -227,9 +226,9 @@ duplications) objects from one of their slots.")
 over two entries are equal.
 Also see `hash-function'.")
    (hash-function #'sxhash
-         :type function
-         :documentation "Function that returns the hash of the result of `key'
-called over an `entry'.
+                  :type function
+                  :documentation "Function that returns the hash of the result
+of `key' called over an `entry'.
 Also see `test'."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
