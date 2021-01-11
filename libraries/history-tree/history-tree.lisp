@@ -299,7 +299,7 @@ Return (values HISTORY NODE) so that calls to `visit' can be chained."
           (setf (gethash owner (bindings node))
                 (make-instance 'binding))))
     (cl-custom-hash-table:with-custom-hash-table
-      (pushnew owner (gethash (entry node) (entries history))))
+      (pushnew node (gethash (entry node) (entries history))))
     (values history node)))
 
 (defmethod visit-all ((history history-tree) node)
