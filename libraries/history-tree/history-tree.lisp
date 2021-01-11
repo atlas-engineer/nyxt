@@ -10,7 +10,7 @@
 ;; TODO: Turn unique defmethod to defuns.
 ;; TODO: Thread safe?
 
-;; TODO: Add forward and back functions to unowned nodes.
+;; TODO: Add forward and back functions to unowned nodes, maybe leveraging `visit-all'?
 ;; TODO: Should we have different functions for finding nodes vs. "owned nodes",
 ;; or pass an option as key argument?
 
@@ -97,17 +97,18 @@ owner."))
   ((origin nil ; TODO: Rename to `root'?  Not to be confused with the htree root, but maybe it's convenient to have the same method name.
            :type (or null node)
            :documentation "The first node created for this owner.")
-   (creator nil                         ; TODO: Should it be an `owner' or an
-                                        ; identifier?  An identifier would allow
-                                        ; us to keep this information even afer
-                                        ; the creator `owner' is deleted.
+   (creator nil
             :type t
             :documentation "The owner in `origin's parent node that created this owner.
 Unless the parent was disowned by this `creator',
 
-  (gethash CREATOR (bindings (origin OWNER)))
+  (gethash (owner history CREATOR) (bindings (parent (origin OWNER))))
 
-should return non-nil.")
+should return non-nil.
+
+We store the owner-identifier instead of the `owner' object so that we keep the
+information of who created this owner even after the creator object has been
+deleted.")
    (current nil
             :type (or null node)
             :reader current
@@ -256,23 +257,26 @@ Also see `test'."))
   (gethash owner-identifier (owners history)))
 
 (export-always 'set-current-owner)
-;; (declaim (ftype (function (history-tree t) owner) set-current-owner)) ; TODO: Fix type.
+(declaim (ftype (function (history-tree t) owner) set-current-owner))
 (defun set-current-owner (history owner-identifier)
   "OWNER-IDENTIFIER is arbitrary data representing an `owner'."
   (let ((owner (owner history owner-identifier)))
     (unless owner
       (setf owner
             (setf (gethash owner-identifier (owners history)) (make-instance 'owner))))
-    (setf (slot-value history 'current-owner-identifier) owner-identifier)))
+    (setf (slot-value history 'current-owner-identifier) owner-identifier)
+    (the owner owner)))
 
 (export-always 'current-owner)
+(declaim (ftype (function (history-tree) owner) current-owner))
 (defun current-owner (history)
-  (owner history (current-owner-identifier history)))
+  (the (values owner &optional) (owner history (current-owner-identifier history))))
 
 (export-always 'current-owner-node)
-;; (declaim (ftype (function (history-tree) (or null node)) current-owner-node)) ; TODO: Fix type.
+(declaim (ftype (function (history-tree) node) current-owner-node))
 (defun current-owner-node (history)
-  (current (the owner (current-owner history))))
+  (the (values node &optional)
+       (current (current-owner history))))
 
 (export-always 'with-current-owner)
 (defmacro with-current-owner ((history owner-identifier) &body body)
