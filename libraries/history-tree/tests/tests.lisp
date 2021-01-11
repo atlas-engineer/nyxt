@@ -122,23 +122,23 @@
              (htree:back (make-tree1)))
             '("http://example.root/B2")))
 
-;; (prove:subtest
-;;     "Traverse all children."
-;;   (prove:is (htree:children-nodes-data
-;;              (htree:back (make-tree1)))
-;;             '("http://example.root/B2" "http://example.root/B1")))
+(prove:subtest
+    "Traverse all children."
+  (prove:is (htree:children-nodes-data
+             (htree:back (make-tree1)))
+            '("http://example.root/B2" "http://example.root/B1")))
 
-;; (prove:subtest
-;;     "Move existing child to first position on add."
-;;   (let ((tree (make-tree2)))
-;;     (prove:is (htree:data (htree:current tree))
-;;               "http://example.root/B")
-;;     (htree:back tree)
-;;     (prove:is (htree:data (htree:current tree))
-;;               "http://example.root")
-;;     (htree:add-child "http://example.root/A" tree)
-;;     (prove:is (htree:data (htree:current tree))
-;;               "http://example.root/A")))
+(prove:subtest
+    "Move node to forward-child on add."
+  (let ((tree (make-tree2)))
+    (prove:is (htree:value (htree:current-owner-node tree))
+              "http://example.root/B")
+    (htree:back tree)
+    (prove:is (htree:value (htree:current-owner-node tree))
+              "http://example.root")
+    (htree:add-child "http://example.root/A" tree)
+    (prove:is (htree:value (htree:current-owner-node tree))
+              "http://example.root/A")))
 
 ;; (defun trim-scheme (url)
 ;;   (let ((delimiter "://"))
