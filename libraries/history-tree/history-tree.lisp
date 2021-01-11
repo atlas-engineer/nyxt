@@ -8,7 +8,6 @@
 ;; TODO: Is "Shared history tree" a better name than "Global history tree"?
 
 ;; TODO: Add forward and back functions to unowned nodes.
-;; TODO: Default owner?  Makes sense for users who don't care about multiple owners.
 ;; TODO: Add `with-owner' macro.
 ;; TODO: Thread safe?
 
@@ -83,6 +82,7 @@ Unless the parent was disowned by this `creator',
 should return non-nil.")
    (current nil
             :type (or null node)
+            :reader current
             :documentation "The current node.
 It's updated every time a node is visited.")
    (nodes '()
@@ -171,12 +171,12 @@ Return the new or existing `entry'."
          :type (or null node)
          :documentation "The root node.
 It only changes when deleted.")
-   (owners (make-hash-table)
+   (owners (error "Owners need be initialized")
            :type hash-table
            :documentation "The key is an owner identifier (an artitrary balue),
 the value is an `owner'.")
-   (current-owner nil
-                  :type (or null owner)
+   (current-owner (error "Owner required")
+                  :type owner
                   :documentation "Must be one of the `owners' values.")
    (entries (make-entry-hash-table)
             :type hash-table
@@ -192,8 +192,14 @@ nodes that hold this data.")
   (:documentation "Staring point of the global history tree data structure."))
 
 (export 'make)
-(defun make (&key entry-key)            ; TODO: Useless?
-  (make-instance 'history-tree :entry-key entry-key))
+(defun make (&key entry-key (owner-identifier "default-owner"))
+  "Return a new `history-tree'."
+  (let ((owners (make-hash-table :test #'equalp))
+        (initial-owner (make-instance 'owner)))
+    (setf (gethash owner-identifier owners) initial-owner)
+    (make-instance 'history-tree :entry-key entry-key
+                                 :owners owners
+                                 :current-owner initial-owner)))
 
 (export-always 'owner)
 (declaim (ftype (function (history-tree t) (or null owner)) owner))
