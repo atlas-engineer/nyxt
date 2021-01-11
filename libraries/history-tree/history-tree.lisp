@@ -601,41 +601,6 @@ First child comes first."
     ;; directly connected to the root.
     owner))
 
-(export-always 'find-node)
-(defun find-node (item tree &key (key #'identity))
-  "Find a tree node matching ITEM in TREE and return it.
-TREE can be a `history' or a `node'. "
-  (block search
-    (do-tree (node tree)
-      (when (funcall (key tree) item (funcall key node))
-        (return-from search node)))))
-
-(export-always 'remove-node)
-(defun remove-node (item tree &key (key #'identity))
-  "Return all the nodes from TREE that didn't match ITEM.
-TREE can be a `history' or a `node'."
-  (let (result)
-    (do-tree (node tree)
-      (unless (funcall (key tree) item (funcall key node))
-        (push node result)))
-    result))
-
-
-
-;; (eval-when (:compile-toplevel :load-toplevel :execute)
-;;   (export 'delete-data))
-;; (defmethod delete-data (data (history history-tree) &key (test #'equal) rebind-children-p)
-;;   "Delete node(s) matching DATA from HISTORY and return the last deleted node.
-;; If the node has children itself, and REBIND-CHILDREN-P is not nil, these
-;; will become children of the node's parent. Search is done with the
-;; help of TEST argument."
-;;   (let ((last-deleted nil))
-;;     (do-tree (node history)
-;;       (when (funcall test data (data node))
-;;         (setf (children (parent node)) (append (when rebind-children-p (children node))
-;;                                                (remove node (children (parent node))))
-;;               last-deleted node)))
-;;     last-deleted))
 
 
 (deftype non-negative-integer ()
