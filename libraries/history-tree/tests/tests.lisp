@@ -61,24 +61,24 @@
   (prove:is (htree:value (htree:current-owner-node (make-tree1)))
             "http://example.root/B2"))
 
-;; (prove:subtest
-;;     "History depth."
-;;   (prove:is (htree:depth (make-tree1))
-;;             2))
+(prove:subtest
+    "History depth."
+  (prove:is (htree:depth (make-tree1))
+            2))
 
-;; (prove:subtest
-;;     "History size."
-;;   (prove:is (htree:size (make-tree1))
-;;             7))
+(prove:subtest
+    "History size."
+  (prove:is (htree:size (make-tree1))
+            7))
 
-;; (prove:subtest
-;;     "All history nodes."
-;;   (prove:is (htree:all-nodes-data (make-tree1))
-;;             '("http://example.root"
-;;               "http://example.root/B"
-;;               "http://example.root/B2" "http://example.root/B1"
-;;               "http://example.root/A"
-;;               "http://example.root/A2" "http://example.root/A1")))
+(prove:subtest
+    "All contiguous history nodes for current owner."
+  (prove:is (htree:all-contiguous-owned-nodes-data (make-tree1))
+            '("http://example.root"
+              "http://example.root/B"
+              "http://example.root/B2" "http://example.root/B1"
+              "http://example.root/A"
+              "http://example.root/A2" "http://example.root/A1")))
 
 ;; (prove:subtest
 ;;     "Reorder the nodes."
