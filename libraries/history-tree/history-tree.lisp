@@ -303,9 +303,7 @@ Return (VALUES HISTORY CURRENT-NODE) so that `back' and `forward' calls can
 be chained."
   (let ((owner (current-owner history)))
     (check-type count positive-integer)
-    (when (and owner
-               (current owner)
-               (parent (current owner)))
+    (when (parent (current owner))
       (let ((former-current (current owner)))
         (visit history (parent (current owner)))
         ;; Put former current node back as forward-child if it is not already
@@ -323,9 +321,7 @@ Return (values HISTORY CURRENT-NODE)) so that `back' and `forward' calls can be
 chained."
   (check-type count positive-integer)
   (let ((owner (current-owner history)))
-    (when (and owner
-               (current owner)
-               (children (current owner)))
+    (when (children (current owner))
       (visit history (forward-child (current-binding owner)))
       (when (< 1 count)
         (forward history (1- count))))
