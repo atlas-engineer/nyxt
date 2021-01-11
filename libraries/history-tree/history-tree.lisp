@@ -391,18 +391,7 @@ A child is owned if it has a binding with current owner.
 Return (values OWNER (current OWNER))."
   (go-to-child data (current-owner history) :child-finder #'find-owned-child))
 
-;; (export-always 'delete-child)
-;; (defmethod delete-child (data (history history-tree) &key (test #'equal))
-;;   "Delete child matching DATA and return the child.
-;; Test is done with the TEST argument."
-;;   (when (current history)
-;;     (let ((matching-node nil))
-;;       (setf (children (current history))
-;;             (delete-if (lambda (node)
-;;                          (when (funcall test (data node) data)
-;;                            (setf matching-node node)))
-;;                        (children (current history))))
-;;       matching-node)))
+
 
 (export-always 'add-child)
 (defmethod add-child (data (history history-tree) &key creator)
