@@ -494,12 +494,12 @@ See `gobject-gtk-browser's `modifier-translator' slot."
 ;;             (first (window-list))
 ;;             (slot-value browser 'last-active-window))))
 
-;; (define-ffi-method ffi-window-set-active-buffer ((window gobject-gtk-window) (buffer gobject-gtk-buffer))
-;;   "Set BROWSER's WINDOW buffer to BUFFER. "
-;;   (gobject-gtk:gobject-gtk-container-remove (box-layout window) (gobject-gtk-object (active-buffer window)))
-;;   (gobject-gtk:gobject-gtk-box-pack-start (box-layout window) (gobject-gtk-object buffer) :expand t)
-;;   (gobject-gtk:gobject-gtk-widget-show (gobject-gtk-object buffer))
-;;   buffer)
+(define-ffi-method ffi-window-set-active-buffer ((window gobject-gtk-window) (buffer gobject-gtk-buffer))
+  "Set BROWSER's WINDOW buffer to BUFFER. "
+  (gir:invoke ((box-layout window) 'remove) (gtk-object (active-buffer window)))
+  (gir:invoke ((box-layout window) 'pack-start) (gtk-object buffer) t t 0)
+  (gir:invoke ((gtk-object buffer) 'show))
+  buffer)
 
 (define-ffi-method ffi-window-set-minibuffer-height ((window gobject-gtk-window) height)
   (gir:invoke ((minibuffer-container window) 'set-size-request) -1 height))
