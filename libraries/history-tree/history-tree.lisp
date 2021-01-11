@@ -134,11 +134,9 @@ It's updated every time a node is visited.")
     (when (gethash owner (bindings parent))
       parent)))
 
-(declaim (ftype (function (owner) (or null binding)) current-binding))
-(defun current-binding (owner)
-  (and (current owner)
-       (the binding
-            (gethash owner (bindings (current owner))))))
+(declaim (ftype (function (owner &optional node) (or null binding)) current-binding))
+(defun current-binding (owner &optional (node (current owner)))
+  (gethash owner (bindings node)))
 
 (declaim (ftype (function (owner node) (or null binding)) owned-p))
 (defun owned-p (owner node)
@@ -517,14 +515,16 @@ current node, recursively.  First parent comes first in the resulting list."
     (node-contiguous-owned-parents (current-owner-node history))))
 
 (export-always 'all-forward-children)
-(defmethod all-forward-children ((history history-tree))
-  "Return a list of the first children of NODE, recursively.
+(defmethod all-forward-children ((history history-tree)
+                                 &optional (node (current-owner-node history)))
+  "Return a list of the forward children of NODE, recursively.
 First child comes first in the resulting list."
-  (let ((owner (current-owner history)))
-    (when (and (current-binding owner)
-               (forward-child (current-binding owner)))
+  (let* ((owner (current-owner history))
+         (binding (current-binding owner node)))
+    (when (and binding (forward-child binding))
       (cons (forward-child (current-binding owner))
-            (all-forward-children (forward-child (current-binding owner)))))))
+            (all-forward-children history
+                                  (forward-child binding))))))
 
 (export 'all-nodes)
 (defmethod all-nodes ((history history-tree))
