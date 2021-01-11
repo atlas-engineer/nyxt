@@ -179,7 +179,7 @@
                                             :title "Example page"))
         (web-page2 (make-instance 'web-page :url "http://example.org"
                                             :title "Same page, another title")))
-    (let ((history (htree:make :entry-key #'url)))
+    (let ((history (htree:make :key #'url)))
       (htree:add-child web-page1 history)
       (htree:add-child web-page2 history)
       (prove:is (hash-table-count (htree:entries history))
@@ -197,7 +197,7 @@
                 (sort (mapcar #'title (list web-page1 web-page2)) #'string<)))))
 
 (prove:subtest "Multiple owners"
-  (let ((history (htree:make :owner-identifier "a"))
+  (let ((history (htree:make :current-owner-identifier "a"))
         (url1 "http://example.org")
         (url2 "https://nyxt.atlas.engineer")
         (url3 "http://en.wikipedia.org"))
