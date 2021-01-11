@@ -99,18 +99,18 @@
               "http://example.root/A2" "http://example.root/A1")))
 
 (prove:subtest "Traverse parents."
-  (prove:is (htree:parent-nodes-data
+  (prove:is (htree:all-parents-data
              (htree:back (make-tree1)))
             '("http://example.root")))
 
 (prove:subtest "Traverse forward children."
-  (prove:is (htree:forward-children-nodes-data
+  (prove:is (htree:all-forward-children-data
              (htree:back (make-tree1)))
             '("http://example.root/B2")))
 
 (prove:subtest
     "Traverse all children."
-  (prove:is (htree:children-nodes-data
+  (prove:is (htree:all-children-data
              (htree:back (make-tree1)))
             '("http://example.root/B2" "http://example.root/B1")))
 
