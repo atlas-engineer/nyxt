@@ -194,4 +194,22 @@
     (prove:is (htree:parent (htree:current (htree:owner history "b")))
               (htree:current (htree:owner history "a")))))
 
+(prove:subtest "Visit all nodes until distant node"
+  (let* ((history (make-tree1))
+         (creator (htree:current-owner-identifier history))
+         (distant-node-value "http://example.root/A1")
+         (distant-node (first (htree:find-nodes history distant-node-value))))
+    (htree:set-current-owner history "b")
+    (htree:add-child "b-data" history :creator creator)
+
+    (htree::visit-all history distant-node)
+
+    (prove:is (htree:value (htree:current-owner-node history))
+              distant-node-value)
+    (prove:is (sort (mapcar #'htree:value (htree:nodes (htree:owner history "b")))
+                    #'string<)
+              (sort (copy-seq  '("http://example.root/A1" "http://example.root/A" "http://example.root"
+                                 "http://example.root/B" "http://example.root/B2" "b-data"))
+                    #'string<))))
+
 (prove:finalize)
