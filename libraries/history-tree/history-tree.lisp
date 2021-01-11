@@ -3,19 +3,16 @@
 
 (in-package :history-tree)
 
-;; TODO: Unexport most (all?) slot writers.
-;; TODO: Review docstrings.
-;; TODO: Is "Shared history tree" a better name than "Global history tree"?
-
-;; TODO: Turn unique defmethod to defuns.
-;; TODO: Thread safe?
-
 ;; TODO: Add function to reparent all the branches of an owner.  Test owner
 ;; deletion first.
+;; TODO: Thread safe?
 
 ;; TODO: Add forward and back functions to unowned nodes, maybe leveraging `visit-all'?
 ;; TODO: Should we have different functions for finding nodes vs. "owned nodes",
 ;; or pass an option as key argument?
+
+;; TODO: Is "Shared history tree" a better name than "Global history tree"?
+;; TODO: Turn unique defmethod to defuns.
 
 (defmacro export-always (symbols &optional (package nil package-supplied?)) ; From serapeum.
   "Like `export', but also evaluated at compile time."
@@ -44,7 +41,7 @@ This is duplicated here so that it can be accessed from the `entry-equal-p' and
   (:accessor-name-transformer #'class*:name-identity)
   (:documentation "Wrapped data as stored in `history-tree''s `entries'."))
 
-(defun make-entry (history data)        ; Flet in `add-entry'?
+(defun make-entry (history data)
   "Return an `entry' wrapping DATA and suitable for HISTORY."
   (make-instance 'entry :value data
                         :key (key history)
@@ -53,20 +50,22 @@ This is duplicated here so that it can be accessed from the `entry-equal-p' and
 
 (define-class node ()
   ((parent nil
-           :type (or null node))
+           :type (or null node)
+           :documentation "If nil, it means the node is a root node.")
    (children '()
-             :documentation "List of nodes.")
+             :documentation "List of nodes.
+Order does not matter.")
    (bindings (make-hash-table)
              :documentation "The key is an `owner', the value is a
 `binding'.  This slot also allows us to know to which owner a node belongs.")
    (entry (error "Entry required")
           :type entry
           :documentation "Arbitrary data (wrapped in an `entry' object) carried
-by the node.  `history-tree''s `entries' holds this `entry'-`node' association."))
+by the node.  `history-tree''s `entries' holds `entry'-`node' associations."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)
-  (:documentation "Internal node of the history tree."))
+  (:documentation "Node structure of the history tree."))
 
 (export 'value)
 (defmethod value ((node node))
@@ -83,8 +82,8 @@ by the node.  `history-tree''s `entries' holds this `entry'-`node' association."
 (define-class binding ()
   ((forward-child  nil
                   :type (or null node)
-                  :documentation "Which of the `children' (in a `node') is the
-child to go forward to for this owner.")
+                  :documentation "Which of the `children' (in the bound `node')
+is the child to go forward to for the bound owner.")
    (last-access (local-time:now)
                 :type (or local-time:timestamp string) ; Support `string' for easier deserialization.
                 :documentation "Timestamp of the last access to this node by the
@@ -92,7 +91,7 @@ owner."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)
-  (:documentation "The relationship between an owner and the current node."))
+  (:documentation "The relationship between an owner and one of its nodes."))
 
 (define-class owner ()
   ;; TODO: Add slot pointing to history an owner belongs to?  Unnecessary if we never expose the `owner' to the caller.
@@ -101,7 +100,9 @@ owner."))
            :documentation "The first node created for this owner.")
    (creator nil
             :type t
-            :documentation "The owner in `origin's parent node that created this owner.
+            :documentation "The owner-identifier in `origin's parent node that
+created this owner.  May be nil, in which case `origin' is a root node.
+
 Unless the parent was disowned by this `creator',
 
   (gethash (owner history CREATOR) (bindings (parent (origin OWNER))))
@@ -119,16 +120,17 @@ deleted.")
 It's updated every time a node is visited.")
    (nodes '()
           :type (or null (cons node))
-          :documentation "The list of owned nodes."))
+          :documentation "The list of all owned nodes."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)
   (:documentation "The high-level information about an owner."))
 
 (defmethod (setf current) (value (owner owner))
-  (if value
+  "This setter protects against setting OWNER's `current' slot to a invalid object."
+  (if (node-p value)
       (setf (slot-value owner 'current) value)
-      (error "Attempted to set current node to NIL for owner ~a." owner)))
+      (error "Attempted to set current node to a non-node for owner ~a." owner)))
 
 (declaim (ftype (function (owner) function) owned-children-lister))
 (defun owned-children-lister (owner)
@@ -141,7 +143,7 @@ It's updated every time a node is visited.")
   "Return the OWNER's owned children for the current node."
   (funcall (owned-children-lister owner) (current owner) ))
 
-(defun owned-parent (owner)
+(defun owned-parent (owner)             ; TODO: Unused.  Generalize for `history-tree'?
   "Return OWNER's parent if it's owned, nil otherwise."
   (let ((parent (parent (current owner))))
     (when (gethash owner (bindings parent))
@@ -204,7 +206,7 @@ Return the new or existing `entry'."
 (define-class history-tree ()           ; TODO: Rename `history'?
   ((owners (error "Owners need be initialized")
            :type hash-table
-           :documentation "The key is an owner identifier (an artitrary balue),
+           :documentation "The key is an owner identifier (an artitrary value),
 the value is an `owner'.")
    (current-owner-identifier (error "Owner identifier required")
                              :reader current-owner-identifier
@@ -262,7 +264,11 @@ Also see `test'."))
 
 (export-always 'set-current-owner)
 (defun set-current-owner (history owner-identifier)
-  "OWNER-IDENTIFIER is arbitrary data representing an `owner'."
+  "Persistently switch owner for HISTORY.
+OWNER-IDENTIFIER is arbitrary data representing an `owner'.
+If OWNER-IDENTIFIER is set for the first time, a new `owner' is created.
+See `with-current-owner' to set the owner locally.
+See `delete-owner' to remove it from HISTORY."
   (let ((owner (owner history owner-identifier)))
     (unless owner
       (setf owner
@@ -280,6 +286,8 @@ Also see `test'."))
 
 (export-always 'with-current-owner)
 (defmacro with-current-owner ((history owner-identifier) &body body)
+  "Locally switch owner for HISTORY.
+See `set-current-owner' to set the owner persistently."
   (let  ((old-owner-identifier (gensym)))
     `(let ((,old-owner-identifier (current-owner-identifier ,history)))
        (unwind-protect (progn (set-current-owner ,history ,owner-identifier)
@@ -346,7 +354,7 @@ be chained."
 
 (export-always 'forward)
 (defmethod forward ((history history-tree) &optional (count 1))
-  "Go COUNT first-children down from the current owner node.
+  "Go COUNT forward-children down from the current owner node.
 Return (values HISTORY CURRENT-NODE)) so that `back' and `forward' calls can be
 chained."
   (check-type count positive-integer)
@@ -409,13 +417,14 @@ If current node matches DATA, then we update its data to DATA (since the
 `history-tree''s `key' and `test' functions may identify two non-identical datum
 as equal).
 
-If DATA is found among the children, the current owner `forward-child' is set to
-the matching child, the child data is set to DATA and the owner current node is
-set to this child.
+If DATA is found among the children, the current owner node `forward-child' is
+set to the matching child, the child data is set to DATA and the owner current
+node is set to this child.
 
-If there is no current element, this creates the first element of the current
-owner.  If CREATOR is provided, set the `creator' slot of current owner and
-the first element parent is set to the current node of `creator'."
+If there is no current node, this creates the `origin' node of the current owner
+and also sets `current' to it.  If CREATOR is provided, set the `creator' slot
+of current owner and the `origin' parent is set to the current node of
+`creator'."
   (let ((owner (current-owner history)))
     (cond
       ((null (current owner))
@@ -697,7 +706,7 @@ Return owner, or nil if there is no owner corresponding to OWNER-IDENTIFIER."
 (export-always 'depth)
 (declaim (ftype (function (history-tree) non-negative-integer) depth))
 (defun depth (history)
-  "Return the number of parents of the current owner node."
+  "Return the number of (possibly unowned) parents of the current owner node."
   (length (all-parents history)))
 
 (export-always 'size)
