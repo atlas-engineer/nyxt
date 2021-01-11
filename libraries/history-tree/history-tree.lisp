@@ -16,10 +16,21 @@
      (export ,symbols ,@(and package-supplied? (list package)))))
 
 (define-class entry ()
-  ((key nil
-        :type (or null function)
-        :documentation "Function called over `value', the result is `equalp'ed to
-identify the data uniquely.")
+  ((key (error "Key function required")
+        :type function
+        :documentation "See `history-tree''s slot of the same name.
+This is duplicated here so that it can be accessed from the `entry-equal-p' and
+`entry-hash' functions.")
+   (test (error "Test function required")
+        :type function
+        :documentation "See `history-tree''s slot of the same name.
+This is duplicated here so that it can be accessed from the `entry-equal-p' and
+`entry-hash' functions.")
+   (hash-function (error "Hash function required")
+        :type function
+        :documentation "See `history-tree''s slot of the same name.
+This is duplicated here so that it can be accessed from the `entry-equal-p' and
+`entry-hash' functions.")
    (value nil
           :type t
           :documentation "Arbitrary data."))
@@ -27,6 +38,13 @@ identify the data uniquely.")
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)
   (:documentation "Wrapped data as stored in `history-tree''s `entries'."))
+
+(defun make-entry (history data)        ; Flet in `add-entry'?
+  "Return an `entry' wrapping DATA and suitable for HISTORY."
+  (make-instance 'entry :value data
+                        :key (key history)
+                        :test (test history)
+                        :hash-function (hash-function history)))
 
 (define-class node ()
   ((parent nil
@@ -66,7 +84,7 @@ owner."))
   (:documentation "The relationship between an owner and the current node."))
 
 (define-class owner ()
-  ;; TODO: Add slot pointing to history an owner belongs to?
+  ;; TODO: Add slot pointing to history an owner belongs to?  Unnecessary if we never expose the `owner' to the caller.
   ((origin nil ; TODO: Rename to `root'?  Not to be confused with the htree root, but maybe it's convenient to have the same method name.
            :type (or null node)
            :documentation "The first node created for this owner.")
@@ -129,11 +147,16 @@ Return true if NODE was owned by OWNER, false otherwise."
   (remhash owner (bindings node)))
 
 (defun entry-equal-p (a b)
-  (if (key a)
-      (equalp (funcall (key a) (value a))
-              (funcall (key b) (value b)))
-      (equalp (value a)
-              (value b))))
+  (funcall (test a)                     ; `test' of A and B should be the same.
+           (funcall (key a) (value a))
+           (funcall (key b) (value b))))
+
+(defun entry-hash (a)
+  (funcall (hash-function a) (funcall (key a) (value a))))
+
+(cl-custom-hash-table:define-custom-hash-table-constructor make-entry-hash-table
+  :test entry-equal-p
+  :hash-function entry-hash)
 
 (defun data-equal-entry-p (data entry)
   (if (key entry)
@@ -142,21 +165,12 @@ Return true if NODE was owned by OWNER, false otherwise."
       (equalp (value entry)
               data)))
 
-(defun entry-hash (a)
-  (if (key a)
-      (sxhash (funcall (key a) (value a)))
-      (sxhash (value a))))
-
-(cl-custom-hash-table:define-custom-hash-table-constructor make-entry-hash-table
-  :test entry-equal-p
-  :hash-function entry-hash)
-
 (defun add-entry (history data)
   "Add DATA to an `entry' in HISTORY `entries'.
 If DATA is already there, reset the `entry' value to DATA anyways.
 Return the new or existing `entry'."
   (cl-custom-hash-table:with-custom-hash-table
-    (let ((new-entry (make-instance 'entry :value data :key (entry-key history))))
+    (let ((new-entry (make-entry history data)))
       (multiple-value-bind (existing-entry found?)
           (gethash new-entry (entries history))
         (if found?
@@ -184,24 +198,44 @@ the value is an `owner'.")
             :type hash-table
             :documentation "The key is an `entry', the value is the list of
 nodes that hold this data.")
-   ;; TODO: Add `hash-function' and `test'.
-   (entry-key nil                       ; TODO: Rename to `key'?
-              :type (or null function)
-              :documentation "The function used to access entries.")) ; TODO: Clarify this docstring.
+   (key #'identity
+              :type function
+              :documentation "The result of this function is passed to `test'
+and `hash-function'.  It is useful to uniquely identify (i.e. avoid
+duplications) objects from one of their slots.")
+   (test #'equalp
+         :type function
+         :documentation "Function that tests if the two results of `key' called
+over two entries are equal.
+Also see `hash-function'.")
+   (hash-function #'sxhash
+         :type function
+         :documentation "Function that returns the hash of the result of `key'
+called over an `entry'.
+Also see `test'."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)
-  (:documentation "Staring point of the global history tree data structure."))
+  (:documentation "Starting point of the global history tree data structure."))
 
 (export 'make)
-(defun make (&key entry-key (owner-identifier "default-owner"))
+(defun make (&rest args
+             &key key
+               test
+               hash-function
+               (current-owner-identifier "default-owner" explicit-p))
   "Return a new `history-tree'."
+  (declare (ignore key test hash-function))
   (let ((owners (make-hash-table :test #'equalp))
         (initial-owner (make-instance 'owner)))
-    (setf (gethash owner-identifier owners) initial-owner)
-    (make-instance 'history-tree :entry-key entry-key
-                                 :owners owners
-                                 :current-owner-identifier owner-identifier)))
+    (setf (gethash current-owner-identifier owners) initial-owner)
+    (unless explicit-p
+      (setf args (append
+                  (list :current-owner-identifier current-owner-identifier)
+                  args)))
+    (apply #'make-instance 'history-tree
+           :owners owners
+           args)))
 
 (export-always 'owner)
 (declaim (ftype (function (history-tree t) (or null owner)) owner))
@@ -362,8 +396,8 @@ Return (values OWNER (current OWNER))."
 Return the (possibly new) current node.
 
 If current node matches DATA, then we update its data to DATA (since the
-`history-tree''s `entry-key' function does not necessarily mean the data is
-identical).
+`history-tree''s `key' and `test' functions may identify two non-identical datum
+as equal).
 
 If DATA is found among the children, the OWNER `forward-child' is set to the
 matching child, the child data is set to DATA and the OWNER current node is set
@@ -612,7 +646,7 @@ First child comes first."
 TREE can be a `history' or a `node'. "
   (block search
     (do-tree (node tree)
-      (when (funcall (entry-key tree) item (funcall key node))
+      (when (funcall (key tree) item (funcall key node))
         (return-from search node)))))
 
 (export-always 'remove-node)
@@ -621,7 +655,7 @@ TREE can be a `history' or a `node'. "
 TREE can be a `history' or a `node'."
   (let (result)
     (do-tree (node tree)
-      (unless (funcall (entry-key tree) item (funcall key node))
+      (unless (funcall (key tree) item (funcall key node))
         (push node result)))
     result))
 
