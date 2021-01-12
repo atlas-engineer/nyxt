@@ -172,6 +172,11 @@ down.")
                               :font-weight "500"
                               :background "#fcff9e")))
                           :documentation "The style of highlighted boxes, e.g. link hints.")
+   (hints-alphabet "abcdefghijklmnopqrstuvwxyz"
+                   :type string
+                   :documentation "The alphabet (charset) to use for hints.
+Order matters -- the ones that go first are more likely to appear more often
+and to index the top of the page.")
    (buffer-load-hook (make-hook-uri->uri
                       :combination #'hooks:combine-composed-hook)
                      :type hook-uri->uri
