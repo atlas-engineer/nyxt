@@ -141,6 +141,8 @@ Example:
                            :documentation "The URL set to a new blank buffer opened by Nyxt.")
    (scroll-distance 50
                     :documentation "The distance scroll-down or scroll-up will scroll.")
+   (smooth-scrolling nil
+                     :documentation "Whether to scroll smoothly with the mouse.")
    (horizontal-scroll-distance 50
                                :documentation "Horizontal scroll distance. The
 distance scroll-left or scroll-right will scroll.")

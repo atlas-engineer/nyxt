@@ -707,7 +707,9 @@ Warning: This behaviour may change in the future."
   (setf (gtk-object buffer) (make-web-view
                              :context-buffer (unless (internal-buffer-p buffer)
                                                buffer)))
-  (ffi-buffer-enable-smooth-scrolling buffer t)
+  (if (smooth-scrolling buffer)
+      (ffi-buffer-enable-smooth-scrolling buffer t)
+      (ffi-buffer-enable-smooth-scrolling buffer nil))
   (gobject:g-signal-connect
    (gtk-object buffer) "decide-policy"
    (lambda (web-view response-policy-decision policy-decision-type-response)
