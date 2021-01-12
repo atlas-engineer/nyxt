@@ -477,10 +477,10 @@ See `gobject-gtk-browser's `modifier-translator' slot."
   "Make a window."
   (make-instance 'user-window))
 
-;; (define-ffi-method ffi-window-to-foreground ((window gobject-gtk-window))
-;;   "Show window in foreground."
-;;   (gobject-gtk:gobject-gtk-window-present (gobject-gtk-object window))
-;;   (setf (slot-value *browser* 'last-active-window) window))
+(define-ffi-method ffi-window-to-foreground ((window gobject-gtk-window))
+  "Show window in foreground."
+  (gir:invoke ((gtk-object window) 'present))
+  (setf (slot-value *browser* 'last-active-window) window))
 
 (define-ffi-method ffi-window-set-title ((window gobject-gtk-window) title)
   "Set the title for a window."
