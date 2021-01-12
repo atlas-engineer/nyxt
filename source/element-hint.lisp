@@ -95,26 +95,29 @@ identifier for every hinted element."
                                      (element-in-view-port-p (elt elements i))))
                        collect (object-create (elt elements i) (elt hints i)))))))
 
-  (defun hints-determine-chars-length (length)
+  (defun hints-determine-chars-length (length alphabet)
     "Finds out how many chars long the hints must be"
-    (floor (+ 1 (/ (log length) (log 26)))))
+    (floor (+ 1 (/ (log length) (log (ps:@ alphabet length))))))
 
   (defun hints-generate (length)
     "Generates hints that will appear on the elements"
-    (strings-generate length (hints-determine-chars-length length)))
+    (ps:let ((alphabet (ps:lisp (hints-alphabet (current-buffer)))))
+      (strings-generate length alphabet)))
 
-  (defun strings-generate (length chars-length)
+  (defun strings-generate (length alphabet)
     "Generates strings of specified length"
-    (ps:let ((minimum (1+ (ps:chain -math (pow 26 (- chars-length 1))))))
-      (loop for i from minimum to (+ minimum length)
-            collect (string-generate i))))
+    (ps:let ((chars-length (hints-determine-chars-length length alphabet)))
+      (ps:let ((minimum (1+ (ps:chain -math (pow (ps:@ alphabet length)
+                                                 (- chars-length 1))))))
+        (loop for i from minimum to (+ minimum length)
+              collect (string-generate i alphabet)))))
 
-  (defun string-generate (n)
+  (defun string-generate (n alphabet)
     "Generates a string from a number"
-    (if (>= n 0)
-        (+ (string-generate (floor (- (/ n 26) 1)))
-           (code-char (+ 65
-                         (rem n 26)))) ""))
+    (ps:let ((alphabet-length (ps:@ alphabet length)))
+      (if (>= n 0)
+          (+ (string-generate (floor (- (/ n alphabet-length) 1)) alphabet)
+             (aref alphabet (rem n alphabet-length))) "")))
 
   (add-stylesheet)
   (hints-add (qsa document (list "a" "button" "input" "textarea" "img"))))
