@@ -174,7 +174,7 @@ down.")
                               :font-weight "500"
                               :background "#fcff9e")))
                           :documentation "The style of highlighted boxes, e.g. link hints.")
-   (hints-alphabet "abcdefghijklmnopqrstuvwxyz"
+   (hints-alphabet "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                    :type string
                    :documentation "The alphabet (charset) to use for hints.
 Order matters -- the ones that go first are more likely to appear more often
