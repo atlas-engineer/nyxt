@@ -560,8 +560,8 @@ See `gobject-gtk-browser's `modifier-translator' slot."
   ;;    (on-signal-notify-title buffer nil)))
   buffer)
 
-;; (define-ffi-method ffi-buffer-delete ((buffer gobject-gtk-buffer))
-;;   (gobject-gtk:gobject-gtk-widget-destroy (gobject-gtk-object buffer)))
+(define-ffi-method ffi-buffer-delete ((buffer gobject-gtk-buffer))
+  (gir:invoke ((gtk-object buffer) 'destroy)))
 
 (define-ffi-method ffi-buffer-load ((buffer gobject-gtk-buffer) uri)
   "Load URI in BUFFER."
