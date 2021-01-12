@@ -486,12 +486,15 @@ See `gobject-gtk-browser's `modifier-translator' slot."
   "Set the title for a window."
   (gir:invoke ((gtk-object window) 'set-title) title))
 
-;; (define-ffi-method ffi-window-active ((browser gobject-gtk-browser))
-;;   "Return the window object for the currently active window."
-;;   (setf (slot-value browser 'last-active-window)
-;;         (or (find-if #'gobject-gtk:gobject-gtk-window-is-active (window-list) :key #'gobject-gtk-object)
-;;             (first (window-list))
-;;             (slot-value browser 'last-active-window))))
+(define-ffi-method ffi-window-active ((browser gobject-gtk-browser))
+  "Return the window object for the currently active window."
+  (setf (slot-value browser 'last-active-window)
+        (or (find-if (lambda (window)
+                       (gir:property (gtk-object window) 'is-active))
+                     (window-list)
+                     :key #'gtk-object)
+            (first (window-list))
+            (slot-value browser 'last-active-window))))
 
 (define-ffi-method ffi-window-set-active-buffer ((window gobject-gtk-window) (buffer gobject-gtk-buffer))
   "Set BROWSER's WINDOW buffer to BUFFER. "
