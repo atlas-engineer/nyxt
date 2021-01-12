@@ -186,9 +186,9 @@ Such contexts are not needed for internal buffers."
 ;;   (gobject-gtk:gobject-gtk-container-remove (box-layout window) (gobject-gtk-object (active-buffer window)))
 ;;   (window-delete window))
 
-;; (define-ffi-method ffi-window-delete ((window gobject-gtk-window))
-;;   "Delete a window object."
-;;   (gobject-gtk:gobject-gtk-widget-destroy (gobject-gtk-object window)))
+(define-ffi-method ffi-window-delete ((window gobject-gtk-window))
+  "Delete a window object."
+  (gir:invoke ((gtk-object window) 'destroy)))
 
 (define-ffi-method ffi-window-fullscreen ((window gobject-gtk-window))
   (gir:invoke ((gtk-object window) 'fullscreen)))
