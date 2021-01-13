@@ -19,13 +19,16 @@
                   mode)))
     (if (symbolp mode) mode (mode-name mode))))
 
-(declaim (ftype (function ((or symbol root-mode list) (or symbol root-mode)) boolean)
+(declaim (ftype (function ((or symbol root-mode list) (or symbol root-mode list)) boolean)
                 mode-equal))
 (defun mode-equal (mode1 mode2)
   (string-equal (symbol-name (maybe-mode-name mode1))
                 (symbol-name (maybe-mode-name mode2))))
 
+(declaim (ftype (function ((or symbol root-mode list) (or root-mode null)) list)
+                rememberable-of))
 (defun rememberable-of (modes auto-mode)
+  "Filter MODES based on rememberability by AUTO-MODE."
   (if auto-mode
       (set-difference modes (non-rememberable-modes auto-mode)
                       :test #'mode-equal)
@@ -318,11 +321,14 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
     rules))
 
 (defmethod serialize-object ((rule auto-mode-rule) stream)
-  (flet ((write-if-present (slot)
+  (flet ((write-if-present (slot &key modes-p)
            (when (funcall slot rule)
              (format t " :~a ~s"
                      slot
-                     (funcall slot rule)))))
+                     (let ((value (funcall slot rule)))
+                       (if modes-p
+                           (mapcar #'maybe-mode-name value)
+                           value))))))
     (let ((*standard-output* stream)
           (*print-case* :downcase))
       (write-string "(" stream)
@@ -330,8 +336,8 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
                (= 2 (length (test rule))))
           (format t "~s " (second (test rule)))
           (format t "~s " (test rule)))
-      (write-if-present 'included)
-      (write-if-present 'excluded)
+      (write-if-present 'included :modes-p t)
+      (write-if-present 'excluded :modes-p t)
       (write-if-present 'exact-p)
       (write-string ")" stream))))
 
