@@ -327,7 +327,12 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
                      slot
                      (let ((value (funcall slot rule)))
                        (if modes-p
-                           (mapcar #'maybe-mode-name value)
+                           (mapcar
+                            #'(lambda (mode)
+                                (if (listp mode)
+                                    mode
+                                    (maybe-mode-name mode)))
+                            value)
                            value))))))
     (let ((*standard-output* stream)
           (*print-case* :downcase))
