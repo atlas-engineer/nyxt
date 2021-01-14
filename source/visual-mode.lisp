@@ -390,21 +390,25 @@ identifier for every hinted element."
                 :scale "sentence")))
 
 (define-command forward-line-with-selection ()
+  "Set mark and move caret forward by a line."
   (let ((mode (find-submode (current-buffer) 'visual-mode)))
     (setf (mark-set mode) t)
     (forward-line)))
 
 (define-command backward-line-with-selection ()
+  "Set mark and move caret backward by a line."
   (let ((mode (find-submode (current-buffer) 'visual-mode)))
     (setf (mark-set mode) t)
     (backward-line)))
 
 (define-command forward-char-with-selection ()
+  "Set mark and move caret forward by a word."
   (let ((mode (find-submode (current-buffer) 'visual-mode)))
     (setf (mark-set mode) t)
     (forward-char)))
 
 (define-command backward-char-with-selection ()
+  "Set mark and move caret backward by a word."
   (let ((mode (find-submode (current-buffer) 'visual-mode)))
     (setf (mark-set mode) t)
     (backward-char)))
