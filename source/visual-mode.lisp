@@ -21,7 +21,11 @@
        "keypadend" 'end-line
        "space" 'forward-char
        "backspace" 'backward-char
-       "keypadhome" 'beginning-line)
+       "keypadhome" 'beginning-line
+       "shift-down" 'forward-line-with-selection
+       "shift-up" 'backward-line-with-selection
+       "shift-left" 'backward-char-with-selection
+       "shift-right" 'forward-char-with-selection)
       scheme:emacs
       (list
        "C-h" 'select-paragraph
@@ -384,3 +388,23 @@ identifier for every hinted element."
                             "move")
                 :direction "backward"
                 :scale "sentence")))
+
+(define-command forward-line-with-selection ()
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (setf (mark-set mode) t)
+    (forward-line)))
+
+(define-command backward-line-with-selection ()
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (setf (mark-set mode) t)
+    (backward-line)))
+
+(define-command forward-char-with-selection ()
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (setf (mark-set mode) t)
+    (forward-char)))
+
+(define-command backward-char-with-selection ()
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (setf (mark-set mode) t)
+    (backward-char)))
