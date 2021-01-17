@@ -77,7 +77,9 @@ identifier for every hinted element."
           ((equal "TEXTAREA" (ps:@ element tag-name))
            (ps:create "type" "textarea" "hint" hint "identifier" hint))
           ((equal "IMG" (ps:@ element tag-name))
-           (ps:create "type" "img" "hint" hint "identifier" hint "src" (ps:@ element src) "alt" (ps:@ element alt)))))
+           (ps:create "type" "img" "hint" hint "identifier" hint "src" (ps:@ element src) "alt" (ps:@ element alt)))
+          ((ps:@ element onclick)
+           (ps:create "type" "clickable" "hint" hint "identifier" hint "body" (ps:@ element |innerHTML|)))))
 
   (defun hints-add (elements)
     "Adds hints on elements"
@@ -129,7 +131,7 @@ identifier for every hinted element."
       (ps:chain element (remove))))
   (hints-remove-all))
 
-(define-parenscript click-button (&key nyxt-identifier)
+(define-parenscript click-element (&key nyxt-identifier)
   (defun qs (context selector)
     "Alias of document.querySelector"
     (ps:chain context (query-selector selector)))
@@ -229,7 +231,12 @@ identifier for every hinted element."
                                     :identifier (alex:assoc-value element :identifier)
                                     :url (alex:assoc-value element :src)
                                     :alt (alex:assoc-value element :alt)
-                                    :hint (alex:assoc-value element :hint)))))))
+                                    :hint (alex:assoc-value element :hint)))
+                    ("clickable"
+                     (make-instance 'clickable-hint
+                                    :identifier (alex:assoc-value element :identifier)
+                                    :hint (alex:assoc-value element :hint)
+                                    :body (plump:text (plump:parse (alex:assoc-value element :body)))))))))
 
 (define-class hint ()
   ((hint "")
@@ -239,19 +246,24 @@ identifier for every hinted element."
          :documentation "The body of the anchor tag."))
   (:accessor-name-transformer #'class*:name-identity))
 
-(defclass button-hint (hint) ())
+(define-class clickable-hint (hint) ())
+
+(define-class button-hint (clickable-hint) ())
 
 (define-class link-hint (hint)
   ((url ""))
   (:accessor-name-transformer #'class*:name-identity))
 
-(defclass input-hint (hint) ())
+(define-class input-hint (hint) ())
 
-(defclass textarea-hint (hint) ())
+(define-class textarea-hint (hint) ())
 
 (define-class image-hint (link-hint)
   ((alt "" :documentation "Alternative text for the image."))
   (:accessor-name-transformer #'class*:name-identity))
+
+(defmethod object-string ((hint hint))
+  (hint hint))
 
 (defmethod object-string ((link-hint link-hint))
   (url link-hint))
@@ -262,20 +274,17 @@ identifier for every hinted element."
           (body link-hint)
           (quri:url-decode (url link-hint) :lenient t)))
 
-(defmethod object-string ((button-hint button-hint))
-  (body button-hint))
+(defmethod object-string ((clickable-hint clickable-hint))
+  (body clickable-hint))
+
+(defmethod object-display ((clickable-hint clickable-hint))
+  (format nil "~a  ~a  Clickable" (hint clickable-hint) (body clickable-hint)))
 
 (defmethod object-display ((button-hint button-hint))
   (format nil "~a  ~a  Button" (hint button-hint) (body button-hint)))
 
-(defmethod object-string ((input-hint input-hint))
-  (hint input-hint))
-
 (defmethod object-display ((input-hint input-hint))
   (format nil "~a  Input" (hint input-hint)))
-
-(defmethod object-string ((textarea-hint textarea-hint))
-  (hint textarea-hint))
 
 (defmethod object-display ((textarea-hint textarea-hint))
   (format nil "~a  Textarea" (hint textarea-hint)))
@@ -289,8 +298,8 @@ identifier for every hinted element."
 (defmethod %follow-hint ((link-hint link-hint))
   (buffer-load (url link-hint)))
 
-(defmethod %follow-hint ((button-hint button-hint))
-  (click-button :nyxt-identifier (identifier button-hint)))
+(defmethod %follow-hint ((clickable-hint clickable-hint))
+  (click-element :nyxt-identifier (identifier clickable-hint)))
 
 (defmethod %follow-hint ((input-hint input-hint))
   (focus-element :nyxt-identifier (identifier input-hint)))
