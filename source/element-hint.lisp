@@ -79,7 +79,9 @@ identifier for every hinted element."
           ((equal "IMG" (ps:@ element tag-name))
            (ps:create "type" "img" "hint" hint "identifier" hint "src" (ps:@ element src) "alt" (ps:@ element alt)))
           ((ps:@ element onclick)
-           (ps:create "type" "clickable" "hint" hint "identifier" hint "body" (ps:@ element |innerHTML|)))))
+           (ps:create "type" "clickable" "hint" hint "identifier" hint "body" (ps:@ element |innerHTML|)))
+          ((ps:@ element onfocus)
+           (ps:create "type" "focusable" "hint" hint "identifier" hint))))
 
   (defun hints-add (elements)
     "Adds hints on elements"
@@ -205,38 +207,41 @@ identifier for every hinted element."
 
 (defun elements-from-json (elements-json)
   (loop for element in (cl-json:decode-json-from-string elements-json)
-        collect (let ((object-type (cdr (assoc :type element))))
-                  (str:string-case object-type
-                    ("link"
-                     (make-instance 'link-hint
-                                    :hint (alex:assoc-value element :hint)
-                                    :identifier (alex:assoc-value element :hint)
-                                    :url (alex:assoc-value element :href)
-                                    :body (plump:text (plump:parse (alex:assoc-value element :body)))))
-                    ("button"
-                     (make-instance 'button-hint
-                                    :identifier (alex:assoc-value element :identifier)
-                                    :hint (alex:assoc-value element :hint)
-                                    :body (plump:text (plump:parse (alex:assoc-value element :body)))))
-                    ("input"
-                     (make-instance 'input-hint
-                                    :identifier (alex:assoc-value element :identifier)
-                                    :hint (alex:assoc-value element :hint)))
-                    ("textarea"
-                     (make-instance 'textarea-hint
-                                    :identifier (alex:assoc-value element :identifier)
-                                    :hint (alex:assoc-value element :hint)))
-                    ("img"
-                     (make-instance 'image-hint
-                                    :identifier (alex:assoc-value element :identifier)
-                                    :url (alex:assoc-value element :src)
-                                    :alt (alex:assoc-value element :alt)
-                                    :hint (alex:assoc-value element :hint)))
-                    ("clickable"
-                     (make-instance 'clickable-hint
-                                    :identifier (alex:assoc-value element :identifier)
-                                    :hint (alex:assoc-value element :hint)
-                                    :body (plump:text (plump:parse (alex:assoc-value element :body)))))))))
+        collect (str:string-case (alex:assoc-value element :type)
+                  ("link"
+                   (make-instance 'link-hint
+                                  :hint (alex:assoc-value element :hint)
+                                  :identifier (alex:assoc-value element :hint)
+                                  :url (alex:assoc-value element :href)
+                                  :body (plump:text (plump:parse (alex:assoc-value element :body)))))
+                  ("button"
+                   (make-instance 'button-hint
+                                  :identifier (alex:assoc-value element :identifier)
+                                  :hint (alex:assoc-value element :hint)
+                                  :body (plump:text (plump:parse (alex:assoc-value element :body)))))
+                  ("input"
+                   (make-instance 'input-hint
+                                  :identifier (alex:assoc-value element :identifier)
+                                  :hint (alex:assoc-value element :hint)))
+                  ("textarea"
+                   (make-instance 'textarea-hint
+                                  :identifier (alex:assoc-value element :identifier)
+                                  :hint (alex:assoc-value element :hint)))
+                  ("img"
+                   (make-instance 'image-hint
+                                  :identifier (alex:assoc-value element :identifier)
+                                  :url (alex:assoc-value element :src)
+                                  :alt (alex:assoc-value element :alt)
+                                  :hint (alex:assoc-value element :hint)))
+                  ("clickable"
+                   (make-instance 'clickable-hint
+                                  :identifier (alex:assoc-value element :identifier)
+                                  :hint (alex:assoc-value element :hint)
+                                  :body (plump:text (plump:parse (alex:assoc-value element :body)))))
+                  ("focusable"
+                   (make-instance 'focusable-hint
+                                  :identifier (alex:assoc-value element :identifier)
+                                  :hint (alex:assoc-value element :hint))))))
 
 (define-class hint ()
   ((hint "")
@@ -248,15 +253,17 @@ identifier for every hinted element."
 
 (define-class clickable-hint (hint) ())
 
+(define-class focusable-hint (hint) ())
+
 (define-class button-hint (clickable-hint) ())
 
 (define-class link-hint (hint)
   ((url ""))
   (:accessor-name-transformer #'class*:name-identity))
 
-(define-class input-hint (hint) ())
+(define-class input-hint (focusable-hint) ())
 
-(define-class textarea-hint (hint) ())
+(define-class textarea-hint (focusable-hint) ())
 
 (define-class image-hint (link-hint)
   ((alt "" :documentation "Alternative text for the image."))
@@ -283,6 +290,9 @@ identifier for every hinted element."
 (defmethod object-display ((button-hint button-hint))
   (format nil "~a  ~a  Button" (hint button-hint) (body button-hint)))
 
+(defmethod object-display ((focusable-hint focusable-hint))
+  (format nil "~a  Focusable" (hint focusable-hint)))
+
 (defmethod object-display ((input-hint input-hint))
   (format nil "~a  Input" (hint input-hint)))
 
@@ -301,11 +311,8 @@ identifier for every hinted element."
 (defmethod %follow-hint ((clickable-hint clickable-hint))
   (click-element :nyxt-identifier (identifier clickable-hint)))
 
-(defmethod %follow-hint ((input-hint input-hint))
-  (focus-element :nyxt-identifier (identifier input-hint)))
-
-(defmethod %follow-hint ((textarea-hint textarea-hint))
-  (focus-element :nyxt-identifier (identifier textarea-hint)))
+(defmethod %follow-hint ((focusable-hint focusable-hint))
+  (focus-element :nyxt-identifier (identifier focusable-hint)))
 
 (defmethod %follow-hint-new-buffer-focus ((link-hint link-hint))
   (make-buffer-focus :url (url link-hint)))
