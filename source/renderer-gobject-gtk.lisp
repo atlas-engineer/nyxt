@@ -69,6 +69,7 @@ understood by `keymap:make-key'.")
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
+(define-user-class browser (gobject-gtk-browser))
 
 (define-class gobject-gtk-window ()
   ((gtk-object)
@@ -82,6 +83,7 @@ understood by `keymap:make-key'.")
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
+(define-user-class window (gobject-gtk-window))
 
 (define-class gobject-gtk-buffer ()
   ((gtk-object)
@@ -94,6 +96,7 @@ data-manager will store the data separately for each buffer."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
+(define-user-class buffer (gobject-gtk-buffer))
 
 (define-class data-manager-data-path (data-path)
   ((ref :initform "data-manager"))
@@ -832,8 +835,3 @@ See `gobject-gtk-browser's `modifier-translator' slot."
 ;;   (webkit:webkit-web-view-go-to-back-forward-list-item
 ;;    (gobject-gtk-object buffer)
 ;;    (webkit-history-entry-gobject-gtk-object history-entry)))
-
-
-(define-user-class window (gobject-gtk-window))
-(define-user-class buffer (gobject-gtk-buffer))
-(define-user-class browser (gobject-gtk-browser))
