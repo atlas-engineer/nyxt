@@ -89,10 +89,10 @@ understood by `keymap:make-key'.")
   ((gtk-object)
    (proxy-uri (quri:uri ""))
    (proxy-ignored-hosts '())
-   (data-manager-path (make-instance 'data-manager-data-path
-                                     :dirname (uiop:xdg-cache-home +data-root+))
-                      :documentation "Directory in which the
-data-manager will store the data separately for each buffer."))
+   (data-manager-path
+    (make-instance 'data-manager-data-path :dirname (uiop:xdg-cache-home +data-root+))
+    :documentation "Directory in which the data-manager will store the
+data separately for each buffer."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
