@@ -194,11 +194,6 @@ data separately for each buffer."))
   (with-slots (gtk-object) buffer
     (setf gtk-object (make-web-view))))
 
-;; (defmethod web-context ((browser gobject-gtk-browser))
-;;   (or (slot-value *browser* 'web-context)
-;;       (setf (slot-value *browser* 'web-context) 
-;;             (make-instance 'webkit:webkit-web-context)))) ; TASK
-
 (defmethod ffi-within-renderer-thread ((browser gobject-gtk-browser) thunk)
   (declare (ignore browser))
   (funcall thunk))
