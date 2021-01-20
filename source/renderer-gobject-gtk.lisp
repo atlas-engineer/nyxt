@@ -20,12 +20,15 @@
   (declare (ignore source-object))
   (let ((callback (find (cffi:pointer-address user-data) callbacks :key (function callback-id))))
     (handler-case
-        (let* ((js-result (webkit:webkit-web-view-run-javascript-finish (nyxt::gtk-object-pointer (callback-web-view callback)) result))
+        (let* ((js-result (webkit:webkit-web-view-run-javascript-finish
+                           (nyxt::gtk-object-pointer (callback-web-view callback)) result))
                (context (webkit:webkit-javascript-result-get-global-context js-result))
                (value (webkit:webkit-javascript-result-get-value js-result))
                (js-str-value (jscore:js-value-to-string-copy context value (cffi:null-pointer)))
                (js-str-length (jscore:js-string-get-maximum-utf-8-c-string-size js-str-value))
-               (str-value (cffi:foreign-alloc :char :count (cffi:convert-from-foreign js-str-length :unsigned-int))))
+               (str-value
+                 (cffi:foreign-alloc
+                  :char :count (cffi:convert-from-foreign js-str-length :unsigned-int))))
           (jscore:js-string-get-utf-8-c-string js-str-value str-value js-str-length)
           (setf callbacks (delete callback callbacks))
           (when (callback-function callback)
