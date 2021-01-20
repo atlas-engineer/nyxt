@@ -632,49 +632,47 @@ See `gobject-gtk-browser's `modifier-translator' slot."
 (define-ffi-method ffi-minibuffer-evaluate-javascript ((window gobject-gtk-window) javascript)
   (nyxt/gobject/gtk:webkit-web-view-evaluate-javascript (minibuffer-view window) javascript))
 
-;; (define-ffi-method ffi-buffer-enable-javascript ((buffer gobject-gtk-buffer) value)
-;;   (setf (webkit:webkit-settings-enable-javascript
-;;          (webkit:webkit-web-view-get-settings (gobject-gtk-object buffer)))
-;;         value))
+(define-ffi-method ffi-buffer-enable-javascript ((buffer gobject-gtk-buffer) value)
+  (setf (webkit:webkit-settings-enable-javascript
+         (webkit:webkit-web-view-get-settings (gtk-object-pointer buffer)))
+        value))
 
-;; (define-ffi-method ffi-buffer-enable-javascript-markup ((buffer gobject-gtk-buffer) value)
-;;   (setf (webkit:webkit-settings-enable-javascript-markup
-;;          (webkit:webkit-web-view-get-settings (gobject-gtk-object buffer)))
-;;         value))
+(define-ffi-method ffi-buffer-enable-javascript-markup ((buffer gobject-gtk-buffer) value)
+  (setf (webkit:webkit-settings-enable-javascript-markup
+         (webkit:webkit-web-view-get-settings (gtk-object-pointer buffer)))
+        value))
 
-;; (define-ffi-method ffi-buffer-enable-smooth-scrolling ((buffer gobject-gtk-buffer) value)
-;;   (setf (webkit:webkit-settings-enable-smooth-scrolling
-;;          (webkit:webkit-web-view-get-settings (gobject-gtk-object buffer)))
-;;         value))
+(define-ffi-method ffi-buffer-enable-smooth-scrolling ((buffer gobject-gtk-buffer) value)
+  (setf (webkit:webkit-settings-enable-smooth-scrolling
+         (webkit:webkit-web-view-get-settings (gtk-object-pointer buffer)))
+        value))
 
-;; #+webkit2-media
-;; (define-ffi-method ffi-buffer-enable-media ((buffer gobject-gtk-buffer) value)
-;;   (setf (webkit:webkit-settings-enable-media
-;;          (webkit:webkit-web-view-get-settings (gobject-gtk-object buffer)))
-;;         value))
+(define-ffi-method ffi-buffer-enable-media ((buffer gobject-gtk-buffer) value)
+  (setf (webkit:webkit-settings-enable-media
+         (webkit:webkit-web-view-get-settings (gtk-object-pointer buffer)))
+        value))
 
-;; (define-ffi-method ffi-buffer-auto-load-image ((buffer gobject-gtk-buffer) value)
-;;   (setf (webkit:webkit-settings-auto-load-images
-;;          (webkit:webkit-web-view-get-settings (gobject-gtk-object buffer)))
-;;         value))
+(define-ffi-method ffi-buffer-auto-load-image ((buffer gobject-gtk-buffer) value)
+  (setf (webkit:webkit-settings-auto-load-images
+         (webkit:webkit-web-view-get-settings (gtk-object-pointer buffer)))
+        value))
 
-;; #+webkit2-mute
-;; (defmethod ffi-buffer-enable-sound ((buffer gobject-gtk-buffer) value)
-;;   (webkit:webkit-web-view-set-is-muted (gobject-gtk-object buffer) value))
+(defmethod ffi-buffer-enable-sound ((buffer gobject-gtk-buffer) value)
+  (webkit:webkit-web-view-set-is-muted (gtk-object-pointer buffer) value))
 
-;; (define-ffi-method ffi-buffer-user-agent ((buffer gobject-gtk-buffer) value)
-;;   (setf (webkit:webkit-settings-user-agent
-;;          (webkit:webkit-web-view-get-settings (gobject-gtk-object buffer)))
-;;         value))
+(define-ffi-method ffi-buffer-user-agent ((buffer gobject-gtk-buffer) value)
+  (setf (webkit:webkit-settings-user-agent
+         (webkit:webkit-web-view-get-settings (gtk-object-pointer buffer)))
+        value))
 
-;; (define-ffi-method ffi-buffer-webgl-enabled-p ((buffer gobject-gtk-buffer))
-;;   (webkit:webkit-settings-enable-webgl
-;;          (webkit:webkit-web-view-get-settings (gobject-gtk-object buffer))))
+(define-ffi-method ffi-buffer-webgl-enabled-p ((buffer gobject-gtk-buffer))
+  (webkit:webkit-settings-enable-webgl
+         (webkit:webkit-web-view-get-settings (gtk-object-pointer buffer))))
 
-;; (define-ffi-method ffi-buffer-enable-webgl ((buffer gobject-gtk-buffer) value)
-;;   (setf (webkit:webkit-settings-enable-webgl
-;;          (webkit:webkit-web-view-get-settings (gobject-gtk-object buffer)))
-;;         value))
+(define-ffi-method ffi-buffer-enable-webgl ((buffer gobject-gtk-buffer) value)
+  (setf (webkit:webkit-settings-enable-webgl
+         (webkit:webkit-web-view-get-settings (gtk-object-pointer buffer)))
+        value))
 
 ;; (define-ffi-method ffi-buffer-set-proxy ((buffer gobject-gtk-buffer)
 ;;                                  &optional (proxy-uri (quri:uri ""))
