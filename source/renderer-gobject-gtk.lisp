@@ -159,11 +159,12 @@ data-manager will store the data separately for each buffer."))
                    (lambda (widget event)
                      (declare (ignore widget))
                      (on-signal-key-press-event window event)))
+      (gir:connect gtk-object
+                   :destroy
+                   (lambda (widget)
+                     (declare (ignore widget))
+                     (on-signal-destroy window)))
       (gir:invoke (gtk-object 'show-all)))
-    ;; (gobject:g-signal-connect
-    ;;  gobject-gtk-object "destroy"
-    ;;  (lambda (widget) (declare (ignore widget))
-    ;;    (on-signal-destroy window)))
     ;; (gobject:g-signal-connect
     ;;  gobject-gtk-object "window-state-event"
     ;;  (lambda (widget event) (declare (ignore widget))
@@ -224,11 +225,9 @@ Such contexts are not needed for internal buffers."
     (gir:invoke (view 'load_uri) "https://duckduckgo.com")
     view))
 
-
-;; (define-ffi-method on-signal-destroy ((window gobject-gtk-window))
-;;   ;; remove buffer from window to avoid corruption of buffer
-;;   (gobject-gtk:gobject-gtk-container-remove (box-layout window) (gobject-gtk-object (active-buffer window)))
-;;   (window-delete window))
+(define-ffi-method on-signal-destroy ((window gobject-gtk-window))
+  (gir:invoke ((box-layout window) 'remove) (gtk-object (active-buffer window)))
+  (window-delete window))
 
 (define-ffi-method ffi-window-delete ((window gobject-gtk-window))
   "Delete a window object."
