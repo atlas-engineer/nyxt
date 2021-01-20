@@ -20,7 +20,7 @@
   (declare (ignore source-object))
   (let ((callback (find (cffi:pointer-address user-data) callbacks :key (function callback-id))))
     (handler-case
-        (let* ((js-result (webkit:webkit-web-view-run-javascript-finish (gir::this-of (callback-web-view callback)) result))
+        (let* ((js-result (webkit:webkit-web-view-run-javascript-finish (nyxt::gtk-object-pointer (callback-web-view callback)) result))
                (context (webkit:webkit-javascript-result-get-global-context js-result))
                (value (webkit:webkit-javascript-result-get-value js-result))
                (js-str-value (jscore:js-value-to-string-copy context value (cffi:null-pointer)))
@@ -71,9 +71,14 @@ understood by `keymap:make-key'.")
   (:accessor-name-transformer #'class*:name-identity))
 (define-user-class browser (gobject-gtk-browser))
 
-(define-class gobject-gtk-window ()
-  ((gtk-object)
-   (box-layout)
+(defclass gobject ()
+  ((gtk-object :accessor gtk-object)))
+
+(defmethod gtk-object-pointer ((object gobject))
+  (gir::this-of (gtk-object object)))
+
+(define-class gobject-gtk-window (gobject)
+  ((box-layout)
    (minibuffer-container)
    (minibuffer-view)
    (status-container)
@@ -85,9 +90,8 @@ understood by `keymap:make-key'.")
   (:accessor-name-transformer #'class*:name-identity))
 (define-user-class window (gobject-gtk-window))
 
-(define-class gobject-gtk-buffer ()
-  ((gtk-object)
-   (proxy-uri (quri:uri ""))
+(define-class gobject-gtk-buffer (gobject)
+  ((proxy-uri (quri:uri ""))
    (proxy-ignored-hosts '())
    (data-manager-path
     (make-instance 'data-manager-data-path :dirname (uiop:xdg-cache-home +data-root+))
