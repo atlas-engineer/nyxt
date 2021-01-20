@@ -106,8 +106,7 @@ data-manager will store the data separately for each buffer."))
 (defmethod ffi-initialize ((browser gobject-gtk-browser) urls startup-timestamp)
   (log:info "Initializing Gobject-GTK Interface")
   (gir:invoke ((gir-gtk browser) 'main))
-  ;; (finalize browser urls startup-timestamp)
-  (log:debug "Interface initialized."))
+  (finalize browser urls startup-timestamp))
 
 (defmethod initialize-instance :after ((browser gobject-gtk-browser) &key)
   (gir:invoke ((gir-gtk browser) 'init) nil))
@@ -160,14 +159,6 @@ data-manager will store the data separately for each buffer."))
                    (lambda (widget event)
                      (declare (ignore widget))
                      (on-signal-key-press-event window event)))
-      ;; RM
-      (gir::g-signal-connect-data (gir::this-of gtk-object)
-                                  "destroy"
-                                  (cffi:foreign-symbol-pointer "gtk_main_quit")
-                                  (cffi:null-pointer)
-                                  (cffi:null-pointer)
-                                  0)
-      
       (gir:invoke (gtk-object 'show-all)))
     ;; (gobject:g-signal-connect
     ;;  gobject-gtk-object "destroy"
@@ -286,9 +277,6 @@ See `gobject-gtk-browser's `modifier-translator' slot."
 
 (defmethod printable-p ((window gobject-gtk-window) event)
   "Return the printable value of EVENT."
-  ;; Generate the result of the current keypress into a dummy
-  ;; (invisible) key-string-buffer so that we can collect the printed
-  ;; representation of composed keypress, such as dead keys.
   (gir:invoke ((key-string-buffer window) 'im-context-filter-keypress) event)
   (when (<= 1 (gir:invoke ((key-string-buffer window) 'get-text-length)))
      (prog1
@@ -623,24 +611,23 @@ See `gobject-gtk-browser's `modifier-translator' slot."
   "Load URI in BUFFER."
   (gir:invoke ((gtk-object buffer) 'load_uri) (object-string uri)))
 
-;; (defmethod ffi-buffer-evaluate-javascript ((buffer gobject-gtk-buffer) javascript)
-;;   (%within-renderer-thread
-;;    (lambda (&optional channel)
-;;      (webkit2:webkit-web-view-evaluate-javascript
-;;       (gobject-gtk-object buffer)
-;;       javascript
-;;       (if channel
-;;           (lambda (result)
-;;             (calispel:! channel result))
-;;           #'identity)
-;;       #'javascript-error-handler))))
+(defmethod ffi-buffer-evaluate-javascript ((buffer gobject-gtk-buffer) javascript)
+  (lambda (&optional channel)
+    (nyxt/gobject/gtk:webkit-web-view-evaluate-javascript
+     (gtk-object buffer)
+     javascript
+     (if channel
+         (lambda (result)
+           (calispel:! channel result))
+         #'identity)
+     #'javascript-error-handler)))
 
 (defmethod ffi-buffer-evaluate-javascript-async ((buffer gobject-gtk-buffer) javascript)
   (nyxt/gobject/gtk:webkit-web-view-evaluate-javascript
    (gtk-object buffer) javascript nil #'javascript-error-handler))
 
-;; (define-ffi-method ffi-minibuffer-evaluate-javascript ((window gobject-gtk-window) javascript)
-;;   (webkit2:webkit-web-view-evaluate-javascript (minibuffer-view window) javascript))
+(define-ffi-method ffi-minibuffer-evaluate-javascript ((window gobject-gtk-window) javascript)
+  (nyxt/gobject/gtk:webkit-web-view-evaluate-javascript (minibuffer-view window) javascript))
 
 ;; (define-ffi-method ffi-buffer-enable-javascript ((buffer gobject-gtk-buffer) value)
 ;;   (setf (webkit:webkit-settings-enable-javascript
