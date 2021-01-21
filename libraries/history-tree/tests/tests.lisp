@@ -133,10 +133,6 @@
    (title ""))
   (:accessor-name-transformer #'class*:name-identity))
 
-(defun first-hash-table-key (hash-table)
-  (with-hash-table-iterator (next-entry hash-table)
-    (nth-value 1 (next-entry))))
-
 (prove:subtest "Compound entry uniqueness"
   (let ((web-page1 (make-instance 'web-page :url "http://example.org"
                                             :title "Example page"))
@@ -147,7 +143,7 @@
       (htree:add-child web-page2 history)
       (prove:is (hash-table-count (htree:entries history))
                 1)
-      (prove:is (title (htree:value (first-hash-table-key (htree:entries history))))
+      (prove:is (title (htree:value (htree::first-hash-table-key (htree:entries history))))
                 "Same page, another title"))
     (let ((history (htree:make)))
       (htree:add-child web-page1 history)
@@ -197,7 +193,7 @@
         (url2 "https://nyxt.atlas.engineer"))
     (htree:add-child url1 history)
     (htree:set-current-owner history "b")
-    (htree:add-child url2 history :creator "a")
+    (htree:add-child url2 history :creator-identifier "a")
     (prove:is (length (htree:nodes (htree:owner history "a")))
               1)
     (prove:is (length (htree:nodes (htree:owner history "b")))
@@ -205,13 +201,83 @@
     (prove:is (htree:parent (htree:current (htree:owner history "b")))
               (htree:current (htree:owner history "a")))))
 
+;; Default owner has its own branch, then we make 2 owners on a 1 separate branch.
+;; 1. Remove 1 owner from non-default branch.  Test if all nodes are still there.
+;; 2. Remove 2nd owner.  Test if all these nodes got garbage collected, but not
+;; the default branch nodes.
+(prove:subtest "Owner deletion"
+  (let ((tree (htree:make)))
+    (dolist (url '("http://example.root"
+                   "http://example.root/R"
+                   "http://example.root/R1"
+                   "http://example.root/R2"))
+      (htree:add-child url tree))
+    (htree:set-current-owner tree "parent-owner")
+    (htree:add-child "http://parent/A" tree)
+    (htree:add-child "http://parent/A1" tree)
+    (htree:back tree)
+    (htree:add-child "http://parent-child/A2" tree)
+
+    (htree:set-current-owner tree "child-owner")
+    (htree:add-child "http://child/A3a" tree :creator-identifier "parent-owner")
+    (htree:back tree)
+    (htree:add-child "http://child/A3b" tree)
+
+    (prove:is (length (htree:nodes (htree:owner tree "parent-owner")))
+              3)
+    (prove:is (length (htree:all-current-branch-nodes tree))
+              5)
+    (prove:is (length (htree:nodes (htree:owner tree htree:+default-owner+)))
+              4)
+
+    (htree:delete-owner tree "child-owner")
+
+    (prove:isnt (htree:current-owner-identifier tree)
+                "child-owner")
+    (prove:is (htree:owner tree "child-owner")
+              nil)
+    (prove:is (length (htree:nodes (htree:owner tree "parent-owner")))
+              3)
+    (htree:set-current-owner tree "parent-owner")
+    (prove:is (length (htree:all-current-branch-nodes tree))
+              5)
+    (prove:is (length (htree:nodes (htree:owner tree htree:+default-owner+)))
+              4)
+
+    (dolist (url-owner (list '("http://parent/A" "parent-owner")
+                             '("http://parent/A1" "parent-owner")
+                             '("http://parent-child/A2" "parent-owner")
+                             '("http://child/A3a" nil)
+                             '("http://child/A3b" nil)))
+      (prove:is (alexandria:hash-table-keys
+                 (htree:bindings (first (htree:find-nodes tree (first url-owner)))))
+                (if (second url-owner)
+                    (list (htree:owner tree (second url-owner)))
+                    nil)))
+
+    (htree:delete-owner tree "parent-owner")
+    (prove:is (htree:current-owner-identifier tree)
+              htree:+default-owner+)
+    (prove:is (htree:owner tree "parent-owner")
+              nil)
+
+    (maphash (lambda (entry nodes)
+               (let ((owner (if (str:contains? "example.root" (htree:value entry))
+                                (list (htree:owner tree htree:+default-owner+))
+                                nil)))
+                 (dolist (node nodes)
+                   (prove:is (alexandria:hash-table-keys (htree:bindings node))
+                             owner))))
+
+     (htree:entries tree))))
+
 (prove:subtest "Visit all nodes until distant node"
   (let* ((history (make-tree1))
          (creator (htree:current-owner-identifier history))
          (distant-node-value "http://example.root/A1")
          (distant-node (first (htree:find-nodes history distant-node-value))))
     (htree:set-current-owner history "b")
-    (htree:add-child "b-data" history :creator creator)
+    (htree:add-child "b-data" history :creator-identifier creator)
 
     (htree::visit-all history distant-node)
 
