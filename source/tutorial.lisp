@@ -237,6 +237,18 @@ query inside parenthesis in which you can use 'and', 'or' and 'not'. Examples:")
     (:li (command-markup 'nyxt/visual-mode:backward-line-with-selection
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
          ": Turn on the text selection and move caret backward by a line."))
+   (:p "Note for Emacs users: unlike in Emacs, in Nyxt the command "
+       (command-markup 'nyxt/visual-mode:toggle-mark
+                       :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
+       "is bound to Shift-space, as C-space is bound to 'execute-command,
+overriding any mode keybinding. But if you want to toggle mark with C-space,
+you'll need to set your own override-map such that C-space is not bound.
+An example:")
+   (:pre (:code "
+\(define-configuration buffer
+  ((override-map (let ((map (make-keymap \"override-map\")))
+                   (define-key map
+                     \"M-x\" 'execute-command)))))"))
 
    (:h3 "Miscellaneous")
    (:ul
