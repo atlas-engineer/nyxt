@@ -1,59 +1,6 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/gobject/gtk
-    (:use :common-lisp :nyxt)
-  (:export :webkit-web-view-evaluate-javascript))
-
-(in-package :nyxt/gobject/gtk)
-
-(defvar callback-counter 0)
-(defvar callbacks ())
-(defstruct callback
-  (id callback-counter :type number)
-  web-view
-  (function nil :type (or function null))
-  (error-function nil :type (or function null)))
-
-(cffi:defcallback javascript-evaluation-complete
-    :void ((source-object :pointer) (result :pointer) (user-data :pointer))
-  (declare (ignore source-object))
-  (let ((callback (find (cffi:pointer-address user-data) callbacks :key (function callback-id))))
-    (handler-case
-        (let* ((js-result (webkit:webkit-web-view-run-javascript-finish
-                           (nyxt::gtk-object-pointer (callback-web-view callback)) result))
-               (context (webkit:webkit-javascript-result-get-global-context js-result))
-               (value (webkit:webkit-javascript-result-get-value js-result))
-               (js-str-value (jscore:js-value-to-string-copy context value (cffi:null-pointer)))
-               (js-str-length (jscore:js-string-get-maximum-utf-8-c-string-size js-str-value))
-               (str-value
-                 (cffi:foreign-alloc
-                  :char :count (cffi:convert-from-foreign js-str-length :unsigned-int))))
-          (jscore:js-string-get-utf-8-c-string js-str-value str-value js-str-length)
-          (setf callbacks (delete callback callbacks))
-          (when (callback-function callback)
-            (funcall (callback-function callback) (cffi:foreign-string-to-lisp str-value))))
-      (error (c)
-        (when callback
-          (when  (callback-error-function callback)
-            (funcall (callback-error-function callback) c))
-          (setf callbacks (delete callback callbacks)))))))
-
-(defun webkit-web-view-evaluate-javascript (web-view javascript &optional call-back error-call-back)
-  "Evaluate javascript in web-view calling call-back upon completion."
-  (incf callback-counter)
-  (push (make-callback :id callback-counter
-                       :web-view web-view
-                       :function call-back
-                       :error-function error-call-back)
-        callbacks)
-  (gir:invoke (web-view 'run_javascript)
-              javascript
-              (cffi:null-pointer)
-              (cffi:callback javascript-evaluation-complete)
-              (cffi:make-pointer callback-counter)))
-(export 'webkit-web-view-evaluate-javascript)
-
 (in-package :nyxt)
 
 (define-class gobject-gtk-browser ()
@@ -614,8 +561,8 @@ See `gobject-gtk-browser's `modifier-translator' slot."
 
 (defmethod ffi-buffer-evaluate-javascript ((buffer gobject-gtk-buffer) javascript)
   (lambda (&optional channel)
-    (nyxt/gobject/gtk:webkit-web-view-evaluate-javascript
-     (gtk-object buffer)
+    (webkit:webkit-web-view-evaluate-javascript
+     (gtk-object-pointer buffer)
      javascript
      (if channel
          (lambda (result)
@@ -624,11 +571,11 @@ See `gobject-gtk-browser's `modifier-translator' slot."
      #'javascript-error-handler)))
 
 (defmethod ffi-buffer-evaluate-javascript-async ((buffer gobject-gtk-buffer) javascript)
-  (nyxt/gobject/gtk:webkit-web-view-evaluate-javascript
-   (gtk-object buffer) javascript nil #'javascript-error-handler))
+  (webkit:webkit-web-view-evaluate-javascript
+   (gtk-object-pointer buffer) javascript nil #'javascript-error-handler))
 
 (define-ffi-method ffi-minibuffer-evaluate-javascript ((window gobject-gtk-window) javascript)
-  (nyxt/gobject/gtk:webkit-web-view-evaluate-javascript (minibuffer-view window) javascript))
+  (webkit:webkit-web-view-evaluate-javascript (gir::this-of (minibuffer-view window)) javascript))
 
 (define-ffi-method ffi-buffer-enable-javascript ((buffer gobject-gtk-buffer) value)
   (setf (webkit:webkit-settings-enable-javascript
