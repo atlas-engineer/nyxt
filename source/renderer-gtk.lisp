@@ -929,7 +929,7 @@ custom (the specified proxy) and none."
     (with-slots (status-buffer) window
       (webkit2:webkit-web-view-evaluate-javascript
        (gtk-object (status-buffer window))
-       (ps:ps (setf (ps:@ document Body |innerHTML|) ; TODO: Rename all "Body" to "body".
+       (ps:ps (setf (ps:@ document body |innerHTML|)
                     (ps:lisp text)))))))
 
 (define-ffi-method ffi-print-message ((window gtk-window) text)
@@ -939,7 +939,7 @@ custom (the specified proxy) and none."
     (with-slots (message-view) window
       (webkit2:webkit-web-view-evaluate-javascript
        (message-view window)
-       (ps:ps (setf (ps:@ document Body |innerHTML|)
+       (ps:ps (setf (ps:@ document body |innerHTML|)
                     (ps:lisp text)))))))
 
 (define-ffi-method ffi-display-uri (text)

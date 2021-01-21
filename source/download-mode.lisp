@@ -52,7 +52,7 @@
                              " as "
                              (:b (file-namestring (download-manager:file d)))))))
                     (:p (:em "Open a file with " (:code (format nil "~a download-open-file" (binding-keys 'execute-command))) "."))))
-         (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)
+         (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
                                       (ps:lisp contents)))))
     (ffi-buffer-evaluate-javascript-async download-buffer insert-content)
     download-buffer))

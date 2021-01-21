@@ -387,7 +387,7 @@ Otherwise go forward to the only child."
                             (:div (markup:raw
                                    (markup:markup*
                                     tree))))))
-           (insert-content (ps:ps (setf (ps:@ document Body |innerHTML|)
+           (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
                                         (ps:lisp content)))))
       (ffi-buffer-evaluate-javascript-async output-buffer insert-content)
       (set-current-buffer output-buffer))))
