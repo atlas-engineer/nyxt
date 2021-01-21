@@ -588,7 +588,7 @@ First child comes first in the resulting list."
 
 (export 'all-current-branch-nodes)
 (defmethod all-current-branch-nodes ((history history-tree))
-  "Return a list of all nodes that belong to the branch the current owner is on."
+  "Return a list of all nodes that belong to the branch the current owner node is on."
   (let ((root (root (current-owner-node history))))
     (cons root (all-children (root (current-owner-node history))))))
 
@@ -677,21 +677,26 @@ As a second value, return the list of all NODE's children, including NODE."
                  (garbage-collect (rest list-of-nodes)))))
       (garbage-collect (nodes owner)))))
 
-(defun first-hash-table-value (hash-table)
+(defun first-hash-table-key (hash-table)
+  (with-hash-table-iterator (next-entry hash-table)
+    (nth-value 1 (next-entry))))
+
+(defun first-hash-table-value (hash-table) ; TODO: Unused
   (with-hash-table-iterator (next-entry hash-table)
     (nth-value 2 (next-entry))))
 
+(export-always 'delete-owner)
 (declaim (ftype (function (history-tree t) (or null owner)) delete-owner))
 (defun delete-owner (history owner-identifier)
   "Delete `owner' corresponding to OWNER-IDENTIFIER from HISTORY.
 For every branch `owner' has nodes on, remove all its nodes if the branch is
 without any owner.
 Return owner, or nil if there is no owner corresponding to OWNER-IDENTIFIER."
-  (let ((owner (owner owner-identifier history)))
+  (let ((owner (owner history owner-identifier)))
     (remhash owner-identifier (owners history))
-    (when (eq owner (current-owner history))
-      (setf (slot-value history 'current-owner)
-            (first-hash-table-value (owners history))))
+    (when (equal owner-identifier (current-owner-identifier history))
+      (setf (slot-value history 'current-owner-identifier)
+            (first-hash-table-key (owners history))))
     (when owner
       (mapc (alex:curry #'disown owner) (nodes owner)))
     ;; Delete nodes only when whole branch is owner-less.  Indeed, otherwise we would
