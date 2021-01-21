@@ -30,6 +30,7 @@
       (list
        "C-h" 'select-paragraph
        "shift-space" 'toggle-mark
+       "C-space" 'toggle-mark
        "C-g" 'visual-mode
        "C-f" 'forward-char
        "C-b" 'backward-char
