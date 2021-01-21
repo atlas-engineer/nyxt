@@ -640,18 +640,16 @@ Children may not all be owned by the current owner."
 
 
 (defun disowned-branch-nodes (node)
-  "Return list of all NODE's children (including NODE) if they are all disowned.
-Return nil otherwise."
+  "Return true if all NODE's children (including NODE) are disowned.
+Return nil otherwise.
+As a second value, return the list of all NODE's children, including NODE."
   (let ((disowned? t)
         (children '()))
-    (block nil
-      (do-tree (child-node node)
-        (unless (disowned-p child-node)
-          (setf disowned? nil)
-          (return))
-        (push child-node children)))
-    (when disowned?
-      children)))
+    (do-tree (child-node node)
+      (unless (disowned-p child-node)
+        (setf disowned? nil))
+      (push child-node children))
+    (values disowned? children)))
 
 (defun delete-node (history node)
   (cl-custom-hash-table:with-custom-hash-table
@@ -660,17 +658,16 @@ Return nil otherwise."
 (defun delete-disowned-branch-nodes (history owner)
   ;; We memoize the deleted nodes to avoid retraversing the branch for all the
   ;; nodes that belong to the same branch.
-  (let ((deleted-nodes '()))
+  (let ((processed-nodes '()))          ; TODO: Memoize with hash-table for performance?
     (labels ((garbage-collect (list-of-nodes)
                (when list-of-nodes
-                 (let* ((node (first list-of-nodes))
-                        (root (root node)))
-                   (unless (find node deleted-nodes)
-                     (let ((disowned-nodes (disowned-branch-nodes root)))
-                       (when disowned-nodes
-                         (dolist (node deleted-nodes)
-                           (delete-node history node))
-                         (alex:appendf deleted-nodes disowned-nodes)))))
+                 (let ((node (first list-of-nodes)))
+                   (unless (find node processed-nodes)
+                     (multiple-value-bind (disowned-branch? nodes)
+                         (disowned-branch-nodes (root node))
+                       (when disowned-branch?
+                         (mapc (alex:curry #'delete-node history) nodes))
+                       (alex:appendf processed-nodes nodes))))
                  (garbage-collect (rest list-of-nodes)))))
       (garbage-collect (nodes owner)))))
 
