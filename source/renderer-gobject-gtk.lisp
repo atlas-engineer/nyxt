@@ -605,6 +605,15 @@ See `gobject-gtk-browser's `modifier-translator' slot."
      #'javascript-error-handler)))
 
 (defmethod ffi-buffer-evaluate-javascript-async ((buffer gobject-gtk-buffer) javascript)
+  (within-renderer-thread-async
+   (lambda ()
+     (webkit2:webkit-web-view-evaluate-javascript
+      (gtk-object-pointer buffer)
+      javascript
+      nil
+      #'javascript-error-handler))))
+
+(defmethod ffi-buffer-evaluate-javascript-async ((buffer gobject-gtk-buffer) javascript)
   (webkit:webkit-web-view-evaluate-javascript
    (gtk-object-pointer buffer) javascript nil #'javascript-error-handler))
 
@@ -721,15 +730,15 @@ See `gobject-gtk-browser's `modifier-translator' slot."
 ;;        (ps:ps (setf (ps:@ document Body |innerHTML|) ; TODO: Rename all "Body" to "body".
 ;;                     (ps:lisp text)))))))
 
-;; (define-ffi-method ffi-print-message ((window gobject-gtk-window) text)
-;;   (let ((text (markup:markup
-;;                (:head (:style (message-buffer-style window)))
-;;                (:body (markup:raw text)))))
-;;     (with-slots (message-view) window
-;;       (webkit2:webkit-web-view-evaluate-javascript
-;;        (message-view window)
-;;        (ps:ps (setf (ps:@ document Body |innerHTML|)
-;;                     (ps:lisp text)))))))
+(define-ffi-method ffi-print-message ((window gobject-gtk-window) text)
+  (let ((text (markup:markup
+               (:head (:style (message-buffer-style window)))
+               (:body (markup:raw text)))))
+    (with-slots (message-view) window
+      (webkit2:webkit-web-view-evaluate-javascript
+       (gir::this-of (message-view window))
+       (ps:ps (setf (ps:@ document Body |innerHTML|)
+                    (ps:lisp text)))))))
 
 ;; (define-ffi-method ffi-display-uri (text)
 ;;   (webkit:webkit-uri-for-display text))
