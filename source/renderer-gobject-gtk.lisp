@@ -176,13 +176,24 @@ not return."
     `(defmethod ,name ,args
        ,@docstring
        ,declares
-       (progn
-         ,@body))))
+       (if (renderer-thread-p)
+           (progn
+             ,@body)
+           (let ((channel (make-bounded-channel 1)))
+             (gtk:within-gtk-thread
+               (calispel:!
+                channel
+                (progn
+                  ,@body)))
+             (calispel:? channel))))))
 
 (defmethod ffi-initialize ((browser gobject-gtk-browser) urls startup-timestamp)
   (log:info "Initializing Gobject-GTK Interface")
-  (gir:invoke ((gir-gtk browser) 'main))
-  (finalize browser urls startup-timestamp))
+  (bt:make-thread (lambda ()
+                    (gir:invoke ((gir-gtk browser) 'main)))
+                  :name "main thread")
+  ;(finalize browser urls startup-timestamp)
+  )
 
 (define-ffi-method ffi-kill-browser ((browser gobject-gtk-browser))
   (unless *keep-alive*
