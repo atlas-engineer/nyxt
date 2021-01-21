@@ -57,11 +57,6 @@ data separately for each buffer."))
   (:export-class-name-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
-(defmethod ffi-initialize ((browser gobject-gtk-browser) urls startup-timestamp)
-  (log:info "Initializing Gobject-GTK Interface")
-  (gir:invoke ((gir-gtk browser) 'main))
-  (finalize browser urls startup-timestamp))
-
 (defmethod initialize-instance :after ((browser gobject-gtk-browser) &key)
   (gir:invoke ((gir-gtk browser) 'init) nil))
 
@@ -141,9 +136,32 @@ data separately for each buffer."))
   (with-slots (gtk-object) buffer
     (setf gtk-object (make-web-view))))
 
+(defun renderer-thread-p ()
+  (str:containsp "main thread" (bt:thread-name (bt:current-thread))))
+
 (defmethod ffi-within-renderer-thread ((browser gobject-gtk-browser) thunk)
   (declare (ignore browser))
-  (funcall thunk))
+  (gtk:within-gtk-thread
+    (funcall thunk)))
+
+(defun within-renderer-thread (thunk)
+  "If the current thread is the renderer thread, execute THUNK with `funcall'.
+Otherwise run the THUNK on the renderer thread by passing it a channel
+and wait on the channel's result."
+  (if (renderer-thread-p)
+      (funcall thunk)
+      (let ((channel (make-bounded-channel 1)))
+        (gtk:within-gtk-thread
+          (funcall thunk channel))
+        (calispel:? channel))))
+
+(defun within-renderer-thread-async (thunk)
+  "Same as `within-renderer-thread' but THUNK is not blocking and does
+not return."
+  (if (renderer-thread-p)
+      (funcall thunk)
+      (gtk:within-gtk-thread
+        (funcall thunk))))
 
 (defmacro define-ffi-method (name args &body body)
   (let* ((docstring (when (stringp (first body))
@@ -160,6 +178,11 @@ data separately for each buffer."))
        ,declares
        (progn
          ,@body))))
+
+(defmethod ffi-initialize ((browser gobject-gtk-browser) urls startup-timestamp)
+  (log:info "Initializing Gobject-GTK Interface")
+  (gir:invoke ((gir-gtk browser) 'main))
+  (finalize browser urls startup-timestamp))
 
 (define-ffi-method ffi-kill-browser ((browser gobject-gtk-browser))
   (unless *keep-alive*
