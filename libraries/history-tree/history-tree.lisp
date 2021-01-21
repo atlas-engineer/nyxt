@@ -2,6 +2,8 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (in-package :history-tree)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria))
 
 ;; TODO: Add function to reparent all the branches of an owner.  Test owner
 ;; deletion first.
@@ -136,7 +138,7 @@ It's updated every time a node is visited.")
 (defun owned-children-lister (owner)
   "Return a function which lists the OWNER's owned children of the node argument."
   (lambda (node)
-    (remove-if (complement (alexandria:curry #'owned-p owner))
+    (remove-if (complement (alex:curry #'owned-p owner))
                (children node))))
 
 (defun owned-children (owner)
@@ -598,7 +600,7 @@ from the top-most parent, in depth-first order."
 (export-always 'all-data)
 (defmethod all-data ((history history-tree))
   "Return a list of all entries data, in unspecified order."
-  (mapcar #'value (alexandria:hash-table-keys (entries history))))
+  (mapcar #'value (alex:hash-table-keys (entries history))))
 
 (export-always 'all-current-owner-nodes-data)
 (defmethod all-current-owner-nodes-data ((history history-tree))
@@ -653,7 +655,7 @@ Return nil otherwise."
 
 (defun delete-node (history node)
   (cl-custom-hash-table:with-custom-hash-table
-    (alexandria:deletef (gethash (entry node) (entries history)) node)))
+    (alex:deletef (gethash (entry node) (entries history)) node)))
 
 (defun delete-disowned-branch-nodes (history owner)
   ;; We memoize the deleted nodes to avoid retraversing the branch for all the
@@ -668,9 +670,7 @@ Return nil otherwise."
                        (when disowned-nodes
                          (dolist (node deleted-nodes)
                            (delete-node history node))
-                         (setf deleted-nodes
-                               (append disowned-nodes
-                                       deleted-nodes))))))
+                         (alex:appendf deleted-nodes disowned-nodes)))))
                  (garbage-collect (rest list-of-nodes)))))
       (garbage-collect (nodes owner)))))
 
@@ -690,10 +690,7 @@ Return owner, or nil if there is no owner corresponding to OWNER-IDENTIFIER."
       (setf (slot-value history 'current-owner)
             (first-hash-table-value (owners history))))
     (when owner
-      (mapc
-       (lambda (node)
-         (disown owner node))
-       (nodes owner)))
+      (mapc (alex:curry #'disown owner) (nodes owner)))
     ;; Delete nodes only when whole branch is owner-less.  Indeed, otherwise we would
     ;; lose information for other owners.  It's better to be as "immutable" as possible.
     ;;
