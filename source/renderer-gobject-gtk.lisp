@@ -137,7 +137,7 @@ data separately for each buffer."))
     (setf gtk-object (make-web-view))))
 
 (defun renderer-thread-p ()
-  (str:containsp "main thread" (bt:thread-name (bt:current-thread))))
+  (string= "main thread" (bt:thread-name (bt:current-thread))))
 
 (defmethod ffi-within-renderer-thread ((browser gobject-gtk-browser) thunk)
   (declare (ignore browser))
@@ -192,8 +192,7 @@ not return."
   (bt:make-thread (lambda ()
                     (gir:invoke ((gir-gtk browser) 'main)))
                   :name "main thread")
-  ;(finalize browser urls startup-timestamp)
-  )
+  (finalize browser urls startup-timestamp))
 
 (define-ffi-method ffi-kill-browser ((browser gobject-gtk-browser))
   (unless *keep-alive*
@@ -514,8 +513,7 @@ See `gobject-gtk-browser's `modifier-translator' slot."
   (setf (slot-value browser 'last-active-window)
         (or (find-if (lambda (window)
                        (gir:property (gtk-object window) 'is-active))
-                     (window-list)
-                     :key #'gtk-object)
+                     (window-list))
             (first (window-list))
             (slot-value browser 'last-active-window))))
 
@@ -720,15 +718,15 @@ See `gobject-gtk-browser's `modifier-translator' slot."
 ;;   (webkit:webkit-web-inspector-show
 ;;    (webkit:webkit-web-view-get-inspector (gobject-gtk-object buffer))))
 
-;; (define-ffi-method ffi-print-status ((window gobject-gtk-window) text)
-;;   (let ((text (markup:markup
-;;                (:head (:style (style (status-buffer window))))
-;;                (:body (markup:raw text)))))
-;;     (with-slots (status-buffer) window
-;;       (webkit2:webkit-web-view-evaluate-javascript
-;;        (gobject-gtk-object (status-buffer window))
-;;        (ps:ps (setf (ps:@ document Body |innerHTML|) ; TODO: Rename all "Body" to "body".
-;;                     (ps:lisp text)))))))
+(define-ffi-method ffi-print-status ((window gobject-gtk-window) text)
+  (let ((text (markup:markup
+               (:head (:style (style (status-buffer window))))
+               (:body (markup:raw text)))))
+    (with-slots (status-buffer) window
+      (webkit2:webkit-web-view-evaluate-javascript
+       (gtk-object-pointer (status-buffer window))
+       (ps:ps (setf (ps:@ document body |innerHTML|)
+                    (ps:lisp text)))))))
 
 (define-ffi-method ffi-print-message ((window gobject-gtk-window) text)
   (let ((text (markup:markup
