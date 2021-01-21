@@ -289,7 +289,9 @@ See `delete-owner' to remove it from HISTORY."
 (export-always 'with-current-owner)
 (defmacro with-current-owner ((history owner-identifier) &body body)
   "Locally switch owner for HISTORY.
-See `set-current-owner' to set the owner persistently."
+See `set-current-owner' to set the owner persistently.
+Owner is created if OWNER-IDENTIFIER does not match any owner.
+OWNER-IDENTIFIER can be any value, even NIL."
   (let  ((old-owner-identifier (gensym)))
     `(let ((,old-owner-identifier (current-owner-identifier ,history)))
        (unwind-protect (progn (set-current-owner ,history ,owner-identifier)
@@ -433,8 +435,9 @@ of current owner and the `origin' parent is set to the current node of
        (let* ((creator (and creator
                             (owner history creator)
                             creator))
-              (creator-node (with-current-owner (history creator)
-                                  (current-owner-node history)))
+              (creator-node (and creator
+                                 (with-current-owner (history creator)
+                                   (current-owner-node history))))
               (new-node (make-node :entry (add-entry history data)
                                    :parent creator-node)))
          (setf (origin owner) new-node
