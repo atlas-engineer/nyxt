@@ -5,9 +5,14 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria))
 
-;; TODO: Add function to reparent all the branches of an owner.  Test owner
-;; deletion first.
+;; TODO: Add function to reparent all the branches of an owner.
 ;; TODO: Thread safe?
+
+;; TODO: Use fast sets for unique lookups?  Turns out hash-tables are overkill
+;; with SBCL on modern hardware, for less than 10.000.000 entries.
+;; Always use lists then?
+;; See TODO notes below mentioning "fast sets".
+;; See https://old.reddit.com/r/Common_Lisp/comments/l1z7ei/fast_set_library_or_gethash_vs_findmember/.
 
 ;; TODO: Add forward and back functions to unowned nodes, maybe leveraging `visit-all'?
 ;; TODO: Should we have different functions for finding nodes vs. "owned nodes",
@@ -305,7 +310,7 @@ OWNER-IDENTIFIER can be any value, even NIL."
   "Visit NODE with HISTORY's current owner.
 Return (values HISTORY NODE) so that calls to `visit' can be chained."
   (let ((owner (current-owner history)))
-    (pushnew node (nodes owner))        ; TODO: Replace with hash-table to speedup?
+    (pushnew node (nodes owner))        ; TODO: See TODO note on "fast sets".
     (setf (current owner) node)
     (let ((binding (gethash owner (bindings node))))
       (if binding
@@ -664,7 +669,7 @@ As a second value, return the list of all NODE's children, including NODE."
 (defun delete-disowned-branch-nodes (history owner)
   ;; We memoize the deleted nodes to avoid retraversing the branch for all the
   ;; nodes that belong to the same branch.
-  (let ((processed-nodes '()))          ; TODO: Memoize with hash-table for performance?
+  (let ((processed-nodes '()))          ; TODO: See TODO note on "fast sets".
     (labels ((garbage-collect (list-of-nodes)
                (when list-of-nodes
                  (let ((node (first list-of-nodes)))
