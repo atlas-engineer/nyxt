@@ -53,8 +53,10 @@
               url3)
     (prove:is (htree:value (htree:parent (htree:current-owner-node history)))
               url1)
-    ;; TODO: Go to other child.
-    ))
+    (htree:back history)
+    (htree:go-to-child url2 history)
+    (prove:is (htree:value (htree:current-owner-node history))
+              url2)))
 
 (prove:subtest "Simple branching tree tests."
   (prove:is (htree:value (htree:current-owner-node (make-tree1)))
