@@ -8,7 +8,7 @@
 (in-package :nyxt/visual-mode)
 
 (define-mode visual-mode ()
-  "Visual mode."
+  "Visual mode. For documentation on commands and keybindings, see the manual."
   ((keymap-scheme
     (define-scheme "visual"
       scheme:cua
