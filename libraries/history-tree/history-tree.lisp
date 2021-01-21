@@ -237,12 +237,14 @@ Also see `test'."))
   (:accessor-name-transformer #'class*:name-identity)
   (:documentation "Starting point of the global history tree data structure."))
 
+(defparameter +default-owner+ "default-owner")
+
 (export 'make)
 (defun make (&rest args
              &key key
                test
                hash-function
-               (current-owner-identifier "default-owner" explicit-p))
+               (current-owner-identifier +default-owner+ explicit-p))
   "Return a new `history-tree'."
   (declare (ignore key test hash-function))
   (let ((owners (make-hash-table :test #'equalp))
