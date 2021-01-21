@@ -157,6 +157,15 @@
                       #'string<)
                 (sort (mapcar #'title (list web-page1 web-page2)) #'string<)))))
 
+(prove:subtest "Single owners"
+  (let ((history (htree:make))
+        (url1 "http://example.org"))
+    (htree:add-child url1 history)
+    (prove:is (htree:current-owner-identifier history)
+              htree::+default-owner+)
+    (prove:is (hash-table-count (htree:owners history))
+              1)))
+
 (prove:subtest "Multiple owners"
   (let ((history (htree:make :current-owner-identifier "a"))
         (url1 "http://example.org")
