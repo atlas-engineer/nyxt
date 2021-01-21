@@ -253,7 +253,8 @@
   :depends-on (alexandria
                cl-custom-hash-table
                local-time
-               nyxt/class-star)
+               nyxt/class-star
+               trivial-package-local-nicknames)
   :pathname "libraries/history-tree/"
   :components ((:file "package")
                (:file "history-tree"))
