@@ -100,7 +100,7 @@ owner."))
   ((origin nil ; TODO: Rename to `root'?  Not to be confused with the htree root, but maybe it's convenient to have the same method name.
            :type (or null node)
            :documentation "The first node created for this owner.")
-   (creator nil
+   (creator nil                         ; TODO: Rename to `creator-identifier'?
             :type t
             :documentation "The owner-identifier in `origin's parent node that
 created this owner.  May be nil, in which case `origin' is a root node.
@@ -239,6 +239,7 @@ Also see `test'."))
   (:accessor-name-transformer #'class*:name-identity)
   (:documentation "Starting point of the global history tree data structure."))
 
+(export-always '+default-owner+)
 (defparameter +default-owner+ "default-owner")
 
 (export 'make)
@@ -415,7 +416,7 @@ Return (values OWNER (current OWNER))."
 
 
 (export-always 'add-child)
-(defmethod add-child (data (history history-tree) &key creator)
+(defmethod add-child (data (history history-tree) &key creator-identifier)
   "Create or find a node holding DATA and set current node to it.
 Return the (possibly new) current node.
 
@@ -430,20 +431,25 @@ node is set to this child.
 If there is no current node, this creates the `origin' node of the current owner
 and also sets `current' to it.  If CREATOR is provided, set the `creator' slot
 of current owner and the `origin' parent is set to the current node of
-`creator'."
-  (let ((owner (current-owner history)))
+`creator-identifier'."
+  (let ((owner (current-owner history))
+        (creator-owner (and creator-identifier (owner history creator-identifier))))
+    (when (and (current owner)
+               creator-identifier)
+      (error "Cannot specify creator-identifier on owner ~s that already has nodes" owner))
+    (when (null (current owner))
+      (when (and creator-owner (null (current creator-owner)))
+        (error "Cannot add node to empty owner with node-less creator ~s" creator-owner)))
+
     (cond
       ((null (current owner))
-       (let* ((creator (and creator
-                            (owner history creator)
-                            creator))
-              (creator-node (and creator
-                                 (with-current-owner (history creator)
-                                   (current-owner-node history))))
+       (let* ((creator-node (and creator-owner (current creator-owner)))
               (new-node (make-node :entry (add-entry history data)
                                    :parent creator-node)))
+         (when creator-owner
+           (push new-node (children creator-node)))
          (setf (origin owner) new-node
-               (creator owner) creator)
+               (creator owner) creator-identifier)
          (visit history new-node)))
 
       ((not (data-equal-entry-p data (entry (current owner))))
