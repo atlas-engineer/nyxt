@@ -36,6 +36,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
+(define-user-class browser (gtk-browser))
 
 (define-class gtk-window ()
   ((gtk-object)
@@ -49,6 +50,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
+(define-user-class window (gtk-window))
 
 (define-class gtk-buffer ()
   ((gtk-object)
@@ -61,6 +63,7 @@ data-manager will store the data separately for each buffer."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
+(define-user-class buffer (gtk-buffer))
 
 (defmethod web-context ((browser gtk-browser))
   (or (slot-value *browser* 'web-context)
@@ -984,10 +987,3 @@ As a second value, return the current buffer index starting from 0."
   (webkit:webkit-web-view-go-to-back-forward-list-item
    (gtk-object buffer)
    (webkit-history-entry-gtk-object history-entry)))
-
-(defun set-renderer ()
-  (define-user-class window (gtk-window))
-  (define-user-class buffer (gtk-buffer))
-  (define-user-class browser (gtk-browser)))
-
-(set-renderer)
