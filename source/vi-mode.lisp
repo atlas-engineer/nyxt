@@ -60,9 +60,6 @@ vi-normal-mode.")
       scheme:vi-insert
       (list
        "C-i" 'autofill
-       "C-v" 'nyxt/web-mode:paste
-       "shift-insert" 'nyxt/web-mode:paste
-       "button2" 'nyxt/web-mode:paste-or-set-url
        "escape" 'vi-normal-mode
        "button1" 'vi-button1)))
    (destructor
