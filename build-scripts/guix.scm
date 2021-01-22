@@ -176,7 +176,12 @@
        ("cl-cffi-gtk" ,sbcl-cl-cffi-gtk)
        ("cl-webkit" ,sbcl-cl-webkit)
        ("glib-networking" ,glib-networking)
-       ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)))
+       ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
+       ;; GObjectIntrospection
+       ("cl-gobject-introspection" ,sbcl-cl-gobject-introspection)
+       ("gtk" ,gtk+)                    ; For the main loop.
+       ("webkitgtk" ,webkitgtk)         ; Required when we use its typelib.
+       ("gobject-introspection" ,gobject-introspection)))
     (synopsis "Extensible web-browser in Common Lisp")
     (home-page "https://nyxt.atlas.engineer")
     (description "Nyxt is a keyboard-oriented, extensible web-browser
