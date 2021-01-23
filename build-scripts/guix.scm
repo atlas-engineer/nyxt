@@ -9,9 +9,10 @@
 ;;
 ;;   guix environment --pure --load=guix.scm --ad-hoc glib glib-networking gsettings-desktop-schemas
 ;;
-;; To build a local executable (remember you'll need an environment with glib-networking, etc.), run:
+;; To build a local executable and then run it:
 ;;
 ;;   guix environment --pure --load=guix.scm -- make all NYXT_INTERNAL_QUICKLISP=false
+;;   guix environment --pure --load=guix.scm -- ./nyxt
 ;;
 ;; To start in a container, run:
 ;;
@@ -40,6 +41,7 @@
              (guix build-system gnu)
              (guix build-system glib-or-gtk)
              (gnu packages)
+             (gnu packages glib)
              (gnu packages lisp)
              (gnu packages lisp-xyz)
              (gnu packages gnome)
