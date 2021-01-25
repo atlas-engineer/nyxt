@@ -50,22 +50,31 @@ All ARGS are declared as `ignorable'."
                  (body :border-top "4px solid dimgray"
                        :margin "0"
                        :padding "0 6px")
-                 ("#container" :display "flex"
-                               :flex-flow "column"
-                               :height "100%")
-                 ("#input" :padding "6px 0"
-                           :border-bottom "solid 1px lightgray"
-                           :width "100%" ; TODO: It fills too much, we need to keep it on the same line as the prompt text.
-                           ;; TODO: This autofocus does not work?
-                           :autofocus "true")
+                 ("#prompt"
+                  :line-height "26px")
+                 ("#prompt-input"
+                  :display "grid"
+                  :grid-template-columns "auto auto 1fr"
+                  :width "100%"
+                  :padding "6px 0"
+                  :color "dimgray"
+                  :border-bottom "solid 1px lightgray")
+                 ("#prompt-extra"
+                  :line-height "26px"
+                  :padding-right "7px")
+                 ("#input"
+                  :border "none"
+                  :outline "none"
+                  :padding "3px"
+                  :background-color "#E8E8E8"
+                  :width "100%"
+                  :autofocus "true")
                  ("#suggestions" :flex-grow "1"
-                                 :overflow-y "hidden" ; TODO: Auto?
+                                 :overflow-y "auto"
                                  :overflow-x "hidden"
                                  :width "100%")
                  ("#cursor" :background-color "gray" ; TODO: Rename "selection".
                             :color "white")
-                 ("#prompt" :padding-right "4px"
-                            :color "dimgray")
                  (ul :list-style "none"
                      :padding "0"
                      :margin "0")
@@ -200,19 +209,18 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
   (markup:markup
    (:head (:style (style prompt-buffer)))
    (:body
-    (:div :id "container"
-          (:div :id "prompt-input"
-                (:span :id "prompt" (prompter:prompt (prompter prompt-buffer)))
-                ;; TODO: See minibuffer `generate-prompt-html' to print the counts.
-                (:span :id "prompt-extra" "[?/?]")
-                (:input :type "text" :id "input"))
-          ;; TODO: Support multi columns and sources.
-          (:div :id "suggestions"
-                ;; (:table
-                ;;  (loop repeat 10 ;; TODO: Only print as many lines as fit the height.
-                ;;        for suggestion in (prompter:suggestions source)
-                ;;        collect (markup:markup (:tr (:td (object-display (prompter:value suggestion)))))))
-                )))))
+    (:div :id "prompt-input"
+          (:div :id "prompt" (prompter:prompt (prompter prompt-buffer)))
+          ;; TODO: See minibuffer `generate-prompt-html' to print the counts.
+          (:div :id "prompt-extra" "[?/?]")
+          (:div (:input :type "text" :id "input")))
+    ;; TODO: Support multi columns and sources.
+    (:div :id "suggestions"
+          ;; (:table
+          ;;  (loop repeat 10 ;; TODO: Only print as many lines as fit the height.
+          ;;        for suggestion in (prompter:suggestions source)
+          ;;        collect (markup:markup (:tr (:td (object-display (prompter:value suggestion)))))))
+          ))))
 
 
 (export 'update-suggestion-html)
