@@ -174,7 +174,7 @@ It's updated every time a node is visited.")
 
 (declaim (ftype (function (node) boolean) disowned-p))
 (defun disowned-p (node)
-  (null (bindings node)))
+  (= 0 (hash-table-count (bindings node))))
 
 (declaim (ftype (function (owner node) boolean) disown))
 (defun disown (owner node)
@@ -692,21 +692,17 @@ As a second value, return the list of all NODE's children, including NODE."
   (cl-custom-hash-table:with-custom-hash-table
     (alex:deletef (gethash (entry node) (entries history)) node)))
 
-(defun delete-disowned-branch-nodes (history owner)
-  ;; We memoize the deleted nodes to avoid retraversing the branch for all the
-  ;; nodes that belong to the same branch.
-  (let ((processed-nodes '()))          ; TODO: See TODO note on "fast sets".
-    (labels ((garbage-collect (list-of-nodes)
-               (when list-of-nodes
-                 (let ((node (first list-of-nodes)))
-                   (unless (find node processed-nodes)
-                     (multiple-value-bind (disowned-branch? nodes)
-                         (disowned-branch-nodes (root node))
-                       (when disowned-branch?
-                         (mapc (alex:curry #'delete-node history) nodes))
-                       (alex:appendf processed-nodes nodes))))
-                 (garbage-collect (rest list-of-nodes)))))
-      (garbage-collect (nodes owner)))))
+(defun delete-disowned-branch-nodes (history nodes)
+  (labels ((garbage-collect (list-of-roots)
+             (when list-of-roots
+               (let ((node (first list-of-roots)))
+                 (multiple-value-bind (disowned-branch? nodes)
+                     (disowned-branch-nodes node)
+                   (when disowned-branch?
+                     (mapc (alex:curry #'delete-node history) nodes))))
+               (garbage-collect (rest list-of-roots)))))
+    ;; `delete-duplicates' ensures that no node is processed twice.
+    (garbage-collect (delete-duplicates (mapcar #'root nodes)))))
 
 (defun first-hash-table-key (hash-table)
   (with-hash-table-iterator (next-entry hash-table)
@@ -729,14 +725,17 @@ Return owner, or nil if there is no owner corresponding to OWNER-IDENTIFIER."
       (setf (slot-value history 'current-owner-identifier)
             (first-hash-table-key (owners history))))
     (when owner
-      (mapc (alex:curry #'disown owner) (nodes owner)))
-    ;; Delete nodes only when whole branch is owner-less.  Indeed, otherwise we would
-    ;; lose information for other owners.  It's better to be as "immutable" as possible.
-    ;;
-    ;; If we want to "free" disowned nodes or edit a given owner's history, the
-    ;; best approach is to copy its owned branches to new branches that are
-    ;; directly connected to the root.
-    (delete-disowned-branch-nodes history owner)
+      (let ((nodes (nodes owner)))
+        (mapc (alex:curry #'disown owner) (nodes owner))
+        ;; Delete nodes only when whole branch is owner-less.  Indeed, otherwise
+        ;; we would lose information for other owners.  It's better to be as
+        ;; "immutable" as possible.
+        ;;
+        ;; If we want to "free" disowned nodes from a branch with still owned
+        ;; nodes, the less confusing approach (at least from a user perspective)
+        ;; is delete all remaining owners, possibly by duplicating elsewhere
+        ;; beforehand.
+        (delete-disowned-branch-nodes history nodes)))
     owner))
 
 
