@@ -739,6 +739,76 @@ Return owner, or nil if there is no owner corresponding to OWNER-IDENTIFIER."
     owner))
 
 
+;; (defmethod current-owner-root (history)
+;;   (first (last (all-contiguous-owned-parents history))))
+
+;; (defun own (owner node &key
+;;                          (last-access (local-time:now))
+;;                          (forward-child nil explicit-child-p))
+;;   "Create binding between OWNER and NODE.
+;; Return new binding."
+;;   (pushnew node (nodes owner))
+;;   (let ((binding (gethash owner (bindings node))))
+;;     (if binding
+;;         (progn
+;;           (setf (last-access binding) last-access)
+;;           (when explicit-child-p
+;;             (setf (forward-child binding) forward-child))
+;;           binding)
+;;         (setf (gethash owner (bindings node))
+;;               (apply #'make-instance 'binding
+;;                      :last-access last-access
+;;                      (when explicit-child-p
+;;                        `(:forward-child ,forward-child)))))))
+
+;; (defun copy-tree (owner node)
+;;   "Return the new root.
+;; As a second value, return the node in the new tree equivalent OWNER's current
+;; node, if its part of the copied tree.  Return nil otherwise."
+;;   (labels ((copy-node (node parent)
+;;              "Return (NEW-NODE NEW-CURRENT-NODE), second value may be nil."
+;;              (let ((new-node (make-node :entry (entry node)
+;;                                         :parent parent)))
+;;                (own owner new-node
+;;                     :last-access (last-access (current-binding owner node)))
+
+;;                (when parent
+;;                  (push new-node (children parent)))
+;;                (when (eq node (forward-child (current-binding owner (parent node))))
+;;                  (setf (forward-child (current-binding owner parent)
+;;                                       new-node)))
+;;                (let ((result-list (mapcar (alex:rcurry #'copy-node node) (children node))))
+;;                  (list new-node
+;;                        (or (when (eq node (current owner))
+;;                              new-node)
+;;                            (find-if (complement #'null)
+;;                                     result-list
+;;                                     :key #'second)))))))
+;;     (apply #'values (copy-node node nil))))
+
+;; (defun detach-owner-from-branch (history owner owner-root)
+;;   "Only detach owner from current branch if there are other owners on the branch."
+;;   (unless (equal (branch-owners owner-root) (list owner))
+;;     (multiple-value-bind ((new-root maybe-new-current))
+;;         (copy-tree owner owner-root)
+;;       (mapc (alex:curry #'disown owner) (all-contiguous-owned-nodes))
+;;       ;; (delete-disowned-branch-nodes history (root owner-root) ; TODO: Garbage collect!
+;;       (when maybe-new-current
+;;         (visit history maybe-new-current)))))
+
+;; (defun detach-current-owner-from-current-branch (history)
+;;   "Only detach owner from current branch if there are other owners on the branch."
+;;   (detach-owner-from-branch history
+;;                             (current-owner history)
+;;                             (owned-root (current-owner history)
+;;                                         (current-owner-node history))))
+
+;; (defun detach-current-owner-from-all-branches (history)
+;;   (let ((old-roots (delete-duplicates
+;;                     (mapcar (alex:curry #'current-owner (current-owner history))
+;;                             (nodes (current-owner history))))))
+;;     (dolist (root old-roots)
+;;       (detach-owner-from-branch history (current-owner history) root))))
 
 (deftype non-negative-integer ()
   `(integer 0 ,most-positive-fixnum))
