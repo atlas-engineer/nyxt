@@ -215,12 +215,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
           (:div :id "prompt-extra" "[?/?]")
           (:div (:input :type "text" :id "input")))
     ;; TODO: Support multi columns and sources.
-    (:div :id "suggestions"
-          ;; (:table
-          ;;  (loop repeat 10 ;; TODO: Only print as many lines as fit the height.
-          ;;        for suggestion in (prompter:suggestions source)
-          ;;        collect (markup:markup (:tr (:td (object-display (prompter:value suggestion)))))))
-          ))))
+    (:div :id "suggestions"))))
 
 
 (export 'update-suggestion-html)
