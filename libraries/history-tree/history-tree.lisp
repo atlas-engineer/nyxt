@@ -83,8 +83,11 @@ by the node.  `history-tree''s `entries' holds `entry'-`node' associations."))
       (root (parent node))
       node))
 
-(defun make-node (&key parent entry) ; TODO: Useless?
-  (make-instance 'node :parent parent :entry entry))
+(defun make-node (&key parent entry history)
+  (let ((node (make-instance 'node :parent parent :entry entry)))
+    (cl-custom-hash-table:with-custom-hash-table
+      (pushnew node (gethash (entry node) (entries history))))
+    node))
 
 (define-class binding ()
   ((forward-child  nil
@@ -317,8 +320,6 @@ Return (values HISTORY NODE) so that calls to `visit' can be chained."
           (setf (last-access binding) (local-time:now))
           (setf (gethash owner (bindings node))
                 (make-instance 'binding))))
-    (cl-custom-hash-table:with-custom-hash-table
-      (pushnew node (gethash (entry node) (entries history))))
     (values history node)))
 
 (defmethod visit-all ((history history-tree) node)
@@ -450,7 +451,8 @@ of current owner and the `origin' parent is set to the current node of
       ((null (current owner))
        (let* ((creator-node (and creator-owner (current creator-owner)))
               (new-node (make-node :entry (add-entry history data)
-                                   :parent creator-node)))
+                                   :parent creator-node
+                                   :history history)))
          (when creator-owner
            (push new-node (children creator-node)))
          (setf (origin owner) new-node
@@ -463,7 +465,8 @@ of current owner and the `origin' parent is set to the current node of
              (setf (value (entry node)) data)
              (let ((maybe-new-entry (add-entry history data)))
                (push (setf node (make-node :entry maybe-new-entry
-                                           :parent (current owner)))
+                                           :parent (current owner)
+                                           :history history))
                      (children (current owner)))))
          (let ((binding (gethash owner (bindings (current owner)))))
            (setf (forward-child binding) node))
