@@ -246,7 +246,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                       collect (markup:markup (:th (symbol-name property-name)))))
                (loop ;; TODO: Only print as many lines as fit the height.  But how can we know in advance?
                      ;; Maybe first make the table, then add the element one by one _if_ there are into view.
-                     with max-suggestion-count = 20
+                     with max-suggestion-count = 10
                      repeat max-suggestion-count
                      with cursor-index = (prompter:selected-suggestion-position (prompter prompt-buffer))
                      for suggestion-index from (max 0 (- cursor-index (/ max-suggestion-count 2)))
