@@ -281,16 +281,19 @@
               htree:+default-owner+)
     (prove:is (htree:owner tree "parent-owner")
               nil)
+    (prove:is (hash-table-count (htree:entries tree))
+              9)
 
     (maphash (lambda (entry nodes)
-               (let ((owner (if (str:contains? "example.root" (htree:value entry))
-                                (list (htree:owner tree htree:+default-owner+))
-                                nil)))
-                 (dolist (node nodes)
-                   (prove:is (alexandria:hash-table-keys (htree:bindings node))
-                             owner))))
+               (prove:is (length nodes)
+                         (if (str:contains? "example.root" (htree:value entry))
+                             1
+                             0)
+                         (format nil "~a entry has ~a remaining nodes"
+                                 (htree:value entry)
+                                 (length nodes))))
 
-     (htree:entries tree))))
+             (htree:entries tree))))
 
 (prove:subtest "Visit all nodes until distant node"
   (let* ((history (make-tree1))
