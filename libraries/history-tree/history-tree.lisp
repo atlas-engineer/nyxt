@@ -163,7 +163,8 @@ It's updated every time a node is visited.")
 
 (declaim (ftype (function (owner &optional node) (or null binding)) current-binding))
 (defun current-binding (owner &optional (node (current owner)))
-  (gethash owner (bindings node)))
+  (and node
+       (gethash owner (bindings node))))
 
 (declaim (ftype (function (owner (or null node)) (or null binding)) owned-p))
 (defun owned-p (owner node)
@@ -353,7 +354,7 @@ Return (values HISTORY NODE) so that calls to `visit' can be chained."
 
 (export-always 'back)
 (defmethod back ((history history-tree) &optional (count 1))
-  "Go COUNT parent up from the current owner node.
+  "Go COUNT parent up from the current owner node, if possible.
 Return (VALUES HISTORY CURRENT-NODE) so that `back' and `forward' calls can
 be chained."
   (let ((owner (current-owner history)))
@@ -371,12 +372,13 @@ be chained."
 
 (export-always 'forward)
 (defmethod forward ((history history-tree) &optional (count 1))
-  "Go COUNT forward-children down from the current owner node.
+  "Go COUNT forward-children down from the current owner node, if possible.
 Return (values HISTORY CURRENT-NODE)) so that `back' and `forward' calls can be
 chained."
   (check-type count positive-integer)
   (let ((owner (current-owner history)))
-    (when (children (current owner))
+    (when (and (current-binding owner)
+               (forward-child (current-binding owner)))
       (visit history (forward-child (current-binding owner)))
       (when (< 1 count)
         (forward history (1- count))))
