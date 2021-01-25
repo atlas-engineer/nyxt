@@ -50,15 +50,15 @@ All ARGS are declared as `ignorable'."
                  (body :border-top "4px solid dimgray"
                        :margin "0"
                        :padding "0 6px")
-                 ("#prompt"
-                  :line-height "26px")
-                 ("#prompt-input"
+                 ("#prompt-area"
                   :display "grid"
                   :grid-template-columns "auto auto 1fr"
                   :width "100%"
                   :padding "6px 0"
                   :color "dimgray"
                   :border-bottom "solid 1px lightgray")
+                 ("#prompt"
+                  :line-height "26px")
                  ("#prompt-extra"
                   :line-height "26px"
                   :padding-right "7px")
@@ -209,7 +209,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
   (markup:markup
    (:head (:style (style prompt-buffer)))
    (:body
-    (:div :id "prompt-input"
+    (:div :id "prompt-area"
           (:div :id "prompt" (prompter:prompt (prompter prompt-buffer)))
           ;; TODO: See minibuffer `generate-prompt-html' to print the counts.
           (:div :id "prompt-extra" "[?/?]")
