@@ -58,7 +58,8 @@ This is duplicated here so that it can be accessed from the `entry-equal-p' and
 (define-class node ()
   ((parent nil
            :type (or null node)
-           :documentation "If nil, it means the node is a root node.")
+           :documentation "If nil, it means the node is a root node.
+(The first of the parents.)")
    (children '()
              :documentation "List of nodes.
 Order does not matter.")
@@ -105,9 +106,10 @@ owner."))
 
 (define-class owner ()
   ;; TODO: Add slot pointing to history an owner belongs to?  Unnecessary if we never expose the `owner' to the caller.
-  ((origin nil ; TODO: Rename to `root'?  Not to be confused with the htree root, but maybe it's convenient to have the same method name.
+  ((origin nil
            :type (or null node)
-           :documentation "The first node created for this owner.")
+           :documentation "The first node created for this owner.
+Not to be confused with the root, since the owner be go back to a parent of `origin'.")
    (creator nil                         ; TODO: Rename to `creator-identifier'?
             :type t
             :documentation "The owner-identifier in `origin's parent node that
@@ -153,9 +155,9 @@ It's updated every time a node is visited.")
   "Return the OWNER's owned children for the current node."
   (funcall (owned-children-lister owner) (current owner) ))
 
-(defun owned-parent (owner)             ; TODO: Unused.  Generalize for `history-tree'?
+(defun owned-parent (owner node)
   "Return OWNER's parent if it's owned, nil otherwise."
-  (let ((parent (parent (current owner))))
+  (let ((parent (and node (parent node))))
     (when (owned-p owner parent)
       parent)))
 
@@ -163,9 +165,10 @@ It's updated every time a node is visited.")
 (defun current-binding (owner &optional (node (current owner)))
   (gethash owner (bindings node)))
 
-(declaim (ftype (function (owner node) (or null binding)) owned-p))
+(declaim (ftype (function (owner (or null node)) (or null binding)) owned-p))
 (defun owned-p (owner node)
-  (and (bindings node)
+  (and node
+       (bindings node)
        (gethash owner (bindings node))))
 
 (declaim (ftype (function (node) boolean) disowned-p))
@@ -566,16 +569,21 @@ Parents may not be owned by the current owner.
 First parent comes first in the resulting list."
   (all-parents (current-owner-node history)))
 
+(defun node-contiguous-owned-parents (owner node)
+  "Return a list of parents of owned by NODE, recursively.
+First parent comes first in the resulting list."
+  (labels ((contiguous-owned-parents (node)
+             (when (owned-parent owner node)
+               (cons (parent node)
+                     (contiguous-owned-parents (parent node))))))
+    (contiguous-owned-parents node)))
+
 (export-always 'all-contiguous-owned-parents)
 (defmethod all-contiguous-owned-parents ((history history-tree))
   "Return a list of parents of owned by HISTORY current owner node, recursively.
 First parent comes first in the resulting list."
-  (labels ((node-contiguous-owned-parents (node)
-             (when (and (parent node)
-                        (owned-p (current-owner history) (parent node)))
-               (cons (parent node)
-                     (node-contiguous-owned-parents (parent node))))))
-    (node-contiguous-owned-parents (current-owner-node history))))
+  (node-contiguous-owned-parents (current-owner history)
+                                 (current-owner-node history)))
 
 (export-always 'all-forward-children)
 (defmethod all-forward-children ((history history-tree)
@@ -602,13 +610,17 @@ See `all-contiguous-owned-nodes'."
   (let ((root (root (current-owner-node history))))
     (cons root (all-children (root (current-owner-node history))))))
 
+(defun owned-root (owner)
+  "Return the first parent among the contiguous owned parents of NODE."
+  (first (last (node-contiguous-owned-parents owner (current owner)))))
+
 (export 'all-contiguous-owned-nodes)
 (defmethod all-contiguous-owned-nodes ((history history-tree))
   "Return a list of all nodes contiguous to the current owner node, starting
 from the top-most parent, in depth-first order."
-  (let ((owner-root (first (last (all-contiguous-owned-parents history)))))
-    (when owner-root
-      (cons owner-root (all-contiguous-owned-children history owner-root)))))
+  (let ((owned-root (owned-root (current-owner history))))
+    (when owned-root
+      (cons owned-root (all-contiguous-owned-children history owned-root)))))
 
 
 
