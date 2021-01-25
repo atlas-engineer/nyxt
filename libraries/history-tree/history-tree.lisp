@@ -156,7 +156,7 @@ It's updated every time a node is visited.")
 (defun owned-parent (owner)             ; TODO: Unused.  Generalize for `history-tree'?
   "Return OWNER's parent if it's owned, nil otherwise."
   (let ((parent (parent (current owner))))
-    (when (gethash owner (bindings parent))
+    (when (owned-p owner parent)
       parent)))
 
 (declaim (ftype (function (owner &optional node) (or null binding)) current-binding))
