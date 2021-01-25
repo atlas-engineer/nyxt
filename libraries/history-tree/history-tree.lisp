@@ -175,7 +175,7 @@ It's updated every time a node is visited.")
 (declaim (ftype (function (owner node) boolean) disown))
 (defun disown (owner node)
   "Remove binding between OWNER and NODE.
-Return true if NODE was owned by OWNER, false otherwise."
+Return true if NODE was owned by OWNER, nil otherwise."
   (remhash owner (bindings node)))
 
 (defun entry-equal-p (a b)
@@ -494,7 +494,7 @@ Return the (maybe new) current node, which holds the last piece of data in
                                  (collect-function #'cons)
                                  (children-function #'children))
   "Map the FUNCTION over the TREE.
-If TREE is a `htree:history-tree', start from it's root.
+If TREE is a `htree:history-tree', start from its root.
 If TREE is a `htree:node', start from it.
 Include results of applying FUNCTION over ROOT if INCLUDE-ROOT is
 non-nil.
@@ -596,7 +596,9 @@ First child comes first in the resulting list."
 
 (export 'all-current-branch-nodes)
 (defmethod all-current-branch-nodes ((history history-tree))
-  "Return a list of all nodes that belong to the branch the current owner node is on."
+  "Return a list of all nodes that belong to the branch the current owner node is on.
+These nodes do not necessarily belong to the current owner.
+See `all-contiguous-owned-nodes'."
   (let ((root (root (current-owner-node history))))
     (cons root (all-children (root (current-owner-node history))))))
 
