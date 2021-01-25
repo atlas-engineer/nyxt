@@ -15,7 +15,7 @@ bugs, instabilities or feature wishes.
 
 -----
 
-#+html: <div align="center"> <a href="http://nyxt.atlas.engineer/">Homepage</a> | <a href="https://nyxt.atlas.engineer/download">Downloads</a> | <a href="https://nyxt.atlas.engineer/articles">Articles</a> | <a href="https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org">Developer Manual</a> | Freenode IRC: <a href="https://webchat.freenode.net/#nyxt">#nyxt</a> </div>
+#+html: <div align="center"> <a href="http://nyxt.atlas.engineer/">Homepage</a> | <a href="https://nyxt.atlas.engineer/download">Downloads</a> | <a href="https://nyxt.atlas.engineer/articles">Articles</a> | <a href="https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org">Developer Manual</a> | Chat (IRC): <a href="https://webchat.freenode.net/#nyxt">#nyxt</a> </div>
 
 -----
 
