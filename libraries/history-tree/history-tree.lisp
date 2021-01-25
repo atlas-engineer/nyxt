@@ -666,6 +666,12 @@ Children may not all be owned by the current owner."
   (mapcar #'value (all-children history)))
 
 
+(defun branch-owners (node)
+  "Return the list of all NODE's children (including NODE) owners."
+  (let ((owners '()))
+    (do-tree (child-node node)
+      (alexandria:appendf owners (alexandria:hash-table-keys (bindings child-node))))
+    (delete-duplicates owners)))
 
 (defun disowned-branch-nodes (node)
   "Return true if all NODE's children (including NODE) are disowned.
