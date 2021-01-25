@@ -85,7 +85,6 @@
                (:file "autofill")
                (:file "auto-mode")
                (:file "external-editor")
-               (:file "url-group")
                #+quicklisp
                (:file "lisp-system")
                ;; Core Modes
