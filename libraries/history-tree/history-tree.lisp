@@ -179,6 +179,7 @@ It's updated every time a node is visited.")
 (defun disown (owner node)
   "Remove binding between OWNER and NODE.
 Return true if NODE was owned by OWNER, nil otherwise."
+  (alex:deletef (nodes owner) node)
   (remhash owner (bindings node)))
 
 (defun entry-equal-p (a b)
