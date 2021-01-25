@@ -69,10 +69,19 @@ All ARGS are declared as `ignorable'."
                   :background-color "#E8E8E8"
                   :width "100%"
                   :autofocus "true")
-                 ("#suggestions" :flex-grow "1"
-                                 :overflow-y "auto"
-                                 :overflow-x "hidden"
-                                 :width "100%")
+                 ("#suggestions"
+                  :flex-grow "1"
+                  :overflow-y "auto"
+                  :overflow-x "hidden"
+                  :width "100%")
+                 ("#suggestions table"
+                  :width "100%"
+                  :table-layout "fixed")
+                 ("#suggestions td"
+                  :white-space "nowrap"
+                  :overflow "auto")
+                 ("#suggestions td::-webkit-scrollbar"
+                  :display "none")
                  ("#cursor" :background-color "gray" ; TODO: Rename "selection".
                             :color "white")
                  (ul :list-style "none"
