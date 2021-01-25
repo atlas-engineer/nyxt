@@ -110,14 +110,12 @@
              (htree:back (make-tree1)))
             '("http://example.root/B2")))
 
-(prove:subtest
-    "Traverse all children."
+(prove:subtest "Traverse all children."
   (prove:is (htree:all-children-data
              (htree:back (make-tree1)))
             '("http://example.root/B2" "http://example.root/B1")))
 
-(prove:subtest
-    "Move node to forward-child on add."
+(prove:subtest "Move node to forward-child on add."
   (let ((tree (make-tree2)))
     (prove:is (htree:value (htree:current-owner-node tree))
               "http://example.root/B")
@@ -186,6 +184,29 @@
     (prove:is (htree:with-current-owner (history "a")
                 (htree:value (htree:current-owner-node history)))
               url1)))
+
+(prove:subtest "Backward and forward"
+  (let ((history (htree:make :current-owner-identifier "a"))
+        (url1 "http://example.org")
+        (url2 "https://nyxt.atlas.engineer")
+        (url3 "http://en.wikipedia.org"))
+    (htree:add-child url1 history)
+    (htree:add-child url2 history)
+    (htree:set-current-owner history "b")
+    (htree:add-child url3 history :creator-identifier "a")
+    (htree:set-current-owner history "a")
+    (prove:is (htree:value (htree:current-owner-node history))
+              url2)
+    (htree:back history)
+    (htree:back history)
+    (prove:is (htree:value (htree:current-owner-node history))
+              url1)
+    (htree:forward history)
+    (prove:is (htree:value (htree:current-owner-node history))
+              url2)
+    (htree:forward history)
+    (prove:is (htree:value (htree:current-owner-node history))
+              url2)))
 
 (prove:subtest "Inter-owner relationships"
   (let ((history (htree:make :current-owner-identifier "a"))
