@@ -47,7 +47,7 @@ All ARGS are declared as `ignorable'."
                '((* :font-family "monospace,monospace"
                     :font-size "14px"
                     :line-height "18px")
-                 (body :border-top "4px solid dimgray"
+                 (body :border-top "3px solid dimgray"
                        :margin "0"
                        :padding "0 6px")
                  ("#prompt-area"
@@ -55,8 +55,7 @@ All ARGS are declared as `ignorable'."
                   :grid-template-columns "auto auto 1fr"
                   :width "100%"
                   :padding "6px 0"
-                  :color "dimgray"
-                  :border-bottom "solid 1px lightgray")
+                  :color "dimgray")
                  ("#prompt"
                   :line-height "26px")
                  ("#prompt-extra"
@@ -69,6 +68,8 @@ All ARGS are declared as `ignorable'."
                   :background-color "#E8E8E8"
                   :width "100%"
                   :autofocus "true")
+                 (".source-glyph"
+                  :margin-right "3px")
                  (".source-name"
                   :color "white"
                   :padding-left "5px"
@@ -79,22 +80,24 @@ All ARGS are declared as `ignorable'."
                   :overflow-y "auto"
                   :overflow-x "hidden"
                   :width "100%")
-                 ("#suggestions table"
-                  :padding-left "18px"
+                 (".source-content"
+                  :padding-left "16px"
+                  :margin-bottom "20px"
                   :width "100%"
                   :table-layout "fixed")
-                 ("#suggestions td"
+                 (".source-content td"
                   :white-space "nowrap"
                   :overflow "auto")
-                 ("#suggestions th"
+                 (".source-content th"
                   :font-weight "normal"
+                  :padding-left "3px"
                   :text-align "left"
                   :background-color "#E8E8E8"
                   :white-space "nowrap"
                   :overflow "auto")
-                 ("#suggestions td::-webkit-scrollbar"
+                 (".source-content td::-webkit-scrollbar"
                   :display "none")
-                 ("#cursor" :background-color "dimgray" ; TODO: Rename "selection".
+                 ("#cursor" :background-color "575757" ; TODO: Rename "selection".
                             :color "white")
                  (ul :list-style "none"
                      :padding "0"
@@ -248,8 +251,8 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
     ;; TODO: Only print `active-properties'.
     (flet ((source->html (source)
              (markup:markup
-              (:div :class "source-name" "⛯ " (prompter:name source))
-              (:table
+              (:div :class "source-name" (:span :class "source-glyph" "⛯") (prompter:name source))
+              (:table :class "source-content"
                (:tr
                 (loop with property-sample = (if (first (prompter:suggestions source)) ; TODO: Instead, ensure that suggestions always has an element?
                                                  (prompter:properties (first (prompter:suggestions source)))
