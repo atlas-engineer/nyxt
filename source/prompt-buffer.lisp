@@ -236,7 +236,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
     ;; TODO: Only print `active-properties'.
     (flet ((source->html (source)
              (markup:markup
-              (:h2 (prompter:name source))
+              (:div :class "source-name" "⛯ " (prompter:name source))
               (:table
                (:tr
                 (loop with property-sample = (if (first (prompter:suggestions source)) ; TODO: Instead, ensure that suggestions always has an element?
