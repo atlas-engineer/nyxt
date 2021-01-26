@@ -97,8 +97,9 @@ All ARGS are declared as `ignorable'."
                   :overflow "auto")
                  (".source-content td::-webkit-scrollbar"
                   :display "none")
-                 ("#cursor" :background-color "575757" ; TODO: Rename "selection".
-                            :color "white")
+                 ("#selection"
+                  :background-color "575757"
+                  :color "white")
                  (ul :list-style "none"
                      :padding "0"
                      :margin "0")
@@ -269,7 +270,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                      collect (markup:markup
                               (:tr :id (when (equal (list suggestion source)
                                                     (multiple-value-list (prompter:selected-suggestion (prompter prompt-buffer))))
-                                         "cursor")
+                                         "selection")
                                    :class (when (find (prompter:value suggestion) (prompter:marked-suggestions source))
                                             "marked")
                                    (loop for (_ property) on (prompter:properties suggestion) by #'cddr
@@ -290,8 +291,8 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                       (<= (ps:chain rect right) (ps:chain window inner-width))
                       (<= (ps:chain rect bottom) (ps:chain window inner-height)))
                  t nil)))
-         (unless (element-in-view-port-p (ps:chain document (get-element-by-id "cursor")))
-           (ps:chain document (get-element-by-id "cursor")
+         (unless (element-in-view-port-p (ps:chain document (get-element-by-id "selection")))
+           (ps:chain document (get-element-by-id "selection")
                      (scroll-into-view t))))))
 
     (let* ((source (current-source prompt-buffer))
