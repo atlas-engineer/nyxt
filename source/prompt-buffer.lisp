@@ -255,7 +255,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                                                  (prompter:properties (first (prompter:suggestions source)))
                                                  (list :default ""))
                       for (property-name _) on property-sample by #'cddr
-                      collect (markup:markup (:th (symbol-name property-name)))))
+                      collect (markup:markup (:th (str:capitalize (symbol-name property-name))))))
                (loop ;; TODO: Only print as many lines as fit the height.  But how can we know in advance?
                      ;; Maybe first make the table, then add the element one by one _if_ there are into view.
                      with max-suggestion-count = 10
