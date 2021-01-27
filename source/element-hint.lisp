@@ -73,9 +73,9 @@ identifier for every hinted element."
           ((equal "BUTTON" (ps:@ element tag-name))
            (ps:create "type" "button" "hint" hint "identifier" hint "body" (ps:@ element |innerHTML|)))
           ((equal "INPUT" (ps:@ element tag-name))
-           (ps:create "type" "input" "hint" hint "identifier" hint))
+           (ps:create "type" "input" "hint" hint "identifier" hint "placeholder" (ps:@ element placeholder)))
           ((equal "TEXTAREA" (ps:@ element tag-name))
-           (ps:create "type" "textarea" "hint" hint "identifier" hint))
+           (ps:create "type" "textarea" "hint" hint "identifier" hint "placeholder" (ps:@ element placeholder)))
           ((equal "IMG" (ps:@ element tag-name))
            (ps:create "type" "img" "hint" hint "identifier" hint "src" (ps:@ element src) "alt" (ps:@ element alt)))
           ((ps:@ element onclick)
@@ -222,11 +222,13 @@ identifier for every hinted element."
                   ("input"
                    (make-instance 'input-hint
                                   :identifier (alex:assoc-value element :identifier)
-                                  :hint (alex:assoc-value element :hint)))
+                                  :hint (alex:assoc-value element :hint)
+                                  :placeholder-text (alex:assoc-value element :placeholder)))
                   ("textarea"
                    (make-instance 'textarea-hint
                                   :identifier (alex:assoc-value element :identifier)
-                                  :hint (alex:assoc-value element :hint)))
+                                  :hint (alex:assoc-value element :hint)
+                                  :placeholder-text (alex:assoc-value element :placeholder)))
                   ("img"
                    (make-instance 'image-hint
                                   :identifier (alex:assoc-value element :identifier)
@@ -261,9 +263,15 @@ identifier for every hinted element."
   ((url ""))
   (:accessor-name-transformer #'class*:name-identity))
 
-(define-class input-hint (focusable-hint) ())
+(define-class input-hint (focusable-hint)
+  ((placeholder-text "" :documentation "The placeholder text of the input element.
+I.e. the grey text initially seen in it."))
+  (:accessor-name-transformer #'class*:name-identity))
 
-(define-class textarea-hint (focusable-hint) ())
+(define-class textarea-hint (focusable-hint)
+  ((placeholder-text "" :documentation "The placeholder text of the textarea.
+I.e. the grey text initially seen in it."))
+  (:accessor-name-transformer #'class*:name-identity))
 
 (define-class image-hint (link-hint)
   ((alt "" :documentation "Alternative text for the image."))
@@ -294,10 +302,16 @@ identifier for every hinted element."
   (format nil "~a  Focusable" (hint focusable-hint)))
 
 (defmethod object-display ((input-hint input-hint))
-  (format nil "~a  Input" (hint input-hint)))
+  (format nil "~a  ~:[~a  ~;~]Input"
+          (hint input-hint)
+          (str:emptyp (placeholder-text input-hint))
+          (placeholder-text input-hint)))
 
 (defmethod object-display ((textarea-hint textarea-hint))
-  (format nil "~a  Textarea" (hint textarea-hint)))
+  (format nil "~a  ~:[~a  ~;~]Textarea"
+          (hint textarea-hint)
+          (str:emptyp (placeholder-text textarea-hint))
+          (placeholder-text textarea-hint)))
 
 (defmethod object-display ((image-hint image-hint))
   (format nil "~a  ~a  ~a"
