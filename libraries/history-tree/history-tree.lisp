@@ -757,6 +757,16 @@ Return owner, or nil if there is no owner corresponding to OWNER-IDENTIFIER."
         (delete-disowned-branch-nodes history nodes)))
     owner))
 
+(export-always 'delete-data)
+(defun delete-data (history data)
+  "Delete entry matching DATA from HISTORY.
+If nodes are still associated to entry, do nothing."
+  (cl-custom-hash-table:with-custom-hash-table
+    (let ((nodes (find-nodes history data)))
+      (unless nodes
+        (let ((matching-entry (make-entry history data)))
+          (remhash matching-entry (entries history)))))))
+
 
 
 (deftype non-negative-integer ()
