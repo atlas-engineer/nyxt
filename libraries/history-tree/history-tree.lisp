@@ -221,10 +221,16 @@ Return true if NODE was owned by OWNER, nil otherwise."
       (equalp (value entry)
               data)))
 
+(export-always 'add-entry)
 (defun add-entry (history data)
   "Add DATA to an `entry' in HISTORY `entries'.
 If DATA is already there, reset the `entry' value to DATA anyways.
-Return the new or existing `entry'."
+Return the new or existing `entry'.
+
+The higher-level functions take care of adding entries for you, so you normally
+need not call this function.  See `add-child' instead.
+One case in which this function might be useful is when you want to import flat
+history data, e.g. a list of visited URLs that's not bound to any owner."
   (cl-custom-hash-table:with-custom-hash-table
     (let ((new-entry (make-entry history data)))
       (multiple-value-bind (existing-entry found?)
