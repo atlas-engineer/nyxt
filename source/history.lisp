@@ -60,6 +60,10 @@ class."
 
 ;; TODO: Define serialization method for global-history-tree's last-access.
 
+(defun make-history-tree ()
+  "Return a new global history tree for `history-entry' data."
+  (make-history-tree :key #'url))
+
 (declaim (ftype (function (quri:uri &key (:title string)) t) history-add))
 (defun history-add (uri &key (title ""))
   "Add URL to the global/buffer-local history.
@@ -69,8 +73,9 @@ The `implicit-visits' count is incremented."
   ;; history is up-to-date there.  Using `with-data-access' here is not
   ;; an option -- it will cause the new thread and the thread from
   ;; `buffer-load' to mutually deadlock.
+  ;; TODO: Is this still true?
   (let ((history (or (get-data (history-path (current-buffer)))
-                     (htree:make))))
+                     (make-history-tree))))
     (unless (url-empty-p uri)
       (htree:go-to-child (make-instance 'history-entry
                                         :url uri
@@ -201,7 +206,7 @@ instance of Nyxt."
                     (expand-path path))
               ;; TODO: Convert this `entry' to an htree:entry.
               (with-data-access (history path
-                                 :default (htree:make))
+                                 :default (make-history-tree))
                 (dolist (entry (alex:hash-table-values history))
                   (htree:add-entry history entry))))))
           (_ (error "Expected (list version history) structure."))))
