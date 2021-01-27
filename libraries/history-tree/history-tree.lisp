@@ -175,10 +175,12 @@ It's updated every time a node is visited.")
     (remove-if (complement (alex:curry #'owned-p owner))
                (children node))))
 
+(export-always 'owned-children)
 (defun owned-children (owner)
   "Return the OWNER's owned children for the current node."
   (funcall (owned-children-lister owner) (current owner) ))
 
+(export-always 'owned-parent)
 (defun owned-parent (owner node)
   "Return OWNER's parent if it's owned, nil otherwise."
   (let ((parent (and node (parent node))))
