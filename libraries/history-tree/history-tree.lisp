@@ -5,7 +5,6 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria))
 
-;; TODO: Add function to reparent all the branches of an owner.
 ;; TODO: Thread safe?
 
 ;; TODO: Use fast sets for unique lookups?  Turns out hash-tables are overkill
