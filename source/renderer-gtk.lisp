@@ -701,6 +701,7 @@ Warning: This behaviour may change in the future."
   (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
   (gtk:gtk-box-pack-start (box-layout window) (gtk-object buffer) :expand t)
   (gtk:gtk-widget-show (gtk-object buffer))
+  (gtk:gtk-widget-grab-focus (gtk-object buffer))
   buffer)
 
 (define-ffi-method ffi-window-set-minibuffer-height ((window gtk-window) height)
