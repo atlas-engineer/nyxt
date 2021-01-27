@@ -142,6 +142,12 @@ should return non-nil.
 We store the owner-identifier instead of the `owner' object so that we keep the
 information of who created this owner even after the creator object has been
 deleted.")
+   (creator-node nil
+                 :export nil
+                 :type (or null node)
+                 :documentation "The current node of the creator when this owner
+is created.  This is useful since the owner corresponding to `creator' may be
+deleted before the `origin' node is added.")
    (current nil
             :type (or null node)
             :reader current
@@ -305,19 +311,46 @@ Also see `test'."))
   "Return the `owner' object identified by OWNER-IDENTIFIER in HISTORY."
   (gethash owner-identifier (owners history)))
 
+(export-always 'add-owner)
+(declaim (ftype (function (history-tree t &key (:creator-identifier t))
+                          (values owner &optional))
+                add-owner))
+(defun add-owner (history owner-identifier &key creator-identifier)
+  "Create and register owner object for OWNER-IDENTIFIER.
+CREATOR-IDENTIFIER is the optional identifier of the parent owner.
+Return the newly created owner.
+If the owner with such identifier already exists, return it and raise a a
+warning."
+  (let ((owner (owner history owner-identifier)))
+    (if owner
+        (progn
+          (warn "Owner with identifier ~s already exists" owner-identifier)
+          owner)
+        (let ((creator-owner (owner history creator-identifier)))
+          (when (and creator-identifier
+                     (or (not creator-owner)
+                         (not (current creator-owner))))
+            (error "Cannot make owner a child of the node-less parent ~s"
+                   creator-identifier))
+          (let ((owner (make-instance 'owner
+                                      :creator creator-identifier
+                                      :creator-node (when creator-identifier
+                                                      (current creator-owner)))))
+            (setf (gethash owner-identifier (owners history))
+                  owner)
+            owner)))))
+
 (export-always 'set-current-owner)
 (defun set-current-owner (history owner-identifier)
   "Persistently switch owner for HISTORY.
 OWNER-IDENTIFIER is arbitrary data representing an `owner'.
-If OWNER-IDENTIFIER is set for the first time, a new `owner' is created.
+Raise an error when no matching owner exists.
+See `add-owner' to create an owner.
 See `with-current-owner' to set the owner locally.
 See `delete-owner' to remove it from HISTORY."
-  (let ((owner (owner history owner-identifier)))
-    (unless owner
-      (setf owner
-            (setf (gethash owner-identifier (owners history)) (make-instance 'owner))))
-    (setf (slot-value history 'current-owner-identifier) owner-identifier)
-    owner))
+  (if (owner history owner-identifier)
+      (setf (slot-value history 'current-owner-identifier) owner-identifier)
+      (error "Owner with identifier ~s does not exist" owner-identifier)))
 
 (export-always 'current-owner)
 (defun current-owner (history)
@@ -453,7 +486,7 @@ Return (values OWNER (current OWNER))."
 
 
 (export-always 'add-child)
-(defmethod add-child (data (history history-tree) &key creator-identifier)
+(defmethod add-child (data (history history-tree))
   "Create or find a node holding DATA and set current node to it.
 Return the (possibly new) current node.
 
@@ -466,28 +499,17 @@ set to the matching child, the child data is set to DATA and the owner current
 node is set to this child.
 
 If there is no current node, this creates the `origin' node of the current owner
-and also sets `current' to it.  If CREATOR is provided, set the `creator' slot
-of current owner and the `origin' parent is set to the current node of
-`creator-identifier'."
-  (let ((owner (current-owner history))
-        (creator-owner (and creator-identifier (owner history creator-identifier))))
-    (when (and (current owner)
-               creator-identifier)
-      (error "Cannot specify creator-identifier on owner ~s that already has nodes" owner))
-    (when (null (current owner))
-      (when (and creator-owner (null (current creator-owner)))
-        (error "Cannot add node to empty owner with node-less creator ~s" creator-owner)))
-
+and also sets `current' to it.  If the owner has a `creator' set,
+the new node is added to the children of the current node of the creator."
+  (let* ((owner (current-owner history)))
     (cond
       ((null (current owner))
-       (let* ((creator-node (and creator-owner (current creator-owner)))
-              (new-node (make-node :entry (add-entry history data)
-                                   :parent creator-node
-                                   :history history)))
-         (when creator-owner
-           (push new-node (children creator-node)))
-         (setf (origin owner) new-node
-               (creator owner) creator-identifier)
+       (let ((new-node (make-node :entry (add-entry history data)
+                                  :parent (creator-node owner)
+                                  :history history)))
+         (when (creator-node owner)
+           (push new-node (children (creator-node owner))))
+         (setf (origin owner) new-node)
          (visit history new-node)))
 
       ((not (data-equal-entry-p data (entry (current owner))))
