@@ -57,4 +57,21 @@ Y-D2 becomes the `forward-child' of X-B2 _for_ X.
 
 Now if Y goes to X-D1, it owns it as well and X-D1 becomes the `forward-child'
 of X-B2 for Y.  Observe that each node may have different `forward-child'ren for
-each of their owners."))
+each of their owners.
+
+
+
+About data deletion: Entries can only be deleted with `delete-data' if no node
+refers to the entry.  Conversely, nodes are only ever deleted when the whole
+branch goes owner-less, that it, when calling `delete-owner'.
+
+So what if the user wants to delete entries that are still referenced anyways?
+
+The recommended approach is:
+
+- loop over all the owners of the branches referencing the entries,
+- maybe duplicate the owners or in part (e.g. recreate an owner with just one
+  node -- the current one),
+- then delete the looped-on owners.
+
+This will effectively free the entries, making them deletable."))
