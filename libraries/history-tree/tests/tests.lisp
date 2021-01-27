@@ -158,7 +158,7 @@
         (url1 "http://example.org"))
     (htree:add-child url1 history)
     (prove:is (htree:current-owner-identifier history)
-              htree::+default-owner+)
+              htree:+default-owner+)
     (prove:is (hash-table-count (htree:owners history))
               1)))
 
@@ -333,5 +333,21 @@
                                        (htree:last-access (htree:current-owner-node history))))
       (prove:ok (local-time:timestamp= b-access
                                        (htree:data-last-access history url1))))))
+(prove:subtest "Entry deletion"
+  (let ((history (htree:make :current-owner-identifier "a"))
+        (url1 "http://example.org")
+        (url2 "http://other.example.org"))
+    (htree:add-child url1 history)
+    (htree:set-current-owner history "b")
+    (htree:add-child url2 history)
+    (htree:delete-owner history "a")
+    (prove:is (hash-table-count (htree:entries history))
+              2)
+    (htree:delete-data history url1)
+    (prove:is (hash-table-count (htree:entries history))
+              1)
+    (htree:delete-data history url2)
+    (prove:is (hash-table-count (htree:entries history))
+              1)))
 
 (prove:finalize)
