@@ -7,10 +7,6 @@
   ((url (quri:uri "")
         :type (or quri:uri string))
    (title "")
-   (id ""
-       :documentation "The `id' of the buffer that this entry belongs to the branch of.")
-   (last-access (local-time:now)
-                :type (or local-time:timestamp string))
    ;; TODO: For now we never increment the explicit-visits count.  Maybe we
    ;; could use a new buffer slot to signal that the last load came from an
    ;; explicit request?
@@ -37,10 +33,7 @@ The total number of visit for a given URL is (+ explicit-visits implicit-visits)
 
 (export-always 'equals)
 (defmethod equals ((e1 history-entry) (e2 history-entry))
-  ;; We need to compare IDs to preserve history entries of different buffers.
-  ;; TODO: Should we?
-  (and (string= (id e1) (id e2))
-       (quri:uri= (url e1) (url e2))))
+  (quri:uri= (url e1) (url e2)))
 
 (defmethod url ((he history-entry))
   "This accessor ensures we always return a `quri:uri'.
@@ -54,32 +47,18 @@ class."
     (setf (slot-value he 'url) (ensure-url (slot-value he 'url))))
   (slot-value he 'url))
 
-(defmethod last-access ((he history-entry))
-  "This accessor ensures we always return a `local-time:timestamp'.
-This is useful in cases the timestamp is originally stored as a
-string (for instance when deserializing a `history-entry').
-
-We can't use `initialize-instance :after' to convert the timestamp
-because `s-serialization:deserialize-sexp' sets the slots manually
-after making the class."
-  (unless (typep (slot-value he 'last-access) 'local-time:timestamp)
-    (setf (slot-value he 'last-access)
-          (local-time:parse-timestring (slot-value he 'last-access))))
-  (slot-value he 'last-access))
-
 (defmethod s-serialization::serialize-sexp-internal ((he history-entry)
                                                      stream
                                                      serialization-state)
-  "Serialize `history-entry' by turning the URL and the last-access into
-strings."
+  "Serialize `history-entry' by turning the URL into strings."
   (let ((new-he (make-instance 'history-entry
                                :title (title he)
-                               :id (id he)
                                :explicit-visits (explicit-visits he)
                                :implicit-visits (implicit-visits he))))
-    (setf (url new-he) (object-string (url he))
-          (last-access new-he) (local-time:format-timestring nil (last-access he)))
+    (setf (url new-he) (object-string (url he)))
     (call-next-method new-he stream serialization-state)))
+
+;; TODO: Define serialization method for global-history-tree's last-access.
 
 (declaim (ftype (function (quri:uri &key (:title string)) t) history-add))
 (defun history-add (uri &key (title ""))
@@ -93,17 +72,12 @@ The `implicit-visits' count is incremented."
   (let ((history (or (get-data (history-path (current-buffer)))
                      (htree:make))))
     (unless (url-empty-p uri)
-      (let* ((maybe-entry (make-instance 'history-entry
-                                         :url uri :id (id (current-buffer))
-                                         :title title))
-             (node (htree:find-data maybe-entry history :ensure-p t :test 'equals))
-             (entry (htree:data node)))
-        (incf (implicit-visits entry))
-        (setf (last-access entry) (local-time:now))
-        ;; Always update the title since it may have changed since last visit.
-        (setf (title entry) title)
-        (setf (htree:current history) node
-              (current-history-node (current-buffer)) node)))
+      (htree:go-to-child (make-instance 'history-entry
+                                        :url uri
+                                        :title title)
+                         history)
+      (let* ((entry (htree:value (htree:current-owner-node history))))
+        (incf (implicit-visits entry))))
     (setf (get-data (history-path (current-buffer))) history)))
 
 (define-command delete-history-entry ()
@@ -115,36 +89,9 @@ The `implicit-visits' count is incremented."
                     :history (minibuffer-set-url-history *browser*)
                     :multi-selection-p t)))
       (dolist (entry entries)
-        (htree:delete-data entry history :test #'eq :rebind-children-p t)))))
+        (htree:delete-data history entry)))))
 
-(defmethod make-buffer-from-history ((root htree:node) (history htree:history-tree))
-  "Create the buffer with the history starting from the ROOT.
-Open the latest child of ROOT."
-  (let* ((node (first (sort (htree:remove-node (id (htree:data root))
-                                               history
-                                               :test #'string/=
-                                               :key (alex:compose #'id #'htree:data))
-                            #'local-time:timestamp>=
-                            :key (alex:compose #'last-access #'htree:data))))
-         (entry (htree:data node))
-         (buffer (make-buffer :url (ensure-url (url entry))
-                              :load-url-p nil
-                              :title (title entry))))
-    (setf (slot-value buffer 'load-status) :unloaded
-          (current-history-node buffer) node)
-    (htree:do-tree (node history)
-      (let ((root-id (id (htree:data root)))
-            (new-id (id buffer)))
-        (with-slots (id) (htree:data node)
-          (setf id (case id
-                     (root-id new-id)
-                     ;; This is to escape collisions of the new buffer ID with old buffer IDs.
-                     (new-id root-id)
-                     (t id))))))
-    buffer))
-
-
-(defun score-history-entry (entry)
+(defun score-history-entry (entry history)
   "Return history ENTRY score.
 The score gets higher for more recent entries and if they've been visited a
 lot."
@@ -156,7 +103,8 @@ lot."
         ;; Inverse number of hours since the last access.
         (/ 1
            (1+ (/ (local-time:timestamp-difference (local-time:now)
-                                                   (last-access entry))
+                                                   ;; TODO: Or use current buffer last access?  Or both?
+                                                   (htree:data-last-access history entry))
                   (* 60 60)))))))
 
 (defun history-suggestion-filter (&key prefix-urls)
@@ -165,16 +113,17 @@ This can be useful to, say, prefix the history with the current URL.  At the
 moment the PREFIX-URLS are inserted as is, not a `history-entry' objects since
 it would not be very useful."
   (with-data-access (hist (history-path (current-buffer)))
-      (let* ((history (when hist
-                        (sort (htree:all-nodes-data hist)
-                              (lambda (x y)
-                                (> (score-history-entry x)
-                                   (score-history-entry y))))))
+      (let* ((all-history-entries (when hist
+                                    (sort (htree:all-data hist)
+                                          (lambda (x y)
+                                            (> (score-history-entry x hist)
+                                               (score-history-entry y hist))))))
           (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
      (when prefix-urls
-       (setf history (append (mapcar #'quri:url-decode prefix-urls) history)))
+       (setf all-history-entries (append (mapcar #'quri:url-decode prefix-urls)
+                                         all-history-entries)))
      (lambda (minibuffer)
-       (fuzzy-match (input-buffer minibuffer) history)))))
+       (fuzzy-match (input-buffer minibuffer) all-history-entries)))))
 
 (defun history-stored-data (path)
   "Return the history data that needs to be serialized.
@@ -206,7 +155,9 @@ instance of Nyxt."
 (setf (fdefinition 'quri.uri::make-uri) #'quri.uri::%make-uri)
 
 (defmethod restore ((profile data-profile) (path history-data-path)
-                    &key restore-session-p &allow-other-keys)
+                    ;; &key restore-session-p
+                    &key
+                    &allow-other-keys)
   "Restore the global/buffer-local history and session from the PATH."
   (handler-case
       (let ((data (with-data-file (file path
@@ -229,27 +180,30 @@ instance of Nyxt."
                     (htree:size history)
                     (expand-path path))
               (setf (get-data path) history)
-              (when restore-session-p
-                (let ((buffer-histories (buffer-local-histories-table history)))
-                  (when (< 0 (hash-table-count buffer-histories))
-                    ;; Make the new buffers.
-                    (dolist (root (alex:hash-table-values buffer-histories))
-                      (make-buffer-from-history root history))
-                    ;; Switch to the last active buffer.
-                    (let* ((current-history-nodes (remove-if #'null (mapcar #'current-history-node
-                                                                            (buffer-list))))
-                           (latest-id (id (first (sort (mapcar #'htree:data current-history-nodes)
-                                                       #'local-time:timestamp>
-                                                       :key #'last-access)))))
-                      (when latest-id (switch-buffer :id latest-id)))))))
+              ;; (when restore-session-p
+              ;;   (let ((buffer-histories (buffer-local-histories-table history)))
+              ;;     (when (< 0 (hash-table-count buffer-histories))
+              ;;       ;; Make the new buffers.
+              ;;       (dolist (root (alex:hash-table-values buffer-histories))
+              ;;         ;; TODO: Restore buffer!
+              ;;         (make-buffer-from-history root history))
+              ;;       ;; Switch to the last active buffer.
+              ;;       (let* ((current-history-nodes (remove-if #'null (mapcar #'current-history-node
+              ;;                                                               (buffer-list))))
+              ;;              (latest-id (id (first (sort (mapcar #'htree:value current-history-nodes)
+              ;;                                          #'local-time:timestamp>
+              ;;                                          :key #'last-access)))))
+              ;;         (when latest-id (switch-buffer :id latest-id))))))
+              )
              (hash-table
               (echo "Importing deprecated global history of ~a URLs from ~s."
                     (hash-table-count history)
                     (expand-path path))
-              (unless (get-data path)
-                (setf (get-data path) (htree:make)))
-              (htree:add-children (alex:hash-table-values history) (get-data path)
-                                  :test #'equals))))
+              ;; TODO: Convert this `entry' to an htree:entry.
+              (with-data-access (history path
+                                 :default (htree:make))
+                (dolist (entry (alex:hash-table-values history))
+                  (htree:add-entry history entry))))))
           (_ (error "Expected (list version history) structure."))))
     (error (c)
       (echo-warning "Failed to restore history from ~a: ~a"

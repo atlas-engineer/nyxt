@@ -123,8 +123,8 @@ non-new-page requests, buffer URL is not altered."
   (with-data-access (history (history-path (buffer request-data)))
     (let* ((auto-mode (find-submode (buffer request-data) 'auto-mode))
            (previous-url
-             (when (ignore-errors (htree:parent (htree:current history)))
-               (url (htree:data (htree:parent (htree:current history))))))
+             (when (ignore-errors (htree:parent (htree:current-owner-node history)))
+               (url (htree:value (htree:parent (htree:current-owner-node history))))))
            (rule (matching-auto-mode-rule (url request-data) (buffer request-data)))
            (previous-rule (when previous-url (matching-auto-mode-rule previous-url (buffer request-data)))))
       (when (and rule previous-url (not previous-rule))

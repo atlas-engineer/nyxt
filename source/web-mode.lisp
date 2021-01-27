@@ -209,20 +209,21 @@ search.")
     (if (eq history-node (htree:current history))
         (echo "History entry is already the current URL.")
         (progn
-          (setf (htree:current history) history-node
-                (id (htree:data history-node)) (id buffer))
-          (buffer-load (url (htree:data history-node)))))))
+          (htree::visit-all history history-node) ; TODO: Should not visit here, instead should call high-level functions from call site.
+          (buffer-load (url (htree:value history-node)))))))
 
 (defun conservative-history-filter (web-mode)
-  #'(lambda (node)
-      (and (conservative-history-movement-p web-mode)
-           (string/= (id (htree:data node)) (id (buffer web-mode))))))
+  #'(lambda (node)                      ; TODO: Pass owner?
+      (with-data-access (history (history-path (buffer web-mode)))
+        (and (conservative-history-movement-p web-mode)
+             (not (htree::owned-parent (htree:current-owner history)
+                                       node))))))
 
 (define-command history-backwards (&optional (buffer (current-buffer)))
   "Go to parent URL in history."
   (with-data-access (history (history-path buffer))
     (let ((parents (remove-if (conservative-history-filter (find-mode buffer 'web-mode))
-                              (htree:parent-nodes history))))
+                              (htree:all-parents history))))
       (if parents
           (set-url-from-history (first parents) buffer)
           (echo "No backward history.")))))
@@ -230,7 +231,7 @@ search.")
 (defun dead-history-filter (web-mode)
   #'(lambda (node)
       (and (history-forwards-to-dead-history-p web-mode)
-           (str:emptyp (id (htree:data node))))))
+           (str:emptyp (id (htree:value node))))))
 
 (define-command history-forwards (&optional (buffer (current-buffer)))
   "Go to forward URL in history."
@@ -255,7 +256,7 @@ search.")
 (defun history-backwards-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all parent URLs."
   (let ((parents (remove-if (conservative-history-filter (find-mode buffer 'web-mode))
-                            (htree:parent-nodes (get-data (history-path buffer))))))
+                            (htree:all-parents (get-data (history-path buffer))))))
     (lambda (minibuffer)
       (if parents
           (fuzzy-match (input-buffer minibuffer) parents)
@@ -272,7 +273,7 @@ search.")
 (defun history-forwards-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over forward-children URL."
   (let ((children (remove-if (conservative-history-filter (find-mode buffer 'web-mode))
-                             (htree:forward-children-nodes (get-data (history-path buffer))))))
+                             (htree:all-forward-children (get-data (history-path buffer))))))
     (lambda (minibuffer)
       (if children
           (fuzzy-match (input-buffer minibuffer) children)
@@ -289,14 +290,14 @@ search.")
 (define-command history-forwards-maybe-query (&optional (buffer (current-buffer)))
   "If current node has multiple chidren, query forward-URL to navigate to.
 Otherwise go forward to the only child."
-  (if (<= 2 (length (htree:children-nodes (get-data (history-path buffer)))))
+  (if (<= 2 (length (htree:all-children (get-data (history-path buffer)))))
       (history-forwards-all-query)
       (history-forwards)))
 
 (defun history-forwards-all-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over children URL from all branches."
   (let ((children (remove-if (conservative-history-filter (find-mode buffer 'web-mode))
-                             (htree:children-nodes (get-data (history-path buffer))))))
+                             (htree:all-children (get-data (history-path buffer))))))
     (lambda (minibuffer)
       (if children
           (fuzzy-match (input-buffer minibuffer) children)
@@ -313,7 +314,7 @@ Otherwise go forward to the only child."
 (defun history-all-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all history URLs."
   (let ((urls (remove-if (conservative-history-filter (find-mode buffer 'web-mode))
-                         (htree:all-nodes (get-data (history-path buffer))))))
+                         (htree:all-current-branch-nodes (get-data (history-path buffer))))))
     (lambda (minibuffer)
       (if urls
           (fuzzy-match (input-buffer minibuffer) urls)
@@ -348,20 +349,16 @@ the 25A0-25FF range."
            (history (get-data (history-path buffer)))
            (tree `(:ul ,(htree:map-tree
                          #'(lambda (node)
-                             `(:li :class
-                                   ,(if (equal (id (htree:data node)) (id buffer))
-                                        "current-buffer"
-                                        "other-buffer")
-                               (:a :href ,(object-string (url (htree:data node)))
-                                   ,(when (nyxt/history-tree-mode:display-buffer-id-glyphs-p mode)
-                                      (integer->unicode-geometric (id (htree:data node))))
-                                   ,(let ((title (or (match (title (htree:data node))
+                             `(:li
+                               (:a :href ,(object-string (url (htree:value node)))
+                                   ,(let ((title (or (match (title (htree:value node))
                                                        ((guard e (not (str:emptyp e))) e))
-                                                     (object-display (url (htree:data node))))))
-                                      (if (eq node (htree:current history))
+                                                     (object-display (url (htree:value node))))))
+                                      (if (eq node (htree:current-owner-node history))
                                           `(:b ,title)
                                           title)))))
-                         (gethash (id buffer) (buffer-local-histories-table history))
+                         ;; TODO: Make sure we are only collecting nodes belonging to the current owner.
+                         history
                          :include-root t
                          :collect-function #'(lambda (a b) `(,@a ,(when b `(:ul ,@b))))))))
       (markup:markup
@@ -384,16 +381,19 @@ the 25A0-25FF range."
                         (delete-buffer :id (id dummy-buffer)))))
            (tree `(:ul ,(htree:map-tree
                          #'(lambda (node)
-                             `(:li (:a :href ,(object-string (url (htree:data node)))
-                                       ,(when (nyxt/history-tree-mode:display-buffer-id-glyphs-p mode)
-                                          (integer->unicode-geometric (id (htree:data node))))
-                                       ,(let ((title (or (match (title (htree:data node))
+                             `(:li (:a :href ,(object-string (url (htree:value node)))
+                                       ;; TODO: Displaying _1_ glyph does not
+                                       ;; make sense when there can be multiple
+                                       ;; owners.
+                                       ;; ,(when (nyxt/history-tree-mode:display-buffer-id-glyphs-p mode)
+                                       ;;    (integer->unicode-geometric (id (htree:owner node))))
+                                       ,(let ((title (or (match (title (htree:value node))
                                                            ((guard e (not (str:emptyp e))) e))
-                                                         (object-display (url (htree:data node))))))
-                                          (if (eq node (htree:current history))
+                                                         (object-display (url (htree:value node))))))
+                                          (if (eq node (htree:value history))
                                               `(:b ,title)
                                               title)))))
-                         (htree:root history)
+                         history
                          :include-root t
                          :collect-function #'(lambda (a b) `(,@a ,(when b `(:ul ,@b))))))))
       (markup:markup
@@ -404,29 +404,35 @@ the 25A0-25FF range."
                      (markup:markup*
                       tree))))))))
 
+(defun history-list (&key (limit 100)   ; TODO: Move?  Export?
+                       (separator " → "))
+  (let* ((path (history-path (current-buffer)))
+         (history (when (get-data path)
+                    (mapcar #'first
+                            (sort (alex:hash-table-alist (htree:entries (get-data path)))
+                                  #'local-time:timestamp>
+                                  :key (lambda (entry-nodes)
+                                         (let ((nodes (rest entry-nodes)))
+                                           (apply #'local-time:timestamp-maximum
+                                                  (mapcar #'htree:last-access nodes)))))))))
+    (loop for entry in (sera:take limit history)
+          collect (markup:markup
+                   (:li (title entry) (unless (str:emptyp (title entry)) separator)
+                        (:a :href (object-string (url entry))
+                            (object-string (url entry))))))))
+
 (define-command list-history (&key (limit 100))
   "Print the user history as a list."
-  (flet ((list-history (&key (separator " → ") (limit 20))
-           (let* ((path (history-path (current-buffer)))
-                  (history (when (get-data path)
-                             (sort (htree:all-nodes (get-data path))
-                                   #'local-time:timestamp>
-                                   :key (lambda (i) (nyxt::last-access (htree:data i)))))))
-             (loop for item in (mapcar #'htree:data (sera:take limit history))
-                   collect (markup:markup
-                            (:li (title item) (unless (str:emptyp (title item)) separator)
-                                 (:a :href (object-string (url item))
-                                     (object-string (url item)))))))))
-    (with-current-html-buffer (buffer "*History list*" 'nyxt/list-history-mode:list-history-mode)
-      (markup:markup
-       (:style (style buffer))
-       (:style (cl-css:css
-                '((a
-                   :color "black")
-                  ("a:hover"
-                   :color "gray"))))
-       (:h1 "History")
-       (:ul (list-history :limit limit))))))
+  (with-current-html-buffer (buffer "*History list*" 'nyxt/list-history-mode:list-history-mode)
+    (markup:markup
+     (:style (style buffer))
+     (:style (cl-css:css
+              '((a
+                 :color "black")
+                ("a:hover"
+                 :color "gray"))))
+     (:h1 "History")
+     (:ul (history-list :limit limit)))))
 
 (define-command paste ()
   "Paste from clipboard into active-element."
@@ -503,6 +509,6 @@ the 25A0-25FF range."
   url)
 
 (defmethod nyxt:object-string ((node htree:node))
-  (object-string (when node (htree:data node))))
+  (object-string (when node (htree:value node))))
 (defmethod nyxt:object-display ((node htree:node))
-  (object-display (when node (htree:data node))))
+  (object-display (when node (htree:value node))))

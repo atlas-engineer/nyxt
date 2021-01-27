@@ -537,18 +537,7 @@ the "
            (loop for bookmark in (get-data (bookmarks-path (current-buffer)))
                  collect (markup:markup (:li (title bookmark) separator
                                              (:a :href (object-string (url bookmark))
-                                                 (object-display (url bookmark)))))))
-         (list-history (&key (separator " → ") (limit 20))
-           (let* ((path (history-path (current-buffer)))
-                  (history (when (get-data path)
-                             (sort (htree:all-nodes (get-data path))
-                                   #'local-time:timestamp>
-                                   :key (lambda (i) (last-access (htree:data i)))))))
-             (loop for item in (mapcar #'htree:data (sera:take limit history))
-                   collect (markup:markup
-                            (:li (title item) (unless (str:emptyp (title item)) separator)
-                                 (:a :href (object-string (url item))
-                                     (object-string (url item)))))))))
+                                                 (object-display (url bookmark))))))))
     (let ((dashboard-style (cl-css:css
                             '((body
                                :margin-top 0
@@ -587,4 +576,4 @@ the "
                      (:ul (list-bookmarks)))
                (:div :class "section" :style "flex: 5"
                      (:h3 "🗐 " (:b "Recent URLs"))
-                     (:ul (list-history)))))))))
+                     (:ul (nyxt/web-mode::history-list)))))))))

@@ -161,14 +161,9 @@ Example: --with-path bookmarks=/path/to/bookmarks
   (unless *keep-alive*
     (uiop:quit 0 nil)))
 
-;; TODO: Doesn't make sense if history += session?
-(define-command quit-after-clearing-session ()
-  "Clear session then quit Nyxt."
-  (with-data-access (history (history-path (current-buffer)))
-    ;; All the `id's of history-entries are emptied to make sure no buffer will be restored.
-    (htree:do-tree (node history)
-      (setf (id (htree:data node)) "")))
-  (uiop:delete-file-if-exists (expand-path (history-path (current-buffer))))
+(define-command quit-after-clearing-session () ; TODO: Rename?
+  "Close all buffers then quit Nyxt."
+  (delete-buffers)
   (quit))
 
 (define-command start-swank (&optional (swank-port *swank-port*))
