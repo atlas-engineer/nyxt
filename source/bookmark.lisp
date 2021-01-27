@@ -310,7 +310,7 @@ rest in background buffers."
                   :suggestion-function (bookmark-suggestion-filter)
                   :multi-selection-p t)))
     (dolist (entry (rest entries))
-      (make-buffer :url (object-string (url entry)) :child-p t))
+      (make-buffer :url (object-string (url entry))))
     (buffer-load (url (first entries)))))
 
 (define-command set-url-from-bookmark-new-buffer ()

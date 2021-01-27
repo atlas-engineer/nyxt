@@ -25,10 +25,6 @@ See the `data-path' class and the `expand-path' function.")
    (last-access (local-time:now)
                 :export nil
                 :documentation "Timestamp when the buffer was last switched to.")
-   (current-history-node nil
-                         :type (or null htree:node)
-                         :documentation "The history node that this buffer history is currently on.
-Used to make sure children buffers properly branch from parent buffers in global history.")
    (modes :initform '()
           :documentation "The list of mode instances.
 Modes are instantiated after the `default-modes' slot, with `initialize-modes'
@@ -143,16 +139,6 @@ Example:
             :initial-value %slot-default))))")
    (default-new-buffer-url (quri:uri "https://nyxt.atlas.engineer/start")
                            :documentation "The URL set to a new blank buffer opened by Nyxt.")
-   (buffer-deletion-history-treatment :rebind
-                                      :type (member :delete :clean :rebind)
-                                      :documentation "What happens to buffer-local history on buffer deletion.
-If :CLEAN, all the nodes belonging to the buffer will have their `id's cleared.
-If :REBIND, and there are children buffers, all the nodes belonging to
-the buffer will be rebound to the most recent child buffer.
-If :REBIND, and there are no children buffers, behave as :CLEAN.
-If :DELETE, and there are no children buffer, all the nodes belonging
-to the buffer will be deleted.
-If :DELETE, and there are children buffers, behave as :REBIND.")
    (scroll-distance 50
                     :documentation "The distance scroll-down or scroll-up will scroll.")
    (smooth-scrolling nil
@@ -507,12 +493,11 @@ BUFFER's modes."
 (defmethod object-display ((buffer buffer))
   (format nil "~a  ~a" (title buffer) (object-display (url buffer))))
 
-(define-command make-buffer (&key (title "") modes (url "") child-p (load-url-p t))
+(define-command make-buffer (&key (title "") modes (url "") parent-buffer (load-url-p t))
   "Create a new buffer.
 MODES is a list of mode symbols.
 If URL is `:default', use `default-new-buffer-url'.
-CHILD-P denotes whether the new buffer should have a history
-starting from the current buffer's history.
+PARENT-BUFFER is useful when we want to record buffer- and history relationships.
 LOAD-URL-P controls whether to load URL right at buffer creation."
   (let* ((buffer (buffer-make *browser* :title title :default-modes modes))
          (url (if (eq url :default)
@@ -521,8 +506,9 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
          (from-internal-p (internal-buffer-p (current-buffer))))
     (with-data-access (history (history-path (if from-internal-p buffer (current-buffer)))
                        :default (htree:make))
-      (setf (current-history-node buffer)
-            (if child-p (htree:current history) (htree:root history))))
+      (htree:add-owner history (id buffer)
+                       :creator-identifier (when parent-buffer
+                                             (id parent-buffer))))
     (unless (url-empty-p url)
       (if load-url-p
           (buffer-load url :buffer buffer)
@@ -569,47 +555,6 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (hooks:run-hook (buffer-make-hook browser) buffer)
     buffer))
 
-(export-always 'buffer-local-histories-table)
-(defmethod buffer-local-histories-table ((history htree:history-tree))
-  "Return a table mapping buffer `id's to the history-tree nodes of the corresponding buffers."
-  (let ((buffers (make-hash-table :test #'equalp)))
-    (htree:do-tree (node history)
-      (let* ((data (htree:data node))
-             (hashed (gethash (id data) buffers)))
-        ;; TODO: Buffer can have several branches associated with it.
-        ;; Setting the first one we find doesn't suffice.
-        (unless (or (str:emptyp (id data)) hashed)
-          (setf (gethash (id data) buffers) node))))
-    buffers))
-
-(defmethod buffer-local-history-clean ((buffer buffer))
-  "Clean buffer-local history based on BUFFER's `buffer-deletion-history-treatment'."
-  (with-data-access (history (history-path buffer))
-    (let* ((treatment (buffer-deletion-history-treatment buffer))
-           (most-recent-child (first
-                               (sort (remove-if
-                                      #'str:emptyp
-                                      (htree:remove-node
-                                       (id buffer)
-                                       (gethash (id buffer) (buffer-local-histories-table history))
-                                       :key (alex:compose #'id #'htree:data))
-                                      :key (alex:compose #'id #'htree:data))
-                                     #'local-time:timestamp>=
-                                     :key (alex:compose #'last-access #'htree:data)))))
-      (flet ((history-set-ids (old-id new-id)
-               (htree:do-tree (node history)
-                 (when (string= old-id (id (htree:data node)))
-                   (setf (id (htree:data node)) new-id)))))
-        (cond
-          ((and (eq treatment :delete) (not most-recent-child))
-           (htree:delete-data nil history
-                              :test #'(lambda (null data)
-                                        (declare (ignore null))
-                                        (string= (id data) (id buffer)))))
-          ((and (member treatment '(:delete :rebind)) most-recent-child)
-           (history-set-ids (id buffer) (id (htree:data most-recent-child))))
-          (t (history-set-ids (id buffer) "")))))))
-
 (declaim (ftype (function (buffer)) add-to-recent-buffers))
 (defun add-to-recent-buffers (buffer)
   "Create a recent-buffer from given buffer and add it to `recent-buffers'."
@@ -628,8 +573,10 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
         (window-set-active-buffer parent-window
                                   replacement-buffer)))
     (ffi-buffer-delete buffer)
-    (buffer-local-history-clean buffer)
     (buffers-delete (id buffer))
+    ;; (setf (id buffer) "") ; TODO: Reset ID?
+    (with-data-access (history (history-path buffer))
+      (htree:delete-owner history (id buffer)))
     (add-to-recent-buffers buffer)
     (store (data-profile buffer) (history-path buffer))))
 
@@ -673,11 +620,10 @@ proceeding."
   (setf (last-access (active-buffer window)) (local-time:now))
   (let ((window-with-same-buffer (find buffer (delete window (window-list))
                                        :key #'active-buffer)))
-    (with-data-access (history (history-path buffer)
-                       :default (htree:make))
-      (when (current-history-node buffer)
-        (setf (htree:current history) (current-history-node buffer)
-              (id (htree:data (htree:current history))) (id buffer))))
+    (unless (internal-buffer-p buffer)
+      (with-data-access (history (history-path buffer)
+                         :default (htree:make))
+        (htree:set-current-owner history (id buffer))))
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
         (let ((temp-buffer (make-dummy-buffer))
               (old-buffer (active-buffer window)))
@@ -764,10 +710,10 @@ proceeding."
         (set-current-buffer (first matching-buffers))
         (switch-buffer-domain :domain domain))))
 
-(define-command make-buffer-focus (&key (url :default))
+(define-command make-buffer-focus (&key (url :default) parent-buffer)
   "Switch to a new buffer.
 See `make-buffer'."
-  (let ((buffer (make-buffer :url url :child-p t)))
+  (let ((buffer (make-buffer :url url :parent-buffer parent-buffer)))
     (set-current-buffer buffer)
     buffer))
 

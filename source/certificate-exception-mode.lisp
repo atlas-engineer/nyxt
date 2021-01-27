@@ -31,10 +31,10 @@ See the `add-domain-to-certificate-exceptions' command."
                                                             (current-buffer)
                                                             'web-mode)))
   "Suggestion function over all parent URLs."
-  (let ((parents (htree:parent-nodes (history mode))))
-    (when (htree:current (history mode))
-      (push (htree:current (history mode)) parents))
-    (setf parents (remove-if #'url-empty-p parents :key (alex:compose #'url #'htree:data)))
+  (let ((parents (htree:all-parents (history mode))))
+    (when (htree:current-owner-node (history mode))
+      (push (htree:current-owner-node (history mode)) parents))
+    (setf parents (remove-if #'url-empty-p parents :key (alex:compose #'url #'htree:value)))
     (lambda (minibuffer)
       (if parents
           (fuzzy-match (input-buffer minibuffer) parents)
@@ -53,8 +53,8 @@ To make this change permanent, you can customize
       (let ((input (prompt-minibuffer
                     :input-prompt "URL host to exception list:"
                     :suggestion-function (previous-history-urls-suggestion-filter))))
-        (unless (url-empty-p (url (htree:data input)))
-          (let ((host (quri:uri-host (url (htree:data input)))))
+        (unless (url-empty-p (url (htree:value input)))
+          (let ((host (quri:uri-host (url (htree:value input)))))
             (echo "Added exception for ~s." host)
             (pushnew host (certificate-exceptions buffer) :test #'string=))))
       (echo "Enable certificate-exception-mode first.")))
