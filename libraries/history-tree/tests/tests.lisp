@@ -313,4 +313,25 @@
                                  "http://example.root/B" "http://example.root/B2" "b-data"))
                     #'string<))))
 
+(prove:subtest "Last access test"
+  (let ((history (htree:make :current-owner-identifier "a"))
+        (url1 "http://example.org"))
+    (htree:add-child url1 history)
+    (sleep 0.1)
+    (htree:set-current-owner history "b")
+    (htree::visit history (first (htree:find-nodes history url1)))
+
+    (let ((a-access (htree:last-access (htree:current-binding
+                                        (htree:owner history "a"))))
+          (b-access (htree:last-access (htree:current-binding
+                                        (htree:current-owner history)))))
+      (prove:ok (local-time:timestamp/= a-access b-access))
+      (prove:ok (local-time:timestamp= b-access
+                                       (htree:last-access (htree:current-owner-node history))))
+      (htree:set-current-owner history "a")
+      (prove:ok (local-time:timestamp= b-access
+                                       (htree:last-access (htree:current-owner-node history))))
+      (prove:ok (local-time:timestamp= b-access
+                                       (htree:data-last-access history url1))))))
+
 (prove:finalize)

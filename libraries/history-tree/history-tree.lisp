@@ -104,6 +104,24 @@ owner."))
   (:accessor-name-transformer #'class*:name-identity)
   (:documentation "The relationship between an owner and one of its nodes."))
 
+(export-always 'last-access)
+(defmethod last-access ((node node))
+  "Return node's last access across all its owners."
+  (apply #'local-time:timestamp-maximum
+         (mapcar #'last-access
+                 (alex:hash-table-values (bindings node)))))
+
+(export-always 'data-last-access)
+(declaim (ftype (function (history-tree t) (or null local-time:timestamp)) data-last-access))
+(defun data-last-access (history data)
+  "Return data last access across all its nodes, regardless of the owner.
+Return nil if DATA is not found."
+  (let ((nodes (find-nodes history data)))
+    (when nodes
+      (the (values local-time:timestamp &optional)
+           (apply #'local-time:timestamp-maximum
+                  (mapcar #'last-access nodes))))))
+
 (define-class owner ()
   ;; TODO: Add slot pointing to history an owner belongs to?  Unnecessary if we never expose the `owner' to the caller.
   ((origin nil
