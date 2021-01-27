@@ -161,6 +161,7 @@ It's updated every time a node is visited.")
     (when (owned-p owner parent)
       parent)))
 
+(export-always 'current-binding)
 (declaim (ftype (function (owner &optional node) (or null binding)) current-binding))
 (defun current-binding (owner &optional (node (current owner)))
   (and node
