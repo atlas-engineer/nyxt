@@ -77,10 +77,10 @@ The `implicit-visits' count is incremented."
   (let ((history (or (get-data (history-path (current-buffer)))
                      (make-history-tree))))
     (unless (url-empty-p uri)
-      (htree:go-to-child (make-instance 'history-entry
-                                        :url uri
-                                        :title title)
-                         history)
+      (htree:add-child (make-instance 'history-entry
+                                      :url uri
+                                      :title title)
+                       history)
       (let* ((entry (htree:value (htree:current-owner-node history))))
         (incf (implicit-visits entry))))
     (setf (get-data (history-path (current-buffer))) history)))
