@@ -257,9 +257,13 @@ instance of Nyxt."
   (let ((history (htree:make)))
     history))
 
+(defvar flat-history-path (make-instance 'history-data-path :basename "history")
+  "Global flat history that was used before the introduction of the global history tree.
+This is deprecated.
+We keep this variable as a means to import the old format to the new one.")
+
 (defmethod restore ((profile data-profile) (path history-data-path)
-                    &key restore-session-p
-                    &allow-other-keys)
+                    &key &allow-other-keys)
   "Restore the global/buffer-local history and session from the PATH."
   (labels ((restore-buffers (history)
              "For each owner, make buffer, swap owner identifier for buffer id.
@@ -272,14 +276,15 @@ instance of Nyxt."
                           ;; buffer exists.  In all cases, this owner is
                           ;; uninteresting.
                           (unless (equal owner-id htree:+default-owner+)
-                            (let ((current-data (htree:value
-                                                 (htree:current
-                                                  (htree:owner history owner-id)))))
-                              (let ((new-buffer (make-buffer :title (title current-data)
-                                                             :url (url current-data)
-                                                             :load-url-p nil)))
-                                (setf (gethash owner-id old-id->new-id) (id new-buffer))
-                                (setf (gethash (id new-buffer) new-owners) owner)))))
+                            (let ((current-node (htree:current
+                                                 (htree:owner history owner-id))))
+                              ;; Node-less owners can safely be ignored.
+                              (when current-node
+                                (let ((new-buffer (make-buffer :title (title (htree:value current-node))
+                                                               :url (url (htree:value current-node))
+                                                               :load-url-p nil)))
+                                  (setf (gethash owner-id old-id->new-id) (id new-buffer))
+                                  (setf (gethash (id new-buffer) new-owners) owner))))))
                         (htree:owners history))
                (maphash (lambda (_ owner)
                           (declare (ignore _))
@@ -300,24 +305,32 @@ instance of Nyxt."
 
            (restore-history-tree (history)
              (echo "Loading history of ~a URLs from ~s."
-                   (htree:size history)
+                   (hash-table-count (htree:entries history))
                    (expand-path path))
              (setf (get-data path) history)
-             (when restore-session-p
-               (restore-buffers history)))
+             (match (session-restore-prompt *browser*)
+               ;; Need `funcall-safely' so we continue if the user exits the
+               ;; minibuffer (which raises a condition).
+               (:always-ask (if-confirm ("Restore session?")
+                                        (restore-buffers history)))
+               (:always-restore (restore-buffers history))
+               (:never-restore (log:info "Not restoring session."))))
 
-           (restore-flat-history (history)
+           (restore-flat-history (old-history old-path)
              (echo "Importing deprecated global history of ~a URLs from ~s."
-                   (hash-table-count history)
-                   (expand-path path))
+                   (hash-table-count old-history)
+                   (expand-path old-path))
              ;; TODO: Convert this `entry' to an htree:entry.
              (with-data-access (history path
                                 :default (make-history-tree)) ; TODO: What shall the default owner be here?
-               (dolist (entry (alex:hash-table-values history))
+               (dolist (entry (alex:hash-table-values old-history))
                  (htree:add-entry history entry))))
 
            (%restore ()
-             (let ((data (with-data-file (file path
+             (let* ((path (if (uiop:file-exists-p (expand-path path))
+                              path
+                              flat-history-path))
+                    (data (with-data-file (file path
                                                :direction :input
                                                :if-does-not-exist nil)
                            (when file
@@ -336,7 +349,7 @@ instance of Nyxt."
                      (restore-history-tree history))
 
                     (hash-table
-                     (restore-flat-history history))))
+                     (restore-flat-history history path))))
                  (_ (error "Expected (list version history) structure."))))))
 
     (if *keep-alive*
