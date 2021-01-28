@@ -92,7 +92,7 @@ Example:
            (handler-case
                (progn
                  (hooks:run-hook ,before-hook)
-                 (log:debug "Calling command ~a." ',name)
+                 ;; (log:debug "Calling command ~a." ',name)
                  ;; TODO: How can we print the arglist as well?
                  ;; (log:debug "Calling command (~a ~a)." ',name (list ,@arglist))
                  (prog1

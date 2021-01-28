@@ -195,7 +195,7 @@ toggle command, return the toggle command of the parent."
         (m (mode-command (class-name (original-class m)))))))
 
 (defun make-mode (mode-symbol buffer)
-  (log:debug mode-symbol buffer (mode-command mode-symbol))
+  ;; (log:debug mode-symbol buffer (mode-command mode-symbol))
   (match (mode-command mode-symbol)
     ;; ":activate t" should not be necessary here since (modes buffer) should be
     ;; empty.
