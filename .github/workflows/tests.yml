@@ -43,7 +43,8 @@ jobs:
       # always run install, since it does some global installs and setup that isn't cached
       env:
        LISP: ${{ matrix.lisp }}
-      run: curl -L https://raw.githubusercontent.com/roswell/roswell/master/scripts/install-for-ci.sh | sh -x
+      # TODO: Update Roswell to latest version (may need Ubuntu 20.* or above).
+      run: curl -L https://github.com/roswell/roswell/blob/v20.06.14.107/scripts/install-for-ci.sh | sh -x
 
     - name: Check Lisp
       continue-on-error: true
