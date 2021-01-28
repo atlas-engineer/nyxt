@@ -331,8 +331,34 @@
               distant-node-value)
     (prove:is (sort (mapcar #'htree:value (htree:nodes (htree:owner history "b")))
                     #'string<)
-              (sort (copy-seq  '("http://example.root/A1" "http://example.root/A" "http://example.root"
-                                 "http://example.root/B" "http://example.root/B2" "b-data"))
+              (sort (copy-seq '("http://example.root/A1" "http://example.root/A" "http://example.root"
+                                "http://example.root/B" "http://example.root/B2" "b-data"))
+                    #'string<)))
+  (let* ((history (make-history1))
+         (creator (htree:current-owner-identifier history))
+         (distant-node-value "b-data"))
+    (htree:add-owner history "b" :creator-identifier creator)
+    (htree:set-current-owner history "b")
+    (htree:add-child distant-node-value history)
+
+    (htree:set-current-owner history htree:+default-owner+)
+    (htree:back history 2)
+
+    (let ((distant-node (first (htree:find-nodes history distant-node-value))))
+      (htree::visit-all history distant-node))
+
+    (prove:is (htree:value (htree:current-owner-node history))
+              distant-node-value)
+    (prove:is (sort (mapcar #'htree:value (htree:nodes (htree:owner history htree:+default-owner+)))
+                    #'string<)
+              (sort (copy-seq '("http://example.root/A"
+                                "http://example.root/A1"
+                                "http://example.root/A2"
+                                "http://example.root"
+                                "http://example.root/B"
+                                "http://example.root/B1"
+                                "http://example.root/B2"
+                                "b-data"))
                     #'string<))))
 
 (prove:subtest "Last access test"
