@@ -6,7 +6,7 @@
 (defvar *id* 0 "Counter used to generate a unique ID.")
 
 (defun unique-id ()
-  (incf *id*))
+  (format nil "ui-element-~d" (incf *id*)))
 
 (defclass ui-element ()
   ((id :accessor id)
@@ -20,6 +20,12 @@
   (cl-markup:markup*
    (object-expression element)))
 
+(defmethod connect ((element ui-element) buffer)
+  (setf (buffer element) buffer))
+
+(defgeneric update (ui-element)
+  (:documentation "Propagate changes to the buffer."))
+
 (defclass button (ui-element)
   ((text :initform "" :accessor text :initarg :text)
    (url :initform "" :accessor url :initarg :url)))
@@ -31,7 +37,9 @@
   ((text :initform "" :initarg :text)))
 
 (defmethod (setf text) (text (paragraph paragraph))
-  (setf (slot-value paragraph 'text) text))
+  (setf (slot-value paragraph 'text) text)
+  (when (slot-boundp paragraph 'buffer)
+    (update paragraph)))
 
 (defmethod object-expression ((paragraph paragraph))
   `(:p :id ,(id paragraph) ,(text paragraph)))
