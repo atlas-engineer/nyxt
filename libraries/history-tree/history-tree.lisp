@@ -663,7 +663,7 @@ First child comes first in the resulting list."
   (let* ((owner (current-owner history))
          (binding (current-binding owner node)))
     (when (and binding (forward-child binding))
-      (cons (forward-child (current-binding owner))
+      (cons (forward-child binding)
             (all-forward-children history
                                   (forward-child binding))))))
 
