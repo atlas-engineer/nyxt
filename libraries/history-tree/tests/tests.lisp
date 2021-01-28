@@ -70,6 +70,13 @@
   (prove:is (htree:size (make-history1))
             7))
 
+(prove:subtest "All forward children"
+  (let ((history (make-history1)))
+    (htree:back history 2)
+    (prove:is (htree:all-forward-children-data history)
+              '("http://example.root/B"
+                "http://example.root/B2"))))
+
 (prove:subtest "All contiguous history nodes for current owner."
   (prove:is (htree:all-contiguous-owned-nodes-data (make-history1))
             '("http://example.root"
