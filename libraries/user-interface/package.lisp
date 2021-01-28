@@ -5,5 +5,13 @@
 
 (in-package :cl-user)
 
-(defpackage :user-interface
-  (:use :common-lisp))
+(uiop:define-package :user-interface
+  (:use :common-lisp)
+  (:export
+   #:id
+   #:buffer
+   #:update
+   #:text
+   #:object-expression
+   #:paragraph
+   #:connect))
