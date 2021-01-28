@@ -393,6 +393,7 @@ Return (values HISTORY NODE) so that calls to `visit' can be chained."
                 (make-instance 'binding))))
     (values history node)))
 
+(export-always 'visit-all)
 (defmethod visit-all ((history history-tree) node)
   "Like `visit' but on all nodes between the current node and NODE.
 This is only possible if the current node and NODE are on the same branch.
