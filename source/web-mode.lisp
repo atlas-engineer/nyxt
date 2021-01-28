@@ -497,8 +497,16 @@ the 25A0-25FF range."
   (unless (or (url-empty-p url)
               (find-if (alex:rcurry #'str:starts-with? (object-string url))
                        (history-blocklist mode)))
-    (with-current-buffer (buffer mode)
-      (nyxt::history-add url :title (title (buffer mode)))))
+    (log:debug "Notify URI ~a for buffer ~a with load status ~a"
+               url
+               (buffer mode)
+               (slot-value (buffer mode) 'nyxt::load-status))
+    ;; TODO: This dirty hack prevents a middle-click from adding URL to the
+    ;; history of the parent buffer.  Find a more reliable way to store URLs in
+    ;; history.
+    (unless (eq (slot-value (buffer mode) 'nyxt::load-status) :unloaded)
+      (with-current-buffer (buffer mode)
+        (nyxt::history-add url :title (title (buffer mode))))))
 
   (store (data-profile (buffer mode)) (history-path (buffer mode)))
   url)
