@@ -280,18 +280,10 @@ To change the default buffer, e.g. set it to a given URL:
    :buffer-fn (lambda () (make-buffer :url \"https://example.org\")))"
   (lambda (&optional urls)
     (let ((buffer (current-buffer)))
+      ;; TODO: Select which history file to load.
       ;; Restore session before opening command line URLs, otherwise it will
       ;; reset the session with the new URLs.
-      (when (and (expand-path (history-path buffer))
-                 (session-list buffer))
-        (match (session-restore-prompt *browser*)
-          ;; Need `funcall-safely' so we continue if the user exits the
-          ;; minibuffer (which raises a condition).
-          (:always-ask (or (funcall-safely #'restore-session-by-name)
-                           (funcall-safely #'restore (data-profile buffer) (history-path buffer))))
-          (:always-restore (funcall-safely #'restore (data-profile buffer)
-                                           (history-path buffer) :restore-session-p t))
-          (:never-restore (log:info "Not restoring session."))))
+      (get-user-data (data-profile buffer) (history-path buffer))
       (cond
         (urls (open-urls urls))
         (buffer-fn
