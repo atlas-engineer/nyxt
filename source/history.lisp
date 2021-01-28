@@ -159,6 +159,92 @@ instance of Nyxt."
 ;; with custom constructors: https://github.com/40ants/cl-prevalence/issues/16.
 (setf (fdefinition 'quri.uri::make-uri) #'quri.uri::%make-uri)
 
+;; Hack of cl-prevalence to support the history-tree custom hash tables:
+(defun history-deserialize-sexp (stream &optional (serialization-state (s-serialization::make-serialization-state)))
+  "Read and return an s-expression serialized version of a lisp object from stream, optionally reusing a serialization state"
+  (s-serialization::reset serialization-state)
+  (let ((sexp (read stream nil :eof)))
+    (if (eq sexp :eof)
+        nil
+        (history-deserialize-sexp-internal sexp (s-serialization::get-hashtable serialization-state)))))
+
+;; Hack of cl-prevalence to support the history-tree custom hash tables:
+(defun history-deserialize-sexp-internal (sexp deserialized-objects)
+  (if (atom sexp)
+      sexp
+      (ecase (first sexp)
+        (:sequence (destructuring-bind (id &key class size elements) (rest sexp)
+                     (cond
+                       ((not class)
+                        (error "Unknown sequence class"))
+                       ((not size)
+                        (error "Unknown sequence size"))
+                       (t
+                        (let ((sequence (make-sequence class size)))
+                          (declare (ignorable sequence))
+                          (setf (gethash id deserialized-objects) sequence)
+                          (map-into sequence
+                                    #'(lambda (x) (history-deserialize-sexp-internal x deserialized-objects))
+                                    elements))))))
+        (:hash-table (destructuring-bind (id &key test size rehash-size rehash-threshold entries) (rest sexp)
+                       (cond
+                         ((not test)
+                          (error "Test function is unknown"))
+                         ((not size)
+                          (error "Hash table size is unknown"))
+                         ((not rehash-size)
+                          (error "Hash table's rehash-size is unknown"))
+                         ((not rehash-threshold)
+                          (error "Hash table's rehash-threshold is unknown"))
+                         (t
+                          (if (member test '(eq eql equal equalp))
+                              (let ((hash-table (make-hash-table :size size
+                                                                 :test test
+                                                                 :rehash-size rehash-size
+                                                                 :rehash-threshold rehash-threshold)))
+                                (setf (gethash id deserialized-objects) hash-table)
+                                (dolist (entry entries)
+                                  (setf (gethash (history-deserialize-sexp-internal (first entry) deserialized-objects) hash-table)
+                                        (history-deserialize-sexp-internal (rest entry) deserialized-objects)))
+                                hash-table)
+                              (let ((hash-table (htree::make-entry-hash-table)))
+                                (cl-custom-hash-table:with-custom-hash-table
+                                  (setf (gethash id deserialized-objects) hash-table)
+                                  (dolist (entry entries)
+                                    (setf (gethash (history-deserialize-sexp-internal (first entry) deserialized-objects) hash-table)
+                                          (history-deserialize-sexp-internal (rest entry) deserialized-objects))))
+                                hash-table))))))
+
+        (:object (destructuring-bind (id &key class slots) (rest sexp)
+                   (let ((object (s-serialization::deserialize-class class slots deserialized-objects)))
+                     (setf (gethash id deserialized-objects) object)
+                     (dolist (slot slots)
+                       (when (slot-exists-p object (first slot))
+                         (setf (slot-value object (first slot))
+                               (history-deserialize-sexp-internal (rest slot) deserialized-objects))))
+                     object)))
+        (:struct (destructuring-bind (id &key class slots) (rest sexp)
+                   (let ((object (s-serialization::deserialize-struct class slots deserialized-objects)))
+                     (setf (gethash id deserialized-objects) object)
+                     (dolist (slot slots)
+                       (when (slot-exists-p object (first slot))
+                         (setf (slot-value object (first slot))
+                               (history-deserialize-sexp-internal (rest slot) deserialized-objects))))
+                     object)))
+        (:cons (destructuring-bind (id cons-car cons-cdr) (rest sexp)
+                 (let ((conspair (cons nil nil)))
+                   (setf (gethash id deserialized-objects)
+                         conspair)
+                   (rplaca conspair (history-deserialize-sexp-internal cons-car deserialized-objects))
+                   (rplacd conspair (history-deserialize-sexp-internal cons-cdr deserialized-objects)))))
+        (:ref (gethash (rest sexp) deserialized-objects)))))
+
+(defmethod s-serialization::deserialize-class ((history (eql 'htree:history-tree)) slots deserialized-objects)
+  ;; We need this specialization because 'history-tree cannot be make-instance'd
+  ;; without specifying some slots like `owners'.
+  (let ((history (htree:make)))
+    history))
+
 (defmethod restore ((profile data-profile) (path history-data-path)
                     ;; &key restore-session-p
                     &key
@@ -172,7 +258,7 @@ instance of Nyxt."
                       ;; We need to make sure current package is :nyxt so that
                       ;; symbols are printed with consistent namespaces.
                       (let ((*package* (find-package :nyxt)))
-                        (s-serialization:deserialize-sexp file))))))
+                        (history-deserialize-sexp file))))))
         (match data
           (nil nil)
           ((guard (list version history) t)
