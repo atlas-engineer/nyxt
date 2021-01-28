@@ -325,17 +325,20 @@ This is useful to tell REPL instances from binary ones."
 (defun open-urls (urls &key no-focus)
   "Create new buffers from URLs.
 First URL is focused if NO-FOCUS is nil."
-  (handler-case
-      (let ((first-buffer (first (mapcar
-                                  (lambda (url) (make-buffer :url url))
-                                  urls))))
-        (when (and first-buffer (not no-focus))
-          (if (open-external-link-in-new-window-p *browser*)
-              (let ((window (window-make *browser*)))
-                (window-set-active-buffer window first-buffer))
-              (set-current-buffer first-buffer))))
-    (error (c)
-      (echo-warning "Could not make buffer to open ~a: ~a" urls c))))
+  (flet ((%open-urls ()
+           (let ((first-buffer (first (mapcar
+                                       (lambda (url) (make-buffer :url url))
+                                       urls))))
+             (when (and first-buffer (not no-focus))
+               (if (open-external-link-in-new-window-p *browser*)
+                   (let ((window (window-make *browser*)))
+                     (window-set-active-buffer window first-buffer))
+                   (set-current-buffer first-buffer))))))
+    (if *keep-alive*
+        (%open-urls)
+        (handler-case (%open-urls)
+          (error (c)
+            (echo-warning "Could not make buffer to open ~a: ~a" urls c))))))
 
 (defun scheme-keymap (buffer buffer-scheme)
   "Return the keymap in BUFFER-SCHEME corresponding to the BUFFER `keymap-scheme-name'.
