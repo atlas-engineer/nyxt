@@ -29,22 +29,13 @@
 
 ;; TODO: Store data-last-access in entry (max of all last-accesses) so that we
 ;; keep this information even for node-less entries.
-(define-class entry ()                  ; TODO: Store history in `entry' instead of function symbols.
-  ((key 'identity
-        :type function-symbol
-        :documentation "See `history-tree''s slot of the same name.
-This is duplicated here so that it can be accessed from the `entry-equal-p' and
-`entry-hash' functions.")
-   (test 'equalp
-         :type function-symbol
-         :documentation "See `history-tree''s slot of the same name.
-This is duplicated here so that it can be accessed from the `entry-equal-p' and
-`entry-hash' functions.")
-   (hash-function 'sxhash
-                  :type function-symbol
-                  :documentation "See `history-tree''s slot of the same name.
-This is duplicated here so that it can be accessed from the `entry-equal-p' and
-`entry-hash' functions.")
+(define-class entry ()
+  ((history nil
+            :type (or null history-tree)
+            :documentation "Required.
+This is gives access to the custom hash functions, see the corresponding
+`history-tree' slots.
+We allow null values for easier deserialization.")
    (value nil
           :type t
           :documentation "Arbitrary data."))
@@ -54,9 +45,7 @@ This is duplicated here so that it can be accessed from the `entry-equal-p' and
 (defun make-entry (history data)
   "Return an `entry' wrapping DATA and suitable for HISTORY."
   (make-instance 'entry :value data
-                        :key (key history)
-                        :test (test history)
-                        :hash-function (hash-function history)))
+                        :history history))
 
 (define-class node ()
   ((parent nil
@@ -129,11 +118,11 @@ owner."))
   "Return data last access across all its nodes, regardless of the owner.
 Return Epoch if DATA is not found or if entry has no timestamp."
   (let ((nodes (find-nodes history data)))
-    (if nodes
-        (the (values local-time:timestamp &optional)
+    (the (values local-time:timestamp &optional)
+         (if nodes
              (apply #'local-time:timestamp-maximum
-                    (mapcar #'last-access nodes)))
-        (local-time:unix-to-timestamp 0))))
+                    (mapcar #'last-access nodes))
+             (local-time:unix-to-timestamp 0)))))
 
 (define-class owner ()
   ;; TODO: Add slot pointing to history an owner belongs to?  Unnecessary if we never expose the `owner' to the caller.
@@ -228,21 +217,24 @@ Return true if NODE was owned by OWNER, nil otherwise."
   (remhash owner (bindings node)))
 
 (defun entry-equal-p (a b)
-  (funcall (test a)                     ; `test' of A and B should be the same.
-           (funcall (key a) (value a))
-           (funcall (key b) (value b))))
+  (let ((h (history a)))
+    (funcall (test h)
+             (funcall (key h) (value a))
+             (funcall (key h) (value b)))))
 
 (defun entry-hash (a)
-  (funcall (hash-function a) (funcall (key a) (value a))))
+  (let ((h (history a)))
+    (funcall (hash-function h) (funcall (key h) (value a)))))
 
 (cl-custom-hash-table:define-custom-hash-table-constructor make-entry-hash-table
   :test entry-equal-p
   :hash-function entry-hash)
 
 (defun data-equal-entry-p (data entry)
-  (funcall (test entry)
-           (funcall (key entry) (value entry))
-           (funcall (key entry) data)))
+  (let ((h (history entry)))
+    (funcall (test h)
+             (funcall (key h) (value entry))
+             (funcall (key h) data))))
 
 (export-always 'add-entry)
 (defun add-entry (history data)
