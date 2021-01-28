@@ -697,8 +697,10 @@ First child comes first in the resulting list."
   "Return a list of all nodes that belong to the branch the current owner node is on.
 These nodes do not necessarily belong to the current owner.
 See `all-contiguous-owned-nodes'."
-  (let ((root (root (current-owner-node history))))
-    (cons root (all-children (root (current-owner-node history))))))
+  (let ((current-node (current-owner-node history)))
+    (when current-node
+      (let ((root (root (current-owner-node history))))
+        (cons root (all-children root))))))
 
 (defun owned-root (owner)
   "Return the first parent among the contiguous owned parents of NODE."
