@@ -32,14 +32,14 @@ search.")
     nil
     :type boolean
     :documentation "Whether history navigation is restricted by buffer-local history.")
-   (history-forwards-prompting-p
+   (history-forwards-prompting-p        ; TODO: Use in history-forwards?
     t
     :type boolean
     :documentation "Whether `history-forwards' is asking the user which history branch to pick when there are several.")
-   (history-forwards-to-dead-history-p
-    nil
-    :type boolean
-    :documentation "Whether `history-forwards' considers `id'-less history nodes.")
+   ;; (history-forwards-to-dead-history-p ; TODO: Too picky, not usable in practice?
+   ;;  nil
+   ;;  :type boolean
+   ;;  :documentation "Whether `history-forwards' considers `id'-less history nodes.")
    (keymap-scheme
     (define-scheme "web"
       scheme:cua
@@ -206,11 +206,19 @@ search.")
 (defun set-url-from-history (history-node &optional (buffer (current-buffer)))
   "Go to HISTORY-NODE's URL."
   (with-data-access (history (history-path buffer))
-    (if (eq history-node (htree:current history))
+    (if (eq history-node (htree:current-owner-node history))
         (echo "History entry is already the current URL.")
         (progn
           (htree::visit-all history history-node) ; TODO: Should not visit here, instead should call high-level functions from call site.
           (buffer-load (url (htree:value history-node)))))))
+
+(defun load-url-if-not-current (url-or-node &optional (buffer (current-buffer)))
+  "Go to HISTORY-NODE's URL."
+  (unless (quri:uri-p url-or-node)
+    (setf url-or-node (url (htree:value url-or-node))))
+  (if (quri:uri= url-or-node (url buffer))
+      (echo "History entry is already the current URL.")
+      (buffer-load url-or-node)))
 
 (defun conservative-history-filter (web-mode)
   #'(lambda (node)                      ; TODO: Pass owner?
@@ -221,112 +229,140 @@ search.")
 
 (define-command history-backwards (&optional (buffer (current-buffer)))
   "Go to parent URL in history."
-  (with-data-access (history (history-path buffer))
-    (let ((parents (remove-if (conservative-history-filter (find-mode buffer 'web-mode))
-                              (htree:all-parents history))))
-      (if parents
-          (set-url-from-history (first parents) buffer)
-          (echo "No backward history.")))))
+  (let ((new-node
+          (with-data-access (history (history-path buffer))
+            (if (conservative-history-movement-p (find-mode buffer 'web-mode))
+                (htree:back-owned-parents history)
+                (htree:back history))
+            (htree:current-owner-node history))))
+    (load-url-if-not-current new-node)))
+
+(define-command history-forwards (&optional (buffer (current-buffer)))
+  "Go to forward URL in history."
+  (let ((new-node
+          (with-data-access (history (history-path buffer))
+            (htree:forward history)
+            (htree:current-owner-node history))))
+    (load-url-if-not-current new-node)))
 
 (defun dead-history-filter (web-mode)
   #'(lambda (node)
       (and (history-forwards-to-dead-history-p web-mode)
            (str:emptyp (id (htree:value node))))))
 
-(define-command history-forwards (&optional (buffer (current-buffer)))
-  "Go to forward URL in history."
-  (with-data-access (history (history-path buffer))
-    (let* ((children (remove-if (alex:compose
-                                 (dead-history-filter (find-mode buffer 'web-mode))
-                                 (conservative-history-filter (find-mode buffer 'web-mode)))
-                                (htree:children (htree:current (get-data (history-path buffer))))))
-           (selected-child (if (or (< (length children) 2)
-                                   (not (history-forwards-prompting-p
-                                         (find-mode buffer 'web-mode))))
-                               (first children)
-                               (prompt-minibuffer
-                                :input-prompt "History branch to follow"
-                                :suggestion-function
-                                (lambda (minibuffer)
-                                  (fuzzy-match (input-buffer minibuffer) children))))))
-      (if selected-child
-          (set-url-from-history selected-child buffer)
-          (echo "No forward history.")))))
-
 (defun history-backwards-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all parent URLs."
-  (let ((parents (remove-if (conservative-history-filter (find-mode buffer 'web-mode))
-                            (htree:all-parents (get-data (history-path buffer))))))
+  (let ((parents (if (conservative-history-movement-p (find-mode buffer 'web-mode))
+                     (htree:all-contiguous-owned-parents (get-data (history-path buffer)))
+                     (htree:all-parents (get-data (history-path buffer))))))
     (lambda (minibuffer)
       (if parents
           (fuzzy-match (input-buffer minibuffer) parents)
           (echo "Cannot navigate backwards.")))))
 
-(define-command history-backwards-query ()
+(define-command history-backwards-query (&optional (buffer (current-buffer)))
   "Query parent URL to navigate back to."
   (let ((input (prompt-minibuffer
                 :input-prompt "Navigate backwards to"
                 :suggestion-function (history-backwards-suggestion-filter))))
     (when input
-      (set-url-from-history input))))
+      (with-data-access (history (history-path buffer))
+        (htree::visit-all history input))      ; TODO: Go COUNT times backwards instead.
+      (load-url-if-not-current input))))
 
-(defun history-forwards-suggestion-filter (&optional (buffer (current-buffer)))
+(defun history-forwards-direct-children-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over forward-children URL."
-  (let ((children (remove-if (conservative-history-filter (find-mode buffer 'web-mode))
-                             (htree:all-forward-children (get-data (history-path buffer))))))
+  (let ((children (if (conservative-history-movement-p (find-mode buffer 'web-mode))
+                      (htree:owned-children  (htree:current-owner (get-data (history-path buffer))))
+                      (htree:children (htree:current-owner-node (get-data (history-path buffer)))))))
     (lambda (minibuffer)
       (if children
           (fuzzy-match (input-buffer minibuffer) children)
           (echo "Cannot navigate forwards.")))))
 
-(define-command history-forwards-query ()
+(define-command history-forwards-direct-children (&optional (buffer (current-buffer)))
+  "Query child URL to navigate to."
+  (let ((input (prompt-minibuffer
+                :input-prompt "Navigate forwards to"
+                :suggestion-function (history-forwards-direct-children-suggestion-filter))))
+    (when input
+      (with-data-access (history (history-path buffer))
+        (htree::go-to-child (htree:value input) history))
+      (load-url-if-not-current input))))
+
+(define-command history-forwards-maybe-query (&optional (buffer (current-buffer)))
+  "If current node has multiple children, query which one to navigate to.
+Otherwise go forward to the only child."
+  (let ((history (get-data (history-path buffer))))
+    (if (<= 2 (length
+               (if (conservative-history-movement-p (find-mode buffer 'web-mode))
+                   (htree:owned-children (htree:current-owner history))
+                   (htree:children (htree:current-owner-node history)))))
+        (history-forwards-direct-children)
+        (history-forwards))))
+
+(defun history-forwards-suggestion-filter (&optional (buffer (current-buffer)))
+  "Suggestion function over forward-children URL."
+  (let ((children (htree:all-forward-children (get-data (history-path buffer)))))
+    (lambda (minibuffer)
+      (if children
+          (fuzzy-match (input-buffer minibuffer) children)
+          (echo "Cannot navigate forwards.")))))
+
+(define-command history-forwards-query (&optional (buffer (current-buffer)))
   "Query forward-URL to navigate to."
   (let ((input (prompt-minibuffer
                 :input-prompt "Navigate forwards to"
                 :suggestion-function (history-forwards-suggestion-filter))))
     (when input
-      (set-url-from-history input))))
-
-(define-command history-forwards-maybe-query (&optional (buffer (current-buffer)))
-  "If current node has multiple chidren, query forward-URL to navigate to.
-Otherwise go forward to the only child."
-  (if (<= 2 (length (htree:all-children (get-data (history-path buffer)))))
-      (history-forwards-all-query)
-      (history-forwards)))
+      (with-data-access (history (history-path buffer))
+        ;; REVIEW: Alternatively, we could use the COUNT argument with
+        ;; (1+ (position input (htree:all-forward-children history)))
+        (loop until (eq input (htree:current-owner-node history))
+                    do (htree:forward history)))
+      (load-url-if-not-current input))))
 
 (defun history-forwards-all-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over children URL from all branches."
-  (let ((children (remove-if (conservative-history-filter (find-mode buffer 'web-mode))
-                             (htree:all-children (get-data (history-path buffer))))))
+  (let* ((history (get-data (history-path buffer)))
+         (children (if (conservative-history-movement-p (find-mode buffer 'web-mode))
+                       (htree:all-contiguous-owned-children (htree:current-owner history))
+                       (htree:all-children history))))
     (lambda (minibuffer)
       (if children
           (fuzzy-match (input-buffer minibuffer) children)
           (echo "Cannot navigate forwards.")))))
 
-(define-command history-forwards-all-query ()
+(define-command history-forwards-all-query (&optional (buffer (current-buffer)))
   "Query URL to forward to, from all child branches."
   (let ((input (prompt-minibuffer
                 :input-prompt "Navigate forwards to (all branches)"
                 :suggestion-function (history-forwards-all-suggestion-filter))))
     (when input
-      (set-url-from-history input))))
+      (with-data-access (history (history-path buffer))
+        (htree:forward history))
+      (load-url-if-not-current input))))
 
 (defun history-all-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all history URLs."
-  (let ((urls (remove-if (conservative-history-filter (find-mode buffer 'web-mode))
-                         (htree:all-current-branch-nodes (get-data (history-path buffer))))))
+  (let* ((history (get-data (history-path buffer)))
+         (urls (if (conservative-history-movement-p (find-mode buffer 'web-mode))
+                   (htree:all-current-owner-nodes history)
+                   (htree:all-current-branch-nodes history))))
     (lambda (minibuffer)
       (if urls
           (fuzzy-match (input-buffer minibuffer) urls)
           (echo "No history.")))))
 
-(define-command history-all-query ()
+(define-command history-all-query (&optional (buffer (current-buffer)))
   "Query URL to go to, from the whole history."
   (let ((input (prompt-minibuffer
                 :input-prompt "Navigate to"
                 :suggestion-function (history-all-suggestion-filter))))
     (when input
-      (set-url-from-history input))))
+      (with-data-access (history (history-path buffer))
+        (htree:visit-all history input))
+      (load-url-if-not-current input))))
 
 (defun integer->unicode-geometric (string-integer)
   "Return geometric block corresponding to the STRING-INTEGER code-point within
