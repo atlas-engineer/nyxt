@@ -591,7 +591,8 @@ Warning: This behaviour may change in the future."
     (setf url (quri:uri (webkit:webkit-uri-request-uri request)))
     (if (null (hooks:handlers (request-resource-hook buffer)))
         (progn
-          (log:debug "Forward to renderer (no request-resource-hook handlers).")
+          (log:debug "Forward to ~s's renderer (no request-resource-hook handlers)."
+                     buffer)
           (webkit:webkit-policy-decision-use response-policy-decision)
           nil)
         (let ((request-data
@@ -610,16 +611,19 @@ Warning: This behaviour may change in the future."
                                                 :known-type-p is-known-type)))))
           (cond
             ((null request-data)
-             (log:debug "Don't forward to renderer (null request data).")
+             (log:debug "Don't forward to ~s's renderer (null request data)."
+                        buffer)
              (webkit:webkit-policy-decision-ignore response-policy-decision)
              nil)
             ((and request-data (quri:uri= url (url request-data)))
-             (log:debug "Forward to renderer (unchanged URL).")
+             (log:debug "Forward to ~s's renderer (unchanged URL)."
+                        buffer)
              (webkit:webkit-policy-decision-use response-policy-decision)
              nil)
             (t
              (setf (webkit:webkit-uri-request-uri request) (object-string (url request-data)))
-             (log:debug "Don't forward to renderer (resource request replaced with ~s)."
+             (log:debug "Don't forward to ~s's renderer (resource request replaced with ~s)."
+                        buffer
                         (object-display (url request-data)))
              ;; Warning: We must ignore the policy decision _before_ we
              ;; start the new load request, or else WebKit will be
