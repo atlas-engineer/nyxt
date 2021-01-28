@@ -27,7 +27,9 @@
 (deftype function-symbol ()
   `(and symbol (satisfies fboundp)))
 
-(define-class entry ()
+;; TODO: Store data-last-access in entry (max of all last-accesses) so that we
+;; keep this information even for node-less entries.
+(define-class entry ()                  ; TODO: Store history in `entry' instead of function symbols.
   ((key 'identity
         :type function-symbol
         :documentation "See `history-tree''s slot of the same name.
@@ -108,6 +110,13 @@ owner."))
   (:documentation "The relationship between an owner and one of its nodes."))
 
 (export-always 'last-access)
+(defmethod last-access ((binding binding))
+  "Ensure we return last-access as a timestamp, in case it was a string."
+  (when (stringp (slot-value binding 'last-access))
+    (setf (slot-value binding 'last-access)
+          (local-time:parse-timestring (slot-value binding 'last-access))))
+  (slot-value binding 'last-access))
+
 (defmethod last-access ((node node))
   "Return node's last access across all its owners."
   (apply #'local-time:timestamp-maximum
