@@ -25,19 +25,22 @@
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (export ,symbols ,@(and package-supplied? (list package)))))
 
+(deftype function-symbol ()
+  `(and symbol (satisfies fboundp)))
+
 (define-class entry ()
   ((key (error "Key function required")
-        :type function
+        :type function-symbol
         :documentation "See `history-tree''s slot of the same name.
 This is duplicated here so that it can be accessed from the `entry-equal-p' and
 `entry-hash' functions.")
    (test (error "Test function required")
-        :type function
+        :type function-symbol
         :documentation "See `history-tree''s slot of the same name.
 This is duplicated here so that it can be accessed from the `entry-equal-p' and
 `entry-hash' functions.")
    (hash-function (error "Hash function required")
-        :type function
+        :type function-symbol
         :documentation "See `history-tree''s slot of the same name.
 This is duplicated here so that it can be accessed from the `entry-equal-p' and
 `entry-hash' functions.")
@@ -264,21 +267,27 @@ the value is an `owner'.")
             :type hash-table
             :documentation "The key is an `entry', the value is the list of
 nodes that hold this data.")
-   (key #'identity
-        :type function
+   (key 'identity
+        :type function-symbol
         :documentation "The result of this function is passed to `test'
 and `hash-function'.  It is useful to uniquely identify (i.e. avoid
-duplications) objects from one of their slots.")
-   (test #'equalp
-         :type function
+duplications) objects from one of their slots.
+It is a `function-symbol' so that the history can be more easily serialized than
+if if were a function.")
+   (test 'equalp
+         :type function-symbol
          :documentation "Function that tests if the two results of `key' called
 over two entries are equal.
-Also see `hash-function'.")
-   (hash-function #'sxhash
-                  :type function
+Also see `hash-function'.
+It is a `function-symbol' so that the history can be more easily serialized than
+if if were a function.")
+   (hash-function 'sxhash
+                  :type function-symbol
                   :documentation "Function that returns the hash of the result
 of `key' called over an `entry'.
-Also see `test'."))
+Also see `test'.
+It is a `function-symbol' so that the history can be more easily serialized than
+if if were a function."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)

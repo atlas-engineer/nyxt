@@ -136,7 +136,7 @@
                                             :title "Example page"))
         (web-page2 (make-instance 'web-page :url "http://example.org"
                                             :title "Same page, another title")))
-    (let ((history (htree:make :key #'url)))
+    (let ((history (htree:make :key 'url)))
       (htree:add-child web-page1 history)
       (htree:add-child web-page2 history)
       (prove:is (hash-table-count (htree:entries history))
