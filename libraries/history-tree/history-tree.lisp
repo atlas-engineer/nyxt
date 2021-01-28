@@ -241,12 +241,12 @@ One case in which this function might be useful is when you want to import flat
 history data, e.g. a list of visited URLs that's not bound to any owner."
   (cl-custom-hash-table:with-custom-hash-table
     (let ((new-entry (make-entry history data)))
-      (multiple-value-bind (existing-entry found?)
+      (multiple-value-bind (existing-entry-nodes found?)
           (gethash new-entry (entries history))
         (if found?
             (progn
-              (setf (value existing-entry) data)
-              existing-entry)
+              (setf (value (entry (first existing-entry-nodes))) data)
+              (entry (first existing-entry-nodes)))
             (progn
               (setf (gethash new-entry (entries history)) '())
               new-entry))))))
