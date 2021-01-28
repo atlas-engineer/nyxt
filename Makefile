@@ -101,6 +101,9 @@ install:
 ifeq ($(UNAME), Linux)
 install: install-nyxt install-assets
 endif
+ifeq ($(UNAME), FreeBSD)
+install: install-nyxt install-assets
+endif
 ifeq ($(UNAME), Darwin)
 install: install-app-bundle
 endif

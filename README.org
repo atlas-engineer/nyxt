@@ -65,8 +65,8 @@ For a complete list of features, please see the manual.
 * Getting started
 ** Install Nyxt
 
-Nyxt supports GNU/Linux, macOS, and Guix with engine support for WebKit
-and WebEngine/Blink.
+Nyxt supports GNU/Linux, macOS and FreeBSD with engine support for
+WebKit and WebEngine/Blink.
 
 Please see the [[https://nyxt.atlas.engineer/download][downloads]] page for pre-built binaries.  Some operating
 systems provide packages for Nyxt:
