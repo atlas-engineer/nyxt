@@ -419,7 +419,7 @@ Return (values HISTORY NODE) so that calls to `visit' can be chained."
   `(integer 1 ,most-positive-fixnum))
 
 (export-always 'back)
-(defmethod back ((history history-tree) &optional (count 1))
+(defmethod back ((history history-tree) &optional (count 1)) ; TODO: Rename to backward?
   "Go COUNT parent up from the current owner node, if possible.
 Return (VALUES HISTORY CURRENT-NODE) so that `back' and `forward' calls can
 be chained."
@@ -434,6 +434,17 @@ be chained."
               former-current))
       (when (< 1 count)
         (back history (1- count))))
+    (values history (current owner))))
+
+(export-always 'back-owned-parents)
+(defmethod back-owned-parents ((history history-tree) &optional (count 1))
+  "Go COUNT parent up from the current owner node, if possible.
+Only connected owned parents are considered.
+Return (VALUES HISTORY CURRENT-NODE) so that `back' and `forward' calls can
+be chained."
+  (let ((owner (current-owner history)))
+    (when (owned-parent owner (current owner))
+      (back history count))
     (values history (current owner))))
 
 (export-always 'forward)
@@ -476,7 +487,7 @@ Test is done with the TEST argument."
         :test #'data-equal-entry-p))
 
 (export-always 'go-to-child)
-(defmethod go-to-child (data (history history-tree) &key (child-finder #'find-child))
+(defmethod go-to-child (data (history history-tree) &key (child-finder #'find-child)) ; TODO: Should take a node instead?
   "Go to direct current node's child matching DATA.
 Return (values HISTORY (current-owner-node HISTORY))."
   (let* ((owner (current-owner history))
