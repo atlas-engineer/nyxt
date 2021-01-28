@@ -58,7 +58,16 @@ class."
     (setf (url new-he) (object-string (url he)))
     (call-next-method new-he stream serialization-state)))
 
-;; TODO: Define serialization method for global-history-tree's last-access.
+(defmethod s-serialization::serialize-sexp-internal ((binding htree:binding)
+                                                     stream
+                                                     serialization-state)
+  "Serialize `history-entry' by turning the URL into strings."
+  (let ((new-binding (make-instance 'htree:binding
+                                    :forward-child (htree:forward-child binding))))
+    (setf (slot-value new-binding 'htree:last-access)
+          (local-time:format-timestring nil (htree:last-access binding)
+                                        :timezone local-time:+utc-zone+))
+    (call-next-method new-binding stream serialization-state)))
 
 (defun make-history-tree ()
   "Return a new global history tree for `history-entry' data."
