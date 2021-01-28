@@ -225,11 +225,9 @@ Return true if NODE was owned by OWNER, nil otherwise."
   :hash-function entry-hash)
 
 (defun data-equal-entry-p (data entry)
-  (if (key entry)
-      (equalp (funcall (key entry) (value entry))
-              (funcall (key entry) data))
-      (equalp (value entry)
-              data)))
+  (funcall (test entry)
+           (funcall (key entry) (value entry))
+           (funcall (key entry) data)))
 
 (export-always 'add-entry)
 (defun add-entry (history data)
