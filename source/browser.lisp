@@ -322,12 +322,13 @@ This is useful to tell REPL instances from binary ones."
                                        url))))
 
 (declaim (ftype (function (list-of-strings &key (:no-focus boolean)))))
-(defun open-urls (urls &key no-focus)
+(defun open-urls (urls &key no-focus parent-buffer)
   "Create new buffers from URLs.
 First URL is focused if NO-FOCUS is nil."
   (flet ((%open-urls ()
            (let ((first-buffer (first (mapcar
-                                       (lambda (url) (make-buffer :url url))
+                                       (lambda (url) (make-buffer :url url
+                                                                  :parent-buffer parent-buffer))
                                        urls))))
              (when (and first-buffer (not no-focus))
                (if (open-external-link-in-new-window-p *browser*)
@@ -348,11 +349,11 @@ If none is found, fall back to `scheme:cua'."
       (keymap:get-keymap scheme:cua
                          buffer-scheme)))
 
-(defun request-resource-open-url (&key url &allow-other-keys)
-  (open-urls (list url) :no-focus t))
+(defun request-resource-open-url (&key url buffer &allow-other-keys)
+  (open-urls (list url) :no-focus t :parent-buffer buffer))
 
-(defun request-resource-open-url-focus (&key url &allow-other-keys)
-  (open-urls (list url) :no-focus nil))
+(defun request-resource-open-url-focus (&key url buffer &allow-other-keys)
+  (open-urls (list url) :no-focus nil :parent-buffer buffer))
 
 (define-class request-data ()
   ((buffer (current-buffer)
@@ -401,7 +402,7 @@ Deal with REQUEST-DATA with the following rules:
          nil)
         (bound-function
          (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode keys))
-         (funcall-safely bound-function :url url)
+         (funcall-safely bound-function :url url :buffer buffer)
          nil)
         ((new-window-p request-data)
          (log:debug "Load URL in new buffer: ~a" (object-display url))
