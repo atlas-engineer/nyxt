@@ -28,19 +28,19 @@
   `(and symbol (satisfies fboundp)))
 
 (define-class entry ()
-  ((key (error "Key function required")
+  ((key 'identity
         :type function-symbol
         :documentation "See `history-tree''s slot of the same name.
 This is duplicated here so that it can be accessed from the `entry-equal-p' and
 `entry-hash' functions.")
-   (test (error "Test function required")
-        :type function-symbol
-        :documentation "See `history-tree''s slot of the same name.
+   (test 'equalp
+         :type function-symbol
+         :documentation "See `history-tree''s slot of the same name.
 This is duplicated here so that it can be accessed from the `entry-equal-p' and
 `entry-hash' functions.")
-   (hash-function (error "Hash function required")
-        :type function-symbol
-        :documentation "See `history-tree''s slot of the same name.
+   (hash-function 'sxhash
+                  :type function-symbol
+                  :documentation "See `history-tree''s slot of the same name.
 This is duplicated here so that it can be accessed from the `entry-equal-p' and
 `entry-hash' functions.")
    (value nil
@@ -62,16 +62,18 @@ This is duplicated here so that it can be accessed from the `entry-equal-p' and
            :documentation "If nil, it means the node is a root node.
 (The first of the parents.)")
    (children '()
-             :documentation "List of nodes.
-Order does not matter.")
+             :type (list node)
+             :documentation "Order does not matter.")
    (bindings (make-hash-table)
              :documentation "The key is an `owner', the value is a
 `binding'.  This slot also allows us to know to which owner a node belongs.")
-   (entry (error "Entry required")
-          :type entry
-          :documentation "Arbitrary data (wrapped in an `entry' object) carried
+   (entry nil
+          :type (or null entry)
+          :documentation "Required.
+(Null entry is accepted only to ease deserialization.)
+Arbitrary data (wrapped in an `entry' object) carried
 by the node.  `history-tree''s `entries' holds `entry'-`node' associations."))
-  (:export-class-name-p t)
+  (:export-class-name-p t)              ; TODO: Unexport?
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)
   (:documentation "Node structure of the history tree."))
