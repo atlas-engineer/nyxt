@@ -87,10 +87,10 @@
   "Delete a window object and remove it from the hash of windows.")
 
 (defmethod ffi-window-fullscreen ((window qt-window))
-  (qt:window-show-full-screen (qt-object window)))
+  (qt:widget-show-full-screen (qt-object window)))
 
 (defmethod ffi-window-unfullscreen ((window qt-window))
-  (qt:window-show-normal (qt-object window)))
+  (qt:widget-show-normal (qt-object window)))
 
 (defmethod initialize-instance :after ((buffer qt-buffer) &key)
   (hooks:run-hook (buffer-before-make-hook *browser*) buffer)
@@ -111,17 +111,17 @@
 
 (defmethod ffi-window-to-foreground ((window qt-window))
   "Show window in foreground."
-  (qt:window-present (qt-object window)))
+  (qt:widget-present (qt-object window)))
 
 (defmethod ffi-window-set-title ((window qt-window) title)
   "Set the title for a window."
-  (qt:window-set-window-title (qt-object window) title)
+  (qt:widget-set-window-title (qt-object window) title)
   title)
 
 (defmethod ffi-window-active ((browser qt-browser))
   "Return the window object for the currently active window."
   (setf (slot-value browser 'last-active-window)
-        (or (find-if #'qt:window-is-active-window (window-list) :key #'qt-object)
+        (or (find-if #'qt:widget-is-active-window (window-list) :key #'qt-object)
             (slot-value browser 'last-active-window))))
 
 (defmethod ffi-window-set-active-buffer ((window qt-window) (buffer qt-buffer))
