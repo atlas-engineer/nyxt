@@ -69,9 +69,9 @@ class."
                                         :timezone local-time:+utc-zone+))
     (call-next-method new-binding stream serialization-state)))
 
-(defun make-history-tree ()
+(defun make-history-tree (&optional (buffer (current-buffer)))
   "Return a new global history tree for `history-entry' data."
-  (htree:make :key 'url))
+  (htree:make :key 'url :current-owner-identifier (id buffer)))
 
 (declaim (ftype (function (quri:uri &key (:title string)) t) history-add))
 (defun history-add (uri &key (title ""))

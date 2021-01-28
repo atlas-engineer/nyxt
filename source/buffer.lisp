@@ -505,7 +505,7 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
                   url))
          (from-internal-p (internal-buffer-p (current-buffer))))
     (with-data-access (history (history-path (if from-internal-p buffer (current-buffer)))
-                       :default (make-history-tree))
+                       :default (make-history-tree buffer))
       (htree:add-owner history (id buffer)
                        :creator-identifier (when parent-buffer
                                              (id parent-buffer))))
@@ -622,7 +622,7 @@ proceeding."
                                        :key #'active-buffer)))
     (unless (internal-buffer-p buffer)
       (with-data-access (history (history-path buffer)
-                         :default (make-history-tree))
+                         :default (make-history-tree buffer))
         (htree:set-current-owner history (id buffer))))
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
         (let ((temp-buffer (make-dummy-buffer))
