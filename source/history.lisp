@@ -109,17 +109,20 @@ The `implicit-visits' count is incremented."
   "Return history ENTRY score.
 The score gets higher for more recent entries and if they've been visited a
 lot."
-  (+ (* 0.1
-        ;; Total number of visits.
-        (+ (implicit-visits entry)
-           (explicit-visits entry)))
-     (* 1.0
-        ;; Inverse number of hours since the last access.
-        (/ 1
-           (1+ (/ (local-time:timestamp-difference (local-time:now)
-                                                   ;; TODO: Or use current buffer last access?  Or both?
-                                                   (htree:data-last-access history entry))
-                  (* 60 60)))))))
+  ;; TODO: Or use current owner last access?  Or both?
+  (let ((last-access (htree:data-last-access history entry)))
+    (+ (* 0.1
+          ;; Total number of visits.
+          (+ (implicit-visits entry)
+             (explicit-visits entry)))
+       (if last-access
+           (* 1.0
+              ;; Inverse number of hours since the last access.
+              (/ 1
+                 (1+ (/ (local-time:timestamp-difference (local-time:now)
+                                                         last-access)
+                        (* 60 60)))))
+           0))))
 
 (defun history-suggestion-filter (&key prefix-urls)
   "Include prefix-urls in front of the history.
