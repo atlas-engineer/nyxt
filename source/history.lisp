@@ -258,71 +258,84 @@ instance of Nyxt."
                     &key restore-session-p
                     &allow-other-keys)
   "Restore the global/buffer-local history and session from the PATH."
-  (flet ((%restore ()
-           (let ((data (with-data-file (file path
-                                             :direction :input
-                                             :if-does-not-exist nil)
-                         (when file
-                           ;; We need to make sure current package is :nyxt so that
-                           ;; symbols are printed with consistent namespaces.
-                           (let ((*package* (find-package :nyxt)))
-                             (history-deserialize-sexp file))))))
-             (match data
-               (nil nil)
-               ((guard (list version history) t)
-                (ctypecase history ; TODO: Extract to separate functions, maybe labels.
-                  (htree:history-tree
-                   (unless (string= version +version+)
-                     (log:warn "History version ~s differs from current version ~s"
-                               version +version+))
-                   (echo "Loading history of ~a URLs from ~s."
-                         (htree:size history)
-                         (expand-path path))
-                   (setf (get-data path) history)
+  (labels ((restore-buffers (history)
+             "For each owner, make buffer, swap owner identifier for buffer id.
+             Keep table of old-id -> new-id, then go through all the owners and update their creator."
+             (let ((old-id->new-id (make-hash-table :test 'equalp))
+                   (new-owners (make-hash-table :test #'equalp)))
+               (maphash (lambda (owner-id owner)
+                          ;; `htree:+default-owner+' may be present if the
+                          ;; history is created (e.g. restored) while no web
+                          ;; buffer exists.  In all cases, this owner is
+                          ;; uninteresting.
+                          (unless (equal owner-id htree:+default-owner+)
+                            (let ((current-data (htree:value
+                                                 (htree:current
+                                                  (htree:owner history owner-id)))))
+                              (let ((new-buffer (make-buffer :title (title current-data)
+                                                             :url (url current-data)
+                                                             :load-url-p nil)))
+                                (setf (gethash owner-id old-id->new-id) (id new-buffer))
+                                (setf (gethash (id new-buffer) new-owners) owner)))))
+                        (htree:owners history))
+               (maphash (lambda (_ owner)
+                          (declare (ignore _))
+                          (setf (htree:creator owner)
+                                (gethash (htree:creator owner) old-id->new-id)))
+                        (htree:owners history))
+               (setf (htree:owners history) new-owners))
+             ;; TODO: Focus last buffer.
+             ;; (let ((latest-id (id (htree:current
+             ;;                       (first (sort (alex:hash-table-values (htree:owners history))
+             ;;                                    #'local-time:timestamp>
+             ;;                                    :key #'htree:last-access))))
+             ;;                  ;; (sort (mapcar #'id (buffer-list))
+             ;;                  ;;       (lambda ()))
+             ;;                  ))
+             ;;   (switch-buffer :id latest-id))
+             )
 
-                   ;; Recipe: For each owner, make buffer, swap owner identifier for buffer id.
-                   ;; Keep table of old-id -> new-id, then go through all the owners and update their creator.
-                   (when restore-session-p
-                     (let ((old-id->new-id (make-hash-table :test 'equalp))
-                           (new-owners (make-hash-table :test #'equalp)))
-                       (maphash (lambda (owner-id owner)
-                                  (let ((current-data (htree:value
-                                                       (htree:current
-                                                        (htree:owner history owner-id)))))
-                                    (let ((new-buffer (make-buffer :title (title current-data)
-                                                                   :url (url current-data)
-                                                                   :load-url-p nil)))
-                                      (setf (gethash owner-id old-id->new-id) (id new-buffer))
-                                      (setf (gethash (id new-buffer) new-owners) owner))))
-                                (htree:owners history))
-                       (maphash (lambda (_ owner)
-                                  (declare (ignore _))
-                                  (setf (htree:creator owner)
-                                        (gethash (htree:creator owner) old-id->new-id)))
-                                (htree:owners history))
-                       (setf (htree:owners history) new-owners))
-                     ;; TODO: Focus last buffer.
-                     ;; (let ((latest-id (id (htree:current
-                     ;;                       (first (sort (alex:hash-table-values (htree:owners history))
-                     ;;                                    #'local-time:timestamp>
-                     ;;                                    :key #'htree:last-access))))
-                     ;;                  ;; (sort (mapcar #'id (buffer-list))
-                     ;;                  ;;       (lambda ()))
-                     ;;                  ))
-                     ;;   (switch-buffer :id latest-id))
-                     ))
+           (restore-history-tree (history)
+             (echo "Loading history of ~a URLs from ~s."
+                   (htree:size history)
+                   (expand-path path))
+             (setf (get-data path) history)
+             (when restore-session-p
+               (restore-buffers history)))
 
-                  (hash-table
-                   (echo "Importing deprecated global history of ~a URLs from ~s."
-                         (hash-table-count history)
-                         (expand-path path))
-                   ;; TODO: Convert this `entry' to an htree:entry.
-                   (with-data-access (history path
-                                      :default (make-history-tree))
-                     (dolist (entry (alex:hash-table-values history))
-                       (htree:add-entry history entry))))))
+           (restore-flat-history (history)
+             (echo "Importing deprecated global history of ~a URLs from ~s."
+                   (hash-table-count history)
+                   (expand-path path))
+             ;; TODO: Convert this `entry' to an htree:entry.
+             (with-data-access (history path
+                                :default (make-history-tree)) ; TODO: What shall the default owner be here?
+               (dolist (entry (alex:hash-table-values history))
+                 (htree:add-entry history entry))))
 
-               (_ (error "Expected (list version history) structure."))))))
+           (%restore ()
+             (let ((data (with-data-file (file path
+                                               :direction :input
+                                               :if-does-not-exist nil)
+                           (when file
+                             ;; We need to make sure current package is :nyxt so that
+                             ;; symbols are printed with consistent namespaces.
+                             (let ((*package* (find-package :nyxt)))
+                               (history-deserialize-sexp file))))))
+               (match data
+                 (nil nil)
+                 ((guard (list version history) t)
+                  (unless (string= version +version+)
+                    (log:warn "History version ~s differs from current version ~s"
+                              version +version+))
+                  (ctypecase history
+                    (htree:history-tree
+                     (restore-history-tree history))
+
+                    (hash-table
+                     (restore-flat-history history))))
+                 (_ (error "Expected (list version history) structure."))))))
+
     (if *keep-alive*
         (%restore)
         (handler-case (%restore)
