@@ -180,6 +180,10 @@ It's updated every time a node is visited.")
       (setf (slot-value owner 'current) value)
       (error "Attempted to set current node to a non-node for owner ~a." owner)))
 
+(defmethod last-access ((owner owner))
+  "Return owner current node last access."
+  (last-access (gethash owner (bindings (current owner)))))
+
 (declaim (ftype (function (owner) function) owned-children-lister))
 (defun owned-children-lister (owner)
   "Return a function which lists the OWNER's owned children of the node argument."
