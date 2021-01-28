@@ -62,7 +62,7 @@ class."
 
 (defun make-history-tree ()
   "Return a new global history tree for `history-entry' data."
-  (make-history-tree :key #'url))
+  (htree:make :key 'url))
 
 (declaim (ftype (function (quri:uri &key (:title string)) t) history-add))
 (defun history-add (uri &key (title ""))
