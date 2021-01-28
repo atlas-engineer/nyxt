@@ -416,7 +416,7 @@ Deal with REQUEST-DATA with the following rules:
            (list-downloads))
          nil)
         (t
-         (log:debug "Forwarding: ~a" (object-display url))
+         (log:debug "Forwarding ~a for buffer ~s" (object-display url) buffer)
          request-data)))))
 
 (export-always 'url-dispatching-handler)
