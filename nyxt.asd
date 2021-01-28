@@ -55,6 +55,7 @@
                (:file "time")
                (:file "types")
                (:file "conditions")
+               (:file "user-interface")
                ;; Core functionality
                (:file "global")
                (:file "data-storage")
