@@ -148,6 +148,11 @@ listed in ~asdf:*central-registry*~.  For instance:
     sudo dnf install sbcl webkit2gtk3-devel glib-networking gsettings-desktop-schemas libfixposix-devel xclip enchant
   #+end_src
 
+- FreeBSD and derivatives
+  #+begin_src sh
+    pkg install sbcl webkit2-gtk3 glib-networking libfixposix xclip enchant
+  #+end_src
+
 If your distribution does not install libraries in an [[https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard][FHS]]-expected location, you
 have to let know your Lisp compiler where to find them.  To do so, add the
 library directories to ~cffi:*foreign-library-directories*~ list.  For instance,
@@ -236,11 +241,16 @@ The following command will build the Lisp core.  On macOS this will
 produce an application bundle which you can copy into your
 =/Applications= folder.
 
-- GNU/Linux, FreeBSD:
+- GNU/Linux:
   #+begin_src sh
     make all
   #+end_src
 
+- FreeBSD
+  #+begin_src sh
+    gmake all
+  #+end_src
+  
 - macOS:
   #+begin_src sh
     make all
