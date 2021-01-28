@@ -13,7 +13,6 @@
 ;; See TODO notes below mentioning "fast sets".
 ;; See https://old.reddit.com/r/Common_Lisp/comments/l1z7ei/fast_set_library_or_gethash_vs_findmember/.
 
-;; TODO: Add forward and back functions to unowned nodes, maybe leveraging `visit-all'?
 ;; TODO: Should we have different functions for finding nodes vs. "owned nodes",
 ;; or pass an option as key argument?
 
@@ -399,22 +398,27 @@ Return (values HISTORY NODE) so that calls to `visit' can be chained."
 This is only possible if the current node and NODE are on the same branch.
 If they are not, an error is raised.
 Return (values HISTORY NODE) so that calls to `visit' can be chained."
-  (labels ((nodes-with-common-parent (node current-node-parents)
-             (unless node
-               (error "NODE and current owner node must be on the same branch"))
-             (if (or (null node)
-                     (find node current-node-parents))
-                 (list node)
-                 (cons node (nodes-with-common-parent (parent node) current-node-parents)))))
-    (let* ((current-node (current-owner-node history))
-           (current-node-parents (all-parents current-node))
-           (node-parents (nreverse (nodes-with-common-parent node current-node-parents)))
-           (common-parent (first node-parents)))
-      (dolist (node (nreverse (member common-parent (nreverse current-node-parents))))
-        (visit history node))
-      (dolist (node (rest node-parents)) ; Skip the first node since it's the common-parent and it's already visited.
-        (visit history node))
-      (values history node))))
+  (if (eq node (current-owner-node history))
+      (values history node)
+      (labels ((nodes-with-common-parent (node current-node-parents)
+                 (unless node
+                   (error "Node ~s and current owner node must be on the same branch" node))
+                 (if (find node current-node-parents)
+                     (list node)
+                     (cons node (nodes-with-common-parent (parent node) current-node-parents)))))
+        (let* ((current-node (current-owner-node history))
+               (current-node-with-parents (cons current-node (all-parents current-node)))
+               (node-parents-until-common-parent (nreverse (nodes-with-common-parent
+                                                            node
+                                                            current-node-with-parents)))
+               (common-parent (first node-parents-until-common-parent)))
+          (loop :until (eq common-parent (current-owner-node history))
+                :do (back history))
+          (loop :until (eq node (current-owner-node history))
+                ;; Skip the first node since it's the common-parent and it's already visited.
+                :do (setf node-parents-until-common-parent (rest node-parents-until-common-parent))
+                :do (go-to-child (value (first node-parents-until-common-parent)) history))
+          (values history node)))))
 
 (deftype positive-integer ()
   `(integer 1 ,most-positive-fixnum))
