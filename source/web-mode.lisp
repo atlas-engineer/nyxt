@@ -202,16 +202,6 @@ search.")
   "Scroll to top if no input element is active, forward event otherwise."
   (call-non-input-command-or-forward #'scroll-to-top :buffer buffer))
 
-(declaim (ftype (function (htree:node &optional buffer)) set-url-from-history))
-(defun set-url-from-history (history-node &optional (buffer (current-buffer)))
-  "Go to HISTORY-NODE's URL."
-  (with-data-access (history (history-path buffer))
-    (if (eq history-node (htree:current-owner-node history))
-        (echo "History entry is already the current URL.")
-        (progn
-          (htree::visit-all history history-node) ; TODO: Should not visit here, instead should call high-level functions from call site.
-          (buffer-load (url (htree:value history-node)))))))
-
 (defun load-url-if-not-current (url-or-node &optional (buffer (current-buffer)))
   "Go to HISTORY-NODE's URL."
   (unless (quri:uri-p url-or-node)
@@ -219,13 +209,6 @@ search.")
   (if (quri:uri= url-or-node (url buffer))
       (echo "History entry is already the current URL.")
       (buffer-load url-or-node)))
-
-(defun conservative-history-filter (web-mode)
-  #'(lambda (node)                      ; TODO: Pass owner?
-      (with-data-access (history (history-path (buffer web-mode)))
-        (and (conservative-history-movement-p web-mode)
-             (not (htree::owned-parent (htree:current-owner history)
-                                       node))))))
 
 (define-command history-backwards (&optional (buffer (current-buffer)))
   "Go to parent URL in history."
@@ -244,11 +227,6 @@ search.")
             (htree:forward history)
             (htree:current-owner-node history))))
     (load-url-if-not-current new-node)))
-
-(defun dead-history-filter (web-mode)
-  #'(lambda (node)
-      (and (history-forwards-to-dead-history-p web-mode)
-           (str:emptyp (id (htree:value node))))))
 
 (defun history-backwards-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all parent URLs."
