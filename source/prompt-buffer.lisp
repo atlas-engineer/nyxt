@@ -47,16 +47,17 @@ All ARGS are declared as `ignorable'."
                '((* :font-family "monospace,monospace"
                     :font-size "14px"
                     :line-height "18px")
-                 (body :border-top "3px solid dimgray"
-                       :margin "0"
-                       :padding "0 6px")
+                 (body
+                  :margin "0"
+                  :padding "0")
                  ("#prompt-area"
+                  :background-color "dimgray"
                   :display "grid"
                   :grid-template-columns "auto auto 1fr"
                   :width "100%"
-                  :padding "6px 0"
-                  :color "dimgray")
+                  :color "white")
                  ("#prompt"
+                  :padding-left "10px"
                   :line-height "26px")
                  ("#prompt-extra"
                   :line-height "26px"
@@ -68,6 +69,9 @@ All ARGS are declared as `ignorable'."
                   :background-color "#E8E8E8"
                   :width "100%"
                   :autofocus "true")
+                 (".source"
+                  :margin-left "10px"
+                  :margin-top "15px")
                  (".source-glyph"
                   :margin-right "3px")
                  (".source-name"
@@ -81,8 +85,8 @@ All ARGS are declared as `ignorable'."
                   :overflow-x "hidden"
                   :width "100%")
                  (".source-content"
-                  :padding-left "16px"
-                  :margin-bottom "20px"
+                  :margin-left "16px"
+                  :background-color "#F7F7F7"
                   :width "100%"
                   :table-layout "fixed")
                  (".source-content td"
@@ -252,29 +256,30 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
     ;; TODO: Only print `active-properties'.
     (flet ((source->html (source)
              (markup:markup
-              (:div :class "source-name" (:span :class "source-glyph" "⛯") (prompter:name source))
-              (:table :class "source-content"
-               (:tr
-                (loop with property-sample = (if (first (prompter:suggestions source)) ; TODO: Instead, ensure that suggestions always has an element?
-                                                 (prompter:properties (first (prompter:suggestions source)))
-                                                 (list :default ""))
-                      for (property-name _) on property-sample by #'cddr
-                      collect (markup:markup (:th (str:capitalize (symbol-name property-name))))))
-               (loop ;; TODO: Only print as many lines as fit the height.  But how can we know in advance?
-                     ;; Maybe first make the table, then add the element one by one _if_ there are into view.
-                     with max-suggestion-count = 10
-                     repeat max-suggestion-count
-                     with cursor-index = (prompter:selected-suggestion-position (prompter prompt-buffer))
-                     for suggestion-index from (max 0 (- cursor-index (/ max-suggestion-count 2)))
-                     for suggestion in (nthcdr suggestion-index (prompter:suggestions source))
-                     collect (markup:markup
-                              (:tr :id (when (equal (list suggestion source)
-                                                    (multiple-value-list (prompter:selected-suggestion (prompter prompt-buffer))))
-                                         "selection")
-                                   :class (when (find (prompter:value suggestion) (prompter:marked-suggestions source))
-                                            "marked")
-                                   (loop for (_ property) on (prompter:properties suggestion) by #'cddr
-                                         collect (markup:markup (:td property))))))))))
+              (:div :class "source"
+                    (:div :class "source-name" (:span :class "source-glyph" "⛯") (prompter:name source))
+                    (:table :class "source-content"
+                            (:tr
+                             (loop with property-sample = (if (first (prompter:suggestions source)) ; TODO: Instead, ensure that suggestions always has an element?
+                                                              (prompter:properties (first (prompter:suggestions source)))
+                                                              (list :default ""))
+                                   for (property-name _) on property-sample by #'cddr
+                                   collect (markup:markup (:th (str:capitalize (symbol-name property-name))))))
+                            (loop ;; TODO: Only print as many lines as fit the height.  But how can we know in advance?
+                                  ;; Maybe first make the table, then add the element one by one _if_ there are into view.
+                                  with max-suggestion-count = 10
+                                  repeat max-suggestion-count
+                                  with cursor-index = (prompter:selected-suggestion-position (prompter prompt-buffer))
+                                  for suggestion-index from (max 0 (- cursor-index (/ max-suggestion-count 2)))
+                                  for suggestion in (nthcdr suggestion-index (prompter:suggestions source))
+                                  collect (markup:markup
+                                           (:tr :id (when (equal (list suggestion source)
+                                                                 (multiple-value-list (prompter:selected-suggestion (prompter prompt-buffer))))
+                                                      "selection")
+                                                :class (when (find (prompter:value suggestion) (prompter:marked-suggestions source))
+                                                         "marked")
+                                                (loop for (_ property) on (prompter:properties suggestion) by #'cddr
+                                                      collect (markup:markup (:td property)))))))))))
       (evaluate-script
        prompt-buffer
        (ps:ps
