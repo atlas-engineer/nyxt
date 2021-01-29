@@ -288,17 +288,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                 (str:join (string #\newline)
                           (loop for i from current-source-index to last-source-index
                                 for source = (nth i sources)
-                                collect (source->html source)))))
-         (defun element-in-view-port-p (element) ; TODO: Factor with `add-element-hints'.
-           (ps:let* ((rect (ps:chain element (get-bounding-client-rect))))
-             (if (and (>= (ps:chain rect top) 0)
-                      (>= (ps:chain rect left) 0)
-                      (<= (ps:chain rect right) (ps:chain window inner-width))
-                      (<= (ps:chain rect bottom) (ps:chain window inner-height)))
-                 t nil)))
-         (unless (element-in-view-port-p (ps:chain document (get-element-by-id "selection")))
-           (ps:chain document (get-element-by-id "selection")
-                     (scroll-into-view t))))))
+                                collect (source->html source))))))))
 
     (let* ((source (current-source prompt-buffer))
            (suggestions (prompter:suggestions source))
