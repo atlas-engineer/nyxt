@@ -48,6 +48,7 @@ All ARGS are declared as `ignorable'."
                     :font-size "14px"
                     :line-height "18px")
                  (body
+                  :overflow "hidden"
                   :margin "0"
                   :padding "0")
                  ("#prompt-area"
