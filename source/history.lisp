@@ -74,16 +74,18 @@ class."
                                         :timezone local-time:+utc-zone+))
     (call-next-method new-binding stream serialization-state)))
 
-(defmethod s-serialization::serialize-sexp-internal ((accessors htree:entry-accessors)
+(defmethod s-serialization::serialize-sexp-internal ((entry htree:entry)
                                                      stream
                                                      serialization-state)
   "Serialize `history-entry' by turning the URL into strings."
-  (let ((new-accessors (make-instance 'htree:entry-accessors
-                                      :nodes (htree:nodes accessors))))
-    (setf (htree:last-access new-accessors)
-          (local-time:format-timestring nil (htree:last-access accessors)
+  (let ((new-entry (make-instance 'htree:entry
+                                  :history (htree:history entry)
+                                  :value (htree:value entry)
+                                  :nodes (htree:nodes entry))))
+    (setf (htree:last-access new-entry)
+          (local-time:format-timestring nil (htree:last-access entry)
                                         :timezone local-time:+utc-zone+))
-    (call-next-method new-accessors stream serialization-state)))
+    (call-next-method new-entry stream serialization-state)))
 
 (defun make-history-tree (&optional (buffer (current-buffer)))
   "Return a new global history tree for `history-entry' data."
