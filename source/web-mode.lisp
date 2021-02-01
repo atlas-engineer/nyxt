@@ -230,13 +230,14 @@ search.")
 
 (defun history-backwards-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all parent URLs."
-  (let ((parents (if (conservative-history-movement-p (find-mode buffer 'web-mode))
-                     (htree:all-contiguous-owned-parents (get-data (history-path buffer)))
-                     (htree:all-parents (get-data (history-path buffer))))))
-    (lambda (minibuffer)
-      (if parents
-          (fuzzy-match (input-buffer minibuffer) parents)
-          (echo "Cannot navigate backwards.")))))
+  (with-data-lookup (history (history-path buffer))
+    (let ((parents (if (conservative-history-movement-p (find-mode buffer 'web-mode))
+                       (htree:all-contiguous-owned-parents history)
+                       (htree:all-parents history))))
+      (lambda (minibuffer)
+        (if parents
+            (fuzzy-match (input-buffer minibuffer) parents)
+            (echo "Cannot navigate backwards."))))))
 
 (define-command history-backwards-query (&optional (buffer (current-buffer)))
   "Query parent URL to navigate back to."
@@ -250,13 +251,14 @@ search.")
 
 (defun history-forwards-direct-children-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over forward-children URL."
-  (let ((children (if (conservative-history-movement-p (find-mode buffer 'web-mode))
-                      (htree:owned-children  (htree:current-owner (get-data (history-path buffer))))
-                      (htree:children (htree:current-owner-node (get-data (history-path buffer)))))))
-    (lambda (minibuffer)
-      (if children
-          (fuzzy-match (input-buffer minibuffer) children)
-          (echo "Cannot navigate forwards.")))))
+  (with-data-lookup (history (history-path buffer))
+    (let ((children (if (conservative-history-movement-p (find-mode buffer 'web-mode))
+                       (htree:owned-children  (htree:current-owner history))
+                       (htree:children (htree:current-owner-node history)))))
+     (lambda (minibuffer)
+       (if children
+           (fuzzy-match (input-buffer minibuffer) children)
+           (echo "Cannot navigate forwards."))))))
 
 (define-command history-forwards-direct-children (&optional (buffer (current-buffer)))
   "Query child URL to navigate to."
@@ -281,11 +283,12 @@ Otherwise go forward to the only child."
 
 (defun history-forwards-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over forward-children URL."
-  (let ((children (htree:all-forward-children (get-data (history-path buffer)))))
-    (lambda (minibuffer)
-      (if children
-          (fuzzy-match (input-buffer minibuffer) children)
-          (echo "Cannot navigate forwards.")))))
+  (with-data-lookup (history (history-path buffer))
+    (let ((children (htree:all-forward-children history)))
+     (lambda (minibuffer)
+       (if children
+           (fuzzy-match (input-buffer minibuffer) children)
+           (echo "Cannot navigate forwards."))))))
 
 (define-command history-forwards-query (&optional (buffer (current-buffer)))
   "Query forward-URL to navigate to."
@@ -302,14 +305,14 @@ Otherwise go forward to the only child."
 
 (defun history-forwards-all-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over children URL from all branches."
-  (let* ((history (get-data (history-path buffer)))
-         (children (if (conservative-history-movement-p (find-mode buffer 'web-mode))
-                       (htree:all-contiguous-owned-children (htree:current-owner history))
-                       (htree:all-children history))))
-    (lambda (minibuffer)
-      (if children
-          (fuzzy-match (input-buffer minibuffer) children)
-          (echo "Cannot navigate forwards.")))))
+  (with-data-lookup (history (history-path buffer))
+    (let ((children (if (conservative-history-movement-p (find-mode buffer 'web-mode))
+                        (htree:all-contiguous-owned-children (htree:current-owner history))
+                        (htree:all-children history))))
+      (lambda (minibuffer)
+        (if children
+            (fuzzy-match (input-buffer minibuffer) children)
+            (echo "Cannot navigate forwards."))))))
 
 (define-command history-forwards-all-query (&optional (buffer (current-buffer)))
   "Query URL to forward to, from all child branches."
@@ -323,14 +326,14 @@ Otherwise go forward to the only child."
 
 (defun history-all-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all history URLs."
-  (let* ((history (get-data (history-path buffer)))
-         (urls (if (conservative-history-movement-p (find-mode buffer 'web-mode))
-                   (htree:all-current-owner-nodes history)
-                   (htree:all-current-branch-nodes history))))
-    (lambda (minibuffer)
-      (if urls
-          (fuzzy-match (input-buffer minibuffer) urls)
-          (echo "No history.")))))
+  (with-data-lookup (history (history-path buffer))
+    (let ((urls (if (conservative-history-movement-p (find-mode buffer 'web-mode))
+                    (htree:all-current-owner-nodes history)
+                    (htree:all-current-branch-nodes history))))
+      (lambda (minibuffer)
+        (if urls
+            (fuzzy-match (input-buffer minibuffer) urls)
+            (echo "No history."))))))
 
 (define-command history-all-query (&optional (buffer (current-buffer)))
   "Query URL to go to, from the whole history."
@@ -346,79 +349,79 @@ Otherwise go forward to the only child."
   "Open a new buffer displaying the whole history tree of a buffer."
   (with-current-html-buffer (output-buffer (format nil "*History-~a*" (id buffer))
                                                  'nyxt/history-tree-mode:history-tree-mode)
-    (let* ((markup:*auto-escape* nil)
-           (mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
-           (history (get-data (history-path buffer)))
-           (tree `(:ul ,(htree:map-owned-tree
-                         #'(lambda (node)
-                             `(:li
-                               (:a :href ,(object-string (url (htree:value node)))
-                                   ,(let ((title (or (match (title (htree:value node))
-                                                       ((guard e (not (str:emptyp e))) e))
-                                                     (object-display (url (htree:value node))))))
-                                      (if (eq node (htree:current-owner-node history))
-                                          `(:b ,title)
-                                          title)))))
-                         history
-                         :include-root t
-                         :collect-function #'(lambda (a b) `(,@a ,(when b `(:ul ,@b))))))))
-      (markup:markup
-       (:body (:h1 "History")
-              (:style (style output-buffer))
-              (:style (style mode))
-              (:div (markup:raw
-                     (markup:markup*
-                      tree))))))))
+    (with-data-lookup (history (history-path buffer))
+      (let* ((markup:*auto-escape* nil)
+             (mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
+             (tree `(:ul ,(htree:map-owned-tree
+                           #'(lambda (node)
+                               `(:li
+                                 (:a :href ,(object-string (url (htree:value node)))
+                                     ,(let ((title (or (match (title (htree:value node))
+                                                         ((guard e (not (str:emptyp e))) e))
+                                                       (object-display (url (htree:value node))))))
+                                        (if (eq node (htree:current-owner-node history))
+                                            `(:b ,title)
+                                            title)))))
+                           history
+                           :include-root t
+                           :collect-function #'(lambda (a b) `(,@a ,(when b `(:ul ,@b))))))))
+        (markup:markup
+         (:body (:h1 "History")
+                (:style (style output-buffer))
+                (:style (style mode))
+                (:div (markup:raw
+                       (markup:markup*
+                        tree)))))))))
 
 (define-command history-tree ()         ; TODO: Factor this with `buffer-history-tree'.
   "Open a new buffer displaying the whole history tree."
   (nyxt::with-current-html-buffer (output-buffer "*History*"
                                                  'nyxt/history-tree-mode:history-tree-mode)
-    (let* ((markup:*auto-escape* nil)
-           (mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
-           (history (let ((dummy-buffer (make-buffer)))
-                      (prog1
-                          (get-data (history-path dummy-buffer))
-                        (delete-buffer :id (id dummy-buffer)))))
-           (tree `(:ul ,(htree:map-tree
-                         #'(lambda (node)
-                             `(:li (:a :href ,(object-string (url (htree:value node)))
-                                       ,(let ((title (or (match (title (htree:value node))
-                                                           ((guard e (not (str:emptyp e))) e))
-                                                         (object-display (url (htree:value node))))))
-                                          (cond
-                                            ((eq node (htree:current-owner-node history))
-                                             `(:i (:b ,title)))
-                                            ((htree:owned-p (htree:current-owner history) node)
-                                             `(:b ,title))
-                                            (t title)))))) ; Color?  Smaller?
-                         history
-                         :include-root t
-                         :collect-function #'(lambda (a b) `(,@a ,(when b `(:ul ,@b))))))))
-      (markup:markup
-       (:body (:h1 "History")
-              (:style (style output-buffer))
-              (:style (style mode))
-              (:div (markup:raw
-                     (markup:markup*
-                      tree))))))))
+    (with-data-lookup (history (let ((dummy-buffer (make-buffer)))
+                                 (prog1
+                                     (history-path dummy-buffer)
+                                   (delete-buffer :id (id dummy-buffer)))))
+      (let ((markup:*auto-escape* nil)
+            (mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
+            (tree `(:ul ,(htree:map-tree
+                          #'(lambda (node)
+                              `(:li (:a :href ,(object-string (url (htree:value node)))
+                                        ,(let ((title (or (match (title (htree:value node))
+                                                            ((guard e (not (str:emptyp e))) e))
+                                                          (object-display (url (htree:value node))))))
+                                           (cond
+                                             ((eq node (htree:current-owner-node history))
+                                              `(:i (:b ,title)))
+                                             ((htree:owned-p (htree:current-owner history) node)
+                                              `(:b ,title))
+                                             (t title)))))) ; Color?  Smaller?
+                          history
+                          :include-root t
+                          :collect-function #'(lambda (a b) `(,@a ,(when b `(:ul ,@b))))))))
+        (markup:markup
+         (:body (:h1 "History")
+                (:style (style output-buffer))
+                (:style (style mode))
+                (:div (markup:raw
+                       (markup:markup*
+                        tree)))))))))
 
 (defun history-list (&key (limit 100)   ; TODO: Move?  Export?
                        (separator " → "))
-  (let* ((path (history-path (current-buffer)))
-         (history (when (get-data path)
-                    (mapcar #'first
-                            (sort (alex:hash-table-alist (htree:entries (get-data path)))
-                                  #'local-time:timestamp>
-                                  :key (lambda (entry-nodes)
-                                         (let ((nodes (rest entry-nodes)))
-                                           (apply #'local-time:timestamp-maximum
-                                                  (mapcar #'htree:last-access nodes)))))))))
-    (loop for entry in (sera:take limit history)
-          collect (markup:markup
-                   (:li (title entry) (unless (str:emptyp (title entry)) separator)
-                        (:a :href (object-string (url entry))
-                            (object-string (url entry))))))))
+  (with-data-lookup (history (history-path (current-buffer)))
+    (let* ((history (when history
+                      (mapcar #'first
+                              (sort (alex:hash-table-alist (htree:entries history))
+                                    #'local-time:timestamp>
+                                    :key (lambda (entry-nodes)
+                                           (let ((nodes (rest entry-nodes)))
+                                             (apply #'local-time:timestamp-maximum
+                                                    (mapcar #'htree:last-access nodes)))))))))
+      (loop for entry in (sera:take limit history)
+            collect (markup:markup
+                     (:li (title entry) (unless (str:emptyp (title entry)) separator)
+                          (:a :href (object-string (url entry))
+                              (object-string (url entry)))))))))
 
 (define-command list-history (&key (limit 100))
   "Print the user history as a list."

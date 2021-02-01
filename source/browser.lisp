@@ -285,13 +285,14 @@ current buffer."
     (when download-dir
       (let* ((download nil))
         (flet ((unsafe-download ()
-                 (setf download (download-manager:resolve
-                                 url
-                                 :directory download-dir
-                                 :cookies cookies
-                                 :proxy proxy-address))
-                 (push download (get-data path))
-                 download))
+                 (with-data-access (downloads path)
+                   (setf download (download-manager:resolve
+                                   url
+                                   :directory download-dir
+                                   :cookies cookies
+                                   :proxy proxy-address))
+                   (push download downloads)
+                   download)))
           (if *keep-alive*
               (unsafe-download)
               (handler-case

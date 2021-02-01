@@ -56,17 +56,18 @@ Enable INCLUDED modes plus the already present ones, and disable EXCLUDED modes,
 (declaim (ftype (function (quri:uri buffer) (or auto-mode-rule null))
                 matching-auto-mode-rule))
 (defun matching-auto-mode-rule (url buffer)
-  (flet ((priority (test1 test2)
-           (let ((priority-list '(match-regex match-url match-host match-domain)))
-             (< (or (position (first test1) priority-list) 4)
-                (or (position (first test2) priority-list) 4)))))
-    (first (sort (remove-if-not
-                  #'(lambda (rule)
-                      (funcall-safely
-                       (apply (first (test rule)) (rest (test rule))) url))
-                  (or (get-data (auto-mode-rules-path buffer))
-                      (restore (data-profile buffer) (auto-mode-rules-path buffer))))
-                 #'priority :key #'test))))
+  (with-data-lookup (rules (auto-mode-rules-path buffer))
+    (flet ((priority (test1 test2)
+             (let ((priority-list '(match-regex match-url match-host match-domain)))
+               (< (or (position (first test1) priority-list) 4)
+                  (or (position (first test2) priority-list) 4)))))
+      (first (sort (remove-if-not
+                    #'(lambda (rule)
+                        (funcall-safely
+                         ;; REVIEW: Use `eval'?
+                         (apply (first (test rule)) (rest (test rule))) url))
+                    rules)
+                   #'priority :key #'test)))))
 
 (declaim (ftype (function (quri:uri buffer)) enable-matching-modes))
 (defun enable-matching-modes (url buffer)
@@ -120,7 +121,7 @@ non-new-page requests, buffer URL is not altered."
   (quri:uri= (url request-data) (url (buffer request-data))))
 
 (defun auto-mode-handler (request-data)
-  (with-data-access (history (history-path (buffer request-data)))
+  (with-data-lookup (history (history-path (buffer request-data)))
     (let* ((auto-mode (find-submode (buffer request-data) 'auto-mode))
            (previous-url
              (when (ignore-errors (htree:parent (htree:current-owner-node history)))
@@ -361,7 +362,8 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
                         :direction :output
                         :if-does-not-exist :create
                         :if-exists :supersede)
-    (let ((*package* (find-package :nyxt/auto-mode)))
+    (let ((*package* (find-package :nyxt/auto-mode))
+          (rules (get-data path)))
       (write-string ";; List of auto-mode rules.
 ;; It is made to be easily readable and editable, but you still need to remember some things:
 ;;
@@ -393,11 +395,11 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
 ;; Example: (match-host \"reddit.com\" \"old.reddit.com\" \"www6.reddit.com\")
 " file)
     (write-string "(" file)
-    (dolist (rule (get-data path))
+    (dolist (rule rules)
       (write-char #\newline file)
       (serialize-object rule file))
     (format file "~%)~%")
-    (echo "Saved ~a auto-mode rules to ~s." (length (get-data path)) (expand-path path)))))
+    (echo "Saved ~a auto-mode rules to ~s." (length rules) (expand-path path)))))
 
 (defmethod restore ((profile data-profile) (path auto-mode-rules-data-path) &key &allow-other-keys)
   (handler-case

@@ -534,10 +534,11 @@ the "
 (define-command dashboard ()
   "Print a dashboard. Usable as a buffer-fn for make-startup-function."
   (flet ((list-bookmarks (&key (separator " → "))
-           (loop for bookmark in (get-data (bookmarks-path (current-buffer)))
-                 collect (markup:markup (:li (title bookmark) separator
-                                             (:a :href (object-string (url bookmark))
-                                                 (object-display (url bookmark))))))))
+           (with-data-lookup (bookmarks (bookmarks-path (current-buffer)))
+             (loop for bookmark in bookmarks
+                   collect (markup:markup (:li (title bookmark) separator
+                                               (:a :href (object-string (url bookmark))
+                                                   (object-display (url bookmark)))))))))
     (let ((dashboard-style (cl-css:css
                             '((body
                                :margin-top 0
