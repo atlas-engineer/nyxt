@@ -36,10 +36,6 @@ search.")
     t
     :type boolean
     :documentation "Whether `history-forwards' is asking the user which history branch to pick when there are several.")
-   ;; (history-forwards-to-dead-history-p ; TODO: Too picky, not usable in practice?
-   ;;  nil
-   ;;  :type boolean
-   ;;  :documentation "Whether `history-forwards' considers `id'-less history nodes.")
    (keymap-scheme
     (define-scheme "web"
       scheme:cua
