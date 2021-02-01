@@ -3,15 +3,10 @@
 
 (in-package :nyxt)
 
-(define-class history-entry ()          ; TODO: Export?
-  ((url (quri:uri "")
+(define-class history-entry (htree:entry)          ; TODO: Export?
+  ((url (quri:uri "")                              ; TODO: Replace `htree:value'?
         :type (or quri:uri string))
    (title "")
-   (last-access "" ; TODO: Remove with Nyxt 2.0?
-                :type (or string local-time:timestamp)
-                :export nil
-                :documentation "This slot is only kept for backward
-compatibility to import the old flat history.")
    ;; TODO: For now we never increment the explicit-visits count.  Maybe we
    ;; could use a new buffer slot to signal that the last load came from an
    ;; explicit request?
@@ -52,44 +47,56 @@ class."
     (setf (slot-value he 'url) (ensure-url (slot-value he 'url))))
   (slot-value he 'url))
 
-(defmethod s-serialization::serialize-sexp-internal ((he history-entry)
+(defmethod s-serialization::serialize-sexp-internal ((uri quri:uri)
                                                      stream
                                                      serialization-state)
-  "Serialize `history-entry' by turning the URL into strings."
-  (let ((new-he (make-instance 'history-entry
-                               :title (title he)
-                               :explicit-visits (explicit-visits he)
-                               :implicit-visits (implicit-visits he))))
-    (setf (url new-he) (object-string (url he)))
-    (call-next-method new-he stream serialization-state)))
+  "Serialize `history-entry' by turning the URL and last access into strings."
+  (prin1 (object-string uri) stream))
 
-(defmethod s-serialization::serialize-sexp-internal ((binding htree:binding)
+(defmethod s-serialization::serialize-sexp-internal ((timestamp local-time:timestamp)
                                                      stream
                                                      serialization-state)
-  "Serialize `history-entry' by turning the URL into strings."
-  (let ((new-binding (make-instance 'htree:binding
-                                    :forward-child (htree:forward-child binding))))
-    (setf (slot-value new-binding 'htree:last-access)
-          (local-time:format-timestring nil (htree:last-access binding)
-                                        :timezone local-time:+utc-zone+))
-    (call-next-method new-binding stream serialization-state)))
+  "Serialize `history-entry' by turning the URL and last access into strings."
+  (prin1 (local-time:format-timestring nil timestamp
+                                       :timezone local-time:+utc-zone+)
+         stream))
 
-(defmethod s-serialization::serialize-sexp-internal ((entry htree:entry)
-                                                     stream
-                                                     serialization-state)
-  "Serialize `history-entry' by turning the URL into strings."
-  (let ((new-entry (make-instance 'htree:entry
-                                  :history (htree:history entry)
-                                  :value (htree:value entry)
-                                  :nodes (htree:nodes entry))))
-    (setf (htree:last-access new-entry)
-          (local-time:format-timestring nil (htree:last-access entry)
-                                        :timezone local-time:+utc-zone+))
-    (call-next-method new-entry stream serialization-state)))
+(define-class nyxt-history-tree (htree:history-tree)
+  ()
+  (:documentation "Same as `htree:history-tree' but with `history-entry' as entries.
+See `htree:make-entry' specialization."))
+
+(defmethod htree:make-entry ((history nyxt-history-tree) data
+                             &key last-access
+                             &allow-other-keys)
+  "Return an `entry' wrapping DATA and suitable for HISTORY."
+  (let ((entry (make-instance 'history-entry
+                              :history history
+                              :last-access (or last-access (local-time:now)))))
+    (when (history-entry-p data)
+      (setf
+       (url entry) (url data)
+       (title entry) (title data)
+       (implicit-visits entry) (implicit-visits data)
+       (explicit-visits entry) (explicit-visits data)))
+    entry))
+
+(defmethod htree:update-entry ((entry history-entry)
+                               data)
+  "Return an `entry' wrapping DATA and suitable for HISTORY."
+  (if (history-entry-p data)
+      (setf (url entry) (url data)
+            (title entry) (title data)
+            (implicit-visits entry) (implicit-visits data)
+            (explicit-visits entry) (explicit-visits data)
+            (htree:history entry) (htree:history data)
+            (htree:last-access entry) (htree:last-access data))
+      (call-next-method)))
 
 (defun make-history-tree (&optional (buffer (current-buffer)))
   "Return a new global history tree for `history-entry' data."
-  (htree:make :key 'url :current-owner-identifier (id buffer)))
+  (htree:make :history-class 'nyxt-history-tree
+              :key 'url :current-owner-identifier (id buffer)))
 
 (declaim (ftype (function (quri:uri &key (:title string)) t) history-add))
 (defun history-add (uri &key (title ""))
@@ -98,11 +105,11 @@ The `implicit-visits' count is incremented."
   (with-data-access (history (history-path (current-buffer))
                      :default (make-history-tree))
     (unless (url-empty-p uri)
-      (htree:add-child (make-instance 'history-entry
-                                      :url uri
-                                      :title title)
+      (htree:add-child (htree:make-entry 'history-entry
+                                         :url uri
+                                         :title title)
                        history)
-      (let* ((entry (htree:value (htree:current-owner-node history))))
+      (let* ((entry (htree:entry (htree:current-owner-node history))))
         (incf (implicit-visits entry))))))
 
 (define-command delete-history-entry ()
@@ -142,7 +149,7 @@ moment the PREFIX-URLS are inserted as is, not a `history-entry' objects since
 it would not be very useful."
   (with-data-lookup (hist (history-path (current-buffer)))
     (let* ((all-history-entries (when hist
-                                  (sort (htree:all-data hist)
+                                  (sort (alex:hash-table-keys (htree:entries hist))
                                         (lambda (x y)
                                           (> (score-history-entry x hist)
                                              (score-history-entry y hist))))))
@@ -262,10 +269,10 @@ instance of Nyxt."
                    (rplacd conspair (history-deserialize-sexp-internal cons-cdr deserialized-objects)))))
         (:ref (gethash (rest sexp) deserialized-objects)))))
 
-(defmethod s-serialization::deserialize-class ((history (eql 'htree:history-tree)) slots deserialized-objects)
+(defmethod s-serialization::deserialize-class ((history (eql 'nyxt-history-tree)) slots deserialized-objects)
   ;; We need this specialization because 'history-tree cannot be make-instance'd
   ;; without specifying some slots like `owners'.
-  (let ((history (htree:make)))
+  (let ((history (make-history-tree)))
     history))
 
 (defvar flat-history-path (make-instance 'history-data-path :basename "history") ; TODO: Move to global.lisp?
@@ -291,8 +298,8 @@ We keep this variable as a means to import the old format to the new one.")
                                                  (htree:owner history owner-id))))
                               ;; Node-less owners can safely be ignored.
                               (when current-node
-                                (let ((new-buffer (make-buffer :title (title (htree:value current-node))
-                                                               :url (url (htree:value current-node))
+                                (let ((new-buffer (make-buffer :title (title (htree:entry current-node))
+                                                               :url (url (htree:entry current-node))
                                                                :load-url-p nil)))
                                   (setf (gethash owner-id old-id->new-id) (id new-buffer))
                                   (setf (gethash (id new-buffer) new-owners) owner))))))
@@ -335,11 +342,8 @@ We keep this variable as a means to import the old format to the new one.")
                                 :default (make-history-tree)) ; TODO: What shall the default owner be here?
                (maphash (lambda (key data)
                           (declare (ignore key))
-                          (let ((last-access (last-access data)))
-                            ;; Remove last-access from DATA to avoid storing it
-                            ;; twice.
-                            (setf (last-access data) "")
-                            (htree:add-entry history data last-access)))
+                          ;; TODO: Make sure we import last-access.
+                          (htree:add-entry history data))
                         old-history)))
 
            (%restore ()
