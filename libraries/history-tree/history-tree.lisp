@@ -616,11 +616,11 @@ Return the (maybe new) current node, which holds the last piece of data in
         (current owner))))
 
 (export-always 'map-tree)
-(defun map-tree (function tree &key flatten include-root ; TODO: Edit?  Unexport?
+(defun map-tree (function tree &key flatten include-root
                                  (collect-function #'cons)
                                  (children-function #'children))
   "Map the FUNCTION over the TREE.
-If TREE is a `htree:history-tree', start from its root.
+If TREE is a `htree:history-tree', start from its current branch root.
 If TREE is a `htree:node', start from it.
 Include results of applying FUNCTION over ROOT if INCLUDE-ROOT is
 non-nil.
@@ -638,11 +638,26 @@ current node to the result of further traversal."
                         (mapcar #'traverse (funcall children-function node)))))))
     (let ((root (typecase tree
                   (node tree)
-                  (history-tree (root tree)))))
+                  (history-tree (root (current-owner-node tree))))))
       (when root
         (if include-root
             (traverse root)
             (apply #'append (mapcar #'traverse (children root))))))))
+
+(export-always 'map-owned-tree)
+(defun map-owned-tree (function tree &key flatten include-root
+                                       (collect-function #'cons)
+                                       (owner (if (history-tree-p tree)
+                                                  (current-owner tree)
+                                                  (current-owner (history (entry tree))))))
+  "Like `map-tree' but restrict traversal to OWNER's nodes."
+  (map-tree function (if (history-tree-p tree)
+                         (owned-root owner)
+                         tree)
+            :flatten flatten
+            :include-root include-root
+            :collect-function collect-function
+            :children-function (owned-children-lister owner)))
 
 (export-always 'do-tree)
 (defmacro do-tree ((var tree) &body body) ; TODO: Edit? Unexport?
@@ -735,6 +750,7 @@ See `all-contiguous-owned-nodes'."
       (let ((root (root (current-owner-node history))))
         (cons root (all-children root))))))
 
+(export 'owned-root)
 (defun owned-root (owner)
   "Return the first parent among the contiguous owned parents of NODE."
   (first (last (node-contiguous-owned-parents owner (current owner)))))
