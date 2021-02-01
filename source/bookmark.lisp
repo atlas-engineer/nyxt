@@ -111,21 +111,21 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 
 (export-always 'match-bookmarks)
 (defun match-bookmarks (specification &optional (as-url-list-p t))
-  (let* ((input-specs (multiple-value-list
-                       (parse-tag-specification
-                        specification)))
-         (tag-specs (first input-specs))
-         (non-tags (str:downcase (str:join " " (second input-specs))))
-         (validator (ignore-errors (tag-specification-validator tag-specs)))
-         (bookmarks (get-data (bookmarks-path (current-buffer)))))
-    (when validator
-      (setf bookmarks (remove-if (lambda (bookmark)
-                                   (not (funcall validator
-                                                 (tags bookmark))))
-                                 bookmarks)))
-    (if as-url-list-p
-        (mapcar #'url (fuzzy-match non-tags bookmarks))
-        (fuzzy-match non-tags bookmarks))))
+  (with-data-lookup (bookmarks (bookmarks-path (current-buffer)))
+    (let* ((input-specs (multiple-value-list
+                         (parse-tag-specification
+                          specification)))
+           (tag-specs (first input-specs))
+           (non-tags (str:downcase (str:join " " (second input-specs))))
+           (validator (ignore-errors (tag-specification-validator tag-specs))))
+      (when validator
+        (setf bookmarks (remove-if (lambda (bookmark)
+                                     (not (funcall validator
+                                                   (tags bookmark))))
+                                   bookmarks)))
+      (if as-url-list-p
+          (mapcar #'url (fuzzy-match non-tags bookmarks))
+          (fuzzy-match non-tags bookmarks)))))
 
 (defun bookmark-suggestion-filter ()
   (lambda (minibuffer)
