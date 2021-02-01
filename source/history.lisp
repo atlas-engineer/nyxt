@@ -7,6 +7,11 @@
   ((url (quri:uri "")
         :type (or quri:uri string))
    (title "")
+   (last-access "" ; TODO: Remove with Nyxt 2.0?
+                :type (or string local-time:timestamp)
+                :export nil
+                :documentation "This slot is only kept for backward
+compatibility to import the old flat history.")
    ;; TODO: For now we never increment the explicit-visits count.  Maybe we
    ;; could use a new buffer slot to signal that the last load came from an
    ;; explicit request?
@@ -68,6 +73,18 @@ class."
           (local-time:format-timestring nil (htree:last-access binding)
                                         :timezone local-time:+utc-zone+))
     (call-next-method new-binding stream serialization-state)))
+
+(defmethod s-serialization::serialize-sexp-internal ((entry htree:entry)
+                                                     stream
+                                                     serialization-state)
+  "Serialize `history-entry' by turning the URL into strings."
+  (let ((new-entry (make-instance 'htree:entry
+                                    :history (htree:history entry)
+                                    :value (htree:value entry))))
+    (setf (slot-value new-entry 'htree:last-access)
+          (local-time:format-timestring nil (htree:last-access entry)
+                                        :timezone local-time:+utc-zone+))
+    (call-next-method new-entry stream serialization-state)))
 
 (defun make-history-tree (&optional (buffer (current-buffer)))
   "Return a new global history tree for `history-entry' data."
@@ -320,11 +337,16 @@ We keep this variable as a means to import the old format to the new one.")
              (echo "Importing deprecated global history of ~a URLs from ~s."
                    (hash-table-count old-history)
                    (expand-path old-path))
-             ;; TODO: Convert this `entry' to an htree:entry.
              (with-data-access (history path
                                 :default (make-history-tree)) ; TODO: What shall the default owner be here?
-               (dolist (entry (alex:hash-table-values old-history))
-                 (htree:add-entry history entry))))
+               (maphash (lambda (key data)
+                          (declare (ignore key))
+                          (let ((last-access (last-access data)))
+                            ;; Remove last-access from DATA to avoid storing it
+                            ;; twice.
+                            (setf (last-access data) "")
+                            (htree:add-entry history data last-access)))
+                        old-history)))
 
            (%restore ()
              (let* ((path (if (uiop:file-exists-p (expand-path path))
