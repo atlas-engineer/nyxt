@@ -139,19 +139,19 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 (defun tag-suggestion-filter (&key with-empty-tag extra-tags)
   "When with-empty-tag is non-nil, insert the empty string as the first tag.
 This can be useful to let the user select no tag when returning directly."
-  (let ((tags (sort (append extra-tags
-                            (mapcar (lambda (name) (make-tag :name name))
-                                    (delete-duplicates
-                                     (apply #'append
-                                            (mapcar #'tags (get-data
-                                                            (bookmarks-path (current-buffer)))))
-                                     :test #'string-equal)))
-                    #'string-lessp
-                    :key #'tag-name)))
-    (when with-empty-tag
-      (push "" tags))
-    (lambda (minibuffer)
-      (fuzzy-match (text-buffer::word-at-cursor (input-cursor minibuffer)) tags))))
+  (with-data-lookup (bookmarks (bookmarks-path (current-buffer)))
+    (let ((tags (sort (append extra-tags
+                              (mapcar (lambda (name) (make-tag :name name))
+                                      (delete-duplicates
+                                       (apply #'append
+                                              (mapcar #'tags bookmarks))
+                                       :test #'string-equal)))
+                      #'string-lessp
+                      :key #'tag-name)))
+      (when with-empty-tag
+        (push "" tags))
+      (lambda (minibuffer)
+        (fuzzy-match (text-buffer::word-at-cursor (input-cursor minibuffer)) tags)))))
 
 (define-command insert-tag (&optional (minibuffer (current-minibuffer)))
   "Replace current word with selected tag."
@@ -171,38 +171,37 @@ This can be useful to let the user select no tag when returning directly."
 (define-command list-bookmarks ()
   "List all bookmarks in a new buffer."
   (with-current-html-buffer (bookmarks-buffer "*Bookmarks*" 'base-mode)
-    (markup:markup
-     (:style (style bookmarks-buffer))
-     (:h1 "Bookmarks")
-     (:body
-      (loop for bookmark in (get-data (bookmarks-path (current-buffer)))
-            collect
-               (let ((url-display (object-display (url bookmark)))
-                     (url-href (object-string (url bookmark))))
-                 (markup:markup (:div
-                                 (:p (:b "Title: ") (title bookmark))
-                                 (:p (:b "URL: ") (:a :href url-href
-                                                      url-display))
-                                 (:p (:b "Tags: ")
-                                     (when (tags bookmark)
-                                       (format nil " (~{~a~^, ~})" (tags bookmark))))
-                                 (:p (:a :class "button"
-                                         :href (lisp-url `(nyxt::delete-bookmark ,url-href)) "Delete"))
-                                 (:hr "")))))))))
+    (with-data-lookup (bookmarks (bookmarks-path (current-buffer)))
+      (markup:markup
+      (:style (style bookmarks-buffer))
+      (:h1 "Bookmarks")
+      (:body
+       (loop for bookmark in bookmarks
+             collect
+             (let ((url-display (object-display (url bookmark)))
+                   (url-href (object-string (url bookmark))))
+               (markup:markup (:div
+                               (:p (:b "Title: ") (title bookmark))
+                               (:p (:b "URL: ") (:a :href url-href
+                                                    url-display))
+                               (:p (:b "Tags: ")
+                                   (when (tags bookmark)
+                                     (format nil " (~{~a~^, ~})" (tags bookmark))))
+                               (:p (:a :class "button"
+                                       :href (lisp-url `(nyxt::delete-bookmark ,url-href)) "Delete"))
+                               (:hr ""))))))))))
 
 (declaim (ftype (function (quri:uri) string) url-bookmark-tags))
 (export-always 'url-bookmark-tags)
 (defun url-bookmark-tags (url)
   "Return the space-separated string of tags of the bookmark corresponding to
 URL."
-  (the (values string &optional)
-       (let ((existing-bm (find url
-                                (get-data (bookmarks-path (current-buffer)))
-                                :key #'url
-                                :test #'equal-url)))
-         (if existing-bm
-             (str:join " " (tags existing-bm))
-             ""))))
+  (with-data-lookup (bookmarks (bookmarks-path (current-buffer)))
+    (the (values string &optional)
+        (let ((existing-bm (find url bookmarks :key #'url :test #'equal-url)))
+          (if existing-bm
+              (str:join " " (tags existing-bm))
+              "")))))
 
 (define-command bookmark-current-page (&optional (buffer (current-buffer)))
   "Bookmark the URL of BUFFER."

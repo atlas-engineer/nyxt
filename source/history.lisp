@@ -93,22 +93,15 @@ class."
 (defun history-add (uri &key (title ""))
   "Add URL to the global/buffer-local history.
 The `implicit-visits' count is incremented."
-  ;; Warning: This should only be called from `web-mode''s `on-signal-notify-uri'.
-  ;; `buffer-load' has its own data syncronization, so we assume that
-  ;; history is up-to-date there.  Using `with-data-access' here is not
-  ;; an option -- it will cause the new thread and the thread from
-  ;; `buffer-load' to mutually deadlock.
-  ;; TODO: Is this still true?
-  (let ((history (or (get-data (history-path (current-buffer)))
-                     (make-history-tree))))
+  (with-data-access (history (history-path (current-buffer))
+                     :default (make-history-tree))
     (unless (url-empty-p uri)
       (htree:add-child (make-instance 'history-entry
                                       :url uri
                                       :title title)
                        history)
       (let* ((entry (htree:value (htree:current-owner-node history))))
-        (incf (implicit-visits entry))))
-    (setf (get-data (history-path (current-buffer))) history)))
+        (incf (implicit-visits entry))))))
 
 (define-command delete-history-entry ()
   "Delete queried history entries."
@@ -145,18 +138,18 @@ lot."
 This can be useful to, say, prefix the history with the current URL.  At the
 moment the PREFIX-URLS are inserted as is, not a `history-entry' objects since
 it would not be very useful."
-  (with-data-access (hist (history-path (current-buffer)))
-      (let* ((all-history-entries (when hist
-                                    (sort (htree:all-data hist)
-                                          (lambda (x y)
-                                            (> (score-history-entry x hist)
-                                               (score-history-entry y hist))))))
-          (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
-     (when prefix-urls
-       (setf all-history-entries (append (mapcar #'quri:url-decode prefix-urls)
-                                         all-history-entries)))
-     (lambda (minibuffer)
-       (fuzzy-match (input-buffer minibuffer) all-history-entries)))))
+  (with-data-lookup (hist (history-path (current-buffer)))
+    (let* ((all-history-entries (when hist
+                                  (sort (htree:all-data hist)
+                                        (lambda (x y)
+                                          (> (score-history-entry x hist)
+                                             (score-history-entry y hist))))))
+           (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
+      (when prefix-urls
+        (setf all-history-entries (append (mapcar #'quri:url-decode prefix-urls)
+                                          all-history-entries)))
+      (lambda (minibuffer)
+        (fuzzy-match (input-buffer minibuffer) all-history-entries)))))
 
 (defun history-stored-data (path)
   "Return the history data that needs to be serialized.
