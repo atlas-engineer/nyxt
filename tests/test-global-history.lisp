@@ -20,7 +20,7 @@
         (is (htree:size (nyxt:get-data path))
             1
             "history has 1 entry")
-        (let ((entry (first (htree:all-nodes-data (nyxt:get-data path)))))
+        (let ((entry (first (htree:all-data (nyxt:get-data path)))))
           (is (url entry)
               (quri:uri "http://example.org")
               :test #'quri:uri=
@@ -32,7 +32,7 @@
         (is (htree:size (nyxt:get-data path))
             1
             "history has still 1 entry after adding same URI")
-        (let ((entry (first (htree:all-nodes-data (nyxt:get-data path)))))
+        (let ((entry (first (htree:all-data (nyxt:get-data path)))))
           (is (title entry)
               "foo"
               "value now has title"))
