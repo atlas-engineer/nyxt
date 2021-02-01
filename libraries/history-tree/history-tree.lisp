@@ -196,7 +196,7 @@ It's updated every time a node is visited.")
   (:documentation "The high-level information about an owner."))
 
 (defmethod (setf current) (value (owner owner))
-  "This setter protects against setting OWNER's `current' slot to a invalid object."
+  "This setter protects against setting OWNER's `current' slot to an invalid object."
   (if (node-p value)
       (setf (slot-value owner 'current) value)
       (error "Attempted to set current node to a non-node for owner ~a." owner)))
@@ -369,9 +369,8 @@ if if were a function."))
 (defun add-owner (history owner-identifier &key creator-identifier)
   "Create and register owner object for OWNER-IDENTIFIER.
 CREATOR-IDENTIFIER is the optional identifier of the parent owner.
-Return the newly created owner.
-If the owner with such identifier already exists, return it and raise a a
-warning."
+Return the newly created owner.  If the owner with such identifier already
+exists, return it and raise a warning."
   (let ((owner (owner history owner-identifier)))
     (if owner
         (progn
@@ -417,7 +416,7 @@ See `delete-owner' to remove it from HISTORY."
 See `set-current-owner' to set the owner persistently.
 Owner is created if OWNER-IDENTIFIER does not match any owner.
 OWNER-IDENTIFIER can be any value, even NIL."
-  (let  ((old-owner-identifier (gensym)))
+  (let ((old-owner-identifier (gensym)))
     `(let ((,old-owner-identifier (current-owner-identifier ,history)))
        (unwind-protect (progn (set-current-owner ,history ,owner-identifier)
                               ,@body)
