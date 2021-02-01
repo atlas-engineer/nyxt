@@ -143,7 +143,7 @@ owner."))
   "Return data last access across all its nodes, regardless of the owner.
 Return Epoch if DATA is not found or if entry has no timestamp."
   (let* ((accessors (find-accessors history data))
-         (nodes (nodes accessors)))
+         (nodes (and accessors (nodes accessors))))
     (the (values local-time:timestamp &optional)
          (if nodes
              (let ((new-last-access
@@ -151,7 +151,9 @@ Return Epoch if DATA is not found or if entry has no timestamp."
                             (mapcar #'last-access (nodes accessors)))))
                (setf (last-access accessors) new-last-access)
                new-last-access)
-             (last-access accessors)))))
+             (if accessors
+                 (last-access accessors)
+                 (local-time:unix-to-timestamp 0))))))
 
 (define-class owner ()
   ;; TODO: Add slot pointing to history an owner belongs to?  Unnecessary if we never expose the `owner' to the caller.
