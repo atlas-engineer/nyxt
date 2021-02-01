@@ -63,7 +63,7 @@ each of their owners.
 
 About data deletion: Entries can only be deleted with `delete-data' if no node
 refers to the entry.  Conversely, nodes are only ever deleted when the whole
-branch goes owner-less, that it, when calling `delete-owner'.
+branch goes owner-less, that is, when calling `delete-owner'.
 
 So what if the user wants to delete entries that are still referenced anyways?
 
