@@ -305,14 +305,14 @@
     (prove:is (hash-table-count (htree:entries history))
               9)
 
-    (maphash (lambda (entry nodes)
-               (prove:is (length nodes)
+    (maphash (lambda (entry entry-accessors)
+               (prove:is (length (htree:nodes entry-accessors))
                          (if (str:contains? "example.root" (htree:value entry))
                              1
                              0)
                          (format nil "~a entry has ~a remaining nodes"
                                  (htree:value entry)
-                                 (length nodes))))
+                                 (length (htree:nodes entry-accessors)))))
 
              (htree:entries history))))
 
