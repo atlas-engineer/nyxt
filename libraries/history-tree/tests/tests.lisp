@@ -54,7 +54,7 @@
     (prove:is (htree:value (htree:parent (htree:current-owner-node history)))
               url1)
     (htree:back history)
-    (htree:go-to-child url2 history)
+    (htree:go-to-child (first (htree:find-nodes history url2)) history)
     (prove:is (htree:value (htree:current-owner-node history))
               url2)))
 
@@ -95,17 +95,20 @@
               "http://example.root/A2" "http://example.root/A1")))
 
 (prove:subtest "Visiting other branches should not reorder the nodes."
-  (prove:is (htree:all-contiguous-owned-nodes-data
-             (htree:go-to-child
-               "http://example.root/A2"
-              (htree:go-to-child
-               "http://example.root/A"
-               (htree:back (make-history1) 2))))
-            '("http://example.root"
-              "http://example.root/B"
-              "http://example.root/B2" "http://example.root/B1"
-              "http://example.root/A"
-              "http://example.root/A2" "http://example.root/A1")))
+  (let ((history (make-history1)))
+    (prove:is (htree:all-contiguous-owned-nodes-data
+               (htree:go-to-child
+                (first
+                 (htree:find-nodes history "http://example.root/A2"))
+                (htree:go-to-child
+                 (first
+                  (htree:find-nodes history "http://example.root/A"))
+                 (htree:back history 2))))
+              '("http://example.root"
+                "http://example.root/B"
+                "http://example.root/B2" "http://example.root/B1"
+                "http://example.root/A"
+                "http://example.root/A2" "http://example.root/A1"))))
 
 (prove:subtest "Traverse parents."
   (prove:is (htree:all-parents-data
@@ -138,19 +141,22 @@
    (title ""))
   (:accessor-name-transformer #'class*:name-identity))
 
+(defun web-page-key (entry)
+  (url (htree:value entry)))
+
 (prove:subtest "Compound entry uniqueness"
   (let ((web-page1 (make-instance 'web-page :url "http://example.org"
                                             :title "Example page"))
         (web-page2 (make-instance 'web-page :url "http://example.org"
                                             :title "Same page, another title")))
-    (let ((history (htree:make :key 'url)))
+    (let ((history (htree:make :key 'web-page-key)))
       (htree:add-child web-page1 history)
       (htree:add-child web-page2 history)
       (prove:is (hash-table-count (htree:entries history))
                 1)
       (prove:is (title (htree:value (htree::first-hash-table-key (htree:entries history))))
                 "Same page, another title"))
-    (let ((history (htree:make :key 'url)))
+    (let ((history (htree:make :key 'web-page-key)))
       (htree:add-child web-page1 history)
       (htree:add-owner history "b")
       (htree:set-current-owner history "b")
