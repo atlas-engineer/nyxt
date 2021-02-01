@@ -266,7 +266,7 @@ instance of Nyxt."
   (let ((history (htree:make)))
     history))
 
-(defvar flat-history-path (make-instance 'history-data-path :basename "history")
+(defvar flat-history-path (make-instance 'history-data-path :basename "history") ; TODO: Move to global.lisp?
   "Global flat history that was used before the introduction of the global history tree.
 This is deprecated.
 We keep this variable as a means to import the old format to the new one.")
