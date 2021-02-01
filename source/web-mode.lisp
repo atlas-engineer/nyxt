@@ -361,7 +361,7 @@ the 25A0-25FF range."
     (let* ((markup:*auto-escape* nil)
            (mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
            (history (get-data (history-path buffer)))
-           (tree `(:ul ,(htree:map-tree
+           (tree `(:ul ,(htree:map-owned-tree
                          #'(lambda (node)
                              `(:li
                                (:a :href ,(object-string (url (htree:value node)))
@@ -371,7 +371,6 @@ the 25A0-25FF range."
                                       (if (eq node (htree:current-owner-node history))
                                           `(:b ,title)
                                           title)))))
-                         ;; TODO: Make sure we are only collecting nodes belonging to the current owner.
                          history
                          :include-root t
                          :collect-function #'(lambda (a b) `(,@a ,(when b `(:ul ,@b))))))))
@@ -383,7 +382,7 @@ the 25A0-25FF range."
                      (markup:markup*
                       tree))))))))
 
-(define-command history-tree ()
+(define-command history-tree ()         ; TODO: Factor this with `buffer-history-tree'.
   "Open a new buffer displaying the whole history tree."
   (nyxt::with-current-html-buffer (output-buffer "*History*"
                                                  'nyxt/history-tree-mode:history-tree-mode)
@@ -404,7 +403,7 @@ the 25A0-25FF range."
                                        ,(let ((title (or (match (title (htree:value node))
                                                            ((guard e (not (str:emptyp e))) e))
                                                          (object-display (url (htree:value node))))))
-                                          (if (eq node (htree:value history))
+                                          (if (eq node (htree:current-owner-node history))
                                               `(:b ,title)
                                               title)))))
                          history
