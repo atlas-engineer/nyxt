@@ -230,6 +230,7 @@ It's updated every time a node is visited.")
   (and node
        (gethash owner (bindings node))))
 
+(export-always 'owned-p)
 (declaim (ftype (function (owner (or null node)) (or null binding)) owned-p))
 (defun owned-p (owner node)
   (and node
