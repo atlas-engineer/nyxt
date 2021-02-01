@@ -27,6 +27,21 @@
 (deftype function-symbol ()
   `(and symbol (satisfies fboundp)))
 
+(define-class entry-accessors ()
+  ((nodes '()
+          :type list
+          :documentation "The list of nodes that access an entry.")
+   (last-access (local-time:now)
+                :type (or local-time:timestamp string) ; Support `string' for easier deserialization.
+                :documentation "The last access to the corresponding entry by
+any owner.  It's useful to keep this access stored here so that when an entry
+goes owner-less, we can still consult the last time it was accessed."))
+  (:accessor-name-transformer #'class*:name-identity)
+  (:export-accessor-names-p t)
+  (:export-class-name-p t)
+  (:documentation "The value corresponding to en `entry' key in the history
+`entries' table."))
+
 ;; TODO: Store data-last-access in entry (max of all last-accesses) so that we
 ;; keep this information even for node-less entries.
 (define-class entry ()
@@ -38,12 +53,7 @@ This is gives access to the custom hash functions, see the corresponding
 We allow null values for easier deserialization.")
    (value nil
           :type t
-          :documentation "Arbitrary data.")
-   (last-access (local-time:now)
-                :type (or local-time:timestamp string) ; Support `string' for easier deserialization.
-                :documentation "The last access to this entry by any owner.
-It's useful to keep this access stored here so that when an entry goes
-owner-less, we can still consult the last time it was accessed."))
+          :documentation "Arbitrary data."))
   (:accessor-name-transformer #'class*:name-identity)
   (:export-accessor-names-p t)
   (:documentation "Wrapped data as stored in `history-tree''s `entries'."))
@@ -54,16 +64,15 @@ owner-less, we can still consult the last time it was accessed."))
           (local-time:now))
       string-or-timestamp))
 
-(defmethod last-access ((entry entry))
+(defmethod last-access ((accessor entry-accessors))
   "Ensure we return last-access as a timestamp, in case it was a string."
-  (setf (slot-value entry 'last-access) (ensure-timestamp
-                                         (slot-value entry 'last-access))))
+  (setf (slot-value accessor 'last-access) (ensure-timestamp
+                                            (slot-value accessor 'last-access))))
 
-(defun make-entry (history data &optional last-access)
+(defun make-entry (history data)
   "Return an `entry' wrapping DATA and suitable for HISTORY."
   (make-instance 'entry :value data
-                        :history history
-                        :last-access last-access))
+                        :history history))
 
 (define-class node ()
   ((parent nil
@@ -99,7 +108,7 @@ by the node.  `history-tree''s `entries' holds `entry'-`node' associations."))
 (defun make-node (&key parent entry history)
   (let ((node (make-instance 'node :parent parent :entry entry)))
     (cl-custom-hash-table:with-custom-hash-table
-      (pushnew node (gethash (entry node) (entries history))))
+      (pushnew node (nodes (gethash (entry node) (entries history)))))
     node))
 
 (define-class binding ()
@@ -128,28 +137,21 @@ owner."))
          (mapcar #'last-access
                  (alex:hash-table-values (bindings node)))))
 
-(defun hash-table-key (hash-table key &key (test 'eql)) ; TODO: Is there a more efficient way?
-  (find key (alex:hash-table-keys hash-table)
-        :test test))
-
 (export-always 'data-last-access)
 (declaim (ftype (function (history-tree t) local-time:timestamp) data-last-access))
 (defun data-last-access (history data)
   "Return data last access across all its nodes, regardless of the owner.
 Return Epoch if DATA is not found or if entry has no timestamp."
-  (let ((nodes (find-nodes history data)))
+  (let* ((accessors (find-accessors history data))
+         (nodes (nodes accessors)))
     (the (values local-time:timestamp &optional)
          (if nodes
              (let ((new-last-access
                      (apply #'local-time:timestamp-maximum
-                            (mapcar #'last-access nodes))))
-               (setf (last-access (entry (first nodes))) new-last-access)
+                            (mapcar #'last-access (nodes accessors)))))
+               (setf (last-access accessors) new-last-access)
                new-last-access)
-             (let ((entry (hash-table-key (entries history) data
-                                          :test (test history))))
-               (if entry
-                   (last-access entry)
-                   (local-time:unix-to-timestamp 0)))))))
+             (last-access accessors)))))
 
 (define-class owner ()
   ;; TODO: Add slot pointing to history an owner belongs to?  Unnecessary if we never expose the `owner' to the caller.
@@ -274,17 +276,19 @@ need not call this function.  See `add-child' instead.
 One case in which this function might be useful is when you want to import flat
 history data, e.g. a list of visited URLs that's not bound to any owner."
   (cl-custom-hash-table:with-custom-hash-table
-    (let ((new-entry (make-entry history data last-access)))
-      (multiple-value-bind (existing-entry-nodes found?)
+    (let ((new-entry (make-entry history data)))
+      (multiple-value-bind (existing-entry-accessors found?)
           (gethash new-entry (entries history))
         (if found?
-            (progn
-              (setf (value (entry (first existing-entry-nodes))) data)
+            (let* ((entry (entry (first (nodes existing-entry-accessors)))))
+              (setf (value entry) data)
               (when last-access
-                (setf (last-access (entry (first existing-entry-nodes))) last-access))
-              (entry (first existing-entry-nodes)))
+                (setf (last-access existing-entry-accessors) last-access))
+              entry)
             (progn
-              (setf (gethash new-entry (entries history)) '())
+              (setf (gethash new-entry (entries history))
+                    (make-instance 'entry-accessors
+                                   :last-access (or last-access (local-time:now))))
               new-entry))))))
 
 (define-class history-tree ()           ; TODO: Rename `history'?
@@ -503,12 +507,18 @@ chained."
         (forward history (1- count))))
     (values history (current owner))))
 
+(defun find-accessors (history data)
+  "Return the entry-accessors matching DATA."
+  (cl-custom-hash-table:with-custom-hash-table
+    (let* ((new-entry (make-entry history data)))
+      (gethash new-entry (entries history)))))
+
 (export 'find-nodes)
 (defun find-nodes (history data)
   "Return the nodes matching DATA."
-  (cl-custom-hash-table:with-custom-hash-table
-    (let ((new-entry (make-entry history data)))
-      (gethash new-entry (entries history)))))
+  (let ((accessors (find-accessors history data)))
+    (when accessors
+      (nodes accessors))))
 
 (declaim (ftype (function (t owner) (or null node)) find-child))
 (defun find-child (data owner) ; TODO: Generalize?
@@ -800,7 +810,9 @@ As a second value, return the list of all NODE's children, including NODE."
 
 (defun delete-node (history node)
   (cl-custom-hash-table:with-custom-hash-table
-    (alex:deletef (gethash (entry node) (entries history)) node)))
+    (let ((accessor (gethash (entry node) (entries history))))
+      (when accessor
+        (alex:deletef (nodes accessor) node)))))
 
 (defun delete-disowned-branch-nodes (history nodes)
   (labels ((garbage-collect (list-of-roots)
