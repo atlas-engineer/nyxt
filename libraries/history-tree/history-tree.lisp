@@ -38,14 +38,32 @@ This is gives access to the custom hash functions, see the corresponding
 We allow null values for easier deserialization.")
    (value nil
           :type t
-          :documentation "Arbitrary data."))
+          :documentation "Arbitrary data.")
+   (last-access (local-time:now)
+                :type (or local-time:timestamp string) ; Support `string' for easier deserialization.
+                :documentation "The last access to this entry by any owner.
+It's useful to keep this access stored here so that when an entry goes
+owner-less, we can still consult the last time it was accessed."))
   (:accessor-name-transformer #'class*:name-identity)
+  (:export-accessor-names-p t)
   (:documentation "Wrapped data as stored in `history-tree''s `entries'."))
 
-(defun make-entry (history data)
+(defun ensure-timestamp (string-or-timestamp)
+  (if (stringp string-or-timestamp)
+      (or (ignore-errors (local-time:parse-timestring string-or-timestamp))
+          (local-time:now))
+      string-or-timestamp))
+
+(defmethod last-access ((entry entry))
+  "Ensure we return last-access as a timestamp, in case it was a string."
+  (setf (slot-value entry 'last-access) (ensure-timestamp
+                                         (slot-value entry 'last-access))))
+
+(defun make-entry (history data &optional last-access)
   "Return an `entry' wrapping DATA and suitable for HISTORY."
   (make-instance 'entry :value data
-                        :history history))
+                        :history history
+                        :last-access last-access))
 
 (define-class node ()
   ((parent nil
@@ -101,16 +119,18 @@ owner."))
 (export-always 'last-access)
 (defmethod last-access ((binding binding))
   "Ensure we return last-access as a timestamp, in case it was a string."
-  (when (stringp (slot-value binding 'last-access))
-    (setf (slot-value binding 'last-access)
-          (local-time:parse-timestring (slot-value binding 'last-access))))
-  (slot-value binding 'last-access))
+  (setf (slot-value binding 'last-access) (ensure-timestamp
+                                           (slot-value binding 'last-access))))
 
 (defmethod last-access ((node node))
   "Return node's last access across all its owners."
   (apply #'local-time:timestamp-maximum
          (mapcar #'last-access
                  (alex:hash-table-values (bindings node)))))
+
+(defun hash-table-key (hash-table key &key (test 'eql)) ; TODO: Is there a more efficient way?
+  (find key (alex:hash-table-keys hash-table)
+        :test test))
 
 (export-always 'data-last-access)
 (declaim (ftype (function (history-tree t) local-time:timestamp) data-last-access))
@@ -120,9 +140,16 @@ Return Epoch if DATA is not found or if entry has no timestamp."
   (let ((nodes (find-nodes history data)))
     (the (values local-time:timestamp &optional)
          (if nodes
-             (apply #'local-time:timestamp-maximum
-                    (mapcar #'last-access nodes))
-             (local-time:unix-to-timestamp 0)))))
+             (let ((new-last-access
+                     (apply #'local-time:timestamp-maximum
+                            (mapcar #'last-access nodes))))
+               (setf (last-access (entry (first nodes))) new-last-access)
+               new-last-access)
+             (let ((entry (hash-table-key (entries history) data
+                                          :test (test history))))
+               (if entry
+                   (last-access entry)
+                   (local-time:unix-to-timestamp 0)))))))
 
 (define-class owner ()
   ;; TODO: Add slot pointing to history an owner belongs to?  Unnecessary if we never expose the `owner' to the caller.
@@ -237,7 +264,7 @@ Return true if NODE was owned by OWNER, nil otherwise."
              (funcall (key h) data))))
 
 (export-always 'add-entry)
-(defun add-entry (history data)
+(defun add-entry (history data &optional last-access)
   "Add DATA to an `entry' in HISTORY `entries'.
 If DATA is already there, reset the `entry' value to DATA anyways.
 Return the new or existing `entry'.
@@ -247,12 +274,14 @@ need not call this function.  See `add-child' instead.
 One case in which this function might be useful is when you want to import flat
 history data, e.g. a list of visited URLs that's not bound to any owner."
   (cl-custom-hash-table:with-custom-hash-table
-    (let ((new-entry (make-entry history data)))
+    (let ((new-entry (make-entry history data last-access)))
       (multiple-value-bind (existing-entry-nodes found?)
           (gethash new-entry (entries history))
         (if found?
             (progn
               (setf (value (entry (first existing-entry-nodes))) data)
+              (when last-access
+                (setf (last-access (entry (first existing-entry-nodes))) last-access))
               (entry (first existing-entry-nodes)))
             (progn
               (setf (gethash new-entry (entries history)) '())
