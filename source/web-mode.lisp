@@ -451,10 +451,6 @@ Otherwise go forward to the only child."
   nil)
 
 (defmethod nyxt:on-signal-load-finished ((mode web-mode) url)
-  ;; TODO: Setting the default zoom level works with pure Javascript, but it
-  ;; can only be done after the URL has been loaded which is a bit of a
-  ;; kludge.  Instead we could add an FFI endpoint,
-  ;; e.g. webkit_web_view_set_zoom_level.
   (unzoom-page :buffer (buffer mode)
                :ratio (current-zoom-ratio (buffer mode)))
   url)

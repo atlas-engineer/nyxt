@@ -628,6 +628,8 @@ sometimes yields the wrong reasult."
 (define-ffi-generic ffi-buffer-user-agent (buffer value))
 (define-ffi-generic ffi-buffer-set-proxy (buffer &optional proxy-uri ignore-hosts))
 (define-ffi-generic ffi-buffer-get-proxy (buffer))
+(define-ffi-generic ffi-buffer-set-zoom-level (buffer value))
+(define-ffi-generic ffi-buffer-get-zoom-level (buffer))
 (define-ffi-generic ffi-generate-input-event (window event))
 (define-ffi-generic ffi-generated-input-event-p (window event))
 (define-ffi-generic ffi-within-renderer-thread (browser thunk))

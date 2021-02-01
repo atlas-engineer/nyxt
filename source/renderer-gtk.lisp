@@ -901,6 +901,10 @@ custom (the specified proxy) and none."
        (values (proxy-uri buffer)
                (proxy-ignored-hosts buffer))))
 
+(define-ffi-method ffi-buffer-set-zoom-level ((buffer gtk-buffer) value)
+  (when (and (floatp value) (>= value 0))
+    (setf (webkit:webkit-web-view-zoom-level (gtk-object buffer)) value)))
+
 (define-ffi-method ffi-generate-input-event ((window gtk-window) event)
   ;; The "send_event" field is used to mark the event as an "unconsumed"
   ;; keypress.  The distinction allows us to avoid looping indefinitely.
