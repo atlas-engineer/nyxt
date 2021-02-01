@@ -753,7 +753,9 @@ See `all-contiguous-owned-nodes'."
 (export 'owned-root)
 (defun owned-root (owner)
   "Return the first parent among the contiguous owned parents of NODE."
-  (first (last (node-contiguous-owned-parents owner (current owner)))))
+  (or
+   (first (last (node-contiguous-owned-parents owner (current owner))))
+   (current owner)))
 
 (export 'all-contiguous-owned-nodes)
 (defmethod all-contiguous-owned-nodes ((history history-tree))
