@@ -342,18 +342,6 @@ Otherwise go forward to the only child."
         (htree:visit-all history input))
       (load-url-if-not-current input))))
 
-(defun integer->unicode-geometric (string-integer)
-  "Return geometric block corresponding to the STRING-INTEGER code-point within
-the 25A0-25FF range."
-  (let ((code-point (and (stringp string-integer)
-                      (parse-integer string-integer :junk-allowed t))))
-    (if code-point
-        (let* ((code-point-start #x25A0)
-               (code-point-end #x25FF)
-               (range (1+ (- code-point-end code-point-start))))
-          (format nil "&#x~X; " (+ code-point-start (mod code-point range))))
-        "")))
-
 (define-command buffer-history-tree (&optional (buffer (current-buffer)))
   "Open a new buffer displaying the whole history tree of a buffer."
   (with-current-html-buffer (output-buffer (format nil "*History-~a*" (id buffer))
@@ -395,17 +383,15 @@ the 25A0-25FF range."
            (tree `(:ul ,(htree:map-tree
                          #'(lambda (node)
                              `(:li (:a :href ,(object-string (url (htree:value node)))
-                                       ;; TODO: Displaying _1_ glyph does not
-                                       ;; make sense when there can be multiple
-                                       ;; owners.
-                                       ;; ,(when (nyxt/history-tree-mode:display-buffer-id-glyphs-p mode)
-                                       ;;    (integer->unicode-geometric (id (htree:owner node))))
                                        ,(let ((title (or (match (title (htree:value node))
                                                            ((guard e (not (str:emptyp e))) e))
                                                          (object-display (url (htree:value node))))))
-                                          (if (eq node (htree:current-owner-node history))
-                                              `(:b ,title)
-                                              title)))))
+                                          (cond
+                                            ((eq node (htree:current-owner-node history))
+                                             `(:i (:b ,title)))
+                                            ((htree:owned-p (htree:current-owner history) node)
+                                             `(:b ,title))
+                                            (t title)))))) ; Color?  Smaller?
                          history
                          :include-root t
                          :collect-function #'(lambda (a b) `(,@a ,(when b `(:ul ,@b))))))))
