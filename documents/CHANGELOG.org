@@ -63,6 +63,8 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 
 - =with-data-access= accepts a default value.
 
+- =with-data-lookup= -- a faster version of =with-data-access= for fast non-modifying look-ups.
+
 - =analysis= library:
 
   - Add support for DBSCAN algorithm. DBSCAN is a clustering algorithm used to

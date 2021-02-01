@@ -276,9 +276,11 @@ This function can be used on browser-less globals like `*init-file-path*'."
 
 (export-always 'with-data-access)
 (defmacro with-data-access ((data-var data-path &key default) &body body)
-  "Lock the data for the BODY to avoid race conditions.
+  "Lock the data for the BODY to avoid race conditions and safely modify it.
 Bind the DATA-VAR to the value of the data from DATA-PATH to reuse it.
-In case there's no data, bind DATA-VAR to DEFAULT and set data to it."
+In case there's no data, bind DATA-VAR to DEFAULT and set data to it.
+
+For a faster and modification-unsafe version, see `with-data-lookup'."
   (alex:with-gensyms (lock path-name)
     `(let* ((,path-name ,data-path)
             (,lock (lock (get-user-data (current-data-profile) ,path-name))))
@@ -288,6 +290,19 @@ In case there's no data, bind DATA-VAR to DEFAULT and set data to it."
                 (progn ,@body)
              (setf (get-data ,path-name) ,data-var)
              (store (current-data-profile) ,path-name)))))))
+
+(export-always 'with-data-lookup)
+(defmacro with-data-lookup ((data-var data-path &key default) &body body)
+  "Bind the data to DATA-VAR for a fast non-modifying lookup.
+Bind the DATA-VAR to the value of the data from DATA-PATH to reuse it.
+In case there's no data, bind DATA-VAR to DEFAULT.
+
+\"non-modifying\" means that you data you set DATA-VAR to will be
+neither persisted to disk nor saved in memory.
+
+For modification-safe macro, see `with-data-access'."
+  `(let ((,data-var (or (get-data ,data-path) ,default)))
+     (progn ,@body)))
 
 (defvar *gpg-default-recipient* nil)
 
