@@ -382,6 +382,7 @@
                                        (htree:last-access (htree:current-owner-node history))))
       (prove:ok (local-time:timestamp= b-access
                                        (htree:data-last-access history url1))))))
+
 (prove:subtest "Entry deletion"
   (let ((history (htree:make :current-owner-identifier "a"))
         (url1 "http://example.org")
