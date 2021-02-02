@@ -869,13 +869,11 @@ If nodes are still associated to entry, do nothing."
 (deftype non-negative-integer ()
   `(integer 0 ,most-positive-fixnum))
 
-(export-always 'depth)
 (declaim (ftype (function (history-tree) non-negative-integer) depth))
 (defun depth (history)
   "Return the number of (possibly unowned) parents of the current owner node."
   (length (all-parents history)))
 
-(export-always 'size)
 (defmethod size ((owner owner))
   "Return the total number of nodes owned by OWNER."
   (length (nodes owner)))

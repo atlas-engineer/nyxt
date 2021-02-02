@@ -63,11 +63,11 @@
             "http://example.root/B2"))
 
 (prove:subtest "History depth."
-  (prove:is (htree:depth (make-history1))
+  (prove:is (htree::depth (make-history1))
             2))
 
 (prove:subtest "History size."
-  (prove:is (htree:size (make-history1))
+  (prove:is (htree::size (make-history1))
             7))
 
 (prove:subtest "All forward children"
