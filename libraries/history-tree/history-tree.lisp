@@ -447,7 +447,7 @@ Return (values HISTORY NODE) so that calls to `visit' can be chained."
                                                             current-node-with-parents)))
                (common-parent (first node-parents-until-common-parent)))
           (loop :until (eq common-parent (current-owner-node history))
-                :do (back history))
+                :do (backward history))
           (loop :until (eq node (current-owner-node history))
                 ;; Skip the first node since it's the common-parent and it's already visited.
                 :do (setf node-parents-until-common-parent (rest node-parents-until-common-parent))
@@ -457,10 +457,10 @@ Return (values HISTORY NODE) so that calls to `visit' can be chained."
 (deftype positive-integer ()
   `(integer 1 ,most-positive-fixnum))
 
-(export-always 'back)
-(defmethod back ((history history-tree) &optional (count 1)) ; TODO: Rename to backward?
+(export-always 'backward)
+(defmethod backward ((history history-tree) &optional (count 1))
   "Go COUNT parent up from the current owner node, if possible.
-Return (VALUES HISTORY CURRENT-NODE) so that `back' and `forward' calls can
+Return (VALUES HISTORY CURRENT-NODE) so that `backward' and `forward' calls can
 be chained."
   (let ((owner (current-owner history)))
     (check-type count positive-integer)
@@ -472,24 +472,24 @@ be chained."
         (setf (forward-child (current-binding owner))
               former-current))
       (when (< 1 count)
-        (back history (1- count))))
+        (backward history (1- count))))
     (values history (current owner))))
 
-(export-always 'back-owned-parents)
-(defmethod back-owned-parents ((history history-tree) &optional (count 1))
+(export-always 'backward-owned-parents)
+(defmethod backward-owned-parents ((history history-tree) &optional (count 1))
   "Go COUNT parent up from the current owner node, if possible.
 Only connected owned parents are considered.
-Return (VALUES HISTORY CURRENT-NODE) so that `back' and `forward' calls can
+Return (VALUES HISTORY CURRENT-NODE) so that `backward' and `forward' calls can
 be chained."
   (let ((owner (current-owner history)))
     (when (owned-parent owner (current owner))
-      (back history count))
+      (backward history count))
     (values history (current owner))))
 
 (export-always 'forward)
 (defmethod forward ((history history-tree) &optional (count 1))
   "Go COUNT forward-children down from the current owner node, if possible.
-Return (values HISTORY CURRENT-NODE)) so that `back' and `forward' calls can be
+Return (values HISTORY CURRENT-NODE)) so that `backward' and `forward' calls can be
 chained."
   (check-type count positive-integer)
   (let ((owner (current-owner history)))
@@ -606,7 +606,7 @@ Return the (maybe new) current node, which holds the last piece of data in
   (let ((owner (current-owner history)))
     (add-child (first children-data) owner)
     (if (rest children-data)
-        (add-children (rest children-data) (back owner))
+        (add-children (rest children-data) (backward owner))
         (current owner))))
 
 (export-always 'map-tree)
