@@ -742,11 +742,7 @@ Warning: This behaviour may change in the future."
          (let* ((item (webkit:webkit-context-menu-get-item-at-position context-menu i)))
            ;; TODO: Remove "Download Linked File" item.
            (match (webkit:webkit-context-menu-item-get-stock-action item)
-             ((or :webkit-context-menu-action-open-link-in-new-window
-                  :webkit-context-menu-action-download-link-to-disk
-                  :webkit-context-menu-action-download-image-to-disk
-                  :webkit-context-menu-action-download-video-to-disk
-                  :webkit-context-menu-action-download-audio-to-disk)
+             ((or :webkit-context-menu-action-open-link-in-new-window)
               (webkit:webkit-context-menu-remove context-menu item))))))
      ;; Return t to prevent the context menu from showing.
      nil))
