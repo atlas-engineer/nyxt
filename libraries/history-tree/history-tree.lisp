@@ -759,48 +759,14 @@ from the top-most parent, in depth-first order."
     (when owned-root
       (cons owned-root (all-contiguous-owned-children history owned-root)))))
 
-
-
-;; TODO: Delete these functions?
 (export-always 'all-data)
 (defmethod all-data ((history history-tree))
   "Return a list of all entries data, in unspecified order."
   (mapcar #'value (alex:hash-table-keys (entries history))))
 
-(export-always 'all-current-owner-nodes-data)
-(defmethod all-current-owner-nodes-data ((history history-tree))
-  "Return a list of all the nodes data of the current owner."
-  (mapcar #'value (all-current-owner-nodes history)))
+(defun map-data (arg)
+  (mapcar #'value arg))
 
-(export-always 'all-current-branch-nodes-data)
-(defmethod all-current-branch-nodes-data ((history history-tree))
-  "Return a list of all the nodes data of the current branch."
-  (mapcar #'value (all-current-branch-nodes history)))
-
-(export-always 'all-contiguous-owned-nodes-data)
-(defmethod all-contiguous-owned-nodes-data ((history history-tree))
-  "Return a list of the data of all nodes contiguous to the current owner node,
-starting from the top-most parent, in depth-first order."
-  (mapcar #'value (all-contiguous-owned-nodes history)))
-
-(export-always 'all-parents-data)
-(defmethod all-parents-data ((history history-tree))
-  "Return a list of the data of all parents of the current node.
-Parents may not be owned by the current owner.
-First parent data comes first in the resulting list."
-  (mapcar #'value (all-parents history)))
-
-(export-always 'all-forward-children-data)
-(defmethod all-forward-children-data ((history history-tree))
-  "Return a list of the data of the forward children of NODE, recursively.
-First child comes first in the resulting list."
-  (mapcar #'value (all-forward-children history)))
-
-(export-always 'all-children-data)
-(defmethod all-children-data ((history history-tree))
-  "Return a list of the data of all the children of HISTORY's current owner node.
-Children may not all be owned by the current owner."
-  (mapcar #'value (all-children history)))
 
 
 (defun branch-owners (node)
