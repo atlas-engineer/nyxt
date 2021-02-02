@@ -211,8 +211,8 @@ search.")
   (let ((new-node
           (with-data-access (history (history-path buffer))
             (if (conservative-history-movement-p (find-mode buffer 'web-mode))
-                (htree:back-owned-parents history)
-                (htree:back history))
+                (htree:backward-owned-parents history)
+                (htree:backward history))
             (htree:current-owner-node history))))
     (load-url-if-not-current new-node)))
 
