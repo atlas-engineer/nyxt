@@ -392,7 +392,7 @@ This function can be used as a `window' `input-dispatcher'."
 The list of values is useful when the last result is multi-valued, e.g. (values 'a 'b).
 You need not wrap multiple values in a PROGN, all top-level expression are
 evaluate in order."
-  (let ((channel (make-bounded-channel 1)))
+  (let ((channel (make-channel 1)))
     (pexec ()
       (calispel:!
        channel
