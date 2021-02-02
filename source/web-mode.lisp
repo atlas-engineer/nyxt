@@ -480,7 +480,8 @@ Otherwise go forward to the only child."
     ;; history.
     (unless (eq (slot-value (buffer mode) 'nyxt::load-status) :unloaded)
       (with-current-buffer (buffer mode)
-        (nyxt::history-add url :title (title (buffer mode))))))
+        (nyxt::history-add url :title (title (buffer mode))
+                               :buffer (buffer mode)))))
 
   url)
 

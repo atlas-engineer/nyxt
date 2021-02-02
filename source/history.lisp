@@ -73,17 +73,18 @@ class."
   "Return a new global history tree for `history-entry' data."
   (htree:make :key 'history-tree-key :current-owner-id (id buffer)))
 
-(declaim (ftype (function (quri:uri &key (:title string)) t) history-add))
-(defun history-add (uri &key (title ""))
+(declaim (ftype (function (quri:uri &key (:title string) (:buffer buffer)) t) history-add))
+(defun history-add (uri &key (title "") (buffer (current-buffer)))
   "Add URL to the global/buffer-local history.
 The `implicit-visits' count is incremented."
   (with-data-access (history (history-path (current-buffer))
                      :default (make-history-tree))
     (unless (url-empty-p uri)
-      (htree:add-child (make-instance 'history-entry
-                                      :url uri
-                                      :title title)
-                       history)
+      (htree:with-current-owner (history (id buffer))
+        (htree:add-child (make-instance 'history-entry
+                                        :url uri
+                                        :title title)
+                         history))
       (let* ((entry (htree:data (htree:current-owner-node history))))
         (incf (implicit-visits entry))))))
 
