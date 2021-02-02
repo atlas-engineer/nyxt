@@ -111,8 +111,6 @@ is the child to go forward to for the bound owner.")
                 :type (or local-time:timestamp string) ; Support `string' for easier deserialization.
                 :documentation "Timestamp of the last access to this node by the
 owner."))
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)
   (:documentation "The relationship between an owner and one of its nodes."))
 
