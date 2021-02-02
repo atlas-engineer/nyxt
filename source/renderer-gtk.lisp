@@ -768,11 +768,7 @@ Warning: This behaviour may change in the future."
                   :webkit-context-menu-action-download-link-to-disk
                   :webkit-context-menu-action-download-image-to-disk
                   :webkit-context-menu-action-download-video-to-disk
-                  :webkit-context-menu-action-download-audio-to-disk
-                  ;; TODO: Restore paste on GNU/Linux when fixed.
-                  ;; https://github.com/atlas-engineer/nyxt/issues/593
-                  #-darwin
-                  :webkit-context-menu-action-paste)
+                  :webkit-context-menu-action-download-audio-to-disk)
               (webkit:webkit-context-menu-remove context-menu item))))))
      ;; Return t to prevent the context menu from showing.
      nil))
