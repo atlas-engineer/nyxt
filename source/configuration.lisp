@@ -24,9 +24,18 @@ from a binary) then any condition is logged instead of triggering the debugger."
           (log:error "In ~a: ~a" f c)
           nil))))
 
-(defun make-bounded-channel (size)
-  (make-instance 'calispel:channel
-                 :buffer (make-instance 'jpl-queues:bounded-fifo-queue :capacity size)))
+(defun make-channel (&optional size)
+  "Return a channel of capacity SIZE.
+If SIZE is NIL, capicity is infinite."
+  (cond
+    ((null size)
+     (make-instance 'calispel:channel
+                    :buffer (make-instance 'jpl-queues:unbounded-fifo-queue)))
+    ((= 0 size)
+     (make-instance 'calispel:channel))
+    ((< 0 size)
+     (make-instance 'calispel:channel
+                    :buffer (make-instance 'jpl-queues:bounded-fifo-queue :capacity size)))))
 
 (defmacro pexec (&body body)
   "Shorthand for (bt:make-thread (lambda () ...))"

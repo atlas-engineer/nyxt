@@ -43,8 +43,8 @@ Example use:
   :suggestion-function #'my-suggestion-filter)
 
 See the documentation of `minibuffer' to know more about the minibuffer options."
-  (let ((channel (make-bounded-channel 1))
-        (interrupt-channel (make-bounded-channel 1)))
+  (let ((channel (make-channel 1))
+        (interrupt-channel (make-channel 1)))
     (ffi-within-renderer-thread
      *browser*
      (lambda ()

@@ -94,7 +94,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
 Otherwise run the THUNK on the renderer thread by passing it a channel and wait on the channel's result."
   (if (renderer-thread-p)
       (funcall thunk)
-      (let ((channel (make-bounded-channel 1)))
+      (let ((channel (make-channel 1)))
         (gtk:within-gtk-thread
           (funcall thunk channel))
         (calispel:? channel))))
@@ -124,7 +124,7 @@ not return."
        (if (renderer-thread-p)
            (progn
              ,@body)
-           (let ((channel (make-bounded-channel 1)))
+           (let ((channel (make-channel 1)))
              (gtk:within-gtk-thread
                (calispel:!
                 channel

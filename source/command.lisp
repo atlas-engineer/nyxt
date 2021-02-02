@@ -294,7 +294,7 @@ This function can be `funcall'ed."
 (defmethod run ((command command) &rest args)
   "Run COMMAND over ARGS and return its result.
 This is blocking, see `run-async' for an asynchronous way to run commands."
-  (let ((channel (make-bounded-channel 1)))
+  (let ((channel (make-channel 1)))
     (pexec ()
       (calispel:! channel
                ;; Bind current buffer for the duration of the command.  This
