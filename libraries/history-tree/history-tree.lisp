@@ -851,19 +851,19 @@ As a second value, return the list of all NODE's children, including NODE."
     (nth-value 2 (next-entry))))
 
 (defun disown-all (history owner)
-  (check-type owner owner)
-  (let ((nodes (nodes owner)))
-    (mapc (alex:curry #'disown owner) (nodes owner))
-    ;; Delete nodes only when whole branch is owner-less.  Indeed, otherwise
-    ;; we would lose information for other owners.  It's better to be as
-    ;; "immutable" as possible.
-    ;;
-    ;; If we want to "free" disowned nodes from a branch with still owned
-    ;; nodes, the less confusing approach (at least from a user perspective)
-    ;; is delete all remaining owners, possibly by duplicating elsewhere
-    ;; beforehand.
-    (delete-disowned-branch-nodes history nodes))
-  (setf (creator-node owner) nil))
+  (when (owner-p owner)
+    (let ((nodes (nodes owner)))
+      (mapc (alex:curry #'disown owner) (nodes owner))
+      ;; Delete nodes only when whole branch is owner-less.  Indeed, otherwise
+      ;; we would lose information for other owners.  It's better to be as
+      ;; "immutable" as possible.
+      ;;
+      ;; If we want to "free" disowned nodes from a branch with still owned
+      ;; nodes, the less confusing approach (at least from a user perspective)
+      ;; is delete all remaining owners, possibly by duplicating elsewhere
+      ;; beforehand.
+      (delete-disowned-branch-nodes history nodes))
+    (setf (creator-node owner) nil)))
 
 (export-always 'delete-owner)
 (declaim (ftype (function (history-tree t) (or null owner)) delete-owner))
