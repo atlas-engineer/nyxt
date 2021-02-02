@@ -37,6 +37,20 @@ If SIZE is NIL, capicity is infinite."
      (make-instance 'calispel:channel
                     :buffer (make-instance 'jpl-queues:bounded-fifo-queue :capacity size)))))
 
+(defun drain-channel (channel &optional timeout)
+  "Listen to CHANNEL until a value is available, then return all CHANNEL values
+as a list.
+TIMEOUT specifies how long to wait when draining values after the first one.
+This is a blocking operation."
+  (labels ((fetch ()
+             (multiple-value-bind (value received?)
+                 (calispel:? channel 0)
+               (if received?
+                   (cons value (fetch))
+                   nil))))
+    (cons (calispel:? channel timeout)
+          (nreverse (fetch)))))
+
 (defmacro pexec (&body body)
   "Shorthand for (bt:make-thread (lambda () ...))"
   `(bt:make-thread (lambda () ,@body)))
