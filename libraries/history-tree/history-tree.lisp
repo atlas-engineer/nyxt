@@ -478,7 +478,7 @@ be chained."
 (export-always 'backward-owned-parents)
 (defmethod backward-owned-parents ((history history-tree) &optional (count 1))
   "Go COUNT parent up from the current owner node, if possible.
-Only connected owned parents are considered.
+Only contiguous owned parents are considered.
 Return (VALUES HISTORY CURRENT-NODE) so that `backward' and `forward' calls can
 be chained."
   (let ((owner (current-owner history)))
@@ -880,8 +880,8 @@ If nodes are still associated to entry, do nothing."
   "Return the total number of nodes owned by OWNER."
   (length (nodes owner)))
 
-(defmethod connected-size ((owner owner)) ; TODO: Prefer "connected" over "contiguous"?
-  "Return the total number of owned nodes connect to the current OWNER node."
+(defmethod contiguous-size ((owner owner))
+  "Return the total number of owned nodes contiguous to the current OWNER node."
   (length (all-contiguous-owned-nodes owner)))
 
 (defmethod size ((history history-tree))
