@@ -73,12 +73,12 @@
 (prove:subtest "All forward children"
   (let ((history (make-history1)))
     (htree:back history 2)
-    (prove:is (htree:all-forward-children-data history)
+    (prove:is (htree::map-data (htree:all-forward-children history))
               '("http://example.root/B"
                 "http://example.root/B2"))))
 
 (prove:subtest "All contiguous history nodes for current owner."
-  (prove:is (htree:all-contiguous-owned-nodes-data (make-history1))
+  (prove:is (htree::map-data (htree:all-contiguous-owned-nodes (make-history1)))
             '("http://example.root"
               "http://example.root/B"
               "http://example.root/B2" "http://example.root/B1"
@@ -86,8 +86,8 @@
               "http://example.root/A2" "http://example.root/A1")))
 
 (prove:subtest "Traverse all history."
-  (prove:is (htree:all-contiguous-owned-nodes-data
-             (htree:back (make-history1)))
+  (prove:is (htree::map-data (htree:all-contiguous-owned-nodes
+                              (htree:back (make-history1))))
             '("http://example.root"
               "http://example.root/B"
               "http://example.root/B2" "http://example.root/B1"
@@ -95,12 +95,12 @@
               "http://example.root/A2" "http://example.root/A1")))
 
 (prove:subtest "Visiting other branches should not reorder the nodes."
-  (prove:is (htree:all-contiguous-owned-nodes-data
-             (htree:go-to-child
-               "http://example.root/A2"
-              (htree:go-to-child
-               "http://example.root/A"
-               (htree:back (make-history1) 2))))
+  (prove:is (htree::map-data (htree:all-contiguous-owned-nodes
+                              (htree:go-to-child
+                               "http://example.root/A2"
+                               (htree:go-to-child
+                                "http://example.root/A"
+                                (htree:back (make-history1) 2)))))
             '("http://example.root"
               "http://example.root/B"
               "http://example.root/B2" "http://example.root/B1"
@@ -108,18 +108,18 @@
               "http://example.root/A2" "http://example.root/A1")))
 
 (prove:subtest "Traverse parents."
-  (prove:is (htree:all-parents-data
-             (htree:back (make-history1)))
+  (prove:is (htree::map-data (htree:all-parents
+                              (htree:back (make-history1))))
             '("http://example.root")))
 
 (prove:subtest "Traverse forward children."
-  (prove:is (htree:all-forward-children-data
-             (htree:back (make-history1)))
+  (prove:is (htree::map-data (htree:all-forward-children
+                              (htree:back (make-history1))))
             '("http://example.root/B2")))
 
 (prove:subtest "Traverse all children."
-  (prove:is (htree:all-children-data
-             (htree:back (make-history1)))
+  (prove:is (htree::map-data (htree:all-children
+                              (htree:back (make-history1))))
             '("http://example.root/B2" "http://example.root/B1")))
 
 (prove:subtest "Move node to forward-child on add."
