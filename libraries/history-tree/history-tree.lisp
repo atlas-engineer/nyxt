@@ -145,30 +145,31 @@ Return Epoch if DATA is not found or if entry has no timestamp."
                  (local-time:unix-to-timestamp 0))))))
 
 (define-class owner ()
-  ;; TODO: Add slot pointing to history an owner belongs to?  Unnecessary if we never expose the `owner' to the caller.
+  ;; REVIEW: Add slot pointing to history an owner belongs to?  As long as the
+  ;; owner has at least one node, the history can be accessed via the entry.
   ((origin nil
            :type (or null node)
            :documentation "The first node created for this owner.
 Not to be confused with the root, since the owner be go back to a parent of `origin'.")
-   (creator nil                         ; TODO: Rename to `creator-identifier'?
+   (creator-id nil
             :type t
-            :documentation "The owner-identifier in `origin's parent node that
+            :documentation "The owner-id in `origin's parent node that
 created this owner.  May be nil, in which case `origin' is a root node.
 
-Unless the parent was disowned by this `creator',
+Unless the parent was disowned by this `creator-id',
 
-  (gethash (owner history CREATOR) (bindings (parent (origin OWNER))))
+  (gethash (owner history CREATOR-ID) (bindings (parent (origin OWNER))))
 
 should return non-nil.
 
-We store the owner-identifier instead of the `owner' object so that we keep the
+We store the owner-id instead of the `owner' object so that we keep the
 information of who created this owner even after the creator object has been
 deleted.")
    (creator-node nil
                  :export nil
                  :type (or null node)
                  :documentation "The current node of the creator when this owner
-is created.  This is useful since the owner corresponding to `creator' may be
+is created.  This is useful since the owner corresponding to `creator-id' may be
 deleted before the `origin' node is added.")
    (current nil
             :type (or null node)
@@ -287,11 +288,11 @@ history data, e.g. a list of visited URLs that's not bound to any owner."
            :type hash-table
            :documentation "The key is an owner identifier (an artitrary value),
 the value is an `owner'.")
-   (current-owner-identifier (error "Owner identifier required")
-                             :reader current-owner-identifier
-                             :type t
-                             :export t
-                             :documentation "Must be one of the `owners' keys.")
+   (current-owner-id (error "Owner identifier required")
+                     :reader current-owner-id
+                     :type t
+                     :export t
+                     :documentation "Must be one of the `owners' keys.")
    (entries (make-entry-hash-table)
             :type hash-table
             :documentation "Both the key and the value are an `entry', so that
@@ -333,15 +334,15 @@ if if were a function."))
              &key key
                test
                hash-function
-               (current-owner-identifier +default-owner+ explicit-p))
+               (current-owner-id +default-owner+ explicit-p))
   "Return a new `history-tree'."
   (declare (ignore key test hash-function))
   (let ((owners (make-hash-table :test #'equalp))
         (initial-owner (make-instance 'owner)))
-    (setf (gethash current-owner-identifier owners) initial-owner)
+    (setf (gethash current-owner-id owners) initial-owner)
     (unless explicit-p
       (setf args (append
-                  (list :current-owner-identifier current-owner-identifier)
+                  (list :current-owner-id current-owner-id)
                   args)))
     (apply #'make-instance 'history-tree
            :owners owners
@@ -349,68 +350,68 @@ if if were a function."))
 
 (export-always 'owner)
 (declaim (ftype (function (history-tree t) (or null owner)) owner))
-(defun owner (history owner-identifier)
+(defun owner (history owner-id)
   "Return the `owner' object identified by OWNER-IDENTIFIER in HISTORY."
-  (gethash owner-identifier (owners history)))
+  (gethash owner-id (owners history)))
 
 (export-always 'add-owner)
-(declaim (ftype (function (history-tree t &key (:creator-identifier t))
+(declaim (ftype (function (history-tree t &key (:creator-id t))
                           (values owner &optional))
                 add-owner))
-(defun add-owner (history owner-identifier &key creator-identifier)
+(defun add-owner (history owner-id &key creator-id)
   "Create and register owner object for OWNER-IDENTIFIER.
-CREATOR-IDENTIFIER is the optional identifier of the parent owner.
+CREATOR-ID is the optional identifier of the parent owner.
 Return the newly created owner.  If the owner with such identifier already
 exists, return it and raise a warning."
-  (let ((owner (owner history owner-identifier)))
+  (let ((owner (owner history owner-id)))
     (if owner
         (progn
-          (warn "Owner with identifier ~s already exists" owner-identifier)
+          (warn "Owner with identifier ~s already exists" owner-id)
           owner)
-        (let ((creator-owner (owner history creator-identifier)))
-          (when (and creator-identifier
+        (let ((creator-owner (owner history creator-id)))
+          (when (and creator-id
                      (or (not creator-owner)
                          (not (current creator-owner))))
             (error "Cannot make owner a child of the node-less parent ~s"
-                   creator-identifier))
+                   creator-id))
           (let ((owner (make-instance 'owner
-                                      :creator creator-identifier
-                                      :creator-node (when creator-identifier
+                                      :creator-id creator-id
+                                      :creator-node (when creator-id
                                                       (current creator-owner)))))
-            (setf (gethash owner-identifier (owners history))
+            (setf (gethash owner-id (owners history))
                   owner)
             owner)))))
 
 (export-always 'set-current-owner)
-(defun set-current-owner (history owner-identifier)
+(defun set-current-owner (history owner-id)
   "Persistently switch owner for HISTORY.
 OWNER-IDENTIFIER is arbitrary data representing an `owner'.
 Raise an error when no matching owner exists.
 See `add-owner' to create an owner.
 See `with-current-owner' to set the owner locally.
 See `delete-owner' to remove it from HISTORY."
-  (if (owner history owner-identifier)
-      (setf (slot-value history 'current-owner-identifier) owner-identifier)
-      (error "Owner with identifier ~s does not exist" owner-identifier)))
+  (if (owner history owner-id)
+      (setf (slot-value history 'current-owner-id) owner-id)
+      (error "Owner with identifier ~s does not exist" owner-id)))
 
 (export-always 'current-owner)
 (defun current-owner (history)
-  (owner history (current-owner-identifier history)))
+  (owner history (current-owner-id history)))
 
 (export-always 'current-owner-node)
 (defun current-owner-node (history)
   (current (current-owner history)))
 
 (export-always 'with-current-owner)
-(defmacro with-current-owner ((history owner-identifier) &body body)
+(defmacro with-current-owner ((history owner-id) &body body)
   "Locally switch owner for HISTORY.
 See `set-current-owner' to set the owner persistently.
 OWNER-IDENTIFIER can be any value, even NIL."
-  (let ((old-owner-identifier (gensym)))
-    `(let ((,old-owner-identifier (current-owner-identifier ,history)))
-       (unwind-protect (progn (set-current-owner ,history ,owner-identifier)
+  (let ((old-owner-id (gensym)))
+    `(let ((,old-owner-id (current-owner-id ,history)))
+       (unwind-protect (progn (set-current-owner ,history ,owner-id)
                               ,@body)
-         (set-current-owner ,history ,old-owner-identifier)))))
+         (set-current-owner ,history ,old-owner-id)))))
 
 (defmethod visit ((history history-tree) node)
   "Visit NODE with HISTORY's current owner.
@@ -572,12 +573,12 @@ set to the matching child, the child data is set to DATA and the owner current
 node is set to this child.
 
 If there is no current node, this creates the `origin' node of the current owner
-and also sets `current' to it.  If the owner has a `creator' set,
+and also sets `current' to it.  If the owner has a `creator-id' set,
 the new node is added to the children of the current node of the creator."
   (let* ((owner (current-owner history)))
     (cond
       ((null (current owner))
-       (make-origin-node history (current-owner-identifier history) data))
+       (make-origin-node history (current-owner-id history) data))
 
       ((not (data-equal-entry-p data (entry (current owner))))
        (let ((node (find-child data owner)))
@@ -864,27 +865,27 @@ As a second value, return the list of all NODE's children, including NODE."
 
 (export-always 'delete-owner)
 (declaim (ftype (function (history-tree t) (or null owner)) delete-owner))
-(defun delete-owner (history owner-identifier)
+(defun delete-owner (history owner-id)
   "Delete `owner' corresponding to OWNER-IDENTIFIER from HISTORY.
 For every branch `owner' has nodes on, remove all its nodes if the branch is
 without any owner.
 Return owner, or nil if there is no owner corresponding to OWNER-IDENTIFIER."
-  (let ((owner (owner history owner-identifier)))
-    (remhash owner-identifier (owners history))
-    (when (equal owner-identifier (current-owner-identifier history))
-      (setf (slot-value history 'current-owner-identifier)
+  (let ((owner (owner history owner-id)))
+    (remhash owner-id (owners history))
+    (when (equal owner-id (current-owner-id history))
+      (setf (slot-value history 'current-owner-id)
             (first-hash-table-key (owners history))))
     (disown-all history owner)
     owner))
 
 (export-always 'reset-owner)
-(defun reset-owner (history owner-identifier)
+(defun reset-owner (history owner-id)
   "Disown all OWNER's nodes and create a new root node with the previous current
 node entry."
-  (let* ((owner (owner history owner-identifier))
+  (let* ((owner (owner history owner-id))
          (old-current-entry (entry (current owner))))
     (disown-all history owner)
-    (make-origin-node history owner-identifier (value old-current-entry))
+    (make-origin-node history owner-id (value old-current-entry))
     owner))
 
 (export-always 'delete-data)
