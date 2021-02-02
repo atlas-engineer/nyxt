@@ -198,12 +198,14 @@ search.")
   "Scroll to top if no input element is active, forward event otherwise."
   (call-non-input-command-or-forward #'scroll-to-top :buffer buffer))
 
-(defun load-url-if-not-current (url-or-node &optional (buffer (current-buffer)))
+(defun load-history-url (url-or-node
+                         &key (buffer (current-buffer))
+                           (message "History entry is already the current URL."))
   "Go to HISTORY-NODE's URL."
   (unless (quri:uri-p url-or-node)
     (setf url-or-node (url (htree:data url-or-node))))
   (if (quri:uri= url-or-node (url buffer))
-      (echo "History entry is already the current URL.")
+      (echo message)
       (buffer-load url-or-node)))
 
 (define-command history-backwards (&optional (buffer (current-buffer)))
@@ -214,7 +216,8 @@ search.")
                 (htree:backward-owned-parents history)
                 (htree:backward history))
             (htree:current-owner-node history))))
-    (load-url-if-not-current new-node)))
+    (load-history-url new-node
+                      :message "No backward history.")))
 
 (define-command history-forwards (&optional (buffer (current-buffer)))
   "Go to forward URL in history."
@@ -222,7 +225,8 @@ search.")
           (with-data-access (history (history-path buffer))
             (htree:forward history)
             (htree:current-owner-node history))))
-    (load-url-if-not-current new-node)))
+    (load-history-url new-node
+                      :message "No forward history.")))
 
 (defun history-backwards-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all parent URLs."
@@ -245,7 +249,7 @@ search.")
         ;; See `history-forwards-query' comment.
         (loop until (eq input (htree:current-owner-node history))
               do (htree:backward history)))
-      (load-url-if-not-current input))))
+      (load-history-url input))))
 
 (defun history-forwards-direct-children-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over forward-children URL."
@@ -266,7 +270,7 @@ search.")
     (when input
       (with-data-access (history (history-path buffer))
         (htree:go-to-child (htree:data input) history))
-      (load-url-if-not-current input))))
+      (load-history-url input))))
 
 (define-command history-forwards-maybe-query (&optional (buffer (current-buffer)))
   "If current node has multiple children, query which one to navigate to.
@@ -300,7 +304,7 @@ Otherwise go forward to the only child."
         ;; Same with `history-backwards-query'.
         (loop until (eq input (htree:current-owner-node history))
                     do (htree:forward history)))
-      (load-url-if-not-current input))))
+      (load-history-url input))))
 
 (defun history-forwards-all-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over children URL from all branches."
@@ -321,7 +325,7 @@ Otherwise go forward to the only child."
     (when input
       (with-data-access (history (history-path buffer))
         (htree:forward history))
-      (load-url-if-not-current input))))
+      (load-history-url input))))
 
 (defun history-all-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all history URLs."
@@ -342,7 +346,7 @@ Otherwise go forward to the only child."
     (when input
       (with-data-access (history (history-path buffer))
         (htree:visit-all history input))
-      (load-url-if-not-current input))))
+      (load-history-url input))))
 
 (define-command buffer-history-tree (&optional (buffer (current-buffer)))
   "Open a new buffer displaying the whole history tree of a buffer."
