@@ -408,7 +408,6 @@ See `delete-owner' to remove it from HISTORY."
 (defmacro with-current-owner ((history owner-identifier) &body body)
   "Locally switch owner for HISTORY.
 See `set-current-owner' to set the owner persistently.
-Owner is created if OWNER-IDENTIFIER does not match any owner.
 OWNER-IDENTIFIER can be any value, even NIL."
   (let ((old-owner-identifier (gensym)))
     `(let ((,old-owner-identifier (current-owner-identifier ,history)))
@@ -552,6 +551,15 @@ Return (values OWNER (current OWNER))."
   (go-to-child data (current-owner history) :child-finder #'find-owned-child))
 
 
+(defun make-origin-node (history owner-id data)
+  (let* ((owner (owner history owner-id))
+         (new-node (make-node :entry (add-entry history data)
+                              :parent (creator-node owner))))
+    (when (creator-node owner)
+      (push new-node (children (creator-node owner))))
+    (setf (origin owner) new-node)
+    (with-current-owner (history owner-id)
+      (visit history new-node))))
 
 (export-always 'add-child)
 (defmethod add-child (data (history history-tree))
@@ -572,12 +580,7 @@ the new node is added to the children of the current node of the creator."
   (let* ((owner (current-owner history)))
     (cond
       ((null (current owner))
-       (let ((new-node (make-node :entry (add-entry history data)
-                                  :parent (creator-node owner))))
-         (when (creator-node owner)
-           (push new-node (children (creator-node owner))))
-         (setf (origin owner) new-node)
-         (visit history new-node)))
+       (make-origin-node history (current-owner-identifier history) data))
 
       ((not (data-equal-entry-p data (entry (current owner))))
        (let ((node (find-child data owner)))
@@ -847,6 +850,21 @@ As a second value, return the list of all NODE's children, including NODE."
   (with-hash-table-iterator (next-entry hash-table)
     (nth-value 2 (next-entry))))
 
+(defun disown-all (history owner)
+  (check-type owner owner)
+  (let ((nodes (nodes owner)))
+    (mapc (alex:curry #'disown owner) (nodes owner))
+    ;; Delete nodes only when whole branch is owner-less.  Indeed, otherwise
+    ;; we would lose information for other owners.  It's better to be as
+    ;; "immutable" as possible.
+    ;;
+    ;; If we want to "free" disowned nodes from a branch with still owned
+    ;; nodes, the less confusing approach (at least from a user perspective)
+    ;; is delete all remaining owners, possibly by duplicating elsewhere
+    ;; beforehand.
+    (delete-disowned-branch-nodes history nodes))
+  (setf (creator-node owner) nil))
+
 (export-always 'delete-owner)
 (declaim (ftype (function (history-tree t) (or null owner)) delete-owner))
 (defun delete-owner (history owner-identifier)
@@ -859,18 +877,17 @@ Return owner, or nil if there is no owner corresponding to OWNER-IDENTIFIER."
     (when (equal owner-identifier (current-owner-identifier history))
       (setf (slot-value history 'current-owner-identifier)
             (first-hash-table-key (owners history))))
-    (when owner
-      (let ((nodes (nodes owner)))
-        (mapc (alex:curry #'disown owner) (nodes owner))
-        ;; Delete nodes only when whole branch is owner-less.  Indeed, otherwise
-        ;; we would lose information for other owners.  It's better to be as
-        ;; "immutable" as possible.
-        ;;
-        ;; If we want to "free" disowned nodes from a branch with still owned
-        ;; nodes, the less confusing approach (at least from a user perspective)
-        ;; is delete all remaining owners, possibly by duplicating elsewhere
-        ;; beforehand.
-        (delete-disowned-branch-nodes history nodes)))
+    (disown-all history owner)
+    owner))
+
+(export-always 'reset-owner)
+(defun reset-owner (history owner-identifier)
+  "Disown all OWNER's nodes and create a new root node with the previous current
+node entry."
+  (let* ((owner (owner history owner-identifier))
+         (old-current-entry (entry (current owner))))
+    (disown-all history owner)
+    (make-origin-node history owner-identifier (value old-current-entry))
     owner))
 
 (export-always 'delete-data)
