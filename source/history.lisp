@@ -52,40 +52,19 @@ class."
     (setf (slot-value he 'url) (ensure-url (slot-value he 'url))))
   (slot-value he 'url))
 
-(defmethod s-serialization::serialize-sexp-internal ((he history-entry)
+(defmethod s-serialization::serialize-sexp-internal ((uri quri:uri)
                                                      stream
                                                      serialization-state)
-  "Serialize `history-entry' by turning the URL into strings."
-  (let ((new-he (make-instance 'history-entry
-                               :title (title he)
-                               :explicit-visits (explicit-visits he)
-                               :implicit-visits (implicit-visits he))))
-    (setf (url new-he) (object-string (url he)))
-    (call-next-method new-he stream serialization-state)))
+  "Serialize `history-entry' by turning the URL and last access into strings."
+  (prin1 (object-string uri) stream))
 
-(defmethod s-serialization::serialize-sexp-internal ((binding htree:binding)
+(defmethod s-serialization::serialize-sexp-internal ((timestamp local-time:timestamp)
                                                      stream
                                                      serialization-state)
-  "Serialize `history-entry' by turning the URL into strings."
-  (let ((new-binding (make-instance 'htree:binding
-                                    :forward-child (htree:forward-child binding))))
-    (setf (slot-value new-binding 'htree:last-access)
-          (local-time:format-timestring nil (htree:last-access binding)
-                                        :timezone local-time:+utc-zone+))
-    (call-next-method new-binding stream serialization-state)))
-
-(defmethod s-serialization::serialize-sexp-internal ((entry htree:entry)
-                                                     stream
-                                                     serialization-state)
-  "Serialize `history-entry' by turning the URL into strings."
-  (let ((new-entry (make-instance 'htree:entry
-                                  :history (htree:history entry)
-                                  :value (htree:value entry)
-                                  :nodes (htree:nodes entry))))
-    (setf (htree:last-access new-entry)
-          (local-time:format-timestring nil (htree:last-access entry)
-                                        :timezone local-time:+utc-zone+))
-    (call-next-method new-entry stream serialization-state)))
+  "Serialize `history-entry' by turning the URL and last access into strings."
+  (prin1 (local-time:format-timestring nil timestamp
+                                       :timezone local-time:+utc-zone+)
+         stream))
 
 (defun make-history-tree (&optional (buffer (current-buffer)))
   "Return a new global history tree for `history-entry' data."
