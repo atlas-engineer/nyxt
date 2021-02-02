@@ -510,8 +510,8 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
       ;; default value.
       (unless (htree:owner history (id buffer))
         (htree:add-owner history (id buffer)
-                         :creator-identifier (when parent-buffer
-                                               (id parent-buffer)))))
+                         :creator-id (when parent-buffer
+                                       (id parent-buffer)))))
     (unless (url-empty-p url)
       (if load-url-p
           (buffer-load url :buffer buffer)
