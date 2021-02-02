@@ -475,7 +475,6 @@ Otherwise go forward to the only child."
       (with-current-buffer (buffer mode)
         (nyxt::history-add url :title (title (buffer mode))))))
 
-  (store (data-profile (buffer mode)) (history-path (buffer mode)))
   url)
 
 (defmethod nyxt:on-signal-notify-title ((mode web-mode) title)
