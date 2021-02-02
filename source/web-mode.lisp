@@ -242,7 +242,9 @@ search.")
                 :suggestion-function (history-backwards-suggestion-filter))))
     (when input
       (with-data-access (history (history-path buffer))
-        (htree:visit-all history input))      ; TODO: Go COUNT times backwards instead.
+        ;; See `history-forwards-query' comment.
+        (loop until (eq input (htree:current-owner-node history))
+              do (htree:backward history)))
       (load-url-if-not-current input))))
 
 (defun history-forwards-direct-children-suggestion-filter (&optional (buffer (current-buffer)))
@@ -295,6 +297,7 @@ Otherwise go forward to the only child."
       (with-data-access (history (history-path buffer))
         ;; REVIEW: Alternatively, we could use the COUNT argument with
         ;; (1+ (position input (htree:all-forward-children history)))
+        ;; Same with `history-backwards-query'.
         (loop until (eq input (htree:current-owner-node history))
                     do (htree:forward history)))
       (load-url-if-not-current input))))
