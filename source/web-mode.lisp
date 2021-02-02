@@ -263,7 +263,7 @@ search.")
                 :suggestion-function (history-forwards-direct-children-suggestion-filter))))
     (when input
       (with-data-access (history (history-path buffer))
-        (htree::go-to-child input history))
+        (htree::go-to-child (htree:value input) history))
       (load-url-if-not-current input))))
 
 (define-command history-forwards-maybe-query (&optional (buffer (current-buffer)))
