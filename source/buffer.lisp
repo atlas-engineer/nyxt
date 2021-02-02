@@ -499,19 +499,13 @@ MODES is a list of mode symbols.
 If URL is `:default', use `default-new-buffer-url'.
 PARENT-BUFFER is useful when we want to record buffer- and history relationships.
 LOAD-URL-P controls whether to load URL right at buffer creation."
-  (let* ((buffer (buffer-make *browser* :title title :default-modes modes))
+  (let* ((buffer (buffer-make *browser*
+                              :title title
+                              :default-modes modes
+                              :parent-buffer parent-buffer))
          (url (if (eq url :default)
                   (default-new-buffer-url buffer)
-                  url))
-         (from-internal-p (internal-buffer-p (current-buffer))))
-    (with-data-access (history (history-path (if from-internal-p buffer (current-buffer)))
-                       :default (make-history-tree buffer))
-      ;; Owner may already exist if history was just create with the above
-      ;; default value.
-      (unless (htree:owner history (id buffer))
-        (htree:add-owner history (id buffer)
-                         :creator-id (when parent-buffer
-                                       (id parent-buffer)))))
+                  url)))
     (unless (url-empty-p url)
       (if load-url-p
           (buffer-load url :buffer buffer)
@@ -528,9 +522,11 @@ If URL is `:default', use `default-new-buffer-url'."
                                    (:data-profile data-profile)
                                    (:default-modes list)
                                    (:dead-buffer buffer)
-                                   (:internal-buffer-p boolean)))
+                                   (:internal-buffer-p boolean)
+                                   (:parent-buffer buffer)))
                 buffer-make))
-(defun buffer-make (browser &key data-profile title default-modes dead-buffer internal-buffer-p)
+(defun buffer-make (browser &key data-profile title default-modes
+                              dead-buffer internal-buffer-p parent-buffer)
   "Make buffer with title TITLE and modes DEFAULT-MODES.
 Run `*browser*'s `buffer-make-hook' over the created buffer before returning it.
 If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
@@ -545,7 +541,8 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
                             :id (get-unique-buffer-identifier *browser*)
                             (append (when title `(:title ,title))
                                     (when default-modes `(:default-modes ,default-modes))
-                                    (when data-profile `(:data-profile ,data-profile)))))))
+                                    (when data-profile `(:data-profile ,data-profile))))))
+         (from-internal-p (internal-buffer-p (current-buffer))))
     (hooks:run-hook (buffer-before-make-hook *browser*) buffer)
     ;; Modes might require that buffer exists, so we need to initialize them
     ;; after the view has been created.
@@ -553,6 +550,15 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (when dead-buffer                   ; TODO: URL should be already set.  Useless?
       (setf (url buffer) (url dead-buffer)))
     (buffers-set (id buffer) buffer)
+    ;; Register buffer in global history:
+    (with-data-access (history (history-path (if from-internal-p buffer (current-buffer)))
+                       :default (make-history-tree buffer))
+      ;; Owner may already exist if history was just create with the above
+      ;; default value.
+      (unless (htree:owner history (id buffer))
+        (htree:add-owner history (id buffer)
+                         :creator-id (when parent-buffer
+                                       (id parent-buffer)))))
     ;; Run hooks before `initialize-modes' to allow for last-minute modification
     ;; of the default modes.
     (hooks:run-hook (buffer-make-hook browser) buffer)
