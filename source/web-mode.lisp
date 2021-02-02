@@ -255,12 +255,12 @@ search.")
   "Suggestion function over forward-children URL."
   (with-data-lookup (history (history-path buffer))
     (let ((children (if (conservative-history-movement-p (find-mode buffer 'web-mode))
-                       (htree:owned-children  (htree:current-owner history))
-                       (htree:children (htree:current-owner-node history)))))
-     (lambda (minibuffer)
-       (if children
-           (fuzzy-match (input-buffer minibuffer) children)
-           (echo "Cannot navigate forwards."))))))
+                        (htree:owned-children (htree:current-owner history))
+                        (htree:children (htree:current-owner-node history)))))
+      (lambda (minibuffer)
+        (if children
+            (fuzzy-match (input-buffer minibuffer) children)
+            (echo "Cannot navigate forwards."))))))
 
 (define-command history-forwards-direct-children (&optional (buffer (current-buffer)))
   "Query child URL to navigate to."
