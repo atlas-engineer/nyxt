@@ -81,7 +81,7 @@ The `implicit-visits' count is incremented."
                                       :url uri
                                       :title title)
                        history)
-      (let* ((entry (htree:value (htree:current-owner-node history))))
+      (let* ((entry (htree:data (htree:current-owner-node history))))
         (incf (implicit-visits entry))))))
 
 (define-command delete-history-entry ()
@@ -151,7 +151,7 @@ it would not be very useful."
   "All disowned history entries (without nodes)."
   (with-data-lookup (hist (history-path (current-buffer)))
     (let ((all-history-entries (when hist
-                                 (sort (mapcar #'htree:value
+                                 (sort (mapcar #'htree:data
                                                (delete-if (lambda (entry) (htree:nodes entry))
                                                           (alex:hash-table-keys (htree:entries hist))))
                                        (lambda (x y)
@@ -298,8 +298,8 @@ We keep this variable as a means to import the old format to the new one.")
                                                  (htree:owner history owner-id))))
                               ;; Node-less owners can safely be ignored.
                               (when current-node
-                                (let ((new-buffer (make-buffer :title (title (htree:value current-node))
-                                                               :url (url (htree:value current-node))
+                                (let ((new-buffer (make-buffer :title (title (htree:data current-node))
+                                                               :url (url (htree:data current-node))
                                                                :load-url-p nil)))
                                   (setf (gethash owner-id old-id->new-id) (id new-buffer))
                                   (setf (gethash (id new-buffer) new-owners) owner))))))

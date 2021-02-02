@@ -201,7 +201,7 @@ search.")
 (defun load-url-if-not-current (url-or-node &optional (buffer (current-buffer)))
   "Go to HISTORY-NODE's URL."
   (unless (quri:uri-p url-or-node)
-    (setf url-or-node (url (htree:value url-or-node))))
+    (setf url-or-node (url (htree:data url-or-node))))
   (if (quri:uri= url-or-node (url buffer))
       (echo "History entry is already the current URL.")
       (buffer-load url-or-node)))
@@ -242,7 +242,7 @@ search.")
                 :suggestion-function (history-backwards-suggestion-filter))))
     (when input
       (with-data-access (history (history-path buffer))
-        (htree::visit-all history input))      ; TODO: Go COUNT times backwards instead.
+        (htree:visit-all history input))      ; TODO: Go COUNT times backwards instead.
       (load-url-if-not-current input))))
 
 (defun history-forwards-direct-children-suggestion-filter (&optional (buffer (current-buffer)))
@@ -263,7 +263,7 @@ search.")
                 :suggestion-function (history-forwards-direct-children-suggestion-filter))))
     (when input
       (with-data-access (history (history-path buffer))
-        (htree::go-to-child (htree:value input) history))
+        (htree:go-to-child (htree:data input) history))
       (load-url-if-not-current input))))
 
 (define-command history-forwards-maybe-query (&optional (buffer (current-buffer)))
@@ -351,10 +351,10 @@ Otherwise go forward to the only child."
              (tree `(:ul ,(htree:map-owned-tree
                            #'(lambda (node)
                                `(:li
-                                 (:a :href ,(object-string (url (htree:value node)))
-                                     ,(let ((title (or (match (title (htree:value node))
+                                 (:a :href ,(object-string (url (htree:data node)))
+                                     ,(let ((title (or (match (title (htree:data node))
                                                          ((guard e (not (str:emptyp e))) e))
-                                                       (object-display (url (htree:value node))))))
+                                                       (object-display (url (htree:data node))))))
                                         (if (eq node (htree:current-owner-node history))
                                             `(:b ,title)
                                             title)))))
@@ -381,10 +381,10 @@ Otherwise go forward to the only child."
             (mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
             (tree `(:ul ,(htree:map-tree
                           #'(lambda (node)
-                              `(:li (:a :href ,(object-string (url (htree:value node)))
-                                        ,(let ((title (or (match (title (htree:value node))
+                              `(:li (:a :href ,(object-string (url (htree:data node)))
+                                        ,(let ((title (or (match (title (htree:data node))
                                                             ((guard e (not (str:emptyp e))) e))
-                                                          (object-display (url (htree:value node))))))
+                                                          (object-display (url (htree:data node))))))
                                            (cond
                                              ((eq node (htree:current-owner-node history))
                                               `(:i (:b ,title)))
@@ -515,6 +515,6 @@ Otherwise go forward to the only child."
   url)
 
 (defmethod nyxt:object-string ((node htree:node))
-  (object-string (when node (htree:value node))))
+  (object-string (when node (htree:data node))))
 (defmethod nyxt:object-display ((node htree:node))
-  (object-display (when node (htree:value node))))
+  (object-display (when node (htree:data node))))
