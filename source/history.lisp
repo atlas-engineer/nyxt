@@ -85,7 +85,7 @@ The `implicit-visits' count is incremented."
                                         :url uri
                                         :title title)
                          history))
-      (let* ((entry (htree:data (htree:current-owner-node history))))
+      (let* ((entry (htree:data (htree:current (htree:owner history (id buffer))))))
         (incf (implicit-visits entry))))))
 
 (define-command delete-history-entry ()
