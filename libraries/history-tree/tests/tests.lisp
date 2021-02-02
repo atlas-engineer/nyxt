@@ -325,7 +325,7 @@
     (htree:set-current-owner history "b")
     (htree:add-child "b-data" history)
 
-    (htree::visit-all history distant-node)
+    (htree:visit-all history distant-node)
 
     (prove:is (htree:value (htree:current-owner-node history))
               distant-node-value)
@@ -345,7 +345,7 @@
     (htree:back history 2)
 
     (let ((distant-node (first (htree:find-nodes history distant-node-value))))
-      (htree::visit-all history distant-node))
+      (htree:visit-all history distant-node))
 
     (prove:is (htree:value (htree:current-owner-node history))
               distant-node-value)
