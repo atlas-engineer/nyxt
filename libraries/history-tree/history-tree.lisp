@@ -82,7 +82,7 @@ goes owner-less, we can still consult the last time it was accessed.")
 (Null entry is accepted only to ease deserialization.)
 Arbitrary data (wrapped in an `entry' object) carried
 by the node.  `history-tree''s `entries' holds `entry'-`node' associations."))
-  (:export-class-name-p t)              ; TODO: Unexport?
+  (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)
   (:documentation "Node structure of the history tree."))
