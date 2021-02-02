@@ -32,10 +32,6 @@ search.")
     nil
     :type boolean
     :documentation "Whether history navigation is restricted by buffer-local history.")
-   (history-forwards-prompting-p        ; TODO: Use in history-forwards?
-    t
-    :type boolean
-    :documentation "Whether `history-forwards' is asking the user which history branch to pick when there are several.")
    (keymap-scheme
     (define-scheme "web"
       scheme:cua
