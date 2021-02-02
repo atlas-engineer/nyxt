@@ -46,7 +46,6 @@ goes owner-less, we can still consult the last time it was accessed.")
           :type list
           :documentation "The list of nodes that access an entry."))
   (:accessor-name-transformer #'class*:name-identity)
-  (:export-accessor-names-p t)
   (:documentation "Wrapped data as stored in `history-tree''s `entries'."))
 
 (defun ensure-timestamp (string-or-timestamp)
