@@ -95,6 +95,21 @@ The `implicit-visits' count is incremented."
       (dolist (entry entries)
         (htree:delete-data history entry)))))
 
+(define-command reset-buffer-history (&optional buffer)
+  "Set selected buffers history to the current URL only.
+This removes the parenthood with the parent buffer, if there was any.
+
+When called over many or all buffers, it may free many history entries which
+then become available for deletion with `delete-history-entry'."
+  (let ((buffers (or (alex:ensure-list buffer)
+                     (prompt-minibuffer
+                      :input-prompt "Reset histories of buffer(s)"
+                      :multi-selection-p t
+                      :suggestion-function (buffer-suggestion-filter)))))
+    (with-data-access (history (history-path (current-buffer)))
+      (dolist (buffer buffers)
+        (htree:reset-owner history (id buffer))))))
+
 (defun score-history-entry (entry history)
   "Return history ENTRY score.
 The score gets higher for more recent entries and if they've been visited a
