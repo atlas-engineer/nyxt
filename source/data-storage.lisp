@@ -27,6 +27,22 @@ This can be used to set the path from command line.  See
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
 
+(define-class async-data-path (data-path)
+  ((channel nil
+            :type (or null calispel:channel)
+            :documentation "Channel that can be used to communicate with the
+thread persisting the data to disk.")
+   (timeout 0.0
+            :documentation "Time to wait on channel for other messages before
+storing.  A timeout of 0 means that as soon as 1 message is received, the thread
+will store the data immediately.  This can waste a store cycle if another
+messages is receieve a fraction of a second after that.  Increasing the timeout
+allows the thread to capture more batches together.  Obviously a higher timeout
+means the store operations are systematically delayed."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer #'class*:name-identity))
+
 (define-class cookies-data-path (data-path)
   ((ref :initform "cookies"))
   (:export-class-name-p t)
@@ -35,8 +51,9 @@ This can be used to set the path from command line.  See
   ((ref :initform "bookmarks"))
   (:export-class-name-p t)
   (:accessor-name-transformer #'class*:name-identity))
-(define-class history-data-path (data-path)
-  ((ref :initform "history"))
+(define-class history-data-path (async-data-path)
+  ((ref "history")
+   (timeout 0.05))
   (:export-class-name-p t)
   (:accessor-name-transformer #'class*:name-identity))
 (define-class download-data-path (data-path) ; TODO: Rename to downloads-data-path?
@@ -223,6 +240,23 @@ Define a method for your `data-path' type to make it restorable."))
 (defmethod restore ((profile private-data-profile) (path data-path) &key &allow-other-keys)
   "This method guarantees PATH will not be loaded from disk in PRIVATE-DATA-PROFILE."
   nil)
+
+(defmethod store :around ((profile data-profile) (path async-data-path) &key &allow-other-keys)
+  (labels ((worker ()
+             (let ((store-ops (drain-channel (channel path) (timeout path))))
+               (when (< 1 (length store-ops))
+                 (log:debug "Skipping ~a unnecessary ~a store ops"
+                           (1- (length store-ops))
+                           path))
+               ;; TODO: Lock here? Seems to dead-lock history forward/backward.
+               ;; (bt:with-recursive-lock-held ((lock (get-user-data profile path))))
+               (call-next-method))
+             (worker)))
+    (unless (channel path)
+      (setf (channel path) (make-channel))
+      (bt:make-thread #'worker))
+    ;; We pass `path', but anything would do since the value is ignored.
+    (calispel:! (channel path) path)))
 
 (export-always 'expand-path)
 (declaim (ftype (function ((or null data-path)) (or string null)) expand-path))
