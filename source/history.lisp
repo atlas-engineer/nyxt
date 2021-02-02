@@ -68,7 +68,7 @@ class."
 
 (defun make-history-tree (&optional (buffer (current-buffer)))
   "Return a new global history tree for `history-entry' data."
-  (htree:make :key 'url :current-owner-identifier (id buffer)))
+  (htree:make :key 'url :current-owner-id (id buffer)))
 
 (declaim (ftype (function (quri:uri &key (:title string)) t) history-add))
 (defun history-add (uri &key (title ""))
@@ -306,8 +306,8 @@ We keep this variable as a means to import the old format to the new one.")
                         (htree:owners history))
                (maphash (lambda (_ owner)
                           (declare (ignore _))
-                          (setf (htree:creator owner)
-                                (gethash (htree:creator owner) old-id->new-id)))
+                          (setf (htree:creator-id owner)
+                                (gethash (htree:creator-id owner) old-id->new-id)))
                         (htree:owners history))
                (setf (htree:owners history) new-owners))
              ;; TODO: Focus last buffer.
