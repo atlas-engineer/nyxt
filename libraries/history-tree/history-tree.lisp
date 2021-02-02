@@ -60,6 +60,12 @@ goes owner-less, we can still consult the last time it was accessed.")
   (setf (slot-value entry 'last-access) (ensure-timestamp
                                          (slot-value entry 'last-access))))
 
+(defun make-entry (history data &optional last-access)
+  "Return an `entry' wrapping DATA and suitable for HISTORY."
+  (make-instance 'entry :value data
+                        :history history
+                        :last-access (or last-access (local-time:now))))
+
 (define-class node ()
   ((parent nil
            :type (or null node)
@@ -84,8 +90,7 @@ by the node.  `history-tree''s `entries' holds `entry'-`node' associations."))
 
 (export 'value)
 (defmethod value ((node node))
-  (funcall (key (history (entry node)))
-           (entry node)))
+  (value (entry node)))
 
 (defmethod root ((node node))
   (if (parent node)
@@ -199,11 +204,6 @@ It's updated every time a node is visited.")
     (remove-if (complement (alex:curry #'owned-p owner))
                (children node))))
 
-(defmethod children ((owner owner))
-  "Return the OWNER's children for the current node.
-Children do not necessarily belong to the owner."
-  (children (current owner)))
-
 (export-always 'owned-children)
 (defun owned-children (owner)
   "Return the OWNER's owned children for the current node."
@@ -243,12 +243,12 @@ Return true if NODE was owned by OWNER, nil otherwise."
 (defun entry-equal-p (a b)
   (let ((h (history a)))
     (funcall (test h)
-             (funcall (key h) a)
-             (funcall (key h) b))))
+             (funcall (key h) (value a))
+             (funcall (key h) (value b)))))
 
 (defun entry-hash (a)
   (let ((h (history a)))
-    (funcall (hash-function h) (funcall (key h) a))))
+    (funcall (hash-function h) (funcall (key h) (value a)))))
 
 (cl-custom-hash-table:define-custom-hash-table-constructor make-entry-hash-table
   :test entry-equal-p
@@ -257,16 +257,11 @@ Return true if NODE was owned by OWNER, nil otherwise."
 (defun data-equal-entry-p (data entry)
   (let ((h (history entry)))
     (funcall (test h)
-             (funcall (key h) entry)
-             data)))
-
-(export-always 'update-entry)
-(defmethod update-entry ((entry entry) data)
-  (setf (value entry) data)
-  entry)
+             (funcall (key h) (value entry))
+             (funcall (key h) data))))
 
 (export-always 'add-entry)
-(defun add-entry (history data)
+(defun add-entry (history data &optional last-access)
   "Add DATA to an `entry' in HISTORY `entries'.
 If DATA is already there, reset the `entry' value to DATA anyways.
 Return the new or existing `entry'.
@@ -276,12 +271,14 @@ need not call this function.  See `add-child' instead.
 One case in which this function might be useful is when you want to import flat
 history data, e.g. a list of visited URLs that's not bound to any owner."
   (cl-custom-hash-table:with-custom-hash-table
-    (let ((new-entry (make-entry history data)))
+    (let ((new-entry (make-entry history data last-access)))
       (multiple-value-bind (existing-entry found?)
           (gethash new-entry (entries history))
         (if found?
             (progn
-              (update-entry existing-entry data)
+              (setf (value existing-entry) data)
+              (when last-access
+                (setf (last-access existing-entry) last-access))
               existing-entry)
             (progn
               (setf (gethash new-entry (entries history))
@@ -305,12 +302,11 @@ we can access the actual object from a given piece of data.
 Indeed, with custom hash table the key that is store (here the entry) is not
 necessarily identical to the one used in `gethash'.  So storing the entry as a
 value gives us access to to the actual object.")
-   (key 'value
+   (key 'identity
         :type function-symbol
-        :documentation "A function that takes an `entry' and which result is
-passed to `test' and `hash-function'.
-It is useful to uniquely identify (i.e. avoid duplications) objects from one of
-their slots.
+        :documentation "The result of this function is passed to `test'
+and `hash-function'.  It is useful to uniquely identify (i.e. avoid
+duplications) objects from one of their slots.
 It is a `function-symbol' so that the history can be more easily serialized than
 if if were a function.")
    (test 'equalp
@@ -337,13 +333,11 @@ if if were a function."))
 
 (export 'make)
 (defun make (&rest args
-             &key (history-class 'history-tree)
-               key
+             &key key
                test
                hash-function
                (current-owner-identifier +default-owner+ explicit-p))
-  "Return a new `history-tree'.
-This function can be used on subclasses if you set the HISTORY-CLASS parameter."
+  "Return a new `history-tree'."
   (declare (ignore key test hash-function))
   (let ((owners (make-hash-table :test #'equalp))
         (initial-owner (make-instance 'owner)))
@@ -352,19 +346,9 @@ This function can be used on subclasses if you set the HISTORY-CLASS parameter."
       (setf args (append
                   (list :current-owner-identifier current-owner-identifier)
                   args)))
-    (remf args :history-class)
-    (apply #'make-instance history-class
+    (apply #'make-instance 'history-tree
            :owners owners
            args)))
-
-(export-always 'make-entry)
-(defmethod make-entry ((history history-tree) data
-                                              &key last-access ; TODO: Remove this argument?
-                                              &allow-other-keys)
-  "Return an `entry' wrapping DATA and suitable for HISTORY."
-  (make-instance 'entry :value data
-                        :history history
-                        :last-access (or last-access (local-time:now))))
 
 (export-always 'owner)
 (declaim (ftype (function (history-tree t) (or null owner)) owner))
@@ -470,7 +454,7 @@ Return (values HISTORY NODE) so that calls to `visit' can be chained."
           (loop :until (eq node (current-owner-node history))
                 ;; Skip the first node since it's the common-parent and it's already visited.
                 :do (setf node-parents-until-common-parent (rest node-parents-until-common-parent))
-                :do (go-to-child (first node-parents-until-common-parent) history))
+                :do (go-to-child (value (first node-parents-until-common-parent)) history))
           (values history node)))))
 
 (deftype positive-integer ()
@@ -552,21 +536,20 @@ Test is done with the TEST argument."
         :test #'data-equal-entry-p))
 
 (export-always 'go-to-child)
-(defmethod go-to-child (node (history history-tree) &key (child-finder #'children))
-  "Go to direct current node's child NODE.
-Return (values HISTORY (current-owner-node HISTORY)).
-If NODE is not an owned child, do nothing."
-  (let ((owner (current-owner history)))
-    (if (find node (funcall child-finder owner))
-        (visit history node)
-        (values history (current owner)))))
+(defmethod go-to-child (data (history history-tree) &key (child-finder #'find-child)) ; TODO: Should take a node instead?
+  "Go to direct current node's child matching DATA.
+Return (values HISTORY (current-owner-node HISTORY))."
+  (let* ((owner (current-owner history))
+         (match (funcall child-finder data owner)))
+    (when match
+      (visit history match))))
 
 (export-always 'go-to-owned-child)
 (defmethod go-to-owned-child (data (history history-tree))
   "Go to current node's direct owned child matching DATA.
 A child is owned if it has a binding with current owner.
 Return (values OWNER (current OWNER))."
-  (go-to-child data (current-owner history) :child-finder #'owned-children))
+  (go-to-child data (current-owner history) :child-finder #'find-owned-child))
 
 
 
@@ -599,7 +582,7 @@ the new node is added to the children of the current node of the creator."
       ((not (data-equal-entry-p data (entry (current owner))))
        (let ((node (find-child data owner)))
          (if node
-             (update-entry (entry node) data)
+             (setf (value (entry node)) data)
              (let ((maybe-new-entry (add-entry history data)))
                (push (setf node (make-node :entry maybe-new-entry
                                            :parent (current owner)))
@@ -609,7 +592,7 @@ the new node is added to the children of the current node of the creator."
          (forward history)))
 
       (t
-       (update-entry (entry (current owner)) data)))
+       (setf (value (entry (current owner))) data)))
 
     (current owner)))
 
@@ -781,7 +764,7 @@ from the top-most parent, in depth-first order."
 (export-always 'all-data)
 (defmethod all-data ((history history-tree))
   "Return a list of all entries data, in unspecified order."
-  (mapcar (key history) (alex:hash-table-keys (entries history))))
+  (mapcar #'value (alex:hash-table-keys (entries history))))
 
 (export-always 'all-current-owner-nodes-data)
 (defmethod all-current-owner-nodes-data ((history history-tree))
