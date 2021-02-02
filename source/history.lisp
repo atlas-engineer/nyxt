@@ -292,9 +292,10 @@ instance of Nyxt."
         (:ref (gethash (rest sexp) deserialized-objects)))))
 
 (defmethod s-serialization::deserialize-class ((history (eql 'htree:history-tree)) slots deserialized-objects)
-  ;; We need this specialization because 'history-tree cannot be make-instance'd
-  ;; without specifying some slots like `owners'.
-  (let ((history (htree:make)))
+  ;; We need this specialization because
+  ;; - `history-tree' cannot be make-instance'd without specifying some slots like `owners'.
+  ;; - We need a history tree
+  (let ((history (make-history-tree)))
     history))
 
 (defvar flat-history-path (make-instance 'history-data-path :basename "history") ; TODO: Move to global.lisp?
