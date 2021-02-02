@@ -402,23 +402,6 @@ Otherwise go forward to the only child."
                        (markup:markup*
                         tree)))))))))
 
-(defun history-list (&key (limit 100)   ; TODO: Move?  Export?
-                       (separator " → "))
-  (with-data-lookup (history (history-path (current-buffer)))
-    (let* ((history (when history
-                      (mapcar #'first
-                              (sort (alex:hash-table-alist (htree:entries history))
-                                    #'local-time:timestamp>
-                                    :key (lambda (entry-nodes)
-                                           (let ((nodes (rest entry-nodes)))
-                                             (apply #'local-time:timestamp-maximum
-                                                    (mapcar #'htree:last-access nodes)))))))))
-      (loop for entry in (sera:take limit history)
-            collect (markup:markup
-                     (:li (title entry) (unless (str:emptyp (title entry)) separator)
-                          (:a :href (object-string (url entry))
-                              (object-string (url entry)))))))))
-
 (define-command list-history (&key (limit 100))
   "Print the user history as a list."
   (with-current-html-buffer (buffer "*History list*" 'nyxt/list-history-mode:list-history-mode)
@@ -430,7 +413,7 @@ Otherwise go forward to the only child."
                 ("a:hover"
                  :color "gray"))))
      (:h1 "History")
-     (:ul (history-list :limit limit)))))
+     (:ul (nyxt::history-html-list :limit limit)))))
 
 (define-command paste ()
   "Paste from clipboard into active-element."

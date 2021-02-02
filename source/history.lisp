@@ -160,6 +160,23 @@ it would not be very useful."
       (lambda (minibuffer)
         (fuzzy-match (input-buffer minibuffer) all-history-entries)))))
 
+(defun history-html-list (&key (limit 100) ; Export?
+                            (separator " → "))
+  (with-data-lookup (history (history-path (current-buffer)))
+    (let* ((history (when history
+                      (mapcar #'first
+                              (sort (alex:hash-table-alist (htree:entries history))
+                                    #'local-time:timestamp>
+                                    :key (lambda (entry-nodes)
+                                           (let ((nodes (rest entry-nodes)))
+                                             (apply #'local-time:timestamp-maximum
+                                                    (mapcar #'htree:last-access nodes)))))))))
+      (loop for entry in (sera:take limit history)
+            collect (markup:markup
+                     (:li (title entry) (unless (str:emptyp (title entry)) separator)
+                          (:a :href (object-string (url entry))
+                              (object-string (url entry)))))))))
+
 (defun history-stored-data (path)
   "Return the history data that needs to be serialized.
 This data can be used to restore the session later, e.g. when starting a new

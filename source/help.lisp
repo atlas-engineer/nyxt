@@ -577,4 +577,4 @@ the "
                      (:ul (list-bookmarks)))
                (:div :class "section" :style "flex: 5"
                      (:h3 "🗐 " (:b "Recent URLs"))
-                     (:ul (nyxt/web-mode::history-list)))))))))
+                     (:ul (history-html-list)))))))))
