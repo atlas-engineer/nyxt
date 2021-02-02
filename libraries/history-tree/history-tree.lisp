@@ -34,9 +34,9 @@
 This is gives access to the custom hash functions, see the corresponding
 `history-tree' slots.
 We allow null values for easier deserialization.")
-   (value nil
-          :type t
-          :documentation "Arbitrary data.")
+   (data nil
+         :type t
+         :documentation "Arbitrary data.")
    (last-access (local-time:now)
                 :type (or local-time:timestamp string) ; Support `string' for easier deserialization.
                 :documentation "The last access to the corresponding entry by
@@ -61,7 +61,7 @@ goes owner-less, we can still consult the last time it was accessed.")
 
 (defun make-entry (history data &optional last-access)
   "Return an `entry' wrapping DATA and suitable for HISTORY."
-  (make-instance 'entry :value data
+  (make-instance 'entry :data data
                         :history history
                         :last-access (or last-access (local-time:now))))
 
@@ -87,9 +87,9 @@ by the node.  `history-tree''s `entries' holds `entry'-`node' associations."))
   (:accessor-name-transformer #'class*:name-identity)
   (:documentation "Node structure of the history tree."))
 
-(export 'value)
-(defmethod value ((node node))
-  (value (entry node)))
+(export 'data)
+(defmethod data ((node node))
+  (data (entry node)))
 
 (defmethod root ((node node))
   (if (parent node)
@@ -241,12 +241,12 @@ Return true if NODE was owned by OWNER, nil otherwise."
 (defun entry-equal-p (a b)
   (let ((h (history a)))
     (funcall (test h)
-             (funcall (key h) (value a))
-             (funcall (key h) (value b)))))
+             (funcall (key h) (data a))
+             (funcall (key h) (data b)))))
 
 (defun entry-hash (a)
   (let ((h (history a)))
-    (funcall (hash-function h) (funcall (key h) (value a)))))
+    (funcall (hash-function h) (funcall (key h) (data a)))))
 
 (cl-custom-hash-table:define-custom-hash-table-constructor make-entry-hash-table
   :test entry-equal-p
@@ -255,13 +255,13 @@ Return true if NODE was owned by OWNER, nil otherwise."
 (defun data-equal-entry-p (data entry)
   (let ((h (history entry)))
     (funcall (test h)
-             (funcall (key h) (value entry))
+             (funcall (key h) (data entry))
              (funcall (key h) data))))
 
 (export-always 'add-entry)
 (defun add-entry (history data &optional last-access)
   "Add DATA to an `entry' in HISTORY `entries'.
-If DATA is already there, reset the `entry' value to DATA anyways.
+If DATA is already there, reset the `entry' data to DATA anyways.
 Return the new or existing `entry'.
 
 The higher-level functions take care of adding entries for you, so you normally
@@ -274,7 +274,7 @@ history data, e.g. a list of visited URLs that's not bound to any owner."
           (gethash new-entry (entries history))
         (if found?
             (progn
-              (setf (value existing-entry) data)
+              (setf (data existing-entry) data)
               (when last-access
                 (setf (last-access existing-entry) last-access))
               existing-entry)
@@ -451,7 +451,7 @@ Return (values HISTORY NODE) so that calls to `visit' can be chained."
           (loop :until (eq node (current-owner-node history))
                 ;; Skip the first node since it's the common-parent and it's already visited.
                 :do (setf node-parents-until-common-parent (rest node-parents-until-common-parent))
-                :do (go-to-child (value (first node-parents-until-common-parent)) history))
+                :do (go-to-child (data (first node-parents-until-common-parent)) history))
           (values history node)))))
 
 (deftype positive-integer ()
@@ -583,7 +583,7 @@ the new node is added to the children of the current node of the creator."
       ((not (data-equal-entry-p data (entry (current owner))))
        (let ((node (find-child data owner)))
          (if node
-             (setf (value (entry node)) data)
+             (setf (data (entry node)) data)
              (let ((maybe-new-entry (add-entry history data)))
                (push (setf node (make-node :entry maybe-new-entry
                                            :parent (current owner)))
@@ -593,7 +593,7 @@ the new node is added to the children of the current node of the creator."
          (forward history)))
 
       (t
-       (setf (value (entry (current owner))) data)))
+       (setf (data (entry (current owner))) data)))
 
     (current owner)))
 
@@ -762,10 +762,10 @@ from the top-most parent, in depth-first order."
 (export-always 'all-data)
 (defmethod all-data ((history history-tree))
   "Return a list of all entries data, in unspecified order."
-  (mapcar #'value (alex:hash-table-keys (entries history))))
+  (mapcar #'data (alex:hash-table-keys (entries history))))
 
 (defun map-data (arg)
-  (mapcar #'value arg))
+  (mapcar #'data arg))
 
 
 
@@ -851,7 +851,7 @@ node entry."
   (let* ((owner (owner history owner-id))
          (old-current-entry (entry (current owner))))
     (disown-all history owner)
-    (make-origin-node history owner-id (value old-current-entry))
+    (make-origin-node history owner-id (data old-current-entry))
     owner))
 
 (export-always 'delete-data)

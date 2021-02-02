@@ -37,7 +37,7 @@
   (let ((history (htree:make))
         (url "http://example.org" ))
     (htree:add-child url history)
-    (prove:is (htree:value (htree:current-owner-node history))
+    (prove:is (htree:data (htree:current-owner-node history))
               url)))
 
 (prove:subtest "Multiple entry"
@@ -49,17 +49,17 @@
     (htree:add-child url2 history)
     (htree:backward history)
     (htree:add-child url3 history)
-    (prove:is (htree:value (htree:current-owner-node history))
+    (prove:is (htree:data (htree:current-owner-node history))
               url3)
-    (prove:is (htree:value (htree:parent (htree:current-owner-node history)))
+    (prove:is (htree:data (htree:parent (htree:current-owner-node history)))
               url1)
     (htree:backward history)
     (htree:go-to-child url2 history)
-    (prove:is (htree:value (htree:current-owner-node history))
+    (prove:is (htree:data (htree:current-owner-node history))
               url2)))
 
 (prove:subtest "Simple branching tree tests."
-  (prove:is (htree:value (htree:current-owner-node (make-history1)))
+  (prove:is (htree:data (htree:current-owner-node (make-history1)))
             "http://example.root/B2"))
 
 (prove:subtest "History depth."
@@ -124,13 +124,13 @@
 
 (prove:subtest "Move node to forward-child on add."
   (let ((history (make-history2)))
-    (prove:is (htree:value (htree:current-owner-node history))
+    (prove:is (htree:data (htree:current-owner-node history))
               "http://example.root/B")
     (htree:backward history)
-    (prove:is (htree:value (htree:current-owner-node history))
+    (prove:is (htree:data (htree:current-owner-node history))
               "http://example.root")
     (htree:add-child "http://example.root/A" history)
-    (prove:is (htree:value (htree:current-owner-node history))
+    (prove:is (htree:data (htree:current-owner-node history))
               "http://example.root/A")))
 
 (define-class web-page ()
@@ -148,7 +148,7 @@
       (htree:add-child web-page2 history)
       (prove:is (hash-table-count (htree:entries history))
                 1)
-      (prove:is (title (htree:value (htree::first-hash-table-key (htree:entries history))))
+      (prove:is (title (htree:data (htree::first-hash-table-key (htree:entries history))))
                 "Same page, another title"))
     (let ((history (htree:make :key 'url)))
       (htree:add-child web-page1 history)
@@ -157,7 +157,7 @@
       (htree:add-child web-page2 history)
       (prove:is (hash-table-count (htree:entries history))
                 1)
-      (prove:is (title (htree:value (htree::first-hash-table-key (htree:entries history))))
+      (prove:is (title (htree:data (htree::first-hash-table-key (htree:entries history))))
                 "Same page, another title"))
     (let ((history (htree:make)))
       (htree:add-child web-page1 history)
@@ -165,7 +165,7 @@
       (prove:is (hash-table-count (htree:entries history))
                 2)
       (prove:is (sort (loop for key being the hash-keys in (htree:entries history)
-                            collect (title (htree:value key)))
+                            collect (title (htree:data key)))
                       #'string<)
                 (sort (mapcar #'title (list web-page1 web-page2)) #'string<)))))
 
@@ -190,16 +190,16 @@
     (htree:add-child url3 history)
     (prove:is (hash-table-count (htree:entries history))
               3)
-    (prove:is (htree:value (htree:current-owner-node history))
+    (prove:is (htree:data (htree:current-owner-node history))
               url3)
-    (prove:is (htree:value (htree:parent (htree:current-owner-node history)))
+    (prove:is (htree:data (htree:parent (htree:current-owner-node history)))
               url2)
     (prove:is (htree:parent (htree:parent (htree:current-owner-node history)))
               nil)
     (prove:is (length (htree:nodes (htree:current-owner history)))
               2)
     (prove:is (htree:with-current-owner (history "a")
-                (htree:value (htree:current-owner-node history)))
+                (htree:data (htree:current-owner-node history)))
               url1)))
 
 (prove:subtest "Backward and forward"
@@ -213,17 +213,17 @@
     (htree:set-current-owner history "b")
     (htree:add-child url3 history)
     (htree:set-current-owner history "a")
-    (prove:is (htree:value (htree:current-owner-node history))
+    (prove:is (htree:data (htree:current-owner-node history))
               url2)
     (htree:backward history)
     (htree:backward history)
-    (prove:is (htree:value (htree:current-owner-node history))
+    (prove:is (htree:data (htree:current-owner-node history))
               url1)
     (htree:forward history)
-    (prove:is (htree:value (htree:current-owner-node history))
+    (prove:is (htree:data (htree:current-owner-node history))
               url2)
     (htree:forward history)
-    (prove:is (htree:value (htree:current-owner-node history))
+    (prove:is (htree:data (htree:current-owner-node history))
               url2)))
 
 (prove:subtest "Inter-owner relationships"
@@ -307,11 +307,11 @@
 
     (maphash (lambda (entry entry-accessors)
                (prove:is (length (htree:nodes entry-accessors))
-                         (if (str:contains? "example.root" (htree:value entry))
+                         (if (str:contains? "example.root" (htree:data entry))
                              1
                              0)
                          (format nil "~a entry has ~a remaining nodes"
-                                 (htree:value entry)
+                                 (htree:data entry)
                                  (length (htree:nodes entry-accessors)))))
 
              (htree:entries history))))
@@ -327,9 +327,9 @@
 
     (htree:visit-all history distant-node)
 
-    (prove:is (htree:value (htree:current-owner-node history))
+    (prove:is (htree:data (htree:current-owner-node history))
               distant-node-value)
-    (prove:is (sort (mapcar #'htree:value (htree:nodes (htree:owner history "b")))
+    (prove:is (sort (mapcar #'htree:data (htree:nodes (htree:owner history "b")))
                     #'string<)
               (sort (copy-seq '("http://example.root/A1" "http://example.root/A" "http://example.root"
                                 "http://example.root/B" "http://example.root/B2" "b-data"))
@@ -347,9 +347,9 @@
     (let ((distant-node (first (htree:find-nodes history distant-node-value))))
       (htree:visit-all history distant-node))
 
-    (prove:is (htree:value (htree:current-owner-node history))
+    (prove:is (htree:data (htree:current-owner-node history))
               distant-node-value)
-    (prove:is (sort (mapcar #'htree:value (htree:nodes (htree:owner history htree:+default-owner+)))
+    (prove:is (sort (mapcar #'htree:data (htree:nodes (htree:owner history htree:+default-owner+)))
                     #'string<)
               (sort (copy-seq '("http://example.root/A"
                                 "http://example.root/A1"
@@ -411,7 +411,7 @@
     (htree:add-child url1 history)
     (htree:add-child url2 history)
     (htree:reset-owner history "a")
-    (prove:is (mapcar #'htree:value (htree:all-contiguous-owned-nodes history))
+    (prove:is (mapcar #'htree:data (htree:all-contiguous-owned-nodes history))
               (list url2))
     (prove:is (htree:parent (htree:current-owner-node history))
               nil)
@@ -426,7 +426,7 @@
     (htree:reset-owner history "b")
 
     (htree:set-current-owner history "b")
-    (prove:is (mapcar #'htree:value (htree:all-contiguous-owned-nodes history))
+    (prove:is (mapcar #'htree:data (htree:all-contiguous-owned-nodes history))
               (list url4))
     (prove:is (htree:parent (htree:current-owner-node history))
               nil)))
