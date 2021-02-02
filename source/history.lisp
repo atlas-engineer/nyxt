@@ -150,15 +150,16 @@ it would not be very useful."
 (defun history-disowned-suggestion-filter ()
   "All disowned history entries (without nodes)."
   (with-data-lookup (hist (history-path (current-buffer)))
-    (let ((all-history-entries (when hist
-                                 (sort (mapcar #'htree:data
-                                               (delete-if (lambda (entry) (htree:nodes entry))
-                                                          (alex:hash-table-keys (htree:entries hist))))
-                                       (lambda (x y)
-                                         (> (score-history-entry x hist)
-                                            (score-history-entry y hist)))))))
+    (let ((owner-less-history-entries
+           (when hist
+             (sort (mapcar #'htree:data
+                           (delete-if (lambda (entry) (htree:nodes entry))
+                                      (alex:hash-table-keys (htree:entries hist))))
+                   (lambda (x y)
+                     (> (score-history-entry x hist)
+                        (score-history-entry y hist)))))))
       (lambda (minibuffer)
-        (fuzzy-match (input-buffer minibuffer) all-history-entries)))))
+        (fuzzy-match (input-buffer minibuffer) owner-less-history-entries)))))
 
 (defun history-html-list (&key (limit 100) ; Export?
                             (separator " → "))
