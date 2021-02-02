@@ -173,13 +173,13 @@
   (let ((history (htree:make))
         (url1 "http://example.org"))
     (htree:add-child url1 history)
-    (prove:is (htree:current-owner-identifier history)
+    (prove:is (htree:current-owner-id history)
               htree:+default-owner+)
     (prove:is (hash-table-count (htree:owners history))
               1)))
 
 (prove:subtest "Multiple owners"
-  (let ((history (htree:make :current-owner-identifier "a"))
+  (let ((history (htree:make :current-owner-id "a"))
         (url1 "http://example.org")
         (url2 "https://nyxt.atlas.engineer")
         (url3 "http://en.wikipedia.org"))
@@ -203,13 +203,13 @@
               url1)))
 
 (prove:subtest "Backward and forward"
-  (let ((history (htree:make :current-owner-identifier "a"))
+  (let ((history (htree:make :current-owner-id "a"))
         (url1 "http://example.org")
         (url2 "https://nyxt.atlas.engineer")
         (url3 "http://en.wikipedia.org"))
     (htree:add-child url1 history)
     (htree:add-child url2 history)
-    (htree:add-owner history "b" :creator-identifier "a")
+    (htree:add-owner history "b" :creator-id "a")
     (htree:set-current-owner history "b")
     (htree:add-child url3 history)
     (htree:set-current-owner history "a")
@@ -227,11 +227,11 @@
               url2)))
 
 (prove:subtest "Inter-owner relationships"
-  (let ((history (htree:make :current-owner-identifier "a"))
+  (let ((history (htree:make :current-owner-id "a"))
         (url1 "http://example.org")
         (url2 "https://nyxt.atlas.engineer"))
     (htree:add-child url1 history)
-    (htree:add-owner history "b" :creator-identifier "a")
+    (htree:add-owner history "b" :creator-id "a")
     (htree:set-current-owner history "b")
     (htree:add-child url2 history)
     (prove:is (length (htree:nodes (htree:owner history "a")))
@@ -259,7 +259,7 @@
     (htree:back history)
     (htree:add-child "http://parent-child/A2" history)
 
-    (htree:add-owner history "child-owner" :creator-identifier "parent-owner")
+    (htree:add-owner history "child-owner" :creator-id "parent-owner")
     (htree:set-current-owner history "child-owner")
     (htree:add-child "http://child/A3a" history)
     (htree:back history)
@@ -274,7 +274,7 @@
 
     (htree:delete-owner history "child-owner")
 
-    (prove:isnt (htree:current-owner-identifier history)
+    (prove:isnt (htree:current-owner-id history)
                 "child-owner")
     (prove:is (htree:owner history "child-owner")
               nil)
@@ -298,7 +298,7 @@
                     nil)))
 
     (htree:delete-owner history "parent-owner")
-    (prove:is (htree:current-owner-identifier history)
+    (prove:is (htree:current-owner-id history)
               htree:+default-owner+)
     (prove:is (htree:owner history "parent-owner")
               nil)
@@ -318,10 +318,10 @@
 
 (prove:subtest "Visit all nodes until distant node"
   (let* ((history (make-history1))
-         (creator (htree:current-owner-identifier history))
+         (creator (htree:current-owner-id history))
          (distant-node-value "http://example.root/A1")
          (distant-node (first (htree:find-nodes history distant-node-value))))
-    (htree:add-owner history "b" :creator-identifier creator)
+    (htree:add-owner history "b" :creator-id creator)
     (htree:set-current-owner history "b")
     (htree:add-child "b-data" history)
 
@@ -335,9 +335,9 @@
                                 "http://example.root/B" "http://example.root/B2" "b-data"))
                     #'string<)))
   (let* ((history (make-history1))
-         (creator (htree:current-owner-identifier history))
+         (creator (htree:current-owner-id history))
          (distant-node-value "b-data"))
-    (htree:add-owner history "b" :creator-identifier creator)
+    (htree:add-owner history "b" :creator-id creator)
     (htree:set-current-owner history "b")
     (htree:add-child distant-node-value history)
 
@@ -362,7 +362,7 @@
                     #'string<))))
 
 (prove:subtest "Last access test"
-  (let ((history (htree:make :current-owner-identifier "a"))
+  (let ((history (htree:make :current-owner-id "a"))
         (url1 "http://example.org"))
     (htree:add-child url1 history)
     (sleep 0.1)
@@ -384,7 +384,7 @@
                                        (htree:data-last-access history url1))))))
 
 (prove:subtest "Entry deletion"
-  (let ((history (htree:make :current-owner-identifier "a"))
+  (let ((history (htree:make :current-owner-id "a"))
         (url1 "http://example.org")
         (url2 "http://other.example.org"))
     (htree:add-child url1 history)
@@ -402,7 +402,7 @@
               1)))
 
 (prove:subtest "Reset owner"
-  (let ((history (htree:make :current-owner-identifier "a"))
+  (let ((history (htree:make :current-owner-id "a"))
         (url1 "http://example.org")
         (url2 "http://other.example.org")
         (url3 "http://alt.example.org")
