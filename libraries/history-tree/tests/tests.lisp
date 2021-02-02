@@ -16,12 +16,12 @@
                    "http://example.root/A"
                    "http://example.root/A1"))
       (htree:add-child url history))
-    (htree:back history)
+    (htree:backward history)
     (htree:add-child "http://example.root/A2" history)
-    (htree:back history 2)
+    (htree:backward history 2)
     (htree:add-child "http://example.root/B" history)
     (htree:add-child "http://example.root/B1" history)
-    (htree:back history)
+    (htree:backward history)
     (htree:add-child "http://example.root/B2" history)
     history))
 
@@ -29,7 +29,7 @@
   (let ((history (htree:make)))
     (htree:add-child "http://example.root" history)
     (htree:add-child "http://example.root/A" history)
-    (htree:back history)
+    (htree:backward history)
     (htree:add-child "http://example.root/B" history)
     history))
 
@@ -47,13 +47,13 @@
         (url3 "http://en.wikipedia.org"))
     (htree:add-child url1 history)
     (htree:add-child url2 history)
-    (htree:back history)
+    (htree:backward history)
     (htree:add-child url3 history)
     (prove:is (htree:value (htree:current-owner-node history))
               url3)
     (prove:is (htree:value (htree:parent (htree:current-owner-node history)))
               url1)
-    (htree:back history)
+    (htree:backward history)
     (htree:go-to-child url2 history)
     (prove:is (htree:value (htree:current-owner-node history))
               url2)))
@@ -72,7 +72,7 @@
 
 (prove:subtest "All forward children"
   (let ((history (make-history1)))
-    (htree:back history 2)
+    (htree:backward history 2)
     (prove:is (htree::map-data (htree:all-forward-children history))
               '("http://example.root/B"
                 "http://example.root/B2"))))
@@ -87,7 +87,7 @@
 
 (prove:subtest "Traverse all history."
   (prove:is (htree::map-data (htree:all-contiguous-owned-nodes
-                              (htree:back (make-history1))))
+                              (htree:backward (make-history1))))
             '("http://example.root"
               "http://example.root/B"
               "http://example.root/B2" "http://example.root/B1"
@@ -100,7 +100,7 @@
                                "http://example.root/A2"
                                (htree:go-to-child
                                 "http://example.root/A"
-                                (htree:back (make-history1) 2)))))
+                                (htree:backward (make-history1) 2)))))
             '("http://example.root"
               "http://example.root/B"
               "http://example.root/B2" "http://example.root/B1"
@@ -109,24 +109,24 @@
 
 (prove:subtest "Traverse parents."
   (prove:is (htree::map-data (htree:all-parents
-                              (htree:back (make-history1))))
+                              (htree:backward (make-history1))))
             '("http://example.root")))
 
 (prove:subtest "Traverse forward children."
   (prove:is (htree::map-data (htree:all-forward-children
-                              (htree:back (make-history1))))
+                              (htree:backward (make-history1))))
             '("http://example.root/B2")))
 
 (prove:subtest "Traverse all children."
   (prove:is (htree::map-data (htree:all-children
-                              (htree:back (make-history1))))
+                              (htree:backward (make-history1))))
             '("http://example.root/B2" "http://example.root/B1")))
 
 (prove:subtest "Move node to forward-child on add."
   (let ((history (make-history2)))
     (prove:is (htree:value (htree:current-owner-node history))
               "http://example.root/B")
-    (htree:back history)
+    (htree:backward history)
     (prove:is (htree:value (htree:current-owner-node history))
               "http://example.root")
     (htree:add-child "http://example.root/A" history)
@@ -215,8 +215,8 @@
     (htree:set-current-owner history "a")
     (prove:is (htree:value (htree:current-owner-node history))
               url2)
-    (htree:back history)
-    (htree:back history)
+    (htree:backward history)
+    (htree:backward history)
     (prove:is (htree:value (htree:current-owner-node history))
               url1)
     (htree:forward history)
@@ -256,13 +256,13 @@
     (htree:set-current-owner history "parent-owner")
     (htree:add-child "http://parent/A" history)
     (htree:add-child "http://parent/A1" history)
-    (htree:back history)
+    (htree:backward history)
     (htree:add-child "http://parent-child/A2" history)
 
     (htree:add-owner history "child-owner" :creator-id "parent-owner")
     (htree:set-current-owner history "child-owner")
     (htree:add-child "http://child/A3a" history)
-    (htree:back history)
+    (htree:backward history)
     (htree:add-child "http://child/A3b" history)
 
     (prove:is (length (htree:nodes (htree:owner history "parent-owner")))
@@ -342,7 +342,7 @@
     (htree:add-child distant-node-value history)
 
     (htree:set-current-owner history htree:+default-owner+)
-    (htree:back history 2)
+    (htree:backward history 2)
 
     (let ((distant-node (first (htree:find-nodes history distant-node-value))))
       (htree:visit-all history distant-node))
@@ -421,7 +421,7 @@
     (htree:add-child url3 history)
     (htree:add-child url4 history)
     (htree:add-child url5 history)
-    (htree:back history)
+    (htree:backward history)
     (htree:set-current-owner history "a")
     (htree:reset-owner history "b")
 
