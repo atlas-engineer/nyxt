@@ -89,7 +89,7 @@ The `implicit-visits' count is incremented."
   (with-data-access (history (history-path (current-buffer)))
     (let ((entries (prompt-minibuffer
                     :input-prompt "Delete entries"
-                    :suggestion-function (history-suggestion-filter)
+                    :suggestion-function (history-disowned-suggestion-filter)
                     :history (minibuffer-set-url-history *browser*)
                     :multi-selection-p t)))
       (dolist (entry entries)
@@ -129,6 +129,19 @@ it would not be very useful."
       (when prefix-urls
         (setf all-history-entries (append (mapcar #'quri:url-decode prefix-urls)
                                           all-history-entries)))
+      (lambda (minibuffer)
+        (fuzzy-match (input-buffer minibuffer) all-history-entries)))))
+
+(defun history-disowned-suggestion-filter ()
+  "All disowned history entries (without nodes)."
+  (with-data-lookup (hist (history-path (current-buffer)))
+    (let ((all-history-entries (when hist
+                                 (sort (mapcar #'htree:value
+                                               (delete-if (lambda (entry) (htree:nodes entry))
+                                                          (alex:hash-table-keys (htree:entries hist))))
+                                       (lambda (x y)
+                                         (> (score-history-entry x hist)
+                                            (score-history-entry y hist)))))))
       (lambda (minibuffer)
         (fuzzy-match (input-buffer minibuffer) all-history-entries)))))
 
