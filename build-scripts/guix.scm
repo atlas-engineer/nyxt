@@ -141,7 +141,6 @@
      `(("alexandria" ,sbcl-alexandria)
        ("bordeaux-threads" ,sbcl-bordeaux-threads)
        ("cl-calispel" ,sbcl-calispel)
-       ("cl-chanl" ,sbcl-chanl)
        ("cl-containers" ,sbcl-cl-containers)
        ("cl-css" ,sbcl-cl-css)
        ("cl-custom-hash-table" ,sbcl-custom-hash-table)
