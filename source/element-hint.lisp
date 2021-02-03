@@ -431,14 +431,16 @@ visible active buffer."
 
 (define-command download-hint-url (&key annotate-visible-only-p)
   "Download the file under the URL(s) hinted by the user."
-  (query-hints "Download link URL"
-               (lambda (selected-links)
-                 (loop for link in selected-links
-                       ;; TODO: sleep should NOT be necessary to avoid breaking download
-                       do (download (quri:uri (url link))) (sleep 0.25))
-                 (list-downloads))
-               :multi-selection-p t
-               :annotate-visible-only-p annotate-visible-only-p))
+  (let ((buffer (current-buffer)))
+    (query-hints "Download link URL"
+                 (lambda (selected-links)
+                   (loop for link in selected-links
+                         ;; TODO: sleep should NOT be necessary to avoid breaking download
+                         do (download (quri:uri (url link))
+                                      :buffer buffer)
+                            (sleep 0.25)))
+                 :multi-selection-p t
+                 :annotate-visible-only-p annotate-visible-only-p)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :nyxt/minibuffer-mode)
