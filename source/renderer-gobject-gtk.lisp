@@ -13,11 +13,7 @@
 
 (in-package :nyxt)
 
-(defun ignore-warning (condition)
-   (declare (ignore condition))
-   (muffle-warning))
-
-(handler-bind ((warning #'ignore-warning))
+(handler-bind ((warning #'muffle-warning))
   (defun renderer-thread-p ()
     (string= "main thread" (bt:thread-name (bt:current-thread))))
   (defmethod ffi-initialize ((browser gtk-browser) urls startup-timestamp)
