@@ -57,12 +57,14 @@ class."
                                                      stream
                                                      serialization-state)
   "Serialize `history-entry' by turning the URL and last access into strings."
+  (declare (ignore serialization-state))
   (prin1 (object-string uri) stream))
 
 (defmethod s-serialization::serialize-sexp-internal ((timestamp local-time:timestamp)
                                                      stream
                                                      serialization-state)
   "Serialize `history-entry' by turning the URL and last access into strings."
+  (declare (ignore serialization-state))
   (prin1 (local-time:format-timestring nil timestamp
                                        :timezone local-time:+utc-zone+)
          stream))
@@ -296,6 +298,7 @@ instance of Nyxt."
   ;; We need this specialization because
   ;; - `history-tree' cannot be make-instance'd without specifying some slots like `owners'.
   ;; - We need a history tree
+  (declare (ignore slots deserialized-objects))
   (let ((history (make-history-tree)))
     history))
 
