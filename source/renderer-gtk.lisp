@@ -760,13 +760,17 @@ Warning: This behaviour may change in the future."
      (declare (ignore web-view param-spec))
      (on-signal-notify-title buffer nil)))
   (gobject:g-signal-connect
+   (gtk-object buffer) "web-process-crashed"
+   (lambda (web-view user-data)
+     (declare (ignore user-data))
+     (log:debug "Web process crashed for web view: ~a" web-view)))
+  (gobject:g-signal-connect
    (gtk-object buffer) "context-menu"
    (lambda (web-view context-menu event hit-test-result)
      (declare (ignore web-view event hit-test-result))
      (let ((length (webkit:webkit-context-menu-get-n-items context-menu)))
        (dolist (i (alex:iota length))
          (let* ((item (webkit:webkit-context-menu-get-item-at-position context-menu i)))
-           ;; TODO: Remove "Download Linked File" item.
            (match (webkit:webkit-context-menu-item-get-stock-action item)
                   ((or :webkit-context-menu-action-open-link-in-new-window)
                    (webkit:webkit-context-menu-remove context-menu item))))))
