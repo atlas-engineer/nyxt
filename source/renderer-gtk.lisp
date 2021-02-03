@@ -854,13 +854,23 @@ requested a reload."
   (webkit:webkit-web-view-set-is-muted (gtk-object buffer) value))
 
 (defmethod ffi-buffer-download ((buffer gtk-buffer) uri)
-  (let ((download (webkit:webkit-web-view-download-uri (gtk-object buffer) uri)))
+  (let ((download (webkit:webkit-web-view-download-uri (gtk-object buffer) uri))
+        (completion-status (make-instance 'user-interface:paragraph :text "Completion: 0%")))
     (gobject:g-signal-connect
      download "received-data"
      (lambda (data-length user-data)
        (declare (ignore data-length user-data))
-       (log:debug "Download Progress: ~a ~%"
-                  (webkit:webkit-download-estimated-progress download))))))
+       (setf (user-interface:text completion-status)
+             (format nil "Completion: ~,2f%" (* 100 (webkit:webkit-download-estimated-progress download))))))
+
+    (with-current-html-buffer (buffer "*Download*" 'base-mode)
+      (user-interface:connect completion-status buffer)
+      (markup:markup
+       (:style (style buffer))
+       (:h1 "Download")
+       (:hr)
+       (:p uri)
+       (:span (markup:raw (user-interface::object-string completion-status)))))))
 
 (define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-user-agent

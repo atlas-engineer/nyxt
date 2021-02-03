@@ -26,7 +26,7 @@
                              (:progress :background "red" :value (format nil "~a" (download-manager:bytes-fetched d))
                                         :max (format nil "~a" (download-manager:bytes-total d))
                                         :style (if (download-manager:finished-p d)
-                                                   "border: 2px solid" "")
+                                                   "border: 1px solid" "")
                                         nil)
                              ;; TODO: Print proxy in use?
                              " ("
