@@ -161,9 +161,9 @@
   :components ((:file "renderer-gtk")))
 
 (asdf:defsystem :nyxt/gobject/gtk
-  :depends-on (:nyxt
+  :depends-on (:nyxt/gtk
                :cl-gobject-introspection
-               :cl-webkit2)
+               :bordeaux-threads)
   :pathname "source/"
   :components ((:file "renderer-gobject-gtk")))
 
