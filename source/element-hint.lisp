@@ -436,8 +436,7 @@ visible active buffer."
                  (lambda (selected-links)
                    (loop for link in selected-links
                          ;; TODO: sleep should NOT be necessary to avoid breaking download
-                         do (download (quri:uri (url link))
-                                      :buffer buffer)
+                         do (download buffer (quri:uri (url link)))
                             (sleep 0.25)))
                  :multi-selection-p t
                  :annotate-visible-only-p annotate-visible-only-p)))
