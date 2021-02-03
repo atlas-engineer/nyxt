@@ -66,9 +66,7 @@
 
 (define-command download-url ()
   "Download the page or file of the current buffer."
-  (download (url (current-buffer)))
-  (unless (find-buffer 'download-mode)
-    (list-downloads)))
+  (download (current-buffer) (url (current-buffer))))
 
 (defun get-downloaded-filenames ()
   "Return the list of downloaded filenames of the current session, as strings."
