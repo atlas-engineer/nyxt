@@ -854,7 +854,13 @@ requested a reload."
   (webkit:webkit-web-view-set-is-muted (gtk-object buffer) value))
 
 (defmethod ffi-buffer-download ((buffer gtk-buffer) uri)
-  (webkit:webkit-web-view-download-uri (gtk-object buffer) uri))
+  (let ((download (webkit:webkit-web-view-download-uri (gtk-object buffer) uri)))
+    (gobject:g-signal-connect
+     download "received-data"
+     (lambda (data-length user-data)
+       (declare (ignore data-length user-data))
+       (log:debug "Download Progress: ~a ~%"
+                  (webkit:webkit-download-estimated-progress download))))))
 
 (define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-user-agent
