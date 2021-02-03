@@ -46,7 +46,12 @@ goes owner-less, we can still consult the last time it was accessed.")
           :type list
           :documentation "The list of nodes that access an entry."))
   (:accessor-name-transformer #'class*:name-identity)
-  (:documentation "Wrapped data as stored in `history-tree''s `entries'."))
+  (:documentation "Wrapped data as stored in `history-tree''s `entries'.
+Each entry has a unique datum.  Each `node' points to one entry.  Multiple nodes
+may point to the same entry.  Entries may also be node-less; they are kept
+around so that we can remember the data that was visited since the beginning of
+time.  Node-less entries are available for manual deletion with
+`delete-data'."))
 
 (defun ensure-timestamp (string-or-timestamp)
   (if (stringp string-or-timestamp)
@@ -85,7 +90,9 @@ by the node.  `history-tree''s `entries' holds `entry'-`node' associations."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)
-  (:documentation "Node structure of the history tree."))
+  (:documentation "Node structure of the history tree.
+Each node has one parent (unless it's a root node) and zero or multiple
+children.  Nodes may have zero or multiple owners."))
 
 (export 'data)
 (defmethod data ((node node))
@@ -112,7 +119,9 @@ is the child to go forward to for the bound owner.")
                 :documentation "Timestamp of the last access to this node by the
 owner."))
   (:accessor-name-transformer #'class*:name-identity)
-  (:documentation "The relationship between an owner and one of its nodes."))
+  (:documentation "The relationship between an owner and one of its nodes.
+In particular, it encodes the forward child nad the date of last access to the
+node for a given owner."))
 
 (export-always 'last-access)
 (defmethod last-access ((binding binding))
@@ -183,7 +192,9 @@ It's updated every time a node is visited.")
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity)
-  (:documentation "The high-level information about an owner."))
+  (:documentation "The high-level information about an owner.
+Each owner is identified by a unique identifier, which is arbitrary data (may
+even be NIL)."))
 
 (defmethod (setf current) (value (owner owner))
   "This setter protects against setting OWNER's `current' slot to an invalid object."
