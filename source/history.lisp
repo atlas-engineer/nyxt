@@ -5,6 +5,7 @@
 
 (define-class history-entry ()          ; TODO: Export?
   ((url (quri:uri "")
+        :accessor nil
         :type (or quri:uri string))
    (title "")
    (last-access "" ; TODO: Remove with Nyxt 2.0?
