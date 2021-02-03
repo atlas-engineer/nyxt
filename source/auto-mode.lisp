@@ -361,7 +361,7 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
   (with-data-file (file path
                         :direction :output
                         :if-does-not-exist :create
-                        :if-exists :supersede)
+                        :if-exists :overwrite)
     (let ((*package* (find-package :nyxt/auto-mode))
           (rules (get-data path)))
       (write-string ";; List of auto-mode rules.

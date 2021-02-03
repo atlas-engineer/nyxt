@@ -193,7 +193,7 @@ instance of Nyxt."
   (with-data-file (file path
                         :direction :output
                         :if-does-not-exist :create
-                        :if-exists :supersede)
+                        :if-exists :overwrite)
     ;; We READ the output of serialize-sexp to make it more human-readable.
     (let ((*package* (find-package :nyxt))
           (*print-length* nil))
