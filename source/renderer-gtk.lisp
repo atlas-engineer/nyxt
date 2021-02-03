@@ -869,7 +869,14 @@ requested a reload."
     (with-current-html-buffer (buffer "*Download*" 'base-mode)
       (markup:markup
        (:style (style buffer))
-       (:h1 "Download")
+       (:style
+        (cl-css:css
+         '((".download-url"
+            :overflow "auto"
+            :white-space "nowrap")
+           (".download-url a"
+            :color "black"))))
+       (:h1 "Downloads")
        (:body
         (loop for download in (downloads *browser*)
               for uri = (first download)
@@ -879,7 +886,7 @@ requested a reload."
                  (markup:markup
                   (:div
                    (:hr)
-                   (:p (:b "URL: ") uri)
+                   (:p :class "download-url" (:b "URL: ") (:a :href uri uri))
                    (:span (markup:raw (user-interface::object-string paragraph)))))))))))
 
 (define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) value)
