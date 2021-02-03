@@ -596,10 +596,11 @@ sometimes yields the wrong reasult."
                    :if-does-not-exist :create
                    :if-exists :append))))))
 
-(defmacro define-ffi-generic (name arguments)
+(defmacro define-ffi-generic (name arguments &body options)
   `(progn
      (export-always ',name)
-     (defgeneric ,name (,@arguments))))
+     (defgeneric ,name (,@arguments)
+       ,@options)))
 
 (define-ffi-generic ffi-window-delete (window))
 (define-ffi-generic ffi-window-fullscreen (window))
