@@ -130,10 +130,13 @@ node for a given owner."))
                                            (slot-value binding 'last-access))))
 
 (defmethod last-access ((node node))
-  "Return node's last access across all its owners."
-  (apply #'local-time:timestamp-maximum
-         (mapcar #'last-access
-                 (alex:hash-table-values (bindings node)))))
+  "Return node's last access across all its owners.
+If the node has no owner, return Epoch."
+  (if (< 0 (hash-table-count (bindings node)))
+      (apply #'local-time:timestamp-maximum
+             (mapcar #'last-access
+                     (alex:hash-table-values (bindings node))))
+      (local-time:unix-to-timestamp 0)))
 
 (export-always 'data-last-access)
 (declaim (ftype (function (history-tree t) local-time:timestamp) data-last-access))
