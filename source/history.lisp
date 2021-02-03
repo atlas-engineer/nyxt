@@ -141,7 +141,7 @@ lot."
 This can be useful to, say, prefix the history with the current URL.  At the
 moment the PREFIX-URLS are inserted as is, not a `history-entry' objects since
 it would not be very useful."
-  (with-data-lookup (hist (history-path (current-buffer)))
+  (with-data-unsafe (hist (history-path (current-buffer)))
     (let* ((all-history-entries (when hist
                                   (sort (htree:all-data hist)
                                         (lambda (x y)
@@ -156,7 +156,7 @@ it would not be very useful."
 
 (defun history-disowned-suggestion-filter ()
   "All disowned history entries (without nodes)."
-  (with-data-lookup (hist (history-path (current-buffer)))
+  (with-data-unsafe (hist (history-path (current-buffer)))
     (let ((owner-less-history-entries
            (when hist
              (sort (mapcar #'htree:data
@@ -170,7 +170,7 @@ it would not be very useful."
 
 (defun history-html-list (&key (limit 100) ; Export?
                             (separator " → "))
-  (with-data-lookup (history (history-path (current-buffer)))
+  (with-data-unsafe (history (history-path (current-buffer)))
     (let* ((history (when history
                       (mapcar #'first
                               (sort (alex:hash-table-alist (htree:entries history))

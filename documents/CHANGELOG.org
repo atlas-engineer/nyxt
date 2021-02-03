@@ -63,7 +63,7 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 
 - =with-data-access= accepts a default value.
 
-- =with-data-lookup= -- a faster version of =with-data-access= for fast non-modifying look-ups.
+- =with-data-unsafe= -- a faster version of =with-data-access= for fast non-modifying thread-unsafe look-ups.
 
 - =analysis= library:
 

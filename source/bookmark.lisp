@@ -112,7 +112,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 
 (export-always 'match-bookmarks)
 (defun match-bookmarks (specification &optional (as-url-list-p t))
-  (with-data-lookup (bookmarks (bookmarks-path (current-buffer)))
+  (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
     (let* ((input-specs (multiple-value-list
                          (parse-tag-specification
                           specification)))
@@ -139,7 +139,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 (defun tag-suggestion-filter (&key with-empty-tag extra-tags)
   "When with-empty-tag is non-nil, insert the empty string as the first tag.
 This can be useful to let the user select no tag when returning directly."
-  (with-data-lookup (bookmarks (bookmarks-path (current-buffer)))
+  (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
     (let ((tags (sort (append extra-tags
                               (mapcar (lambda (name) (make-tag :name name))
                                       (delete-duplicates
@@ -171,7 +171,7 @@ This can be useful to let the user select no tag when returning directly."
 (define-command list-bookmarks ()
   "List all bookmarks in a new buffer."
   (with-current-html-buffer (bookmarks-buffer "*Bookmarks*" 'base-mode)
-    (with-data-lookup (bookmarks (bookmarks-path (current-buffer)))
+    (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
       (markup:markup
       (:style (style bookmarks-buffer))
       (:h1 "Bookmarks")
@@ -196,7 +196,7 @@ This can be useful to let the user select no tag when returning directly."
 (defun url-bookmark-tags (url)
   "Return the space-separated string of tags of the bookmark corresponding to
 URL."
-  (with-data-lookup (bookmarks (bookmarks-path (current-buffer)))
+  (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
     (the (values string &optional)
         (let ((existing-bm (find url bookmarks :key #'url :test #'equal-url)))
           (if existing-bm
