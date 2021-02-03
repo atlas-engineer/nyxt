@@ -34,7 +34,15 @@ want to change the behaviour of modifiers, for instance swap 'control' and
                 :export nil
                 :documentation "Single instantiation of our custom web context.")
    (downloads
-    :documentation "List of downloads. Used for rendering by download manager."))
+    :documentation "List of downloads. Used for rendering by download manager.")
+   (download-buffer-style
+    (cl-css:css
+     '((".download-url"
+        :overflow "auto"
+        :white-space "nowrap")
+       (".download-url a"
+        :color "black")))
+    :documentation "Style applied to the download buffer."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
@@ -869,13 +877,7 @@ requested a reload."
     (with-current-html-buffer (buffer "*Download*" 'base-mode)
       (markup:markup
        (:style (style buffer))
-       (:style
-        (cl-css:css
-         '((".download-url"
-            :overflow "auto"
-            :white-space "nowrap")
-           (".download-url a"
-            :color "black"))))
+       (:style (download-buffer-style *browser*))
        (:h1 "Downloads")
        (:body
         (loop for download in (downloads *browser*)
