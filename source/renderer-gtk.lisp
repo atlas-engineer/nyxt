@@ -32,7 +32,9 @@ want to change the behaviour of modifiers, for instance swap 'control' and
                 :type t
                 :accessor nil
                 :export nil
-                :documentation "Single instantiation of our custom web context."))
+                :documentation "Single instantiation of our custom web context.")
+   (downloads
+    :documentation "List of downloads. Used for rendering by download manager."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
@@ -855,22 +857,30 @@ requested a reload."
 
 (defmethod ffi-buffer-download ((buffer gtk-buffer) uri)
   (let ((download (webkit:webkit-web-view-download-uri (gtk-object buffer) uri))
-        (completion-status (make-instance 'user-interface:paragraph :text "Completion: 0%")))
+        (completion-paragraph (make-instance 'user-interface:paragraph :text "Completion: 0%")))
+    (push (list uri completion-paragraph) (downloads *browser*))
     (gobject:g-signal-connect
      download "received-data"
      (lambda (data-length user-data)
        (declare (ignore data-length user-data))
-       (setf (user-interface:text completion-status)
+       (setf (user-interface:text completion-paragraph)
              (format nil "Completion: ~,2f%" (* 100 (webkit:webkit-download-estimated-progress download))))))
 
     (with-current-html-buffer (buffer "*Download*" 'base-mode)
-      (user-interface:connect completion-status buffer)
       (markup:markup
        (:style (style buffer))
        (:h1 "Download")
-       (:hr)
-       (:p uri)
-       (:span (markup:raw (user-interface::object-string completion-status)))))))
+       (:body
+        (loop for download in (downloads *browser*)
+              for uri = (first download)
+              for paragraph = (second download)
+              do (user-interface:connect paragraph buffer)
+              collect
+                 (markup:markup
+                  (:div
+                   (:hr)
+                   (:p (:b "URL: ") uri)
+                   (:span (markup:raw (user-interface::object-string paragraph)))))))))))
 
 (define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-user-agent
