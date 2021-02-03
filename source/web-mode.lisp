@@ -226,7 +226,7 @@ search.")
 
 (defun history-backwards-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all parent URLs."
-  (with-data-lookup (history (history-path buffer))
+  (with-data-unsafe (history (history-path buffer))
     (let ((parents (if (conservative-history-movement-p (find-mode buffer 'web-mode))
                        (htree:all-contiguous-owned-parents history)
                        (htree:all-parents history))))
@@ -249,7 +249,7 @@ search.")
 
 (defun history-forwards-direct-children-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over forward-children URL."
-  (with-data-lookup (history (history-path buffer))
+  (with-data-unsafe (history (history-path buffer))
     (let ((children (if (conservative-history-movement-p (find-mode buffer 'web-mode))
                         (htree:owned-children (htree:current-owner history))
                         (htree:children (htree:current-owner-node history)))))
@@ -281,7 +281,7 @@ Otherwise go forward to the only child."
 
 (defun history-forwards-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over forward-children URL."
-  (with-data-lookup (history (history-path buffer))
+  (with-data-unsafe (history (history-path buffer))
     (let ((children (htree:all-forward-children history)))
      (lambda (minibuffer)
        (if children
@@ -304,7 +304,7 @@ Otherwise go forward to the only child."
 
 (defun history-forwards-all-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over children URL from all branches."
-  (with-data-lookup (history (history-path buffer))
+  (with-data-unsafe (history (history-path buffer))
     (let ((children (if (conservative-history-movement-p (find-mode buffer 'web-mode))
                         (htree:all-contiguous-owned-children (htree:current-owner history))
                         (htree:all-children history))))
@@ -325,7 +325,7 @@ Otherwise go forward to the only child."
 
 (defun history-all-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all history URLs."
-  (with-data-lookup (history (history-path buffer))
+  (with-data-unsafe (history (history-path buffer))
     (let ((urls (if (conservative-history-movement-p (find-mode buffer 'web-mode))
                     (htree:all-current-owner-nodes history)
                     (htree:all-current-branch-nodes history))))
@@ -348,7 +348,7 @@ Otherwise go forward to the only child."
   "Open a new buffer displaying the whole history tree of a buffer."
   (with-current-html-buffer (output-buffer (format nil "*History-~a*" (id buffer))
                                                  'nyxt/history-tree-mode:history-tree-mode)
-    (with-data-lookup (history (history-path buffer))
+    (with-data-unsafe (history (history-path buffer))
       (let* ((markup:*auto-escape* nil)
              (mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
              (tree `(:ul ,(htree:map-owned-tree
@@ -376,7 +376,7 @@ Otherwise go forward to the only child."
   "Open a new buffer displaying the whole history tree."
   (nyxt::with-current-html-buffer (output-buffer "*History*"
                                                  'nyxt/history-tree-mode:history-tree-mode)
-    (with-data-lookup (history (let ((dummy-buffer (make-buffer)))
+    (with-data-unsafe (history (let ((dummy-buffer (make-buffer)))
                                  (prog1
                                      (history-path dummy-buffer)
                                    (delete-buffer :id (id dummy-buffer)))))

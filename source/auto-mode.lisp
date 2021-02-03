@@ -72,7 +72,7 @@ Enable INCLUDED modes plus the already present ones, and disable EXCLUDED modes,
 (declaim (ftype (function (quri:uri buffer) (or auto-mode-rule null))
                 matching-auto-mode-rule))
 (defun matching-auto-mode-rule (url buffer)
-  (with-data-lookup (rules (auto-mode-rules-path buffer))
+  (with-data-unsafe (rules (auto-mode-rules-path buffer))
     (flet ((priority (test1 test2)
              (let ((priority-list '(match-regex match-url match-host match-domain)))
                (< (or (position (first test1) priority-list) 4)
@@ -136,7 +136,7 @@ non-new-page requests, buffer URL is not altered."
   (quri:uri= (url request-data) (url (buffer request-data))))
 
 (defun auto-mode-handler (request-data)
-  (with-data-lookup (history (history-path (buffer request-data)))
+  (with-data-unsafe (history (history-path (buffer request-data)))
     (let* ((auto-mode (find-submode (buffer request-data) 'auto-mode))
            (previous-url (sera:and-let* ((owner (htree:current-owner-node history))
                                          (parent (htree:parent owner))
