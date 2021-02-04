@@ -41,7 +41,16 @@ want to change the behaviour of modifiers, for instance swap 'control' and
         :overflow "auto"
         :white-space "nowrap")
        (".download-url a"
-        :color "black")))
+        :color "black")
+       (".progress-bar-container"
+        :height "20px"
+        :width "100%")
+       (".progress-bar-base"
+        :height "100%"
+        :background-color "lightgray")
+       (".progress-bar-fill"
+        :height "100%"
+        :background-color "dimgray")))
     :documentation "Style applied to the download buffer."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -865,16 +874,19 @@ requested a reload."
 
 (defmethod ffi-buffer-download ((buffer gtk-buffer) uri)
   (let ((download (webkit:webkit-web-view-download-uri (gtk-object buffer) uri))
-        (completion-paragraph (make-instance 'user-interface:paragraph :text "Completion: 0%")))
-    (push (list uri completion-paragraph) (downloads *browser*))
+        (completion-paragraph (make-instance 'user-interface:paragraph :text "Completion: 0%"))
+        (progress-bar (make-instance 'user-interface:progress-bar)))
+    (push (list uri completion-paragraph progress-bar) (downloads *browser*))
     (gobject:g-signal-connect
      download "received-data"
      (lambda (data-length user-data)
        (declare (ignore data-length user-data))
+       (setf (user-interface:percentage progress-bar)
+             (* 100 (webkit:webkit-download-estimated-progress download)))
        (setf (user-interface:text completion-paragraph)
              (format nil "Completion: ~,2f%" (* 100 (webkit:webkit-download-estimated-progress download))))))
 
-    (with-current-html-buffer (buffer "*Download*" 'base-mode)
+    (with-current-html-buffer (buffer "*Downloads*" 'base-mode)
       (markup:markup
        (:style (style buffer))
        (:style (download-buffer-style *browser*))
@@ -883,13 +895,17 @@ requested a reload."
         (loop for download in (downloads *browser*)
               for uri = (first download)
               for paragraph = (second download)
+              for progress = (third download)
               do (user-interface:connect paragraph buffer)
+                 (user-interface:connect progress buffer)
               collect
                  (markup:markup
                   (:div
                    (:hr)
                    (:p :class "download-url" (:b "URL: ") (:a :href uri uri))
-                   (:span (markup:raw (user-interface::object-string paragraph)))))))))))
+                   (:span (markup:raw (user-interface::object-string paragraph)))
+                   (:div :class "progress-bar-container"
+                         (markup:raw (user-interface::object-string progress)))))))))))
 
 (define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-user-agent
