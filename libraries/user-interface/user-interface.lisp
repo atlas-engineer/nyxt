@@ -46,3 +46,21 @@
 
 (defmethod text ((paragraph paragraph))
   (slot-value paragraph 'text))
+
+(defclass progress-bar (ui-element)
+  ((percentage :initform 0 :initarg :percentage
+               :documentation "The percentage the progress bar is
+filled up, use a number between 0 and 100.")))
+
+(defmethod percentage ((progress-bar progress-bar))
+  (slot-value progress-bar 'percentage))
+
+(defmethod object-expression ((progress-bar progress-bar))
+  `(:div :class "progress-bar-base"
+         (:div :class "progress-bar-fill"
+               :id ,(id progress-bar))))
+
+(defmethod (setf percentage) (percentage (progress-bar progress-bar))
+  (setf (slot-value progress-bar 'percentage) (format nil "~D%" percentage))
+  (when (slot-boundp progress-bar 'buffer)
+    (update progress-bar)))
