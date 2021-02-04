@@ -4,12 +4,13 @@
 (in-package :nyxt)
 
 (defclass download ()
-  ((uri :accessor uri)
+  ((uri :accessor uri :initarg :uri :documentation "A string
+representation of a URL to be shown in the interface.")
    (paragraph :accessor paragraph :initform (make-instance 'user-interface:paragraph))
    (progress :accessor progress :initform (make-instance 'user-interface:progress-bar)))
   (:documentation "This class is used to represent a download within
-  the *Downloads* buffer. The browser class contains a list of these
-  download objects: `downloads'."))
+the *Downloads* buffer. The browser class contains a list of these
+download objects: `downloads'."))
 
 (defmethod connect ((download download) buffer)
   "Connect the user-interface objects within the download to the
