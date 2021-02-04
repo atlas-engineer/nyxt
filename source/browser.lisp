@@ -221,8 +221,7 @@ editor executable."))
       (log:error "In *after-init-hook*: ~a" c)))
   ;; Most of the code assumes the existence of a window.  Let's create it here
   ;; so that the user does not have to bother with it in the `startup-function'.
-  (let ((window (window-make browser)))
-    (window-set-active-buffer window (help)))
+  (window-make browser)
   ;; The `startup-function' must be run _after_ this function returns;
   ;; `ffi-within-renderer-thread' runs its body on the renderer thread when it's
   ;; idle, so it should do the job.  It's not enough since the

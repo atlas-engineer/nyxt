@@ -280,6 +280,7 @@ To change the default buffer, e.g. set it to a given URL:
   (make-startup-function
    :buffer-fn (lambda () (make-buffer :url \"https://example.org\")))"
   (lambda (&optional urls)
+    (window-set-active-buffer window (help))
     (let ((buffer (current-buffer)))
       ;; TODO: Select which history file to load.
       ;; Restore session before opening command line URLs, otherwise it will
