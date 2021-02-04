@@ -269,34 +269,35 @@ This function is meant to be run in the background."
 When PROXY-ADDRESS is :AUTO (the default), the proxy address is guessed from the
 current buffer."
   (hooks:run-hook (before-download-hook *browser*) url) ; TODO: Set URL to download-hook result?
-  (if (download-with-lisp-engine-p buffer)
-      (progn
-        (when (eq proxy-address :auto)
-          (setf proxy-address (proxy-address buffer :downloads-only t)))
-        (let* ((path (download-path buffer))
-               (download-dir (expand-path path)))
-          (declare (type (or quri:uri null) proxy-address))
-          (when download-dir
-            (let* ((download nil))
-              (flet ((unsafe-download ()
-                       (with-data-access (downloads path)
-                         (setf download (download-manager:resolve
-                                         url
-                                         :directory download-dir
-                                         :cookies cookies
-                                         :proxy proxy-address))
-                         (push download downloads)
-                         download)))
-                (if *keep-alive*
-                    (unsafe-download)
-                    (handler-case
-                        (unsafe-download)
-                      (error (c)
-                        (echo-warning "Download error: ~a" c)
-                        nil)))))))
-        (unless (find-buffer 'download-mode)
-          (list-downloads)))
-      (ffi-buffer-download buffer (object-string url))))
+  (match (download-engine buffer)
+    (:lisp
+     (when (eq proxy-address :auto)
+       (setf proxy-address (proxy-address buffer :downloads-only t)))
+     (let* ((path (download-path buffer))
+            (download-dir (expand-path path)))
+       (declare (type (or quri:uri null) proxy-address))
+       (when download-dir
+         (let* ((download nil))
+           (flet ((unsafe-download ()
+                    (with-data-access (downloads path)
+                      (setf download (download-manager:resolve
+                                      url
+                                      :directory download-dir
+                                      :cookies cookies
+                                      :proxy proxy-address))
+                      (push download downloads)
+                      download)))
+             (if *keep-alive*
+                 (unsafe-download)
+                 (handler-case
+                     (unsafe-download)
+                   (error (c)
+                     (echo-warning "Download error: ~a" c)
+                     nil)))))))
+     (unless (find-buffer 'download-mode)
+       (list-downloads)))
+    (:renderer
+     (ffi-buffer-download buffer (object-string url)))))
 
 (defmethod get-unique-window-identifier ((browser browser))
   (format nil "~s" (incf (slot-value browser 'total-window-count))))
