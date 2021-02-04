@@ -15,6 +15,12 @@ of Nyxt."))
     (:p "Nyxt is written in the Common Lisp programming language which offers a
 great perk: everything in the browser can be customized by the user, even while
 it's running!")
+    (:p "To get started with Common Lisp, we recommend "
+        (:a :href "https://lispcookbook.github.io/cl-cookbook"
+            "Common Lisp Cookbook")
+        " as a starting point.  It contains numerous pointers to other
+        resources, including free books both for beginners and seasoned
+        programmers.")
     (:p "Nyxt provides a mechanism for new users unfamiliar with Lisp
 to customize Nyxt. Start by invoking the
 commands " (:code "describe-class") " or " (:code "describe-slot") ".
