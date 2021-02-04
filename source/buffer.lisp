@@ -545,8 +545,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
                             :id (get-unique-buffer-identifier *browser*)
                             (append (when title `(:title ,title))
                                     (when default-modes `(:default-modes ,default-modes))
-                                    (when data-profile `(:data-profile ,data-profile))))))
-         (from-internal-p (internal-buffer-p (current-buffer))))
+                                    (when data-profile `(:data-profile ,data-profile)))))))
     (hooks:run-hook (buffer-before-make-hook *browser*) buffer)
     ;; Modes might require that buffer exists, so we need to initialize them
     ;; after the view has been created.
@@ -556,7 +555,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (buffers-set (id buffer) buffer)
     (unless no-history-p
       ;; Register buffer in global history:
-      (with-data-access (history (history-path (if from-internal-p buffer (current-buffer)))
+      (with-data-access (history (history-path buffer)
                          :default (make-history-tree buffer))
         ;; Owner may already exist if history was just create with the above
         ;; default value.
