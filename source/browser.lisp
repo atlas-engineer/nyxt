@@ -267,36 +267,33 @@ current buffer."
   (hooks:run-hook (before-download-hook *browser*) url) ; TODO: Set URL to download-hook result?
   (match (download-engine buffer)
     (:lisp
-     (when (eq proxy-address :auto)
-       (setf proxy-address (proxy-address buffer :downloads-only t)))
-     (let* ((path (download-path buffer))
-            (download-dir (expand-path path)))
-       (declare (type (or quri:uri null) proxy-address))
-       (when download-dir
-         (let* ((download nil))
-           (flet ((unsafe-download ()
-                    (with-data-access (downloads path)
-                      (setf download (download-manager:resolve
-                                      url
-                                      :directory download-dir
-                                      :cookies cookies
-                                      :proxy proxy-address))
-                      (push download downloads)
-                      ;; Add a watcher / renderer for monitoring download
-                      (let ((download-render (make-instance 'download)))
-                        (setf (uri download-render) (object-string url))
-                        (push download-render (downloads *browser*))
-                        (bt:make-thread
-                         (lambda ()
-                           (download-watch download-render download))))
-                      download)))
-             (if *keep-alive*
-                 (unsafe-download)
-                 (handler-case
-                     (unsafe-download)
-                   (error (c)
-                     (echo-warning "Download error: ~a" c)
-                     nil))))))))
+     (alex:when-let* ((path (download-path buffer))
+                      (download-dir (expand-path path)))
+       (when (eq proxy-address :auto)
+         (setf proxy-address (proxy-address buffer :downloads-only t)))
+       (let* ((download nil))
+         (flet ((unsafe-download ()
+                  (with-data-access (downloads path)
+                    (setf download 
+                          (download-manager:resolve url
+                                                    :directory download-dir
+                                                    :cookies cookies
+                                                    :proxy proxy-address))
+                    (push download downloads)
+                    ;; Add a watcher / renderer for monitoring download
+                    (let ((download-render (make-instance 'download :uri (object-string url))))
+                      (push download-render (downloads *browser*))
+                      (bt:make-thread
+                       (lambda ()
+                         (download-watch download-render download))))
+                    download)))
+           (if *keep-alive*
+               (unsafe-download)
+               (handler-case
+                   (unsafe-download)
+                 (error (c)
+                   (echo-warning "Download error: ~a" c)
+                   nil)))))))
     (:renderer
      (ffi-buffer-download buffer (object-string url))))
   (list-downloads))

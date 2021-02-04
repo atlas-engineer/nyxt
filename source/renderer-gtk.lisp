@@ -855,8 +855,7 @@ requested a reload."
 
 (defmethod ffi-buffer-download ((buffer gtk-buffer) uri)
   (let* ((webkit-download (webkit:webkit-web-view-download-uri (gtk-object buffer) uri))
-         (download (make-instance 'download)))
-    (setf (uri download) uri)
+         (download (make-instance 'download :uri uri)))
     (push download (downloads *browser*))
     (gobject:g-signal-connect
      webkit-download "received-data"
