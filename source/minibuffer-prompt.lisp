@@ -43,31 +43,32 @@ Example use:
   :suggestion-function #'my-suggestion-filter)
 
 See the documentation of `minibuffer' to know more about the minibuffer options."
-  (let ((channel (make-channel 1))
-        (interrupt-channel (make-channel 1)))
-    (ffi-within-renderer-thread
-     *browser*
-     (lambda ()
-       (let ((minibuffer (or minibuffer
-                             (apply #'make-minibuffer (append (list :channel channel
-                                                                    :interrupt-channel interrupt-channel)
-                                                              args)))))
-         (if *keep-alive*
-             (match (setup-function minibuffer)
-               ((guard f f) (funcall f minibuffer)))
-             (handler-case (match (setup-function minibuffer)
-                             ((guard f f) (funcall f minibuffer)))
-               (error (c)
-                 (echo-warning "Minibuffer error: ~a" c))))
-         (state-changed minibuffer)
-         (update-display minibuffer)
-         (push minibuffer (active-minibuffers (current-window)))
-         (apply #'show
-                (unless (suggestion-function minibuffer)
-                  ;; We don't need so much height since there is no suggestion to display.
-                  (list :height (minibuffer-open-single-line-height (current-window))))))))
-    (calispel:fair-alt
-      ((calispel:? channel result)
-       result)
-      ((calispel:? interrupt-channel)
-       (error 'nyxt-minibuffer-canceled)))))
+  (when (ready-p *browser*)
+    (let ((channel (make-channel 1))
+          (interrupt-channel (make-channel 1)))
+      (ffi-within-renderer-thread
+       *browser*
+       (lambda ()
+         (let ((minibuffer (or minibuffer
+                               (apply #'make-minibuffer (append (list :channel channel
+                                                                      :interrupt-channel interrupt-channel)
+                                                                args)))))
+           (if *keep-alive*
+               (match (setup-function minibuffer)
+                 ((guard f f) (funcall f minibuffer)))
+               (handler-case (match (setup-function minibuffer)
+                               ((guard f f) (funcall f minibuffer)))
+                 (error (c)
+                   (echo-warning "Minibuffer error: ~a" c))))
+           (state-changed minibuffer)
+           (update-display minibuffer)
+           (push minibuffer (active-minibuffers (current-window)))
+           (apply #'show
+                  (unless (suggestion-function minibuffer)
+                    ;; We don't need so much height since there is no suggestion to display.
+                    (list :height (minibuffer-open-single-line-height (current-window))))))))
+      (calispel:fair-alt
+        ((calispel:? channel result)
+         result)
+        ((calispel:? interrupt-channel)
+         (error 'nyxt-minibuffer-canceled))))))

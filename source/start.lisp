@@ -149,6 +149,7 @@ Example: --with-path bookmarks=/path/to/bookmarks
   (loop for window in (window-list)
         do (ffi-window-delete window))
   (ffi-kill-browser *browser*)
+  (setf (slot-value *browser* 'ready-p) nil)
   (when (socket-thread *browser*)
     (ignore-errors
      (bt:destroy-thread (socket-thread *browser*)))

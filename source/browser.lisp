@@ -121,7 +121,11 @@ window or not.")
                       :documentation "`local-time:timestamp' of when Nyxt was started.")
    (init-time 0.0
               :export nil
-              :documentation "Init time in seconds.")
+              :documentation "Initialization time in seconds.")
+   (ready-p nil
+            :reader ready-p
+            :documentation "If true, browser is ready for operation: make
+buffers, load data files, prompt minibuffer, etc.")
    (session-restore-prompt :always-ask
                            :documentation "Ask whether to restore the
 session. Possible values are :always-ask :always-restore :never-restore.")
@@ -233,7 +237,8 @@ editor executable."))
   ;; Set 'init-time at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)
-        (local-time:timestamp-difference (local-time:now) startup-timestamp)))
+        (local-time:timestamp-difference (local-time:now) startup-timestamp))
+  (setf (slot-value *browser* 'ready-p) t))
 
 ;; Catch a common case for a better error message.
 (defmethod buffers :before ((browser t))
