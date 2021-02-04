@@ -891,6 +891,7 @@ requested a reload."
        (:style (style buffer))
        (:style (download-buffer-style *browser*))
        (:h1 "Downloads")
+       (:hr)
        (:body
         (loop for download in (downloads *browser*)
               for uri = (first download)
@@ -901,7 +902,6 @@ requested a reload."
               collect
                  (markup:markup
                   (:div
-                   (:hr)
                    (:p :class "download-url" (:b "URL: ") (:a :href uri uri))
                    (:span (markup:raw (user-interface::object-string paragraph)))
                    (:div :class "progress-bar-container"
