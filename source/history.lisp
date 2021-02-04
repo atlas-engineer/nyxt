@@ -313,24 +313,27 @@ We keep this variable as a means to import the old format to the new one.")
   (labels ((restore-buffers (history)
              "For each owner, make buffer, swap owner identifier for buffer id.
              Keep table of old-id -> new-id, then go through all the owners and update their creator."
-             (let ((old-id->new-id (make-hash-table :test 'equalp))
+             (let ((old-id->new-id (make-hash-table :test #'equalp))
                    (new-owners (make-hash-table :test #'equalp)))
-               (maphash (lambda (owner-id owner)
-                          ;; `htree:+default-owner+' may be present if the
-                          ;; history is created (e.g. restored) while no web
-                          ;; buffer exists.  In all cases, this owner is
-                          ;; uninteresting.
-                          (unless (equal owner-id htree:+default-owner+)
-                            (let ((current-node (htree:current
-                                                 (htree:owner history owner-id))))
-                              ;; Node-less owners can safely be ignored.
-                              (when current-node
-                                (let ((new-buffer (make-buffer :title (title (htree:data current-node))
-                                                               :url (url (htree:data current-node))
-                                                               :load-url-p nil)))
-                                  (setf (gethash owner-id old-id->new-id) (id new-buffer))
-                                  (setf (gethash (id new-buffer) new-owners) owner))))))
-                        (htree:owners history))
+               ;; We can't `maphash' over (htree:owners history) because
+               ;; `make-buffer' modifiers the owners hash table.
+               (mapc (lambda-match
+                       ((cons owner-id owner)
+                        ;; `htree:+default-owner+' may be present if the
+                        ;; history is created (e.g. restored) while no web
+                        ;; buffer exists.  In all cases, this owner is
+                        ;; uninteresting.
+                        (unless (equal owner-id htree:+default-owner+)
+                          (let ((current-node (htree:current
+                                               (htree:owner history owner-id))))
+                            ;; Node-less owners can safely be ignored.
+                            (when current-node
+                              (let ((new-buffer (make-buffer :title (title (htree:data current-node))
+                                                             :url (url (htree:data current-node))
+                                                             :load-url-p nil)))
+                                (setf (gethash owner-id old-id->new-id) (id new-buffer))
+                                (setf (gethash (id new-buffer) new-owners) owner)))))))
+                     (alex:hash-table-alist (htree:owners history)))
                (maphash (lambda (_ owner)
                           (declare (ignore _))
                           (setf (htree:creator-id owner)
