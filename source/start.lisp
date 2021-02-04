@@ -280,16 +280,22 @@ To change the default buffer, e.g. set it to a given URL:
   (make-startup-function
    :buffer-fn (lambda () (make-buffer :url \"https://example.org\")))"
   (lambda (&optional urls)
-    (window-set-active-buffer window (help))
-    (let ((buffer (current-buffer)))
-      ;; TODO: Select which history file to load.
-      ;; Restore session before opening command line URLs, otherwise it will
-      ;; reset the session with the new URLs.
-      (get-user-data (data-profile buffer) (history-path buffer))
-      (cond
-        (urls (open-urls urls))
-        (buffer-fn
-         (window-set-active-buffer (current-window) (funcall-safely buffer-fn)))))
+    (let ((window (current-window)))
+      ;; Since this is the first buffer, we don't use any history for it:
+      ;; - it's not interesting;
+      ;; - most importantly because restoring the history may prompt the
+      ;; user which blocks further action such as the loading of the page,
+      ;; something we don't want for the startup.
+      (window-set-active-buffer window (help :no-history-p t))
+      (let ((buffer (current-buffer)))
+        ;; Restore session before opening command line URLs, otherwise it will
+        ;; reset the session with the new URLs.
+        ;; TODO: Select which history file to load.
+        (get-user-data (data-profile buffer) (history-path buffer))
+        (cond
+          (urls (open-urls urls))
+          (buffer-fn
+           (window-set-active-buffer window (funcall-safely buffer-fn))))))
     (when (startup-error-reporter-function *browser*)
       (funcall-safely (startup-error-reporter-function *browser*)))))
 

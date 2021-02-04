@@ -461,9 +461,10 @@ The version number is stored in the clipboard."
     (or (first (keymap:binding-keys fn keymaps))
         "UNBOUND")))
 
-(define-command help ()
+(define-command help (&key no-history-p)
   "Print help information."
-  (with-current-html-buffer (buffer "*Help*" 'nyxt/help-mode:help-mode)
+  (with-current-html-buffer (buffer "*Help*" 'nyxt/help-mode:help-mode
+                             :no-history-p no-history-p)
     (markup:markup
      (:style (style buffer))
      (:style (cl-css:css '((:h2
