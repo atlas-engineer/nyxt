@@ -14,4 +14,6 @@
    #:text
    #:object-expression
    #:paragraph
+   #:progress-bar
+   #:object-string
    #:connect))
