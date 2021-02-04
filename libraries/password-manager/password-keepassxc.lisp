@@ -33,13 +33,12 @@
 
 (defmethod clip-password ((password-interface keepassxc-interface) &key password-name service)
   (declare (ignore service))
-  (let* ((st (make-string-input-stream (master-password password-interface)))
-         (output (uiop:run-program (list *keepassxc-cli-program*
-                                         "show" (password-file password-interface)
-                                         password-name)
-                                   :input st :output '(:string :stripped t))))
-    (clip-password-string
-     (cl-ppcre:regex-replace "[\\S\\s]*Password: \(.*\)[\\S\\s]*" output "\\1"))))
+  (with-input-from-string (st (master-password password-interface))
+    (uiop:run-program (list *keepassxc-cli-program*
+                            "clip" "--attribute=password"
+                            (password-file password-interface)
+                            password-name)
+                      :input st :output '(:string :stripped t))))
 
 (defmethod save-password ((password-interface keepassxc-interface) &key password-name password service)
   (declare (ignore service))
