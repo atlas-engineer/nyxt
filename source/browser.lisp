@@ -114,10 +114,6 @@ when C-cliking on a URL, decide whether to open in a new
 window or not.")
    (downloads
     :documentation "List of downloads. Used for rendering by download manager.")
-   (download-watcher nil
-                     :type t
-                     :export nil
-                     :documentation "List of downloads.")
    (startup-timestamp (local-time:now)
                       :export nil
                       :documentation "`local-time:timestamp' of when Nyxt was started.")
@@ -247,24 +243,22 @@ editor executable."))
     (error "There is no current *browser*. Is Nyxt started?")))
 
 
-(defun download-watch ()
+(defun download-watch (download-render download-object)
   "Update the *Downloads* buffer.
 This function is meant to be run in the background."
-  ;; TODO: Add a (sleep ...)?  If we have many downloads, this loop could result
-  ;; in too high a frequency of refreshes.
   (when download-manager:*notifications*
     (loop for d = (calispel:? download-manager:*notifications*)
           while d
           when (download-manager:finished-p d)
             do (hooks:run-hook (after-download-hook *browser*))
-          do (let ((buffer (find-buffer 'download-mode)))
-               ;; Only update if buffer exists.  We update even when out of focus
-               ;; because if we switch to the buffer after all downloads are
-               ;; completed, we won't receive notifications so the content needs
-               ;; to be updated already.
-               ;; TODO: Disable when out of focus?  Maybe need hook for that.
-               (when buffer
-                 (ffi-within-renderer-thread *browser* #'download-refresh))))))
+          do (sleep 0.1) ; avoid excessive polling
+             (let ((completion-percentage
+                     (* 100 (/ (download-manager:bytes-fetched download-object)
+                               (download-manager:bytes-total download-object)))))
+               (setf (user-interface:percentage (progress download-render))
+                     completion-percentage)
+               (setf (user-interface:text (paragraph download-render))
+                     (format nil "Completion: ~,2f%" completion-percentage))))))
 
 ;; TODO: To download any URL at any moment and not just in resource-query, we
 ;; need to query the cookies for URL.  Thus we need to add an IPC endpoint to
@@ -292,6 +286,13 @@ current buffer."
                                       :cookies cookies
                                       :proxy proxy-address))
                       (push download downloads)
+                      ;; Add a watcher / renderer for monitoring download
+                      (let ((download-render (make-instance 'download)))
+                        (setf (uri download-render) (object-string url))
+                        (push download-render (downloads *browser*))
+                        (bt:make-thread
+                         (lambda ()
+                           (download-watch download-render download))))
                       download)))
              (if *keep-alive*
                  (unsafe-download)
