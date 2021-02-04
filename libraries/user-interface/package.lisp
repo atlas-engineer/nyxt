@@ -15,5 +15,6 @@
    #:object-expression
    #:paragraph
    #:progress-bar
+   #:percentage
    #:object-string
    #:connect))
