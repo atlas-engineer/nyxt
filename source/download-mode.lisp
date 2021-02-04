@@ -6,9 +6,15 @@
 (defclass download ()
   ((uri :accessor uri)
    (paragraph :accessor paragraph :initform (make-instance 'user-interface:paragraph))
-   (progress :accessor progress :initform (make-instance 'user-interface:progress-bar))))
+   (progress :accessor progress :initform (make-instance 'user-interface:progress-bar)))
+  (:documentation "This class is used to represent a download within
+  the *Downloads* buffer. The browser class contains a list of these
+  download objects: `downloads'."))
 
 (defmethod connect ((download download) buffer)
+  "Connect the user-interface objects within the download to the
+buffer. This allows the user-interface objects to update their
+appearance in the buffer when they are setf'd."
   (user-interface:connect (paragraph download) buffer)
   (user-interface:connect (progress download) buffer))
 
@@ -32,7 +38,8 @@
         :background-color "dimgray"))))))
 
 (defun list-downloads ()
-  "Display a buffer listing all downloads."
+  "Display a buffer listing all downloads. We iterate through the
+browser's downloads to draw every single download."
   (with-current-html-buffer (buffer "*Downloads*" 'download-mode)
     (markup:markup
      (:style (style buffer))
@@ -68,7 +75,8 @@
       (fuzzy-match (input-buffer minibuffer) filenames))))
 
 (define-command download-open-file ()
-  "Open a downloaded file.
+  "Open a downloaded file. This command only works for downloads
+started by the :lisp download engine.
 See also `open-file'."
   (let ((filename (prompt-minibuffer
                    :input-prompt "Open file"
