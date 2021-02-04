@@ -512,21 +512,25 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
           (setf (url buffer) (quri:uri url))))
     buffer))
 
-(define-command make-internal-buffer (&key (title "") modes)
+(define-command make-internal-buffer (&key (title "") modes
+                                      no-history-p)
   "Create a new buffer.
 MODES is a list of mode symbols.
 If URL is `:default', use `default-new-buffer-url'."
-  (buffer-make *browser* :title title :default-modes modes :internal-buffer-p t))
+  (buffer-make *browser* :title title :default-modes modes :internal-buffer-p t
+               :no-history-p no-history-p))
 
 (declaim (ftype (function (browser &key (:title string)
                                    (:data-profile data-profile)
                                    (:default-modes list)
                                    (:dead-buffer buffer)
                                    (:internal-buffer-p boolean)
-                                   (:parent-buffer buffer)))
+                                   (:parent-buffer buffer)
+                                   (:no-history-p boolean)))
                 buffer-make))
 (defun buffer-make (browser &key data-profile title default-modes
-                              dead-buffer internal-buffer-p parent-buffer)
+                              dead-buffer internal-buffer-p parent-buffer
+                              no-history-p)
   "Make buffer with title TITLE and modes DEFAULT-MODES.
 Run `*browser*'s `buffer-make-hook' over the created buffer before returning it.
 If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
@@ -550,15 +554,16 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (when dead-buffer                   ; TODO: URL should be already set.  Useless?
       (setf (url buffer) (url dead-buffer)))
     (buffers-set (id buffer) buffer)
-    ;; Register buffer in global history:
-    (with-data-access (history (history-path (if from-internal-p buffer (current-buffer)))
-                       :default (make-history-tree buffer))
-      ;; Owner may already exist if history was just create with the above
-      ;; default value.
-      (unless (htree:owner history (id buffer))
-        (htree:add-owner history (id buffer)
-                         :creator-id (when parent-buffer
-                                       (id parent-buffer)))))
+    (unless no-history-p
+      ;; Register buffer in global history:
+      (with-data-access (history (history-path (if from-internal-p buffer (current-buffer)))
+                         :default (make-history-tree buffer))
+        ;; Owner may already exist if history was just create with the above
+        ;; default value.
+        (unless (htree:owner history (id buffer))
+          (htree:add-owner history (id buffer)
+                           :creator-id (when parent-buffer
+                                         (id parent-buffer))))))
     ;; Run hooks before `initialize-modes' to allow for last-minute modification
     ;; of the default modes.
     (hooks:run-hook (buffer-make-hook browser) buffer)

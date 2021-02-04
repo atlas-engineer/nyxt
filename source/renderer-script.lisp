@@ -88,7 +88,9 @@ The function can be passed ARGS."
                                             (ps:lisp style)))))))
 
 (export-always 'with-current-html-buffer)
-(defmacro with-current-html-buffer ((buffer-var title mode) &body body)
+(defmacro with-current-html-buffer ((buffer-var title mode
+                                     &key no-history-p)
+                                    &body body)
   "Switch to a buffer in MODE displaying CONTENT.
 If a buffer in MODE with TITLE exists, reuse it, otherwise create a new buffer.
 BUFFER-VAR is bound to the new bufer in BODY.
@@ -100,7 +102,9 @@ BODY must return the HTML markup as a string."
                                     (buffer-list))
                            (funcall (symbol-function ,mode)
                                     :activate t
-                                    :buffer (make-internal-buffer :title ,title)))))
+                                    :buffer (make-internal-buffer
+                                             :title ,title
+                                             :no-history-p ,no-history-p)))))
      (html-set
       (progn
         ,@body)
