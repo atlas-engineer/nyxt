@@ -318,14 +318,19 @@ For a faster and modification-unsafe version, see `with-data-unsafe'."
              (store (current-data-profile) ,path-name)))))))
 
 (export-always 'with-data-unsafe)
-(defmacro with-data-unsafe ((data-var data-path) &body body)
+(defmacro with-data-unsafe ((data-var data-path &key key) &body body)
   "Bind the data to DATA-VAR for a fast non-modifying lookup.
 Bind the DATA-VAR to the value of the data from DATA-PATH to reuse it.
 In case there's no data, bind DATA-VAR to DEFAULT.
 
+If KEY is used, bind the result of applying KEY to the data, to
+DATA-VAR.
+
 Beware: this is not a thread-safe macro, so data may be altered while
 you use this macro! For a modification-safe macro, see `with-data-access'."
-  `(let ((,data-var (get-data ,data-path)))
+  `(let ((,data-var ,(if key
+                         `(funcall ,key (get-data ,data-path))
+                         `(get-data ,data-path))))
      (progn ,@body)))
 
 (defvar *gpg-default-recipient* nil)

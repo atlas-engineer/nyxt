@@ -226,14 +226,14 @@ search.")
 
 (defun history-backwards-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all parent URLs."
-  (with-data-unsafe (history (history-path buffer))
-    (let ((parents (if (conservative-history-movement-p (find-mode buffer 'web-mode))
-                       (htree:all-contiguous-owned-parents history)
-                       (htree:all-parents history))))
-      (lambda (minibuffer)
-        (if parents
-            (fuzzy-match (input-buffer minibuffer) parents)
-            (echo "Cannot navigate backwards."))))))
+  (with-data-unsafe (parents (history-path buffer)
+                     :key (if (conservative-history-movement-p (find-mode buffer 'web-mode))
+                              #'htree:all-contiguous-owned-parents
+                              #'htree:all-parents))
+    (lambda (minibuffer)
+      (if parents
+          (fuzzy-match (input-buffer minibuffer) parents)
+          (echo "Cannot navigate backwards.")))))
 
 (define-command history-backwards-query (&optional (buffer (current-buffer)))
   "Query parent URL to navigate back to."
@@ -249,14 +249,14 @@ search.")
 
 (defun history-forwards-direct-children-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over forward-children URL."
-  (with-data-unsafe (history (history-path buffer))
-    (let ((children (if (conservative-history-movement-p (find-mode buffer 'web-mode))
-                        (htree:owned-children (htree:current-owner history))
-                        (htree:children (htree:current-owner-node history)))))
-      (lambda (minibuffer)
-        (if children
-            (fuzzy-match (input-buffer minibuffer) children)
-            (echo "Cannot navigate forwards."))))))
+  (with-data-unsafe (children (history-path buffer)
+                     :key (if (conservative-history-movement-p (find-mode buffer 'web-mode))
+                              (alex:compose #'htree:owned-children #'htree:current-owner)
+                              (alex:compose #'htree:children #'htree:current-owner-node)))
+    (lambda (minibuffer)
+      (if children
+          (fuzzy-match (input-buffer minibuffer) children)
+          (echo "Cannot navigate forwards.")))))
 
 (define-command history-forwards-direct-children (&optional (buffer (current-buffer)))
   "Query child URL to navigate to."
@@ -281,12 +281,12 @@ Otherwise go forward to the only child."
 
 (defun history-forwards-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over forward-children URL."
-  (with-data-unsafe (history (history-path buffer))
-    (let ((children (htree:all-forward-children history)))
-     (lambda (minibuffer)
-       (if children
-           (fuzzy-match (input-buffer minibuffer) children)
-           (echo "Cannot navigate forwards."))))))
+  (with-data-unsafe (children (history-path buffer)
+                     :key #'htree:all-forward-children)
+    (lambda (minibuffer)
+      (if children
+          (fuzzy-match (input-buffer minibuffer) children)
+          (echo "Cannot navigate forwards.")))))
 
 (define-command history-forwards-query (&optional (buffer (current-buffer)))
   "Query forward-URL to navigate to."
@@ -304,14 +304,14 @@ Otherwise go forward to the only child."
 
 (defun history-forwards-all-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over children URL from all branches."
-  (with-data-unsafe (history (history-path buffer))
-    (let ((children (if (conservative-history-movement-p (find-mode buffer 'web-mode))
-                        (htree:all-contiguous-owned-children (htree:current-owner history))
-                        (htree:all-children history))))
-      (lambda (minibuffer)
-        (if children
-            (fuzzy-match (input-buffer minibuffer) children)
-            (echo "Cannot navigate forwards."))))))
+  (with-data-unsafe (children (history-path buffer)
+                     :key (if (conservative-history-movement-p (find-mode buffer 'web-mode))
+                              (alex:compose #'htree:all-contiguous-owned-children #'htree:current-owner)
+                              #'htree:all-children))
+    (lambda (minibuffer)
+      (if children
+          (fuzzy-match (input-buffer minibuffer) children)
+          (echo "Cannot navigate forwards.")))))
 
 (define-command history-forwards-all-query (&optional (buffer (current-buffer)))
   "Query URL to forward to, from all child branches."
@@ -325,14 +325,14 @@ Otherwise go forward to the only child."
 
 (defun history-all-suggestion-filter (&optional (buffer (current-buffer)))
   "Suggestion function over all history URLs."
-  (with-data-unsafe (history (history-path buffer))
-    (let ((urls (if (conservative-history-movement-p (find-mode buffer 'web-mode))
-                    (htree:all-current-owner-nodes history)
-                    (htree:all-current-branch-nodes history))))
-      (lambda (minibuffer)
-        (if urls
-            (fuzzy-match (input-buffer minibuffer) urls)
-            (echo "No history."))))))
+  (with-data-unsafe (urls (history-path buffer)
+                     :key (if (conservative-history-movement-p (find-mode buffer 'web-mode))
+                              #'htree:all-current-owner-nodes
+                              #'htree:all-current-branch-nodes))
+    (lambda (minibuffer)
+      (if urls
+          (fuzzy-match (input-buffer minibuffer) urls)
+          (echo "No history.")))))
 
 (define-command history-all-query (&optional (buffer (current-buffer)))
   "Query URL to go to, from the whole history."
