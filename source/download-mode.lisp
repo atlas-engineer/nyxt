@@ -3,6 +3,15 @@
 
 (in-package :nyxt)
 
+(defclass download ()
+  ((uri :accessor uri)
+   (paragraph :accessor paragraph :initform (make-instance 'user-interface:paragraph))
+   (progress :accessor progress :initform (make-instance 'user-interface:progress-bar))))
+
+(defmethod connect ((download download) buffer)
+  (user-interface:connect (paragraph download) buffer)
+  (user-interface:connect (progress download) buffer))
+
 (define-mode download-mode ()           ; TODO: Move to separate package?
   "Display list of downloads."
   ((style
@@ -22,56 +31,27 @@
         :height "100%"
         :background-color "dimgray"))))))
 
-(defun download-refresh ()
+(defun list-downloads ()
   "Display a buffer listing all downloads."
-  ;; TODO: list the downloads of the buffers with the non-standard paths.
-  (with-current-html-buffer (download-buffer "*Downloads*" 'download-mode)
-    (let ((buffer (current-buffer)))
-      (markup:markup
-       (:style (style download-buffer))
-       (:h1 "Downloads")
-       (:p (:b "Directory: ") (ensure-parent-exists (expand-path (download-path buffer))))
-       (:span              ; TODO: Do we need this span?  We need something because of the loop.
-        (loop for d in (get-data (download-path buffer))
-              collect
-                 (markup:markup
-                  (:p
-                   (:progress :background "red" :value (format nil "~a" (download-manager:bytes-fetched d))
-                              :max (format nil "~a" (download-manager:bytes-total d))
-                              :style (if (download-manager:finished-p d)
-                                         "border: 1px solid" "")
-                              nil)
-                   ;; TODO: Print proxy in use?
-                   " ("
-                   (format nil "~a/s, " (sera:format-file-size-human-readable
-                                         nil
-                                         (download-manager:last-update-speed d)
-                                         :flavor :iec))
-                   (sera:format-file-size-human-readable
-                    nil
-                    (download-manager:bytes-fetched d)
-                    :flavor :iec)
-                   (if (= 0 (download-manager:bytes-total d))
-                       ", out of unknown total"
-                       (format nil "/~a, ~a%"
-                               (sera:format-file-size-human-readable
-                                nil
-                                (download-manager:bytes-total d)
-                                :flavor :iec)
-                               ;; TODO: No need for percentage?
-                               (floor (* 100 (download-manager:progress d)))))
-                   ") "
-                   (:u (object-display (download-manager:resolved-uri d)))
-                   " as "
-                   (:b (file-namestring (download-manager:file d)))))))
-       (:p (:em "Open a file with " (:code (format nil "~a download-open-file" (binding-keys 'execute-command))) "."))))))
-
-(define-command list-downloads ()
-  "Display a buffer listing all downloads."
-  (unless (download-watcher *browser*)
-    (setf (download-watcher *browser*)
-          (bt:make-thread #'download-watch)))
-  (set-current-buffer (download-refresh)))
+  (with-current-html-buffer (buffer "*Downloads*" 'download-mode)
+    (markup:markup
+     (:style (style buffer))
+     (:style (style (make-instance 'download-mode)))
+     (:h1 "Downloads")
+     (:hr)
+     (:body
+      (loop for download in (downloads *browser*)
+            for uri = (uri download)
+            for paragraph = (paragraph download)
+            for progress = (progress download)
+            do (connect download buffer)
+            collect
+               (markup:markup
+                (:div
+                 (:p :class "download-url" (:b "URL: ") (:a :href uri uri))
+                 (:span (markup:raw (user-interface:object-string paragraph)))
+                 (:div :class "progress-bar-container"
+                       (markup:raw (user-interface:object-string progress))))))))))
 
 (define-command download-url ()
   "Download the page or file of the current buffer."
