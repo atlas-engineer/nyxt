@@ -32,26 +32,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
                 :type t
                 :accessor nil
                 :export nil
-                :documentation "Single instantiation of our custom web context.")
-   (downloads
-    :documentation "List of downloads. Used for rendering by download manager.")
-   (download-buffer-style
-    (cl-css:css
-     '((".download-url"
-        :overflow "auto"
-        :white-space "nowrap")
-       (".download-url a"
-        :color "black")
-       (".progress-bar-container"
-        :height "20px"
-        :width "100%")
-       (".progress-bar-base"
-        :height "100%"
-        :background-color "lightgray")
-       (".progress-bar-fill"
-        :height "100%"
-        :background-color "dimgray")))
-    :documentation "Style applied to the download buffer."))
+                :documentation "Single instantiation of our custom web context."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer #'class*:name-identity))
@@ -873,39 +854,18 @@ requested a reload."
   (webkit:webkit-web-view-set-is-muted (gtk-object buffer) value))
 
 (defmethod ffi-buffer-download ((buffer gtk-buffer) uri)
-  (let ((download (webkit:webkit-web-view-download-uri (gtk-object buffer) uri))
-        (completion-paragraph (make-instance 'user-interface:paragraph :text "Completion: 0%"))
-        (progress-bar (make-instance 'user-interface:progress-bar)))
-    (push (list uri completion-paragraph progress-bar) (downloads *browser*))
+  (let* ((webkit-download (webkit:webkit-web-view-download-uri (gtk-object buffer) uri))
+         (download (make-instance 'download)))
+    (setf (uri download) uri)
+    (push download (downloads *browser*))
     (gobject:g-signal-connect
-     download "received-data"
+     webkit-download "received-data"
      (lambda (data-length user-data)
        (declare (ignore data-length user-data))
-       (setf (user-interface:percentage progress-bar)
-             (* 100 (webkit:webkit-download-estimated-progress download)))
-       (setf (user-interface:text completion-paragraph)
-             (format nil "Completion: ~,2f%" (* 100 (webkit:webkit-download-estimated-progress download))))))
-
-    (with-current-html-buffer (buffer "*Downloads*" 'base-mode)
-      (markup:markup
-       (:style (style buffer))
-       (:style (download-buffer-style *browser*))
-       (:h1 "Downloads")
-       (:hr)
-       (:body
-        (loop for download in (downloads *browser*)
-              for uri = (first download)
-              for paragraph = (second download)
-              for progress = (third download)
-              do (user-interface:connect paragraph buffer)
-                 (user-interface:connect progress buffer)
-              collect
-                 (markup:markup
-                  (:div
-                   (:p :class "download-url" (:b "URL: ") (:a :href uri uri))
-                   (:span (markup:raw (user-interface::object-string paragraph)))
-                   (:div :class "progress-bar-container"
-                         (markup:raw (user-interface::object-string progress)))))))))))
+       (setf (user-interface:percentage (progress download))
+             (* 100 (webkit:webkit-download-estimated-progress webkit-download)))
+       (setf (user-interface:text (paragraph download))
+             (format nil "Completion: ~,2f%" (* 100 (webkit:webkit-download-estimated-progress webkit-download))))))))
 
 (define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-user-agent

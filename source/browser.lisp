@@ -112,6 +112,8 @@ if there are errors, they will be reported by this function.")
                                        :documentation "When open links from an external program, or
 when C-cliking on a URL, decide whether to open in a new
 window or not.")
+   (downloads
+    :documentation "List of downloads. Used for rendering by download manager.")
    (download-watcher nil
                      :type t
                      :export nil
@@ -293,11 +295,10 @@ current buffer."
                      (unsafe-download)
                    (error (c)
                      (echo-warning "Download error: ~a" c)
-                     nil)))))))
-     (unless (find-buffer 'download-mode)
-       (list-downloads)))
+                     nil))))))))
     (:renderer
-     (ffi-buffer-download buffer (object-string url)))))
+     (ffi-buffer-download buffer (object-string url))))
+  (list-downloads))
 
 (defmethod get-unique-window-identifier ((browser browser))
   (format nil "~s" (incf (slot-value browser 'total-window-count))))
