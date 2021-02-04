@@ -61,6 +61,6 @@ filled up, use a number between 0 and 100.")))
                :id ,(id progress-bar))))
 
 (defmethod (setf percentage) (percentage (progress-bar progress-bar))
-  (setf (slot-value progress-bar 'percentage) (format nil "~D%" percentage))
+  (setf (slot-value progress-bar 'percentage) (format nil "~D%" (round percentage)))
   (when (slot-boundp progress-bar 'buffer)
     (update progress-bar)))
