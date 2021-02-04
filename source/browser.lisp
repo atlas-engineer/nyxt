@@ -254,7 +254,7 @@ This function is meant to be run in the background."
           do (sleep 0.1) ; avoid excessive polling
              (let ((completion-percentage
                      (* 100 (/ (download-manager:bytes-fetched download-object)
-                               (download-manager:bytes-total download-object)))))
+                               (max 1 (download-manager:bytes-total download-object))))))
                (setf (user-interface:percentage (progress download-render))
                      completion-percentage)
                (setf (user-interface:text (paragraph download-render))
