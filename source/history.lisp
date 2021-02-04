@@ -357,8 +357,6 @@ We keep this variable as a means to import the old format to the new one.")
                    (expand-path path))
              (setf (get-data path) history)
              (match (session-restore-prompt *browser*)
-               ;; Need `funcall-safely' so we continue if the user exits the
-               ;; minibuffer (which raises a condition).
                (:always-ask (if-confirm ("Restore session?")
                                         (restore-buffers history)))
                (:always-restore (restore-buffers history))
