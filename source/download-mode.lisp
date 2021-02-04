@@ -5,57 +5,66 @@
 
 (define-mode download-mode ()           ; TODO: Move to separate package?
   "Display list of downloads."
-  ())
+  ((style
+    (cl-css:css
+     '((".download-url"
+        :overflow "auto"
+        :white-space "nowrap")
+       (".download-url a"
+        :color "black")
+       (".progress-bar-container"
+        :height "20px"
+        :width "100%")
+       (".progress-bar-base"
+        :height "100%"
+        :background-color "lightgray")
+       (".progress-bar-fill"
+        :height "100%"
+        :background-color "dimgray"))))))
 
 (defun download-refresh ()
   "Display a buffer listing all downloads."
   ;; TODO: list the downloads of the buffers with the non-standard paths.
-  (let* ((buffer (current-buffer))
-         (download-buffer (or (find-buffer 'download-mode)
-                              (download-mode :activate t
-                                             :buffer (make-internal-buffer :title "*Downloads*"))))
-         (contents (markup:markup
-                    (:style (style download-buffer))
-                    (:h1 "Downloads")
-                    (:p (:b "Directory: ") (ensure-parent-exists (expand-path (download-path buffer))))
-                    (:span              ; TODO: Do we need this span?  We need something because of the loop.
-                     (loop for d in (get-data (download-path buffer))
-                           collect
-                           (markup:markup
-                            (:p
-                             (:progress :background "red" :value (format nil "~a" (download-manager:bytes-fetched d))
-                                        :max (format nil "~a" (download-manager:bytes-total d))
-                                        :style (if (download-manager:finished-p d)
-                                                   "border: 1px solid" "")
-                                        nil)
-                             ;; TODO: Print proxy in use?
-                             " ("
-                             (format nil "~a/s, " (sera:format-file-size-human-readable
-                                                   nil
-                                                   (download-manager:last-update-speed d)
-                                                   :flavor :iec))
-                             (sera:format-file-size-human-readable
-                              nil
-                              (download-manager:bytes-fetched d)
-                              :flavor :iec)
-                             (if (= 0 (download-manager:bytes-total d))
-                                 ", out of unknown total"
-                                 (format nil "/~a, ~a%"
-                                         (sera:format-file-size-human-readable
-                                          nil
-                                          (download-manager:bytes-total d)
-                                          :flavor :iec)
-                                         ;; TODO: No need for percentage?
-                                         (floor (* 100 (download-manager:progress d)))))
-                             ") "
-                             (:u (object-display (download-manager:resolved-uri d)))
-                             " as "
-                             (:b (file-namestring (download-manager:file d)))))))
-                    (:p (:em "Open a file with " (:code (format nil "~a download-open-file" (binding-keys 'execute-command))) "."))))
-         (insert-content (ps:ps (setf (ps:@ document body |innerHTML|)
-                                      (ps:lisp contents)))))
-    (ffi-buffer-evaluate-javascript-async download-buffer insert-content)
-    download-buffer))
+  (with-current-html-buffer (download-buffer "*Downloads*" 'download-mode)
+    (let ((buffer (current-buffer)))
+      (markup:markup
+       (:style (style download-buffer))
+       (:h1 "Downloads")
+       (:p (:b "Directory: ") (ensure-parent-exists (expand-path (download-path buffer))))
+       (:span              ; TODO: Do we need this span?  We need something because of the loop.
+        (loop for d in (get-data (download-path buffer))
+              collect
+                 (markup:markup
+                  (:p
+                   (:progress :background "red" :value (format nil "~a" (download-manager:bytes-fetched d))
+                              :max (format nil "~a" (download-manager:bytes-total d))
+                              :style (if (download-manager:finished-p d)
+                                         "border: 1px solid" "")
+                              nil)
+                   ;; TODO: Print proxy in use?
+                   " ("
+                   (format nil "~a/s, " (sera:format-file-size-human-readable
+                                         nil
+                                         (download-manager:last-update-speed d)
+                                         :flavor :iec))
+                   (sera:format-file-size-human-readable
+                    nil
+                    (download-manager:bytes-fetched d)
+                    :flavor :iec)
+                   (if (= 0 (download-manager:bytes-total d))
+                       ", out of unknown total"
+                       (format nil "/~a, ~a%"
+                               (sera:format-file-size-human-readable
+                                nil
+                                (download-manager:bytes-total d)
+                                :flavor :iec)
+                               ;; TODO: No need for percentage?
+                               (floor (* 100 (download-manager:progress d)))))
+                   ") "
+                   (:u (object-display (download-manager:resolved-uri d)))
+                   " as "
+                   (:b (file-namestring (download-manager:file d)))))))
+       (:p (:em "Open a file with " (:code (format nil "~a download-open-file" (binding-keys 'execute-command))) "."))))))
 
 (define-command list-downloads ()
   "Display a buffer listing all downloads."
