@@ -24,6 +24,7 @@ the *Downloads* buffer. The browser class contains a list of these
 download objects: `downloads'."))
 
 (defmethod (setf completion-percentage) (percentage (download download))
+  (check-type percentage (real 0 100))
   (setf (slot-value download 'completion-percentage) percentage)
   (setf (user-interface:percentage (progress download))
         (completion-percentage download))
@@ -34,8 +35,9 @@ download objects: `downloads'."))
   (slot-value download 'completion-percentage))
 
 (defmethod (setf destination-path) (path (download download))
+  (check-type path string)
   (setf (slot-value download 'destination-path) path)
-  (setf (user-interface:url (open-button download)) 
+  (setf (user-interface:url (open-button download))
         (lisp-url `(nyxt/file-manager-mode:open-file-function ,path))))
 
 (defmethod destination-path ((download download))
