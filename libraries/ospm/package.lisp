@@ -6,7 +6,7 @@
 (uiop:define-package ospm
   (:use #:common-lisp)
   (:use #:trivia)
-  (:import-from #:class* #:define-class)
+  (:import-from #:class-star #:define-class)
   (:import-from #:serapeum #:export-always))
 
 (defvar ospm::scheme-reader-syntax nil)
