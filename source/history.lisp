@@ -26,7 +26,7 @@ include implicit visits.")
                     :documentation "
 Number of times the URL was visited by following a link on a page.  This does
 not include explicit visits."))
-  (:accessor-name-transformer #'class*:name-identity)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "
 Entry for the global history.
 The total number of visit for a given URL is (+ explicit-visits implicit-visits)."))

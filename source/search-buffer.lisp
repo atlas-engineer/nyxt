@@ -114,7 +114,7 @@
   ((identifier)
    (body)
    (buffer))
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (defclass multi-buffer-match (match) ())
 

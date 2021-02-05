@@ -35,7 +35,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
                 :documentation "Single instantiation of our custom web context."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 (define-user-class browser (gtk-browser))
 
 (define-class gtk-window ()
@@ -49,7 +49,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
    (key-string-buffer))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 (define-user-class window (gtk-window))
 
 (define-class gtk-buffer ()
@@ -62,7 +62,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 data-manager will store the data separately for each buffer."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 (define-user-class buffer (gtk-buffer))
 
 (defmethod web-context ((browser gtk-browser))
@@ -165,7 +165,7 @@ not return."
 (define-class data-manager-data-path (data-path)
   ((ref :initform "data-manager"))
   (:export-class-name-p t)
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (defmethod expand-data-path ((profile private-data-profile) (path data-manager-data-path))
   "We shouldn't store any `data-manager' data for `private-data-profile'."

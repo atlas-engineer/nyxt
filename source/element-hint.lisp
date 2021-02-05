@@ -251,7 +251,7 @@ identifier for every hinted element."
    ;; TODO: Move to `link-hint' or `button-hint'? Maybe add an intermediate class?
    (body ""
          :documentation "The body of the anchor tag."))
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-class clickable-hint (hint) ())
 
@@ -261,21 +261,21 @@ identifier for every hinted element."
 
 (define-class link-hint (hint)
   ((url ""))
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-class input-hint (focusable-hint)
   ((placeholder-text "" :documentation "The placeholder text of the input element.
 I.e. the grey text initially seen in it."))
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-class textarea-hint (focusable-hint)
   ((placeholder-text "" :documentation "The placeholder text of the textarea.
 I.e. the grey text initially seen in it."))
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-class image-hint (link-hint)
   ((alt "" :documentation "Alternative text for the image."))
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (defmethod object-string ((hint hint))
   (hint hint))

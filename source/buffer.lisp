@@ -222,7 +222,7 @@ Rules are kept in browser's `user-data', keyed by the expanded `auto-mode-rules-
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-user-class buffer)
 
@@ -262,7 +262,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-user-class web-buffer)
 
@@ -318,7 +318,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-user-class internal-buffer)
 
@@ -403,7 +403,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-user-class status-buffer)
 
