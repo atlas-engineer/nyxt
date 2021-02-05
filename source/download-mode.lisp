@@ -133,13 +133,8 @@ download."
   "Download the page or file of the current buffer."
   (download (current-buffer) (url (current-buffer))))
 
-(defun get-downloaded-filenames ()
-  "Return the list of downloaded filenames of the current session, as strings."
-  (mapcar #'download-manager:filename
-          (get-data (download-path (current-buffer)))))
-
 (defun downloaded-files-suggestion-filter ()
-  (let ((filenames (get-downloaded-filenames)))
+  (let ((filenames (mapcar #'destination-path (downloads *browser*))))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) filenames))))
 
