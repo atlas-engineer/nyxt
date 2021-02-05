@@ -282,6 +282,8 @@ current buffer."
                     (push download downloads)
                     ;; Add a watcher / renderer for monitoring download
                     (let ((download-render (make-instance 'download :uri (object-string url))))
+                      (setf (destination-path download-render)
+                            (download-manager:filename download))
                       (push download-render (downloads *browser*))
                       (bt:make-thread
                        (lambda ()
