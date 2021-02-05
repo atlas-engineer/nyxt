@@ -39,8 +39,9 @@ appearance in the buffer when they are setf'd."
         :background-color "dimgray"))))))
 
 (defun list-downloads ()
-  "Display a buffer listing all downloads. We iterate through the
-browser's downloads to draw every single download."
+  "Display a buffer listing all downloads.
+We iterate through the browser's downloads to draw every single
+download."
   (with-current-html-buffer (buffer "*Downloads*" 'download-mode)
     (markup:markup
      (:style (style buffer))
