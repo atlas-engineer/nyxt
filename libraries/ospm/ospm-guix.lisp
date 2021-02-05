@@ -22,7 +22,7 @@ Also see `expand-output-p' and `expand-outputs-p'.")
 This can only be derived if `path' has been derived."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer #'class*:name-identity)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "OS package outputs are meaningful mostly for functional
 package managers like Nix or Guix."))
 
@@ -141,7 +141,7 @@ value.
    (description ""))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (export-always 'expanded-output-p)
 (defun expanded-output-p (output)
