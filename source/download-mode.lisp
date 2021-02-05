@@ -13,6 +13,8 @@ showing the percentage a download is complete.")
    (destination-path :initarg :destination-path
                      :documentation "A string represent where the file
 will be downloaded to on disk.")
+   (cancel-function :documentation "The function to call when
+cancelling a download. This can be set by the download engine.")
    (cancel-button :accessor cancel-button :initform
                   (make-instance 'user-interface:button
                                  :text "✕"
@@ -26,6 +28,19 @@ will be downloaded to on disk.")
   (:documentation "This class is used to represent a download within
 the *Downloads* buffer. The browser class contains a list of these
 download objects: `downloads'."))
+
+(defun cancel-download (uri)
+  (alex:when-let ((download (find uri (downloads *browser*) :key #'uri :test #'equal)))
+    (funcall (cancel-function download))
+    (echo "Download ~a cancelled." uri)))
+
+(defmethod (setf cancel-function) (cancel-function (download download))
+  (setf (slot-value download 'cancel-function) cancel-function)
+  (setf (user-interface:url (cancel-button download))
+        (lisp-url `(cancel-download ,(uri download)))))
+
+(defmethod cancel-function ((download download))
+  (slot-value download 'cancel-function))
 
 (defmethod (setf completion-percentage) (percentage (download download))
   (setf (slot-value download 'completion-percentage) percentage)
@@ -52,6 +67,7 @@ buffer. This allows the user-interface objects to update their
 appearance in the buffer when they are setf'd."
   (user-interface:connect (paragraph download) buffer)
   (user-interface:connect (open-button download) buffer)
+  (user-interface:connect (cancel-button download) buffer)
   (user-interface:connect (progress download) buffer))
 
 (define-mode download-mode ()           ; TODO: Move to separate package?
