@@ -82,7 +82,7 @@ Example formatter that prints the buffer indices over the total number of buffer
 The handlers take the window as argument."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-user-class window)
 

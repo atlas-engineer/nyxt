@@ -142,7 +142,7 @@ CLASS-SYM to NEW-SUPERCLASSES.  The class is restored when exiting BODY."
                                                     ,initform))
                 else do
                   (log:warn "Undefined slot ~a in ~a" (first slot) final-name))
-         (:accessor-name-transformer #'class*:name-identity))
+         (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
        (define-user-class ,name ,(cons temp-name
                                             (mapcar #'class-name
                                                     (mopu:direct-superclasses final-name)))))))

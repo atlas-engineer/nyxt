@@ -210,7 +210,7 @@ GnuPG documentation for how to set it up.")
    ((name :initform \"dev\"))
    (:export-class-name-p t)
    (:export-accessor-names-p t)
-   (:accessor-name-transformer #'class*:name-identity)
+   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
    (:documentation \"Development profile.\"))
 
 \(defmethod nyxt:expand-data-path ((profile dev-data-profile) (path data-path))

@@ -24,7 +24,7 @@
                 :type integer
                 :documentation "Last time this command was called from minibuffer.
 This can be used to order the commands."))
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-condition documentation-style-warning (style-warning)
   ((name :initarg :name :reader name)
@@ -176,7 +176,7 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
          :type (or symbol null))
    (class-sym nil
               :type (or symbol null)))
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (defmethod object-string ((slot slot))
   (string-downcase (write-to-string (name slot))))

@@ -100,7 +100,7 @@ You will want edit this to match the changes done to `style'.")
                  :documentation "Keymap that takes precedence over all modes' keymaps."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer #'class*:name-identity)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "The minibuffer is the interface for user interactions.  Each
 prompt spawns a new minibuffer object: this makes it possible to nest minibuffer
 calls, such as invoking `minibuffer-history'.

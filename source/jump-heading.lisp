@@ -5,7 +5,7 @@
 
 (define-class heading ()
   ((inner-text ""))
-  (:accessor-name-transformer #'class*:name-identity)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "A heading. The inner-text must not be modified, so
   than we can jump to the anchor of the same name."))
 

@@ -18,7 +18,7 @@ query.  This is optional: if nil, use `search-url' instead with ~a expanded to
 the empty string."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (export-always 'make-search-engine)
 (defun make-search-engine (shortcut search-url &optional (fallback-url ""))

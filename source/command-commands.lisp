@@ -9,7 +9,7 @@
    (value nil
           :type t
           :documentation "The hook value."))
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (defmethod object-string ((hook-desc hook-description))
   (name hook-desc))

@@ -51,7 +51,7 @@ function.")
 Enable INCLUDED modes plus the already present ones, and disable EXCLUDED modes, if nil."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (declaim (ftype (function (quri:uri buffer) (or auto-mode-rule null))
                 matching-auto-mode-rule))

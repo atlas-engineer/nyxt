@@ -36,7 +36,7 @@ SEARCH-URL maybe either be a full URL or a path.  If the latter, the path is
 appended to the URL."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (defmethod object-string ((entry bookmark-entry))
   (object-string (url entry)))

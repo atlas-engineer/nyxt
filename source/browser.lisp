@@ -21,7 +21,7 @@ Example: \"http://192.168.1.254:8080\".")
                         :documentation "Non-nil if downloads should also use the proxy."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer #'class*:name-identity)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "Enable forwarding of all network requests to a specific host.
 This can apply to specific buffer."))
 
@@ -184,7 +184,7 @@ editing files. It should be specified as a complete string path to the
 editor executable."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-user-class browser)
 
@@ -379,7 +379,7 @@ the web view.")
          :documentation "The key sequence that was pressed to generate the request."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (export-always 'request-resource)
 (defun request-resource (request-data)
