@@ -16,3 +16,10 @@
    (user-interface:buffer progress-bar)
    (ps:ps (let ((element (ps:chain document (get-element-by-id (ps:lisp (user-interface:id progress-bar))))))
             (setf (ps:chain element style width) (ps:lisp (user-interface:percentage progress-bar)))))))
+
+(defmethod user-interface:update ((button user-interface:button))
+  (ffi-buffer-evaluate-javascript-async
+   (user-interface:buffer button)
+   (ps:ps (let ((element (ps:chain document (get-element-by-id (ps:lisp (user-interface:id button))))))
+            (setf (ps:chain element text-content) (ps:lisp (user-interface:text button)))
+            (setf (ps:chain element href) (ps:lisp (user-interface:url button)))))))

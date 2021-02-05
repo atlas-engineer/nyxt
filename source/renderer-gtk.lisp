@@ -861,10 +861,13 @@ requested a reload."
      webkit-download "received-data"
      (lambda (data-length user-data)
        (declare (ignore data-length user-data))
-       (setf (user-interface:percentage (progress download))
-             (* 100 (webkit:webkit-download-estimated-progress webkit-download)))
-       (setf (user-interface:text (paragraph download))
-             (format nil "Completion: ~,2f%" (* 100 (webkit:webkit-download-estimated-progress webkit-download))))))))
+       (setf (completion-percentage download)
+             (* 100 (webkit:webkit-download-estimated-progress webkit-download)))))
+    (gobject:g-signal-connect
+     webkit-download "created-destination"
+     (lambda (destination user-data)
+       (declare (ignore destination user-data))
+       (setf (destination-path download) (webkit:webkit-download-destination webkit-download))))))
 
 (define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-user-agent
