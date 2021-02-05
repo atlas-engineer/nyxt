@@ -13,6 +13,10 @@ showing the percentage a download is complete.")
    (destination-path :initarg :destination-path
                      :documentation "A string represent where the file
 will be downloaded to on disk.")
+   (cancel-button :accessor cancel-button :initform
+                  (make-instance 'user-interface:button
+                                 :text "✕"
+                                 :url (lisp-url '(echo "Don't know how to cancel download."))))
    (open-button :accessor open-button :initform
                 (make-instance 'user-interface:button
                                :text "🗁"
@@ -54,7 +58,9 @@ appearance in the buffer when they are setf'd."
   "Display list of downloads."
   ((style
     (cl-css:css
-     '((".download-url"
+     '(("download"
+        :margin-top "10px")
+       (".download-url"
         :overflow "auto"
         :white-space "nowrap")
        (".download-url a"
@@ -79,19 +85,21 @@ download."
      (:style (style (make-instance 'download-mode)))
      (:h1 "Downloads")
      (:hr)
-     (:body
+     (:div
       (loop for download in (downloads *browser*)
             for uri = (uri download)
             for paragraph = (paragraph download)
             for progress = (progress download)
             for open-button = (open-button download)
+            for cancel-button = (cancel-button download)
             do (connect download buffer)
             collect
                (markup:markup
-                (:div
-                 (:p :class "download-url"
-                     (markup:raw (user-interface:object-string open-button))
-                     (:a :href uri uri))
+                (:div :class "download"
+                 (:p :class "download-buttons"
+                  (markup:raw (user-interface:object-string cancel-button))
+                  (markup:raw (user-interface:object-string open-button)))
+                 (:p :class "download-url" (:a :href uri uri))
                  (:span (markup:raw (user-interface:object-string paragraph)))
                  (:div :class "progress-bar-container"
                        (markup:raw (user-interface:object-string progress))))))))))
