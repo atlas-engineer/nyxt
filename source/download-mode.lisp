@@ -24,7 +24,6 @@ the *Downloads* buffer. The browser class contains a list of these
 download objects: `downloads'."))
 
 (defmethod (setf completion-percentage) (percentage (download download))
-  (check-type percentage (real 0 100))
   (setf (slot-value download 'completion-percentage) percentage)
   (setf (user-interface:percentage (progress download))
         (completion-percentage download))

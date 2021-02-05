@@ -859,15 +859,24 @@ requested a reload."
     (push download (downloads *browser*))
     (gobject:g-signal-connect
      webkit-download "received-data"
-     (lambda (data-length user-data)
-       (declare (ignore data-length user-data))
+     (lambda (webkit-download data-length)
+       (declare (ignore data-length))
        (setf (completion-percentage download)
              (* 100 (webkit:webkit-download-estimated-progress webkit-download)))))
     (gobject:g-signal-connect
+     webkit-download "decide-destination"
+     (lambda (webkit-download suggested-file-name)
+       (alex:when-let* ((path (download-path buffer))
+                        (download-dir (expand-path path))
+                        (file-path (format nil "file://~a~a" download-dir suggested-file-name)))
+         (log:debug "Downloading file to ~a" file-path)
+         (webkit:webkit-download-set-destination webkit-download file-path))))
+    (gobject:g-signal-connect
      webkit-download "created-destination"
-     (lambda (destination user-data)
-       (declare (ignore destination user-data))
-       (setf (destination-path download) (webkit:webkit-download-destination webkit-download))))))
+     (lambda (webkit-download destination)
+       (declare (ignore destination))
+       (setf (destination-path download)
+             (webkit:webkit-download-destination webkit-download))))))
 
 (define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-user-agent
