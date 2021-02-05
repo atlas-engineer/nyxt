@@ -18,11 +18,16 @@ cancelling a download. This can be set by the download engine.")
    (cancel-button :accessor cancel-button :initform
                   (make-instance 'user-interface:button
                                  :text "✕"
-                                 :url (lisp-url '(echo "Don't know how to cancel download."))))
+                                 :url (lisp-url '(echo "Can't cancel download.")))
+                  :documentation "The download is referenced by its
+URI. The URL for this button is therefore encoded as a funcall to
+cancel-download with an argument of the URI to cancel.")
    (open-button :accessor open-button :initform
                 (make-instance 'user-interface:button
                                :text "🗁"
-                               :url (lisp-url '(echo "File path unknown."))))
+                               :url (lisp-url '(echo "Can't open file, file path unknown.")))
+                :documentation "The file name to open is encoded
+within the button's URL when the destinaton path is set.")
    (paragraph :accessor paragraph :initform (make-instance 'user-interface:paragraph))
    (progress :accessor progress :initform (make-instance 'user-interface:progress-bar)))
   (:documentation "This class is used to represent a download within
@@ -30,9 +35,12 @@ the *Downloads* buffer. The browser class contains a list of these
 download objects: `downloads'."))
 
 (defun cancel-download (uri)
+  "This function is called by the cancel-button with an argument of
+the URI. It will search the URIs of all the existing downloads, if it
+finds it, it will invoke its cancel-function."
   (alex:when-let ((download (find uri (downloads *browser*) :key #'uri :test #'equal)))
     (funcall (cancel-function download))
-    (echo "Download ~a cancelled." uri)))
+    (echo "Download cancelled: ~a." uri)))
 
 (defmethod (setf cancel-function) (cancel-function (download download))
   (setf (slot-value download 'cancel-function) cancel-function)
