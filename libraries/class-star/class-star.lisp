@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :class*)
+(in-package :class-star)
 
 (defun name-identity (name definition)
   (declare (ignore definition))
