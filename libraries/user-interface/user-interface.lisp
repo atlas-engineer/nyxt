@@ -27,11 +27,27 @@
   (:documentation "Propagate changes to the buffer."))
 
 (defclass button (ui-element)
-  ((text :initform "" :accessor text :initarg :text)
-   (url :initform "" :accessor url :initarg :url)))
+  ((text :initform "" :initarg :text)
+   (url :initform ""  :initarg :url)))
+
+(defmethod (setf text) (text (button button))
+  (setf (slot-value button 'text) text)
+  (when (slot-boundp button 'buffer)
+    (update button)))
+
+(defmethod (setf url) (url (button button))
+  (setf (slot-value button 'url) url)
+  (when (slot-boundp button 'buffer)
+    (update button)))
+
+(defmethod text ((button button))
+  (slot-value button 'text))
+
+(defmethod url ((button button))
+  (slot-value button 'url))
 
 (defmethod object-expression ((button button))
-  `(:a :class "button" :href ,(url button) ,(text button)))
+  `(:a :id ,(id button) :class "button" :href ,(url button) ,(text button)))
 
 (defclass paragraph (ui-element)
   ((text :initform "" :initarg :text)))
