@@ -2,19 +2,23 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (in-package :cl-user)
+(defpackage :class-star/tests
+  (:use :common-lisp)
+  (:import-from :class-star))
+(in-package :class-star/tests)
 
 (prove:plan nil)
 
 (prove:subtest "Simple class"
   (prove:is (progn
-              (class*:define-class foo ()
+              (class-star:define-class foo ()
                 ((name "fooname")))
               (let ((foo (make-instance 'foo)))
                 (name-of foo)))
             "fooname"))
 
 (prove:subtest "Simple class with custom accessors"
-  (class*:define-class bar ()
+  (class-star:define-class bar ()
     ((name "fooname")
      (age :accessor this-age)
      (address :accessor nil))
@@ -26,7 +30,7 @@
 
 (prove:subtest "Simple class default value"
   (prove:is (progn
-              (class*:define-class foo-default ()
+              (class-star:define-class foo-default ()
                 ((name :type string)
                  (age :type number)))
               (let ((foo (make-instance 'foo-default)))
@@ -37,14 +41,14 @@
 #+nil
 (prove:subtest "No initarg"
   (prove:is-error (let ((hu.dwim.defclass-star:*automatic-initargs-p* nil))
-                    (class*:define-class foo-no-initarg ()
+                    (class-star:define-class foo-no-initarg ()
                       ((name :type string)))
                     (make-instance 'foo-no-initarg :name "bar"))
                   'sb-pcl::initarg-error))
 
 (prove:subtest "No accessor"
   (prove:is (progn
-              (class*:define-class foo-no-accessors ()
+              (class-star:define-class foo-no-accessors ()
                 ((name-no-acc :type string))
                 (:automatic-accessors-p nil))
               (make-instance 'foo-no-accessors)
@@ -52,24 +56,24 @@
             nil))
 
 (prove:subtest "Initform inference"
-  (class*:define-class foo-initform-infer ()
+  (class-star:define-class foo-initform-infer ()
     ((name :type string)))
   (prove:is (name-of (make-instance 'foo-initform-infer))
             "")
-  (class*:define-class foo-initform-infer-no-unbound ()
+  (class-star:define-class foo-initform-infer-no-unbound ()
     ((name :type function))
-    (:initform-inference 'class*:no-unbound-initform-inference))
+    (:initform-inference 'class-star:no-unbound-initform-inference))
   (prove:is-error (make-instance 'foo-initform-infer-no-unbound)
                   'simple-error)
-  (class*:define-class foo-initform-infer-nil-fallback ()
+  (class-star:define-class foo-initform-infer-nil-fallback ()
     ((name :type (or function null)))
-    (:initform-inference 'class*:nil-fallback-initform-inference))
+    (:initform-inference 'class-star:nil-fallback-initform-inference))
   (prove:is (name-of (make-instance 'foo-initform-infer-nil-fallback))
             nil))
 
 (defvar street-name "bar")
 (prove:subtest "Type inference"
-  (class*:define-class foo-type-infer ()
+  (class-star:define-class foo-type-infer ()
     ((name "foo")
      (nickname street-name)
      (age 1)
