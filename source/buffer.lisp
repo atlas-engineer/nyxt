@@ -198,7 +198,9 @@ The handlers take the buffer as argument.")
 stored.  Nil means use system default.
 Downloads are kept in browser's `user-data', keyed by the expanded `download-path'.")
    (download-engine :initform :lisp
-                    :documentation "Select a download engine to use, options are :lisp or :renderer.")
+                    :type symbol
+                    :documentation "Select a download engine to use,
+such as :lisp or :renderer.")
    (history-path (make-instance 'history-data-path :basename "default"
                                                    :dirname (uiop:xdg-data-home +data-root+ "history"))
                  :type data-path
