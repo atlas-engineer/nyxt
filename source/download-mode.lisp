@@ -5,7 +5,8 @@
 
 (defclass download ()
   ((uri :accessor uri :initarg :uri :documentation "A string
-representation of a URL to be shown in the interface.")
+representation of a URL to be shown in the interface."
+        :initform (error "URI required."))
    (completion-percentage :initform 0
                           :type float
                           :documentation "A number between 0 and 100
