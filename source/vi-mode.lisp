@@ -45,6 +45,13 @@ vi-normal-mode.")
         (setf (keymap-scheme-name buffer) scheme:vi-normal)
         (setf (forward-input-events-p buffer) nil))))))
 
+(define-command switch-to-vi-normal-mode (&optional (mode (find-submode (current-buffer)
+                                                                        'vi-insert-mode)))
+  "Switch to the mode remembered to be the matching VI-normal one for this MODE."
+  (when mode
+    (enable-modes (list (and (previous-vi-normal-mode mode)
+                             (mode-name (previous-vi-normal-mode mode)))))))
+
 ;; TODO: Move ESCAPE binding to the override map?
 (define-mode vi-insert-mode ()
   "Enable VI-style modal bindings (insert mode).
@@ -55,12 +62,15 @@ See `vi-normal-mode'."
     :type (or keymap:scheme-name null)
     :documentation "The previous keymap scheme that will be used when ending
 vi-normal-mode.")
+   (previous-vi-normal-mode nil
+    :type (or vi-normal-mode null)
+    :documentation "The `vi-normal-mode' that this insert mode is tied to.")
    (keymap-scheme
     (define-scheme "vi"
       scheme:vi-insert
       (list
        "C-i" 'autofill
-       "escape" 'vi-normal-mode
+       "escape" 'switch-to-vi-normal-mode
        "button1" 'vi-button1)))
    (destructor
     (lambda (mode)
@@ -73,7 +83,9 @@ vi-normal-mode.")
           (setf (previous-keymap-scheme-name mode)
                 (if vi-normal
                     (previous-keymap-scheme-name vi-normal)
-                    (keymap-scheme-name buffer))))
+                    (keymap-scheme-name buffer))
+                (previous-vi-normal-mode mode)
+                vi-normal))
         (vi-normal-mode :activate nil :buffer buffer)
         (setf (keymap-scheme-name buffer) scheme:vi-insert))))))
 
