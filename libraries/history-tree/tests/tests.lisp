@@ -136,7 +136,7 @@
 (define-class web-page ()
   ((url "")
    (title ""))
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (prove:subtest "Compound entry uniqueness"
   (let ((web-page1 (make-instance 'web-page :url "http://example.org"
