@@ -241,20 +241,20 @@ editor executable."))
 
 (defun download-watch (download-render download-object)
   "Update the *Downloads* buffer.
-This function is meant to be run in the background."
+This function is meant to be run in the background. There is a
+potential thread starvation issue if one thread consumes all
+messages. If in practice this becomes a problem, we should poll on
+each thread until the completion percentage is 100 OR a timeout is
+reached (during which no new progress has been made)."
   (when download-manager:*notifications*
     (loop for d = (calispel:? download-manager:*notifications*)
           while d
           when (download-manager:finished-p d)
             do (hooks:run-hook (after-download-hook *browser*))
           do (sleep 0.1) ; avoid excessive polling
-             (let ((completion-percentage
-                     (* 100 (/ (download-manager:bytes-fetched download-object)
-                               (max 1 (download-manager:bytes-total download-object))))))
-               (setf (user-interface:percentage (progress download-render))
-                     completion-percentage)
-               (setf (user-interface:text (paragraph download-render))
-                     (format nil "Completion: ~,2f%" completion-percentage))))))
+             (setf (completion-percentage download-render)
+                   (* 100 (/ (download-manager:bytes-fetched download-object)
+                             (max 1 (download-manager:bytes-total download-object))))))))
 
 ;; TODO: To download any URL at any moment and not just in resource-query, we
 ;; need to query the cookies for URL.  Thus we need to add an IPC endpoint to

@@ -6,17 +6,47 @@
 (defclass download ()
   ((uri :accessor uri :initarg :uri :documentation "A string
 representation of a URL to be shown in the interface.")
+   (completion-percentage :initform 0
+                          :type float
+                          :documentation "A number between 0 and 100
+showing the percentage a download is complete.")
+   (destination-path :initarg :destination-path
+                     :documentation "A string represent where the file
+will be downloaded to on disk.")
+   (open-button :accessor open-button :initform
+                (make-instance 'user-interface:button
+                               :text "🗁"
+                               :url (lisp-url '(echo "File path unknown."))))
    (paragraph :accessor paragraph :initform (make-instance 'user-interface:paragraph))
    (progress :accessor progress :initform (make-instance 'user-interface:progress-bar)))
   (:documentation "This class is used to represent a download within
 the *Downloads* buffer. The browser class contains a list of these
 download objects: `downloads'."))
 
+(defmethod (setf completion-percentage) (percentage (download download))
+  (setf (slot-value download 'completion-percentage) percentage)
+  (setf (user-interface:percentage (progress download))
+        (completion-percentage download))
+  (setf (user-interface:text (paragraph download))
+        (format nil "Completion: ~,2f%" (completion-percentage download))))
+
+(defmethod completion-percentage ((download download))
+  (slot-value download 'completion-percentage))
+
+(defmethod (setf destination-path) (path (download download))
+  (setf (slot-value download 'destination-path) path)
+  (setf (user-interface:url (open-button download)) 
+        (lisp-url `(nyxt/file-manager-mode:open-file-function ,path))))
+
+(defmethod destination-path ((download download))
+  (slot-value download 'destination-path))
+
 (defmethod connect ((download download) buffer)
   "Connect the user-interface objects within the download to the
 buffer. This allows the user-interface objects to update their
 appearance in the buffer when they are setf'd."
   (user-interface:connect (paragraph download) buffer)
+  (user-interface:connect (open-button download) buffer)
   (user-interface:connect (progress download) buffer))
 
 (define-mode download-mode ()           ; TODO: Move to separate package?
@@ -53,11 +83,14 @@ download."
             for uri = (uri download)
             for paragraph = (paragraph download)
             for progress = (progress download)
+            for open-button = (open-button download)
             do (connect download buffer)
             collect
                (markup:markup
                 (:div
-                 (:p :class "download-url" (:b "URL: ") (:a :href uri uri))
+                 (:p :class "download-url"
+                     (markup:raw (user-interface:object-string open-button))
+                     (:a :href uri uri))
                  (:span (markup:raw (user-interface:object-string paragraph)))
                  (:div :class "progress-bar-container"
                        (markup:raw (user-interface:object-string progress))))))))))
