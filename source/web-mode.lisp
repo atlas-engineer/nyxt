@@ -4,7 +4,7 @@
 (uiop:define-package :nyxt/web-mode
   (:use :common-lisp :trivia :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:class* #:define-class)
+  (:import-from #:class-star #:define-class)
   (:documentation "Mode for web pages"))
 (in-package :nyxt/web-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
