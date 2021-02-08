@@ -15,7 +15,7 @@
 ;; This is required because special buffers cannot be part of a history (and it breaks it).
 ;; Bind C-l to set-url-new-buffer?  Wait: What if we click on a link?  url
 ;; changes in special buffers should open a new one.
-;; Or else we require that all special-buffer-generting commands open a new buffer.
+;; Or else we require that all special-buffer-generating commands open a new buffer.
 
 (define-mode web-mode ()
   "Base mode for interacting with documents."
@@ -71,7 +71,7 @@ search.")
        "C-up" 'scroll-to-top
        "C-i" 'autofill
        "C-c '" 'fill-input-from-external-editor
-       ;; Leave SPACE and arrow keys unbound so that the renderer decides wether to
+       ;; Leave SPACE and arrow keys unbound so that the renderer decides whether to
        ;; navigate textboxes (arrows), insert or scroll (space).
        "pageup" 'scroll-page-up
        "pagedown" 'scroll-page-down
