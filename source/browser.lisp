@@ -28,7 +28,7 @@ This can apply to specific buffer."))
 (export-always 'combine-composed-hook-until-nil)
 (defmethod combine-composed-hook-until-nil ((hook hooks:hook) &optional arg)
   "Return the result of the composition of the HOOK handlers on ARG, from
-oldest to youngest.  Stop processsing when a handler returns nil.
+oldest to youngest.  Stop processing when a handler returns nil.
 Without handler, return ARG.  This is an acceptable `combination' for
 `hook'."
   (labels ((compose-handlers (handlers result)
@@ -81,7 +81,7 @@ Warning: This setting may be deprecated in a future release, don't rely on it.")
                        :export nil
                        :documentation "This is used to generate unique window
 identifiers in `get-unique-window-identifier'.  We can't rely on the windows
-count since deleting windows may reseult in duplicate identifiers.")
+count since deleting windows may result in duplicate identifiers.")
    (last-active-window nil
                        :type (or window null)
                        :export nil
@@ -110,7 +110,7 @@ arguments).  It is run after the renderer has been initialized, after the
 if there are errors, they will be reported by this function.")
    (open-external-link-in-new-window-p nil
                                        :documentation "When open links from an external program, or
-when C-cliking on a URL, decide whether to open in a new
+when C-clicking on a URL, decide whether to open in a new
 window or not.")
    (downloads
     :documentation "List of downloads. Used for rendering by download manager.")
@@ -278,7 +278,7 @@ current buffer."
        (let* ((download nil))
          (flet ((unsafe-download ()
                   (with-data-access (downloads path)
-                    (setf download 
+                    (setf download
                           (download-manager:resolve url
                                                     :directory download-dir
                                                     :cookies cookies
@@ -362,7 +362,7 @@ If none is found, fall back to `scheme:cua'."
 (define-class request-data ()
   ((buffer (current-buffer)
            :type buffer
-           :documentation "Buffer targetted by the request.")
+           :documentation "Buffer targeted by the request.")
    (url (quri:uri "")
         :documentation "URL of the request")
    (event-type :other
@@ -555,7 +555,7 @@ The following example does a few things:
   "Return the currently active window.
 If NO-RESCAN is non-nil, fetch the window from the `last-active-window' cache
 instead of asking the renderer for the active window.  It is faster but
-sometimes yields the wrong reasult."
+sometimes yields the wrong result."
   (when *browser*
     (if (and no-rescan (slot-value *browser* 'last-active-window))
         (slot-value *browser* 'last-active-window)
