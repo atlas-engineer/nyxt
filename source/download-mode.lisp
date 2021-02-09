@@ -7,7 +7,7 @@
   ((uri :accessor uri :initarg :uri :documentation "A string
 representation of a URL to be shown in the interface."
         :initform (error "URI required."))
-   (completion-percentage :initform 0
+   (completion-percentage :initform 0.0
                           :type float
                           :documentation "A number between 0 and 100
 showing the percentage a download is complete.")
