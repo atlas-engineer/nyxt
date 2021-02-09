@@ -16,6 +16,10 @@
                    *invisible-modes*
                    :test #'string=))))
 
+(defun list-modes (&optional (buffer (current-buffer)))
+  (format nil "~{~a~^ ~}"
+          (mapcar (alex:compose #'str:downcase #'mode-name) (modes buffer))))
+
 (export-always 'format-status-buttons)
 (defun format-status-buttons ()
   (markup:markup
@@ -77,4 +81,5 @@
            (:div :class "arrow arrow-left"
                  :style "background-color:rgb(120,120,120)" "")
            (:div :id "modes"
+                 :title (list-modes buffer)
                  (format-status-modes buffer))))))
