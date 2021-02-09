@@ -20,6 +20,7 @@
 (defun make-password-store-interface ()
   (unless *password-store-program*
     (setf *password-store-program* (executable-find "pass")))
+  (setf *sleep-timer* (or (uiop:getenv "PASSWORD_STORE_CLIP_TIME") 45))
   (when *password-store-program*
     (make-instance 'password-store-interface)))
 (push #'make-password-store-interface interface-list)
@@ -44,17 +45,8 @@
 
 (defmethod clip-password ((password-interface password-store-interface) &key password-name service)
   (declare (ignore service))
-  (clip-password-string
-   ;; The common way to store secret in password-store is to use the first line
-   ;; for the secret; there's no standard for how to encode anything else.
-   ;; Because there's no support in `password` for having additional fields
-   ;; (e.g. username or email address for autofilling input fields), we'll keep
-   ;; it simple and just return the first line of the password file.
-   (first
-    (cl-ppcre:split #\newline
-                    (uiop:run-program (list *password-store-program* "show"
-                                            password-name)
-                                      :output '(:string :stripped t))))))
+  (uiop:run-program (list *password-store-program* "show" "--clip" password-name)
+                    :output '(:string :stripped t)))
 
 (defmethod save-password ((password-interface password-store-interface)
                           &key password-name password service)

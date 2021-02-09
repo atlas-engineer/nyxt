@@ -35,9 +35,11 @@
   (declare (ignore service))
   (with-input-from-string (st (master-password password-interface))
     (uiop:run-program (list *keepassxc-cli-program*
-                            "clip" "--attribute=password"
+                            "clip"
                             (password-file password-interface)
-                            password-name)
+                            password-name
+                            ;; Timeout for password
+                            (format nil "~a" *sleep-timer*))
                       :input st :output '(:string :stripped t))))
 
 (defmethod save-password ((password-interface keepassxc-interface) &key password-name password service)
