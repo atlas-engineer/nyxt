@@ -17,7 +17,7 @@
          :type symbol
          :documentation "Mode symbol to call the mode with.
 Package prefix is optional.")
-   (arguments nil ;; TODO: "args" instead of "arguments"?
+   (arguments nil
               :type list
               :documentation "Arguments to activate the mode with."))
   (:export-class-name-p t)
