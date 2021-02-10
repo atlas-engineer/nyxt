@@ -3,20 +3,20 @@
 ;; GNU Guix development package.  To build and install, clone this repository,
 ;; switch directory to here and run:
 ;;
-;;   guix package --install-from-file=guix.scm
+;;   guix package --install-from-file=build-scripts/guix.scm
 ;;
 ;; To use as the basis for a development environment, run:
 ;;
-;;   guix environment --pure --load=guix.scm --ad-hoc glib glib-networking gsettings-desktop-schemas
+;;   guix environment --pure --load=build-scripts/guix.scm --ad-hoc glib glib-networking gsettings-desktop-schemas
 ;;
 ;; To build a local executable and then run it:
 ;;
-;;   guix environment --pure --load=guix.scm -- make all NYXT_INTERNAL_QUICKLISP=false
-;;   guix environment --pure --load=guix.scm -- ./nyxt
+;;   guix environment --pure --load=build-scripts/guix.scm -- make all NYXT_INTERNAL_QUICKLISP=false
+;;   guix environment --pure --load=build-scripts/guix.scm -- ./nyxt
 ;;
 ;; To start in a container, run:
 ;;
-;;   guix environment --no-grafts --load=guix.scm --container --network --share=/PATH/TO/YOUR/NYXT/CHECKOUT=/nyxt --preserve='^DISPLAY$' --expose=/etc/ssl/certs --ad-hoc nss-certs glib glib-networking gsettings-desktop-schemas
+;;   guix environment --no-grafts --load=build-scripts/guix.scm --container --network --share=/PATH/TO/YOUR/NYXT/CHECKOUT=/nyxt --preserve='^DISPLAY$' --expose=/etc/ssl/certs --ad-hoc nss-certs glib glib-networking gsettings-desktop-schemas
 ;;
 ;; Replace '/PATH/TO/YOUR/NYXT/CHECKOUT' as appropriate.
 ;; Then in the container environment:
