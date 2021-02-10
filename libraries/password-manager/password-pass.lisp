@@ -7,6 +7,8 @@
   (export '*password-store-program*))
 (defvar *password-store-program* nil
   "The path to the executable.")
+(defconstant +password-store-default-timeout+ 45
+  "The default timeout for clipboard reset used by pass.")
 
 (defclass password-store-interface (password-interface)
   ((password-directory :reader password-directory
@@ -20,7 +22,8 @@
 (defun make-password-store-interface ()
   (unless *password-store-program*
     (setf *password-store-program* (executable-find "pass")))
-  (setf *sleep-timer* (or (uiop:getenv "PASSWORD_STORE_CLIP_TIME") 45))
+  (setf *sleep-timer* (or (uiop:getenv "PASSWORD_STORE_CLIP_TIME")
+                          +password-store-default-timeout+))
   (when *password-store-program*
     (make-instance 'password-store-interface)))
 (push #'make-password-store-interface interface-list)
