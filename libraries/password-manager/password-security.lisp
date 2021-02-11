@@ -23,7 +23,7 @@
   (error "Listing passwords not supported by security interface."))
 
 (defmethod clip-password ((password-interface security-interface) &key password-name service)
-  (clip-password-string
+  (clip-password-string password-interface
    (str:replace-all
     "\"" ""
     (str:replace-first

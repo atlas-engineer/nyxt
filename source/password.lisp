@@ -81,5 +81,5 @@
                               (password-suggestion-filter
                                (password-interface *browser*)))))
           (password:clip-password (password-interface *browser*) :password-name password-name)
-          (echo "Password saved to clipboard for ~a seconds." password:*sleep-timer*)))
+          (echo "Password saved to clipboard for ~a seconds." (sleep-timer (password-interface *browser*)))))
       (echo-warning "No password manager found.")))
