@@ -14,12 +14,6 @@
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'make-password-store-interface))
-(defun make-password-store-interface ()
-  (make-instance 'password-store-interface))
-(push #'make-password-store-interface interface-list)
-
 (defmethod list-passwords ((password-interface password-store-interface))
   ;; Special care must be taken for symlinks. Say `~/.password-store/work`
   ;; points to `~/work/pass`, would we follow symlinks, we would not be able to

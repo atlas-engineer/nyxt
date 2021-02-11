@@ -12,13 +12,6 @@
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'make-security-interface))
-(defun make-security-interface ()
-  (make-instance 'security-interface))
-
-(push #'make-security-interface interface-list)
-
 (defmethod list-passwords ((password-interface security-interface))
   (error "Listing passwords not supported by security interface."))
 

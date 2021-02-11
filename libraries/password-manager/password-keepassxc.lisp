@@ -11,12 +11,6 @@
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'make-keepassxc-interface))
-(defun make-keepassxc-interface ()
-  (make-instance 'keepassxc-interface))
-(push #'make-keepassxc-interface interface-list)
-
 (defmethod list-passwords ((password-interface keepassxc-interface))
   (let* ((st (make-string-input-stream (master-password password-interface)))
          (output (execute password-interface (list "ls" (password-file password-interface))
