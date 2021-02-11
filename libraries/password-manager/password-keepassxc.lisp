@@ -3,22 +3,22 @@
 
 (in-package :password)
 
-(defclass keepassxc-interface (password-interface)
-  ((password-file :accessor password-file
+(define-class keepassxc-interface (password-interface)
+  ((executable :initform (executable-find "keepassxc-cli"))
+   (password-file :accessor password-file
                   :initarg :file)
    (master-password :accessor master-password
                     :initarg :master-password
-                    :initform nil)))
+                    :initform nil))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'make-keepassxc-interface))
 (defun make-keepassxc-interface ()
   (make-instance 'keepassxc-interface))
 (push #'make-keepassxc-interface interface-list)
-
-(defmethod initialize-instance :after ((password-interface keepassxc-interface))
-  (unless (slot-boundp password-interface 'executable)
-    (setf (executable password-interface) (executable-find "keepassxc-cli"))))
 
 (defmethod list-passwords ((password-interface keepassxc-interface))
   (let* ((st (make-string-input-stream (master-password password-interface)))

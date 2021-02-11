@@ -6,7 +6,11 @@
 ;;; Provide an interface to the command line "security" program used
 ;;; on BSD and Darwin systems to interface with the system keychain
 
-(defclass security-interface (password-interface) ())
+(define-class security-interface (password-interface)
+  ((executable :initform (executable-find "security")))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'make-security-interface))
@@ -14,10 +18,6 @@
   (make-instance 'security-interface))
 
 (push #'make-security-interface interface-list)
-
-(defmethod initialize-instance :after ((password-interface security-interface) &key)
-  (unless (slot-boundp password-interface 'executable)
-    (setf (executable password-interface) (executable-find "security"))))
 
 (defmethod list-passwords ((password-interface security-interface))
   (error "Listing passwords not supported by security interface."))

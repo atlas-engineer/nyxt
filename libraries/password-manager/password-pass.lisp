@@ -3,23 +3,23 @@
 
 (in-package :password)
 
-(defclass password-store-interface (password-interface)
-  ((password-directory :reader password-directory
+(define-class password-store-interface (password-interface)
+  ((executable (executable-find "pass"))
+   (sleep-timer (or (uiop:getenv "PASSWORD_STORE_CLIP_TIME") 45))
+   (password-directory :reader password-directory
                        :initarg :directory
                        :initform (or (uiop:getenv "PASSWORD_STORE_DIR")
                                      (namestring (format nil "~a/.password-store"
-                                                         (uiop:getenv "HOME")))))))
+                                                         (uiop:getenv "HOME"))))))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'make-password-store-interface))
 (defun make-password-store-interface ()
   (make-instance 'password-store-interface))
 (push #'make-password-store-interface interface-list)
-
-(defmethod initialize-instance :after ((password-interface password-store-interface) &key)
-  (setf (sleep-timer password-interface) (or (uiop:getenv "PASSWORD_STORE_CLIP_TIME") 45))
-  (unless (slot-boundp password-interface 'executable)
-    (setf (executable password-interface) (executable-find "pass"))))
 
 (defmethod list-passwords ((password-interface password-store-interface))
   ;; Special care must be taken for symlinks. Say `~/.password-store/work`
