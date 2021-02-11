@@ -41,17 +41,17 @@
 
 (defmethod clip-password ((password-interface password-store-interface) &key password-name service)
   (declare (ignore service))
-  (uiop:run-program (list (executable password-interface) "show" "--clip" password-name)
-                    :output '(:string :stripped t)))
+  (execute password-interface (list "show" "--clip" password-name)
+    :output '(:string :stripped t)))
 
 (defmethod save-password ((password-interface password-store-interface)
                           &key password-name password service)
   (declare (ignore service))
   (if (str:emptyp password)
-      (uiop:run-program (list (executable password-interface) "generate" password-name))
+      (execute password-interface (list "generate" password-name))
       (with-open-stream (st (make-string-input-stream password))
-        (uiop:run-program (list (executable password-interface) "insert" "--echo" password-name)
-                          :input st))))
+        (execute password-interface (list "insert" "--echo" password-name)
+          :input st))))
 
 (defmethod password-correct-p ((password-interface password-store-interface))
   t)
