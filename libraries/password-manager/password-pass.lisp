@@ -3,13 +3,6 @@
 
 (in-package :password)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '*password-store-program*))
-(defvar *password-store-program* nil
-  "The path to the executable.")
-(defconstant +password-store-default-timeout+ 45
-  "The default timeout for clipboard reset used by pass.")
-
 (defclass password-store-interface (password-interface)
   ((password-directory :reader password-directory
                        :initarg :directory
@@ -20,13 +13,13 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'make-password-store-interface))
 (defun make-password-store-interface ()
-  (unless *password-store-program*
-    (setf *password-store-program* (executable-find "pass")))
-  (setf *sleep-timer* (or (uiop:getenv "PASSWORD_STORE_CLIP_TIME")
-                          +password-store-default-timeout+))
-  (when *password-store-program*
-    (make-instance 'password-store-interface)))
+  (make-instance 'password-store-interface))
 (push #'make-password-store-interface interface-list)
+
+(defmethod initialize-instance :after ((password-interface password-store-interface) &key)
+  (setf (sleep-timer password-interface) (or (uiop:getenv "PASSWORD_STORE_CLIP_TIME") 45))
+  (unless (slot-boundp password-interface 'executable)
+    (setf (executable password-interface) (executable-find "pass"))))
 
 (defmethod list-passwords ((password-interface password-store-interface))
   ;; Special care must be taken for symlinks. Say `~/.password-store/work`
@@ -48,16 +41,16 @@
 
 (defmethod clip-password ((password-interface password-store-interface) &key password-name service)
   (declare (ignore service))
-  (uiop:run-program (list *password-store-program* "show" "--clip" password-name)
+  (uiop:run-program (list (executable password-interface) "show" "--clip" password-name)
                     :output '(:string :stripped t)))
 
 (defmethod save-password ((password-interface password-store-interface)
                           &key password-name password service)
   (declare (ignore service))
   (if (str:emptyp password)
-      (uiop:run-program (list *password-store-program* "generate" password-name))
+      (uiop:run-program (list (executable password-interface) "generate" password-name))
       (with-open-stream (st (make-string-input-stream password))
-        (uiop:run-program (list *password-store-program* "insert" "--echo" password-name)
+        (uiop:run-program (list (executable password-interface) "insert" "--echo" password-name)
                           :input st))))
 
 (defmethod password-correct-p ((password-interface password-store-interface))
