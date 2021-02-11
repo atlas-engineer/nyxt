@@ -3,12 +3,11 @@
 
 (in-package :password)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '*sleep-timer*))
-(defvar *sleep-timer* 15)
-
 (defclass password-interface ()
-  ())
+  ((executable :accessor executable :initarg :executable
+               :documentation "The program to query for password information.")
+   (sleep-timer :accessor sleep-timer :initarg :sleep-timer :initform 15
+                :documentation "The amount of time to sleep, in seconds.")))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'list-passwords))
