@@ -5,15 +5,22 @@
 
 ;;; define user classes so that users may apply define-configuration
 ;;; macro to change slot values
-(define-user-class password:security-interface)
-(define-user-class password:keepassxc-interface)
-(define-user-class password:password-store-interface)
+(loop for interface in password:*interfaces* do
+         (eval `(define-user-class ,(intern (symbol-name interface)
+                                            (package-name (symbol-package interface))))))
 
-(defun make-password-interface (class)
-  (match class
-    ('password:security-interface (make-instance 'password:user-security-interface))
-    ('password:keepassxc-interface (make-instance 'password:user-keepassxc-interface))
-    ('password:password-store-interface (make-instance 'password:user-password-store-interface))))
+(defun make-password-interface ()
+  "Make a password interface for all user classes, the first one with
+a non-nil value of executable is considered to be the interface to
+make/return."
+  (labels ((user-password-interface-symbols ()
+             (loop for interface in password:*interfaces*
+                   collect (intern (str:concat "USER-" (symbol-name interface))
+                                   (package-name (symbol-package interface)))))
+           (user-password-interfaces ()
+             (loop for interface-symbol in (user-password-interface-symbols)
+                   collect (make-instance interface-symbol))))
+    (find-if #'password:executable (user-password-interfaces))))
 
 (defun password-suggestion-filter (password-instance)
   (let ((password-list (password:list-passwords password-instance))
