@@ -270,7 +270,8 @@
                cl-ppcre
                str
                trivial-clipboard
-               uiop)
+               uiop
+               nyxt/class-star)
   :pathname "libraries/password-manager/"
   :components ((:file "package")
                (:file "password")
