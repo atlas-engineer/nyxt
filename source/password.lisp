@@ -39,9 +39,9 @@ make/return."
 
 (defun has-method-p (object generic-function)
   "Return non-nil if OBJECT is a specializer of a method of GENERIC-FUNCTION."
-  (find (class-of object)
-        (alex:mappend #'closer-mop:method-specializers
-                      (closer-mop:generic-function-methods generic-function))))
+  (find-if (alex:curry #'typep object)
+           (alex:mappend #'closer-mop:method-specializers
+                         (closer-mop:generic-function-methods generic-function))))
 
 (define-command save-new-password ()
   "Save password to password interface."
