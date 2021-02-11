@@ -3,11 +3,6 @@
 
 (in-package :password)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '*keepassxc-cli-program*))
-(defvar *keepassxc-cli-program* nil
-  "The path to the executable.")
-
 (defclass keepassxc-interface (password-interface)
   ((password-file :accessor password-file
                   :initarg :file)
@@ -18,15 +13,16 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'make-keepassxc-interface))
 (defun make-keepassxc-interface ()
-  (unless *keepassxc-cli-program*
-    (setf *keepassxc-cli-program* (executable-find "keepassxc-cli")))
-  (when *keepassxc-cli-program*
-    (make-instance 'keepassxc-interface)))
+  (make-instance 'keepassxc-interface))
 (push #'make-keepassxc-interface interface-list)
+
+(defmethod initialize-instance :after ((password-interface keepassxc-interface))
+  (unless (slot-boundp password-interface 'executable)
+    (setf (executable password-interface) (executable-find "keepassxc-cli"))))
 
 (defmethod list-passwords ((password-interface keepassxc-interface))
   (let* ((st (make-string-input-stream (master-password password-interface)))
-         (output (uiop:run-program (list *keepassxc-cli-program*
+         (output (uiop:run-program (list (executable password-interface)
                                          "ls" (password-file password-interface))
                                    :input st :output '(:string :stripped t))))
     (remove "Recycle Bin/" (rest (cl-ppcre:split "\\n" output)) :test #'equal)))
@@ -34,12 +30,12 @@
 (defmethod clip-password ((password-interface keepassxc-interface) &key password-name service)
   (declare (ignore service))
   (with-input-from-string (st (master-password password-interface))
-    (uiop:run-program (list *keepassxc-cli-program*
+    (uiop:run-program (list (executable password-interface)
                             "clip"
                             (password-file password-interface)
                             password-name
                             ;; Timeout for password
-                            (format nil "~a" *sleep-timer*))
+                            (format nil "~a" (sleep-timer password-interface)))
                       :input st :output '(:string :stripped t))))
 
 (defmethod save-password ((password-interface keepassxc-interface) &key password-name password service)
@@ -47,7 +43,7 @@
   (with-input-from-string (st (format nil "~a~C~a"
                                       (master-password password-interface)
                                       #\newline password))
-    (uiop:run-program (list *keepassxc-cli-program*
+    (uiop:run-program (list (executable password-interface)
                             "add" "--password-prompt" (password-file password-interface)
                             (if (str:emptyp password-name)
                                 "--generate"
@@ -58,7 +54,7 @@
   (when (master-password password-interface)
     (handler-case
         (let* ((st (make-string-input-stream (master-password password-interface)))
-               (output (uiop:run-program (list *keepassxc-cli-program*
+               (output (uiop:run-program (list (executable password-interface)
                                                "ls" (password-file password-interface))
                                          :input st :output '(:string :stripped t))))
           (remove "Recycle Bin/" (rest (cl-ppcre:split "\\n" output)) :test #'equal))
