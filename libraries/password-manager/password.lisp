@@ -30,6 +30,9 @@ If PASSWORD-NAME is empty, then generate a new password."))
 (defgeneric password-correct-p (password-interface)
   (:documentation "Return T if set password is correct, NIL otherwise."))
 
+(defmacro execute (interface arguments &body body)
+  `(uiop:run-program (append (list (executable ,interface)) ,arguments) ,@body))
+
 (defun safe-clipboard-text ()
   "Return clipboard content, or \"\" if the content is not textual."
   ;; xclip errors out when the clipboard contains non-text:
