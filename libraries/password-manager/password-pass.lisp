@@ -7,8 +7,8 @@
   ((executable (executable-find "pass"))
    (sleep-timer (or (uiop:getenv "PASSWORD_STORE_CLIP_TIME") 45))
    (password-directory (or (uiop:getenv "PASSWORD_STORE_DIR")
-                                     (namestring (format nil "~a/.password-store"
-                                                         (uiop:getenv "HOME"))))
+                           (namestring (format nil "~a/.password-store"
+                                               (uiop:getenv "HOME"))))
                        :reader password-directory))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
