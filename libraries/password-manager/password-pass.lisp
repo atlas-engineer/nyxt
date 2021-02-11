@@ -6,11 +6,10 @@
 (define-class password-store-interface (password-interface)
   ((executable (executable-find "pass"))
    (sleep-timer (or (uiop:getenv "PASSWORD_STORE_CLIP_TIME") 45))
-   (password-directory :reader password-directory
-                       :initarg :directory
-                       :initform (or (uiop:getenv "PASSWORD_STORE_DIR")
+   (password-directory (or (uiop:getenv "PASSWORD_STORE_DIR")
                                      (namestring (format nil "~a/.password-store"
-                                                         (uiop:getenv "HOME"))))))
+                                                         (uiop:getenv "HOME"))))
+                       :reader password-directory))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
