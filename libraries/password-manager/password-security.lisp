@@ -29,9 +29,9 @@
     (str:replace-first
      "password: " ""
      (nth-value 1
-                (uiop:run-program
-                 (list (executable password-interface) "find-internet-password"
-                       "-a" password-name "-s" service "-g")
-                 :error-output '(:string :stripped t)))))))
+                (execute password-interface
+                  (list "find-internet-password"
+                        "-a" password-name "-s" service "-g")
+                  :error-output '(:string :stripped t)))))))
 
 (defmethod password-correct-p ((password-interface security-interface)) t)
