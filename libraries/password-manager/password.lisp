@@ -61,3 +61,7 @@ Return nil if COMMAND is not found anywhere."
        (uiop:run-program (format nil "command -v ~A" command)
                          :output '(:string :stripped t)))
     path))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export '*interfaces*))
+(defvar *interfaces* (list))
