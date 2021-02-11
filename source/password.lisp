@@ -16,11 +16,7 @@
   (log:debug "Password interface ~a uses executable ~s."
              (when (password-interface *browser*)
                (class-name (class-of (password-interface *browser*))))
-             (match (symbol-name (class-name (class-of (password-interface *browser*))))
-               ;; With `symbol-name' we remove the package prefix.
-               ("KEEPASSXC-INTERFACE" password:*keepassxc-cli-program*)
-               ("SECURITY-INTERFACE" password:*security-cli-program*)
-               ("PASSWORD-STORE-INTERFACE" password:*password-store-program*))))
+             (password:executable (password-interface *browser*))))
 
 (defun has-method-p (object generic-function)
   "Return non-nil if OBJECT is a specializer of a method of GENERIC-FUNCTION."
@@ -81,5 +77,5 @@
                               (password-suggestion-filter
                                (password-interface *browser*)))))
           (password:clip-password (password-interface *browser*) :password-name password-name)
-          (echo "Password saved to clipboard for ~a seconds." (sleep-timer (password-interface *browser*)))))
+          (echo "Password saved to clipboard for ~a seconds." (password:sleep-timer (password-interface *browser*)))))
       (echo-warning "No password manager found.")))
