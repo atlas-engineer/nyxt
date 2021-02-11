@@ -4,12 +4,9 @@
 (in-package :password)
 
 (define-class keepassxc-interface (password-interface)
-  ((executable :initform (executable-find "keepassxc-cli"))
-   (password-file :accessor password-file
-                  :initarg :file)
-   (master-password :accessor master-password
-                    :initarg :master-password
-                    :initform nil))
+  ((executable (executable-find "keepassxc-cli"))
+   (password-file)
+   (master-password :initform nil))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
