@@ -3,6 +3,18 @@
 
 (in-package :nyxt)
 
+;;; define user classes so that users may apply define-configuration
+;;; macro to change slot values
+(define-user-class password:security-interface)
+(define-user-class password:keepassxc-interface)
+(define-user-class password:password-store-interface)
+
+(defun make-password-interface (class)
+  (match class
+    ('password:security-interface (make-instance 'password:user-security-interface))
+    ('password:keepassxc-interface (make-instance 'password:user-keepassxc-interface))
+    ('password:password-store-interface (make-instance 'password:user-password-store-interface))))
+
 (defun password-suggestion-filter (password-instance)
   (let ((password-list (password:list-passwords password-instance))
         (domain (quri:uri-domain (url (current-buffer)))))
