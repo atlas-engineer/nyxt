@@ -37,11 +37,11 @@ If PASSWORD-NAME is empty, then generate a new password."))
   (ignore-errors (trivial-clipboard:text)))
 
 ;;; Prerequisite Functions
-(defun clip-password-string (pass)
+(defmethod clip-password-string ((password-interface password-interface) pass)
   (trivial-clipboard:text pass)
   (bt:make-thread
    (lambda ()
-     (sleep *sleep-timer*)
+     (sleep (sleep-timer password-interface))
      (when (string= (safe-clipboard-text) pass)
        ;; Reset the clipboard so that the user does not accidentally paste
        ;; something else.
