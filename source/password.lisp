@@ -32,10 +32,10 @@ make/return."
       (fuzzy-match (input-buffer minibuffer) password-list))))
 
 (defun password-debug-info ()
-  (log:debug "Password interface ~a uses executable ~s."
-             (when (password-interface *browser*)
-               (class-name (class-of (password-interface *browser*))))
-             (password:executable (password-interface *browser*))))
+  (when (password-interface *browser*)
+    (log:debug "Password interface ~a uses executable ~s."
+               (class-name (class-of (password-interface *browser*)))
+               (password:executable (password-interface *browser*)))))
 
 (defun has-method-p (object generic-function)
   "Return non-nil if OBJECT is a specializer of a method of GENERIC-FUNCTION."
