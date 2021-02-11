@@ -61,16 +61,3 @@ Return nil if COMMAND is not found anywhere."
        (uiop:run-program (format nil "command -v ~A" command)
                          :output '(:string :stripped t)))
     path))
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'interface-list))
-(defvar interface-list '()
-  "List of interface intializing functions.
-`make' returns the first non-nil value which is returned by an invocation of one
-of the functions.")
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'make))
-(defun make ()
-  "Initalize the first interface in `interface-list' that returns non-nil."
-  (some #'funcall interface-list))
