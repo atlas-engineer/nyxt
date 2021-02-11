@@ -44,8 +44,7 @@
   (when (master-password password-interface)
     (handler-case
         (let* ((st (make-string-input-stream (master-password password-interface)))
-               (output (execute password-interface (list (executable password-interface)
-                                                         "ls" (password-file password-interface))
+               (output (execute password-interface (list "ls" (password-file password-interface))
                                 :input st :output '(:string :stripped t))))
           (remove "Recycle Bin/" (rest (cl-ppcre:split "\\n" output)) :test #'equal))
       (uiop/run-program:subprocess-error ()
