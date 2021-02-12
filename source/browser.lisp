@@ -370,13 +370,14 @@ If none is found, fall back to `scheme:cua'."
                :export nil
                :documentation "The type of request, e.g. `:link-click'.")
    (new-window-p nil
-                 :documentation "Whether the request wants to happen in a new window.")
+                 :documentation "Whether the request takes place in a
+new window.")
    (known-type-p nil
-                 :documentation "Whether the request is for a contented with
-supported MIME-type (e.g. a picture that can be displayed in
-the web view.")
+                 :documentation "Whether the request is for content with
+supported MIME-type, such as a picture that can be displayed in the web
+view.")
    (keys '()
-         :documentation "The key sequence that was pressed to generate the request."))
+         :documentation "The key sequence that generated the request."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
