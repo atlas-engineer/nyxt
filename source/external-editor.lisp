@@ -13,10 +13,10 @@ is blocking, invoke on a separate thread when possible."
     (uiop:read-file-string p)))
 
 (define-command fill-input-from-external-editor ()
-  "This command will open your editor specified by your VISUAL-EDITOR
-  of the BROWSER class, if unset, it will default to your VISUAL
-  environment variable. It will then capture whatever text you enter
-  and save in your editor."
+  "This command will open your editor specified by your VISUAL-EDITOR of
+the BROWSER class, if unset, it will default to your VISUAL environment
+variable. It will then capture whatever text you enter and save in your
+editor."
   (bt:make-thread
    (lambda ()
      (let ((text (get-text-from-external-editor)))
