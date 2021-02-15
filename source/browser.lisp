@@ -190,7 +190,7 @@ editor executable."))
 
 (defun %get-user-data (profile path cache)
   (sera:and-let* ((expanded-path (expand-path path)))
-    (multiple-value-bind  (user-data found?)
+    (multiple-value-bind (user-data found?)
         (gethash expanded-path cache)
       (if found?
           user-data
