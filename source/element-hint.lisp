@@ -329,7 +329,9 @@ I.e. the grey text initially seen in it."))
   (focus-element :nyxt-identifier (identifier focusable-hint)))
 
 (defmethod %follow-hint-new-buffer-focus ((link-hint link-hint) &optional parent-buffer)
-  (make-buffer-focus :url (url link-hint) :parent-buffer parent-buffer))
+  (make-buffer-focus :url (url link-hint)
+                     :parent-buffer parent-buffer
+                     :nosave-buffer-p (nosave-buffer-p parent-buffer)))
 
 (defmethod %follow-hint-new-buffer-focus ((hint hint) &optional parent-buffer)
   (declare (ignore parent-buffer))
