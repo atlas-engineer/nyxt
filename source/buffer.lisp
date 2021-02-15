@@ -255,6 +255,17 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
   (when (expand-path (cookies-path buffer))
     (ensure-parent-exists (expand-path (cookies-path buffer)))))
 
+(define-class nosave-buffer (user-web-buffer)
+  ((data-profile (make-instance 'nosave-data-profile))
+   (default-modes '(reduce-tracking-mode certificate-exception-mode
+                    web-mode base-mode)))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:export-predicate-name-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+
+(define-user-class nosave-buffer)
+
 (define-class internal-buffer (user-buffer)
   ((style #.(cl-css:css
              '((body
@@ -498,6 +509,23 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
           (setf (url buffer) (quri:uri url))))
     buffer))
 
+(define-command make-nosave-buffer (&key (title "") modes (url "") (load-url-p t))
+  "Create a new buffer that won't save anything to the filesystem.
+MODES is a list of mode symbols.
+If URL is `:default', use `default-new-buffer-url'.
+LOAD-URL-P controls whether to load URL right at buffer creation."
+  (let* ((buffer (buffer-make *browser* :title title
+                                        :default-modes modes
+                                        :nosave-buffer-p t))
+         (url (if (eq url :default)
+                  (default-new-buffer-url buffer)
+                  url)))
+    (unless (url-empty-p url)
+      (if load-url-p
+          (buffer-load url :buffer buffer)
+          (setf (url buffer) (quri:uri url))))
+    buffer))
+
 (define-command make-internal-buffer (&key (title "") modes
                                       no-history-p)
   "Create a new buffer.
@@ -510,13 +538,14 @@ If URL is `:default', use `default-new-buffer-url'."
                                    (:data-profile data-profile)
                                    (:default-modes list)
                                    (:dead-buffer buffer)
+                                   (:nosave-buffer-p boolean)
                                    (:internal-buffer-p boolean)
                                    (:parent-buffer buffer)
                                    (:no-history-p boolean)))
                 buffer-make))
 (defun buffer-make (browser &key data-profile title default-modes
-                              dead-buffer internal-buffer-p parent-buffer
-                              no-history-p)
+                              dead-buffer nosave-buffer-p internal-buffer-p
+                              parent-buffer no-history-p)
   "Make buffer with title TITLE and modes DEFAULT-MODES.
 Run `*browser*'s `buffer-make-hook' over the created buffer before returning it.
 If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
@@ -525,9 +554,10 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
                        ;; Dead buffer ID must be renewed before calling `ffi-buffer-make'.
                        (setf (id dead-buffer) (get-unique-buffer-identifier *browser*))
                        (ffi-buffer-make dead-buffer))
-                     (apply #'make-instance (if internal-buffer-p
-                                                'user-internal-buffer
-                                                'user-web-buffer)
+                     (apply #'make-instance (cond
+                                              (internal-buffer-p 'user-internal-buffer)
+                                              (nosave-buffer-p 'user-nosave-buffer)
+                                              (t 'user-web-buffer))
                             :id (get-unique-buffer-identifier *browser*)
                             (append (when title `(:title ,title))
                                     (when default-modes `(:default-modes ,default-modes))
