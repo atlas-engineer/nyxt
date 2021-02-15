@@ -502,24 +502,27 @@ Warning: This behaviour may change in the future."
                              :is-ephemeral ,(not path)))))
 
 (defun make-context (&optional buffer)
-  (let* ((context (if (and buffer
-                           ;; Initial window buffer or replacement/temp buffers
-                           ;; may have no ID.
-                           (not (str:emptyp (id buffer))))
-                      (let ((manager (make-data-manager buffer)))
-                        (make-instance 'webkit:webkit-web-context
-                                       :website-data-manager manager))
-                      (web-context *browser*)))
-         (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
-    (when (and buffer
-               (web-buffer-p buffer)
-               (expand-path (cookies-path buffer)))
-      (webkit:webkit-cookie-manager-set-persistent-storage
-       cookie-manager
-       (expand-path (cookies-path buffer))
-       :webkit-cookie-persistent-storage-text)
-      (set-cookie-policy cookie-manager (default-cookie-policy buffer)))
-    context))
+  ;; This is to ensure that paths are not expanded when we make
+  ;; contexts for `nosave-buffer's.
+  (with-current-buffer buffer
+    (let* ((context (if (and buffer
+                             ;; Initial window buffer or replacement/temp buffers
+                             ;; may have no ID.
+                             (not (str:emptyp (id buffer))))
+                        (let ((manager (make-data-manager buffer)))
+                          (make-instance 'webkit:webkit-web-context
+                                         :website-data-manager manager))
+                        (web-context *browser*)))
+           (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
+      (when (and buffer
+                 (web-buffer-p buffer)
+                 (expand-path (cookies-path buffer)))
+        (webkit:webkit-cookie-manager-set-persistent-storage
+         cookie-manager
+         (expand-path (cookies-path buffer))
+         :webkit-cookie-persistent-storage-text)
+        (set-cookie-policy cookie-manager (default-cookie-policy buffer)))
+      context)))
 
 (defmethod initialize-instance :after ((buffer gtk-buffer) &key)
   (let ((path (data-manager-path buffer)))

@@ -588,15 +588,19 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
       (setf (url buffer) (url dead-buffer)))
     (buffers-set (id buffer) buffer)
     (unless no-history-p
-      ;; Register buffer in global history:
-      (with-data-access (history (history-path buffer)
-                         :default (make-history-tree buffer))
-        ;; Owner may already exist if history was just create with the above
-        ;; default value.
-        (unless (htree:owner history (id buffer))
-          (htree:add-owner history (id buffer)
-                           :creator-id (when parent-buffer
-                                         (id parent-buffer))))))
+      ;; When we create buffer, current one can override the
+      ;; data-profile of the created buffer. This is dangerous,
+      ;; especially for nosave buffers.
+      (with-current-buffer buffer
+        ;; Register buffer in global history:
+        (with-data-access (history (history-path buffer)
+                           :default (make-history-tree buffer))
+          ;; Owner may already exist if history was just create with the above
+          ;; default value.
+          (unless (htree:owner history (id buffer))
+            (htree:add-owner history (id buffer)
+                             :creator-id (when parent-buffer
+                                           (id parent-buffer)))))))
     ;; Run hooks before `initialize-modes' to allow for last-minute modification
     ;; of the default modes.
     (hooks:run-hook (buffer-make-hook browser) buffer)
@@ -667,10 +671,14 @@ proceeding."
   (setf (last-access (active-buffer window)) (local-time:now))
   (let ((window-with-same-buffer (find buffer (delete window (window-list))
                                        :key #'active-buffer)))
-    (unless (internal-buffer-p buffer)
-      (with-data-access (history (history-path buffer)
-                         :default (make-history-tree buffer))
-        (htree:set-current-owner history (id buffer))))
+    ;; When switching buffers, `current-buffer' is still the old one,
+    ;; so path is expanded/queried by the rules of the old
+    ;; buffer. That's not desirable, especially for nosave-buffers.
+    (with-current-buffer buffer
+      (unless (internal-buffer-p buffer)
+        (with-data-access (history (history-path buffer)
+                           :default (make-history-tree buffer))
+          (htree:set-current-owner history (id buffer)))))
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
         (let ((temp-buffer (make-dummy-buffer))
               (old-buffer (active-buffer window)))
