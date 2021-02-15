@@ -739,10 +739,12 @@ proceeding."
         (set-current-buffer (first matching-buffers))
         (switch-buffer-domain :domain domain))))
 
-(define-command make-buffer-focus (&key (url :default) parent-buffer)
+(define-command make-buffer-focus (&key (url :default) parent-buffer nosave-buffer-p)
   "Switch to a new buffer.
 See `make-buffer'."
-  (let ((buffer (make-buffer :url url :parent-buffer parent-buffer)))
+  (let ((buffer (if nosave-buffer-p
+                    (make-nosave-buffer :url url)
+                    (make-buffer :url url :parent-buffer parent-buffer))))
     (set-current-buffer buffer)
     buffer))
 
@@ -835,9 +837,9 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
             (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url)))
             (ffi-buffer-load buffer url))))))
 
-(define-command set-url (&key new-buffer-p prefill-current-url-p)
+(define-command set-url (&key new-buffer-p prefill-current-url-p nosave-buffer-p)
   "Set the URL for the current buffer, completing with history."
-  (let ((history (minibuffer-set-url-history *browser*)))
+  (let ((history (unless nosave-buffer-p (minibuffer-set-url-history *browser*))))
     (when history
       (containers:insert-item history (url (current-buffer))))
     (let ((url (prompt-minibuffer
@@ -862,7 +864,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
                                    ;; Make empty buffer, or else there might be
                                    ;; a race condition between the URL that's
                                    ;; loaded and the default one.
-                                   (make-buffer-focus :url "")
+                                   (make-buffer-focus :url "" :nosave-buffer-p nosave-buffer-p)
                                    (current-buffer))))))
 
 (define-command set-url-from-current-url ()
@@ -872,6 +874,10 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
 (define-command set-url-new-buffer ()
   "Prompt for a URL and set it in a new focused buffer."
   (set-url :new-buffer-p t))
+
+(define-command set-url-nosave-buffer ()
+  "Prompt for a URL and set it in a new focused nosave buffer."
+  (set-url :new-buffer-p t :nosave-buffer-p t))
 
 (define-command reload-current-buffer (&optional (buffer (current-buffer)))
   "Reload of BUFFER or current buffer if unspecified."
