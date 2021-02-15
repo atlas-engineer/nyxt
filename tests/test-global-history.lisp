@@ -9,9 +9,9 @@
 
 (subtest "Global history"
   (let* ((*browser* (make-instance 'user-browser)))
-    ;; Set profile to private to inhibit serialization / deserialization.
+    ;; Set profile to nosave to inhibit serialization / deserialization.
     ;; TODO: We should still test serialization and deserialization.
-    (setf *global-data-profile* (make-instance 'private-data-profile))
+    (setf *global-data-profile* (make-instance 'nosave-data-profile))
     (let ((buffer (nyxt::make-internal-buffer)))
       (nyxt:with-current-buffer buffer
         (let ((path (history-path buffer)))

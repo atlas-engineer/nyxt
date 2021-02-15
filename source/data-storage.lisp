@@ -101,15 +101,15 @@ means the store operations are systematically delayed."))
   (:export-class-name-p t)
   (:documentation "With the default profile all data is persisted to the standard locations."))
 
-(define-class private-data-profile (data-profile)
-  ((name :initform "private")
+(define-class nosave-data-profile (data-profile)
+  ((name :initform "nosave")
    (user-data-cache (make-hash-table :test #'equal)
                     :type hash-table
-                    :documentation "Buffer-local `user-data-cache' to isolate the data of a private buffer."))
+                    :documentation "Buffer-local `user-data-cache' to isolate the data of a nosave buffer."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
-  (:documentation "With the private profile no data should be persisted to disk.
+  (:documentation "With the nosave profile no data should be persisted to disk.
 No data should be shared with other buffers either."))
 
 (export-always '*global-data-profile*)
@@ -199,16 +199,16 @@ Return NIL when path must not be used.  This makes it possible to use the
 function result as a boolean in conditions."
   (expand-default-path path))
 
-(defmethod expand-data-path ((profile private-data-profile) (path cookies-data-path))
-  "We shouldn't store cookies for `private-data-profile'."
+(defmethod expand-data-path ((profile nosave-data-profile) (path cookies-data-path))
+  "We shouldn't store cookies for `nosave-data-profile'."
   nil)
 
-(defmethod expand-data-path ((profile private-data-profile) (path standard-output-data-path))
-  "We shouldn't store `*standard-output*' for `private-data-profile'."
+(defmethod expand-data-path ((profile nosave-data-profile) (path standard-output-data-path))
+  "We shouldn't store `*standard-output*' for `nosave-data-profile'."
   nil)
 
-(defmethod expand-data-path ((profile private-data-profile) (path error-output-data-path))
-  "We shouldn't store `*error-output*' for `private-data-profile'."
+(defmethod expand-data-path ((profile nosave-data-profile) (path error-output-data-path))
+  "We shouldn't store `*error-output*' for `nosave-data-profile'."
   nil)
 
 (export-always 'ensure-parent-exists)
@@ -233,12 +233,12 @@ Define a method for your `data-path' type to make it storable."))
   (:documentation "The generic way to restore data from the given path type.
 Define a method for your `data-path' type to make it restorable."))
 
-(defmethod store ((profile private-data-profile) (path data-path) &key &allow-other-keys)
-  "This method guarantees PATH will not be persisted to disk in PRIVATE-DATA-PROFILE."
+(defmethod store ((profile nosave-data-profile) (path data-path) &key &allow-other-keys)
+  "This method guarantees PATH will not be persisted to disk in NOSAVE-DATA-PROFILE."
   nil)
 
-(defmethod restore ((profile private-data-profile) (path data-path) &key &allow-other-keys)
-  "This method guarantees PATH will not be loaded from disk in PRIVATE-DATA-PROFILE."
+(defmethod restore ((profile nosave-data-profile) (path data-path) &key &allow-other-keys)
+  "This method guarantees PATH will not be loaded from disk in NOSAVE-DATA-PROFILE."
   nil)
 
 (defmethod store :around ((profile data-profile) (path async-data-path) &key &allow-other-keys)
@@ -288,8 +288,8 @@ This function can be used on browser-less globals like `*init-file-path*'."
 (defgeneric get-user-data (profile path)
   (:documentation "Access the browsing-related data depending on the `data-profile'."))
 
-(defmethod get-user-data ((profile private-data-profile) (path data-path))
-  "Look up the buffer-local data in case of `private-data-profile'."
+(defmethod get-user-data ((profile nosave-data-profile) (path data-path))
+  "Look up the buffer-local data in case of `nosave-data-profile'."
   (%get-user-data profile path (user-data-cache profile)))
 
 (export-always 'get-data)
