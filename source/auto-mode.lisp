@@ -40,7 +40,7 @@ Package prefix is optional.")
     (check-type mode (cons symbol *))
     (make-instance 'mode-invocation
                    :name (first mode)
-                   :args (rest mode))))
+                   :arguments (rest mode))))
 
 (declaim (ftype (function (list (or auto-mode null))
                           (or (cons mode-invocation *) null))
