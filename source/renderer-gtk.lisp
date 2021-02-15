@@ -167,8 +167,8 @@ not return."
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(defmethod expand-data-path ((profile private-data-profile) (path data-manager-data-path))
-  "We shouldn't store any `data-manager' data for `private-data-profile'."
+(defmethod expand-data-path ((profile nosave-data-profile) (path data-manager-data-path))
+  "We shouldn't store any `data-manager' data for `nosave-data-profile'."
   nil)
 
 (defun make-web-view (&key context-buffer)

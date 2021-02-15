@@ -274,7 +274,7 @@ existing instance instead of a separate instance that exits immediately.")
 instance must be non-nil.")
     (:p "To let know a private instance of Nyxt to load a foo.lisp script and run it's
 `foo' function:")
-    (:pre (:code "nyxt --data-profile private --remote --load foo.lisp --eval '(foo)'"))
+    (:pre (:code "nyxt --data-profile nosave --remote --load foo.lisp --eval '(foo)'"))
 
     (:h2 "Troubleshooting")
     (:h3 "Playing videos")
