@@ -567,7 +567,8 @@ If URL is `:default', use `default-new-buffer-url'."
   "Make buffer with title TITLE and modes DEFAULT-MODES.
 Run `*browser*'s `buffer-make-hook' over the created buffer before returning it.
 If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
-  (let* ((buffer (if dead-buffer
+  (let* ((nosave-buffer-p (or nosave-buffer-p (nosave-buffer-p parent-buffer)))
+         (buffer (if dead-buffer
                      (progn
                        ;; Dead buffer ID must be renewed before calling `ffi-buffer-make'.
                        (setf (id dead-buffer) (get-unique-buffer-identifier *browser*))
@@ -599,7 +600,9 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
           ;; default value.
           (unless (htree:owner history (id buffer))
             (htree:add-owner history (id buffer)
-                             :creator-id (when parent-buffer
+                             :creator-id (when (and parent-buffer
+                                                    (not nosave-buffer-p)
+                                                    (not (nosave-buffer-p parent-buffer)))
                                            (id parent-buffer)))))))
     ;; Run hooks before `initialize-modes' to allow for last-minute modification
     ;; of the default modes.
@@ -865,7 +868,9 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
 
 (define-command set-url (&key new-buffer-p prefill-current-url-p nosave-buffer-p)
   "Set the URL for the current buffer, completing with history."
-  (let ((history (unless nosave-buffer-p (minibuffer-set-url-history *browser*))))
+  (let ((nosave-buffer-p (or nosave-buffer-p
+                             (nosave-buffer-p (current-buffer))))
+        (history (unless nosave-buffer-p (minibuffer-set-url-history *browser*))))
     (when history
       (containers:insert-item history (url (current-buffer))))
     (let ((url (prompt-minibuffer

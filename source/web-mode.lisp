@@ -184,7 +184,8 @@ search.")
       (if (and (input-tag-p response) url-empty)
           (funcall-safely #'paste)
           (unless url-empty
-            (make-buffer-focus :url (url-at-point buffer)))))))
+            (make-buffer-focus :url (url-at-point buffer)
+                               :nosave-buffer-p (nosave-buffer-p buffer)))))))
 
 (define-command maybe-scroll-to-bottom (&optional (buffer (current-buffer)))
   "Scroll to bottom if no input element is active, forward event otherwise."
