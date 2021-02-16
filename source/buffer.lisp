@@ -160,25 +160,6 @@ distance scroll-left or scroll-right will scroll.")
                       :documentation "The ratio of the page to scroll.
 A value of 0.95 means that the bottom 5% will be the top 5% when scrolling
 down.")
-   (box-style (cl-css:css
-               '((".nyxt-hint"
-                  :background "linear-gradient(#fcff9e, #efcc00)"
-                  :color "black"
-                  :border "1px black solid"
-                  :padding "1px 3px 1px 3px"
-                  :border-radius "2px"
-                  :z-index #.(1- (expt 2 31)))))
-              :documentation "The style of the boxes, e.g. link hints.")
-   (highlighted-box-style (cl-css:css
-                           '((".nyxt-hint.nyxt-highlight-hint"
-                              :font-weight "500"
-                              :background "#fcff9e")))
-                          :documentation "The style of highlighted boxes, e.g. link hints.")
-   (hints-alphabet "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                   :type string
-                   :documentation "The alphabet (charset) to use for hints.
-Order matters -- the ones that go first are more likely to appear more often
-and to index the top of the page.")
    (buffer-load-hook (make-hook-uri->uri
                       :combination #'hooks:combine-composed-hook)
                      :type hook-uri->uri
