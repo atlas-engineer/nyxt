@@ -32,6 +32,25 @@ search.")
     nil
     :type boolean
     :documentation "Whether history navigation is restricted by buffer-local history.")
+   (box-style (cl-css:css
+               '((".nyxt-hint"
+                  :background "linear-gradient(#fcff9e, #efcc00)"
+                  :color "black"
+                  :border "1px black solid"
+                  :padding "1px 3px 1px 3px"
+                  :border-radius "2px"
+                  :z-index #.(1- (expt 2 31)))))
+              :documentation "The style of the boxes, e.g. link hints.")
+   (highlighted-box-style (cl-css:css
+                           '((".nyxt-hint.nyxt-highlight-hint"
+                              :font-weight "500"
+                              :background "#fcff9e")))
+                          :documentation "The style of highlighted boxes, e.g. link hints.")
+   (hints-alphabet "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                   :type string
+                   :documentation "The alphabet (charset) to use for hints.
+Order matters -- the ones that go first are more likely to appear more often
+and to index the top of the page.")
    (keymap-scheme
     (define-scheme "web"
       scheme:cua
@@ -157,6 +176,9 @@ search.")
        "s-space" 'scroll-page-up
        "pageup" 'scroll-page-up
        "pagedown" 'scroll-page-down)))))
+
+(defun current-web-mode ()
+  (find-submode (current-buffer) 'web-mode))
 
 (sera:export-always '%clicked-in-input?)
 (define-parenscript %clicked-in-input? ()

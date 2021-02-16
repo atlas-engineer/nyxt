@@ -21,8 +21,8 @@
     (unless (qs document "#nyxt-stylesheet")
       (ps:try
        (ps:let* ((style-element (ps:chain document (create-element "style")))
-                 (box-style (ps:lisp (box-style (current-buffer))))
-                 (highlighted-style (ps:lisp (highlighted-box-style (current-buffer)))))
+                 (box-style (ps:lisp (box-style (current-web-mode))))
+                 (highlighted-style (ps:lisp (highlighted-box-style (current-web-mode)))))
          (setf (ps:@ style-element id) "nyxt-stylesheet")
          (ps:chain document head (append-child style-element))
          (ps:chain style-element sheet (insert-rule box-style 0))
