@@ -24,6 +24,25 @@ from a binary) then any condition is logged instead of triggering the debugger."
           (log:error "In ~a: ~a" f c)
           nil))))
 
+(export-always 'with-muffled-body)
+(defmacro with-muffled-body ((format-string &rest args) &body body)
+  "Run body with muffled condition when `*keep-alive*' is nil, run normally otherwise.
+Then the condition is muffled, a warning is reported to the user as per
+FORMAT-STRING and ARGS.
+As a special case, the first `:condition' keyword in ARGS is replaced with the
+condition."
+  `(if ,*keep-alive*
+       (progn
+         ,@body)
+       (handler-case (progn ,@body)
+         (error (c)
+           (declare (ignorable c))
+           (let ((condition-index (position :condition ',args)))
+             (apply #'echo-warning ,format-string
+                    (if condition-index
+                        (replace ',args (list c) :start1 condition-index)
+                        ',args)))))))
+
 (defun make-channel (&optional size)
   "Return a channel of capacity SIZE.
 If SIZE is NIL, capicity is infinite."
