@@ -373,9 +373,10 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                 :color "rgb(230, 230, 230)"
                 :text-align "right"
                 :padding-right "5px"
-                :text-overflow "ellipsis"
-                :overflow-x "hidden"
+                :overflow-x "scroll"
                 :white-space "nowrap")
+               ("#modes::-webkit-scrollbar"
+                :display "none")
                (.button
                 :color "rgb(250, 250, 250)"
                 :text-decoration "none"
