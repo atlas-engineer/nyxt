@@ -16,7 +16,6 @@ macro to change slot values."
   "Make a password interface for all user classes, the first one with
 a non-nil value of executable is considered to be the interface to
 make/return."
-  (make-password-interface-user-classes)
   (find-if #'password:executable
            (mapcar (alex:compose #'make-instance #'user-class-name)
                    password:*interfaces*)))
