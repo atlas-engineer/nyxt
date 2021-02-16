@@ -436,15 +436,14 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
     (echo "Saved ~a auto-mode rules to ~s." (length rules) (expand-path path)))))
 
 (defmethod restore ((profile data-profile) (path auto-mode-rules-data-path) &key &allow-other-keys)
-  (handler-case
-      (let ((data (with-data-file (file path
-                                        :direction :input
-                                        :if-does-not-exist nil)
-                    (when file
-                      (let ((*package* (find-package :nyxt/auto-mode)))
-                        (deserialize-auto-mode-rules file))))))
-        (when data
-          (echo "Loading ~a auto-mode rules from ~s." (length data) (expand-path path))
-          (setf (get-data path) data)))
-    (error (c)
-      (echo-warning "Failed to load auto-mode-rules from ~s: ~a" (expand-path path) c))))
+  (maybe-muffle-condition ("Failed to load auto-mode-rules from ~s: ~a"
+                           (expand-path path) :condition)
+    (let ((data (with-data-file (file path
+                                      :direction :input
+                                      :if-does-not-exist nil)
+                  (when file
+                    (let ((*package* (find-package :nyxt/auto-mode)))
+                      (deserialize-auto-mode-rules file))))))
+      (when data
+        (echo "Loading ~a auto-mode rules from ~s." (length data) (expand-path path))
+        (setf (get-data path) data)))))
