@@ -46,13 +46,18 @@ Package prefix is optional.")
                    :name (first mode)
                    :arguments (rest mode))))
 
+(defun mode-invocations (mode-list)
+  "Return the mode invocations corresponding to mode specifiers in MODE-LIST.
+If the mode specifier is not known, it's omitted from the results."
+  (delete nil (mapcar #'mode-invocation mode-list)))
+
 (declaim (ftype (function (list (or auto-mode null))
                           (or (cons mode-invocation *) null))
                 rememberable-of))
 (defun rememberable-of (modes auto-mode)
   "Filter MODES based on rememberability by AUTO-MODE."
   (if auto-mode
-      (set-difference (mapcar #'mode-invocation modes)
+      (set-difference (mode-invocations modes)
                       (non-rememberable-modes auto-mode)
                       :test #'equals)
       modes))
@@ -113,20 +118,20 @@ Enable INCLUDED modes plus the already present ones, and disable EXCLUDED modes,
 
 (defun save-last-active-modes (auto-mode url)
   (when (can-save-last-active-modes auto-mode url)
-    (setf (last-active-modes auto-mode) (mapcar #'mode-invocation (modes (buffer auto-mode)))
+    (setf (last-active-modes auto-mode) (mode-invocations (modes (buffer auto-mode)))
           (last-active-modes-url auto-mode) url)))
 
 (defun reapply-last-active-modes (auto-mode)
   (disable-modes
    (mapcar #'name
-           (set-difference (mapcar #'mode-invocation (modes (buffer auto-mode)))
+           (set-difference (mode-invocations (modes (buffer auto-mode)))
                            (last-active-modes auto-mode)
                            :test #'equals))
    (buffer auto-mode))
   (enable-modes
    (mapcar #'name
            (set-difference (last-active-modes auto-mode)
-                           (mapcar #'mode-invocation (modes (buffer auto-mode)))
+                           (mode-invocations (modes (buffer auto-mode)))
                            :test #'equals))
    (buffer auto-mode)))
 
@@ -219,7 +224,7 @@ The rules are:
 (defun initialize-auto-mode (mode)
   (unless (last-active-modes mode)
     (setf (last-active-modes mode)
-          (mapcar #'mode-invocation (default-modes (buffer mode)))))
+          (mode-invocations (default-modes (buffer mode)))))
   (when (prompt-on-mode-toggle mode)
     (hooks:add-hook (enable-mode-hook (buffer mode))
                     (nyxt::make-handler-mode
@@ -266,7 +271,7 @@ on the last URL not covered by `auto-mode'.")
    (constructor #'initialize-auto-mode)))
 
 (defmethod non-rememberable-modes ((auto-mode auto-mode))
-  (mapcar #'mode-invocation (slot-value auto-mode 'non-rememberable-modes)))
+  (mode-invocations (slot-value auto-mode 'non-rememberable-modes)))
 
 (define-command save-non-default-modes-for-future-visits ()
   "Save the modes present in `default-modes' and not present in current modes as :excluded,
@@ -288,11 +293,11 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
       (setf url (url url)))
     (add-modes-to-auto-mode-rules
      (url-infer-match url)
-     :include (set-difference (mapcar #'mode-invocation(modes (current-buffer)))
-                              (mapcar #'mode-invocation (default-modes (current-buffer)))
+     :include (set-difference (mode-invocations (modes (current-buffer)))
+                              (mode-invocations (default-modes (current-buffer)))
                               :test #'equals)
-     :exclude (set-difference (mapcar #'mode-invocation (default-modes (current-buffer)))
-                              (mapcar #'mode-invocation (modes (current-buffer)))
+     :exclude (set-difference (mode-invocations (default-modes (current-buffer)))
+                              (mode-invocations (modes (current-buffer)))
                               :test #'equals))))
 
 (define-command save-exact-modes-for-future-visits ()
@@ -315,7 +320,7 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
     (when (typep url 'nyxt::history-entry)
       (setf url (url url)))
     (add-modes-to-auto-mode-rules (url-infer-match url)
-                                  :include (mapcar #'mode-invocation (modes (current-buffer)))
+                                  :include (mode-invocations (modes (current-buffer)))
                                   :exact-p t)))
 
 (declaim (ftype (function (list &key (:append-p boolean) (:exclude (or (cons mode-invocation *) null))
@@ -379,8 +384,8 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
     (let ((rules (read stream)))
       (mapcar #'(lambda (rule)
                   (let ((rule (append '(:test) rule)))
-                    (setf (getf rule :included) (mapcar #'mode-invocation (getf rule :included))
-                          (getf rule :excluded) (mapcar #'mode-invocation (getf rule :excluded)))
+                    (setf (getf rule :included) (mode-invocations (getf rule :included))
+                          (getf rule :excluded) (mode-invocations (getf rule :excluded)))
                     (when (stringp (getf rule :test))
                       (setf (getf rule :test) `(match-url ,(getf rule :test))))
                     (apply #'make-instance 'auto-mode-rule rule)))
