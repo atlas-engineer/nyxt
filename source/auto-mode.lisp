@@ -25,6 +25,8 @@ Package prefix is optional.")
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (sera:export-always 'equals)
+(defmethod equals ((object1 t) (object2 t))
+  (equalp object1 object2))
 (defmethod equals ((mode1 mode-invocation) (mode2 mode-invocation))
   (string-equal (symbol-name (name mode1))
                 (symbol-name (name mode2))))
