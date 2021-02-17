@@ -276,30 +276,23 @@ current buffer."
        (when (eq proxy-address :auto)
          (setf proxy-address (proxy-address buffer :downloads-only t)))
        (let* ((download nil))
-         (flet ((unsafe-download ()
-                  (with-data-access (downloads path)
-                    (setf download
-                          (download-manager:resolve url
-                                                    :directory download-dir
-                                                    :cookies cookies
-                                                    :proxy proxy-address))
-                    (push download downloads)
-                    ;; Add a watcher / renderer for monitoring download
-                    (let ((download-render (make-instance 'download :uri (object-string url))))
-                      (setf (destination-path download-render)
-                            (download-manager:filename download))
-                      (push download-render (downloads *browser*))
-                      (bt:make-thread
-                       (lambda ()
-                         (download-watch download-render download))))
-                    download)))
-           (if *keep-alive*
-               (unsafe-download)
-               (handler-case
-                   (unsafe-download)
-                 (error (c)
-                   (echo-warning "Download error: ~a" c)
-                   nil)))))))
+         (with-muffled-body ("Download error: ~a" :condition)
+           (with-data-access (downloads path)
+             (setf download
+                   (download-manager:resolve url
+                                             :directory download-dir
+                                             :cookies cookies
+                                             :proxy proxy-address))
+             (push download downloads)
+             ;; Add a watcher / renderer for monitoring download
+             (let ((download-render (make-instance 'download :uri (object-string url))))
+               (setf (destination-path download-render)
+                     (download-manager:filename download))
+               (push download-render (downloads *browser*))
+               (bt:make-thread
+                (lambda ()
+                  (download-watch download-render download))))
+             download)))))
     (:renderer
      (ffi-buffer-download buffer (object-string url))))
   (list-downloads))
@@ -329,21 +322,16 @@ This is useful to tell REPL instances from binary ones."
 (defun open-urls (urls &key no-focus parent-buffer)
   "Create new buffers from URLs.
 First URL is focused if NO-FOCUS is nil."
-  (flet ((%open-urls ()
-           (let ((first-buffer (first (mapcar
-                                       (lambda (url) (make-buffer :url url
-                                                                  :parent-buffer parent-buffer))
-                                       urls))))
-             (when (and first-buffer (not no-focus))
-               (if (open-external-link-in-new-window-p *browser*)
-                   (let ((window (window-make *browser*)))
-                     (window-set-active-buffer window first-buffer))
-                   (set-current-buffer first-buffer))))))
-    (if *keep-alive*
-        (%open-urls)
-        (handler-case (%open-urls)
-          (error (c)
-            (echo-warning "Could not make buffer to open ~a: ~a" urls c))))))
+  (with-muffled-body ("Could not make buffer to open ~a: ~a" urls :condition)
+    (let ((first-buffer (first (mapcar
+                                (lambda (url) (make-buffer :url url
+                                                           :parent-buffer parent-buffer))
+                                urls))))
+      (when (and first-buffer (not no-focus))
+        (if (open-external-link-in-new-window-p *browser*)
+            (let ((window (window-make *browser*)))
+              (window-set-active-buffer window first-buffer))
+            (set-current-buffer first-buffer))))))
 
 (defun scheme-keymap (buffer buffer-scheme)
   "Return the keymap in BUFFER-SCHEME corresponding to the BUFFER `keymap-scheme-name'.

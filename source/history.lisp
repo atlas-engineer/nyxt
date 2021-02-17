@@ -375,37 +375,30 @@ We keep this variable as a means to import the old format to the new one.")
                             ;; twice.
                             (setf (last-access data) "")
                             (htree:add-entry history data last-access)))
-                        old-history)))
+                        old-history))))
+    (with-muffled-body ("Failed to restore history from ~a: ~a"
+                        (expand-path path) :condition)
+      (let* ((path (if (uiop:file-exists-p (expand-path path))
+                       path
+                       flat-history-path))
+             (data (with-data-file (file path
+                                         :direction :input
+                                         :if-does-not-exist nil)
+                     (when file
+                       ;; We need to make sure current package is :nyxt so that
+                       ;; symbols are printed with consistent namespaces.
+                       (let ((*package* (find-package :nyxt)))
+                         (history-deserialize-sexp file))))))
+        (match data
+          (nil nil)
+          ((guard (list version history) t)
+           (unless (string= version +version+)
+             (log:warn "History version ~s differs from current version ~s"
+                       version +version+))
+           (ctypecase history
+             (htree:history-tree
+              (restore-history-tree history))
 
-           (%restore ()
-             (let* ((path (if (uiop:file-exists-p (expand-path path))
-                              path
-                              flat-history-path))
-                    (data (with-data-file (file path
-                                               :direction :input
-                                               :if-does-not-exist nil)
-                           (when file
-                             ;; We need to make sure current package is :nyxt so that
-                             ;; symbols are printed with consistent namespaces.
-                             (let ((*package* (find-package :nyxt)))
-                               (history-deserialize-sexp file))))))
-               (match data
-                 (nil nil)
-                 ((guard (list version history) t)
-                  (unless (string= version +version+)
-                    (log:warn "History version ~s differs from current version ~s"
-                              version +version+))
-                  (ctypecase history
-                    (htree:history-tree
-                     (restore-history-tree history))
-
-                    (hash-table
-                     (restore-flat-history history path))))
-                 (_ (error "Expected (list version history) structure."))))))
-
-    (if *keep-alive*
-        (%restore)
-        (handler-case (%restore)
-          (error (c)
-            (echo-warning "Failed to restore history from ~a: ~a"
-                          (expand-path path) c))))))
+             (hash-table
+              (restore-flat-history history path))))
+          (_ (error "Expected (list version history) structure.")))))))

@@ -53,13 +53,9 @@ See the documentation of `minibuffer' to know more about the minibuffer options.
                                (apply #'make-minibuffer (append (list :channel channel
                                                                       :interrupt-channel interrupt-channel)
                                                                 args)))))
-           (if *keep-alive*
-               (match (setup-function minibuffer)
-                 ((guard f f) (funcall f minibuffer)))
-               (handler-case (match (setup-function minibuffer)
-                               ((guard f f) (funcall f minibuffer)))
-                 (error (c)
-                   (echo-warning "Minibuffer error: ~a" c))))
+           (with-muffled-body ("Minibuffer error: ~a" :condition)
+             (alex:when-let ((f (setup-function minibuffer)))
+               (funcall f minibuffer)))
            (state-changed minibuffer)
            (update-display minibuffer)
            (push minibuffer (active-minibuffers (current-window)))
