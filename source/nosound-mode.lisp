@@ -10,7 +10,7 @@
   "Disable sound in current buffer."
   ((destructor
     (lambda (mode)
-      (ffi-buffer-enable-sound (buffer mode) nil)))
+      (ffi-buffer-enable-sound (buffer mode) t)))
    (constructor
     (lambda (mode)
-      (ffi-buffer-enable-sound (buffer mode) t)))))
+      (ffi-buffer-enable-sound (buffer mode) nil)))))
