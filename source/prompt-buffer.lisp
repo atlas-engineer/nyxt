@@ -127,7 +127,7 @@ All ARGS are declared as `ignorable'."
                    :documentation "Keymap that takes precedence over all modes' keymaps."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
-    (:accessor-name-transformer #'class*:name-identity)
+    (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
     (:documentation "The prompt buffer is the interface for user interactions.
 Each prompt spawns a new object: this makes it possible to nest prompts , such
 as invoking `prompt-history'.
