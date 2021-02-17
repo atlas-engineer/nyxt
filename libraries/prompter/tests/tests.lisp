@@ -46,10 +46,10 @@
       (prove:is (source1-suggestions prompter)
                 '("foo" "bar")))))
 
-(class*:define-class url ()
+(class-star:define-class url ()
   ((uri "")
    (title ""))
-  (:accessor-name-transformer #'class*:name-identity))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (defmethod prompter:object-properties ((url url))
   `(:uri ,(uri url)

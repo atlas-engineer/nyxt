@@ -66,7 +66,7 @@ function and its preprocessors.")
 used by the `sort-predicate'."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer #'class*:name-identity)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "Suggestions are processed and listed in `prompter-source'.
 It wraps arbitrary object stored in the `value' slot.
 The other slots are optional."))
@@ -274,7 +274,7 @@ If nil, no history is used.")
 It can be a function of one argument, the prompter, which returns a string."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
-    (:accessor-name-transformer #'class*:name-identity)
+    (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
     (:documentation "A prompter source instance is meant to be used by a
 `prompter' object.  See its `sources' slot.  A source is a consistent collection
 of suggestions, filters, actions.
@@ -301,7 +301,7 @@ call.")))
   ((name "Confirm")
    (initial-suggestions '("yes" "no")))
   (:export-class-name-p t)
-  (:accessor-name-transformer #'class*:name-identity)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "Prompt for yes-no questions."))
 
 (defmethod initialize-instance :after ((source prompter-source) &key)
