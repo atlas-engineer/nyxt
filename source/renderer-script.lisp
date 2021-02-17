@@ -29,6 +29,7 @@ The function can be passed ARGS."
 (define-parenscript document-get-body (&key (limit 100000))
   (ps:chain document body |innerHTML| (slice 0 (ps:lisp limit))))
 
+(export-always 'document-get-paragraph-contents)
 (define-parenscript document-get-paragraph-contents (&key (limit 100000))
   (defun qsa (context selector)
     (ps:chain context (query-selector-all selector)))
