@@ -120,7 +120,7 @@
                      "B" 'make-buffer-focus
                      "o" 'set-url
                      "O" 'set-url-new-buffer
-                     ;; TODO: vim-ish set-url-nosave-buffer keybinding?
+                     "g o" 'set-url-nosave-buffer
                      "m u" 'bookmark-url
                      "m d" 'bookmark-delete
                      "R" 'reload-current-buffer

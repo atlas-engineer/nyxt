@@ -156,7 +156,8 @@ and to index the top of the page.")
        "f" 'follow-hint
        "F" 'follow-hint-new-buffer-focus
        "; f" 'follow-hint-new-buffer
-       ;; TODO: vim-ish keybindings for follow-hint-nosave-buffer(-focus)?
+       "g f" 'follow-hint-nosave-buffer
+       "g F" 'follow-hint-nosave-buffer-focus
        "button9" 'history-forwards
        "button8" 'history-backwards
        "+" 'zoom-in-page
