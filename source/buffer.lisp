@@ -874,10 +874,8 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
     (when history
       (containers:insert-item history (url (current-buffer))))
     (let ((url (prompt-minibuffer
-                :input-prompt (format nil "Open URL in ~A buffer"
-                                      (if new-buffer-p
-                                          "new"
-                                          "current"))
+                :input-prompt (format nil "Open URL in ~:[current~;new~]~:[~; nosave~] buffer"
+                                      new-buffer-p nosave-buffer-p)
                 :input-buffer (if prefill-current-url-p
                                   (object-string (url (current-buffer))) "")
                 :default-modes '(set-url-mode minibuffer-mode)
