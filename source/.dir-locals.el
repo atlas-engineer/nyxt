@@ -1,4 +1,5 @@
-((lisp-mode
+((nil . ((fill-column . 80)))
+ (lisp-mode
   . ((eval . (cl-flet ((enhance-imenu-lisp
                         (&rest keywords)
                         (dolist (keyword keywords)
