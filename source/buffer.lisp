@@ -544,25 +544,25 @@ If URL is `:default', use `default-new-buffer-url'."
                                    (:no-history-p boolean)))
                 buffer-make))
 (defun buffer-make (browser &key data-profile title default-modes
-                              dead-buffer nosave-buffer-p internal-buffer-p
-                              parent-buffer no-history-p)
+                                 dead-buffer internal-buffer-p
+                                 parent-buffer no-history-p
+                                 (nosave-buffer-p (nosave-buffer-p parent-buffer)))
   "Make buffer with title TITLE and modes DEFAULT-MODES.
 Run `*browser*'s `buffer-make-hook' over the created buffer before returning it.
 If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
-  (let* ((nosave-buffer-p (or nosave-buffer-p (nosave-buffer-p parent-buffer)))
-         (buffer (if dead-buffer
-                     (progn
-                       ;; Dead buffer ID must be renewed before calling `ffi-buffer-make'.
-                       (setf (id dead-buffer) (get-unique-buffer-identifier *browser*))
-                       (ffi-buffer-make dead-buffer))
-                     (apply #'make-instance (cond
-                                              (internal-buffer-p 'user-internal-buffer)
-                                              (nosave-buffer-p 'user-nosave-buffer)
-                                              (t 'user-web-buffer))
-                            :id (get-unique-buffer-identifier *browser*)
-                            (append (when title `(:title ,title))
-                                    (when default-modes `(:default-modes ,default-modes))
-                                    (when data-profile `(:data-profile ,data-profile)))))))
+  (let ((buffer (if dead-buffer
+                    (progn
+                      ;; Dead buffer ID must be renewed before calling `ffi-buffer-make'.
+                      (setf (id dead-buffer) (get-unique-buffer-identifier *browser*))
+                      (ffi-buffer-make dead-buffer))
+                    (apply #'make-instance (cond
+                                             (internal-buffer-p 'user-internal-buffer)
+                                             (nosave-buffer-p 'user-nosave-buffer)
+                                             (t 'user-web-buffer))
+                           :id (get-unique-buffer-identifier *browser*)
+                           (append (when title `(:title ,title))
+                                   (when default-modes `(:default-modes ,default-modes))
+                                   (when data-profile `(:data-profile ,data-profile)))))))
     (hooks:run-hook (buffer-before-make-hook *browser*) buffer)
     ;; Modes might require that buffer exists, so we need to initialize them
     ;; after the view has been created.
@@ -577,7 +577,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
       (with-current-buffer buffer
         ;; Register buffer in global history:
         (with-data-access (history (history-path buffer)
-                           :default (make-history-tree buffer))
+                                   :default (make-history-tree buffer))
           ;; Owner may already exist if history was just create with the above
           ;; default value.
           (unless (htree:owner history (id buffer))
@@ -848,11 +848,10 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
             (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url)))
             (ffi-buffer-load buffer url))))))
 
-(define-command set-url (&key new-buffer-p prefill-current-url-p nosave-buffer-p)
+(define-command set-url (&key new-buffer-p prefill-current-url-p 
+                              (nosave-buffer-p (nosave-buffer-p (current-buffer))))
   "Set the URL for the current buffer, completing with history."
-  (let ((nosave-buffer-p (or nosave-buffer-p
-                             (nosave-buffer-p (current-buffer))))
-        (history (unless nosave-buffer-p (minibuffer-set-url-history *browser*))))
+  (let ((history (unless nosave-buffer-p (minibuffer-set-url-history *browser*))))
     (when history
       (containers:insert-item history (url (current-buffer))))
     (let ((url (prompt-minibuffer
