@@ -854,7 +854,7 @@ requested a reload."
 
 #+webkit2-mute
 (defmethod ffi-buffer-enable-sound ((buffer gtk-buffer) value)
-  (webkit:webkit-web-view-set-is-muted (gtk-object buffer) value))
+  (webkit:webkit-web-view-set-is-muted (gtk-object buffer) (not value)))
 
 (defmethod ffi-buffer-download ((buffer gtk-buffer) uri)
   (let* ((webkit-download (webkit:webkit-web-view-download-uri (gtk-object buffer) uri))
