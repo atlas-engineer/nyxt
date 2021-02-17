@@ -117,12 +117,15 @@ then become available for deletion with `delete-history-entry'."
       (dolist (buffer buffers)
         (htree:reset-owner history (id buffer))))))
 
-(defun score-history-entry (entry history)
+(defun score-history-entry (htree-entry history)
   "Return history ENTRY score.
 The score gets higher for more recent entries and if they've been visited a
 lot."
   ;; TODO: Or use current owner last access?  Or both?
-  (let ((last-access (htree:data-last-access history entry)))
+  ;; WARNING: `htree:data-last-access' is slow, which is why we take a
+  ;; htree-entry instead which has much faster access to the last access.
+  (let* ((entry (htree:data htree-entry))
+         (last-access (htree:last-access htree-entry)))
     (+ (* 0.1
           ;; Total number of visits.
           (+ (implicit-visits entry)
@@ -143,10 +146,11 @@ moment the PREFIX-URLS are inserted as is, not a `history-entry' objects since
 it would not be very useful."
   (with-data-unsafe (hist (history-path (current-buffer)))
     (let* ((all-history-entries (when hist
-                                  (sort (htree:all-data hist)
-                                        (lambda (x y)
-                                          (> (score-history-entry x hist)
-                                             (score-history-entry y hist))))))
+                                  (mapcar #'htree:data
+                                          (sort (alex:hash-table-keys (htree:entries hist))
+                                                (lambda (x y)
+                                                  (> (score-history-entry x hist)
+                                                     (score-history-entry y hist)))))))
            (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
       (when prefix-urls
         (setf all-history-entries (append (mapcar #'quri:url-decode prefix-urls)
@@ -159,12 +163,13 @@ it would not be very useful."
   (with-data-unsafe (hist (history-path (current-buffer)))
     (let ((owner-less-history-entries
            (when hist
-             (sort (mapcar #'htree:data
-                           (delete-if (lambda (entry) (htree:nodes entry))
-                                      (alex:hash-table-keys (htree:entries hist))))
-                   (lambda (x y)
-                     (> (score-history-entry x hist)
-                        (score-history-entry y hist)))))))
+             (mapcar #'htree:data
+                     (sort
+                      (delete-if (lambda (entry) (htree:nodes entry))
+                                 (alex:hash-table-keys (htree:entries hist)))
+                      (lambda (x y)
+                        (> (score-history-entry x hist)
+                           (score-history-entry y hist))))))))
       (lambda (minibuffer)
         (fuzzy-match (input-buffer minibuffer) owner-less-history-entries)))))
 
