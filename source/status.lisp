@@ -9,7 +9,8 @@
 
 (export-always 'format-status-modes)
 (defun format-status-modes (&optional (buffer (current-buffer)))
-  (format nil "~{~a~^ ~}"
+  (format nil "~:[~;⚠ nosave ~]~{~a~^ ~}"
+          (nosave-buffer-p buffer)
           (mapcar (lambda (m) (str:replace-all "-mode" "" m))
                   (set-difference
                    (mapcar (alex:compose #'str:downcase #'mode-name) (modes buffer))
