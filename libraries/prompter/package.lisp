@@ -5,7 +5,7 @@
 
 (uiop:define-package prompter
   (:use #:common-lisp)
-  (:import-from #:class* #:define-class)
+  (:import-from #:class-star #:define-class)
   (:import-from #:serapeum #:export-always))
 
 (in-package prompter)
