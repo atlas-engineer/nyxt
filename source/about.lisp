@@ -9,8 +9,8 @@
     (markup:markup
      (:style (style buffer))
      (:h1 "Contributors")
-     (:p "Let us know if you've contributed to the development of
-                    Nyxt and would like to be included on this list.")
+     (:p "Let us know if you've contributed to the development of Nyxt and would
+like to be included on this list.")
      (:ul
       (:li "Adom Hartell (@4t0m)")
       (:li "Artyom Bologov (@aartaka)")
