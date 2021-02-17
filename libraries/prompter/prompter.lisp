@@ -14,7 +14,7 @@
                   :export nil
                   :documentation
                   "Communication channel with the `update' thread."))
-  (:accessor-name-transformer #'class*:name-identity)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "This object is used to memorize which sources are ready for a
 given input.
 A new object is created on every new input."))
@@ -104,7 +104,7 @@ See also `result-channel'.")
 This is useful to know if prompter was cancelled or not."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
-    (:accessor-name-transformer #'class*:name-identity)
+    (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
     (:documentation "The prompter is an interface for user interactions.
 A prompter object holds multiple sources (of type `prompter-source') which
 contain a list of `suggestion's.
