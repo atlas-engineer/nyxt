@@ -58,7 +58,6 @@ This slot is mostly meant to clean up the thread if necessary.")
    (password-interface (make-password-interface)
                        :export nil)
    (messages-content '()
-                     :export nil
                      :documentation "A list of all echoed messages.
 Most recent messages are first.")
    (clipboard-ring (make-ring)
