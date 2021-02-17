@@ -12,6 +12,7 @@ representation of a URL to be shown in the interface."
                           :documentation "A number between 0 and 100
 showing the percentage a download is complete.")
    (destination-path :initarg :destination-path
+                     :initform nil
                      :documentation "A string represent where the file
 will be downloaded to on disk.")
    (cancel-function :documentation "The function to call when
@@ -65,7 +66,7 @@ finds it, it will invoke its cancel-function."
   (check-type path string)
   (setf (slot-value download 'destination-path) path)
   (setf (user-interface:url (open-button download))
-        (lisp-url `(nyxt/file-manager-mode:open-file-function ,path))))
+        (lisp-url `(open-file ,path))))
 
 (defmethod destination-path ((download download))
   (slot-value download 'destination-path))
@@ -134,9 +135,23 @@ download."
   (download (current-buffer) (url (current-buffer))))
 
 (defun downloaded-files-suggestion-filter ()
-  (let ((filenames (mapcar #'destination-path (downloads *browser*))))
+  (let* ((filenames (mapcar #'destination-path (downloads *browser*)))
+         (filenames (remove nil filenames)))
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) filenames))))
+
+(defun open-file (filename)
+  "Open FILENAME in Nyxt if supported, or externally otherwise.
+FILENAME is the full path of the file (or directory). Nyxt and those that are
+opened externally."
+  (handler-case
+      (uiop:launch-program
+       #+linux
+       (list "xdg-open" (namestring filename))
+       #+darwin
+       (list "open" (namestring filename)))
+    ;; We can probably signal something and display a notification.
+    (error (c) (log:error "Opening ~a: ~a~&" filename c))))
 
 (define-command download-open-file ()
   "Open a downloaded file. This command only works for downloads
@@ -145,4 +160,4 @@ See also `open-file'."
   (let ((filename (prompt-minibuffer
                    :input-prompt "Open file"
                    :suggestion-function (downloaded-files-suggestion-filter))))
-    (nyxt/file-manager-mode:open-file-function filename)))
+    (open-file filename)))
