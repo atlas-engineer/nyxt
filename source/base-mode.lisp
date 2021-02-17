@@ -22,6 +22,7 @@
                      "C-l" 'set-url-from-current-url
                      "C-u C-l" 'set-url ; `set-url' is listed in the tutorial, so it should be bound.
                      "M-l" 'set-url-new-buffer
+                     "C-u M-l" 'set-url-nosave-buffer
                      "f5" 'reload-current-buffer
                      "C-r" 'reload-current-buffer
                      "C-R" 'reload-buffer
@@ -75,6 +76,7 @@
                      "C-pagedown" 'switch-buffer-next
                      "C-l" 'set-url
                      "M-l" 'set-url-new-buffer
+                     "C-u M-l" 'set-url-nosave-buffer
                      "C-t" 'make-buffer-focus
                      "C-r" 'reload-current-buffer
                      "C-R" 'reload-buffer
@@ -118,6 +120,7 @@
                      "B" 'make-buffer-focus
                      "o" 'set-url
                      "O" 'set-url-new-buffer
+                     ;; TODO: vim-ish set-url-nosave-buffer keybinding?
                      "m u" 'bookmark-url
                      "m d" 'bookmark-delete
                      "R" 'reload-current-buffer
