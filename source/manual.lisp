@@ -272,7 +272,7 @@ convenience, " (:code "load-init-file") " (re)loads your initialization file.")
 existing instance instead of a separate instance that exits immediately.")
     (:p "The `remote-execution-p' slot of the `browser' class of the remote
 instance must be non-nil.")
-    (:p "To let know a private instance of Nyxt to load a foo.lisp script and run it's
+    (:p "To let know a private instance of Nyxt to load a foo.lisp script and run its
 `foo' function:")
     (:pre (:code "nyxt --data-profile nosave --remote --load foo.lisp --eval '(foo)'"))
 
