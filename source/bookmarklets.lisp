@@ -10,9 +10,15 @@
 (in-package :nyxt)
 
 (defmacro define-bookmarklet-command (name documentation source)
+  "Define a bookmarklet command, the source can either be a JavaScript string to
+evaluate, or a file:// URL with a file path to a JavaScript source file."
   `(define-command ,name (&optional (buffer (current-buffer)))
      ,documentation
-     (ffi-buffer-evaluate-javascript-async buffer ,source)))
+     (let* ((source ,source)
+            (source (if (file-url-p source)
+                        (read-file-string source)
+                        source)))
+       (ffi-buffer-evaluate-javascript-async buffer source))))
 
 (define-bookmarklet-command color-internal-external-links
   "Color internal links red, external links blue, and in-page links orange."

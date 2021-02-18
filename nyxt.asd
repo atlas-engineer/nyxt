@@ -53,6 +53,7 @@
                ;; Independent utilities
                (:file "tags")
                (:file "time")
+               (:file "file")
                (:file "types")
                (:file "conditions")
                (:file "user-interface")
