@@ -369,3 +369,10 @@ suggestions."
 
 (defun default-action (prompter)
   (first (slot-value (selected-source prompter) 'actions)))
+
+(export-always 'resume-sources)
+(defun resume (prompter)
+  "Calls each source `resumer' function, if present."
+  (mapc (lambda (source)
+          (maybe-funcall (resumer source) source))
+        (sources prompter)))
