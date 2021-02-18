@@ -28,9 +28,8 @@ On errors, return URL."
 (defun valid-url-p (url)
   ;; List of URI schemes: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
   ;; Last updated 2020-08-26.
-  (let ((valid-schemes
-          (append
-           '("lisp" "javascript")              ; For Nyxt's internal URLs and not-standardised ones.
+  (let* ((nyxt-schemes '("lisp" "javascript"))
+         (iana-schemes
            '("aaa" "aaas" "about" "acap" "acct" "cap" "cid" "coap" "coap+tcp" "coap+ws"
              "coaps" "coaps+tcp" "coaps+ws" "crid" "data" "dav" "dict" "dns" "example" "file"
              "ftp" "geo" "go" "gopher" "h323" "http" "https" "iax" "icap" "im" "imap" "info"
@@ -40,25 +39,33 @@ On errors, return URL."
              "rtsps" "rtspu" "service" "session" "shttp" "sieve" "sip" "sips" "sms" "snmp"
              "soap.beep" "soap.beeps" "stun" "stuns" "tag" "tel" "telnet" "tftp"
              "thismessage" "tip" "tn3270" "turn" "turns" "tv" "urn" "vemmi" "vnc" "ws" "wss"
-             "xcon" "xcon-userid" "xmlrpc.beep" "xmlrpc.beeps" "xmpp" "z39.50r" "z39.50s")))
-        (uri (ignore-errors (quri:uri url))))
-    (and uri
-         (quri:uri-p uri)
-         (find (quri:uri-scheme uri) valid-schemes :test #'string=)
-         ;; `parse-url' tries to guess
-         ;; the URL from the user input by prefixing it with HTTPS:
-         (or (not (find (quri:uri-scheme uri) '("http" "https") :test #'string=))
-             (and
-              ;; "http://" does not have a host.
-              ;; A valid URL may have an empty domain, e.g. http://192.168.1.1.
-              (quri:uri-host uri)
-              ;; "http://algo" has the "algo" hostname but it's probably invalid
-              ;; unless it's found on the local network.  We also need to
-              ;; support "localhost" and the current system hostname.
-              ;; get-host-by-name may signal a ns-try-again-condition which is
-              ;; not an error, so we can't use `ignore-errors' here.
-              (handler-case (iolib/sockets:lookup-hostname (quri:uri-host uri) :ipv6 iolib/sockets:*ipv6*)
-                (t () nil)))))))
+             "xcon" "xcon-userid" "xmlrpc.beep" "xmlrpc.beeps" "xmpp" "z39.50r" "z39.50s"))
+         (valid-schemes (append nyxt-schemes iana-schemes))
+         (uri (ignore-errors (quri:uri url))))
+    (flet ((hostname-found-p (name)
+             (handler-case (iolib/sockets:lookup-hostname name)
+               (t () nil)))
+           (valid-scheme-p (scheme)
+             (find scheme valid-schemes :test #'string=))
+           (http-p (scheme)
+             (find scheme '("http" "https") :test #'string=)))
+      (and uri
+           (quri:uri-p uri)
+           (valid-scheme-p (quri:uri-scheme uri))
+           ;; `parse-url' tries to guess
+           ;; the URL from the user input by prefixing it with HTTPS:
+           (or (not (http-p (quri:uri-scheme uri)))
+               (and
+                ;; "http://" does not have a host.
+                ;; A valid URL may have an empty domain, e.g. http://192.168.1.1.
+                (quri:uri-host uri)
+                ;; "http://algo" has the "algo" hostname but it's probably invalid
+                ;; unless it's found on the local network.  We also need to
+                ;; support "localhost" and the current system hostname.
+                ;; get-host-by-name may signal a ns-try-again-condition which is
+                ;; not an error, so we can't use `ignore-errors' here.
+                (or (quri:ip-addr-p (quri:uri-host uri))
+                    (hostname-found-p (quri:uri-host uri)))))))))
 
 (declaim (ftype (function (t) quri:uri) ensure-url))
 (defun ensure-url (thing)
