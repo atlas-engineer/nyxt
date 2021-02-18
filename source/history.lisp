@@ -117,7 +117,7 @@ then become available for deletion with `delete-history-entry'."
       (dolist (buffer buffers)
         (htree:reset-owner history (id buffer))))))
 
-(defun score-history-entry (htree-entry history)
+(defun score-history-entry (htree-entry)
   "Return history ENTRY score.
 The score gets higher for more recent entries and if they've been visited a
 lot."
@@ -149,8 +149,8 @@ it would not be very useful."
                                   (mapcar #'htree:data
                                           (sort (alex:hash-table-keys (htree:entries hist))
                                                 (lambda (x y)
-                                                  (> (score-history-entry x hist)
-                                                     (score-history-entry y hist)))))))
+                                                  (> (score-history-entry x)
+                                                     (score-history-entry y)))))))
            (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
       (when prefix-urls
         (setf all-history-entries (append (mapcar #'quri:url-decode prefix-urls)
@@ -168,8 +168,8 @@ it would not be very useful."
                       (delete-if (lambda (entry) (htree:nodes entry))
                                  (alex:hash-table-keys (htree:entries hist)))
                       (lambda (x y)
-                        (> (score-history-entry x hist)
-                           (score-history-entry y hist))))))))
+                        (> (score-history-entry x)
+                           (score-history-entry y))))))))
       (lambda (minibuffer)
         (fuzzy-match (input-buffer minibuffer) owner-less-history-entries)))))
 
