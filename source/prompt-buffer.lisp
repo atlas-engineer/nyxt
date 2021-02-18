@@ -190,7 +190,7 @@ Return source as second value."
 (defun show-prompt-buffer (prompt-buffer &key (window (current-window)) height)
   "Show the last active prompt-buffer, if any."
   (when prompt-buffer
-    (pushnew prompt-buffer (active-minibuffers window))
+    (push prompt-buffer (active-minibuffers window))
     (erase-document prompt-buffer)      ; TODO: When to erase?
     (update-display prompt-buffer)
     (pexec ()
@@ -211,7 +211,17 @@ Return source as second value."
   ;; prompt-buffer was invoked before the old one reaches here.
   (alex:deletef (active-minibuffers (current-window)) prompt-buffer)
   (when (resumable-p prompt-buffer)
-    (push prompt-buffer (old-prompt-buffers *browser*)))
+    (flet ((prompter= (prompter1 prompter2)
+             (and (string= (prompter:prompt prompter1)
+                           (prompter:prompt prompter2))
+                  (string= (prompter:input prompter1)
+                           (prompter:input prompter2)))))
+      ;; Delete a previous, similar prompt, if any.
+      (alex:deletef (old-prompt-buffers *browser*)
+                    (prompter prompt-buffer)
+                    :key #'prompter
+                    :test #'prompter=)
+      (push prompt-buffer (old-prompt-buffers *browser*))))
   (if (active-minibuffers (current-window))
       (let ((next-prompt-buffer (first (active-minibuffers (current-window)))))
         ;; TODO: Remove when done with `minibuffer'.
