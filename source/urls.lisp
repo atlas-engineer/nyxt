@@ -57,7 +57,7 @@ On errors, return URL."
               ;; support "localhost" and the current system hostname.
               ;; get-host-by-name may signal a ns-try-again-condition which is
               ;; not an error, so we can't use `ignore-errors' here.
-              (handler-case (usocket:get-host-by-name (quri:uri-host uri))
+              (handler-case (iolib/sockets:lookup-hostname (quri:uri-host uri) :ipv6 iolib/sockets:*ipv6*)
                 (t () nil)))))))
 
 (declaim (ftype (function (t) quri:uri) ensure-url))
