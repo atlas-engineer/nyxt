@@ -191,6 +191,8 @@ Return source as second value."
   (when prompt-buffer
     (erase-document prompt-buffer)      ; TODO: When to erase?
     (update-display prompt-buffer)
+    (pexec ()
+      (watch-prompt prompt-buffer))
     (ffi-window-set-prompt-buffer-height
      (current-window)
      (or height
@@ -329,6 +331,23 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                     (get-element-by-id "input")
                     (focus))))
   (update-suggestion-html prompt-buffer))
+
+(defun watch-prompt (prompt-buffer)
+  "This blocks and updates the view."
+  ;; TODO: Stop loop when prompt-buffer is no longer current.
+  (sera:nlet maybe-update-view ((next-source (prompter:next-ready-p (prompter prompt-buffer))))
+    (cond
+      ;; Nothing to do:
+      ((eq t next-source) t)
+      ((null next-source) nil)
+      (t ;; At least one source got updated.
+       (update-suggestion-html prompt-buffer)
+       (maybe-update-view (prompter:next-ready-p (prompter prompt-buffer)))))))
+
+(defun set-prompt-input (prompt-buffer input)
+  "Set INPUT in PROMPT-BUFFER,"
+  (setf (prompter:input (prompter prompt-buffer))
+        input))
 
 (export-always 'prompt)
 (defun prompt (&key prompter prompt-buffer)
