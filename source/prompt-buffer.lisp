@@ -21,6 +21,8 @@ All ARGS are declared as `ignorable'."
     ((prompter (error "Prompter required") ; TODO: Inherit instead?
                :type prompter:prompter)
      (default-modes '(prompt-buffer-mode))
+     (resumable-p t
+                  :type boolean)
      ;; TODO: Need a changed-callback?
      ;; TODO: Need a invisible-input-p slot?
      (invisible-input-p nil
@@ -161,8 +163,7 @@ A prompt query is typically done as follows:
   (let* ((initargs (alex:remove-from-plist args :window)) ; TODO: Make window a slot or prompt-buffer? That would simplify `make-prompt-buffer' args.
          (prompt-buffer (apply #'make-instance 'prompt-buffer initargs)))
     ;; (update-display prompt-buffer) ; TODO: Remove when sure.
-    (push prompt-buffer (active-minibuffers window))
-    (show-prompt-buffer)                              ; TODO: Show should probably take an argument, no?
+    (show-prompt-buffer prompt-buffer :window window)
     ;; TODO: Add method that returns if there is only 1 source with no filter.
     ;; (apply #'show
     ;;        (unless (prompter:filter prompt-buffer)
@@ -186,9 +187,10 @@ Return source as second value."
   "Return the list of the marked suggestion values in the prompt-buffer."
   (prompter:all-marked-suggestions (prompter prompt-buffer)))
 
-(defun show-prompt-buffer (&key (prompt-buffer (first (active-minibuffers (current-window)))) height)
+(defun show-prompt-buffer (prompt-buffer &key (window (current-window)) height)
   "Show the last active prompt-buffer, if any."
   (when prompt-buffer
+    (pushnew prompt-buffer (active-minibuffers window))
     (erase-document prompt-buffer)      ; TODO: When to erase?
     (update-display prompt-buffer)
     (pexec ()
@@ -208,11 +210,13 @@ Return source as second value."
   ;; Note that PROMPT-BUFFER is not necessarily first in the list, e.g. a new
   ;; prompt-buffer was invoked before the old one reaches here.
   (alex:deletef (active-minibuffers (current-window)) prompt-buffer)
+  (when (resumable-p prompt-buffer)
+    (push prompt-buffer (old-prompt-buffers *browser*)))
   (if (active-minibuffers (current-window))
-      (progn
+      (let ((next-prompt-buffer (first (active-minibuffers (current-window)))))
         ;; TODO: Remove when done with `minibuffer'.
-        (if (prompt-buffer-p (first (active-minibuffers (current-window))))
-            (show-prompt-buffer)
+        (if (prompt-buffer-p next-prompt-buffer)
+            (show-prompt-buffer next-prompt-buffer)
             (show))
         ;; TODO: Remove?
         ;; We need to refresh so that the nested prompt-buffers don't have to do it.
@@ -245,7 +249,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
           (:div :id "prompt" (prompter:prompt (prompter prompt-buffer)))
           ;; TODO: See minibuffer `generate-prompt-html' to print the counts.
           (:div :id "prompt-extra" "[?/?]")
-          (:div (:input :type "text" :id "input")))
+          (:div (:input :type "text" :id "input" :value (prompter:input (prompter prompt-buffer)))))
     ;; TODO: Support multi columns and sources.
     (:div :id "suggestions"))))
 
@@ -352,12 +356,15 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
 (export-always 'prompt)
 (defun prompt (&key prompter prompt-buffer)
   "Open the prompt buffer, ready for user input.
-ARGS are passed to the prompt-buffer constructor.
+PROMPTER and PROMPT-BUFFER are plists of keyword arguments passed to the
+prompt-buffer constructor.
+
 Example use:
 
 \(prompt
-  :prompter (sources (list (make-instance 'prompter:prompter-source :filter #'my-suggestion-filter)))
-  :prompt-buffer )
+  :prompter (list
+             :sources (list (make-instance 'prompter:prompter-source :filter #'my-suggestion-filter)))
+  :prompt-buffer (list ...))
 
 See the documentation of `prompt-buffer' to know more about the options."
   (let ((prompt (apply #'prompter:make prompter)))
@@ -392,3 +399,25 @@ Example usage defaulting to \"no\":
      (if (confirmed-p answer)
          ,yes-form
          ,no-form)))
+
+(defmethod prompter:object-properties ((prompt-buffer prompt-buffer))
+  (list :prompt (prompter:prompt (prompter prompt-buffer))
+        :input (prompter:input (prompter prompt-buffer))))
+
+(define-class resume-prompt-source (prompter:prompter-source)
+  ((prompter:name "Resume prompters")
+   (prompter:initial-suggestions (old-prompt-buffers *browser*))
+   ;; TODO: Remove duplicates.
+   ;; TODO: History?
+   ))
+
+(define-command resume-prompt ()
+  "Query an older prompt and resume it."
+  (let ((old-prompt
+          (prompt
+           :prompt-buffer (list :resumable-p nil)
+           :prompter (list
+                      :prompt "Resume prompt session"
+                      :sources (list (make-instance 'resume-prompt-source))))))
+    (when old-prompt
+      (show-prompt-buffer old-prompt))))
