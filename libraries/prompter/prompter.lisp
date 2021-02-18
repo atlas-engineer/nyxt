@@ -117,9 +117,15 @@ Use `all-ready-p' and `next-ready-p' to know when the prompter is ready.
 Sources suggestions can be retrieved, possibly partially, even when the
 compution is not finished.")))
 
+(defun update-sources (prompter &optional (text ""))
+  (setf (sync-queue prompter) (make-instance 'sync-queue))
+  (mapc (lambda (source) (update source text (ready-channel (sync-queue prompter))))
+        (sources prompter)))
+
 (defmethod initialize-instance :after ((prompter prompter) &key)
   (setf (selection prompter) (list (first (sources prompter)) 0))
   (maybe-funcall (initializer prompter) prompter)
+  (update-sources prompter)
   prompter)
 
 (defmethod (setf selection) (value (prompter prompter))
@@ -139,9 +145,7 @@ compution is not finished.")))
   (let ((old-input (slot-value prompter 'input)))
     (unless (string= old-input text)
       (setf (slot-value prompter 'input) text)
-      (setf (sync-queue prompter) (make-instance 'sync-queue))
-      (mapc (lambda (source) (update source text (ready-channel (sync-queue prompter))))
-            (sources prompter))
+      (update-sources prompter text)
       ;; TODO: Update `selection' when `update' is done.
       (setf (selection prompter) (list (first (sources prompter)) 0))))
   text)
