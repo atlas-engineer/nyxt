@@ -312,13 +312,6 @@ short as possible."
    (lambda () (open-urls urls)))
   urls)
 
-(defun set-socket-permissions (socket-path)
-  "Make socket only readable and writable by the current user."
-  #+darwin
-  (uiop:run-program (list "chmod" "600" socket-path))
-  #-darwin
-  (setf (osicat:file-permissions socket-path) '(:user-read :user-write)))
-
 (defun listen-socket ()
   (let ((socket-path (expand-path *socket-path*)))
     (when socket-path
@@ -328,8 +321,8 @@ short as possible."
                                  :connect :passive
                                  :local-filename socket-path)
         ;; We don't want group members or others to flood the socket or, worse,
-        ;; execute code.
-        (set-socket-permissions socket-path)
+        ;; execute code. 600 gives permissions only for the current user
+        (set-socket-permissions socket-path "600")
         ;; Since we are in a separate thread, we need to set the default package
         ;; for remote execution.
         (in-package :nyxt-user)

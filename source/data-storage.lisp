@@ -506,3 +506,8 @@ exists."
 (defun read-file-string (url)
   "Read a file from a file:// type URL into a string."
   (uiop:read-file-string (quri:uri-path (quri:uri url))))
+
+(defun set-socket-permissions (socket-path numeric-mode)
+  "Change socket (file) permissions user."
+  #+unix
+  (uiop:run-program (list "chmod" numeric-mode socket-path)))
