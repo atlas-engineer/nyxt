@@ -10,6 +10,8 @@
 ;; they may be defined globally.  Conversely, `prompter' is mostly used
 ;; locally.
 
+;; TODO: Rename `mutex' to `lock'.
+
 (deftype must-match-choices ()
   `(or (eql :always)
        (eql :ignore)
@@ -84,7 +86,9 @@ another.")
                   :type (or null function)
                   :documentation
                   "Function called with the source as argument.
-It is useful for instance to create the list of `initial-suggestions'.")
+The returned value is assigned to `initial-suggestions'.
+It is useful for instance to create the list of `initial-suggestions'
+asynchronously, without blocking the creation of the prompt buffer..")
 
      (destructor nil
                  :type (or null function)
@@ -101,6 +105,12 @@ user input is processed.
 On initialization this list is transformed to a list of `suggestion's
 where properties are set from `suggestion-property-function'.
 This list is never modified after initialization.")
+
+     (initial-suggestions-lock (bt:make-lock)
+                               :type bt:lock
+                               :export nil
+                               :documentation "Protect `initial-suggestions'
+access.")
 
      (suggestions '()
                   :reader suggestions
@@ -305,24 +315,35 @@ call.")))
   (:documentation "Prompt for yes-no questions."))
 
 (defmethod initialize-instance :after ((source prompter-source) &key)
-  ;; TODO: Should we always do this?  What if initial-suggestions are already
-  ;; suggestion objects?
-  (setf (slot-value source 'initial-suggestions)
-        (mapcar (lambda (suggestion-value)
-                  (make-instance 'suggestion
-                                 :value suggestion-value
-                                 :properties (maybe-funcall (suggestion-property-function source)
-                                                            suggestion-value)
-                                 :match-data ""))
-                (initial-suggestions source)))
-  ;; TODO: Setting `suggestions' is not needed?
-  (setf (slot-value source 'suggestions) (initial-suggestions source))
+  (let ((wait-channel (make-channel 1)))
+    (calispel:! wait-channel t)
+    (bt:make-thread
+     (lambda ()
+       (bt:acquire-lock (initial-suggestions-lock source))
+       (calispel:? wait-channel)
+       ;; `initial-suggestions' initialization must be done before first input can be processed.
+       (when (constructor source)
+         (setf (slot-value source 'initial-suggestions)
+               (funcall (constructor source) source)))
+       ;; TODO: Should we always do this?  What if initial-suggestions are already
+       ;; suggestion objects?
+       (setf (slot-value source 'initial-suggestions)
+             (mapcar (lambda (suggestion-value)
+                       (make-instance 'suggestion
+                                      :value suggestion-value
+                                      :properties (maybe-funcall (suggestion-property-function source)
+                                                                 suggestion-value)
+                                      :match-data ""))
+                     (initial-suggestions source)))
+       ;; TODO: Setting `suggestions' is not needed?
+       (setf (slot-value source 'suggestions) (initial-suggestions source))
+       (bt:release-lock (initial-suggestions-lock source))))
+    ;; Wait until above thread has acquired the `initial-suggestions-lock'.
+    (calispel:! wait-channel t))
   (unless (filter source)
     ;; If we have no filter, then we have no suggestions beside
     ;; immediate input, so we must allow them as valid suggestion.
     (setf (must-match-p source) nil))
-  ;; TODO: Run this in parallel. Must be done before first input can be processed.
-  (maybe-funcall (constructor source) source)
   source)
 
 (defun filtered-properties-suggestion (suggestion properties)
@@ -397,6 +418,9 @@ If a previous suggestion computation was not finished, it is forcefully terminat
   (setf (update-thread source)
         (bt:make-thread
          (lambda ()
+           ;; Wait until initial-suggestions are ready.
+           (bt:acquire-lock (initial-suggestions-lock source))
+           (bt:release-lock (initial-suggestions-lock source))
            (let ((last-notification-time (get-internal-real-time))
                  (preprocessed-suggestions (mapcar #'copy-object
                                                    (initial-suggestions source))))
