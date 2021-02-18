@@ -420,4 +420,5 @@ Example usage defaulting to \"no\":
                       :prompt "Resume prompt session"
                       :sources (list (make-instance 'resume-prompt-source))))))
     (when old-prompt
+      (prompter:resume (prompter old-prompt))
       (show-prompt-buffer old-prompt))))
