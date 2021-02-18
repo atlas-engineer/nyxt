@@ -449,21 +449,12 @@ Warning: This behaviour may change in the future."
        nil)
       ((prompt-buffer-p minibuffer)
        (pexec ()
-         ;; TODO: Move this logic to prompt-buffer.lisp.
          (let ((input (ffi-minibuffer-evaluate-javascript
                        (current-window)
                        (ps:ps (ps:chain document (get-element-by-id "input")
                                         value)))))
-           (setf (prompter:input (prompter minibuffer))
-                 input)
-           (sera:nlet maybe-update-view ((next-source (prompter:next-ready-p (prompter minibuffer))))
-             (cond
-               ;; Nothing to do
-               ((eq t next-source) t)
-               ((null next-source) nil)
-               (t ;; At least one source got updated.
-                (update-suggestion-html minibuffer)
-                (maybe-update-view (prompter:next-ready-p (prompter minibuffer))))))))
+           (set-prompt-input minibuffer input)
+           (watch-prompt minibuffer)))
        ;; Forward to HTML input: it's necessary to handle input methods,
        ;; e.g. "control-shift u".
        nil)
