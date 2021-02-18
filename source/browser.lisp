@@ -66,6 +66,10 @@ Most recent messages are first.")
    (minibuffer-search-history (make-ring))
    (minibuffer-set-url-history (make-ring))
    (minibuffer-session-restore-history (make-ring))
+   (old-prompt-buffers '()
+                       :export nil
+                       :documentation "The list of old prompt buffers.
+This can be used to resume former buffers.")
    (recent-buffers (make-ring :size 50)
                    :export nil
                    :documentation "A ring that keeps track of deleted buffers.")
