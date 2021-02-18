@@ -925,7 +925,12 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
 
 (define-class global-history-source (prompter:prompter-source)
   ((prompter:name "Global history")
-   (prompter:initial-suggestions (history-initial-suggestions))
+   ;; REVIEW: Collect history suggestions asynchronously or not?  It's fast
+   ;; enough with <10,000 entries on @ambrevar's laptop.
+   ;; (prompter:initial-suggestions (history-initial-suggestions))
+   (prompter:constructor (lambda (source)
+                           (declare (ignorable source))
+                           (history-initial-suggestions)))
    (prompter:multi-selection-p t)       ; TODO: Disable once tested OK.
    (prompter:history (minibuffer-set-url-history *browser*))
    (prompter:must-match-p nil)
