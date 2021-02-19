@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/watch-mode
-    (:use :common-lisp :trivia :nyxt)
+    (:use :common-lisp :nyxt)
   (:documentation "Mode for reloading buffers at regular time
   intervals."))
 (in-package :nyxt/watch-mode)
@@ -30,17 +30,20 @@ seconds."
            (mapcar
             (lambda (elem) (cdr (assoc elem to-seconds-alist :test 'string-equal)))
             active-time-units)))
-    (prompt-minibuffer
-     ;; TODO better way to format the string?
-     :input-prompt (format nil "Confirm refreshing every ~:@{~{~d ~}~a~:@}?"
-                           (list times active-time-units)))
+    (echo "Refreshing every ~:@{~{~d ~}~a~:@}"
+          (list times active-time-units))
     (apply '+ (mapcar (lambda (time multiplier) (* time multiplier))
                       times to-seconds-multipliers))))
 
 (define-mode watch-mode ()
   "Reload the current buffer at regular time intervals."
-  ((thread (let ((secs (seconds-from-user-input)))
-             (bt:make-thread (lambda () (loop (reload-current-buffer)
-                                         (sleep secs))))))
-   (destructor (lambda (mode) (bt:destroy-thread (thread mode))))
-   (constructor (lambda (mode) (thread mode)))))
+  ((thread :documentation "The thread responsible for reloading the view.")
+   (sleep-time :documentation "The amount of time to sleep between reloads.")
+   (destructor (lambda (mode)
+                 (when (thread mode)
+                   (bt:destroy-thread (thread mode)))))
+   (constructor (lambda (mode)
+                  (setf (sleep-time mode) (seconds-from-user-input))
+                  (setf (thread mode)
+                        (bt:make-thread (lambda () (loop (reload-current-buffer)
+                                                         (sleep (sleep-time mode))))))))))
