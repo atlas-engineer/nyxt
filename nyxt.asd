@@ -128,7 +128,6 @@
                (:file "status")
                ;; Depends on everything else:
                (:file "about")
-               (:file "session")
                (:file "start")
                (:file "tutorial")
                (:file "manual"))
