@@ -321,7 +321,7 @@ We keep this variable as a means to import the old format to the new one.")
              (let ((old-id->new-id (make-hash-table :test #'equalp))
                    (new-owners (make-hash-table :test #'equalp)))
                ;; We can't `maphash' over (htree:owners history) because
-               ;; `make-buffer' modifiers the owners hash table.
+               ;; `make-buffer' modifies the owners hash table.
                (mapc (lambda-match
                        ((cons owner-id owner)
                         ;; `htree:+default-owner+' may be present if the
@@ -361,6 +361,8 @@ We keep this variable as a means to import the old format to the new one.")
                    (hash-table-count (htree:entries history))
                    (expand-path path))
              (setf (get-data path) history)
+             ;; REVIEW: Does it really belong to the data restoration?
+             ;; Maybe move back to the startup function?
              (match (session-restore-prompt *browser*)
                (:always-ask (if-confirm ("Restore session?")
                                         (restore-buffers history)))
@@ -371,6 +373,9 @@ We keep this variable as a means to import the old format to the new one.")
              (echo "Importing deprecated global history of ~a URLs from ~s."
                    (hash-table-count old-history)
                    (expand-path old-path))
+             ;; REVIEW: `with-data-access' relies on `restore', so it shouldn't
+             ;; be used inside of what it relies on. That's a vicious circle.
+             ;; TODO: Use `get-data' instead.
              (with-data-access (history path
                                 :default (make-history-tree)) ; TODO: What shall the default owner be here?
                (maphash (lambda (key data)
@@ -407,3 +412,43 @@ We keep this variable as a means to import the old format to the new one.")
              (hash-table
               (restore-flat-history history path))))
           (_ (error "Expected (list version history) structure.")))))))
+
+
+(defun histories-list (&optional (buffer (current-buffer)))
+  (mapcar #'pathname-name
+          (uiop:directory-files (dirname (history-path buffer)))))
+
+(defun history-name-suggestion-filter (minibuffer)
+  (fuzzy-match (input-buffer minibuffer) (histories-list)))
+
+(define-command store-history-by-name ()
+  "Store the history data in the file named by user input.
+Useful for session snapshots, as `restore-history-bu-name' will restore opened buffers."
+  (with-data-access (history (history-path (current-buffer)))
+    (sera:and-let* ((name (prompt-minibuffer
+                           :input-prompt "The name to store history with"
+                           :history (minibuffer-session-restore-history *browser*)
+                           :suggestion-function #'history-name-suggestion-filter
+                           :must-match-p nil))
+                    (path (make-instance 'history-data-path
+                                         :dirname (dirname (history-path (current-buffer)))
+                                         :basename name)))
+      (setf (get-data path) history)
+      (store (data-profile (current-buffer)) path))))
+
+(define-command restore-history-by-name ()
+  "Delete all the buffers of the current session/history and restore the history chosen by user."
+  ;; TODO: backup current history?
+  (sera:and-let* ((name (prompt-minibuffer
+                         :input-prompt "The name of the history to restore"
+                         :history (minibuffer-session-restore-history *browser*)
+                         :suggestion-function #'history-name-suggestion-filter))
+                  (path (make-instance 'history-data-path
+                                       :dirname (dirname (history-path (current-buffer)))
+                                       :basename name)))
+    (dolist (buffer (buffer-list))
+      (buffer-delete buffer))
+    (setf (get-data path) (make-history-tree))
+    (restore (data-profile (current-buffer)) path)
+    ;; TODO: Maybe modify `history-path' of all the buffers instead of polluting history?
+    (setf (get-data (history-path (current-buffer))) (get-data path))))
