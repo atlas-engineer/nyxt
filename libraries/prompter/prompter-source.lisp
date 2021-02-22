@@ -10,8 +10,6 @@
 ;; they may be defined globally.  Conversely, `prompter' is mostly used
 ;; locally.
 
-;; TODO: Rename `mutex' to `lock'.
-
 (deftype must-match-choices ()
   `(or (eql :always)
        (eql :ignore)
@@ -218,7 +216,7 @@ If update calculation is aborted, nil is sent instead.")
                                :documentation "Becomes non-nil when calculation
 is done and the source was sent to the `ready-channel'.")
 
-     (wrote-to-ready-channel-mutex (bt:make-lock)
+     (wrote-to-ready-channel-lock (bt:make-lock)
                                    :type bt:lock
                                    :export nil
                                    :documentation "Protect
@@ -230,7 +228,7 @@ is done and the source was sent to the `ready-channel'.")
                     :documentation "Thread where the `filter-preprocessor', `filter' and
 `filter-postprocessor' are run.  We store it in a slot so that we can terminate it.")
 
-     (suggestion-limit 0                ; TODO: Implement.
+     (suggestion-limit 0                ; TODO: Implement.  Move to Nyxt's prompt-buffer?
                        :documentation
                        "Don't display more suggestions than this.
 If 0, there is no limit.")
@@ -408,7 +406,7 @@ If a previous suggestion computation was not finished, it is forcefully terminat
   (when (and (update-thread source)
              ;; TODO: This is prone to a race condition.
              (bt:thread-alive-p (update-thread source)))
-    (bt:with-lock-held ((wrote-to-ready-channel-mutex source))
+    (bt:with-lock-held ((wrote-to-ready-channel-lock source))
       (unless (wrote-to-ready-channel-p source)
         (calispel:! (ready-channel source) nil)))
     ;; Destroy thread _after_ holding the lock, otherwise the lock may be held
@@ -454,7 +452,7 @@ If a previous suggestion computation was not finished, it is forcefully terminat
 
            ;; TODO: Pass `filter-preprocessor' result to source in case filter is not run?
            (maybe-funcall (filter-postprocessor source) source input)
-           (bt:with-lock-held ((wrote-to-ready-channel-mutex source))
+           (bt:with-lock-held ((wrote-to-ready-channel-lock source))
              (unless (wrote-to-ready-channel-p source)
                (calispel:! new-ready-channel source)
                (setf (wrote-to-ready-channel-p source) t)))))))

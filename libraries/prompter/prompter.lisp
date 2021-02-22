@@ -159,7 +159,7 @@ Signal destruction by sending a value to PROMPTER's `interrupt-channel'."
   (mapc (lambda (source) (maybe-funcall (destructor source) prompter source))
         (sources prompter))
   (maybe-funcall (after-destructor prompter))
-  ;; TODO: Interrupt before or after desctructor?
+  ;; TODO: Interrupt before or after destructor?
   (calispel:! (interrupt-channel prompter) t))
 
 (export-always 'call-persistent-action)
