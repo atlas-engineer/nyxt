@@ -258,29 +258,26 @@ provided buffers."
 (define-command search-buffer2 (&key case-sensitive-p)
   "Start a search on the current buffer."
   (prompt
-   :prompter (list
-              :prompt "Search for (3+ characters)" ; TODO: 2+ characters instead?  1?
-              ;; TODO: List both case-sensitive and insensitive?
-              :sources (list
-                        (make-instance 'search-buffer-source :case-sensitive-p case-sensitive-p)))))
+   :prompt "Search for (3+ characters)" ; TODO: 2+ characters instead?  1?
+   ;; TODO: List both case-sensitive and insensitive?
+   :sources (list
+             (make-instance 'search-buffer-source :case-sensitive-p case-sensitive-p))))
 
 (define-command search-buffers2 (&key case-sensitive-p)
   "Start a search on the current buffer."
   ;; TODO: Fix following across buffers.
   (let ((buffers (prompt
-                  :prompter (list
-                             :prompt "Search buffer(s)"
-                             :sources (list (make-instance 'buffer-source ; TODO: Define class?
-                                                           :actions '()
-                                                           :multi-selection-p t))))))
+                  :prompt "Search buffer(s)"
+                  :sources (list (make-instance 'buffer-source ; TODO: Define class?
+                                                :actions '()
+                                                :multi-selection-p t)))))
     (prompt
-     :prompter (list
-                :prompt "Search for (3+ characters)"
-                :sources (mapcar (lambda (buffer)
-                                   (make-instance 'search-buffer-source
-                                                  :name (format nil "Search ~a" (if (url-empty-p (url buffer))
-                                                                                    (title buffer)
-                                                                                    (url buffer)))
-                                                  :case-sensitive-p case-sensitive-p
-                                                  :source-buffer buffer))
-                                 buffers)))))
+     :prompt "Search for (3+ characters)"
+     :sources (mapcar (lambda (buffer)
+                        (make-instance 'search-buffer-source
+                                       :name (format nil "Search ~a" (if (url-empty-p (url buffer))
+                                                                         (title buffer)
+                                                                         (url buffer)))
+                                       :case-sensitive-p case-sensitive-p
+                                       :source-buffer buffer))
+                      buffers))))
