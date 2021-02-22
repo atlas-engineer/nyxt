@@ -32,7 +32,8 @@
        "M-u" 'prompt-buffer-unmark-all
        "M-m" 'prompt-buffer-toggle-mark-all
        "C-w" 'copy-selection
-       "C-v" 'prompt-buffer-paste))
+       "C-v" 'prompt-buffer-paste
+       "M-h" 'prompt-buffer-history))
     ;; TODO: We could have VI bindings for the minibuffer too.
     ;; But we need to make sure it's optional + to have an indicator
     ;; for the mode.
@@ -122,13 +123,14 @@ If STEPS is negative, go to next pages instead."
 
 (define-command return-selection (&optional (prompt-buffer (current-prompt-buffer)))
   "Have the PROMT-BUFFER return the selection, then quit."
-  (prompter:return-selection (prompter prompt-buffer))
-  (hide-prompt-buffer prompt-buffer))
+  (hide-prompt-buffer prompt-buffer
+                      (lambda ()
+                        (prompter:return-selection (prompter prompt-buffer)))))
 
 (define-command return-input (&optional (prompt-buffer (current-prompt-buffer))) ; TODO: Remove if we remove `must-match-p'?
   "Have the PROMT-BUFFER return the selection, then quit."
-  (prompter:return-input (prompter prompt-buffer))
-  (hide-prompt-buffer prompt-buffer))
+  (hide-prompt-buffer prompt-buffer
+                      (lambda () (prompter:return-input (prompter prompt-buffer)))))
 
 (defun prompt-buffer-actions (&optional (window (current-window)))
   (sera:and-let* ((first-prompt-buffer (first (nyxt::active-minibuffers window))))
@@ -155,8 +157,9 @@ If STEPS is negative, go to next pages instead."
                             :prompt "Action to run on selection"
                             :sources (list (make-instance 'action-source))))))
     (when action
-      (prompter:return-selection (prompter prompt-buffer) action)
-      (hide-prompt-buffer prompt-buffer))))
+      (hide-prompt-buffer prompt-buffer
+                          (lambda ()
+                            (prompter:return-selection (prompter prompt-buffer) action))))))
 
 (define-command run-persistent-action (&optional (prompt-buffer (current-prompt-buffer)))
   "Run persistent action over selected suggestion without closing PROMPT-BUFFER."
@@ -275,3 +278,25 @@ Only available if `multi-selection-p' is non-nil."
                (setf (ps:chain tag selection-end) (+ begin (ps:chain input-text length)))))))
      (insert-at (ps:chain document (get-element-by-id "input"))
                 (ps:lisp (ring-insert-clipboard (nyxt::clipboard-ring *browser*)))))))
+
+(defun prompt-buffer-history-entries (&optional (window (current-window)))
+  (sera:and-let* ((first-prompt-buffer (first (nyxt::active-minibuffers window))))
+    ;; TODO: No need for delete-duplicates if we don't allow duplicates in the first place.
+    (delete-duplicates (containers:container->list
+                        (prompter:history (prompter first-prompt-buffer)))
+                       :test #'equal)))
+
+(define-class prompt-buffer-history-source (prompter:prompter-source)
+  ((prompter:name "Prompt buffer input history")
+   (prompter:initial-suggestions (prompt-buffer-history-entries))))
+
+(define-command prompt-buffer-history (&optional (prompt-buffer (current-prompt-buffer)))
+  "Choose a prompt-buffer input history entry to insert as input."
+  (if (prompter:history (prompter prompt-buffer))
+      (let ((input (prompt
+                    :prompter
+                    (list :prompt "Input history"
+                          :sources (list (make-instance 'prompt-buffer-history-source))))))
+        (unless (str:empty? input)
+          (nyxt::set-prompt-buffer-input input)))
+      (echo "Prompt buffer has no history.")))
