@@ -12,7 +12,7 @@
 
 (define-command clear-messages ()
   "Clear the *Messages* buffer."
-  (setf (nyxt::messages-content *browser*) '())
+  (setf (slot-value *browser* 'messages-content) '())
   (echo "Messages cleared."))
 
 (define-command nyxt::list-messages ()

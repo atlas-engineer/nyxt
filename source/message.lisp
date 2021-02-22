@@ -13,7 +13,7 @@
      (with-output-to-string (s)
        (log4cl-impl:layout-to-stream
         (slot-value appender 'log4cl-impl:layout) s logger level log-func))
-     (messages-content *browser*))))
+     (slot-value *browser* 'messages-content))))
 
 (defmacro %echo (text &key (logger 'log:info))
   "Echo TEXT in the message buffer.
