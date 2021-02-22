@@ -173,7 +173,6 @@
        ("trivial-package-local-nicknames" ,sbcl-trivial-package-local-nicknames)
        ("trivial-types" ,sbcl-trivial-types)
        ("unix-opts" ,sbcl-unix-opts)
-       ("usocket" ,sbcl-usocket)
        ;; WebKitGTK deps
        ("cl-cffi-gtk" ,sbcl-cl-cffi-gtk)
        ("cl-webkit" ,sbcl-cl-webkit)
