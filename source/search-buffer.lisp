@@ -110,13 +110,23 @@
     (replace-original-nodes)
     (ps:chain |json| (stringify *matches*))))
 
-(define-class match ()
+(define-class match ()                  ; TODO: This conflicts with trivia.  Rename?
   ((identifier)
    (body)
    (buffer))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (defclass multi-buffer-match (match) ())
+
+(defmethod prompter:object-properties ((match match))
+  (list :default (body match)
+        :id (identifier match)))
+
+(defmethod prompter:object-properties ((match multi-buffer-match))
+  (list :default (body match)
+        :id (identifier match)
+        :buffer-id (id (buffer match))
+        :buffer-title (title (buffer match))))
 
 (defmethod object-string ((match match))
   (body match))
@@ -140,7 +150,7 @@
 
 (defun match-suggestion-function (input &optional (buffers (list (current-buffer))) (case-sensitive-p nil))
   "Update the suggestions asynchronously via query-buffer."
-  (when (> (length input) 2)
+  (when (> (length input) 2)            ; TODO: Replace by prompter's `requires-pattern'?
     (let ((input (str:replace-all " " " " input))
           (all-matches nil)
           (multi-buffer (if (> (list-length buffers) 1) t nil)))
@@ -215,3 +225,41 @@ provided buffers."
 (define-command remove-search-hints ()
   "Remove all search hints."
   (%remove-search-hints))
+
+(defun search-buffer-collector (&key case-sensitive-p)
+  (lambda (preprocessed-suggestions source input)
+      (declare (ignore preprocessed-suggestions))
+      (mapcar (lambda (suggestion-value)
+                (make-instance 'prompter:suggestion ; TODO: Can we have the `prompter' do this automatically for us?
+                               :value suggestion-value
+                               :properties (when (prompter:suggestion-property-function source)
+                                             (funcall (prompter:suggestion-property-function source)
+                                                      suggestion-value))))
+              (match-suggestion-function input (list (current-buffer)) case-sensitive-p))))
+
+(define-class search-buffer-source (prompter:prompter-source)
+  ((prompter:name "Search buffer")
+   (prompter:must-match-p nil)
+   (prompter:follow-p t)
+   (prompter:filter nil)
+   (prompter:filter-preprocessor (search-buffer-collector))
+   (prompter:persistent-action (lambda (suggestion)
+                                 (declare (ignore suggestion)) ; TODO: Pass suggestion?
+                                 (prompt-buffer-selection-highlight-hint :scroll t)))
+   (prompter:destructor (lambda (prompter source)
+                          (declare (ignore prompter source))
+                          (remove-focus)))))
+
+(define-class search-buffer-case-sensitive-source (search-buffer-source)
+  ((prompter:filter-preprocessor (search-buffer-collector :case-sensitive-p t))))
+
+(define-command search-buffer2 (&key case-sensitive-p)
+  "Start a search on the current buffer."
+  (prompt
+   :prompter (list
+              :prompt "Search for (3+ characters)" ; TODO: 2+ characters instead?  1?
+              ;; TODO: List both case-sensitive and insensitive?
+              :sources (list
+                        (if case-sensitive-p
+                            (make-instance 'search-buffer-case-sensitive-source)
+                            (make-instance 'search-buffer-source))))))
