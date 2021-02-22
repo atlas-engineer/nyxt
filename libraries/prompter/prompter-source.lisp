@@ -46,7 +46,7 @@ Suitable as a `source' `suggestion-property-function'."
     (t (list :default (write-to-string object)))))
 
 (define-class suggestion ()
-  ((value nil
+  ((value nil ; TODO: Rename `data' as with the GHT?  Maybe confusing since we have `match-data'.
           :type t)
    (properties '()
                :documentation "A plist of properties to structure the filtering.
