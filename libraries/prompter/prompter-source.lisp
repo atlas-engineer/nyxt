@@ -6,7 +6,7 @@
 ;; TODO: Use methods instead of slots?  Probably no, because we must be able to
 ;; handle anonymous sources / prompters.
 ;; TODO: Memoize suggestion computation?
-;; TODO: User classes?  Probably useful mostly for `prompter-source' since
+;; TODO: User classes?  Probably useful mostly for `source' since
 ;; they may be defined globally.  Conversely, `prompter' is mostly used
 ;; locally.
 
@@ -33,7 +33,7 @@ For sturcture and class instances, the plist is made of the exported slots: the
 keys are the slot symbols and the values the slot values passed to
 `write-to-string'.
 
-Suitable as a `prompter-source' `suggestion-property-function'."
+Suitable as a `source' `suggestion-property-function'."
   (cond
     ((or (typep object 'standard-object)
          (typep object 'structure-object))
@@ -61,14 +61,14 @@ used by the `sort-predicate'."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
-  (:documentation "Suggestions are processed and listed in `prompter-source'.
+  (:documentation "Suggestions are processed and listed in `source'.
 It wraps arbitrary object stored in the `value' slot.
 The other slots are optional."))
 
 ;; We must eval the class at read-time because `make-source' is generated using
 ;; the initargs of the class.
 (sera:eval-always
-  (define-class prompter-source ()      ; TODO: Rename `source'?
+  (define-class source ()      ; TODO: Rename `source'?
     ((name (error "Source must have a name")
            :documentation
            "Name which can be used to differentiate sources from one
@@ -147,7 +147,7 @@ input is modified, before filtering the suggestions.")
      (filter-postprocessor nil
                            :type (or null function)
                            :documentation
-                           "Function called over the prompter-source and the input,
+                           "Function called over the source and the input,
 when input is modified, after filtering the suggestions.")
 
      (sort-predicate #'score>
@@ -290,18 +290,18 @@ call.")))
 (export-always 'make-source)
 (define-function make-source            ; TODO: Useless?
     (append '(&rest args)
-            `(&key ,@(initargs 'prompter-source)))
+            `(&key ,@(initargs 'source)))
   "Return prompter source object."
-  (apply #'make-instance 'prompter-source args))
+  (apply #'make-instance 'source args))
 
-(define-class yes-no-source (prompter-source)
+(define-class yes-no-source (source)
   ((name "Confirm")
    (initial-suggestions '("yes" "no")))
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "Prompt for yes-no questions."))
 
-(defmethod initialize-instance :after ((source prompter-source) &key)
+(defmethod initialize-instance :after ((source source) &key)
   (let ((wait-channel (make-channel 1)))
     (calispel:! wait-channel t)
     (bt:make-thread

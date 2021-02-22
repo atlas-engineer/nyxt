@@ -27,7 +27,7 @@ A new object is created on every new input."))
   (the (values cl-containers:ring-buffer-reverse &optional)
        (containers:make-ring-buffer size :last-in-first-out)))
 
-;; Same as `prompter-source' as to why we wrap in `eval-always'.
+;; Same as `source' as to why we wrap in `eval-always'.
 (sera:eval-always
   (define-class prompter ()
     ((input ""
@@ -41,8 +41,8 @@ A new object is created on every new input."))
              "Prefix to the user input.")
 
      (sources '()
-              :type (or null (cons prompter-source))
-              :documentation "List of `prompter-source's.")
+              :type (or null (cons source))
+              :documentation "List of `source's.")
 
      (selection '()
                 ;; TODO: Index by (source-index suggestion-index) instead?
@@ -115,7 +115,7 @@ This is useful to know if prompter was cancelled or not."))
     (:export-accessor-names-p t)
     (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
     (:documentation "The prompter is an interface for user interactions.
-A prompter object holds multiple sources (of type `prompter-source') which
+A prompter object holds multiple sources (of type `source') which
 contain a list of `suggestion's.
 
 You can call `destroy' to call the registered termination functions of the

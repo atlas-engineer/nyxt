@@ -56,7 +56,7 @@ A higher score means the suggestion-string comes first."
 
 (export-always 'score>)
 (defun score> (suggestion1 suggestion2)
-  "Suitable as a `prompter-source' `sort-predicate'."
+  "Suitable as a `source' `sort-predicate'."
   (> (score suggestion1)
      (score suggestion2)))
 
