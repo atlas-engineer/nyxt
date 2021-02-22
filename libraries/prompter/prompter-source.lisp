@@ -15,12 +15,6 @@
        (eql :ignore)
        (eql :confirm)))
 
-(defvar *default-history-size* 1000)    ; TODO: Export?
-
-(defun make-history (&key (size *default-history-size*))
-  "Return a new ring buffer."
-  (containers:make-ring-buffer size :last-in-first-out))
-
 (defun exported-p (sym)
   (eq :external
       (nth-value 1 (find-symbol (string sym)
@@ -264,12 +258,6 @@ non-nil.")
 - `:always': Reject input.
 - `:confirm': Prompt before accepting the input.
 - `:ignore': Exit and do nothing.")
-
-     (history (make-history)            ; TODO: Move to `prompter' class?
-              :type (or containers:ring-buffer-reverse null)
-              :documentation
-              "History of inputs for the prompter.
-If nil, no history is used.")
 
      (keymap nil
              :type (or null keymap:keymap)
