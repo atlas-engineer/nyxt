@@ -765,7 +765,8 @@ proceeding."
                              (declare (ignore source))
                              (unless (or (prompter:returned-p prompter)
                                          (eq buffer (current-buffer)))
-                               (set-current-buffer buffer)))))))
+                               (set-current-buffer buffer))))))
+  (:export-class-name-p t))
 
 (define-command switch-buffer2 ()
   "Switch the active buffer in the current window."
