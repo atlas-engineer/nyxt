@@ -771,9 +771,8 @@ proceeding."
 (define-command switch-buffer2 ()
   "Switch the active buffer in the current window."
   (prompt
-   :prompter (list
-              :prompt "Switch to buffer"
-              :sources (list (make-instance 'buffer-source)))))
+   :prompt "Switch to buffer"
+   :sources (list (make-instance 'buffer-source))))
 
 (define-command switch-buffer-domain (&key domain (buffer (current-buffer)))
   "Switch the active buffer in the current window from the current domain."
