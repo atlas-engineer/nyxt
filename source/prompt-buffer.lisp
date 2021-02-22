@@ -204,9 +204,8 @@ Return source as second value."
   nil)
 
 (export-always 'hide-prompt-buffer)
-(defun hide-prompt-buffer (prompt-buffer) ; TODO: Rename `hide'
-  "Hide PROMPT-BUFFER and display next active one, if any."
-  (prompter:destroy (nyxt:prompter prompt-buffer))
+(defun hide-prompt-buffer (prompt-buffer &optional return-function) ; TODO: Rename `hide'
+  "Hide PROMPT-BUFFER, display next active one, and return PROMPT-BUFFER suggestion."
   ;; Note that PROMPT-BUFFER is not necessarily first in the list, e.g. a new
   ;; prompt-buffer was invoked before the old one reaches here.
   (alex:deletef (active-minibuffers (current-window)) prompt-buffer)
@@ -234,7 +233,11 @@ Return source as second value."
         ;; (update-display (first (active-minibuffers (current-window))))
         )
       (progn
-        (ffi-window-set-prompt-buffer-height (current-window) 0))))
+        (ffi-window-set-prompt-buffer-height (current-window) 0)))
+  (when return-function
+    (funcall return-function))
+  ;; Destroy prompter last, or else `return-function' may not work.
+  (prompter:destroy (nyxt:prompter prompt-buffer)))
 
 (export-always 'evaluate-script)
 (defmethod evaluate-script ((prompt-buffer prompt-buffer) script) ; TODO: Remove?
@@ -359,9 +362,18 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
        (maybe-update-view (prompter:next-ready-p (prompter prompt-buffer)))))))
 
 (defun set-prompt-input (prompt-buffer input)
-  "Set INPUT in PROMPT-BUFFER,"
+  "Set prompter's INPUT in PROMPT-BUFFER."
   (setf (prompter:input (prompter prompt-buffer))
         input))
+
+(defun set-prompt-buffer-input (input)
+  "Set HTML INPUT in PROMPT-BUFFER."
+  (when (first (active-minibuffers (current-window)))
+    (ffi-minibuffer-evaluate-javascript
+     (current-window)
+     (ps:ps
+       (setf (ps:chain document (get-element-by-id "input") value)
+             (ps:lisp input))))))
 
 (export-always 'prompt)
 (defun prompt (&key prompter prompt-buffer)
