@@ -173,9 +173,10 @@ Signal destruction by sending a value to PROMPTER's `interrupt-channel'."
 
 (export-always 'call-persistent-action)
 (defun call-persistent-action (prompter)
-  (sera:and-let* ((action (persistent-action (selected-source prompter))))
+  (sera:and-let* ((action (persistent-action (selected-source prompter)))
+                  (suggestion (selected-suggestion prompter)))
     (funcall action
-             (value (selected-suggestion prompter)))))
+             (value suggestion))))
 
 (defun select (prompter steps &key wrap-over-p)
   "Select suggestion by jumping STEPS forward.
