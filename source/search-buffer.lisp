@@ -148,6 +148,7 @@
                                :body (cdr (assoc :body element))
                                :buffer buffer)))
 
+;; TODO: When prompter is in, turn `buffers' into a single buffer.
 (defun match-suggestion-function (input &optional (buffers (list (current-buffer))) (case-sensitive-p nil))
   "Update the suggestions asynchronously via query-buffer."
   (when (> (length input) 2)            ; TODO: Replace by prompter's `requires-pattern'?
@@ -228,17 +229,20 @@ provided buffers."
 
 (defun search-buffer-collector (&key case-sensitive-p)
   (lambda (preprocessed-suggestions source input)
-      (declare (ignore preprocessed-suggestions))
-      (mapcar (lambda (suggestion-value)
-                (make-instance 'prompter:suggestion ; TODO: Can we have the `prompter' do this automatically for us?
-                               :value suggestion-value
-                               :properties (when (prompter:suggestion-property-function source)
-                                             (funcall (prompter:suggestion-property-function source)
-                                                      suggestion-value))))
-              (match-suggestion-function input (list (current-buffer)) case-sensitive-p))))
+    (declare (ignore preprocessed-suggestions))
+    (mapcar (lambda (suggestion-value)
+              (make-instance 'prompter:suggestion ; TODO: Can we have the `prompter' do this automatically for us?
+                             :value suggestion-value
+                             :properties (when (prompter:suggestion-property-function source)
+                                           (funcall (prompter:suggestion-property-function source)
+                                                    suggestion-value))))
+            (match-suggestion-function input (list (source-buffer source))
+                                       case-sensitive-p))))
 
 (define-class search-buffer-source (prompter:prompter-source)
-  ((prompter:name "Search buffer")
+  ((case-sensitive-p nil)
+   (source-buffer (current-buffer))
+   (prompter:name "Search buffer")
    (prompter:must-match-p nil)
    (prompter:follow-p t)
    (prompter:filter nil)
@@ -248,10 +252,8 @@ provided buffers."
                                  (prompt-buffer-selection-highlight-hint :scroll t)))
    (prompter:destructor (lambda (prompter source)
                           (declare (ignore prompter source))
-                          (remove-focus)))))
-
-(define-class search-buffer-case-sensitive-source (search-buffer-source)
-  ((prompter:filter-preprocessor (search-buffer-collector :case-sensitive-p t))))
+                          (remove-focus))))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-command search-buffer2 (&key case-sensitive-p)
   "Start a search on the current buffer."
@@ -260,6 +262,25 @@ provided buffers."
               :prompt "Search for (3+ characters)" ; TODO: 2+ characters instead?  1?
               ;; TODO: List both case-sensitive and insensitive?
               :sources (list
-                        (if case-sensitive-p
-                            (make-instance 'search-buffer-case-sensitive-source)
-                            (make-instance 'search-buffer-source))))))
+                        (make-instance 'search-buffer-source :case-sensitive-p case-sensitive-p)))))
+
+(define-command search-buffers2 (&key case-sensitive-p)
+  "Start a search on the current buffer."
+  ;; TODO: Fix following across buffers.
+  (let ((buffers (prompt
+                  :prompter (list
+                             :prompt "Search buffer(s)"
+                             :sources (list (make-instance 'buffer-source ; TODO: Define class?
+                                                           :actions '()
+                                                           :multi-selection-p t))))))
+    (prompt
+     :prompter (list
+                :prompt "Search for (3+ characters)"
+                :sources (mapcar (lambda (buffer)
+                                   (make-instance 'search-buffer-source
+                                                  :name (format nil "Search ~a" (if (url-empty-p (url buffer))
+                                                                                    (title buffer)
+                                                                                    (url buffer)))
+                                                  :case-sensitive-p case-sensitive-p
+                                                  :source-buffer buffer))
+                                 buffers)))))
