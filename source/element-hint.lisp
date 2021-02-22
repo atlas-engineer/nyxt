@@ -390,6 +390,35 @@ I.e. the grey text initially seen in it."))
                                      :scroll scroll))
           (remove-focus)))))
 
+;; TODO: Replace `update-selection-highlight-hint' with
+;; `prompt-buffer-selection-highlight-hint' when prompt-buffer becomes the
+;; default.
+(defun prompt-buffer-selection-highlight-hint (&key suggestions scroll follow
+                                                 (prompt-buffer (current-prompt-buffer))
+                                                 (buffer (current-buffer)))
+  (let ((hint (flet ((hintp (hint-suggestion)
+                       (if (typep hint-suggestion '(or link-hint button-hint match))
+                           hint-suggestion
+                           nil)))
+                (if suggestions
+                    (hintp (prompter:value (first suggestions)))
+                    (when prompt-buffer
+                      (hintp (prompter:value (current-suggestion))))))))
+    (when hint
+      (when (and follow
+                 (slot-exists-p hint 'buffer)
+                 (not (equal (buffer hint) buffer)))
+        (set-current-buffer (buffer hint))
+        (setf buffer (buffer hint)))
+      (if (or
+           (not (slot-exists-p hint 'buffer))
+           (and (slot-exists-p hint 'buffer)
+                (equal (buffer hint) buffer)))
+          (with-current-buffer buffer
+            (highlight-selected-hint :link-hint hint
+                                     :scroll scroll))
+          (remove-focus)))))
+
 (define-command follow-hint (&key annotate-visible-only-p)
   "Show a set of element hints, and go to the user inputted one in the
 currently active buffer."
