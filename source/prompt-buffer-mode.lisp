@@ -145,7 +145,7 @@ If STEPS is negative, go to next pages instead."
     `(:name ,(symbol-name action)
       :documentation ,(first-line (documentation action 'function)))))
 
-(define-class action-source (prompter:prompter-source)
+(define-class action-source (prompter:source)
   ((prompter:name "List of actions")
    (prompter:initial-suggestions (prompt-buffer-actions))
    (prompter:suggestion-property-function #'action-properties)))
@@ -286,7 +286,7 @@ Only available if `multi-selection-p' is non-nil."
                         (prompter:history (prompter first-prompt-buffer)))
                        :test #'equal)))
 
-(define-class prompt-buffer-history-source (prompter:prompter-source)
+(define-class prompt-buffer-history-source (prompter:source)
   ((prompter:name "Prompt buffer input history")
    (prompter:initial-suggestions (prompt-buffer-history-entries))))
 
