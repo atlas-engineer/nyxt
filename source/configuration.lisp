@@ -247,5 +247,6 @@ Initialization file use case:
       list)))
 
 (defun public-initargs (class-specifier)
-  (delete-if (lambda (name) (eq :internal (nth-value 1 (find-symbol (string name)))))
+  (delete-if (lambda (name) (eq :internal (nth-value 1 (find-symbol (string name)
+                                                                    (symbol-package name)))))
              (mopu:direct-slot-names class-specifier)))
