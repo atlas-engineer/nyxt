@@ -264,8 +264,7 @@ If STEPS is negative, go forward and selection first suggestion."
                 (1- (length (suggestions last-source)))))))
 
 (defun resolve-selection (prompter)
-  ;; TODO: marked-suggestions are actually values.  Rename?  Fix inconsistency?
-  (or (all-marked-suggestions prompter)
+  (or (mapcar #'value (all-marked-suggestions prompter))
       (value (selected-suggestion prompter))
       ;; TODO: What if there is no result?
       (and (not (must-match-p prompter))
