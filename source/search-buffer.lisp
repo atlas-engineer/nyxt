@@ -239,7 +239,7 @@ provided buffers."
             (match-suggestion-function input (list (source-buffer source))
                                        case-sensitive-p))))
 
-(define-class search-buffer-source (prompter:prompter-source)
+(define-class search-buffer-source (prompter:source)
   ((case-sensitive-p nil)
    (source-buffer (current-buffer))
    (prompter:name "Search buffer")

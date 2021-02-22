@@ -385,7 +385,7 @@ Example use:
 
 \(prompt
   :prompter (list
-             :sources (list (make-instance 'prompter:prompter-source :filter #'my-suggestion-filter)))
+             :sources (list (make-instance 'prompter:source :filter #'my-suggestion-filter)))
   :prompt-buffer (list ...))
 
 See the documentation of `prompt-buffer' to know more about the options."
@@ -426,7 +426,7 @@ Example usage defaulting to \"no\":
   (list :prompt (prompter:prompt (prompter prompt-buffer))
         :input (prompter:input (prompter prompt-buffer))))
 
-(define-class resume-prompt-source (prompter:prompter-source)
+(define-class resume-prompt-source (prompter:source)
   ((prompter:name "Resume prompters")
    (prompter:initial-suggestions (old-prompt-buffers *browser*))
    ;; TODO: Remove duplicates.
