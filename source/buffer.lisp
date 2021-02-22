@@ -752,7 +752,7 @@ proceeding."
       (setf buffers (alex:rotate buffers -1)))
     buffers))
 
-(define-class buffer-source (prompter:prompter-source)
+(define-class buffer-source (prompter:source)
   ((prompter:name "Buffer list")
    ;; For commodity, the current buffer shouldn't be the first one on the list.
    (prompter:initial-suggestions (buffer-initial-suggestions :current-is-last-p t))
@@ -924,7 +924,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
                                    (make-buffer-focus :url "" :nosave-buffer-p nosave-buffer-p)
                                    (current-buffer))))))
 
-(define-class global-history-source (prompter:prompter-source)
+(define-class global-history-source (prompter:source)
   ((prompter:name "Global history")
    ;; REVIEW: Collect history suggestions asynchronously or not?  It's fast
    ;; enough with <10,000 entries on @ambrevar's laptop.
@@ -937,7 +937,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
    (prompter:actions '(buffer-load
                        new-buffer-load))))
 
-(define-class new-url-source (prompter:prompter-source)
+(define-class new-url-source (prompter:source)
   ((prompter:name "New URL")
    (prompter:initial-suggestions '())
    (prompter:filter-preprocessor nil)
