@@ -34,7 +34,7 @@ Return the resulting list.
 If any input substring matches exactly (but not necessarily a whole word),
 then all suggestions that are not exactly matched by at least one substring are removed.
 
-Suitable as a `prompter-source' `filter-preprocessor'."
+Suitable as a `source' `filter-preprocessor'."
   ;; TODO: Compute match-data separately.  Make it customizable.
   (dolist (suggestion suggestions)
     (setf
