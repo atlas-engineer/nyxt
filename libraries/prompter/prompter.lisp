@@ -52,7 +52,7 @@ A new object is created on every new input."))
                 :reader selection
                 :documentation "A pair of source and suggestion index.")
 
-     (initializer nil
+     (constructor nil
                   :type (or null function)
                   :documentation
                   "Function called with the prompter as argument.")
@@ -133,7 +133,7 @@ compution is not finished.")))
 
 (defmethod initialize-instance :after ((prompter prompter) &key)
   (setf (selection prompter) (list (first (sources prompter)) 0))
-  (maybe-funcall (initializer prompter) prompter)
+  (maybe-funcall (constructor prompter) prompter)
   (update-sources prompter)
   prompter)
 
