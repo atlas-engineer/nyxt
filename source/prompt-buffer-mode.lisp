@@ -41,7 +41,7 @@
 
 (define-command select-next (&optional (prompt-buffer (current-prompt-buffer)))
   "Select next entry in prompt buffer."
-  (prompter:select-next (prompter prompt-buffer))
+  (prompter:select-next prompt-buffer)
   ;; TODO: Update display?  The library should probably decide when to update
   ;; it.  Drawback is that it maybe result in too many draws.  If the caller
   ;; decides when redraw, it has more control.
@@ -49,27 +49,27 @@
 
 (define-command select-previous (&optional (prompt-buffer (current-prompt-buffer)))
   "Select next entry in prompt buffer."
-  (prompter:select-previous (prompter prompt-buffer))
+  (prompter:select-previous prompt-buffer)
   (update-suggestion-html prompt-buffer))
 
 (define-command select-first (&optional (prompt-buffer (current-prompt-buffer)))
   "Select first entry in prompt buffer."
-  (prompter:select-first (prompter prompt-buffer))
+  (prompter:select-first prompt-buffer)
   (update-suggestion-html prompt-buffer))
 
 (define-command select-last (&optional (prompt-buffer (current-prompt-buffer)))
   "Select first entry in prompt buffer."
-  (prompter:select-last (prompter prompt-buffer))
+  (prompter:select-last prompt-buffer)
   (update-suggestion-html prompt-buffer))
 
 (define-command select-next-source (&optional (prompt-buffer (current-prompt-buffer)))
   "Select next soruce in prompt buffer."
-  (prompter:select-next-source (prompter prompt-buffer))
+  (prompter:select-next-source prompt-buffer)
   (update-suggestion-html prompt-buffer))
 
 (define-command select-previous-source (&optional (prompt-buffer (current-prompt-buffer)))
   "Select previous source in prompt buffer."
-  (prompter:select-previous-source (prompter prompt-buffer))
+  (prompter:select-previous-source prompt-buffer)
   (update-suggestion-html prompt-buffer))
 
 (define-command select-next-page (&key (prompt-buffer (current-prompt-buffer))
@@ -108,7 +108,7 @@ If STEPS is negative, go to previous pages instead."
                  row-index)
                 (ps:chain (ps:chain document (get-element-by-id "cursor")) row-index))))))
       (sera:and-let* ((index-diff (parse-integer step-page-index :junk-allowed t)))
-        (prompter:select-next (prompter prompt-buffer)
+        (prompter:select-next prompt-buffer
                               index-diff)))
     ;; TODO: Update display?  The library should probably decide when to update
     ;; it.  Drawback is that it maybe result in too many draws.  If the caller
@@ -125,16 +125,16 @@ If STEPS is negative, go to next pages instead."
   "Have the PROMT-BUFFER return the selection, then quit."
   (hide-prompt-buffer prompt-buffer
                       (lambda ()
-                        (prompter:return-selection (prompter prompt-buffer)))))
+                        (prompter:return-selection prompt-buffer))))
 
 (define-command return-input (&optional (prompt-buffer (current-prompt-buffer))) ; TODO: Remove if we remove `must-match-p'?
   "Have the PROMT-BUFFER return the selection, then quit."
   (hide-prompt-buffer prompt-buffer
-                      (lambda () (prompter:return-input (prompter prompt-buffer)))))
+                      (lambda () (prompter:return-input prompt-buffer))))
 
 (defun prompt-buffer-actions (&optional (window (current-window)))
   (sera:and-let* ((first-prompt-buffer (first (nyxt::active-minibuffers window))))
-    (prompter:actions (prompter first-prompt-buffer))))
+    (prompter:actions first-prompt-buffer)))
 
 ;; TODO: Should actions be commands?
 (defun action-properties (action)
@@ -153,17 +153,16 @@ If STEPS is negative, go to next pages instead."
 (define-command return-selection-over-action (&optional (prompt-buffer (current-prompt-buffer)))
   "Prompt for an action to run over PROMPT-BUFFER selection."
   (let ((action (prompt
-                 :prompter (list
-                            :prompt "Action to run on selection"
-                            :sources (list (make-instance 'action-source))))))
+                 :prompt "Action to run on selection"
+                 :sources (list (make-instance 'action-source)))))
     (when action
       (hide-prompt-buffer prompt-buffer
                           (lambda ()
-                            (prompter:return-selection (prompter prompt-buffer) action))))))
+                            (prompter:return-selection prompt-buffer action))))))
 
 (define-command run-persistent-action (&optional (prompt-buffer (current-prompt-buffer)))
   "Run persistent action over selected suggestion without closing PROMPT-BUFFER."
-  (prompter:call-persistent-action (prompter prompt-buffer)))
+  (prompter:call-persistent-action prompt-buffer))
 
 (define-command cancel-input (&optional (prompt-buffer (current-prompt-buffer))) ; TODO: Rename.
   "Close the prompt-buffer without further action."
@@ -171,7 +170,7 @@ If STEPS is negative, go to next pages instead."
 
 (define-command toggle-follow (&optional (prompt-buffer (current-prompt-buffer)))
   "Close the prompt-buffer without further action."
-  (prompter:toggle-follow (prompter prompt-buffer)))
+  (prompter:toggle-follow prompt-buffer))
 
 (define-command prompt-buffer-toggle-mark (&key
                                            (prompt-buffer (current-prompt-buffer))
@@ -283,7 +282,7 @@ Only available if `multi-selection-p' is non-nil."
   (sera:and-let* ((first-prompt-buffer (first (nyxt::active-minibuffers window))))
     ;; TODO: No need for delete-duplicates if we don't allow duplicates in the first place.
     (delete-duplicates (containers:container->list
-                        (prompter:history (prompter first-prompt-buffer)))
+                        (prompter:history first-prompt-buffer))
                        :test #'equal)))
 
 (define-class prompt-buffer-history-source (prompter:source)
@@ -292,11 +291,10 @@ Only available if `multi-selection-p' is non-nil."
 
 (define-command prompt-buffer-history (&optional (prompt-buffer (current-prompt-buffer)))
   "Choose a prompt-buffer input history entry to insert as input."
-  (if (prompter:history (prompter prompt-buffer))
+  (if (prompter:history prompt-buffer)
       (let ((input (prompt
-                    :prompter
-                    (list :prompt "Input history"
-                          :sources (list (make-instance 'prompt-buffer-history-source))))))
+                    :prompt "Input history"
+                    :sources (list (make-instance 'prompt-buffer-history-source)))))
         (unless (str:empty? input)
           (nyxt::set-prompt-buffer-input input)))
       (echo "Prompt buffer has no history.")))

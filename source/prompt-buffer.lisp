@@ -17,10 +17,12 @@ All ARGS are declared as `ignorable'."
        ,@body)))
 
 (sera:eval-always
-  (define-class prompt-buffer (user-internal-buffer)
-    ((prompter (error "Prompter required") ; TODO: Inherit instead?
-               :type prompter:prompter)
-     (default-modes '(prompt-buffer-mode))
+  (define-class prompt-buffer (user-internal-buffer prompter:prompter)
+    ((default-modes '(prompt-buffer-mode))
+     (window nil
+             :type (or null window)
+             :export nil
+             :documentation "The window in which the prompt buffer is showing.")
      (resumable-p t
                   :type boolean)
      ;; TODO: Need a changed-callback?
@@ -132,16 +134,9 @@ All ARGS are declared as `ignorable'."
     (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
     (:documentation "The prompt buffer is the interface for user interactions.
 Each prompt spawns a new object: this makes it possible to nest prompts , such
-as invoking `prompt-history'.
+as invoking `prompt-buffer-history'.
 
-A prompt query is typically done as follows:
-
-\(let ((tags (prompt-minibuffer
-              :input-prompt \"Space-separated tag (s) \"
-              :default-modes '(set-tag-mode minibuffer-mode)
-              :suggestion-function (tag-suggestion-filter))))
-  ;; Write form here in which `tags' is bound to the resulting element(s).
-  )")))
+See `prompt' for how to invoke prompts.")))
 
 (define-user-class prompt-buffer)
 
@@ -149,56 +144,40 @@ A prompt query is typically done as follows:
   (hooks:run-hook (minibuffer-make-hook *browser*) prompt-buffer) ; TODO: Rename `minibuffer'.
   ;; We don't want to show the input in the suggestion list when invisible.
   (when (invisible-input-p prompt-buffer)
-    (dolist (source (prompter:sources (prompter prompt-buffer)))
+    (dolist (source (prompter:sources prompt-buffer))
       ;; This way the minibuffer won't display the input as a suggestion.
       (setf (prompter:must-match-p source) t)))
   (initialize-modes prompt-buffer))
 
-(export-always 'make-prompt-buffer)
-(define-function make-prompt-buffer (append
-                                     '(&rest args)
-                                     `(&key (window (current-window))
-                                            ,@(public-initargs 'prompt-buffer)))
-  "TODO: Complete me!"
-  (let* ((initargs (alex:remove-from-plist args :window)) ; TODO: Make window a slot or prompt-buffer? That would simplify `make-prompt-buffer' args.
-         (prompt-buffer (apply #'make-instance 'prompt-buffer initargs)))
-    ;; (update-display prompt-buffer) ; TODO: Remove when sure.
-    (show-prompt-buffer prompt-buffer :window window)
-    ;; TODO: Add method that returns if there is only 1 source with no filter.
-    ;; (apply #'show
-    ;;        (unless (prompter:filter prompt-buffer)
-    ;;          ;; We don't need so much height since there is no suggestion to display.
-    ;;          (list :height (minibuffer-open-single-line-height (current-window)))))
-    ))
-
 (export-always 'current-source)
 (defun current-source (&optional (prompt-buffer (current-prompt-buffer)))
-  (prompter:selected-source (prompter prompt-buffer)))
+  (prompter:selected-source prompt-buffer))
 
 (export-always 'current-suggestion)
 (defun current-suggestion (&optional (prompt-buffer (current-prompt-buffer)))
   "Return selected prompt-buffer suggestion.
 To access the actual value, call `prompter:value' over the returned suggestion.
 Return source as second value."
-  (prompter:selected-suggestion (prompter prompt-buffer)))
+  (prompter:selected-suggestion prompt-buffer))
 
 (export-always 'all-marked-suggestions)
 (defun all-marked-suggestions (&optional (prompt-buffer (current-prompt-buffer)))
   "Return the list of the marked suggestion values in the prompt-buffer."
-  (prompter:all-marked-suggestions (prompter prompt-buffer)))
+  (prompter:all-marked-suggestions prompt-buffer))
 
-(defun show-prompt-buffer (prompt-buffer &key (window (current-window)) height)
+(defun show-prompt-buffer (prompt-buffer &key height)
   "Show the last active prompt-buffer, if any."
+  ;; TODO: Add method that returns if there is only 1 source with no filter.
   (when prompt-buffer
-    (push prompt-buffer (active-minibuffers window))
+    (push prompt-buffer (active-minibuffers (window prompt-buffer)))
     (erase-document prompt-buffer)      ; TODO: When to erase?
     (update-display prompt-buffer)
     (pexec ()
       (watch-prompt prompt-buffer))
     (ffi-window-set-prompt-buffer-height
-     (current-window)
+     (window prompt-buffer)
      (or height
-         (minibuffer-open-height (current-window)))))) ; TODO: Rename `minibuffer'.
+         (minibuffer-open-height (window prompt-buffer)))))) ; TODO: Rename `minibuffer'.
 
 (defmethod state-changed ((prompt-buffer prompt-buffer)) ; TODO: Remove when done.
   nil)
@@ -217,8 +196,7 @@ Return source as second value."
                            (prompter:input prompter2)))))
       ;; Delete a previous, similar prompt, if any.
       (alex:deletef (old-prompt-buffers *browser*)
-                    (prompter prompt-buffer)
-                    :key #'prompter
+                    prompt-buffer
                     :test #'prompter=)
       (push prompt-buffer (old-prompt-buffers *browser*))))
   (if (active-minibuffers (current-window))
@@ -237,7 +215,7 @@ Return source as second value."
   (when return-function
     (funcall return-function))
   ;; Destroy prompter last, or else `return-function' may not work.
-  (prompter:destroy (nyxt:prompter prompt-buffer)))
+  (prompter:destroy prompt-buffer))
 
 (export-always 'evaluate-script)
 (defmethod evaluate-script ((prompt-buffer prompt-buffer) script) ; TODO: Remove?
@@ -259,17 +237,17 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
    (:head (:style (style prompt-buffer)))
    (:body
     (:div :id "prompt-area"
-          (:div :id "prompt" (prompter:prompt (prompter prompt-buffer)))
+          (:div :id "prompt" (prompter:prompt prompt-buffer))
           ;; TODO: See minibuffer `generate-prompt-html' to print the counts.
           (:div :id "prompt-extra" "[?/?]")
-          (:div (:input :type "text" :id "input" :value (prompter:input (prompter prompt-buffer)))))
+          (:div (:input :type "text" :id "input" :value (prompter:input prompt-buffer))))
     ;; TODO: Support multi columns and sources.
     (:div :id "suggestions"))))
 
 
 (export 'update-suggestion-html)
 (defmethod update-suggestion-html ((prompt-buffer prompt-buffer))
-  (let* ((sources (prompter:sources (prompter prompt-buffer)))
+  (let* ((sources (prompter:sources prompt-buffer))
          (current-source-index (position (current-source prompt-buffer) sources))
          (last-source-index (1- (length sources))))
     ;; TODO: Factor out property printing.
@@ -289,12 +267,12 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                                   ;; Maybe first make the table, then add the element one by one _if_ there are into view.
                                   with max-suggestion-count = 10
                                   repeat max-suggestion-count
-                                  with cursor-index = (prompter:selected-suggestion-position (prompter prompt-buffer))
+                                  with cursor-index = (prompter:selected-suggestion-position prompt-buffer)
                                   for suggestion-index from (max 0 (- cursor-index (/ max-suggestion-count 2)))
                                   for suggestion in (nthcdr suggestion-index (prompter:suggestions source))
                                   collect (markup:markup
                                            (:tr :id (when (equal (list suggestion source)
-                                                                 (multiple-value-list (prompter:selected-suggestion (prompter prompt-buffer))))
+                                                                 (multiple-value-list (prompter:selected-suggestion prompt-buffer)))
                                                       "selection")
                                                 :class (when (find (prompter:value suggestion) (prompter:marked-suggestions source))
                                                          "marked")
@@ -352,18 +330,18 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
 (defun watch-prompt (prompt-buffer)
   "This blocks and updates the view."
   ;; TODO: Stop loop when prompt-buffer is no longer current.
-  (sera:nlet maybe-update-view ((next-source (prompter:next-ready-p (prompter prompt-buffer))))
+  (sera:nlet maybe-update-view ((next-source (prompter:next-ready-p prompt-buffer)))
     (cond
       ;; Nothing to do:
       ((eq t next-source) t)
       ((null next-source) nil)
       (t ;; At least one source got updated.
        (update-suggestion-html prompt-buffer)
-       (maybe-update-view (prompter:next-ready-p (prompter prompt-buffer)))))))
+       (maybe-update-view (prompter:next-ready-p prompt-buffer))))))
 
 (defun set-prompt-input (prompt-buffer input)
   "Set prompter's INPUT in PROMPT-BUFFER."
-  (setf (prompter:input (prompter prompt-buffer))
+  (setf (prompter:input prompt-buffer)
         input))
 
 (defun set-prompt-buffer-input (input)
@@ -376,31 +354,41 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
              (ps:lisp input))))))
 
 (export-always 'prompt)
-(defun prompt (&key prompter prompt-buffer)
-  "Open the prompt buffer, ready for user input.
+(sera:eval-always
+  (define-function prompt (append
+                           '(&rest args)
+                           `(&key ,@(append
+                                     (public-initargs 'prompt-buffer)
+                                     (public-initargs 'prompter:prompter))))
+      "Open the prompt buffer, ready for user input.
 PROMPTER and PROMPT-BUFFER are plists of keyword arguments passed to the
 prompt-buffer constructor.
 
 Example use:
 
 \(prompt
-  :prompter (list
-             :sources (list (make-instance 'prompter:source :filter #'my-suggestion-filter)))
-  :prompt-buffer (list ...))
+  :prompt \"Test prompt\"
+  :sources (list (make-instance 'prompter:source :filter #'my-suggestion-filter)))
 
 See the documentation of `prompt-buffer' to know more about the options."
-  (let ((prompt (apply #'prompter:make prompter)))
-    (ffi-within-renderer-thread
-     *browser*
-     (lambda ()
-       (apply 'make-prompt-buffer (append (list :prompter prompt)
-                                          prompt-buffer))))
-    ;; Wait until it's destroyed and get the selections from `return-selection'.
-    (calispel:fair-alt
-      ((calispel:? (prompter:result-channel prompt) results)
-       results)
-      ((calispel:? (prompter:interrupt-channel prompt))
-       (error 'nyxt-prompt-buffer-canceled)))))
+    (let ((result-channel (make-channel 1))
+          (interrupt-channel (make-channel 1)))
+      (ffi-within-renderer-thread
+       *browser*
+       (lambda ()
+         (let ((prompt-buffer (apply #'make-instance 'prompt-buffer
+                                     (append args
+                                             (list
+                                              :window (current-window)
+                                              :result-channel result-channel
+                                              :interrupt-channel interrupt-channel)))))
+           (show-prompt-buffer prompt-buffer))))
+      ;; Wait until it's destroyed and get the selections from `return-selection'.
+      (calispel:fair-alt
+        ((calispel:? result-channel results)
+         results)
+        ((calispel:? interrupt-channel)
+         (error 'nyxt-prompt-buffer-canceled))))))
 
 (export-always 'prompter-if-confirm)    ; TODO: Rename to `if-confirm' once `minibuffer' is gone.
 (defmacro prompter-if-confirm (prompt yes-form &optional no-form)
@@ -423,8 +411,8 @@ Example usage defaulting to \"no\":
          ,no-form)))
 
 (defmethod prompter:object-properties ((prompt-buffer prompt-buffer))
-  (list :prompt (prompter:prompt (prompter prompt-buffer))
-        :input (prompter:input (prompter prompt-buffer))))
+  (list :prompt (prompter:prompt prompt-buffer)
+        :input (prompter:input prompt-buffer)))
 
 (define-class resume-prompt-source (prompter:source)
   ((prompter:name "Resume prompters")
@@ -437,10 +425,9 @@ Example usage defaulting to \"no\":
   "Query an older prompt and resume it."
   (let ((old-prompt
           (prompt
-           :prompt-buffer (list :resumable-p nil)
-           :prompter (list
-                      :prompt "Resume prompt session"
-                      :sources (list (make-instance 'resume-prompt-source))))))
+           :resumable-p nil
+           :prompt "Resume prompt session"
+           :sources (list (make-instance 'resume-prompt-source)))))
     (when old-prompt
-      (prompter:resume (prompter old-prompt))
+      (prompter:resume old-prompt)
       (show-prompt-buffer old-prompt))))
