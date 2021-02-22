@@ -955,13 +955,12 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
     (when history
       (containers:insert-item history (quri:render-uri (url (current-buffer)))))
     (prompt
-     :prompter (list
-                :prompt "Open URL"
-                :input (if prefill-current-url-p
-                           (object-string (url (current-buffer))) "")
-                :history history
-                :sources (list (make-instance 'new-url-source)
-                               (make-instance 'global-history-source)))
+     :prompt "Open URL"
+     :input (if prefill-current-url-p
+                (object-string (url (current-buffer))) "")
+     :history history
+     :sources (list (make-instance 'new-url-source)
+                    (make-instance 'global-history-source))
      ;; :default-modes '(set-url-mode minibuffer-mode) ; TODO: Replace this with a prompter action or filter.
      )))
 
