@@ -148,17 +148,19 @@ See `prompt' for how to invoke prompts.")))
 (defun current-source (&optional (prompt-buffer (current-prompt-buffer)))
   (prompter:selected-source prompt-buffer))
 
-(export-always 'current-suggestion)
-(defun current-suggestion (&optional (prompt-buffer (current-prompt-buffer)))
-  "Return selected prompt-buffer suggestion.
-To access the actual value, call `prompter:value' over the returned suggestion.
-Return source as second value."
-  (prompter:selected-suggestion prompt-buffer))
+(export-always 'current-suggestion-value)
+(defun current-suggestion-value (&optional (prompt-buffer (current-prompt-buffer)))
+  "Return selected prompt-buffer suggestion value.
+Return source as second value.
+To access the suggestion instead, see `prompter:selected-suggestion'."
+  (multiple-value-bind (suggestion source)
+      (prompter:selected-suggestion prompt-buffer)
+    (values (prompter:value suggestion) source)))
 
-(export-always 'all-marked-suggestions)
-(defun all-marked-suggestions (&optional (prompt-buffer (current-prompt-buffer)))
-  "Return the list of the marked suggestion values in the prompt-buffer."
-  (prompter:all-marked-suggestions prompt-buffer))
+(export-always 'all-marked-suggestion-values)
+(defun all-marked-suggestion-values (&optional (prompt-buffer (current-prompt-buffer)))
+  "Return the list of the marked suggestion in the prompt-buffer."
+  (mapcar #'prompter:value (prompter:all-marked-suggestions prompt-buffer)))
 
 (defun show-prompt-buffer (prompt-buffer &key height)
   "Show the last active prompt-buffer, if any."
@@ -269,7 +271,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                                            (:tr :id (when (equal (list suggestion source)
                                                                  (multiple-value-list (prompter:selected-suggestion prompt-buffer)))
                                                       "selection")
-                                                :class (when (find (prompter:value suggestion) (prompter:marked-suggestions source))
+                                                :class (when (find suggestion (prompter:marked-suggestions source))
                                                          "marked")
                                                 (loop for (_ property) on (prompter:properties suggestion) by #'cddr
                                                       collect (markup:markup (:td property)))))))))))

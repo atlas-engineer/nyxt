@@ -403,7 +403,7 @@ I.e. the grey text initially seen in it."))
                 (if suggestions
                     (hintp (prompter:value (first suggestions)))
                     (when prompt-buffer
-                      (hintp (prompter:value (current-suggestion))))))))
+                      (hintp (current-suggestion-value)))))))
     (when hint
       (when (and follow
                  (slot-exists-p hint 'buffer)
