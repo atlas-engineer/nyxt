@@ -19,6 +19,14 @@
 given input.
 A new object is created on every new input."))
 
+(defvar *default-history-size* 1000)    ; TODO: Export?
+
+(declaim (ftype (function (&key (:size fixnum)) containers:ring-buffer-reverse) make-history))
+(defun make-history (&key (size *default-history-size*))
+  "Return a new ring buffer."
+  (the (values cl-containers:ring-buffer-reverse &optional)
+       (containers:make-ring-buffer size :last-in-first-out)))
+
 ;; Same as `prompter-source' as to why we wrap in `eval-always'.
 (sera:eval-always
   (define-class prompter ()
@@ -64,10 +72,11 @@ It's called after the sources are cleaned up.
 
 Note that the function is executed *before* performing an action.")
 
-     ;; (history (make-history)              ; TODO: Move to `prompter' class?
-     ;;     :type (or containers:ring-buffer-reverse null)
-     ;;     :documentation
-     ;;     "")
+     (history (make-history)
+              :type (or containers:ring-buffer-reverse null)
+              :documentation
+              "History of inputs for the prompter.
+If nil, no history is used.")
 
      (keymap nil
              :type (or null keymap:keymap)
@@ -274,6 +283,12 @@ marked elements."
                                        (sources prompter)))
         (slot-value (selected-source prompter) 'actions))))
 
+(defun add-input-to-history (prompter)
+  (unless (or (null (history prompter))
+              (str:empty? (input prompter)))
+    ;; TODO: Make sure we remove duplicates.
+    (containers:insert-item (history prompter) (input prompter))))
+
 (export-always 'return-selection)
 (defun return-selection (prompter &optional (action (default-action prompter)))
   "Call action over selection and send the results to PROMPTER's `result-channel'.
@@ -284,6 +299,7 @@ instead."
     (setf action #'identity))
   ;; TODO: Catch conditions.
   (setf (returned-p prompter) t)
+  (add-input-to-history prompter)
   (let ((action-result (funcall action (resolve-selection prompter))))
     (calispel:! (result-channel prompter) action-result)))
 
@@ -291,6 +307,7 @@ instead."
 (defun return-input (prompter)
   "Send input to PROMPTER's `result-channel'."
   (setf (returned-p prompter) t)
+  (add-input-to-history prompter)
   (calispel:! (result-channel prompter) (input prompter)))
 
 (export-always 'toggle-follow)
