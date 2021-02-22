@@ -25,7 +25,8 @@ All ARGS are declared as `ignorable'."
              :documentation "The window in which the prompt buffer is showing.")
      (resumable-p t
                   :type boolean)
-     ;; TODO: Need a changed-callback?
+     ;; TODO: Need a changed-callback?  Probably not, see `search-buffer'.  But
+     ;; can we run the postprocessor without running the filter?
      ;; TODO: Need a invisible-input-p slot?
      (invisible-input-p nil
                         :documentation "If non-nil, input is replaced by placeholder character.
@@ -33,12 +34,6 @@ All ARGS are declared as `ignorable'."
      (hide-suggestion-count-p nil       ; TODO: Move to `prompter' library?
                               :documentation "Show the number of chosen suggestions
 ;; inside brackets. It can be useful to disable, for instance for a yes/no question.")
-     ;; TODO: If we move selection cursor to `prompter' library, then it can be
-     ;; restored when resuming.
-     ;; (suggestion-head 0
-     ;;                  :export nil)
-     ;; (suggestion-cursor 0
-     ;;                    :export nil)
      (content ""
               :accessor nil
               :export nil
