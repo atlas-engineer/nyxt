@@ -110,9 +110,9 @@ arguments).  It is run after the renderer has been initialized, after the
                                     :documentation "When supplied, upon startup,
 if there are errors, they will be reported by this function.")
    (open-external-link-in-new-window-p nil
-                                       :documentation "When open links from an external program, or
-when C-clicking on a URL, decide whether to open in a new
-window or not.")
+                                       :documentation "When opening links from
+an external program, or when C-clicking on a URL, decide whether to open in a
+new window or not.")
    (downloads
     :documentation "List of downloads. Used for rendering by download manager.")
    (startup-timestamp (local-time:now)
@@ -392,7 +392,7 @@ Deal with REQUEST-DATA with the following rules:
          nil)
         ((internal-buffer-p buffer)
          (log:debug "Load URL from internal buffer in new buffer: ~a" (object-display url))
-         (open-urls (list (object-string url)))
+         (make-buffer-focus :url (object-string url))
          nil)
         (bound-function
          (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode keys))
