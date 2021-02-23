@@ -4,6 +4,8 @@
 (in-package :nyxt)
 ;; Packagers are welcome to customize the `defparameter's to suit the host system.
 
+(defvar *chmod-command* "chmod")
+
 (export-always '*options*)
 (defvar *options* '()
   "The list of command line options.")

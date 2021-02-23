@@ -510,4 +510,6 @@ exists."
 (defun set-socket-permissions (socket-path numeric-mode)
   "Change socket (file) permissions user."
   #+unix
-  (uiop:run-program (list "chmod" numeric-mode socket-path)))
+  (uiop:run-program (list *chmod-command* numeric-mode socket-path))
+  #-unix
+  (error "Non-Unix systems are unsupported."))

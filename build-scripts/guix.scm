@@ -41,6 +41,7 @@
              (guix build-system gnu)
              (guix build-system glib-or-gtk)
              (gnu packages)
+             (gnu packages base)
              (gnu packages glib)
              (gnu packages lisp)
              (gnu packages lisp-xyz)
@@ -100,6 +101,14 @@
          (add-before 'build 'set-version
            (lambda _
              (setenv "NYXT_VERSION" ,version)
+             #t))
+         (add-before 'build 'fix-paths
+           (lambda* (#:key inputs #:allow-other-keys)
+             (substitute* "source/global.lisp"
+               (("\\(defvar \\*chmod\\-command\\* \"chmod\")")
+                (string-append "(defvar *chmod-command* \""
+                               (assoc-ref inputs "coreutils")
+                               "/bin/chmod\")")))
              #t))
          (add-before 'check 'configure-tests
            (lambda _
@@ -173,6 +182,8 @@
        ("trivial-package-local-nicknames" ,sbcl-trivial-package-local-nicknames)
        ("trivial-types" ,sbcl-trivial-types)
        ("unix-opts" ,sbcl-unix-opts)
+       ;; System deps
+       ("coreutils" ,coreutils-minimal)
        ;; WebKitGTK deps
        ("cl-cffi-gtk" ,sbcl-cl-cffi-gtk)
        ("cl-webkit" ,sbcl-cl-webkit)
