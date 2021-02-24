@@ -25,11 +25,6 @@ The function can be passed ARGS."
                   collect (transform-definition name lambda-list body))
        ,@body)))
 
-;; TODO: after implementing reader-view, utilize reader-view algorithm
-;; to get only document data ignoring images, css, etc
-(define-parenscript document-get-body (&key (limit 100000))
-  (ps:chain document body |innerHTML| (slice 0 (ps:lisp limit))))
-
 (export-always 'document-get-paragraph-contents)
 (define-parenscript document-get-paragraph-contents (&key (limit 100000))
   (defun qsa (context selector)

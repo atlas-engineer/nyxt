@@ -218,7 +218,7 @@ URL."
     (if (url-empty-p (url buffer))
         (echo "Buffer has no URL.")
         (let* ((body (with-current-buffer buffer
-                       (document-get-body)))
+                       (ffi-buffer-get-document buffer)))
                (tags (prompt-minibuffer
                       :input-prompt "Space-separated tag(s)"
                       :default-modes '(set-tag-mode minibuffer-mode)
