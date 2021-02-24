@@ -41,8 +41,10 @@ A new object is created on every new input."))
              "Prefix to the user input.")
 
      (sources '()
-              :type (or null (cons source))
-              :documentation "List of `source's.")
+              :type (or null source (cons source))
+              :documentation "List of `source's.
+For convenience, if the initarg is a single source (that is, not inside a list),
+it is automatically wrapped into a list upon initialization.")
 
      (selection '()
                 ;; TODO: Index by (source-index suggestion-index) instead?
@@ -132,6 +134,7 @@ compution is not finished.")))
         (sources prompter)))
 
 (defmethod initialize-instance :after ((prompter prompter) &key)
+  (setf (sources prompter) (uiop:ensure-list (sources prompter)))
   (setf (selection prompter) (list (first (sources prompter)) 0))
   (maybe-funcall (constructor prompter) prompter)
   (update-sources prompter)
