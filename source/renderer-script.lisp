@@ -17,23 +17,20 @@ The function can be passed ARGS."
                                        (ps:ps ,@script-body)))))
 
 (export-always 'pflet)
-(defmacro pflet ((&body functions) &body body)
-  "Define single parenscript function in a flet body."
-  `(flet ,(loop for function in functions
-                for name = (first function)
-                for lambda-list = (second function)
-                for function-body = (caddr function)
-                collect `(,name ,lambda-list
-                                (ffi-buffer-evaluate-javascript-sync
-                                 (current-buffer)
-                                 (ps:ps ,function-body))))
-     ,@body))
+(defmacro pflet (functions &body body)
+  (flet ((transform-definition (name args body)
+           `(,name ,args
+                   (ffi-buffer-evaluate-javascript (current-buffer) (ps:ps . ,body)))))
+    `(flet ,(loop for (name lambda-list . body) in functions
+                  collect (transform-definition name lambda-list body))
+       ,@body)))
 
 ;; TODO: after implementing reader-view, utilize reader-view algorithm
 ;; to get only document data ignoring images, css, etc
 (define-parenscript document-get-body (&key (limit 100000))
   (ps:chain document body |innerHTML| (slice 0 (ps:lisp limit))))
 
+(export-always 'document-get-paragraph-contents)
 (define-parenscript document-get-paragraph-contents (&key (limit 100000))
   (defun qsa (context selector)
     (ps:chain context (query-selector-all selector)))
