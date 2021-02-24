@@ -19,9 +19,9 @@
 
 (prove:subtest "Prompter init"
   (let ((prompter (prompter:make
-                   :sources (list (prompter:make-source
-                                   :name "Test source"
-                                   :initial-suggestions '("foo" "bar"))))))
+                   :sources (prompter:make-source
+                             :name "Test source"
+                             :initial-suggestions '("foo" "bar")))))
     (prove:ok (find "foo" (prompter:suggestions
                            (first (prompter:sources prompter)))
                     :test #'string=
