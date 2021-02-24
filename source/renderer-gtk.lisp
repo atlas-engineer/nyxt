@@ -147,14 +147,14 @@ not return."
       (progn
         (setf gtk-running-p t)
         (gtk:within-main-loop
-          (gdk:gdk-set-program-class "nyxt")
+          (glib:g-set-prgname "nyxt")
           (finalize browser urls startup-timestamp))
         (unless *keep-alive*
           (gtk:join-gtk-main)))
       #+darwin
       (progn
         (setf gtk-running-p t)
-        (gdk:gdk-set-program-class "nyxt")
+        (glib:g-set-prgname "nyxt")
         (finalize browser urls startup-timestamp)
         (gtk:gtk-main))))
 
