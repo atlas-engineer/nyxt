@@ -635,6 +635,12 @@ sometimes yields the wrong result."
                       (ps:lisp (current-zoom-ratio (current-buffer)))))))
       (with-current-buffer buffer
         (zoom)))))
+(define-ffi-generic ffi-buffer-get-document (buffer)
+  (:method ((buffer buffer))
+    (pflet ((get-html ()
+              (ps:chain document document-element |innerHTML|)))
+      (with-current-buffer buffer
+        (get-html)))))
 (define-ffi-generic ffi-generate-input-event (window event))
 (define-ffi-generic ffi-generated-input-event-p (window event))
 (define-ffi-generic ffi-within-renderer-thread (browser thunk))
