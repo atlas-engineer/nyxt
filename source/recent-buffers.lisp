@@ -10,19 +10,22 @@
       (and (quri:uri= (url buffer) (url other-buffer))
            (string= (title buffer) (title other-buffer))))))
 
-(defun recent-buffer-suggestion-filter ()
-  (let ((buffers (containers:container->list (recent-buffers *browser*))))
-    (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) buffers))))
+(define-class recent-buffer-source (prompter:source)
+  ((prompter:name "Deleted buffers")
+   (prompter:must-match-p t)
+   (prompter:multi-selection-p t)
+   (prompter:initial-suggestions
+    (containers:container->list (recent-buffers *browser*)))))
 
 (define-command reopen-buffer ()
   "Reopen queried deleted buffer(s)."
-  (let ((buffers (prompt-minibuffer
-                  :input-prompt "Reopen buffer(s)"
-                  :multi-selection-p t
-                  :suggestion-function (recent-buffer-suggestion-filter))))
+  (let* ((buffers (prompt
+                   :prompt "Ropen buffer(s):"
+                   :sources (make-instance 'recent-buffer-source)))
+         (buffers (uiop:ensure-list buffers)))
     (dolist (buffer buffers)
-      (containers:delete-item-if (recent-buffers *browser*) (buffer-match-predicate buffer))
+      (containers:delete-item-if (recent-buffers *browser*)
+                                 (buffer-match-predicate buffer))
       (reload-current-buffer (buffer-make *browser* :dead-buffer buffer))
       (when (and (eq buffer (first buffers))
                  (focus-on-reopened-buffer-p *browser*))
