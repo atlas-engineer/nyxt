@@ -24,35 +24,37 @@
 (defmethod object-display ((class class-suggestion))
   (object-string class))
 
-(defun variable-suggestion-filter ()
-  (let* ((variables (mapcar (lambda (v) (make-variable-suggestion :name v))
-                            (package-variables))))
-    (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) variables))))
+(define-class function-source (prompter:source)
+  ((prompter:name "Functions")
+   (prompter:must-match-p t)
+   (prompter:initial-suggestions
+    (mapcar (lambda (v) (make-function-suggestion :name v))
+            (package-functions)))))
 
-(defun function-suggestion-filter ()
-  (let ((functions (mapcar (lambda (v) (make-function-suggestion :name v))
-                           (package-functions))))
-    (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) functions))))
+(define-class class-source (prompter:source)
+  ((prompter:name "Classes")
+   (prompter:must-match-p t)
+   (prompter:initial-suggestions
+    (mapcar (lambda (v) (make-class-suggestion :name v))
+            (package-classes)))))
 
-(defun class-suggestion-filter ()
-  (let ((classes (mapcar (lambda (v) (make-class-suggestion :name v))
-                         (package-classes))))
-    (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) classes))))
+(define-class slot-source (prompter:source)
+  ((prompter:name "Slots")
+   (prompter:must-match-p t)
+   (prompter:initial-suggestions (package-slots))))
 
-(defun slot-suggestion-filter ()
-  (let ((slots (package-slots)))
-    (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) slots))))
+(define-class variable-source (prompter:source)
+  ((prompter:name "Variables")
+   (prompter:must-match-p t)
+   (prompter:initial-suggestions (mapcar (lambda (v) (make-variable-suggestion :name v))
+                                         (package-variables)))))
 
 (define-command describe-variable ()
   "Inspect a variable and show it in a help buffer."
   (let* ((input (variable-suggestion-name
-                 (prompt-minibuffer
-                  :suggestion-function (variable-suggestion-filter)
-                  :input-prompt "Describe variable"))))
+                 (prompt
+                  :prompt "Describe variable:"
+                  :sources (make-instance 'variable-source)))))
     (with-current-html-buffer (buffer
                                (str:concat "*Help-" (symbol-name input) "*")
                                'nyxt/help-mode:help-mode)
@@ -121,9 +123,9 @@
 (define-command describe-function ()
   "Inspect a function and show it in a help buffer.
 For generic functions, describe all the methods."
-  (let ((input (prompt-minibuffer
-                :input-prompt "Describe function"
-                :suggestion-function (function-suggestion-filter))))
+  (let ((input (prompt
+                :prompt "Describe function"
+                :sources (make-instance 'function-source))))
     (setf input (function-suggestion-name input))
     (flet ((method-desc (method)
              (markup:markup
@@ -191,9 +193,9 @@ A command is a special kind of function that can be called with
 (define-command describe-class ()
   "Inspect a class and show it in a help buffer."
   (let* ((input (class-suggestion-name
-                 (prompt-minibuffer
-                  :input-prompt "Describe class"
-                  :suggestion-function (class-suggestion-filter)))))
+                 (prompt
+                  :prompt "Describe class"
+                  :sources (make-instance 'class-source)))))
     (with-current-html-buffer (buffer
                                (str:concat "*Help-" (symbol-name input) "*")
                                'nyxt/help-mode:help-mode)
@@ -242,9 +244,9 @@ CLASS can be a class symbol or a list of class symbols, as with
 
 (define-command describe-slot ()
   "Inspect a slot and show it in a help buffer."
-  (let* ((input (prompt-minibuffer
-                 :input-prompt "Describe slot"
-                 :suggestion-function (slot-suggestion-filter))))
+  (let* ((input (prompt
+                 :prompt "Describe slot"
+                 :sources (make-instance 'slot-source))))
     (with-current-html-buffer (buffer
                                (str:concat "*Help-" (symbol-name (name input)) "*")
                                'nyxt/help-mode:help-mode)
