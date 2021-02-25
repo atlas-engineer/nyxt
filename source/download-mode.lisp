@@ -133,16 +133,16 @@ download."
   "Download the page or file of the current buffer."
   (download (current-buffer) (url (current-buffer))))
 
-(defun downloaded-files-suggestion-filter ()
-  (let ((filenames (mapcar #'destination-path (downloads *browser*))))
-    (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) filenames))))
+(define-class downloaded-files-source (prompter:source)
+  ((prompter:name "Files")
+   (prompter:must-match-p t)
+   (prompter:initial-suggestions (mapcar #'destination-path (downloads *browser*)))
+   (prompter:actions '(nyxt/file-manager-mode:open-file-function))))
 
 (define-command download-open-file ()
   "Open a downloaded file. This command only works for downloads
 started by the :lisp download engine.
 See also `open-file'."
-  (let ((filename (prompt-minibuffer
-                   :input-prompt "Open file"
-                   :suggestion-function (downloaded-files-suggestion-filter))))
-    (nyxt/file-manager-mode:open-file-function filename)))
+  (prompt
+   :prompt "Open file:"
+   :sources (make-instance 'downloaded-files-source)))
