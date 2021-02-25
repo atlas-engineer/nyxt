@@ -146,8 +146,8 @@ not return."
       #-darwin
       (progn
         (setf gtk-running-p t)
+	(glib:g-set-prgname "nyxt")
         (gtk:within-main-loop
-          (glib:g-set-prgname "nyxt")
           (finalize browser urls startup-timestamp))
         (unless *keep-alive*
           (gtk:join-gtk-main)))
