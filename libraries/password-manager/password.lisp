@@ -56,11 +56,9 @@ If PASSWORD-NAME is empty, then generate a new password."))
 (defun executable-find (command)
   "Search for COMMAND in the PATH and return the absolute file name.
 Return nil if COMMAND is not found anywhere."
-  (multiple-value-bind (path)
-      (ignore-errors
-       (uiop:run-program (format nil "command -v ~A" command)
-                         :output '(:string :stripped t)))
-    path))
+  (ignore-errors
+   (uiop:run-program (format nil "command -v ~A" command)
+                     :output '(:string :stripped t))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '*interfaces*))
