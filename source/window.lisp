@@ -143,7 +143,7 @@ The handlers take the window as argument."))
   "Delete the queried window(s)."
   (prompt
    :prompt "Delete window(s):"
-   :sources (list (make-instance 'window-source))))
+   :sources (make-instance 'window-source)))
 
 (define-command delete-current-window (&optional (window (current-window)))
   "Delete WINDOW, or the currently active window if unspecified."
