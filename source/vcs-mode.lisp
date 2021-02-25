@@ -123,10 +123,6 @@ Create BASE if it doesn't exist."
   ;; ./~/my/foo instead of /home/user/my/foo.
   (namestring (merge-pathnames (uiop:truename* base) dir)))
 
-(defun projects-roots-suggestion-filter (minibuffer)
-  "Fuzzy-match local project roots."
-  (fuzzy-match (input-buffer minibuffer) *vcs-projects-roots*))
-
 (defun choose-clone-url (root-name project-name clone-uri)
   "If we are cloning one repository of ours (ROOT-NAME equals `vcs-username'), then use a git remote url instead of https."
   (let ((username (nyxt/vcs::vcs-username (quri:uri-domain clone-uri))))
@@ -164,6 +160,11 @@ CLONE-URI: quri:uri object."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (in-package :nyxt)
 
+(define-class vcs-project-root-source (prompter:source)
+  ((prompter:name "Project Directories")
+   (prompter:must-match-p t)
+   (prompter:initial-suggestions nyxt/vcs::*vcs-projects-roots*)))
+
 (define-command vcs-clone ()
   "Clone the repository of the current URL to disk.  Only Git is supported at
 the moment.  Set the list of preferred destinations in the `*vcs-projects-roots*' variable.
@@ -182,9 +183,9 @@ The default username can be set in `*vcs-username*' or `*vcs-username-alist*'."
       ((= 1 (length nyxt/vcs::*vcs-projects-roots*))
        (setf target-dir (first nyxt/vcs::*vcs-projects-roots*))
        (nyxt/vcs::clone project-name root-name target-dir clone-uri))
-      (t (let ((target-dir (prompt-minibuffer
-                            :input-prompt "Target directory"
-                            :suggestion-function #'nyxt/vcs::projects-roots-suggestion-filter)))
+      (t (let ((target-dir (prompt
+                            :prompt "Target directory:"
+                            :sources (make-instance 'vcs-project-root-source))))
            (nyxt/vcs::clone project-name root-name target-dir clone-uri))))))
 
 (define-command git-clone ()
