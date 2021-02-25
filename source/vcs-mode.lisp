@@ -5,9 +5,6 @@
   (:use :common-lisp :trivia :nyxt)
   (:documentation "Interact with Git repositories.
 
-New command: vcs-clone (alias git-clone), to clone a VCS repository on
-disk (Git only at the moment).
-
 Change the `*vcs-projects-roots*' list to define where to look for
 existing repositories on disk.
 
@@ -17,16 +14,8 @@ One can set their username for GitHub and other forges.  It helps the
 clone command in doing The Right Thing©, such as using a Git remote
 URL instead of HTTPS.
 
-See `nyxt/vcs:*vcs-username*' (default username) and `*vcs-username-alist*'.
-
-
-***********************************************************************
-*Disclaimer*: this feature is meant to grow with Next 1.4 and onwards!
-***********************************************************************
-
-We could clone on GitHub/GitLab, be notified if we have unpushed
-changes, browse files in a text editor, use hooks...
-"))
+See `nyxt/vcs:*vcs-username*' (default username) and
+`*vcs-username-alist*'."))
 (in-package :nyxt/vcs)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
@@ -36,17 +25,17 @@ changes, browse files in a text editor, use hooks...
 (sera:export-always '*vcs-projects-roots*)
 (defparameter *vcs-projects-roots* '("~/projects" "~/src" "~/work" "~/common-lisp" "~/quicklisp/local-projects")
   "A list of directories to look for VCS repositories into.")
-;; Possible improvement: specify the depth to look for projects alongside the directory.
-;; See magit-list-repositories.
+;; Possible improvement: specify the depth to look for projects
+;; alongside the directory.  See magit-list-repositories.
 
 (declaim (type (or null alist-of-strings) *vcs-usernames-alist*))
 (sera:export-always '*vcs-usernames-alist*)
 (defvar *vcs-usernames-alist* '(("github.com" . "")
                                 ("gitlab.com" . "")
                                 ("bitbucket.org" . ""))
-  "Your VCS usernames on different forges.  It helps some commands to do things
-right, such as cloning over SSH instead of HTTPS.  The forge name should be a
-domain, such as 'github.com'.")
+  "Your VCS usernames on different forges.  It helps some commands to
+do things right, such as cloning over SSH instead of HTTPS.  The forge
+name should be a domain, such as 'github.com'.")
 
 (declaim (type (or null string) *vcs-username*))
 (sera:export-always '*vcs-username*)
@@ -58,7 +47,8 @@ domain, such as 'github.com'.")
 
 (declaim (ftype (function (string)) vcs-username))
 (defun vcs-username (forge)
-  "Find the username for this forge name. Look up into `*vcs-usernames-alist*' and fallback to `*vcs-username*'."
+  "Find the username for this forge name. Look up into
+`*vcs-usernames-alist*' and fallback to `*vcs-username*'."
   (let* ((forge/username (assoc forge *vcs-usernames-alist* :test #'string-equal)))
     (cond
       ((null forge/username)
@@ -72,7 +62,8 @@ domain, such as 'github.com'.")
        nil))))
 
 (defun search-git-directories (dir)
-  "Search all directories that contain a .git/ subdirectory, one level deep inside DIR."
+  "Search all directories that contain a .git/ subdirectory, one level
+deep inside DIR."
   (when (uiop:directory-pathname-p (uiop:ensure-directory-pathname dir))
     (loop for dir in (uiop:subdirectories dir)
        for git-dir = (merge-pathnames dir ".git/")
@@ -85,7 +76,9 @@ domain, such as 'github.com'.")
 
 (defun find-project-directory (name &key exit-recursive-scan)
   "Return the directory pathname of the project named NAME by searching the local projects.
-If EXIT-RECURSIVE-SCAN is non-nil, avoid recursive scan of local projects. By default, it will re-scan the local projects to avoid false negatives and false positives."
+If EXIT-RECURSIVE-SCAN is non-nil, avoid recursive scan of local
+projects. By default, it will re-scan the local projects to avoid
+false negatives and false positives."
   (unless *git-projects*
     (setf *git-projects* (parse-projects)))
   (let ((result (find name *git-projects*
@@ -124,7 +117,8 @@ Create BASE if it doesn't exist."
   (namestring (merge-pathnames (uiop:truename* base) dir)))
 
 (defun choose-clone-url (root-name project-name clone-uri)
-  "If we are cloning one repository of ours (ROOT-NAME equals `vcs-username'), then use a git remote url instead of https."
+  "If we are cloning one repository of ours (ROOT-NAME equals
+`vcs-username'), then use a git remote url instead of https."
   (let ((username (nyxt/vcs::vcs-username (quri:uri-domain clone-uri))))
     (if (and username
              (string= root-name username))
