@@ -13,12 +13,10 @@ macro to change slot values."
 (make-password-interface-user-classes)
 
 (defun make-password-interface ()
-  "Make a password interface for all user classes, the first one with
-a non-nil value of executable is considered to be the interface to
-make/return."
-  (find-if #'password:executable
-           (mapcar (alex:compose #'make-instance #'user-class-name)
-                   password:*interfaces*)))
+  "Return the instance of the first password interface among `password:*interfaces*'
+for which the `executable' slot is non-nil."
+  (find-if (alex:compose #'password:executable #'make-instance #'user-class-name)
+           password:*interfaces*))
 
 (defun password-suggestion-filter (password-instance)
   (let ((password-list (password:list-passwords password-instance))
