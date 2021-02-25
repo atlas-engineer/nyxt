@@ -63,27 +63,16 @@ bookmarks."
   "Return the last search engine of the SEARCH-ENGINES."
   (first (last search-engines)))
 
-(export-always 'search-engine-suggestion-filter)
-(defun search-engine-suggestion-filter (minibuffer)
-  (with-slots (input-buffer) minibuffer
-    (let* ((engines (search-engines (current-buffer)))
-           (matched-engines
-             (remove-if-not
-              (lambda (engine)
-                (str:starts-with-p (text-buffer::string-representation input-buffer)
-                                   (shortcut engine)
-                                   :ignore-case t))
-              engines))
-           (fuzzy-matched-engines
-            (fuzzy-match (input-buffer minibuffer)
-                         (set-difference engines matched-engines))))
-      (append matched-engines fuzzy-matched-engines))))
+(define-class search-engine-source (prompter:source)
+  ((prompter:name "Search Engines")
+   (prompter:must-match-p t)
+   (prompter:initial-suggestions (search-engines (current-buffer)))))
 
 (define-command search-selection ()
   "Search selected text using the queried search engine."
   (let* ((selection (%copy))
-         (engine (prompt-minibuffer
-                  :input-prompt "Search engine"
-                  :suggestion-function #'search-engine-suggestion-filter)))
+         (engine (prompt
+                  :prompt "Search engine:"
+                  :sources (make-instance 'search-engine-source))))
     (when engine
       (buffer-load (generate-search-query selection (search-url engine))))))
