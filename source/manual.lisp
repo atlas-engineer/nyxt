@@ -240,8 +240,12 @@ with " (:code "nyxt --data-profile dev") ".")
 detected. Use " (:code "make-password-interface") " to automatically
 return the first password interface with a non-nil executable
 path (e.g. the executable was found on your system).")
-    (:p "See the " (:code "password:*interfaces*") " for the list of registered
-password manager interfaces.")
+    (:p "If you want to force, say, KeepassXC, add the following to your
+configuration file:")
+    (:pre (:code
+           "(push 'password:keepassxc-interface password:*interfaces*)"))
+    (:p "See the " (:code "password:*interfaces*") " variable documentation for
+the list of registered password manager interfaces.")
     (:p "You may use the " (:code "define-configuration") " macro with
 any of the password interfaces to configure them. Please make sure to
 use the package prefixed class name/slot designators within
