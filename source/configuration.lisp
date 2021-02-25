@@ -105,9 +105,11 @@ This is a blocking operation."
   "Define the user class of NAME.
 This helper function is useful to compose the customizations of a class.
 
+The resulting class is named with the return value of (user-class-name NAME).
+
 This may be called multiple times.
 NAME must be an existing class.
-NAME is automatically append to SUPERCLASSES, so that user-name inherits
+NAME is automatically appended to SUPERCLASSES, so that 'user-NAME' inherits
 from NAME last."
   (let ((user-name (user-class-name name))
         (superclasses-with-original (remove-duplicates
@@ -163,8 +165,8 @@ CLASS-SYM to NEW-SUPERCLASSES.  The class is restored when exiting BODY."
                   (log:warn "Undefined slot ~a in ~a" (first slot) final-name))
          (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
        (define-user-class ,name ,(cons temp-name
-                                            (mapcar #'class-name
-                                                    (mopu:direct-superclasses final-name)))))))
+                                       (mapcar #'class-name
+                                               (mopu:direct-superclasses final-name)))))))
 
 (defun get-initform (class-symbol class-slot)
   (getf (mopu:slot-properties (find-class class-symbol) class-slot) :initform))
