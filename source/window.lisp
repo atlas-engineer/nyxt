@@ -109,11 +109,6 @@ The handlers take the window as argument."))
      (object-string b))
     (_ (format nil "<#WINDOW ~a>" (id window)))))
 
-(defun window-suggestion-filter ()
-  (let ((windows (window-list)))
-    (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) windows))))
-
 (declaim (ftype (function (browser)) window-make))
 (export-always 'window-make)
 (defun window-make (browser)
@@ -133,13 +128,22 @@ The handlers take the window as argument."))
   (when (zerop (hash-table-count (windows *browser*)))
     (quit)))
 
+(defmethod prompter:object-properties ((window window))
+  (list :id (id window)
+        :active-buffer (title (active-buffer window))))
+
+(define-class window-source (prompter:source)
+  ((prompter:name "Windows")
+   (prompter:must-match-p t)
+   (prompter:multi-selection-p t)
+   (prompter:initial-suggestions (window-list))
+   (prompter:actions '(window-delete))))
+
 (define-command delete-window ()
   "Delete the queried window(s)."
-  (let ((windows (prompt-minibuffer
-                  :input-prompt "Delete window(s)"
-                  :multi-selection-p t
-                  :suggestion-function (window-suggestion-filter))))
-    (mapcar #'delete-current-window windows)))
+  (prompt
+   :prompt "Delete window(s):"
+   :sources (list (make-instance 'window-source))))
 
 (define-command delete-current-window (&optional (window (current-window)))
   "Delete WINDOW, or the currently active window if unspecified."
