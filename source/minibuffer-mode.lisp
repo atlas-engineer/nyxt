@@ -85,10 +85,9 @@ complete against a search engine."
           (kill-whole-line minibuffer)
           (insert minibuffer (str:concat (shortcut (first matching-engines)) " ")))
          (match-count
-          (let ((engine (prompt-minibuffer
-                         :input-prompt "Search engine"
-                         :input-buffer (if (zerop match-count) "" (input-buffer minibuffer))
-                         :suggestion-function #'nyxt:search-engine-suggestion-filter)))
+          (let ((engine (prompt
+                         :prompt "Search engine"
+                         :sources (make-instance 'search-engine-source))))
             (when engine
               (kill-whole-line minibuffer)
               (insert minibuffer (str:concat (shortcut engine) " "))))))))
