@@ -158,9 +158,9 @@ For generic functions, describe all the methods."
   "Inspect a command and show it in a help buffer.
 A command is a special kind of function that can be called with
 `execute-command' and can be bound to a key."
-  (let ((input (prompt-minibuffer
-                :input-prompt "Describe command"
-                :suggestion-function (command-suggestion-filter))))
+  (let ((input (prompt
+                :prompt "Describe command"
+                :sources (make-instance 'command-source))))
     (describe-command* input)))
 
 (defun describe-slot* (slot class &key mention-class-p)      ; TODO: Adapt HTML sections / lists to describe-slot and describe-class.

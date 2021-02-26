@@ -252,36 +252,12 @@ extra fiddling."
 (defmethod object-string ((command command))
   (str:downcase (sym command)))
 
-(defmethod object-display ((command command))
-  (command-display command))
-
 (defmethod command-function ((command command))
   "Return the function associated to COMMAND.
 This function can be `funcall'ed."
   (symbol-function (find-symbol
                     (string (sym command))
                     (pkg command))))
-
-(defun command-display (command)
-  ;; Use `(current-window :no-rescan)' or else the minibuffer will stutter
-  ;; because of the FFI calls.
-  (let* ((buffer (active-buffer (current-window :no-rescan)))
-         (scheme-name (keymap-scheme-name buffer))
-         (bindings '()))
-    (loop for mode in (modes buffer)
-          for scheme-keymap = (keymap:get-keymap scheme-name (keymap-scheme mode))
-          when scheme-keymap
-            do (setf bindings (keymap:binding-keys (sym command) scheme-keymap))
-          when (not (null bindings))
-            return bindings)
-    (format nil "~a~a~a"
-            (str:downcase (sym command))
-            (if bindings
-                (format nil " (~{~a~^, ~})" bindings)
-                "")
-            (match (object-string (pkg command))
-              ((or "" "nyxt" "nyxt-user") "")
-              (a (format nil " [~a]" a))))))
 
 (declaim (ftype (function (function) (or null command)) function-command))
 (defun function-command (function)

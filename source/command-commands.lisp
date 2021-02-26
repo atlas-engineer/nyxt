@@ -11,31 +11,42 @@
           :documentation "The hook value."))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(defmethod object-string ((hook-desc hook-description))
-  (name hook-desc))
-(defmethod object-display ((hook-desc hook-description))
-  (name hook-desc))
+(defmethod prompter:object-properties ((hook-description hook-description))
+  (list :name (name hook-description)
+        :value (value hook-description)))
 
-(defmethod object-string ((handler hooks:handler))
-  (str:downcase (hooks:name handler)))
-(defmethod object-display ((handler hooks:handler))
-  (str:downcase (hooks:name handler)))
+(defmethod prompter:object-properties ((handler hooks:handler))
+  (list :name (str:downcase (hooks:name handler))))
 
-(defun command-suggestion-filter (&optional mode-symbols)
-  (let* ((commands
-           (sort (apply #'list-commands mode-symbols) #'> :key #'access-time))
-         (pretty-commands (mapcar #'command-display commands)))
-    (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) commands :suggestions-display pretty-commands))))
+(defun get-commands (&optional (buffer (current-buffer)))
+  (sort (apply #'list-commands
+               (mapcar #'mode-name (modes buffer)))
+        #'> :key #'access-time))
+
+(defmethod prompter:object-properties ((command command))
+  (let* ((buffer (active-buffer (current-window :no-rescan)))
+         (scheme-name (keymap-scheme-name buffer))
+         (bindings '()))
+    (loop for mode in (modes buffer)
+          for scheme-keymap = (keymap:get-keymap scheme-name (keymap-scheme mode))
+          when scheme-keymap
+            do (setf bindings (keymap:binding-keys (sym command) scheme-keymap))
+          when (not (null bindings))
+            return bindings)
+    (list :name (string-downcase (sym command))
+          :bindings (format nil "~{~a~^, ~}" bindings))))
+
+(define-class command-source (prompter:source)
+  ((prompter:name "Commands")
+   (prompter:must-match-p t)
+   (prompter:initial-suggestions (get-commands))))
 
 (define-command execute-command ()
   "Execute a command by name."
   (unless (active-minibuffers (current-window))
-    (let ((command (prompt-minibuffer
-                    :input-prompt "Execute command"
-                    :suggestion-function (command-suggestion-filter
-                                          (mapcar #'mode-name
-                                                  (modes (current-buffer))))
+    (let ((command (prompt
+                    :prompt "Execute command"
+                    :sources (make-instance 'command-source)
                     :hide-suggestion-count-p t)))
       (setf (access-time command) (get-internal-real-time))
       (run-async command))))
@@ -44,10 +55,9 @@
    "Execute a command by name, also supply required, optional, and
 keyword parameters."
   ;; TODO: prefill default-values when prompting optional/key arguments
-   (let* ((command (prompt-minibuffer
-                    :input-prompt "Execute extended command"
-                    :suggestion-function (command-suggestion-filter
-                                          (mapcar #'mode-name (modes (current-buffer))))
+   (let* ((command (prompt
+                    :prompt "Execute extended command"
+                    :sources (make-instance 'command-source)
                     :hide-suggestion-count-p t))
           (command-symbol (sym command))
           (argument-list (swank::arglist command-symbol))
@@ -77,7 +87,7 @@ keyword parameters."
                                :input-prompt (second (car argument))))))))
      (setf (access-time command) (get-internal-real-time))))
 
-(defun hook-suggestion-filter ()
+(defun get-hooks ()
   (flet ((list-hooks (object)
            (mapcar (lambda (hook)
                      (make-instance 'hook-description
@@ -92,38 +102,46 @@ keyword parameters."
     (let ((window-hooks (list-hooks (current-window)))
           (buffer-hooks (list-hooks (current-buffer)))
           (browser-hooks (list-hooks *browser*)))
-      (lambda (minibuffer)
-        (fuzzy-match (input-buffer minibuffer)
-                     (append window-hooks
-                             buffer-hooks
-                             browser-hooks))))))
+      (append window-hooks
+              buffer-hooks
+              browser-hooks))))
 
-(defun handler-suggestion-filter (hook)
-  (lambda (minibuffer)
-    (fuzzy-match (input-buffer minibuffer)
-                 (hooks:handlers hook))))
+(define-class hook-source (prompter:source)
+  ((prompter:name "Hooks")
+   (prompter:must-match-p t)
+   (prompter:initial-suggestions (get-hooks))))
 
-(defun disabled-handler-suggestion-filter (hook)
-  (lambda (minibuffer)
-    (fuzzy-match (input-buffer minibuffer)
-                 (hooks:disabled-handlers hook))))
+(define-class handler-source (prompter:source)
+  ((prompter:name "Handlers")
+   (prompter:must-match-p t)
+   (hook :accessor hook
+         :initarg :hook
+         :documentation "The hook for which to retrieve handlers for.")
+   (prompter:constructor (lambda (source)
+                           (hooks:handlers (hook source))))))
+
+(define-class disabled-handler-source (handler-source)
+  ((prompter:constructor (lambda (source)
+                           (hooks:disabled-handlers (hook source))))))
 
 (define-command disable-hook-handler ()
   "Remove handler(s) from a hook."
-  (let* ((hook-desc (prompt-minibuffer
-                     :input-prompt "Hook where to disable handler"
-                     :suggestion-function (hook-suggestion-filter)))
-         (handler (prompt-minibuffer
-                   :input-prompt (format nil "Disable handler from ~a" (name hook-desc))
-                   :suggestion-function (handler-suggestion-filter (value hook-desc)))))
+  (let* ((hook-desc (prompt
+                     :prompt "Hook where to disable handler"
+                     :sources (make-instance 'hook-source)))
+         (handler (prompt
+                   :prompt (format nil "Disable handler from ~a" (name hook-desc))
+                   :sources (make-instance 'handler-source
+                                           :hook (value hook-desc)))))
     (hooks:disable-hook (value hook-desc) handler)))
 
 (define-command enable-hook-handler ()
   "Remove handler(s) from a hook."
-  (let* ((hook-desc (prompt-minibuffer
-                     :input-prompt "Hook where to enable handler"
-                     :suggestion-function (hook-suggestion-filter)))
-         (handler (prompt-minibuffer
-                   :input-prompt (format nil "Enable handler from ~a" (name hook-desc))
-                   :suggestion-function (disabled-handler-suggestion-filter (value hook-desc)))))
+  (let* ((hook-desc (prompt
+                     :prompt "Hook where to enable handler"
+                     :sources (make-instance 'hook-source)))
+         (handler (prompt
+                   :prompt (format nil "Enable handler from ~a" (name hook-desc))
+                   :sources (make-instance 'disabled-handler-source
+                                           :hook (value hook-desc)))))
     (hooks:enable-hook (value hook-desc) handler)))
