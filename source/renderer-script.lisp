@@ -90,7 +90,7 @@ The function can be passed ARGS."
                                     &body body)
   "Switch to a buffer in MODE displaying CONTENT.
 If a buffer in MODE with TITLE exists, reuse it, otherwise create a new buffer.
-BUFFER-VAR is bound to the new bufer in BODY.
+BUFFER-VAR is bound to the new buffer in BODY.
 MODE is a mode symbol.
 BODY must return the HTML markup as a string."
   `(let* ((,buffer-var (or (find-if (lambda (b)
