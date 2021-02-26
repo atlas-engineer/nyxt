@@ -17,8 +17,8 @@ A mode toggler command is also defined as NAME.
 Its arguments are passed to the class instantiation.
 Two key arguments have a special meaning beside the slot value of the mode:
 - :BUFFER is used to enable or disable the mode in the corresponding buffer.
-  This should always be specified in Lisp code since the active buffer might, if
-  any, might not be the right buffer.
+  This should always be specified in Lisp code since the active buffer, if any,
+  might not be the right buffer.
 - :ACTIVATE is used to choose whether to enable or disable the mode.
 If :ACTIVATE is omitted, the mode is toggled.
 The buffer is returned so that mode toggles can be chained.
