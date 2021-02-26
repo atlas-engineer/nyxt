@@ -236,16 +236,8 @@ with " (:code "nyxt --data-profile dev") ".")
     (:p "Nyxt provides a uniform interface to some password managers including "
         (:a :href "https://keepassxc.org/" "KeepassXC")
         " and " (:a :href "https://www.passwordstore.org/" "Password Store") ". "
-        "The installed password manager is automatically
-detected. Use " (:code "make-password-interface") " to automatically
-return the first password interface with a non-nil executable
-path (e.g. the executable was found on your system).")
-    (:p "If you want to force, say, KeepassXC, add the following to your
-configuration file:")
-    (:pre (:code
-           "(push 'password:keepassxc-interface password:*interfaces*)"))
-    (:p "See the " (:code "password:*interfaces*") " variable documentation for
-the list of registered password manager interfaces.")
+        "The supported installed password manager is automatically detected."
+        "See the " (:code "password-interface") " buffer slot for customization.")
     (:p "You may use the " (:code "define-configuration") " macro with
 any of the password interfaces to configure them. Please make sure to
 use the package prefixed class name/slot designators within

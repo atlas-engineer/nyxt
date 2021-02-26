@@ -28,10 +28,10 @@ for which the `executable' slot is non-nil."
       (fuzzy-match (input-buffer minibuffer) password-list))))
 
 (defun password-debug-info ()
-  (when (password-interface *browser*)
+  (alex:when-let ((interface (password-interface (current-buffer))))
     (log:debug "Password interface ~a uses executable ~s."
-               (class-name (class-of (password-interface *browser*)))
-               (password:executable (password-interface *browser*)))))
+               (class-name (class-of interface))
+               (password:executable interface))))
 
 (defun has-method-p (object generic-function)
   "Return non-nil if OBJECT is a specializer of a method of GENERIC-FUNCTION."
@@ -39,12 +39,12 @@ for which the `executable' slot is non-nil."
            (alex:mappend #'closer-mop:method-specializers
                          (closer-mop:generic-function-methods generic-function))))
 
-(define-command save-new-password ()
+(define-command save-new-password (&optional (buffer (current-buffer)))
   "Save password to password interface."
   (password-debug-info)
   (cond
-    ((and (password-interface *browser*)
-          (has-method-p (password-interface *browser*)
+    ((and (password-interface buffer)
+          (has-method-p (password-interface buffer)
                         #'password:save-password))
      (let* ((password-name (prompt-minibuffer
                             :input-prompt "Name for new password"
@@ -53,44 +53,44 @@ for which the `executable' slot is non-nil."
             (new-password (prompt-minibuffer
                            :invisible-input-p t
                            :input-prompt "New password (leave empty to generate)")))
-       (password:save-password (password-interface *browser*)
+       (password:save-password (password-interface buffer)
                                :password-name password-name
                                :password new-password)))
-    ((null (password-interface *browser*))
+    ((null (password-interface buffer))
      (echo-warning "No password manager found."))
     (t (echo-warning "Password manager ~s does not support saving passwords."
                      (string-downcase
-                      (class-name (class-of (password-interface *browser*))))))))
+                      (class-name (class-of (password-interface buffer))))))))
 
 (defmacro with-password (password-interface &body body)
   `(if (password:password-correct-p ,password-interface)
        ,@body))
 
-(define-command copy-password-prompt-details ()
+(define-command copy-password-prompt-details (&optional (buffer (current-buffer)))
   "Copy password prompting for all the details without suggestion."
   (password-debug-info)
-  (if (password-interface *browser*)
+  (if (password-interface buffer)
       (let* ((password-name (prompt-minibuffer
                              :input-prompt "Name of password"))
              (service (prompt-minibuffer
                        :input-prompt "Service")))
         (handler-case
-            (password:clip-password (password-interface *browser*)
+            (password:clip-password (password-interface buffer)
                                     :password-name password-name
                                     :service service)
           (error (c)
             (echo-warning "Error retrieving password: ~a" c))))
       (echo-warning "No password manager found.")))
 
-(define-command copy-password ()
+(define-command copy-password (&optional (buffer (current-buffer)))
   "Copy chosen password from minibuffer."
   (password-debug-info)
-  (if (password-interface *browser*)
-      (with-password (password-interface *browser*)
+  (if (password-interface buffer)
+      (with-password (password-interface buffer)
         (let ((password-name (prompt-minibuffer
                               :suggestion-function
                               (password-suggestion-filter
-                               (password-interface *browser*)))))
-          (password:clip-password (password-interface *browser*) :password-name password-name)
-          (echo "Password saved to clipboard for ~a seconds." (password:sleep-timer (password-interface *browser*)))))
+                               (password-interface buffer)))))
+          (password:clip-password (password-interface buffer) :password-name password-name)
+          (echo "Password saved to clipboard for ~a seconds." (password:sleep-timer (password-interface buffer)))))
       (echo-warning "No password manager found.")))
