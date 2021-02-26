@@ -168,8 +168,8 @@ it would not be very useful."
     (let* ((all-history-entries (when hist
                                   (sort (htree:all-data hist)
                                         (lambda (x y)
-                                          (> (score-history-entry x hist)
-                                             (score-history-entry y hist))))))
+                                          (> (score-history-entry x)
+                                             (score-history-entry y))))))
            (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
       (when prefix-urls
         (setf all-history-entries (append (mapcar #'quri:url-decode prefix-urls)
