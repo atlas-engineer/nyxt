@@ -36,9 +36,12 @@
    :prompt "Load system"
    :sources (make-instance 'quicklisp-source)))
 
+(define-class new-quicklisp-distribution-source (new-url-source)
+  ((prompter:actions '())))
+
 (define-command add-distribution ()
   "Add a new Quicklisp distribution."
-  (let ((url (prompt-minibuffer
-              :input-prompt "New distribution URL"
-              :must-match-p nil)))
+  (let ((url (prompt
+              :prompt "New distribution URL"
+              :sources (make-instance 'new-quicklisp-distribution-source))))
     (ql-dist:install-dist url :prompt nil)))
