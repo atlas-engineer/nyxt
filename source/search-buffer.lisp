@@ -195,7 +195,7 @@
                           (remove-focus))))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(define-command search-buffer2 (&key case-sensitive-p)
+(define-command search-buffer (&key case-sensitive-p)
   "Start a search on the current buffer."
   (prompt
    :prompt "Search for (3+ characters)" ; TODO: 2+ characters instead?  1?
@@ -203,7 +203,7 @@
    :sources (list
              (make-instance 'search-buffer-source :case-sensitive-p case-sensitive-p))))
 
-(define-command search-buffers2 (&key case-sensitive-p)
+(define-command search-buffers (&key case-sensitive-p)
   "Start a search on the current buffer."
   ;; TODO: Fix following across buffers.
   (let ((buffers (prompt
