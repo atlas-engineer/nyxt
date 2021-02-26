@@ -3,11 +3,14 @@
 
 (in-package :password)
 
-(defclass password-interface ()
-  ((executable :accessor executable :initarg :executable
+(define-class password-interface ()
+  ((executable nil
                :documentation "The program to query for password information.")
-   (sleep-timer :accessor sleep-timer :initarg :sleep-timer :initform 15
-                :documentation "The amount of time to sleep, in seconds.")))
+   (sleep-timer 15
+                :documentation "The amount of time to sleep, in seconds."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'list-passwords))
