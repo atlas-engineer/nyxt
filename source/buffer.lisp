@@ -172,6 +172,16 @@ and must return a (possibly new) URL.")
                        :type hook-buffer
                        :documentation "Hook run before `buffer-delete' takes effect.
 The handlers take the buffer as argument.")
+   (password-interface (make-password-interface)
+                       :type password::password-interface
+                       :documentation "The current password interface.
+See `password:*interfaces*' for the list of all currently registered interfaces.
+To use, say, KeepassXC, set this slot to
+
+  (make-instance 'password:user-keepassxc-interface)
+
+Password interfaces may have user classes (that is, prefixed with 'user-' as in
+the above example), in which case you can use `define-configuration' on them.")
    (download-path (make-instance 'download-data-path
                                  :dirname (xdg-download-dir))
                   :type data-path

@@ -55,8 +55,6 @@ under your user profile.")
                   :documentation "Thread that listens on socket.
 See `*socket-path*'.
 This slot is mostly meant to clean up the thread if necessary.")
-   (password-interface (make-password-interface)
-                       :export nil)
    (messages-content '()
                      :export t
                      :reader messages-content
