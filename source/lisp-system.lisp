@@ -24,16 +24,17 @@
                                          :href (lisp-url `(ql:quickload ,name)) "Load"))
                                  (:hr)))))))))
 
+(define-class quicklisp-source (prompter:source)
+  ((prompter:name "Quicklisp systems")
+   (prompter:must-match-p t)
+   (prompter:initial-suggestions (mapcar #'ql-dist:short-description (ql:system-list)))
+   (prompter:actions '(ql:quickload))))
+
 (define-command load-system ()
   "Load a system from Quicklisp."
-  (let ((system (prompt-minibuffer
-                 :input-prompt "Load system"
-                 :suggestion-function (lambda (minibuffer)
-                                        (fuzzy-match
-                                         (input-buffer minibuffer)
-                                         (mapcar #'ql-dist:short-description (ql:system-list))))
-                 :must-match-p t)))
-    (ql:quickload system)))
+  (prompt
+   :prompt "Load system"
+   :sources (make-instance 'quicklisp-source)))
 
 (define-command add-distribution ()
   "Add a new Quicklisp distribution."
