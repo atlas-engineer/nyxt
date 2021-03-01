@@ -243,10 +243,10 @@ Return the short error message and the full error message as second value."
 
 (define-command load-file ()
   "Load the prompted Lisp file."
-  (let ((file-name-input (prompt-minibuffer
-                          :input-prompt "Load file"
-                          :hide-suggestion-count-p t)))
-    (load-lisp file-name-input)))
+  (prompt
+   :prompt "Load file"
+   :sources (make-instance 'prompter:raw-source
+                           :actions '(load-lisp))))
 
 (define-command load-init-file (&key (init-file (expand-path *init-file-path*)))
   "Load or reload the init file."
