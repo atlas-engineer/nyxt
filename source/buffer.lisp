@@ -936,17 +936,6 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
    (prompter:actions '(buffer-load
                        new-buffer-load))))
 
-(define-class new-url-source (prompter:source)
-  ((prompter:name "New URL")
-   (prompter:initial-suggestions '())
-   (prompter:filter-preprocessor nil)
-   (prompter:filter nil)
-   ;; TODO: Remove slots that are set to default value.
-   (prompter:multi-selection-p nil)
-   (prompter:must-match-p nil)
-   (prompter:actions '(buffer-load
-                       new-buffer-load))))
-
 (define-command set-url2 (&key prefill-current-url-p)
   "Set the URL for the current buffer, completing with history."
   ;; TODO: Do we still need to add current URL to history?
@@ -958,7 +947,9 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
      :input (if prefill-current-url-p
                 (object-string (url (current-buffer))) "")
      :history history
-     :sources (list (make-instance 'new-url-source)
+     :sources (list (make-instance 'prompter:raw-source
+                                   :name "New URL"
+                                   :actions '(buffer-load new-buffer-load))
                     (make-instance 'global-history-source))
      ;; :default-modes '(set-url-mode minibuffer-mode) ; TODO: Replace this with a prompter action or filter.
      )))
