@@ -290,8 +290,13 @@ To change the default buffer, e.g. set it to a given URL:
       (let ((buffer (current-buffer)))
         ;; Restore session before opening command line URLs, otherwise it will
         ;; reset the session with the new URLs.
-        ;; TODO: Select which history file to load.
-        (get-user-data (data-profile buffer) (history-path buffer))
+        (match (session-restore-prompt *browser*)
+          (:always-ask (restore-history-by-name))
+          (:always-restore (restore (data-profile buffer) (history-path buffer)
+                                    :restore-buffers-p t))
+          (:never-restore (progn
+                            (log:info "Not restoring session.")
+                            (restore (data-profile buffer) (history-path buffer)))))
         (cond
           (urls (open-urls urls))
           (buffer-fn

@@ -313,7 +313,7 @@ This is deprecated.
 We keep this variable as a means to import the old format to the new one.")
 
 (defmethod restore ((profile data-profile) (path history-data-path)
-                    &key &allow-other-keys)
+                    &key restore-buffers-p &allow-other-keys)
   "Restore the global/buffer-local history and session from the PATH."
   (labels ((restore-buffers (history)
              "For each owner, make buffer, swap owner identifier for buffer id.
@@ -344,6 +344,10 @@ We keep this variable as a means to import the old format to the new one.")
                           (setf (htree:creator-id owner)
                                 (gethash (htree:creator-id owner) old-id->new-id)))
                         (htree:owners history))
+               ;; Current owner can be outdated.
+               (sera:and-let* ((new-id (gethash (htree:current-owner-id history) old-id->new-id)))
+                 (when (htree:owner history new-id)
+                   (htree:set-current-owner history new-id)))
                (setf (htree:owners history) new-owners))
              ;; TODO: Focus last buffer.
              ;; (let ((latest-id (id (htree:current
@@ -361,13 +365,8 @@ We keep this variable as a means to import the old format to the new one.")
                    (hash-table-count (htree:entries history))
                    (expand-path path))
              (setf (get-data path) history)
-             ;; REVIEW: Does it really belong to the data restoration?
-             ;; Maybe move back to the startup function?
-             (match (session-restore-prompt *browser*)
-               (:always-ask (if-confirm ("Restore session?")
-                                        (restore-buffers history)))
-               (:always-restore (restore-buffers history))
-               (:never-restore (log:info "Not restoring session."))))
+             (when restore-buffers-p
+               (restore-buffers history)))
 
            (restore-flat-history (old-history old-path)
              (echo "Importing deprecated global history of ~a URLs from ~s."
@@ -446,9 +445,10 @@ Useful for session snapshots, as `restore-history-bu-name' will restore opened b
                   (path (make-instance 'history-data-path
                                        :dirname (dirname (history-path (current-buffer)))
                                        :basename name)))
-    (dolist (buffer (buffer-list))
-      (buffer-delete buffer))
-    (setf (get-data path) (make-history-tree))
-    (restore (data-profile (current-buffer)) path)
-    ;; TODO: Maybe modify `history-path' of all the buffers instead of polluting history?
-    (setf (get-data (history-path (current-buffer))) (get-data path))))
+    (let ((old-buffers (buffer-list)))
+      (setf (get-data path) (make-history-tree))
+      (restore (data-profile (current-buffer)) path :restore-buffers-p t)
+      ;; TODO: Maybe modify `history-path' of all the buffers instead of polluting history?
+      (setf (get-data (history-path (current-buffer))) (get-data path))
+      (dolist (buffer old-buffers)
+        (buffer-delete buffer)))))
