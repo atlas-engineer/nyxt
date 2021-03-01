@@ -75,7 +75,7 @@ for which the `executable' slot is non-nil."
                              :prompt "Name of password"
                              :sources (make-instance 'prompter:raw-source)))
              (service (prompt
-                       :input-prompt "Service"
+                       :prompt "Service"
                        :sources (make-instance 'prompter:raw-source))))
         (handler-case
             (password:clip-password (password-interface buffer)
