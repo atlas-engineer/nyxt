@@ -12,18 +12,17 @@
 seconds."
   (let* ((time-units '("days" "hours" "minutes" "seconds"))
          (to-seconds-alist (pairlis time-units '(86400 3600 60 1)))
-         (active-time-units (prompt-minibuffer
-                             :input-prompt "Time unit(s)"
-                             :multi-selection-p t
-                             :suggestion-function (lambda (minibuffer)
-                                                    (fuzzy-match
-                                                     (input-buffer minibuffer)
-                                                     time-units))))
+         (active-time-units (prompt
+                             :prompt "Time unit(s)"
+                             :sources (make-instance 'prompter:source
+                                                     :name "Units"
+                                                     :initial-suggestions time-units
+                                                     :multi-selection-p t)))
          (times (mapcar (lambda (unit)
                           (parse-integer
-                           (prompt-minibuffer
-                            :input-prompt (format nil "Time interval (~a)" unit)
-                            :hide-suggestion-count-p t)
+                           (prompt
+                            :prompt (format nil "Time interval (~a)" unit)
+                            :sources (make-instance 'prompter:raw-source))
                            :junk-allowed t))
                         active-time-units))
          (to-seconds-multipliers
