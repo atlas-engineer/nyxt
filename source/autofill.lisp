@@ -6,7 +6,8 @@
 (export-always '(autofill-id
                  autofill-name
                  autofill-key
-                 autofill-fill))
+                 autofill-fill
+                 make-autofill))
 (defstruct autofill
   (id)
   (name)
