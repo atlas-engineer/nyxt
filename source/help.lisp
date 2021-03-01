@@ -224,8 +224,9 @@ CLASS can be a class symbol or a list of class symbols, as with
                    ((,slot ,value)))))
         (let ((accepted-input
                 (loop while t do
-                         (let ((input (prompt-minibuffer
-                                       :input-prompt (format nil "Configure slot value ~a" slot))))
+                         (let ((input (prompt
+                                       :prompt (format nil "Configure slot value ~a" slot)
+                                       :sources (make-instance 'prompter:raw-source))))
                            ;; no type specified, no need to keep querying
                            (unless type (return input))
                            (when (typep (read-from-string input) type)
