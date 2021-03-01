@@ -46,13 +46,14 @@ for which the `executable' slot is non-nil."
     ((and (password-interface buffer)
           (has-method-p (password-interface buffer)
                         #'password:save-password))
-     (let* ((password-name (prompt-minibuffer
-                            :input-prompt "Name for new password"
-                            :input-buffer (or (quri:uri-domain (url (current-buffer)))
-                                              "")))
-            (new-password (prompt-minibuffer
+     (let* ((password-name (prompt
+                            :prompt "Name for new password"
+                            :input (or (quri:uri-domain (url (current-buffer))) "")
+                            :sources (make-instance 'prompter:raw-source)))
+            (new-password (prompt
                            :invisible-input-p t
-                           :input-prompt "New password (leave empty to generate)")))
+                           :prompt "New password (leave empty to generate)"
+                           :sources (make-instance 'prompter:raw-source))))
        (password:save-password (password-interface buffer)
                                :password-name password-name
                                :password new-password)))
@@ -70,10 +71,12 @@ for which the `executable' slot is non-nil."
   "Copy password prompting for all the details without suggestion."
   (password-debug-info)
   (if (password-interface buffer)
-      (let* ((password-name (prompt-minibuffer
-                             :input-prompt "Name of password"))
-             (service (prompt-minibuffer
-                       :input-prompt "Service")))
+      (let* ((password-name (prompt
+                             :prompt "Name of password"
+                             :sources (make-instance 'prompter:raw-source)))
+             (service (prompt
+                       :input-prompt "Service"
+                       :sources (make-instance 'prompter:raw-source))))
         (handler-case
             (password:clip-password (password-interface buffer)
                                     :password-name password-name
