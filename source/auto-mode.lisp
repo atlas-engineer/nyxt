@@ -147,9 +147,10 @@ non-new-page requests, buffer URL is not altered."
 (defun auto-mode-handler (request-data)
   (with-data-unsafe (previous-url (history-path (buffer request-data))
                      :key #'(lambda (history)
-                              (sera:and-let* ((history history) ;; history should be non-nil
-                                              (owner (htree:current-owner-node history))
-                                              (parent (htree:parent owner))
+                              (sera:and-let* ((hist history) ;; history should be non-nil
+                                              (owner (htree:current-owner hist))
+                                              (current (htree:current owner))
+                                              (parent (htree:parent current))
                                               (url (url (htree:data parent))))
                                 url)))
     (let* ((auto-mode (find-submode (buffer request-data) 'auto-mode))
