@@ -80,9 +80,9 @@ All ARGS are declared as `ignorable'."
                   :line-height "24px"
                   :background-color "gray")
                  ("#suggestions"
-                  :flex-grow "1"
-                  :overflow-y "auto"
+                  :overflow-y "hidden"
                   :overflow-x "hidden"
+                  :height "100%"
                   :width "100%")
                  (".source-content"
                   :margin-left "16px"
