@@ -8,8 +8,9 @@
     (if word-supplied-p
         (enchant:with-dict (lang (spell-check-language *browser*))
           (enchant:dict-check lang word))
-        (let ((word (prompt-minibuffer
-                     :input-prompt "Spell check word")))
+        (let ((word (prompt
+                     :prompt "Spell check word"
+                     :sources (make-instance 'prompter:raw-source))))
           (if (enchant:with-dict (lang (spell-check-language *browser*))
                 (enchant:dict-check lang word))
               (echo "~s spelled correctly." word)
