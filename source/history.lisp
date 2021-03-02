@@ -360,7 +360,8 @@ We keep this variable as a means to import the old format to the new one.")
                    (expand-path path))
              (setf (get-data path) history)
              (when restore-buffers-p
-               (restore-buffers history)))
+               (restore-buffers history))
+             history)
 
            (restore-flat-history (old-history old-path)
              (echo "Importing deprecated global history of ~a URLs from ~s."
@@ -378,7 +379,8 @@ We keep this variable as a means to import the old format to the new one.")
                             ;; twice.
                             (setf (last-access data) "")
                             (htree:add-entry history data last-access)))
-                        old-history))))
+                        old-history)
+               history)))
     (with-muffled-body ("Failed to restore history from ~a: ~a"
                         (expand-path path) :condition)
       (let* ((path (if (uiop:file-exists-p (expand-path path))
@@ -404,7 +406,9 @@ We keep this variable as a means to import the old format to the new one.")
 
              (hash-table
               (restore-flat-history history path))))
-          (_ (error "Expected (list version history) structure.")))))))
+          (_ (progn
+               (error "Expected (list version history) structure.")
+               nil)))))))
 
 
 (defun histories-list (&optional (buffer (current-buffer)))
@@ -441,8 +445,9 @@ Useful for session snapshots, as `restore-history-bu-name' will restore opened b
                                        :basename name)))
     (let ((old-buffers (buffer-list)))
       (setf (get-data path) (make-history-tree))
-      (restore (data-profile (current-buffer)) path :restore-buffers-p t)
-      ;; TODO: Maybe modify `history-path' of all the buffers instead of polluting history?
-      (setf (get-data (history-path (current-buffer))) (get-data path))
-      (dolist (buffer old-buffers)
-        (buffer-delete buffer)))))
+      (sera:and-let* ((new-history (restore (data-profile (current-buffer)) path
+                                            :restore-buffers-p t)))
+        ;; TODO: Maybe modify `history-path' of all the buffers instead of polluting history?
+        (setf (get-data (history-path (current-buffer))) new-history)
+        (dolist (buffer old-buffers)
+          (buffer-delete buffer))))))
