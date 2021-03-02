@@ -193,14 +193,9 @@ identifier for every hinted element."
 
 (defclass paragraph-hint (nyxt/web-mode::hint) ())
 
-(defmethod object-string ((paragraph-hint paragraph-hint))
-  (nyxt/web-mode::body paragraph-hint))
-
-(defmethod object-display ((paragraph-hint paragraph-hint))
-  (format nil
-          "~a  ~a  Paragraph"
-          (nyxt/web-mode::hint paragraph-hint)
-          (nyxt/web-mode::body paragraph-hint)))
+(defmethod prompter:object-properties ((hint paragraph-hint))
+  (list :hint (nyxt/web-mode::hint hint)
+        :body (nyxt/web-mode::body hint)))
 
 (define-parenscript set-caret-on-start (&key nyxt-identifier)
   (defun qs (context selector)
@@ -227,22 +222,23 @@ identifier for every hinted element."
                                         :hint (cdr (assoc :hint element))
                                         :body (plump:text (plump:parse (cdr (assoc :body element))))))))))
 
-
 (defun query-paragraph-hints (prompt function &key annotate-visible-only-p)
   (let ((buffer (current-buffer)))
-    (let ((elements-json (%add-paragraph-hints :annotate-visible-only-p annotate-visible-only-p)))
-      (let ((result (prompt-minibuffer
-                     :input-prompt prompt
-                     :default-modes '(element-hint-mode minibuffer-mode)
-                     :history nil
-                     :suggestion-function
-                     (nyxt/web-mode::hint-suggestion-filter
-                      (paragraph-elements-from-json elements-json))
-                     :cleanup-function
-                     (lambda ()
-                       (with-current-buffer buffer
-                         (nyxt/web-mode::remove-element-hints))))))
-        (funcall-safely function result)))))
+    (let ((result (prompt
+                   :prompt prompt
+                   :history nil
+                   :sources
+                   (make-instance
+                    'nyxt/web-mode::hint-source
+                    :initial-suggestions
+                    (paragraph-elements-from-json (%add-paragraph-hints
+                                                   :annotate-visible-only-p
+                                                   annotate-visible-only-p)))
+                   :after-destructor
+                   (lambda ()
+                     (with-current-buffer buffer
+                       (nyxt/web-mode::remove-element-hints))))))
+      (funcall-safely function result))))
 
 (define-parenscript block-page-keypresses ()
   (setf (ps:@ window block-keypresses)
