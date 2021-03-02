@@ -238,7 +238,6 @@ identifier for every hinted element."
 (define-class hint ()
   ((hint "")
    (identifier "")
-   ;; TODO: Move to `link-hint' or `button-hint'? Maybe add an intermediate class?
    (body ""
          :documentation "The body of the anchor tag."))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
