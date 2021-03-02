@@ -14,8 +14,8 @@
       (list
        "C-n" 'select-next
        "C-p" 'select-previous
-       "C-v" 'select-next-page
-       "M-v" 'select-previous-page
+       "M-n" 'select-next-page
+       "M-p" 'select-previous-page
        "M->" 'select-last
        "M-<" 'select-first
        "M-]" 'select-next-source
