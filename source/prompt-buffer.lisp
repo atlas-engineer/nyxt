@@ -87,8 +87,7 @@ All ARGS are declared as `ignorable'."
                  (".source-content"
                   :margin-left "16px"
                   :background-color "#F7F7F7"
-                  :width "100%"
-                  :table-layout "fixed")
+                  :width "100%")
                  (".source-content td"
                   :white-space "nowrap"
                   :overflow "auto")
@@ -96,18 +95,12 @@ All ARGS are declared as `ignorable'."
                   :font-weight "normal"
                   :padding-left "3px"
                   :text-align "left"
-                  :background-color "#E8E8E8"
-                  :white-space "nowrap"
-                  :overflow "auto")
+                  :background-color "#E8E8E8")
                  (".source-content td::-webkit-scrollbar"
                   :display "none")
                  ("#selection"
                   :background-color "575757"
                   :color "white")
-                 (ul :list-style "none"
-                     :padding "0"
-                     :margin "0")
-                 (li :padding "2px")
                  (.marked :background-color "darkgray"
                           :font-weight "bold"
                           :color "white")
