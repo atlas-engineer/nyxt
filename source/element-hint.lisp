@@ -170,40 +170,30 @@ identifier for every hinted element."
     (ps:dolist (e old-elements)
       (setf (ps:@ e class-name) "nyxt-hint"))))
 
-(defun query-hints (prompt function &key multi-selection-p annotate-visible-only-p)
-  (let* ((buffer (current-buffer))
-         minibuffer)
-    (let ((elements-json (add-element-hints :annotate-visible-only-p annotate-visible-only-p)))
-      ;; TODO: Add offscreen hints in background from full document annotation
-      (let ((result (prompt-minibuffer
-                     :input-prompt prompt
-                     :default-modes '(element-hint-mode minibuffer-mode)
-                     :history nil
-                     :multi-selection-p multi-selection-p
-                     :suggestion-function
-                     (hint-suggestion-filter (elements-from-json elements-json))
-                     :changed-callback
-                     (let ((subsequent-call nil))
-                       (lambda ()
-                         ;; when the minibuffer initially appears, we don't
-                         ;; want update-selection-highlight-hint to scroll
-                         ;; but on subsequent calls, it should scroll
-                         (update-selection-highlight-hint
-                          :scroll subsequent-call
-                          :buffer buffer
-                          :minibuffer minibuffer)
-                         (setf subsequent-call t)))
-                     :cleanup-function
-                     (lambda ()
-                       (with-current-buffer buffer
-                         (remove-element-hints))))))
-        (funcall-safely function result)))))
+(define-class hint-source (prompter:source)
+  ((prompter:name "Hints")
+   (prompter:must-match-p t)
+   (prompter:follow-p t)
+   (prompter:persistent-action (lambda (suggestion)
+                                 (highlight-selected-hint :link-hint suggestion)))))
 
-(defun hint-suggestion-filter (hints)
-  (lambda (minibuffer)
-    (let* ((matched-hints (remove-if-not (lambda (x) (str:starts-with-p (input-buffer minibuffer) (hint x) :ignore-case t)) hints))
-           (fuzzy-matched-hints (fuzzy-match (input-buffer minibuffer) (set-difference hints matched-hints))))
-      (append matched-hints fuzzy-matched-hints))))
+(defun query-hints (prompt function &key multi-selection-p annotate-visible-only-p)
+  (let* ((buffer (current-buffer)))
+    (let ((result (prompt
+                   :prompt prompt
+                   :history nil
+                   :sources
+                   (make-instance 
+                    'hint-source
+                    :multi-selection-p multi-selection-p
+                    :initial-suggestions 
+                    (elements-from-json (add-element-hints
+                                         :annotate-visible-only-p annotate-visible-only-p)))
+                   :after-destructor
+                   (lambda ()
+                     (with-current-buffer buffer
+                       (remove-element-hints))))))
+      (funcall-safely function result))))
 
 (defun elements-from-json (elements-json)
   (loop for element in (cl-json:decode-json-from-string elements-json)
@@ -253,6 +243,11 @@ identifier for every hinted element."
          :documentation "The body of the anchor tag."))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
+(defmethod prompter:object-properties ((hint hint))
+  (list :hint (hint hint)
+        :body (body hint)
+        :url (when (slot-exists-p hint 'url) (url hint))))
+
 (define-class clickable-hint (hint) ())
 
 (define-class focusable-hint (hint) ())
@@ -265,59 +260,20 @@ identifier for every hinted element."
 
 (define-class input-hint (focusable-hint)
   ((placeholder-text "" :documentation "The placeholder text of the input element.
-I.e. the grey text initially seen in it."))
+I.e. the grey text initially seen in it.")
+   (body "Input Area"))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-class textarea-hint (focusable-hint)
   ((placeholder-text "" :documentation "The placeholder text of the textarea.
-I.e. the grey text initially seen in it."))
+I.e. the grey text initially seen in it.")
+   (body "Text Area"))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-class image-hint (link-hint)
-  ((alt "" :documentation "Alternative text for the image."))
+  ((alt "" :documentation "Alternative text for the image.")
+   (body "Image"))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
-
-(defmethod object-string ((hint hint))
-  (hint hint))
-
-(defmethod object-string ((link-hint link-hint))
-  (url link-hint))
-
-(defmethod object-display ((link-hint link-hint))
-  (format nil "~a  ~a  ~a"
-          (hint link-hint)
-          (body link-hint)
-          (quri:url-decode (url link-hint) :lenient t)))
-
-(defmethod object-string ((clickable-hint clickable-hint))
-  (body clickable-hint))
-
-(defmethod object-display ((clickable-hint clickable-hint))
-  (format nil "~a  ~a  Clickable" (hint clickable-hint) (body clickable-hint)))
-
-(defmethod object-display ((button-hint button-hint))
-  (format nil "~a  ~a  Button" (hint button-hint) (body button-hint)))
-
-(defmethod object-display ((focusable-hint focusable-hint))
-  (format nil "~a  Focusable" (hint focusable-hint)))
-
-(defmethod object-display ((input-hint input-hint))
-  (format nil "~a  ~:[~a  ~;~]Input"
-          (hint input-hint)
-          (str:emptyp (placeholder-text input-hint))
-          (placeholder-text input-hint)))
-
-(defmethod object-display ((textarea-hint textarea-hint))
-  (format nil "~a  ~:[~a  ~;~]Textarea"
-          (hint textarea-hint)
-          (str:emptyp (placeholder-text textarea-hint))
-          (placeholder-text textarea-hint)))
-
-(defmethod object-display ((image-hint image-hint))
-  (format nil "~a  ~a  ~a"
-          (hint image-hint)
-          (alt image-hint)
-          (quri:url-decode (url image-hint) :lenient t)))
 
 (defmethod %follow-hint ((link-hint link-hint))
   (buffer-load (url link-hint)))
@@ -362,37 +318,6 @@ I.e. the grey text initially seen in it."))
 (defmethod %copy-hint-url ((hint hint))
   (echo "Unsupported operation for hint: can't copy URL."))
 
-(defun update-selection-highlight-hint (&key suggestions scroll follow
-                                          (minibuffer (current-minibuffer))
-                                          (buffer (current-buffer)))
-  (let ((hint (flet ((hintp (hint-suggestion)
-                       (if (typep hint-suggestion '(or link-hint button-hint match))
-                           hint-suggestion
-                           nil)))
-                (if suggestions
-                    (hintp (first suggestions))
-                    (when minibuffer
-                      (let ((hint-suggestion (nth (nyxt::suggestion-cursor minibuffer)
-                                                 (nyxt::suggestions minibuffer))))
-                        (hintp hint-suggestion)))))))
-    (when hint
-      (when (and follow
-                 (slot-exists-p hint 'buffer)
-                 (not (equal (buffer hint) buffer)))
-        (set-current-buffer (buffer hint))
-        (setf buffer (buffer hint)))
-      (if (or
-           (not (slot-exists-p hint 'buffer))
-           (and (slot-exists-p hint 'buffer)
-                (equal (buffer hint) buffer)))
-          (with-current-buffer buffer
-            (highlight-selected-hint :link-hint hint
-                                     :scroll scroll))
-          (remove-focus)))))
-
-;; TODO: Replace `update-selection-highlight-hint' with
-;; `prompt-buffer-selection-highlight-hint' when prompt-buffer becomes the
-;; default.
 (defun prompt-buffer-selection-highlight-hint (&key suggestions scroll follow
                                                  (prompt-buffer (current-prompt-buffer))
                                                  (buffer (current-buffer)))
@@ -502,18 +427,6 @@ visible nosave active buffer."
                  :multi-selection-p t
                  :annotate-visible-only-p annotate-visible-only-p)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(in-package :nyxt/minibuffer-mode)
-(define-mode element-hint-mode (nyxt/minibuffer-mode:minibuffer-mode)
-  "Minibuffer mode for setting the tag of a bookmark."
-  ((keymap-scheme
-    (define-scheme "set-tag"
-      scheme:cua
-      (list
-       "M-i" 'toggle-hints-transparency
-       "M-n" 'select-next-follow
-       "M-p" 'select-previous-follow)))))
-
 (define-command toggle-hints-transparency (&key (buffer (current-buffer)))
   "Toggle the on-screen element hints transparency."
   (pflet ((toggle-transparent ()
@@ -527,15 +440,3 @@ visible nosave active buffer."
                   (setf (ps:chain element style opacity) "1.0")))))
     (with-current-buffer buffer
       (toggle-transparent))))
-
-(define-command select-next-follow (&optional (minibuffer (current-minibuffer)))
-  "Select next entry in minibuffer and focus the referencing hint/match
-if there is one such."
-  (select-next minibuffer)
-  (nyxt/web-mode::update-selection-highlight-hint :follow t :scroll t))
-
-(define-command select-previous-follow (&optional (minibuffer (current-minibuffer)))
-  "Select previous entry in minibuffer and focus the referencing hint/match
-if there is one such."
-  (select-previous minibuffer)
-  (nyxt/web-mode::update-selection-highlight-hint :follow t :scroll t))
