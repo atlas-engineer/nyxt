@@ -23,6 +23,8 @@
                :local-time
                :log4cl
                :mk-string-metrics
+               #-sbcl
+               osicat
                :parenscript
                :quri
                :serapeum

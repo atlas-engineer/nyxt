@@ -353,8 +353,16 @@ short as possible."
        #+darwin
        (equal "=" (uiop:run-program (list "stat" "-f" "%T" socket-path)
                                     :output '(:string :stripped t)))
-       #-darwin
-       (not (eq :socket (osicat:file-kind socket-path)))))
+       #+(and (not darwin) (not sbcl))
+       (not (eq :socket (osicat:file-kind socket-path)))
+       #+(and (not darwin) sbcl)
+       (flet ((socket-p (path)
+                (let ((socket-mask 49152)
+                      (mode-mask 61440))
+                  (= socket-mask
+                     (logand mode-mask
+                             (sb-posix:stat-mode (sb-posix:stat path)))))))
+         (socket-p socket-path))))
 
 (defun listen-or-query-socket (urls)
   "If another Nyxt is listening on the socket, tell it to open URLS.
