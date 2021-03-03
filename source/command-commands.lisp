@@ -72,19 +72,22 @@ keyword parameters."
              (when required-arguments
                (loop for argument in required-arguments
                      collect (read-from-string
-                              (prompt-minibuffer
-                               :input-prompt argument))))
+                              (prompt
+                               :prompt argument
+                               :sources (make-instance 'prompter:raw-source)))))
              (when optional-arguments
                (loop for argument in optional-arguments
                      collect (read-from-string
-                              (prompt-minibuffer
-                               :input-prompt (first argument)))))
+                              (prompt
+                               :prompt (first argument)
+                               :sources (make-instance 'prompter:raw-source)))))
              (when key-arguments
                (loop for argument in key-arguments
                      collect (first (car argument))
                      collect (read-from-string
-                              (prompt-minibuffer
-                               :input-prompt (second (car argument))))))))
+                              (prompt
+                               :prompt (second (car argument))
+                               :sources (make-instance 'prompter:raw-source)))))))
      (setf (access-time command) (get-internal-real-time))))
 
 (defun get-hooks ()
