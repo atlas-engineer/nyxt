@@ -179,7 +179,7 @@
        ("mk-string-metrics" ,cl-mk-string-metrics)
        ("moptilities" ,cl-moptilities)
        ("named-readtables" ,cl-named-readtables)
-       ("osicat" ,cl-osicat)
+       ;; ("osicat" ,cl-osicat) ; Not needed for SBCL.
        ("parenscript" ,cl-parenscript)
        ("plump" ,cl-plump)
        ("quri" ,cl-quri)
