@@ -312,6 +312,18 @@ call.")))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "Prompt for raw user input."))
 
+(defmethod ensure-suggestions-list ((source source) elements)
+  (mapcar (lambda (suggestion-value)
+            (if (typep suggestion-value 'suggestion)
+                suggestion-value
+                (make-instance 'suggestion
+                               :value suggestion-value
+                               :properties (maybe-funcall
+                                            (suggestion-property-function source)
+                                            suggestion-value)
+                               :match-data "")))
+          (uiop:ensure-list elements)))
+
 (defmethod initialize-instance :after ((source source) &key)
   (let ((wait-channel (make-channel 1)))
     (calispel:! wait-channel t)
@@ -323,16 +335,8 @@ call.")))
        (when (constructor source)
          (setf (slot-value source 'initial-suggestions)
                (funcall (constructor source) source)))
-       ;; TODO: Should we always do this?  What if initial-suggestions are already
-       ;; suggestion objects?
        (setf (slot-value source 'initial-suggestions)
-             (mapcar (lambda (suggestion-value)
-                       (make-instance 'suggestion
-                                      :value suggestion-value
-                                      :properties (maybe-funcall (suggestion-property-function source)
-                                                                 suggestion-value)
-                                      :match-data ""))
-                     (initial-suggestions source)))
+             (ensure-suggestions-list source (initial-suggestions source)))
        ;; TODO: Setting `suggestions' is not needed?
        (setf (slot-value source 'suggestions) (initial-suggestions source))
        (bt:release-lock (initial-suggestions-lock source))))
