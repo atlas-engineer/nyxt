@@ -166,10 +166,11 @@ it would not be very useful."
   "TODO: Complete me!"
   (with-data-unsafe (hist (history-path (current-buffer)))
     (let* ((all-history-entries (when hist
-                                  (sort (htree:all-data hist)
-                                        (lambda (x y)
-                                          (> (score-history-entry x)
-                                             (score-history-entry y))))))
+                                  (mapcar #'htree:data
+                                          (sort (alex:hash-table-keys (htree:entries hist))
+                                                (lambda (x y)
+                                                  (> (score-history-entry x)
+                                                     (score-history-entry y)))))))
            (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
       (when prefix-urls
         (setf all-history-entries (append (mapcar #'quri:url-decode prefix-urls)
