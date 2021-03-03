@@ -314,6 +314,7 @@
                cl-ppcre
                local-time
                named-readtables
+               #-sbcl
                osicat
                serapeum
                str

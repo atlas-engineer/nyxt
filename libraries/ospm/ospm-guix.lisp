@@ -271,13 +271,20 @@ value.
                                 :date (local-time:parse-timestring date)
                                 :path path))
 
+(defun read-link (path)
+  "Resolve PATH symlink once."
+  #+sbcl
+  (sb-posix:readlink path)
+  #-sbcl
+  (osicat:read-link profile))
+
 (defun guix-expand-profile-symlink (profile)
   "Return the path the PROFILE link points too.
 This function is mostly useful for the standard profile and the Guix checkout profile.
 
 If the result is not absolute, return PROFILE untouched.  This is what we want
 for non-standard profiles."
-  (let ((result (osicat:read-link profile)))
+  (let ((result (read-link profile)))
     (if (uiop:relative-pathname-p result)
         profile
         result)))
