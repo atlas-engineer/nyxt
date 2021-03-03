@@ -237,10 +237,6 @@ Define a method for your `data-path' type to make it restorable."))
   "This method guarantees PATH will not be persisted to disk in NOSAVE-DATA-PROFILE."
   nil)
 
-(defmethod restore ((profile nosave-data-profile) (path data-path) &key &allow-other-keys)
-  "This method guarantees PATH will not be loaded from disk in NOSAVE-DATA-PROFILE."
-  nil)
-
 (defmethod store :around ((profile data-profile) (path async-data-path) &key &allow-other-keys)
   (labels ((worker ()
              (let ((store-ops (drain-channel (channel path) (timeout path))))
