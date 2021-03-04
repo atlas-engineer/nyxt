@@ -428,13 +428,11 @@ If a previous suggestion computation was not finished, it is forcefully terminat
                                                    (initial-suggestions source))))
              (setf preprocessed-suggestions
                    (if (filter-preprocessor source)
-                       (maybe-funcall (filter-preprocessor source)
-                                      preprocessed-suggestions source input)
-                       (list (make-instance 'suggestion
-                                            :value input
-                                            :properties (maybe-funcall (suggestion-property-function source)
-                                                                       input)
-                                            :match-data ""))))
+                       (ensure-suggestions-list
+                        source
+                        (maybe-funcall (filter-preprocessor source)
+                                       preprocessed-suggestions source input))
+                       (ensure-suggestions-list source input)))
              ;; TODO: Should we really reset the suggestions here?
              (setf (slot-value source 'suggestions) '())
              (if (or (str:empty? input)
