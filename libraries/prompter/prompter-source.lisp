@@ -75,7 +75,7 @@ The other slots are optional."))
 another.")
 
      (constructor nil
-                  :type (or null function)
+                  :type (or null list function)
                   :documentation
                   "Function called with the source as argument.
 The returned value is assigned to `initial-suggestions'.
@@ -90,7 +90,6 @@ It's called when `destroy' is called over `prompter'.")
 
      (initial-suggestions '()
                           :reader initial-suggestions
-                          :export t
                           :documentation
                           "Suggestions used on initialization, before any
 user input is processed.
@@ -332,9 +331,12 @@ call.")))
        (bt:acquire-lock (initial-suggestions-lock source))
        (calispel:? wait-channel)
        ;; `initial-suggestions' initialization must be done before first input can be processed.
-       (when (constructor source)
-         (setf (slot-value source 'initial-suggestions)
-               (funcall (constructor source) source)))
+       (cond ((listp (constructor source))
+              (setf (slot-value source 'initial-suggestions)
+                    (constructor source)))
+             ((constructor source)
+              (setf (slot-value source 'initial-suggestions)
+                    (funcall (constructor source) source))))
        (setf (slot-value source 'initial-suggestions)
              (ensure-suggestions-list source (initial-suggestions source)))
        ;; TODO: Setting `suggestions' is not needed?
