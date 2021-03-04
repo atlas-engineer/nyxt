@@ -59,7 +59,10 @@ want to change the behaviour of modifiers, for instance swap 'control' and
    (data-manager-path (make-instance 'data-manager-data-path
                                      :dirname (uiop:xdg-cache-home +data-root+))
                       :documentation "Directory in which the WebKitGTK
-data-manager will store the data separately for each buffer."))
+data-manager will store the data separately for each buffer.")
+   (gtk-extensions-path (make-instance 'gtk-extensions-data-path
+                                       :dirname (uiop:xdg-config-home +data-root+ "extensions"))
+                        :documentation "Directory to store the WebKit-specific extensions in."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
@@ -169,6 +172,16 @@ not return."
 
 (defmethod expand-data-path ((profile nosave-data-profile) (path data-manager-data-path))
   "We shouldn't store any `data-manager' data for `nosave-data-profile'."
+  nil)
+
+(define-class gtk-extensions-data-path (data-path)
+  ((ref :initform "gtk-extensions"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+
+(defmethod expand-data-path ((profile nosave-data-profile) (path gtk-extensions-data-path))
+  ;; REVIEW: Should we?
+  "We shouldn't enable (possibly) user-identifying extensions for `nosave-data-profile'."
   nil)
 
 (defun make-web-view (&key context-buffer)
@@ -517,6 +530,12 @@ Warning: This behaviour may change in the future."
                                          :website-data-manager manager))
                         (web-context *browser*)))
            (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
+      (when (expand-path (gtk-extensions-path buffer))
+        (gobject:g-signal-connect
+         context "initialize-web-extensions"
+         #'(lambda (context)
+             (webkit:webkit-web-context-set-web-extensions-directory
+              context (expand-path (gtk-extensions-path buffer))))))
       (when (and buffer
                  (web-buffer-p buffer)
                  (expand-path (cookies-path buffer)))
