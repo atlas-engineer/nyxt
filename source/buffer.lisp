@@ -718,14 +718,6 @@ proceeding."
        ;; Display the most recent inactive buffer.
        (sort diff #'local-time:timestamp> :key #'last-access)))))
 
-(export-always 'buffer-suggestion-filter)
-(defun buffer-suggestion-filter (&key current-is-last-p domain)
-  (let ((buffers (buffer-list :sort-by-time t :domain domain)))
-    (when current-is-last-p
-      (setf buffers (alex:rotate buffers -1)))
-    (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) buffers))))
-
 (define-command copy-url ()
   "Save current URL to clipboard."
   (copy-to-clipboard (object-string (url (current-buffer))))
@@ -735,16 +727,6 @@ proceeding."
   "Save current page title to clipboard."
   (copy-to-clipboard (title (current-buffer)))
   (echo "~a copied to clipboard." (title (current-buffer))))
-
-(define-command switch-buffer (&key id)
-  "Switch the active buffer in the current window."
-  (if id
-      (set-current-buffer (buffers-get id))
-      (let ((buffer (prompt-minibuffer
-                     :input-prompt "Switch to buffer"
-                     ;; For commodity, the current buffer shouldn't be the first one on the list.
-                     :suggestion-function (buffer-suggestion-filter :current-is-last-p t))))
-        (set-current-buffer buffer))))
 
 (defun buffer-initial-suggestions (&key current-is-last-p domain)
   (let ((buffers (buffer-list :sort-by-time t :domain domain)))
@@ -768,21 +750,22 @@ proceeding."
                                (set-current-buffer buffer))))))
   (:export-class-name-p t))
 
-(define-command switch-buffer2 ()
+(define-command switch-buffer (&key id)
   "Switch the active buffer in the current window."
-  (prompt
-   :prompt "Switch to buffer"
-   :sources (list (make-instance 'buffer-source))))
+  (if id
+      (set-current-buffer (buffers-get id))
+      (prompt
+       :prompt "Switch to buffer"
+       :sources (list (make-instance 'buffer-source)))))
 
 (define-command switch-buffer-domain (&key domain (buffer (current-buffer)))
   "Switch the active buffer in the current window from the current domain."
   (let ((domain (or domain (quri:uri-domain (url buffer)))))
-    (let ((buffer (prompt-minibuffer
-                   :input-prompt "Switch to buffer in current domain:"
-                   :suggestion-function (buffer-suggestion-filter
-                                         :domain domain
-                                         :current-is-last-p t))))
-      (set-current-buffer buffer))))
+    (prompt
+     :prompt "Switch to buffer in current domain:"
+     :sources (make-instance 'buffer-source
+                             :constructor (buffer-list :sort-by-time t
+                                                       :domain domain)))))
 
 (defun switch-buffer-or-query-domain (domain)
   "Switch to a buffer if it exists for a given domain, otherwise query
@@ -805,20 +788,23 @@ See `make-buffer'."
   "Delete the buffer(s) via minibuffer input."
   (if id
       (buffer-delete (gethash id (slot-value *browser* 'buffers)))
-      (let ((buffers (prompt-minibuffer
-                      :input-prompt "Delete buffer(s)"
-                      :multi-selection-p t
-                      :suggestion-function (buffer-suggestion-filter))))
-        (mapcar #'buffer-delete buffers))))
+      (flet ((delete-buffers (buffers)
+               (mapcar #'buffer-delete buffers)))
+        (prompt
+         :prompt "Delete buffer(s)"
+         :sources (make-instance 'buffer-source
+                                 :multi-selection-p t
+                                 :actions (list #'delete-buffers))))))
 
 (define-command reduce-to-buffer (&key (delete t))
   "Reduce the buffer(s) via minibuffer input and copy their titles/URLs to a
 single buffer, optionally delete them. This function is useful for archiving a
 set of useful URLs or preparing a list to send to a someone else."
-  (let ((buffers (prompt-minibuffer
-                  :input-prompt "Reduce buffer(s)"
-                  :multi-selection-p t
-                  :suggestion-function (buffer-suggestion-filter))))
+  (let ((buffers (prompt
+                  :prompt "Reduce buffer(s)"
+                  :sources (make-instance 'buffer-source
+                                          :actions '()
+                                          :multi-selection-p t))))
     (with-current-html-buffer (reduced-buffer "*Reduced Buffers*" 'base-mode)
       (markup:markup
        (:style (style reduced-buffer))
@@ -840,15 +826,13 @@ set of useful URLs or preparing a list to send to a someone else."
                      (:hr ""))))))))
     (when delete (mapcar #'buffer-delete buffers))))
 
-(defun delete-buffers ()
-  "Delete all buffers."
-  (mapcar #'buffer-delete (buffer-list)))
-
-(define-command delete-all-buffers ()
+(define-command delete-all-buffers (&key confirmation-p)
   "Delete all buffers, with confirmation."
   (let ((count (length (buffer-list))))
-    (if-confirm ("Are you sure to delete ~a buffer~p?" count count)
-      (delete-buffers))))
+    (if confirmation-p
+        (if-confirm ("Are you sure to delete ~a buffer~p?" count count)
+                    (mapcar #'buffer-delete (buffer-list)))
+        (mapcar #'buffer-delete (buffer-list)))))
 
 (define-command delete-current-buffer (&optional (buffer (current-buffer)))
   "Delete the currently active buffer, and make the next buffer the
@@ -894,34 +878,21 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
             (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url)))
             (ffi-buffer-load buffer url)))))
 
-(define-command set-url (&key new-buffer-p prefill-current-url-p 
-                              (nosave-buffer-p (nosave-buffer-p (current-buffer))))
-  "Set the URL for the current buffer, completing with history."
-  (let ((history (unless nosave-buffer-p (minibuffer-set-url-history *browser*))))
-    (when history
-      (containers:insert-item history (url (current-buffer))))
-    (let ((url (prompt-minibuffer
-                :input-prompt (format nil "Open URL in ~:[current~;new~]~:[~; nosave~] buffer"
-                                      new-buffer-p nosave-buffer-p)
-                :input-buffer (if prefill-current-url-p
-                                  (object-string (url (current-buffer))) "")
-                :default-modes '(set-url-mode minibuffer-mode)
-                :suggestion-function (history-suggestion-filter
-                                      :prefix-urls (list (object-string
-                                                          (url (current-buffer)))))
-                :history history
-                :must-match-p nil)))
+(defun new-buffer-load (url)
+  "Load a URL in a new buffer."
+  (make-buffer-focus :url url))
 
-      (when (typep url 'history-entry)
-        ;; In case prompt-minibuffer returned a string upon
-        ;; must-match-p.
-        (setf url (url url)))
-      (buffer-load url :buffer (if new-buffer-p
-                                   ;; Make empty buffer, or else there might be
-                                   ;; a race condition between the URL that's
-                                   ;; loaded and the default one.
-                                   (make-buffer-focus :url "" :nosave-buffer-p nosave-buffer-p)
-                                   (current-buffer))))))
+(defun new-nosave-buffer-load (url)
+  "Load a URL in a new nosave buffer."
+  (make-buffer-focus :url url :nosave-buffer-p t))
+
+(defun new-buffer-load-from-history (history-suggestion)
+  "Load a URL in a new buffer (from history)."
+  (make-buffer-focus :url (url history-suggestion)))
+
+(defun new-nosave-buffer-load-from-history (history-suggestion)
+  "Load a URL in a new buffer (from history)."
+  (make-buffer-focus :url (url history-suggestion)))
 
 (define-class global-history-source (prompter:source)
   ((prompter:name "Global history")
@@ -933,12 +904,10 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
                            (history-initial-suggestions)))
    (prompter:multi-selection-p t)       ; TODO: Disable once tested OK.
    (prompter:must-match-p nil)
-   (prompter:actions '(buffer-load
-                       new-buffer-load))))
+   (prompter:actions '(buffer-load))))
 
-(define-command set-url2 (&key prefill-current-url-p)
+(define-command set-url (&key (prefill-current-url-p t))
   "Set the URL for the current buffer, completing with history."
-  ;; TODO: Do we still need to add current URL to history?
   (let ((history (minibuffer-set-url-history *browser*)))
     (when history
       (containers:insert-item history (quri:render-uri (url (current-buffer)))))
@@ -949,22 +918,37 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
      :history history
      :sources (list (make-instance 'prompter:raw-source
                                    :name "New URL"
-                                   :actions '(buffer-load new-buffer-load))
-                    (make-instance 'global-history-source))
-     ;; :default-modes '(set-url-mode minibuffer-mode) ; TODO: Replace this with a prompter action or filter.
-     )))
+                                   :actions (list 'buffer-load 'new-buffer-load))
+                    (make-instance 'global-history-source
+                                   :actions (list 'buffer-load 'new-buffer-load-from-history))))))
 
-(define-command set-url-from-current-url ()
-  "Set the URL for the current buffer, pre-filling in the current URL."
-  (set-url :prefill-current-url-p t))
-
-(define-command set-url-new-buffer ()
+(define-command set-url-new-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused buffer."
-  (set-url :new-buffer-p t))
+  (let ((history (minibuffer-set-url-history *browser*)))
+    (when history
+      (containers:insert-item history (quri:render-uri (url (current-buffer)))))
+    (prompt
+     :prompt "Open URL"
+     :input (if prefill-current-url-p
+                (object-string (url (current-buffer))) "")
+     :history history
+     :sources (list (make-instance 'prompter:raw-source
+                                   :name "New URL"
+                                   :actions (list 'new-buffer-load))
+                    (make-instance 'global-history-source
+                                   :actions (list 'new-buffer-load-from-history))))))
 
-(define-command set-url-nosave-buffer ()
+(define-command set-url-nosave-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused nosave buffer."
-  (set-url :new-buffer-p t :nosave-buffer-p t))
+  (prompt
+   :prompt "Open URL"
+   :input (if prefill-current-url-p
+              (object-string (url (current-buffer))) "")
+   :sources (list (make-instance 'prompter:raw-source
+                                 :name "New URL"
+                                 :actions (list 'buffer-load 'new-nosave-buffer-load))
+                  (make-instance 'global-history-source
+                                 :actions (list 'buffer-load 'new-nosave-buffer-load-from-history)))))
 
 (define-command reload-current-buffer (&optional (buffer (current-buffer)))
   "Reload of BUFFER or current buffer if unspecified."
@@ -972,11 +956,13 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
 
 (define-command reload-buffer ()
   "Reload queried buffer(s)."
-  (let ((buffers (prompt-minibuffer
-                  :input-prompt "Reload buffer(s)"
-                  :multi-selection-p t
-                  :suggestion-function (buffer-suggestion-filter))))
-    (mapcar #'reload-current-buffer buffers)))
+  (flet ((reload-buffers (buffers)
+           (mapcar #'reload-current-buffer buffers)))
+    (prompt
+     :prompt "Reload buffer(s)"
+     :sources (make-instance 'buffer-source
+                             :multi-selection-p t
+                             :actions (list #'reload-buffers)))))
 
 (define-command switch-buffer-previous ()
   "Switch to the previous buffer in the list of buffers.
@@ -1008,12 +994,11 @@ this command it cycles through all buffers."
 (defun mode-name (mode)
   (class-name (original-class mode)))
 
-(declaim (ftype (function (list-of-symbols &optional buffer)) disable-modes))
 (export-always 'disable-modes)
 (defun disable-modes (modes &optional (buffer (current-buffer)))
   "Disable MODES for BUFFER.
 MODES should be a list symbols, each possibly returned by `mode-name'."
-  (dolist (mode modes)
+  (dolist (mode (uiop:ensure-list modes))
     (let ((command (mode-command mode)))
       (if command
           (funcall-safely (sym command) :buffer buffer :activate nil)
