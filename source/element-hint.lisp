@@ -394,25 +394,19 @@ visible nosave active buffer."
   (query-hints "Copy element URL" '%copy-hint-url
                :annotate-visible-only-p annotate-visible-only-p))
 
-(define-command bookmark-hint ()
+(define-command bookmark-hint (&key annotate-visible-only-p)
   "Show link hints on screen, and allow the user to bookmark one"
-  (let* ((elements-json (add-element-hints))
-         (result (prompt-minibuffer
-                  :input-prompt "Bookmark hint"
-                  :default-modes '(element-hint-mode minibuffer-mode)
-                  :history nil
-                  :suggestion-function
-                  (hint-suggestion-filter (elements-from-json elements-json))
-                  :cleanup-function
-                  (lambda ()
-                    (remove-element-hints))))
-         (tags (prompt-minibuffer
-                :input-prompt "Space-separated tag(s)"
-                :default-modes '(set-tag-mode minibuffer-mode)
-                :input-buffer (url-bookmark-tags (quri:uri (url result)))
-                :suggestion-function (tag-suggestion-filter))))
-    (when result
-      (bookmark-add (quri:uri (url result)) :tags tags))))
+  (query-hints "Bookmark hint"
+               (lambda (result)
+                 (let ((uri (quri:uri (url result)))
+                       (tags (tags (prompt-minibuffer
+                                    :input-prompt "Space-separated tag(s)"
+                                    :default-modes '(set-tag-mode minibuffer-mode)
+                                    :input-buffer (url-bookmark-tags (quri:uri (url result)))
+                                    :suggestion-function (tag-suggestion-filter)))))
+                   (bookmark-add uri :tags tags)))
+               :multi-selection-p t
+               :annotate-visible-only-p annotate-visible-only-p))
 
 (define-command download-hint-url (&key annotate-visible-only-p)
   "Download the file under the URL(s) hinted by the user."
