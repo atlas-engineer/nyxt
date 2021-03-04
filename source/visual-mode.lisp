@@ -230,7 +230,7 @@ identifier for every hinted element."
                    :sources
                    (make-instance
                     'nyxt/web-mode::hint-source
-                    :initial-suggestions
+                    :constructor
                     (paragraph-elements-from-json (%add-paragraph-hints
                                                    :annotate-visible-only-p
                                                    annotate-visible-only-p)))
