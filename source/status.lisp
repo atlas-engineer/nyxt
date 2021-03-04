@@ -41,7 +41,7 @@
 (defun format-status-url (&optional (buffer (current-buffer)))
   (markup:markup
    (:a :class "button"
-       :href (lisp-url '(nyxt:set-url-from-current-url))
+       :href (lisp-url '(nyxt:set-url))
        (format nil " ~a — ~a"
                (object-display (url buffer))
                (title buffer)))))

@@ -166,9 +166,9 @@ Example: --with-path bookmarks=/path/to/bookmarks
   (unless *keep-alive*
     (uiop:quit 0 nil)))
 
-(define-command quit-after-clearing-session () ; TODO: Rename?
+(define-command quit-after-clearing-session (&key confirmation-p) ; TODO: Rename?
   "Close all buffers then quit Nyxt."
-  (delete-buffers)
+  (delete-all-buffers :confirmation-p confirmation-p)
   (quit))
 
 (define-command start-swank (&optional (swank-port *swank-port*))
