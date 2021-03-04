@@ -42,7 +42,7 @@
    (prompter:must-match-p t)
    (prompter:follow-p t)
    (prompter:persistent-action #'scroll-page-to-heading)
-   (prompter:initial-suggestions (get-headings))
+   (prompter:constructor (get-headings))
    (prompter:actions '(scroll-page-to-heading))))
 
 (define-command jump-to-heading ()

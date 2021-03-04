@@ -407,7 +407,7 @@ Example usage defaulting to \"no\":
 
 (define-class resume-prompt-source (prompter:source)
   ((prompter:name "Resume prompters")
-   (prompter:initial-suggestions (old-prompt-buffers *browser*))
+   (prompter:constructor (old-prompt-buffers *browser*))
    ;; TODO: Remove duplicates.
    ;; TODO: History?
    ))
