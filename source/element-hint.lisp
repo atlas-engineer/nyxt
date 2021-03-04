@@ -186,7 +186,7 @@ identifier for every hinted element."
                    (make-instance 
                     'hint-source
                     :multi-selection-p multi-selection-p
-                    :initial-suggestions 
+                    :constructor
                     (elements-from-json (add-element-hints
                                          :annotate-visible-only-p annotate-visible-only-p)))
                    :after-destructor
