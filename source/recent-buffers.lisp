@@ -14,7 +14,7 @@
   ((prompter:name "Deleted buffers")
    (prompter:must-match-p t)
    (prompter:multi-selection-p t)
-   (prompter:initial-suggestions
+   (prompter:constructor
     (containers:container->list (recent-buffers *browser*)))))
 
 (define-command reopen-buffer ()

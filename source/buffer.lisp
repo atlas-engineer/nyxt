@@ -755,7 +755,7 @@ proceeding."
 (define-class buffer-source (prompter:source)
   ((prompter:name "Buffer list")
    ;; For commodity, the current buffer shouldn't be the first one on the list.
-   (prompter:initial-suggestions (buffer-initial-suggestions :current-is-last-p t))
+   (prompter:constructor (buffer-initial-suggestions :current-is-last-p t))
    (prompter:actions '(set-current-buffer))
    (prompter:follow-p t)
    (prompter:follow-delay 0.1)

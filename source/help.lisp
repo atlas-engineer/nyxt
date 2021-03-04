@@ -27,26 +27,26 @@
 (define-class function-source (prompter:source)
   ((prompter:name "Functions")
    (prompter:must-match-p t)
-   (prompter:initial-suggestions
+   (prompter:constructor
     (mapcar (lambda (v) (make-function-suggestion :name v))
             (package-functions)))))
 
 (define-class class-source (prompter:source)
   ((prompter:name "Classes")
    (prompter:must-match-p t)
-   (prompter:initial-suggestions
+   (prompter:constructor
     (mapcar (lambda (v) (make-class-suggestion :name v))
             (package-classes)))))
 
 (define-class slot-source (prompter:source)
   ((prompter:name "Slots")
    (prompter:must-match-p t)
-   (prompter:initial-suggestions (package-slots))))
+   (prompter:constructor (package-slots))))
 
 (define-class variable-source (prompter:source)
   ((prompter:name "Variables")
    (prompter:must-match-p t)
-   (prompter:initial-suggestions (mapcar (lambda (v) (make-variable-suggestion :name v))
+   (prompter:constructor (mapcar (lambda (v) (make-variable-suggestion :name v))
                                          (package-variables)))))
 
 (define-command describe-variable ()
