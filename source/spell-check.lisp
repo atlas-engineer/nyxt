@@ -44,15 +44,20 @@ suggestions."
 
 (define-command spell-check-suggest-word (&key word)
   "Suggest a spelling for a given word."
-  (let ((selected-word (prompt-minibuffer
-                        :input-buffer word
-                        :input-prompt "Suggest spelling (3+ characters)"
-                        :suggestion-function 'enchant-suggestion)))
+  (let ((selected-word (prompt
+                        :input word
+                        :prompt "Suggest spelling (3+ characters)"
+                        :sources (make-instance 'enchant-source))))
     (trivial-clipboard:text selected-word)
     (echo "Word copied to clipboard.")))
 
-(defun enchant-suggestion (minibuffer)
-  (let ((input (input-buffer minibuffer)))
-    (when (> (length input) 2)
-      (enchant:with-dict (lang (spell-check-language *browser*))
-        (enchant:dict-suggest lang input)))))
+(define-class enchant-source (prompter:source)
+  ((case-sensitive-p nil)
+   (prompter:name "Enchant")
+   (prompter:filter nil)
+   (prompter:filter-preprocessor
+    (lambda (preprocessed-suggestions source input)
+      (declare (ignore preprocessed-suggestions source))
+      (when (> (length input) 2)
+        (enchant:with-dict (lang (spell-check-language *browser*))
+          (enchant:dict-suggest lang input)))))))
