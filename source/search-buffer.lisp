@@ -170,14 +170,7 @@
 (defun search-buffer-collector (&key case-sensitive-p)
   (lambda (preprocessed-suggestions source input)
     (declare (ignore preprocessed-suggestions))
-    (mapcar (lambda (suggestion-value)
-              (make-instance 'prompter:suggestion ; TODO: Can we have the `prompter' do this automatically for us?
-                             :value suggestion-value
-                             :properties (when (prompter:suggestion-property-function source)
-                                           (funcall (prompter:suggestion-property-function source)
-                                                    suggestion-value))))
-            (match-suggestion-function input (list (source-buffer source))
-                                       case-sensitive-p))))
+    (match-suggestion-function input (list (source-buffer source)) case-sensitive-p)))
 
 (define-class search-buffer-source (prompter:source)
   ((case-sensitive-p nil)
