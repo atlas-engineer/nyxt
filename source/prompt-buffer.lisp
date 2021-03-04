@@ -87,7 +87,8 @@ All ARGS are declared as `ignorable'."
                  (".source-content"
                   :margin-left "16px"
                   :background-color "#F7F7F7"
-                  :width "100%")
+                  :width "100%"
+                  :table-layout "fixed")
                  (".source-content td"
                   :white-space "nowrap"
                   :overflow "auto")
