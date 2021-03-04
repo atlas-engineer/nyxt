@@ -147,7 +147,7 @@ If STEPS is negative, go to next pages instead."
 
 (define-class action-source (prompter:source)
   ((prompter:name "List of actions")
-   (prompter:initial-suggestions (prompt-buffer-actions))
+   (prompter:constructor (prompt-buffer-actions))
    (prompter:suggestion-property-function #'action-properties)))
 
 (define-command return-selection-over-action (&optional (prompt-buffer (current-prompt-buffer)))
@@ -287,7 +287,7 @@ Only available if `multi-selection-p' is non-nil."
 
 (define-class prompt-buffer-history-source (prompter:source)
   ((prompter:name "Prompt buffer input history")
-   (prompter:initial-suggestions (prompt-buffer-history-entries))))
+   (prompter:constructor (prompt-buffer-history-entries))))
 
 (define-command prompt-buffer-history (&optional (prompt-buffer (current-prompt-buffer)))
   "Choose a prompt-buffer input history entry to insert as input."

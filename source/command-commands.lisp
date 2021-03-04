@@ -39,7 +39,7 @@
 (define-class command-source (prompter:source)
   ((prompter:name "Commands")
    (prompter:must-match-p t)
-   (prompter:initial-suggestions (get-commands))))
+   (prompter:constructor (get-commands))))
 
 (define-command execute-command ()
   "Execute a command by name."
@@ -112,7 +112,7 @@ keyword parameters."
 (define-class hook-source (prompter:source)
   ((prompter:name "Hooks")
    (prompter:must-match-p t)
-   (prompter:initial-suggestions (get-hooks))))
+   (prompter:constructor (get-hooks))))
 
 (define-class handler-source (prompter:source)
   ((prompter:name "Handlers")

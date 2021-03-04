@@ -136,7 +136,7 @@ The handlers take the window as argument."))
   ((prompter:name "Windows")
    (prompter:must-match-p t)
    (prompter:multi-selection-p t)
-   (prompter:initial-suggestions (window-list))
+   (prompter:constructor (window-list))
    (prompter:actions '(window-delete))))
 
 (define-command delete-window ()

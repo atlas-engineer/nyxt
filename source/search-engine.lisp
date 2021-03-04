@@ -66,7 +66,7 @@ bookmarks."
 (define-class search-engine-source (prompter:source)
   ((prompter:name "Search Engines")
    (prompter:must-match-p t)
-   (prompter:initial-suggestions (search-engines (current-buffer)))))
+   (prompter:constructor (search-engines (current-buffer)))))
 
 (define-command search-selection ()
   "Search selected text using the queried search engine."

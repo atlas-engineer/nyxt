@@ -157,7 +157,7 @@ CLONE-URI: quri:uri object."
 (define-class vcs-project-root-source (prompter:source)
   ((prompter:name "Project Directories")
    (prompter:must-match-p t)
-   (prompter:initial-suggestions nyxt/vcs::*vcs-projects-roots*)))
+   (prompter:constructor nyxt/vcs::*vcs-projects-roots*)))
 
 (define-command vcs-clone ()
   "Clone the repository of the current URL to disk.  Only Git is supported at

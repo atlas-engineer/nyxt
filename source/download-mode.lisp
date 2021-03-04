@@ -136,7 +136,7 @@ download."
 (define-class downloaded-files-source (prompter:source)
   ((prompter:name "Files")
    (prompter:must-match-p t)
-   (prompter:initial-suggestions (mapcar #'destination-path (downloads *browser*)))
+   (prompter:constructor (mapcar #'destination-path (downloads *browser*)))
    (prompter:actions '(nyxt/file-manager-mode:open-file-function))))
 
 (define-command download-open-file ()

@@ -16,7 +16,7 @@ seconds."
                              :prompt "Time unit(s)"
                              :sources (make-instance 'prompter:source
                                                      :name "Units"
-                                                     :initial-suggestions time-units
+                                                     :constructor time-units
                                                      :multi-selection-p t)))
          (times (mapcar (lambda (unit)
                           (parse-integer
