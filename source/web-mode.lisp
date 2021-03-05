@@ -253,22 +253,27 @@ and to index the top of the page.")
     (load-history-url new-node
                       :message "No forward history.")))
 
-(defun history-backwards-suggestion-filter (&optional (buffer (current-buffer)))
-  "Suggestion function over all parent URLs."
-  (with-data-unsafe (parents (history-path buffer)
-                     :key (if (conservative-history-movement-p (find-mode buffer 'web-mode))
-                              #'htree:all-contiguous-owned-parents
-                              #'htree:all-parents))
-    (lambda (minibuffer)
-      (if parents
-          (fuzzy-match (input-buffer minibuffer) parents)
-          (echo "Cannot navigate backwards.")))))
+(define-class history-backwards-source (prompter:source)
+  ((prompter:name "Parent URLs")
+   (buffer :initarg :buffer :accessor buffer :initform nil)
+   (prompter:constructor
+    (lambda (source)
+      (with-data-unsafe (parents (history-path (buffer source))
+                                 :key (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
+                                          #'htree:all-contiguous-owned-parents
+                                          #'htree:all-parents))
+        parents))))
+  (:export-class-name-p t))
+
+(defmethod prompter:object-properties ((node history-tree:node))
+  (list :entry (history-tree:data (history-tree:entry node))))
 
 (define-command history-backwards-query (&optional (buffer (current-buffer)))
   "Query parent URL to navigate back to."
-  (let ((input (prompt-minibuffer
-                :input-prompt "Navigate backwards to"
-                :suggestion-function (history-backwards-suggestion-filter))))
+  (let ((input (prompt
+                :prompt "Navigate backwards to"
+                :sources (make-instance 'history-backwards-source
+                                        :buffer (current-buffer)))))
     (when input
       (with-data-access (history (history-path buffer))
         ;; See `history-forwards-query' comment.
@@ -480,12 +485,12 @@ Otherwise go forward to the only child."
 
 (define-command autofill ()
   "Fill in a field with a value from a saved list."
-  (let ((selected-fill (prompt-minibuffer
-                        :input-prompt "Autofill"
-                        :suggestion-function
-                        (lambda (minibuffer)
-                          (fuzzy-match (input-buffer minibuffer)
-                                       (autofills *browser*))))))
+  (let ((selected-fill (prompt
+                        :prompt "Autofill"
+                        :sources (make-instance 'prompter:source
+                                                :name "Autofills"
+                                                :constructor (autofills *browser*)
+                                                :actions '()))))
     (cond ((stringp (autofill-fill selected-fill))
            (%paste :input-text (autofill-fill selected-fill)))
           ((functionp (autofill-fill selected-fill))
