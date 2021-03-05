@@ -1004,72 +1004,87 @@ MODES should be a list symbols, each possibly returned by `mode-name'."
           (funcall-safely (sym command) :buffer buffer :activate nil)
           (log:warn "Mode command ~a not found." mode)))))
 
-(declaim (ftype (function (list-of-symbols &optional buffer t)) enable-modes))
 (export-always 'enable-modes)
 (defun enable-modes (modes &optional (buffer (current-buffer)) args)
   "Enable MODES for BUFFER.
 MODES should be a list of symbols, each possibly returned by `mode-name'.
 ARGS are passed to the mode command."
-  (dolist (mode modes)
+  (dolist (mode (uiop:ensure-list modes))
     (let ((command (mode-command mode)))
       (if command
           (apply #'funcall-safely (sym command) :buffer buffer :activate t args)
           (log:warn "Mode command ~a not found." mode)))))
 
-(defun active-mode-suggestion-filter (buffers)
-  "Return the union of the active modes in BUFFERS."
-  (let ((modes (delete-duplicates (mapcar #'mode-name
-                                          (alex:mappend #'modes buffers)))))
-    (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) modes))))
+(define-class active-mode-source (prompter:source)
+  ((prompter:name "Active modes")
+   (buffers :initarg :buffers :accessor buffers :initform nil)
+   (prompter:multi-selection-p t)
+   (prompter:constructor (lambda (source)
+                           (delete-duplicates 
+                            (alex:mappend 
+                             #'modes 
+                             (uiop:ensure-list (buffers source)))
+                            :test (lambda (i y) (equal (mode-name i)
+                                                       (mode-name y)))))))
+  (:export-class-name-p t))
 
-(defun inactive-mode-suggestion-filter (buffers)
-  "Return the list of all modes minus those present in all BUFFERS."
-  (let ((all-non-minibuffer-modes
-         (delete-if (lambda (m)
-                      (closer-mop:subclassp (find-class m)
-                                            (find-class 'nyxt/minibuffer-mode:minibuffer-mode)))
-                    (mode-list)))
-        (common-modes (reduce #'intersection
-                              (mapcar (lambda (b)
-                                        (mapcar #'mode-name (modes b)))
-                                      buffers))))
-    (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) (set-difference all-non-minibuffer-modes common-modes)))))
+(define-class inactive-mode-source (prompter:source)
+  ((prompter:name "Inactive modes")
+   (buffers :initarg :buffers :accessor buffers :initform nil)
+   (prompter:multi-selection-p t)
+   (prompter:constructor (lambda (source)
+                           (let ((common-modes
+                                   (reduce #'intersection
+                                           (mapcar (lambda (b)
+                                                     (mapcar #'mode-name (modes b)))
+                                                   (uiop:ensure-list (buffers source))))))
+                             (set-difference (mode-list) common-modes)))))
+  (:export-class-name-p t))
 
-(define-command disable-mode-for-current-buffer (&key (buffers (list (current-buffer))))
+(define-command disable-mode-for-current-buffer (&key (buffer (current-buffer)))
   "Disable queried mode(s)."
-  (let ((modes (prompt-minibuffer
-                :input-prompt "Disable mode(s)"
-                :multi-selection-p t
-                :suggestion-function (active-mode-suggestion-filter buffers))))
-    (dolist (buffer buffers)
-      (disable-modes modes buffer))))
+  (let ((modes (prompt
+                :prompt "Disable mode(s)"
+                :sources (make-instance 'active-mode-source
+                                        :buffers buffer))))
+    (disable-modes (mapcar #'mode-name modes) buffer)))
+
 
 (define-command disable-mode-for-buffer ()
   "Disable queried mode(s) for select buffer(s)."
-  (let ((buffers (prompt-minibuffer
-                  :input-prompt "Disable mode(s) for buffer(s)"
-                  :multi-selection-p t
-                  :suggestion-function (buffer-suggestion-filter))))
-    (disable-mode-for-current-buffer :buffers buffers)))
+  (let* ((buffers (prompt
+                   :prompt "Disable mode(s) for buffer(s)"
+                   :sources (make-instance 'buffer-source
+                                           :multi-selection-p t
+                                           :actions '())))
+         (modes (prompt
+                 :prompt "Disable mode(s)"
+                 :sources (make-instance 'active-mode-source
+                                         :buffers buffers))))
+    (loop for buffer in buffers
+          do (disable-modes (mapcar #'mode-name modes) buffer))))
 
-(define-command enable-mode-for-current-buffer (&key (buffers (list (current-buffer))))
+(define-command enable-mode-for-current-buffer (&key (buffer (current-buffer)))
   "Enable queried mode(s)."
-  (let ((modes (prompt-minibuffer
-                :input-prompt "Enable mode(s)"
-                :multi-selection-p t
-                :suggestion-function (inactive-mode-suggestion-filter buffers))))
-    (dolist (buffer buffers)
-      (enable-modes modes buffer))))
+  (let ((modes (prompt
+                :prompt "Enable mode(s)"
+                :sources (make-instance 'inactive-mode-source
+                                        :buffers buffer))))
+    (enable-modes (uiop:ensure-list modes) buffer)))
 
 (define-command enable-mode-for-buffer ()
   "Enable queried mode(s) for select buffer(s)."
-  (let ((buffers (prompt-minibuffer
-                  :input-prompt "Enable mode(s) for buffer(s)"
-                  :multi-selection-p t
-                  :suggestion-function (buffer-suggestion-filter))))
-    (enable-mode-for-current-buffer :buffers buffers)))
+  (let* ((buffers (prompt
+                   :prompt "Enable mode(s) for buffer(s)"
+                   :sources (make-instance 'buffer-source
+                                           :multi-selection-p t
+                                           :actions '())))
+         (modes (prompt
+                 :prompt "Enable mode(s)"
+                 :sources (make-instance 'inactive-mode-source
+                                         :buffers buffers))))
+    (loop for buffer in buffers
+          do (enable-modes (uiop:ensure-list modes) buffer))))
 
 (define-command open-inspector ()
   "Open the inspector, a graphical tool to inspect and change the content of the buffer."
