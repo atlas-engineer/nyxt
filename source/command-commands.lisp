@@ -44,10 +44,10 @@
 (define-command execute-command ()
   "Execute a command by name."
   (unless (active-minibuffers (current-window))
-    (let ((command (prompt
-                    :prompt "Execute command"
-                    :sources (make-instance 'command-source)
-                    :hide-suggestion-count-p t)))
+    (let ((command (first (prompt
+                           :prompt "Execute command"
+                           :sources (make-instance 'command-source)
+                           :hide-suggestion-count-p t))))
       (setf (access-time command) (get-internal-real-time))
       (run-async command))))
 
