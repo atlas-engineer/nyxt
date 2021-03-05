@@ -271,11 +271,13 @@ If STEPS is negative, go forward and selection first suggestion."
                 (1- (length (suggestions last-source)))))))
 
 (defun resolve-selection (prompter)
-  (or (mapcar #'value (all-marked-suggestions prompter))
-      (value (selected-suggestion prompter))
-      ;; TODO: What if there is no result?
-      (and (not (must-match-p prompter))
-           (slot-value prompter 'input))))
+  "Return the result of the prompt buffer. If there is no result, an
+empty list (e.g. NIL) will be returned."
+  (uiop:ensure-list
+   (or (mapcar #'value (all-marked-suggestions prompter))
+       (value (selected-suggestion prompter))
+       (and (not (must-match-p prompter))
+            (slot-value prompter 'input)))))
 
 (export-always 'actions)
 (defun actions (prompter)
