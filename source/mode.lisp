@@ -127,6 +127,9 @@ It is run before the destructor.")
 (defmethod object-string ((mode root-mode))
   (symbol-name (class-name (class-of mode))))
 
+(defmethod prompter:object-properties ((mode root-mode))
+  (list :name (mode-name mode)))
+
 (export-always 'find-mode)
 (defmethod find-mode ((buffer buffer) mode-symbol)
   "Return the mode corresponding to MODE-SYMBOL in active in BUFFER.
