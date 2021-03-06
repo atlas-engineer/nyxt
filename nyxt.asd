@@ -35,6 +35,7 @@
                :trivial-package-local-nicknames
                :trivial-types
                :unix-opts
+               :cl-html-diff
                ;; Local systems:
                :nyxt/user-interface
                :nyxt/text-buffer
@@ -114,6 +115,7 @@
                (:file "os-package-manager-mode")
                (:file "visual-mode")
                (:file "watch-mode")
+               (:file "diff-mode")
                ;; Web-mode commands
                (:file "bookmarklets")
                (:file "input-edit")
