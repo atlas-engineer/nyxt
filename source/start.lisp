@@ -512,7 +512,7 @@ Finally,run the `*after-init-hook*'."
                   (listen-or-query-socket free-args)))
         (startup-timestamp (local-time:now))
         (startup-error-reporter nil))
-    (when thread
+    (when (or thread (getf *options* :no-socket))
       (format t "Nyxt version ~a~&" +version+)
       (unless (or (getf *options* :no-auto-config)
                   (not (expand-path *auto-config-file-path*)))
