@@ -13,7 +13,8 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria :nyxt)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum :nyxt)
-  (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks :nyxt))
+  (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks :nyxt)
+  (trivial-package-local-nicknames:add-package-local-nickname :file-attributes :org.shirakumo.file-attributes :nyxt))
 
 (uiop:define-package :nyxt/repl-mode
     (:use :common-lisp :nyxt)
@@ -30,7 +31,8 @@ It's recommended to use this package in the Nyxt configuration file, instead of
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria :nyxt-user)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum :nyxt-user)
-  (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks :nyxt-user))
+  (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks :nyxt-user)
+  (trivial-package-local-nicknames:add-package-local-nickname :file-attributes :org.shirakumo.file-attributes :nyxt-user))
 
 (uiop:define-package parenscript-user
     (:use :common-lisp :nyxt :parenscript))
