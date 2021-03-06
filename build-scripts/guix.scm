@@ -44,6 +44,7 @@
              (guix build-system glib-or-gtk)
              (gnu packages)
              (gnu packages base)
+             (gnu packages commencement)
              (gnu packages glib)
              (gnu packages lisp)
              (gnu packages lisp-xyz)
@@ -193,6 +194,7 @@
        ("trivial-types" ,cl-trivial-types)
        ("unix-opts" ,cl-unix-opts)
        ;; System deps
+       ("gcc" ,gcc-toolchain)           ; Needed for cl-iolib.
        ("coreutils" ,coreutils-minimal)
        ;; WebKitGTK deps
        ("cl-cffi-gtk" ,cl-cffi-gtk)
