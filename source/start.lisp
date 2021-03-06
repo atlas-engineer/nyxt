@@ -321,8 +321,10 @@ short as possible."
                                  :connect :passive
                                  :local-filename socket-path)
         ;; We don't want group members or others to flood the socket or, worse,
-        ;; execute code. 600 gives permissions only for the current user
-        (set-socket-permissions socket-path "600")
+        ;; execute code.
+        (set-permissions socket-path
+                         :group-read nil :group-write nil :group-execute nil
+                         :other-read nil :other-write nil :other-execute nil)
         ;; Since we are in a separate thread, we need to set the default package
         ;; for remote execution.
         (in-package :nyxt-user)

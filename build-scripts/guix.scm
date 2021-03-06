@@ -105,14 +105,6 @@
            (lambda _
              (setenv "NYXT_VERSION" ,version)
              #t))
-         (add-before 'build 'fix-paths
-           (lambda* (#:key inputs #:allow-other-keys)
-             (substitute* "source/global.lisp"
-               (("\\(defvar \\*chmod\\-command\\* \"chmod\")")
-                (string-append "(defvar *chmod-command* \""
-                               (assoc-ref inputs "coreutils")
-                               "/bin/chmod\")")))
-             #t))
          (add-before 'check 'configure-tests
            (lambda _
              (setenv "NYXT_TESTS_NO_NETWORK" "1")
@@ -172,6 +164,7 @@
        ("cluffer" ,cl-cluffer)
        ("dexador" ,cl-dexador)
        ("enchant" ,cl-enchant)
+       ("file-attributes" ,cl-file-attributes)
        ("fset" ,cl-fset)
        ("hu.dwim.defclass-star" ,cl-hu.dwim.defclass-star)
        ("iolib" ,cl-iolib)
@@ -195,7 +188,6 @@
        ("unix-opts" ,cl-unix-opts)
        ;; System deps
        ("gcc" ,gcc-toolchain)           ; Needed for cl-iolib.
-       ("coreutils" ,coreutils-minimal)
        ;; WebKitGTK deps
        ("cl-cffi-gtk" ,cl-cffi-gtk)
        ("cl-webkit" ,cl-webkit)

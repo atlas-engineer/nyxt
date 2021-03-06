@@ -19,6 +19,7 @@
                :moptilities
                :dexador
                :enchant
+               :file-attributes
                :iolib
                :local-time
                :log4cl
