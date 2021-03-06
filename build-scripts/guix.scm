@@ -156,6 +156,7 @@
        ("cl-containers" ,cl-containers)
        ("cl-css" ,cl-css)
        ("cl-custom-hash-table" ,cl-custom-hash-table)
+       ("cl-html-diff" ,sbcl-cl-html-diff)
        ("cl-json" ,cl-json)
        ("cl-markup" ,cl-markup)
        ("cl-ppcre" ,cl-ppcre)
