@@ -413,7 +413,12 @@ We keep this variable as a means to import the old format to the new one.")
 
 (defun histories-list (&optional (buffer (current-buffer)))
   (mapcar #'pathname-name
-          (uiop:directory-files (dirname (history-path buffer)))))
+          (remove-if
+           #'(lambda (pathname)
+               (let ((type (pathname-type pathname)))
+                 (or (not (stringp type))
+                  (not (string-equal "lisp" type)))))
+           (uiop:directory-files (dirname (history-path buffer))))))
 
 (defun history-name-suggestion-filter (minibuffer)
   (fuzzy-match (input-buffer minibuffer) (histories-list)))
