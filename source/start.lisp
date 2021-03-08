@@ -403,6 +403,16 @@ Otherwise bind socket and return the listening thread."
         (log:info "No instance running.")
         (uiop:quit))))
 
+(defun indent (s space-count)
+  "Return s with all lines but the first indented by SPACE-COUNT."
+  (let* ((lines (sera:lines s))
+         (indent (make-string space-count :initial-element #\space)))
+    (str:join (string #\newline)
+              (cons (first lines)
+                    (mapcar (lambda (s)
+                              (str:concat indent s))
+                            (rest lines))))))
+
 (export-always 'start)
 (define-function start `(&rest options &key urls
                                ,@(mapcar (alex:compose #'intern
@@ -461,7 +471,7 @@ Examples:
                  (not (expand-path *init-file-path*)))
        (load-lisp (expand-path *init-file-path*) :package (find-package :nyxt-user)))
      (mapcar (lambda (pair)
-               (format t "~a~10t~a~&" (first pair) (second pair)))
+               (format t "~a~10t~a~&" (first pair) (indent (second pair) 10)))
              (mapcar #'rest (package-data-profiles))))
 
     ((getf options :script)
