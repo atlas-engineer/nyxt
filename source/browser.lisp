@@ -200,7 +200,7 @@ editor executable."))
               (restore profile path))
             user-data)))))
 
-(defmethod get-user-data ((profile default-data-profile) (path data-path))
+(defmethod get-user-data ((profile data-profile) (path data-path))
   (%get-user-data profile path (user-data-cache *browser*)))
 
 (defmethod get-containing-window-for-buffer ((buffer buffer)
