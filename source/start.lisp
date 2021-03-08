@@ -383,7 +383,8 @@ Otherwise bind socket and return the listening thread."
                                   :remote-filename socket-path)
          (format s "~s" `(open-external-urls ',urls)))
        nil)
-      ((file-is-socket-p socket-path)
+      ((and (uiop:file-exists-p socket-path)
+            (not (file-is-socket-p socket-path)))
        (log:error "Could not bind socket ~a, non-socket file exists." socket-path)
        nil)
       (t
