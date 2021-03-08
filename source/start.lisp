@@ -349,14 +349,14 @@ short as possible."
                               :remote-filename (expand-path *socket-path*))
      (iolib:socket-connected-p s))))
 
-(defun file-is-socket-p (socket-path)
-  "Check if a file is a socket."
-  (and (uiop:file-exists-p socket-path)
+(defun file-is-socket-p (path)
+  "Return non-nil if a PATH is a socket."
+  (and (uiop:file-exists-p path)
        #+darwin
-       (equal "=" (uiop:run-program (list "stat" "-f" "%T" socket-path)
+       (equal "=" (uiop:run-program (list "stat" "-f" "%T" path)
                                     :output '(:string :stripped t)))
        #+(and (not darwin) (not sbcl))
-       (not (eq :socket (osicat:file-kind socket-path)))
+       (eq :socket (osicat:file-kind path))
        #+(and (not darwin) sbcl)
        (flet ((socket-p (path)
                 (let ((socket-mask 49152)
@@ -364,7 +364,7 @@ short as possible."
                   (= socket-mask
                      (logand mode-mask
                              (sb-posix:stat-mode (sb-posix:stat path)))))))
-         (socket-p socket-path))))
+         (socket-p path))))
 
 (defun listen-or-query-socket (urls)
   "If another Nyxt is listening on the socket, tell it to open URLS.
