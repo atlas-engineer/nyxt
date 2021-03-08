@@ -194,7 +194,9 @@ customizable object that helps define general rules for data storage.  Both
 data-paths and data-profiles compose, so it's possible to define general rules
 for all data-paths (even for those not known in advance) while it's also
 possible to specialize some data-paths given a data-profile.")
-    (:p "The data-profile can be set from command line and from the configuration file.")
+    (:p "The data-profile can be set from command line and from the configuration file."
+        "You can list all known data profiles (including the user-defined
+        profiles) with the " (:code "--list-data-profiles") " command-line option.")
     (:p "The data-paths can be passed a hint from the "
         (:code "--with-path") " command line option, but each data-path and
 data-profile rules are free to ignore it. The " (:code "expand-default-path") "
@@ -203,14 +205,17 @@ See its documentation for more details.")
     (:p "When the data path ends with the " (:code ".gpg") " extension, your
 GnuPG key is used to decrypt and encrypt the file transparently.  Refer to the
 GnuPG documentation for how to set it up.")
+    (:p "Note that the socket and the initialization data-paths cannot be set in
+your configuration (the socket is used before the initialization file is loaded)."
+        "Instead you can specify these paths from their respective command-line option."
+        "You can instantiate a unique, separate Nyxt instance when you provide a new socket path."
+        "This is particularly useful in combination with data profiles, e.g. to
+        develop Nyxt or extensions.")
     (:p "Example to create a development data-profile that stores all data in "
         (:code "/tmp/nyxt") " and stores bookmark in an encrypted file:")
     (:pre (:code "
 \(define-class dev-data-profile (data-profile)
    ((name :initform \"dev\"))
-   (:export-class-name-p t)
-   (:export-accessor-names-p t)
-   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
    (:documentation \"Development profile.\"))
 
 \(defmethod nyxt:expand-data-path ((profile dev-data-profile) (path data-path))
@@ -219,8 +224,8 @@ GnuPG documentation for how to set it up.")
                                       :basename (basename path)
                                       :dirname \"/tmp/nyxt/\")))
 
-\(defmethod nyxt:expand-data-path ((profile dev-data-profile) (path session-data-path))
-  \"Persist session to default location.\"
+\(defmethod nyxt:expand-data-path ((profile dev-data-profile) (path history-data-path))
+  \"Persist history to default location.\"
   (expand-data-path *global-data-profile* path))
 
 ;; Make new profile the default:
@@ -229,8 +234,8 @@ GnuPG documentation for how to set it up.")
                                     'dev-data-profile)))
    (bookmarks-path (make-instance 'bookmarks-data-path
                                   :basename \"~/personal/bookmarks/bookmarks.lisp.gpg\"))))"))
-    (:p "Then you can start an instance of Nyxt using this profile
-with " (:code "nyxt --data-profile dev") ".")
+    (:p "Then you can start a separate instance of Nyxt using this profile
+with " (:code "nyxt --data-profile dev --socket /tmp/nyxt.socket") ".")
 
     (:h3 "Password management")
     (:p "Nyxt provides a uniform interface to some password managers including "
