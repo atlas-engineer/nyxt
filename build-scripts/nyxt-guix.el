@@ -87,7 +87,8 @@ environment already exists, after sourcing \"etc/profile\"."
 
 (cl-defun nyxt-make-guix-sbcl-for-nyxt (nyxt-checkout
                                         &key image-path container no-grafts preserve force
-                                        guix-profile-root)
+                                        (ad-hoc '("gnupg"))
+                                        root)
   "Run an SBCL executable image with all Nyxt dependencies pre-loaded.
 
 The image is generated as needed and cached as IMAGE-PATH.
@@ -143,9 +144,9 @@ implementation.  Example:
           (error "Guix environment failed, see %s" output)
           (switch-to-buffer-other-window output))))
     (list (nyxt-guix-lazy-environment
-           guix-profile-root
+           root
            :preserve preserve
-           :guix-env-args (list "-l" (shell-quote-argument guix-def) "--ad-hoc" "gnupg")
+           :guix-env-args `("-l" ,(shell-quote-argument guix-def) ,@(when ad-hoc `("--ad-hoc" ,ad-hoc)))
            :run-args (list image-path)))))
 
 (provide 'nyxt-guix)
