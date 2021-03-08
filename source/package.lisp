@@ -24,6 +24,7 @@
 (uiop:define-package nyxt-user
   (:use :common-lisp :trivia :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
+  (:import-from #:class-star #:define-class)
   (:documentation "
 Package left for the user to fiddgle with.
 It's recommended to use this package in the Nyxt configuration file, instead of
