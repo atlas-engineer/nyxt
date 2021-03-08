@@ -12,6 +12,10 @@
   "Path string of the Unix socket used to communicate between different
 instances of Nyxt.
 
+If this resolves nil with `expand-path', Nyxt starts in multi-instance mode.
+This means that re-running Nyxt will start a new instance of Nyxt instance of
+prompting the first instance.
+
 This path cannot be set from the init file because we want to be able to set and
 use the socket without parsing any init file.
 
@@ -512,7 +516,9 @@ Finally,run the `*after-init-hook*'."
                   (listen-or-query-socket free-args)))
         (startup-timestamp (local-time:now))
         (startup-error-reporter nil))
-    (when (or thread (getf *options* :no-socket))
+    (when (or thread
+              (getf *options* :no-socket)
+              (null (expand-path *socket-path*)))
       (format t "Nyxt version ~a~&" +version+)
       (unless (or (getf *options* :no-auto-config)
                   (not (expand-path *auto-config-file-path*)))
