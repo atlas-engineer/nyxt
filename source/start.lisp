@@ -433,13 +433,15 @@ Examples:
   ;; config data-profile.
   ;; We also want to expand xdg-data-home dynamically.
   (setf *socket-path*
-        (if (getf *options* :no-socket)
-            nil
-            (make-instance 'data-path
-                           :basename (or (getf *options* :socket)
-                                         (uiop:getenv "NYXT_SOCKET")
-                                         (basename *socket-path*))
-                           :dirname (uiop:xdg-data-home +data-root+))))
+        (cond
+          ((getf *options* :no-socket)
+           nil)
+          (*socket-path*
+           (make-instance 'data-path
+                          :basename (or (getf *options* :socket)
+                                        (uiop:getenv "NYXT_SOCKET")
+                                        (basename *socket-path*))
+                          :dirname (uiop:xdg-data-home +data-root+)))))
 
   (if (getf *options* :verbose)
       (progn
