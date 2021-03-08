@@ -207,7 +207,6 @@ Don't run this from a REPL, prefer `start' instead."
                      (opts:arg-parser-failed #'handle-malformed-cli-arg))
         (opts:get-opts))
     (setf *keep-alive* nil)             ; Not a REPL.
-    (in-package :nyxt-user)
     (apply #'start (append options (list :urls free-args)))))
 
 (declaim (ftype (function (trivial-types:pathname-designator &key (:package (or null package))))
@@ -334,9 +333,6 @@ short as possible."
         (set-permissions socket-path
                          :group-read nil :group-write nil :group-execute nil
                          :other-read nil :other-write nil :other-execute nil)
-        ;; Since we are in a separate thread, we need to set the default package
-        ;; for remote execution.
-        (in-package :nyxt-user)
         (loop as connection = (iolib:accept-connection s)
               while connection
               do (progn
@@ -557,6 +553,13 @@ Finally,run the `*after-init-hook*'."
                                      :startup-error-reporter-function startup-error-reporter
                                      :startup-timestamp startup-timestamp))
       (setf (socket-thread *browser*) thread)
+      ;; Defaulting to :nyxt-user is convenient when evaluating code (such as
+      ;; remote execution or the integrated REPL).
+      ;; This must be done in a separate thread because the calling thread may
+      ;; have set `*package*' as an initial-binding (see `bt:make-thread'), as
+      ;; is the case with the SLY mrepl thread.
+      (bt:make-thread (lambda ()
+                        (in-package :nyxt-user)))
       (ffi-initialize *browser* free-args startup-timestamp))))
 
 (define-command nyxt-init-time ()
