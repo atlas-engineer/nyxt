@@ -439,9 +439,10 @@ Useful for session snapshots, as `restore-history-bu-name' will restore opened b
       (store (data-profile (current-buffer)) path))))
 
 (define-command restore-history-by-name ()
-  "Delete all the buffers of the current session/history and restore the history chosen by user.
-The new history rewrites the current one, so make a backup of the history file
-if you want it preserved!"
+  "Delete all the buffers of the current session/history and import the history chosen by user.
+The imported history file is untouched while the current one is overwritten.
+If you want to save the current history file beforehand, call
+`store-history-by-name' to save it under a new name."
   ;; TODO: backup current history?
   (sera:and-let* ((name (prompt-minibuffer
                          :input-prompt "The name of the history to restore"
