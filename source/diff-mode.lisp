@@ -2,20 +2,20 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/diff-mode
-    (:use :common-lisp :nyxt)
+  (:use :common-lisp :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
+  (:export :diff)
   (:documentation "Mode for displaying web-buffer diffs."))
-
 (in-package :nyxt/diff-mode)
 
 (define-mode diff-mode ()
   "Diff mode is used to view the diffs between two buffers."
-  (;; (buffer (make-internal-buffer :title "*diff*"
-   ;;                               :modes '(base-mode))
-   ;;         :documentation "TODO")
-   (old-html :documentation "TODO")
-   (new-html :documentation "TODO")
-   (diff-html :documentation "TODO")
+  ((buffer (error "Please supply a buffer.")
+           :documentation "The buffer where the diff will be displayed.")
+   (old-html :documentation "String html representation.")
+   (new-html :documentation "String html representation.")
+   (diff-html :documentation "String html representation of the computed diff
+   between old-html and new-html slots.")
    (diff-style (cl-css:css
                 '((".nyxt-diff-insert"
                    :text-decoration "none"
@@ -29,37 +29,63 @@
                   ("del.nyxt-diff-replace"
                    :text-decoration "none"
                    :background-color "#efcbcf")))
-               :documentation "Colours based on the modus-operandi theme by
-Protesilaos Stavrou, which follows the highest standard on accessibility.")
+                 :documentation "Diff colours for its visual representation.
+They're based on the modus-operandi theme by Protesilaos Stavrou, which follows
+the highest standard on accessibility.")
    (keymap-scheme (define-scheme "diff"
                     scheme:cua
                     (list "q" 'delete-current-buffer))
                   :type keymap:scheme)
-   (destructor (lambda (mode) (nyxt::buffer-delete (buffer mode))))
-   (constructor (lambda (mode)
-                  ;; TODO device a smart way to let users choose from buffers
-                  ;; and/or files
-                  (setf (old-html mode)
-                        (ffi-buffer-get-document
-                         (prompt-minibuffer
-                          :input-prompt "Old buffer"
-                          :suggestion-function (buffer-suggestion-filter))))
-                  (setf (new-html mode)
-                        (ffi-buffer-get-document
-                         (prompt-minibuffer
-                          :input-prompt "New buffer"
-                          :suggestion-function (buffer-suggestion-filter
-                                                :current-is-last-p t))))
-                  (setf (diff-html mode)
-                        (html-diff:html-diff (old-html mode)
-                                             (new-html mode)
+   (destructor (lambda (instance) (nyxt::buffer-delete (buffer instance))))
+   (constructor (lambda (instance)
+                  (setf (diff-html instance)
+                        (html-diff:html-diff (old-html instance)
+                                             (new-html instance)
                                              :insert-class "nyxt-diff-insert"
                                              :delete-class "nyxt-diff-delete"
                                              :replace-class "nyxt-diff-replace"))
                   (nyxt::html-set
-                   (str:concat (markup:markup (:style (diff-style mode)))
-                               (diff-html mode))
-                   (buffer mode))
-                  ;; dirty fix to set the title
-                  (setf (title (buffer mode)) "diff")
-                  (set-current-buffer (buffer mode))))))
+                   (str:concat (markup:markup (:style (diff-style instance)))
+                               (diff-html instance))
+                   (buffer instance))
+                  ;; setting the title the following way doesn't work
+                  ;; (setf (title (buffer instance)) "*diff*")
+                  ;; (set-window-title)
+                  ;; a temporary fix below
+                  (ffi-buffer-evaluate-javascript
+                   (buffer instance)
+                   "document.title = '*diff*'")
+                  ;; (ps:ps (ps:chain document title))
+                  ))))
+
+(defun prompt-old-html ()
+  "Extract the string html representation of the old buffer.
+The current buffer appears at the top of the minibuffer prompt."
+  (ffi-buffer-get-document
+   (prompt-minibuffer
+    :input-prompt "Old buffer"
+    :suggestion-function (buffer-suggestion-filter))))
+
+(defun prompt-new-html ()
+  "Extract the string html representation of the new buffer.
+The last visited buffer appears at the top of the minibuffer prompt."
+  (ffi-buffer-get-document
+   (prompt-minibuffer
+    :input-prompt "New buffer"
+    :suggestion-function (buffer-suggestion-filter
+                          :current-is-last-p t))))
+
+;; how to export this command so that it's available in the minibuffer?
+(define-command diff ()
+  "Create a buffer showing a diff between 2 html documents."
+  ;; users should be able to choose from buffers and/or files.  to be expanded
+  ;; when file-manager-mode is fixed.
+  (set-current-buffer
+   (diff-mode :old-html (prompt-old-html)
+              :new-html (prompt-new-html)
+              :buffer (make-internal-buffer
+                       ;; it's sensible to set the title here but it will be
+                       ;; overridden anyway by `html-set`
+                       :title "*diff*"
+                       ;; only cua-mode keybindings work, why?
+                       :modes '(base-mode)))))
