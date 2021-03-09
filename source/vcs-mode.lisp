@@ -184,7 +184,8 @@ The default username can be set in `*vcs-username*' or `*vcs-username-alist*'."
        (nyxt/vcs::clone project-name root-name target-dir clone-uri))
       (t (let ((target-dir (prompt-minibuffer
                             :input-prompt "Target directory"
-                            :suggestion-function #'nyxt/vcs::projects-roots-suggestion-filter)))
+                            :suggestion-function #'nyxt/vcs::projects-roots-suggestion-filter
+                            :must-match-p nil)))
            (nyxt/vcs::clone project-name root-name target-dir clone-uri))))))
 
 (define-command git-clone ()
