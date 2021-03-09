@@ -113,14 +113,13 @@ Example:
        (defparameter ,before-hook (hooks:make-hook-void))
        (export-always ',after-hook)
        (defparameter ,after-hook (hooks:make-hook-void))
-       (unless (find-if (lambda (c) (and (eq (name c) ',name)
-                                         (eq (symbol-package (name c)) (symbol-package ',name))))
-                        *command-list*)
-         (push (make-instance 'command
-                              :name ',name
-                              :fn ',name
-                              :sexp '(define-command (,@arglist) ,@body))
-               *command-list*))
+       ;; Overwrite previous command:
+       (setf *command-list* (delete ',name *command-list* :key #'name))
+       (push (make-instance 'command
+                            :name ',name
+                            :fn (symbol-function ',name)
+                            :sexp '(define-command (,@arglist) ,@body))
+             *command-list*)
        (export-always ',name (symbol-package ',name))
        ;; We define the function at compile-time so that macros from the same
        ;; file can find the symbol function.
