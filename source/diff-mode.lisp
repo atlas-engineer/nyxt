@@ -49,9 +49,7 @@ the highest standard on accessibility.")
                   ;; a temporary fix below
                   (ffi-buffer-evaluate-javascript
                    (buffer instance)
-                   "document.title = '*diff*'")
-                  ;; (ps:ps (ps:chain document title))
-                  ))))
+                   (ps:ps (setf (ps:chain document title) "*diff*")))))))
 
 (defun prompt-old-html ()
   "Extract the string html representation of the old buffer.
@@ -74,12 +72,12 @@ The last visited buffer appears at the top of the minibuffer prompt."
   "Create a buffer showing a diff between 2 html documents."
   ;; users should be able to choose from buffers and/or files.  to be expanded
   ;; when file-manager-mode is fixed.
-  (set-current-buffer
+  (set-current-buffer               ; change buffer here, not at the constructor
    (diff-mode :old-html (prompt-old-html)
               :new-html (prompt-new-html)
               :buffer (make-internal-buffer
                        ;; it's sensible to set the title here but it will be
-                       ;; overridden anyway by `html-set`
+                       ;; overridden anyway by html-set
                        :title "*diff*"
                        ;; only cua-mode keybindings work, why?
                        :modes '(base-mode)))))
