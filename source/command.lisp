@@ -51,6 +51,32 @@ We need a `command' class for multiple reasons:
     (documentation-style-warning)
   ((subject-type :initform 'command)))
 
+(export-always 'make-command)
+(defmacro make-command (name arglist &body body)
+  "Return a new local `command' named NAME.
+
+With BODY, the command binds ARGLIST and executes the body.
+
+Without BODY, NAME must be a function symbol and the command wraps over it
+against ARGLIST, if specified. "
+  (alex:with-gensyms (fn sexp)
+    `(let ((,fn nil)
+           (,sexp nil))
+       (cond
+         ((and ',arglist ',body)
+          (setf ,fn (lambda (,@arglist) ,@body)
+                ,sexp '(lambda (,@arglist) ,@body)))
+         ((and ',arglist (typep ',name 'function-symbol))
+          (setf ,fn (lambda (,@arglist) (funcall ',name ,@arglist))
+                ,sexp '(lambda (,@arglist) (funcall ,name ,@arglist))))
+         ((and (null ',arglist) (typep ',name 'function-symbol))
+          (setf ,fn (symbol-function ',name)))
+         (t (error "Either NAME must be a function symbol, or ARGLIST and BODY must be set properly.")))
+       (make-instance 'command
+                      :name ',name
+                      :fn ,fn
+                      :sexp ,sexp))))
+
 (export-always 'define-command)
 (defmacro define-command (name (&rest arglist) &body body)
   "Define new command NAME.
