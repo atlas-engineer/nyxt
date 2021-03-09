@@ -59,12 +59,12 @@ supply the URL you would like to navigate to. The minibuffer can provide
 suggestions.  The list of suggestions will automatically narrow down to those
 matching your input as you type.")
    (:ul
-    (:li (command-markup 'nyxt/minibuffer-mode:return-selection
-                         :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode)))
+    (:li ;; (command-markup 'nyxt/minibuffer-mode:return-selection                               ;;
+         ;;                 :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode))) ;;
          ": Validate the selected suggestion(s) or the current input if there is
 no suggestion.")
-    (:li (command-markup 'nyxt/minibuffer-mode:return-input
-                         :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode)))
+    (:li ;; (command-markup 'nyxt/minibuffer-mode:return-input
+         ;;                 :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode)))
          ": Validate the current input, ignoring any suggestion."))
    (:p " Some commands support multiple selections, for
 instance " (:code "delete-buffer") " can delete all selected buffers at once.
@@ -73,17 +73,17 @@ not altered even if the marked elements don't show.")
    (:p "When at least one suggestion is marked, only the marked suggestions are processed
 upon return.  The suggestion under the cursor is not processed if not marked.")
    (:ul
-    (:li (command-markup 'nyxt/minibuffer-mode:minibuffer-toggle-mark
-                         :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode)))
+    (:li ;; (command-markup 'nyxt/minibuffer-mode:minibuffer-toggle-mark                         ;;
+         ;;                 :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode))) ;;
          ": Select or deselect the current suggestion.")
-    (:li (command-markup 'nyxt/minibuffer-mode:minibuffer-mark-all
-                         :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode)))
+    (:li ;; (command-markup 'nyxt/minibuffer-mode:minibuffer-mark-all
+         ;;                 :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode)))
          ": Select all currently-displayed suggestions.")
-    (:li (command-markup 'nyxt/minibuffer-mode:minibuffer-unmark-all
-                         :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode)))
+    (:li ;; (command-markup 'nyxt/minibuffer-mode:minibuffer-unmark-all
+         ;;                 :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode)))
          ": Deselect all currently-displayed suggestions.")
-    (:li (command-markup 'nyxt/minibuffer-mode:minibuffer-toggle-mark-all
-                         :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode)))
+    (:li ;; (command-markup 'nyxt/minibuffer-mode:minibuffer-toggle-mark-all
+         ;;                 :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode)))
          ": Toggle the mark of all currently-displayed suggestions."))
    (:h3 "Message Area")
    (:p "The message area represents a space (typically at the bottom of a

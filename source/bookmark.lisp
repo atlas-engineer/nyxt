@@ -166,7 +166,8 @@ This can be useful to let the user select no tag when returning directly."
     (define-scheme "set-tag"
       scheme:cua
       (list "tab" 'insert-tag
-            "return" 'nyxt/minibuffer-mode:return-input)))))
+            ;; TODO: RETURN
+            )))))
 
 (define-command list-bookmarks ()
   "List all bookmarks in a new buffer."
@@ -289,7 +290,8 @@ If character before cursor is '+' or '-' complete against tag."
             (text-buffer::replace-word-at-cursor
              (input-cursor minibuffer)
              (str:concat operand? (tag-name tag)))))
-        (nyxt/minibuffer-mode:insert-suggestion minibuffer))))
+        ;; (nyxt/minibuffer-mode:insert-suggestion minibuffer)
+        )))
 
 (define-mode minibuffer-tag-mode (nyxt/minibuffer-mode:minibuffer-mode)
   "Minibuffer mode for setting the bookmark and their tags."

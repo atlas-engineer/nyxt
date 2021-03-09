@@ -193,7 +193,8 @@
 
 (define-command self-insert-repl ()
   "Insert pressed key in the current REPL."
-  (nyxt/minibuffer-mode:self-insert (current-repl)))
+  ;; TODO
+  )
 
 (in-package :nyxt)
 
