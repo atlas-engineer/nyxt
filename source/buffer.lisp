@@ -490,7 +490,7 @@ BUFFER's modes."
   (let ((default-modes
           (second (getf (mopu:slot-properties (find-class 'buffer) 'default-modes)
                         :initform))))
-    (mapcar (alex:compose #'sym #'mode-command) default-modes)))
+    (mapcar (alex:compose #'name #'mode-command) default-modes)))
 
 (hooks:define-hook-type buffer (function (buffer)))
 
@@ -1001,7 +1001,7 @@ MODES should be a list symbols, each possibly returned by `mode-name'."
   (dolist (mode (uiop:ensure-list modes))
     (let ((command (mode-command mode)))
       (if command
-          (funcall-safely (sym command) :buffer buffer :activate nil)
+          (funcall-safely (name command) :buffer buffer :activate nil) ; TODO: Make commands funcallable.
           (log:warn "Mode command ~a not found." mode)))))
 
 (export-always 'enable-modes)
@@ -1012,7 +1012,7 @@ ARGS are passed to the mode command."
   (dolist (mode (uiop:ensure-list modes))
     (let ((command (mode-command mode)))
       (if command
-          (apply #'funcall-safely (sym command) :buffer buffer :activate t args)
+          (apply #'funcall-safely (name command) :buffer buffer :activate t args) ; TODO: Make commands funcallable.
           (log:warn "Mode command ~a not found." mode)))))
 
 (define-class active-mode-source (prompter:source)
