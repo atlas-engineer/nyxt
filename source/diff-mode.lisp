@@ -1,12 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/diff-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:export :diff)
-  (:documentation "Mode for displaying web-buffer diffs."))
-(in-package :nyxt/diff-mode)
+(in-package :nyxt)
 
 (define-mode diff-mode ()
   "Diff mode is used to view the diffs between two buffers."
@@ -75,7 +70,6 @@ The last visited buffer appears at the top of the minibuffer prompt."
     :suggestion-function (buffer-suggestion-filter
                           :current-is-last-p t))))
 
-;; how to export this command so that it's available in the minibuffer?
 (define-command diff ()
   "Create a buffer showing a diff between 2 html documents."
   ;; users should be able to choose from buffers and/or files.  to be expanded
