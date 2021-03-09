@@ -69,10 +69,10 @@
 (defun describe-command* (command)
   "Display NAME command documentation in a new focused buffer."
   (with-current-html-buffer (buffer
-                             (str:concat "*Help-" (symbol-name (sym command)) "*")
+                             (str:concat "*Help-" (symbol-name (name command)) "*")
                              'nyxt/help-mode:help-mode)
     (let* ((key-keymap-pairs (nth-value 1 (keymap:binding-keys
-                                           (sym command)
+                                           (name command)
                                            (all-keymaps))))
            (key-keymapname-pairs (mapcar (lambda (pair)
                                            (list (first pair)
@@ -83,11 +83,11 @@
                               :file)))
       (markup:markup
        (:style (style buffer))
-       (:h1 (symbol-name (sym command))
+       (:h1 (symbol-name (name command))
             (unless (eq (find-package :nyxt)
-                        (symbol-package (sym command)))
+                        (symbol-package (name command)))
               (format nil " (~a)"
-                      (package-name (symbol-package (sym command))))))
+                      (package-name (symbol-package (name command))))))
        (:p (:pre   ; See describe-slot* for why we use :pre.
             ;; TODO: This only displays the first method,
             ;; i.e. the first command of one of the modes.
@@ -115,7 +115,7 @@
             (loop for command in *command-list*
                   collect (markup:markup
                            (:details
-                            (:summary (format nil "~(~a~)" (symbol-name (sym command))))
+                            (:summary (format nil "~(~a~)" (symbol-name (name command))))
                             (:p (:pre (documentation (command-function command) t)))
                             (:pre :class "nyxt-source" (:code (let ((*print-case* :downcase))
                                                                 (write-to-string (sexp command)))))))))))

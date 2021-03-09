@@ -137,8 +137,8 @@ Return nil if mode is not found.  MODE-SYMBOL does not have to be namespaced, it
 can be 'web-mode as well as 'nyxt/web-mode:web-mode."
   (let ((mode-full-symbol (if (find-class mode-symbol nil)
                               mode-symbol
-                              (match (mode-command mode-symbol)
-                                ((guard c (not (null c))) (sym c))))))
+                              (alex:when-let ((c (mode-command mode-symbol)))
+                                (name c)))))
     (when mode-full-symbol
       (find mode-full-symbol
             (modes buffer)
@@ -150,8 +150,8 @@ can be 'web-mode as well as 'nyxt/web-mode:web-mode."
 It may be MODE-SYMBOL itself."
   (let ((mode-full-symbol (if (find-class mode-symbol nil)
                               mode-symbol
-                              (match (mode-command mode-symbol)
-                                ((guard c (not (null c))) (sym c))))))
+                              (alex:when-let ((c (mode-command mode-symbol)))
+                                (name c)))))
     (when mode-full-symbol
       (find-if (lambda (m)
                  (closer-mop:subclassp (class-of m)
@@ -173,7 +173,7 @@ It may be MODE-SYMBOL itself."
   (delete-if (complement (lambda (m)
                            (str:suffixp (list (symbol-name m) "-MODE")
                                         "-MODE")))
-             (mapcar #'sym *command-list*)))
+             (mapcar #'name *command-list*)))
 
 (defun original-class (class-sym)
   "When CLASS-SYM is a user class, return its original class."
@@ -190,8 +190,8 @@ defined in any package and is unique.
 If MODE-SYMBOL is a mode that inherits from another without defining its own
 toggle command, return the toggle command of the parent."
   (or (find-if (lambda (c)
-                 (eq (find-symbol (string mode-symbol) (symbol-package (sym c)))
-                     (sym c)))
+                 (eq (find-symbol (string mode-symbol) (symbol-package (name c)))
+                     (name c)))
                *command-list*)
       (match (find-class mode-symbol nil)
         (nil nil)
@@ -202,7 +202,7 @@ toggle command, return the toggle command of the parent."
   (match (mode-command mode-symbol)
     ;; ":activate t" should not be necessary here since (modes buffer) should be
     ;; empty.
-    ((guard c c) (funcall (sym c) :buffer buffer :activate t))
+    ((guard c c) (funcall (name c) :buffer buffer :activate t))
     (_ (log:warn "Mode command ~a not found." mode-symbol))))
 
 (export-always 'find-buffer)
