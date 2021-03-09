@@ -10,7 +10,10 @@
   ((sym nil
         :type (or symbol null))
    (sexp nil
-         :type t)
+         :type t
+         :documentation "S-expression of the definition of top-level commands or
+commands wrapping over lambdas.
+This is nil for local commands that wrap over named functions.")
    (last-access (local-time:now)
                 :type local-time:timestamp
                 :documentation "Last time this command was called from prompt buffer.
