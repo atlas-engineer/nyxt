@@ -12,6 +12,9 @@
          :type symbol
          :documentation "Name of the command.
 This is useful to build commands out of anonymous functions.")
+   (fn (error "Function required.")
+     :type function
+     :documentation "Function wrapped by the command.")
    (sexp nil
          :type t
          :documentation "S-expression of the definition of top-level commands or
@@ -85,6 +88,7 @@ Example:
                         *command-list*)
          (push (make-instance 'command
                               :name ',name
+                              :fn ',name
                               :sexp '(define-command (,@arglist) ,@body))
                *command-list*))
        (export-always ',name (symbol-package ',name))
