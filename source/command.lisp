@@ -37,6 +37,10 @@ We need a `command' class for multiple reasons:
 - Last access: This is useful to sort command by the time they were last
   called.  The only way to do this is to persist the command instances."))
 
+(defmethod print-object ((command command) stream)
+  (print-unreadable-object (command stream :type t :identity t)
+    (format stream "~a" (name command))))
+
 (define-condition documentation-style-warning (style-warning)
   ((name :initarg :name :reader name)
    (subject-type :initarg :subject-type :reader subject-type))
