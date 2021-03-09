@@ -298,16 +298,11 @@ extra fiddling."
 (defmethod object-string ((command command))
   (str:downcase (name command)))
 
-(defmethod command-function ((command command)) ; TODO: Remove when commands are funcallable?
-  "Return the function associated to COMMAND.
-This function can be `funcall'ed."
-  (symbol-function (name command)))
-
 (declaim (ftype (function (function) (or null command)) function-command))
 (defun function-command (function)
   "Return the command associated to FUNCTION, if any."
   (find-if (lambda (cmd)
-             (eq function (command-function cmd)))
+             (eq function (fn cmd)))
            (list-commands)))
 
 
@@ -322,7 +317,7 @@ This is blocking, see `run-async' for an asynchronous way to run commands."
                ;; but before command termination, `current-buffer' will
                ;; return the buffer from which the command was invoked.
                (with-current-buffer (current-buffer)
-                 (apply #'funcall-safely (command-function command) args))))
+                 (apply #'funcall-safely command args))))
     (calispel:? channel)))
 
 (defmethod run-async ((command command) &rest args)
@@ -331,7 +326,7 @@ See `run' for a way to run commands in a synchronous fashion and return the
 result."
   (pexec ()
     (with-current-buffer (current-buffer) ; See `run' for why we bind current buffer.
-      (apply #'funcall-safely (command-function command) args))))
+      (apply #'funcall-safely command args))))
 
 (define-command noop ()                 ; TODO: Replace with ESCAPE special command that allows dispatched to cancel current key stack.
   "A command that does nothing.
