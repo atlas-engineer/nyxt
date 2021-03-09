@@ -6,13 +6,6 @@
 (defvar *command-list* '()
   "The list of known commands, for internal use only.")
 
-;; We need a `command' class for multiple reasons:
-;; - Identify commands uniquely (although being a member of `*command-list*' is enough).
-;;
-;; - Customize prompt buffer display value with properties.
-;;
-;; - Access-time: This is useful to sort command by the time they were last
-;;   called.  The only way to do this is to persist the command instances.
 (define-class command ()
   ((sym nil
         :type (or symbol null))
@@ -24,7 +17,19 @@
                 :type local-time:timestamp
                 :documentation "Last time this command was called from prompt buffer.
 This can be used to order the commands."))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:documentation "Commands are interactive functions.
+(As in Emacs.)
+
+We need a `command' class for multiple reasons:
+- Identify commands uniquely.
+
+- Customize prompt buffer display value with properties.
+
+- Last access: This is useful to sort command by the time they were last
+  called.  The only way to do this is to persist the command instances."))
 
 (define-condition documentation-style-warning (style-warning)
   ((name :initarg :name :reader name)
