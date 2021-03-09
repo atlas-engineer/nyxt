@@ -24,10 +24,13 @@ This is nil for local commands that wrap over named functions.")
                 :type local-time:timestamp
                 :documentation "Last time this command was called from prompt buffer.
 This can be used to order the commands."))
+  (:metaclass closer-mop:funcallable-standard-class)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:export-class-name-p t)
   (:documentation "Commands are interactive functions.
 (As in Emacs.)
+
+Commands are funcallable.
 
 We need a `command' class for multiple reasons:
 - Identify commands uniquely.
@@ -36,6 +39,9 @@ We need a `command' class for multiple reasons:
 
 - Last access: This is useful to sort command by the time they were last
   called.  The only way to do this is to persist the command instances."))
+
+(defmethod initialize-instance :after ((command command) &key)
+  (closer-mop:set-funcallable-instance-function command (fn command)))
 
 (defmethod print-object ((command command) stream)
   (print-unreadable-object (command stream :type t :identity t)
