@@ -51,7 +51,8 @@
    (prompter:persistent-action #'scroll-page-to-heading)
    (prompter:constructor (lambda (source)
                            (get-headings :buffer (buffer source))))
-   (prompter:actions '(nyxt/actions::scroll-to-heading))))
+   (prompter:actions (list (make-command scroll-to-heading* (headings)
+                             (scroll-page-to-heading (first headings)))))))
 
 (define-command jump-to-heading (&key (buffer (current-buffer)))
   "Jump to a particular heading, of type h1, h2, h3, h4, h5, or h6."
@@ -76,5 +77,3 @@ of buffers."
                              :name (format nil "Headings: ~a" (title buffer))
                              :buffer buffer)))))
 
-(defun nyxt/actions::scroll-to-heading (headings)
-  (nyxt/web-mode::scroll-page-to-heading (first headings)))
