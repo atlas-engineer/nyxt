@@ -119,13 +119,6 @@ Example:
        (defparameter ,before-hook (hooks:make-hook-void))
        (export-always ',after-hook)
        (defparameter ,after-hook (hooks:make-hook-void))
-       ;; Overwrite previous command:
-       (setf *command-list* (delete ',name *command-list* :key #'name))
-       (push (make-instance 'command
-                            :name ',name
-                            :fn (symbol-function ',name)
-                            :sexp '(define-command (,@arglist) ,@body))
-             *command-list*)
        (export-always ',name (symbol-package ',name))
        ;; We define the function at compile-time so that macros from the same
        ;; file can find the symbol function.
@@ -146,7 +139,14 @@ Example:
                        ,@body)
                    (hooks:run-hook ,after-hook)))
              (nyxt-condition (c)
-               (format t "~s" c))))))))
+               (format t "~s" c)))))
+       ;; Overwrite previous command:
+       (setf *command-list* (delete ',name *command-list* :key #'name))
+       (push (make-instance 'command
+                            :name ',name
+                            :fn (symbol-function ',name)
+                            :sexp '(define-command (,@arglist) ,@body))
+             *command-list*))))
 
 ;; TODO: Update define-deprecated-command
 (defmacro define-deprecated-command (name (&rest arglist) &body body)
