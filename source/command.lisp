@@ -9,8 +9,6 @@
 (define-class command ()
   ((sym nil
         :type (or symbol null))
-   (pkg nil
-        :type (or package null))
    (sexp nil
          :type t)
    (last-access (local-time:now)
@@ -41,7 +39,7 @@ We need a `command' class for multiple reasons:
              (subject-type condition)
              (name condition)))))
 
-(define-condition command-documentation-style-warning
+(define-condition command-documentation-style-warning  ; TODO: Remove and force docstring instead.
     (documentation-style-warning)
   ((subject-type :initform 'command)))
 
@@ -78,11 +76,10 @@ Example:
        (export-always ',after-hook)
        (defparameter ,after-hook (hooks:make-hook-void))
        (unless (find-if (lambda (c) (and (eq (sym c) ',name)
-                                         (eq (pkg c) (symbol-package ',name))))
+                                         (eq (symbol-package (sym c)) (symbol-package ',name))))
                         *command-list*)
          (push (make-instance 'command
                               :sym ',name
-                              :pkg (symbol-package ',name)
                               :sexp '(define-command (,@arglist) ,@body))
                *command-list*))
        (export-always ',name (symbol-package ',name))
@@ -243,13 +240,13 @@ extra fiddling."
                                    (not (eq (find-package 'nyxt-user)
                                             (symbol-package (sym c))))))
                           (notany (lambda (m)
-                                    (eq (pkg c)
+                                    (eq (symbol-package (sym c))
                                         (match m
                                           ;; root-mode does not have a mode-command.
                                           ('root-mode nil)
                                           (_ (match (mode-command m)
                                                (nil nil)
-                                               (mc (pkg mc)))))))
+                                               (mc (symbol-package (sym mc))))))))
                                   mode-symbols)))
                    *command-list*)
         *command-list*)))
@@ -262,7 +259,7 @@ extra fiddling."
 This function can be `funcall'ed."
   (symbol-function (find-symbol
                     (string (sym command))
-                    (pkg command))))
+                    (symbol-package (sym command)))))
 
 (declaim (ftype (function (function) (or null command)) function-command))
 (defun function-command (function)
