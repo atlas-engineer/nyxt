@@ -21,7 +21,7 @@
 (defun get-commands (&optional (buffer (current-buffer)))
   (sort (apply #'list-commands
                (mapcar #'mode-name (modes buffer)))
-        #'> :key #'access-time))
+        #'local-time:timestamp> :key #'last-access))
 
 (defmethod prompter:object-properties ((command command))
   (let* ((buffer (active-buffer (current-window :no-rescan)))
@@ -48,7 +48,7 @@
                            :prompt "Execute command"
                            :sources (make-instance 'command-source)
                            :hide-suggestion-count-p t))))
-      (setf (access-time command) (get-internal-real-time))
+      (setf (last-access command) (local-time:now))
       (run-async command))))
 
 (define-command execute-extended-command ()
@@ -88,7 +88,7 @@ keyword parameters."
                               (prompt
                                :prompt (second (car argument))
                                :sources (make-instance 'prompter:raw-source)))))))
-     (setf (access-time command) (get-internal-real-time))))
+     (setf (last-access command) (local-time:now))))
 
 (defun get-hooks ()
   (flet ((list-hooks (object)
