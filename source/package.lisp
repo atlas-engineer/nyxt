@@ -35,9 +35,6 @@ It's recommended to use this package in the Nyxt configuration file, instead of
   (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks :nyxt-user)
   (trivial-package-local-nicknames:add-package-local-nickname :file-attributes :org.shirakumo.file-attributes :nyxt-user))
 
-(uiop:define-package :nyxt/actions
-    (:use :common-lisp :nyxt))
-
 ;; Unlike other modes, nyxt/minibuffer-mode is declared here because
 ;; certain files depend upon its existence being declared beforehand
 ;; (for compilation).
