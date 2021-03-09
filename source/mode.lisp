@@ -189,10 +189,9 @@ defined in any package and is unique.
 
 If MODE-SYMBOL is a mode that inherits from another without defining its own
 toggle command, return the toggle command of the parent."
-  (or (find-if (lambda (c)
-                 (eq (find-symbol (string mode-symbol) (symbol-package (name c)))
-                     (name c)))
-               *command-list*)
+  (or (find (string mode-symbol) *command-list*
+            :key (lambda (command) (string (name command)))
+            :test #'string=)
       (match (find-class mode-symbol nil)
         (nil nil)
         (m (mode-command (class-name (original-class m)))))))

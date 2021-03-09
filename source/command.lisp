@@ -259,12 +259,10 @@ extra fiddling."
 (defmethod object-string ((command command))
   (str:downcase (name command)))
 
-(defmethod command-function ((command command))
+(defmethod command-function ((command command)) ; TODO: Remove when commands are funcallable?
   "Return the function associated to COMMAND.
 This function can be `funcall'ed."
-  (symbol-function (find-symbol
-                    (string (name command))
-                    (symbol-package (name command)))))
+  (symbol-function (name command)))
 
 (declaim (ftype (function (function) (or null command)) function-command))
 (defun function-command (function)
