@@ -9,7 +9,7 @@
 ;; We need a `command' class for multiple reasons:
 ;; - Identify commands uniquely (although being a member of `*command-list*' is enough).
 ;;
-;; - Customize minibuffer display value with `object-string'.
+;; - Customize prompt buffer display value with properties.
 ;;
 ;; - Access-time: This is useful to sort command by the time they were last
 ;;   called.  The only way to do this is to persist the command instances.
@@ -20,9 +20,9 @@
         :type (or package null))
    (sexp nil
          :type t)
-   (access-time 0
-                :type integer
-                :documentation "Last time this command was called from minibuffer.
+   (last-access (local-time:now)
+                :type local-time:timestamp
+                :documentation "Last time this command was called from prompt buffer.
 This can be used to order the commands."))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
