@@ -7,8 +7,11 @@
   "The list of known commands, for internal use only.")
 
 (define-class command ()
-  ((sym nil
-        :type (or symbol null))
+  ((name (error "Command name required.")
+         :export t
+         :type symbol
+         :documentation "Name of the command.
+This is useful to build commands out of anonymous functions.")
    (sexp nil
          :type t
          :documentation "S-expression of the definition of top-level commands or
@@ -20,7 +23,6 @@ This is nil for local commands that wrap over named functions.")
 This can be used to order the commands."))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
   (:documentation "Commands are interactive functions.
 (As in Emacs.)
 
@@ -78,11 +80,11 @@ Example:
        (defparameter ,before-hook (hooks:make-hook-void))
        (export-always ',after-hook)
        (defparameter ,after-hook (hooks:make-hook-void))
-       (unless (find-if (lambda (c) (and (eq (sym c) ',name)
-                                         (eq (symbol-package (sym c)) (symbol-package ',name))))
+       (unless (find-if (lambda (c) (and (eq (name c) ',name)
+                                         (eq (symbol-package (name c)) (symbol-package ',name))))
                         *command-list*)
          (push (make-instance 'command
-                              :sym ',name
+                              :name ',name
                               :sexp '(define-command (,@arglist) ,@body))
                *command-list*))
        (export-always ',name (symbol-package ',name))
@@ -220,7 +222,7 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
   "Return non-nil if COMMAND is a mode toggler.
 A mode toggler is a command of the same name as its associated mode."
   (ignore-errors
-   (closer-mop:subclassp (find-class (sym command) nil)
+   (closer-mop:subclassp (find-class (name command) nil)
                          (find-class 'root-mode))))
 
 (defun list-commands (&rest mode-symbols)
@@ -241,28 +243,28 @@ extra fiddling."
                      (and (or (not list-togglers-p)
                               (and (not (mode-toggler-p c))
                                    (not (eq (find-package 'nyxt-user)
-                                            (symbol-package (sym c))))))
+                                            (symbol-package (name c))))))
                           (notany (lambda (m)
-                                    (eq (symbol-package (sym c))
+                                    (eq (symbol-package (name c))
                                         (match m
                                           ;; root-mode does not have a mode-command.
                                           ('root-mode nil)
                                           (_ (match (mode-command m)
                                                (nil nil)
-                                               (mc (symbol-package (sym mc))))))))
+                                               (mc (symbol-package (name mc))))))))
                                   mode-symbols)))
                    *command-list*)
         *command-list*)))
 
 (defmethod object-string ((command command))
-  (str:downcase (sym command)))
+  (str:downcase (name command)))
 
 (defmethod command-function ((command command))
   "Return the function associated to COMMAND.
 This function can be `funcall'ed."
   (symbol-function (find-symbol
-                    (string (sym command))
-                    (symbol-package (sym command)))))
+                    (string (name command))
+                    (symbol-package (name command)))))
 
 (declaim (ftype (function (function) (or null command)) function-command))
 (defun function-command (function)

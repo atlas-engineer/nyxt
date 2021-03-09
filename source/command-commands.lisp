@@ -30,10 +30,10 @@
     (loop for mode in (modes buffer)
           for scheme-keymap = (keymap:get-keymap scheme-name (keymap-scheme mode))
           when scheme-keymap
-            do (setf bindings (keymap:binding-keys (sym command) scheme-keymap))
+            do (setf bindings (keymap:binding-keys (name command) scheme-keymap))
           when (not (null bindings))
             return bindings)
-    (list :name (string-downcase (sym command))
+    (list :name (string-downcase (name command))
           :bindings (format nil "~{~a~^, ~}" bindings))))
 
 (define-class command-source (prompter:source)
@@ -59,7 +59,7 @@ keyword parameters."
                     :prompt "Execute extended command"
                     :sources (make-instance 'command-source)
                     :hide-suggestion-count-p t))
-          (command-symbol (sym command))
+          (command-symbol (name command)) ; TODO: Make commands funcallable.
           (argument-list (swank::arglist command-symbol))
           (required-arguments (nth-value 0 (alex:parse-ordinary-lambda-list
                                             argument-list)))
