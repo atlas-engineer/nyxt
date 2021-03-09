@@ -59,15 +59,14 @@ keyword parameters."
                     :prompt "Execute extended command"
                     :sources (make-instance 'command-source)
                     :hide-suggestion-count-p t))
-          (command-symbol (name command)) ; TODO: Make commands funcallable.
-          (argument-list (swank::arglist command-symbol))
+          (argument-list (swank::arglist (fn command)))
           (required-arguments (nth-value 0 (alex:parse-ordinary-lambda-list
                                             argument-list)))
           (optional-arguments (nth-value 1 (alex:parse-ordinary-lambda-list
                                             argument-list)))
           (key-arguments (nth-value 3 (alex:parse-ordinary-lambda-list
                                        argument-list))))
-     (apply command-symbol
+     (apply command
             (append
              (when required-arguments
                (loop for argument in required-arguments

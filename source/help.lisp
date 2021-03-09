@@ -78,7 +78,7 @@
                                            (list (first pair)
                                                  (keymap:name (second pair))))
                                          key-keymap-pairs))
-           (source-file (getf (getf (swank:find-definition-for-thing (command-function command))
+           (source-file (getf (getf (swank:find-definition-for-thing (fn command))
                                     :location)
                               :file)))
       (markup:markup
@@ -92,7 +92,7 @@
             ;; TODO: This only displays the first method,
             ;; i.e. the first command of one of the modes.
             ;; Ask for modes instead?
-            (documentation (command-function command) t)))
+            (documentation (fn command) t)))
        (:h2 "Bindings")
        (:p (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
        (:h2 (format nil "Source (~a): " source-file))
@@ -116,7 +116,7 @@
                   collect (markup:markup
                            (:details
                             (:summary (format nil "~(~a~)" (symbol-name (name command))))
-                            (:p (:pre (documentation (command-function command) t)))
+                            (:p (:pre (documentation (fn command) t)))
                             (:pre :class "nyxt-source" (:code (let ((*print-case* :downcase))
                                                                 (write-to-string (sexp command)))))))))))
 
