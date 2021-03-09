@@ -155,7 +155,6 @@ when input is modified, after filtering the suggestions.")
 filtered.  The predicate works the same as the `sort' predicate.")
 
      (actions '(identity)
-              :type (cons (or function symbol)) ; TODO: Accept function symbols?  Commands?
               :accessor nil
               :export nil
               :documentation "List of functions that can be run on suggestions
