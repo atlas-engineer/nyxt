@@ -133,7 +133,7 @@ If STEPS is negative, go to next pages instead."
                       (lambda () (prompter:return-input prompt-buffer))))
 
 (defun prompt-buffer-actions (&optional (window (current-window)))
-  (sera:and-let* ((first-prompt-buffer (first (nyxt::active-minibuffers window))))
+  (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
     (prompter:actions first-prompt-buffer)))
 
 ;; TODO: Should actions be commands?
@@ -279,7 +279,7 @@ Only available if `multi-selection-p' is non-nil."
                 (ps:lisp (ring-insert-clipboard (nyxt::clipboard-ring *browser*)))))))
 
 (defun prompt-buffer-history-entries (&optional (window (current-window)))
-  (sera:and-let* ((first-prompt-buffer (first (nyxt::active-minibuffers window))))
+  (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
     ;; TODO: No need for delete-duplicates if we don't allow duplicates in the first place.
     (delete-duplicates (containers:container->list
                         (prompter:history first-prompt-buffer))

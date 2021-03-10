@@ -571,12 +571,12 @@ sometimes yields the wrong result."
 (export-always 'current-minibuffer)
 (defun current-minibuffer ()
   "Return the currently active minibuffer."
-  (first (active-minibuffers (current-window))))
+  (first (active-prompt-buffers (current-window))))
 
 (export-always 'current-prompt-buffer)
 (defun current-prompt-buffer ()
   "Return the currently active prompt-buffer."
-  (first (active-minibuffers (current-window))))
+  (first (active-prompt-buffers (current-window))))
 
 (defmethod write-output-to-log ((browser browser))
   "Set the *standard-output* and *error-output* to write to a log file."

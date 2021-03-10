@@ -32,7 +32,7 @@ Example:
     keymap))
 
 (export-always 'current-keymaps)
-(defun current-keymaps (&optional (buffer (if (active-minibuffers (current-window))
+(defun current-keymaps (&optional (buffer (if (active-prompt-buffers (current-window))
                                               (current-minibuffer)
                                               (current-buffer))))
   "Return the list of `keymap' for the current buffer, ordered by priority.
@@ -124,14 +124,14 @@ Return nil to forward to renderer or non-nil otherwise."
                 (setf key-stack nil))
               t)
 
-             ((and (active-minibuffers window)
+             ((and (active-prompt-buffers window)
                    ;; TODO: Remove this confition when `minibuffer' is gone.
-                   (prompt-buffer-p (first (active-minibuffers window))))
+                   (prompt-buffer-p (first (active-prompt-buffers window))))
               (setf key-stack nil)
               ;; Forward to prompt buffer.
               nil)
 
-             ((active-minibuffers window)
+             ((active-prompt-buffers window)
               (when printable-p
                 (dolist (key key-stack)
                   (let ((value (keymap:key-value key)))
