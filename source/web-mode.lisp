@@ -225,7 +225,7 @@ and to index the top of the page.")
 
 (defun load-history-url (url-or-node
                          &key (buffer (current-buffer))
-                           (message "History entry is already the current URL."))
+                              (message "History entry is already the current URL."))
   "Go to HISTORY-NODE's URL."
   (unless (quri:uri-p url-or-node)
     (setf url-or-node (url (htree:data url-or-node))))
@@ -256,47 +256,51 @@ and to index the top of the page.")
 (define-class history-backwards-source (prompter:source)
   ((prompter:name "Parent URLs")
    (buffer :initarg :buffer :accessor buffer :initform nil)
+   (prompter:must-match-p t)
    (prompter:constructor
     (lambda (source)
-      (with-data-unsafe (parents (history-path (buffer source))
-                                 :key (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
-                                          #'htree:all-contiguous-owned-parents
-                                          #'htree:all-parents))
-        parents))))
+      (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
+                   #'htree:all-contiguous-owned-parents
+                   #'htree:all-parents)
+               (get-data (history-path (buffer source)))))))
   (:export-class-name-p t))
 
 (defmethod prompter:object-properties ((node history-tree:node))
-  (list :entry (history-tree:data (history-tree:entry node))))
+  (let ((entry (htree:data (history-tree:entry node))))
+    (list :url (object-display (url entry))
+          :title (title entry))))
 
 (define-command history-backwards-query (&optional (buffer (current-buffer)))
   "Query parent URL to navigate back to."
-  (let ((input (prompt
-                :prompt "Navigate backwards to"
-                :sources (make-instance 'history-backwards-source
-                                        :buffer (current-buffer)))))
+  (let ((input (first (prompt
+                       :prompt "Navigate backwards to"
+                       :sources (make-instance 'history-backwards-source
+                                               :buffer buffer)))))
     (when input
       (with-data-access (history (history-path buffer))
-        ;; See `history-forwards-query' comment.
         (loop until (eq input (htree:current-owner-node history))
               do (htree:backward history)))
       (load-history-url input))))
 
-(defun history-forwards-direct-children-suggestion-filter (&optional (buffer (current-buffer)))
-  "Suggestion function over forward-children URL."
-  (with-data-unsafe (children (history-path buffer)
-                     :key (if (conservative-history-movement-p (find-mode buffer 'web-mode))
-                              (alex:compose #'htree:owned-children #'htree:current-owner)
-                              (alex:compose #'htree:children #'htree:current-owner-node)))
-    (lambda (minibuffer)
-      (if children
-          (fuzzy-match (input-buffer minibuffer) children)
-          (echo "Cannot navigate forwards.")))))
+(define-class direct-history-forwards-source (prompter:source)
+  ((prompter:name "Direct child URLs")
+   (buffer :initarg :buffer :accessor buffer :initform nil)
+   (prompter:must-match-p t)
+   (prompter:constructor
+    (lambda (source)
+      (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
+                   (alex:compose #'htree:owned-children #'htree:current-owner)
+                   (alex:compose #'htree:children #'htree:current-owner-node))
+               (get-data (history-path (buffer source)))))))
+  (:documentation "Direct children of the current history node.")
+  (:export-class-name-p t))
 
 (define-command history-forwards-direct-children (&optional (buffer (current-buffer)))
   "Query child URL to navigate to."
-  (let ((input (prompt-minibuffer
-                :input-prompt "Navigate forwards to"
-                :suggestion-function (history-forwards-direct-children-suggestion-filter))))
+  (let ((input (first (prompt
+                       :prompt "Navigate forwards to"
+                       :sources (make-instance 'direct-history-forwards-source
+                                               :buffer buffer)))))
     (when input
       (with-data-access (history (history-path buffer))
         (htree:go-to-child (htree:data input) history))
@@ -313,66 +317,71 @@ Otherwise go forward to the only child."
         (history-forwards-direct-children)
         (history-forwards))))
 
-(defun history-forwards-suggestion-filter (&optional (buffer (current-buffer)))
-  "Suggestion function over forward-children URL."
-  (with-data-unsafe (children (history-path buffer)
-                     :key #'htree:all-forward-children)
-    (lambda (minibuffer)
-      (if children
-          (fuzzy-match (input-buffer minibuffer) children)
-          (echo "Cannot navigate forwards.")))))
+(define-class history-forwards-source (prompter:source)
+  ((prompter:name "Child URLs")
+   (buffer :initarg :buffer :accessor buffer :initform nil)
+   (prompter:must-match-p t)
+   (prompter:constructor
+    (lambda (source)
+      (htree:all-forward-children (get-data (history-path (buffer source)))))))
+  (:export-class-name-p t))
 
 (define-command history-forwards-query (&optional (buffer (current-buffer)))
   "Query forward-URL to navigate to."
-  (let ((input (prompt-minibuffer
-                :input-prompt "Navigate forwards to"
-                :suggestion-function (history-forwards-suggestion-filter))))
+  (let ((input (first (prompt
+                       :prompt "Navigate forwards to"
+                       :sources (list (make-instance 'history-forwards-source
+                                                     :buffer buffer))))))
     (when input
       (with-data-access (history (history-path buffer))
         ;; REVIEW: Alternatively, we could use the COUNT argument with
         ;; (1+ (position input (htree:all-forward-children history)))
         ;; Same with `history-backwards-query'.
         (loop until (eq input (htree:current-owner-node history))
-                    do (htree:forward history)))
+              do (htree:forward history)))
       (load-history-url input))))
 
-(defun history-forwards-all-suggestion-filter (&optional (buffer (current-buffer)))
-  "Suggestion function over children URL from all branches."
-  (with-data-unsafe (children (history-path buffer)
-                     :key (if (conservative-history-movement-p (find-mode buffer 'web-mode))
-                              (alex:compose #'htree:all-contiguous-owned-children #'htree:current-owner)
-                              #'htree:all-children))
-    (lambda (minibuffer)
-      (if children
-          (fuzzy-match (input-buffer minibuffer) children)
-          (echo "Cannot navigate forwards.")))))
+(define-class all-history-forwards-source (prompter:source)
+  ((prompter:name "Child URLs")
+   (buffer :initarg :buffer :accessor buffer :initform nil)
+   (prompter:must-match-p t)
+   (prompter:constructor
+    (lambda (source)
+      (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
+                   (alex:compose #'htree:all-contiguous-owned-children #'htree:current-owner)
+                   #'htree:all-children)
+               (get-data (history-path (buffer source)))))))
+  (:export-class-name-p t))
 
 (define-command history-forwards-all-query (&optional (buffer (current-buffer)))
   "Query URL to forward to, from all child branches."
-  (let ((input (prompt-minibuffer
-                :input-prompt "Navigate forwards to (all branches)"
-                :suggestion-function (history-forwards-all-suggestion-filter))))
+  (let ((input (first (prompt
+                       :prompt "Navigate forwards to (all branches)"
+                       :sources (list (make-instance 'all-history-forwards-source
+                                                     :buffer buffer))))))
     (when input
       (with-data-access (history (history-path buffer))
         (htree:forward history))
       (load-history-url input))))
 
-(defun history-all-suggestion-filter (&optional (buffer (current-buffer)))
-  "Suggestion function over all history URLs."
-  (with-data-unsafe (urls (history-path buffer)
-                     :key (if (conservative-history-movement-p (find-mode buffer 'web-mode))
-                              #'htree:all-current-owner-nodes
-                              #'htree:all-current-branch-nodes))
-    (lambda (minibuffer)
-      (if urls
-          (fuzzy-match (input-buffer minibuffer) urls)
-          (echo "No history.")))))
+(define-class history-all-source (prompter:source)
+  ((prompter:name "History URLs")
+   (buffer :initarg :buffer :accessor buffer :initform nil)
+   (prompter:must-match-p t)
+   (prompter:constructor
+    (lambda (source)
+      (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
+                   #'htree:all-current-owner-nodes
+                   #'htree:all-current-branch-nodes)
+               (get-data (history-path (buffer source)))))))
+  (:export-class-name-p t))
 
 (define-command history-all-query (&optional (buffer (current-buffer)))
   "Query URL to go to, from the whole history."
-  (let ((input (prompt-minibuffer
-                :input-prompt "Navigate to"
-                :suggestion-function (history-all-suggestion-filter))))
+  (let ((input (prompt
+                :prompt "Navigate to"
+                :sources (list (make-instance 'history-all-source
+                                              :buffer buffer)))))
     (when input
       (with-data-access (history (history-path buffer))
         (htree:visit-all history input))
@@ -470,12 +479,24 @@ Otherwise go forward to the only child."
     (lambda (minibuffer)
       (fuzzy-match (input-buffer minibuffer) ring-items))))
 
+(define-class ring-source (prompter:source)
+  ((prompter:name "Ring")
+   (ring :initarg :ring :accessor ring :initform nil)
+   (prompter:must-match-p t)
+   (prompter:constructor
+    (lambda (source)
+      (containers:container->list (ring source))))
+   (prompter:actions
+    (list (make-command paste* (ring-items)
+            (%paste :input-text (first ring-items))))))
+  (:export-class-name-p t))
+
 (define-command paste-from-ring ()
   "Show `*browser*' clipboard ring and paste selected entry."
-  (let ((ring-item (prompt-minibuffer
-                    :suggestion-function (ring-suggestion-filter
-                                          (nyxt::clipboard-ring *browser*)))))
-    (%paste :input-text ring-item)))
+  (prompt
+   :prompt "Paste from ring"
+   :sources (list (make-instance 'ring-source
+                                 :ring (nyxt::clipboard-ring *browser*)))))
 
 (define-command copy ()
   "Copy selected text to clipboard."
@@ -483,18 +504,24 @@ Otherwise go forward to the only child."
     (copy-to-clipboard input)
     (echo "Text copied.")))
 
+(define-class autofill-source (prompter:source)
+  ((prompter:name "Autofills")
+   (prompter:must-match-p t)
+   (prompter:constructor (autofills *browser*))
+   (prompter:actions
+    (list (make-command autofill* (autofills)
+            (let ((selected-fill (first autofills)))
+              (cond ((stringp (autofill-fill selected-fill))
+                     (%paste :input-text (autofill-fill selected-fill)))
+                    ((functionp (autofill-fill selected-fill))
+                     (%paste :input-text (funcall (autofill-fill selected-fill))))))))))
+  (:export-class-name-p t))
+
 (define-command autofill ()
   "Fill in a field with a value from a saved list."
-  (let ((selected-fill (prompt
-                        :prompt "Autofill"
-                        :sources (make-instance 'prompter:source
-                                                :name "Autofills"
-                                                :constructor (autofills *browser*)
-                                                :actions '()))))
-    (cond ((stringp (autofill-fill selected-fill))
-           (%paste :input-text (autofill-fill selected-fill)))
-          ((functionp (autofill-fill selected-fill))
-           (%paste :input-text (funcall (autofill-fill selected-fill)))))))
+  (prompt
+   :prompt "Autofill"
+   :sources (make-instance 'autofill-source)))
 
 (defmethod nyxt:on-signal-notify-uri ((mode web-mode) url)
   (declare (type quri:uri url))
@@ -529,8 +556,3 @@ Otherwise go forward to the only child."
   (unzoom-page :buffer (buffer mode)
                :ratio (current-zoom-ratio (buffer mode)))
   url)
-
-(defmethod nyxt:object-string ((node htree:node))
-  (object-string (when node (htree:data node))))
-(defmethod nyxt:object-display ((node htree:node))
-  (object-display (when node (htree:data node))))
