@@ -168,7 +168,7 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
     (ffi-window-set-prompt-buffer-height
      (window prompt-buffer)
      (or height
-         (minibuffer-open-height (window prompt-buffer)))))) ; TODO: Rename `minibuffer'.
+         (prompt-buffer-open-height (window prompt-buffer))))))
 
 (defmethod state-changed ((prompt-buffer prompt-buffer)) ; TODO: Remove when done.
   nil)
