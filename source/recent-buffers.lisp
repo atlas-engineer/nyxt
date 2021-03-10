@@ -21,8 +21,7 @@
   "Reopen queried deleted buffer(s)."
   (let* ((buffers (prompt
                    :prompt "Ropen buffer(s):"
-                   :sources (make-instance 'recent-buffer-source)))
-         (buffers (uiop:ensure-list buffers)))
+                   :sources (make-instance 'recent-buffer-source))))
     (dolist (buffer buffers)
       (containers:delete-item-if (recent-buffers *browser*)
                                  (buffer-match-predicate buffer))
