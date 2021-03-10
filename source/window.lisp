@@ -36,9 +36,6 @@
                              :margin 0))))
    (prompt-buffer-open-height 256
                               :documentation "The height of the prompt buffer when open.")
-   (minibuffer-open-single-line-height 35 ; TODO: Remove?  Rename?
-                                       :documentation "The height of
- the minibuffer when open for a single line of input.")
    (input-dispatcher #'dispatch-input-event
                      :documentation "Function to process input events.
 It takes EVENT, BUFFER, WINDOW and PRINTABLE-P parameters.
