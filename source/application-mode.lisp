@@ -30,6 +30,6 @@
 (declaim (ftype (function (list-of-keymaps buffer) (values list-of-keymaps buffer))
                 keep-override-map))
 (defun keep-override-map (keymaps buffer)
-  (if (nyxt::active-minibuffers (current-window))
+  (if (nyxt::active-prompt-buffers (current-window))
       (values keymaps buffer)
       (values (list (override-map buffer)) buffer)))

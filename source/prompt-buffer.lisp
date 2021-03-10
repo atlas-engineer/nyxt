@@ -160,7 +160,7 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
   "Show the last active prompt-buffer, if any."
   ;; TODO: Add method that returns if there is only 1 source with no filter.
   (when prompt-buffer
-    (push prompt-buffer (active-minibuffers (window prompt-buffer)))
+    (push prompt-buffer (active-prompt-buffers (window prompt-buffer)))
     (erase-document prompt-buffer)      ; TODO: When to erase?
     (update-display prompt-buffer)
     (pexec ()
@@ -178,7 +178,7 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
   "Hide PROMPT-BUFFER, display next active one, and return PROMPT-BUFFER suggestion."
   ;; Note that PROMPT-BUFFER is not necessarily first in the list, e.g. a new
   ;; prompt-buffer was invoked before the old one reaches here.
-  (alex:deletef (active-minibuffers (current-window)) prompt-buffer)
+  (alex:deletef (active-prompt-buffers (current-window)) prompt-buffer)
   (when (resumable-p prompt-buffer)
     (flet ((prompter= (prompter1 prompter2)
              (and (string= (prompter:prompt prompter1)
@@ -190,16 +190,16 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
                     prompt-buffer
                     :test #'prompter=)
       (push prompt-buffer (old-prompt-buffers *browser*))))
-  (if (active-minibuffers (current-window))
-      (let ((next-prompt-buffer (first (active-minibuffers (current-window)))))
+  (if (active-prompt-buffers (current-window))
+      (let ((next-prompt-buffer (first (active-prompt-buffers (current-window)))))
         ;; TODO: Remove when done with `minibuffer'.
         (if (prompt-buffer-p next-prompt-buffer)
             (show-prompt-buffer next-prompt-buffer)
             (show))
         ;; TODO: Remove?
         ;; We need to refresh so that the nested prompt-buffers don't have to do it.
-        ;; (state-changed (first (active-minibuffers (current-window))))
-        ;; (update-display (first (active-minibuffers (current-window))))
+        ;; (state-changed (first (active-prompt-buffers (current-window))))
+        ;; (update-display (first (active-prompt-buffers (current-window))))
         )
       (progn
         (ffi-window-set-prompt-buffer-height (current-window) 0)))
@@ -337,7 +337,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
 
 (defun set-prompt-buffer-input (input)
   "Set HTML INPUT in PROMPT-BUFFER."
-  (when (first (active-minibuffers (current-window)))
+  (when (first (active-prompt-buffers (current-window)))
     (ffi-minibuffer-evaluate-javascript
      (current-window)
      (ps:ps

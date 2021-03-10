@@ -43,7 +43,7 @@
 
 (define-command execute-command ()
   "Execute a command by name."
-  (unless (active-minibuffers (current-window))
+  (unless (active-prompt-buffers (current-window))
     (let ((command (first (prompt
                            :prompt "Execute command"
                            :sources (make-instance 'command-source)
