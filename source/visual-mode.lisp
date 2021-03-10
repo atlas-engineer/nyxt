@@ -222,24 +222,6 @@ identifier for every hinted element."
                                         :hint (cdr (assoc :hint element))
                                         :body (plump:text (plump:parse (cdr (assoc :body element))))))))))
 
-(defun query-paragraph-hints (prompt function &key annotate-visible-only-p)
-  (let ((buffer (current-buffer)))
-    (let ((result (prompt
-                   :prompt prompt
-                   :history nil
-                   :sources
-                   (make-instance
-                    'nyxt/web-mode::hint-source
-                    :constructor
-                    (paragraph-elements-from-json (%add-paragraph-hints
-                                                   :annotate-visible-only-p
-                                                   annotate-visible-only-p)))
-                   :after-destructor
-                   (lambda ()
-                     (with-current-buffer buffer
-                       (nyxt/web-mode::remove-element-hints))))))
-      (funcall-safely function result))))
-
 (define-parenscript block-page-keypresses ()
   (setf (ps:@ window block-keypresses)
         (lambda (event)
@@ -263,7 +245,23 @@ identifier for every hinted element."
 
 (define-command select-paragraph ()
   "Add hints to text elements on the page and open a minibuffer for selecting them."
-  (query-paragraph-hints "Set caret on element" #'%follow-hint :annotate-visible-only-p t))
+  (let ((buffer (current-buffer)))
+    (let ((result (first
+                   (prompt
+                    :prompt "Set caret on element"
+                    :history nil
+                    :sources
+                    (make-instance
+                     'nyxt/web-mode::hint-source
+                     :constructor
+                     (paragraph-elements-from-json
+                      (%add-paragraph-hints
+                       :annotate-visible-only-p t)))
+                    :after-destructor
+                    (lambda ()
+                      (with-current-buffer buffer
+                        (nyxt/web-mode::remove-element-hints)))))))
+      (funcall-safely #'%follow-hint result))))
 
 (define-parenscript is-collapsed ()
   ;; returns "true" if mark's start and end are the same value
