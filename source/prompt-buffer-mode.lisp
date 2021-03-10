@@ -152,9 +152,9 @@ If STEPS is negative, go to next pages instead."
 
 (define-command return-selection-over-action (&optional (prompt-buffer (current-prompt-buffer)))
   "Prompt for an action to run over PROMPT-BUFFER selection."
-  (let ((action (prompt
-                 :prompt "Action to run on selection"
-                 :sources (list (make-instance 'action-source)))))
+  (let ((action (first (prompt
+                        :prompt "Action to run on selection"
+                        :sources (list (make-instance 'action-source))))))
     (when action
       (hide-prompt-buffer prompt-buffer
                           (lambda ()
@@ -292,9 +292,9 @@ Only available if `multi-selection-p' is non-nil."
 (define-command prompt-buffer-history (&optional (prompt-buffer (current-prompt-buffer)))
   "Choose a prompt-buffer input history entry to insert as input."
   (if (prompter:history prompt-buffer)
-      (let ((input (prompt
-                    :prompt "Input history"
-                    :sources (list (make-instance 'prompt-buffer-history-source)))))
+      (let ((input (first (prompt
+                           :prompt "Input history"
+                           :sources (list (make-instance 'prompt-buffer-history-source))))))
         (unless (str:empty? input)
           (nyxt::set-prompt-buffer-input input)))
       (echo "Prompt buffer has no history.")))
