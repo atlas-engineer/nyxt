@@ -21,7 +21,7 @@
   (let ((prompter (prompter:make
                    :sources (prompter:make-source
                              :name "Test source"
-                             :initial-suggestions '("foo" "bar")))))
+                             :constructor '("foo" "bar")))))
     (prove:ok (find "foo" (prompter:suggestions
                            (first (prompter:sources prompter)))
                     :test #'string=
@@ -32,7 +32,7 @@
   (let ((prompter (prompter:make
                    :sources (list (prompter:make-source
                                    :name "Test source"
-                                   :initial-suggestions '("foo" "bar"))))))
+                                   :constructor '("foo" "bar"))))))
     (setf (prompter:input prompter) "foo")
     (when (prompter:all-ready-p prompter)
       (prove:is (source1-suggestions prompter)
@@ -61,7 +61,7 @@
          (prompter (prompter:make
                     :sources (list (prompter:make-source
                                     :name "Test source"
-                                    :initial-suggestions (list url1 url2))))))
+                                    :constructor (list url1 url2))))))
     (setf (prompter:input prompter) "nyxt")
     (when (prompter:all-ready-p prompter)
       (let ((filtered-suggestions (prompter:suggestions
@@ -80,7 +80,7 @@
   (let ((prompter (prompter:make
                    :sources (list (prompter:make-source
                                    :name "Test source"
-                                   :initial-suggestions '("foo" "bar")
+                                   :constructor '("foo" "bar")
                                    :filter #'slow-identity-match)))))
     (setf (prompter:input prompter) "foo")
     (when (prompter:all-ready-p prompter)
@@ -93,7 +93,7 @@
   (let* ((suggestion-values '("foobar" "foobaz"))
          (source (prompter:make-source
                   :name "Test source"
-                  :initial-suggestions suggestion-values
+                  :constructor suggestion-values
                   :filter #'slow-identity-match))
          (prompter (prompter:make
                     :sources (list source))))
@@ -112,7 +112,7 @@
   (let* ((suggestion-values '("foobar" "foobaz"))
          (source (prompter:make-source
                   :name "Test source"
-                  :initial-suggestions suggestion-values
+                  :constructor suggestion-values
                   :filter #'slow-identity-match))
          (prompter (prompter:make
                     :sources (list source))))
@@ -128,7 +128,7 @@
 
 (prove:subtest "Yes-No prompt"
   (let* ((source (make-instance 'prompter:yes-no-source
-                                :initial-suggestions '("no" "yes")))
+                                :constructor '("no" "yes")))
          (prompter (prompter:make
                     :sources (list source))))
     (prove:is
@@ -146,21 +146,21 @@
   (let ((prompter (prompter:make
                    :sources (list (prompter:make-source
                                    :name "Test source"
-                                   :initial-suggestions '("foo" "bar"))))))
+                                   :constructor '("foo" "bar"))))))
     (setf (prompter:input prompter) "bar")
     (when (prompter:all-ready-p prompter)
       (prompter:return-selection prompter)
       (prove:is (calispel:? (prompter:result-channel prompter))
-                "bar"))))
+                '("bar")))))
 
 (prove:subtest "Multi sources"
   (let ((prompter (prompter:make
                    :sources (list (prompter:make-source
                                    :name "Test source 1"
-                                   :initial-suggestions '("foo" "bar"))
+                                   :constructor '("foo" "bar"))
                                   (prompter:make-source
                                    :name "Test source 2"
-                                   :initial-suggestions '("100 foo" "200"))))))
+                                   :constructor '("100 foo" "200"))))))
     (setf (prompter:input prompter) "foo")
     (when (prompter:all-ready-p prompter)
       (prove:is (all-source-suggestions prompter)
