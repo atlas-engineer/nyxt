@@ -132,7 +132,7 @@ The handlers take the window as argument."))
    (prompter:multi-selection-p t)
    (prompter:constructor (window-list))
    (prompter:actions (list (make-command window-delete* (windows)
-                             (mapcar #' window-delete windows))))))
+                             (mapcar #'window-delete windows))))))
 
 (define-command delete-window ()
   "Delete the queried window(s)."
