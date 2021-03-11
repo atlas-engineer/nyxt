@@ -136,19 +136,24 @@ If STEPS is negative, go to next pages instead."
   (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
     (prompter:actions first-prompt-buffer)))
 
-;; TODO: Should actions be commands?
+;; TODO: Should actions be commands?  For now, they can be either commands or symbols.
 (defun action-properties (action)
   "Return the name and documentation properties of the given ACTION symbol."
   ;; TODO: Return bindings.
   (flet ((first-line (string)
            (first (str:split (string #\newline) string))))
-    `(:name ,(symbol-name action)
-      :documentation ,(first-line (documentation action 'function)))))
+
+    `(:name ,(symbol-name (typecase action
+                            (command (name action))
+                            (t action)))
+      :documentation ,(first-line (typecase action
+                                    (command (nyxt::docstring action))
+                                    (t (documentation action 'function)))))))
 
 (define-class action-source (prompter:source)
   ((prompter:name "List of actions")
    (prompter:constructor (prompt-buffer-actions))
-   (prompter:suggestion-property-function #'action-properties)))
+   (prompter:suggestion-property-function 'action-properties)))
 
 (define-command return-selection-over-action (&optional (prompt-buffer (current-prompt-buffer)))
   "Prompt for an action to run over PROMPT-BUFFER selection."
