@@ -155,6 +155,7 @@ It is passed the following arguments:
                            "Function called when input is modified, after
 filtering the suggestions with `filter'.
 It is passed the following arguments:
+- the filtered suggestions;
 - the source;
 - the input.")
 
@@ -477,8 +478,10 @@ feedback to the user while the list of suggestions is being computed."
                       (setf (slot-value source 'suggestions)
                             (ensure-suggestions-list
                              source
-                             ;; TODO: Pass `suggestions' to filter-postprocessor, to mirror filter-preprocessor signature.
-                             (maybe-funcall (filter-postprocessor source) source input))))))
+                             (maybe-funcall (filter-postprocessor source)
+                                            (slot-value source 'suggestions)
+                                            source
+                                            input))))))
              (wait-for-initial-suggestions)
              (process!
               (preprocess
