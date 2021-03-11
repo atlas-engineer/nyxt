@@ -321,13 +321,14 @@ If STEPS is negative, go forward and selection first suggestion."
                     (intersection marks suggestion-values))))))))))
 
 (defun resolve-selection (prompter)
-  "Return the result of the prompt buffer. If there is no result, an
-empty list (that is, NIL) is returned."
-  (uiop:ensure-list
-   (or (mapcar #'value (all-marks prompter))
-       (value (selected-suggestion prompter))
-       (and (not (must-match-p prompter)) ; TODO: What shall we do on no match?
-            (slot-value prompter 'input)))))
+  "Return the list of selected values.
+If there is no marks, the current selection value is returned as a list of one element.
+For instance, if the selected element value is NIL, this returns '(NIL).
+If there is no element, NIL is returned."
+  (or (mapcar #'value (or (all-marks prompter)
+                          (uiop:ensure-list (selected-suggestion prompter))))
+      (and (not (must-match-p (selected-source prompter))) ; TODO: Remove when we remove `must-match-p'.
+           (slot-value prompter 'input))))
 
 (export-always 'actions)
 (defun actions (prompter)
@@ -357,11 +358,12 @@ If there is no marked suggestion, send the currently selected suggestion
 instead."
   (unless action
     (setf action #'identity))
-  ;; TODO: Catch conditions.
   (setf (returned-p prompter) t)
   (add-input-to-history prompter)
-  (let ((action-result (funcall action (resolve-selection prompter))))
-    (calispel:! (result-channel prompter) action-result)))
+  (alex:if-let ((selection-value (resolve-selection prompter)))
+    (let ((action-result (funcall action selection-value)))
+      (calispel:! (result-channel prompter) action-result))
+    (calispel:! (interrupt-channel prompter) t)))
 
 (export-always 'return-input)
 (defun return-input (prompter)
