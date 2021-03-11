@@ -95,6 +95,21 @@ against ARGLIST, if specified. "
                         :fn ,fn
                         :sexp ,sexp)))))
 
+(export-always 'make-mapped-command)
+(defmacro make-mapped-command (function-symbol)
+  "Define a command which `mapcar's FUNCTION-SYMBOL over a list of arguments."
+  (let ((name (intern (str:concat (string FUNCTION-SYMBOL) "-*"))))
+    `(make-command ,name (arg-list)
+       (mapcar ',function-symbol arg-list))))
+
+(export-always 'make-unmapped-command)
+(defmacro make-unmapped-command (function-symbol)
+  "Define a command which calls FUNCTION-SYMBOL over the first element of a list
+of arguments."
+  (let ((name (intern (str:concat (string FUNCTION-SYMBOL) "-1"))))
+    `(make-command ,name (arg-list)
+       (,function-symbol (first arg-list)))))
+
 (export-always 'define-command)
 (defmacro define-command (name (&rest arglist) &body body)
   "Define new command NAME.
