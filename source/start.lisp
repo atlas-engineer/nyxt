@@ -245,8 +245,10 @@ Return the short error message and the full error message as second value."
   "Load the prompted Lisp file."
   (prompt
    :prompt "Load file"
-   :sources (make-instance 'prompter:raw-source
-                           :actions '(load-lisp))))
+   :sources
+   (make-instance 'prompter:raw-source
+                  :actions (list (make-command load-file* (files)
+                                   (load-lisp (first files)))))))
 
 (define-command load-init-file (&key (init-file (expand-path *init-file-path*)))
   "Load or reload the init file."
