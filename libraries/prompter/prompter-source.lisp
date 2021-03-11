@@ -116,11 +116,14 @@ See `ready-notifier' to know when the list is final.
 See `update-notifier' to know when it has been updated, to avoid polling the
 list.")
 
-     (marked-suggestions '()
+     (marks '()
                          :documentation
-                         "The list of suggestions which have been marked by the user.
+                         "The list of suggestion values which have been marked by the user.
 Marking is only allowed when `multi-selection-p' is non-nil.
-When suggestions are marked, the subsequent action is run over all marked suggestions.")
+When suggestions are marked, the subsequent action is run over all marked suggestions.
+
+We store the values instead of the suggestion because suggestions objects are
+reinstantiated between each input processing.")
 
      (active-properties '()
                         :documentation "Suggestion properties to display and

@@ -275,27 +275,27 @@ If STEPS is negative, go forward and selection first suggestion."
   (when (multi-selection-p (selected-source prompter))
     (multiple-value-bind (suggestion source)
         (selected-suggestion prompter)
-      (with-accessors ((marked-suggestions marked-suggestions)) source
-        (if (find suggestion marked-suggestions)
-            (setf marked-suggestions (delete suggestion marked-suggestions))
-            (push suggestion marked-suggestions))))))
+      (with-accessors ((marks marks)) source
+        (if (find suggestion marks)
+            (setf marks (delete suggestion marks))
+            (push suggestion marks))))))
 
 (export-always 'mark-all)
 (defun mark-all (prompter)
   (let ((source (selected-source prompter)))
     (when (multi-selection-p source)
-      (alex:unionf (marked-suggestions source)
-                   (mapcar #'prompter:value (suggestions source))))))
+      (alex:unionf (marks source)
+                   (mapcar #'value (suggestions source))))))
 
 (export-always 'unmark-all)
 (defun unmark-all (prompter)
   (let ((source (selected-source prompter)))
     (when (multi-selection-p source)
-      (with-accessors ((marked-suggestions marked-suggestions)
+      (with-accessors ((marks marks)
                        (suggestions suggestions))
           source
-        (setf marked-suggestions
-              (set-difference marked-suggestions
+        (setf marks
+              (set-difference marks
                               (mapcar #'value suggestions)))))))
 
 (export-always 'toggle-mark-all)
@@ -303,25 +303,25 @@ If STEPS is negative, go forward and selection first suggestion."
   (let ((source (selected-source prompter)))
     (when (multi-selection-p source)
       (with-accessors ((suggestions suggestions)
-                       (marked-suggestions marked-suggestions))
+                       (marks marks))
           source
         (let ((suggestion-values (mapcar #'value suggestions)))
-          (setf marked-suggestions
+          (setf marks
                 (cond
-                  ((subsetp marked-suggestions suggestion-values)
-                   (set-difference suggestion-values marked-suggestions))
-                  ((subsetp suggestion-values marked-suggestions)
-                   (set-difference marked-suggestions suggestion-values))
-                  (t ; When the intersection of suggestion-values and marked-suggestions is non-trivial.
+                  ((subsetp marks suggestion-values)
+                   (set-difference suggestion-values marks))
+                  ((subsetp suggestion-values marks)
+                   (set-difference marks suggestion-values))
+                  (t ; When the intersection of suggestion-values and marks is non-trivial.
                    (set-difference
-                    (union marked-suggestions suggestion-values)
-                    (intersection marked-suggestions suggestion-values))))))))))
+                    (union marks suggestion-values)
+                    (intersection marks suggestion-values))))))))))
 
 (defun resolve-selection (prompter)
   "Return the result of the prompt buffer. If there is no result, an
 empty list (that is, NIL) is returned."
   (uiop:ensure-list
-   (or (mapcar #'value (all-marked-suggestions prompter))
+   (or (mapcar #'value (all-marks prompter))
        (value (selected-suggestion prompter))
        (and (not (must-match-p prompter)) ; TODO: What shall we do on no match?
             (slot-value prompter 'input)))))
@@ -333,7 +333,7 @@ Without marks, it's the list of actions for the current source.
 With marks, it's the intersection of the actions of the sources that contain the
 marked elements."
   (let ((marked-sources
-          (remove-if (complement #'marked-suggestions) (sources prompter))))
+          (remove-if (complement #'marks) (sources prompter))))
     (if marked-sources
         (reduce #'intersection (mapcar (lambda (source)
                                          (slot-value source 'actions))
@@ -436,10 +436,10 @@ Return source as second value."
 suggestions."
   (second (selection prompter)))
 
-(export-always 'all-marked-suggestions)
-(defun all-marked-suggestions (prompter)
+(export-always 'all-marks)
+(defun all-marks (prompter)
   "Return the list of the marked suggestion values in the prompter."
-  (alex:mappend #'marked-suggestions (sources prompter)))
+  (alex:mappend #'marks (sources prompter)))
 
 (defun default-action (prompter)
   (first (actions prompter)))
