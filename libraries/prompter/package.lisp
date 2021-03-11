@@ -31,4 +31,13 @@ All ARGS are declared as `ignorable'."
              (symbol-name
               (first (getf (mopu:slot-properties class-specifier slot) :initargs)))
              (symbol-package class-specifier)))
+          ;; TODO: `slot-names' or `direct-slot-names'?
           (mopu:slot-names class-specifier)))
+
+(defun exported-p (sym)
+  (eq :external
+      (nth-value 1 (find-symbol (string sym) (symbol-package sym)))))
+
+(defun public-initargs (class-specifier)
+  "Return CLASS-SPECIFIER initargs as symbols (not keywords)."
+  (delete-if (complement #'exported-p) (initargs class-specifier)))

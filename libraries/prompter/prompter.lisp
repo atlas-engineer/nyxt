@@ -368,7 +368,7 @@ After timeout has elapsed for one source, return nil."
 (export-always 'make)
 (define-function make
     (append '(&rest args)
-            `(&key ,@(initargs 'prompter)))
+            `(&key ,@(public-initargs 'prompter)))
   "Return prompter object."
   (apply #'make-instance 'prompter args))
 
