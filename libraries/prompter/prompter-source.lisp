@@ -77,10 +77,12 @@ another.")
      (constructor nil
                   :type (or null list function)
                   :documentation
-                  "Function called with the source as argument.
+                  "Function or list to set `initial-suggestions'.
+If a function, it's called asynchronously with the source as argument.
 The returned value is assigned to `initial-suggestions'.
-It is useful for instance to create the list of `initial-suggestions'
-asynchronously, without blocking the creation of the prompt buffer..")
+
+It a list, it's assigned synchronously to `initial-suggestions'.  The list is
+guaranteed to never be modified.")
 
      (destructor nil
                  :type (or null function)
@@ -331,26 +333,30 @@ call.")))
           (uiop:ensure-list elements)))
 
 (defmethod initialize-instance :after ((source source) &key)
-  (let ((wait-channel (make-channel 1)))
-    (calispel:! wait-channel t)
+  "See the `constructor' documentation of `source'."
+  (let ((wait-channel (make-channel)))
     (bt:make-thread
      (lambda ()
        (bt:acquire-lock (initial-suggestions-lock source))
-       (calispel:? wait-channel)
        ;; `initial-suggestions' initialization must be done before first input can be processed.
        (cond ((listp (constructor source))
               (setf (slot-value source 'initial-suggestions)
                     (constructor source)))
              ((constructor source)
+              ;; Run constructor asynchronously.
+              (calispel:! wait-channel t)
               (setf (slot-value source 'initial-suggestions)
                     (funcall (constructor source) source))))
        (setf (slot-value source 'initial-suggestions)
              (ensure-suggestions-list source (initial-suggestions source)))
        ;; TODO: Setting `suggestions' is not needed?
        (setf (slot-value source 'suggestions) (initial-suggestions source))
-       (bt:release-lock (initial-suggestions-lock source))))
+       (bt:release-lock (initial-suggestions-lock source))
+       (when (listp (constructor source))
+         ;; Initial suggestions are set synchronously in this case.
+         (calispel:! wait-channel t))))
     ;; Wait until above thread has acquired the `initial-suggestions-lock'.
-    (calispel:! wait-channel t))
+    (calispel:? wait-channel))
   (unless (filter source)
     ;; If we have no filter, then we have no suggestions beside
     ;; immediate input, so we must allow them as valid suggestion.
