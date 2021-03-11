@@ -71,8 +71,8 @@ bookmarks."
 (define-command search-selection ()
   "Search selected text using the queried search engine."
   (let* ((selection (%copy))
-         (engine (prompt
-                  :prompt "Search engine:"
-                  :sources (make-instance 'search-engine-source))))
+         (engine (first (prompt
+                         :prompt "Search engine:"
+                         :sources (make-instance 'search-engine-source)))))
     (when engine
       (buffer-load (generate-search-query selection (search-url engine))))))
