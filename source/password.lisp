@@ -18,14 +18,14 @@ for which the `executable' slot is non-nil."
   (find-if (alex:compose #'password:executable #'make-instance #'user-class-name)
            password:*interfaces*))
 
-(defun password-suggestion-filter (password-instance)
-  (let ((password-list (password:list-passwords password-instance))
-        (domain (quri:uri-domain (url (current-buffer)))))
-    (when domain
-      (let ((closest-match (find-if (alex:curry #'str:containsp domain) password-list)))
-        (setf password-list (cons closest-match (delete closest-match password-list)))))
-    (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) password-list))))
+(define-class password-source (prompter:source)
+  ((prompter:name "Passwords")
+   (buffer :accessor buffer :initarg :buffer)
+   (password-instance :accessor password-instance :initarg :password-instance)
+   (prompter:must-match-p t)
+   (prompter:constructor
+    (lambda (source)
+      (password:list-passwords (password-instance source))))))
 
 (defun password-debug-info ()
   (alex:when-let ((interface (password-interface (current-buffer))))
@@ -46,14 +46,14 @@ for which the `executable' slot is non-nil."
     ((and (password-interface buffer)
           (has-method-p (password-interface buffer)
                         #'password:save-password))
-     (let* ((password-name (prompt
-                            :prompt "Name for new password"
-                            :input (or (quri:uri-domain (url (current-buffer))) "")
-                            :sources (make-instance 'prompter:raw-source)))
-            (new-password (prompt
-                           :invisible-input-p t
-                           :prompt "New password (leave empty to generate)"
-                           :sources (make-instance 'prompter:raw-source))))
+     (let* ((password-name (first (prompt
+                                   :prompt "Name for new password"
+                                   :input (or (quri:uri-domain (url (current-buffer))) "")
+                                   :sources (make-instance 'prompter:raw-source))))
+            (new-password (first (prompt
+                                  :invisible-input-p t
+                                  :prompt "New password (leave empty to generate)"
+                                  :sources (make-instance 'prompter:raw-source)))))
        (password:save-password (password-interface buffer)
                                :password-name password-name
                                :password new-password)))
@@ -71,12 +71,12 @@ for which the `executable' slot is non-nil."
   "Copy password prompting for all the details without suggestion."
   (password-debug-info)
   (if (password-interface buffer)
-      (let* ((password-name (prompt
-                             :prompt "Name of password"
-                             :sources (make-instance 'prompter:raw-source)))
-             (service (prompt
-                       :prompt "Service"
-                       :sources (make-instance 'prompter:raw-source))))
+      (let* ((password-name (first (prompt
+                                    :prompt "Name of password"
+                                    :sources (make-instance 'prompter:raw-source))))
+             (service (first (prompt
+                              :prompt "Service"
+                              :sources (make-instance 'prompter:raw-source)))))
         (handler-case
             (password:clip-password (password-interface buffer)
                                     :password-name password-name
@@ -90,10 +90,10 @@ for which the `executable' slot is non-nil."
   (password-debug-info)
   (if (password-interface buffer)
       (with-password (password-interface buffer)
-        (let ((password-name (prompt-minibuffer
-                              :suggestion-function
-                              (password-suggestion-filter
-                               (password-interface buffer)))))
+        (let ((password-name (first (prompt
+                                     :sources (list (make-instance 'password-source
+                                                                   :buffer buffer
+                                                                   :password-instance (password-interface buffer)))))))
           (password:clip-password (password-interface buffer) :password-name password-name)
           (echo "Password saved to clipboard for ~a seconds." (password:sleep-timer (password-interface buffer)))))
       (echo-warning "No password manager found.")))
