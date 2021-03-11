@@ -194,7 +194,9 @@ to next source, or previous source if STEPS is negative."
   (unless (= 0 steps)
     (labels ((index->source (index &optional (sources (sources prompter)))
                (let ((limit (length (suggestions (first sources)))))
-                 (if (< index limit)
+                 (if (or (< index limit)
+                         ;; Can happen when INDEX is beyond the total length.
+                         (null (rest sources)))
                      (first sources)
                      (index->source (- index limit) (rest sources)))))
              (source-length (sources)
