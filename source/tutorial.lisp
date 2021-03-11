@@ -52,20 +52,20 @@ the settings of a mode in a buffer does not impact the other buffers.  Mode
 functions are only available when the mode is enabled for the current buffer.")
    (:p "Each mode has an associated " (:i "mode toggler") " which is a command
 of the same name that toggles the mode for the current buffer.")
-   (:h3 "Minibuffer")
-   (:p "The minibuffer is a menu that will appear when a command requests user
+   (:h3 "Prompt buffer")
+   (:p "The prompt buffer is a menu that will appear when a command requests user
 input. For example, when invoking the " (:code "set-url") " command, you must
-supply the URL you would like to navigate to. The minibuffer can provide
+supply the URL you would like to navigate to. The prompt buffer can provide
 suggestions.  The list of suggestions will automatically narrow down to those
 matching your input as you type.")
    (:ul
-    (:li ;; (command-markup 'nyxt/minibuffer-mode:return-selection                               ;;
-         ;;                 :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode))) ;;
-         ": Validate the selected suggestion(s) or the current input if there is
+    (:li  (command-markup 'nyxt/prompt-buffer-mode:return-selection
+                          :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
+          ": Validate the selected suggestion(s) or the current input if there is
 no suggestion.")
-    (:li ;; (command-markup 'nyxt/minibuffer-mode:return-input
-         ;;                 :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode)))
-         ": Validate the current input, ignoring any suggestion."))
+    (:li  (command-markup 'nyxt/prompt-buffer-mode:return-input
+                          :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
+          ": Validate the current input, ignoring any suggestion."))
    (:p " Some commands support multiple selections, for
 instance " (:code "delete-buffer") " can delete all selected buffers at once.
 When the input is changed and the suggestions are re-filtered, the selection is
@@ -73,18 +73,18 @@ not altered even if the marked elements don't show.")
    (:p "When at least one suggestion is marked, only the marked suggestions are processed
 upon return.  The suggestion under the cursor is not processed if not marked.")
    (:ul
-    (:li ;; (command-markup 'nyxt/minibuffer-mode:minibuffer-toggle-mark                         ;;
-         ;;                 :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode))) ;;
-         ": Select or deselect the current suggestion.")
-    (:li ;; (command-markup 'nyxt/minibuffer-mode:minibuffer-mark-all
-         ;;                 :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode)))
-         ": Select all currently-displayed suggestions.")
-    (:li ;; (command-markup 'nyxt/minibuffer-mode:minibuffer-unmark-all
-         ;;                 :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode)))
-         ": Deselect all currently-displayed suggestions.")
-    (:li ;; (command-markup 'nyxt/minibuffer-mode:minibuffer-toggle-mark-all
-         ;;                 :modes (list (make-instance 'nyxt/minibuffer-mode:minibuffer-mode)))
-         ": Toggle the mark of all currently-displayed suggestions."))
+    (:li  (command-markup 'nyxt/prompt-buffer-mode:prompt-buffer-toggle-mark
+                          :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
+          ": Select or deselect the current suggestion.")
+    (:li  (command-markup 'nyxt/prompt-buffer-mode:prompt-buffer-mark-all
+                          :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
+          ": Select all currently-displayed suggestions.")
+    (:li  (command-markup 'nyxt/prompt-buffer-mode:prompt-buffer-unmark-all
+                          :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
+          ": Deselect all currently-displayed suggestions.")
+    (:li  (command-markup 'nyxt/prompt-buffer-mode:prompt-buffer-toggle-mark-all
+                          :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
+          ": Toggle the mark of all currently-displayed suggestions."))
    (:h3 "Message Area")
    (:p "The message area represents a space (typically at the bottom of a
 window) where Nyxt outputs messages back to you. To view the history of all
@@ -120,7 +120,7 @@ to quickly find whatever buffer you are looking for.")
    (:h3 "Link navigation")
    (:p "Link-hinting allows you to visit URLs on a page without using the mouse.
 Invoke one of the commands below: several hints will appear on screen and all
-links on the page will be listed in the minibuffer.  You can select the hints
+links on the page will be listed in the prompt buffer.  You can select the hints
 by matching against the hint, the URL or the title.")
    (:ul
     (:li (command-markup 'nyxt/web-mode:follow-hint) ": Go to link in current buffer.")
@@ -142,8 +142,8 @@ been.")
 invoking the command 'buffer-history-tree'.")
    (:h3 "Searching")
    (:p "Nyxt can search a single buffer or multiple buffers at the same time.")
-   (:p "You can view suggestions for search results in the minibuffer in one
-place rather than having to jump around on a buffer (or multiple buffers).")
+   (:p "You can view suggestions for search results in the prompt buffer in one
+place rather than having to jump around in a buffer (or multiple buffers).")
    (:ul
     (:li (command-markup 'nyxt/web-mode:search-buffer) ": Search buffer.")
     (:li (command-markup 'nyxt/web-mode:search-buffers) ": Search multiple buffers.")
@@ -192,7 +192,7 @@ CUA and Emacs-like keybindings out of the box, too). Activate it with "
          ": Quit visual mode.")
     (:li (command-markup 'nyxt/visual-mode:select-paragraph
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Open up a minibuffer prompt for selecting a paragraph you want to
+         ": Open up a prompt buffer for selecting a paragraph you want to
 set the caret on.")
     (:li (command-markup 'nyxt/visual-mode:toggle-mark
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
@@ -301,4 +301,4 @@ of a variable.")
     (:li (command-markup 'describe-slot) ": Lookup a class slot value and documentation."))
    (:p "A good starting point is to study the documentation of the classes "
        (:code "browser") ", " (:code "window") ", " (:code "buffer") " and "
-       (:code "minibuffer") ".")))
+       (:code "prompt-buffer") ".")))
