@@ -276,9 +276,10 @@ If STEPS is negative, go forward and selection first suggestion."
     (multiple-value-bind (suggestion source)
         (selected-suggestion prompter)
       (with-accessors ((marks marks)) source
-        (if (find suggestion marks)
-            (setf marks (delete suggestion marks))
-            (push suggestion marks))))))
+        (let ((value (value suggestion)))
+          (if (find value marks)
+              (setf marks (delete value marks))
+              (push value marks)))))))
 
 (export-always 'mark-all)
 (defun mark-all (prompter)
