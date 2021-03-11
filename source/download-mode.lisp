@@ -137,7 +137,9 @@ download."
   ((prompter:name "Files")
    (prompter:must-match-p t)
    (prompter:constructor (mapcar #'destination-path (downloads *browser*)))
-   (prompter:actions '(nyxt/file-manager-mode:open-file-function))))
+   (prompter:actions
+    (list (make-command open-file* (files)
+                        (nyxt/file-manager-mode:open-file-function (first files)))))))
 
 (define-command download-open-file ()
   "Open a downloaded file. This command only works for downloads
