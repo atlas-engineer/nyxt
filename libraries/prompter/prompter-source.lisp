@@ -296,7 +296,7 @@ call.")))
 (export-always 'make-source)
 (define-function make-source            ; TODO: Useless?
     (append '(&rest args)
-            `(&key ,@(initargs 'source)))
+            `(&key ,@(public-initargs 'source)))
   "Return prompter source object."
   (apply #'make-instance 'source args))
 
