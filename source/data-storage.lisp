@@ -374,18 +374,17 @@ you use this macro! For a modification-safe macro, see `with-data-access'."
                  :keygrip (nth 9 (assoc "grp" entry :test #'string=)))))
             entries)))
 
-(defun gpg-key-suggestion-filter ()
-  (let ((keys (gpg-private-keys)))
-    (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) keys))))
+(define-class gpg-key-source (prompter:source)
+  ((prompter:name "GPG Private Keys")
+   (prompter:must-match-p nil)
+   (prompter:constructor (gpg-private-keys))))
+
+(defmethod prompter:object-properties ((gpg-key gpg-key))
+  (list :id (gpg-key-key-id gpg-key)
+        :additional (str:join ", " (mapcar #'gpg-uid-user-id (gpg-key-uids gpg-key)))))
 
 (defmethod object-string ((gpg-key gpg-key))
   (gpg-key-key-id gpg-key))
-
-(defmethod object-display ((gpg-key gpg-key))
-  (format nil "~a (~a)"
-          (gpg-key-key-id gpg-key)
-          (str:join ", " (mapcar #'gpg-uid-user-id (gpg-key-uids gpg-key)))))
 
 (defun gpg-recipient (file)             ; TODO: Find a proper way to do this.
   "Return the key of FILE's recipient if any, `*gpg-recipient*' otherwise.
@@ -446,10 +445,9 @@ nothing is done if file is missing."
                (with-input-from-string (,in (with-output-to-string (,stream)
                                               (setf ,result (progn ,@body))))
                  (gpg-write ,in ,gpg-file ,recipient))
-               (let ((,recipient (prompt-minibuffer
-                                  :input-prompt "Recipient:"
-                                  :suggestion-function (gpg-key-suggestion-filter)
-                                  :must-match-p nil)))
+               (let ((,recipient (prompt
+                                  :prompt "Recipient:"
+                                  :sources '(gpg-key-source))))
                  (with-input-from-string (,in (with-output-to-string (,stream)
                                                 (setf ,result (progn ,@body))))
                    (gpg-write ,in ,gpg-file (gpg-key-key-id ,recipient)))))
