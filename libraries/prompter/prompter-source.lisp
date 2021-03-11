@@ -155,9 +155,10 @@ when input is modified, after filtering the suggestions.")
 filtered.  The predicate works the same as the `sort' predicate.")
 
      (actions '(identity)
+              :type list
               :accessor nil
               :export nil
-              :documentation "List of functions that can be run on suggestions
+              :documentation "List of funcallables that can be run on suggestions
 of this source.")
 
      (persistent-action nil ; TODO: Should be a list so we can support as many persistent actions as we want.
