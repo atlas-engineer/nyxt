@@ -272,7 +272,7 @@ If STEPS is negative, go forward and selection first suggestion."
 
 (defun resolve-selection (prompter)
   "Return the result of the prompt buffer. If there is no result, an
-empty list (e.g. NIL) will be returned."
+empty list (that is, NIL) is returned."
   (uiop:ensure-list
    (or (mapcar #'value (all-marked-suggestions prompter))
        (value (selected-suggestion prompter))
