@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/os-package-manager-mode
-  (:use :common-lisp :trivia :nyxt)
+    (:use :common-lisp :trivia :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:documentation "Universal interface to various operating system package managers."))
 (in-package :nyxt/os-package-manager-mode)
@@ -84,41 +84,47 @@
               " (current)"
               "")))
 
-(defun os-package-suggestion-filter ()
-  (echo "Loading package database...")
-  (let* ((all-packages (ospm:list-packages)))
-    (echo "")
-    (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) all-packages))))
+(define-class os-package-source (prompter:source)
+  ((prompter:name "Packages")
+   (prompter:must-match-p t)
+   (prompter:constructor (ospm:list-packages))))
 
-(defun os-manifest-suggestion-filter ()
-  (let* ((all-manifests (mapcar #'namestring (ospm:list-manifests))))
-    (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) all-manifests))))
+(define-class os-manifest-source (prompter:source)
+  ((prompter:name "Manifests")
+   (prompter:must-match-p t)
+   (prompter:constructor (mapcar #'namestring (ospm:list-manifests)))))
 
-(defun os-package-output-suggestion-filter ()
-  (echo "Loading package database...")
-  (let* ((all-outputs (ospm:list-package-outputs)))
-    (echo "")
-    (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) all-outputs))))
+(define-class os-package-output-source (prompter:source)
+  ((prompter:name "Package Outputs")
+   (prompter:must-match-p t)
+   (prompter:constructor (ospm:list-package-outputs))))
 
-(defun os-installed-package-suggestion-filter (profile)
-  (let* ((installed-packages (ospm:list-packages profile)))
-    (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) installed-packages))))
+(define-class os-installed-package-source (prompter:source)
+  ((prompter:name "Installed Packages")
+   (prompter:must-match-p t)
+   (profile)
+   (prompter:constructor
+    (lambda (source)
+      (ospm:list-packages (profile source)))))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(defun os-profile-suggestion-filter (&key include-manager-p)
-  (let* ((all-profiles (ospm:list-profiles :include-manager-p include-manager-p)))
-    (lambda (minibuffer)
-      ;; TODO: Don't prompt when there is just 1 profile.
-      (fuzzy-match (input-buffer minibuffer) all-profiles))))
+(define-class os-profile-source (prompter:source)
+  ((prompter:name "Profiles")
+   (prompter:must-match-p t)
+   (include-manager-p)
+   (prompter:constructor
+    (lambda (source) (ospm:list-profiles
+                      :include-manager-p (include-manager-p source)))))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(defun os-generation-suggestion-filter (profile)
-  (let* ((all-generations (ospm:list-generations profile)))
-    (lambda (minibuffer)
-      ;; TODO: Don't prompt when there is just 1 profile.
-      (fuzzy-match (input-buffer minibuffer) all-generations))))
+(define-class os-generation-source (prompter:source)
+  ((prompter:name "Packages")
+   (prompter:must-match-p t)
+   (profile)
+   (prompter:constructor
+    (lambda (source) 
+      (ospm:list-generations (profile source)))))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (defun %describe-os-package (packages)
   (let* ((buffer (or (find-buffer 'os-package-manager-mode)
@@ -168,11 +174,11 @@
                                               `((:a :class "button"
                                                     :href ,(lisp-url '(echo "Computing path & size...")
                                                                      `(ospm:expand-outputs (first (ospm:find-os-packages
-                                                                                                     ,(ospm:name package)
-                                                                                                     :version ,(ospm:version package))))
+                                                                                                   ,(ospm:name package)
+                                                                                                   :version ,(ospm:version package))))
                                                                      `(%describe-os-package
                                                                        (ospm:find-os-packages ,(ospm:name package)
-                                                                                                :version ,(ospm:version package))))
+                                                                                              :version ,(ospm:version package))))
                                                     "Compute path & size")))
                                           ,(format-outputs (ospm:outputs package)))
                                      (:li "Supported systems: " ,(str:join " " (ospm:supported-systems package)))
@@ -199,10 +205,9 @@
 (define-command describe-os-package ()
   "Show description of select packages."
   (assert-package-manager)
-  (let* ((packages (prompt-minibuffer
-                    :suggestion-function (os-package-suggestion-filter)
-                    :input-prompt "Describe OS package(s)"
-                    :multi-selection-p t)))
+  (let* ((packages (prompt
+                    :sources '(os-package-source)
+                    :prompt "Describe OS package(s)")))
     (%describe-os-package packages)))
 
 (defun viewable-file-type-p (path)
@@ -216,14 +221,12 @@
   "List files of select packages."
   (assert-package-manager)
   (let* ((packages-or-outputs (if (typep (ospm:manager) 'ospm:guix-manager)
-                                  (prompt-minibuffer
-                                   :suggestion-function (os-package-output-suggestion-filter)
-                                   :input-prompt "List files of OS package outputs(s)"
-                                   :multi-selection-p t)
-                                  (prompt-minibuffer
-                                   :suggestion-function (os-package-suggestion-filter)
-                                   :input-prompt "List files of OS package(s)"
-                                   :multi-selection-p t)))
+                                  (prompt
+                                   :sources '(os-package-output-source)
+                                   :prompt "List files of OS package outputs(s)")
+                                  (prompt
+                                   :sources '(os-package-source)
+                                   :prompt "List files of OS package(s)")))
          (buffer (or (find-buffer 'os-package-manager-mode)
                      (nyxt/os-package-manager-mode:os-package-manager-mode
                       :activate t
@@ -266,32 +269,32 @@ OBJECTS can be a list of packages, a generation, etc."
         (echo "An package operation is already running.  You can cancel it with `cancel-package-operation'.")
         (progn
           (pexec ()
-            (let ((process-info (funcall command objects profile))
-                  (mode (find-submode buffer 'os-package-manager-mode)))
-              (setf (nyxt/os-package-manager-mode:current-process-info mode) process-info)
-              (html-set "" buffer)      ; Reset content between operations.
-              (html-write
-               (markup:markup
-                (:style (style buffer))
-                (:h1 title)
-                (:p
-                 (:a :class "button"
-                     :href (lisp-url '(nyxt/os-package-manager-mode:cancel-package-operation))
-                     "Cancel")))
-               buffer)
-              (format-command-stream
-               process-info
-               (lambda (s)
-                 ;; TODO: Make shell formating function and add support for
-                 ;; special characters, e.g. progress bars.
-                 (html-write
-                  (markup:markup
-                   (:code (str:replace-all " " " " s))
-                   (:br))
-                  buffer)))
-              (html-write
-               (markup:markup (:p "Done."))
-               buffer)))
+                 (let ((process-info (funcall command objects profile))
+                       (mode (find-submode buffer 'os-package-manager-mode)))
+                   (setf (nyxt/os-package-manager-mode:current-process-info mode) process-info)
+                   (html-set "" buffer)      ; Reset content between operations.
+                   (html-write
+                    (markup:markup
+                     (:style (style buffer))
+                     (:h1 title)
+                     (:p
+                      (:a :class "button"
+                          :href (lisp-url '(nyxt/os-package-manager-mode:cancel-package-operation))
+                          "Cancel")))
+                    buffer)
+                   (format-command-stream
+                    process-info
+                    (lambda (s)
+                      ;; TODO: Make shell formating function and add support for
+                      ;; special characters, e.g. progress bars.
+                      (html-write
+                       (markup:markup
+                        (:code (str:replace-all " " " " s))
+                        (:br))
+                       buffer)))
+                   (html-write
+                    (markup:markup (:p "Done."))
+                    buffer)))
           (set-current-buffer buffer)
           buffer))))
 
@@ -299,57 +302,63 @@ OBJECTS can be a list of packages, a generation, etc."
   "Install select packages."
   (assert-package-manager)
   ;; TODO: Allow profile creation.  Need multi-source support for that?
-  (let* ((profile (prompt-minibuffer
-                   :suggestion-function (os-profile-suggestion-filter)
-                   :input-prompt "Target profile"))
-         (packages (prompt-minibuffer
-                    :suggestion-function (os-package-output-suggestion-filter)
-                    :input-prompt "Install OS package(s)"
-                    :multi-selection-p t)))
+  (let* ((profile (first
+                   (prompt
+                    :sources '(os-profile-source)
+                    :prompt "Target profile")))
+         (packages (prompt
+                    :sources '(os-package-output-source)
+                    :prompt "Install OS package(s)")))
     (operate-os-package "Installing packages..." #'ospm:install profile packages)))
 
 (define-command uninstall-os-package ()
   "Uninstall select packages."
   (assert-package-manager)
-  (let* ((profile (prompt-minibuffer
-                   :suggestion-function (os-profile-suggestion-filter)
-                   :input-prompt "Target profile"))
-         (packages (prompt-minibuffer
-                    :suggestion-function (os-installed-package-suggestion-filter profile)
-                    :input-prompt "Uninstall OS package(s)"
-                    :multi-selection-p t)))
+  (let* ((profile (first
+                   (prompt
+                    :sources '(os-profile-source)
+                    :prompt "Target profile")))
+         (packages (prompt
+                    :sources (list (make-instance 'os-installed-package-source
+                                                  :profile profile))
+                    :prompt "Uninstall OS package(s)")))
     (operate-os-package "Uninstalling packages..." #'ospm:uninstall profile packages)))
 
 (define-command install-package-manifest ()
   "Install select manifest to a profile."
   (assert-package-manager)
-  (let* ((profile (prompt-minibuffer
-                   :suggestion-function (os-profile-suggestion-filter)
-                   :input-prompt "Target profile"))
-         (manifest (prompt-minibuffer
-                    :suggestion-function (os-manifest-suggestion-filter)
-                    :input-prompt "Manifest")))
+  (let* ((profile (first
+                   (prompt
+                    :sources '(os-profile-source)
+                    :prompt "Target profile")))
+         (manifest (first
+                    (prompt
+                     :sources '(os-manifest-source)
+                     :prompt "Manifest"))))
     (operate-os-package "Installing package manifest..." #'ospm:install-manifest profile manifest)))
 
 (define-command edit-package-manifest ()
   "Edit select manifest."
   (assert-package-manager)
-  (let ((manifest (prompt-minibuffer
-                   :suggestion-function (os-manifest-suggestion-filter)
-                   :input-prompt "Manifest")))
+  (let ((manifest (first
+                   (prompt
+                    :sources '(os-manifest-source)
+                    :prompt "Manifest"))))
     (echo "Opening ~s with ~a" manifest (external-editor-program *browser*))
     (uiop:launch-program (list (external-editor-program *browser*) manifest))))
 
 (define-command describe-os-generation ()
   "Show the packages of a given profile generation."
   (assert-package-manager)
-  (let* ((profile (prompt-minibuffer
-                   :suggestion-function (os-profile-suggestion-filter
-                                         :include-manager-p t)
-                   :input-prompt "Profile"))
-         (generation (prompt-minibuffer
-                      :suggestion-function (os-generation-suggestion-filter profile)
-                      :input-prompt "Generation"))
+  (let* ((profile (first
+                   (prompt
+                    :sources (list (make-instance 'os-profile-suggestion-filter
+                                                  :include-manager-p t))
+                    :prompt "Profile")))
+         (generation (first
+                      (prompt
+                       :sources '(os-generation-source)
+                       :prompt "Generation")))
          (buffer (or (find-buffer 'os-package-manager-mode)
                      (nyxt/os-package-manager-mode:os-package-manager-mode
                       :activate t
@@ -364,16 +373,16 @@ OBJECTS can be a list of packages, a generation, etc."
        (loop for package-output in (ospm:list-packages (ospm:path generation))
              for package = (ospm:parent-package package-output)
              collect
-             (markup:markup*
-              `(:li (:a :class "button"
-                        :href ,(lisp-url `(%describe-os-package
-                                           (or (ospm:find-os-packages
-                                                ,(ospm:name package)
-                                                :version ,(ospm:version package))
-                                               (ospm:find-os-packages
-                                                ,(ospm:name package)))))
-                        ,(object-string package-output))
-                    " " ,(ospm:version package))))))
+                (markup:markup*
+                 `(:li (:a :class "button"
+                           :href ,(lisp-url `(%describe-os-package
+                                              (or (ospm:find-os-packages
+                                                   ,(ospm:name package)
+                                                   :version ,(ospm:version package))
+                                                  (ospm:find-os-packages
+                                                   ,(ospm:name package)))))
+                           ,(object-string package-output))
+                       " " ,(ospm:version package))))))
      buffer)
     (echo "")
     (set-current-buffer buffer)
@@ -382,27 +391,31 @@ OBJECTS can be a list of packages, a generation, etc."
 (define-command switch-os-generation ()
   "Switch generation of selected profile."
   (assert-package-manager)
-  (let* ((profile (prompt-minibuffer
-                   :suggestion-function (os-profile-suggestion-filter
-                                         :include-manager-p t)
-                   :input-prompt "Target profile"))
-         (generation (prompt-minibuffer
-                      :suggestion-function (os-generation-suggestion-filter profile)
-                      :input-prompt "Switch to generation")))
+  (let* ((profile (first
+                   (prompt
+                    :sources (list (make-instance 'os-profile-suggestion-filter
+                                                  :include-manager-p t))
+                    :prompt "Target profile")))
+         (generation (first
+                      (prompt
+                       :sources (list (make-instance 'os-generation-suggestion-filter
+                                                     :profile profile))
+                       :prompt "Switch to generation"))))
     (operate-os-package "Switching to generation..." #'ospm:switch-generation
                         profile generation)))
 
 (define-command delete-os-generations ()
   "Delete generations of selected profile."
   (assert-package-manager)
-  (let* ((profile (prompt-minibuffer
-                   :suggestion-function (os-profile-suggestion-filter
-                                         :include-manager-p t)
-                   :input-prompt "Target profile"))
-         (generations (prompt-minibuffer
-                       :suggestion-function (os-generation-suggestion-filter profile)
-                       :input-prompt "Delete generations"
-                       :multi-selection-p t)))
+  (let* ((profile (first
+                   (prompt
+                    :sources (list (make-instance 'os-profile-source
+                                                  :include-manager-p t))
+                    :prompt "Target profile")))
+         (generations (prompt
+                       :sources (list (make-instance 'os-generation-source
+                                                     :profile profile))
+                       :prompt "Delete generations")))
     (operate-os-package "Deleting generations..." #'ospm:delete-generations
                         profile generations)))
 
