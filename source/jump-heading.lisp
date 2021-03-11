@@ -51,8 +51,7 @@
    (prompter:persistent-action #'scroll-page-to-heading)
    (prompter:constructor (lambda (source)
                            (get-headings :buffer (buffer source))))
-   (prompter:actions (list (make-command scroll-to-heading* (headings)
-                             (scroll-page-to-heading (first headings)))))))
+   (prompter:actions (list (make-unmapped-command scroll-page-to-heading)))))
 
 (define-command jump-to-heading (&key (buffer (current-buffer)))
   "Jump to a particular heading, of type h1, h2, h3, h4, h5, or h6."
