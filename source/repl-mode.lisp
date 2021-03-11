@@ -188,13 +188,11 @@
   (update-input-buffer-display repl))
 
 (defmethod insert ((repl repl-mode) characters)
-  (cluffer:insert-item (input-cursor repl) characters)
+  (let* ((translation-table '(("hyphen" "-")
+                              ("space" " ")))
+         (translated-characters (cadr (assoc characters translation-table :test #'string=))))
+    (cluffer:insert-item (input-cursor repl) (or translated-characters characters)))
   (update-input-buffer-display repl))
-
-(define-command self-insert-repl ()
-  "Insert pressed key in the current REPL."
-  ;; TODO
-  )
 
 (in-package :nyxt)
 

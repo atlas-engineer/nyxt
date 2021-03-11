@@ -149,7 +149,7 @@ Return nil to forward to renderer or non-nil otherwise."
                 (dolist (key key-stack)
                   (let ((value (keymap:key-value key)))
                     (log:debug "Insert ~s in REPL" value)
-                    (insert (nyxt/repl-mode::current-repl) value))))
+                    (nyxt/repl-mode::insert (nyxt/repl-mode::current-repl) value))))
               (setf key-stack nil)
               t)
 
