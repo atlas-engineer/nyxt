@@ -184,16 +184,10 @@ If STEPS is negative, go to next pages instead."
 Only available if current prompt-buffer source `multi-selection-p' is non-nil.
 DIRECTION can be `:forward' or `:backward' and specifies which suggestion to
 select next."
-  (when (prompter:multi-selection-p (current-source))
-    (multiple-value-bind (suggestion source)
-        (prompter:selected-suggestion prompt-buffer)
-      (with-accessors ((marked-suggestions prompter:marked-suggestions)) source
-        (match (find suggestion marked-suggestions)
-          ((guard n n) (setf marked-suggestions (delete suggestion marked-suggestions)))
-          (_ (push suggestion marked-suggestions)))))
-    (match direction
-      (:forward (select-next prompt-buffer))
-      (:backward (select-previous prompt-buffer)))))
+  (prompter:toggle-mark prompt-buffer)
+  (match direction
+    (:forward (select-next prompt-buffer))
+    (:backward (select-previous prompt-buffer))))
 
 (define-command prompt-buffer-toggle-mark-backwards (&key
                                                      (prompt-buffer (current-prompt-buffer)))
@@ -206,45 +200,21 @@ Only available if pomrpt-buffer `multi-selection-p' is non-nil.  DIRECTION can b
 (define-command prompt-buffer-mark-all (&optional (prompt-buffer (current-prompt-buffer)))
   "Mark all visible suggestions in current source.
 Only available if `multi-selection-p' is non-nil."
-  (when (prompter:multi-selection-p (current-source))
-    (alex:unionf (prompter:marked-suggestions (current-source))
-                 (mapcar #'prompter:value (prompter:suggestions (current-source))))
-    (update-suggestion-html prompt-buffer)))
+  (prompter:mark-all prompt-buffer)
+  (update-suggestion-html prompt-buffer))
 
 (define-command prompt-buffer-unmark-all (&optional (prompt-buffer (current-prompt-buffer)))
   "Unmark all visible suggestions in current source.
 Only available if `multi-selection-p' is non-nil."
-  (let ((source (current-source)))
-    (when (prompter:multi-selection-p source)
-      (with-accessors ((marked-suggestions prompter:marked-suggestions)
-                       (suggestions prompter:suggestions))
-          source
-        (setf marked-suggestions
-              (set-difference marked-suggestions
-                              (mapcar #'prompter:value suggestions))))
-      (update-suggestion-html prompt-buffer))))
+  (prompter:unmark-all prompt-buffer)
+  (update-suggestion-html prompt-buffer))
 
 (define-command prompt-buffer-toggle-mark-all (&optional
                                                (prompt-buffer (current-prompt-buffer)))
   "Toggle the mark over all visible suggestions in current source.
 Only available if `multi-selection-p' is non-nil."
-  (let ((source (current-source)))
-    (when (prompter:multi-selection-p source)
-      (with-accessors ((suggestions prompter:suggestions)
-                       (marked-suggestions prompter:marked-suggestions))
-          source
-        (let ((suggestion-values (mapcar #'prompter:value suggestions)))
-          (setf marked-suggestions
-                (cond
-                  ((subsetp marked-suggestions suggestion-values)
-                   (set-difference suggestion-values marked-suggestions))
-                  ((subsetp suggestion-values marked-suggestions)
-                   (set-difference marked-suggestions suggestion-values))
-                  (t ; When the intersection of suggestion-values and marked-suggestions is non-trivial.
-                   (set-difference
-                    (union marked-suggestions suggestion-values)
-                    (intersection marked-suggestions suggestion-values)))))))
-      (update-suggestion-html prompt-buffer))))
+  (prompter:toggle-mark-all prompt-buffer)
+  (update-suggestion-html prompt-buffer))
 
 (define-command copy-selection (&optional (prompt-buffer (current-prompt-buffer)))
   "Copy default property of selection to clipboard."
