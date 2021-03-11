@@ -28,7 +28,8 @@
   ((prompter:name "Quicklisp systems")
    (prompter:must-match-p t)
    (prompter:constructor (mapcar #'ql-dist:short-description (ql:system-list)))
-   (prompter:actions '(ql:quickload))))
+   (prompter:actions (list (make-command quickload* (systems)
+                             (ql:quickload (first systems)))))))
 
 (define-command load-system ()
   "Load a system from Quicklisp."
@@ -38,7 +39,7 @@
 
 (define-command add-distribution ()
   "Add a new Quicklisp distribution."
-  (let ((url (prompt
-              :prompt "New distribution URL"
-              :sources (make-instance 'prompter:raw-source))))
+  (let ((url (first (prompt
+                     :prompt "New distribution URL"
+                     :sources (make-instance 'prompter:raw-source)))))
     (ql-dist:install-dist url :prompt nil)))
