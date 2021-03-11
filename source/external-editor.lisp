@@ -20,14 +20,20 @@ so invoke on a separate thread when possible."
                                (uiop:native-namestring p)) :ignore-error-status t)
     (uiop:read-file-string p)))
 
+(define-parenscript select-input-field ()
+  (let ((active-tag (ps:chain document active-element tag-name)))
+    (when (or (string= active-tag "INPUT")
+              (string= active-tag "TEXTAREA"))
+      (ps:chain document active-element (select)))))
+
+(define-parenscript undo-selection ()
+  (ps:chain window (get-selection) (remove-all-ranges)))
+
+;; known issues:
+;; fails on duckduckgo's search bar because it loses its focus
 (define-command fill-input-from-external-editor ()
-  "This command will open your editor specified by your VISUAL-EDITOR of
-the BROWSER class, if unset, it will default to your VISUAL environment
-variable. It will then capture whatever text you enter and save in your
-editor."
+  "Edit the current input field using `external-editor-program'."
+  (select-input-field)
   (bt:make-thread
-   (lambda ()
-     (let ((text (get-text-from-external-editor)))
-       (ffi-within-renderer-thread
-        *browser*
-        (lambda () (%paste :input-text text)))))))
+   (lambda () (%paste :input-text (open-with-external-editor (%copy)))
+         (undo-selection))))
