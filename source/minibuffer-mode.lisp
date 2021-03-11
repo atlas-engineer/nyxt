@@ -44,8 +44,10 @@
        "up" 'select-previous
        "C-v" 'minibuffer-paste
        "C-y" 'minibuffer-paste
+       "s-insert" 'minibuffer-paste
        "C-w" 'copy-suggestion
        "C-c" 'copy-suggestion
+       "C-insert" 'copy-suggestion
        "tab" 'insert-suggestion
        "M-h" 'minibuffer-history
        "C-space" 'minibuffer-toggle-mark
