@@ -270,6 +270,53 @@ If STEPS is negative, go forward and selection first suggestion."
           (list last-source
                 (1- (length (suggestions last-source)))))))
 
+(export-always 'toggle-mark)
+(defun toggle-mark (prompter)
+  (when (multi-selection-p (selected-source prompter))
+    (multiple-value-bind (suggestion source)
+        (selected-suggestion prompter)
+      (with-accessors ((marked-suggestions marked-suggestions)) source
+        (if (find suggestion marked-suggestions)
+            (setf marked-suggestions (delete suggestion marked-suggestions))
+            (push suggestion marked-suggestions))))))
+
+(export-always 'mark-all)
+(defun mark-all (prompter)
+  (let ((source (selected-source prompter)))
+    (when (multi-selection-p source)
+      (alex:unionf (marked-suggestions source)
+                   (mapcar #'prompter:value (suggestions source))))))
+
+(export-always 'unmark-all)
+(defun unmark-all (prompter)
+  (let ((source (selected-source prompter)))
+    (when (multi-selection-p source)
+      (with-accessors ((marked-suggestions marked-suggestions)
+                       (suggestions suggestions))
+          source
+        (setf marked-suggestions
+              (set-difference marked-suggestions
+                              (mapcar #'value suggestions)))))))
+
+(export-always 'toggle-mark-all)
+(defun toggle-mark-all (prompter)
+  (let ((source (selected-source prompter)))
+    (when (multi-selection-p source)
+      (with-accessors ((suggestions suggestions)
+                       (marked-suggestions marked-suggestions))
+          source
+        (let ((suggestion-values (mapcar #'value suggestions)))
+          (setf marked-suggestions
+                (cond
+                  ((subsetp marked-suggestions suggestion-values)
+                   (set-difference suggestion-values marked-suggestions))
+                  ((subsetp suggestion-values marked-suggestions)
+                   (set-difference marked-suggestions suggestion-values))
+                  (t ; When the intersection of suggestion-values and marked-suggestions is non-trivial.
+                   (set-difference
+                    (union marked-suggestions suggestion-values)
+                    (intersection marked-suggestions suggestion-values))))))))))
+
 (defun resolve-selection (prompter)
   "Return the result of the prompt buffer. If there is no result, an
 empty list (that is, NIL) is returned."
