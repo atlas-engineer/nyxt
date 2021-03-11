@@ -12,6 +12,9 @@
          :type symbol
          :documentation "Name of the command.
 This is useful to build commands out of anonymous functions.")
+   (docstring ""
+              :type string
+              :documentation "Documentation of the command.")
    (fn (error "Function required.")
      :type function
      :documentation "Function wrapped by the command.")
@@ -66,26 +69,31 @@ We need a `command' class for multiple reasons:
   "Return a new local `command' named NAME.
 
 With BODY, the command binds ARGLIST and executes the body.
+The first string in the body is used to fill the `help' slot.
 
 Without BODY, NAME must be a function symbol and the command wraps over it
 against ARGLIST, if specified. "
-  (alex:with-gensyms (fn sexp)
-    `(let ((,fn nil)
-           (,sexp nil))
-       (cond
-         ((and ',arglist ',body)
-          (setf ,fn (lambda (,@arglist) ,@body)
-                ,sexp '(lambda (,@arglist) ,@body)))
-         ((and ',arglist (typep ',name 'function-symbol))
-          (setf ,fn (lambda (,@arglist) (funcall ',name ,@arglist))
-                ,sexp '(lambda (,@arglist) (funcall ,name ,@arglist))))
-         ((and (null ',arglist) (typep ',name 'function-symbol))
-          (setf ,fn (symbol-function ',name)))
-         (t (error "Either NAME must be a function symbol, or ARGLIST and BODY must be set properly.")))
-       (make-instance 'command
-                      :name ',name
-                      :fn ,fn
-                      :sexp ,sexp))))
+  (let ((documentation (if (stringp (first body))
+                           (first body)
+                           "")))
+    (alex:with-gensyms (fn sexp)
+      `(let ((,fn nil)
+             (,sexp nil))
+         (cond
+           ((and ',arglist ',body)
+            (setf ,fn (lambda (,@arglist) ,@body)
+                  ,sexp '(lambda (,@arglist) ,@body)))
+           ((and ',arglist (typep ',name 'function-symbol))
+            (setf ,fn (lambda (,@arglist) (funcall ',name ,@arglist))
+                  ,sexp '(lambda (,@arglist) (funcall ,name ,@arglist))))
+           ((and (null ',arglist) (typep ',name 'function-symbol))
+            (setf ,fn (symbol-function ',name)))
+           (t (error "Either NAME must be a function symbol, or ARGLIST and BODY must be set properly.")))
+         (make-instance 'command
+                        :name ',name
+                        :docstring ,documentation
+                        :fn ,fn
+                        :sexp ,sexp)))))
 
 (export-always 'define-command)
 (defmacro define-command (name (&rest arglist) &body body)
@@ -144,6 +152,7 @@ Example:
        (setf *command-list* (delete ',name *command-list* :key #'name))
        (push (make-instance 'command
                             :name ',name
+                            :docstring ,@documentation
                             :fn (symbol-function ',name)
                             :sexp '(define-command (,@arglist) ,@body))
              *command-list*))))
