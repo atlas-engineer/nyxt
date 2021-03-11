@@ -218,7 +218,7 @@ Only available if `multi-selection-p' is non-nil."
 
 (define-command copy-selection (&optional (prompt-buffer (current-prompt-buffer)))
   "Copy default property of selection to clipboard."
-  (let* ((marks (all-marked-suggestion-values prompt-buffer))
+  (let* ((marks (prompter:all-marks prompt-buffer))
          (props (if marks
                     (mapcar #'prompter:object-properties marks)
                     (list (prompter:properties (prompter:selected-suggestion

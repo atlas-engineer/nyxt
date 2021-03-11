@@ -151,11 +151,6 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
       (prompter:selected-suggestion prompt-buffer)
     (values (prompter:value suggestion) source)))
 
-(export-always 'all-marked-suggestion-values)
-(defun all-marked-suggestion-values (&optional (prompt-buffer (current-prompt-buffer)))
-  "Return the list of the marked suggestion in the prompt-buffer."
-  (mapcar #'prompter:value (prompter:all-marked-suggestions prompt-buffer)))
-
 (defun show-prompt-buffer (prompt-buffer &key height)
   "Show the last active prompt-buffer, if any."
   ;; TODO: Add method that returns if there is only 1 source with no filter.
@@ -265,7 +260,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                                            (:tr :id (when (equal (list suggestion source)
                                                                  (multiple-value-list (prompter:selected-suggestion prompt-buffer)))
                                                       "selection")
-                                                :class (when (find suggestion (prompter:marked-suggestions source))
+                                                :class (when (find (prompter:value suggestion) (prompter:marks source))
                                                          "marked")
                                                 (loop for (_ property) on (prompter:properties suggestion) by #'cddr
                                                       collect (markup:markup (:td property)))))))))))
@@ -281,7 +276,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
 
     (let* ((source (current-source prompt-buffer))
            (suggestions (prompter:suggestions source))
-           (marked-suggestions (prompter:marked-suggestions source)))
+           (marks (prompter:marks source)))
       (evaluate-script
        prompt-buffer
        (ps:ps
@@ -292,15 +287,15 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                    "")
                   ((hide-suggestion-count-p prompt-buffer)
                    "")
-                  (marked-suggestions
+                  (marks
                    (format nil "[~a/~a]"
-                           (length marked-suggestions)
+                           (length marks)
                            (length suggestions)))
-                  ((and (not marked-suggestions)
+                  ((and (not marks)
                         (prompter:multi-selection-p source))
                    (format nil "[0/~a]"
                            (length suggestions)))
-                  ((not marked-suggestions)
+                  ((not marks)
                    (format nil "[~a]"
                            (length suggestions)))))))))))
 
