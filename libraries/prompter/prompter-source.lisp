@@ -418,7 +418,8 @@ If a previous suggestion computation was not finished, it is forcefully terminat
 - First the `filter-preprocessor' is run over a copy of `initial-suggestions'.
 - The resulting suggestions are passed one by one to `filter'.
   When filter returns non-nil, the result is added to `suggestions' and
-  `update-notifier' is notified, if `notification-delay' has been exceeded.
+  `update-notifier' is notified, if `notification-delay' has been exceeded or if
+  the last suggestion has been processed.
 - Last the `filter-postprocessor' is run the SOURCE and the INPUT.
   Its return value is assigned to the list of suggestions.
 - Finally, `ready-notifier' is fired up.
@@ -450,23 +451,27 @@ feedback to the user while the list of suggestions is being computed."
                          (maybe-funcall (filter-preprocessor source)
                                         initial-suggestions-copy source input))
                         (ensure-suggestions-list source input)))
-                  (process! (preprocessed-suggestions last-notification-time)
-                    (setf (slot-value source 'suggestions) '())
-                    (if (or (str:empty? input)
-                            (not (functionp (filter source))))
-                        (setf (slot-value source 'suggestions) preprocessed-suggestions)
-                        (dolist (suggestion preprocessed-suggestions)
-                          (sera:and-let* ((processed-suggestion
-                                           (funcall (filter source) input suggestion)))
-                            (setf (slot-value source 'suggestions)
-                                  (insert-item-at suggestion (sort-predicate source)
-                                                  (suggestions source)))
-                            (let* ((now (get-internal-real-time))
-                                   (duration (/ (- now last-notification-time)
-                                                internal-time-units-per-second)))
-                              (when (> duration (notification-delay source))
-                                (calispel:! (update-notifier source) t)
-                                (setf last-notification-time now)))))))
+                  (process! (preprocessed-suggestions)
+                    (let ((last-notification-time (get-internal-real-time)))
+
+                      (setf (slot-value source 'suggestions) '())
+                      (if (or (str:empty? input)
+                              (not (functionp (filter source))))
+                          (setf (slot-value source 'suggestions) preprocessed-suggestions)
+                          (dolist (suggestion preprocessed-suggestions)
+                            (sera:and-let* ((processed-suggestion
+                                             (funcall (filter source) input suggestion)))
+                              (setf (slot-value source 'suggestions)
+                                    (insert-item-at suggestion (sort-predicate source)
+                                                    (suggestions source)))
+                              (let* ((now (get-internal-real-time))
+                                     (duration (/ (- now last-notification-time)
+                                                  internal-time-units-per-second)))
+                                (when (or (> duration (notification-delay source))
+                                          (= (length (slot-value source 'suggestions))
+                                             (length preprocessed-suggestions)))
+                                  (calispel:! (update-notifier source) t)
+                                  (setf last-notification-time now))))))))
                   (postprocess! ()
                     (when (filter-postprocessor source)
                       (setf (slot-value source 'suggestions)
@@ -475,16 +480,12 @@ feedback to the user while the list of suggestions is being computed."
                              ;; TODO: Pass `suggestions' to filter-postprocessor, to mirror filter-preprocessor signature.
                              (maybe-funcall (filter-postprocessor source) source input))))))
              (wait-for-initial-suggestions)
-             (let ((last-notification-time (get-internal-real-time)))
-               ;; TODO: Move last-notification-time inside `process'.
-               (process!
-                (preprocess
-                 ;; We copy the list of initial-suggestions so that the
-                 ;; preprocessor cannot modify it.
-                 (mapcar #'copy-object
-                         (initial-suggestions source)))
-                last-notification-time))
-             ;; TODO: Notify when filter is done.
+             (process!
+              (preprocess
+               ;; We copy the list of initial-suggestions so that the
+               ;; preprocessor cannot modify it.
+               (mapcar #'copy-object
+                       (initial-suggestions source))))
              (postprocess!)
              (bt:with-lock-held ((wrote-to-ready-channel-lock source))
                (unless (wrote-to-ready-channel-p source)
