@@ -276,7 +276,7 @@ empty list (that is, NIL) is returned."
   (uiop:ensure-list
    (or (mapcar #'value (all-marked-suggestions prompter))
        (value (selected-suggestion prompter))
-       (and (not (must-match-p prompter))
+       (and (not (must-match-p prompter)) ; TODO: What shall we do on no match?
             (slot-value prompter 'input)))))
 
 (export-always 'actions)
@@ -290,7 +290,7 @@ marked elements."
     (if marked-sources
         (reduce #'intersection (mapcar (lambda (source)
                                          (slot-value source 'actions))
-                                       (sources prompter)))
+                                       marked-sources))
         (slot-value (selected-source prompter) 'actions))))
 
 (defun add-input-to-history (prompter)
@@ -395,7 +395,7 @@ suggestions."
   (alex:mappend #'marked-suggestions (sources prompter)))
 
 (defun default-action (prompter)
-  (first (slot-value (selected-source prompter) 'actions)))
+  (first (actions prompter)))
 
 (export-always 'resume)
 (defun resume (prompter)
