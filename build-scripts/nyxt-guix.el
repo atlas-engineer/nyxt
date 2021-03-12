@@ -45,17 +45,6 @@
        (or (getenv "XDG_CACHE_HOME") "~/.cache")
        "/lisp-repl-core-directory")))
 
-(defun nyxt--cl-dump-call (image-path)
-  `(uiop:run-program
-    `("lisp-repl-core-dumper"
-      "-o" ,,image-path
-      "-p" ,(format nil "~{ ~a~}~%"
-                    (delete-if
-                     (lambda (s) (string= "nyxt" (subseq s 0 (min (length s) 4))))
-                     (append (asdf:system-depends-on (asdf:find-system :nyxt))
-                             (asdf:system-depends-on (asdf:find-system :nyxt/gtk)))))
-      "sbcl")))
-
 (defvar nyxt-guix-profile-directory "~/.guix-temp-profiles/nyxt"
   "Default directory where to dump auto-generated Guix profiles for Nyxt development.")
 
@@ -121,24 +110,28 @@ implementation.  Example:
       ;; TODO: Can we reuse the same Guix environment?  Would probably be
       ;; faster, but then containerizing is harder.
       (let* ((output (get-buffer-create " *Guix SBCL for Nyxt*"))
-             (status (apply #'call-process
-                            "guix"
-                            nil (list output t) nil
-                            "environment"
-                            `(,@(when no-grafts
-                                  '("--no-grafts"))
-                              "-l" ,guix-def
-                              ,@(if container
-                                    (list
-                                     "--container"
-                                     (concat "--share=" (file-name-directory image-path))
-                                     (concat "--share=" nyxt-checkout "=/nyxt"))
-                                  '("--pure"))
-                              "--ad-hoc" "lisp-repl-core-dumper"
-                              "--"
-                              "sbcl" "--noinform" "--no-userinit" "--eval" "(require :asdf)"
-                              "--eval" ,(prin1-to-string (nyxt--cl-dump-call image-path))
-                              "--quit"))))
+             (args (cons "environment"
+                         `(,@(when no-grafts
+                               '("--no-grafts"))
+                           "-l" ,guix-def
+                           ,@(if container
+                                 (list
+                                  "--container"
+                                  (concat "--share=" (file-name-directory image-path))
+                                  (concat "--share=" nyxt-checkout "=/nyxt"))
+                               '("--pure"))
+                           "--ad-hoc" "lisp-repl-core-dumper"
+                           "--"
+                           "lisp-repl-core-dumper"
+                           "-o" ,image-path
+                           "-d" "nyxt/gtk"
+                           "sbcl"
+                           "--quit")))
+             (status (and (message "Running Guix with args %S" args)
+                      (apply #'call-process
+                                  "guix"
+                                  nil (list output t) nil
+                                  args))))
         (if (= status)
             (kill-buffer output)
           (error "Guix environment failed, see %s" output)
