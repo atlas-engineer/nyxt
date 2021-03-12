@@ -52,9 +52,9 @@
 (define-command describe-variable ()
   "Inspect a variable and show it in a help buffer."
   (let* ((input (variable-suggestion-name
-                 (prompt
-                  :prompt "Describe variable:"
-                  :sources (make-instance 'variable-source)))))
+                 (first (prompt
+                         :prompt "Describe variable:"
+                         :sources (make-instance 'variable-source))))))
     (with-current-html-buffer (buffer
                                (str:concat "*Help-" (symbol-name input) "*")
                                'nyxt/help-mode:help-mode)
@@ -123,9 +123,9 @@
 (define-command describe-function ()
   "Inspect a function and show it in a help buffer.
 For generic functions, describe all the methods."
-  (let ((input (prompt
-                :prompt "Describe function"
-                :sources (make-instance 'function-source))))
+  (let ((input (first (prompt
+                       :prompt "Describe function"
+                       :sources (make-instance 'function-source)))))
     (setf input (function-suggestion-name input))
     (flet ((method-desc (method)
              (markup:markup
@@ -158,9 +158,9 @@ For generic functions, describe all the methods."
   "Inspect a command and show it in a help buffer.
 A command is a special kind of function that can be called with
 `execute-command' and can be bound to a key."
-  (let ((input (prompt
-                :prompt "Describe command"
-                :sources (make-instance 'command-source))))
+  (let ((input (first (prompt
+                       :prompt "Describe command"
+                       :sources (make-instance 'command-source)))))
     (describe-command* input)))
 
 (defun describe-slot* (slot class &key mention-class-p)      ; TODO: Adapt HTML sections / lists to describe-slot and describe-class.
@@ -193,9 +193,9 @@ A command is a special kind of function that can be called with
 (define-command describe-class ()
   "Inspect a class and show it in a help buffer."
   (let* ((input (class-suggestion-name
-                 (prompt
-                  :prompt "Describe class"
-                  :sources (make-instance 'class-source)))))
+                 (first (prompt
+                         :prompt "Describe class"
+                         :sources (make-instance 'class-source))))))
     (with-current-html-buffer (buffer
                                (str:concat "*Help-" (symbol-name input) "*")
                                'nyxt/help-mode:help-mode)
@@ -224,9 +224,9 @@ CLASS can be a class symbol or a list of class symbols, as with
                    ((,slot ,value)))))
         (let ((accepted-input
                 (loop while t do
-                         (let ((input (prompt
-                                       :prompt (format nil "Configure slot value ~a" slot)
-                                       :sources (make-instance 'prompter:raw-source))))
+                         (let ((input (first (prompt
+                                              :prompt (format nil "Configure slot value ~a" slot)
+                                              :sources (make-instance 'prompter:raw-source)))))
                            ;; no type specified, no need to keep querying
                            (unless type (return input))
                            (when (typep (read-from-string input) type)
@@ -245,9 +245,9 @@ CLASS can be a class symbol or a list of class symbols, as with
 
 (define-command describe-slot ()
   "Inspect a slot and show it in a help buffer."
-  (let* ((input (prompt
-                 :prompt "Describe slot"
-                 :sources (make-instance 'slot-source))))
+  (let* ((input (first (prompt
+                        :prompt "Describe slot"
+                        :sources (make-instance 'slot-source)))))
     (with-current-html-buffer (buffer
                                (str:concat "*Help-" (symbol-name (name input)) "*")
                                'nyxt/help-mode:help-mode)
