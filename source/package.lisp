@@ -52,22 +52,10 @@ It's recommended to use this package in the Nyxt configuration file, instead of
   (:import-from #:serapeum #:export-always)
   (:documentation "Mode for prompter buffer."))
 
-;; nyxt/file-manager-mode is declared here due to the same reason as
-;; nyxt/minibuffer-mode.
 (uiop:define-package :nyxt/file-manager-mode
     (:use :common-lisp :trivia :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
-  (:documentation "Manage files.
-
-Open any file from within Nyxt, with the usual fuzzy suggestion.
-
-`M-x open-file (C-x C-f)'
-
-\"file manager\" is a bit excessive for now. Currently, we can:
-- browse files, with fuzzy-suggestion
-- go one directory up (C-l)
-- enter a directory (C-j)
-- open files. By default, with xdg-open. See `open-file-function'.
-")
+  (:import-from #:class-star #:define-class)
+  (:documentation "Manage files.")
   (:export :file-manager-mode)
-  (:export :open-file-from-directory-suggestion-filter))
+  (:export :open-file-function :directory-source))

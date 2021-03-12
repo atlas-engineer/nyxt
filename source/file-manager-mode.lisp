@@ -46,80 +46,16 @@ Can be used as a `*open-file-function*'."
     ;; We can probably signal something and display a notification.
     (error (c) (log:error "Opening ~a: ~a~&" filename c))))
 
-;; note: put under the function definition.
-;; the user is encouraged to override this in her init file.
-(serapeum:export-always '*open-file-function*)
-(defparameter *open-file-function* #'open-file-function
-  "Function triggered to open files.
+(defparameter *open-file-function* #'open-file-function "Function triggered to open files.")
 
-Example to open directories with =emacsclient= and some music ad
-videos with =mpv=:
+(define-class directory-source (prompter:source)
+  ((prompter:name "Files")
+   (directory-path :accessor directory-path :initarg :directory-path)
+   (prompter:must-match-p t)
+   (prompter:constructor 
+    (lambda (source)
+      (uiop:directory-files (directory-path source))))))
 
-\(defun my-open-files (filename)
-  \"Open music and videos with mpv, open directories with emacsclient.\"
-  (let ((args)
-        (extension (pathname-type filename)))
-    (cond
-      ((uiop:directory-pathname-p filename)
-       (log:info \"Opening ~a with emacsclient.\" filename)
-       (setf args (list \"emacsclient\" filename)))
-
-      ((member extension '(\"flv\" \"mkv\" \"mp4\") :test #'string-equal)
-       (setf args (list \"mpv\" filename))))
-
-    (handler-case (if args
-                      (uiop:launch-program args)
-                      ;; fallback to Nyxt's default.
-                      (nyxt/file-manager-mode:open-file-function filename))
-      (error (c) (log:error \"Error opening ~a: ~a\" filename c)))))
-
-\(setf nyxt/file-manager-mode:*open-file-function* #'my-open-files)")
-
-(define-mode file-manager-mode (nyxt/minibuffer-mode:minibuffer-mode)
-  "Mode to open any file from the filesystem with fuzzy suggestion
-on the minibuffer. Specialize keybindings on this mode. See the
-command `open-file'."
-  ((keymap-scheme
-    (define-scheme "file-manager"
-      scheme:emacs
-      (list
-       "M-left" 'display-parent-directory
-       "C-l" 'display-parent-directory
-       "C-j" 'enter-directory
-       "M-right" 'enter-directory)
-
-      scheme:vi-normal
-      (list
-       "M-right" 'enter-directory
-       "M-left" 'display-parent-directory)))))
-
-(serapeum:export-always 'open-file-from-directory-suggestion-filter)
-(defun open-file-from-directory-suggestion-filter (minibuffer &optional (directory (uiop:getcwd)))
-  "Fuzzy-match files and directories from DIRECTORY."
-  (let ((filenames (uiop:directory-files directory))
-        (dirnames (uiop:subdirectories directory)))
-    (fuzzy-match (input-buffer minibuffer) (append filenames dirnames))))
-
-(define-command display-parent-directory (&optional (minibuffer (current-minibuffer)))
-  "Get the parent directory and update the minibuffer.
-
-Default keybindings: `M-Left' and `C-l'."
-  (uiop:chdir "..")
-  (erase-input minibuffer)
-  (update-display minibuffer))
-
-(define-command enter-directory (&optional (minibuffer (current-minibuffer)))
-  "If the suggestion at point is a directory, refresh the minibuffer suggestions with its list of files.
-
-Default keybindings: `M-Right' and `C-j'. "
-  (let ((filename (get-suggestion minibuffer)))
-    (when (and (uiop:directory-pathname-p filename)
-               (uiop:directory-exists-p filename))
-      (uiop:chdir filename)
-      (erase-input minibuffer)
-      (update-display minibuffer))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define-command nyxt::open-file ()
   "Open a file from the filesystem.
 
@@ -129,22 +65,14 @@ fuzzy suggestion.
 The default directory is the one computed by
 `download-manager:default-download-directory' (usually `~/Downloads').
 
-Press `Enter' to visit a file, `M-Left' or `C-l' to go one directory
-up, `M-Right' or `C-j' to browse the directory at point.
-
 By default, it uses the `xdg-open' command. The user can override the
 `nyxt:open-file-function' function, which takes the filename (or directory
-name) as parameter.
-
-The default keybinding is `C-x C-f'.
-
-Note: this feature is alpha, get in touch for more!"
+name) as parameter."
   ;; TODO: How do we set the current directory permanently?
   (uiop:with-current-directory ((uiop:getcwd))
     ;; Allow the current minibuffer to recognize our keybindings.
-    (let ((filename (prompt-minibuffer
-                     :default-modes '(file-manager-mode nyxt/minibuffer-mode:minibuffer-mode)
-                     :input-prompt (namestring (uiop:getcwd))
-                     :suggestion-function #'open-file-from-directory-suggestion-filter)))
-
+    (let ((filename (first (prompt
+                            :prompt (namestring (uiop:getcwd))
+                            :sources (list (make-instance 'directory-source
+                                                          :directory-path (uiop:getcwd)))))))
       (funcall nyxt/file-manager-mode::*open-file-function* (namestring filename)))))
