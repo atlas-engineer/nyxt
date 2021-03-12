@@ -4,21 +4,6 @@
 (in-package :nyxt/file-manager-mode)
 (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum)
 
-;;; ***********************************************************************
-;;; *Disclaimer*: this feature is meant to grow with Next 1.4 and onwards!
-;;; ***********************************************************************
-;;;
-;;; Much can be done:
-;;; - configuration options to choose what to open with
-;;; - more configuration in general
-;;; - sort by last access, etc
-;;; - multi-selection
-;;; - bookmarks
-;;; - open files in Nyxt
-;;; - a UI to list files
-;;; - lazy loading for large directories
-;;; - many things...
-
 (defparameter *open-file-in-new-buffer* t
   "If nil, don't open files and directories in a new buffer.")
 
