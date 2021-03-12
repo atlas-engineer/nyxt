@@ -24,7 +24,7 @@
                   ("del.nyxt-diff-replace"
                    :text-decoration "none"
                    :background-color "#efcbcf")))
-                 :documentation "Diff colours for its visual representation.
+               :documentation "Diff colours for its visual representation.
 They're based on the modus-operandi theme by Protesilaos Stavrou, which follows
 the highest standard on accessibility.")
    (keymap-scheme (define-scheme "diff"
@@ -51,33 +51,27 @@ the highest standard on accessibility.")
                    (buffer instance)
                    (ps:ps (setf (ps:chain document title) "*diff*")))))))
 
-(defun prompt-old-html ()
-  "Extract the string html representation of the old buffer.
-The current buffer appears at the top of the minibuffer prompt."
-  (ffi-buffer-get-document
-   (prompt-minibuffer
-    :input-prompt "Old buffer"
-    :suggestion-function (buffer-suggestion-filter))))
-
-(defun prompt-new-html ()
-  "Extract the string html representation of the new buffer.
-The last visited buffer appears at the top of the minibuffer prompt."
-  (ffi-buffer-get-document
-   (prompt-minibuffer
-    :input-prompt "New buffer"
-    :suggestion-function (buffer-suggestion-filter
-                          :current-is-last-p t))))
-
 (define-command diff ()
   "Create a buffer showing a diff between 2 html documents."
   ;; users should be able to choose from buffers and/or files.  to be expanded
   ;; when file-manager-mode is fixed.
-  (set-current-buffer               ; change buffer here, not at the constructor
-   (diff-mode :old-html (prompt-old-html)
-              :new-html (prompt-new-html)
-              :buffer (make-internal-buffer
-                       ;; it's sensible to set the title here but it will be
-                       ;; overridden anyway by html-set
-                       :title "*diff*"
-                       ;; only cua-mode keybindings work, why?
-                       :modes '(base-mode)))))
+  (flet ((fetch-html-from-buffer (&key prompt current-is-last-p)
+           (ffi-buffer-get-document
+            (prompt-minibuffer
+             :input-prompt prompt
+             :suggestion-function (buffer-suggestion-filter
+                                   :current-is-last-p current-is-last-p)))))
+    ;; change buffer here, not at the constructor
+    (set-current-buffer
+     (diff-mode :old-html (fetch-html-from-buffer
+                           :prompt "Old buffer"
+                           :current-is-last-p nil)
+                :new-html (fetch-html-from-buffer
+                           :prompt "New buffer"
+                           :current-is-last-p t)
+                :buffer (make-internal-buffer
+                         ;; it's sensible to set the title here but it will be
+                         ;; overridden anyway by html-set
+                         :title "*diff*"
+                         ;; only cua-mode keybindings work, why?
+                         :modes '(base-mode))))))
