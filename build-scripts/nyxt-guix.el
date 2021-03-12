@@ -146,7 +146,7 @@ implementation.  Example:
     (list (nyxt-guix-lazy-environment
            root
            :preserve preserve
-           :guix-env-args `("-l" ,(shell-quote-argument guix-def) ,@(when ad-hoc `("--ad-hoc" ,ad-hoc)))
+           :guix-env-args `("-l" ,(shell-quote-argument guix-def) ,@(when ad-hoc `("--ad-hoc" ,@ad-hoc)))
            :run-args (list image-path)))))
 
 (provide 'nyxt-guix)
