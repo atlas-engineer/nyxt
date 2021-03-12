@@ -95,14 +95,13 @@ The `implicit-visits' count is incremented."
       (let* ((entry (htree:data (htree:current (htree:owner history (id buffer))))))
         (incf (implicit-visits entry))))))
 
-(define-command delete-history-entry ()
+(define-command delete-history-entry (&key (buffer (current-buffer)))
   "Delete queried history entries."
-  (with-data-access (history (history-path (current-buffer)))
-    (let ((entries (prompt-minibuffer
-                    :input-prompt "Delete entries"
-                    :suggestion-function (history-disowned-suggestion-filter)
-                    :history (minibuffer-set-url-history *browser*)
-                    :multi-selection-p t)))
+  (with-data-access (history (history-path buffer))
+    (let ((entries (prompt
+                    :prompt "Delete entries"
+                    :sources (list (make-instance 'history-disowned-source
+                                                  :buffer buffer)))))
       (dolist (entry entries)
         (htree:delete-data history entry)))))
 
@@ -113,10 +112,10 @@ This removes the parenthood with the parent buffer, if there was any.
 When called over many or all buffers, it may free many history entries which
 then become available for deletion with `delete-history-entry'."
   (let ((buffers (or (alex:ensure-list buffer)
-                     (prompt-minibuffer
-                      :input-prompt "Reset histories of buffer(s)"
-                      :multi-selection-p t
-                      :suggestion-function (buffer-suggestion-filter)))))
+                     (prompt
+                      :prompt "Reset histories of buffer(s)"
+                      :sources (list (make-instance 'buffer-source
+                                                    :actions '()))))))
     (with-data-access (history (history-path (current-buffer)))
       (dolist (buffer buffers)
         (htree:reset-owner history (id buffer))))))
@@ -143,25 +142,6 @@ lot."
                         (* 60 60)))))
            0))))
 
-(defun history-suggestion-filter (&key prefix-urls)
-  "Include prefix-urls in front of the history.
-This can be useful to, say, prefix the history with the current URL.  At the
-moment the PREFIX-URLS are inserted as is, not a `history-entry' objects since
-it would not be very useful."
-  (with-data-unsafe (hist (history-path (current-buffer)))
-    (let* ((all-history-entries (when hist
-                                  (mapcar #'htree:data
-                                          (sort (alex:hash-table-keys (htree:entries hist))
-                                                (lambda (x y)
-                                                  (> (score-history-entry x)
-                                                     (score-history-entry y)))))))
-           (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
-      (when prefix-urls
-        (setf all-history-entries (append (mapcar #'quri:url-decode prefix-urls)
-                                          all-history-entries)))
-      (lambda (minibuffer)
-        (fuzzy-match (input-buffer minibuffer) all-history-entries)))))
-
 (defun history-initial-suggestions (&key prefix-urls) ; TODO: Rename?  Make this a preprocessor so that it runs in the background?
   "TODO: Complete me!"
   (with-data-unsafe (hist (history-path (current-buffer)))
@@ -177,20 +157,24 @@ it would not be very useful."
                                           all-history-entries)))
       all-history-entries)))
 
-(defun history-disowned-suggestion-filter ()
-  "All disowned history entries (without nodes)."
-  (with-data-unsafe (hist (history-path (current-buffer)))
-    (let ((owner-less-history-entries
-           (when hist
-             (mapcar #'htree:data
-                     (sort
-                      (delete-if (lambda (entry) (htree:nodes entry))
-                                 (alex:hash-table-keys (htree:entries hist)))
-                      (lambda (x y)
-                        (> (score-history-entry x)
-                           (score-history-entry y))))))))
-      (lambda (minibuffer)
-        (fuzzy-match (input-buffer minibuffer) owner-less-history-entries)))))
+(define-class history-disowned-source (prompter:source)
+  ((prompter:name "Disowned History")
+   (buffer :accessor buffer :initarg :buffer)
+   (prompter:must-match-p t)
+   (prompter:multi-selection-p t)
+   (prompter:constructor
+    (lambda (source)
+      (with-data-unsafe (hist (history-path (buffer source)))
+        (let ((owner-less-history-entries
+                (when hist
+                  (mapcar #'htree:data
+                          (sort
+                           (delete-if (lambda (entry) (htree:nodes entry))
+                                      (alex:hash-table-keys (htree:entries hist)))
+                           (lambda (x y)
+                             (> (score-history-entry x)
+                                (score-history-entry y))))))))
+          owner-less-history-entries))))))
 
 (defun history-html-list (&key (limit 100) ; Export?
                             (separator " → "))
@@ -439,18 +423,19 @@ We keep this variable as a means to import the old format to the new one.")
                   (not (string-equal "lisp" type)))))
            (uiop:directory-files (dirname (history-path buffer))))))
 
-(defun history-name-suggestion-filter (minibuffer)
-  (fuzzy-match (input-buffer minibuffer) (histories-list)))
+(define-class history-name-source (prompter:source)
+  ((prompter:name "Histories")
+   (prompter:must-match-p t)
+   (prompter:constructor (histories-list))))
 
 (define-command store-history-by-name ()
   "Store the history data in the file named by user input.
 Useful for session snapshots, as `restore-history-bu-name' will restore opened buffers."
   (with-data-access (history (history-path (current-buffer)))
-    (sera:and-let* ((name (prompt-minibuffer
-                           :input-prompt "The name to store history with"
-                           :history (minibuffer-session-restore-history *browser*)
-                           :suggestion-function #'history-name-suggestion-filter
-                           :must-match-p nil))
+    (sera:and-let* ((name (first (prompt
+                                  :input-prompt "The name to store history with"
+                                  :sources (list (make-instance 'prompter:raw-source)
+                                                 (make-instance 'history-name-source)))))
                     (path (make-instance 'history-data-path
                                          :dirname (dirname (history-path (current-buffer)))
                                          :basename name)))
@@ -463,10 +448,9 @@ The imported history file is untouched while the current one is overwritten.
 If you want to save the current history file beforehand, call
 `store-history-by-name' to save it under a new name."
   ;; TODO: backup current history?
-  (sera:and-let* ((name (prompt-minibuffer
-                         :input-prompt "The name of the history to restore"
-                         :history (minibuffer-session-restore-history *browser*)
-                         :suggestion-function #'history-name-suggestion-filter))
+  (sera:and-let* ((name (first (prompt
+                                :prompt "The name of the history to restore"
+                                :sources (list (make-instance 'history-name-source)))))
                   (path (make-instance 'history-data-path
                                        :dirname (dirname (history-path (current-buffer)))
                                        :basename name)))
