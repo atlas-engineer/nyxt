@@ -15,11 +15,10 @@ Example usage defaulting to \"no\":
 \(let ((*yes-no-choices* '(:no \"no\" :yes \"yes\")))
   (if-confirm (\"Are you sure to kill ~a buffers?\" count)
      (delete-buffers)))"
-  ;; TODO: Can we keep the `*yes-no-choices*' customization option?
   `(let ((answer (prompt
-                  :input-prompt (format nil ,@prompt)
-                  :suggestion-function (yes-no-suggestion-filter)
+                  :prompt (format nil ,@prompt)
+                  :sources '(prompter:yes-no-source)
                   :hide-suggestion-count-p t)))
-     (if (confirmed-p answer)
+     (if (string= "yes" answer)
          ,yes-form
          ,no-form)))
