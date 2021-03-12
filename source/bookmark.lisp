@@ -423,7 +423,7 @@ rest in background buffers."
                     ;; this should be fixed (and :must-match-p nil -
                     ;; removed) once the file-manager has better navigation
                     ;; support
-                    :suggestion-function #'nyxt/file-manager-mode:open-file-from-directory-suggestion-filter
+                    ;; :suggestion-function #'nyxt/file-manager-mode:open-file-from-directory-suggestion-filter
                     :must-match-p nil)))
     (if (and (uiop:file-exists-p html-file)
              (equal (pathname-type html-file) "html"))
