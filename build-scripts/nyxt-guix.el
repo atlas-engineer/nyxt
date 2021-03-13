@@ -61,62 +61,59 @@
                                                    no-grafts
                                                    extra-args
                                                    command-args)
-  "Return the command to load a Guix environment.
-If the environment already exists, don't regenerate it.
+  "Return the command to load a Guix environment, persisted at ROOT.
+If the ROOT environment already exists, don't regenerate it.
 
-If CONTAINER is non nil, the environment is containerized, otherwise it's pure.
+If CONTAINER is non nil, the environment is containerized,
+otherwise it's pure (that is, it does not inherit from the
+current environment variables.)
 
 PRESERVE is a list of environment variables (list of strings) to preserve.
 
 EXTRA-ARGS is passed to `guix environment', before \"--\".
-When CONTAINER is nil, EXTRA-ARGS are shell-quoted with `shell-quote-argument'.
 
 COMMAND-ARGS as passed after EXTRA-ARGS and \"--\", or, if the environment
 already exists and CONTAINER is nil, after sourcing \"etc/profile\"."
-  (setq root (expand-file-name (or root
-                                   (concat nyxt-guix-profile-directory "/nyxt"))))
-  (make-directory (file-name-directory root) :parents)
-  (cl-flet ((guix-environment-command
-             (root-exists)
-             (mapconcat
-              #'shell-quote-argument
-              (append
-               '("guix" "environment")
-               `(,@(when no-grafts '("--no-grafts"))
-                 ,@(if container
-                       `("--container"
-                         ,(mapcar (lambda (dir) (concat "--share=" dir)) share)
-                         ,(mapcar (lambda (dir) (concat "--expose=" dir)) expose)
-                         ,@(when network '("--network")))
-                     '("--pure"))
+  (let ((root-env (concat root "/etc/profile")))
+    (if (and (not container)
+             (file-exists-p root-env))
+        (append
+         (apply #'nyxt--pure-env preserve)
+         (list (executable-find "bash")    ; `executable-find' needed because of the pure-env.
+               "--norc" "--noprofile" "-c"
+               (format "source %s && %s" (shell-quote-argument root-env)
+                       (mapconcat #'shell-quote-argument command-args " "))))
+      (append
+       '("guix" "environment")
+       `(,@(when no-grafts '("--no-grafts"))
+         ,@(if container
+               `("--container"
+                 ,(mapcar (lambda (dir) (concat "--share=" dir)) share)
+                 ,(mapcar (lambda (dir) (concat "--expose=" dir)) expose)
+                 ,@(when network '("--network")))
+             '("--pure"))
+         ,@(if (file-exists-p root-env)
+               `("-p" ,root)
+             `("-r" ,root
+               ,@(when load `(,(concat "--load=" load)))))
+         ,@(when ad-hoc
+             `("--ad-hoc" ,@ad-hoc))
 
-                 ,@(if root-exists
-                       `("-p" ,root)
-                     `("-r" ,root
-                       ,@(when load `(,(concat "--load=" load)))))
-                 ,@(apply #'nyxt--guix-preserve-vars preserve)
-                 ,@extra-args
-                 "--"
-                 ,@command-args))
-              " ")))
-    (let ((root-env (concat root "/etc/profile")))
-      (list (executable-find "bash") "--norc" "--noprofile" "-c"
-            (format "if [ -e '%s' ]; then %s ; else %s ; fi"
-                    root-env
-                    (if container
-                        (guix-environment-command t)
-                      (format "source '%s' && %s" (shell-quote-argument root-env)
-                              (mapconcat #'shell-quote-argument command-args " ")))
-                    (guix-environment-command nil))))))
+         ,@(apply #'nyxt--guix-preserve-vars preserve)
+         ,@extra-args
+         "--"
+         ,@command-args)))))
 
 (cl-defun nyxt-make-guix-sbcl-for-nyxt (nyxt-checkout
                                         &key
+                                        force
                                         ;; Core dumper options:
                                         image-path
-                                        force
                                         ;; Guix environment options:
                                         root
-                                        container no-grafts preserve
+                                        container
+                                        preserve
+                                        no-grafts
                                         (ad-hoc '("gnupg")))
   "Run an SBCL executable image with all Nyxt dependencies pre-loaded.
 
@@ -140,25 +137,44 @@ implementation.  Example:
   (setq image-path (expand-file-name
                     (or image-path
                         (concat (nyxt-cache-dir) "/sbcl-nyxt.image"))))
+  (setq root (expand-file-name (or root
+                                   (concat nyxt-guix-profile-directory "/nyxt"))))
   (let ((guix-def (concat nyxt-checkout "/build-scripts/guix.scm")))
-    (when (and (file-exists-p image-path)
-               (or force
-                   (time-less-p (nyxt-mtime image-path) (nyxt-mtime guix-def))))
-      (message "Rebuilding Lisp image %S..." image-path)
-      (ignore-errors (delete-file image-path)))
-    (nyxt-guix-lazy-environment-command
-     root
-     :load guix-def
-     :ad-hoc (cons "lisp-repl-core-dumper" ad-hoc)
-     :preserve preserve
-     :container container
-     :network t
-     :share (list (file-name-directory image-path)
-                  (concat nyxt-checkout "=/nyxt"))
-     :no-grafts no-grafts
-     :command-args `("lisp-repl-core-dumper"
-                     "-o" ,image-path
-                     "-d" "nyxt/gtk"
-                     "sbcl"))))
+    (cl-flet ((guix-environment (&rest command-args)
+                                (nyxt-guix-lazy-environment-command
+                                 root
+                                 :load guix-def
+                                 :ad-hoc (cons "lisp-repl-core-dumper" ad-hoc)
+                                 :preserve preserve
+                                 :container container
+                                 :network t
+                                 :share (list (file-name-directory image-path)
+                                              (concat nyxt-checkout "=/nyxt"))
+                                 :no-grafts no-grafts
+                                 :command-args command-args)))
+      (when (or force
+                (not (file-exists-p root))
+                (and (file-exists-p image-path)
+                     (time-less-p (nyxt-mtime image-path) (nyxt-mtime guix-def))))
+        (message "Rebuilding environment %S\nand Lisp image %S..." root image-path)
+        (ignore-errors (delete-file image-path))
+        (make-directory (file-name-directory root) :parents)
+        (let ((output (get-buffer-create "*Nyxt Guix environment compilation*"))
+              (command (guix-environment "lisp-repl-core-dumper"
+                                         "-o" image-path
+                                         "-d" "nyxt/gtk"
+                                         "sbcl" "--quit")))
+          (let ((status (apply #'call-process
+                               (car command)
+                               nil (list output t) nil
+                               (cdr command))))
+            (if (= status 0)
+                (kill-buffer output)
+              (error "Nyxt Guix environment creation failed, see %S." output)
+              (switch-to-buffer-other-window output)))))
+      (list (guix-environment "lisp-repl-core-dumper"
+                              "-o" image-path
+                              "-d" "nyxt/gtk"
+                              "sbcl")))))
 
 (provide 'nyxt-guix)
