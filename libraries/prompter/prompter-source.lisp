@@ -28,12 +28,17 @@
 
 (export-always 'object-properties)
 (defmethod object-properties ((object t))
-  "Return a plist of properties of OBJECT.
+  "Return a plist of strings for OBJECT.
+Properties are strings that describe the structure of the object.
+
 For sturcture and class instances, the plist is made of the exported slots: the
 keys are the slot symbols and the values the slot values passed to
 `write-to-string'.
 
-Suitable as a `source' `suggestion-property-function'."
+Suitable as a `source' `suggestion-property-function'.  It's useful to separate
+and compose between different object properties and different sources (for
+instance, the same `object-properties' method can be inherited or used across
+different sources)."
   (cond
     ((or (typep object 'standard-object)
          (typep object 'structure-object))
@@ -126,6 +131,8 @@ We store the values instead of the suggestion because suggestions objects are
 reinstantiated between each input processing.")
 
      (active-properties '()
+                        :export t
+                        :accessor nil
                         :documentation "Suggestion properties to display and
 process when filtering.  A suggestion `object-properties' method should return a
 plist of property names and string values.  An empty list means all properties
@@ -133,8 +140,15 @@ are displayed.")
 
      (suggestion-property-function #'object-properties ; TODO: Better name?
                                    :documentation "Function called on the
-suggestions to derive their list of properties.  To control which property to
-display and match against, see `active-properties'.")
+suggestions to derive their list of properties.
+
+To control which property to display and match against, see `active-properties'.
+
+`object-properties' is used by default, which is convenient to compose different
+properties and sources.
+For non-specific object, or for objects for which we want properties other than
+those returned by `object-properties', you can set this slot to a custom
+function.")
 
      (filter #'fuzzy-match
              :type (or null function)
@@ -367,14 +381,34 @@ call.")))
     (setf (must-match-p source) nil))
   source)
 
-(defun filtered-properties-suggestion (suggestion properties)
-  "Return a new suggestion with only PROPERTIES."
-  (uiop:remove-plist-keys (if properties
-                              (set-difference
-                               (sera:plist-keys (properties suggestion))
-                               properties)
-                              nil)
-                          (properties suggestion)))
+;; TODO: Property keys should be strings.  Should properties be objects?
+(export-always 'properties)
+(defmethod properties ((source source)) ; TODO: Rename this so that it's not exported?
+  (sera:plist-keys
+   (if (first (suggestions source)) ; TODO: Instead, ensure that suggestions always has an element?
+       (properties (first (suggestions source)))
+       (list :default ""))))
+
+(defmethod active-properties ((source source) &key &allow-other-keys)
+  "Return active properties.
+If the `active-properties' slot is NIL, return all properties."
+  (or (slot-value source 'active-properties)
+      (properties source)))
+
+(defmethod (setf active-properties) (value (source source))
+  "Set active properties to the intersection of VALUE and SOURCE properties."
+  (setf (slot-value source 'active-properties)
+        (intersection value (properties source))))
+
+(defmethod active-properties ((suggestion suggestion)
+                              &key (source (error "Source required"))
+                              &allow-other-keys)
+  "Return the active properties of SUGGESTION.
+Active properties are queried from SOURCE."
+  (apply #'alex:remove-from-plist
+         (properties suggestion)
+         (set-difference (sera:plist-keys (properties suggestion))
+                         (active-properties source))))
 
 (defun copy-object (object)
   "Like `copy-structure' but also works for class instances."
