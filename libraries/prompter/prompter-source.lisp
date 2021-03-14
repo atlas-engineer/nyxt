@@ -107,6 +107,7 @@ This list is never modified after initialization.")
      (initial-suggestions-lock (bt:make-lock)
                                :type bt:lock
                                :export nil
+                               :initarg nil
                                :documentation "Protect `initial-suggestions'
 access.")
 
@@ -186,7 +187,9 @@ filtered.  The predicate works the same as the `sort' predicate.")
               :accessor nil
               :export nil
               :documentation "List of funcallables that can be run on suggestions
-of this source.")
+of this source.
+This is the low-level implementation, see the `actions' function for the public
+interface.")
 
      (persistent-action nil ; TODO: Should be a list so we can support as many persistent actions as we want.
                         :type (or null function)
@@ -226,6 +229,7 @@ poll `suggestions' for changes.")
      (ready-channel nil
                     :type (or null calispel:channel)
                     :export nil
+                    :initarg nil
                     :documentation "Notify listener that source is ready.
 The source object is sent to the channel.
 If update calculation is aborted, nil is sent instead.")
@@ -233,18 +237,21 @@ If update calculation is aborted, nil is sent instead.")
      (wrote-to-ready-channel-p nil
                                :type boolean
                                :export nil
+                               :initarg nil
                                :documentation "Becomes non-nil when calculation
 is done and the source was sent to the `ready-channel'.")
 
      (wrote-to-ready-channel-lock (bt:make-lock)
                                   :type bt:lock
                                   :export nil
+                                  :initarg nil
                                   :documentation "Protect
 `wrote-to-ready-channel-p' access.")
 
      (update-thread nil
                     :type t
                     :export nil
+                    :initarg nil
                     :documentation "Thread where the `filter-preprocessor', `filter' and
 `filter-postprocessor' are run.  We store it in a slot so that we can terminate it.")
 
