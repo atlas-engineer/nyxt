@@ -26,13 +26,14 @@ All ARGS are declared as `ignorable'."
 
 (defun initargs (class-specifier)
   "Return CLASS-SPECIFIER initargs as symbols (not keywords)."
-  (mapcar (lambda (slot)
-            (intern
-             (symbol-name
-              (first (getf (mopu:slot-properties class-specifier slot) :initargs)))
-             (symbol-package class-specifier)))
-          ;; TODO: `slot-names' or `direct-slot-names'?
-          (mopu:slot-names class-specifier)))
+  (delete nil
+          (mapcar (lambda (slot)
+                    (intern
+                     (symbol-name
+                      (first (getf (mopu:slot-properties class-specifier slot) :initargs)))
+                     (symbol-package class-specifier)))
+                  ;; TODO: `slot-names' or `direct-slot-names'?
+                  (mopu:slot-names class-specifier))))
 
 (defun exported-p (sym)
   (eq :external
