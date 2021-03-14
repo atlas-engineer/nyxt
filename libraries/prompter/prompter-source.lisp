@@ -117,8 +117,8 @@ See `update-notifier' to know when it has been updated, to avoid polling the
 list.")
 
      (marks '()
-                         :documentation
-                         "The list of suggestion values which have been marked by the user.
+            :documentation
+            "The list of suggestion values which have been marked by the user.
 Marking is only allowed when `multi-selection-p' is non-nil.
 When suggestions are marked, the subsequent action is run over all marked suggestions.
 
@@ -223,9 +223,9 @@ If update calculation is aborted, nil is sent instead.")
 is done and the source was sent to the `ready-channel'.")
 
      (wrote-to-ready-channel-lock (bt:make-lock)
-                                   :type bt:lock
-                                   :export nil
-                                   :documentation "Protect
+                                  :type bt:lock
+                                  :export nil
+                                  :documentation "Protect
 `wrote-to-ready-channel-p' access.")
 
      (update-thread nil
@@ -234,7 +234,7 @@ is done and the source was sent to the `ready-channel'.")
                     :documentation "Thread where the `filter-preprocessor', `filter' and
 `filter-postprocessor' are run.  We store it in a slot so that we can terminate it.")
 
-     (suggestion-limit 0                ; TODO: Implement.  Move to Nyxt's prompt-buffer?
+     (suggestion-limit 0       ; TODO: Implement.  Move to Nyxt's prompt-buffer?
                        :documentation
                        "Don't display more suggestions than this.
 If 0, there is no limit.")
