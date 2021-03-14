@@ -40,7 +40,7 @@ Suitable as a `source' `filter-preprocessor'."
     (setf
      (match-data suggestion)
      (format-properties
-      (filtered-properties-suggestion suggestion (active-properties source))
+      (active-properties suggestion :source source)
       (str:downcasep input))))
   (unless (str:empty? input)
     (let ((exactly-matching-substrings (find-exactly-matching-substrings
