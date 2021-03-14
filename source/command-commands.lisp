@@ -33,8 +33,11 @@
             do (setf bindings (keymap:binding-keys (name command) scheme-keymap))
           when (not (null bindings))
             return bindings)
-    (list :name (string-downcase (name command))
-          :bindings (format nil "~{~a~^, ~}" bindings))))
+    (flet ((first-line (string)
+             (first (str:split (string #\newline) string))))
+      (list :name (string-downcase (name command))
+            :bindings (format nil "~{~a~^, ~}" bindings)
+            :docstring (first-line (nyxt::docstring command))))))
 
 (define-class command-source (prompter:source)
   ((prompter:name "Commands")
