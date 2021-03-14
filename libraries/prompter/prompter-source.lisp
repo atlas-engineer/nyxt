@@ -389,6 +389,16 @@ call.")))
        (properties (first (suggestions source)))
        (list :default ""))))
 
+(export-always 'properties-non-default)
+(defun properties-non-default (source)
+  "Return SOURCE properties except the default one."
+  (rest (properties source)))
+
+(export-always 'properties-default)
+(defun properties-default (source)
+  "Return SOURCE default property."
+  (first (properties source)))
+
 (defmethod active-properties ((source source) &key &allow-other-keys)
   "Return active properties.
 If the `active-properties' slot is NIL, return all properties."
@@ -398,7 +408,8 @@ If the `active-properties' slot is NIL, return all properties."
 (defmethod (setf active-properties) (value (source source))
   "Set active properties to the intersection of VALUE and SOURCE properties."
   (setf (slot-value source 'active-properties)
-        (intersection value (properties source))))
+        (delete-duplicates (cons (properties-default source)
+                                 (intersection value (properties source))))))
 
 (defmethod active-properties ((suggestion suggestion)
                               &key (source (error "Source required"))
