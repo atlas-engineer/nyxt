@@ -244,11 +244,9 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                     (:div :class "source-name" (:span :class "source-glyph" "⛯") (prompter:name source))
                     (:table :class "source-content"
                             (:tr
-                             (loop with property-sample = (if (first (prompter:suggestions source)) ; TODO: Instead, ensure that suggestions always has an element?
-                                                              (prompter:properties (first (prompter:suggestions source)))
-                                                              (list :default ""))
-                                   for (property-name _) on property-sample by #'cddr
-                                   collect (markup:markup (:th (str:capitalize (symbol-name property-name))))))
+                             (loop for property in (prompter:active-properties source)
+                                   ;; TODO: If we turn properties to strings, no need to capitalize.
+                                   collect (markup:markup (:th (str:capitalize property)))))
                             (loop ;; TODO: Only print as many lines as fit the height.  But how can we know in advance?
                                   ;; Maybe first make the table, then add the element one by one _if_ there are into view.
                                   with max-suggestion-count = 10
@@ -262,7 +260,7 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
                                                       "selection")
                                                 :class (when (find (prompter:value suggestion) (prompter:marks source))
                                                          "marked")
-                                                (loop for (_ property) on (prompter:properties suggestion) by #'cddr
+                                                (loop for (_ property) on (prompter:active-properties suggestion :source source) by #'cddr
                                                       collect (markup:markup (:td property)))))))))))
       (evaluate-script
        prompt-buffer
