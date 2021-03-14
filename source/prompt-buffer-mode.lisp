@@ -25,6 +25,7 @@
        "M-return" 'return-selection-over-action       ; TODO: Also bind to C-return?
        "C-j" 'run-persistent-action
        "C-c C-f" 'toggle-follow
+       "C-]" 'toggle-properties-display ; "C-]" is Emacs Helm binding.
        "C-space" 'prompt-buffer-toggle-mark
        "shift-space" 'prompt-buffer-toggle-mark-backwards
        "M-space" 'prompt-buffer-toggle-mark
@@ -131,6 +132,28 @@ If STEPS is negative, go to next pages instead."
   "Have the PROMT-BUFFER return the selection, then quit."
   (hide-prompt-buffer prompt-buffer
                       (lambda () (prompter:return-input prompt-buffer))))
+
+(defun property-properties (property)
+  "Return the name of a prompter property."
+  `(:name ,(symbol-name property)))
+
+(define-class property-source (prompter:source)
+  ((prompter:name "List of prompter properties")
+   (prompter:multi-selection-p t)
+   (prompter:suggestion-property-function 'property-properties)))
+
+(define-command toggle-properties-display (&optional (prompt-buffer (current-prompt-buffer)))
+  "Prompt for which prompter properties to display."
+  (let ((properties (prompt
+                     :prompt "Properties to display"
+                     :sources (list (make-instance 'property-source
+                                                   :marks (prompter:active-properties (current-source prompt-buffer))
+                                                   :constructor (prompter:properties-non-default
+                                                                 (current-source prompt-buffer)))))))
+    (when properties
+      (setf (prompter:active-properties (current-source prompt-buffer))
+            properties)
+      (update-suggestion-html prompt-buffer))))
 
 (defun prompt-buffer-actions (&optional (window (current-window)))
   (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
