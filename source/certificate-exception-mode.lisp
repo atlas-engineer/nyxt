@@ -27,18 +27,17 @@ See the `add-domain-to-certificate-exceptions' command."
     (lambda (mode)
       (setf (certificate-exceptions (buffer mode)) (certificate-exceptions mode))))))
 
-(defun previous-history-urls-suggestion-filter (&optional (mode (find-submode
-                                                            (current-buffer)
-                                                            'web-mode)))
+(defun previous-history-urls-suggestion-filter ()
   "Suggestion function over all parent URLs."
-  (let ((parents (htree:all-parents (history mode))))
-    (when (htree:current-owner-node (history mode))
-      (push (htree:current-owner-node (history mode)) parents))
-    (setf parents (remove-if #'url-empty-p parents :key (alex:compose #'url #'htree:data)))
-    (lambda (minibuffer)
-      (if parents
-          (fuzzy-match (input-buffer minibuffer) parents)
-          '()))))
+  (with-data-unsafe (history (history-path (current-buffer)))
+    (let ((parents (htree:all-parents history)))
+      (when (htree:current-owner-node history)
+        (push (htree:current-owner-node history) parents))
+      (setf parents (remove-if #'url-empty-p parents :key (alex:compose #'url #'htree:data)))
+      (lambda (minibuffer)
+        (if parents
+            (fuzzy-match (input-buffer minibuffer) parents)
+            '())))))
 
 (define-command add-domain-to-certificate-exceptions (&optional (buffer (current-buffer)))
   "Add the current hostname to the buffer's certificate exception list.
