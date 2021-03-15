@@ -169,7 +169,7 @@ If STEPS is negative, go to next pages instead."
   (flet ((first-line (string)
            (first (str:split (string #\newline) string))))
     (make-instance
-     'suggestion
+     'prompter:suggestion
      :value action
      ;; TODO: Include bindings in properties.
      :properties `(:name ,(symbol-name (typecase action
@@ -184,7 +184,7 @@ If STEPS is negative, go to next pages instead."
 (define-class action-source (prompter:source)
   ((prompter:name "List of actions")
    (prompter:constructor (prompt-buffer-actions))
-   (prompter:suggestion-maker 'make-action-properties)))
+   (prompter:suggestion-maker 'make-action-suggestion)))
 
 (define-command return-selection-over-action (&optional (prompt-buffer (current-prompt-buffer)))
   "Prompt for an action to run over PROMPT-BUFFER selection."
