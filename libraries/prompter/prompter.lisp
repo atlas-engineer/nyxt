@@ -320,13 +320,13 @@ If STEPS is negative, go forward and selection first suggestion."
                     (union marks suggestion-values)
                     (intersection marks suggestion-values))))))))))
 
-(defun resolve-selection (prompter)
+(defun resolve-selection (prompter)     ; TODO: Write tests for this!
   "Return the list of selected values.
 If there is no marks, the current selection value is returned as a list of one element.
 For instance, if the selected element value is NIL, this returns '(NIL).
 If there is no element, NIL is returned."
-  (or (or (all-marks prompter)
-          (mapcar #'value (uiop:ensure-list (selected-suggestion prompter))))
+  (or (all-marks prompter)
+      (mapcar #'value (uiop:ensure-list (selected-suggestion prompter)))
       (and (not (must-match-p (selected-source prompter))) ; TODO: Remove when we remove `must-match-p'.
            (slot-value prompter 'input))))
 
