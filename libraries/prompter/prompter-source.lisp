@@ -15,6 +15,9 @@
        (eql :ignore)
        (eql :confirm)))
 
+(deftype function-symbol ()
+  `(and symbol (satisfies fboundp)))
+
 (defun exported-p (sym)
   (eq :external
       (nth-value 1 (find-symbol (string sym)
@@ -178,7 +181,7 @@ Called on
 - (optional) current input.")
 
      (filter #'fuzzy-match
-             :type (or null function)
+             :type (or null function function-symbol)
              :documentation
              "Takes `input' and a `suggestion' and return a new suggestion, or
 nil if the suggestion is discarded.")
@@ -527,7 +530,7 @@ feedback to the user while the list of suggestions is being computed."
 
                       (setf (slot-value source 'suggestions) '())
                       (if (or (str:empty? input)
-                              (not (functionp (filter source))))
+                              (not (filter source)))
                           (setf (slot-value source 'suggestions) preprocessed-suggestions)
                           (dolist (suggestion preprocessed-suggestions)
                             (sera:and-let* ((processed-suggestion
