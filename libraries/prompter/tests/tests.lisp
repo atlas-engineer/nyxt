@@ -178,4 +178,12 @@
       (prove:is (all-source-suggestions prompter)
                 '("foo" "bar" "200")))))
 
+(prove:subtest "Raw source"
+  (let ((prompter (prompter:make
+                   :sources (list (make-instance 'prompter:raw-source)))))
+    (setf (prompter:input prompter) "foo")
+    (when (prompter:all-ready-p prompter)
+      (prove:is (all-source-suggestions prompter)
+                '("foo")))))
+
 (prove:finalize)
