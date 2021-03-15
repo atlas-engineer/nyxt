@@ -208,10 +208,10 @@ The rules are:
         (when (not (mode-covered-by-auto-mode-p mode auto-mode enable-p))
           (if-confirm ("Permanently ~:[disable~;enable~] ~a for this URL?"
                        enable-p (mode-name mode))
-                      (let ((url (prompt
-                                  :prompt "URL:"
-                                  :input (object-display (url (buffer mode)))
-                                  :sources (make-instance 'prompter:raw-source))))
+                      (let ((url (first (prompt
+                                         :prompt "URL:"
+                                         :input (object-display (url (buffer mode)))
+                                         :sources (make-instance 'prompter:raw-source)))))
                         (add-modes-to-auto-mode-rules (url-infer-match url)
                                                       :append-p t
                                                       :include (when enable-p (list invocation))
@@ -282,14 +282,14 @@ to one of auto-mode rules. Apply the resulting rule for all the future visits to
 inferring the matching condition with `url-infer-match'.
 
 For the storage format see the comment in the head of your `auto-mode-rules-data-path' file."
-  (let ((url (prompt
-              :prompt "URL:"
-              :input (object-string (url (current-buffer)))
-              :sources (list
-                        (make-instance 'prompter:raw-source
-                                       :name "New URL")
-                        (make-instance 'global-history-source
-                                       :actions '())))))
+  (let ((url (first (prompt
+                     :prompt "URL:"
+                     :input (object-string (url (current-buffer)))
+                     :sources (list
+                               (make-instance 'prompter:raw-source
+                                              :name "New URL")
+                               (make-instance 'global-history-source
+                                              :actions '()))))))
     (when (typep url 'nyxt::history-entry)
       (setf url (url url)))
     (add-modes-to-auto-mode-rules
@@ -309,14 +309,14 @@ Uses `url-infer-match', see its documentation for matching rules.
 For the storage format see the comment in the head of your `auto-mode-rules-data-path' file."
   ;; TODO: Should it prompt for modes to save?
   ;; One may want to adjust the modes before persisting them as :exact-p rule.
-  (let ((url (prompt
-              :prompt "URL:"
-              :input (object-string (url (current-buffer)))
-              :sources (list
-                        (make-instance 'prompter:raw-source
-                                       :name "New URL")
-                        (make-instance 'global-history-source
-                                       :actions '())))))
+  (let ((url (first (prompt
+                     :prompt "URL:"
+                     :input (object-string (url (current-buffer)))
+                     :sources (list
+                               (make-instance 'prompter:raw-source
+                                              :name "New URL")
+                               (make-instance 'global-history-source
+                                              :actions '()))))))
     (when (typep url 'nyxt::history-entry)
       (setf url (url url)))
     (add-modes-to-auto-mode-rules (url-infer-match url)
