@@ -24,6 +24,8 @@
        "C-return" 'return-input         ; TODO: Bind to shift-return instead?
        "M-return" 'return-selection-over-action       ; TODO: Also bind to C-return?
        "C-j" 'run-persistent-action
+       "f1 b" 'run-prompt-buffer-command
+       "C-h b" 'run-prompt-buffer-command ; TODO: Move to Emacs bindings.
        "C-c C-f" 'toggle-follow
        "C-]" 'toggle-properties-display ; "C-]" is Emacs Helm binding.
        "C-space" 'prompt-buffer-toggle-mark
@@ -158,6 +160,19 @@ If STEPS is negative, go to next pages instead."
       (setf (prompter:active-properties (current-source prompt-buffer))
             properties)
       (update-suggestion-html prompt-buffer))))
+
+(define-class prompt-buffer-command-source (prompter:source)
+  ((prompter:name "List of prompt buffer commands")
+   (prompter:must-match-p t)
+   (prompter:constructor (nyxt::get-commands (current-prompt-buffer)))))
+
+(define-command run-prompt-buffer-command ()
+  "Prompt for a command to call in PROMPT-BUFFER."
+  (let ((command (first (prompt
+                         :prompt "Command to run in current prompt buffer"
+                         :sources (list (make-instance 'prompt-buffer-command-source))))))
+    (when command
+      (funcall-safely command))))
 
 (defun prompt-buffer-actions (&optional (window (current-window)))
   (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
