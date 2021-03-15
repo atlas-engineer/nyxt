@@ -36,7 +36,7 @@ Properties are strings that describe the structure of the object.
 
 For sturcture and class instances, the plist is made of the exported slots: the
 keys are the slot symbols and the values the slot values passed to
-`write-to-string'.
+`princ-to-string'.
 
 It's used in `make-suggestion' which can be used as a `suggestion-maker' for `source's.
 
@@ -49,10 +49,10 @@ inherited or used across different sources)."
      (or
       (alex:mappend (lambda (slot)
                       (list (intern (string slot) "KEYWORD")
-                            (write-to-string (slot-value object slot))))
+                            (princ-to-string (slot-value object slot))))
                     (object-public-slots object))
-      (write-to-string object)))
-    (t (list :default (write-to-string object)))))
+      (princ-to-string object)))
+    (t (list :default (princ-to-string object)))))
 
 (define-class suggestion ()
   ((value nil ; TODO: Rename `data' as with the GHT?  Maybe confusing since we have `match-data'.
