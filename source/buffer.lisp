@@ -906,7 +906,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
 
 (define-command set-url (&key (prefill-current-url-p t))
   "Set the URL for the current buffer, completing with history."
-  (let ((history (minibuffer-set-url-history *browser*)))
+  (let ((history (set-url-history *browser*)))
     (when history
       (containers:insert-item history (quri:render-uri (url (current-buffer)))))
     (prompt
@@ -924,7 +924,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
 
 (define-command set-url-new-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused buffer."
-  (let ((history (minibuffer-set-url-history *browser*)))
+  (let ((history (set-url-history *browser*)))
     (when history
       (containers:insert-item history (quri:render-uri (url (current-buffer)))))
     (prompt
