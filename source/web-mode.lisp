@@ -474,11 +474,6 @@ Otherwise go forward to the only child."
   ;; (trivial-clipboard:text (trivial-clipboard:text))
   (%paste))
 
-(defun ring-suggestion-filter (ring)
-  (let ((ring-items (containers:container->list ring)))
-    (lambda (minibuffer)
-      (fuzzy-match (input-buffer minibuffer) ring-items))))
-
 (define-class ring-source (prompter:source)
   ((prompter:name "Ring")
    (ring :initarg :ring :accessor ring :initform nil)
