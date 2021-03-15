@@ -163,14 +163,27 @@ If STEPS is negative, go to next pages instead."
 
 (define-class prompt-buffer-command-source (prompter:source)
   ((prompter:name "List of prompt buffer commands")
+   (parent-prompt-buffer (error "Parent prompt buffer required"))
    (prompter:must-match-p t)
-   (prompter:constructor (nyxt::get-commands (current-prompt-buffer)))))
+   (prompter:suggestion-maker 'make-prompt-buffer-command-suggestion)
+   (prompter:constructor (nyxt::get-commands (current-prompt-buffer))))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(define-command run-prompt-buffer-command ()
+(defun make-prompt-buffer-command-suggestion (command source &optional input)
+  "Return a `suggestion' wrapping around COMMAND."
+  (make-instance
+   'prompter:suggestion
+   :value command
+   :properties (nyxt::command-properties command (parent-prompt-buffer source))
+   :source source
+   :input input))
+
+(define-command run-prompt-buffer-command (&optional (prompt-buffer (current-prompt-buffer)))
   "Prompt for a command to call in PROMPT-BUFFER."
   (let ((command (first (prompt
                          :prompt "Command to run in current prompt buffer"
-                         :sources (list (make-instance 'prompt-buffer-command-source))))))
+                         :sources (list (make-instance 'prompt-buffer-command-source
+                                                       :parent-prompt-buffer prompt-buffer))))))
     (when command
       (funcall-safely command))))
 
