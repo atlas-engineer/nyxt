@@ -27,18 +27,6 @@ See the `add-domain-to-certificate-exceptions' command."
     (lambda (mode)
       (setf (certificate-exceptions (buffer mode)) (certificate-exceptions mode))))))
 
-(defun previous-history-urls-suggestion-filter ()
-  "Suggestion function over all parent URLs."
-  (with-data-unsafe (history (history-path (current-buffer)))
-    (let ((parents (htree:all-parents history)))
-      (when (htree:current-owner-node history)
-        (push (htree:current-owner-node history) parents))
-      (setf parents (remove-if #'url-empty-p parents :key (alex:compose #'url #'htree:data)))
-      (lambda (minibuffer)
-        (if parents
-            (fuzzy-match (input-buffer minibuffer) parents)
-            '())))))
-
 (define-command add-domain-to-certificate-exceptions (&optional (buffer (current-buffer)))
   "Add the current hostname to the buffer's certificate exception list.
 This is only effective if `certificate-exception-mode' is enabled.
@@ -49,9 +37,10 @@ To make this change permanent, you can customize
 \(setf nyxt/certificate-exception-mode:*default-certificate-exceptions*
       '(\"nyxt.atlas.engineer\" \"example.org\"))"
   (if (find-submode buffer 'certificate-exception-mode)
-      (let ((input (prompt-minibuffer
-                    :input-prompt "URL host to exception list:"
-                    :suggestion-function (previous-history-urls-suggestion-filter))))
+      (let ((input (first (prompt
+                           :prompt "URL host to exception list:"
+                           :sources (list (make-instance 'nyxt/web-mode::history-all-source
+                                                         :buffer buffer))))))
         (unless (url-empty-p (url (htree:data input)))
           (let ((host (quri:uri-host (url (htree:data input)))))
             (echo "Added exception for ~s." host)
