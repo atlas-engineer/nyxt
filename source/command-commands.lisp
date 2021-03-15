@@ -23,11 +23,9 @@
                (mapcar #'mode-name (modes buffer)))
         #'local-time:timestamp> :key #'last-access))
 
-(defmethod prompter:object-properties ((command command))
-  (let* ((buffer (or (current-prompt-buffer)
-                     (active-buffer (current-window :no-rescan))))
-         (scheme-name (keymap-scheme-name buffer))
-         (bindings '()))
+(defun command-properties (command &optional (buffer (active-buffer (current-window :no-rescan))))
+  (let ((scheme-name (keymap-scheme-name buffer))
+        (bindings '()))
     (loop for mode in (modes buffer)
           for scheme-keymap = (keymap:get-keymap scheme-name (keymap-scheme mode))
           when scheme-keymap
@@ -39,6 +37,9 @@
       (list :name (string-downcase (name command))
             :bindings (format nil "~{~a~^, ~}" bindings)
             :docstring (first-line (nyxt::docstring command))))))
+
+(defmethod prompter:object-properties ((command command))
+  (command-properties command))
 
 (define-class command-source (prompter:source)
   ((prompter:name "Commands")
