@@ -360,7 +360,7 @@ call.")))
 
 (define-class yes-no-source (source)
   ((name "Confirm")
-   (initial-suggestions '("yes" "no")))
+   (constructor '("yes" "no")))
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "Prompt for yes-no questions."))
