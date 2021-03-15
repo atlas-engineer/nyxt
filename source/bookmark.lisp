@@ -38,7 +38,14 @@ appended to the URL."))
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(defmethod object-string ((entry bookmark-entry))
+(defmethod prompter:object-properties ((entry bookmark-entry))
+  ;; TODO: Add more slots?
+  `(:url ,(quri:render-uri (url entry))
+    :title ,(title entry)
+    :tags ,(format nil "~{~a ~}" (tags entry))
+    :date ,(date entry)))
+
+(defmethod object-string ((entry bookmark-entry)) ; TODO: Delete?
   (object-string (url entry)))
 
 (defmethod object-display ((entry bookmark-entry))
@@ -76,7 +83,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   name
   description)
 
-(defmethod object-string ((tag tag))
+(defmethod object-string ((tag tag))    ; TODO: Remove?
   (tag-name tag))
 
 (defmethod object-display ((tag tag))
@@ -110,33 +117,39 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
         (push entry bookmarks-without-url)
         (setf bookmarks bookmarks-without-url)))))
 
-(export-always 'match-bookmarks)
-(defun match-bookmarks (specification &optional (as-url-list-p t))
-  (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
-    (let* ((input-specs (multiple-value-list
-                         (parse-tag-specification
-                          specification)))
-           (tag-specs (first input-specs))
-           (non-tags (str:downcase (str:join " " (second input-specs))))
-           (validator (ignore-errors (tag-specification-validator tag-specs))))
-      (when validator
-        (setf bookmarks (remove-if (lambda (bookmark)
-                                     (not (funcall validator
-                                                   (tags bookmark))))
-                                   bookmarks)))
-      (if as-url-list-p
-          (mapcar #'url (fuzzy-match non-tags bookmarks))
-          (fuzzy-match non-tags bookmarks)))))
+;; (export-always 'match-bookmarks)
+;; (defun match-bookmarks (specification &optional (as-url-list-p t))
+;;   (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
+;;     (let* ((input-specs (multiple-value-list
+;;                          (parse-tag-specification
+;;                           specification)))
+;;            (tag-specs (first input-specs))
+;;            (non-tags (str:downcase (str:join " " (second input-specs))))
+;;            (validator (ignore-errors (tag-specification-validator tag-specs))))
+;;       (when validator
+;;         (setf bookmarks (remove-if (lambda (bookmark)
+;;                                      (not (funcall validator
+;;                                                    (tags bookmark))))
+;;                                    bookmarks)))
+;;       (if as-url-list-p
+;;           (mapcar #'url (fuzzy-match non-tags bookmarks))
+;;           (fuzzy-match non-tags bookmarks)))))
 
-(defun bookmark-suggestion-filter ()
-  (lambda (minibuffer)
-    (match-bookmarks (input-buffer minibuffer) nil)))
 
-(export-always 'tag-suggestion-filter)
-(declaim (ftype (function (&key (:with-empty-tag boolean)
-                                (:extra-tags list-of-tags)))
-                tag-suggestion-filter))
-(defun tag-suggestion-filter (&key with-empty-tag extra-tags)
+;; (defun bookmark-suggestion-filter ()
+;;   (lambda (minibuffer)
+;;     (match-bookmarks (input-buffer minibuffer) nil)))
+
+(define-class bookmark-source (prompter:source)
+  ((prompter:name "Bookmarks")
+   (prompter:constructor (get-data (bookmarks-path (current-buffer))))
+   (prompter:active-properties '(:url :title :tags))))
+
+;; (export-always 'tag-suggestion-filter)
+;; (declaim (ftype (function (&key (:with-empty-tag boolean)
+;;                                 (:extra-tags list-of-tags)))
+;;                 tag-suggestion-filter))
+(defun tag-suggestions (&key with-empty-tag extra-tags)
   "When with-empty-tag is non-nil, insert the empty string as the first tag.
 This can be useful to let the user select no tag when returning directly."
   (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
@@ -150,24 +163,34 @@ This can be useful to let the user select no tag when returning directly."
                       :key #'tag-name)))
       (when with-empty-tag
         (push "" tags))
-      (lambda (minibuffer)
-        (fuzzy-match (text-buffer::word-at-cursor (input-cursor minibuffer)) tags)))))
+      tags
+      ;; (lambda (minibuffer)
+      ;;   (fuzzy-match (text-buffer::word-at-cursor (input-cursor minibuffer)) tags))
+      )))
 
-(define-command insert-tag (&optional (minibuffer (current-minibuffer)))
-  "Replace current word with selected tag."
-  (let ((selection (get-suggestion minibuffer)))
-    (unless (uiop:emptyp selection)
-      (text-buffer::replace-word-at-cursor (input-cursor minibuffer) (str:concat selection " "))
-      (update-display minibuffer))))
+(define-class tag-source (prompter:source)
+  ((prompter:name "Tags")
+   (extra-tags '())
+   (prompter:multi-selection-p t)
+   (prompter:constructor (lambda (source)
+                           (tag-suggestions :extra-tags (extra-tags source)))))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(define-mode set-tag-mode (nyxt/minibuffer-mode:minibuffer-mode)
-  "Minibuffer mode for setting the tag of a bookmark."
-  ((keymap-scheme
-    (define-scheme "set-tag"
-      scheme:cua
-      (list "tab" 'insert-tag
-            ;; TODO: RETURN
-            )))))
+;; (define-command insert-tag (&optional (minibuffer (current-minibuffer)))
+;;   "Replace current word with selected tag."
+;;   (let ((selection (get-suggestion minibuffer)))
+;;     (unless (uiop:emptyp selection)
+;;       (text-buffer::replace-word-at-cursor (input-cursor minibuffer) (str:concat selection " "))
+;;       (update-display minibuffer))))
+
+;; (define-mode set-tag-mode (nyxt/minibuffer-mode:minibuffer-mode)
+;;   "Minibuffer mode for setting the tag of a bookmark."
+;;   ((keymap-scheme
+;;     (define-scheme "set-tag"
+;;       scheme:cua
+;;       (list "tab" 'insert-tag
+;;             ;; TODO: RETURN
+;;             )))))
 
 (define-command list-bookmarks ()
   "List all bookmarks in a new buffer."
@@ -220,12 +243,12 @@ URL."
         (echo "Buffer has no URL.")
         (let* ((body (with-current-buffer buffer
                        (ffi-buffer-get-document buffer)))
-               (tags (prompt-minibuffer
-                      :input-prompt "Space-separated tag(s)"
-                      :default-modes '(set-tag-mode minibuffer-mode)
-                      :input-buffer (url-bookmark-tags (url buffer))
-                      :suggestion-function (tag-suggestion-filter
-                                            :extra-tags (make-tags (extract-keywords body 5))))))
+               (tags (prompt
+                      :prompt "Space-separated tag(s)"
+                      ;; :default-modes '(set-tag-mode minibuffer-mode) ; TODO: Replace completion.
+                      :input (url-bookmark-tags (url buffer))
+                      :sources (make-instance 'tag-source
+                                              :extra-tags (make-tags (extract-keywords body 5))))))
           (bookmark-add (url buffer)
                         :title (title buffer)
                         :tags tags)
@@ -233,35 +256,37 @@ URL."
 
 (define-command bookmark-page ()
   "Bookmark the currently opened page(s) in the active buffer."
-  (let ((buffers (prompt-minibuffer
-                  :input-prompt "Bookmark URL from buffer(s)"
-                  :multi-selection-p t
-                  :suggestion-function (buffer-suggestion-filter))))
-    (mapc #'bookmark-current-page buffers)))
+  (prompt
+   :input "Bookmark URL from buffer(s)"
+   :sources (make-instance 'buffer-source
+                          :multi-selection-p t
+                          :actions (list 'bookmark-current-page))))
 
 (define-command bookmark-url (&key url)
   "Allow the user to bookmark a URL via minibuffer input."
   (let ((url (or url
-                 (prompt-minibuffer
-                  :input-prompt "Bookmark URL"))))
+                 (prompt
+                  :prompt "Bookmark URL"
+                  :sources (list
+                            (make-instance 'prompter:raw-source
+                                           :name "New URL"))))))
     (if (not (valid-url-p url))
         (echo "Invalid URL")
         (let* ((url (quri:uri url))
-               (tags (prompt-minibuffer
-                      :input-prompt "Space-separated tag(s)"
-                      :default-modes '(set-tag-mode minibuffer-mode)
-                      :input-buffer (url-bookmark-tags url)
-                      :suggestion-function (tag-suggestion-filter))))
+               (tags (prompt
+                      :prompt "Space-separated tag(s)"
+                      ;; :default-modes '(set-tag-mode minibuffer-mode) ; TODO: Replace completion.
+                      :input (url-bookmark-tags url)
+                      :sources (make-instance 'tag-source))))
           (bookmark-add url :tags tags)))))
 
 (define-command bookmark-delete ()
   "Delete bookmark(s)."
   (with-data-access (bookmarks (bookmarks-path (current-buffer)))
-    (let ((entries (prompt-minibuffer
-                    :input-prompt "Delete bookmark(s)"
-                    :multi-selection-p t
-                    :default-modes '(minibuffer-tag-mode minibuffer-mode)
-                    :suggestion-function (bookmark-suggestion-filter))))
+    (let ((entries (prompt
+                    :prompt "Delete bookmark(s)"
+                    ;; :default-modes '(minibuffer-tag-mode minibuffer-mode)
+                    :sources (make-instance 'bookmark-source))))
       (setf bookmarks
             (set-difference bookmarks
                             entries :test #'equals)))))
@@ -276,52 +301,52 @@ comparing URLs."
            (list (make-instance 'bookmark-entry :url (quri:uri url)))
            :test #'equals))))
 
-(define-command insert-suggestion-or-tag (&optional (minibuffer (current-minibuffer)))
-  "Paste selected suggestion or tag in input.
-If character before cursor is '+' or '-' complete against tag."
-  (let* ((current-word (text-buffer::word-at-cursor (input-cursor minibuffer)))
-         (operand? (unless (str:emptyp current-word) (subseq current-word 0 1))))
-    (if (or (equal "-" operand?)
-            (equal "+" operand?))
-        (let ((tag (prompt-minibuffer
-                    :input-prompt "Tag"
-                    :input-buffer (subseq current-word 1)
-                    :suggestion-function (tag-suggestion-filter))))
-          (when tag
-            (text-buffer::replace-word-at-cursor
-             (input-cursor minibuffer)
-             (str:concat operand? (tag-name tag)))))
-        ;; (nyxt/minibuffer-mode:insert-suggestion minibuffer)
-        )))
+;; (define-command insert-suggestion-or-tag (&optional (minibuffer (current-minibuffer)))
+;;   "Paste selected suggestion or tag in input.
+;; If character before cursor is '+' or '-' complete against tag."
+;;   (let* ((current-word (text-buffer::word-at-cursor (input-cursor minibuffer)))
+;;          (operand? (unless (str:emptyp current-word) (subseq current-word 0 1))))
+;;     (if (or (equal "-" operand?)
+;;             (equal "+" operand?))
+;;         (let ((tag (prompt
+;;                     :prompt "Tag"
+;;                     :input (subseq current-word 1)
+;;                     :sources (make-instance 'tag-source))))
+;;           (when tag
+;;             (text-buffer::replace-word-at-cursor
+;;              (input-cursor minibuffer)
+;;              (str:concat operand? (tag-name tag)))))
+;;         ;; (nyxt/minibuffer-mode:insert-suggestion minibuffer)
+;;         )))
 
-(define-mode minibuffer-tag-mode (nyxt/minibuffer-mode:minibuffer-mode)
-  "Minibuffer mode for setting the bookmark and their tags."
-  ((keymap-scheme
-    (define-scheme "minibuffer-tag"
-      scheme:cua
-      (list
-       "tab" 'insert-suggestion-or-tag)))))
+;; (define-mode minibuffer-tag-mode (nyxt/minibuffer-mode:minibuffer-mode)
+;;   "Minibuffer mode for setting the bookmark and their tags."
+;;   ((keymap-scheme
+;;     (define-scheme "minibuffer-tag"
+;;       scheme:cua
+;;       (list
+;;        "tab" 'insert-suggestion-or-tag)))))
 
 (define-command set-url-from-bookmark ()
   "Set the URL for the current buffer from a bookmark.
 With multiple selections, open the first bookmark in the current buffer, the
 rest in background buffers."
-  (let ((entries (prompt-minibuffer
-                  :input-prompt "Open bookmark(s)"
-                  :default-modes '(minibuffer-tag-mode minibuffer-mode)
-                  :suggestion-function (bookmark-suggestion-filter)
-                  :multi-selection-p t)))
+  (let ((entries (prompt
+                  :prompt "Open bookmark(s)"
+                  ;; :default-modes '(minibuffer-tag-mode minibuffer-mode) ; TODO: Replace this behaviour.
+                  :sources (make-instance 'bookmark-source
+                                          :multi-selection-p t))))
     (dolist (entry (rest entries))
       (make-buffer :url (object-string (url entry))))
     (buffer-load (url (first entries)))))
 
 (define-command set-url-from-bookmark-new-buffer ()
   "Open selected bookmarks in new buffers."
-  (let ((entries (prompt-minibuffer
-                  :input-prompt "Open bookmarks in new buffers"
-                  :default-modes '(minibuffer-tag-mode minibuffer-mode)
-                  :suggestion-function (bookmark-suggestion-filter)
-                  :multi-selection-p t)))
+  (let ((entries (prompt
+                  :prompt "Open bookmark(s) in new buffers"
+                  ;; :default-modes '(minibuffer-tag-mode minibuffer-mode) ; TODO: Replace this behaviour.
+                  :sources (make-instance 'bookmark-source
+                                          :multi-selection-p t))))
     (dolist (entry (rest entries))
       (make-buffer :url (object-string (url entry))))
     (make-buffer-focus :url (url (first entries)))))
