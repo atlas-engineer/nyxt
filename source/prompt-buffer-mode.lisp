@@ -133,14 +133,18 @@ If STEPS is negative, go to next pages instead."
   (hide-prompt-buffer prompt-buffer
                       (lambda () (prompter:return-input prompt-buffer))))
 
-(defun property-properties (property)
-  "Return the name of a prompter property."
-  `(:name ,(symbol-name property)))
+(defun make-property-suggestion (property source &optional input)
+  "Return a `suggestion' wrapping around PROPERTY. "
+  (make-instance 'prompter:suggestion
+                 :value property
+                 :properties `(:name ,(string-capitalize (symbol-name property)))
+                 :source source
+                 :input input))
 
 (define-class property-source (prompter:source)
   ((prompter:name "List of prompter properties")
    (prompter:multi-selection-p t)
-   (prompter:suggestion-property-function 'property-properties)))
+   (prompter:suggestion-maker 'make-property-suggestion)))
 
 (define-command toggle-properties-display (&optional (prompt-buffer (current-prompt-buffer)))
   "Prompt for which prompter properties to display."
@@ -160,23 +164,27 @@ If STEPS is negative, go to next pages instead."
     (prompter:actions first-prompt-buffer)))
 
 ;; TODO: Should actions be commands?  For now, they can be either commands or symbols.
-(defun action-properties (action)
-  "Return the name and documentation properties of the given ACTION symbol."
-  ;; TODO: Return bindings.
+(defun make-action-suggestion (action source &optional input)
+  "Return a `suggestion' wrapping around ACTION."
   (flet ((first-line (string)
            (first (str:split (string #\newline) string))))
-
-    `(:name ,(symbol-name (typecase action
-                            (command (name action))
-                            (t action)))
-      :documentation ,(first-line (typecase action
-                                    (command (nyxt::docstring action))
-                                    (t (documentation action 'function)))))))
+    (make-instance
+     'suggestion
+     :value action
+     ;; TODO: Include bindings in properties.
+     :properties `(:name ,(symbol-name (typecase action
+                                         (command (name action))
+                                         (t action)))
+                   :documentation ,(first-line (typecase action
+                                                 (command (nyxt::docstring action))
+                                                 (t (documentation action 'function)))))
+     :source source
+     :input input)))
 
 (define-class action-source (prompter:source)
   ((prompter:name "List of actions")
    (prompter:constructor (prompt-buffer-actions))
-   (prompter:suggestion-property-function 'action-properties)))
+   (prompter:suggestion-maker 'make-action-properties)))
 
 (define-command return-selection-over-action (&optional (prompt-buffer (current-prompt-buffer)))
   "Prompt for an action to run over PROMPT-BUFFER selection."
