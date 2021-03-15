@@ -934,9 +934,9 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
      :history history
      :sources (list (make-instance 'prompter:raw-source
                                    :name "New URL"
-                                   :actions (list 'new-buffer-load))
+                                   :actions (list (make-unmapped-command new-buffer-load)))
                     (make-instance 'global-history-source
-                                   :actions (list 'new-buffer-load-from-history))))))
+                                   :actions (list (make-unmapped-command new-buffer-load-from-history)))))))
 
 (define-command set-url-nosave-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused nosave buffer."
