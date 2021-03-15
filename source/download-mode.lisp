@@ -65,7 +65,7 @@ finds it, it will invoke its cancel-function."
   (check-type path string)
   (setf (slot-value download 'destination-path) path)
   (setf (user-interface:url (open-button download))
-        (lisp-url `(nyxt/file-manager-mode:open-file-function ,path))))
+        (lisp-url `(nyxt::default-open-file-function ,path))))
 
 (defmethod destination-path ((download download))
   (slot-value download 'destination-path))
@@ -81,7 +81,8 @@ appearance in the buffer when they are setf'd."
 
 (define-mode download-mode ()           ; TODO: Move to separate package?
   "Display list of downloads."
-  ((style
+  ((open-file-function #'default-open-file-function)
+   (style
     (cl-css:css
      '(("download"
         :margin-top "10px")
@@ -99,6 +100,16 @@ appearance in the buffer when they are setf'd."
        (".progress-bar-fill"
         :height "100%"
         :background-color "dimgray"))))))
+
+(defun default-open-file-function (filename)
+  "Open FILENAME.
+
+Can be used as a `open-file-function'."
+  (uiop:launch-program
+   #+linux
+   (list "xdg-open" (namestring filename))
+   #+darwin
+   (list "open" (namestring filename))))
 
 (defun list-downloads ()
   "Display a buffer listing all downloads.
@@ -139,12 +150,11 @@ download."
    (prompter:constructor (mapcar #'destination-path (downloads *browser*)))
    (prompter:actions
     (list (make-command open-file* (files)
-                        (nyxt/file-manager-mode:open-file-function (first files)))))))
+            (let ((download-mode (find-submode (current-buffer) 'download-mode)))
+              (funcall (open-file-function download-mode) (first files))))))))
 
 (define-command download-open-file ()
-  "Open a downloaded file. This command only works for downloads
-started by the :lisp download engine.
-See also `open-file'."
+  "Open a downloaded file."
   (prompt
    :prompt "Open file:"
    :sources (make-instance 'downloaded-files-source)))
