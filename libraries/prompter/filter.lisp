@@ -68,3 +68,21 @@ A higher score means the suggestion-string comes first."
   (setf (score suggestion)
         (score-suggestion-string input (match-data suggestion)))
   suggestion)
+
+(export-always 'submatch)
+(defun submatches (input suggestion)      ; TODO: Add tests!
+  "Return SUGGESTION untouched if all INPUT strings are contained in it.
+
+This is suitable as a prompter `filter'.
+It probably makes little sense to use it together with the
+`delete-inexact-matches' preprocessor."
+  (let ((terms (delete-duplicates (str:split " " input :omit-nulls t)
+                                  :test #'equal)))
+    (when (funcall
+           (apply #'alex:conjoin
+                  (mapcar (lambda (term)
+                            (lambda (suggestion-match-data)
+                              (str:contains? term suggestion-match-data :ignore-case t)))
+                          terms))
+           (match-data suggestion))
+      suggestion)))
