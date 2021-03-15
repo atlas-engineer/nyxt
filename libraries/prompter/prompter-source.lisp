@@ -446,9 +446,13 @@ If the `active-properties' slot is NIL, return all properties."
 
 (defmethod (setf active-properties) (value (source source))
   "Set active properties to the intersection of VALUE and SOURCE properties."
-  (setf (slot-value source 'active-properties)
-        (delete-duplicates (cons (properties-default source)
-                                 (intersection value (properties source))))))
+  (flet ((remove-from-seq (seq &rest items)
+           (reduce (lambda (seq item) (remove item seq))
+                   (set-difference seq items)
+                   :initial-value seq)))
+    (setf (slot-value source 'active-properties)
+          (cons (properties-default source)
+                (apply #'remove-from-seq (properties-non-default source) value)))))
 
 (defmethod active-properties ((suggestion suggestion)
                               &key (source (error "Source required"))
