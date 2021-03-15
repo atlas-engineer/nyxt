@@ -445,9 +445,9 @@ nothing is done if file is missing."
                (with-input-from-string (,in (with-output-to-string (,stream)
                                               (setf ,result (progn ,@body))))
                  (gpg-write ,in ,gpg-file ,recipient))
-               (let ((,recipient (prompt
-                                  :prompt "Recipient:"
-                                  :sources '(gpg-key-source))))
+               (let ((,recipient (first (prompt
+                                         :prompt "Recipient:"
+                                         :sources '(gpg-key-source)))))
                  (with-input-from-string (,in (with-output-to-string (,stream)
                                                 (setf ,result (progn ,@body))))
                    (gpg-write ,in ,gpg-file (gpg-key-key-id ,recipient)))))
