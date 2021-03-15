@@ -81,7 +81,9 @@ Suggestions are made with the `suggestion-maker' slot from `source'."))
            (str:join " " (sera:plist-values properties))))
 
 (defmethod initialize-instance :after ((suggestion suggestion) &key source input)
-  (when (and input source)
+  "Set SUGGESTION `match-data' if empty and if SOURCE and INPUT initargs are provided."
+  (when (and input source
+             (uiop:emptyp (match-data suggestion)))
     (setf (match-data suggestion)
           (format-properties
            (active-properties suggestion :source source)
