@@ -433,7 +433,7 @@ We keep this variable as a means to import the old format to the new one.")
 Useful for session snapshots, as `restore-history-bu-name' will restore opened buffers."
   (with-data-access (history (history-path (current-buffer)))
     (sera:and-let* ((name (first (prompt
-                                  :input-prompt "The name to store history with"
+                                  :prompt "The name to store history with"
                                   :sources (list (make-instance 'prompter:raw-source)
                                                  (make-instance 'history-name-source)))))
                     (path (make-instance 'history-data-path
