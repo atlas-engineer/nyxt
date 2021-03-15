@@ -346,7 +346,7 @@ I.e. the grey text initially seen in it.")
 (define-command follow-hint (&key annotate-visible-only-p)
   "Show a set of element hints, and go to the user inputted one in the
 currently active buffer."
-  (query-hints "Go to element" '%follow-hint
+  (query-hints "Go to element" (lambda (results) (%follow-hint (first results)))
                :annotate-visible-only-p annotate-visible-only-p))
 
 (define-command follow-hint-new-buffer (&key annotate-visible-only-p)
@@ -391,20 +391,15 @@ visible nosave active buffer."
 
 (define-command copy-hint-url (&key annotate-visible-only-p)
   "Show a set of element hints, and copy the URL of the user inputted one."
-  (query-hints "Copy element URL" '%copy-hint-url
+  (query-hints "Copy element URL" (lambda (result)  (%copy-hint-url (first result)))
                :annotate-visible-only-p annotate-visible-only-p))
 
 (define-command bookmark-hint (&key annotate-visible-only-p)
   "Show link hints on screen, and allow the user to bookmark one"
   (query-hints "Bookmark hint"
                (lambda (result)
-                 (let ((uri (quri:uri (url result)))
-                       (tags (tags (prompt-minibuffer
-                                    :input-prompt "Space-separated tag(s)"
-                                    :default-modes '(set-tag-mode minibuffer-mode)
-                                    :input-buffer (url-bookmark-tags (quri:uri (url result)))
-                                    :suggestion-function (tag-suggestion-filter)))))
-                   (bookmark-add uri :tags tags)))
+                 (let ((url (url (first result))))
+                   (bookmark-url :url url)))
                :multi-selection-p t
                :annotate-visible-only-p annotate-visible-only-p))
 
