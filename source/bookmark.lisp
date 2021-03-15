@@ -412,34 +412,22 @@ rest in background buffers."
       (echo-warning "Failed to load bookmarks from ~s: ~a"
                     (expand-path path) c))))
 
-(define-command import-bookmarks-from-html ()
+(define-command import-bookmarks-from-html (&key (html-file nil))
   "Import bookmarks from an HTML file."
-  (let ((html-file (prompt-minibuffer
-                    :default-modes '(nyxt/file-manager-mode:file-manager-mode
-                                     minibuffer-mode)
-                    :input-prompt "Path to the HTML file"
-                    ;; the suggestion filter allows non-html files right
-                    ;; now, as with :must-match-p set to nil the user
-                    ;; would still be able to select a non-html file;
-                    ;; this should be fixed (and :must-match-p nil -
-                    ;; removed) once the file-manager has better navigation
-                    ;; support
-                    ;; :suggestion-function #'nyxt/file-manager-mode:open-file-from-directory-suggestion-filter
-                    :must-match-p nil)))
-    (if (and (uiop:file-exists-p html-file)
-             (equal (pathname-type html-file) "html"))
-        (with-open-file (in-html html-file :external-format :utf-8)
-          (let ((a-tags (plump:get-elements-by-tag-name (plump:parse in-html) "a")))
-            (dolist (a-tag a-tags)
-              (let* ((url (plump:attribute a-tag "href"))
-                     (title (plump:render-text a-tag))
-                     (date (plump:attribute a-tag "add_date"))
-                     (tags (plump:attribute a-tag "tags"))
-                     (url-uri (quri:uri url)))
-                (when (str:starts-with? "http" (quri:uri-scheme url-uri))
-                  (bookmark-add url-uri
-                                :title title
-                                :date (ignore-errors (local-time:unix-to-timestamp (parse-integer date)))
-                                :tags (when tags
-                                        (str:split "," tags))))))))
-        (echo "The file doesn't exist or is not an HTML file."))))
+  (if (and (uiop:file-exists-p html-file)
+           (equal (pathname-type html-file) "html"))
+      (with-open-file (in-html html-file :external-format :utf-8)
+        (let ((a-tags (plump:get-elements-by-tag-name (plump:parse in-html) "a")))
+          (dolist (a-tag a-tags)
+            (let* ((url (plump:attribute a-tag "href"))
+                   (title (plump:render-text a-tag))
+                   (date (plump:attribute a-tag "add_date"))
+                   (tags (plump:attribute a-tag "tags"))
+                   (url-uri (quri:uri url)))
+              (when (str:starts-with? "http" (quri:uri-scheme url-uri))
+                (bookmark-add url-uri
+                              :title title
+                              :date (ignore-errors (local-time:unix-to-timestamp (parse-integer date)))
+                              :tags (when tags
+                                      (str:split "," tags))))))))
+      (echo "The file doesn't exist or is not an HTML file.")))

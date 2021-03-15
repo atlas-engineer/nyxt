@@ -51,11 +51,3 @@ It's recommended to use this package in the Nyxt configuration file, instead of
   (:import-from #:class-star #:define-class)
   (:import-from #:serapeum #:export-always)
   (:documentation "Mode for prompter buffer."))
-
-(uiop:define-package :nyxt/file-manager-mode
-    (:use :common-lisp :trivia :nyxt)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:class-star #:define-class)
-  (:documentation "Manage files.")
-  (:export :file-manager-mode)
-  (:export :open-file-function :directory-source))

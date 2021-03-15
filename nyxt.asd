@@ -110,7 +110,6 @@
                (:file "nosound-mode")
                (:file "noscript-mode")
                (:file "nowebgl-mode")
-               (:file "file-manager-mode")
                (:file "download-mode")
                (:file "vcs-mode")
                (:file "force-https-mode")
