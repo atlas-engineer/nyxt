@@ -60,10 +60,10 @@
    "Execute a command by name, also supply required, optional, and
 keyword parameters."
   ;; TODO: prefill default-values when prompting optional/key arguments
-   (let* ((command (prompt
-                    :prompt "Execute extended command"
-                    :sources (make-instance 'command-source)
-                    :hide-suggestion-count-p t))
+   (let* ((command (first (prompt
+                           :prompt "Execute extended command"
+                           :sources (make-instance 'command-source)
+                           :hide-suggestion-count-p t)))
           (argument-list (swank::arglist (fn command)))
           (required-arguments (nth-value 0 (alex:parse-ordinary-lambda-list
                                             argument-list)))
@@ -76,22 +76,22 @@ keyword parameters."
              (when required-arguments
                (loop for argument in required-arguments
                      collect (read-from-string
-                              (prompt
-                               :prompt argument
-                               :sources (make-instance 'prompter:raw-source)))))
+                              (first (prompt
+                                      :prompt argument
+                                      :sources (make-instance 'prompter:raw-source))))))
              (when optional-arguments
                (loop for argument in optional-arguments
                      collect (read-from-string
-                              (prompt
-                               :prompt (first argument)
-                               :sources (make-instance 'prompter:raw-source)))))
+                              (first (prompt
+                                      :prompt (first argument)
+                                      :sources (make-instance 'prompter:raw-source))))))
              (when key-arguments
                (loop for argument in key-arguments
                      collect (first (car argument))
                      collect (read-from-string
-                              (prompt
-                               :prompt (second (car argument))
-                               :sources (make-instance 'prompter:raw-source)))))))
+                              (first (prompt
+                                      :prompt (second (car argument))
+                                      :sources (make-instance 'prompter:raw-source))))))))
      (setf (last-access command) (local-time:now))))
 
 (defun get-hooks ()
@@ -133,22 +133,22 @@ keyword parameters."
 
 (define-command disable-hook-handler ()
   "Remove handler(s) from a hook."
-  (let* ((hook-desc (prompt
-                     :prompt "Hook where to disable handler"
-                     :sources (make-instance 'hook-source)))
-         (handler (prompt
-                   :prompt (format nil "Disable handler from ~a" (name hook-desc))
-                   :sources (make-instance 'handler-source
-                                           :hook (value hook-desc)))))
+  (let* ((hook-desc (first (prompt
+                            :prompt "Hook where to disable handler"
+                            :sources (make-instance 'hook-source))))
+         (handler (first (prompt
+                          :prompt (format nil "Disable handler from ~a" (name hook-desc))
+                          :sources (make-instance 'handler-source
+                                                  :hook (value hook-desc))))))
     (hooks:disable-hook (value hook-desc) handler)))
 
 (define-command enable-hook-handler ()
   "Remove handler(s) from a hook."
-  (let* ((hook-desc (prompt
-                     :prompt "Hook where to enable handler"
-                     :sources (make-instance 'hook-source)))
-         (handler (prompt
-                   :prompt (format nil "Enable handler from ~a" (name hook-desc))
-                   :sources (make-instance 'disabled-handler-source
-                                           :hook (value hook-desc)))))
+  (let* ((hook-desc (first (prompt
+                            :prompt "Hook where to enable handler"
+                            :sources (make-instance 'hook-source))))
+         (handler (first (prompt
+                          :prompt (format nil "Enable handler from ~a" (name hook-desc))
+                          :sources (make-instance 'disabled-handler-source
+                                                  :hook (value hook-desc))))))
     (hooks:enable-hook (value hook-desc) handler)))
