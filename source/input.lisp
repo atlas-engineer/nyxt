@@ -124,26 +124,6 @@ Return nil to forward to renderer or non-nil otherwise."
                 (setf key-stack nil))
               t)
 
-             ((and (active-prompt-buffers window)
-                   ;; TODO: Remove this confition when `minibuffer' is gone.
-                   (prompt-buffer-p (first (active-prompt-buffers window))))
-              (setf key-stack nil)
-              ;; Forward to prompt buffer.
-              nil)
-
-             ((active-prompt-buffers window)
-              (when printable-p
-                (dolist (key key-stack)
-                  (let ((value (keymap:key-value key)))
-                    (log:debug "Insert ~s in minibuffer" value)
-                    ;; TODO: This thread is required for search-buffer to list
-                    ;; the suggestions properly.  Remove this workaround with
-                    ;; the upcoming minibuffer library.
-                    (pexec ()
-                      (insert (nyxt:current-minibuffer) value)))))
-              (setf key-stack nil)
-              t)
-
              ((nyxt/repl-mode::active-repl-p window)
               (when printable-p
                 (dolist (key key-stack)
