@@ -701,7 +701,7 @@ proceeding."
     (print-status nil window)
     (when (and (web-buffer-p buffer)
                (eq (slot-value buffer 'load-status) :unloaded))
-      (reload-current-buffer buffer))))
+      (reload-buffer buffer))))
 
 (defun last-active-buffer ()
   "Return buffer with most recent `last-access'."
@@ -738,7 +738,7 @@ proceeding."
   ((prompter:name "Buffer list")
    ;; For commodity, the current buffer shouldn't be the first one on the list.
    (prompter:constructor (buffer-initial-suggestions :current-is-last-p t))
-   (prompter:actions '(set-current-buffer))
+   (prompter:actions (list (make-unmapped-command set-current-buffer)))
    (prompter:follow-p t)
    (prompter:follow-delay 0.1)
    (prompter:persistent-action #'set-current-buffer)
@@ -788,13 +788,11 @@ See `make-buffer'."
   "Delete the buffer(s) via minibuffer input."
   (if id
       (buffer-delete (gethash id (slot-value *browser* 'buffers)))
-      (flet ((delete-buffers (buffers)
-               (mapcar #'buffer-delete buffers)))
-        (prompt
-         :prompt "Delete buffer(s)"
-         :sources (make-instance 'buffer-source
-                                 :multi-selection-p t
-                                 :actions (list #'delete-buffers))))))
+      (prompt
+       :prompt "Delete buffer(s)"
+       :sources (make-instance 'buffer-source
+                               :multi-selection-p t
+                               :actions (list (make-mapped-command buffer-delete))))))
 
 (define-command reduce-to-buffer (&key (delete t))
   "Reduce the buffer(s) via minibuffer input and copy their titles/URLs to a
@@ -918,9 +916,11 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
      :history history
      :sources (list (make-instance 'prompter:raw-source
                                    :name "New URL"
-                                   :actions (list 'buffer-load 'new-buffer-load))
+                                   :actions (list (make-unmapped-command buffer-load)
+                                                  (make-unmapped-command new-buffer-load)))
                     (make-instance 'global-history-source
-                                   :actions (list 'buffer-load 'new-buffer-load-from-history))))))
+                                   :actions (list (make-unmapped-command buffer-load)
+                                                  (make-unmapped-command new-buffer-load-from-history)))))))
 
 (define-command set-url-new-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused buffer."
@@ -946,23 +946,27 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
               (object-string (url (current-buffer))) "")
    :sources (list (make-instance 'prompter:raw-source
                                  :name "New URL"
-                                 :actions (list 'buffer-load 'new-nosave-buffer-load))
+                                 :actions (list (make-unmapped-command buffer-load)
+                                                (make-unmapped-command new-nosave-buffer-load)))
                   (make-instance 'global-history-source
-                                 :actions (list 'buffer-load 'new-nosave-buffer-load-from-history)))))
+                                 :actions (list (make-unmapped-command buffer-load)
+                                                (make-unmapped-command new-nosave-buffer-load-from-history))))))
 
-(define-command reload-current-buffer (&optional (buffer (current-buffer)))
-  "Reload of BUFFER or current buffer if unspecified."
+(defun reload-buffer (buffer)
+  "Reload a buffer."
   (buffer-load (url buffer) :buffer buffer))
 
-(define-command reload-buffer ()
+(define-command reload-current-buffer ()
+  "Reload of BUFFER or current buffer if unspecified."
+  (reload-buffer (current-buffer)))
+
+(define-command reload-buffers ()
   "Reload queried buffer(s)."
-  (flet ((reload-buffers (buffers)
-           (mapcar #'reload-current-buffer buffers)))
-    (prompt
-     :prompt "Reload buffer(s)"
-     :sources (make-instance 'buffer-source
-                             :multi-selection-p t
-                             :actions (list #'reload-buffers)))))
+  (prompt
+   :prompt "Reload buffer(s)"
+   :sources (make-instance 'buffer-source
+                           :multi-selection-p t
+                           :actions (list (make-mapped-command reload-buffer)))))
 
 (define-command switch-buffer-previous ()
   "Switch to the previous buffer in the list of buffers.
