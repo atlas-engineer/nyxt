@@ -35,10 +35,11 @@ For sturcture and class instances, the plist is made of the exported slots: the
 keys are the slot symbols and the values the slot values passed to
 `write-to-string'.
 
-Suitable as a `source' `suggestion-property-function'.  It's useful to separate
-and compose between different object properties and different sources (for
-instance, the same `object-properties' method can be inherited or used across
-different sources)."
+It's used in `make-suggestion' which can be used as a `suggestion-maker' for `source's.
+
+It's useful to separate concerns and compose between different object properties
+and different sources (for instance, the same `object-properties' method can be
+inherited or used across different sources)."
   (cond
     ((or (typep object 'standard-object)
          (typep object 'structure-object))
@@ -68,7 +69,33 @@ used by the `sort-predicate'."))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "Suggestions are processed and listed in `source'.
 It wraps arbitrary object stored in the `value' slot.
-The other slots are optional."))
+The other slots are optional.
+
+Suggestions are made with the `suggestion-maker' slot from `source'."))
+
+(defun format-properties (properties &optional downcasedp)
+  (funcall (if downcasedp #'string-downcase #'identity)
+           (str:join " " (sera:plist-values properties))))
+
+(defmethod initialize-instance :after ((suggestion suggestion) &key source input)
+  (when (and input source)
+    (setf (match-data suggestion)
+          (format-properties
+           (active-properties suggestion :source source)
+           (str:downcasep input)))))
+
+(export-always 'make-suggestion)
+(defmethod make-suggestion ((value t) source &optional input)
+  "Return a `suggestion' wrapping around VALUE.
+Properties are set with `object-properties'.
+`match-data' is set by concatenating all the active properties into a
+space-separated string.
+The `match-data' is downcased if INPUT is lower-case."
+  (make-instance 'suggestion
+                 :value value
+                 :properties (object-properties value)
+                 :source source
+                 :input input))
 
 ;; We must eval the class at read-time because `make-source' is generated using
 ;; the initargs of the class.
@@ -139,17 +166,16 @@ process when filtering.  A suggestion `object-properties' method should return a
 plist of property names and string values.  An empty list means all properties
 are displayed.")
 
-     (suggestion-property-function #'object-properties ; TODO: Better name?
-                                   :documentation "Function called on the
-suggestions to derive their list of properties.
+     (suggestion-maker #'make-suggestion
+                       :documentation "Function that wraps an arbitrary
+object into a source `suggestion'.
+This is useful to set the suggestion slots such as `properties' and `match-data'
+depending on the source and the input.
 
-To control which property to display and match against, see `active-properties'.
-
-`object-properties' is used by default, which is convenient to compose different
-properties and sources.
-For non-specific object, or for objects for which we want properties other than
-those returned by `object-properties', you can set this slot to a custom
-function.")
+Called on
+- arbitrary object
+- source
+- (optional) current input.")
 
      (filter #'fuzzy-match
              :type (or null function)
@@ -345,16 +371,14 @@ call.")))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "Prompt for raw user input."))
 
-(defmethod ensure-suggestions-list ((source source) elements)
+(defmethod ensure-suggestions-list ((source source) elements
+                                    &key input &allow-other-keys)
   (mapcar (lambda (suggestion-value)
             (if (typep suggestion-value 'suggestion)
                 suggestion-value
-                (make-instance 'suggestion
-                               :value suggestion-value
-                               :properties (maybe-funcall
-                                            (suggestion-property-function source)
-                                            suggestion-value)
-                               :match-data "")))
+                (make-suggestion suggestion-value
+                                 source
+                                 input)))
           (uiop:ensure-list elements)))
 
 (defmethod initialize-instance :after ((source source) &key)
@@ -428,13 +452,6 @@ Active properties are queried from SOURCE."
          (set-difference (sera:plist-keys (properties suggestion))
                          (active-properties source))))
 
-(defun copy-object (object)
-  "Like `copy-structure' but also works for class instances."
-  (let ((copy (make-instance (class-name (class-of object)))))
-    (dolist (slot (mopu:slot-names object))
-      (setf (slot-value copy slot) (slot-value object slot)))
-    copy))
-
 (defun maybe-funcall (fn &rest args)
   "Funcall FN over args.
 If FN is nil, return ARGS as multiple values."
@@ -502,11 +519,9 @@ feedback to the user while the list of suggestions is being computed."
                     (bt:release-lock (initial-suggestions-lock source)))
                   (preprocess (initial-suggestions-copy)
                     (if (filter-preprocessor source)
-                        (ensure-suggestions-list
-                         source
-                         (maybe-funcall (filter-preprocessor source)
-                                        initial-suggestions-copy source input))
-                        (ensure-suggestions-list source input)))
+                        (funcall (filter-preprocessor source)
+                                 initial-suggestions-copy source input)
+                        initial-suggestions-copy))
                   (process! (preprocessed-suggestions)
                     (let ((last-notification-time (get-internal-real-time)))
 
@@ -536,13 +551,18 @@ feedback to the user while the list of suggestions is being computed."
                              (maybe-funcall (filter-postprocessor source)
                                             (slot-value source 'suggestions)
                                             source
-                                            input))))))
+                                            input)
+                             :input input)))))
              (wait-for-initial-suggestions)
              (process!
               (preprocess
                ;; We copy the list of initial-suggestions so that the
-               ;; preprocessor cannot modify it.
-               (mapcar #'copy-object
+               ;; preprocessor cannot modify them.
+               (mapcar (lambda (suggestion)
+                         (funcall (suggestion-maker source)
+                          (value suggestion)
+                          source
+                          input))
                        (initial-suggestions source))))
              (postprocess!)
              (bt:with-lock-held ((wrote-to-ready-channel-lock source))

@@ -18,15 +18,6 @@ The substrings must be SUBSTRING-LENGTH characters long or more."
                      input-strings))
        :test #'string=))))
 
-(defun format-properties (properties &optional downcasedp)
-  (let ((result
-          (str:join " "
-                    (loop for i on properties by #'cddr
-                          collect (second i)))))
-    (if downcasedp
-        (string-downcase result)
-        result)))
-
 (export-always 'delete-inexact-matches)
 (defun delete-inexact-matches (suggestions source input)
   "Destructively filter out non-exact matches from SUGGESTIONS.
@@ -35,13 +26,7 @@ If any input substring matches exactly (but not necessarily a whole word),
 then all suggestions that are not exactly matched by at least one substring are removed.
 
 Suitable as a `source' `filter-preprocessor'."
-  ;; TODO: Compute match-data separately.  Make it customizable.
-  (dolist (suggestion suggestions)
-    (setf
-     (match-data suggestion)
-     (format-properties
-      (active-properties suggestion :source source)
-      (str:downcasep input))))
+  (declare (ignore source))
   (unless (str:empty? input)
     (let ((exactly-matching-substrings (find-exactly-matching-substrings
                                         input
