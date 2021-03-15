@@ -187,15 +187,7 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
       (push prompt-buffer (old-prompt-buffers *browser*))))
   (if (active-prompt-buffers (current-window))
       (let ((next-prompt-buffer (first (active-prompt-buffers (current-window)))))
-        ;; TODO: Remove when done with `minibuffer'.
-        (if (prompt-buffer-p next-prompt-buffer)
-            (show-prompt-buffer next-prompt-buffer)
-            (show))
-        ;; TODO: Remove?
-        ;; We need to refresh so that the nested prompt-buffers don't have to do it.
-        ;; (state-changed (first (active-prompt-buffers (current-window))))
-        ;; (update-display (first (active-prompt-buffers (current-window))))
-        )
+        (show-prompt-buffer next-prompt-buffer))
       (progn
         (ffi-window-set-prompt-buffer-height (current-window) 0)))
   (when return-function
