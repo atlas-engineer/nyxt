@@ -239,10 +239,11 @@ URL."
                   :suggestion-function (buffer-suggestion-filter))))
     (mapc #'bookmark-current-page buffers)))
 
-(define-command bookmark-url ()
+(define-command bookmark-url (&key url)
   "Allow the user to bookmark a URL via minibuffer input."
-  (let ((url (prompt-minibuffer
-              :input-prompt "Bookmark URL")))
+  (let ((url (or url
+                 (prompt-minibuffer
+                  :input-prompt "Bookmark URL"))))
     (if (not (valid-url-p url))
         (echo "Invalid URL")
         (let* ((url (quri:uri url))
