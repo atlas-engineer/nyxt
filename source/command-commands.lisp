@@ -24,7 +24,8 @@
         #'local-time:timestamp> :key #'last-access))
 
 (defmethod prompter:object-properties ((command command))
-  (let* ((buffer (active-buffer (current-window :no-rescan)))
+  (let* ((buffer (or (current-prompt-buffer)
+                     (active-buffer (current-window :no-rescan))))
          (scheme-name (keymap-scheme-name buffer))
          (bindings '()))
     (loop for mode in (modes buffer)
