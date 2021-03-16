@@ -42,7 +42,3 @@ All ARGS are declared as `ignorable'."
 (defun public-initargs (class-specifier)
   "Return CLASS-SPECIFIER initargs as symbols (not keywords)."
   (delete-if (complement #'exported-p) (initargs class-specifier)))
-
-(uiop:define-package prompter/tests
-  (:use #:common-lisp
-        #:prove))

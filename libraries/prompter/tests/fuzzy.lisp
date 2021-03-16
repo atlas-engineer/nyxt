@@ -3,7 +3,7 @@
 
 (in-package :prompter/tests)
 
-(plan nil)
+(prove:plan nil)
 
 (defparameter *suggestions*
   '("LINK-HINTS" "ACTIVE-HISTORY-NODE" "HISTORY-BACKWARDS"
@@ -34,52 +34,53 @@
     "GO-ANCHOR-NEW-BUFFER-FOCUS")
   "Historical list of Nyxt commands.")
 
-(subtest "Fuzzy match"
+(prove:subtest "Fuzzy match"
   (let ((source (make-instance 'prompter:raw-source)))
     (flet ((match (input list)
              (prompter:value
-              (first (sort (mapcar (alex:curry #'prompter:fuzzy-match input)
+              (first (sort (mapcar (lambda (suggestion)
+                                     (prompter:fuzzy-match input suggestion))
                                    (prompter::ensure-suggestions-list source list :input input))
                            #'prompter:score>)))))
-      (is (match "hel" '("help-mode" "help" "foo-help" "help-foo-bar"))
+      (prove:is (match "hel" '("help-mode" "help" "foo-help" "help-foo-bar"))
           "help")
 
-      (is (match "hel" *suggestions*)
+      (prove:is (match "hel" *suggestions*)
           "HELP"
           "match 'help' with real suggestions list")
 
-      (is (match "swit buf" '("about" "switch-buffer-next" "switch-buffer" "delete-buffer"))
+      (prove:is (match "swit buf" '("about" "switch-buffer-next" "switch-buffer" "delete-buffer"))
           "switch-buffer"
           "match 'swit buf' (small list)")
 
-      (is (match "swit buf" *suggestions*)
+      (prove:is (match "swit buf" *suggestions*)
           "SWITCH-BUFFER"
           "match 'swit buf' with real suggestions list")
 
       ;; TODO: Fix reverse fuzzy matching.
-      ;; (is (match "buf swit" '("about" "switch-buffer-next" "switch-buffer" "delete-buffer"))
+      ;; (prove:is (match "buf swit" '("about" "switch-buffer-next" "switch-buffer" "delete-buffer"))
       ;;   "switch-buffer"
       ;;   "reverse match 'buf swit' (small list)")
 
-      ;; (is (match "buf swit" *suggestions*)
+      ;; (prove:is (match "buf swit" *suggestions*)
       ;;     "SWITCH-BUFFER"
       ;;     "reverse match 'buf swit' with real suggestions list")
 
-      (is (match "de" '("some-mode" "delete-foo"))
+      (prove:is (match "de" '("some-mode" "delete-foo"))
           "delete-foo"
           "suggestions beginning with the first word appear first")
 
-      (is (match "foobar" '("foo-dash-bar" "foo-bar"))
+      (prove:is (match "foobar" '("foo-dash-bar" "foo-bar"))
           "foo-bar"
           "search without a space. All characters count (small list).")
-      (is (match "sbf" *suggestions*)
+      (prove:is (match "sbf" *suggestions*)
           "SWITCH-BUFFER"
           "search without a space. All characters count, real list.")
-      (is (match "FOO" '("foo-dash-bar" "FOO-BAR"))
+      (prove:is (match "FOO" '("foo-dash-bar" "FOO-BAR"))
           "FOO-BAR"
           "input is uppercase (small list).")
-      (is (match "[" '("test1" "http://[1:0:0:2::3:0.]/" "test2"))
+      (prove:is (match "[" '("test1" "http://[1:0:0:2::3:0.]/" "test2"))
           "http://[1:0:0:2::3:0.]/"
           "match regex meta-characters"))))
 
-(finalize)
+(prove:finalize)
