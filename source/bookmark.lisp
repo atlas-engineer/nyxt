@@ -39,11 +39,13 @@ appended to the URL."))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (defmethod prompter:object-properties ((entry bookmark-entry))
-  ;; TODO: Add more slots?
+  ;; TODO: Add annocation slots?
   `(:url ,(quri:render-uri (url entry))
     :title ,(title entry)
     :tags ,(format nil "~{~a ~}" (tags entry))
-    :date ,(date entry)))
+    :date ,(date entry)
+    :shortcut ,(shortcut entry)
+    :search-url ,(search-url entry)))
 
 (defmethod object-string ((entry bookmark-entry)) ; TODO: Delete?
   (object-string (url entry)))
