@@ -126,13 +126,13 @@ Lisp function, except the form is " (:code "define-command") " instead of "
     (:p "Example:")
     (:pre (:code
            "(define-command bookmark-url ()
-  \"Allow the user to bookmark a URL via minibuffer input.\"
+  \"Qury the user which URL to bookmark.\"
   (let ((url (prompt
               :prompt \"Bookmark URL\"
               :sources (make-instance 'prompter:raw-source))))
     (bookmark-add url)))"))
-    (:p "See the " (:code "minibuffer") " class documentation for how to write
-write custom minibuffers.")
+    (:p "See the " (:code "prompt-buffer") " class documentation for how to write
+write custom prompt-buffers.")
 
     (:h3 "Hooks")
     (:p "Hooks provide a powerful mechanism to tweak the behaviour of various
@@ -311,7 +311,7 @@ ibus --daemonize --replace --xim"))
 your " (:code ".xprofile") " or similar.")
     (:h3 "Font size on HiDPI displays")
     (:p "On HiDPI displays, the font size used for displaying web and Nyxt's
-minibuffer content might be too tiny.")
+prompt-buffer content might be too tiny.")
     (:p "To fix this issue when using the WebKitGTK render, export the following
 environment variable before starting Nyxt:")
     (:pre (:code "
