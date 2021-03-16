@@ -177,7 +177,7 @@ CLASS-SYM to NEW-SUPERCLASSES.  The class is restored when exiting BODY."
 NAMES is either a symbol or a list of symbols.
 
 Classes can be modes or a one of the user-configurable classes like `browser',
-`buffer', `minibuffer', `window'.  Note that the classes must _not_ be prefixed
+`buffer', `prompt-buffer', `window'.  Note that the classes must _not_ be prefixed
 by 'user-'.
 
 The `%slot-default' variable is replaced by the slot initform.

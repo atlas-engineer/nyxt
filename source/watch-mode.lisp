@@ -8,8 +8,7 @@
 (in-package :nyxt/watch-mode)
 
 (defun seconds-from-user-input ()
-  "Read from the minibuffer numerical time inputs and collate them into
-seconds."
+  "Query the numerical time inputs and collate them into seconds."
   (let* ((time-units '("days" "hours" "minutes" "seconds"))
          (to-seconds-alist (pairlis time-units '(86400 3600 60 1)))
          (active-time-units (prompt

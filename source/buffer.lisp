@@ -54,7 +54,7 @@ after the mode-specific hook.")
                                         :fallback-url "https://duckduckgo.com/"))
                    :type list-of-search-engines
                    :documentation "A list of the `search-engine' objects.
-You can invoke them from the minibuffer by prefixing your query with SHORTCUT.
+You can invoke them from the prompt-buffer by prefixing your query with SHORTCUT.
 If the query is empty, FALLBACK-URL is loaded instead.  If
 FALLBACK-URL is empty, SEARCH-URL is used on an empty search.
 
@@ -785,7 +785,7 @@ See `make-buffer'."
     buffer))
 
 (define-command delete-buffer (&key id)
-  "Delete the buffer(s) via minibuffer input."
+  "Query the buffer(s) to delete."
   (if id
       (buffer-delete (gethash id (slot-value *browser* 'buffers)))
       (prompt
@@ -795,7 +795,7 @@ See `make-buffer'."
                                :actions (list (make-mapped-command buffer-delete))))))
 
 (define-command reduce-to-buffer (&key (delete t))
-  "Reduce the buffer(s) via minibuffer input and copy their titles/URLs to a
+  "Query the buffer(s) to \"reduce \" by copying their titles/URLs to a
 single buffer, optionally delete them. This function is useful for archiving a
 set of useful URLs or preparing a list to send to a someone else."
   (let ((buffers (prompt
