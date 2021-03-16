@@ -379,10 +379,10 @@ See the documentation of `prompt-buffer' to know more about the options."
 (define-command resume-prompt ()
   "Query an older prompt and resume it."
   (let ((old-prompt
-          (prompt
-           :resumable-p nil
-           :prompt "Resume prompt session"
-           :sources (list (make-instance 'resume-prompt-source)))))
+          (first (prompt
+                  :resumable-p nil
+                  :prompt "Resume prompt session"
+                  :sources (list (make-instance 'resume-prompt-source))))))
     (when old-prompt
       (prompter:resume old-prompt)
       (show-prompt-buffer old-prompt))))
