@@ -19,7 +19,7 @@ compatibility to import the old flat history.")
    (explicit-visits 0
                     :type integer
                     :documentation "
-Number of times the URL was visited by a minibuffer request.  This does not
+Number of times the URL was visited by a prompt-buffer request.  This does not
 include implicit visits.")
    (implicit-visits 0
                     :type integer

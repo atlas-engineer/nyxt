@@ -86,7 +86,7 @@ for which the `executable' slot is non-nil."
       (echo-warning "No password manager found.")))
 
 (define-command copy-password (&optional (buffer (current-buffer)))
-  "Copy chosen password from minibuffer."
+  "Query password and copy to clipboard."
   (password-debug-info)
   (if (password-interface buffer)
       (with-password (password-interface buffer)

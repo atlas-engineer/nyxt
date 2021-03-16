@@ -451,7 +451,6 @@ nothing is done if file is missing."
                  (with-input-from-string (,in (with-output-to-string (,stream)
                                                 (setf ,result (progn ,@body))))
                    (gpg-write ,in ,gpg-file (gpg-key-key-id ,recipient)))))
-           ;; TODO: We need synchronous minibuffer prompts to return value for result.
            ,result))))
 
 (defmacro with-maybe-gpg-file ((stream filespec &rest options) &body body)

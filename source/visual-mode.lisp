@@ -244,7 +244,7 @@ identifier for every hinted element."
   (setf (ps:@ document body content-editable) "false"))
 
 (define-command select-paragraph ()
-  "Add hints to text elements on the page and open a minibuffer for selecting them."
+  "Add hints to text elements on the page and query them."
   (let ((buffer (current-buffer)))
     (let ((result (first
                    (prompt
