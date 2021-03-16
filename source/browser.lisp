@@ -566,11 +566,6 @@ sometimes yields the wrong result."
         (make-window buffer))
     buffer))
 
-(export-always 'current-minibuffer)
-(defun current-minibuffer ()
-  "Return the currently active minibuffer."
-  (first (active-prompt-buffers (current-window))))
-
 (export-always 'current-prompt-buffer)
 (defun current-prompt-buffer ()
   "Return the currently active prompt-buffer."

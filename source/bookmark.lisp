@@ -176,7 +176,7 @@ This can be useful to let the user select no tag when returning directly."
                            (tag-suggestions :extra-tags (extra-tags source)))))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-;; (define-command insert-tag (&optional (minibuffer (current-minibuffer)))
+;; (define-command insert-tag (&optional (minibuffer (current-prompt-buffer)))
 ;;   "Replace current word with selected tag."
 ;;   (let ((selection (get-suggestion minibuffer)))
 ;;     (unless (uiop:emptyp selection)
@@ -301,7 +301,7 @@ comparing URLs."
            (list (make-instance 'bookmark-entry :url (quri:uri url)))
            :test #'equals))))
 
-;; (define-command insert-suggestion-or-tag (&optional (minibuffer (current-minibuffer)))
+;; (define-command insert-suggestion-or-tag (&optional (prompt-buffer (current-prompt-buffer)))
 ;;   "Paste selected suggestion or tag in input.
 ;; If character before cursor is '+' or '-' complete against tag."
 ;;   (let* ((current-word (text-buffer::word-at-cursor (input-cursor minibuffer)))

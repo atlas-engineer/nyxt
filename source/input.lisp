@@ -33,7 +33,7 @@ Example:
 
 (export-always 'current-keymaps)
 (defun current-keymaps (&optional (buffer (if (active-prompt-buffers (current-window))
-                                              (current-minibuffer)
+                                              (current-prompt-buffer)
                                               (current-buffer))))
   "Return the list of `keymap' for the current buffer, ordered by priority.
 If non-empty, return the result of BUFFER's `current-keymaps-hook' instead."
@@ -54,7 +54,7 @@ minibuffer keymaps."
              (mapcar
               (lambda (buffer-or-minibuffer)
                 (delete nil (mapcar #'keymap (modes buffer-or-minibuffer))))
-              (delete nil (list buffer (current-minibuffer))))))))
+              (delete nil (list buffer (current-prompt-buffer))))))))
 
 (declaim (ftype (function (keymap:key) boolean) pointer-event-p))
 (defun pointer-event-p (key)
