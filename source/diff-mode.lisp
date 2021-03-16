@@ -55,20 +55,17 @@ the highest standard on accessibility.")
   "Create a buffer showing a diff between 2 html documents."
   ;; users should be able to choose from buffers and/or files.  to be expanded
   ;; when file-manager-mode is fixed.
-  (flet ((fetch-html-from-buffer (&key prompt current-is-last-p)
+  (flet ((fetch-html-from-buffer (&key prompt)
            (ffi-buffer-get-document
-            (prompt-minibuffer
-             :input-prompt prompt
-             :suggestion-function (buffer-suggestion-filter
-                                   :current-is-last-p current-is-last-p)))))
+            (prompt
+             :prompt prompt
+             :sources (list (make-instance 'buffer-source))))))
     ;; change buffer here, not at the constructor
     (set-current-buffer
      (diff-mode :old-html (fetch-html-from-buffer
-                           :prompt "Old buffer"
-                           :current-is-last-p nil)
+                           :prompt "Old buffer")
                 :new-html (fetch-html-from-buffer
-                           :prompt "New buffer"
-                           :current-is-last-p t)
+                           :prompt "New buffer")
                 :buffer (make-internal-buffer
                          ;; it's sensible to set the title here but it will be
                          ;; overridden anyway by html-set
