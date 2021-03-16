@@ -112,7 +112,7 @@ All ARGS are declared as `ignorable'."
                      (define-key map
                        "escape"
                        ;; We compute symbol at runtime because
-                       ;; nyxt/minibuffer-mode does not exist at
+                       ;; nyxt/prompt-buffer-mode does not exist at
                        ;; compile-time since it's loaded afterwards.
                        (find-symbol (string 'cancel-input)
                                     (find-package 'nyxt/prompt-buffer-mode))))
