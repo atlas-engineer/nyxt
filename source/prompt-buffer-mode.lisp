@@ -24,6 +24,7 @@
        "C-return" 'return-input         ; TODO: Bind to shift-return instead?
        "M-return" 'return-selection-over-action       ; TODO: Also bind to C-return?
        "C-j" 'run-persistent-action
+       "C-g" 'cancel-input
        "f1 b" 'run-prompt-buffer-command
        "C-h b" 'run-prompt-buffer-command ; TODO: Move to Emacs bindings.
        "C-c C-f" 'toggle-follow
