@@ -130,7 +130,7 @@ See `prompt' for how to invoke prompts.")))
 (define-user-class prompt-buffer)
 
 (defmethod initialize-instance :after ((prompt-buffer prompt-buffer) &key) ; TODO: Merge in `make-prompt-buffer'?
-  (hooks:run-hook (minibuffer-make-hook *browser*) prompt-buffer) ; TODO: Rename `minibuffer'.
+  (hooks:run-hook (prompt-buffer-make-hook *browser*) prompt-buffer)
   ;; We don't want to show the input in the suggestion list when invisible.
   (when (invisible-input-p prompt-buffer)
     (dolist (source (prompter:sources prompt-buffer))
