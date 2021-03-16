@@ -382,11 +382,12 @@ call.")))
 (defmethod ensure-suggestions-list ((source source) elements
                                     &key input &allow-other-keys)
   (mapcar (lambda (suggestion-value)
-            (if (typep suggestion-value 'suggestion)
+            (if (suggestion-p suggestion-value)
                 suggestion-value
-                (make-suggestion suggestion-value
-                                 source
-                                 input)))
+                (funcall (suggestion-maker source)
+                         suggestion-value
+                         source
+                         input)))
           (uiop:ensure-list elements)))
 
 (defmethod initialize-instance :after ((source source) &key)
