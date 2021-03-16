@@ -3,7 +3,7 @@
 
 (in-package :nyxt)
 
-(hooks:define-hook-type minibuffer (function (minibuffer)))
+(hooks:define-hook-type prompt-buffer (function (prompt-buffer)))
 (hooks:define-hook-type download (function (download-manager:download)))
 
 (hooks:define-hook-type resource (function (request-data) (or request-data null)))
@@ -150,11 +150,11 @@ This hook is mostly useful to set the `cookies-path'.
 The buffer web view is not allocated, so it's not possible to run any
 parenscript from this hook.  See `buffer-make-hook' for a hook.
 The handlers take the buffer as argument.")
-   (minibuffer-make-hook (make-hook-minibuffer)
-                         :type hook-minibuffer
-                         :documentation "Hook run after the `minibuffer' class
-is instantiated and before initializing the minibuffer modes.
-The handlers take the minibuffer as argument.")
+   (prompt-buffer-make-hook (make-hook-prompt-buffer)
+                            :type hook-prompt-buffer
+                            :documentation "Hook run after the `prompt-buffer'
+class is instantiated and before initializing the prompt-buffer modes.
+The handlers take the prompt-buffer as argument.")
    (before-download-hook (make-hook-download)
                          :type hook-download
                          :documentation "Hook run before downloading a URL.
