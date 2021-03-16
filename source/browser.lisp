@@ -71,7 +71,7 @@ This can be used to resume former buffers.")
    (recent-buffers (make-ring :size 50)
                    :export nil
                    :documentation "A ring that keeps track of deleted buffers.")
-   (focus-on-reopened-buffer-p t ; TODO: Replace this with minibuffer Helm-style actions.
+   (focus-on-reopened-buffer-p t ; TODO: Replace this with prompt-buffer Helm-style actions.
                                :documentation "When reopening a closed buffer,
 focus on it instead of opening it in the background.
 
@@ -124,7 +124,7 @@ new window or not.")
    (ready-p nil
             :reader ready-p
             :documentation "If true, browser is ready for operation: make
-buffers, load data files, prompt minibuffer, etc.")
+buffers, load data files, open prompt buffer, etc.")
    (session-restore-prompt :always-ask
                            :documentation "Ask whether to restore the
 session. Possible values are :always-ask :always-restore :never-restore.")
@@ -224,7 +224,7 @@ editor executable."))
   ;; The `startup-function' must be run _after_ this function returns;
   ;; `ffi-within-renderer-thread' runs its body on the renderer thread when it's
   ;; idle, so it should do the job.  It's not enough since the
-  ;; `startup-function' may invoke the minibuffer, which cannot be invoked from
+  ;; `startup-function' may invoke the prompt buffer, which cannot be invoked from
   ;; the renderer thread: this is why we run the startup-function in a new
   ;; thread from there.
   (ffi-within-renderer-thread
@@ -540,8 +540,8 @@ The following example does a few things:
   ;; TODO: Get rid of the NO-RESCAN option and find a fast way to retrieve
   ;; current window reliably.
   ;; Tests:
-  ;; - Make two windows and make sure minibuffer gets spawned in the right window.
-  ;; - Delete the second window and see if the minibuffer still works in the first one.
+  ;; - Make two windows and make sure prompt-buffer gets spawned in the right window.
+  ;; - Delete the second window and see if the prompt-buffer still works in the first one.
   "Return the currently active window.
 If NO-RESCAN is non-nil, fetch the window from the `last-active-window' cache
 instead of asking the renderer for the active window.  It is faster but
@@ -553,14 +553,14 @@ sometimes yields the wrong result."
         (ignore-errors (ffi-window-active *browser*)))))
 
 (declaim (ftype (function (buffer)) set-current-buffer))
-;; (declaim (ftype (function ((and buffer (not minibuffer)))) set-current-buffer)) ; TODO: Better.
-;; But we can't use "minibuffer" here since it's not declared yet.  It will
+;; (declaim (ftype (function ((and buffer (not prompt-buffer)))) set-current-buffer)) ; TODO: Better.
+;; But we can't use "prompt-buffer" here since it's not declared yet.  It will
 ;; crash Nyxt if we call set-current-buffer before instantiating the first
-;; minibuffer.
+;; prompt-buffer.
 (export-always 'set-current-buffer)
 (defun set-current-buffer (buffer)
   "Set the active buffer for the active window."
-  (unless (eq 'minibuffer (class-name (class-of buffer)))
+  (unless (eq 'prompt-buffer (sera:class-name-of buffer))
     (if (current-window)
         (window-set-active-buffer (current-window) buffer)
         (make-window buffer))
