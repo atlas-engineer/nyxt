@@ -44,7 +44,9 @@ A new object is created on every new input."))
               :type (or null source (cons source))
               :documentation "List of `source's.
 For convenience, if the initarg is a single source (that is, not inside a list),
-it is automatically wrapped into a list upon initialization.")
+it is automatically wrapped into a list upon initialization.
+If the source is designated by a symbol, then it is automatically instantiated
+with `make-instance'.")
 
      (selection '()
                 ;; TODO: Index by (source-index suggestion-index) instead?
@@ -138,7 +140,17 @@ compution is not finished.")))
     (setf (prompt prompter) (write-to-string (prompt prompter))))
   (unless (stringp (input prompter))
     (setf (input prompter) (write-to-string (input prompter))))
-  (setf (sources prompter) (uiop:ensure-list (sources prompter)))
+  (flet ((ensure-sources (specifiers)
+           (mapcar (lambda (source-specifier)
+                     (cond
+                       ((source-p source-specifier)
+                        source-specifier)
+                       ((and (symbolp source-specifier)
+                             (c2cl:subclassp source-specifier 'source))
+                        (make-instance source-specifier))
+                       (t (error "Bad source specifier ~s." source-specifier))))
+                   (uiop:ensure-list specifiers))))
+    (setf (sources prompter) (ensure-sources (sources prompter))))
   (setf (selection prompter) (list (first (sources prompter)) 0))
   (maybe-funcall (constructor prompter) prompter)
   (update-sources prompter)
