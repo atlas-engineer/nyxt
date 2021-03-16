@@ -35,15 +35,9 @@ It's recommended to use this package in the Nyxt configuration file, instead of
   (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks :nyxt-user)
   (trivial-package-local-nicknames:add-package-local-nickname :file-attributes :org.shirakumo.file-attributes :nyxt-user))
 
-;; Unlike other modes, nyxt/minibuffer-mode is declared here because
+;; Unlike other modes, nyxt/prompt-buffer-mode is declared here because
 ;; certain files depend upon its existence being declared beforehand
 ;; (for compilation).
-(uiop:define-package :nyxt/minibuffer-mode
-  (:use :common-lisp :trivia :nyxt)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:serapeum #:export-always)
-  (:export :minibuffer-mode)
-  (:documentation "Mode for minibuffer"))
 ;; TODO: See if prompt-buffer-mode can be declared in prompt-buffer-mode.lisp.
 (uiop:define-package :nyxt/prompt-buffer-mode
   (:use :common-lisp :trivia :nyxt)
