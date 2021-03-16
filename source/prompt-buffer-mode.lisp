@@ -81,7 +81,7 @@
 If STEPS is negative, go to previous pages instead."
   (unless (= 0 steps)
     (let ((step-page-index              ; TODO: Add multi-source support.
-            (ffi-minibuffer-evaluate-javascript
+            (ffi-prompt-buffer-evaluate-javascript
              (current-window)
              (ps:ps
                (defun element-in-view-port-p (element)
@@ -290,7 +290,7 @@ Only available if `multi-selection-p' is non-nil."
 
 (define-command prompt-buffer-paste (&optional (window (current-window)))
   "Paste clipboard text to input."
-  (ffi-minibuffer-evaluate-javascript
+  (ffi-prompt-buffer-evaluate-javascript
    window
    (ps:ps
      (defun insert-at (tag input-text)

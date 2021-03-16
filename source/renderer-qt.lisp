@@ -54,7 +54,7 @@
     (qt:layout-add-widget box-layout minibuffer-view)
     (qt:layout-set-contents-margins box-layout 0 0 0 0)
     (qt:layout-set-spacing box-layout 0)
-    (ffi-window-set-minibuffer-height window 16)
+    (ffi-window-set-prompt-buffer-height window 16)
     (qt:widget-resize qt-object 1024 768)
     (qt:widget-install-key-press-filter
      (qt-object window)
@@ -131,7 +131,7 @@
   (qt:widget-show (qt-object buffer))
   (setf (active-buffer window) buffer))
 
-(defmethod ffi-window-set-minibuffer-height ((window qt-window) height)
+(defmethod ffi-window-set-prompt-buffer-height ((window qt-window) height)
   (qt:widget-set-fixed-height (minibuffer-view window) height))
 
 (defmethod ffi-buffer-make ((browser qt-browser))
@@ -145,7 +145,7 @@
 (defmethod ffi-buffer-evaluate-javascript-async ((buffer qt-buffer) javascript)
   (qt:web-engine-page-run-javascript (qt:web-engine-view-page (qt-object buffer)) javascript %callback))
 
-(defmethod ffi-minibuffer-evaluate-javascript-async ((window qt-window) javascript)
+(defmethod ffi-prompt-buffer-evaluate-javascript-async ((window qt-window) javascript)
   (qt:web-engine-page-run-javascript (qt:web-engine-view-page (minibuffer-view window)) javascript %callback))
 
 (defmethod ffi-generate-input-event ((window qt-window) event))

@@ -462,7 +462,7 @@ Warning: This behaviour may change in the future."
        nil)
       ((prompt-buffer-p minibuffer)
        (pexec ()
-         (let ((input (ffi-minibuffer-evaluate-javascript
+         (let ((input (ffi-prompt-buffer-evaluate-javascript
                        (current-window)
                        (ps:ps (ps:chain document (get-element-by-id "input")
                                         value)))))
@@ -730,7 +730,7 @@ Warning: This behaviour may change in the future."
   (gtk:gtk-widget-grab-focus (gtk-object buffer))
   buffer)
 
-(define-ffi-method ffi-window-set-minibuffer-height ((window gtk-window) height)
+(define-ffi-method ffi-window-set-prompt-buffer-height ((window gtk-window) height)
   (setf (gtk:gtk-widget-size-request (minibuffer-container window))
         (list -1 height))
   (if (eql 0 height)
@@ -868,7 +868,7 @@ requested a reload."
       nil
       #'javascript-error-handler))))
 
-(defmethod ffi-minibuffer-evaluate-javascript ((window gtk-window) javascript)
+(defmethod ffi-prompt-buffer-evaluate-javascript ((window gtk-window) javascript)
   (%within-renderer-thread
    (lambda (&optional channel)
      (webkit2:webkit-web-view-evaluate-javascript
@@ -880,7 +880,7 @@ requested a reload."
           #'identity)
       #'javascript-error-handler))))
 
-(define-ffi-method ffi-minibuffer-evaluate-javascript-async ((window gtk-window) javascript)
+(define-ffi-method ffi-prompt-buffer-evaluate-javascript-async ((window gtk-window) javascript)
   (webkit2:webkit-web-view-evaluate-javascript (minibuffer-view window) javascript))
 
 (define-ffi-method ffi-buffer-enable-javascript ((buffer gtk-buffer) value)
