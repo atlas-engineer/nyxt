@@ -201,7 +201,7 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
 The new webview HTML content is set as the PROMPT-BUFFER's `content'."
   (when prompt-buffer
     (let ((new-content (str:concat script (ps:ps (ps:chain document body |outerHTML|))))) ; TODO: Why do we postfix with this (ps:ps ... |outerHTML|)?
-      (ffi-minibuffer-evaluate-javascript-async
+      (ffi-prompt-buffer-evaluate-javascript-async
        (current-window)
        new-content))))
 
@@ -290,12 +290,12 @@ The new webview HTML content is set as the PROMPT-BUFFER's `content'."
 
 (defmethod update-display ((prompt-buffer prompt-buffer)) ; TODO: Merge into `show'?
   ;; TODO: Finish me!
-  (ffi-minibuffer-evaluate-javascript-async ; TODO: Replace with `evaluate-script'?  Rename the latter?
+  (ffi-prompt-buffer-evaluate-javascript-async ; TODO: Replace with `evaluate-script'?  Rename the latter?
    (current-window)
    (ps:ps (ps:chain document
                     (write (ps:lisp (str:concat (generate-prompt-html prompt-buffer)))))))
   ;; TODO: The following is supposed to focus on the HTML input but does not work.
-  (ffi-minibuffer-evaluate-javascript-async
+  (ffi-prompt-buffer-evaluate-javascript-async
    (current-window)
    (ps:ps (ps:chain document
                     (get-element-by-id "input")
@@ -322,7 +322,7 @@ The new webview HTML content is set as the PROMPT-BUFFER's `content'."
 (defun set-prompt-buffer-input (input)
   "Set HTML INPUT in PROMPT-BUFFER."
   (when (first (active-prompt-buffers (current-window)))
-    (ffi-minibuffer-evaluate-javascript
+    (ffi-prompt-buffer-evaluate-javascript
      (current-window)
      (ps:ps
        (setf (ps:chain document (get-element-by-id "input") value)
