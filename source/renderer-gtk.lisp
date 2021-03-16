@@ -41,8 +41,8 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 (define-class gtk-window ()
   ((gtk-object)
    (box-layout)
-   (minibuffer-container)
-   (minibuffer-view)
+   (prompt-buffer-container)
+   (prompt-buffer-view)
    (status-container)
    (message-container)
    (message-view)
@@ -208,7 +208,7 @@ Such contexts are not needed for internal buffers."
   (%within-renderer-thread-async
    (lambda ()
      (with-slots (gtk-object box-layout active-buffer
-                  minibuffer-container minibuffer-view
+                  prompt-buffer-container prompt-buffer-view
                   status-buffer status-container
                   message-container message-view
                   id key-string-buffer) window
@@ -220,7 +220,7 @@ Such contexts are not needed for internal buffers."
        (setf box-layout (make-instance 'gtk:gtk-box
                                        :orientation :vertical
                                        :spacing 0))
-       (setf minibuffer-container (make-instance 'gtk:gtk-box
+       (setf prompt-buffer-container (make-instance 'gtk:gtk-box
                                                  :orientation :vertical
                                                  :spacing 0))
        (setf message-container (make-instance 'gtk:gtk-box
@@ -247,10 +247,10 @@ Such contexts are not needed for internal buffers."
        (setf (gtk:gtk-widget-size-request status-container)
              (list -1 (height status-buffer)))
 
-       (setf minibuffer-view (make-web-view))
-       (gtk:gtk-box-pack-end box-layout minibuffer-container :expand nil)
-       (gtk:gtk-box-pack-start minibuffer-container minibuffer-view :expand t)
-       (setf (gtk:gtk-widget-size-request minibuffer-container)
+       (setf prompt-buffer-view (make-web-view))
+       (gtk:gtk-box-pack-end box-layout prompt-buffer-container :expand nil)
+       (gtk:gtk-box-pack-start prompt-buffer-container prompt-buffer-view :expand t)
+       (setf (gtk:gtk-widget-size-request prompt-buffer-container)
              (list -1 0))
 
        (gtk:gtk-container-add gtk-object box-layout)
@@ -455,23 +455,23 @@ See `gtk-browser's `modifier-translator' slot."
   "We don't handle key release events.
 Warning: This behaviour may change in the future."
   (declare (ignore event))
-  (let ((minibuffer (first (active-prompt-buffers sender))))
+  (let ((prompt-buffer (first (active-prompt-buffers sender))))
     (cond
-      ((not minibuffer)
+      ((not prompt-buffer)
        ;; Forward release event to the web view.
        nil)
-      ((prompt-buffer-p minibuffer)
+      ((prompt-buffer-p prompt-buffer)
        (pexec ()
          (let ((input (ffi-prompt-buffer-evaluate-javascript
                        (current-window)
                        (ps:ps (ps:chain document (get-element-by-id "input")
                                         value)))))
-           (set-prompt-input minibuffer input)
-           (watch-prompt minibuffer)))
+           (set-prompt-input prompt-buffer input)
+           (watch-prompt prompt-buffer)))
        ;; Forward to HTML input: it's necessary to handle input methods,
        ;; e.g. "control-shift u".
        nil)
-      ;; Do not forward release event when minibuffer is up.
+      ;; Do not forward release event when prompt-buffer is up.
       (t t))))
 
 (define-ffi-method on-signal-button-press-event ((sender gtk-buffer) event)
@@ -731,18 +731,18 @@ Warning: This behaviour may change in the future."
   buffer)
 
 (define-ffi-method ffi-window-set-prompt-buffer-height ((window gtk-window) height)
-  (setf (gtk:gtk-widget-size-request (minibuffer-container window))
+  (setf (gtk:gtk-widget-size-request (prompt-buffer-container window))
         (list -1 height))
   (if (eql 0 height)
       (gtk:gtk-widget-grab-focus (gtk-object (active-buffer window)))
-      (gtk:gtk-widget-grab-focus (minibuffer-view window))))
+      (gtk:gtk-widget-grab-focus (prompt-buffer-view window))))
 
 (define-ffi-method ffi-window-set-prompt-buffer-height ((window gtk-window) height)
-  (setf (gtk:gtk-widget-size-request (minibuffer-container window)) ; TODO: Rename `minibuffer-container' when we switch to prompter.
+  (setf (gtk:gtk-widget-size-request (prompt-buffer-container window)) ; TODO: Rename `prompt-buffer-container' when we switch to prompter.
         (list -1 height))
   (if (eql 0 height)
       (gtk:gtk-widget-grab-focus (gtk-object (active-buffer window)))
-      (gtk:gtk-widget-grab-focus (minibuffer-view window))))
+      (gtk:gtk-widget-grab-focus (prompt-buffer-view window))))
 
 (define-ffi-method ffi-window-get-status-buffer-height ((window gtk-window))
   (nth-value 1 (gtk:gtk-widget-size-request (status-container window))))
@@ -872,7 +872,7 @@ requested a reload."
   (%within-renderer-thread
    (lambda (&optional channel)
      (webkit2:webkit-web-view-evaluate-javascript
-      (minibuffer-view window)
+      (prompt-buffer-view window)
       javascript
       (if channel
           (lambda (result)
@@ -881,7 +881,7 @@ requested a reload."
       #'javascript-error-handler))))
 
 (define-ffi-method ffi-prompt-buffer-evaluate-javascript-async ((window gtk-window) javascript)
-  (webkit2:webkit-web-view-evaluate-javascript (minibuffer-view window) javascript))
+  (webkit2:webkit-web-view-evaluate-javascript (prompt-buffer-view window) javascript))
 
 (define-ffi-method ffi-buffer-enable-javascript ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-enable-javascript
