@@ -1,15 +1,15 @@
 [submodule "quicklisp/local-projects/cl-webkit"]
-	path = quicklisp-libraries/cl-webkit
+	path = libraries/cl-webkit
 	url = https://github.com/joachifm/cl-webkit
 [submodule "quicklisp/local-projects/cluffer"]
-	path = quicklisp-libraries/cluffer
+	path = libraries/cluffer
 	url = https://github.com/robert-strandh/Cluffer.git
 [submodule "quicklisp-client"]
 	path = quicklisp-client
 	url = https://github.com/quicklisp/quicklisp-client
 [submodule "quicklisp-libraries/cl-cffi-gtk"]
-	path = quicklisp-libraries/cl-cffi-gtk
+	path = libraries/cl-cffi-gtk
 	url = https://github.com/Ferada/cl-cffi-gtk/
 [submodule "quicklisp-libraries/quri"]
-	path = quicklisp-libraries/quri
+	path = libraries/quri
 	url = https://github.com/fukamachi/quri
