@@ -37,7 +37,7 @@
        "C-w" 'copy-selection
        "C-v" 'prompt-buffer-paste
        "M-h" 'prompt-buffer-history))
-    ;; TODO: We could have VI bindings for the minibuffer too.
+    ;; TODO: We could have VI bindings for the prompt-buffer too.
     ;; But we need to make sure it's optional + to have an indicator
     ;; for the mode.
     )))

@@ -37,7 +37,7 @@ All ARGS are declared as `ignorable'."
      (content ""
               :accessor nil
               :export nil
-              :documentation "The HTML content of the minibuffer.")
+              :documentation "The HTML content of the prompt-buffer.")
      ;; TODO: Need max-lines?
      ;; (max-lines 10
      ;;               :documentation "Max number of suggestion lines to show.
@@ -107,7 +107,7 @@ All ARGS are declared as `ignorable'."
                           :color "white")
                  (.selected :background-color "gray"
                             :color "white")))
-            :documentation "The CSS applied to a minibuffer when it is set-up.")
+            :documentation "The CSS applied to a prompt-buffer when it is set-up.")
      (override-map (let ((map (make-keymap "overide-map")))
                      (define-key map
                        "escape"
@@ -134,7 +134,7 @@ See `prompt' for how to invoke prompts.")))
   ;; We don't want to show the input in the suggestion list when invisible.
   (when (invisible-input-p prompt-buffer)
     (dolist (source (prompter:sources prompt-buffer))
-      ;; This way the minibuffer won't display the input as a suggestion.
+      ;; This way the prompt-buffer won't display the input as a suggestion.
       (setf (prompter:must-match-p source) t)))
   (initialize-modes prompt-buffer))
 
@@ -198,7 +198,7 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
 (export-always 'evaluate-script)
 (defmethod evaluate-script ((prompt-buffer prompt-buffer) script) ; TODO: Remove?
   "Evaluate SCRIPT into PROMPT-BUFFER's webview.
-The new webview HTML content is set as the MINIBUFFER's `content'."
+The new webview HTML content is set as the PROMPT-BUFFER's `content'."
   (when prompt-buffer
     (let ((new-content (str:concat script (ps:ps (ps:chain document body |outerHTML|))))) ; TODO: Why do we postfix with this (ps:ps ... |outerHTML|)?
       (ffi-minibuffer-evaluate-javascript-async
@@ -216,7 +216,6 @@ The new webview HTML content is set as the MINIBUFFER's `content'."
    (:body
     (:div :id "prompt-area"
           (:div :id "prompt" (prompter:prompt prompt-buffer))
-          ;; TODO: See minibuffer `generate-prompt-html' to print the counts.
           (:div :id "prompt-extra" "[?/?]")
           (:div (:input :type "text" :id "input" :value (prompter:input prompt-buffer))))
     ;; TODO: Support multi columns and sources.
