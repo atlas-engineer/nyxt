@@ -355,5 +355,7 @@
 
 (asdf:defsystem nyxt/prompter/tests
   :depends-on (nyxt/prompter prove)
+  :pathname "libraries/prompter/"
+  :components ((:file "test-package"))
   :perform (asdf:test-op (op c)
                          (nyxt-run-test c "libraries/prompter/tests/")))
