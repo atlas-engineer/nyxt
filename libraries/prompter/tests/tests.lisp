@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :cl-user)
+(in-package :prompter/tests)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
