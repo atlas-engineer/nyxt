@@ -106,12 +106,17 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                                  (when (equal-url (url b) url)
                                                    (setf entry b)))
                                                bookmarks))
-             (tags (if (stringp tags) (str:split " " tags :omit-nulls t) tags)))
+             (tags (mapcar (lambda (tag)
+                             (if (stringp tag) tag (tag-name tag)))
+                           ;; TODO: We should not need ensure-list.  Make sure
+                           ;; prompter does not return "" on empty input.
+                           (uiop:ensure-list tags))))
         (unless entry
           (setf entry (make-instance 'bookmark-entry
                                      :url url)))
         (unless (str:emptyp title)
           (setf (title entry) title))
+        (delete "" tags :test #'string=)
         (setf tags (delete-duplicates tags :test #'string=))
         (setf (tags entry) (sort tags #'string<))
         (when date
@@ -147,13 +152,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
    (prompter:constructor (get-data (bookmarks-path (current-buffer))))
    (prompter:active-properties '(:url :title :tags))))
 
-;; (export-always 'tag-suggestion-filter)
-;; (declaim (ftype (function (&key (:with-empty-tag boolean)
-;;                                 (:extra-tags list-of-tags)))
-;;                 tag-suggestion-filter))
-(defun tag-suggestions (&key with-empty-tag extra-tags)
-  "When with-empty-tag is non-nil, insert the empty string as the first tag.
-This can be useful to let the user select no tag when returning directly."
+(defun tag-suggestions ()
   (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
     (let ((tags (sort (append extra-tags
                               (mapcar (lambda (name) (make-tag :name name))
@@ -163,16 +162,23 @@ This can be useful to let the user select no tag when returning directly."
                                        :test #'string-equal)))
                       #'string-lessp
                       :key #'tag-name)))
-      (when with-empty-tag
-        (push "" tags))
-      tags
-      ;; (lambda (minibuffer)
-      ;;   (fuzzy-match (text-buffer::word-at-cursor (input-cursor minibuffer)) tags))
-      )))
+      tags)))
+
+(defun last-word (s)
+  (if (uiop:emptyp s)
+      ""
+      (alex:last-elt (sera:words s))))
 
 (define-class tag-source (prompter:source)
   ((prompter:name "Tags")
    (extra-tags '())
+   (prompter:filter-preprocessor (lambda (initial-suggestions-copy source input)
+                                   (prompter:delete-inexact-matches
+                                    initial-suggestions-copy
+                                    source
+                                    (last-word input))))
+   (prompter:filter (lambda (input suggestion)
+                      (prompter:fuzzy-match (last-word input) suggestion)))
    (prompter:multi-selection-p t)
    (prompter:constructor (lambda (source)
                            (tag-suggestions :extra-tags (extra-tags source)))))
@@ -246,11 +252,15 @@ URL."
         (let* ((body (with-current-buffer buffer
                        (ffi-buffer-get-document buffer)))
                (tags (prompt
-                      :prompt "Space-separated tag(s)"
+                      :prompt "Tag(s)"
                       ;; :default-modes '(set-tag-mode minibuffer-mode) ; TODO: Replace completion.
                       :input (url-bookmark-tags (url buffer))
-                      :sources (make-instance 'tag-source
-                                              :extra-tags (make-tags (extract-keywords body 5))))))
+                      :sources (list
+                                (make-instance 'prompter:word-source
+                                               :name "New tags"
+                                               :multi-selection-p t)
+                                (make-instance 'tag-source
+                                               :extra-tags (make-tags (extract-keywords body 5)))))))
           (bookmark-add (url buffer)
                         :title (title buffer)
                         :tags tags)
@@ -276,10 +286,14 @@ URL."
         (echo "Invalid URL")
         (let* ((url (quri:uri url))
                (tags (prompt
-                      :prompt "Space-separated tag(s)"
+                      :prompt "Tag(s)"
                       ;; :default-modes '(set-tag-mode minibuffer-mode) ; TODO: Replace completion.
-                      :input (url-bookmark-tags url)
-                      :sources (make-instance 'tag-source))))
+                      :input (url-bookmark-tags (url buffer))
+                      :sources (list
+                                (make-instance 'prompter:word-source
+                                               :name "New tags"
+                                               :multi-selection-p t)
+                                (make-instance 'tag-source)))))
           (bookmark-add url :tags tags)))))
 
 (define-command bookmark-delete ()
