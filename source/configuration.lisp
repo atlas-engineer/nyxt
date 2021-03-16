@@ -13,16 +13,10 @@
 from a binary) then any condition is logged instead of triggering the debugger."
   (if *keep-alive*
       (handler-case (apply f args)
-        (nyxt-minibuffer-canceled ()
-          (log:debug "Minibuffer interrupted")
-          nil)
         (nyxt-prompt-buffer-canceled ()
           (log:debug "Prompt buffer interrupted")
           nil))
       (handler-case (apply f args)
-        (nyxt-minibuffer-canceled ()
-          (log:debug "Minibuffer interrupted")
-          nil)
         (nyxt-prompt-buffer-canceled ()
           (log:debug "Prompt buffer interrupted")
           nil)
