@@ -62,7 +62,7 @@ jobs:
       shell: bash
       run: |
         make quicklisp-extra-libs
-        echo "(:tree \"$PWD/quicklisp-libraries\")" > ~/.config/common-lisp/source-registry.conf.d/asdf.conf
+        echo "(:tree \"$PWD/libraries\")" > ~/.config/common-lisp/source-registry.conf.d/asdf.conf
 
     - name: Load system and run tests
       shell: bash
