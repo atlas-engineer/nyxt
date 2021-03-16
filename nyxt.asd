@@ -338,6 +338,7 @@
   :depends-on (alexandria
                calispel
                cl-containers
+               closer-mop
                mk-string-metrics
                moptilities
                serapeum
