@@ -74,7 +74,6 @@
                (:file "object-display")
                (:file "notification")
                (:file "clipboard")
-               (:file "fuzzy")
                (:file "message")
                (:file "input")
                (:file "prompt-buffer")
