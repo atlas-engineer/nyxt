@@ -116,7 +116,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                      :url url)))
         (unless (str:emptyp title)
           (setf (title entry) title))
-        (delete "" tags :test #'string=)
+        (setf tags (delete "" tags :test #'string=))
         (setf tags (delete-duplicates tags :test #'string=))
         (setf (tags entry) (sort tags #'string<))
         (when date
@@ -124,35 +124,12 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
         (push entry bookmarks-without-url)
         (setf bookmarks bookmarks-without-url)))))
 
-;; (export-always 'match-bookmarks)
-;; (defun match-bookmarks (specification &optional (as-url-list-p t))
-;;   (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
-;;     (let* ((input-specs (multiple-value-list
-;;                          (parse-tag-specification
-;;                           specification)))
-;;            (tag-specs (first input-specs))
-;;            (non-tags (str:downcase (str:join " " (second input-specs))))
-;;            (validator (ignore-errors (tag-specification-validator tag-specs))))
-;;       (when validator
-;;         (setf bookmarks (remove-if (lambda (bookmark)
-;;                                      (not (funcall validator
-;;                                                    (tags bookmark))))
-;;                                    bookmarks)))
-;;       (if as-url-list-p
-;;           (mapcar #'url (fuzzy-match non-tags bookmarks))
-;;           (fuzzy-match non-tags bookmarks)))))
-
-
-;; (defun bookmark-suggestion-filter ()
-;;   (lambda (minibuffer)
-;;     (match-bookmarks (input-buffer minibuffer) nil)))
-
 (define-class bookmark-source (prompter:source)
   ((prompter:name "Bookmarks")
    (prompter:constructor (get-data (bookmarks-path (current-buffer))))
    (prompter:active-properties '(:url :title :tags))))
 
-(defun tag-suggestions ()
+(defun tag-suggestions (&key extra-tags)
   (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
     (let ((tags (sort (append extra-tags
                               (mapcar (lambda (name) (make-tag :name name))
@@ -183,22 +160,6 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
    (prompter:constructor (lambda (source)
                            (tag-suggestions :extra-tags (extra-tags source)))))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
-
-;; (define-command insert-tag (&optional (minibuffer (current-prompt-buffer)))
-;;   "Replace current word with selected tag."
-;;   (let ((selection (get-suggestion minibuffer)))
-;;     (unless (uiop:emptyp selection)
-;;       (text-buffer::replace-word-at-cursor (input-cursor minibuffer) (str:concat selection " "))
-;;       (update-display minibuffer))))
-
-;; (define-mode set-tag-mode (nyxt/minibuffer-mode:minibuffer-mode)
-;;   "Minibuffer mode for setting the tag of a bookmark."
-;;   ((keymap-scheme
-;;     (define-scheme "set-tag"
-;;       scheme:cua
-;;       (list "tab" 'insert-tag
-;;             ;; TODO: RETURN
-;;             )))))
 
 (define-command list-bookmarks ()
   "List all bookmarks in a new buffer."
@@ -274,7 +235,7 @@ URL."
                           :multi-selection-p t
                           :actions (list 'bookmark-current-page))))
 
-(define-command bookmark-url (&key url)
+(define-command bookmark-url (&key url (buffer (current-buffer)))
   "Allow the user to bookmark a URL via minibuffer input."
   (let ((url (or url
                  (prompt
@@ -316,32 +277,6 @@ comparing URLs."
            bookmarks
            (list (make-instance 'bookmark-entry :url (quri:uri url)))
            :test #'equals))))
-
-;; (define-command insert-suggestion-or-tag (&optional (prompt-buffer (current-prompt-buffer)))
-;;   "Paste selected suggestion or tag in input.
-;; If character before cursor is '+' or '-' complete against tag."
-;;   (let* ((current-word (text-buffer::word-at-cursor (input-cursor minibuffer)))
-;;          (operand? (unless (str:emptyp current-word) (subseq current-word 0 1))))
-;;     (if (or (equal "-" operand?)
-;;             (equal "+" operand?))
-;;         (let ((tag (prompt
-;;                     :prompt "Tag"
-;;                     :input (subseq current-word 1)
-;;                     :sources (make-instance 'tag-source))))
-;;           (when tag
-;;             (text-buffer::replace-word-at-cursor
-;;              (input-cursor minibuffer)
-;;              (str:concat operand? (tag-name tag)))))
-;;         ;; (nyxt/minibuffer-mode:insert-suggestion minibuffer)
-;;         )))
-
-;; (define-mode minibuffer-tag-mode (nyxt/minibuffer-mode:minibuffer-mode)
-;;   "Minibuffer mode for setting the bookmark and their tags."
-;;   ((keymap-scheme
-;;     (define-scheme "minibuffer-tag"
-;;       scheme:cua
-;;       (list
-;;        "tab" 'insert-suggestion-or-tag)))))
 
 (define-command set-url-from-bookmark ()
   "Set the URL for the current buffer from a bookmark.
