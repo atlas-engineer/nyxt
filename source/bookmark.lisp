@@ -235,7 +235,7 @@ URL."
                           :multi-selection-p t
                           :actions (list 'bookmark-current-page))))
 
-(define-command bookmark-url (&key url (buffer (current-buffer)))
+(define-command bookmark-url (&key url)
   "Allow the user to bookmark a URL via minibuffer input."
   (let ((url (or url
                  (prompt
@@ -249,7 +249,7 @@ URL."
                (tags (prompt
                       :prompt "Tag(s)"
                       ;; :default-modes '(set-tag-mode minibuffer-mode) ; TODO: Replace completion.
-                      :input (url-bookmark-tags (url buffer))
+                      :input (url-bookmark-tags url)
                       :sources (list
                                 (make-instance 'prompter:word-source
                                                :name "New tags"
