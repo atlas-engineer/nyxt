@@ -15,10 +15,10 @@ Example usage defaulting to \"no\":
 \(let ((*yes-no-choices* '(:no \"no\" :yes \"yes\")))
   (if-confirm (\"Are you sure to kill ~a buffers?\" count)
      (delete-buffers)))"
-  `(let ((answer (prompt
-                  :prompt (format nil ,@prompt)
-                  :sources '(prompter:yes-no-source)
-                  :hide-suggestion-count-p t)))
+  `(let ((answer (first (prompt
+                         :prompt (format nil ,@prompt)
+                         :sources '(prompter:yes-no-source)
+                         :hide-suggestion-count-p t))))
      (if (string= "yes" answer)
          ,yes-form
          ,no-form)))
