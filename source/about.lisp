@@ -13,8 +13,10 @@
 like to be included on this list.")
      (:ul
       (:li "Adom Hartell (@4t0m)")
+      (:li "André A. Gomes (@aadcg)")
       (:li "Artyom Bologov (@aartaka)")
       (:li "John Mercouris (@jmercouris)")
+      (:li "@kssytsrk")
       (:li "Pierre Neidhardt (@ambrevar)")
       (:li "Solomon Bloch (@noogie13)")
       (:li "Vincent Dardel (@vindarel)"))
