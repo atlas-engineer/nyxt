@@ -19,8 +19,7 @@
                      "C-tab" 'switch-buffer-next
                      "C-pageup" 'switch-buffer-previous
                      "C-pagedown" 'switch-buffer-next
-                     "C-l" 'set-url-from-current-url
-                     "C-u C-l" 'set-url ; `set-url' is listed in the tutorial, so it should be bound.
+                     "C-l" 'set-url
                      "M-l" 'set-url-new-buffer
                      "C-u M-l" 'set-url-nosave-buffer
                      "f5" 'reload-current-buffer
