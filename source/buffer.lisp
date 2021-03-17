@@ -656,9 +656,8 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 (defun window-list ()
   (alex:hash-table-values (windows *browser*)))
 
-(declaim (ftype (function (window buffer)) window-set-active-buffer))
 (export-always 'window-set-active-buffer)
-(defun window-set-active-buffer (window buffer) ; TODO: Rename window-set-buffer.
+(defun window-set-active-buffer (window buffer &key (focus t)) ; TODO: Rename window-set-buffer.
   "Set BROWSER's WINDOW buffer to BUFFER.
 Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
 proceeding."
@@ -686,12 +685,12 @@ proceeding."
                      (object-string (url (active-buffer window-with-same-buffer)))
                      (object-string (url buffer)))
           (ffi-window-set-active-buffer window-with-same-buffer temp-buffer)
-          (ffi-window-set-active-buffer window buffer)
+          (ffi-window-set-active-buffer window buffer :focus focus)
           (setf (active-buffer window) buffer)
           (window-set-active-buffer window-with-same-buffer old-buffer)
           (ffi-buffer-delete temp-buffer))
         (progn
-          (ffi-window-set-active-buffer window buffer)
+          (ffi-window-set-active-buffer window buffer :focus focus)
           (setf (active-buffer window) buffer)))
     (setf (last-access buffer) (local-time:now))
     ;; So that `current-buffer' returns the new value if buffer was
@@ -741,7 +740,8 @@ proceeding."
    (prompter:actions (list (make-unmapped-command set-current-buffer)))
    (prompter:follow-p t)
    (prompter:follow-delay 0.1)
-   (prompter:persistent-action #'set-current-buffer)
+   (prompter:persistent-action #'(lambda (buffer)
+                                   (set-current-buffer buffer :focus nil)))
    (prompter:destructor (let ((buffer (current-buffer)))
                            (lambda (prompter source)
                              (declare (ignore source))

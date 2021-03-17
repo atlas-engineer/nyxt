@@ -40,7 +40,7 @@
                        (when (equal (ps:lisp (inner-text heading))
                                     (ps:chain heading inner-text))
                          (ps:chain heading (scroll-into-view t)))))))
-    (set-current-buffer (buffer heading))
+    (set-current-buffer (buffer heading) :focus nil)
     (scroll-page-to-heading heading)))
 
 (define-class heading-source (prompter:source)

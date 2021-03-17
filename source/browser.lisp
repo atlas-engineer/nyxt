@@ -552,17 +552,12 @@ sometimes yields the wrong result."
         ;; No window when browser is not started or does not implement `ffi-window-active'.
         (ignore-errors (ffi-window-active *browser*)))))
 
-(declaim (ftype (function (buffer)) set-current-buffer))
-;; (declaim (ftype (function ((and buffer (not prompt-buffer)))) set-current-buffer)) ; TODO: Better.
-;; But we can't use "prompt-buffer" here since it's not declared yet.  It will
-;; crash Nyxt if we call set-current-buffer before instantiating the first
-;; prompt-buffer.
 (export-always 'set-current-buffer)
-(defun set-current-buffer (buffer)
+(defun set-current-buffer (buffer &key (focus t))
   "Set the active buffer for the active window."
   (unless (eq 'prompt-buffer (sera:class-name-of buffer))
     (if (current-window)
-        (window-set-active-buffer (current-window) buffer)
+        (window-set-active-buffer (current-window) buffer :focus focus)
         (make-window buffer))
     buffer))
 
