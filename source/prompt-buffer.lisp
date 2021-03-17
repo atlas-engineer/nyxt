@@ -228,7 +228,6 @@ The new webview HTML content is set as the PROMPT-BUFFER's `content'."
          (current-source-index (position (current-source prompt-buffer) sources))
          (last-source-index (1- (length sources))))
     ;; TODO: Factor out property printing.
-    ;; TODO: Only print `active-properties'.
     (flet ((source->html (source)
              (markup:markup
               (:div :class "source"
