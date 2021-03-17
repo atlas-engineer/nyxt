@@ -28,6 +28,98 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 *** Add online suggestions from search engines
 ** 2.0.0
 
+*** 2-pre-release-6
+
+- New /prompt-buffer/, replacing the /minibuffer/ for all user
+  interactions.
+
+  Important highlights:
+
+  - Asynchronous suggestion computation
+    This implies a performance boost: prompt input is always responsive,
+    regardless of the suggestion computation.
+  - Multi-source support: get suggestions from different source
+    compositions!
+    This is not fully leveraged for now, it will be in the coming version!
+  - Multi-action support: open the prompt, narrow down, mark, and press
+    =M-return= to list all the actions you can operate on the marks.
+  - Multi-column display: all suggestion properties are configuration
+    via the =object-properties= method.
+    Press =C-]= to configure the columns to display.
+  - New =resume-prompt= command, for instance to resume a search where
+    you left it.
+  - New "follow mode" (toggle with =C-c C-f=).  Try it in
+    =switch-buffer=, it will update the view with the selected suggestion!
+
+- Global history tree (GHT)
+  See [[https://nyxt.atlas.engineer/article/global-history-tree.org][our article]] for an introduction.
+
+  - Session commands were removed.
+    Use =restore-history-by-name= and =store-history-by-name= instead.
+
+  - The new default history file is now stored in the =history= subdirectory by default.
+
+- New =nosave= mode.
+  A buffer in =nosave= mode does not persist any data to disk.
+  (Also knowns as "icognito" or "private" mode in some other browsers.)
+
+  - Rename =private-data-profile= to =nosave-data-profile=.
+
+- New =visual-mode=. (Thanks to @kssytsrk!)
+
+- New =watch-mode=.  (Thanks to @aadcg!)
+
+- New =diff= command.  (Thanks to @aadcg!)
+
+- Enable [[https://webkit.org/blog/7675/intelligent-tracking-prevention/][Intelligent Tracking Prevention]] by default.
+
+- New [[https://wiki.gnome.org/Projects/GObjectIntrospection][GObject Introspected]]-based renderer.
+
+- Removed =url-group=.
+  We recommend using bookmark tags instead.
+
+- Hints:
+  - More element hints are followable (such as Javascript URLs).
+
+  - Hint alphabet is customizable via the =hints-alphabet= =web-mode= slot.
+
+- Password management:
+
+  - Initialization fixes.
+
+  - Fix timeouts and cleanup clipboard properly.
+
+  - Password interfaces now have user classes, thus they are configurable with
+    =define-configuration=.
+
+- New =smooth-scrolling= =buffer= slot option.
+
+- New =update-hostlists= command for =blocker-mode=.
+
+- New =with-data-unsafe= for thread-unsafe persistent data access.
+
+- New =:renderer= download engine.
+
+  You can switch download engine with the =download-engine= buffer slot.
+
+- Build and platform support:
+  - New non-official platform support: FreeBSD.
+
+  - macOS is down at the non-official state now.
+    (Help welcome!)
+
+  - Remove =usocket= and =Osicat= dependencies.
+
+- Bug fixes, among which:
+
+  - Startup failures when =*socket-path*= is nil, or when socket exists on
+    single-instance.
+
+  - Pasting text no longer moves the cursor.
+
+  - Fix application name, as well as icon on Wayland.  (Thanks to @jeffbowman, @aacdg!)
+
+
 *** 2-pre-release-5
 
 - Added a dashboard function to Nyxt. It can be used as a
