@@ -309,7 +309,7 @@ and to index the top of the page.")
 (define-command history-forwards-maybe-query (&optional (buffer (current-buffer)))
   "If current node has multiple children, query which one to navigate to.
 Otherwise go forward to the only child."
-  (let ((history (get-data (history-path buffer))))
+  (with-data-unsafe (history (history-path buffer))
     (if (<= 2 (length
                (if (conservative-history-movement-p (find-mode buffer 'web-mode))
                    (htree:owned-children (htree:current-owner history))
