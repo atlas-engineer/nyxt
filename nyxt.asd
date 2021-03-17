@@ -53,7 +53,6 @@
   :pathname "source/"
   :components ((:file "package")
                ;; Independent utilities
-               (:file "tags")
                (:file "time")
                (:file "types")
                (:file "conditions")
