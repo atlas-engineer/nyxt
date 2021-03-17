@@ -20,6 +20,7 @@
        "M-<" 'select-first
        "M-]" 'select-next-source
        "M-[" 'select-previous-source
+       "tab" 'prompt-buffer-insert-selection
        "return" 'return-selection
        "C-return" 'return-input         ; TODO: Bind to shift-return instead?
        "M-return" 'return-selection-over-action       ; TODO: Also bind to C-return?
@@ -333,3 +334,9 @@ Only available if `multi-selection-p' is non-nil."
         (unless (str:empty? input)
           (nyxt::set-prompt-buffer-input input)))
       (echo "Prompt buffer has no history.")))
+
+(define-command prompt-buffer-insert-selection (&optional (prompt-buffer (current-prompt-buffer)))
+  "Insert current selection default property in the prompt buffer input."
+  (alex:when-let ((selection (prompter:properties-default
+                              (prompter:selected-suggestion prompt-buffer))))
+    (nyxt::set-prompt-buffer-input selection)))
