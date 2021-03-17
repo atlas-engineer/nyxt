@@ -81,20 +81,6 @@ For instance, these are equal:
 In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   (equal-url (url e1) (url e2)))
 
-(defstruct tag
-  name
-  description)
-
-(defmethod object-string ((tag tag))    ; TODO: Remove?
-  (tag-name tag))
-
-(defmethod object-display ((tag tag))
-  (if (tag-description tag)
-      (format nil "~a (~a)"
-              (tag-name tag)
-              (tag-description tag))
-      (object-string tag)))
-
 (declaim (ftype (function (quri:uri &key (:title string) (:date (or local-time:timestamp null)) (:tags t)) t) bookmark-add))
 (export-always 'bookmark-add)
 (defun bookmark-add (url &key date title tags)
@@ -106,11 +92,9 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                                  (when (equal-url (url b) url)
                                                    (setf entry b)))
                                                bookmarks))
-             (tags (mapcar (lambda (tag)
-                             (if (stringp tag) tag (tag-name tag)))
-                           ;; TODO: We should not need ensure-list.  Make sure
-                           ;; prompter does not return "" on empty input.
-                           (uiop:ensure-list tags))))
+             ;; TODO: We should not need ensure-list.  Make sure
+             ;; prompter does not return "" on empty input.
+             (tags (uiop:ensure-list tags)))
         (unless entry
           (setf entry (make-instance 'bookmark-entry
                                      :url url)))
@@ -129,16 +113,13 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
    (prompter:constructor (get-data (bookmarks-path (current-buffer))))
    (prompter:active-properties '(:url :title :tags))))
 
-(defun tag-suggestions (&key extra-tags)
+(defun tag-suggestions ()
   (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
-    (let ((tags (sort (append extra-tags
-                              (mapcar (lambda (name) (make-tag :name name))
-                                      (delete-duplicates
-                                       (apply #'append
-                                              (mapcar #'tags bookmarks))
-                                       :test #'string-equal)))
-                      #'string-lessp
-                      :key #'tag-name)))
+    (let ((tags (sort (delete-duplicates
+                       (apply #'append
+                              (mapcar #'tags bookmarks))
+                       :test #'string-equal)
+                      #'string-lessp)))
       tags)))
 
 (defun last-word (s)
@@ -148,7 +129,6 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 
 (define-class tag-source (prompter:source)
   ((prompter:name "Tags")
-   (extra-tags '())
    (prompter:filter-preprocessor (lambda (initial-suggestions-copy source input)
                                    (prompter:delete-inexact-matches
                                     initial-suggestions-copy
@@ -157,8 +137,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
    (prompter:filter (lambda (input suggestion)
                       (prompter:fuzzy-match (last-word input) suggestion)))
    (prompter:multi-selection-p t)
-   (prompter:constructor (lambda (source)
-                           (tag-suggestions :extra-tags (extra-tags source)))))
+   (prompter:constructor (tag-suggestions)))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-command list-bookmarks ()
@@ -184,48 +163,43 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                        :href (lisp-url `(nyxt::delete-bookmark ,url-href)) "Delete"))
                                (:hr ""))))))))))
 
-(declaim (ftype (function (quri:uri) string) url-bookmark-tags))
 (export-always 'url-bookmark-tags)
 (defun url-bookmark-tags (url)
-  "Return the space-separated string of tags of the bookmark corresponding to
-URL."
+  "Return the list of tags of the bookmark corresponding to URL."
   (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
-    (the (values string &optional)
-        (let ((existing-bm (find url bookmarks :key #'url :test #'equal-url)))
-          (if existing-bm
-              (str:join " " (tags existing-bm))
-              "")))))
+    (alex:when-let ((existing (find url bookmarks :key #'url :test #'equal-url)))
+      (tags existing))))
 
 (define-command bookmark-current-page (&optional (buffer (current-buffer)))
   "Bookmark the URL of BUFFER."
-  (flet ((extract-keywords (html limit)
-           (sera:take limit (delete "" (mapcar #'first
-                                               (analysis:keywords
-                                                (make-instance
-                                                 'analysis:document
-                                                 :string-contents (plump:text (plump:parse html)))))
-                                    :test #'string=)))
-         (make-tags (name-list)
-           (mapcar (lambda (name) (make-tag :name name :description "suggestion"))
-                   name-list)))
-    (if (url-empty-p (url buffer))
-        (echo "Buffer has no URL.")
-        (let* ((body (with-current-buffer buffer
-                       (ffi-buffer-get-document buffer)))
-               (tags (prompt
-                      :prompt "Tag(s)"
-                      ;; :default-modes '(set-tag-mode minibuffer-mode) ; TODO: Replace completion.
-                      :input (url-bookmark-tags (url buffer))
-                      :sources (list
-                                (make-instance 'prompter:word-source
-                                               :name "New tags"
-                                               :multi-selection-p t)
-                                (make-instance 'tag-source
-                                               :extra-tags (make-tags (extract-keywords body 5)))))))
-          (bookmark-add (url buffer)
-                        :title (title buffer)
-                        :tags tags)
-          (echo "Bookmarked ~a." (object-display (url buffer)))))))
+  ;; TODO: Re-use extract-keywords to implement tag suggestion source.
+  ;; (flet ((extract-keywords (html limit)
+  ;;          (sera:take limit (delete "" (mapcar #'first
+  ;;                                              (analysis:keywords
+  ;;                                               (make-instance
+  ;;                                                'analysis:document
+  ;;                                                :string-contents (plump:text (plump:parse html)))))
+  ;;                                   :test #'string=)))))
+  (if (url-empty-p (url buffer))
+      (echo "Buffer has no URL.")
+      (let* (;; (body (with-current-buffer buffer
+             ;;         (ffi-buffer-get-document buffer)))
+             (tags (prompt
+                    :prompt "Tag(s)"
+                    :sources (list
+                              (make-instance 'prompter:word-source
+                                             :name "New tags"
+                                             :multi-selection-p t)
+                              (make-instance 'tag-source
+                                             ;; TODO: This seems to rarely work, why?
+                                             :marks (url-bookmark-tags (url buffer))
+                                             ;; TODO: Move extra-tags to a separate source.
+                                             ;; :extra-tags (extract-keywords body 5)
+                                             )))))
+        (bookmark-add (url buffer)
+                      :title (title buffer)
+                      :tags tags)
+        (echo "Bookmarked ~a." (object-display (url buffer))))))
 
 (define-command bookmark-page ()
   "Bookmark the currently opened page(s) in the active buffer."
@@ -248,13 +222,12 @@ URL."
         (let* ((url (quri:uri url))
                (tags (prompt
                       :prompt "Tag(s)"
-                      ;; :default-modes '(set-tag-mode minibuffer-mode) ; TODO: Replace completion.
-                      :input (url-bookmark-tags url)
                       :sources (list
                                 (make-instance 'prompter:word-source
                                                :name "New tags"
                                                :multi-selection-p t)
-                                (make-instance 'tag-source)))))
+                                (make-instance 'tag-source
+                                               :marks (url-bookmark-tags url))))))
           (bookmark-add url :tags tags)))))
 
 (define-command bookmark-delete ()
