@@ -603,7 +603,7 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-window-to-foreground (window))
 (define-ffi-generic ffi-window-set-title (window title))
 (define-ffi-generic ffi-window-active (browser))
-(define-ffi-generic ffi-window-set-active-buffer (window buffer))
+(define-ffi-generic ffi-window-set-active-buffer (window buffer &key focus))
 (define-ffi-generic ffi-window-set-prompt-buffer-height (window height))
 (define-ffi-generic ffi-window-set-status-buffer-height (window height))
 (define-ffi-generic ffi-window-set-message-buffer-height (window height))

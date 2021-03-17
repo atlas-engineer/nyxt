@@ -722,12 +722,13 @@ Warning: This behaviour may change in the future."
             (first (window-list))
             (slot-value browser 'last-active-window))))
 
-(define-ffi-method ffi-window-set-active-buffer ((window gtk-window) (buffer gtk-buffer))
+(define-ffi-method ffi-window-set-active-buffer ((window gtk-window) (buffer gtk-buffer) &key (focus t))
   "Set BROWSER's WINDOW buffer to BUFFER. "
   (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
   (gtk:gtk-box-pack-start (box-layout window) (gtk-object buffer) :expand t)
   (gtk:gtk-widget-show (gtk-object buffer))
-  (gtk:gtk-widget-grab-focus (gtk-object buffer))
+  (when focus
+    (gtk:gtk-widget-grab-focus (gtk-object buffer)))
   buffer)
 
 (define-ffi-method ffi-window-set-prompt-buffer-height ((window gtk-window) height)
