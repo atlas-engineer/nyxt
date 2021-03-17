@@ -317,14 +317,14 @@ This is useful to tell REPL instances from binary ones."
                                        title (unless (str:emptyp title) " - ")
                                        url))))
 
+;; REVIEW: Do we need :NO-FOCUS? It's not used anywhere.
 (declaim (ftype (function (list-of-strings &key (:no-focus boolean)))))
-(defun open-urls (urls &key no-focus parent-buffer)
+(defun open-urls (urls &key no-focus)
   "Create new buffers from URLs.
 First URL is focused if NO-FOCUS is nil."
   (with-muffled-body ("Could not make buffer to open ~a: ~a" urls :condition)
     (let ((first-buffer (first (mapcar
-                                (lambda (url) (make-buffer :url url
-                                                           :parent-buffer parent-buffer))
+                                (lambda (url) (make-buffer :url url))
                                 urls))))
       (when (and first-buffer (not no-focus))
         (if (open-external-link-in-new-window-p *browser*)
@@ -341,10 +341,10 @@ If none is found, fall back to `scheme:cua'."
                          buffer-scheme)))
 
 (defun request-resource-open-url (&key url buffer &allow-other-keys)
-  (open-urls (list url) :no-focus t :parent-buffer buffer))
+  (make-buffer :url url :parent-buffer buffer))
 
 (defun request-resource-open-url-focus (&key url buffer &allow-other-keys)
-  (open-urls (list url) :no-focus nil :parent-buffer buffer))
+  (make-buffer-focus :url url :parent-buffer buffer))
 
 (define-class request-data ()
   ((buffer (current-buffer)
