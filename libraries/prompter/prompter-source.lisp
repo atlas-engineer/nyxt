@@ -444,14 +444,22 @@ call.")))
        (list :default ""))))
 
 (export-always 'properties-non-default)
-(defun properties-non-default (source)
+(defmethod properties-non-default ((source source))
   "Return SOURCE properties except the default one."
   (rest (properties source)))
 
 (export-always 'properties-default)
-(defun properties-default (source)
+(defmethod properties-default ((source source))
   "Return SOURCE default property."
   (first (properties source)))
+
+(defmethod properties-default ((suggestion suggestion))
+  "Return SUGGESTION default property value."
+  (second (properties suggestion)))
+
+(defmethod properties-non-default ((suggestion suggestion))
+  "Return SUGGESTION non-default properties as a plist."
+  (cddr (properties suggestion)))
 
 (defmethod active-properties ((source source) &key &allow-other-keys)
   "Return active properties.
