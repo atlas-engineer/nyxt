@@ -110,48 +110,25 @@
     (replace-original-nodes)
     (ps:chain |json| (stringify *matches*))))
 
-(define-class match ()                  ; TODO: This conflicts with trivia.  Rename?
+(define-class search-match ()
   ((identifier)
    (body)
    (buffer))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(defclass multi-buffer-match (match) ())
-
-(defmethod prompter:object-properties ((match match))
-  (list :default (body match)
-        :id (identifier match)))
-
-(defmethod prompter:object-properties ((match multi-buffer-match))
+(defmethod prompter:object-properties ((match search-match))
   (list :default (body match)
         :id (identifier match)
         :buffer-id (id (buffer match))
         :buffer-title (title (buffer match))))
 
-(defun matches-from-json (matches-json &optional (buffer (current-buffer)) (multi-buffer nil))
+(defun matches-from-json (matches-json &optional (buffer (current-buffer)))
   (loop for element in (handler-case (cl-json:decode-json-from-string matches-json)
                          (error () nil))
-        collect (make-instance (if multi-buffer 'multi-buffer-match 'match)
+        collect (make-instance 'search-match
                                :identifier (cdr (assoc :identifier element))
                                :body (cdr (assoc :body element))
                                :buffer buffer)))
-
-;; TODO: When prompter is in, turn `buffers' into a single buffer.
-(defun match-suggestion-function (input &optional (buffers (list (current-buffer))) (case-sensitive-p nil))
-  "Update the suggestions asynchronously via query-buffer."
-  (when (> (length input) 2)            ; TODO: Replace by prompter's `requires-pattern'?
-    (let ((input (str:replace-all " " " " input))
-          (all-matches nil)
-          (multi-buffer (if (> (list-length buffers) 1) t nil)))
-      (dolist (buffer buffers)
-        (with-current-buffer buffer
-          (let* ((result (query-buffer
-                          :query input
-                          :case-sensitive-p case-sensitive-p))
-                 (matches (matches-from-json
-                           result buffer multi-buffer)))
-            (setf all-matches (append all-matches matches)))))
-      all-matches)))
 
 (define-parenscript %remove-search-hints ()
   (defun qsa (context selector)
@@ -167,22 +144,29 @@
   "Remove all search hints."
   (%remove-search-hints))
 
-(defun search-buffer-collector (&key case-sensitive-p)
-  (lambda (preprocessed-suggestions source input)
-    (declare (ignore preprocessed-suggestions))
-    (match-suggestion-function input (list (source-buffer source)) case-sensitive-p)))
-
 (define-class search-buffer-source (prompter:source)
   ((case-sensitive-p nil)
-   (source-buffer (current-buffer))
+   (buffer (current-buffer))
+   (minimum-search-length 2)
    (prompter:name "Search buffer")
    (prompter:must-match-p nil)
    (prompter:follow-p t)
    (prompter:filter nil)
-   (prompter:filter-preprocessor (search-buffer-collector))
-   (prompter:persistent-action (lambda (suggestion)
-                                 (declare (ignore suggestion)) ; TODO: Pass suggestion?
-                                 (prompt-buffer-selection-highlight-hint :scroll t)))
+   (prompter:filter-preprocessor
+    (lambda (preprocessed-suggestions source input)
+      (declare (ignore preprocessed-suggestions))
+      (when (> (length input) (minimum-search-length source))
+        (let ((input (str:replace-all " " " " input))
+              (buffer (buffer source)))
+          (with-current-buffer buffer
+            (matches-from-json
+             (query-buffer
+              :query input
+              :case-sensitive-p (case-sensitive-p source))
+             buffer))))))
+   ;; (prompter:persistent-action (lambda (suggestion)
+   ;;                               (declare (ignore suggestion))
+   ;;                               (prompt-buffer-selection-highlight-hint :scroll t)))
    (prompter:destructor (lambda (prompter source)
                           (declare (ignore prompter source))
                           (remove-focus))))
@@ -191,8 +175,7 @@
 (define-command search-buffer (&key case-sensitive-p)
   "Start a search on the current buffer."
   (prompt
-   :prompt "Search for (3+ characters)" ; TODO: 2+ characters instead?  1?
-   ;; TODO: List both case-sensitive and insensitive?
+   :prompt "Search for (3+ characters)"
    :sources (list
              (make-instance 'search-buffer-source :case-sensitive-p case-sensitive-p))))
 
