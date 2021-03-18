@@ -13,9 +13,8 @@ so invoke on a separate thread when possible."
       (with-open-file (f p :direction :io
                            :if-exists :append)
         (write-sequence input-text f)))
-    (log:debug "External Editor: ~a opening: ~a"
+    (log:debug "External Editor: ~s opening: ~s"
                (external-editor-program *browser*) p)
-    ;; launch-program runs asynchronously but it misbehaves
     (uiop:run-program (list (external-editor-program *browser*)
                             (uiop:native-namestring p))
                       :ignore-error-status t)
@@ -25,18 +24,27 @@ so invoke on a separate thread when possible."
   (let ((active-tag (ps:chain document active-element tag-name)))
     (when (or (string= active-tag "INPUT")
               (string= active-tag "TEXTAREA"))
-      ;; (ps:chain document (exec-command "selectAll"))
       (ps:chain document active-element (select)))))
-
-;; this could be an optional exiting behaviour
-;; (define-parenscript undo-selection ()
-;;   (ps:chain window (get-selection) (remove-all-ranges)))
 
 (define-parenscript set-caret-on-end ()
   (ps:chain document (get-selection) (collapse-to-end)))
 
-;; known issues:
-;; fails on duckduckgo's search bar because it loses its focus
+;; TODO:
+
+;; BUG: Fails when the input field loses its focus, e.g the duckduckgo search
+;; bar.  Can probably be solved with JS.
+
+;; There could be an optional exiting behaviour -- set-caret-on-end or
+;; undo-selection.
+
+;; (define-parenscript undo-selection ()
+;;   (ps:chain window (get-selection) (remove-all-ranges)))
+
+;; It could be extended so that the coordinates of the cursor (line,column)
+;; could be shared between Nyxt and the external editor.  A general solution
+;; can't be achieved since not all editors, e.g. vi, accept the syntax
+;; `+line:column' as an option to start the editor.
+
 (define-command fill-input-from-external-editor ()
   "Edit the current input field using `external-editor-program'."
   (bt:make-thread
