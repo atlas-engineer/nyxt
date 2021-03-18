@@ -321,7 +321,7 @@ I.e. the grey text initially seen in it.")
                                                  (prompt-buffer (current-prompt-buffer))
                                                  (buffer (current-buffer)))
   (let ((hint (flet ((hintp (hint-suggestion)
-                       (if (typep hint-suggestion '(or link-hint button-hint match))
+                       (if (typep hint-suggestion '(or link-hint button-hint search-match))
                            hint-suggestion
                            nil)))
                 (if suggestions

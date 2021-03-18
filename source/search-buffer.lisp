@@ -164,9 +164,10 @@
               :query input
               :case-sensitive-p (case-sensitive-p source))
              buffer))))))
-   ;; (prompter:persistent-action (lambda (suggestion)
-   ;;                               (declare (ignore suggestion))
-   ;;                               (prompt-buffer-selection-highlight-hint :scroll t)))
+   (prompter:persistent-action (lambda (suggestion)
+                                 ;; TODO: rewrite prompt-buffer-selection-highlight-hint
+                                 (set-current-buffer (buffer suggestion) :focus nil)
+                                 (prompt-buffer-selection-highlight-hint :scroll t)))
    (prompter:destructor (lambda (prompter source)
                           (declare (ignore prompter source))
                           (remove-focus))))
@@ -181,7 +182,6 @@
 
 (define-command search-buffers (&key case-sensitive-p)
   "Start a search on the current buffer."
-  ;; TODO: Fix following across buffers.
   (let ((buffers (prompt
                   :prompt "Search buffer(s)"
                   :sources (list (make-instance 'buffer-source ; TODO: Define class?
@@ -195,5 +195,5 @@
                                                                          (title buffer)
                                                                          (url buffer)))
                                        :case-sensitive-p case-sensitive-p
-                                       :source-buffer buffer))
+                                       :buffer buffer))
                       buffers))))
