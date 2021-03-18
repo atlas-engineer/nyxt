@@ -554,8 +554,10 @@ feedback to the user while the list of suggestions is being computed."
                     (bt:release-lock (initial-suggestions-lock source)))
                   (preprocess (initial-suggestions-copy)
                     (if (filter-preprocessor source)
-                        (funcall (filter-preprocessor source)
-                                 initial-suggestions-copy source input)
+                        (ensure-suggestions-list
+                         source
+                         (funcall (filter-preprocessor source)
+                                  initial-suggestions-copy source input))
                         initial-suggestions-copy))
                   (process! (preprocessed-suggestions)
                     (let ((last-notification-time (get-internal-real-time)))
