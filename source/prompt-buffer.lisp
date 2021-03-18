@@ -91,6 +91,7 @@ All ARGS are declared as `ignorable'."
                   :table-layout "fixed")
                  (".source-content td"
                   :white-space "nowrap"
+                  :height "20px"
                   :overflow "auto")
                  (".source-content th"
                   :font-weight "normal"
