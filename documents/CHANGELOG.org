@@ -59,9 +59,9 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 
   - The new default history file is now stored in the =history= subdirectory by default.
 
-- New =nosave= mode.
-  A buffer in =nosave= mode does not persist any data to disk.
-  (Also knowns as "icognito" or "private" mode in some other browsers.)
+- New =nosave= buffer commands.
+  A =nosave= buffer does not persist any data to disk.
+  (This feature is also known as "icognito" or "private" mode in some other browsers.)
 
   - Rename =private-data-profile= to =nosave-data-profile=.
 
@@ -71,6 +71,9 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 
 - New =diff= command.  (Thanks to @aadcg!)
 
+- =fill-input-from-external-editor= now allows editing existing HTML
+  instead of starting from scratch.  (Thanks to @aadcg!)
+
 - Enable [[https://webkit.org/blog/7675/intelligent-tracking-prevention/][Intelligent Tracking Prevention]] by default.
 
 - New [[https://wiki.gnome.org/Projects/GObjectIntrospection][GObject Introspected]]-based renderer.
@@ -79,7 +82,8 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
   We recommend using bookmark tags instead.
 
 - Hints:
-  - More element hints are followable (such as Javascript URLs).
+  - More element hints are followable (such as Javascript URLs,
+    clickable and focusable elements).
 
   - Hint alphabet is customizable via the =hints-alphabet= =web-mode= slot.
 
