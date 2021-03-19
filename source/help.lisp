@@ -11,10 +11,6 @@
 
 (defstruct class-suggestion
   (name))
-(defmethod object-string ((class class-suggestion))
-  (string-downcase (format nil "~s" (class-suggestion-name class))))
-(defmethod object-display ((class class-suggestion))
-  (object-string class))
 
 (define-class function-source (prompter:source)
   ((prompter:name "Functions")
@@ -45,6 +41,17 @@
     (mapcar (lambda (v) (make-variable-suggestion :name v))
             (package-variables)))
    (prompter:actions (list (make-unmapped-command describe-variable)))))
+
+(define-command describe-* ()
+  "Inspect anything and show it in a help buffer."
+  (prompt
+   :prompt "Describe *:"
+   :sources (list (make-instance 'variable-source)
+                  (make-instance 'function-source)
+                  (make-instance 'command-source
+                                 :actions (list (make-unmapped-command describe-command)))
+                  (make-instance 'class-source)
+                  (make-instance 'slot-source))))
 
 (define-command describe-variable (&optional variable-suggestion)
   "Inspect a variable and show it in a help buffer."
@@ -123,7 +130,7 @@ A command is a special kind of function that can be called with
                             (symbol-package (name command)))
                   (format nil " (~a)"
                           (package-name (symbol-package (name command))))))
-           (:p (:pre   ; See describe-slot* for why we use :pre.
+           (:p (:pre
                 ;; TODO: This only displays the first method,
                 ;; i.e. the first command of one of the modes.
                 ;; Ask for modes instead?
@@ -138,7 +145,24 @@ A command is a special kind of function that can be called with
        :sources (make-instance 'command-source
                                :actions (list (make-unmapped-command describe-command))))))
 
-(defun describe-slot* (slot class &key mention-class-p)      ; TODO: Adapt HTML sections / lists to describe-slot and describe-class.
+(define-command describe-slot (&optional slot)
+  "Inspect a slot and show it in a help buffer."
+  (if slot
+      (let ((input slot))
+        (with-current-html-buffer (buffer
+                                   (str:concat "*Help-" (symbol-name (name input)) "*")
+                                   'nyxt/help-mode:help-mode)
+          (str:concat (markup:markup (:style (style buffer)))
+                      (describe-slot* (name input) (class-sym input)
+                                      :mention-class-p t))))
+      (prompt
+       :prompt "Describe slot"
+       :sources (make-instance 'slot-source))))
+
+(defun describe-slot* (slot class &key mention-class-p)
+  "Create the HTML that represents a slot."
+  ;; TODO: Adapt HTML sections / lists to describe-slot and describe-class.
+  ;; TODO: Parse docstrings and highlight code samples.
   (let ((props (mopu:slot-properties (find-class class) slot)))
     (markup:markup
      (:ul
@@ -157,7 +181,6 @@ A command is a special kind of function that can be called with
                (list (markup:markup (:li "Default value: " (:code initform-string)))))))
        (when (getf props :documentation)
          ;; We use :pre for documentation so that code samples get formatted properly.
-         ;; TODO: Parse docstrings and highlight code samples.
          (list (markup:markup (:li "Documentation: " (:pre (getf props :documentation))))))
        (unless (user-class-p class)
          (list (markup:markup
@@ -218,20 +241,6 @@ CLASS can be a class symbol or a list of class symbols, as with
                         :if-exists :append)
     (log:info "Appending configuration form ~a to ~s." form (expand-path *auto-config-file-path*))
     (format file "~&~a~%" form)))
-
-(define-command describe-slot (&optional slot)
-  "Inspect a slot and show it in a help buffer."
-  (if slot
-      (let ((input slot))
-        (with-current-html-buffer (buffer
-                                   (str:concat "*Help-" (symbol-name (name input)) "*")
-                                   'nyxt/help-mode:help-mode)
-          (str:concat (markup:markup (:style (style buffer)))
-                      (describe-slot* (name input) (class-sym input)
-                                      :mention-class-p t))))
-      (prompt
-       :prompt "Describe slot"
-       :sources (make-instance 'slot-source))))
 
 (define-command common-settings ()
   "Configure a set of frequently used settings."
