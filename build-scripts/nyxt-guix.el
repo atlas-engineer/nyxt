@@ -22,10 +22,12 @@
           (mapcar (lambda (var) (concat var "=" (getenv var)))
                   (append
                    '("DISPLAY"
+                     "EDITOR"
                      "HOME"
                      "LOGNAME"
                      "TERM"
-                     "USER")
+                     "USER"
+                     "VISUAL")
                    preserve-vars))))
 
 (defun nyxt--guix-preserve-vars (&rest preserve-vars)
@@ -158,6 +160,7 @@ implementation.  Example:
                      (time-less-p (nyxt-mtime image-path) (nyxt-mtime guix-def))))
         (message "Rebuilding environment %S\nand Lisp image %S..." root image-path)
         (ignore-errors (delete-file image-path))
+        (ignore-errors (delete-file root))
         (make-directory (file-name-directory root) :parents)
         (let ((output (get-buffer-create "*Nyxt Guix environment compilation*"))
               (command (guix-environment "lisp-repl-core-dumper"
