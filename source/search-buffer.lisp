@@ -147,7 +147,7 @@
 (define-class search-buffer-source (prompter:source)
   ((case-sensitive-p nil)
    (buffer (current-buffer))
-   (minimum-search-length 2)
+   (minimum-search-length 3)
    (prompter:name "Search buffer")
    (prompter:must-match-p nil)
    (prompter:follow-p t)
@@ -155,7 +155,7 @@
    (prompter:filter-preprocessor
     (lambda (preprocessed-suggestions source input)
       (declare (ignore preprocessed-suggestions))
-      (when (> (length input) (minimum-search-length source))
+      (when (>= (length input) (minimum-search-length source))
         (let ((input (str:replace-all " " " " input))
               (buffer (buffer source)))
           (with-current-buffer buffer
@@ -173,12 +173,19 @@
                           (remove-focus))))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
+(defmethod initialize-instance :after ((source search-buffer-source) &key)
+  (setf (prompter:name source)
+        (format nil "~a (~a+ characters)"
+                (prompter:name source)
+                (minimum-search-length source))))
+
 (define-command search-buffer (&key case-sensitive-p)
   "Start a search on the current buffer."
   (prompt
-   :prompt "Search for (3+ characters)"
+   :prompt "Search text"
    :sources (list
-             (make-instance 'search-buffer-source :case-sensitive-p case-sensitive-p))))
+             (make-instance 'search-buffer-source
+                            :case-sensitive-p case-sensitive-p))))
 
 (define-command search-buffers (&key case-sensitive-p)
   "Start a search on the current buffer."
@@ -188,7 +195,7 @@
                                                 :actions '()
                                                 :multi-selection-p t)))))
     (prompt
-     :prompt "Search for (3+ characters)"
+     :prompt "Search text"
      :sources (mapcar (lambda (buffer)
                         (make-instance 'search-buffer-source
                                        :name (format nil "Search ~a" (if (url-empty-p (url buffer))
