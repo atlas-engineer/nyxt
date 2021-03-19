@@ -61,40 +61,6 @@
        :prompt "Describe variable:"
        :sources (make-instance 'variable-source))))
 
-(declaim (ftype (function (command)) describe-command*))
-(defun describe-command* (command)
-  "Display NAME command documentation in a new focused buffer."
-  (with-current-html-buffer (buffer
-                             (str:concat "*Help-" (symbol-name (name command)) "*")
-                             'nyxt/help-mode:help-mode)
-    (let* ((key-keymap-pairs (nth-value 1 (keymap:binding-keys
-                                           (name command)
-                                           (all-keymaps))))
-           (key-keymapname-pairs (mapcar (lambda (pair)
-                                           (list (first pair)
-                                                 (keymap:name (second pair))))
-                                         key-keymap-pairs))
-           (source-file (getf (getf (swank:find-definition-for-thing (fn command))
-                                    :location)
-                              :file)))
-      (markup:markup
-       (:style (style buffer))
-       (:h1 (symbol-name (name command))
-            (unless (eq (find-package :nyxt)
-                        (symbol-package (name command)))
-              (format nil " (~a)"
-                      (package-name (symbol-package (name command))))))
-       (:p (:pre   ; See describe-slot* for why we use :pre.
-            ;; TODO: This only displays the first method,
-            ;; i.e. the first command of one of the modes.
-            ;; Ask for modes instead?
-            (documentation (fn command) t)))
-       (:h2 "Bindings")
-       (:p (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
-       (:h2 (format nil "Source (~a): " source-file))
-       (:pre (:code (let ((*print-case* :downcase))
-                      (write-to-string (sexp command)))))))))
-
 (define-command describe-function (&optional function-suggestion)
   "Inspect a function and show it in a help buffer.
 For generic functions, describe all the methods."
@@ -130,14 +96,45 @@ For generic functions, describe all the methods."
        :prompt "Describe function"
        :sources (make-instance 'function-source))))
 
-(define-command describe-command ()
+(define-command describe-command (&optional command)
   "Inspect a command and show it in a help buffer.
 A command is a special kind of function that can be called with
 `execute-command' and can be bound to a key."
-  (let ((input (first (prompt
-                       :prompt "Describe command"
-                       :sources (make-instance 'command-source)))))
-    (describe-command* input)))
+  (if command
+      (with-current-html-buffer (buffer
+                                 (str:concat "*Help-" (symbol-name (name command)) "*")
+                                 'nyxt/help-mode:help-mode)
+        (let* ((key-keymap-pairs (nth-value 1 (keymap:binding-keys
+                                               (name command)
+                                               (all-keymaps))))
+               (key-keymapname-pairs (mapcar (lambda (pair)
+                                               (list (first pair)
+                                                     (keymap:name (second pair))))
+                                             key-keymap-pairs))
+               (source-file (getf (getf (swank:find-definition-for-thing (fn command))
+                                        :location)
+                                  :file)))
+          (markup:markup
+           (:style (style buffer))
+           (:h1 (symbol-name (name command))
+                (unless (eq (find-package :nyxt)
+                            (symbol-package (name command)))
+                  (format nil " (~a)"
+                          (package-name (symbol-package (name command))))))
+           (:p (:pre   ; See describe-slot* for why we use :pre.
+                ;; TODO: This only displays the first method,
+                ;; i.e. the first command of one of the modes.
+                ;; Ask for modes instead?
+                (documentation (fn command) t)))
+           (:h2 "Bindings")
+           (:p (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
+           (:h2 (format nil "Source (~a): " source-file))
+           (:pre (:code (let ((*print-case* :downcase))
+                          (write-to-string (sexp command))))))))
+      (prompt
+       :prompt "Describe command"
+       :sources (make-instance 'command-source
+                               :actions (list (make-unmapped-command describe-command))))))
 
 (defun describe-slot* (slot class &key mention-class-p)      ; TODO: Adapt HTML sections / lists to describe-slot and describe-class.
   (let ((props (mopu:slot-properties (find-class class) slot)))
@@ -337,7 +334,7 @@ This function can be used as a `window' `input-dispatcher'."
               ((and bound-value (not (keymap:keymap-p bound-value)))
                ;; TODO: Highlight hit bindings and display translation if any.
                ;; For this, we probably need to call `lookup-key' on key-stack.
-               (describe-command* (function-command (symbol-function bound-value)))
+               (describe-command (function-command (symbol-function bound-value)))
                (setf key-stack nil)
                (setf (input-dispatcher window) #'dispatch-input-event))
               ((not bound-value)
