@@ -5,17 +5,9 @@
 
 (defstruct variable-suggestion
   (name))
-(defmethod object-string ((variable variable-suggestion))
-  (string-downcase (format nil "~s" (variable-suggestion-name variable))))
-(defmethod object-display ((variable variable-suggestion))
-  (object-string variable))
 
 (defstruct function-suggestion
   (name))
-(defmethod object-string ((fun function-suggestion))
-  (string-downcase (format nil "~s" (function-suggestion-name fun))))
-(defmethod object-display ((fun function-suggestion))
-  (object-string fun))
 
 (defstruct class-suggestion
   (name))
@@ -46,24 +38,27 @@
 (define-class variable-source (prompter:source)
   ((prompter:name "Variables")
    (prompter:must-match-p t)
-   (prompter:constructor (mapcar (lambda (v) (make-variable-suggestion :name v))
-                                         (package-variables)))))
+   (prompter:constructor
+    (mapcar (lambda (v) (make-variable-suggestion :name v))
+            (package-variables)))
+   (prompter:actions (list (make-unmapped-command describe-variable)))))
 
-(define-command describe-variable ()
+(define-command describe-variable (&optional variable-suggestion)
   "Inspect a variable and show it in a help buffer."
-  (let* ((input (variable-suggestion-name
-                 (first (prompt
-                         :prompt "Describe variable:"
-                         :sources (make-instance 'variable-source))))))
-    (with-current-html-buffer (buffer
-                               (str:concat "*Help-" (symbol-name input) "*")
-                               'nyxt/help-mode:help-mode)
-      (markup:markup
-       (:style (style buffer))
-       (:h1 (format nil "~s" input)) ; Use FORMAT to keep package prefix.
-       (:pre (documentation input 'variable))
-       (:h2 "Current Value:")
-       (:pre (object-display (symbol-value input)))))))
+  (if variable-suggestion
+      (let* ((input (variable-suggestion-name variable-suggestion)))
+        (with-current-html-buffer (buffer
+                                   (str:concat "*Help-" (symbol-name input) "*")
+                                   'nyxt/help-mode:help-mode)
+          (markup:markup
+           (:style (style buffer))
+           (:h1 (format nil "~s" input)) ; Use FORMAT to keep package prefix.
+           (:pre (documentation input 'variable))
+           (:h2 "Current Value:")
+           (:pre (object-display (symbol-value input))))))
+      (prompt
+       :prompt "Describe variable:"
+       :sources (make-instance 'variable-source))))
 
 (declaim (ftype (function (command)) describe-command*))
 (defun describe-command* (command)
