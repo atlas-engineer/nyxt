@@ -190,6 +190,12 @@
   :build-pathname "nyxt"
   :entry-point "nyxt:entry-point")
 
+(asdf:defsystem :nyxt/gobject/gtk-application
+  :depends-on (:nyxt/gobject/gtk)
+  :build-operation "program-op"
+  :build-pathname "nyxt"
+  :entry-point "nyxt:entry-point")
+
 (asdf:defsystem :nyxt/qt-application
   :depends-on (:nyxt/qt)
   :build-operation "program-op"
