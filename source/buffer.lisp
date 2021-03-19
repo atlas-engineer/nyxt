@@ -188,7 +188,7 @@ the above example), in which case you can use `define-configuration' on them.")
                   :documentation "Path of directory where downloads will be
 stored.  Nil means use system default.
 Downloads are kept in browser's `user-data', keyed by the expanded `download-path'.")
-   (download-engine :initform :lisp
+   (download-engine :initform :renderer
                     :type symbol
                     :documentation "Select a download engine to use,
 such as :lisp or :renderer.")
