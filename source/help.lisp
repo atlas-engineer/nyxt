@@ -35,7 +35,8 @@
 (define-class slot-source (prompter:source)
   ((prompter:name "Slots")
    (prompter:must-match-p t)
-   (prompter:constructor (package-slots))))
+   (prompter:constructor (package-slots))
+   (prompter:actions (list (make-unmapped-command describe-slot)))))
 
 (define-class variable-source (prompter:source)
   ((prompter:name "Variables")
@@ -218,17 +219,19 @@ CLASS can be a class symbol or a list of class symbols, as with
     (log:info "Appending configuration form ~a to ~s." form (expand-path *auto-config-file-path*))
     (format file "~&~a~%" form)))
 
-(define-command describe-slot ()
+(define-command describe-slot (&optional slot)
   "Inspect a slot and show it in a help buffer."
-  (let* ((input (first (prompt
-                        :prompt "Describe slot"
-                        :sources (make-instance 'slot-source)))))
-    (with-current-html-buffer (buffer
-                               (str:concat "*Help-" (symbol-name (name input)) "*")
-                               'nyxt/help-mode:help-mode)
-      (str:concat (markup:markup (:style (style buffer)))
-                  (describe-slot* (name input) (class-sym input)
-                                  :mention-class-p t)))))
+  (if slot
+      (let ((input slot))
+        (with-current-html-buffer (buffer
+                                   (str:concat "*Help-" (symbol-name (name input)) "*")
+                                   'nyxt/help-mode:help-mode)
+          (str:concat (markup:markup (:style (style buffer)))
+                      (describe-slot* (name input) (class-sym input)
+                                      :mention-class-p t))))
+      (prompt
+       :prompt "Describe slot"
+       :sources (make-instance 'slot-source))))
 
 (define-command common-settings ()
   "Configure a set of frequently used settings."
