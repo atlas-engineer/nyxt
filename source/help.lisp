@@ -29,7 +29,8 @@
    (prompter:must-match-p t)
    (prompter:constructor
     (mapcar (lambda (v) (make-class-suggestion :name v))
-            (package-classes)))))
+            (package-classes)))
+   (prompter:actions (list (make-unmapped-command describe-class)))))
 
 (define-class slot-source (prompter:source)
   ((prompter:name "Slots")
@@ -163,24 +164,25 @@ A command is a special kind of function that can be called with
                          :href (lisp-url `(nyxt::configure-slot ',slot ',class))
                          "Configure"))))))))))
 
-(define-command describe-class ()
+(define-command describe-class (&optional class-suggestion)
   "Inspect a class and show it in a help buffer."
-  (let* ((input (class-suggestion-name
-                 (first (prompt
-                         :prompt "Describe class"
-                         :sources (make-instance 'class-source))))))
-    (with-current-html-buffer (buffer
-                               (str:concat "*Help-" (symbol-name input) "*")
-                               'nyxt/help-mode:help-mode)
-      (let* ((slots (class-public-slots input))
-             (slot-descs (apply #'str:concat (mapcar (alex:rcurry #'describe-slot* input) slots))))
-        (str:concat
-         (markup:markup
-          (:style (style buffer))
-          (:h1 (symbol-name input))
-          (:p (:pre (documentation input 'type)))
-          (:h2 "Slots:"))
-         slot-descs)))))
+  (if class-suggestion
+      (let ((input (class-suggestion-name class-suggestion)))
+        (with-current-html-buffer (buffer
+                                   (str:concat "*Help-" (symbol-name input) "*")
+                                   'nyxt/help-mode:help-mode)
+          (let* ((slots (class-public-slots input))
+                 (slot-descs (apply #'str:concat (mapcar (alex:rcurry #'describe-slot* input) slots))))
+            (str:concat
+             (markup:markup
+              (:style (style buffer))
+              (:h1 (symbol-name input))
+              (:p (:pre (documentation input 'type)))
+              (:h2 "Slots:"))
+             slot-descs))))
+      (prompt
+       :prompt "Describe class"
+       :sources (make-instance 'class-source))))
 
 (defun configure-slot (slot class &key (value nil new-value-supplied-p) (type nil))
   "Set the value of a slot in a users auto-config.lisp.
