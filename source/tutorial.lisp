@@ -274,7 +274,7 @@ section) of the current page and jump to it.")
          (:code "autofills") " browser slot.")
     (:li (command-markup 'vcs-clone) ": Clone version control repository
 matching current URL.")
-    (:li (command-markup 'open-file) ", " (command-markup 'download-open-file)
+    (:li (command-markup 'download-open-file) ", " (command-markup 'download-open-file)
          ": Open file in Nyxt or externally.  See `*open-file-function*'.")
     (:li (command-markup 'edit-with-external-editor)
          ": Edit selected HTML input tag with an external editor.")
