@@ -256,6 +256,10 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
                            (name slot)
                            (class-sym slot))))
 
+(defmethod prompter:object-properties ((slot slot))
+  `(:name ,(name slot)
+    :class ,(class-sym slot)))
+
 (defun exported-p (sym)
   (eq :external
       (nth-value 1 (find-symbol (string sym)
