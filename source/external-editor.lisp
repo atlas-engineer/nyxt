@@ -3,7 +3,7 @@
 
 (in-package :nyxt)
 
-(defun edit-with-external-editor (&optional input-text)
+(defun %edit-with-external-editor (&optional input-text)
   "Edit `input-text' using `external-editor-program'.
 Create a temporary file and return its content.  The editor runs synchronously
 so invoke on a separate thread when possible."
@@ -46,12 +46,12 @@ so invoke on a separate thread when possible."
 ;; can't be achieved since not all editors, e.g. vi, accept the syntax
 ;; `+line:column' as an option to start the editor.
 
-(define-command fill-input-from-external-editor ()
+(define-command edit-with-external-editor ()
   "Edit the current input field using `external-editor-program'."
   (if (external-editor-program *browser*)
       (bt:make-thread
        (lambda ()
          (select-input-field)
-         (%paste :input-text (edit-with-external-editor (%copy)))
+         (%paste :input-text (%edit-with-external-editor (%copy)))
          (set-caret-on-end)))
       (echo-warning "Please set `external-editor-program' browser slot.")))

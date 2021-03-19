@@ -276,7 +276,7 @@ section) of the current page and jump to it.")
 matching current URL.")
     (:li (command-markup 'open-file) ", " (command-markup 'download-open-file)
          ": Open file in Nyxt or externally.  See `*open-file-function*'.")
-    (:li (command-markup 'fill-input-from-external-editor)
+    (:li (command-markup 'edit-with-external-editor)
          ": Edit selected HTML input tag with an external editor.")
     (:li (command-markup 'quit) ": Close all Nyxt windows and quit."))
 
