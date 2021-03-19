@@ -3,7 +3,7 @@
 
 (in-package :nyxt)
 
-(defun open-with-external-editor (&optional input-text)
+(defun edit-with-external-editor (&optional input-text)
   "Edit `input-text' using `external-editor-program'.
 Create a temporary file and return its content.  The editor runs synchronously
 so invoke on a separate thread when possible."
@@ -13,11 +13,12 @@ so invoke on a separate thread when possible."
       (with-open-file (f p :direction :io
                            :if-exists :append)
         (write-sequence input-text f)))
-    (log:debug "External Editor: ~s opening: ~s"
+    (log:debug "External editor ~s opens ~s"
                (external-editor-program *browser*) p)
-    (uiop:run-program (list (external-editor-program *browser*)
-                            (uiop:native-namestring p))
-                      :ignore-error-status t)
+    (with-muffled-body ("Failed editing: ~a" :condition)
+      (uiop:run-program (list (external-editor-program *browser*)
+                              (uiop:native-namestring p))
+                        :ignore-error-status t))
     (uiop:read-file-string p)))
 
 (define-parenscript select-input-field ()
@@ -47,8 +48,10 @@ so invoke on a separate thread when possible."
 
 (define-command fill-input-from-external-editor ()
   "Edit the current input field using `external-editor-program'."
-  (bt:make-thread
-   (lambda ()
-     (select-input-field)
-     (%paste :input-text (open-with-external-editor (%copy)))
-     (set-caret-on-end))))
+  (if (external-editor-program *browser*)
+      (bt:make-thread
+       (lambda ()
+         (select-input-field)
+         (%paste :input-text (edit-with-external-editor (%copy)))
+         (set-caret-on-end)))
+      (echo-warning "Please set `external-editor-program' browser slot.")))
