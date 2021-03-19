@@ -18,11 +18,6 @@
 (deftype function-symbol ()
   `(and symbol (satisfies fboundp)))
 
-(defun exported-p (sym)
-  (eq :external
-      (nth-value 1 (find-symbol (string sym)
-                                (symbol-package sym)))))
-
 (defun object-public-slots (object-specifier)
   "Return the list of exported slots."
   (delete-if
