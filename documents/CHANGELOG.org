@@ -71,8 +71,10 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 
 - New =diff= command.  (Thanks to @aadcg!)
 
-- =fill-input-from-external-editor= now allows editing existing HTML
-  instead of starting from scratch.  (Thanks to @aadcg!)
+- Rename =fill-input-from-external-editor= to =edit-with-external-editor=.  (Thanks to @aadcg!)
+
+  The edited HTML content is replicated in the editor, then the editor
+  content is committed back upon closing.
 
 - Enable [[https://webkit.org/blog/7675/intelligent-tracking-prevention/][Intelligent Tracking Prevention]] by default.
 
