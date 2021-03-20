@@ -1094,10 +1094,8 @@ ARGS are passed to the mode command."
   "Open the inspector, a graphical tool to inspect and change the content of the buffer."
   (ffi-inspector-show (current-buffer)))
 
-(define-parenscript %print-buffer ()
-  (print))
-
 (export-always 'print-buffer)
 (define-command print-buffer ()
   "Print the current buffer."
-  (%print-buffer))
+  (pflet ((print-buffer () (print)))
+         (print-buffer)))
