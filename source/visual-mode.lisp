@@ -69,7 +69,7 @@
       (if (equal (keymap-scheme-name (buffer mode)) scheme:vi-normal)
           (setf (mark-set mode) t))))))
 
-(define-parenscript %add-paragraph-hints (&key annotate-visible-only-p)
+(define-parenscript add-paragraph-hints (&key annotate-visible-only-p)
   (defun qs (context selector)
     "Alias of document.querySelector"
     (ps:chain context (query-selector selector)))
@@ -210,7 +210,7 @@ identifier for every hinted element."
     (ps:chain sel (remove-all-ranges))
     (ps:chain sel (add-range range))))
 
-(defmethod %follow-hint ((paragraph-hint paragraph-hint))
+(defmethod follow-hint ((paragraph-hint paragraph-hint))
   (set-caret-on-start :nyxt-identifier (nyxt/web-mode::identifier paragraph-hint)))
 
 (defun paragraph-elements-from-json (elements-json)
@@ -255,13 +255,13 @@ identifier for every hinted element."
                      'nyxt/web-mode::hint-source
                      :constructor
                      (paragraph-elements-from-json
-                      (%add-paragraph-hints
+                      (add-paragraph-hints
                        :annotate-visible-only-p t)))
                     :after-destructor
                     (lambda ()
                       (with-current-buffer buffer
                         (nyxt/web-mode::remove-element-hints)))))))
-      (funcall-safely #'%follow-hint result))))
+      (funcall-safely #'follow-hint result))))
 
 (define-parenscript is-collapsed ()
   ;; returns "true" if mark's start and end are the same value
