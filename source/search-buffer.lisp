@@ -130,19 +130,18 @@
                                :body (cdr (assoc :body element))
                                :buffer buffer)))
 
-(define-parenscript %remove-search-hints ()
-  (defun qsa (context selector)
-    "Alias of document.querySelectorAll"
-    (ps:chain context (query-selector-all selector)))
-  (defun remove-search-nodes ()
-    "Removes all the search elements"
-    (ps:dolist (node (qsa document ".nyxt-search-node"))
-      (ps:chain node (replace-with (aref *nodes* (ps:@ node id))))))
-  (remove-search-nodes))
-
 (define-command remove-search-hints ()
   "Remove all search hints."
-  (%remove-search-hints))
+  (pflet ((remove-search-hints ()
+            (defun qsa (context selector)
+              "Alias of document.querySelectorAll"
+              (ps:chain context (query-selector-all selector)))
+            (defun remove-search-nodes ()
+              "Removes all the search elements"
+              (ps:dolist (node (qsa document ".nyxt-search-node"))
+                (ps:chain node (replace-with (aref *nodes* (ps:@ node id))))))
+            (remove-search-nodes)))
+    (remove-search-hints)))
 
 (define-class search-buffer-source (prompter:source)
   ((case-sensitive-p nil)
