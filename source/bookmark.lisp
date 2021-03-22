@@ -191,7 +191,6 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                              :name "New tags"
                                              :multi-selection-p t)
                               (make-instance 'tag-source
-                                             ;; TODO: This seems to rarely work, why?
                                              :marks (url-bookmark-tags (url buffer))
                                              ;; TODO: Move extra-tags to a separate source.
                                              ;; :extra-tags (extract-keywords body 5)
