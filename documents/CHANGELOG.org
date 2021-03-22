@@ -55,7 +55,7 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
   It leverages the new prompt buffer multi-source feature to conflate
   all help sources.
 
-- Global history tree (GHT)
+- Global history tree (GHT).
   See [[https://nyxt.atlas.engineer/article/global-history-tree.org][our article]] for an introduction.
 
   - Session commands were removed.
@@ -82,7 +82,7 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 
 - Enable [[https://webkit.org/blog/7675/intelligent-tracking-prevention/][Intelligent Tracking Prevention]] by default.
 
-- New [[https://wiki.gnome.org/Projects/GObjectIntrospection][GObject Introspected]]-based renderer.
+- New [[https://wiki.gnome.org/Projects/GObjectIntrospection][GObject Introspection]]-based renderer.
 
 - Removed =url-group=.
   We recommend using bookmark tags instead.
