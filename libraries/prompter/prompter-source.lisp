@@ -482,6 +482,10 @@ Active properties are queried from SOURCE."
          (set-difference (sera:plist-keys (properties suggestion))
                          (active-properties source))))
 
+(export-always 'marked-p)
+(defun marked-p (source value)
+  (find value (prompter:marks source) :test #'equalp))
+
 (defun maybe-funcall (fn &rest args)
   "Funcall FN over args.
 If FN is nil, return ARGS as multiple values."
