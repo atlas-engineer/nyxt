@@ -249,8 +249,7 @@ The new webview HTML content is set as the PROMPT-BUFFER's `content'."
                                            (:tr :id (when (equal (list suggestion source)
                                                                  (multiple-value-list (prompter:selected-suggestion prompt-buffer)))
                                                       "selection")
-                                                :class (when (find (prompter:value suggestion) (prompter:marks source)
-                                                                   :test #'equalp)
+                                                :class (when (prompter:marked-p source (prompter:value suggestion))
                                                          "marked")
                                                 (loop for (_ property) on (prompter:active-properties suggestion :source source) by #'cddr
                                                       collect (markup:markup (:td property)))))))))))
