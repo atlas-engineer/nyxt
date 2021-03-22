@@ -42,10 +42,10 @@
             (package-variables)))
    (prompter:actions (list (make-unmapped-command describe-variable)))))
 
-(define-command describe-* ()
+(define-command describe-any ()
   "Inspect anything and show it in a help buffer."
   (prompt
-   :prompt "Describe *:"
+   :prompt "Describe:"
    :sources (list (make-instance 'variable-source)
                   (make-instance 'function-source)
                   (make-instance 'command-source
