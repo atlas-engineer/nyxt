@@ -211,13 +211,16 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 (define-command bookmark-url (&key url)
   "Allow the user to bookmark a URL via minibuffer input."
   (let ((url (or url
-                 (prompt
-                  :prompt "Bookmark URL"
-                  :sources (list
-                            (make-instance 'prompter:raw-source
-                                           :name "New URL"))))))
+                 (ignore-errors
+                  (quri:uri
+                   (first
+                    (prompt
+                     :prompt "Bookmark URL"
+                     :sources (list
+                               (make-instance 'prompter:raw-source
+                                              :name "New URL")))))))))
     (if (not (valid-url-p url))
-        (echo "Invalid URL")
+        (echo "Invalid URL '~a'" url)
         (let* ((url (quri:uri url))
                (tags (prompt
                       :prompt "Tag(s)"
