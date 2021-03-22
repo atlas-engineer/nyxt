@@ -51,6 +51,10 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
   - New "follow mode" (toggle with =C-c C-f=).  Try it in
     =switch-buffer=, it will update the view with the selected suggestion!
 
+- New =describe-any= command.
+  It leverages the new prompt buffer multi-source feature to conflate
+  all help sources.
+
 - Global history tree (GHT)
   See [[https://nyxt.atlas.engineer/article/global-history-tree.org][our article]] for an introduction.
 
@@ -104,7 +108,7 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 
 - New =with-data-unsafe= for thread-unsafe persistent data access.
 
-- New =:renderer= download engine.
+- New default =:renderer= download engine.
 
   You can switch download engine with the =download-engine= buffer slot.
 
