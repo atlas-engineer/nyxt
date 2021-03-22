@@ -12,6 +12,8 @@
     (define-scheme "prompt-buffer"
       scheme:cua
       (list
+       "down" 'select-next
+       "up" 'select-previous
        "C-n" 'select-next
        "C-p" 'select-previous
        "M-n" 'select-next-page
