@@ -22,8 +22,8 @@ let go of all keys, and then press 'control', 'meta' and 'left'.")
     (:li (:code "super") " (" (:code "S") "): Windows key, Command key")
     (:li (:code "meta") " (" (:code "M") "): Alt key, Option key")
     (:li (:code "shift") " (" (:code "s") "): Shift key"))
-   (:p "Modifiers can be remapped, see the `modifier-translator' slot of the
-`gtk-browser' class.")
+   (:p "Modifiers can be remapped, see the " (:code "modifier-translator")
+       " slot of the " (:code "gtk-browser") " class.")
 
    (:h3 "Quickstart keys")
    (:ul
@@ -275,7 +275,7 @@ section) of the current page and jump to it.")
     (:li (command-markup 'vcs-clone) ": Clone version control repository
 matching current URL.")
     (:li (command-markup 'download-open-file) ", " (command-markup 'download-open-file)
-         ": Open file in Nyxt or externally.  See `*open-file-function*'.")
+         ": Open file in Nyxt or externally.  See " (:code "*open-file-function*") ".")
     (:li (command-markup 'edit-with-external-editor)
          ": Edit selected HTML input tag with an external editor.")
     (:li (command-markup 'quit) ": Close all Nyxt windows and quit."))
@@ -298,7 +298,8 @@ function.")
     (:li (command-markup 'describe-variable) ": View the value and documentation
 of a variable.")
     (:li (command-markup 'describe-class) ": Lookup a class documentation and all its slots.")
-    (:li (command-markup 'describe-slot) ": Lookup a class slot value and documentation."))
+    (:li (command-markup 'describe-slot) ": Lookup a class slot value and documentation.")
+    (:li (command-markup 'describe-any) ": The conflation of all the 'describe' functions."))
    (:p "A good starting point is to study the documentation of the classes "
        (:code "browser") ", " (:code "window") ", " (:code "buffer") " and "
        (:code "prompt-buffer") ".")))
