@@ -24,6 +24,9 @@
    (complement #'exported-p)
    (mopu:slot-names object-specifier)))
 
+(defun default-object-property (object)
+  (list :default (princ-to-string object)))
+
 (export-always 'object-properties)
 (defmethod object-properties ((object t))
   "Return a plist of strings for OBJECT.
@@ -47,7 +50,7 @@ inherited or used across different sources)."
                             (princ-to-string (slot-value object slot))))
                     (object-public-slots object))
       (princ-to-string object)))
-    (t (list :default (princ-to-string object)))))
+    (t (default-object-property object))))
 
 (define-class suggestion ()
   ((value nil ; TODO: Rename `data' as with the GHT?  Maybe confusing since we have `match-data'.
@@ -71,12 +74,19 @@ The other slots are optional.
 
 Suggestions are made with the `suggestion-maker' slot from `source'."))
 
+(defun object-properties-p (properties)
+  (and (listp properties)
+       (evenp (length properties))))
+
 (defun format-properties (properties &optional downcasedp)
   (funcall (if downcasedp #'string-downcase #'identity)
            (str:join " " (sera:plist-values properties))))
 
 (defmethod initialize-instance :after ((suggestion suggestion) &key source input)
   "Set SUGGESTION `match-data' if empty and if SOURCE and INPUT initargs are provided."
+  (unless (object-properties-p (properties suggestion))
+    (warn "Properties of ~s should be a plist instead of ~s" (value suggestion) (properties suggestion))
+    (setf (properties suggestion) (default-object-property (value suggestion))))
   (when (and input source
              (uiop:emptyp (match-data suggestion)))
     (setf (match-data suggestion)
@@ -434,9 +444,9 @@ call.")))
 (export-always 'properties)
 (defmethod properties ((source source)) ; TODO: Rename this so that it's not exported?
   (sera:plist-keys
-   (if (first (suggestions source)) ; TODO: Instead, ensure that suggestions always has an element?
-       (properties (first (suggestions source)))
-       (list :default ""))))
+   (alex:if-let ((sugg (first (suggestions source)))) ; TODO: Instead, ensure that suggestions always has an element?
+     (properties sugg)
+     (default-object-property ""))))
 
 (export-always 'properties-non-default)
 (defmethod properties-non-default ((source source))
