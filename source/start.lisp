@@ -9,18 +9,17 @@
 
 (export-always '*socket-path*)
 (defvar *socket-path* (make-instance 'data-path :basename "nyxt.socket")
-  "Path string of the Unix socket used to communicate between different
-instances of Nyxt.
+  "Path of the Unix socket used to communicate between different instances of
+Nyxt.
 
-If this resolves nil with `expand-path', Nyxt starts in multi-instance mode.
-This means that re-running Nyxt will start a new instance of Nyxt instance of
+If `expand-ptah' resolves this to `nil', then Nyxt starts in multi-instance mode.
+This means that re-running Nyxt will start a new instance of Nyxt instead of
 prompting the first instance.
 
-This path cannot be set from the init file because we want to be able to set and
-use the socket without parsing any init file.
-
-Instead, the socket can be set from the corresponding command line option or the
-NYXT_SOCKET environment variable.")
+This path cannot be set from the initialization file because we want to be able
+to set and use the socket without parsing any file.  Instead, the socket can be
+set from the corresponding command line option or the NYXT_SOCKET environment
+variable.")
 
 (defmethod expand-data-path ((profile data-profile) (path (eql *init-file-path*)))
   "Return path of the init file."
