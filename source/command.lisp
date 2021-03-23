@@ -334,7 +334,7 @@ extra fiddling."
            (list-commands)))
 
 
-(defmethod run ((command command) &rest args)
+(defun run (command &rest args)
   "Run COMMAND over ARGS and return its result.
 This is blocking, see `run-async' for an asynchronous way to run commands."
   (let ((channel (make-channel 1)))
@@ -348,7 +348,7 @@ This is blocking, see `run-async' for an asynchronous way to run commands."
                  (apply #'funcall-safely command args))))
     (calispel:? channel)))
 
-(defmethod run-async ((command command) &rest args)
+(defun run-async (command &rest args)
   "Run COMMAND over ARGS asynchronously.
 See `run' for a way to run commands in a synchronous fashion and return the
 result."
