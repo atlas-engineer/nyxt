@@ -84,10 +84,23 @@
               " (current)"
               "")))
 
+(defmethod prompter:object-properties ((pkg ospm:guix-package))
+  (let ((result (call-next-method pkg)))
+    (remf result :dependencies)
+    (setf (getf result :outputs) (str:join " " (mapcar #'ospm:name (ospm:outputs pkg))))
+    (setf (getf result :supported-systems) (str:join " " (ospm:supported-systems pkg)))
+    (setf (getf result :inputs) (str:join " " (ospm:inputs pkg)))
+    (setf (getf result :native-inputs) (str:join " " (ospm:native-inputs pkg)))
+    (setf (getf result :propagated-inputs) (str:join " " (ospm:propagated-inputs pkg)))
+    (setf (getf result :licenses) (format nil "~{~a~^, ~}" (ospm:licenses pkg)))
+    result))
+
 (define-class os-package-source (prompter:source)
   ((prompter:name "Packages")
    (prompter:must-match-p t)
-   (prompter:constructor (ospm:list-packages))))
+   (prompter:multi-selection-p t)
+   (prompter:constructor (ospm:list-packages))
+   (prompter:active-properties '(:name :version :synopsis))))
 
 (define-class os-manifest-source (prompter:source)
   ((prompter:name "Manifests")
