@@ -76,7 +76,8 @@ Suggestions are made with the `suggestion-maker' slot from `source'."))
 
 (defun object-properties-p (properties)
   (and (listp properties)
-       (evenp (length properties))))
+       (evenp (length properties))
+       (every #'stringp (sera:plist-values properties))))
 
 (defun format-properties (properties &optional downcasedp)
   (funcall (if downcasedp #'string-downcase #'identity)
@@ -85,7 +86,7 @@ Suggestions are made with the `suggestion-maker' slot from `source'."))
 (defmethod initialize-instance :after ((suggestion suggestion) &key source input)
   "Set SUGGESTION `match-data' if empty and if SOURCE and INPUT initargs are provided."
   (unless (object-properties-p (properties suggestion))
-    (warn "Properties of ~s should be a plist instead of ~s" (value suggestion) (properties suggestion))
+    (warn "Properties of ~s should be a plist of strings instead of ~s" (value suggestion) (properties suggestion))
     (setf (properties suggestion) (default-object-property (value suggestion))))
   (when (and input source
              (uiop:emptyp (match-data suggestion)))
