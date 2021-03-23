@@ -738,13 +738,6 @@ Warning: This behaviour may change in the future."
       (gtk:gtk-widget-grab-focus (gtk-object (active-buffer window)))
       (gtk:gtk-widget-grab-focus (prompt-buffer-view window))))
 
-(define-ffi-method ffi-window-set-prompt-buffer-height ((window gtk-window) height)
-  (setf (gtk:gtk-widget-size-request (prompt-buffer-container window)) ; TODO: Rename `prompt-buffer-container' when we switch to prompter.
-        (list -1 height))
-  (if (eql 0 height)
-      (gtk:gtk-widget-grab-focus (gtk-object (active-buffer window)))
-      (gtk:gtk-widget-grab-focus (prompt-buffer-view window))))
-
 (define-ffi-method ffi-window-get-status-buffer-height ((window gtk-window))
   (nth-value 1 (gtk:gtk-widget-size-request (status-container window))))
 
