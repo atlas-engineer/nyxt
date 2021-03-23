@@ -1,3 +1,6 @@
+#+sbcl
+(sb-ext:assert-version->= 1 5 0)
+
 (defsystem "nyxt"
   :version "2" ; Pre-release 6
   :author "Atlas Engineer LLC"

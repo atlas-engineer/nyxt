@@ -135,7 +135,6 @@ build-deps: quicklisp-extra-libs
 .PHONY: deps
 deps:
 	$(NYXT_INTERNAL_QUICKLISP) && $(MAKE) build-deps || true
-	if [ $(basename "$(LISP)") = "sbcl" ]; then $(LISP) --no-userinit --non-interactive --eval '(assert-version->= 1 5 0)'; fi
 
 .PHONY: doc
 doc:
