@@ -137,17 +137,14 @@ deps:
 	$(NYXT_INTERNAL_QUICKLISP) && $(MAKE) build-deps || true
 	if [ $(basename "$(LISP)") = "sbcl" ]; then $(LISP) --no-userinit --non-interactive --eval '(assert-version->= 1 5 0)'; fi
 
-manual.html: $(lisp_files)
+.PHONY: doc
+doc:
 	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--eval '$(quicklisp_maybe_load)' \
 		--eval '(asdf:load-asd "nyxt.asd")' \
-		--eval '(asdf:load-system :nyxt)' \
-		--eval '(with-open-file  (out "manual.html" :direction :output) (write-string (nyxt::manual-content) out))' \
+		--eval '(asdf:load-system :nyxt/documentation)' \
 		--eval '(uiop:quit)'
-
-.PHONY: doc
-doc: manual.html
 
 .PHONY: check
 check: check-asdf check-binary
