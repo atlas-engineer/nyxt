@@ -29,8 +29,9 @@
 
 (export-always 'object-properties)
 (defmethod object-properties ((object t))
-  "Return a plist of strings for OBJECT.
-Properties are strings that describe the structure of the object.
+  "Return a plist of (PROPERTY-KEY PROPERTY-VALUE) for OBJECT.
+Properties are meant to describe the OBJECT structurally.
+Property-values can be of arbitrary type.
 
 For sturcture and class instances, the plist is made of the exported slots: the
 keys are the slot symbols and the values the slot values passed to
@@ -76,17 +77,19 @@ Suggestions are made with the `suggestion-maker' slot from `source'."))
 
 (defun object-properties-p (properties)
   (and (listp properties)
-       (evenp (length properties))
-       (every #'stringp (sera:plist-values properties))))
+       (evenp (length properties))))
 
 (defun format-properties (properties &optional downcasedp)
   (funcall (if downcasedp #'string-downcase #'identity)
-           (str:join " " (sera:plist-values properties))))
+           (str:join " " (mapcar #'princ-to-string (sera:plist-values properties)))))
 
 (defmethod initialize-instance :after ((suggestion suggestion) &key source input)
-  "Set SUGGESTION `match-data' if empty and if SOURCE and INPUT initargs are provided."
+  "Set SUGGESTION `match-data' if empty and if SOURCE and INPUT initargs are provided.
+`match-data' is set by concatenating all the active properties into a
+space-separated string.
+The `match-data' is downcased if INPUT is lower-case."
   (unless (object-properties-p (properties suggestion))
-    (warn "Properties of ~s should be a plist of strings instead of ~s" (value suggestion) (properties suggestion))
+    (warn "Properties of ~s should be a plist instead of ~s" (value suggestion) (properties suggestion))
     (setf (properties suggestion) (default-object-property (value suggestion))))
   (when (and input source
              (uiop:emptyp (match-data suggestion)))
@@ -98,10 +101,7 @@ Suggestions are made with the `suggestion-maker' slot from `source'."))
 (export-always 'make-suggestion)
 (defmethod make-suggestion ((value t) source &optional input)
   "Return a `suggestion' wrapping around VALUE.
-Properties are set with `object-properties'.
-`match-data' is set by concatenating all the active properties into a
-space-separated string.
-The `match-data' is downcased if INPUT is lower-case."
+Properties are set with `object-properties'."
   (make-instance 'suggestion
                  :value value
                  :properties (object-properties value)
