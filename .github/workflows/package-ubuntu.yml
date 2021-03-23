@@ -10,11 +10,11 @@ jobs:
     strategy:
       matrix:
         lisp: [sbcl]
-        # Ubuntu 20.04 is the first with a modern enough SBCL, but it does not
-        # matter anyways since we build SBCL ourselves.
         # See https://github.com/actions/virtual-environments
-        # os: [ubuntu-20.04]
-        os: [ubuntu-latest]
+        # for the list of official distributions.
+        # TODO: ubuntu-20.04has an issue with linux-packaging:
+        # https://gitlab.com/ralt/linux-packaging/-/issues/6
+        os: [ubuntu-18.04]
       # fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -30,7 +30,8 @@ jobs:
       run: |
         sudo apt-get update -qq
         sudo apt-get install -y ruby ruby-dev rubygems dpkg-dev sbcl curl git-core zlib1g-dev
-        sudo apt-get install -y libfixposix3 libfixposix-dev libwebkit2gtk-4.0-dev glib-networking gsettings-desktop-schemas xclip notify-osd enchant-2
+        # TODO: On Ubuntu 20.04, it's libfixposix3 and enchant-2.
+        sudo apt-get install -y libfixposix0 libfixposix-dev libwebkit2gtk-4.0-dev glib-networking gsettings-desktop-schemas xclip notify-osd enchant
 
     - name: Fetch Common Lisp third-party dependencies
       shell: bash
