@@ -628,7 +628,7 @@ sometimes yields the wrong result."
     (pflet ((zoom ()
                   (ps:let ((style (ps:chain document body style)))
                     (setf (ps:@ style zoom)
-                          (ps:lisp (current-zoom-ratio (current-buffer)))))))
+                          (ps:lisp value)))))
       (with-current-buffer buffer
         (zoom)))))
 (define-ffi-generic ffi-buffer-get-document (buffer)
