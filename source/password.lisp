@@ -15,8 +15,11 @@ macro to change slot values."
 (defun make-password-interface ()
   "Return the instance of the first password interface among `password:*interfaces*'
 for which the `executable' slot is non-nil."
-  (find-if (alex:compose #'password:executable #'make-instance #'user-class-name)
-           password:*interfaces*))
+  (some (lambda (interface)
+          (let ((instance (make-instance (user-class-name interface))))
+            (when (password:executable instance)
+              instance)))
+        password:*interfaces*))
 
 (define-class password-source (prompter:source)
   ((prompter:name "Passwords")
