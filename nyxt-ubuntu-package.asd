@@ -1,3 +1,6 @@
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
 ;; TODO: Can we move this file to build-scripts?  Looks like linux-packaging
 ;; fails to find the produced binary then.
 (defsystem "nyxt-ubuntu-package"
