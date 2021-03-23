@@ -172,7 +172,8 @@
                          (write-string (funcall (find-symbol (string 'manual-content)
                                                              (find-package 'nyxt)))
 
-                                       out))))
+                                       out))
+                       (format *error-output* "Manual dumped to ~s.~&" (output-file o c))))
 
 (defsystem "nyxt/gtk"
   :depends-on (nyxt
