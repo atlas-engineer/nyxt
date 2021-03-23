@@ -276,7 +276,7 @@ value.
   #+sbcl
   (sb-posix:readlink path)
   #-sbcl
-  (osicat:read-link profile))
+  (osicat:read-link path))
 
 (defun guix-expand-profile-symlink (profile)
   "Return the path the PROFILE link points too.
