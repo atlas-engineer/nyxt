@@ -21,6 +21,7 @@
     (setf gtk-running-p t)
     (let ((main-thread (bt:make-thread (lambda ()
                                          (glib:g-set-prgname "nyxt")
+                                         (gdk:gdk-set-program-class "Nyxt")
                                          (gir:invoke ((gir:ffi "Gtk") 'main)))
                                        :name "main thread")))
       (finalize browser urls startup-timestamp)

@@ -150,6 +150,7 @@ not return."
       (progn
         (setf gtk-running-p t)
         (glib:g-set-prgname "nyxt")
+        (gdk:gdk-set-program-class "Nyxt")
         (gtk:within-main-loop
           (finalize browser urls startup-timestamp))
         (unless *keep-alive*
@@ -158,6 +159,7 @@ not return."
       (progn
         (setf gtk-running-p t)
         (glib:g-set-prgname "nyxt")
+        (gdk:gdk-set-program-class "Nyxt")
         (finalize browser urls startup-timestamp)
         (gtk:gtk-main))))
 
