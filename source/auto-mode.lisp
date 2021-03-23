@@ -257,6 +257,7 @@ to included/excluded modes in the auto-mode rules on mode activation/deactivatio
    ;; base-mode conflicts with its Nyxt symbol if it's not prefixed
    (non-rememberable-modes '(help-mode web-mode auto-mode nyxt::base-mode)
                            :type list
+                           :accessor nil
                            :documentation "Modes that `auto-mode' won't even try to save.
 Append names of modes you want to always control manually to this list.
 Be careful with deleting the defaults -- it can be harmful for your browsing.")
