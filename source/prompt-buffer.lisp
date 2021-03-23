@@ -258,7 +258,7 @@ The new webview HTML content is set as the PROMPT-BUFFER's `content'."
        (ps:ps
          (setf (ps:chain document (get-element-by-id "suggestions") |innerHTML|)
                (ps:lisp
-                (str:join (string #\newline)
+                (str:join +newline+
                           (loop for i from current-source-index to last-source-index
                                 for source = (nth i sources)
                                 collect (source->html source))))))))

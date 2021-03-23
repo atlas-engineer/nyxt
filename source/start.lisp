@@ -410,7 +410,7 @@ Otherwise bind socket and return the listening thread."
   "Return s with all lines but the first indented by SPACE-COUNT."
   (let* ((lines (sera:lines s))
          (indent (make-string space-count :initial-element #\space)))
-    (str:join (string #\newline)
+    (str:join +newline+
               (cons (first lines)
                     (mapcar (lambda (s)
                               (str:concat indent s))

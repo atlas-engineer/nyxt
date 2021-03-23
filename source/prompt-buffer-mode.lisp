@@ -199,7 +199,7 @@ If STEPS is negative, go to next pages instead."
 (defun make-action-suggestion (action source &optional input)
   "Return a `suggestion' wrapping around ACTION."
   (flet ((first-line (string)
-           (first (str:split (string #\newline) string))))
+           (first (str:split +newline+ string))))
     (make-instance
      'prompter:suggestion
      :value action
@@ -287,7 +287,7 @@ Only available if `multi-selection-p' is non-nil."
                     (list (prompter:properties (prompter:selected-suggestion
                                                 prompt-buffer)))))
          ;; Reverse so that text is ordered from oldest mark to newest.
-         (text (str:join (string #\newline) (mapcar #'second (reverse props)))))
+         (text (str:join +newline+ (mapcar #'second (reverse props)))))
     (unless (str:emptyp text)
       (trivial-clipboard:text text)
       (echo "Copied ~s to clipboard." text))))

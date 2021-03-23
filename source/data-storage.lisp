@@ -354,7 +354,7 @@ you use this macro! For a modification-safe macro, see `with-data-access'."
                                                            :output s)))
                           :test #'string=))
          (entries (mapcar (lambda (s) (str:concat "sec" s)) entries))
-         (entries (mapcar (lambda (s) (str:split (string #\newline) s :omit-nulls t)) entries))
+         (entries (mapcar (lambda (s) (str:split +newline+ s :omit-nulls t)) entries))
          (entries (mapcar (lambda (entry) (mapcar (lambda (s) (str:split ":" s)) entry)) entries)))
     (mapcar (lambda (entry)
               (let ((key (first entry))
@@ -391,7 +391,7 @@ you use this macro! For a modification-safe macro, see `with-data-access'."
 As second value the email.
 As third value the name."
   (if (uiop:file-exists-p file)
-      (let* ((output (str:split (string #\newline)
+      (let* ((output (str:split +newline+
                                 (with-output-to-string (s)
                                   (uiop:run-program (list *gpg-program* "--decrypt" file)
                                                     :output nil :error-output s))))

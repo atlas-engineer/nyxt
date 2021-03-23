@@ -33,7 +33,7 @@
           when (not (null bindings))
             return bindings)
     (flet ((first-line (string)
-             (first (str:split (string #\newline) string))))
+             (first (str:split +newline+ string))))
       (list :name (string-downcase (name command))
             :bindings (format nil "~{~a~^, ~}" bindings)
             :docstring (first-line (nyxt::docstring command))))))
