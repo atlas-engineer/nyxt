@@ -24,7 +24,8 @@ APPLICATIONSDIR = /Applications
 help:
 	@cat INSTALL
 
-lisp_files := nyxt.asd $(shell find . -type f -name '*.lisp')
+makefile_dir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+
 quicklisp_set_dir=(push \#p"$(QUICKLISP_LIBRARIES)/" (symbol-value (find-symbol "*LOCAL-PROJECT-DIRECTORIES*" (find-package (quote ql)))))
 quicklisp_maybe_load=(when (string= (uiop:getenv "NYXT_INTERNAL_QUICKLISP") "true") (load "$(QUICKLISP_DIR)/setup.lisp") $(quicklisp_set_dir))
 
@@ -34,12 +35,13 @@ clean-fasls:
 	$(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--load $(QUICKLISP_DIR)/setup.lisp \
-		--eval '(asdf:load-asd "nyxt.asd")' \
+		--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' \
 		--eval '(ql:quickload :swank)' \
 		--eval '(load (merge-pathnames  "contrib/swank-asdf.lisp" swank-loader:*source-directory*))' \
 		--eval '(swank:delete-system-fasls "nyxt")' \
 		--eval '(uiop:quit)' || true
 
+lisp_files := nyxt.asd $(shell find . -type f -name '*.lisp')
 nyxt: $(lisp_files)
 	$(MAKE) application
 
@@ -48,7 +50,7 @@ application: deps
 	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--eval '$(quicklisp_maybe_load)' \
-		--eval '(asdf:load-asd "nyxt.asd")' \
+		--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' \
 		--eval '(asdf:make :nyxt/$(NYXT_RENDERER)-application)' \
 		--eval '(uiop:quit)' || (printf "\n%s\n%s\n" "Compilation failed, see the above stacktrace." && exit 1)
 
@@ -78,7 +80,7 @@ version: deps
 	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--eval '$(quicklisp_maybe_load)' \
-		--eval '(asdf:load-asd "nyxt.asd")' \
+		--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' \
 		--eval '(asdf:load-system :nyxt)' \
 		--eval '(with-open-file (stream "version" :direction :output :if-exists :supersede) (format stream "~a" nyxt:+version+))' \
 		--eval '(uiop:quit)'
@@ -130,7 +132,7 @@ build-deps: quicklisp-extra-libs
 		--eval '(require "asdf")' \
 		--load $(QUICKLISP_DIR)/setup.lisp \
 		--eval '$(quicklisp_set_dir)' \
-		--eval '(asdf:load-asd "nyxt.asd")' \
+		--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' \
 		--eval '(ql:quickload :nyxt/$(NYXT_RENDERER)-application)' \
 		--eval '(uiop:quit)' || true
 	$(MAKE) quicklisp-update
@@ -144,7 +146,7 @@ doc:
 	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--eval '$(quicklisp_maybe_load)' \
-		--eval '(asdf:load-asd "nyxt.asd")' \
+		--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' \
 		--eval '(asdf:load-system :nyxt/documentation)' \
 		--eval '(uiop:quit)'
 
@@ -158,7 +160,7 @@ check-asdf: deps
 	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--eval '$(quicklisp_maybe_load)' \
-		--eval '(asdf:load-asd "nyxt.asd")' \
+		--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' \
 		--eval '(asdf:test-system :nyxt)' \
 		--eval '(uiop:quit)'
 
