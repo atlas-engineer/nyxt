@@ -475,7 +475,7 @@ Otherwise go forward to the only child."
   (%paste))
 
 (define-class ring-source (prompter:source)
-  ((prompter:name "Ring")
+  ((prompter:name "Clipboard ring")
    (ring :initarg :ring :accessor ring :initform nil)
    (prompter:must-match-p t)
    (prompter:constructor
@@ -486,7 +486,7 @@ Otherwise go forward to the only child."
             (%paste :input-text (first ring-items))))))
   (:export-class-name-p t))
 
-(define-command paste-from-ring ()
+(define-command paste-from-clipboard-ring ()
   "Show `*browser*' clipboard ring and paste selected entry."
   (prompt
    :prompt "Paste from ring"
