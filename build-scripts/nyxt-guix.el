@@ -116,7 +116,7 @@ already exists and CONTAINER is nil, after sourcing \"etc/profile\"."
                                         container
                                         preserve
                                         no-grafts
-                                        (ad-hoc '("gnupg")))
+                                        (ad-hoc '("guix" "gnupg")))
   "Run an SBCL executable image with all Nyxt dependencies pre-loaded.
 
 The image is generated as needed and cached as IMAGE-PATH.
