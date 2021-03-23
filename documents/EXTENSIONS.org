@@ -5,3 +5,8 @@
   privacy-supporting mirrors for the Nyxt browser.
   It is currently able to redirect from Youtube to Invidious, from Reddit 
   to Teddit, from Instagram to Bibliogram, and from Twitter to Nitter.
+
+- [[https://github.com/aartaka/nx-search-engines][nx-search-engines]] ::
+  The aim of nx-search-engines is to get rid of black box world of
+  search bookmarklets and search cookies by moving to the pretty land
+  of lispy syntax and small helper functions generating search URIs.
