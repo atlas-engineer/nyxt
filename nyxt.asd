@@ -5,51 +5,51 @@
   :description "Extensible web-browser in Common Lisp"
   :license "BSD 3-Clause"
   :serial t
-  :depends-on (:alexandria
-               :bordeaux-threads
-               :calispel
-               :cl-css
-               :cl-json
-               :cl-markup
-               :cl-ppcre
-               :cl-ppcre-unicode
-               :cl-prevalence
-               :closer-mop
-               :cl-containers
-               :moptilities
-               :dexador
-               :enchant
-               :file-attributes
-               :iolib
-               :local-time
-               :log4cl
-               :mk-string-metrics
+  :depends-on (alexandria
+               bordeaux-threads
+               calispel
+               cl-css
+               cl-json
+               cl-markup
+               cl-ppcre
+               cl-ppcre-unicode
+               cl-prevalence
+               closer-mop
+               cl-containers
+               moptilities
+               dexador
+               enchant
+               file-attributes
+               iolib
+               local-time
+               log4cl
+               mk-string-metrics
                #-sbcl
                osicat
-               :parenscript
-               :quri
-               :serapeum
-               :str
-               :plump
-               :swank
-               :trivia
-               :trivial-clipboard
-               :trivial-features
-               :trivial-package-local-nicknames
-               :trivial-types
-               :unix-opts
-               :cl-html-diff
+               parenscript
+               quri
+               serapeum
+               str
+               plump
+               swank
+               trivia
+               trivial-clipboard
+               trivial-features
+               trivial-package-local-nicknames
+               trivial-types
+               unix-opts
+               cl-html-diff
                ;; Local systems:
-               :nyxt/user-interface
-               :nyxt/text-buffer
-               :nyxt/analysis
-               :nyxt/download-manager
-               :nyxt/history-tree
-               :nyxt/password-manager
-               :nyxt/keymap
-               :nyxt/class-star
-               :nyxt/ospm
-               :nyxt/prompter)
+               nyxt/user-interface
+               nyxt/text-buffer
+               nyxt/analysis
+               nyxt/download-manager
+               nyxt/history-tree
+               nyxt/password-manager
+               nyxt/keymap
+               nyxt/class-star
+               nyxt/ospm
+               nyxt/prompter)
   :pathname "source/"
   :components ((:file "package")
                ;; Independent utilities
@@ -155,23 +155,23 @@
                     (nyxt-run-test c "tests-network-needed/" :network-needed-p t)))
 
 (defsystem "nyxt/gtk"
-  :depends-on (:nyxt
-               :cl-cffi-gtk
-               :cl-webkit2)
+  :depends-on (nyxt
+               cl-cffi-gtk
+               cl-webkit2)
   :pathname "source/"
   :components ((:file "renderer-gtk")))
 
 (defsystem "nyxt/gobject/gtk"
-  :depends-on (:nyxt/gtk
-               :cl-gobject-introspection
-               :bordeaux-threads)
+  :depends-on (nyxt/gtk
+               cl-gobject-introspection
+               bordeaux-threads)
   :pathname "source/"
   :components ((:file "renderer-gobject-gtk")))
 
 (defsystem "nyxt/qt"
-  :depends-on (:nyxt
-               :cl-webengine
-               :trivial-main-thread)
+  :depends-on (nyxt
+               cl-webengine
+               trivial-main-thread)
   :pathname "source/"
   :components ((:file "renderer-qt")))
 
@@ -185,19 +185,19 @@
 ;; produce the desired binary.
 
 (defsystem "nyxt/gtk-application"
-  :depends-on (:nyxt/gtk)
+  :depends-on (nyxt/gtk)
   :build-operation "program-op"
   :build-pathname "nyxt"
   :entry-point "nyxt:entry-point")
 
 (defsystem "nyxt/gobject/gtk-application"
-  :depends-on (:nyxt/gobject/gtk)
+  :depends-on (nyxt/gobject/gtk)
   :build-operation "program-op"
   :build-pathname "nyxt"
   :entry-point "nyxt:entry-point")
 
 (defsystem "nyxt/qt-application"
-  :depends-on (:nyxt/qt)
+  :depends-on (nyxt/qt)
   :build-operation "program-op"
   :build-pathname "nyxt-qt"
   :entry-point "nyxt:entry-point")
@@ -228,10 +228,10 @@
                                    :network-needed-p t)))
 
 (defsystem "nyxt/analysis"
-  :depends-on (:str
-               :serapeum
-               :alexandria
-               :cl-ppcre)
+  :depends-on (str
+               serapeum
+               alexandria
+               cl-ppcre)
   :pathname "libraries/analysis/"
   :components ((:file "package")
                (:file "data")
@@ -243,13 +243,13 @@
                (:file "dbscan")))
 
 (defsystem "nyxt/user-interface"
-  :depends-on (:cl-markup)
+  :depends-on (cl-markup)
   :pathname "libraries/user-interface/"
   :components ((:file "package")
                (:file "user-interface")))
 
 (defsystem "nyxt/text-buffer"
-  :depends-on (:cluffer)
+  :depends-on (cluffer)
   :pathname "libraries/text-buffer/"
   :components ((:file "package")
                (:file "text-buffer")))
