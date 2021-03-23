@@ -251,7 +251,7 @@ The new webview HTML content is set as the PROMPT-BUFFER's `content'."
                                                       "selection")
                                                 :class (when (prompter:marked-p source (prompter:value suggestion))
                                                          "marked")
-                                                (loop for (_ property) on (prompter:active-properties suggestion :source source) by #'cddr
+                                                (loop for (nil property) on (prompter:active-properties suggestion :source source) by #'cddr
                                                       collect (markup:markup (:td property)))))))))))
       (evaluate-script
        prompt-buffer
