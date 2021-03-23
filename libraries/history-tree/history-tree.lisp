@@ -39,6 +39,7 @@ We allow null values for easier deserialization.")
          :documentation "Arbitrary data.")
    (last-access (local-time:now)
                 :type (or local-time:timestamp string) ; Support `string' for easier deserialization.
+                :writer t
                 :documentation "The last access to the corresponding entry by
 any owner.  It's useful to keep this access stored here so that when an entry
 goes owner-less, we can still consult the last time it was accessed.")
@@ -116,6 +117,7 @@ children.  Nodes may have zero or multiple owners."))
 is the child to go forward to for the bound owner.")
    (last-access (local-time:now)
                 :type (or local-time:timestamp string) ; Support `string' for easier deserialization.
+                :writer t
                 :documentation "Timestamp of the last access to this node by the
 owner."))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
