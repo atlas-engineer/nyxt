@@ -123,7 +123,7 @@
                      "m u" 'bookmark-url
                      "m d" 'bookmark-delete
                      "R" 'reload-current-buffer
-                     "r" 'reload-buffer
+                     "r" 'reload-buffers
                      "m o" 'set-url-from-bookmark
                      "m O" 'set-url-from-bookmark-new-buffer
                      "m m" 'bookmark-page
