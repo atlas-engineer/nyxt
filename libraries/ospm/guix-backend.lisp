@@ -46,7 +46,7 @@
                                 ":")
         ;; In Guix, an empty home-page is #f, but we want a string.
         #:home-page (or (package-home-page package) "")
-        #:license-name (map license-name (ensure-list (package-license package)))
+        #:licenses (map license-name (ensure-list (package-license package)))
         #:synopsis (package-synopsis package)
         #:description (string-replace-substring (package-description package) "\\n" " "))))))
 
