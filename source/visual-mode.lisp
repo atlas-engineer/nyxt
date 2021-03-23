@@ -17,7 +17,7 @@
        "down" 'forward-line
        "left" 'backward-char
        "right" 'forward-char
-       "escape" 'visual-mode
+       "escape" 'clear-selection
        "keypadend" 'end-line
        "space" 'forward-char
        "backspace" 'backward-char
@@ -25,7 +25,12 @@
        "shift-down" 'forward-line-with-selection
        "shift-up" 'backward-line-with-selection
        "shift-left" 'backward-char-with-selection
-       "shift-right" 'forward-char-with-selection)
+       "shift-right" 'forward-char-with-selection
+       "C-shift-left" 'backward-word-with-selection
+       "C-shift-right" 'forward-word-with-selection
+       "C-shift-up" 'beginning-line-with-selection
+       "C-shift-down" 'end-line-with-selection
+       "C-c" 'visual-mode)
       scheme:emacs
       (list
        "C-h" 'select-paragraph
@@ -50,6 +55,7 @@
        "k" 'backward-line
        "l" 'forward-char
        "w" 'forward-word
+       "b" 'backward-word
        "$" 'end-line
        "0" 'beginning-line
        "v" 'toggle-mark
@@ -270,6 +276,14 @@ identifier for every hinted element."
       (ps:@ sel is-collapsed)))
   (is-collapsed))
 
+
+(define-parenscript collapse-to-focus ()
+  "Collapse the selection"
+  (let ((sel (ps:chain window (get-selection))))
+    (ps:chain sel
+              (collapse (ps:@ sel focus-node)
+                        (ps:@ sel focus-offset)))))
+
 (define-command toggle-mark ()
   "Toggle the mark."
   (let ((mode (find-submode (current-buffer) 'visual-mode)))
@@ -279,13 +293,16 @@ identifier for every hinted element."
           (if (mark-set mode)
               (echo "Mark set")
               (echo "Mark deactivated")))
-        (pflet ((collapse-to-focus ()
-                                   (let ((sel (ps:chain window (get-selection))))
-                                     (ps:chain sel
-                                               (collapse (ps:@ sel focus-node)
-                                                         (ps:@ sel focus-offset))))))
-               (collapse-to-focus)
-               (echo "Mark set")))))
+        (progn
+          (collapse-to-focus)
+          (echo "Mark set")))))
+
+(define-command clear-selection ()
+  "Clear the selection and unset the mark."
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (unless (string= (is-collapsed) "true") (collapse-to-focus))
+    (setf (mark-set mode) nil)
+    (echo "Mark deactivated")))
 
 (define-parenscript caret-move (&key action direction scale (n 1))
   (let ((sel (ps:chain window (get-selection))))
@@ -397,13 +414,37 @@ identifier for every hinted element."
     (backward-line)))
 
 (define-command forward-char-with-selection ()
-  "Set mark and move caret forward by a word."
+  "Set mark and move caret forward by a character."
   (let ((mode (find-submode (current-buffer) 'visual-mode)))
     (setf (mark-set mode) t)
     (forward-char)))
 
 (define-command backward-char-with-selection ()
-  "Set mark and move caret backward by a word."
+  "Set mark and move caret backward by a character."
   (let ((mode (find-submode (current-buffer) 'visual-mode)))
     (setf (mark-set mode) t)
     (backward-char)))
+
+(define-command forward-word-with-selection ()
+  "Set mark and move caret forward by a word."
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (setf (mark-set mode) t)
+    (forward-word)))
+
+(define-command backward-word-with-selection ()
+  "Set mark and move caret backward by a word."
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (setf (mark-set mode) t)
+    (backward-word)))
+
+(define-command beginning-line-with-selection ()
+  "Set mark and move caret to the beginning of the line."
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (setf (mark-set mode) t)
+    (beginning-line)))
+
+(define-command end-line-with-selection ()
+  "Set mark and move caret to the end of line."
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (setf (mark-set mode) t)
+    (end-line)))
