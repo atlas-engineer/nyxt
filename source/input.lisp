@@ -111,14 +111,14 @@ Return nil to forward to renderer or non-nil otherwise."
               (log:debug "Prefix binding ~a" (keyspecs key-stack translated-key))
               t)
 
-             ((typep bound-function 'function-symbol)
+             ((typep bound-function 'function-symbol) ; TODO: Only accept commands?
               (log:debug "Found key binding ~a to ~a" (keyspecs key-stack translated-key) bound-function)
               ;; We save the last key separately to keep it available to the
               ;; command even after key-stack has been reset in the other
               ;; thread.
               (setf (last-key window) (first key-stack))
               (unwind-protect
-                   (run-async (function-command (symbol-function bound-function)))
+                   (run-async bound-function)
                 ;; We must reset the key-stack on errors or else all subsequent
                 ;; keypresses will keep triggering the same erroring command.
                 (setf key-stack nil))
