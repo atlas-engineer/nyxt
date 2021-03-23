@@ -28,6 +28,10 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 *** Add online suggestions from search engines
 ** 2.0.0
 
+*** TASK 2-pre-release-7 (Upcoming)
+
+- Rename =paste-from-clipboard-ring= to =paste-from-clipboard-ring=.
+
 *** 2-pre-release-6
 
 - New /prompt-buffer/, replacing the /minibuffer/ for all user
