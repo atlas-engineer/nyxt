@@ -39,7 +39,10 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 
   Important highlights:
 
-  - Asynchronous suggestion computation
+  - Universal input method support (such as with UIM, IBus, etc.).
+    In other words, you can now input text in any language (Chinese,
+    Japanese, Korean, Indic, etc.)
+  - Asynchronous suggestion computation.
     This implies a performance boost: prompt input is always responsive,
     regardless of the suggestion computation.
   - Multi-source support: get suggestions from different source
