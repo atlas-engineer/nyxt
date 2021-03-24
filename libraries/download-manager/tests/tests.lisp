@@ -2,17 +2,21 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (in-package :cl-user)
+(uiop:define-package download-manager/tests
+  (:use #:common-lisp #:prove)
+  (:import-from #:download-manager))
+(in-package :download-manager/tests)
 
-(prove:plan nil)
+(plan nil)
 
-(prove:subtest "Simple HTTP/HTTPS downloads"
+(subtest "Simple HTTP/HTTPS downloads"
   (let ((uris '("https://abcl.org"
                 "http://en.wikipedia.org/wiki/Main_Page"
                 "https://duckduckgo.com"
                 "https://atlas.engineer")))
     (dolist (uri uris)
-      (prove:ok
+      (ok
        (download-manager:resolve (quri:uri uri))
        (format nil "Able to download <~a>~%" uri)))))
 
-(prove:finalize)
+(finalize)
