@@ -159,7 +159,7 @@ value.
 (export-always 'expand-outputs)
 (defun expand-outputs (pkg)
   "Compute the output locations of PKG."
-  (dolist (pair (package-output-paths (name pkg)))
+  (dolist (pair (package-output-paths (name pkg) (version pkg)))
     (setf (path (find-output (first pair) pkg))
           (rest pair))))
 

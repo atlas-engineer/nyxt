@@ -12,12 +12,15 @@
 
 (defvar %find-package
   ;; TODO: Use upstream's way to find packages.
-  '(lambda (name)
+  '(lambda* (name #:optional version)
     (let ((result (list)))
       (fold-packages
        (lambda (package count)
-         (when (string=? (package-name package)
-                         name)
+         (when (and (string=? (package-name package)
+                              name)
+                    (or (not version)
+                        (string=? (package-version package)
+                                  version)))
            (set! result package))
          (+ 1 count))
        1)
@@ -65,7 +68,7 @@
       ))))
 
 ;; TODO: Find a fast way to compute the output-paths.
-(defun package-output-paths (name)
+(defun package-output-paths (name version)
   "Computing the output-paths in `generate-database' is too slow, so we do it
 just-in-time instead."
   (guix-eval
@@ -97,7 +100,7 @@ just-in-time instead."
          (return
            (derivation->output-paths drv))))))
 
-   `(package-output-paths (find-package ,name))))
+   `(package-output-paths (find-package ,name ,version))))
 
 (defun package-output-size (output-path)
   (guix-eval
