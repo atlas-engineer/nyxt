@@ -4,7 +4,8 @@
 (in-package :nyxt)
 
 (define-mode base-mode ()
-  "Mode that does nothing but bind the general-purpose key bindings."
+  "Bind general-purpose commands defined by `define-command'.
+This mode is a good candidate to be passed to `make-buffer'."
   ((keymap-scheme (define-scheme "base"
                     scheme:cua
                     (list
@@ -12,6 +13,7 @@
                      "C-[" 'switch-buffer-previous
                      "C-]" 'switch-buffer-next
                      "C-x b" 'switch-buffer
+                     "C-x C-b" 'list-buffers
                      "C-x k" 'delete-buffer
                      "C-w" 'delete-current-buffer
                      "C-x C-k" 'delete-current-buffer
@@ -63,28 +65,9 @@
                     scheme:emacs
                     (list
                      "C-x C-c" 'quit
-                     "C-[" 'switch-buffer-previous
-                     "C-]" 'switch-buffer-next
-                     "C-x b" 'switch-buffer
-                     "C-x C-b" 'list-buffers
                      "C-x k" 'delete-buffer ; Emacs' default behaviour is to query.
-                     "C-x C-k" 'delete-current-buffer
                      "C-x left" 'switch-buffer-previous
                      "C-x right" 'switch-buffer-next
-                     "C-pageup" 'switch-buffer-previous
-                     "C-pagedown" 'switch-buffer-next
-                     "C-l" 'set-url
-                     "M-l" 'set-url-new-buffer
-                     "C-u M-l" 'set-url-nosave-buffer
-                     "C-t" 'make-buffer-focus
-                     "C-r" 'reload-current-buffer
-                     "C-R" 'reload-buffer
-                     "C-m o" 'set-url-from-bookmark
-                     "C-m C-o" 'set-url-from-bookmark-new-buffer
-                     "C-m s" 'bookmark-current-page
-                     "C-m C-s" 'bookmark-page
-                     "C-m k" 'bookmark-delete
-                     "C-m u" 'bookmark-url
                      "C-M-l" 'copy-url
                      "C-M-i" 'copy-title
                      "C-h C-h" 'help
@@ -98,21 +81,16 @@
                      "C-h s" 'describe-slot
                      "C-h k" 'describe-key
                      "C-h b" 'describe-bindings
-                     "C-o" 'load-file
                      "M-x" 'execute-command
                      "C-x 5 2" 'make-window
                      "C-x 5 0" 'delete-current-window
-                     "C-x 5 1" 'delete-window
-                     "C-/" 'reopen-buffer
-                     "C-x C-f" 'open-file)
+                     "C-x 5 1" 'delete-window)
 
                     scheme:vi-normal
                     (list
                      "Z Z" 'quit
                      "[" 'switch-buffer-previous
                      "]" 'switch-buffer-next
-                     "C-pageup" 'switch-buffer-previous
-                     "C-pagedown" 'switch-buffer-next
                      "g b" 'switch-buffer
                      "d" 'delete-buffer
                      "D" 'delete-current-buffer
