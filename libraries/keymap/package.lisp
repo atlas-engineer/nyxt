@@ -3,74 +3,74 @@
 
 (in-package :cl-user)
 
-(defpackage :keymap
-  (:use :common-lisp)
+(uiop:define-package keymap
+  (:use #:common-lisp)
   (:import-from #:fset)
   (:import-from #:str)
   (:local-nicknames (#:alex #:alexandria))
   (:export
-   modifier=
-   +control+
-   +meta+
-   +shift+
-   +super+
-   +hyper+
+   #:modifier=
+   #:+control+
+   #:+meta+
+   #:+shift+
+   #:+super+
+   #:+hyper+
 
-   *modifier-list*
+   #:*modifier-list*
 
-   key
-   make-key
-   copy-key
-   key-code
-   key-value
-   key-modifiers
-   key-status
-   key=
+   #:key
+   #:make-key
+   #:copy-key
+   #:key-code
+   #:key-value
+   #:key-modifiers
+   #:key-status
+   #:key=
 
-   *default-bound-type*
+   #:*default-bound-type*
 
-   keymap
-   make-keymap
-   keymap-p
-   define-key
-   lookup-key
-   parents
-   name
-   bound-type
+   #:keymap
+   #:make-keymap
+   #:keymap-p
+   #:define-key
+   #:lookup-key
+   #:parents
+   #:name
+   #:bound-type
 
-   translate-remove-shift-toggle-case
-   translate-remove-shift
-   translate-remove-but-first-control
-   translate-remove-shift-but-first-control
-   translate-remove-shift-but-first-control-toggle-case
-   translate-shifted-control-combinations
-   *translator*
+   #:translate-remove-shift-toggle-case
+   #:translate-remove-shift
+   #:translate-remove-but-first-control
+   #:translate-remove-shift-but-first-control
+   #:translate-remove-shift-but-first-control-toggle-case
+   #:translate-shifted-control-combinations
+   #:*translator*
 
-   *print-shortcut*
-   keys->keyspecs
+   #:*print-shortcut*
+   #:keys->keyspecs
 
-   keymap->map
-   keymap-with-parents->map
-   binding-keys
+   #:keymap->map
+   #:keymap-with-parents->map
+   #:binding-keys
 
-   compose
+   #:compose
 
    ;; conditions
-   bad-modifier
-   make-key-required-arg
-   empty-keyspec
-   empty-value
-   empty-modifiers
+   #:bad-modifier
+   #:make-key-required-arg
+   #:empty-keyspec
+   #:empty-value
+   #:empty-modifiers
 
    ;; scheme
-   scheme-name
-   make-scheme-name
-   scheme-name-p
-   scheme
-   scheme-p
-   define-scheme
-   get-keymap
-   make-scheme)
+   #:scheme-name
+   #:make-scheme-name
+   #:scheme-name-p
+   #:scheme
+   #:scheme-p
+   #:define-scheme
+   #:get-keymap
+   #:make-scheme)
   (:documentation "
 The workflow goes as follows:
 - Make a keymap with `make-keymap'.
@@ -86,13 +86,13 @@ Some globals can be tweaked to customize the library to your needs:
   full name, e.g. \"C\" instead of \"control\".
 - `*default-bound-type*': The allowed type for bound values; default to T (everything)."))
 
-(defpackage :scheme
-  (:use :common-lisp)
-  (:import-from :keymap :make-scheme-name )
+(uiop:define-package scheme
+  (:use #:common-lisp)
+  (:import-from #:keymap #:make-scheme-name)
   (:export
-   :cua
-   :emacs
-   :vi-normal
-   :vi-insert)
+   #:cua
+   #:emacs
+   #:vi-normal
+   #:vi-insert)
   (:documentation "Package holding the list of well-known scheme names.
 We use a dedicated package so that scheme names can easily be listed and completed."))
