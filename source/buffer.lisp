@@ -952,13 +952,13 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
                                  :actions (list (make-unmapped-command buffer-load)
                                                 (make-unmapped-command new-nosave-buffer-load-from-history))))))
 
-(defun reload-buffer (buffer)
-  "Reload a buffer."
+(defun reload-buffer (&optional (buffer (current-buffer)))
+  "Reload a BUFFER or current-buffer if not provided."
   (buffer-load (url buffer) :buffer buffer))
 
 (define-command reload-current-buffer ()
   "Reload current buffer."
-  (reload-buffer (current-buffer)))
+  (reload-buffer))
 
 (define-command reload-buffers ()
   "Reload queried buffer(s)."
