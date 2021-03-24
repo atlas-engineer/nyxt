@@ -27,7 +27,10 @@
                      "LOGNAME"
                      "TERM"
                      "USER"
-                     "VISUAL")
+                     "VISUAL"
+                     ;; Used to share files (such as communication sockets) in
+                     ;; some applications like `emacsclient':
+                     "XDG_RUNTIME_DIR")
                    preserve-vars))))
 
 (defun nyxt--guix-preserve-vars (&rest preserve-vars)
