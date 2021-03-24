@@ -360,6 +360,7 @@
 
 (defsystem "nyxt/ospm/tests"
   :depends-on (nyxt/ospm prove)
+  :components ((:file "libraries/ospm/test-package"))
   :perform (test-op (op c)
                     (nyxt-run-test c "libraries/ospm/tests/tests.lisp")))
 

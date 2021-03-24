@@ -1,4 +1,7 @@
-(in-package :cl-user)
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
+(in-package :ospm/tests)
 
 (defvar *current-directory* (asdf:system-relative-pathname
                              (asdf:find-system :nyxt/ospm) "libraries/ospm/tests/"))
