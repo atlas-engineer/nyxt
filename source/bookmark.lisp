@@ -115,7 +115,10 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 
 (defun tag-suggestions ()
   (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
-    (let ((tags (sort (delete-duplicates
+    ;; Warning: `sort' is destructive and `append' does not copy the last list,
+    ;; so if we used `delete-duplicates' here it would have modified the last
+    ;; list.
+    (let ((tags (sort (remove-duplicates
                        (apply #'append
                               (mapcar #'tags bookmarks))
                        :test #'string-equal)
@@ -184,6 +187,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
       (echo "Buffer has no URL.")
       (let* (;; (body (with-current-buffer buffer
              ;;         (ffi-buffer-get-document buffer)))
+             ;; TODO: Allow removing tags when none are selected.
              (tags (prompt
                     :prompt "Tag(s)"
                     :sources (list
