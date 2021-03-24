@@ -958,7 +958,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
 
 (define-command reload-current-buffer ()
   "Reload current buffer."
-  (reload-buffer))
+  (reload-buffer (current-buffer)))
 
 (define-command reload-buffers ()
   "Reload queried buffer(s)."
