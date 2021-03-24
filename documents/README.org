@@ -408,7 +408,7 @@ Follow the following steps:
         (slynk:create-server :port slynk-port :dont-close t)
         (echo "Slynk server started at port ~a" slynk-port))
   #+end_src
-3. Run the command =start-lynk= in Nyxt
+3. Run the command =start-slynk= in Nyxt
 
 Then proceed as in the previous SLIME section by relacing
 ~slime-connect~ with ~sly-connect~.
