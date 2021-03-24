@@ -3,8 +3,8 @@
 
 (in-package :cl-user)
 
-(defpackage :download-manager
-  (:use :common-lisp)
+(uiop:define-package download-manager
+  (:use #:common-lisp)
   (:export
    #:init
    #:*notifications*
