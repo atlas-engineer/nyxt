@@ -2,10 +2,10 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (in-package :cl-user)
-(uiop:define-package history-tree-tests
+(uiop:define-package history-tree/tests
   (:use #:common-lisp)
   (:import-from #:class-star #:define-class))
-(in-package :history-tree-tests)
+(in-package :history-tree/tests)
 
 (prove:plan nil)
 
