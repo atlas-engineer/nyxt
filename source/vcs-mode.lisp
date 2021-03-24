@@ -3,6 +3,7 @@
 
 (uiop:define-package :nyxt/vcs
   (:use :common-lisp :trivia :nyxt)
+  (:import-from #:class-star #:define-class)
   (:documentation "Interact with Git repositories.
 
 Change the `*vcs-projects-roots*' list to define where to look for
@@ -151,15 +152,12 @@ CLONE-URI: quri:uri object."
     (error (c)
       (echo-warning "Error cloning ~a: ~a" project-name c))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(in-package :nyxt)
-
 (define-class vcs-project-root-source (prompter:source)
   ((prompter:name "Project Directories")
    (prompter:must-match-p t)
    (prompter:constructor nyxt/vcs::*vcs-projects-roots*)))
 
-(define-command vcs-clone ()
+(define-command nyxt::vcs-clone ()
   "Clone the repository of the current URL to disk.  Only Git is supported at
 the moment.  Set the list of preferred destinations in the `*vcs-projects-roots*' variable.
 The default username can be set in `*vcs-username*' or `*vcs-username-alist*'."
@@ -182,11 +180,11 @@ The default username can be set in `*vcs-username*' or `*vcs-username-alist*'."
                                    :sources (make-instance 'vcs-project-root-source)))))
            (nyxt/vcs::clone project-name root-name target-dir clone-uri))))))
 
-(define-command git-clone ()
+(define-command nyxt::git-clone ()
   "Alias of `vcs-clone'."
   (vcs-clone))
 
-(define-command vcs-update-local-projects ()
+(define-command nyxt::vcs-update-local-projects ()
   "Scan the project roots and update the list of existing repositories."
   (setf nyxt/vcs::*git-projects* (nyxt/vcs::parse-projects))
   (echo "VCS projects updated."))

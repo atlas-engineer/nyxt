@@ -2,10 +2,14 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/os-package-manager-mode
-    (:use :common-lisp :trivia :nyxt)
+  (:use :common-lisp :trivia :nyxt)
+  (:import-from #:class-star #:define-class)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:documentation "Universal interface to various operating system package managers."))
 (in-package :nyxt/os-package-manager-mode)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
+  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
 
 ;; TODO: Prompt for password?  Use this:
 ;; (with-input-from-string (i "password")
@@ -38,12 +42,9 @@
      (ps:ps (ps:chain document
                       (write (ps:lisp (markup:markup (:p "Operation cancelled.")))))))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(in-package :nyxt)
-
-(defmethod object-string ((pkg ospm:os-package))
+(defmethod nyxt:object-string ((pkg ospm:os-package))
   (ospm:name pkg))
-(defmethod object-display ((pkg ospm:os-package))
+(defmethod nyxt:object-display ((pkg ospm:os-package))
   (format nil "~a ~a~a~a"
           (ospm:name pkg)
           (ospm:version pkg)
@@ -53,11 +54,11 @@
                        :initial-element #\ )
           (ospm:synopsis pkg)))
 
-(defmethod object-string ((output ospm:os-package-output))
+(defmethod nyxt:object-string ((output ospm:os-package-output))
   (format nil "~a:~a"
           (ospm:name (ospm:parent-package output))
           (ospm:name output)))
-(defmethod object-display ((output ospm:os-package-output))
+(defmethod nyxt:object-display ((output ospm:os-package-output))
   (let* ((pkg (ospm:parent-package output))
          (name (format nil "~a~a ~a"
                        (ospm:name pkg)
@@ -72,9 +73,9 @@
                          :initial-element #\ )
             (ospm:synopsis pkg))))
 
-(defmethod object-string ((gen ospm:os-generation))
+(defmethod nyxt:object-string ((gen ospm:os-generation))
   (ospm:id gen))
-(defmethod object-display ((gen ospm:os-generation))
+(defmethod nyxt:object-display ((gen ospm:os-generation))
   (format nil "~a ~a ~a packages~a"
           (ospm:id gen)
           (local-time:format-timestring nil (ospm:date gen)
@@ -172,7 +173,7 @@
                    `((:li "Total size: " ,(sera:format-file-size-human-readable
                                            nil
                                            (reduce #'+ (mapcar #'ospm:size outputs)))))))))
-      (html-set
+      (nyxt::html-set
        (markup:markup
         (:style (style buffer))
         (:h1 "Packages")
@@ -215,7 +216,7 @@
       (echo message)
       (error message))))
 
-(define-command describe-os-package ()
+(define-command nyxt::describe-os-package ()
   "Show description of select packages."
   (assert-package-manager)
   (let* ((packages (prompt
@@ -230,7 +231,7 @@
           '(".html" ".htm") )))
 
 ;; TODO: open in editor, with select program, leverage file-manager
-(define-command list-os-package-files ()
+(define-command nyxt::list-os-package-files ()
   "List files of select packages."
   (assert-package-manager)
   (let* ((packages-or-outputs (if (typep (ospm:manager) 'ospm:guix-manager)
@@ -245,7 +246,7 @@
                       :activate t
                       :buffer (make-internal-buffer :title "*OS packages*")))))
     (echo "Computing file list...")
-    (html-set
+    (nyxt::html-set
      (markup:markup
       (:style (style buffer))
       (:h1 "Package files")
@@ -281,12 +282,12 @@ OBJECTS can be a list of packages, a generation, etc."
           (uiop:process-alive-p process-info))
         (echo "An package operation is already running.  You can cancel it with `cancel-package-operation'.")
         (progn
-          (pexec ()
+          (nyxt::pexec ()
                  (let ((process-info (funcall command objects profile))
                        (mode (find-submode buffer 'os-package-manager-mode)))
                    (setf (nyxt/os-package-manager-mode:current-process-info mode) process-info)
-                   (html-set "" buffer)      ; Reset content between operations.
-                   (html-write
+                   (nyxt::html-set "" buffer)      ; Reset content between operations.
+                   (nyxt::html-write
                     (markup:markup
                      (:style (style buffer))
                      (:h1 title)
@@ -300,18 +301,18 @@ OBJECTS can be a list of packages, a generation, etc."
                     (lambda (s)
                       ;; TODO: Make shell formating function and add support for
                       ;; special characters, e.g. progress bars.
-                      (html-write
+                      (nyxt::html-write
                        (markup:markup
                         (:code (str:replace-all " " " " s))
                         (:br))
                        buffer)))
-                   (html-write
+                   (nyxt::html-write
                     (markup:markup (:p "Done."))
                     buffer)))
           (set-current-buffer buffer)
           buffer))))
 
-(define-command install-os-package ()
+(define-command nyxt::install-os-package ()
   "Install select packages."
   (assert-package-manager)
   ;; TODO: Allow profile creation.  Need multi-source support for that?
@@ -324,7 +325,7 @@ OBJECTS can be a list of packages, a generation, etc."
                     :prompt "Install OS package(s)")))
     (operate-os-package "Installing packages..." #'ospm:install profile packages)))
 
-(define-command uninstall-os-package ()
+(define-command nyxt::uninstall-os-package ()
   "Uninstall select packages."
   (assert-package-manager)
   (let* ((profile (first
@@ -337,7 +338,7 @@ OBJECTS can be a list of packages, a generation, etc."
                     :prompt "Uninstall OS package(s)")))
     (operate-os-package "Uninstalling packages..." #'ospm:uninstall profile packages)))
 
-(define-command install-package-manifest ()
+(define-command nyxt::install-package-manifest ()
   "Install select manifest to a profile."
   (assert-package-manager)
   (let* ((profile (first
@@ -350,7 +351,7 @@ OBJECTS can be a list of packages, a generation, etc."
                      :prompt "Manifest"))))
     (operate-os-package "Installing package manifest..." #'ospm:install-manifest profile manifest)))
 
-(define-command edit-package-manifest ()
+(define-command nyxt::edit-package-manifest ()
   "Edit select manifest."
   (assert-package-manager)
   (let ((manifest (first
@@ -360,7 +361,7 @@ OBJECTS can be a list of packages, a generation, etc."
     (echo "Opening ~s with ~a" manifest (external-editor-program *browser*))
     (uiop:launch-program (list (external-editor-program *browser*) manifest))))
 
-(define-command describe-os-generation ()
+(define-command nyxt::describe-os-generation ()
   "Show the packages of a given profile generation."
   (assert-package-manager)
   (let* ((profile (first
@@ -377,7 +378,7 @@ OBJECTS can be a list of packages, a generation, etc."
                       :activate t
                       :buffer (make-internal-buffer :title "*OS packages*")))))
     (echo "Loading package database...")
-    (html-set
+    (nyxt::html-set
      (markup:markup
       (:style (style buffer))
       (:h2 (format nil "Packages for generation ~a" (ospm:id generation)))
@@ -401,7 +402,7 @@ OBJECTS can be a list of packages, a generation, etc."
     (set-current-buffer buffer)
     buffer))
 
-(define-command switch-os-generation ()
+(define-command nyxt::switch-os-generation ()
   "Switch generation of selected profile."
   (assert-package-manager)
   (let* ((profile (first
@@ -417,7 +418,7 @@ OBJECTS can be a list of packages, a generation, etc."
     (operate-os-package "Switching to generation..." #'ospm:switch-generation
                         profile generation)))
 
-(define-command delete-os-generations ()
+(define-command nyxt::delete-os-generations ()
   "Delete generations of selected profile."
   (assert-package-manager)
   (let* ((profile (first
