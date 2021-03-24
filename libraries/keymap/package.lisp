@@ -7,7 +7,6 @@
   (:use #:common-lisp)
   (:import-from #:fset)
   (:import-from #:str)
-  (:local-nicknames (#:alex #:alexandria))
   (:export
    #:modifier=
    #:+control+
@@ -85,6 +84,8 @@ Some globals can be tweaked to customize the library to your needs:
 - `*print-shortcuts*': Print modifiers using their short form instead of the
   full name, e.g. \"C\" instead of \"control\".
 - `*default-bound-type*': The allowed type for bound values; default to T (everything)."))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria :keymap))
 
 (uiop:define-package scheme
   (:use #:common-lisp)

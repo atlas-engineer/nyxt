@@ -321,8 +321,9 @@
 
 (defsystem "nyxt/keymap/tests"
   :depends-on (alexandria fset nyxt/keymap prove)
+  :components ((:file "libraries/keymap/test-package"))
   :perform (test-op (op c)
-                         (nyxt-run-test c "libraries/keymap/tests/")))
+                    (nyxt-run-test c "libraries/keymap/tests/")))
 
 (defsystem "nyxt/class-star"
   :depends-on (hu.dwim.defclass-star moptilities alexandria)
