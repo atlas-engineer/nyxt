@@ -70,6 +70,7 @@ vi-normal-mode.")
       scheme:vi-insert
       (list
        "C-i" 'autofill
+       "C-c '" 'edit-with-external-editor
        "escape" 'switch-to-vi-normal-mode
        "button1" 'vi-button1)))
    (destructor
