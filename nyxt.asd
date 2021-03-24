@@ -156,9 +156,11 @@
 
 (defsystem "nyxt/tests"
   :depends-on (nyxt prove)
+  :pathname "tests/"
+  :components ((:file "package"))
   :perform (test-op (op c)
-                    (nyxt-run-test c "tests/")
-                    (nyxt-run-test c "tests-network-needed/" :network-needed-p t)))
+                    (nyxt-run-test c "tests/offline/")
+                    (nyxt-run-test c "tests/online/" :network-needed-p t)))
 
 (defsystem "nyxt/documentation"         ; TODO: Only rebuild if input changed.
   :depends-on (nyxt)

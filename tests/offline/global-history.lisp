@@ -1,9 +1,7 @@
-(defpackage :nyxt.tests
-  (:use :common-lisp
-        :nyxt
-        :prove))
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt.tests)
+(in-package :nyxt/tests)
 
 (plan nil)
 
