@@ -156,8 +156,7 @@
 
 (defsystem "nyxt/tests"
   :depends-on (nyxt prove)
-  :pathname "tests/"
-  :components ((:file "package"))
+  :components ((:file "tests/package"))
   :perform (test-op (op c)
                     (nyxt-run-test c "tests/offline/")
                     (nyxt-run-test c "tests/online/" :network-needed-p t)))
@@ -386,7 +385,6 @@
 
 (defsystem "nyxt/prompter/tests"
   :depends-on (nyxt/prompter prove)
-  :pathname "libraries/prompter/"
-  :components ((:file "test-package"))
+  :components ((:file "libraries/prompter/test-package"))
   :perform (test-op (op c)
                          (nyxt-run-test c "libraries/prompter/tests/")))
