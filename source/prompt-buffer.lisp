@@ -150,7 +150,7 @@ Return source as second value.
 To access the suggestion instead, see `prompter:selected-suggestion'."
   (multiple-value-bind (suggestion source)
       (prompter:selected-suggestion prompt-buffer)
-    (values (prompter:value suggestion) source)))
+    (values (when suggestion (prompter:value suggestion)) source)))
 
 (defun show-prompt-buffer (prompt-buffer &key height)
   "Show the last active prompt-buffer, if any."
