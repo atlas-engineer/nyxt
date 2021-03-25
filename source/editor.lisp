@@ -5,7 +5,19 @@
 
 (define-mode editor-mode ()
   "Mode for editor modes to extend."
-  ()
+  ((keymap-scheme (define-scheme "base"
+                    scheme:cua
+                    (list
+                     "C-o" 'editor-open-file
+                     "C-s" 'editor-write-file)
+                    scheme:emacs
+                    (list
+                     "C-x C-f" 'editor-open-file
+                     "C-x C-s" 'editor-write-file)
+                    scheme:vi-normal
+                    (list
+                     "C-o" 'editor-open-file))
+                  :type keymap:scheme))
   (:documentation "This class is used to define a protocol for editors to implement."))
 
 (defgeneric write-file (buffer-editor &key if-exists)
