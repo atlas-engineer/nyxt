@@ -17,8 +17,7 @@
 (export-always 'launch-and-notify)
 (defun launch-and-notify (command &key (success-msg "Command succeded.") (error-msg "Command failed."))
   "Run this program asynchronously and notify when it is finished."
-  (bt:make-thread
-   (lambda ()
-     (let ((exit-code (uiop:wait-process
-                       (uiop:launch-program command))))
-       (notify (if (zerop exit-code) success-msg error-msg))))))
+  (run-thread
+    (let ((exit-code (uiop:wait-process
+                      (uiop:launch-program command))))
+      (notify (if (zerop exit-code) success-msg error-msg)))))

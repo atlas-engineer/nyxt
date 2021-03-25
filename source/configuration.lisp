@@ -24,7 +24,7 @@
   "The path of the initialization file.")
 
 (export-always 'funcall-safely)
-(defun funcall-safely (f &rest args)
+(defun funcall-safely (f &rest args)    ; TODO: Delete now that we have `thread'?
   "Like `funcall' except that if `*keep-alive*' is nil (e.g. the program is run
 from a binary) then any condition is logged instead of triggering the debugger."
   (if *keep-alive*
@@ -39,58 +39,6 @@ from a binary) then any condition is logged instead of triggering the debugger."
         (error (c)
           (log:error "In ~a: ~a" f c)
           nil))))
-
-(export-always 'with-muffled-body)
-(defmacro with-muffled-body ((format-string &rest args) &body body)
-  "Run body with muffled condition when `*keep-alive*' is nil, run normally otherwise.
-Then the condition is muffled, a warning is reported to the user as per
-FORMAT-STRING and ARGS.
-As a special case, the first `:condition' keyword in ARGS is replaced with the
-condition."
-  `(if ,*keep-alive*
-       (progn
-         ,@body)
-       (handler-case (progn ,@body)
-         (error (c)
-           (declare (ignorable c))
-           ,(let ((condition-index (position :condition args)))
-              `(apply #'echo-warning ,format-string
-                      ,@(if condition-index
-                            (append (subseq args 0 condition-index)
-                                    '(c)
-                                    (subseq args (1+ condition-index)))
-                            args)))))))
-
-(defun make-channel (&optional size)
-  "Return a channel of capacity SIZE.
-If SIZE is NIL, capicity is infinite."
-  (cond
-    ((null size)
-     (make-instance 'calispel:channel
-                    :buffer (make-instance 'jpl-queues:unbounded-fifo-queue)))
-    ((= 0 size)
-     (make-instance 'calispel:channel))
-    ((< 0 size)
-     (make-instance 'calispel:channel
-                    :buffer (make-instance 'jpl-queues:bounded-fifo-queue :capacity size)))))
-
-(defun drain-channel (channel &optional timeout)
-  "Listen to CHANNEL until a value is available, then return all CHANNEL values
-as a list.
-TIMEOUT specifies how long to wait when draining values after the first one.
-This is a blocking operation."
-  (labels ((fetch ()
-             (multiple-value-bind (value received?)
-                 (calispel:? channel 0)
-               (if received?
-                   (cons value (fetch))
-                   nil))))
-    (cons (calispel:? channel timeout)
-          (nreverse (fetch)))))
-
-(defmacro pexec (&body body)
-  "Shorthand for (bt:make-thread (lambda () ...))"
-  `(bt:make-thread (lambda () ,@body)))
 
 (defparameter %buffer nil)              ; TODO: Make a monad?
 

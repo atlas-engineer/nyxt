@@ -65,6 +65,7 @@
                (:file "user-interface")
                ;; Core functionality
                (:file "global")
+               (:file "concurrency")
                (:file "data-storage")
                (:file "configuration")
                (:file "command")

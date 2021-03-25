@@ -230,7 +230,7 @@ editor executable."))
   (ffi-within-renderer-thread
    browser
    (lambda ()
-     (pexec ()
+     (run-thread ()
        (funcall-safely (startup-function browser) urls))))
   ;; Set 'init-time at the end of finalize to take the complete startup time
   ;; into account.
@@ -290,9 +290,8 @@ current buffer."
                (setf (destination-path download-render)
                      (download-manager:filename download))
                (push download-render (downloads *browser*))
-               (bt:make-thread
-                (lambda ()
-                  (download-watch download-render download))))
+               (run-thread
+                 (download-watch download-render download)))
              download)))))
     (:renderer
      (ffi-buffer-download buffer (object-string url))))

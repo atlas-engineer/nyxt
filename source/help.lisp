@@ -383,7 +383,7 @@ The list of values is useful when the last result is multi-valued, e.g. (values 
 You need not wrap multiple values in a PROGN, all top-level expression are
 evaluate in order."
   (let ((channel (make-channel 1)))
-    (pexec ()
+    (run-thread ()
       (calispel:!
        channel
        (with-input-from-string (input string)
@@ -396,7 +396,7 @@ evaluate in order."
 
 (defun evaluate-async (string)
   "Like `evaluate' but does not block and does not return the result."
-  (pexec ()
+  (run-thread ()
     (with-input-from-string (input string)
       (loop for object = (read input nil :eof)
             until (eq object :eof)

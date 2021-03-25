@@ -87,9 +87,15 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
   #-darwin
   (string= "cl-cffi-gtk main thread" (bt:thread-name (bt:current-thread))))
 
+(defmacro within-gtk-thread (&body body)
+  "Protected `gtk:within-gtk-thread'."
+  `(gtk:within-gtk-thread
+     (with-muffled-body ("Error on GTK thead: ~a" :condition)
+       ,@body)))
+
 (defmethod ffi-within-renderer-thread ((browser gtk-browser) thunk)
   (declare (ignore browser))
-  (gtk:within-gtk-thread
+  (within-gtk-thread
     (funcall thunk)))
 
 (defun %within-renderer-thread (thunk)
@@ -98,7 +104,7 @@ Otherwise run the THUNK on the renderer thread by passing it a channel and wait 
   (if (renderer-thread-p)
       (funcall thunk)
       (let ((channel (make-channel 1)))
-        (gtk:within-gtk-thread
+        (within-gtk-thread
           (funcall thunk channel))
         (calispel:? channel))))
 
@@ -107,7 +113,7 @@ Otherwise run the THUNK on the renderer thread by passing it a channel and wait 
 not return."
   (if (renderer-thread-p)
       (funcall thunk)
-      (gtk:within-gtk-thread
+      (within-gtk-thread
         (funcall thunk))))
 
 (defmacro define-ffi-method (name args &body body)
@@ -128,7 +134,7 @@ not return."
            (progn
              ,@body)
            (let ((channel (make-channel 1)))
-             (gtk:within-gtk-thread
+             (within-gtk-thread
                (calispel:!
                 channel
                 (progn
@@ -144,7 +150,7 @@ not return."
    on."
   (log:debug "Initializing GTK Interface")
   (if gtk-running-p
-      (gtk:within-gtk-thread
+      (within-gtk-thread
         (finalize browser urls startup-timestamp))
       #-darwin
       (progn
@@ -152,7 +158,8 @@ not return."
         (glib:g-set-prgname "nyxt")
         (gdk:gdk-set-program-class "Nyxt")
         (gtk:within-main-loop
-          (finalize browser urls startup-timestamp))
+          (with-muffled-body ("Error on GTK thread: ~a" :condition)
+            (finalize browser urls startup-timestamp)))
         (unless *keep-alive*
           (gtk:join-gtk-main)))
       #+darwin
@@ -463,7 +470,7 @@ Warning: This behaviour may change in the future."
        ;; Forward release event to the web view.
        nil)
       ((prompt-buffer-p prompt-buffer)
-       (pexec ()
+       (run-thread ()
          (let ((input (ffi-prompt-buffer-evaluate-javascript
                        (current-window)
                        (ps:ps (ps:chain document (get-element-by-id "input")
