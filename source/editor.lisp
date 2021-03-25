@@ -1,13 +1,12 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-;;;; This class is used to define a protocol for editors to implement.
-
 (in-package :nyxt)
 
 (define-mode editor-mode ()
   "Mode for editor modes to extend."
-  ())
+  ()
+  (:documentation "This class is used to define a protocol for editors to implement."))
 
 (defgeneric write-file (buffer-editor &key if-exists)
   (:documentation "Write the file to storage."))
@@ -32,14 +31,14 @@
 (define-command editor-open-file (&key (buffer (current-buffer)))
   "Open a file in the internal editor."
   (let ((file (first (prompt
-                      :prompt "Open File"
+                      :prompt "Open file"
                       :sources (make-instance 'prompter:raw-source
-                                              :name "Absolute File Path")))))
+                                              :name "Absolute file path")))))
     (open-file buffer file)
     (setf (file buffer) file)
     (setf (title buffer) file)
     (setf (url buffer) (quri:uri file))))
 
 (define-command editor-write-file (&key (buffer (current-buffer)) (if-exists :error))
-  "Write a file in the internal editor."
+  "Write the FILE of the BUFFER.."
   (write-file buffer :if-exists if-exists))
