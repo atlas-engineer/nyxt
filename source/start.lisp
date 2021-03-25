@@ -304,9 +304,9 @@ To change the default buffer, e.g. set it to a given URL:
         (cond
           (urls (open-urls urls))
           (buffer-fn
-           (window-set-active-buffer window (funcall-safely buffer-fn))))))
+           (window-set-active-buffer window (funcall buffer-fn))))))
     (when (startup-error-reporter-function *browser*)
-      (funcall-safely (startup-error-reporter-function *browser*)))))
+      (funcall (startup-error-reporter-function *browser*)))))
 
 (export-always 'open-external-urls)
 (defun open-external-urls (urls)

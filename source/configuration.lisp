@@ -7,23 +7,6 @@
 (defvar *auto-config-file-path* (make-instance 'data-path :basename "auto-config")
   "The path of the generated configuration file.")
 
-(export-always 'funcall-safely)
-(defun funcall-safely (f &rest args)    ; TODO: Delete now that we have `thread'?
-  "Like `funcall' except that if `*run-from-repl-p*' is nil (e.g. the program is run
-from a binary) then any condition is logged instead of triggering the debugger."
-  (if *run-from-repl-p*
-      (handler-case (apply f args)
-        (nyxt-prompt-buffer-canceled ()
-          (log:debug "Prompt buffer interrupted")
-          nil))
-      (handler-case (apply f args)
-        (nyxt-prompt-buffer-canceled ()
-          (log:debug "Prompt buffer interrupted")
-          nil)
-        (error (c)
-          (log:error "In ~a: ~a" f c)
-          nil))))
-
 (defparameter %buffer nil)              ; TODO: Make a monad?
 
 (export-always 'current-buffer)

@@ -88,7 +88,7 @@ Enable INCLUDED modes plus the already present ones, and disable EXCLUDED modes,
                   (or (position (first test2) priority-list) 4)))))
       (first (sort (remove-if-not
                     #'(lambda (rule)
-                        (funcall-safely
+                        (funcall
                          ;; REVIEW: Use `eval'?
                          (apply (first (test rule)) (rest (test rule))) url))
                     rules)

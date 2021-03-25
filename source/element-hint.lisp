@@ -193,7 +193,7 @@ identifier for every hinted element."
                    (lambda ()
                      (with-current-buffer buffer
                        (remove-element-hints))))))
-      (funcall-safely function result))))
+      (funcall function result))))
 
 (defun elements-from-json (elements-json)
   (loop for element in (cl-json:decode-json-from-string elements-json)

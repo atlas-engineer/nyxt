@@ -1005,7 +1005,7 @@ MODES should be a list symbols, each possibly returned by `mode-name'."
   (dolist (mode (uiop:ensure-list modes))
     (let ((command (mode-command mode)))
       (if command
-          (funcall-safely command :buffer buffer :activate nil)
+          (funcall command :buffer buffer :activate nil)
           (log:warn "Mode command ~a not found." mode)))))
 
 (export-always 'enable-modes)
@@ -1016,7 +1016,7 @@ ARGS are passed to the mode command."
   (dolist (mode (uiop:ensure-list modes))
     (let ((command (mode-command mode)))
       (if command
-          (apply #'funcall-safely command :buffer buffer :activate t args)
+          (apply #'funcall command :buffer buffer :activate t args)
           (log:warn "Mode command ~a not found." mode)))))
 
 (define-class active-mode-source (prompter:source)
