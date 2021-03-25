@@ -26,7 +26,9 @@
                                      :if-exists if-exists))
 
 (defmethod open-file ((buffer editor-buffer) file)
-  (set-content (editor buffer) (uiop:read-file-string file)))
+  (if (uiop:file-exists-p file)
+      (set-content (editor buffer) (uiop:read-file-string file))
+      (set-content (editor buffer) "")))
 
 (define-command editor-open-file (&key (buffer (current-buffer)))
   "Open a file in the internal editor."
