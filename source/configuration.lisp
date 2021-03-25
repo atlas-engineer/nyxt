@@ -9,9 +9,9 @@
 
 (export-always 'funcall-safely)
 (defun funcall-safely (f &rest args)    ; TODO: Delete now that we have `thread'?
-  "Like `funcall' except that if `*keep-alive*' is nil (e.g. the program is run
+  "Like `funcall' except that if `*run-from-repl-p*' is nil (e.g. the program is run
 from a binary) then any condition is logged instead of triggering the debugger."
-  (if *keep-alive*
+  (if *run-from-repl-p*
       (handler-case (apply f args)
         (nyxt-prompt-buffer-canceled ()
           (log:debug "Prompt buffer interrupted")

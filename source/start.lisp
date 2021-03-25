@@ -162,7 +162,7 @@ Example: --with-path bookmarks=/path/to/bookmarks
       (when (uiop:file-exists-p socket-path)
         (log:info "Deleting socket ~s." socket-path)
         (uiop:delete-file-if-exists socket-path))))
-  (unless *keep-alive*
+  (unless *run-from-repl-p*
     (uiop:quit 0 nil)))
 
 (define-command quit-after-clearing-session (&key confirmation-p) ; TODO: Rename?
@@ -205,7 +205,7 @@ Don't run this from a REPL, prefer `start' instead."
                      (opts:missing-arg #'handle-malformed-cli-arg)
                      (opts:arg-parser-failed #'handle-malformed-cli-arg))
         (opts:get-opts))
-    (setf *keep-alive* nil)             ; Not a REPL.
+    (setf *run-from-repl-p* nil)             ; Not a REPL.
     (apply #'start (append options (list :urls free-args)))))
 
 (declaim (ftype (function (trivial-types:pathname-designator &key (:package (or null package))))
@@ -224,7 +224,7 @@ Return the short error message and the full error message as second value."
                 (log:info "Loading Lisp file ~s." file)
                 (load file)))
              nil))
-      (if *keep-alive*
+      (if *run-from-repl-p*
           (unsafe-load)
           (handler-case
               (unsafe-load)
@@ -496,7 +496,7 @@ Examples:
      (with-protect ("Error: ~a" :condition)
        (start-browser urls))))
 
-  (unless *keep-alive* (uiop:quit)))
+  (unless *run-from-repl-p* (uiop:quit)))
 
 (defun load-or-eval (&key remote)
   (loop for (opt value . nil) on *options*

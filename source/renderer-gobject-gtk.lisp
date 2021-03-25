@@ -27,5 +27,5 @@
                             (gir:invoke ((gir:ffi "Gtk") 'main))))
                         :name "main thread")))
       (finalize browser urls startup-timestamp)
-      (unless *keep-alive*
+      (unless *run-from-repl-p*
         (bt:join-thread main-thread)))))
