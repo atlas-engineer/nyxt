@@ -17,7 +17,7 @@
        "down" 'forward-line
        "left" 'backward-char
        "right" 'forward-char
-       "escape" 'clear-selection
+       "escape" 'visual-mode
        "keypadend" 'end-line
        "space" 'forward-char
        "backspace" 'backward-char
