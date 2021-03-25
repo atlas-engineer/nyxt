@@ -154,15 +154,18 @@
    (prompter:filter-preprocessor
     (lambda (preprocessed-suggestions source input)
       (declare (ignore preprocessed-suggestions))
-      (when (>= (length input) (minimum-search-length source))
-        (let ((input (str:replace-all " " " " input))
-              (buffer (buffer source)))
-          (with-current-buffer buffer
-            (matches-from-json
-             (query-buffer
-              :query input
-              :case-sensitive-p (case-sensitive-p source))
-             buffer))))))
+      (if (>= (length input) (minimum-search-length source))
+          (let ((input (str:replace-all " " " " input))
+                (buffer (buffer source)))
+            (with-current-buffer buffer
+              (matches-from-json
+               (query-buffer
+                :query input
+                :case-sensitive-p (case-sensitive-p source))
+               buffer)))
+          (progn
+            (remove-search-hints)
+            '()))))
    (prompter:persistent-action (lambda (suggestion)
                                  ;; TODO: rewrite prompt-buffer-selection-highlight-hint
                                  (set-current-buffer (buffer suggestion) :focus nil)
