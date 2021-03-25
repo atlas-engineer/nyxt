@@ -230,7 +230,7 @@ editor executable."))
   (ffi-within-renderer-thread
    browser
    (lambda ()
-     (run-thread ()
+     (run-thread
        (funcall-safely (startup-function browser) urls))))
   ;; Set 'init-time at the end of finalize to take the complete startup time
   ;; into account.

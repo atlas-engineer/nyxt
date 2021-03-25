@@ -159,7 +159,7 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
     (push prompt-buffer (active-prompt-buffers (window prompt-buffer)))
     (erase-document prompt-buffer)      ; TODO: When to erase?
     (update-display prompt-buffer)
-    (run-thread ()
+    (run-thread
       (watch-prompt prompt-buffer))
     (ffi-window-set-prompt-buffer-height
      (window prompt-buffer)
