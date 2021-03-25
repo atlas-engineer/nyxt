@@ -9,10 +9,10 @@
   "Mode for editor modes to extend."
   ())
 
-(defgeneric write-file (editor &key if-exists)
+(defgeneric write-file (buffer-editor &key if-exists)
   (:documentation "Write the file to storage."))
 
-(defgeneric open-file (editor file)
+(defgeneric open-file (buffer-editor file)
   (:documentation "Open the file in the editor."))
 
 (defgeneric get-content (editor)
