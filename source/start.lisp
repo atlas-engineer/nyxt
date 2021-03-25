@@ -12,7 +12,7 @@
   "Path of the Unix socket used to communicate between different instances of
 Nyxt.
 
-If `expand-ptah' resolves this to `nil', then Nyxt starts in multi-instance mode.
+If `expand-path' resolves this to `nil', then Nyxt starts in multi-instance mode.
 This means that re-running Nyxt will start a new instance of Nyxt instead of
 prompting the first instance.
 
