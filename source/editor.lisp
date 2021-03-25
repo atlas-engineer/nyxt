@@ -57,3 +57,9 @@
   "Write the FILE of the BUFFER.."
   (write-file buffer :if-exists if-exists)
   (echo "File ~a written to storage." (file buffer)))
+
+(define-command open-new-editor-with-file ()
+  "Open a new editor and query a file."
+  (let ((buffer (make-editor-buffer)))
+    (set-current-buffer buffer)
+    (editor-open-file :buffer buffer)))
