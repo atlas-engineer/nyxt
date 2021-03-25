@@ -18,6 +18,7 @@
        "left" 'backward-char
        "right" 'forward-char
        "escape" 'visual-mode
+       "delete" 'clear-selection
        "keypadend" 'end-line
        "space" 'forward-char
        "backspace" 'backward-char
