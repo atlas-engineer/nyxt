@@ -384,7 +384,7 @@ We keep this variable as a means to import the old format to the new one.")
                             (htree:add-entry history data last-access)))
                         old-history)
                history)))
-    (with-muffled-body ("Failed to restore history from ~a: ~a"
+    (with-protect ("Failed to restore history from ~a: ~a"
                         (expand-path path) :condition)
       (let* ((path (if (uiop:file-exists-p (expand-path path))
                        path

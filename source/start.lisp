@@ -478,7 +478,7 @@ Examples:
      (start-load-or-eval))
 
     (t
-     (with-muffled-body ("Error: ~a" :condition)
+     (with-protect ("Error: ~a" :condition)
        (start-browser urls))))
 
   (unless *keep-alive* (uiop:quit)))
