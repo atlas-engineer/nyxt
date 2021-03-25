@@ -250,7 +250,7 @@ Define a method for your `data-path' type to make it restorable."))
              (worker)))
     (unless (channel path)
       (setf (channel path) (make-channel))
-      (bt:make-thread #'worker))
+      (run-thread (worker)))
     ;; We pass `path', but anything would do since the value is ignored.
     (calispel:! (channel path) path)))
 

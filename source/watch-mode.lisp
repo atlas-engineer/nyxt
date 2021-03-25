@@ -43,6 +43,7 @@
    (constructor (lambda (mode)
                   (setf (sleep-time mode) (seconds-from-user-input))
                   (setf (thread mode)
-                        (bt:make-thread (lambda () (loop while (buffer mode)
-                                                         do (nyxt::reload-buffer (buffer mode))
-                                                            (sleep (sleep-time mode))))))))))
+                        (run-thread
+                          (loop while (buffer mode)
+                                do (nyxt::reload-buffer (buffer mode))
+                                   (sleep (sleep-time mode)))))))))

@@ -282,7 +282,7 @@ OBJECTS can be a list of packages, a generation, etc."
           (uiop:process-alive-p process-info))
         (echo "An package operation is already running.  You can cancel it with `cancel-package-operation'.")
         (progn
-          (nyxt::pexec ()
+          (run-thread ()
                  (let ((process-info (funcall command objects profile))
                        (mode (find-submode buffer 'os-package-manager-mode)))
                    (setf (nyxt/os-package-manager-mode:current-process-info mode) process-info)

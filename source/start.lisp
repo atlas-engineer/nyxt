@@ -392,7 +392,7 @@ Otherwise bind socket and return the listening thread."
       (t
        (log:info "Listening to socket ~s." socket-path)
        (uiop:delete-file-if-exists socket-path) ; Safe since socket-path is a :socket at this point.
-       (bt:make-thread #'listen-socket)))))
+       (run-thread (listen-socket))))))
 
 (defun remote-eval (expr)
   "If another Nyxt is listening on the socket, tell it to evaluate EXPR."
@@ -493,7 +493,8 @@ Examples:
      (start-load-or-eval))
 
     (t
-     (start-browser urls)))
+     (with-muffled-body ("Error: ~a" :condition)
+       (start-browser urls))))
 
   (unless *keep-alive* (uiop:quit)))
 

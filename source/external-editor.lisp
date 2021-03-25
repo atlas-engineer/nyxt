@@ -49,9 +49,8 @@ so invoke on a separate thread when possible."
 (define-command edit-with-external-editor ()
   "Edit the current input field using `external-editor-program'."
   (if (external-editor-program *browser*)
-      (bt:make-thread
-       (lambda ()
-         (select-input-field)
-         (%paste :input-text (%edit-with-external-editor (%copy)))
-         (set-caret-on-end)))
+      (run-thread
+        (select-input-field)
+        (%paste :input-text (%edit-with-external-editor (%copy)))
+        (set-caret-on-end))
       (echo-warning "Please set `external-editor-program' browser slot.")))

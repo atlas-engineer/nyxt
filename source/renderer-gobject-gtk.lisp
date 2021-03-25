@@ -19,11 +19,13 @@
   (defmethod ffi-initialize ((browser gtk-browser) urls startup-timestamp)
     (log:debug "Initializing Gobject-GTK Interface")
     (setf gtk-running-p t)
-    (let ((main-thread (bt:make-thread (lambda ()
-                                         (glib:g-set-prgname "nyxt")
-                                         (gdk:gdk-set-program-class "Nyxt")
-                                         (gir:invoke ((gir:ffi "Gtk") 'main)))
-                                       :name "main thread")))
+    (let ((main-thread (bt:make-thread
+                        (lambda ()
+                          (with-muffled-body ("Error on GTK thread: ~a" :condition)
+                            (glib:g-set-prgname "nyxt")
+                            (gdk:gdk-set-program-class "Nyxt")
+                            (gir:invoke ((gir:ffi "Gtk") 'main))))
+                        :name "main thread")))
       (finalize browser urls startup-timestamp)
       (unless *keep-alive*
         (bt:join-thread main-thread)))))
