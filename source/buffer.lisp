@@ -328,6 +328,21 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 
 (define-user-class internal-buffer)
 
+(define-class editor-buffer (internal-buffer)
+  ((file :documentation "The file being edited.")
+   (default-modes '(ace-mode base-mode)))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:export-predicate-name-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:documentation "Each editor buffer matches a file. Each editor buffer
+  contains an editor mode instance."))
+
+(define-user-class editor-buffer)
+
+(defmethod editor ((editor-buffer editor-buffer))
+  (find-submode editor-buffer 'editor-mode))
+
 (defun make-dummy-buffer ()
   ;; Internal buffers are lighter than full-blown buffers which can have a
   ;; WebKit context, etc.
@@ -548,6 +563,12 @@ If URL is `:default', use `default-new-buffer-url'."
                          :default-modes modes
                          :buffer-class 'user-internal-buffer
                          :no-history-p no-history-p))
+
+(define-command make-editor-buffer (&key (title "") modes)
+  "Create a new editor buffer."
+  (buffer-make *browser* :title title
+                         :default-modes modes
+                         :buffer-class 'user-editor-buffer))
 
 (declaim (ftype (function (browser &key (:title string)
                                    (:data-profile data-profile)
