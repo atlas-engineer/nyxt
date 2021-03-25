@@ -53,11 +53,13 @@ condition."
        (handler-case (progn ,@body)
          (error (c)
            (declare (ignorable c))
-           (let ((condition-index (position :condition ',args)))
-             (apply #'echo-warning ,format-string
-                    (if condition-index
-                        (replace ',args (list c) :start1 condition-index)
-                        ',args)))))))
+           ,(let ((condition-index (position :condition args)))
+              `(apply #'echo-warning ,format-string
+                      ,@(if condition-index
+                            (append (subseq args 0 condition-index)
+                                    '(c)
+                                    (subseq args (1+ condition-index)))
+                            args)))))))
 
 (defun make-channel (&optional size)
   "Return a channel of capacity SIZE.
