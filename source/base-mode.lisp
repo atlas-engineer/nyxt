@@ -84,6 +84,12 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "C-h k" 'describe-key
                      "C-h b" 'describe-bindings
                      "M-x" 'execute-command
+                     "C-x r j" 'set-url-from-bookmark
+                     "C-x r J" 'set-url-from-bookmark-new-buffer
+                     "C-x r M" 'bookmark-current-page
+                     "C-x r m" 'bookmark-page
+                     "C-x r k" 'bookmark-delete
+                     "C-x r u" 'bookmark-url
                      "C-x 5 2" 'make-window
                      "C-x 5 0" 'delete-current-window
                      "C-x 5 1" 'delete-window
