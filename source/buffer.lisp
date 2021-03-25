@@ -1099,3 +1099,12 @@ ARGS are passed to the mode command."
   "Print the current buffer."
   (pflet ((print-buffer () (print)))
          (print-buffer)))
+
+(define-command focus-first-input-field (&key (buffer (current-buffer)))
+  "Move the focus to the first input field of `buffer'."
+  (pflet ((focus () (ps:chain document
+                              (get-elements-by-tag-name "INPUT")
+                              (item 0)
+                              (focus))))
+    (with-current-buffer buffer
+      (focus))))

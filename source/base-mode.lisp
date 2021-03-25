@@ -58,7 +58,8 @@
                      "C-shift-t" 'reopen-buffer
                      "C-T" 'reopen-buffer
                      "C-p" 'print-buffer
-                     "C-x C-f" 'open-file)
+                     "C-x C-f" 'open-file
+                     "M-i" 'focus-first-input-field)
 
                     scheme:emacs
                     (list
