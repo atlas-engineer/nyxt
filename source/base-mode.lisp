@@ -68,6 +68,8 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "C-x k" 'delete-buffer ; Emacs' default behaviour is to query.
                      "C-x left" 'switch-buffer-previous
                      "C-x right" 'switch-buffer-next
+                     "C-x b" 'switch-buffer
+                     "C-x C-b" 'list-buffers
                      "C-M-l" 'copy-url
                      "C-M-i" 'copy-title
                      "C-h C-h" 'help
@@ -84,7 +86,8 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "M-x" 'execute-command
                      "C-x 5 2" 'make-window
                      "C-x 5 0" 'delete-current-window
-                     "C-x 5 1" 'delete-window)
+                     "C-x 5 1" 'delete-window
+                     "C-x C-f" 'open-file)
 
                     scheme:vi-normal
                     (list
