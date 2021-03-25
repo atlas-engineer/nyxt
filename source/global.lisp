@@ -8,7 +8,7 @@
 (defvar *options* '()
   "The list of command line options.")
 
-(defvar *keep-alive* t
+(defvar *run-from-repl-p* t
   "If non-nil, don't terminate the Lisp process when quitting the browser.
 This is useful when the browser is run from a REPL so that quitting does not
 close the connection.")

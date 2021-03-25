@@ -314,7 +314,7 @@ This is useful to tell REPL instances from binary ones."
     (setf title (if (str:emptyp title) "" title))
     (setf url (if (url-empty-p url) "<no url/name>" (object-display url)))
     (ffi-window-set-title window
-                          (str:concat "Nyxt" (when *keep-alive* " REPL") " - "
+                          (str:concat "Nyxt" (when *run-from-repl-p* " REPL") " - "
                                        title (unless (str:emptyp title) " - ")
                                        url))))
 

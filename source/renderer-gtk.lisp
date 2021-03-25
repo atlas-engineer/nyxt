@@ -160,7 +160,7 @@ not return."
         (gtk:within-main-loop
           (with-protect ("Error on GTK thread: ~a" :condition)
             (finalize browser urls startup-timestamp)))
-        (unless *keep-alive*
+        (unless *run-from-repl-p*
           (gtk:join-gtk-main)))
       #+darwin
       (progn
@@ -171,7 +171,7 @@ not return."
         (gtk:gtk-main))))
 
 (define-ffi-method ffi-kill-browser ((browser gtk-browser))
-  (unless *keep-alive*
+  (unless *run-from-repl-p*
     (gtk:leave-gtk-main)))
 
 (define-class data-manager-data-path (data-path)

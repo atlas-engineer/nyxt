@@ -5,13 +5,13 @@
 
 (export-always 'with-protect)
 (defmacro with-protect ((format-string &rest args) &body body)
-  "Run body with muffled condition when `*keep-alive*' is nil, run normally otherwise.
+  "Run body with muffled condition when `*run-from-repl-p*' is nil, run normally otherwise.
 Then the condition is muffled, a warning is reported to the user as per
 FORMAT-STRING and ARGS.
 As a special case, the first `:condition' keyword in ARGS is replaced with the
 condition."
   (alex:with-gensyms (c)
-    `(if *keep-alive*
+    `(if *run-from-repl-p*
          (progn ,@body)
          (handler-case (progn ,@body)
            (error (,c)
