@@ -43,4 +43,5 @@
 
 (define-command editor-write-file (&key (buffer (current-buffer)) (if-exists :error))
   "Write the FILE of the BUFFER.."
-  (write-file buffer :if-exists if-exists))
+  (write-file buffer :if-exists if-exists)
+  (echo "File ~a written to storage." (file buffer)))
