@@ -437,7 +437,7 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
     (echo "Saved ~a auto-mode rules to ~s." (length rules) (expand-path path)))))
 
 (defmethod restore ((profile data-profile) (path auto-mode-rules-data-path) &key &allow-other-keys)
-  (with-muffled-body ("Failed to load auto-mode-rules from ~s: ~a"
+  (with-protect ("Failed to load auto-mode-rules from ~s: ~a"
                       (expand-path path) :condition)
     (let ((data (with-data-file (file path
                                       :direction :input

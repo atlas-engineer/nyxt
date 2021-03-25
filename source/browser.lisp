@@ -277,7 +277,7 @@ current buffer."
        (when (eq proxy-address :auto)
          (setf proxy-address (proxy-address buffer :downloads-only t)))
        (let* ((download nil))
-         (with-muffled-body ("Download error: ~a" :condition)
+         (with-protect ("Download error: ~a" :condition)
            (with-data-access (downloads path)
              (setf download
                    (download-manager:resolve url
@@ -323,7 +323,7 @@ This is useful to tell REPL instances from binary ones."
 (defun open-urls (urls &key no-focus)
   "Create new buffers from URLs.
 First URL is focused if NO-FOCUS is nil."
-  (with-muffled-body ("Could not make buffer to open ~a: ~a" urls :condition)
+  (with-protect ("Could not make buffer to open ~a: ~a" urls :condition)
     (let ((first-buffer (first (mapcar
                                 (lambda (url) (make-buffer :url url))
                                 urls))))

@@ -21,7 +21,7 @@
     (setf gtk-running-p t)
     (let ((main-thread (bt:make-thread
                         (lambda ()
-                          (with-muffled-body ("Error on GTK thread: ~a" :condition)
+                          (with-protect ("Error on GTK thread: ~a" :condition)
                             (glib:g-set-prgname "nyxt")
                             (gdk:gdk-set-program-class "Nyxt")
                             (gir:invoke ((gir:ffi "Gtk") 'main))))

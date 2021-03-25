@@ -90,7 +90,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
 (defmacro within-gtk-thread (&body body)
   "Protected `gtk:within-gtk-thread'."
   `(gtk:within-gtk-thread
-     (with-muffled-body ("Error on GTK thead: ~a" :condition)
+     (with-protect ("Error on GTK thead: ~a" :condition)
        ,@body)))
 
 (defmethod ffi-within-renderer-thread ((browser gtk-browser) thunk)
@@ -158,7 +158,7 @@ not return."
         (glib:g-set-prgname "nyxt")
         (gdk:gdk-set-program-class "Nyxt")
         (gtk:within-main-loop
-          (with-muffled-body ("Error on GTK thread: ~a" :condition)
+          (with-protect ("Error on GTK thread: ~a" :condition)
             (finalize browser urls startup-timestamp)))
         (unless *keep-alive*
           (gtk:join-gtk-main)))

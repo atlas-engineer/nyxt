@@ -3,8 +3,8 @@
 
 (in-package :nyxt)
 
-(export-always 'with-muffled-body)      ; TODO: Rename to `with-protect'?
-(defmacro with-muffled-body ((format-string &rest args) &body body)
+(export-always 'with-protect)
+(defmacro with-protect ((format-string &rest args) &body body)
   "Run body with muffled condition when `*keep-alive*' is nil, run normally otherwise.
 Then the condition is muffled, a warning is reported to the user as per
 FORMAT-STRING and ARGS.
@@ -61,5 +61,5 @@ This supersedes `bt:make-thread' in Nyxt.  Don't use the latter unless you know
 what you are doing!"
   `(bt:make-thread
     (lambda ()
-      (with-muffled-body ("Error on separate thead: ~a" :condition)
+      (with-protect ("Error on separate thead: ~a" :condition)
         ,@body))))
