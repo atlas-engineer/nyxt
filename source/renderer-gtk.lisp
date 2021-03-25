@@ -470,7 +470,7 @@ Warning: This behaviour may change in the future."
        ;; Forward release event to the web view.
        nil)
       ((prompt-buffer-p prompt-buffer)
-       (run-thread ()
+       (run-thread
          (let ((input (ffi-prompt-buffer-evaluate-javascript
                        (current-window)
                        (ps:ps (ps:chain document (get-element-by-id "input")
