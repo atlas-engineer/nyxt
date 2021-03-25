@@ -203,14 +203,14 @@ and to index the top of the page.")
         (ffi-generate-input-event
          window
          (nyxt::last-event buffer))
-        (funcall-safely command))))
+        (funcall command))))
 
 (define-command paste-or-set-url (&optional (buffer (current-buffer)))
   "Paste text if active element is an input tag, forward event otherwise."
   (let ((response (%clicked-in-input?)))
     (let ((url-empty (url-empty-p (url-at-point buffer))))
       (if (and (input-tag-p response) url-empty)
-          (funcall-safely #'paste)
+          (funcall #'paste)
           (unless url-empty
             (make-buffer-focus :url (url-at-point buffer)
                                :nosave-buffer-p (nosave-buffer-p buffer)))))))

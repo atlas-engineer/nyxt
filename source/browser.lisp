@@ -231,7 +231,7 @@ editor executable."))
    browser
    (lambda ()
      (run-thread
-       (funcall-safely (startup-function browser) urls))))
+       (funcall (startup-function browser) urls))))
   ;; Set 'init-time at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)
@@ -395,7 +395,7 @@ Deal with REQUEST-DATA with the following rules:
          nil)
         (bound-function
          (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode keys))
-         (funcall-safely bound-function :url url :buffer buffer)
+         (funcall bound-function :url url :buffer buffer)
          nil)
         ((new-window-p request-data)
          (log:debug "Load URL in new buffer: ~a" (object-display url))
@@ -457,10 +457,10 @@ The following example does a few things:
   (make-handler-resource
    #'(lambda (request-data)
        (let ((url (url request-data)))
-         (if (funcall-safely test url)
+         (if (funcall test url)
              (etypecase action
                (function
-                (let* ((new-url (funcall-safely action url)))
+                (let* ((new-url (funcall action url)))
                   (log:info "Applied ~s URL-dispatcher on ~s and got ~s"
                             (symbol-name name)
                             (object-display url)
@@ -473,7 +473,7 @@ The following example does a few things:
                                           (format nil action
                                                   (object-string url)))
                                          nil)))
-                         (funcall-safely action url)
+                         (funcall action url)
                          (log:info "Applied ~s shell-command URL-dispatcher on ~s"
                             (symbol-name name)
                             (object-display url)))))

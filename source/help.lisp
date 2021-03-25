@@ -400,7 +400,7 @@ evaluate in order."
     (with-input-from-string (input string)
       (loop for object = (read input nil :eof)
             until (eq object :eof)
-            collect (funcall-safely (lambda () (eval object)))))))
+            collect (funcall (lambda () (eval object)))))))
 
 (defun error-buffer (title text)
   "Print some help."

@@ -93,7 +93,7 @@ The handlers take the window as argument."))
       (ffi-print-status
        window
        (or status
-           (funcall-safely (status-formatter window) window))))))
+           (funcall (status-formatter window) window))))))
 
 (hooks:define-hook-type window (function (window)))
 

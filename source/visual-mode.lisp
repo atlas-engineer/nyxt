@@ -268,7 +268,7 @@ identifier for every hinted element."
                     (lambda ()
                       (with-current-buffer buffer
                         (nyxt/web-mode::remove-element-hints)))))))
-      (funcall-safely #'follow-hint result))))
+      (funcall #'follow-hint result))))
 
 (define-parenscript is-collapsed ()
   ;; returns "true" if mark's start and end are the same value

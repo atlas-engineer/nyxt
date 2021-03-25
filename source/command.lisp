@@ -343,7 +343,10 @@ This is blocking, see `run-async' for an asynchronous way to run commands."
                ;; but before command termination, `current-buffer' will
                ;; return the buffer from which the command was invoked.
                (with-current-buffer (current-buffer)
-                 (apply #'funcall-safely command args))))
+                 (handler-case (apply #'funcall command args)
+                   (nyxt-prompt-buffer-canceled ()
+                     (log:debug "Prompt buffer interrupted")
+                     nil)))))
     (calispel:? channel)))
 
 (defun run-async (command &rest args)
@@ -352,7 +355,10 @@ See `run' for a way to run commands in a synchronous fashion and return the
 result."
   (run-thread
     (with-current-buffer (current-buffer) ; See `run' for why we bind current buffer.
-      (apply #'funcall-safely command args))))
+      (handler-case (apply #'funcall command args)
+        (nyxt-prompt-buffer-canceled ()
+          (log:debug "Prompt buffer interrupted")
+          nil)))))
 
 (define-command noop ()                 ; TODO: Replace with ESCAPE special command that allows dispatched to cancel current key stack.
   "A command that does nothing.
