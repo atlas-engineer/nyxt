@@ -13,7 +13,7 @@
 (defmethod expand-data-path ((profile data-profile) (path socket-data-path))
   "Return finalized path for socket files."
   (expand-default-path path :root (namestring (if (str:emptyp (namestring (dirname path)))
-                                                  (uiop:xdg-data-home +data-root+)
+                                                  (uiop:xdg-runtime-dir +data-root+)
                                                   (dirname path)))))
 
 (export-always '*socket-path*)
