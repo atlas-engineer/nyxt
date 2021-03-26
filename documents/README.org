@@ -44,8 +44,11 @@
 * Developer installation with Guix
 
 First, clone the Nyxt repository.  It is most convenient to clone the
-Nyxt repository into =~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF
-will find it]]).
+Nyxt repository into =~/.local/share/common-lisp/systems=, so that ASDF finds
+it.
+
+(This path is looked up non-recursively, thus the Common Lisp libraries checked
+out as Git-submodules in Nyxt won't be mistakenly seen by ASDF.)
 
 Second, install [[https://guix.gnu.org][Guix]] and follow the instructions in the
 [[../build-scripts/guix.scm]] file of the Nyxt repository.
@@ -120,11 +123,12 @@ libraries.
 They are included as a submodule of this repository, so if you use the
 Makefile there is nothing to be done.
 
-Otherwise clone each repository into =~/common-lisp= or any directory
-listed in ~asdf:*central-registry*~.  For instance:
+Otherwise clone each repository into =~/.local/share/common-lisp/systems= (or
+[[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF -will find it]]).  For instance:
 
 #+begin_src sh
-  git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit
+  mkdir -p ~/.local/share/common-lisp/systems
+  git clone https://github.com/joachifm/cl-webkit ~/.local/share/common-lisp/systems/cl-webkit
 #+end_src
 
 *** GNU/Linux, FreeBSD GTK dependencies
@@ -198,12 +202,13 @@ these fixes.
 ** Qt dependencies
 *** Lisp dependencies
 
-Nyxt on Qt requires the latest version of the cl-webengine library.
-Clone the cl-webengine repository into =~/common-lisp= or any directory
-listed in ~asdf:*central-registry*~:
+Nyxt on Qt requires the latest version of the cl-webengine library.  Clone the
+cl-webengine repository into =~/.local/share/common-lisp/systems= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another
+directory where ASDF -will find it]]). For instance:
 
 #+begin_src sh
-  git clone git@github.com:atlas-engineer/cl-webengine.git ~/common-lisp/cl-webengine
+  mkdir -p ~/.local/share/common-lisp/systems
+  git clone git@github.com:atlas-engineer/cl-webengine.git ~/.local/share/common-lisp/systems/cl-webengine
 #+end_src
 
 Please follow the instructions in the cl-webengine repository for
@@ -226,12 +231,11 @@ details about how to install it on your system.
 
 ** Fetch the source code
 
-Clone the Nyxt repository into =~/common-lisp= or any directory listed
-in ~asdf:*central-registry*~:
+Clone the Nyxt repository into =~/.local/share/common-lisp/systems=:
 
 #+begin_src sh
-mkdir -p ~/common-lisp
-git clone https://github.com/atlas-engineer/nyxt ~/common-lisp/nyxt
+mkdir -p ~/.local/share/common-lisp/systems
+git clone https://github.com/atlas-engineer/nyxt ~/.local/share/common-lisp/systems/nyxt
 #+end_src
 
 ** Compile
