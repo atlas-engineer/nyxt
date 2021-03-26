@@ -70,7 +70,7 @@ query is not a valid URL, or the first keyword is not recognized.")
     :documentation "If non-nil, the cursor moves to the end
 (resp. beginning) of the word when `move-forward-word'
 (resp. `move-backward-word') is called.")
-   (override-map (let ((map (make-keymap "overide-map")))
+   (override-map (let ((map (make-keymap "override-map")))
                    (define-key map
                      "C-space" 'execute-command))
                  :documentation "Keymap that overrides all other bindings.
@@ -80,7 +80,7 @@ customize to their needs.
 Example:
 
 \(define-configuration buffer
-  ((override-map (let ((map (make-keymap \"overide-map\")))
+  ((override-map (let ((map (make-keymap \"override-map\")))
                              (define-key map
                                \"M-x\" 'execute-command
                                \"C-q\" 'quit)

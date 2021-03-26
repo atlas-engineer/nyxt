@@ -109,7 +109,7 @@ All ARGS are declared as `ignorable'."
                  (.selected :background-color "gray"
                             :color "white")))
             :documentation "The CSS applied to a prompt-buffer when it is set-up.")
-     (override-map (let ((map (make-keymap "overide-map")))
+     (override-map (let ((map (make-keymap "override-map")))
                      (define-key map
                        "escape"
                        ;; We compute symbol at runtime because
