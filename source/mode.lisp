@@ -192,17 +192,16 @@ toggle command, return the toggle command of the parent."
   (or (find (string mode-symbol) *command-list*
             :key (lambda (command) (string (name command)))
             :test #'string=)
-      (match (find-class mode-symbol nil)
-        (nil nil)
-        (m (mode-command (class-name (original-class m)))))))
+      (alex:when-let ((m (find-class mode-symbol nil)))
+        (mode-command (class-name (original-class m))))))
 
 (defun make-mode (mode-symbol buffer)
   ;; (log:debug mode-symbol buffer (mode-command mode-symbol))
-  (match (mode-command mode-symbol)
+  (alex:if-let ((c (mode-command mode-symbol)))
     ;; ":activate t" should not be necessary here since (modes buffer) should be
     ;; empty.
-    ((guard c c) (funcall (name c) :buffer buffer :activate t))
-    (_ (log:warn "Mode command ~a not found." mode-symbol))))
+    (funcall (name c) :buffer buffer :activate t)
+    (log:warn "Mode command ~a not found." mode-symbol)))
 
 (export-always 'find-buffer)
 (defun find-buffer (mode-symbol)

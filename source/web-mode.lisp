@@ -387,10 +387,17 @@ Otherwise go forward to the only child."
         (htree:visit-all history input))
       (load-history-url input))))
 
+(defun title-or-fallback (history-entry)
+  "Return HISTORY-ENTRY title or, if empty, the URL."
+  (let ((title (title history-entry)))
+    (if (str:emptyp title)
+        (object-display (url history-entry))
+        title)))
+
 (define-command buffer-history-tree (&optional (buffer (current-buffer)))
   "Open a new buffer displaying the whole history tree of a buffer."
   (with-current-html-buffer (output-buffer (format nil "*History-~a*" (id buffer))
-                                                 'nyxt/history-tree-mode:history-tree-mode)
+                             'nyxt/history-tree-mode:history-tree-mode)
     (with-data-unsafe (history (history-path buffer))
       (let* ((markup:*auto-escape* nil)
              (mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
@@ -398,9 +405,7 @@ Otherwise go forward to the only child."
                            #'(lambda (node)
                                `(:li
                                  (:a :href ,(object-string (url (htree:data node)))
-                                     ,(let ((title (or (match (title (htree:data node))
-                                                         ((guard e (not (str:emptyp e))) e))
-                                                       (object-display (url (htree:data node))))))
+                                     ,(let ((title (title-or-fallback (htree:data node))))
                                         (if (eq node (htree:current-owner-node history))
                                             `(:b ,title)
                                             title)))))
@@ -428,9 +433,7 @@ Otherwise go forward to the only child."
             (tree `(:ul ,(htree:map-tree
                           #'(lambda (node)
                               `(:li (:a :href ,(object-string (url (htree:data node)))
-                                        ,(let ((title (or (match (title (htree:data node))
-                                                            ((guard e (not (str:emptyp e))) e))
-                                                          (object-display (url (htree:data node))))))
+                                        ,(let ((title (title-or-fallback (htree:data node))))
                                            (cond
                                              ((eq node (htree:current-owner-node history))
                                               `(:i (:b ,title)))

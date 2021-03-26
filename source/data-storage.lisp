@@ -178,9 +178,8 @@ place of PATH `basename'.
 - If basename has a slash, return basename.
 - Otherwise expand to 'ROOT/basename.lisp' or 'ROOT/basename' if the basename
   already contains a period."
-  (let ((name (match (find-ref-path (ref path))
-                (nil (namestring (basename path)))
-                (m m))))
+  (let ((name (or (find-ref-path (ref path))
+                  (namestring (basename path)))))
     (cond
       ((uiop:emptyp name)
        root)
@@ -425,8 +424,7 @@ Other options are not supported.  File is overwritten if it exists, while
 nothing is done if file is missing."
   ;; TODO: Support all of `open' options.
   (alex:with-gensyms (in clear-data result recipient)
-    (if (match (getf options :direction)
-          ((or :io :input nil) t))
+    (if (member (getf options :direction) '(:io :input nil))
         `(when (uiop:file-exists-p ,gpg-file)
            (let ((,clear-data (with-output-to-string (out)
                                 (uiop:run-program
@@ -463,11 +461,10 @@ Parent directories are created if necessary."
        (with-gpg-file (,stream ,filespec ,@options)
          ,@body)
        (progn
-         ,(when (and (match (getf options :direction)
-                       ((or :io :output) t))
-                     (match (nth-value 2 (get-properties options '(:if-does-not-exist)))
-                       (nil t)
-                       ((guard l (eq (getf l :if-does-not-exist) :create)) t)))
+         ,(when (and (member (getf options :direction) '(:io :output))
+                     (let ((l (nth-value 2 (get-properties options '(:if-does-not-exist)))))
+                       (or (null l)
+                           (eq (getf l :if-does-not-exist) :create))))
             `(ensure-parent-exists ,filespec))
          (with-open-file (,stream ,filespec ,@options)
            ,@body))))

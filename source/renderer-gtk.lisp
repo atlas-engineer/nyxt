@@ -693,16 +693,15 @@ Warning: This behaviour may change in the future."
 
 (define-ffi-method on-signal-mouse-target-changed ((buffer gtk-buffer) hit-test-result modifiers)
   (declare (ignore modifiers))
-  (match (cond ((webkit:webkit-hit-test-result-link-uri hit-test-result)
-                (webkit:webkit-hit-test-result-link-uri hit-test-result))
-               ((webkit:webkit-hit-test-result-image-uri hit-test-result)
-                (webkit:webkit-hit-test-result-image-uri hit-test-result))
-               ((webkit:webkit-hit-test-result-media-uri hit-test-result)
-                (webkit:webkit-hit-test-result-media-uri hit-test-result)))
-    (nil (print-message "")
-         (setf (url-at-point buffer) (quri:uri "")))
-    (url (print-message (str:concat "→ " (quri:url-decode url :lenient t)))
-         (setf (url-at-point buffer) (quri:uri url)))))
+  (alex:if-let ((url (or (webkit:webkit-hit-test-result-link-uri hit-test-result)
+                         (webkit:webkit-hit-test-result-image-uri hit-test-result)
+                         (webkit:webkit-hit-test-result-media-uri hit-test-result))))
+    (progn
+      (print-message (str:concat "→ " (quri:url-decode url :lenient t)))
+      (setf (url-at-point buffer) (quri:uri url)))
+    (progn
+      (print-message "")
+      (setf (url-at-point buffer) (quri:uri "")))))
 
 (define-ffi-method ffi-window-make ((browser gtk-browser))
   "Make a window."
@@ -815,9 +814,9 @@ Warning: This behaviour may change in the future."
      (let ((length (webkit:webkit-context-menu-get-n-items context-menu)))
        (dolist (i (alex:iota length))
          (let* ((item (webkit:webkit-context-menu-get-item-at-position context-menu i)))
-           (match (webkit:webkit-context-menu-item-get-stock-action item)
-                  ((or :webkit-context-menu-action-open-link-in-new-window)
-                   (webkit:webkit-context-menu-remove context-menu item))))))
+           (when (eq (webkit:webkit-context-menu-item-get-stock-action item)
+                     :webkit-context-menu-action-open-link-in-new-window)
+             (webkit:webkit-context-menu-remove context-menu item)))))
      ;; Return t to prevent the context menu from showing.
      nil))
   buffer)

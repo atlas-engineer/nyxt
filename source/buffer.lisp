@@ -710,10 +710,9 @@ proceeding."
   (let ((active-buffers
           (mapcar #'active-buffer (window-list)))
         (buffers (buffer-list)))
-    (match (set-difference buffers active-buffers)
-      ((guard diff diff)
+    (alex:when-let ((diff (set-difference buffers active-buffers)))
        ;; Display the most recent inactive buffer.
-       (sort diff #'local-time:timestamp> :key #'last-access)))))
+       (sort diff #'local-time:timestamp> :key #'last-access))))
 
 (define-command copy-url ()
   "Save current URL to clipboard."

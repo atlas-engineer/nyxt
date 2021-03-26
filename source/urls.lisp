@@ -161,9 +161,9 @@ Otherwise, build a search query with the default search engine."
                                     input-url *default-pathname-defaults*)))))
             ((valid-url-p (str:concat "https://" input-url))
              (quri:uri (str:concat "https://" input-url)))
-            (t (match (default-search-engine search-engines)
-                 (nil (quri:uri input-url))
-                 (default (quri:uri (generate-search-query input-url (search-url default)))))))))))
+            (t (alex:if-let ((default (default-search-engine search-engines)))
+                 (quri:uri (generate-search-query input-url (search-url default)))
+                 (quri:uri input-url))))))))
 
 (export-always 'lisp-url)
 (declaim (ftype (function (t &rest t) string) lisp-url))

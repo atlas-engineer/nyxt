@@ -96,11 +96,11 @@ This is a blocking operation."
 (defun current-buffer (&optional window)
   "Get the active buffer for WINDOW, or the active window otherwise."
   (or %buffer
-      (match (or window (current-window))
-        ((guard w w) (active-buffer w))
-        (_ (when *browser*
+      (alex:if-let ((w (or window (current-window))))
+        (active-buffer w)
+        (when *browser*
              (log:debug "No active window, picking last active buffer.")
-             (last-active-buffer))))))
+             (last-active-buffer)))))
 
 (export-always 'with-current-buffer)
 (defmacro with-current-buffer (buffer &body body)

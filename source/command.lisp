@@ -313,12 +313,10 @@ extra fiddling."
                                             (symbol-package (name c))))))
                           (notany (lambda (m)
                                     (eq (symbol-package (name c))
-                                        (match m
-                                          ;; root-mode does not have a mode-command.
-                                          ('root-mode nil)
-                                          (_ (match (mode-command m)
-                                               (nil nil)
-                                               (mc (symbol-package (name mc))))))))
+                                        ;; root-mode does not have a mode-command.
+                                        (alex:when-let ((mc (and (not (eq m 'root-mode))
+                                                                 (mode-command m))))
+                                          (symbol-package (name mc)))))
                                   mode-symbols)))
                    *command-list*)
         *command-list*)))

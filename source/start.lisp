@@ -322,13 +322,13 @@ short as possible."
         (loop as connection = (iolib:accept-connection s)
               while connection
               do (progn
-                   (match (alex:read-stream-content-into-string connection)
-                     ((guard expr (not (uiop:emptyp expr)))
-                      (if (remote-execution-p *browser*)
-                          (progn
-                            (log:info "External evaluation request: ~s" expr)
-                            (eval-expr expr))
-                          (parse-urls expr))))
+                   (alex:when-let ((expr (alex:read-stream-content-into-string connection)))
+                     (unless (uiop:emptyp expr)
+                       (if (remote-execution-p *browser*)
+                           (progn
+                             (log:info "External evaluation request: ~s" expr)
+                             (eval-expr expr))
+                           (parse-urls expr))))
                    ;; If we get pinged too early, we do not have a current-window yet.
                    (when (current-window)
                      (ffi-window-to-foreground (current-window))))))
