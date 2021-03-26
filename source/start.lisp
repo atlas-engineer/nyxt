@@ -40,18 +40,6 @@ Return nil if `*init-file-path*' is nil."
                          subpath)
       (expand-path *init-file-path*)))
 
-(defmethod expand-data-path ((profile data-profile) (path (eql *auto-config-file-path*)))
-  "Return path of the init file."
-  (unless (getf *options* :no-auto-config)
-    (match (getf *options* :auto-config)
-      (new-path
-       (expand-default-path (make-instance 'data-path
-                                           :basename (or new-path (basename path))
-                                           ;; Specify `dirname' here since
-                                           ;; *auto-config-file-path* is evaluated
-                                           ;; at compile-time.
-                                           :dirname (uiop:xdg-config-home +data-root+)))))))
-
 (defun handle-malformed-cli-arg (condition)
   (format t "Error parsing argument ~a: ~a.~&" (opts:option condition) condition)
   (opts:describe)
