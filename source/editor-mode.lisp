@@ -8,7 +8,9 @@
 (in-package :nyxt/editor-mode)
 
 (define-mode editor-mode ()
-  "Mode for editor modes to extend."
+  "Mode for editor modes to extend. Importantly, it is required to implement the
+methods get/set-content for each editor-mode. This will allow your mode to
+get/set-content (which is necessary for operation)."
   ((keymap-scheme (define-scheme "base"
                     scheme:cua
                     (list
@@ -27,9 +29,11 @@
 (defmethod editor ((editor-buffer editor-buffer))
   (find-submode editor-buffer 'editor-mode))
 
+;; IMPORTANT: Implement this method specializing on your class extending editor-mode.
 (defgeneric get-content (editor)
   (:documentation "Get the content of the editor."))
 
+;; IMPORTANT: Implement this method specializing on your class extending editor-mode.
 (defgeneric set-content (editor content)
   (:documentation "Set the content of the editor."))
 
@@ -55,7 +59,7 @@
     (setf (url buffer) (quri:uri file))))
 
 (define-command editor-write-file (&key (buffer (current-buffer)) (if-exists :error))
-  "Write the FILE of the BUFFER.."
+  "Write the FILE of the BUFFER to storage."
   (write-file buffer :if-exists if-exists)
   (echo "File ~a written to storage." (file buffer)))
 
