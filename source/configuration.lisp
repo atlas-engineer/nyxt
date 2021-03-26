@@ -3,9 +3,25 @@
 
 (in-package :nyxt)
 
+(define-class init-data-path (data-path)
+  ()
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+
+(defmethod expand-data-path ((profile data-profile) (path init-data-path))
+  "Return finalized path for initialization files."
+  (expand-default-path path :root (namestring (if (str:emptyp (namestring (dirname path)))
+                                                  (uiop:xdg-config-home +data-root+)
+                                                  (dirname path)))))
+
 (export-always '*auto-config-file-path*)
-(defvar *auto-config-file-path* (make-instance 'data-path :basename "auto-config")
+(defvar *auto-config-file-path* (make-instance 'init-data-path :basename "auto-config")
   "The path of the generated configuration file.")
+
+(export-always '*init-file-path*)
+(defvar *init-file-path* (make-instance 'init-data-path :basename "init")
+  "The path of the initialization file.")
 
 (export-always 'funcall-safely)
 (defun funcall-safely (f &rest args)

@@ -3,12 +3,21 @@
 
 (in-package :nyxt)
 
-(export-always '*init-file-path*)
-(defvar *init-file-path* (make-instance 'data-path :basename "init")
-  "The path of the initialization file.")
+(define-class socket-data-path (data-path)
+  ()
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:documentation "Socket files are typically stored in a dedicated directory."))
+
+(defmethod expand-data-path ((profile data-profile) (path socket-data-path))
+  "Return finalized path for socket files."
+  (expand-default-path path :root (namestring (if (str:emptyp (namestring (dirname path)))
+                                                  (uiop:xdg-data-home +data-root+)
+                                                  (dirname path)))))
 
 (export-always '*socket-path*)
-(defvar *socket-path* (make-instance 'data-path :basename "nyxt.socket")
+(defvar *socket-path* (make-instance 'socket-data-path :basename "nyxt.socket")
   "Path of the Unix socket used to communicate between different instances of
 Nyxt.
 
@@ -20,18 +29,6 @@ This path cannot be set from the initialization file because we want to be able
 to set and use the socket without parsing any file.  Instead, the socket can be
 set from the corresponding command line option or the NYXT_SOCKET environment
 variable.")
-
-(defmethod expand-data-path ((profile data-profile) (path (eql *init-file-path*)))
-  "Return path of the init file."
-  (unless (getf *options* :no-init)
-    (match (getf *options* :init)
-      (new-path
-       (expand-default-path (make-instance 'data-path
-                                           :basename (or new-path (basename path))
-                                           ;; Specify `dirname' here since
-                                           ;; *init-file-path* is evaluated
-                                           ;; at compile-time.
-                                           :dirname (uiop:xdg-config-home +data-root+)))))))
 
 (export-always 'nyxt-init-file)
 (defun nyxt-init-file (&optional subpath)
