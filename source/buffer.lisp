@@ -340,9 +340,6 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 
 (define-user-class editor-buffer)
 
-(defmethod editor ((editor-buffer editor-buffer))
-  (find-submode editor-buffer 'editor-mode))
-
 (defun make-dummy-buffer ()
   ;; Internal buffers are lighter than full-blown buffers which can have a
   ;; WebKit context, etc.

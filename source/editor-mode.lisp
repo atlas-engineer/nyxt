@@ -1,7 +1,11 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt)
+(uiop:define-package :nyxt/editor-mode
+    (:use :common-lisp :nyxt)
+  (:import-from #:keymap #:define-key #:define-scheme)
+  (:documentation "Mode for editors."))
+(in-package :nyxt/editor-mode)
 
 (define-mode editor-mode ()
   "Mode for editor modes to extend."
@@ -20,11 +24,8 @@
                   :type keymap:scheme))
   (:documentation "This class is used to define a protocol for editors to implement."))
 
-(defgeneric write-file (buffer-editor &key if-exists)
-  (:documentation "Write the file to storage."))
-
-(defgeneric open-file (buffer-editor file)
-  (:documentation "Open the file in the editor."))
+(defmethod editor ((editor-buffer editor-buffer))
+  (find-submode editor-buffer 'editor-mode))
 
 (defgeneric get-content (editor)
   (:documentation "Get the content of the editor."))
@@ -58,7 +59,7 @@
   (write-file buffer :if-exists if-exists)
   (echo "File ~a written to storage." (file buffer)))
 
-(define-command open-new-editor-with-file ()
+(define-command nyxt::open-new-editor-with-file ()
   "Open a new editor and query a file."
   (let ((buffer (make-editor-buffer)))
     (set-current-buffer buffer)

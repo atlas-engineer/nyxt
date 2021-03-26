@@ -92,10 +92,10 @@
                (:file "autofill")
                (:file "auto-mode")
                (:file "external-editor")
-               (:file "editor")
                #+quicklisp
                (:file "lisp-system")
                ;; Core Modes
+               (:file "editor-mode")
                (:file "buffer-listing-mode")
                (:file "base-mode")
                (:file "repl-mode")
