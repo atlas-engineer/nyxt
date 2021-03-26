@@ -24,7 +24,11 @@ See `nyxt/vcs:*vcs-username*' (default username) and
 
 (declaim (type (or null list-of-strings) *vcs-projects-roots*))
 (sera:export-always '*vcs-projects-roots*)
-(defparameter *vcs-projects-roots* '("~/projects" "~/src" "~/work" "~/common-lisp" "~/quicklisp/local-projects")
+(defparameter *vcs-projects-roots* '("~/projects" "~/src" "~/work"
+                                     "~/common-lisp"
+                                     "~/.local/share/common-lisp/systems"
+                                     "~/.local/share/common-lisp/source"
+                                     "~/quicklisp/local-projects")
   "A list of directories to look for VCS repositories into.")
 ;; Possible improvement: specify the depth to look for projects
 ;; alongside the directory.  See magit-list-repositories.
