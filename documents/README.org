@@ -120,10 +120,11 @@ libraries.
 They are included as a submodule of this repository, so if you use the
 Makefile there is nothing to be done.
 
-Otherwise clone each repository into =~/common-lisp= or any directory
-listed in ~asdf:*central-registry*~.  For instance:
+Otherwise clone each repository into =~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another
+directory where ASDF will find it]]):
 
 #+begin_src sh
+  mkdir -p ~/common-lisp
   git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit
 #+end_src
 
@@ -199,10 +200,11 @@ these fixes.
 *** Lisp dependencies
 
 Nyxt on Qt requires the latest version of the cl-webengine library.
-Clone the cl-webengine repository into =~/common-lisp= or any directory
-listed in ~asdf:*central-registry*~:
+Clone the cl-webengine repository into =~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another
+directory where ASDF will find it]]):
 
 #+begin_src sh
+  mkdir -p ~/common-lisp
   git clone git@github.com:atlas-engineer/cl-webengine.git ~/common-lisp/cl-webengine
 #+end_src
 
