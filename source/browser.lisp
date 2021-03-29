@@ -170,8 +170,8 @@ The handlers take the `download-manager:download' class instance as argument.")
               :documentation "To autofill run the command `autofill'.
 Use this slot to customize the autofill values available.
 
-The fill can be a string value it or a function.  The latter allows you to
-provide content dynamic to the context.")
+The fill can be a string value or a function.  The latter allows you to provide
+content dynamic to the context.")
 
    (spell-check-language "en_US"
                          :documentation "Spell check language used by Nyxt. For

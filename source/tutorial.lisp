@@ -270,7 +270,7 @@ An example:")
          ": Control the page zoom.")
     (:li (command-markup 'nyxt/web-mode:jump-to-heading) ": Query a heading (a
 section) of the current page and jump to it.")
-    (:li (command-markup 'nyxt/web-mode:autofill) ": See the "
+    (:li (command-markup 'nyxt/web-mode::autofill) ": See the "
          (:code "autofills") " browser slot.")
     (:li (command-markup 'vcs-clone) ": Clone version control repository
 matching current URL.")
