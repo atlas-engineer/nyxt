@@ -38,14 +38,18 @@ get/set-content (which is necessary for operation)."
   (:documentation "Set the content of the editor."))
 
 (defmethod write-file ((buffer editor-buffer) &key (if-exists :error))
-  (alexandria:write-string-into-file (get-content (editor buffer))
-                                     (file buffer)
-                                     :if-exists if-exists))
+  (alexandria:if-let ((editor (editor buffer)))
+    (alexandria:write-string-into-file (get-content editor)
+                                       (file buffer)
+                                       :if-exists if-exists)
+    (echo "Editor buffer cannot write file without configured editor mode.")))
 
 (defmethod open-file ((buffer editor-buffer) file)
-  (if (uiop:file-exists-p file)
-      (set-content (editor buffer) (uiop:read-file-string file))
-      (set-content (editor buffer) "")))
+  (alexandria:if-let ((editor (editor buffer)))
+    (if (uiop:file-exists-p file)
+        (set-content editor (uiop:read-file-string file))
+        (set-content editor ""))
+    (echo "Editor buffer cannot open file without configured editor mode.")))
 
 (define-command editor-open-file (&key (buffer (current-buffer)))
   "Open a file in the internal editor."
