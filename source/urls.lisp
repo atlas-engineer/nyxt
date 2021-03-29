@@ -16,6 +16,7 @@ On errors, return URL."
          (or (ignore-errors (ffi-display-uri (quri:render-uri uri)))
              (quri:render-uri uri))))
 
+(export-always 'generate-search-query)
 (defun generate-search-query (search-string search-url)
   (let* ((encoded-search-string
            ;; We need to encode the search string to escape special characters.
