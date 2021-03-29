@@ -306,9 +306,7 @@ CLASS can be a class symbol or a list of class symbols, as with
 (defun tls-help (buffer url)
   "This function is invoked upon TLS certificate errors to give users
 help on how to proceed."
-  ;; Set (url buffer) so that the user can simply reload the page after
-  ;; allowing the exception:
-  (setf (url buffer) url)
+  (setf (slot-value buffer 'load-status) :failed)
   (html-set
    (markup:markup
     (:h1 (format nil "TLS Certificate Error: ~a" (object-display url)))

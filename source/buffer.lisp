@@ -227,9 +227,10 @@ Rules are kept in browser's `user-data', keyed by the expanded `auto-mode-rules-
                   :documentation "The symbols of the modes to instantiate on buffer creation.
 The mode instances are stored in the `modes' slot.")
    (load-status :unloaded
-                :type (or (eql :loading)
-                          (eql :finished)
-                          (eql :unloaded))
+                :type (member :loading
+                              :finished
+                              :unloaded
+                              :failed)
                 :accessor nil
                 :export nil ; TODO: Need to decide if we want progress / errors before exposing to the user.
                 :documentation "The status of the buffer.
@@ -459,12 +460,22 @@ See `buffer-make'."
   (dolist (mode-symbol (reverse (default-modes buffer)))
     (make-mode mode-symbol buffer)))
 
+(defun load-failed-p (buffer)
+  "Only web-buffer loads can fail."
+  (and (web-buffer-p buffer)
+       (eq (slot-value buffer 'load-status) :failed)))
+
 (export-always 'on-signal-notify-uri)
 (defmethod on-signal-notify-uri ((buffer buffer) no-uri)
   "Set BUFFER's `url' slot, then dispatch `on-signal-notify-uri' over the
 BUFFER's modes."
   (declare (ignore no-uri))
-  (setf (url buffer) (ffi-buffer-uri buffer))
+  (let ((view-url (ffi-buffer-uri buffer)))
+    (when (or (not (load-failed-p buffer))
+              (not (url-empty-p view-url)))
+      ;; When a buffer fails to load and `ffi-buffer-uri' returns an empty
+      ;; URL, we don't set (url buffer) to keep access to the old value.
+      (setf (url buffer) (ffi-buffer-uri buffer))))
   (dolist (mode (modes buffer))
     (on-signal-notify-uri mode (url buffer)))
   (url buffer))
