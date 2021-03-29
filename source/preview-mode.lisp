@@ -11,7 +11,16 @@
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum)
   (trivial-package-local-nicknames:add-package-local-nickname :file-attributes :org.shirakumo.file-attributes))
 
-(define-mode preview-mode (nyxt/action-mode:action-mode)
+(defun updated-file-p (path-url mode)
+  (and
+   (quri:uri-file-p path-url)
+   (or (null (last-access mode))
+       (local-time:timestamp>
+        (local-time:universal-to-timestamp
+         (file-attributes:modification-time (quri:uri-path path-url)))
+        (last-access mode)))))
+
+(define-mode preview-mode (nyxt/process-mode:process-mode)
   "Refreshes the buffer when associated local file is changed."
   ((firing-condition #'updated-file-p)
    (action
@@ -29,4 +38,4 @@
 watch and refresh it."
   (sera:and-let* ((file (or file (prompt :prompt "File to preview"))))
     (buffer-load (quri.uri.file:make-uri-file :path file) :buffer buffer)
-    (preview-mode)))
+    (nyxt/preview-mode:preview-mode)))

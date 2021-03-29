@@ -33,14 +33,14 @@
     (apply '+ (mapcar (lambda (time multiplier) (* time multiplier))
                       times to-seconds-multipliers))))
 
-(define-mode watch-mode (nyxt/action-mode:action-mode)
+(define-mode watch-mode (nyxt/process-mode:process-mode)
   "Reload the current buffer at regular time intervals."
   ((action #'(lambda (path-url mode)
                (unless (sleep-time mode)
                  (setf (sleep-time mode) (seconds-from-user-input)))
                (loop
                  (if (quri:uri= path-url (url (buffer mode)))
-                     (reload-current-buffer (buffer mode))
+                     (nyxt::reload-buffer (buffer mode))
                      (buffer-load path-url :buffer (buffer mode)))
                  (sleep (sleep-time mode)))))
    (sleep-time :documentation "The amount of time to sleep between reloads.")))
