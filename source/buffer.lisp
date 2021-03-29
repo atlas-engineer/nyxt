@@ -898,6 +898,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
    (prompter:constructor (lambda (source)
                            (declare (ignorable source))
                            (history-initial-suggestions)))
+   (prompter:filter-preprocessor nil)   ; Don't remove non-exact results.
    (prompter:multi-selection-p t)       ; TODO: Disable once tested OK.
    (prompter:must-match-p nil)
    (prompter:actions '(buffer-load))))
