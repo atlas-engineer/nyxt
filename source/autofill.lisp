@@ -4,7 +4,7 @@
 (in-package :nyxt)
 
 (define-class autofill ()
-  ((key nil
+  ((key ""
         :accessor autofill-key ; TODO: Maybe use non-prefixed version instead?
         :documentation "Unique and short key to identify the autofill by.")
    (name ""
