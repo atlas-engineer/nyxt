@@ -133,7 +133,9 @@
                (:file "reduce-tracking-mode")
                (:file "os-package-manager-mode")
                (:file "visual-mode")
+               (:file "action-mode")
                (:file "watch-mode")
+               (:file "preview-mode")
                (:file "diff-mode")
                ;; Web-mode commands
                (:file "bookmarklets")
