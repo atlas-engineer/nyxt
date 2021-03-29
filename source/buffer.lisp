@@ -1021,9 +1021,9 @@ ARGS are passed to the mode command."
    (buffers :initarg :buffers :accessor buffers :initform nil)
    (prompter:multi-selection-p t)
    (prompter:constructor (lambda (source)
-                           (delete-duplicates 
-                            (alex:mappend 
-                             #'modes 
+                           (delete-duplicates
+                            (alex:mappend
+                             #'modes
                              (uiop:ensure-list (buffers source)))
                             :test (lambda (i y) (equal (mode-name i)
                                                        (mode-name y)))))))
@@ -1097,11 +1097,24 @@ ARGS are passed to the mode command."
   (pflet ((print-buffer () (print)))
          (print-buffer)))
 
-(define-command focus-first-input-field (&key (buffer (current-buffer)))
+(define-command focus-first-input-field (&key (buffer (current-buffer))
+                                         (type-blacklist '("hidden"
+                                                           "checkbox"
+                                                           "button")))
   "Move the focus to the first input field of `buffer'."
-  (pflet ((focus () (ps:chain document
-                              (get-elements-by-tag-name "INPUT")
-                              (item 0)
-                              (focus))))
+  ;; The list of input types can be found below.
+  ;; https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input
+  (pflet ((nth-input-type (i) (ps:chain document
+                                        (get-elements-by-tag-name "INPUT")
+                                        (item (ps:lisp i))
+                                        type))
+          (nth-input-focus (i) (ps:chain document
+                                         (get-elements-by-tag-name "INPUT")
+                                         (item (ps:lisp i))
+                                         (focus))))
     (with-current-buffer buffer
-      (focus))))
+      (nth-input-focus (do ((i 0 (1+ i)))
+                           ((notany
+                             (lambda (type) (equalp (nth-input-type i) type))
+                             type-blacklist)
+                            i))))))
