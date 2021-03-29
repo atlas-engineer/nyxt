@@ -177,13 +177,14 @@ identifier for every hinted element."
    (prompter:persistent-action (lambda (suggestion)
                                  (highlight-selected-hint :link-hint suggestion)))))
 
+(serapeum:export-always 'query-hints)
 (defun query-hints (prompt function &key multi-selection-p annotate-visible-only-p)
   (let* ((buffer (current-buffer)))
     (let ((result (prompt
                    :prompt prompt
                    :history nil
                    :sources
-                   (make-instance 
+                   (make-instance
                     'hint-source
                     :multi-selection-p multi-selection-p
                     :constructor
