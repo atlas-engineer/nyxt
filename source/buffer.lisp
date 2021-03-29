@@ -788,6 +788,7 @@ See `make-buffer'."
       (prompt
        :prompt "Delete buffer(s)"
        :sources (make-instance 'buffer-source
+                               :constructor (buffer-initial-suggestions :current-is-last-p nil)
                                :multi-selection-p t
                                :actions (list (make-mapped-command buffer-delete))))))
 
