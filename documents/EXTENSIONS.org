@@ -10,3 +10,8 @@
   The aim of nx-search-engines is to get rid of black box world of
   search bookmarklets and search cookies by moving to the pretty land
   of lispy syntax and small helper functions generating search URIs.
+
+- [[https://github.com/atlas-engineer/nx-ace][nx-ace]] ::
+  nx-ace allows you to use the Ace editor within Nyxt. To use it, load
+  it, and add =ace-mode= to your default modes for your
+  =editor-buffer=.
