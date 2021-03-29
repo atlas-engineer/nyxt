@@ -9,17 +9,48 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks))
 
+;; TODO: Add style to loop help page?
+(defun https->http-loop-help (buffer url) ; TODO: Factor with tls-help?
+  "This function is invoked upon TLS certificate errors to give users
+help on how to proceed."
+  (setf (slot-value buffer 'nyxt::load-status) :failed)
+  (nyxt::html-set
+   (markup:markup
+    (:h1 (format nil "HTTPS → HTTP loop: ~a" (object-display url)))
+    (:p "The HTTPS address you are trying to visit redirects to HTTP while the "
+        (:code "force-https-mode") " is on.")
+    (:p "Since HTTP connections are not secure,"
+        " it's not recommended to proceed if you don't trust the target host.")
+    (:p " If you really want to proceed, you can either:"
+        (:ul
+         (:li "disable "
+              (:code "force-https-mode") " temporarily;")
+         (:li "or disable it dynamically with " (:code "auto-mode") "'s "
+              (:code "save-exact-modes-for-future-visits") "."))))
+   buffer))
+
 (defun force-https-handler (request-data)
   "Impose HTTPS on any link with HTTP scheme."
-  (let ((uri (url request-data)))
-    (when (string= (quri:uri-scheme uri) "http")
-      (log:info "HTTPS enforced on \"~a\"" (object-display uri))
-      ;; FIXME: http-only websites are displayed as "https://foo.bar"
-      ;; FIXME: some websites (e.g., go.com) simply time-out
-      (setf (quri:uri-scheme uri) "https"
-            (quri:uri-port uri) (quri.port:scheme-default-port "https")
-            (url request-data) uri)))
-  request-data)
+  (let ((uri (url request-data))
+        (mode (find-submode (buffer request-data) 'force-https-mode)))
+    (cond
+      ((string/= (quri:uri-scheme uri) "http")
+       request-data)
+      ((quri:uri= (previous-url mode) uri)
+       (log:info "HTTPS->HTTP redirection loop detected, stop forcing '~a'" uri)
+       (https->http-loop-help (buffer request-data) uri)
+       nil)
+      (t
+       ;; Warning: Copy URI, else next line would modify the scheme of
+       ;; `previous-url' as well.
+       (setf (previous-url mode) (quri:copy-uri uri))
+       (log:info "HTTPS enforced on '~a'" (object-display uri))
+       ;; FIXME: http-only websites are displayed as "https://foo.bar"
+       ;; FIXME: some websites (e.g., go.com) simply time-out
+       (setf (quri:uri-scheme uri) "https"
+             (quri:uri-port uri) (quri.port:scheme-default-port "https")
+             (url request-data) uri)
+       request-data))))
 
 (define-mode force-https-mode ()
   "Impose HTTPS on every queried URI.
@@ -34,7 +65,8 @@ Example:
 
 \(define-configuration buffer
   ((default-modes (append '(force-https-mode) %slot-default))))"
-  ((destructor
+  ((previous-url (quri:uri ""))
+   (destructor
     (lambda (mode)
       (hooks:remove-hook (request-resource-hook (buffer mode))
                          'force-https-handler)))
