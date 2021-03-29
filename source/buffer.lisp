@@ -1097,10 +1097,9 @@ ARGS are passed to the mode command."
   (pflet ((print-buffer () (print)))
          (print-buffer)))
 
-(define-command focus-first-input-field (&key (buffer (current-buffer))
-                                         (type-blacklist '("hidden"
-                                                           "checkbox"
-                                                           "button")))
+(define-command focus-first-input-field (&key (type-blacklist '("hidden"
+                                                                "checkbox"
+                                                                "button")))
   "Move the focus to the first input field of `buffer'."
   ;; The list of input types can be found below.
   ;; https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input
@@ -1112,9 +1111,8 @@ ARGS are passed to the mode command."
                                          (get-elements-by-tag-name "INPUT")
                                          (item (ps:lisp i))
                                          (focus))))
-    (with-current-buffer buffer
-      (nth-input-focus (do ((i 0 (1+ i)))
-                           ((notany
-                             (lambda (type) (equalp (nth-input-type i) type))
-                             type-blacklist)
-                            i))))))
+    (nth-input-focus (do ((i 0 (1+ i)))
+                         ((notany
+                           (lambda (type) (equalp (nth-input-type i) type))
+                           type-blacklist)
+                          i)))))
