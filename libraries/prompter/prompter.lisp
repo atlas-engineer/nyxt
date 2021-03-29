@@ -153,7 +153,7 @@ compution is not finished.")))
     (setf (sources prompter) (ensure-sources (sources prompter))))
   (setf (selection prompter) (list (first (sources prompter)) 0))
   (maybe-funcall (constructor prompter) prompter)
-  (update-sources prompter)
+  (update-sources prompter (input prompter))
   prompter)
 
 (defmethod (setf selection) (value (prompter prompter))

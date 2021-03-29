@@ -184,6 +184,12 @@
     (setf (prompter:input prompter) "foo")
     (when (prompter:all-ready-p prompter)
       (prove:is (all-source-suggestions prompter)
+                '("foo"))))
+  (let ((prompter (prompter:make
+                   :input "foo"
+                   :sources (list (make-instance 'prompter:raw-source)))))
+    (when (prompter:all-ready-p prompter)
+      (prove:is (all-source-suggestions prompter)
                 '("foo")))))
 
 (prove:finalize)
