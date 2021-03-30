@@ -268,35 +268,39 @@ To change the default buffer, e.g. set it to a given URL:
 
   (make-startup-function
    :buffer-fn (lambda () (make-buffer :url \"https://example.org\")))"
-  (lambda (&optional urls)
-    (let ((window (current-window)))
-      ;; Since this is the first buffer, we don't use any history for it:
-      ;; - it's not interesting;
-      ;; - most importantly because restoring the history may prompt the
-      ;; user which blocks further action such as the loading of the page,
-      ;; something we don't want for the startup.
-      (window-set-active-buffer window (help :no-history-p t))
-      (let ((buffer (current-buffer)))
+  (flet ((restore-session ()
+           (let ((buffer (current-buffer)))
+             (match (session-restore-prompt *browser*)
+               (:always-ask (handler-case (restore-history-by-name)
+                              ;; We handle prompt cancelation, otherwise the rest of
+                              ;; the function would not be run.
+                              (nyxt-prompt-buffer-canceled ()
+                                (log:debug "Prompt buffer interrupted")
+                                nil)))
+               (:always-restore (restore (data-profile buffer) (history-path buffer)
+                                         :restore-buffers-p t))
+               (:never-restore (progn
+                                 (log:info "Not restoring session.")
+                                 (restore (data-profile buffer) (history-path buffer)))))))
+         (load-start-urls (window urls)
+           (cond
+             (urls (open-urls urls))
+             (buffer-fn
+              (window-set-active-buffer window (funcall buffer-fn))))))
+    (lambda (&optional urls)
+      (let ((window (current-window)))
+        ;; Since this is the first buffer, we don't use any history for it:
+        ;; - it's not interesting;
+        ;; - most importantly because restoring the history may prompt the
+        ;; user which blocks further action such as the loading of the page,
+        ;; something we don't want for the startup.
+        (window-set-active-buffer window (help :no-history-p t))
         ;; Restore session before opening command line URLs, otherwise it will
         ;; reset the session with the new URLs.
-        (match (session-restore-prompt *browser*)
-          (:always-ask (handler-case (restore-history-by-name)
-                         ;; We handle prompt cancelation, otherwise the rest of
-                         ;; the function would not be run.
-                         (nyxt-prompt-buffer-canceled ()
-                           (log:debug "Prompt buffer interrupted")
-                           nil)))
-          (:always-restore (restore (data-profile buffer) (history-path buffer)
-                                    :restore-buffers-p t))
-          (:never-restore (progn
-                            (log:info "Not restoring session.")
-                            (restore (data-profile buffer) (history-path buffer)))))
-        (cond
-          (urls (open-urls urls))
-          (buffer-fn
-           (window-set-active-buffer window (funcall buffer-fn))))))
-    (when (startup-error-reporter-function *browser*)
-      (funcall (startup-error-reporter-function *browser*)))))
+        (restore-session)
+        (load-start-urls window urls))
+      (alex:when-let ((f (startup-error-reporter-function *browser*)))
+        (funcall f)))))
 
 (export-always 'open-external-urls)
 (defun open-external-urls (urls)
