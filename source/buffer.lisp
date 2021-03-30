@@ -649,7 +649,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (when parent-window
       (let ((replacement-buffer (or (first (get-inactive-buffers))
                                     (make-buffer :url :default))))
-        (window-set-active-buffer parent-window
+        (window-set-buffer parent-window
                                   replacement-buffer)))
     (ffi-buffer-delete buffer)
     (buffers-delete (id buffer))
@@ -685,12 +685,12 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 (defun window-list ()
   (alex:hash-table-values (windows *browser*)))
 
-(export-always 'window-set-active-buffer)
-(defun window-set-active-buffer (window buffer &key (focus t)) ; TODO: Rename window-set-buffer.
+(export-always 'window-set-buffer)
+(defun window-set-buffer (window buffer &key (focus t))
   "Set BROWSER's WINDOW buffer to BUFFER.
-Run WINDOW's `window-set-active-buffer-hook' over WINDOW and BUFFER before
+Run WINDOW's `window-set-buffer-hook' over WINDOW and BUFFER before
 proceeding."
-  (hooks:run-hook (window-set-active-buffer-hook window) window buffer)
+  (hooks:run-hook (window-set-buffer-hook window) window buffer)
   ;; The current buffer last-access time is set to now to ensure it becomes the
   ;; second newest buffer.  If we didn't update the access time, the buffer
   ;; last-access time could be older than, say, buffers opened in the
@@ -713,13 +713,13 @@ proceeding."
                      (object-string (url old-buffer))
                      (object-string (url (active-buffer window-with-same-buffer)))
                      (object-string (url buffer)))
-          (ffi-window-set-active-buffer window-with-same-buffer temp-buffer)
-          (ffi-window-set-active-buffer window buffer :focus focus)
+          (ffi-window-set-buffer window-with-same-buffer temp-buffer)
+          (ffi-window-set-buffer window buffer :focus focus)
           (setf (active-buffer window) buffer)
-          (window-set-active-buffer window-with-same-buffer old-buffer)
+          (window-set-buffer window-with-same-buffer old-buffer)
           (ffi-buffer-delete temp-buffer))
         (progn
-          (ffi-window-set-active-buffer window buffer :focus focus)
+          (ffi-window-set-buffer window buffer :focus focus)
           (setf (active-buffer window) buffer)))
     (setf (last-access buffer) (local-time:now))
     ;; So that `current-buffer' returns the new value if buffer was

@@ -330,7 +330,7 @@ First URL is focused if NO-FOCUS is nil."
       (when (and first-buffer (not no-focus))
         (if (open-external-link-in-new-window-p *browser*)
             (let ((window (window-make *browser*)))
-              (window-set-active-buffer window first-buffer))
+              (window-set-buffer window first-buffer))
             (set-current-buffer first-buffer))))))
 
 (defun scheme-keymap (buffer buffer-scheme)
@@ -556,7 +556,7 @@ sometimes yields the wrong result."
   "Set the active buffer for the active window."
   (unless (eq 'prompt-buffer (sera:class-name-of buffer))
     (if (current-window)
-        (window-set-active-buffer (current-window) buffer :focus focus)
+        (window-set-buffer (current-window) buffer :focus focus)
         (make-window buffer))
     buffer))
 
@@ -597,7 +597,7 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-window-to-foreground (window))
 (define-ffi-generic ffi-window-set-title (window title))
 (define-ffi-generic ffi-window-active (browser))
-(define-ffi-generic ffi-window-set-active-buffer (window buffer &key focus))
+(define-ffi-generic ffi-window-set-buffer (window buffer &key focus))
 (define-ffi-generic ffi-window-set-prompt-buffer-height (window height))
 (define-ffi-generic ffi-window-set-status-buffer-height (window height))
 (define-ffi-generic ffi-window-set-message-buffer-height (window height))
