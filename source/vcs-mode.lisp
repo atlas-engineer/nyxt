@@ -22,6 +22,8 @@ See `nyxt/vcs:*vcs-username*' (default username) and
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
 
+(defvar *git-program* "git")
+
 (declaim (type (or null list-of-strings) *vcs-projects-roots*))
 (sera:export-always '*vcs-projects-roots*)
 (defparameter *vcs-projects-roots* '("~/projects" "~/src" "~/work"
@@ -147,7 +149,7 @@ CLONE-URI: quri:uri object."
   (echo "Cloning ~a into ~a" project-name target-dir)
   (handler-case (progn
                   (launch-and-notify
-                   (list "git" "clone"
+                   (list *git-program* "clone"
                          (choose-clone-url root-name project-name clone-uri)
                          (nyxt/vcs::concat-filenames target-dir project-name))
                    :success-msg (format nil "Repository ~a cloned." project-name)

@@ -101,13 +101,16 @@ appearance in the buffer when they are setf'd."
         :height "100%"
         :background-color "dimgray"))))))
 
+#+linux
+(defvar *xdg-open-program* "xdg-open")
+
 (defun default-open-file-function (filename)
   "Open FILENAME.
 
 Can be used as a `open-file-function'."
   (uiop:launch-program
    #+linux
-   (list "xdg-open" (namestring filename))
+   (list *xdg-open-program* (namestring filename))
    #+darwin
    (list "open" (namestring filename))))
 

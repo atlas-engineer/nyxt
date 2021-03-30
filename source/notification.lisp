@@ -3,6 +3,8 @@
 
 (in-package :nyxt)
 
+(defvar *notify-send-program* "notify-send")
+
 (export-always 'notify)
 (defun notify (msg)
   "Echo this message and display it with a desktop notification system (notify-send on linux, terminal-notifier on macOs)."
@@ -10,7 +12,7 @@
   (ignore-errors
     (uiop:launch-program
      #+linux
-     (list "notify-send" msg)
+     (list *notify-send-program* msg)
      #+darwin
      (list "terminal-notifier" "-title" "Nyxt" "-message" msg))))
 
