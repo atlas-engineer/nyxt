@@ -356,7 +356,7 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
 (defmethod serialize-object ((rule auto-mode-rule) stream)
   (flet ((write-if-present (slot &key modes-p)
            (when (funcall slot rule)
-             (format t " :~a ~s"
+             (format t " :~a ~a"
                      slot
                      (let ((value (funcall slot rule)))
                        (if modes-p
