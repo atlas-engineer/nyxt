@@ -146,24 +146,18 @@ non-new-page requests, buffer URL is not altered."
   (quri:uri= (url request-data) (url (buffer request-data))))
 
 (defun auto-mode-handler (request-data)
-  (with-data-unsafe (previous-url (history-path (buffer request-data))
-                     :key #'(lambda (history)
-                              (sera:and-let* ((hist history) ;; history should be non-nil
-                                              (owner (htree:current-owner hist))
-                                              (current (htree:current owner))
-                                              (parent (htree:parent current))
-                                              (url (url (htree:data parent))))
-                                url)))
-    (let* ((auto-mode (find-submode (buffer request-data) 'auto-mode))
-           (rule (matching-auto-mode-rule (url request-data) (buffer request-data)))
-           (previous-rule (when previous-url (matching-auto-mode-rule previous-url (buffer request-data)))))
-      (when (and rule previous-url (not previous-rule))
-        (save-last-active-modes auto-mode previous-url))
-      (cond
-        ((and (not rule) (new-page-request-p request-data))
-         (reapply-last-active-modes auto-mode))
-        ((and rule (not (eq rule previous-rule)))
-         (enable-matching-modes (url request-data) (buffer request-data))))))
+  (let* ((auto-mode (find-submode (buffer request-data) 'auto-mode))
+         (rule (matching-auto-mode-rule (url request-data) (buffer request-data)))
+         (previous-url (previous-url auto-mode))
+         (previous-rule (when previous-url (matching-auto-mode-rule previous-url (buffer request-data)))))
+    (when (and rule previous-url (not previous-rule))
+      (save-last-active-modes auto-mode previous-url))
+    (cond
+      ((and (not rule) (new-page-request-p request-data))
+       (reapply-last-active-modes auto-mode))
+      ((and rule (not (eq rule previous-rule)))
+       (enable-matching-modes (url request-data) (buffer request-data))))
+    (setf (previous-url auto-mode) (url request-data)))
   request-data)
 
 (declaim (ftype (function (root-mode auto-mode boolean) list)
@@ -262,6 +256,17 @@ to included/excluded modes in the auto-mode rules on mode activation/deactivatio
                            :documentation "Modes that `auto-mode' won't even try to save.
 Append names of modes you want to always control manually to this list.
 Be careful with deleting the defaults -- it can be harmful for your browsing.")
+   (previous-url nil
+                 :type (or quri:uri null)
+                 :documentation "The last URL for which `auto-mode-handler' was fired.
+We need to know if the auto mode rule has been applied before to avoid
+re-applying a rule for a sequence of pages that match the same rule.
+
+We can'rely on the previous history entry because
+dead buffers and session-restored buffers may have a history with a previous URL
+matching the same rule while obviously the rule has never been applied for the
+new-born buffer.")
+
    (last-active-modes-url nil
                           :type (or quri:uri null)
                           :documentation "The last URL that the active modes were saved for.
