@@ -43,7 +43,7 @@ package managers like Nix or Guix."))
    "\\\\" "\\"
    (write-to-string form)))
 
-(defvar *guix-command* "guix"
+(defvar *guix-program* "guix"
   "Name or path to the `guix' executable.")
 
 (defvar %guix-listener-channel nil)
@@ -57,7 +57,7 @@ For each inputs on `%guix-listener-channel' a result is returned on
   ;; which happens when the parent Lisp process dies.
   (flet ((start-guix ()
            (let ((guix-process
-                   (uiop:launch-program `(,*guix-command* "repl" "--type=machine")
+                   (uiop:launch-program `(,*guix-program* "repl" "--type=machine")
                                         :input :stream :output :stream)))
              ;; Skip REPL header.
              ;; We could use `read' but CCL won't swallow the linebreak, while
