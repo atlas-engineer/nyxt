@@ -932,7 +932,8 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
    (prompter:filter-preprocessor nil)   ; Don't remove non-exact results.
    (prompter:multi-selection-p t)       ; TODO: Disable once tested OK.
    (prompter:must-match-p nil)
-   (prompter:actions '(buffer-load))))
+   (prompter:actions '(buffer-load)))
+  (:export-class-name-p t))
 
 (define-command set-url (&key (prefill-current-url-p t))
   "Set the URL for the current buffer, completing with history."
