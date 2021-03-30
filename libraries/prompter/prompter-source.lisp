@@ -11,9 +11,7 @@
 ;; locally.
 
 (deftype must-match-choices ()
-  `(or (eql :always)
-       (eql :ignore)
-       (eql :confirm)))
+  `(member :always :ignore :confirm))
 
 (deftype function-symbol ()
   `(and symbol (satisfies fboundp)))
@@ -322,7 +320,7 @@ Also see `follow-delay'.")
 non-nil.")
 
      (must-match-p :always ; TODO: Remove and use dedicated source instead?  Then remove `return-input'.
-                   :type (or must-match-choices null)
+                   :type (or must-match-choices boolean) ; TODO: Should not allow T, should we?  Anyways, we can probably remove this slot.
                    :documentation
                    "Control what to do when input does not match anything.
 - `:always': Reject input.
