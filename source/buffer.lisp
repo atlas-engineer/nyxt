@@ -1136,6 +1136,8 @@ ARGS are passed to the mode command."
   "Move the focus to the first input field of `buffer'."
   ;; The list of input types can be found below.
   ;; https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input
+  ;; TODO: The following results in 2 DOM traversal.  We should probably do the
+  ;; whole thing in a single Parenscript instead.
   (pflet ((nth-input-type (i) (ps:chain document
                                         (get-elements-by-tag-name "INPUT")
                                         (item (ps:lisp i))
