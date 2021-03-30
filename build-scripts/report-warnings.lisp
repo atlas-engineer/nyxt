@@ -23,6 +23,13 @@ they are not included but their dependencies are."
   (and (typep condition 'style-warning)
        (every #'char-equal "redefin" (princ-to-string condition))))
 
+#+ccl
+(defun osicat-warning-p (condition)
+  ;; Osicat triggers a warning on CCL because of some unimplemented chunk.
+  ;; See https://github.com/osicat/osicat/issues/37.
+  (and (typep condition 'style-warning)
+       (search "Undefined function OSICAT::MAKE-FD-STREAM" (princ-to-string condition))))
+
 (defun load-system-silently (system)
   (uiop:with-null-output (null-output)
     (let ((*standard-output* null-output))
@@ -32,7 +39,9 @@ they are not included but their dependencies are."
   (mapc #'load-system-silently (list-dependencies system))
   (let ((conditions '()))
     (handler-bind ((warning (lambda (c)
-                              (unless (redefinition-p c)
+                              (unless (or (redefinition-p c)
+                                          #+ccl
+                                          (osicat-warning-p c))
                                 (push c conditions)))))
       (asdf:load-system system :force t))
     (let ((report (mapcar (lambda (c) (format nil "~a~%" c))
