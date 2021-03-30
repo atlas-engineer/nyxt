@@ -26,7 +26,6 @@ See `nyxt/vcs:*vcs-username*' (default username) and
 (sera:export-always '*vcs-projects-roots*)
 (defparameter *vcs-projects-roots* '("~/projects" "~/src" "~/work"
                                      "~/common-lisp"
-                                     "~/.local/share/common-lisp/systems"
                                      "~/.local/share/common-lisp/source"
                                      "~/quicklisp/local-projects")
   "A list of directories to look for VCS repositories into.")
