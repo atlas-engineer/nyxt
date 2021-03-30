@@ -72,6 +72,7 @@ If the mode specifier is not known, it's omitted from the results."
              :type (or (cons mode-invocation *) null)
              :documentation "The list of `mode-invocation's to disable on rule activation.")
    (exact-p nil
+            :type boolean
             :documentation "If non-nil, enable the INCLUDED modes exclusively.
 Enable INCLUDED modes plus the already present ones, and disable EXCLUDED modes, if nil."))
   (:export-class-name-p t)
