@@ -5,7 +5,7 @@
 	path = _build/cluffer
 	url = https://github.com/robert-strandh/Cluffer.git
 [submodule "quicklisp-client"]
-	path = quicklisp-client
+	path = _build/quicklisp-client
 	url = https://github.com/quicklisp/quicklisp-client
 [submodule "quicklisp-libraries/cl-cffi-gtk"]
 	path = _build/cl-cffi-gtk
