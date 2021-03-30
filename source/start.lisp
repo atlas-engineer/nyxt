@@ -286,7 +286,7 @@ To change the default buffer, e.g. set it to a given URL:
            (cond
              (urls (open-urls urls))
              (buffer-fn
-              (window-set-active-buffer window (funcall buffer-fn))))))
+              (window-set-buffer window (funcall buffer-fn))))))
     (lambda (&optional urls)
       (let ((window (current-window)))
         ;; Since this is the first buffer, we don't use any history for it:
@@ -294,7 +294,7 @@ To change the default buffer, e.g. set it to a given URL:
         ;; - most importantly because restoring the history may prompt the
         ;; user which blocks further action such as the loading of the page,
         ;; something we don't want for the startup.
-        (window-set-active-buffer window (help :no-history-p t))
+        (window-set-buffer window (help :no-history-p t))
         ;; Restore session before opening command line URLs, otherwise it will
         ;; reset the session with the new URLs.
         (restore-session)

@@ -37,9 +37,9 @@
                      :documentation "Function to process input events.
 It takes EVENT, BUFFER, WINDOW and PRINTABLE-P parameters.
 Cannot be null.")
-   (window-set-active-buffer-hook (make-hook-window-buffer)
+   (window-set-buffer-hook (make-hook-window-buffer)
                                   :type hook-window-buffer
-                                  :documentation "Hook run before `window-set-active-buffer' takes effect.
+                                  :documentation "Hook run before `window-set-buffer' takes effect.
 The handlers take the window and the buffer as argument.")
    (status-formatter #'format-status
                      :type (function (window) string)
@@ -150,7 +150,7 @@ The handlers take the window as argument."))
   "Create a new window."
   (let ((window (window-make *browser*))
         (buffer (or buffer (make-buffer :url :default))))
-    (window-set-active-buffer window buffer)
+    (window-set-buffer window buffer)
     (values window buffer)))
 
 (define-command toggle-fullscreen (&optional (window (current-window)))

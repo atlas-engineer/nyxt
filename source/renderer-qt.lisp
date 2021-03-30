@@ -124,7 +124,7 @@
         (or (find-if #'qt:widget-is-active-window (window-list) :key #'qt-object)
             (slot-value browser 'last-active-window))))
 
-(defmethod ffi-window-set-active-buffer ((window qt-window) (buffer qt-buffer))
+(defmethod ffi-window-set-buffer ((window qt-window) (buffer qt-buffer))
   "Set BROWSER's WINDOW buffer to BUFFER."
   (qt:widget-set-parent (qt-object (active-buffer window)) (cffi:null-pointer))
   (qt:layout-insert-widget (box-layout window) 0 (qt-object buffer))

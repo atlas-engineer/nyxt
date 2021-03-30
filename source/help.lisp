@@ -411,7 +411,7 @@ evaluate in order."
 (defun error-in-new-window (title text)
   (let* ((window (window-make *browser*))
          (error-buffer (error-buffer title text)))
-    (window-set-active-buffer window error-buffer)
+    (window-set-buffer window error-buffer)
     error-buffer))
 
 (define-command nyxt-version ()
