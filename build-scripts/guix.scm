@@ -1,3 +1,6 @@
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
 ;;; Commentary:
 ;;
 ;; GNU Guix development package.  To build and install, clone this repository,

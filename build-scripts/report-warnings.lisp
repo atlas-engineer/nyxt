@@ -1,3 +1,6 @@
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
 (defun list-dependencies (system)
   "Return SYSTEM dependencies.
 If a dependency is part of the subsystem (i.e. they have the same .asd file),

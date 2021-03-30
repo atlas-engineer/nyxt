@@ -1,3 +1,6 @@
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
 ;; The following system is used to create standalone (portable)
 ;; application bundles for Darwin with all dependencies included
 ;; (intended for distribution)- otherwise, the Makefile may be
