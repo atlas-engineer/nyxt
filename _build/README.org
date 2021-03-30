@@ -5,4 +5,7 @@ Potential reasons:
 
 - Version on Quicklisp out of date
 - Not available on Quicklisp
-- ...
+
+We store these in a directory that's excluded from recursion by ASDF.
+as per =asdf/source-registry:*source-registry-exclusions*=.
+This way we won't conflict with user or system libraries.
