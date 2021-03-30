@@ -162,7 +162,7 @@ non-new-page requests, buffer URL is not altered."
       (cond
         ((and (not rule) (new-page-request-p request-data))
          (reapply-last-active-modes auto-mode))
-        ((and rule (not (equalp rule previous-rule)))
+        ((and rule (not (eq rule previous-rule)))
          (enable-matching-modes (url request-data) (buffer request-data))))))
   request-data)
 
