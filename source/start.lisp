@@ -280,7 +280,12 @@ To change the default buffer, e.g. set it to a given URL:
         ;; Restore session before opening command line URLs, otherwise it will
         ;; reset the session with the new URLs.
         (match (session-restore-prompt *browser*)
-          (:always-ask (restore-history-by-name))
+          (:always-ask (handler-case (restore-history-by-name)
+                         ;; We handle prompt cancelation, otherwise the rest of
+                         ;; the function would not be run.
+                         (nyxt-prompt-buffer-canceled ()
+                           (log:debug "Prompt buffer interrupted")
+                           nil)))
           (:always-restore (restore (data-profile buffer) (history-path buffer)
                                     :restore-buffers-p t))
           (:never-restore (progn
