@@ -270,18 +270,18 @@ To change the default buffer, e.g. set it to a given URL:
    :buffer-fn (lambda () (make-buffer :url \"https://example.org\")))"
   (flet ((restore-session ()
            (let ((buffer (current-buffer)))
-             (match (session-restore-prompt *browser*)
-               (:always-ask (handler-case (restore-history-by-name)
-                              ;; We handle prompt cancelation, otherwise the rest of
-                              ;; the function would not be run.
-                              (nyxt-prompt-buffer-canceled ()
-                                (log:debug "Prompt buffer interrupted")
-                                nil)))
-               (:always-restore (restore (data-profile buffer) (history-path buffer)
-                                         :restore-buffers-p t))
-               (:never-restore (progn
-                                 (log:info "Not restoring session.")
-                                 (restore (data-profile buffer) (history-path buffer)))))))
+             (when (histories-list buffer)
+                 (match (session-restore-prompt *browser*)
+                   (:always-ask (handler-case (restore-history-by-name)
+                                  ;; We handle prompt cancelation, otherwise the rest of
+                                  ;; the function would not be run.
+                                  (nyxt-prompt-buffer-canceled ()
+                                    (log:debug "Prompt buffer interrupted")
+                                    nil)))
+                   (:always-restore (restore (data-profile buffer) (history-path buffer)
+                                             :restore-buffers-p t))
+                   (:never-restore (log:info "Not restoring session.")
+                                   (restore (data-profile buffer) (history-path buffer)))))))
          (load-start-urls (window urls)
            (cond
              (urls (open-urls urls))
