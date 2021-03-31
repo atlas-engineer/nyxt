@@ -15,3 +15,8 @@
   nx-ace allows you to use the Ace editor within Nyxt. To use it, load
   it, and add =ace-mode= to your default modes for your
   =editor-buffer=.
+
+- [[https://github.com/aartaka/nx-kaomoji.git][nx-kaomoji]] ::
+  nx-kaomoji lets you paste Kaomojis to any input field with a
+  dedicated command. Load it and run =kaomoji-fill= (or bind it to a
+  key) in Nyxt.
