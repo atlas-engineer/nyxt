@@ -413,15 +413,17 @@ We keep this variable as a means to import the old format to the new one.")
                (error "Expected (list version history) structure.")
                nil)))))))
 
-
 (defun histories-list (&optional (buffer (current-buffer)))
-  (mapcar #'pathname-name
-          (remove-if
-           #'(lambda (pathname)
-               (let ((type (pathname-type pathname)))
-                 (or (not (stringp type))
-                  (not (string-equal "lisp" type)))))
-           (uiop:directory-files (dirname (history-path buffer))))))
+  (let* ((path (expand-path (history-path buffer)))
+         (dir (when path (uiop:pathname-directory-pathname path))))
+    (when dir
+      (mapcar #'pathname-name
+              (remove-if
+               #'(lambda (pathname)
+                   (let ((type (pathname-type pathname)))
+                     (or (not (stringp type))
+                         (not (string-equal "lisp" type)))))
+               (uiop:directory-files dir))))))
 
 (define-class history-name-source (prompter:source)
   ((prompter:name "Histories")
