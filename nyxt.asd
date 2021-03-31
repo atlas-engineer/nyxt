@@ -96,6 +96,7 @@
                (:file "lisp-system")
                ;; Core Modes
                (:file "editor-mode")
+               (:file "plaintext-editor-mode")
                (:file "buffer-listing-mode")
                (:file "base-mode")
                (:file "repl-mode")
