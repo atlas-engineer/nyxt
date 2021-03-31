@@ -14,20 +14,29 @@
       (list)))
    (style (cl-css:css
            '((* :font-family "monospace,monospace")
-             (body :margin "0"
-                   :padding "0 6px")
+             (body :margin-right "0")
              ("#container" :display "flex"
                            :flex-flow "column"
                            :height "100%")
-             ("#input" :padding "6px 0"
-                       :border-top "solid 1px lightgray")
+             ("#input" :display "grid"
+                       :grid-template-columns "auto 1fr"
+                       :width "100%"
+                       :padding 0
+                       :margin 0
+                       :background-color "dimgray")
+             ("#input-buffer" :width "100%"
+                              :border "none"
+                              :outline "none"
+                              :padding "3px"
+                              :background-color "#E8E8E8"
+                              :autofocus "true")
              ("#evaluation-history" :flex-grow "1"
                                     :overflow-y "auto"
                                     :overflow-x "auto")
-             ("#cursor" :background-color "gray"
-                        :color "white")
              ("#prompt" :padding-right "4px"
-                        :color "dimgray")
+                        :padding-left "4px"
+                        :line-height "30px"
+                        :color "white")
              (ul :list-style "none"
                  :padding "0"
                  :margin "0")
@@ -69,8 +78,9 @@
                    (:body
                     (:div :id "container"
                           (:div :id "evaluation-history" "")
-                          (:div :id "input" (:span :id "prompt" ">") (:input :type "text" :id "input-buffer"))
-                          (:div :id "suggestions" "")))))
+                          (:div :id "input"
+                                (:span :id "prompt" ">")
+                                (:input :type "text" :id "input-buffer"))))))
          (insert-content (ps:ps (ps:chain document
                                           (write (ps:lisp content))))))
     (ffi-buffer-evaluate-javascript-async (buffer repl) insert-content)))
