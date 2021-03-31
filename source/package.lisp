@@ -19,6 +19,7 @@
 (uiop:define-package nyxt/repl-mode
   (:use #:common-lisp #:nyxt)
   (:import-from #:keymap #:define-scheme)
+  (:import-from #:nyxt #:pflet)
   (:export :repl-mode))
 
 (uiop:define-package nyxt-user

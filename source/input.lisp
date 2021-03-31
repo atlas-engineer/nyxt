@@ -80,6 +80,7 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
 (defun dispatch-input-event (event buffer window printable-p)
   "Dispatch keys in WINDOW `key-stack'.
 Return nil to forward to renderer or non-nil otherwise."
+  (declare (ignore printable-p))
   (echo-dismiss) ; Clean up message-view on keypress.
   (with-accessors ((key-stack key-stack)) window
     (labels ((keyspecs (key &optional translated-key)
@@ -122,15 +123,6 @@ Return nil to forward to renderer or non-nil otherwise."
                 ;; We must reset the key-stack on errors or else all subsequent
                 ;; keypresses will keep triggering the same erroring command.
                 (setf key-stack nil))
-              t)
-
-             ((nyxt/repl-mode::active-repl-p window)
-              (when printable-p
-                (dolist (key key-stack)
-                  (let ((value (keymap:key-value key)))
-                    (log:debug "Insert ~s in REPL" value)
-                    (nyxt/repl-mode::insert (nyxt/repl-mode::current-repl) value))))
-              (setf key-stack nil)
               t)
 
              ((or (and buffer (forward-input-events-p buffer))
