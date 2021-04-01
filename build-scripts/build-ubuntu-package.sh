@@ -10,7 +10,7 @@ gem install --no-document fpm &> /dev/null
 
 export PATH=~/.gem/ruby/$(ls ~/.gem/ruby)/bin:$PATH
 
-git clone --depth=1 --branch=sbcl-2.0.10 https://github.com/sbcl/sbcl.git ~/sbcl &> /dev/null
+git clone --depth=1 --branch=sbcl-2.1.0 https://github.com/sbcl/sbcl.git ~/sbcl &> /dev/null
 (
     cd ~/sbcl
     set +e
