@@ -69,7 +69,7 @@ A higher score means the suggestion-string comes first."
         (score-suggestion-string input (match-data suggestion)))
   suggestion)
 
-(export-always 'submatch)
+(export-always 'submatches)
 (defun submatches (input suggestion)      ; TODO: Add tests!
   "Return SUGGESTION untouched if all INPUT strings are contained in it.
 
