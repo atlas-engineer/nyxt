@@ -815,6 +815,17 @@ Warning: This behaviour may change in the future."
      (declare (ignore user-data))
      (log:debug "Web process crashed for web view: ~a" web-view)))
   (gobject:g-signal-connect
+   (gtk-object buffer) "create"
+   (lambda (web-view navigation-action)
+     (declare (ignore web-view))
+     (let ((new-buffer (buffer-make *browser*))
+           (uri (webkit:webkit-uri-request-uri
+                 (webkit:webkit-navigation-action-get-request
+                  (gobject:pointer navigation-action)))))
+       (ffi-buffer-load new-buffer uri)
+       (window-set-buffer (current-window) new-buffer)
+       (gtk-object new-buffer))))
+  (gobject:g-signal-connect
    (gtk-object buffer) "context-menu"
    (lambda (web-view context-menu event hit-test-result)
      (declare (ignore web-view event hit-test-result))
