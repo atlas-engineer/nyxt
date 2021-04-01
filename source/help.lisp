@@ -389,7 +389,10 @@ evaluate in order."
           (last
            (loop for object = (read input nil :eof)
                  until (eq object :eof)
-                 collect (multiple-value-list  (eval object))))))))
+                 collect (multiple-value-list
+                          (handler-case
+                              (eval object)
+                            (error (c) (format nil "~a" c))))))))))
     (calispel:? channel)))
 
 (defun evaluate-async (string)
