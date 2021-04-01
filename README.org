@@ -89,7 +89,7 @@ To perform an installation from source, please see the [[file:documents/README.o
 
 For full documentation about Nyxt, how it works, and how to extend it
 please see the embedded help.  To get started, run the =help= command
-(=C-space help=).
+(press =control= + =space=, type =help= and confirm with =return=).
 
 If you want to help with development, or build Nyxt from source, read
 the developer's documentation at [[file:documents/README.org][documents/README.org]].
