@@ -116,22 +116,9 @@ doc:
 		--eval '(asdf:load-system :nyxt/documentation)' $(lisp_quit)
 
 .PHONY: check
-check: check-asdf check-binary
-
-## TODO: Test that Nyxt starts even with broken init file.
-
-.PHONY: check-asdf
-check-asdf: deps
-	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
-		--eval '(require "asdf")' \
-		--eval '$(quicklisp_maybe_load)' \
-		--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' \
-		--eval '(asdf:test-system :nyxt)' \
-		--eval '(uiop:quit)'
-
-.PHONY: check-binary
-check-binary: nyxt
-	./nyxt -h
+check:
+	$(lisp_eval) '($(load_or_quickload) :nyxt)' \
+		--eval '(asdf:test-system :nyxt)' $(lisp_quit)
 
 .PHONY: clean-deps
 clean-deps:

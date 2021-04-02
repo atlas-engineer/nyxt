@@ -162,6 +162,7 @@
        (uiop:getenv "NYXT_TESTS_ERROR_ON_FAIL")
        (uiop:quit 18)))
 
+;; TODO: Test that Nyxt starts and that --help, --version work.
 (defsystem "nyxt/tests"
   :depends-on (nyxt prove)
   :components ((:file "tests/package"))
