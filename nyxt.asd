@@ -209,6 +209,10 @@
                                (read-from-string "swank-loader:*source-directory*"))))
                        (funcall (read-from-string "swank:delete-system-fasls") "nyxt")))
 
+;; We use a temporary "version" file to generate the final nyxt.desktop with the
+;; right version number.  Since "version" is a file target, third-party
+;; packaging systems can choose to generate "version" in advance before calling
+;; "make install-assets", so that they won't need to rely on Quicklisp.
 (defsystem "nyxt/version"
   :depends-on (nyxt)
   :output-files (compile-op (o c)
