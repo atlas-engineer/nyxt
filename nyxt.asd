@@ -9,6 +9,15 @@
 (defvar %submodules-dir (or (uiop:getenv "NYXT_SUBMODULES_DIR")
                             "_build/submodules"))
 
+(defvar *prefix* (format nil "~a/~a"
+                         (or (uiop:getenv "DESTDIR") "")
+                         (or (uiop:getenv "PREFIX")
+                             "/usr/local")))
+(defvar *datadir* (or (uiop:getenv "DATADIR")
+                    (format nil "~a/share" *prefix*)))
+(defvar *bindir* (or (uiop:getenv "BINDIR")
+                     (format nil "~a/bin" *prefix*)))
+
 (defsystem "nyxt"
   :version "2" ; Pre-release 6
   :author "Atlas Engineer LLC"
@@ -279,6 +288,45 @@
   (uiop:dump-image (output-file o c)
                    :executable t
                    :compression (uiop:getenv "NYXT_COMPRESS")))
+
+(defsystem "nyxt/install"
+  :depends-on (alexandria
+               str
+               nyxt/gtk-application nyxt/version)    ; TODO: Make renderer customizable?
+  :perform (compile-op
+            (o c)
+            (flet ((ensure-parent-exists (file)
+                     (uiop:ensure-all-directories-exist
+                      (list (directory-namestring file)))))
+              (let ((desktop-file (format nil "~a/applications/nyxt.desktop" *datadir*)))
+                (ensure-parent-exists desktop-file)
+                (with-open-file (desktop-stream desktop-file :direction :output
+                                                             :if-exists :supersede)
+                  (princ
+                   (funcall (read-from-string "str:replace-all")
+                            "VERSION"
+                            (symbol-value (read-from-string "nyxt:+version+"))
+                            (funcall (read-from-string "alexandria:read-file-into-string")
+                                     (system-relative-pathname c "assets/nyxt.desktop")))
+                   desktop-stream)))
+              (mapc (lambda (icon-size)
+                      (let ((icon-file (format nil "~a/icons/hicolor/~ax~a/apps/nyxt.png"
+                                               *datadir* icon-size icon-size)))
+                        (ensure-parent-exists icon-file)
+                        (uiop:copy-file (system-relative-pathname
+                                         c
+                                         (format nil "assets/nyxt_~ax~a.png"
+                                                 icon-size icon-size))
+                                        icon-file)))
+                    '(16 32 128 256 512))
+              (let ((binary-file (format nil "~a/nyxt" *bindir*)))
+                (ensure-parent-exists binary-file)
+                (uiop:copy-file (system-relative-pathname c "nyxt") binary-file)
+                ;; TODO: Use file-attributes instead of chmod?  Too verbose?
+                (uiop:run-program (list "chmod" "+x" binary-file))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Library subsystems:
 
 (defsystem "nyxt/download-manager"
   :depends-on (calispel
