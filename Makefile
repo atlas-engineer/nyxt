@@ -76,13 +76,12 @@ endif
 ## right version number.  Since "version" is a file target, third-party
 ## packaging systems can choose to generate "version" in advance before calling
 ## "make install-assets", so that they won't need to rely on Quicklisp.
-version: deps
+version:
 	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
 		--eval '(require "asdf")' \
 		--eval '$(quicklisp_maybe_load)' \
 		--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' \
-		--eval '(asdf:load-system :nyxt)' \
-		--eval '(with-open-file (stream "version" :direction :output :if-exists :supersede) (format stream "~a" nyxt:+version+))' \
+		--eval '(asdf:make :nyxt/version)' \
 		--eval '(uiop:quit)'
 
 .PHONY: install-assets
