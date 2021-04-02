@@ -36,17 +36,10 @@ lisp_eval:=$(LISP) $(LISP_FLAGS) \
 	--eval
 lisp_quit:=--eval '(uiop:quit)'
 
-# .PHONY: clean-fasls
-# clean-fasls:
-# 	$(NYXT_INTERNAL_QUICKLISP) && \
-# 	$(LISP) $(LISP_FLAGS) \
-# 		--eval '(require "asdf")' \
-# 		--load $(QUICKLISP_DIR)/setup.lisp \
-# 		--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' \
-# 		--eval '(ql:quickload :swank)' \
-# 		--eval '(load (merge-pathnames  "contrib/swank-asdf.lisp" swank-loader:*source-directory*))' \
-# 		--eval '(swank:delete-system-fasls "nyxt")' \
-# 		--eval '(uiop:quit)' || true
+.PHONY: clean-fasls
+clean-fasls:
+	$(lisp_eval) '($(load_or_quickload) :swank)' \
+		'(asdf:make :nyxt/clean-fasls)' $(lisp_quit)
 
 ## We need lisp_files to avoid building binary when nothing has changed.
 ## TODO: Can ASDF be this smart?

@@ -191,6 +191,15 @@
                        (funcall (read-from-string "ql:update-dist")
                                 "quicklisp" :prompt nil)))
 
+(defsystem "nyxt/clean-fasls"
+  :depends-on (swank)
+  :perform (compile-op (o c)
+                       (load (merge-pathnames
+                              "contrib/swank-asdf.lisp"
+                              (symbol-value
+                               (read-from-string "swank-loader:*source-directory*"))))
+                       (funcall (read-from-string "swank:delete-system-fasls") "nyxt")))
+
 (defsystem "nyxt/version"
   :depends-on (nyxt)
   :output-files (compile-op (o c)
