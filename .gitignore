@@ -3,6 +3,7 @@ build/
 version
 nyxt
 Nyxt.app
+_build/submodules/system-index.txt
 
 # Ignore PNG and XCF
 *.png
