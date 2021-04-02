@@ -35,7 +35,7 @@ jobs:
       run: |
         make quicklisp-extra-libs
         mkdir -p ~/.config/common-lisp/source-registry.conf.d/
-        echo "(:tree \"$PWD/_build\")" >> ~/.config/common-lisp/source-registry.conf.d/asdf.conf
+        echo "(:tree \"$PWD/_build/submodules\")" >> ~/.config/common-lisp/source-registry.conf.d/asdf.conf
 
     - name: Build special SBCL and make package
       shell: bash

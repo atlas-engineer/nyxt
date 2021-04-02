@@ -9,7 +9,7 @@ LISP ?= sbcl
 ## We use --non-interactive with SBCL so that errors don't interrupt the CI.
 LISP_FLAGS ?= --no-userinit --non-interactive
 QUICKLISP_DIR=_build/quicklisp-client
-QUICKLISP_LIBRARIES=_build
+QUICKLISP_LIBRARIES=_build/submodules
 
 NYXT_INTERNAL_QUICKLISP = true
 NYXT_RENDERER = gtk
