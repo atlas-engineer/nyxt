@@ -26,7 +26,7 @@ continuous integration and build systems.
 
 If NYXT_INTERNAL_QUICKLISP is "true" (the default), all Lisp
 dependencies will be fetched with Quicklisp into the
-QUICKLISP_DIR directory.
+NYXT_QUICKLISP_DIR directory.
 
 Otherwise, the dependencies will have to be locally installed
 on your system.  You may have to accomodate the LISP_FLAGS
