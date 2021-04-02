@@ -67,14 +67,6 @@ ifeq ($(UNAME), Darwin)
 all: nyxt app-bundle
 endif
 
-## We use a temporary "version" file to generate the final nyxt.desktop with the
-## right version number.  Since "version" is a file target, third-party
-## packaging systems can choose to generate "version" in advance before calling
-## "make install-assets", so that they won't need to rely on Quicklisp.
-version:
-	$(lisp_eval) '($(load_or_quickload) :nyxt)' \
-		--eval '(asdf:make :nyxt/version)' $(lisp_quit)
-
 .PHONY: install
 ifeq ($(UNAME), Darwin)
 install: install-app-bundle
