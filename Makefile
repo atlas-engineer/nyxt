@@ -79,12 +79,8 @@ endif
 ## packaging systems can choose to generate "version" in advance before calling
 ## "make install-assets", so that they won't need to rely on Quicklisp.
 version:
-	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
-		--eval '(require "asdf")' \
-		--eval '$(quicklisp_maybe_load)' \
-		--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' \
-		--eval '(asdf:make :nyxt/version)' \
-		--eval '(uiop:quit)'
+	$(lisp_eval) '($(load_or_quickload) :nyxt)' \
+		--eval '(asdf:make :nyxt/version)' $(lisp_quit)
 
 .PHONY: install-assets
 install-assets: version
