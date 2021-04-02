@@ -112,12 +112,8 @@ endif
 
 .PHONY: doc
 doc:
-	env NYXT_INTERNAL_QUICKLISP=$(NYXT_INTERNAL_QUICKLISP) $(LISP) $(LISP_FLAGS) \
-		--eval '(require "asdf")' \
-		--eval '$(quicklisp_maybe_load)' \
-		--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' \
-		--eval '(asdf:load-system :nyxt/documentation)' \
-		--eval '(uiop:quit)'
+	$(lisp_eval) '($(load_or_quickload) :nyxt)' \
+		--eval '(asdf:load-system :nyxt/documentation)' $(lisp_quit)
 
 .PHONY: check
 check: check-asdf check-binary
