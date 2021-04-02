@@ -4,6 +4,11 @@
 #+sbcl
 (sb-ext:assert-version->= 1 5 0)
 
+(defvar %quicklisp-dir (or (uiop:getenv "NYXT_QUICKLISP_DIR")
+                           "_build/quicklisp-client"))
+(defvar %submodules-dir (or (uiop:getenv "NYXT_SUBMODULES_DIR")
+                            "_build/submodules"))
+
 (defsystem "nyxt"
   :version "2" ; Pre-release 6
   :author "Atlas Engineer LLC"
@@ -163,6 +168,27 @@
   :perform (test-op (op c)
                     (nyxt-run-test c "tests/offline/")
                     (nyxt-run-test c "tests/online/" :network-needed-p t)))
+
+(defsystem "nyxt/submodules"
+  :perform (compile-op (o c)
+                       (uiop:run-program `("git"
+                                           "-C" ,(namestring (system-relative-pathname c ""))
+                                           ;; TODO: Pass --force to ensure submodules are checked out?
+                                           "submodule" "update" "--init")
+                                         :ignore-error-status t)))
+
+(defsystem "nyxt/quicklisp"
+  :depends-on (nyxt/submodules)
+  :perform (compile-op (o c)
+                       (load (system-relative-pathname
+                              c
+                              (format nil "~a/setup.lisp" %quicklisp-dir)))
+                       (setf (symbol-value (read-from-string "ql:*local-project-directories*"))
+                             (cons
+                              (uiop:truenamize (uiop:ensure-directory-pathname %submodules-dir))
+                              (symbol-value (read-from-string "ql:*local-project-directories*"))))
+                       (funcall (read-from-string "ql:update-dist")
+                                "quicklisp" :prompt nil)))
 
 (defsystem "nyxt/version"
   :depends-on (nyxt)
