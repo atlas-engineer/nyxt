@@ -12,12 +12,6 @@ LISP_FLAGS ?= --no-userinit --non-interactive
 NYXT_INTERNAL_QUICKLISP=true
 NYXT_RENDERER=gtk
 
-PREFIX = /usr/local
-prefix = $(PREFIX)
-BINDIR = $(PREFIX)/bin
-DATADIR = $(PREFIX)/share
-APPLICATIONSDIR = /Applications
-
 .PHONY: help
 help:
 	@cat INSTALL
