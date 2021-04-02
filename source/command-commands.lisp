@@ -36,7 +36,11 @@
              (first (str:split +newline+ string))))
       (list :name (string-downcase (name command))
             :bindings (format nil "~{~a~^, ~}" bindings)
-            :docstring (first-line (nyxt::docstring command))))))
+            :docstring (first-line (nyxt::docstring command))
+            :mode (let ((package-name (str:downcase (uiop:symbol-package-name (name command)))))
+                    (if (sera:in package-name "nyxt" "nyxt-user")
+                        ""
+                        (str:replace-first "nyxt/" "" package-name)))))))
 
 (defmethod prompter:object-properties ((command command))
   (command-properties command))
