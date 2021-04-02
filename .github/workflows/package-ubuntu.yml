@@ -30,10 +30,9 @@ jobs:
         sudo apt-get install -y ruby ruby-dev rubygems dpkg-dev sbcl curl git-core zlib1g-dev
         sudo apt-get install -y libfixposix3 libfixposix-dev libwebkit2gtk-4.0-dev glib-networking gsettings-desktop-schemas xclip notify-osd enchant-2
 
-    - name: Fetch Common Lisp third-party dependencies
+    - name: Register Common Lisp third-party dependencies location
       shell: bash
       run: |
-        make quicklisp-extra-libs
         mkdir -p ~/.config/common-lisp/source-registry.conf.d/
         echo "(:tree \"$PWD/_build/submodules\")" >> ~/.config/common-lisp/source-registry.conf.d/asdf.conf
 
