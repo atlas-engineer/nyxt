@@ -41,13 +41,13 @@ clean-fasls:
 	$(lisp_eval) '($(load_or_quickload) :swank)' \
 		'(asdf:make :nyxt/clean-fasls)' $(lisp_quit)
 
-## We need lisp_files to avoid building binary when nothing has changed.
-## TODO: Can ASDF be this smart?
+## load_or_quickload is a bit slow on :nyxt/$(NYXT_RENDERER)-application, so we
+## keep a Make dependency on the Lisp files.
 lisp_files := nyxt.asd $(shell find . -type f -name '*.lisp')
 nyxt: $(lisp_files)
 	$(lisp_eval) '($(load_or_quickload) :nyxt/$(NYXT_RENDERER)-application)' \
 		--eval '(asdf:make :nyxt/$(NYXT_RENDERER)-application)' \
-		|| (printf "\n%s\n%s\n" "Compilation failed, see the above stacktrace." && exit 1)
+		$(lisp_quit) || (printf "\n%s\n%s\n" "Compilation failed, see the above stacktrace." && exit 1)
 
 .PHONY: app-bundle
 app-bundle:
