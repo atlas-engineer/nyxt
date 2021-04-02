@@ -33,20 +33,13 @@ git clone --depth=1 https://gitlab.com/ralt/linux-packaging.git ~/common-lisp/li
 git clone --depth=1 https://gitlab.common-lisp.net/asdf/asdf.git ~/common-lisp/asdf/ &> /dev/null
 
 mkdir -p ~/.config/common-lisp/source-registry.conf.d/
-echo "(:tree \"$PWD/\")" >> ~/.config/common-lisp/source-registry.conf.d/linux-packaging.conf
-
-## Prepare desktop file.
-sbcl --eval '(require "asdf")' \
-		 --load ~/quicklisp/setup.lisp \
-		 --eval "(ql:quickload :nyxt)" \
-		 --eval '(with-open-file (stream "version" :direction :output :if-exists :supersede) (format stream "~a" nyxt:+version+))' \
-		 --quit
-sed -i "s/VERSION/$(cat version)/" assets/nyxt.desktop
+echo "(:tree \"$(pwd)/\")" >> ~/.config/common-lisp/source-registry.conf.d/linux-packaging.conf
 
 sbcl \
     --eval '(setf *debugger-hook* (lambda (c h) (declare (ignore h)) (format t "~A~%" c) (sb-ext:quit :unix-status -1)))' \
     --load ~/quicklisp/setup.lisp \
     --eval "(ql:quickload :linux-packaging)" \
+    --eval '(asdf:load-asd "'$(pwd)'/nyxt.asd")' \
     --eval "(ql:quickload :nyxt)" \
     --eval "(ql:quickload :nyxt-ubuntu-package)" \
     --eval "(asdf:make :nyxt-ubuntu-package)" \
