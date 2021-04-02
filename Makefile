@@ -113,9 +113,9 @@ check:
 	$(lisp_eval) '($(load_or_quickload) :nyxt)' \
 		--eval '(asdf:test-system :nyxt)' $(lisp_quit)
 
-.PHONY: clean-deps
-clean-deps:
-	rm -rf $(QUICKLISP_DIR)
+.PHONY: clean-submodules
+clean-submodules:
+	git submodule deinit  --all
 
 .PHONY: clean
-clean: clean-fasls clean-deps
+clean: clean-fasls clean-submodules
