@@ -10,18 +10,18 @@
 ;;
 ;; To use as the basis for a development environment, run:
 ;;
-;;   guix environment --container --load=build-scripts/guix.scm --ad-hoc glib glib-networking gsettings-desktop-schemas
+;;   guix environment --container --load=build-scripts/guix.scm --ad-hoc glib glib-networking gsettings-desktop-schemas git-minimal
 ;;
 ;; Replace --container by --pure if you still want ASDF to see external
 ;; libraries in ~/common-lisp, etc.
 ;; To build a local executable and then run it:
 ;;
-;;   guix environment --container --load=build-scripts/guix.scm -- make all NYXT_INTERNAL_QUICKLISP=false
+;;   guix environment --container --load=build-scripts/guix.scm --ad-hoc git-minimal -- make all NYXT_INTERNAL_QUICKLISP=false
 ;;   guix environment --pure --load=build-scripts/guix.scm -- ./nyxt
 ;;
 ;; To start in a container, run:
 ;;
-;;   guix environment --no-grafts --load=build-scripts/guix.scm --container --network --share=/PATH/TO/YOUR/NYXT/CHECKOUT=/nyxt --preserve='^DISPLAY$' --expose=/etc/ssl/certs --ad-hoc nss-certs glib glib-networking gsettings-desktop-schemas
+;;   guix environment --no-grafts --load=build-scripts/guix.scm --container --network --share=/PATH/TO/YOUR/NYXT/CHECKOUT=/nyxt --preserve='^DISPLAY$' --expose=/etc/ssl/certs --ad-hoc nss-certs glib glib-networking gsettings-desktop-schemas git-minimal
 ;;
 ;; Replace '/PATH/TO/YOUR/NYXT/CHECKOUT' as appropriate.
 ;; Then in the container environment:
