@@ -36,6 +36,7 @@ jobs:
       shell: bash
       run: |
         sudo apt-get update -qq
+        sudo apt-get install -y git
         sudo apt-get install -y libfixposix3 libfixposix-dev libwebkit2gtk-4.0-dev glib-networking gsettings-desktop-schemas xclip notify-osd enchant-2
 
     - name: Install Roswell
@@ -58,9 +59,10 @@ jobs:
       shell: bash
       run: ros -e "(ql:update-all-dists :prompt nil)"
 
-    - name: Register Common Lisp third-party dependencies location
+    - name: Fetch Common Lisp third-party dependencies
       shell: bash
       run: |
+        ros -e '(asdf:load-system :nyxt/submodules)'
         mkdir -p ~/.config/common-lisp/source-registry.conf.d/
         echo "(:tree \"$PWD/_build/submodules\")" > ~/.config/common-lisp/source-registry.conf.d/asdf.conf
 
