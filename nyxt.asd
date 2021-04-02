@@ -173,9 +173,8 @@
                        (with-open-file (out (output-file o c)
                                             :direction :output
                                             :if-exists :supersede)
-                         (write-string (funcall (find-symbol (string 'manual-content)
-                                                             (find-package 'nyxt)))
-
+                         (write-string (funcall (read-from-string "nyxt::manual-content"
+                                                                  (find-package 'nyxt)))
                                        out))
                        (format *error-output* "Manual dumped to ~s.~&" (output-file o c))))
 
