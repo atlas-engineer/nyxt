@@ -6,7 +6,7 @@
 
 set -xe
 
-gem install --no-document fpm &> /dev/null
+sudo gem install --no-document fpm &> /dev/null
 
 export PATH=~/.gem/ruby/$(ls ~/.gem/ruby)/bin:$PATH
 
@@ -19,7 +19,7 @@ git clone --depth=1 --branch=sbcl-2.1.0 https://github.com/sbcl/sbcl.git ~/sbcl 
     set -e
     test $code = 0 || (cat sbcl-build.log && exit 1)
 
-    sh install.sh &> /dev/null
+    sudo sh install.sh &> /dev/null
 )
 
 export SBCL_HOME=/usr/local/lib/sbcl
@@ -30,16 +30,28 @@ rm quicklisp.lisp
 mkdir -p ~/common-lisp
 git clone --depth=1 https://gitlab.com/ralt/linux-packaging.git ~/common-lisp/linux-packaging/ &> /dev/null
 ## Modern ASDF needed.
-git clone --depth=1 https://gitlab.common-lisp.net/asdf/asdf.git ~/common-lisp/asdf/ &> /dev/null
+git clone --depth=1 --branch=3.3.4 https://gitlab.common-lisp.net/asdf/asdf.git ~/common-lisp/asdf/ &> /dev/null
 
 mkdir -p ~/.config/common-lisp/source-registry.conf.d/
 echo "(:tree \"$(pwd)/\")" >> ~/.config/common-lisp/source-registry.conf.d/linux-packaging.conf
 
+echo
+echo "==> ASDF diagnostic"
+ls -la ~/.config/common-lisp/source-registry.conf.d/
+sbcl \
+  --eval '(require "asdf")' \
+  --eval '(format t "- ASDF version: ~a~%" (asdf:asdf-version))' \
+  --eval '(format t "- ASDF default registries: ~a~%" asdf:*default-source-registries*)' \
+  --eval '(format t "- ASDF user source registry directory: ~a~%" (asdf/source-registry:user-source-registry-directory))' \
+  --quit
+
+echo
+echo "==> Build package"
 sbcl \
     --eval '(setf *debugger-hook* (lambda (c h) (declare (ignore h)) (format t "~A~%" c) (sb-ext:quit :unix-status -1)))' \
+    --eval '(require "asdf")' \
     --load ~/quicklisp/setup.lisp \
     --eval "(ql:quickload :linux-packaging)" \
-    --eval '(asdf:load-asd "'$(pwd)'/nyxt.asd")' \
     --eval "(ql:quickload :nyxt)" \
     --eval "(ql:quickload :nyxt-ubuntu-package)" \
     --eval "(asdf:make :nyxt-ubuntu-package)" \
