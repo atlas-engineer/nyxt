@@ -31,7 +31,7 @@
 Properties are meant to describe the OBJECT structurally.
 Property-values can be of arbitrary type.
 
-For sturcture and class instances, the plist is made of the exported slots: the
+For structure and class instances, the plist is made of the exported slots: the
 keys are the slot symbols and the values the slot values passed to
 `princ-to-string'.
 
