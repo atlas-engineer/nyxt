@@ -26,7 +26,7 @@ endif
 lisp_eval:=$(LISP) $(LISP_FLAGS) \
 	--eval '(require "asdf")' \
 	--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' \
-  --eval '(when (string= "$(NYXT_INTERNAL_QUICKLISP)" "true") (asdf:load-system :nyxt/quicklisp))' \
+	--eval '(when (string= "$(NYXT_INTERNAL_QUICKLISP)" "true") (asdf:load-system :nyxt/quicklisp))' \
 	--eval
 lisp_quit:=--eval '(uiop:quit)'
 
