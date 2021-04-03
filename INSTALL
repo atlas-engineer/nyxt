@@ -39,9 +39,15 @@ Nyxt with an invocation along those lines:
 
     sbcl --eval '(asdf:load-asd "'$(pwd)'/nyxt.asd")' --eval '(ql:quickload :nyxt/gtk-application)' --quit
 
+or, even shorter if Nyxt is checked out in a directory traversed by ASDF (like
+~/common-lisp):
+
+    sbcl --eval '(ql:quickload :nyxt/gtk-application)' --quit
+
 WARNING: Make sure your Quicklisp distribution is up-to-date when using
 NYXT_INTERNAL_QUICKLISP=false.  Also check the .gitmodules file for Common Lisp
-libraries that should follow master.
+libraries pinned to a version that may not be the same as the one in the latest
+Quickdist.
 
 The documentation generation is mostly useful if you cannot consult the
 documention in Nyxt itself.  Since the manual is normally dynamically generated
