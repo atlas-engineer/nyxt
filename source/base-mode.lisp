@@ -60,7 +60,6 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "C-shift-t" 'reopen-buffer
                      "C-T" 'reopen-buffer
                      "C-p" 'print-buffer
-                     "C-x C-f" 'open-file
                      "M-i" 'focus-first-input-field)
 
                     scheme:emacs
@@ -93,8 +92,7 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "C-x r u" 'bookmark-url
                      "C-x 5 2" 'make-window
                      "C-x 5 0" 'delete-current-window
-                     "C-x 5 1" 'delete-window
-                     "C-x C-f" 'open-file)
+                     "C-x 5 1" 'delete-window)
 
                     scheme:vi-normal
                     (list
@@ -136,6 +134,5 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "C-w C-w" 'make-window
                      "C-w q" 'delete-current-window
                      "C-w C-q" 'delete-window
-                     "u" 'reopen-buffer
-                     "C-x C-f" 'open-file))
+                     "u" 'reopen-buffer))
                   :type keymap:scheme)))
