@@ -147,10 +147,11 @@ download."
   "Download the page or file of the current buffer."
   (download (current-buffer) (url (current-buffer))))
 
-(define-class downloaded-files-source (prompter:source)
-  ((prompter:name "Files")
-   (prompter:must-match-p t)
+(define-class downloaded-files-source (prompter:file-source)
+  ((prompter:must-match-p t)
    (prompter:constructor (mapcar #'destination-path (downloads *browser*)))
+   ;; TODO: Extract to `prompter:file-source'?
+   ;; TODO: Maybe extract `open-file-function' to `browser'?
    (prompter:actions
     (list (make-command open-file* (files)
             (let ((download-mode (find-submode (current-buffer) 'download-mode)))
