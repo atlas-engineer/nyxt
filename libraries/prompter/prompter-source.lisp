@@ -404,12 +404,16 @@ call.")))
                         pathname
                         (uiop:pathname-directory-pathname pathname))))
     (mapcar (lambda (file)
-              (funcall (suggestion-maker source) (namestring file) source))
+              (make-instance 'suggestion
+                             :value file
+                             :match-data (namestring file)
+                             :properties (object-properties file)
+                             :source source
+                             :input input))
             (append (uiop:subdirectories directory) (uiop:directory-files directory)))))
 
 (define-class file-source (source)
   ((name "Files")
-   (filter nil)
    (filter-preprocessor 'make-file-suggestions)
    (multi-selection-p t))
   (:export-class-name-p t)
