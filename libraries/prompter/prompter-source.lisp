@@ -412,6 +412,7 @@ call.")))
                              :input input))
             (append (uiop:subdirectories directory) (uiop:directory-files directory)))))
 
+;; TODO: `must-match-p'?
 (define-class file-source (source)
   ((name "Files")
    (filter-preprocessor 'make-file-suggestions)
