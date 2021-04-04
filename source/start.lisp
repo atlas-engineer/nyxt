@@ -229,10 +229,15 @@ Return the short error message and the full error message as second value."
   "Load the prompted Lisp file."
   (prompt
    :prompt "Load file"
+   :input (namestring (alex:if-let ((init-path (expand-path *init-file-path*)))
+                        (uiop:pathname-directory-pathname (pathname init-path))
+                        (uiop:getcwd)))
    :sources
-   (make-instance 'prompter:raw-source
+   ;; TODO: Load several files at once? `prompter:file-source' allows that.
+   (make-instance 'prompter:file-source
                   :actions (list (make-command load-file* (files)
-                                   (load-lisp (first files)))))))
+                                   (dolist (file files)
+                                     (load-lisp file)))))))
 
 (define-command load-init-file (&key (init-file (expand-path *init-file-path*)))
   "Load or reload the init file."
