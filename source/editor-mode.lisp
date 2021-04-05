@@ -65,8 +65,10 @@ get/set-content (which is necessary for operation)."
   "Open a file in the internal editor."
   (let ((file (first (prompt
                       :prompt "Open file"
-                      :sources (make-instance 'file-source
-                                              :name "Absolute file path")))))
+                      :sources
+                      (list (make-instance 'prompter:raw-source)
+                            (make-instance 'file-source
+                                           :name "Absolute file path"))))))
     (open-file buffer file)
     ;; TODO: Maybe make `editor-mode' and `editor-buffer' pathname-friendly?
     (setf (file buffer) (namestring file))
