@@ -809,10 +809,10 @@ Warning: This behaviour may change in the future."
    (lambda (web-view param-spec)
      (declare (ignore web-view param-spec))
      (on-signal-notify-title buffer nil)))
+  ;; TODO: Bind "web-process-terminated" instead?
   (gobject:g-signal-connect
    (gtk-object buffer) "web-process-crashed"
-   (lambda (web-view user-data)
-     (declare (ignore user-data))
+   (lambda (web-view)
      (log:debug "Web process crashed for web view: ~a" web-view)))
   (gobject:g-signal-connect
    (gtk-object buffer) "create"
