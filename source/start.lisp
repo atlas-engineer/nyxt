@@ -233,8 +233,8 @@ Return the short error message and the full error message as second value."
                         (uiop:pathname-directory-pathname (pathname init-path))
                         (uiop:getcwd)))
    :sources
-   ;; TODO: Load several files at once? `prompter:file-source' allows that.
-   (make-instance 'prompter:file-source
+   ;; TODO: Load several files at once? `file-source' allows that.
+   (make-instance 'file-source
                   :actions (list (make-command load-file* (files)
                                    (dolist (file files)
                                      (load-lisp file)))))))
