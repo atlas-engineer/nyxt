@@ -4,11 +4,15 @@
 (in-package :nyxt)
 
 (defun directory-elements (directory)
+  "Return list of all the files and subdirectories inside DIRECTORY."
   (let ((directory (pathname directory)))
     (append (uiop:subdirectories directory)
             (uiop:directory-files directory))))
 
 (defun ensure-directory-pathname (pathname)
+  "Force the PATHNAME to be a directory.
+For directory, do nothing.
+For file, take its directory."
   (let ((pathname (pathname pathname)))
     (if (uiop:directory-pathname-p pathname)
         pathname
