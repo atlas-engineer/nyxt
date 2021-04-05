@@ -92,6 +92,7 @@
                (:file "autofill")
                (:file "auto-mode")
                (:file "external-editor")
+               (:file "file-manager")
                #+quicklisp
                (:file "lisp-system")
                ;; Core Modes

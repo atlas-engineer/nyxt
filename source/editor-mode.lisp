@@ -66,7 +66,7 @@ get/set-content (which is necessary for operation)."
   (let ((file (first (prompt
                       :prompt "Open file"
                       :input (namestring (uiop:getcwd))
-                      :sources (make-instance 'prompter:file-source
+                      :sources (make-instance 'file-source
                                               :name "Absolute file path")))))
     (open-file buffer file)
     ;; TODO: Maybe make `editor-mode' and `editor-buffer' pathname-friendly?

@@ -397,30 +397,6 @@ call.")))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "Prompt for user input words."))
 
-(defun make-file-suggestions (suggestions source input)
-  (declare (ignore suggestions))
-  (let* ((pathname (pathname input))
-         (directory (if (uiop:directory-pathname-p pathname)
-                        pathname
-                        (uiop:pathname-directory-pathname pathname))))
-    (mapcar (lambda (file)
-              (make-instance 'suggestion
-                             :value file
-                             :match-data (namestring file)
-                             :properties (object-properties file)
-                             :source source
-                             :input input))
-            (append (uiop:subdirectories directory) (uiop:directory-files directory)))))
-
-;; TODO: `must-match-p'?
-(define-class file-source (source)
-  ((name "Files")
-   (filter-preprocessor 'make-file-suggestions)
-   (multi-selection-p t))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
-  (:documentation "Prompt for file(s) on the disk."))
-
 (defmethod ensure-suggestions-list ((source source) elements
                                     &key input &allow-other-keys)
   (mapcar (lambda (suggestion-value)
