@@ -8,13 +8,15 @@
     (append (uiop:subdirectories directory)
             (uiop:directory-files directory))))
 
+(defun ensure-directory-pathname (pathname)
+  (let ((pathname (pathname pathname)))
+    (if (uiop:directory-pathname-p pathname)
+        pathname
+        (uiop:pathname-directory-pathname pathname))))
+
 (defun make-file-suggestions (suggestions source input)
   (declare (ignore suggestions))
-  (let* ((pathname (pathname input))
-         ;; TODO: Extract to `directory-elements'?
-         (directory (if (uiop:directory-pathname-p pathname)
-                        pathname
-                        (uiop:pathname-directory-pathname pathname))))
+  (let* ((pathname (pathname input)))
     (mapcar (lambda (file)
               (make-instance 'prompter:suggestion
                              :value file
@@ -22,7 +24,7 @@
                              :properties (prompter:object-properties file)
                              :source source
                              :input input))
-            (directory-elements directory))))
+            (directory-elements (ensure-directory-pathname pathname)))))
 
 (define-class file-source (prompter:source)
   ((prompter:name "Files")
