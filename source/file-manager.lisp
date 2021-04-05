@@ -9,15 +9,6 @@
     (append (uiop:subdirectories directory)
             (uiop:directory-files directory))))
 
-(defun ensure-directory-pathname (pathname)
-  "Force the PATHNAME to be a directory.
-For directory, do nothing.
-For file, take its directory."
-  (let ((pathname (pathname pathname)))
-    (if (uiop:directory-pathname-p pathname)
-        pathname
-        (uiop:pathname-directory-pathname pathname))))
-
 (defun make-file-suggestions (suggestions source input)
   (declare (ignore suggestions))
   (let* ((pathname (pathname input)))
@@ -28,7 +19,9 @@ For file, take its directory."
                              :properties (prompter:object-properties file)
                              :source source
                              :input input))
-            (directory-elements (ensure-directory-pathname pathname)))))
+            (directory-elements (if (uiop:directory-pathname-p pathname)
+                                    pathname
+                                    (uiop:pathname-directory-pathname pathname))))))
 
 (define-class file-source (prompter:source)
   ((prompter:name "Files")
