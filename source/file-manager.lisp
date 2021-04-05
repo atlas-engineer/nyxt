@@ -3,9 +3,15 @@
 
 (in-package :nyxt)
 
+(defun directory-elements (directory)
+  (let ((directory (pathname directory)))
+    (append (uiop:subdirectories directory)
+            (uiop:directory-files directory))))
+
 (defun make-file-suggestions (suggestions source input)
   (declare (ignore suggestions))
   (let* ((pathname (pathname input))
+         ;; TODO: Extract to `directory-elements'?
          (directory (if (uiop:directory-pathname-p pathname)
                         pathname
                         (uiop:pathname-directory-pathname pathname))))
@@ -16,7 +22,7 @@
                              :properties (prompter:object-properties file)
                              :source source
                              :input input))
-            (append (uiop:subdirectories directory) (uiop:directory-files directory)))))
+            (directory-elements directory))))
 
 (define-class file-source (prompter:source)
   ((prompter:name "Files")
