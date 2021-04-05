@@ -65,7 +65,6 @@ get/set-content (which is necessary for operation)."
   "Open a file in the internal editor."
   (let ((file (first (prompt
                       :prompt "Open file"
-                      :input (namestring (uiop:getcwd))
                       :sources (make-instance 'file-source
                                               :name "Absolute file path")))))
     (open-file buffer file)

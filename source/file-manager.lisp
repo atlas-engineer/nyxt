@@ -25,6 +25,7 @@
 
 (define-class file-source (prompter:source)
   ((prompter:name "Files")
+   (prompter:constructor (directory-elements (uiop:getcwd)))
    (prompter:filter-preprocessor 'make-file-suggestions)
    (prompter:multi-selection-p t))
   (:export-class-name-p t)
