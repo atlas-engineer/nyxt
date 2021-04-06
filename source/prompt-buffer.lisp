@@ -197,6 +197,8 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
 
 (export 'prompt-render-suggestions)
 (defmethod prompt-render-suggestions ((prompt-buffer prompt-buffer))
+  "Refresh the rendering of the suggestion list.
+This does not redraw the whole prompt buffer, unlike `prompt-render'."
   (let* ((sources (prompter:sources prompt-buffer))
          (current-source-index (position (current-source prompt-buffer) sources))
          (last-source-index (1- (length sources))))
@@ -314,7 +316,7 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
        (prompt-render-suggestions prompt-buffer)
        (maybe-update-view (prompter:next-ready-p prompt-buffer))))))
 
-(defun set-prompt-input (prompt-buffer input)
+(defun set-prompt-input (prompt-buffer input) ; TODO: Useless?
   "Set prompter's INPUT in PROMPT-BUFFER."
   (setf (prompter:input prompt-buffer)
         input))
