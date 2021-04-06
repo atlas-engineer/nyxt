@@ -3,29 +3,16 @@
 
 (in-package :nyxt)
 
-(defstruct variable-suggestion
-  (name))
-
-(defstruct function-suggestion
-  (name))
-
-(defstruct class-suggestion
-  (name))
-
 (define-class function-source (prompter:source)
   ((prompter:name "Functions")
    (prompter:must-match-p t)
-   (prompter:constructor
-    (mapcar (lambda (v) (make-function-suggestion :name v))
-            (package-functions)))
+   (prompter:constructor (package-functions))
    (prompter:actions (list (make-unmapped-command describe-function)))))
 
 (define-class class-source (prompter:source)
   ((prompter:name "Classes")
    (prompter:must-match-p t)
-   (prompter:constructor
-    (mapcar (lambda (v) (make-class-suggestion :name v))
-            (package-classes)))
+   (prompter:constructor (package-classes))
    (prompter:actions (list (make-unmapped-command describe-class)))))
 
 (define-class slot-source (prompter:source)
@@ -37,9 +24,7 @@
 (define-class variable-source (prompter:source)
   ((prompter:name "Variables")
    (prompter:must-match-p t)
-   (prompter:constructor
-    (mapcar (lambda (v) (make-variable-suggestion :name v))
-            (package-variables)))
+   (prompter:constructor (package-variables))
    (prompter:actions (list (make-unmapped-command describe-variable)))))
 
 (define-command describe-any ()
@@ -56,7 +41,7 @@
 (define-command describe-variable (&optional variable-suggestion)
   "Inspect a variable and show it in a help buffer."
   (if variable-suggestion
-      (let* ((input (variable-suggestion-name variable-suggestion)))
+      (let* ((input variable-suggestion))
         (with-current-html-buffer (buffer
                                    (str:concat "*Help-" (symbol-name input) "*")
                                    'nyxt/help-mode:help-mode)
@@ -74,7 +59,7 @@
   "Inspect a function and show it in a help buffer.
 For generic functions, describe all the methods."
   (if function-suggestion
-      (let ((input (function-suggestion-name function-suggestion)))
+      (let ((input function-suggestion))
         (flet ((method-desc (method)
                  (markup:markup
                   (:h1 (symbol-name input) " " (write-to-string (mopu:method-specializers method)))
@@ -191,7 +176,7 @@ A command is a special kind of function that can be called with
 (define-command describe-class (&optional class-suggestion)
   "Inspect a class and show it in a help buffer."
   (if class-suggestion
-      (let ((input (class-suggestion-name class-suggestion)))
+      (let ((input class-suggestion))
         (with-current-html-buffer (buffer
                                    (str:concat "*Help-" (symbol-name input) "*")
                                    'nyxt/help-mode:help-mode)
