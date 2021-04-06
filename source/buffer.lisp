@@ -331,7 +331,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 
 (define-class editor-buffer (internal-buffer)
   ((file :documentation "The file being edited.")
-   (default-modes '(base-mode plaintext-editor-mode))
+   (default-modes '(plaintext-editor-mode base-mode))
    (url (quri:uri "editor-buffer"))
    (title "editor-buffer"))
   (:export-class-name-p t)
