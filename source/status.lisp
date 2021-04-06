@@ -7,13 +7,10 @@
 (defun format-status-modes (buffer window)
   (format nil "~:[~;⚠ nosave ~]~{~a~^ ~}"
           (nosave-buffer-p buffer)
-          (if (glyph-mode-presentation-p (status-buffer window))
-              (loop for mode in (modes buffer)
-                    when (visible-in-status-p mode)
-                    collect (glyph mode))
-              (loop for mode in (modes buffer)
-                    when (visible-in-status-p mode)
-                    collect (format-mode mode)))))
+          (mapcar (if (glyph-mode-presentation-p (status-buffer window))
+                      #'glyph
+                      #'format-mode)
+                  (sera:filter #'visible-in-status-p (modes buffer)))))
 
 (defun list-modes (buffer)
   (format nil "~{~a~^ ~}" (mapcar #'format-mode (modes buffer))))
