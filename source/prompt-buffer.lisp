@@ -133,7 +133,7 @@ See `prompt' for how to invoke prompts.")))
 
 (define-user-class prompt-buffer)
 
-(defmethod initialize-instance :after ((prompt-buffer prompt-buffer) &key) ; TODO: Merge in `make-prompt-buffer'?
+(defmethod initialize-instance :after ((prompt-buffer prompt-buffer) &key)
   (hooks:run-hook (prompt-buffer-make-hook *browser*) prompt-buffer)
   ;; We don't want to show the input in the suggestion list when invisible.
   (when (invisible-input-p prompt-buffer)
@@ -169,7 +169,7 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
          (prompt-buffer-open-height (window prompt-buffer))))))
 
 (export-always 'hide-prompt-buffer)
-(defun hide-prompt-buffer (prompt-buffer &optional return-function) ; TODO: Rename `hide'
+(defun hide-prompt-buffer (prompt-buffer &optional return-function)
   "Hide PROMPT-BUFFER, display next active one, and return PROMPT-BUFFER suggestion."
   ;; Note that PROMPT-BUFFER is not necessarily first in the list, e.g. a new
   ;; prompt-buffer was invoked before the old one reaches here.
@@ -297,7 +297,7 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
                     (get-element-by-id "input")
                     (focus)))))
 
-(defmethod prompt-render ((prompt-buffer prompt-buffer)) ; TODO: Merge into `show'?
+(defmethod prompt-render ((prompt-buffer prompt-buffer)) ; TODO: Merge into `show-prompt-buffer'?
   (prompt-render-skeleton prompt-buffer)
   (prompt-render-focus prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
