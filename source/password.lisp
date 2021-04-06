@@ -66,9 +66,23 @@ for which the `executable' slot is non-nil."
                      (string-downcase
                       (class-name (class-of (password-interface buffer))))))))
 
+(defmethod password:fill-interface ((password-interface password:keepassxc-interface))
+  (loop :initially (unless (password::password-file password-interface)
+                     (setf (password::password-file password-interface)
+                           (first (prompt :sources (list (make-instance 'file-source
+                                                                        :name "Password file"))))))
+        :until (password:password-correct-p password-interface)
+        :do (setf (password::master-password password-interface)
+                  (first (prompt :sources (list (make-instance 'prompter:raw-source
+                                                               :name "Password"))
+                                 :invisible-input-p t)))))
+
 (defmacro with-password (password-interface &body body)
   `(if (password:password-correct-p ,password-interface)
-       ,@body))
+       ,@body
+       (progn
+         (password:fill-interface ,password-interface)
+         ,@body)))
 
 (define-command copy-password-prompt-details (&optional (buffer (current-buffer)))
   "Copy password prompting for all the details without suggestion."

@@ -34,6 +34,13 @@ If PASSWORD-NAME is empty, then generate a new password."))
 (defgeneric password-correct-p (password-interface)
   (:documentation "Return T if set password is correct, NIL otherwise."))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'fill-interface))
+(defgeneric fill-interface (password-interface)
+  (:method ((password-interface password-interface))
+    password-interface)
+  (:documentation "Return the PASSWORD-INTERFACE with all the misfilled fields corrected."))
+
 (defmacro execute (interface arguments &body body)
   `(uiop:run-program (append (list (executable ,interface)) ,arguments) ,@body))
 
