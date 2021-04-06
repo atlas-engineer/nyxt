@@ -168,9 +168,6 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
      (or height
          (prompt-buffer-open-height (window prompt-buffer))))))
 
-(defmethod state-changed ((prompt-buffer prompt-buffer)) ; TODO: Remove when done.
-  nil)
-
 (export-always 'hide-prompt-buffer)
 (defun hide-prompt-buffer (prompt-buffer &optional return-function) ; TODO: Rename `hide'
   "Hide PROMPT-BUFFER, display next active one, and return PROMPT-BUFFER suggestion."
