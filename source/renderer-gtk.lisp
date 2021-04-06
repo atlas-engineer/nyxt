@@ -815,6 +815,22 @@ Warning: This behaviour may change in the future."
    (lambda (web-view)
      (log:debug "Web process crashed for web view: ~a" web-view)))
   (gobject:g-signal-connect
+   (gtk-object buffer) "load-failed"
+   (lambda (web-view load-event failing-uri error)
+     (declare (ignore load-event web-view error))
+     (echo "Failed to load URL ~a in buffer ~a." failing-uri buffer)
+     (html-set
+      (markup:markup
+       (:h1 "Page could not be loaded.")
+       (:h2 "URL: " failing-uri)
+       (:p "Please check:"
+           (:ul
+            (:li "Your Internet connection.")
+            (:li "That the URL is valid.")
+            (:li "That the resource at the URL is reachable."))))
+      buffer)
+     t))
+  (gobject:g-signal-connect
    (gtk-object buffer) "create"
    (lambda (web-view navigation-action)
      (declare (ignore web-view))
