@@ -70,7 +70,6 @@
                (:file "configuration")
                (:file "command")
                (:file "renderer-script")
-               (:file "if-confirm")
                (:file "buffer")
                (:file "window")
                (:file "mode")
