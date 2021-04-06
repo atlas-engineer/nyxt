@@ -101,6 +101,7 @@ Example:
   ((buffer nil
            :type (or buffer null))
    (glyph nil :type (or string null)
+              :accessor nil
               :documentation "A glyph used to represent this mode, if unset, it
               will be dynamically calculated as the first letters of the mode
               name.")
@@ -134,6 +135,7 @@ It is run before the destructor.")
 (defmethod prompter:object-properties ((mode root-mode))
   (list :name (mode-name mode)))
 
+(export-always 'glyph)
 (defmethod glyph ((mode root-mode))
   "Return the glyph for a mode, or if unset, return a standard formatted mode."
   (or (slot-value mode 'glyph)
