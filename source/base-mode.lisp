@@ -6,7 +6,8 @@
 (define-mode base-mode ()
   "Bind general-purpose commands defined by `define-command'.
 This mode is a good candidate to be passed to `make-buffer'."
-  ((keymap-scheme (define-scheme "base"
+  ((visible-in-status-p nil)
+   (keymap-scheme (define-scheme "base"
                     scheme:cua
                     (list
                      "C-q" 'quit
