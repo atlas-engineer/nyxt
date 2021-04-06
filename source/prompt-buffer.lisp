@@ -246,10 +246,13 @@ The new webview HTML content is set as the PROMPT-BUFFER's `content'."
                              (:span :class "source-glyph" "⛯")
                              ,(prompter:name source))))
                     (:table :class "source-content"
-                            (:tr
-                             (loop for property in (prompter:active-properties source)
-                                   ;; TODO: If we turn properties to strings, no need to capitalize.
-                                   collect (markup:markup (:th (str:capitalize property)))))
+                            (markup:raw
+                             (markup:markup*
+                              `(:tr
+                                ,@(when (sera:single (prompter:active-properties source)) '(:hidden "true"))
+                                ,@(loop for property in (prompter:active-properties source)
+                                       ;; TODO: If we turn properties to strings, no need to capitalize.
+                                       collect `(:th ,(str:capitalize property))))))
                             (loop ;; TODO: Only print as many lines as fit the height.  But how can we know in advance?
                                   ;; Maybe first make the table, then add the element one by one _if_ there are into view.
                                   with max-suggestion-count = 10
