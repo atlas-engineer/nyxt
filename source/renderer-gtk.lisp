@@ -792,7 +792,6 @@ Warning: This behaviour may change in the future."
    (gtk-object buffer) "scroll-event"
    (lambda (web-view event) (declare (ignore web-view))
      (on-signal-scroll-event buffer event)))
-  ;; TODO: Capture button-release-event?
   ;; TLS certificate handling
   (gobject:g-signal-connect
    (gtk-object buffer) "load-failed-with-tls-errors"
@@ -809,7 +808,6 @@ Warning: This behaviour may change in the future."
    (lambda (web-view param-spec)
      (declare (ignore web-view param-spec))
      (on-signal-notify-title buffer nil)))
-  ;; TODO: Bind "web-process-terminated" instead?
   (gobject:g-signal-connect
    (gtk-object buffer) "web-process-crashed"
    (lambda (web-view)
