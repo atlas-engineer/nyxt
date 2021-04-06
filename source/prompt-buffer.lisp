@@ -41,10 +41,6 @@ new history for each new prompt buffer.  Here we set the history to be shared gl
      (hide-suggestion-count-p nil       ; TODO: Move to `prompter' library?
                               :documentation "Show the number of chosen suggestions
 ;; inside brackets. It can be useful to disable, for instance for a yes/no question.")
-     (content ""
-              :accessor nil
-              :export nil
-              :documentation "The HTML content of the prompt-buffer.")
      ;; TODO: Need max-lines?
      ;; (max-lines 10
      ;;               :documentation "Max number of suggestion lines to show.
