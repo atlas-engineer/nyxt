@@ -100,6 +100,13 @@ Example:
   "All modes inherit from `root-mode'."
   ((buffer nil
            :type (or buffer null))
+   (glyph nil :type (or string null)
+              :documentation "A glyph used to represent this mode, if unset, it
+              will be dynamically calculated as the first letters of the mode
+              name.")
+   (visible-in-status-p
+    t
+    :documentation "Should this mode be visible within the status line?")
    (activate :accessor activate :initarg :activate) ; TODO: This can be used in the future to temporarily turn off modes without destroying the object.
    (constructor nil ; TODO: Make constructor / destructor methods?  Then we can use initialize-instance, etc.
                 :type (or function null)
