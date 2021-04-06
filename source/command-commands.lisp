@@ -48,7 +48,10 @@
 (define-class command-source (prompter:source)
   ((prompter:name "Commands")
    (prompter:must-match-p t)
-   (prompter:constructor (get-commands))))
+   (prompter:constructor (get-commands)))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:documentation "Prompter source to execute commands."))
 
 (define-command execute-command ()
   "Execute a command by name."
