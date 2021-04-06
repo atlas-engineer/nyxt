@@ -131,11 +131,21 @@ It is run before the destructor.")
    (keymap-scheme (make-hash-table :size 0)
                   :type keymap:scheme)))
 
-(defmethod object-string ((mode root-mode))
-  (symbol-name (class-name (class-of mode))))
-
 (defmethod prompter:object-properties ((mode root-mode))
   (list :name (mode-name mode)))
+
+(defmethod glyph ((mode root-mode))
+  "Return the glyph for a mode, or if unset, return a standard formatted mode."
+  (or (slot-value mode 'glyph)
+      (format-mode mode)))
+
+(defmethod (setf glyph) (glyph (mode root-mode))
+  (setf (slot-value mode 'glyph) glyph))
+
+(defmethod format-mode ((mode root-mode))
+  "Produce a string representation of a mode suitable for use in a status
+  buffer."
+  (str:replace-all "-mode" "" (str:downcase (mode-name mode))))
 
 (export-always 'find-mode)
 (defmethod find-mode ((buffer buffer) mode-symbol)
