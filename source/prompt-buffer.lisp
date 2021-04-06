@@ -309,7 +309,6 @@ The new webview HTML content is set as the PROMPT-BUFFER's `content'."
    (current-window)
    (ps:ps (ps:chain document
                     (write (ps:lisp (str:concat (generate-prompt-html prompt-buffer)))))))
-  ;; TODO: The following is supposed to focus on the HTML input but does not work.
   (ffi-prompt-buffer-evaluate-javascript-async
    (current-window)
    (ps:ps (ps:chain document
