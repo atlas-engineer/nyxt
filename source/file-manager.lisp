@@ -30,4 +30,4 @@
    (prompter:multi-selection-p t))
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
-  (:documentation "Prompt for file(s) on the disk."))
+  (:documentation "Prompt source for file(s) on the disk."))
