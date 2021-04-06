@@ -352,6 +352,9 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
   ((height 20
            :type integer
            :documentation "The height of the status buffer in pixels.")
+   (glyph-mode-presentation-p
+    nil
+    :documentation "Display the modes as a list of glyphs.")
    (style #.(cl-css:css
              '((body
                 :background "rgb(200, 200, 200)"
