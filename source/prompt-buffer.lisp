@@ -195,6 +195,32 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
   ;; Destroy prompter last, or else `return-function' may not work.
   (prompter:destroy prompt-buffer))
 
+(defun prompt-render-prompt (prompt-buffer)
+  (let* ((source (current-source prompt-buffer))
+         (suggestions (prompter:suggestions source))
+         (marks (prompter:marks source)))
+    (ffi-prompt-buffer-evaluate-javascript-async
+     (current-window)
+     (ps:ps
+       (setf (ps:chain document (get-element-by-id "prompt-extra") |innerHTML|)
+             (ps:lisp
+              (cond
+                ((not suggestions)
+                 "")
+                ((hide-suggestion-count-p prompt-buffer)
+                 "")
+                (marks
+                 (format nil "[~a/~a]"
+                         (length marks)
+                         (length suggestions)))
+                ((and (not marks)
+                      (prompter:multi-selection-p source))
+                 (format nil "[0/~a]"
+                         (length suggestions)))
+                ((not marks)
+                 (format nil "[~a]"
+                         (length suggestions))))))))))
+
 (export 'prompt-render-suggestions)
 (defmethod prompt-render-suggestions ((prompt-buffer prompt-buffer))
   "Refresh the rendering of the suggestion list.
@@ -244,31 +270,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                           (loop for i from current-source-index to last-source-index
                                 for source = (nth i sources)
                                 collect (source->html source))))))))
-
-    (let* ((source (current-source prompt-buffer))
-           (suggestions (prompter:suggestions source))
-           (marks (prompter:marks source)))
-      (ffi-prompt-buffer-evaluate-javascript-async
-       (current-window)
-       (ps:ps
-         (setf (ps:chain document (get-element-by-id "prompt-extra") |innerHTML|)
-               (ps:lisp
-                (cond
-                  ((not suggestions)
-                   "")
-                  ((hide-suggestion-count-p prompt-buffer)
-                   "")
-                  (marks
-                   (format nil "[~a/~a]"
-                           (length marks)
-                           (length suggestions)))
-                  ((and (not marks)
-                        (prompter:multi-selection-p source))
-                   (format nil "[0/~a]"
-                           (length suggestions)))
-                  ((not marks)
-                   (format nil "[~a]"
-                           (length suggestions)))))))))))
+    (prompt-render-prompt prompt-buffer)))
 
 (defun erase-document (prompt-buffer)
   (ffi-prompt-buffer-evaluate-javascript-async
