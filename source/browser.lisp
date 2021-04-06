@@ -62,8 +62,11 @@ This slot is mostly meant to clean up the thread if necessary.")
 Most recent messages are first.")
    (clipboard-ring (make-ring)
                    :export nil)
+   (prompt-buffer-generic-history (make-ring)
+                    :documentation "The default history of all prompt buffer entries.
+This history is used if no history is specified for a given prompt buffer.")
    (set-url-history (make-ring)
-                    :documentation "The list of all URLs set via set-url")
+                    :documentation "The history of all URLs set via set-url")
    (old-prompt-buffers '()
                        :export nil
                        :documentation "The list of old prompt buffers.

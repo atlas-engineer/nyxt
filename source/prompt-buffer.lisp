@@ -25,6 +25,13 @@ All ARGS are declared as `ignorable'."
              :documentation "The window in which the prompt buffer is showing.")
      (resumable-p t
                   :type boolean)
+     (prompter:history (prompt-buffer-generic-history *browser*)
+                       ;; No need to export or define the accessor since this is
+                       ;; an override of the prompter slot.
+                       :accessor nil
+                       :export nil
+                       :documentation "By default the prompter library creates a
+new history for each new prompt buffer.  Here we set the history to be shared globally.")
      ;; TODO: Need a changed-callback?  Probably not, see `search-buffer'.  But
      ;; can we run the postprocessor without running the filter?
      ;; TODO: Need a invisible-input-p slot?
@@ -332,9 +339,10 @@ The new webview HTML content is set as the PROMPT-BUFFER's `content'."
 (sera:eval-always
   (define-function prompt (append
                            '(&rest args)
-                           `(&key ,@(append
-                                     (public-initargs 'prompt-buffer)
-                                     (public-initargs 'prompter:prompter))))
+                           `(&key ,@(delete-duplicates
+                                     (append
+                                      (public-initargs 'prompt-buffer)
+                                      (public-initargs 'prompter:prompter)))))
       "Open the prompt buffer, ready for user input.
 PROMPTER and PROMPT-BUFFER are plists of keyword arguments passed to the
 prompt-buffer constructor.
