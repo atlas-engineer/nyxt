@@ -103,10 +103,9 @@ If STEPS is negative, go to previous pages instead."
              (current-window)
              (ps:ps
                (defun element-in-view-port-p (element)
+                 ;; We are only concerned with vertical visibility.
                  (ps:let* ((rect (ps:chain element (get-bounding-client-rect))))
                    (if (and (>= (ps:chain rect top) 0)
-                            (>= (ps:chain rect left) 0)
-                            (<= (ps:chain rect right) (ps:chain window inner-width))
                             (<= (ps:chain rect bottom) (ps:chain window inner-height)))
                        t nil)))
                (defun step-row (row)
@@ -125,9 +124,9 @@ If STEPS is negative, go to previous pages instead."
                      row))
                (-
                 (ps:chain
-                 (find-first-element-out-of-view (ps:chain document (get-element-by-id "cursor")))
+                 (find-first-element-out-of-view (ps:chain document (get-element-by-id "selection")))
                  row-index)
-                (ps:chain (ps:chain document (get-element-by-id "cursor")) row-index))))))
+                (ps:chain (ps:chain document (get-element-by-id "selection")) row-index))))))
       (sera:and-let* ((index-diff (parse-integer step-page-index :junk-allowed t)))
         (prompter:select-next prompt-buffer
                               index-diff)))
