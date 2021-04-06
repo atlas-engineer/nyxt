@@ -7,7 +7,20 @@
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
 
 (define-mode prompt-buffer-mode ()
-  "Mode for the prompt buffer."
+  "The prompt buffer is the where all the interactions between Nyxt and the user happen.
+It shows a list of suggestions which is filtered and narrowed down live while
+the user types.
+
+Many prompter-buffer-specific commands are available; you can list them with
+`run-prompt-buffer-command', bound to \"f1 b\" by default.
+
+The prompt buffer can have multiple 'sources' of suggestions.  Each source has
+its own properties, such as the ability to mark multiple suggestions.
+A same source can be used by different prompt buffers.
+
+Each source offers a set of 'actions' for its selection(s).
+Actions can be listed and run with `return-selection-over-action' (bound to
+\"M-return\" by default)."
   ((keymap-scheme
     (define-scheme "prompt-buffer"
       scheme:cua
