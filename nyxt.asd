@@ -4,9 +4,9 @@
 #+sbcl
 (sb-ext:assert-version->= 1 5 0)
 
-(defvar %quicklisp-dir (or (uiop:getenv "NYXT_QUICKLISP_DIR")
+(defvar *quicklisp-dir* (or (uiop:getenv "NYXT_QUICKLISP_DIR")
                            "_build/quicklisp-client"))
-(defvar %submodules-dir (or (uiop:getenv "NYXT_SUBMODULES_DIR")
+(defvar *submodules-dir* (or (uiop:getenv "NYXT_SUBMODULES_DIR")
                             "_build/submodules"))
 
 (defvar *prefix* (format nil "~a/~a"
@@ -192,10 +192,10 @@
   :perform (compile-op (o c)
                        (load (system-relative-pathname
                               c
-                              (format nil "~a/setup.lisp" %quicklisp-dir)))
+                              (format nil "~a/setup.lisp" *quicklisp-dir*)))
                        (setf (symbol-value (read-from-string "ql:*local-project-directories*"))
                              (cons
-                              (uiop:truenamize (uiop:ensure-directory-pathname %submodules-dir))
+                              (uiop:truenamize (uiop:ensure-directory-pathname *submodules-dir*))
                               (symbol-value (read-from-string "ql:*local-project-directories*"))))
                        (funcall (read-from-string "ql:update-dist")
                                 "quicklisp" :prompt nil)))
