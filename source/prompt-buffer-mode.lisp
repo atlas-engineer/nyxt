@@ -66,32 +66,32 @@ Actions can be listed and run with `return-selection-over-action' (bound to
   ;; TODO: Update display?  The library should probably decide when to update
   ;; it.  Drawback is that it maybe result in too many draws.  If the caller
   ;; decides when redraw, it has more control.
-  (update-suggestion-html prompt-buffer))
+  (prompt-render-suggestions prompt-buffer))
 
 (define-command select-previous (&optional (prompt-buffer (current-prompt-buffer)))
   "Select next entry in prompt buffer."
   (prompter:select-previous prompt-buffer)
-  (update-suggestion-html prompt-buffer))
+  (prompt-render-suggestions prompt-buffer))
 
 (define-command select-first (&optional (prompt-buffer (current-prompt-buffer)))
   "Select first entry in prompt buffer."
   (prompter:select-first prompt-buffer)
-  (update-suggestion-html prompt-buffer))
+  (prompt-render-suggestions prompt-buffer))
 
 (define-command select-last (&optional (prompt-buffer (current-prompt-buffer)))
   "Select first entry in prompt buffer."
   (prompter:select-last prompt-buffer)
-  (update-suggestion-html prompt-buffer))
+  (prompt-render-suggestions prompt-buffer))
 
 (define-command select-next-source (&optional (prompt-buffer (current-prompt-buffer)))
   "Select next soruce in prompt buffer."
   (prompter:select-next-source prompt-buffer)
-  (update-suggestion-html prompt-buffer))
+  (prompt-render-suggestions prompt-buffer))
 
 (define-command select-previous-source (&optional (prompt-buffer (current-prompt-buffer)))
   "Select previous source in prompt buffer."
   (prompter:select-previous-source prompt-buffer)
-  (update-suggestion-html prompt-buffer))
+  (prompt-render-suggestions prompt-buffer))
 
 (define-command select-next-page (&key (prompt-buffer (current-prompt-buffer))
                                   (steps 1))
@@ -133,7 +133,7 @@ If STEPS is negative, go to previous pages instead."
     ;; TODO: Update display?  The library should probably decide when to update
     ;; it.  Drawback is that it maybe result in too many draws.  If the caller
     ;; decides when redraw, it has more control.
-    (update-suggestion-html prompt-buffer)))
+    (prompt-render-suggestions prompt-buffer)))
 
 (define-command select-previous-page (&key (prompt-buffer (current-prompt-buffer))
                                       (steps 1))
@@ -176,7 +176,7 @@ If STEPS is negative, go to next pages instead."
     (when properties
       (setf (prompter:active-properties (current-source prompt-buffer))
             properties)
-      (update-suggestion-html prompt-buffer))))
+      (prompt-render-suggestions prompt-buffer))))
 
 (define-class prompt-buffer-command-source (prompter:source)
   ((prompter:name "List of prompt buffer commands")
@@ -277,20 +277,20 @@ Only available if pomrpt-buffer `multi-selection-p' is non-nil.  DIRECTION can b
   "Mark all visible suggestions in current source.
 Only available if `multi-selection-p' is non-nil."
   (prompter:mark-all prompt-buffer)
-  (update-suggestion-html prompt-buffer))
+  (prompt-render-suggestions prompt-buffer))
 
 (define-command prompt-buffer-unmark-all (&optional (prompt-buffer (current-prompt-buffer)))
   "Unmark all visible suggestions in current source.
 Only available if `multi-selection-p' is non-nil."
   (prompter:unmark-all prompt-buffer)
-  (update-suggestion-html prompt-buffer))
+  (prompt-render-suggestions prompt-buffer))
 
 (define-command prompt-buffer-toggle-mark-all (&optional
                                                (prompt-buffer (current-prompt-buffer)))
   "Toggle the mark over all visible suggestions in current source.
 Only available if `multi-selection-p' is non-nil."
   (prompter:toggle-mark-all prompt-buffer)
-  (update-suggestion-html prompt-buffer))
+  (prompt-render-suggestions prompt-buffer))
 
 (define-command copy-selection (&optional (prompt-buffer (current-prompt-buffer)))
   "Copy default property of selection to clipboard."

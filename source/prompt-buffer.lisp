@@ -198,8 +198,8 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
   ;; Destroy prompter last, or else `return-function' may not work.
   (prompter:destroy prompt-buffer))
 
-(export 'update-suggestion-html)
-(defmethod update-suggestion-html ((prompt-buffer prompt-buffer))
+(export 'prompt-render-suggestions)
+(defmethod prompt-render-suggestions ((prompt-buffer prompt-buffer))
   (let* ((sources (prompter:sources prompt-buffer))
          (current-source-index (position (current-source prompt-buffer) sources))
          (last-source-index (1- (length sources))))
@@ -303,7 +303,7 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
 (defmethod prompt-render ((prompt-buffer prompt-buffer)) ; TODO: Merge into `show'?
   (prompt-render-skeleton prompt-buffer)
   (prompt-render-focus prompt-buffer)
-  (update-suggestion-html prompt-buffer))
+  (prompt-render-suggestions prompt-buffer))
 
 (defun watch-prompt (prompt-buffer)
   "This blocks and updates the view."
@@ -314,7 +314,7 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
       ((eq t next-source) t)
       ((null next-source) nil)
       (t ;; At least one source got updated.
-       (update-suggestion-html prompt-buffer)
+       (prompt-render-suggestions prompt-buffer)
        (maybe-update-view (prompter:next-ready-p prompt-buffer))))))
 
 (defun set-prompt-input (prompt-buffer input)
