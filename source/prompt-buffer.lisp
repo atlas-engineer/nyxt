@@ -160,8 +160,7 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
   ;; TODO: Add method that returns if there is only 1 source with no filter.
   (when prompt-buffer
     (push prompt-buffer (active-prompt-buffers (window prompt-buffer)))
-    (erase-document prompt-buffer)      ; TODO: When to erase?
-    (update-display prompt-buffer)
+    (prompt-render prompt-buffer)
     (run-thread
       (watch-prompt prompt-buffer))
     (ffi-window-set-prompt-buffer-height
@@ -198,22 +197,6 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
     (funcall return-function))
   ;; Destroy prompter last, or else `return-function' may not work.
   (prompter:destroy prompt-buffer))
-
-(defmethod erase-document ((prompt-buffer prompt-buffer)) ; TODO: Remove, empty automatically when `content' is set?
-  (ffi-prompt-buffer-evaluate-javascript-async (current-window) (ps:ps
-                                                                  (ps:chain document (open))
-                                                                  (ps:chain document (close)))))
-
-(defmethod generate-prompt-html ((prompt-buffer prompt-buffer))
-  (markup:markup
-   (:head (:style (style prompt-buffer)))
-   (:body
-    (:div :id "prompt-area"
-          (:div :id "prompt" (prompter:prompt prompt-buffer))
-          (:div :id "prompt-extra" "[?/?]")
-          (:div (:input :type "text" :id "input" :value (prompter:input prompt-buffer))))
-    (:div :id "suggestions"))))
-
 
 (export 'update-suggestion-html)
 (defmethod update-suggestion-html ((prompt-buffer prompt-buffer))
@@ -288,17 +271,38 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
                    (format nil "[~a]"
                            (length suggestions)))))))))))
 
-(defmethod update-display ((prompt-buffer prompt-buffer)) ; TODO: Merge into `show'?
-  ;; TODO: Finish me!
-  (ffi-prompt-buffer-evaluate-javascript-async ; TODO: Replace with `evaluate-script'?  Rename the latter?
-   (current-window)
-   (ps:ps (ps:chain document
-                    (write (ps:lisp (str:concat (generate-prompt-html prompt-buffer)))))))
+(defun erase-document (prompt-buffer)
   (ffi-prompt-buffer-evaluate-javascript-async
-   (current-window)
+   (window prompt-buffer)
+   (ps:ps
+     (ps:chain document (open))
+     (ps:chain document (close)))))
+
+(defun prompt-render-skeleton (prompt-buffer)
+  (erase-document prompt-buffer)
+  (ffi-prompt-buffer-evaluate-javascript-async
+   (window prompt-buffer)
+   (ps:ps (ps:chain document
+                    (write
+                     (ps:lisp (markup:markup
+                               (:head (:style (style prompt-buffer)))
+                               (:body
+                                (:div :id "prompt-area"
+                                      (:div :id "prompt" (prompter:prompt prompt-buffer))
+                                      (:div :id "prompt-extra" "[?/?]")
+                                      (:div (:input :type "text" :id "input" :value (prompter:input prompt-buffer))))
+                                (:div :id "suggestions")))))))))
+
+(defun prompt-render-focus (prompt-buffer)
+  (ffi-prompt-buffer-evaluate-javascript-async
+   (window prompt-buffer)
    (ps:ps (ps:chain document
                     (get-element-by-id "input")
-                    (focus))))
+                    (focus)))))
+
+(defmethod prompt-render ((prompt-buffer prompt-buffer)) ; TODO: Merge into `show'?
+  (prompt-render-skeleton prompt-buffer)
+  (prompt-render-focus prompt-buffer)
   (update-suggestion-html prompt-buffer))
 
 (defun watch-prompt (prompt-buffer)
