@@ -3,23 +3,20 @@
 
 (in-package :nyxt)
 
-(declaim (type (cons string) *invisible-modes*))
-(defvar *invisible-modes* '("base-mode") ; TODO: Export?
-  "List of mode names to hide from the status view")
-
 (export-always 'format-status-modes)
-(defun format-status-modes (&optional (buffer (current-buffer)))
+(defun format-status-modes (buffer window)
   (format nil "~:[~;⚠ nosave ~]~{~a~^ ~}"
           (nosave-buffer-p buffer)
-          (mapcar (lambda (m) (str:replace-all "-mode" "" m))
-                  (set-difference
-                   (mapcar (alex:compose #'str:downcase #'mode-name) (modes buffer))
-                   *invisible-modes*
-                   :test #'string=))))
+          (if (glyph-mode-presentation-p (status-buffer window))
+              (loop for mode in (modes buffer)
+                    when (visible-in-status-p mode)
+                    collect (glyph mode))
+              (loop for mode in (modes buffer)
+                    when (visible-in-status-p mode)
+                    collect (format-mode mode)))))
 
-(defun list-modes (&optional (buffer (current-buffer)))
-  (format nil "~{~a~^ ~}"
-          (mapcar (alex:compose #'str:downcase #'mode-name) (modes buffer))))
+(defun list-modes (buffer)
+  (format nil "~{~a~^ ~}" (mapcar #'format-mode (modes buffer))))
 
 (export-always 'format-status-buttons)
 (defun format-status-buttons ()
@@ -31,14 +28,14 @@
    (:a :class "button" :title "Buffers" :href (lisp-url '(nyxt::list-buffers)) "≡")))
 
 (export-always 'format-status-load-status)
-(defun format-status-load-status (&optional (buffer (current-buffer)))
+(defun format-status-load-status (buffer)
   (markup:markup
    (:span (if (and (web-buffer-p buffer)
                    (eq (slot-value buffer 'load-status) :loading))
               "Loading: " ""))))
 
 (export-always 'format-status-url)
-(defun format-status-url (&optional (buffer (current-buffer)))
+(defun format-status-url (buffer)
   (markup:markup
    (:a :class "button"
        :href (lisp-url '(nyxt:set-url))
@@ -83,4 +80,4 @@
                  :style "background-color:rgb(120,120,120)" "")
            (:div :id "modes"
                  :title (list-modes buffer)
-                 (format-status-modes buffer))))))
+                 (format-status-modes buffer window))))))
