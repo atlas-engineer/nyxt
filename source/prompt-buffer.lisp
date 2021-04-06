@@ -173,7 +173,7 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
   "Hide PROMPT-BUFFER, display next active one, and return PROMPT-BUFFER suggestion."
   ;; Note that PROMPT-BUFFER is not necessarily first in the list, e.g. a new
   ;; prompt-buffer was invoked before the old one reaches here.
-  (alex:deletef (active-prompt-buffers (current-window)) prompt-buffer)
+  (alex:deletef (active-prompt-buffers (window prompt-buffer)) prompt-buffer)
   (when (resumable-p prompt-buffer)
     (flet ((prompter= (prompter1 prompter2)
              (and (string= (prompter:prompt prompter1)
@@ -185,11 +185,11 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
                     prompt-buffer
                     :test #'prompter=)
       (push prompt-buffer (old-prompt-buffers *browser*))))
-  (if (active-prompt-buffers (current-window))
-      (let ((next-prompt-buffer (first (active-prompt-buffers (current-window)))))
+  (if (active-prompt-buffers (window prompt-buffer))
+      (let ((next-prompt-buffer (first (active-prompt-buffers (window prompt-buffer)))))
         (show-prompt-buffer next-prompt-buffer))
       (progn
-        (ffi-window-set-prompt-buffer-height (current-window) 0)))
+        (ffi-window-set-prompt-buffer-height (window prompt-buffer) 0)))
   (when return-function
     (funcall return-function))
   ;; Destroy prompter last, or else `return-function' may not work.
@@ -200,7 +200,7 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
          (suggestions (prompter:suggestions source))
          (marks (prompter:marks source)))
     (ffi-prompt-buffer-evaluate-javascript-async
-     (current-window)
+     (window prompt-buffer)
      (ps:ps
        (setf (ps:chain document (get-element-by-id "prompt-extra") |innerHTML|)
              (ps:lisp
@@ -262,7 +262,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                 (loop for (nil property) on (prompter:active-properties suggestion :source source) by #'cddr
                                                       collect (markup:markup (:td property)))))))))))
       (ffi-prompt-buffer-evaluate-javascript-async
-       (current-window)
+       (window prompt-buffer)
        (ps:ps
          (setf (ps:chain document (get-element-by-id "suggestions") |innerHTML|)
                (ps:lisp
@@ -325,12 +325,13 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
 
 (defun set-prompt-buffer-input (input)
   "Set HTML INPUT in PROMPT-BUFFER."
-  (when (first (active-prompt-buffers (current-window)))
-    (ffi-prompt-buffer-evaluate-javascript
-     (current-window)
-     (ps:ps
-       (setf (ps:chain document (get-element-by-id "input") value)
-             (ps:lisp input))))))
+  (let ((window (current-window)))
+    (when (first (active-prompt-buffers window))
+      (ffi-prompt-buffer-evaluate-javascript
+       window
+       (ps:ps
+         (setf (ps:chain document (get-element-by-id "input") value)
+               (ps:lisp input)))))))
 
 (export-always 'prompt)
 (sera:eval-always
