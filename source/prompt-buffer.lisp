@@ -203,20 +203,10 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
   ;; Destroy prompter last, or else `return-function' may not work.
   (prompter:destroy prompt-buffer))
 
-(export-always 'evaluate-script)
-(defmethod evaluate-script ((prompt-buffer prompt-buffer) script) ; TODO: Remove?
-  "Evaluate SCRIPT into PROMPT-BUFFER's webview.
-The new webview HTML content is set as the PROMPT-BUFFER's `content'."
-  (when prompt-buffer
-    (let ((new-content (str:concat script (ps:ps (ps:chain document body |outerHTML|))))) ; TODO: Why do we postfix with this (ps:ps ... |outerHTML|)?
-      (ffi-prompt-buffer-evaluate-javascript-async
-       (current-window)
-       new-content))))
-
 (defmethod erase-document ((prompt-buffer prompt-buffer)) ; TODO: Remove, empty automatically when `content' is set?
-  (evaluate-script prompt-buffer (ps:ps
-                                   (ps:chain document (open))
-                                   (ps:chain document (close)))))
+  (ffi-prompt-buffer-evaluate-javascript-async (current-window) (ps:ps
+                                                                  (ps:chain document (open))
+                                                                  (ps:chain document (close)))))
 
 (defmethod generate-prompt-html ((prompt-buffer prompt-buffer))
   (markup:markup
@@ -226,7 +216,6 @@ The new webview HTML content is set as the PROMPT-BUFFER's `content'."
           (:div :id "prompt" (prompter:prompt prompt-buffer))
           (:div :id "prompt-extra" "[?/?]")
           (:div (:input :type "text" :id "input" :value (prompter:input prompt-buffer))))
-    ;; TODO: Support multi columns and sources.
     (:div :id "suggestions"))))
 
 
@@ -268,8 +257,8 @@ The new webview HTML content is set as the PROMPT-BUFFER's `content'."
                                                          "marked")
                                                 (loop for (nil property) on (prompter:active-properties suggestion :source source) by #'cddr
                                                       collect (markup:markup (:td property)))))))))))
-      (evaluate-script
-       prompt-buffer
+      (ffi-prompt-buffer-evaluate-javascript-async
+       (current-window)
        (ps:ps
          (setf (ps:chain document (get-element-by-id "suggestions") |innerHTML|)
                (ps:lisp
@@ -281,8 +270,8 @@ The new webview HTML content is set as the PROMPT-BUFFER's `content'."
     (let* ((source (current-source prompt-buffer))
            (suggestions (prompter:suggestions source))
            (marks (prompter:marks source)))
-      (evaluate-script
-       prompt-buffer
+      (ffi-prompt-buffer-evaluate-javascript-async
+       (current-window)
        (ps:ps
          (setf (ps:chain document (get-element-by-id "prompt-extra") |innerHTML|)
                (ps:lisp
