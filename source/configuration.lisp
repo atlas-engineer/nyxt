@@ -68,7 +68,8 @@ from NAME last."
        ;; Probably no need to call the defclass macro if we just need to
        ;; set the superclasses.
        (closer-mop:ensure-class ',user-name
-                                :direct-superclasses ',superclasses-with-original))))
+                                :direct-superclasses ',superclasses-with-original
+                                :documentation (documentation ',name 'type)))))
 
 (defun user-class-p (class-specifier)
   (not (mopu:direct-slot-names class-specifier)))
