@@ -239,7 +239,12 @@ The new webview HTML content is set as the PROMPT-BUFFER's `content'."
     (flet ((source->html (source)
              (markup:markup
               (:div :class "source"
-                    (:div :class "source-name" (:span :class "source-glyph" "⛯") (prompter:name source))
+                    (markup:raw
+                     (markup:markup*
+                      `(:div :class "source-name"
+                             ,@(when (sera:single sources) '(:hidden "true"))
+                             (:span :class "source-glyph" "⛯")
+                             ,(prompter:name source))))
                     (:table :class "source-content"
                             (:tr
                              (loop for property in (prompter:active-properties source)
