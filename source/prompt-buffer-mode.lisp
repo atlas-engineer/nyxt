@@ -42,6 +42,7 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "C-j" 'run-persistent-action
        "C-g" 'cancel-input
        "f1 b" 'run-prompt-buffer-command
+       "f1 m" 'describe-prompt-buffer
        "C-h b" 'run-prompt-buffer-command ; TODO: Move to Emacs bindings.
        "C-c C-f" 'toggle-follow
        "C-]" 'toggle-properties-display ; "C-]" is Emacs Helm binding.

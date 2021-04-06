@@ -193,6 +193,33 @@ A command is a special kind of function that can be called with
        :prompt "Describe class"
        :sources (make-instance 'class-source))))
 
+(define-command nyxt/prompt-buffer-mode::describe-prompt-buffer (&optional (prompt-buffer (current-prompt-buffer)))
+  "Describe a prompt buffer instance."
+  (with-current-html-buffer (buffer
+                             (str:concat "*Help-" (prompter:prompt prompt-buffer) "-prompter*")
+                             'nyxt/help-mode:help-mode)
+    (let* ((modes (modes prompt-buffer))
+           (sources (prompter:sources prompt-buffer)))
+      (str:concat
+       (markup:markup
+        (:style (style buffer))
+        (:h1 (prompter:prompt prompt-buffer))
+        (:p (:pre (documentation prompt-buffer 'type)))
+        (:h2 "Modes:")
+        (:ul
+         (loop for mode in modes
+               collect (markup:markup (:li (:a :href
+                                               (lisp-url
+                                                `(describe-class ',(sera:class-name-of mode)))
+                                               (string (sera:class-name-of mode)))))))
+        (:h2 "Sources:")
+        (:ul
+         (loop for source in sources
+               collect (markup:markup (:li (:a :href
+                                               (lisp-url
+                                                `(describe-class ',(sera:class-name-of source)))
+                                               (string (sera:class-name-of source))))))))))))
+
 (defun configure-slot (slot class &key (value nil new-value-supplied-p) (type nil))
   "Set the value of a slot in a users auto-config.lisp.
 CLASS can be a class symbol or a list of class symbols, as with
