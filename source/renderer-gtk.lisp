@@ -657,12 +657,12 @@ Warning: This behaviour may change in the future."
                                                 :new-window-p is-new-window
                                                 :known-type-p is-known-type)))))
           (cond
-            ((null request-data)
+            ((not (typep request-data 'request-data))
              (log:debug "Don't forward to ~s's renderer (null request data)."
                         buffer)
              (webkit:webkit-policy-decision-ignore response-policy-decision)
              nil)
-            ((and request-data (quri:uri= url (url request-data)))
+            ((quri:uri= url (url request-data))
              (log:debug "Forward to ~s's renderer (unchanged URL)."
                         buffer)
              (webkit:webkit-policy-decision-use response-policy-decision)
