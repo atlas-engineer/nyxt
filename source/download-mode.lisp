@@ -114,7 +114,7 @@ Can be used as a `open-file-function'."
    #+darwin
    (list "open" (namestring filename))))
 
-(defun list-downloads ()
+(define-command list-downloads ()
   "Display a buffer listing all downloads.
 We iterate through the browser's downloads to draw every single
 download."
