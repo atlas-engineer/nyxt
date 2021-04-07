@@ -41,7 +41,7 @@ cancel-download with an argument of the URI to cancel.")
                                :url (lisp-url '(echo "Can't open file, file path unknown.")))
                 :documentation "The file name to open is encoded
 within the button's URL when the destinaton path is set.")
-   (paragraph (make-instance 'user-interface:paragraph)) ; TODO: Rename to progress-text.
+   (progress-text (make-instance 'user-interface:paragraph))
    (progress (make-instance 'user-interface:progress-bar)))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "This class is used to represent a download within
@@ -70,7 +70,7 @@ finds it, it will invoke its cancel-function."
   (setf (slot-value download 'completion-percentage) percentage)
   (setf (user-interface:percentage (progress download))
         (completion-percentage download))
-  (setf (user-interface:text (paragraph download))
+  (setf (user-interface:text (progress-text download))
         (format nil "Completion: ~,2f%" (completion-percentage download))))
 
 (defmethod (setf destination-path) (path (download download))
@@ -84,7 +84,7 @@ finds it, it will invoke its cancel-function."
 buffer. This allows the user-interface objects to update their
 appearance in the buffer when they are setf'd."
   (user-interface:connect (status-text download) buffer)
-  (user-interface:connect (paragraph download) buffer)
+  (user-interface:connect (progress-text download) buffer)
   (user-interface:connect (open-button download) buffer)
   (user-interface:connect (cancel-button download) buffer)
   (user-interface:connect (progress download) buffer))
@@ -137,8 +137,8 @@ download."
      (:div
       (loop for download in (downloads *browser*)
             for uri = (uri download)
-            for status = (status-text download)
-            for paragraph = (paragraph download)
+            for status-text = (status-text download)
+            for progress-text = (progress-text download)
             for progress = (progress download)
             for open-button = (open-button download)
             for cancel-button = (cancel-button download)
@@ -150,9 +150,9 @@ download."
                           ;; TODO: Disable the buttons when download status is failed / canceled.
                           (markup:raw (user-interface:object-string cancel-button))
                           (markup:raw (user-interface:object-string open-button))
-                          (markup:raw (user-interface:object-string status)))
+                          (markup:raw (user-interface:object-string status-text)))
                       (:p :class "download-url" (:a :href uri uri))
-                      (:span (markup:raw (user-interface:object-string paragraph)))
+                      (:span (markup:raw (user-interface:object-string progress-text)))
                       (:div :class "progress-bar-container"
                             (markup:raw (user-interface:object-string progress))))))))))
 
