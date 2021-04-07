@@ -3,34 +3,38 @@
 
 (in-package :nyxt)
 
-(defclass download ()
-  ((uri :accessor uri :initarg :uri :documentation "A string
-representation of a URL to be shown in the interface."
-        :initform (error "URI required."))
-   (completion-percentage :initform 0.0
+(define-class download ()
+  ((uri (error "URI required.")
+        :documentation "A string representation of a URL to be shown in the
+interface.")
+   (completion-percentage 0.0
+                          :reader completion-percentage
                           :type float
                           :documentation "A number between 0 and 100
 showing the percentage a download is complete.")
    (destination-path :initarg :destination-path
+                     :reader destination-path
                      :documentation "A string represent where the file
 will be downloaded to on disk.")
-   (cancel-function :documentation "The function to call when
+   (cancel-function nil
+                    :type (or null function)
+                    :reader cancel-function
+                    :documentation "The function to call when
 cancelling a download. This can be set by the download engine.")
-   (cancel-button :accessor cancel-button :initform
-                  (make-instance 'user-interface:button
+   (cancel-button (make-instance 'user-interface:button
                                  :text "✕"
                                  :url (lisp-url '(echo "Can't cancel download.")))
                   :documentation "The download is referenced by its
 URI. The URL for this button is therefore encoded as a funcall to
 cancel-download with an argument of the URI to cancel.")
-   (open-button :accessor open-button :initform
-                (make-instance 'user-interface:button
+   (open-button (make-instance 'user-interface:button
                                :text "🗁"
                                :url (lisp-url '(echo "Can't open file, file path unknown.")))
                 :documentation "The file name to open is encoded
 within the button's URL when the destinaton path is set.")
-   (paragraph :accessor paragraph :initform (make-instance 'user-interface:paragraph))
-   (progress :accessor progress :initform (make-instance 'user-interface:progress-bar)))
+   (paragraph (make-instance 'user-interface:paragraph))
+   (progress (make-instance 'user-interface:progress-bar)))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "This class is used to represent a download within
 the *Downloads* buffer. The browser class contains a list of these
 download objects: `downloads'."))
@@ -48,9 +52,6 @@ finds it, it will invoke its cancel-function."
   (setf (user-interface:url (cancel-button download))
         (lisp-url `(cancel-download ,(uri download)))))
 
-(defmethod cancel-function ((download download))
-  (slot-value download 'cancel-function))
-
 (defmethod (setf completion-percentage) (percentage (download download))
   (setf (slot-value download 'completion-percentage) percentage)
   (setf (user-interface:percentage (progress download))
@@ -58,17 +59,11 @@ finds it, it will invoke its cancel-function."
   (setf (user-interface:text (paragraph download))
         (format nil "Completion: ~,2f%" (completion-percentage download))))
 
-(defmethod completion-percentage ((download download))
-  (slot-value download 'completion-percentage))
-
 (defmethod (setf destination-path) (path (download download))
   (check-type path string)
   (setf (slot-value download 'destination-path) path)
   (setf (user-interface:url (open-button download))
         (lisp-url `(nyxt::default-open-file-function ,path))))
-
-(defmethod destination-path ((download download))
-  (slot-value download 'destination-path))
 
 (defmethod connect ((download download) buffer)
   "Connect the user-interface objects within the download to the
