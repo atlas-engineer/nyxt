@@ -817,7 +817,7 @@ Warning: This behaviour may change in the future."
   (gobject:g-signal-connect
    (gtk-object buffer) "load-failed"
    (lambda (web-view load-event failing-uri error)
-     (declare (ignore web-view error))
+     (declare (ignore load-event web-view error))
      (unless (eq (slot-value buffer 'load-status) :finished)
        (echo "Failed to load URL ~a in buffer ~a." failing-uri (id buffer))
        (html-set
