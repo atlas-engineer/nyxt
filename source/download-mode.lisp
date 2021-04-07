@@ -7,6 +7,15 @@
   ((uri (error "URI required.")
         :documentation "A string representation of a URL to be shown in the
 interface.")
+   (status :unloaded
+           :reader status
+           :type (member :unloaded
+                         :loading
+                         :finished
+                         :failed
+                         :canceled)
+           :documentation "Status of the download.")
+   (status-text (make-instance 'user-interface:paragraph))
    (completion-percentage 0.0
                           :reader completion-percentage
                           :type float
@@ -32,7 +41,7 @@ cancel-download with an argument of the URI to cancel.")
                                :url (lisp-url '(echo "Can't open file, file path unknown.")))
                 :documentation "The file name to open is encoded
 within the button's URL when the destinaton path is set.")
-   (paragraph (make-instance 'user-interface:paragraph))
+   (paragraph (make-instance 'user-interface:paragraph)) ; TODO: Rename to progress-text.
    (progress (make-instance 'user-interface:progress-bar)))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "This class is used to represent a download within
@@ -52,6 +61,11 @@ finds it, it will invoke its cancel-function."
   (setf (user-interface:url (cancel-button download))
         (lisp-url `(cancel-download ,(uri download)))))
 
+(defmethod (setf status) (value (download download))
+  (setf (slot-value download 'status) value)
+  (setf (user-interface:text (status-text download))
+        (format nil "Status: ~a" value)))
+
 (defmethod (setf completion-percentage) (percentage (download download))
   (setf (slot-value download 'completion-percentage) percentage)
   (setf (user-interface:percentage (progress download))
@@ -69,6 +83,7 @@ finds it, it will invoke its cancel-function."
   "Connect the user-interface objects within the download to the
 buffer. This allows the user-interface objects to update their
 appearance in the buffer when they are setf'd."
+  (user-interface:connect (status-text download) buffer)
   (user-interface:connect (paragraph download) buffer)
   (user-interface:connect (open-button download) buffer)
   (user-interface:connect (cancel-button download) buffer)
@@ -122,6 +137,7 @@ download."
      (:div
       (loop for download in (downloads *browser*)
             for uri = (uri download)
+            for status = (status-text download)
             for paragraph = (paragraph download)
             for progress = (progress download)
             for open-button = (open-button download)
@@ -130,13 +146,15 @@ download."
             collect
                (markup:markup
                 (:div :class "download"
-                 (:p :class "download-buttons"
-                  (markup:raw (user-interface:object-string cancel-button))
-                  (markup:raw (user-interface:object-string open-button)))
-                 (:p :class "download-url" (:a :href uri uri))
-                 (:span (markup:raw (user-interface:object-string paragraph)))
-                 (:div :class "progress-bar-container"
-                       (markup:raw (user-interface:object-string progress))))))))))
+                      (:p :class "download-buttons"
+                          ;; TODO: Disable the buttons when download status is failed / canceled.
+                          (markup:raw (user-interface:object-string cancel-button))
+                          (markup:raw (user-interface:object-string open-button))
+                          (markup:raw (user-interface:object-string status)))
+                      (:p :class "download-url" (:a :href uri uri))
+                      (:span (markup:raw (user-interface:object-string paragraph)))
+                      (:div :class "progress-bar-container"
+                            (markup:raw (user-interface:object-string progress))))))))))
 
 (define-command download-url ()
   "Download the page or file of the current buffer."

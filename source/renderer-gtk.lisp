@@ -947,7 +947,9 @@ requested a reload."
   (let* ((webkit-download (webkit:webkit-web-view-download-uri (gtk-object buffer) uri))
          (download (make-instance 'download :uri uri)))
     (setf (cancel-function download)
-          #'(lambda () (webkit:webkit-download-cancel webkit-download)))
+          #'(lambda ()
+              (setf (status download) :canceled)
+              (webkit:webkit-download-cancel webkit-download)))
     (push download (downloads *browser*))
     (gobject:g-signal-connect
      webkit-download "received-data"
@@ -977,6 +979,8 @@ requested a reload."
      webkit-download "failed"
      (lambda (webkit-download error)
        (declare (ignore error))
+       (unless (eq (status download) :canceled)
+         (setf (status download) :failed))
        (echo "Download failed for ~s."
              (webkit:webkit-uri-request-uri
               (webkit:webkit-download-get-request webkit-download)))))))

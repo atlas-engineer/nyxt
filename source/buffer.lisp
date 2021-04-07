@@ -226,7 +226,7 @@ Rules are kept in browser's `user-data', keyed by the expanded `auto-mode-rules-
                   :type list-of-symbols
                   :documentation "The symbols of the modes to instantiate on buffer creation.
 The mode instances are stored in the `modes' slot.")
-   (load-status :unloaded
+   (load-status :unloaded ; TODO: Rename to `status' to be consistent with download-mode?
                 :type (member :loading
                               :finished
                               :unloaded
