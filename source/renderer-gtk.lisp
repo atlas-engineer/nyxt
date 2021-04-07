@@ -983,7 +983,15 @@ requested a reload."
          (setf (status download) :failed))
        (echo "Download failed for ~s."
              (webkit:webkit-uri-request-uri
-              (webkit:webkit-download-get-request webkit-download)))))))
+              (webkit:webkit-download-get-request webkit-download)))))
+    (gobject:g-signal-connect
+     webkit-download "finished"
+     (lambda (webkit-download)
+       (declare (ignore webkit-download))
+       (unless (member (status download) '(:canceled :failed))
+         (setf (status download) :finished)
+         ;; If download was too small, it may not have been updated.
+         (setf (completion-percentage download) 100))))))
 
 (define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-user-agent
