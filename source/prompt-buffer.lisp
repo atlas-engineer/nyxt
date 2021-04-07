@@ -45,6 +45,8 @@ new history for each new prompt buffer.  Here we set the history to be shared gl
      ;; (max-lines 10
      ;;               :documentation "Max number of suggestion lines to show.
      ;; You will want edit this to match the changes done to `style'.")
+     (compact-display-p nil
+                        :documentation "Display the prompt buffer in a more compact way.")
      (style #.(cl-css:css
                '((* :font-family "monospace,monospace"
                     :font-size "14px"
@@ -235,17 +237,21 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                     (markup:raw
                      (markup:markup*
                       `(:div :class "source-name"
-                             ,@(when (sera:single sources) '(:hidden "true"))
+                             ,@(when (and (compact-display-p prompt-buffer)
+                                          (sera:single sources))
+                                 '(:hidden "true"))
                              (:span :class "source-glyph" "⛯")
                              ,(prompter:name source))))
                     (:table :class "source-content"
                             (markup:raw
                              (markup:markup*
                               `(:tr
-                                ,@(when (sera:single (prompter:active-properties source)) '(:hidden "true"))
+                                ,@(when (and (compact-display-p prompt-buffer)
+                                             (sera:single (prompter:active-properties source)))
+                                    '(:hidden "true"))
                                 ,@(loop for property in (prompter:active-properties source)
-                                       ;; TODO: If we turn properties to strings, no need to capitalize.
-                                       collect `(:th ,(str:capitalize property))))))
+                                        ;; TODO: If we turn properties to strings, no need to capitalize.
+                                        collect `(:th ,(str:capitalize property))))))
                             (loop ;; TODO: Only print as many lines as fit the height.  But how can we know in advance?
                                   ;; Maybe first make the table, then add the element one by one _if_ there are into view.
                                   with max-suggestion-count = 10
@@ -264,12 +270,12 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
       (ffi-prompt-buffer-evaluate-javascript-async
        (window prompt-buffer)
        (ps:ps
-         (setf (ps:chain document (get-element-by-id "suggestions") |innerHTML|)
-               (ps:lisp
-                (str:join +newline+
-                          (loop for i from current-source-index to last-source-index
-                                for source = (nth i sources)
-                                collect (source->html source))))))))
+        (setf (ps:chain document (get-element-by-id "suggestions") |innerHTML|)
+              (ps:lisp
+               (str:join +newline+
+                         (loop for i from current-source-index to last-source-index
+                               for source = (nth i sources)
+                               collect (source->html source))))))))
     (prompt-render-prompt prompt-buffer)))
 
 (defun erase-document (prompt-buffer)
