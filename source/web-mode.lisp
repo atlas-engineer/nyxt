@@ -167,6 +167,7 @@ and to index the top of the page.")
        "z o" 'zoom-out-page
        "z z" 'unzoom-page
        "g h" 'jump-to-heading
+       "g H" 'jump-to-heading-across-buffers
        "/" 'search-buffer
        "?" 'remove-search-hints
        "m f" 'bookmark-hint
