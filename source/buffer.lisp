@@ -766,8 +766,7 @@ proceeding."
 
 (define-class buffer-source (prompter:source)
   ((prompter:name "Buffer list")
-   ;; For commodity, the current buffer shouldn't be the first one on the list.
-   (prompter:constructor (buffer-initial-suggestions :current-is-last-p t))
+   (prompter:constructor (buffer-initial-suggestions :current-is-last-p nil))
    (prompter:actions (list (make-unmapped-command set-current-buffer)))
    (prompter:follow-p t)
    (prompter:follow-delay 0.1)
@@ -787,7 +786,9 @@ proceeding."
       (set-current-buffer (buffers-get id))
       (prompt
        :prompt "Switch to buffer"
-       :sources (list (make-instance 'buffer-source)))))
+       :sources (list (make-instance 'buffer-source
+                                     ;; For commodity, the current buffer shouldn't be the first one on the list.
+                                     :constructor (buffer-initial-suggestions :current-is-last-p t))))))
 
 (define-command switch-buffer-domain (&key domain (buffer (current-buffer)))
   "Switch the active buffer in the current window from the current domain."
@@ -822,7 +823,6 @@ See `make-buffer'."
       (prompt
        :prompt "Delete buffer(s)"
        :sources (make-instance 'buffer-source
-                               :constructor (buffer-initial-suggestions :current-is-last-p nil)
                                :multi-selection-p t
                                :actions (list (make-mapped-command buffer-delete))))))
 
