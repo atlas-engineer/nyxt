@@ -968,7 +968,14 @@ requested a reload."
      (lambda (webkit-download destination)
        (declare (ignore destination))
        (setf (destination-path download)
-             (webkit:webkit-download-destination webkit-download))))))
+             (webkit:webkit-download-destination webkit-download))))
+    (gobject:g-signal-connect
+     webkit-download "failed"
+     (lambda (webkit-download error)
+       (declare (ignore error))
+       (echo "Download failed for ~s."
+             (webkit:webkit-uri-request-uri
+              (webkit:webkit-download-get-request webkit-download)))))))
 
 (define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-user-agent
