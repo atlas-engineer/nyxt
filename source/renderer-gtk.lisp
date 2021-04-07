@@ -958,10 +958,14 @@ requested a reload."
     (gobject:g-signal-connect
      webkit-download "decide-destination"
      (lambda (webkit-download suggested-file-name)
-       (alex:when-let* ((path (download-path buffer))
-                        (download-dir (expand-path path))
-                        (file-path (format nil "file://~a~a" download-dir suggested-file-name)))
-         (log:debug "Downloading file to ~s." file-path)
+       (alex:when-let* ((download-dir (download-path buffer))
+                        (download-directory (expand-path download-dir))
+                        (path (str:concat download-directory suggested-file-name))
+                        (unique-path (download-manager::ensure-unique-file path))
+                        (file-path (format nil "file://~a" unique-path)))
+         (if (string= path unique-path)
+             (echo "Destination ~s exists, saving as ~s." path unique-path)
+             (log:debug "Downloading file to ~s." unique-path))
          (webkit:webkit-download-set-destination webkit-download file-path))))
     (gobject:g-signal-connect
      webkit-download "created-destination"
