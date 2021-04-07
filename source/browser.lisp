@@ -34,6 +34,7 @@ Without handler, return ARG.  This is an acceptable `combination' for
   (labels ((compose-handlers (handlers result)
              (if handlers
                  (let ((new-result (funcall (first handlers) result)))
+                   (log:debug "Handler (~a ~a): ~a" (first handlers) result new-result)
                    (when new-result
                      (compose-handlers (rest handlers) new-result)))
                  result)))
