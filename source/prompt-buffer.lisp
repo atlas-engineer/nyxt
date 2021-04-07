@@ -34,7 +34,6 @@ All ARGS are declared as `ignorable'."
 new history for each new prompt buffer.  Here we set the history to be shared globally.")
      ;; TODO: Need a changed-callback?  Probably not, see `search-buffer'.  But
      ;; can we run the postprocessor without running the filter?
-     ;; TODO: Need a invisible-input-p slot?
      (invisible-input-p nil
                         :documentation "If non-nil, input is replaced by placeholder character.
 ;; This is useful to conceal passwords.")
@@ -297,8 +296,16 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                 (:div :id "prompt-area"
                                       (:div :id "prompt" (prompter:prompt prompt-buffer))
                                       (:div :id "prompt-extra" "[?/?]")
-                                      (:div (:input :type "text" :id "input" :value (prompter:input prompt-buffer))))
-                                (:div :id "suggestions")))))))))
+                                      (:div (:input :type (if (invisible-input-p prompt-buffer)
+                                                              "password"
+                                                              "text")
+                                                    :id "input"
+                                                    :value (prompter:input prompt-buffer))))
+                                (markup:raw
+                                 (markup:markup*
+                                  `(:div :id "suggestions"
+                                         ,@(when (invisible-input-p prompt-buffer)
+                                             '(:hidden "true")))))))))))))
 
 (defun prompt-render-focus (prompt-buffer)
   (ffi-prompt-buffer-evaluate-javascript-async
