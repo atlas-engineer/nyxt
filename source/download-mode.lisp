@@ -64,14 +64,14 @@ finds it, it will invoke its cancel-function."
 (defmethod (setf status) (value (download download))
   (setf (slot-value download 'status) value)
   (setf (user-interface:text (status-text download))
-        (format nil "Status: ~a" value)))
+        (format nil "Status: ~(~a~)." value)))
 
 (defmethod (setf completion-percentage) (percentage (download download))
   (setf (slot-value download 'completion-percentage) percentage)
   (setf (user-interface:percentage (progress download))
         (completion-percentage download))
   (setf (user-interface:text (progress-text download))
-        (format nil "Completion: ~,2f%" (completion-percentage download))))
+        (format nil "Completion: ~,2f%." (completion-percentage download))))
 
 (defmethod (setf destination-path) (path (download download))
   (check-type path string)
@@ -89,18 +89,26 @@ appearance in the buffer when they are setf'd."
   (user-interface:connect (cancel-button download) buffer)
   (user-interface:connect (progress download) buffer))
 
-(define-mode download-mode ()           ; TODO: Move to separate package?
+;; TODO: Move to separate package
+(define-mode download-mode ()
   "Display list of downloads."
   ((open-file-function #'default-open-file-function)
    (style
     (cl-css:css
-     '(("download"
-        :margin-top "10px")
+     '((".download"
+        :margin-top "10px"
+        :padding-left "5px"
+        :background-color "#F5F5F5"
+        :border-radius "3px")
        (".download-url"
         :overflow "auto"
         :white-space "nowrap")
        (".download-url a"
+        :font-size "small"
         :color "black")
+       (".status p"
+        :display "inline-block"
+        :margin-right "10px")
        (".progress-bar-container"
         :height "20px"
         :width "100%")
@@ -149,12 +157,13 @@ download."
                       (:p :class "download-buttons"
                           ;; TODO: Disable the buttons when download status is failed / canceled.
                           (markup:raw (user-interface:object-string cancel-button))
-                          (markup:raw (user-interface:object-string open-button))
-                          (markup:raw (user-interface:object-string status-text)))
+                          (markup:raw (user-interface:object-string open-button)))
                       (:p :class "download-url" (:a :href uri uri))
-                      (:span (markup:raw (user-interface:object-string progress-text)))
                       (:div :class "progress-bar-container"
-                            (markup:raw (user-interface:object-string progress))))))))))
+                            (markup:raw (user-interface:object-string progress)))
+                      (:div :class "status"
+                            (markup:raw (user-interface:object-string progress-text))
+                            (markup:raw (user-interface:object-string status-text))))))))))
 
 (define-command download-url ()
   "Download the page or file of the current buffer."

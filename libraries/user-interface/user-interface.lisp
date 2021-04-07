@@ -74,7 +74,9 @@ filled up, use a number between 0 and 100.")))
 (defmethod object-expression ((progress-bar progress-bar))
   `(:div :class "progress-bar-base"
          (:div :class "progress-bar-fill"
-               :id ,(id progress-bar))))
+               :id ,(id progress-bar)
+               ;; empty string to force markup to make closing :div tag
+               "")))
 
 (defmethod (setf percentage) (percentage (progress-bar progress-bar))
   (setf (slot-value progress-bar 'percentage) (format nil "~D%" (round percentage)))
