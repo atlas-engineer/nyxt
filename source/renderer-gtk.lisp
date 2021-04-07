@@ -811,7 +811,9 @@ Warning: This behaviour may change in the future."
   (gobject:g-signal-connect
    (gtk-object buffer) "web-process-crashed"
    (lambda (web-view)
-     (log:debug "Web process crashed for web view: ~a" web-view)))
+     (echo-warning "Web process crashed for buffer ~a" (id buffer))
+     (log:debug "Web process crashed for web view ~a" web-view)
+     (delete-buffer :id (id buffer))))
   (gobject:g-signal-connect
    (gtk-object buffer) "load-failed"
    (lambda (web-view load-event failing-uri error)
