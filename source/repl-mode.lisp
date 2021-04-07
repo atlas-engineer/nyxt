@@ -101,6 +101,6 @@
 
 (define-command nyxt::lisp-repl ()
   "Show Lisp REPL."
-  (let* ((repl-buffer (make-buffer :title "*Lisp REPL*" :modes '(nyxt/repl-mode:repl-mode base-mode))))
+  (let* ((repl-buffer (make-internal-buffer :title "*Lisp REPL*" :modes '(nyxt/repl-mode:repl-mode base-mode))))
     (set-current-buffer repl-buffer)
     repl-buffer))
