@@ -817,18 +817,19 @@ Warning: This behaviour may change in the future."
   (gobject:g-signal-connect
    (gtk-object buffer) "load-failed"
    (lambda (web-view load-event failing-uri error)
-     (declare (ignore load-event web-view error))
-     (echo "Failed to load URL ~a in buffer ~a." failing-uri buffer)
-     (html-set
-      (markup:markup
-       (:h1 "Page could not be loaded.")
-       (:h2 "URL: " failing-uri)
-       (:p "Please check:"
-           (:ul
-            (:li "Your Internet connection.")
-            (:li "That the URL is valid.")
-            (:li "That the resource at the URL is reachable."))))
-      buffer)
+     (declare (ignore web-view error))
+     (unless (eq (slot-value buffer 'load-status) :finished)
+       (echo "Failed to load URL ~a in buffer ~a." failing-uri (id buffer))
+       (html-set
+        (markup:markup
+         (:h1 "Page could not be loaded.")
+         (:h2 "URL: " failing-uri)
+         (:p "Please check:"
+             (:ul
+              (:li "Your Internet connection.")
+              (:li "That the URL is valid.")
+              (:li "That the resource at the URL is reachable."))))
+        buffer))
      t))
   (gobject:g-signal-connect
    (gtk-object buffer) "create"
@@ -960,7 +961,7 @@ requested a reload."
        (alex:when-let* ((path (download-path buffer))
                         (download-dir (expand-path path))
                         (file-path (format nil "file://~a~a" download-dir suggested-file-name)))
-         (log:debug "Downloading file to ~a" file-path)
+         (log:debug "Downloading file to ~s." file-path)
          (webkit:webkit-download-set-destination webkit-download file-path))))
     (gobject:g-signal-connect
      webkit-download "created-destination"

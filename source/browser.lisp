@@ -410,6 +410,11 @@ Deal with REQUEST-DATA with the following rules:
          (download buffer url
                    :proxy-address (proxy-address buffer :downloads-only t)
                    :cookies "")
+         ;; TODO: WebKitGTK emits "load-failed" if we call
+         ;; webkit-policy-decision-ignore on a download requestion.
+         ;; To work around this, we set the `load-status' to a value other than
+         ;; `:loading'.
+         (setf (slot-value buffer 'load-status) :finished)
          nil)
         (t
          (log:debug "Forwarding ~a for buffer ~s" (object-display url) buffer)
