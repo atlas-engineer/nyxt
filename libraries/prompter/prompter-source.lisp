@@ -22,14 +22,14 @@
    (complement #'exported-p)
    (mopu:slot-names object-specifier)))
 
-(defun default-object-property (object)
+(defun default-object-attributes (object)
   (list :default (princ-to-string object)))
 
-(export-always 'object-properties)
-(defmethod object-properties ((object t))
-  "Return a plist of (PROPERTY-KEY PROPERTY-VALUE) for OBJECT.
-Properties are meant to describe the OBJECT structurally.
-Property-values can be of arbitrary type.
+(export-always 'object-attributes)
+(defmethod object-attributes ((object t))
+  "Return a plist of (ATTRIBUTE-KEY ATTRIBUTE-VALUE) for OBJECT.
+Attributes are meant to describe the OBJECT structurally.
+Attribute-values can be of arbitrary type.
 
 For structure and class instances, the plist is made of the exported slots: the
 keys are the slot symbols and the values the slot values passed to
@@ -37,8 +37,8 @@ keys are the slot symbols and the values the slot values passed to
 
 It's used in `make-suggestion' which can be used as a `suggestion-maker' for `source's.
 
-It's useful to separate concerns and compose between different object properties
-and different sources (for instance, the same `object-properties' method can be
+It's useful to separate concerns and compose between different object attributes
+and different sources (for instance, the same `object-attributes' method can be
 inherited or used across different sources)."
   (cond
     ((or (typep object 'standard-object)
@@ -49,14 +49,14 @@ inherited or used across different sources)."
                             (princ-to-string (slot-value object slot))))
                     (object-public-slots object))
       (princ-to-string object)))
-    (t (default-object-property object))))
+    (t (default-object-attributes object))))
 
 (define-class suggestion ()
   ((value nil ; TODO: Rename `data' as with the GHT?  Maybe confusing since we have `match-data'.
           :type t)
-   (properties '()
-               :documentation "A plist of properties to structure the filtering.
-The key is the property name and the value is a string.")
+   (attributes '()
+               :documentation "A plist of attributes to structure the filtering.
+The key is the attribute name and the value is a string.")
    (match-data nil
                :type t
                :writer t
@@ -74,28 +74,28 @@ The other slots are optional.
 
 Suggestions are made with the `suggestion-maker' slot from `source'."))
 
-(defun object-properties-p (properties)
-  (and (listp properties)
-       (evenp (length properties))))
+(defun object-attributes-p (object)
+  (and (listp object)
+       (evenp (length object))))
 
-(defun format-properties (properties &optional downcasedp)
+(defun format-attributes (attributes &optional downcasedp)
   (funcall (if downcasedp #'string-downcase #'identity)
-           (str:join " " (mapcar #'princ-to-string (sera:plist-values properties)))))
+           (str:join " " (mapcar #'princ-to-string (sera:plist-values attributes)))))
 
 (defmethod initialize-instance :after ((suggestion suggestion) &key source input)
   "Set SUGGESTION `match-data' if empty and if SOURCE and INPUT initargs are provided.
-`match-data' is set by concatenating all the active properties into a
+`match-data' is set by concatenating all the active attributes into a
 space-separated string.
 The `match-data' is downcased if INPUT is lower-case."
-  (unless (object-properties-p (properties suggestion))
-    (warn "Properties of ~s should be a plist instead of ~s" (value suggestion) (properties suggestion))
-    (setf (properties suggestion) (default-object-property (value suggestion))))
+  (unless (object-attributes-p (attributes suggestion))
+    (warn "Attributes of ~s should be a plist instead of ~s" (value suggestion) (attributes suggestion))
+    (setf (attributes suggestion) (default-object-attribute (value suggestion))))
   (when (uiop:emptyp (match-data suggestion))
     (setf (match-data suggestion)
-          (format-properties
+          (format-attributes
            (if source
-               (active-properties suggestion :source source)
-               (properties suggestion))
+               (active-attributes suggestion :source source)
+               (attributes suggestion))
            (if input
                (str:downcasep input)
                :downcasep)))))
@@ -104,15 +104,15 @@ The `match-data' is downcased if INPUT is lower-case."
   (alex:if-let ((value (slot-value suggestion 'match-data)))
     value
     (setf (match-data suggestion)
-          (format-properties (properties suggestion) :downcasedp))))
+          (format-attributes (attributes suggestion) :downcasedp))))
 
 (export-always 'make-suggestion)
 (defmethod make-suggestion ((value t) source &optional input)
   "Return a `suggestion' wrapping around VALUE.
-Properties are set with `object-properties'."
+Attributes are set with `object-attributes'."
   (make-instance 'suggestion
                  :value value
-                 :properties (object-properties value)
+                 :attributes (object-attributes value)
                  :source source
                  :input input))
 
@@ -144,7 +144,7 @@ It's called when `destroy' is called over `prompter'.")
                         "Suggestions used on initialization, before any
 user input is processed.
 On initialization this list is transformed to a list of `suggestion's
-where properties are set from `suggestion-property-function'.
+where attributes are set from `suggestion-attribute-function'.
 This list is never modified after initialization.")
 
    (initial-suggestions-lock (bt:make-lock)
@@ -174,18 +174,18 @@ When suggestions are marked, the subsequent action is run over all marked sugges
 We store the values instead of the suggestion because suggestions objects are
 reinstantiated between each input processing.")
 
-   (active-properties '()
+   (active-attributes '()
                       :export t
                       :accessor nil
-                      :documentation "Suggestion properties to display and
-process when filtering.  A suggestion `object-properties' method should return a
-plist of property names and string values.  An empty list means all properties
+                      :documentation "Suggestion attributes to display and
+process when filtering.  A suggestion `object-attributes' method should return a
+plist of attribute names and string values.  An empty list means all attributes
 are displayed.")
 
    (suggestion-maker #'make-suggestion
                      :documentation "Function that wraps an arbitrary
 object into a source `suggestion'.
-This is useful to set the suggestion slots such as `properties' and `match-data'
+This is useful to set the suggestion slots such as `attributes' and `match-data'
 depending on the source and the input.
 
 Called on
@@ -437,57 +437,56 @@ call."))
     (setf (must-match-p source) nil))
   source)
 
-;; TODO: Property keys should be strings.  Should properties be objects?
-(export-always 'properties)
-(defmethod properties ((source source)) ; TODO: Rename this so that it's not exported?
+;; TODO: Attribute keys should be strings.  Should attributes be objects?
+(defmethod source-attributes ((source source)) ; We don't name this `attributes' so that it's unexported.
   (sera:plist-keys
    (alex:if-let ((sugg (first (suggestions source)))) ; TODO: Instead, ensure that suggestions always has an element?
-     (properties sugg)
-     (default-object-property ""))))
+     (attributes sugg)
+     (default-object-attributes ""))))
 
-(export-always 'properties-non-default)
-(defmethod properties-non-default ((source source))
-  "Return SOURCE properties except the default one."
-  (rest (properties source)))
+(export-always 'attributes-non-default)
+(defmethod attributes-non-default ((source source))
+  "Return SOURCE attributes except the default one."
+  (rest (source-attributes source)))
 
-(export-always 'properties-default)
-(defmethod properties-default ((source source))
-  "Return SOURCE default property."
-  (first (properties source)))
+(export-always 'attributes-default)
+(defmethod attributes-default ((source source))
+  "Return SOURCE default attribute."
+  (first (source-attributes source)))
 
-(defmethod properties-default ((suggestion suggestion))
-  "Return SUGGESTION default property value."
-  (second (properties suggestion)))
+(defmethod attributes-default ((suggestion suggestion))
+  "Return SUGGESTION default attribute value."
+  (second (attributes suggestion)))
 
-(defmethod properties-non-default ((suggestion suggestion))
-  "Return SUGGESTION non-default properties as a plist."
-  (cddr (properties suggestion)))
+(defmethod attributes-non-default ((suggestion suggestion))
+  "Return SUGGESTION non-default attributes as a plist."
+  (cddr (attributes suggestion)))
 
-(defmethod active-properties ((source source) &key &allow-other-keys)
-  "Return active properties.
-If the `active-properties' slot is NIL, return all properties."
-  (or (slot-value source 'active-properties)
-      (properties source)))
+(defmethod active-attributes ((source source) &key &allow-other-keys)
+  "Return active attributes.
+If the `active-attributes' slot is NIL, return all attributes."
+  (or (slot-value source 'active-attributes)
+      (source-attributes source)))
 
-(defmethod (setf active-properties) (value (source source))
-  "Set active properties to the intersection of VALUE and SOURCE properties."
+(defmethod (setf active-attributes) (value (source source))
+  "Set active attributes to the intersection of VALUE and SOURCE attributes."
   (flet ((remove-from-seq (seq &rest items)
            (reduce (lambda (seq item) (remove item seq))
                    (set-difference seq items)
                    :initial-value seq)))
-    (setf (slot-value source 'active-properties)
-          (cons (properties-default source)
-                (apply #'remove-from-seq (properties-non-default source) value)))))
+    (setf (slot-value source 'active-attributes)
+          (cons (attributes-default source)
+                (apply #'remove-from-seq (attributes-non-default source) value)))))
 
-(defmethod active-properties ((suggestion suggestion)
+(defmethod active-attributes ((suggestion suggestion)
                               &key (source (error "Source required"))
                               &allow-other-keys)
-  "Return the active properties of SUGGESTION.
-Active properties are queried from SOURCE."
+  "Return the active attributes of SUGGESTION.
+Active attributes are queried from SOURCE."
   (apply #'alex:remove-from-plist
-         (properties suggestion)
-         (set-difference (sera:plist-keys (properties suggestion))
-                         (active-properties source))))
+         (attributes suggestion)
+         (set-difference (sera:plist-keys (attributes suggestion))
+                         (active-attributes source))))
 
 (export-always 'marked-p)
 (defun marked-p (source value)
