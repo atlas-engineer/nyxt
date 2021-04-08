@@ -11,8 +11,6 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 - PATCH when we make backwards-compatible bug fixes.
 
 ** TASK Upcoming
-*** Jump to heading across all tabs
-- Add a jump to heading command that works across all open tabs
 *** Package manager
 - There should be a package manager/repository where creators of
   packages can publish, and users can download
@@ -21,16 +19,16 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 - Add support for per-tab Proxy and Tor support
 *** Password manager
 - Add an integrated password manager
-*** Add built-in editor
-- Add simple built-in editor capabilities so that you can easily
-  script Next without opening up an external editor
-- Also use the editor for text-field input on the internet
+
 *** Add online suggestions from search engines
 ** 2.0.0
 
 *** TASK 2-pre-release-7 (Upcoming)
 
 - Rename =paste-from-clipboard-ring= to =paste-from-clipboard-ring=.
+- New Jump to heading across all tabs
+- New simple built-in editor capabilities so that you can easily script
+  Nyxt without opening up an external editor
 
 *** 2-pre-release-6
 
@@ -135,7 +133,6 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
   - Pasting text no longer moves the cursor.
 
   - Fix application name, as well as icon on Wayland.  (Thanks to @jeffbowman, @aacdg!)
-
 
 *** 2-pre-release-5
 
