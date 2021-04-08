@@ -138,6 +138,42 @@ For instance, these are equal:
       (schemeless-uri= url1 url2)
       (the (values boolean &optional) (quri:uri= url1 url2))))
 
+(declaim (ftype (function (quri:uri quri:uri list) boolean) eq-uri-p))
+(defun eq-uri-p (url1 url2 eq-fn-list)
+  "Return non-nil when URL1 and URL2 are \"equal\" as dictated by EQ-FN-LIST.
+
+EQ-FN-LIST is a list of functions that take URL1 and URL2 as arguments and
+return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
+`quri:uri=', `url-equal' and `schemeless-uri=' are examples of equivalence
+relations."
+  ;; (and (fn1 url1 url2) (fn2 url1 url2) ...) stops as soon as any fn returns
+  ;; nil, unlike the solution below.
+  (every #'identity (mapcar (lambda (fn) (funcall fn url1 url2)) eq-fn-list)))
+
+(declaim (ftype (function (quri:uri quri:uri) boolean)
+                distinct-url-path-p scheme= domain= host=))
+(defun distinct-url-path-p (url1 url2)
+  "Return non-nil when URL1 and URL2 have distinct paths."
+  ;; See https://github.com/fukamachi/quri/issues/48.
+  (not (equalp (string-right-trim "/" (or (quri:uri-path url1) ""))
+               (string-right-trim "/" (or (quri:uri-path url2) "")))))
+
+(defun scheme= (url1 url2)
+  "Return non-nil when URL1 and URL2 have the same scheme.
+HTTP and HTTPS belong to the same equivalence class."
+  (or (equalp (quri:uri-scheme url1) (quri:uri-scheme url2))
+      (and (quri:uri-http-p url1) (quri:uri-http-p url2))))
+
+(defun domain= (url1 url2)
+  "Return non-nil when URL1 and URL2 have the same domain."
+  (equalp (quri:uri-domain url1) (quri:uri-domain url2)))
+
+(defun host= (url1 url2)
+  "Return non-nil when URL1 and URL2 have the same host.
+This is a more restrictive requirement than `domain='."
+  ;; What's the difference between quri:uri-host and quri:uri-authority?
+  (equalp (quri:uri-host url1) (quri:uri-host url2)))
+
 (declaim (ftype (function (string) (values (or quri:uri null) t &optional)) parse-url))
 (defun parse-url (input-url)
   "From user input, return the full URL to visit.
