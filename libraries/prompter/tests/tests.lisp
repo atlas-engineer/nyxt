@@ -52,8 +52,8 @@
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (defmethod prompter:object-attributes ((url url))
-  `(:uri ,(uri url)
-    :title ,(title url)))
+  `(("URI" ,(uri url))
+    ("Title" ,(title url))))
 
 (prove:subtest "Multi-attribute matching"
   (let* ((url1 (make-instance 'url :uri "http://example.org" :title "Example"))
@@ -67,7 +67,15 @@
       (let ((filtered-suggestions (prompter:suggestions
                                    (first (prompter:sources prompter)))))
         (prove:is (mapcar #'prompter:value filtered-suggestions)
-                  (list url2))))))
+                  (list url2))))
+    (setf (prompter:active-attributes-keys (prompter:selected-source prompter))
+          '("URI"))
+    (prove:is (prompter:active-attributes-keys (prompter:selected-source prompter))
+               '("URI"))
+    (prove:is (prompter:active-attributes
+                (prompter:selected-suggestion prompter)
+                :source (prompter:selected-source prompter))
+              `(("URI" ,(uri url2) )))))
 
 (defvar *prompter-suggestion-update-interval* 1.5)
 
@@ -126,7 +134,8 @@
                 :test #'<
                 "Consecutive inputs happened fast enough"))))
 
-(prove:subtest "Yes-No prompt"
+(prove:subtest "Yes-No prompt"          ; TODO: This test randomly throws an error:
+  ;; Raised an error Interrupt thread failed: thread #<THREAD "Anonymous thread" FINISHED values: T {1013B856B3}> has exited. (expected: :NON-ERROR)
   (let* ((source (make-instance 'prompter:yes-no-source
                                 :constructor '("no" "yes")))
          (prompter (prompter:make
