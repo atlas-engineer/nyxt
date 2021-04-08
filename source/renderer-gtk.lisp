@@ -842,18 +842,6 @@ Warning: This behaviour may change in the future."
        (ffi-buffer-load new-buffer uri)
        (window-set-buffer (current-window) new-buffer)
        (gtk-object new-buffer))))
-  (gobject:g-signal-connect
-   (gtk-object buffer) "context-menu"
-   (lambda (web-view context-menu event hit-test-result)
-     (declare (ignore web-view event hit-test-result))
-     (let ((length (webkit:webkit-context-menu-get-n-items context-menu)))
-       (dolist (i (alex:iota length))
-         (let* ((item (webkit:webkit-context-menu-get-item-at-position context-menu i)))
-           (when (eq (webkit:webkit-context-menu-item-get-stock-action item)
-                     :webkit-context-menu-action-open-link-in-new-window)
-             (webkit:webkit-context-menu-remove context-menu item)))))
-     ;; Return t to prevent the context menu from showing.
-     nil))
   buffer)
 
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
