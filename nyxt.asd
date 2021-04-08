@@ -132,7 +132,6 @@
                (:file "noscript-mode")
                (:file "nowebgl-mode")
                (:file "download-mode")
-               (:file "vcs-mode")
                (:file "force-https-mode")
                (:file "reduce-tracking-mode")
                (:file "os-package-manager-mode")
