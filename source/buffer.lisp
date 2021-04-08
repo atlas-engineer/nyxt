@@ -674,14 +674,21 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (store (data-profile buffer) (history-path buffer))))
 
 (export-always 'buffer-list)
-(defun buffer-list (&key sort-by-time domain)
+(defun buffer-list (&key sort-by-time domain url)
   (let* ((buffer-list (alex:hash-table-values (buffers *browser*)))
-         (buffer-list (if sort-by-time (sort
-                                        buffer-list #'local-time:timestamp> :key #'last-access)
-                          buffer-list))
-         (buffer-list (if domain (remove-if-not
-                                  (lambda (i) (equal domain (quri:uri-domain (url i)))) buffer-list)
-                          buffer-list)))
+         (buffer-list
+           (if sort-by-time
+               (sort buffer-list #'local-time:timestamp> :key #'last-access)
+               buffer-list))
+         (buffer-list
+           (if domain
+               (remove-if-not
+                (lambda (i) (equal domain (quri:uri-domain (url i)))) buffer-list)
+               buffer-list))
+         (buffer-list
+           (if url
+               (remove-if-not (lambda (i) (quri:uri= url (url i))) buffer-list)
+               buffer-list)))
     buffer-list))
 
 (defun buffers-get (id)
