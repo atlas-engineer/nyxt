@@ -16,7 +16,7 @@
               (make-instance 'prompter:suggestion
                              :value file
                              :match-data (namestring file)
-                             :properties (prompter:object-properties file)
+                             :attributes (prompter:object-attributes file)
                              :source source
                              :input input))
             (directory-elements (if (uiop:directory-pathname-p pathname)

@@ -85,23 +85,30 @@
               " (current)"
               "")))
 
-(defmethod prompter:object-properties ((pkg ospm:guix-package))
-  (let ((result (call-next-method pkg)))
-    (remf result :dependencies)
-    (setf (getf result :outputs) (str:join " " (mapcar #'ospm:name (ospm:outputs pkg))))
-    (setf (getf result :supported-systems) (str:join " " (ospm:supported-systems pkg)))
-    (setf (getf result :inputs) (str:join " " (ospm:inputs pkg)))
-    (setf (getf result :native-inputs) (str:join " " (ospm:native-inputs pkg)))
-    (setf (getf result :propagated-inputs) (str:join " " (ospm:propagated-inputs pkg)))
-    (setf (getf result :licenses) (format nil "~{~a~^, ~}" (ospm:licenses pkg)))
-    result))
+(defmethod prompter:object-attributes ((pkg ospm:guix-package)) ; TODO: This is much too slow.
+  (let ((result (call-next-method pkg))
+        (map `(("Dependencies" nil)
+               ("Outputs" ,(str:join " " (mapcar #'ospm:name (ospm:outputs pkg))))
+               ("Supported systems" ,(str:join " " (ospm:supported-systems pkg)))
+               ("Inputs" ,(str:join " " (ospm:inputs pkg)))
+               ("Native inputs" ,(str:join " " (ospm:native-inputs pkg)))
+               ("Propagated inputs" ,(str:join " " (ospm:propagated-inputs pkg)))
+               ("Licenses" ,(format nil "~{~a~^, ~}" (ospm:licenses pkg))))))
+    (delete nil
+            (mapcar (lambda (key-value)
+                      (alex:if-let ((new-key-value (first (member (first key-value) map :test #'string= :key #'first))))
+                        (if (second new-key-value)
+                            new-key-value
+                            nil)
+                        key-value))
+                    result))))
 
 (define-class os-package-source (prompter:source)
   ((prompter:name "Packages")
    (prompter:must-match-p t)
    (prompter:multi-selection-p t)
    (prompter:constructor (ospm:list-packages))
-   (prompter:active-properties '(:name :version :synopsis))))
+   (prompter:active-attributes-keys '("Name" "Version" "Synopsis"))))
 
 (define-class os-manifest-source (prompter:source)
   ((prompter:name "Manifests")

@@ -243,10 +243,10 @@ identifier for every hinted element."
          :documentation "The body of the anchor tag."))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(defmethod prompter:object-properties ((hint hint))
-  (list :hint (hint hint)
-        :body (body hint)
-        :url (when (slot-exists-p hint 'url) (url hint))))
+(defmethod prompter:object-attributes ((hint hint))
+  `(("Hint" ,(hint hint))
+    ("Body" ,(body hint))
+    ("URL" ,(when (slot-exists-p hint 'url) (url hint)))))
 
 (define-class clickable-hint (hint) ())
 

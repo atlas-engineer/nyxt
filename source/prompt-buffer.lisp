@@ -229,7 +229,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
   (let* ((sources (prompter:sources prompt-buffer))
          (current-source-index (position (current-source prompt-buffer) sources))
          (last-source-index (1- (length sources))))
-    ;; TODO: Factor out property printing.
+    ;; TODO: Factor out attribute printing.
     (flet ((source->html (source)
              (markup:markup
               (:div :class "source"
@@ -246,11 +246,10 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                              (markup:markup*
                               `(:tr
                                 ,@(when (and (compact-display-p prompt-buffer)
-                                             (sera:single (prompter:active-properties source)))
+                                             (sera:single (prompter:active-attributes-keys source)))
                                     '(:hidden "true"))
-                                ,@(loop for property in (prompter:active-properties source)
-                                        ;; TODO: If we turn properties to strings, no need to capitalize.
-                                        collect `(:th ,(str:capitalize property))))))
+                                ,@(loop for attribute-key in (prompter:active-attributes-keys source)
+                                        collect `(:th ,attribute-key)))))
                             (loop ;; TODO: Only print as many lines as fit the height.  But how can we know in advance?
                                   ;; Maybe first make the table, then add the element one by one _if_ there are into view.
                                   with max-suggestion-count = 10
@@ -264,8 +263,8 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                       "selection")
                                                 :class (when (prompter:marked-p source (prompter:value suggestion))
                                                          "marked")
-                                                (loop for (nil property) on (prompter:active-properties suggestion :source source) by #'cddr
-                                                      collect (markup:markup (:td property)))))))))))
+                                                (loop for (nil attribute) in (prompter:active-attributes suggestion :source source)
+                                                      collect (markup:markup (:td attribute)))))))))))
       (ffi-prompt-buffer-evaluate-javascript-async
        (window prompt-buffer)
        (ps:ps
@@ -384,9 +383,9 @@ See the documentation of `prompt-buffer' to know more about the options."
         ((calispel:? interrupt-channel)
          (error 'nyxt-prompt-buffer-canceled))))))
 
-(defmethod prompter:object-properties ((prompt-buffer prompt-buffer))
-  (list :prompt (prompter:prompt prompt-buffer)
-        :input (prompter:input prompt-buffer)))
+(defmethod prompter:object-attributes ((prompt-buffer prompt-buffer))
+  `(("Prompt" ,(prompter:prompt prompt-buffer))
+    ("Input" ,(prompter:input prompt-buffer))))
 
 (define-class resume-prompt-source (prompter:source)
   ((prompter:name "Resume prompters")

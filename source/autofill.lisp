@@ -32,10 +32,10 @@ Can be:
 (defmethod object-string ((autofill autofill))
   (autofill-key autofill))
 
-(defmethod prompter:object-properties ((autofill autofill))
-  (list :key (autofill-key autofill)
-        :name (autofill-name autofill)
-        :fill (autofill-fill autofill)))
+(defmethod prompter:object-attributes ((autofill autofill))
+  `(("Key" ,(autofill-key autofill))
+    ("Name" ,(autofill-name autofill))
+    ("Fill" ,(autofill-fill autofill))))
 
 (defmethod object-display ((autofill autofill))
   (format nil "~a:  ~a" (autofill-key autofill)

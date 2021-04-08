@@ -267,10 +267,10 @@ and to index the top of the page.")
                  history)))))
   (:export-class-name-p t))
 
-(defmethod prompter:object-properties ((node history-tree:node))
+(defmethod prompter:object-attributes ((node history-tree:node))
   (let ((entry (htree:data (history-tree:entry node))))
-    (list :url (object-display (url entry))
-          :title (title entry))))
+    `(("URL" ,(object-display (url entry)))
+      ("Title" ,(title entry)))))
 
 (define-command history-backwards-query (&optional (buffer (current-buffer)))
   "Query parent URL to navigate back to."

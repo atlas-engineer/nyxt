@@ -45,7 +45,7 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "f1 m" 'describe-prompt-buffer
        "C-h b" 'run-prompt-buffer-command ; TODO: Move to Emacs bindings.
        "C-c C-f" 'toggle-follow
-       "C-]" 'toggle-properties-display ; "C-]" is Emacs Helm binding.
+       "C-]" 'toggle-attributes-display ; "C-]" is Emacs Helm binding.
        "C-space" 'prompt-buffer-toggle-mark
        "shift-space" 'prompt-buffer-toggle-mark-backwards
        "M-space" 'prompt-buffer-toggle-mark
@@ -152,30 +152,34 @@ If STEPS is negative, go to next pages instead."
   (hide-prompt-buffer prompt-buffer
                       (lambda () (prompter:return-input prompt-buffer))))
 
-(defun make-property-suggestion (property source &optional input)
-  "Return a `suggestion' wrapping around PROPERTY. "
+(defun make-attribute-suggestion (attribute source &optional input)
+  "Return a `suggestion' wrapping around ATTRIBUTE. "
   (make-instance 'prompter:suggestion
-                 :value property
-                 :properties `(:name ,(string-capitalize (symbol-name property)))
+                 :value attribute
+                 :attributes `(("Attribute key" ,attribute))
                  :source source
                  :input input))
 
-(define-class property-source (prompter:source)
-  ((prompter:name "List of prompter properties")
+(define-class attribute-source (prompter:source)
+  ((prompter:name "List of prompter attributes")
    (prompter:multi-selection-p t)
-   (prompter:suggestion-maker 'make-property-suggestion)))
+   (prompter:suggestion-maker 'make-attribute-suggestion)))
 
-(define-command toggle-properties-display (&optional (prompt-buffer (current-prompt-buffer)))
-  "Prompt for which prompter properties to display."
-  (let ((properties (prompt
-                     :prompt "Properties to display"
-                     :sources (list (make-instance 'property-source
-                                                   :marks (prompter:active-properties (current-source prompt-buffer))
-                                                   :constructor (prompter:properties-non-default
+(define-command toggle-attributes-display (&optional (prompt-buffer (current-prompt-buffer)))
+  "Prompt for which prompter attributes to display."
+  (let ((attributes (prompt
+                     :prompt "Attributes to display"
+                     :sources (list (make-instance 'attribute-source
+                                                   :marks (intersection
+                                                           (prompter:active-attributes-keys (current-source prompt-buffer))
+                                                           (prompter:attributes-keys-non-default
+                                                            (current-source prompt-buffer))
+                                                           :test #'string=)
+                                                   :constructor (prompter:attributes-keys-non-default
                                                                  (current-source prompt-buffer)))))))
-    (when properties
-      (setf (prompter:active-properties (current-source prompt-buffer))
-            properties)
+    (when attributes
+      (setf (prompter:active-attributes-keys (current-source prompt-buffer))
+            attributes)
       (prompt-render-suggestions prompt-buffer))))
 
 (define-class prompt-buffer-command-source (prompter:source)
@@ -191,7 +195,7 @@ If STEPS is negative, go to next pages instead."
   (make-instance
    'prompter:suggestion
    :value command
-   :properties (nyxt::command-properties command (parent-prompt-buffer source))
+   :attributes (nyxt::command-properties command (parent-prompt-buffer source))
    :source source
    :input input))
 
@@ -216,8 +220,8 @@ If STEPS is negative, go to next pages instead."
     (make-instance
      'prompter:suggestion
      :value action
-     ;; TODO: Include bindings in properties.
-     :properties `(:name ,(symbol-name (typecase action
+     ;; TODO: Include bindings in attributes.
+     :attributes `(:name ,(symbol-name (typecase action
                                          (command (name action))
                                          (t action)))
                    :documentation ,(first-line (typecase action
@@ -296,8 +300,8 @@ Only available if `multi-selection-p' is non-nil."
   "Copy default property of selection to clipboard."
   (let* ((marks (prompter:all-marks prompt-buffer))
          (props (if marks
-                    (mapcar #'prompter:object-properties marks) ; TODO: We should use the property function of the source, since it does not have to be `object-properties'.
-                    (list (prompter:properties (prompter:selected-suggestion
+                    (mapcar #'prompter:object-attributes marks) ; TODO: We should use the attribute function of the source, since it does not have to be `object-attributes'.
+                    (list (prompter:attributes (prompter:selected-suggestion
                                                 prompt-buffer)))))
          ;; Reverse so that text is ordered from oldest mark to newest.
          (text (str:join +newline+ (mapcar #'second (reverse props)))))
@@ -352,6 +356,6 @@ Only available if `multi-selection-p' is non-nil."
 
 (define-command prompt-buffer-insert-selection (&optional (prompt-buffer (current-prompt-buffer)))
   "Insert current selection default property in the prompt buffer input."
-  (alex:when-let ((selection (prompter:properties-default
+  (alex:when-let ((selection (prompter:attributes-default
                               (prompter:selected-suggestion prompt-buffer))))
     (nyxt::set-prompt-buffer-input selection)))

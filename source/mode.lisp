@@ -134,8 +134,8 @@ It is run before the destructor.")
    (keymap-scheme (make-hash-table :size 0)
                   :type keymap:scheme)))
 
-(defmethod prompter:object-properties ((mode root-mode))
-  (list :name (mode-name mode)))
+(defmethod prompter:object-attributes ((mode root-mode))
+  `(("Name" ,(mode-name mode))))
 
 (export-always 'glyph)
 (defmethod glyph ((mode root-mode))

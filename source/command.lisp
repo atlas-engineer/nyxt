@@ -256,9 +256,9 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
                            (name slot)
                            (class-sym slot))))
 
-(defmethod prompter:object-properties ((slot slot))
-  `(:name ,(name slot)
-    :class ,(class-sym slot)))
+(defmethod prompter:object-attributes ((slot slot))
+  `(("Name" ,(name slot))
+    ("Class" ,(class-sym slot))))
 
 (defun exported-p (sym)
   (eq :external
