@@ -126,6 +126,18 @@ This way, HTTPS and HTTP is ignored when comparing URIs."
   (string< (schemeless-url uri1)
            (schemeless-url uri2)))
 
+(declaim (ftype (function (quri:uri quri:uri) boolean) url-equal))
+(defun url-equal (url1 url2)
+  "URLs are equal if the URIs are equal, scheme excluded.
+Empty paths are also excluded from the comparison.
+For instance, these are equal:
+- http://example.org
+- https://example.org/"
+  (if (and (quri:uri-http-p url1)
+           (quri:uri-http-p url2))
+      (schemeless-uri= url1 url2)
+      (the (values boolean &optional) (quri:uri= url1 url2))))
+
 (declaim (ftype (function (string) (values (or quri:uri null) t &optional)) parse-url))
 (defun parse-url (input-url)
   "From user input, return the full URL to visit.
