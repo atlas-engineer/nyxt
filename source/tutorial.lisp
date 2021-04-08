@@ -272,8 +272,6 @@ An example:")
 section) of the current page and jump to it.")
     (:li (command-markup 'nyxt/web-mode::autofill) ": See the "
          (:code "autofills") " browser slot.")
-    (:li (command-markup 'vcs-clone) ": Clone version control repository
-matching current URL.")
     (:li (command-markup 'download-open-file) ", " (command-markup 'download-open-file)
          ": Open file in Nyxt or externally.  See " (:code "*open-file-function*") ".")
     (:li (command-markup 'edit-with-external-editor)
