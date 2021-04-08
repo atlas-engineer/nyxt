@@ -51,11 +51,11 @@
    (title ""))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(defmethod prompter:object-properties ((url url))
+(defmethod prompter:object-attributes ((url url))
   `(:uri ,(uri url)
     :title ,(title url)))
 
-(prove:subtest "Multi-property matching"
+(prove:subtest "Multi-attribute matching"
   (let* ((url1 (make-instance 'url :uri "http://example.org" :title "Example"))
          (url2 (make-instance 'url :uri "http://nyxt.atlas.engineer" :title "Nyxt homepage"))
          (prompter (prompter:make

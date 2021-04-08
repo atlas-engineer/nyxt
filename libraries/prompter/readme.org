@@ -8,7 +8,7 @@ Non-exhaustive list of features:
 - Multiple sources.
 - Multiple actions.
 - Customizable matching and sorting.
-- Multiple properties to match and display (also known as "multiple column
+- Multiple attributes to match and display (also known as "multiple column
   display" like =helm-find-files=).
 - Customizable initialization and cleanup functions.
 - Notifications sent when suggestion list is updated.
