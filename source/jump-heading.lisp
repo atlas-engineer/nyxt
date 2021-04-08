@@ -13,8 +13,8 @@
 (defmethod title ((heading heading))
   (subseq (inner-text heading) 0 (position #\[ (inner-text heading))))
 
-(defmethod prompter:object-properties ((heading heading))
-  (list :title (title heading)))
+(defmethod prompter:object-attributes ((heading heading))
+  `(("Title" ,(title heading))))
 
 (defun get-headings (&key (buffer (current-buffer)))
   (pflet ((get-headings ()

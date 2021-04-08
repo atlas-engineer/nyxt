@@ -123,9 +123,9 @@ The handlers take the window as argument."))
   (when (zerop (hash-table-count (windows *browser*)))
     (quit)))
 
-(defmethod prompter:object-properties ((window window))
-  (list :id (id window)
-        :active-buffer (title (active-buffer window))))
+(defmethod prompter:object-attributes ((window window))
+  `(("ID" ,(id window))
+    ("Active buffer" ,(title (active-buffer window)))))
 
 (define-class window-source (prompter:source)
   ((prompter:name "Windows")

@@ -385,9 +385,9 @@ you use this macro! For a modification-safe macro, see `with-data-access'."
    (prompter:must-match-p nil)
    (prompter:constructor (gpg-private-keys))))
 
-(defmethod prompter:object-properties ((gpg-key gpg-key))
-  (list :id (gpg-key-key-id gpg-key)
-        :additional (str:join ", " (mapcar #'gpg-uid-user-id (gpg-key-uids gpg-key)))))
+(defmethod prompter:object-attributes ((gpg-key gpg-key))
+  `(("ID" ,(gpg-key-key-id gpg-key))
+    ("Additional" ,(str:join ", " (mapcar #'gpg-uid-user-id (gpg-key-uids gpg-key))))))
 
 (defmethod object-string ((gpg-key gpg-key))
   (gpg-key-key-id gpg-key))

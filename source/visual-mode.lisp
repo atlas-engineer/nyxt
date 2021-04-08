@@ -201,9 +201,9 @@ identifier for every hinted element."
 
 (defclass paragraph-hint (nyxt/web-mode::hint) ())
 
-(defmethod prompter:object-properties ((hint paragraph-hint))
-  (list :hint (nyxt/web-mode::hint hint)
-        :body (nyxt/web-mode::body hint)))
+(defmethod prompter:object-attributes ((hint paragraph-hint))
+  `(("Hint" ,(nyxt/web-mode::hint hint))
+    ("Body" ,(nyxt/web-mode::body hint))))
 
 (define-parenscript set-caret-on-start (&key nyxt-identifier)
   (defun qs (context selector)

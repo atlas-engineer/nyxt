@@ -11,12 +11,12 @@
           :documentation "The hook value."))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(defmethod prompter:object-properties ((hook-description hook-description))
-  (list :name (name hook-description)
-        :value (value hook-description)))
+(defmethod prompter:object-attributes ((hook-description hook-description))
+  `(("Name" ,(name hook-description))
+    ("Value" ,(value hook-description))))
 
-(defmethod prompter:object-properties ((handler hooks:handler))
-  (list :name (str:downcase (hooks:name handler))))
+(defmethod prompter:object-attributes ((handler hooks:handler))
+  `(("Name" ,(str:downcase (hooks:name handler)))))
 
 (defun get-commands (&optional (buffer (current-buffer)))
   (sort (apply #'list-commands
@@ -34,15 +34,15 @@
             return bindings)
     (flet ((first-line (string)
              (first (str:split +newline+ string))))
-      (list :name (string-downcase (name command))
-            :bindings (format nil "~{~a~^, ~}" bindings)
-            :docstring (first-line (nyxt::docstring command))
-            :mode (let ((package-name (str:downcase (uiop:symbol-package-name (name command)))))
-                    (if (sera:in package-name "nyxt" "nyxt-user")
-                        ""
-                        (str:replace-first "nyxt/" "" package-name)))))))
+      `(("Name" ,(string-downcase (name command)))
+        ("Bindings" ,(format nil "~{~a~^, ~}" bindings))
+        ("Docstring" ,(first-line (nyxt::docstring command)))
+        ("Mode" ,(let ((package-name (str:downcase (uiop:symbol-package-name (name command)))))
+                   (if (sera:in package-name "nyxt" "nyxt-user")
+                       ""
+                       (str:replace-first "nyxt/" "" package-name))))))))
 
-(defmethod prompter:object-properties ((command command))
+(defmethod prompter:object-attributes ((command command))
   (command-properties command))
 
 (define-class command-source (prompter:source)

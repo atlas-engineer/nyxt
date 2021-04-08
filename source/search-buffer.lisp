@@ -116,11 +116,11 @@
    (buffer))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(defmethod prompter:object-properties ((match search-match))
-  (list :default (body match)
-        :id (identifier match)
-        :buffer-id (id (buffer match))
-        :buffer-title (title (buffer match))))
+(defmethod prompter:object-attributes ((match search-match))
+  `(("Default" ,(body match))
+    ("ID" ,(identifier match))
+    ("Buffer ID" ,(id (buffer match)))
+    ("Buffer title" ,(title (buffer match)))))
 
 (defun matches-from-json (matches-json &optional (buffer (current-buffer)))
   (loop for element in (handler-case (cl-json:decode-json-from-string matches-json)

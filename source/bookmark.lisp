@@ -38,14 +38,14 @@ appended to the URL."))
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(defmethod prompter:object-properties ((entry bookmark-entry))
+(defmethod prompter:object-attributes ((entry bookmark-entry))
   ;; TODO: Add annocation slots?
-  `(:url ,(quri:render-uri (url entry))
-    :title ,(title entry)
-    :tags ,(format nil "~{~a ~}" (tags entry))
-    :date ,(date entry)
-    :shortcut ,(shortcut entry)
-    :search-url ,(search-url entry)))
+  `(("URL" ,(quri:render-uri (url entry)))
+    ("Title" ,(title entry))
+    ("Tags" ,(format nil "~{~a ~}" (tags entry)))
+    ("Date" ,(date entry))
+    ("Shortcut" ,(shortcut entry))
+    ("Search URL" ,(search-url entry))))
 
 (defmethod object-string ((entry bookmark-entry)) ; TODO: Delete?
   (object-string (url entry)))
@@ -108,7 +108,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 (define-class bookmark-source (prompter:source)
   ((prompter:name "Bookmarks")
    (prompter:constructor (get-data (bookmarks-path (current-buffer))))
-   (prompter:active-properties '(:url :title :tags))))
+   (prompter:active-attributes-keys '("URL" "Title" "Tags"))))
 
 (defun tag-suggestions ()
   (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
