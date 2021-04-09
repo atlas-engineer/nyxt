@@ -250,7 +250,13 @@ These modes will then be activated on every visit to this domain/host/URL."
                           :documentation "Whether user will be asked about adding the mode
 to included/excluded modes in the auto-mode rules on mode activation/deactivation.")
    ;; base-mode conflicts with its Nyxt symbol if it's not prefixed
-   (non-rememberable-modes '(help-mode web-mode auto-mode nyxt::base-mode)
+   (non-rememberable-modes '(web-mode auto-mode nyxt::base-mode
+                             ;; Style&keybindings modes specific to internal screens
+                             help-mode message-mode diff-mode download-mode buffer-listing-mode
+                             plaintext-editor-mode history-tree-mode list-history-mode repl-mode
+                             ;; One-shot modes
+                             ;; TODO: reading-line-mode?
+                             visual-mode)
                            :type list
                            :accessor nil
                            :documentation "Modes that `auto-mode' won't even try to save.
