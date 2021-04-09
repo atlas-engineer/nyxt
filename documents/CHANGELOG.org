@@ -85,7 +85,7 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 
 - On WebKit process crashes, automatically delete the unusable buffer.
 
-- Display more meaningful message on on page load error.
+- Display a more meaningful message on page load error.
 
 - Bug fixes
 
