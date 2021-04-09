@@ -25,10 +25,91 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 
 *** TASK 2-pre-release-7 (Upcoming)
 
-- Rename =paste-from-clipboard-ring= to =paste-from-clipboard-ring=.
-- New Jump to heading across all tabs
+- Added Support for popups and "Open in new window" context menu item.
+
 - New simple built-in editor capabilities so that you can easily script
-  Nyxt without opening up an external editor
+  Nyxt without opening up an external editor.
+
+- New =focus-first-input-field= command.  (Thanks to @aadcg!)
+
+- =lisp-repl= improvements:
+
+  - New input text area that support input methods.
+
+  - Visual error reporting.
+
+- Rename =paste-from-clipboard-ring= to =paste-from-clipboard-ring=.
+
+- Prompt buffer improvements:
+
+  - All buffer-related prompt buffer source now show the current buffer at
+    the top, except when buffer switchin in which case the previous buffer
+    is shown at the top.
+
+  - New =describe-prompt-buffer= command (bound to =f1 m= by default in
+    the prompt buffer).
+
+  - New =compact-display-p= configuration option to automatically hide
+    source and column header when there is a single source or column.
+
+  - Re-add global input history to the prompt buffer.
+
+  - Fix invisible input for commands like password queries.
+
+- Modes can be easily configured how they get displayed in the status
+  area:
+
+  - =visible-in-status-p= can be set to =nil= and the mode won't be
+    shown.
+    This is useful for ubiquitous modes.
+
+  - If set, the =glyph= slot will be displayed instead of the mode name.
+
+- New Jump to heading across all tabs.
+
+- Move all =Makefile= recipes to the =nyxt.asd=.
+  Now the whole build and install process can be fully driven from
+  Common Lisp.
+
+- Added more keybindings to =visual-mode=.
+
+- Rename =window-set-active-buffer= to =window-set-buffer=.
+
+- Download manager improvements:
+
+  - Added a prompt buffer source to list and open the downloads.
+
+  - Report errors and canceled downloads.
+
+  - Generate unique file name when destination exists.
+
+- On WebKit process crashes, automatically delete the unusable buffer.
+
+- Display more meaningful message on on page load error.
+
+- Bug fixes
+
+  - Handle all Lisp exception, which should prevent Nyxt from crashing
+    on Lisp errors.
+
+    =funcall-safely= has been superseded by =with-protect=.
+
+  - Fix WM class and name on both Xorg and Wayland.
+
+  - Fix many commands that broke with the new prompt buffer API
+    (=reload-buffers=, =bookmark-url=, =bookmark-page=, =search-buffer=...).
+
+  - Avoid HTTP->HTTPS->HTTP loops with force-https-mode.
+
+  - Fix auto-mode on restored or reopened buffers.
+
+  - Fix crash with recent cl-str version.
+
+  - Fix OSPM with non-SBCL compilers.
+
+  - Fix license query for OSPM Guix.
+
+  - Fix last bookmark tag spurious modification.
 
 *** 2-pre-release-6
 
