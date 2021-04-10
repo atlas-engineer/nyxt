@@ -30,9 +30,11 @@
                               :padding "3px"
                               :background-color "#E8E8E8"
                               :autofocus "true")
-             ("#evaluation-history" :flex-grow "1"
-                                    :overflow-y "auto"
-                                    :overflow-x "auto")
+             ("#evaluation-history"
+              :font-size "12px"
+              :flex-grow "1"
+              :overflow-y "auto"
+              :overflow-x "auto")
              ("#prompt" :padding-right "4px"
                         :padding-left "4px"
                         :line-height "30px"
