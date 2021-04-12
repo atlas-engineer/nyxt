@@ -246,16 +246,21 @@ If STEPS is 0, do nothing.
 If STEPS is negative, go forward."
   (select prompter (- steps)))
 
+(defun empty-source-p (source)
+  (not (suggestions source)))
+
 (export-always 'select-next-source)
 (defun select-next-source (prompter &optional (steps 1))
-  "Jumping STEPS source forward and select first suggestion.
+  "Jumping STEPS non-empty source forward and select first suggestion.
 If STEPS is 0, do nothing.
 If STEPS is negative, go backward and select last suggestion."
   (unless (= 0 steps)
-    (let* ((source-index (position (selected-source prompter)
-                                   (sources prompter)))
+    (let* ((nonempty-sources (remove-if #'empty-source-p (sources prompter)))
+           (source-index (or (position (selected-source prompter)
+                                       nonempty-sources)
+                             0))
            (new-source (nth (alex:clamp (+ steps source-index) 0 (1- (length (sources prompter))))
-                            (sources prompter)))
+                            nonempty-sources))
            (suggestion-index (if (< 0 steps)
                                  0
                                  (1- (length (suggestions new-source))))))
@@ -270,19 +275,29 @@ If STEPS is negative, go forward and selection first suggestion."
   (unless (= 0 steps)
     (select-next-source prompter (- steps))))
 
+(defun nonempty-source-p (source)
+  (suggestions source))
+
 (export-always 'select-first)
 (defun select-first (prompter)
-  "Select first element."
-  (setf (selection prompter)
-        (list (first (sources prompter)) 0)))
+  "Select first element.
+Empty sources are skipped."
+  (let ((first-non-empty-source
+          (or (find-if #'nonempty-source-p (sources prompter))
+              (first (sources prompter)))))
+    (setf (selection prompter)
+          (list first-non-empty-source 0))))
 
 (export-always 'select-last)
 (defun select-last (prompter)
   "Select last element."
-  (let ((last-source (first (last (sources prompter)))))
+  (let ((last-non-empty-source
+          (or (find #'nonempty-source-p (sources prompter)
+                    :from-end t)
+              (first (last (sources prompter))))))
     (setf (selection prompter)
-          (list last-source
-                (1- (length (suggestions last-source)))))))
+          (list last-non-empty-source
+                (1- (length (suggestions last-non-empty-source)))))))
 
 (export-always 'toggle-mark)
 (defun toggle-mark (prompter)
