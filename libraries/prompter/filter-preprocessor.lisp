@@ -18,6 +18,8 @@ The substrings must be SUBSTRING-LENGTH characters long or more."
                      input-strings))
        :test #'string=))))
 
+;; TODO: Disambiguate naming of `delete-inexact-matches' and `filter-exact-matches'?
+
 (export-always 'delete-inexact-matches)
 (defun delete-inexact-matches (suggestions source input)
   "Destructively filter out non-exact matches from SUGGESTIONS.
@@ -38,3 +40,15 @@ Suitable as a `source' `filter-preprocessor'."
                                       always (search i (match-data suggestion)))))
                          suggestions)))))
   suggestions)
+
+(export-always 'filter-exact-matches)
+(defun filter-exact-matches (suggestions source input)
+  "Return only SUGGESTIONS that match all the words in INPUT."
+  (declare (ignore source))
+  (if (str:empty? input)
+      suggestions
+      (let ((words (sera:words input)))
+        (delete-if (lambda (suggestion)
+                     (notevery (lambda (sub) (search sub (match-data suggestion)))
+                               words))
+                   suggestions))))
