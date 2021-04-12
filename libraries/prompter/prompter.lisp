@@ -151,7 +151,7 @@ compution is not finished.")))
                        (t (error "Bad source specifier ~s." source-specifier))))
                    (uiop:ensure-list specifiers))))
     (setf (sources prompter) (ensure-sources (sources prompter))))
-  (setf (selection prompter) (list (first (sources prompter)) 0))
+  (select-first prompter)
   (maybe-funcall (constructor prompter) prompter)
   (update-sources prompter (input prompter))
   prompter)
@@ -174,8 +174,7 @@ compution is not finished.")))
     (unless (string= old-input text)
       (setf (slot-value prompter 'input) text)
       (update-sources prompter text)
-      ;; TODO: Update `selection' when `update' is done.
-      (setf (selection prompter) (list (first (sources prompter)) 0))))
+      (select-first prompter)))
   text)
 
 (export-always 'destroy)
@@ -427,6 +426,8 @@ If timeout expires for one source, return nil."
                  nil)
                 (t
                  (push next-source (ready-sources sync-queue))
+                 ;; Update selection when update is done:
+                 (select-first prompter)
                  next-source))))
         ;; No sync-queue if no input was ever set.
         t)))
