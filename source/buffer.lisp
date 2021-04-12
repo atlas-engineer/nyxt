@@ -953,8 +953,12 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
                                    :actions (list (make-unmapped-command buffer-load)
                                                   (make-unmapped-command new-buffer-load)))
                     (make-instance 'global-history-source
+                                   ;; TODO: Multi-selection?
                                    :actions (list (make-unmapped-command buffer-load)
-                                                  (make-unmapped-command new-buffer-load-from-history)))))))
+                                                  (make-unmapped-command new-buffer-load-from-history)))
+                    (make-instance 'bookmark-source
+                                   ;; TODO: New buffer?
+                                   :multi-selection-p t)))))
 
 (define-command set-url-new-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused buffer."
