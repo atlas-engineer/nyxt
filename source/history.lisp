@@ -432,7 +432,7 @@ We keep this variable as a means to import the old format to the new one.")
 
 (define-command store-history-by-name ()
   "Store the history data in the file named by user input.
-Useful for session snapshots, as `restore-history-bu-name' will restore opened buffers."
+Useful for session snapshots, as `restore-history-by-name' will restore opened buffers."
   (with-data-access (history (history-path (current-buffer)))
     (sera:and-let* ((name (first (prompt
                                   :prompt "The name to store history with"
