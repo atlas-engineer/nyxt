@@ -375,8 +375,7 @@ rest in background buffers."
                          (first (prompt
                                  ;; TODO: Is there a more intuitive directory for bookmarks?
                                  :input (namestring (uiop:getcwd))
-                                 :sources (make-instance
-                                           'file-source
+                                 :sources (make-instance 'file-source
                                            :filter-preprocessor #'directory-or-html-file))))))
       (if (and (uiop:file-exists-p html-file)
                (equal (pathname-type html-file) "html"))
