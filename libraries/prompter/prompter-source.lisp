@@ -59,6 +59,7 @@ inherited or used across different sources)."
 The key is the property name and the value is a string.")
    (match-data nil
                :type t
+               :writer t
                :documentation "Arbitrary data that can be used by the `filter'
 function and its preprocessors.")
    (score 0.0
@@ -98,6 +99,12 @@ The `match-data' is downcased if INPUT is lower-case."
            (if input
                (str:downcasep input)
                :downcasep)))))
+
+(defmethod match-data ((suggestion suggestion))
+  (alex:if-let ((value (slot-value suggestion 'match-data)))
+    value
+    (setf (match-data suggestion)
+          (format-properties (properties suggestion) :downcasedp))))
 
 (export-always 'make-suggestion)
 (defmethod make-suggestion ((value t) source &optional input)
