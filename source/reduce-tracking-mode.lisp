@@ -8,7 +8,9 @@
 
 (define-mode reduce-tracking-mode ()
   "Set specific settings in the web view in order to mitigate fingerprinting,
-(how third-party trackers attempt to indentify you."
+(how third-party trackers attempt to indentify you.
+
+Fingerprinting can be tested with https://panopticlick.eff.org/."
   ((preferred-languages '("en_US")
                         :type list-of-strings
                         :documentation "The list of languages that will be sent as
