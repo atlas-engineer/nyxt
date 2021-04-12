@@ -89,12 +89,15 @@ The `match-data' is downcased if INPUT is lower-case."
   (unless (object-properties-p (properties suggestion))
     (warn "Properties of ~s should be a plist instead of ~s" (value suggestion) (properties suggestion))
     (setf (properties suggestion) (default-object-property (value suggestion))))
-  (when (and input source
-             (uiop:emptyp (match-data suggestion)))
+  (when (uiop:emptyp (match-data suggestion))
     (setf (match-data suggestion)
           (format-properties
-           (active-properties suggestion :source source)
-           (str:downcasep input)))))
+           (if source
+               (active-properties suggestion :source source)
+               (properties suggestion))
+           (if input
+               (str:downcasep input)
+               :downcasep)))))
 
 (export-always 'make-suggestion)
 (defmethod make-suggestion ((value t) source &optional input)
