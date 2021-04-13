@@ -12,7 +12,9 @@ As a special case, the first `:condition' keyword in ARGS is replaced with the
 condition."
   (alex:with-gensyms (c)
     `(if *run-from-repl-p*
-         (progn ,@body)
+         (handler-case (progn ,@body)
+           (nyxt-prompt-buffer-canceled ()
+             (log:debug "Prompt buffer interrupted")))
          (handler-case (progn ,@body)
            (error (,c)
              (declare (ignorable ,c))
