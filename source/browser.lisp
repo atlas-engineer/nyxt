@@ -389,9 +389,9 @@ Deal with REQUEST-DATA with the following rules:
       (declare (type quri:uri url))
       (cond
         ((and (internal-buffer-p buffer) (equal "lisp" (quri:uri-scheme url)))
-         (log:debug "Evaluate Lisp code from internal buffer: ~a"
-                    (quri:url-decode (schemeless-url url) :lenient t))
-         (evaluate-async (quri:url-decode (schemeless-url url) :lenient t))
+         (let ((code (quri:url-decode (schemeless-url url) :lenient t)))
+           (log:debug "Evaluate Lisp code from internal buffer: ~a" code)
+           (evaluate-async code))
          nil)
         ((internal-buffer-p buffer)
          (log:debug "Load URL from internal buffer in new buffer: ~a" (object-display url))
