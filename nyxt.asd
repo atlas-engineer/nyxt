@@ -14,7 +14,7 @@
                          (or (uiop:getenv "PREFIX")
                              "/usr/local")))
 (defvar *datadir* (or (uiop:getenv "DATADIR")
-                    (format nil "~a/share" *prefix*)))
+                      (format nil "~a/share" *prefix*)))
 (defvar *bindir* (or (uiop:getenv "BINDIR")
                      (format nil "~a/bin" *prefix*)))
 
