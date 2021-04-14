@@ -658,7 +658,7 @@ Warning: This behaviour may change in the future."
                                                 :known-type-p is-known-type)))))
           (cond
             ((not (typep request-data 'request-data))
-             (log:debug "Don't forward to ~s's renderer (null request data)."
+             (log:debug "Don't forward to ~s's renderer (non request data)."
                         buffer)
              (webkit:webkit-policy-decision-ignore response-policy-decision)
              nil)
@@ -859,6 +859,10 @@ requested a reload."
   (let* ((history (webkit-history buffer))
          (entry (or (find uri history :test #'quri:uri= :key #'webkit-history-entry-uri)
                     (find uri history :test #'quri:uri= :key #'webkit-history-entry-original-uri))))
+    ;; Mark buffer as :loading right away so functions like `window-set-buffer'
+    ;; don't try to reload if they are called before the "load-change" signal
+    ;; is emitted.
+    (setf (slot-value buffer 'load-status) :loading)
     (if (and entry (not (quri:uri= uri (url buffer))))
         (progn
           (log:debug "Load URL from history entry ~a" entry)
