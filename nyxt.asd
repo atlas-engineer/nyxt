@@ -143,6 +143,7 @@
                (:file "input-edit")
                (:file "element-hint")
                (:file "element-hint-mode")
+               (:file "element-frame")
                (:file "jump-heading")
                (:file "scroll")
                (:file "search-buffer")
