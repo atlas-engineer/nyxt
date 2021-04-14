@@ -221,3 +221,114 @@ functionality into internal-buffers."
        (apply #'str:concat "lisp://"
               (mapcar (alex:compose #'quri:url-encode #'write-to-string)
                       (cons lisp-form more-lisp-forms)))))
+
+;; TODO How to pass the optional arg to fetch-links?
+(declaim (ftype (function (quri:uri) list) renderer-fetch-links))
+(defun renderer-fetch-links (url)
+  "Return a list of links from URL.
+If there is a buffer corresponding to URL, then fetch the links from it.
+Otherwise, create a new buffer to fetch the links."
+  (let ((buffer-exists-p (first (buffer-list :url url))))
+    (if buffer-exists-p
+        (funcall #'fetch-links buffer-exists-p)
+        ;; Buffers should be made as light as possible (no images, CSS, etc).
+        (let ((buffer (make-nosave-buffer :modes '(web-mode noimage-mode)
+                                          :url url))
+              (channel (make-channel)))
+          (sera:add-hook (buffer-loaded-hook buffer)
+								         (make-handler-buffer
+                          (lambda (buffer)
+                            (calispel:! channel (funcall #'fetch-links buffer))
+                            ;; The buffer is only needed to get the links.
+                            ;; Alternative:
+                            ;; (sera:remove-hook (buffer-loaded-hook buffer)
+                            ;;                   'fetch-links)
+                            (buffer-delete buffer))
+                          :name 'fetch-links))
+          (calispel:? channel)))))
+
+(declaim (ftype (function (quri:uri &optional list) list) http-fetch-links))
+(defun http-fetch-links (url &optional (filtering-rules (list #'host=
+                                                              #'distinct-url-path-p
+                                                              #'scheme=)))
+  "Return a list of links from URL."
+  ;; TODO
+  ;; quri:merge-uris bug - see https://github.com/fukamachi/quri/issues/47;
+  ;; Manage urls that download stuff;
+  ;; Manage urls that can't be reached.
+  (let ((links
+          (remove
+           nil
+           (mapcar
+            (lambda (tag) (unless (null (plump:attribute tag "href"))
+                       (quri:merge-uris (plump:attribute tag "href") url)))
+            (plump:get-elements-by-tag-name (plump:parse (dex:get url)) "a")))))
+    (loop for link in links
+          when (eq-uri-p link url filtering-rules)
+            collect link)))
+
+(declaim (ftype (function (integer
+                           list
+                           &optional (or compiled-function symbol)
+                           (or compiled-function symbol))
+                          list)
+                recursive-links))
+(defun recursive-links (depth url-list
+                        &optional
+                          (fetch-links-fn #'http-fetch-links)
+                          (filter-links-fn #'identity))
+  "Return a list of length DEPTH.
+
+Each element is a list of URLs at distance 0,1,...,DEPTH from URL-LIST.
+
+DEPTH is the minimum distance between 2 URLs, i.e. how many URLs need to be
+visited to get from one to the other via their links.
+
+URL-LIST is list of URLs of type QURI.URI.
+
+FILTER-LINKS-FN is a function that takes a list of URLs and returns another.
+
+FETCH-LINKS-FN is a function that takes a URL and returns its corresponding
+links.
+
+Example: Take URL-LIST to be a list of one element, url U, and DEPTH to be 2.
+The links of U are collected in a list, (list (\"links-of\" U)).  With that list
+as the new starting point, the same method is called with depth 1, and finally
+with depth 0.  Find below the stack of calls.
+
+(recursive-links 2 (list U))
+(recursive-links 1 (list (\"links-of\" U)))
+(recursive-links 0 (list (\"links-of\" (\"links-of\" U))))
+
+-> (list ((list U)                                 ; DEPTH 0
+          (list (\"links-of\" U))                  ; DEPTH 1
+          (list (\"links-of\" (\"links-of\" U))))) ; DEPTH 2"
+  (labels ((nth-power-function (n arg fn)
+             "Apply FN on ARG at most N times, as long as ARG is non-nil."
+             (cond ((or (zerop n) (null arg)) arg)
+                   (t (nth-power-function (1- n) (funcall fn arg) fn))))
+           (url-in-list-p (url list)
+             "Return non-nil when URL is a member of LIST."
+             (position url list :test #'quri:uri=)))
+    (let ((url-list-all-depth (when url-list (list url-list)))
+          ;; Unless `filter-links-fn' is the identity function, VISITED-URL-LIST
+          ;; doesn't replace URL-LIST-ALL-DEPTH.
+          (visited-url-list (when url-list url-list)))
+      (nth-power-function
+       depth
+       url-list
+       (lambda (url-list)
+         ;; Guarantee that the links of any URL are fetched once and only once;
+         ;; and that LINK-LIST is a set, i.e. a list without duplicated
+         ;; elements.
+         (let ((link-list))
+           (dolist (url url-list)
+             (loop for link in (funcall fetch-links-fn url)
+                   unless (or (url-in-list-p link link-list)
+                              (url-in-list-p link visited-url-list))
+                     do (progn (push link link-list)
+                               (push link visited-url-list))))
+           (push (funcall filter-links-fn link-list) url-list-all-depth)
+           link-list)))
+      (nreverse url-list-all-depth))))
+
