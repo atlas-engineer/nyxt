@@ -13,11 +13,8 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "C-q" 'quit
                      "C-[" 'switch-buffer-previous
                      "C-]" 'switch-buffer-next
-                     "C-x b" 'switch-buffer
-                     "C-x C-b" 'list-buffers
-                     "C-x k" 'delete-buffer
+                     "M-down" 'switch-buffer
                      "C-w" 'delete-current-buffer
-                     "C-x C-k" 'delete-current-buffer
                      "C-shift-tab" 'switch-buffer-previous
                      "C-tab" 'switch-buffer-next
                      "C-pageup" 'switch-buffer-previous
@@ -60,13 +57,14 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "C-/" 'reopen-buffer
                      "C-shift-t" 'reopen-buffer
                      "C-T" 'reopen-buffer
-                     "C-p" 'print-buffer
-                     "M-i" 'focus-first-input-field)
+                     "M-i" 'focus-first-input-field
+                     "C-p" 'print-buffer)
 
                     scheme:emacs
                     (list
                      "C-x C-c" 'quit
-                     "C-x k" 'delete-buffer ; Emacs' default behaviour is to query.
+                     "C-x k" 'delete-buffer
+                     "C-x C-k" 'delete-current-buffer
                      "C-x left" 'switch-buffer-previous
                      "C-x right" 'switch-buffer-next
                      "C-x b" 'switch-buffer
@@ -84,6 +82,7 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "C-h s" 'describe-slot
                      "C-h k" 'describe-key
                      "C-h b" 'describe-bindings
+                     "C-d" 'list-downloads
                      "M-x" 'execute-command
                      "C-x r j" 'set-url-from-bookmark
                      "C-x r J" 'set-url-from-bookmark-new-buffer
