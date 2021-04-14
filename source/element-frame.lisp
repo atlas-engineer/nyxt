@@ -82,7 +82,7 @@
                            :z-index #.(1- (expt 2 31))))))
         (selection-rectangle-style (cl-css:css
                                     '(("#nyxt-rectangle-selection"
-                                       :position "fixed"
+                                       :position "absolute"
                                        :top "0"
                                        :left "0"
                                        :background "rgba(0,0,0,0.10)"
