@@ -74,3 +74,9 @@ Example:
     (lambda (mode)
       (hooks:add-hook (request-resource-hook (buffer mode))
                       (make-handler-resource #'force-https-handler))))))
+
+(defmethod on-signal-load-finished ((mode force-https-mode) url)
+  (declare (ignore url))
+  (when (eq (slot-value (buffer mode) 'nyxt::load-status) :finished)
+    (setf (previous-url mode) (quri:uri "")))
+  nil)
