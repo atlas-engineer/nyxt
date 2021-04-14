@@ -505,8 +505,8 @@ BUFFER's modes."
 
 (export-always 'on-signal-load-committed)
 (defmethod on-signal-load-committed ((buffer buffer) url)
-  (declare (ignore buffer url))
-  nil)
+  (dolist (mode (modes buffer))
+    (on-signal-load-committed mode url)))
 
 (export-always 'on-signal-load-finished)
 (defmethod on-signal-load-finished ((buffer buffer) url)
