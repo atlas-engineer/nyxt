@@ -96,7 +96,8 @@
     "Alias of document.querySelectorAll"
     (ps:chain context (query-selector-all selector)))
 
-  (defun element-in-selection (selection element)
+  (defun element-in-selection-p (selection element)
+    "Determine if a element is bounded within a selection."
     (ps:let* ((element-rect (ps:chain element (get-bounding-client-rect)))
               (offsetX (ps:chain window |pageXOffset|))
               (offsetY (ps:chain window |pageYOffset|))
@@ -118,10 +119,10 @@
            (ps:create "type" "img" "src" (ps:@ element src) "alt" (ps:@ element alt)))))
 
   (defun collect-selection (elements selection)
-    "Check which elements are within a selection"
+    "Collect elements within a selection"
     (ps:chain |json| (stringify
                       (loop for element in elements
-                            when (element-in-selection selection element)
+                            when (element-in-selection-p selection element)
                             collect (object-create element)))))
 
   (collect-selection (qsa document (list "a")) selection))
