@@ -65,11 +65,11 @@ and to index the top of the page.")
        "M-left" 'history-backwards
        "M-]" 'history-forwards
        "M-[" 'history-backwards
-       "C-g" 'follow-hint
-       "M-g" 'follow-hint-new-buffer-focus
-       "C-u M-g" 'follow-hint-new-buffer
-       "C-M-g" 'follow-hint-nosave-buffer-focus
-       "C-u C-M-g" 'follow-hint-nosave-buffer
+       "C-j" 'follow-hint
+       "C-u C-j" 'follow-hint-new-buffer-focus
+       "C-J" 'follow-hint-new-buffer
+       "C-M-j" 'follow-hint-nosave-buffer-focus
+       "C-u C-M-j" 'follow-hint-nosave-buffer
        "C-x C-w" 'copy-hint-url
        "C-c" 'copy
        "button9" 'history-forwards
