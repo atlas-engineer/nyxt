@@ -624,7 +624,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
         ;; Register buffer in global history:
         (with-data-access (history (history-path buffer)
                                    :default (make-history-tree buffer))
-          ;; Owner may already exist if history was just create with the above
+          ;; Owner may already exist if history was just created with the above
           ;; default value.
           (unless (htree:owner history (id buffer))
             (htree:add-owner history (id buffer)
