@@ -86,7 +86,10 @@ class."
 The `implicit-visits' count is incremented."
   (with-data-access (history (history-path (current-buffer))
                      :default (make-history-tree))
-    (unless (url-empty-p uri)
+    (unless (or (url-empty-p uri)
+                ;; If buffer was not registered in the global history, don't
+                ;; proceed.  See `buffer-make'.
+                (not (htree:owner history (id buffer))))
       (htree:with-current-owner (history (id buffer))
         (htree:add-child (make-instance 'history-entry
                                         :url uri
