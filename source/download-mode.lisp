@@ -92,9 +92,7 @@ appearance in the buffer when they are setf'd."
 ;; TODO: Move to separate package
 (define-mode download-mode ()
   "Display list of downloads."
-  ((rememberable-p nil)
-   (open-file-function #'default-open-file-function)
-   (style
+  ((style
     (cl-css:css
      '((".download"
         :margin-top "10px"
@@ -120,18 +118,6 @@ appearance in the buffer when they are setf'd."
         :height "100%"
         :background-color "dimgray"))))))
 
-#+linux
-(defvar *xdg-open-program* "xdg-open")
-
-(defun default-open-file-function (filename)
-  "Open FILENAME.
-
-Can be used as a `open-file-function'."
-  (uiop:launch-program
-   #+linux
-   (list *xdg-open-program* (namestring filename))
-   #+darwin
-   (list "open" (namestring filename))))
 
 (define-command list-downloads ()
   "Display a buffer listing all downloads.
@@ -170,17 +156,6 @@ download."
   "Download the page or file of the current buffer."
   (download (current-buffer) (url (current-buffer))))
 
-(define-class downloaded-files-source (file-source)
-  ((prompter:constructor (mapcar #'destination-path (downloads *browser*)))
-   ;; TODO: Extract to `file-source'?
-   ;; TODO: Maybe extract `open-file-function' to `browser'?
-   (prompter:actions
-    (list (make-command open-file* (files)
-            (let ((download-mode (find-submode (current-buffer) 'download-mode)))
-              (funcall (open-file-function download-mode) (first files))))))))
-
 (define-command download-open-file ()
   "Open a downloaded file."
-  (prompt
-   :prompt "Open file:"
-   :sources (make-instance 'downloaded-files-source)))
+  (find-file :default-directory (expand-path (download-path (current-buffer)))))
