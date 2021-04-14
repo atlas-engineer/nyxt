@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt)
+(in-package :nyxt/web-mode)
 
 (define-parenscript add-overlay (overlay-style selection-rectangle-style)
   "Add a selectable overlay to the screen."
