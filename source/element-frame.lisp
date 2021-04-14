@@ -90,8 +90,66 @@
     (add-overlay overlay-style
                  selection-rectangle-style)))
 
+(define-parenscript get-selection ()
+  "Get the intersecting elements"
+  (defun qsa (context selector)
+    "Alias of document.querySelectorAll"
+    (ps:chain context (query-selector-all selector)))
+
+  (defun element-in-selection (selection element)
+    (ps:let ((element-rect (ps:chain element (get-bounding-client-rect)))
+             (offsetX (ps:chain window |pageXOffset|))
+             (offsetY (ps:chain window |pageYOffset|)))
+      (if (and
+           (<= (ps:chain element-rect left) (ps:chain selection x2))
+           (>= (ps:chain element-rect right) (ps:chain selection x1))
+           (<= (ps:chain element-rect top) (ps:chain selection y2))
+           (>= (ps:chain element-rect bottom) (ps:chain selection y1)))
+          t nil)))
+
+  (defun object-create (element)
+    (cond ((equal "A" (ps:@ element tag-name))
+           (ps:create "type" "link" "href" (ps:@ element href) "body" (ps:@ element |innerHTML|)))
+          ((equal "IMG" (ps:@ element tag-name))
+           (ps:create "type" "img" "src" (ps:@ element src) "alt" (ps:@ element alt)))))
+
+  (defun collect-selection (elements selection)
+    "Check which elements are within a selection"
+    (ps:chain |json| (stringify
+                      (loop for element in elements
+                            when (element-in-selection selection element)
+                            collect (object-create element)))))
+
+  (collect-selection (qsa document (list "a")) selection))
+
+(define-class html-element ()
+  ((body ""))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+
+(define-class link (html-element)
+  ((url ""))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+
+(define-class image (html-element)
+  ((alt "" :documentation "Alternative text for the image.")
+   (url ""))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+
+(define-command frame-element-get-selection ()
+  "Get the selected elements."
+  (loop for element in (cl-json:decode-json-from-string (get-selection))
+        collect (str:string-case (alex:assoc-value element :type)
+                  ("link"
+                   (make-instance 'link
+                                  :url (alex:assoc-value element :href)
+                                  :body (plump:text (plump:parse (alex:assoc-value element :body)))))
+                  ("img"
+                   (make-instance 'image
+                                  :url (alex:assoc-value element :src)
+                                  :alt (alex:assoc-value element :alt))))))
+
 (define-command frame-element-clear ()
-  "Clear a frame around elements."
+  "Clear the selection frame."
   (pflet ((remove-overlay ()
             (ps:chain document (get-element-by-id "nyxt-rectangle-selection") (remove))
             (ps:chain document (get-element-by-id "nyxt-overlay") (remove))))
