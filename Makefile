@@ -67,7 +67,7 @@ install: install-app-bundle
 else
 install:
 	$(lisp_eval) '($(load_or_quickload) :nyxt/$(NYXT_RENDERER)-application)' \
-		'(asdf:make :nyxt/install)' $(lisp_quit)
+		--eval '(asdf:make :nyxt/install)' $(lisp_quit)
 endif
 
 .PHONY: doc
