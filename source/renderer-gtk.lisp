@@ -693,7 +693,8 @@ Warning: This behaviour may change in the future."
           ((eq load-event :webkit-load-committed)
            (on-signal-load-committed buffer url))
           ((eq load-event :webkit-load-finished)
-           (setf (slot-value buffer 'load-status) :finished)
+           (unless (eq (slot-value buffer 'load-status) :failed)
+             (setf (slot-value buffer 'load-status) :finished))
            (on-signal-load-finished buffer url)
            (print-status nil (get-containing-window-for-buffer buffer *browser*))
            (echo "Finished loading ~s." (object-display url))))))
@@ -818,8 +819,9 @@ Warning: This behaviour may change in the future."
    (gtk-object buffer) "load-failed"
    (lambda (web-view load-event failing-uri error)
      (declare (ignore load-event web-view error))
-     (unless (eq (slot-value buffer 'load-status) :finished)
+     (unless (member (slot-value buffer 'load-status) '(:finished :failed))
        (echo "Failed to load URL ~a in buffer ~a." failing-uri (id buffer))
+       (setf (slot-value buffer 'load-status) :failed)
        (html-set
         (markup:markup
          (:h1 "Page could not be loaded.")
