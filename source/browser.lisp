@@ -183,7 +183,14 @@ editing files. It should be specified as a complete string path to the
 editor executable."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:documentation "The browser class defines the overall behaviour of Nyxt, in
+the sense that it manages the display of buffers.  For instance, it abstracts
+the renderer, and lays the foundations to track and manipulate buffers and
+windows.
+
+A typical Nyxt session encompasses a single instance of this class, but nothing
+prevents otherwise."))
 
 (define-user-class browser)
 
