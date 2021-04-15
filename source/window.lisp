@@ -20,7 +20,8 @@
    (fullscreen-p nil
                  :export nil
                  :type boolean
-                 :documentation "Remember if window is fullscreen of not.")
+                 :documentation "Whether the window is displayed in
+fullscreen.")
    ;; TODO: each frame should have a status buffer, not each window
    (status-buffer :export nil)
    (message-buffer-height 16

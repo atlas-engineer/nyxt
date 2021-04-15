@@ -280,8 +280,8 @@ If update calculation is aborted, nil is sent instead.")
                              :type boolean
                              :export nil
                              :initarg nil
-                             :documentation "Becomes non-nil when calculation
-is done and the source was sent to the `ready-channel'.")
+                             :documentation "Whether the source was sent
+to the `ready-channel'.")
 
    (wrote-to-ready-channel-lock (bt:make-lock)
                                 :type bt:lock
@@ -305,8 +305,7 @@ If 0, there is no limit.")
    (multi-selection-p nil
                       :type boolean
                       :documentation
-                      "Allow marking multiple candidates when this attribute is
-present.")
+                      "Whether multiple candidates can be marked.")
 
    (resumer nil
             :type (or null function)
@@ -318,7 +317,7 @@ See `resume-sources'.")
    (follow-p nil
              :type boolean
              :documentation
-             "If non-nil, automatically execute `persistent-action'.
+             "Whether `persistent-action' is automatically executed.
 Also see `follow-delay'.")
 
    (follow-delay 0.0

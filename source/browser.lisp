@@ -43,10 +43,10 @@ Without handler, return ARG.  This is an acceptable `combination' for
 (define-class browser ()
   ((remote-execution-p nil
                        :type boolean
-                       :documentation "If non-nil, execute Lisp code that is
-sent to the socket.  You must understand the risks before enabling this: a
-privileged user with access to your system can then take control of the browser
-and execute arbitrary code under your user profile.")
+                       :documentation "Whether code sent to the socket gets
+executed.  You must understand the risks before enabling this: a privileged user
+with access to your system can then take control of the browser and execute
+arbitrary code under your user profile.")
 ;; TODO: is it always user's data? Better name maybe?
    (user-data-cache (make-hash-table :test #'equal)
                     :type hash-table
@@ -108,9 +108,8 @@ count since deleting windows may result in duplicate identifiers.")
                                     :documentation "When supplied, upon startup,
 if there are errors, they will be reported by this function.")
    (open-external-link-in-new-window-p nil
-                                       :documentation "When opening links from
-an external program, or when C-clicking on a URL, decide whether to open in a
-new window or not.")
+                                       :documentation "Whether to open links
+issued by an external program or issued by Control+<button1> in a new window.")
    (downloads
     :documentation "List of downloads. Used for rendering by download manager.")
    (startup-timestamp (local-time:now)
