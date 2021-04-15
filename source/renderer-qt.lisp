@@ -119,7 +119,7 @@
   title)
 
 (defmethod ffi-window-active ((browser qt-browser))
-  "Return the window object for the currently active window."
+  "Return the window object for the current window."
   (setf (slot-value browser 'last-active-window)
         (or (find-if #'qt:widget-is-active-window (window-list) :key #'qt-object)
             (slot-value browser 'last-active-window))))

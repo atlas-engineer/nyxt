@@ -10,7 +10,7 @@
    (active-buffer :accessor nil :reader active-buffer :export nil)
    (active-prompt-buffers '()
                           :export nil
-                          :documentation "The stack of currently active prompt buffers.")
+                          :documentation "The stack of current prompt buffers.")
    (key-stack '()
               :documentation "A stack that keeps track of the key chords a user has pressed.")
    (last-key nil
@@ -139,7 +139,7 @@ The handlers take the window as argument."))
    :sources (make-instance 'window-source)))
 
 (define-command delete-current-window (&optional (window (current-window)))
-  "Delete WINDOW, or the currently active window if unspecified."
+  "Delete WINDOW, or the current window, when omitted."
   (let ((window-count (hash-table-count (windows *browser*))))
     (cond ((and window (> window-count 1))
            (ffi-window-delete window))
@@ -154,7 +154,7 @@ The handlers take the window as argument."))
     (values window buffer)))
 
 (define-command toggle-fullscreen (&optional (window (current-window)))
-  "Fullscreen WINDOW, or the currently active window if unspecified."
+  "Fullscreen WINDOW, or the current window, when omitted."
   (if (fullscreen-p window)
       (ffi-window-unfullscreen window)
       (ffi-window-fullscreen window)))
