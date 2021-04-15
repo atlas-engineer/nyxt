@@ -113,8 +113,7 @@ See also `result-channel'.")
      (returned-p nil
                  :type boolean
                  :documentation
-                 "If non-nil, prompter has returned.
-This is useful to know if prompter was cancelled or not."))
+                 "Whether the prompter has been cancelled."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
     (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))

@@ -73,8 +73,7 @@ If the mode specifier is not known, it's omitted from the results."
              :documentation "The list of `mode-invocation's to disable on rule activation.")
    (exact-p nil
             :type boolean
-            :documentation "If non-nil, enable the INCLUDED modes exclusively.
-Enable INCLUDED modes plus the already present ones, and disable EXCLUDED modes, if nil."))
+            :documentation "Whether to exclusively enable the `included' modes."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))

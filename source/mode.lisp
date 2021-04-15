@@ -107,7 +107,7 @@ Example:
               name.")
    (visible-in-status-p
     t
-    :documentation "Should this mode be visible within the status line?")
+    :documentation "Whether the mode is visible in the status line.")
    (activate :accessor activate :initarg :activate) ; TODO: This can be used in the future to temporarily turn off modes without destroying the object.
    (constructor nil ; TODO: Make constructor / destructor methods?  Then we can use initialize-instance, etc.
                 :type (or function null)
