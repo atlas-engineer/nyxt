@@ -99,7 +99,7 @@ forwarded when no binding is found.")
                       :combination #'combine-composed-hook-until-nil)
                      :type hook-resource
                      :documentation "Hook run before the `request-resource-hook'.
-One example of it's application is `auto-mode' that changes mode setup. Any
+One example of its application is `auto-mode' that changes mode setup. Any
 action on modes that can possibly change the handlers in `request-resource-hook'
 should find its place there.")
    (request-resource-scheme (define-scheme "request-resource"
