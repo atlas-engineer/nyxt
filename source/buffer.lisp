@@ -168,6 +168,11 @@ down.")
                      :documentation "Hook run in `buffer-load' after `parse-url' was processed.
 The handlers take the URL going to be loaded as argument
 and must return a (possibly new) URL.")
+   (buffer-loaded-hook (make-hook-buffer)
+                       :type hook-buffer
+                       :documentation "Hook run when `load-status' is set to
+`:finished'.
+The handlers take the buffer as argument.")
    (buffer-delete-hook (make-hook-buffer)
                        :type hook-buffer
                        :documentation "Hook run before `buffer-delete' takes effect.
@@ -238,6 +243,7 @@ The mode instances are stored in the `modes' slot.")
                               :unloaded
                               :failed)
                 :accessor nil
+                :reader load-status
                 :export nil ; TODO: Need to decide if we want progress / errors before exposing to the user.
                 :documentation "The status of the buffer.
 - `:loading' when loading a web resource.
@@ -271,6 +277,12 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 (defmethod initialize-instance :after ((buffer web-buffer) &key)
   (when (expand-path (cookies-path buffer))
     (ensure-parent-exists (expand-path (cookies-path buffer)))))
+
+(defmethod (setf load-status) (status (buffer web-buffer))
+  (setf (slot-value buffer 'load-status) status)
+  (when (eq status :finished)
+    (bt:make-thread
+     (lambda () (hooks:run-hook (buffer-loaded-hook buffer) buffer)))))
 
 (define-class nosave-buffer (user-web-buffer)
   ((data-profile (make-instance 'nosave-data-profile))
@@ -472,7 +484,7 @@ See `buffer-make'."
 (defun load-failed-p (buffer)
   "Only web-buffer loads can fail."
   (and (web-buffer-p buffer)
-       (eq (slot-value buffer 'load-status) :failed)))
+       (eq (load-status buffer) :failed)))
 
 (export-always 'on-signal-notify-uri)
 (defmethod on-signal-notify-uri ((buffer buffer) no-uri)
@@ -730,7 +742,7 @@ proceeding."
     (set-window-title window buffer)
     (print-status nil window)
     (when (and (web-buffer-p buffer)
-               (eq (slot-value buffer 'load-status) :unloaded))
+               (eq (load-status buffer) :unloaded))
       (reload-buffer buffer))))
 
 (defun last-active-buffer ()

@@ -437,7 +437,7 @@ Deal with REQUEST-DATA with the following rules:
          ;; webkit-policy-decision-ignore on a download requestion.
          ;; To work around this, we set the `load-status' to a value other than
          ;; `:loading'.
-         (setf (slot-value buffer 'load-status) :finished)
+         (setf (load-status buffer) :finished)
          nil)
         (t
          (log:debug "Forwarding ~a for buffer ~s" (render-url url) buffer)
