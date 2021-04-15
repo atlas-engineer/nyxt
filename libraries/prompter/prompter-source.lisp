@@ -318,7 +318,7 @@ See `resume-sources'.")
    (follow-p nil
              :type boolean
              :documentation
-             "When non-nil, automatically execute `persistent-action'.
+             "If non-nil, automatically execute `persistent-action'.
 Also see `follow-delay'.")
 
    (follow-delay 0.0
