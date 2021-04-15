@@ -168,6 +168,10 @@ down.")
                      :documentation "Hook run in `buffer-load' after `parse-url' was processed.
 The handlers take the URL going to be loaded as argument
 and must return a (possibly new) URL.")
+   (buffer-loaded-hook (make-hook-buffer)
+                       :type hook-buffer
+                       :documentation "Hook run on `on-signal-load-finished'.
+The handlers take the buffer as argument.")
    (buffer-delete-hook (make-hook-buffer)
                        :type hook-buffer
                        :documentation "Hook run before `buffer-delete' takes effect.
@@ -517,7 +521,8 @@ BUFFER's modes."
 (export-always 'on-signal-load-finished)
 (defmethod on-signal-load-finished ((buffer buffer) url)
   (dolist (mode (modes buffer))
-    (on-signal-load-finished mode url)))
+    (on-signal-load-finished mode url))
+  (run-thread (hooks:run-hook (buffer-loaded-hook buffer) buffer)))
 
 (defun default-mode-symbols ()
   "Return default mode symbols (with package prefix)."
