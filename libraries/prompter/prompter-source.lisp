@@ -129,7 +129,7 @@ another.")
 If a function, it's called asynchronously with the source as argument.
 The returned value is assigned to `initial-suggestions'.
 
-It a list, it's assigned synchronously to `initial-suggestions'.  The list is
+If a list, it's assigned synchronously to `initial-suggestions'.  The list is
 guaranteed to never be modified.")
 
    (destructor nil
