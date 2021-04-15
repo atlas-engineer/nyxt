@@ -217,7 +217,13 @@ Rules are kept in browser's `user-data', keyed by the expanded `auto-mode-rules-
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:documentation "A buffer is the fundamental unit of displayed content.
+Buffers result from the computations of a web renderer, which generates a visual
+representation of HTML documents.
+
+Rendered URLs or the Nyxt's manual qualify as examples.  Buffers are fully
+separated from one another, so that each has its own behaviour and settings."))
 
 (define-user-class buffer)
 
