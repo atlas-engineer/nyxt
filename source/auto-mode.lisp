@@ -246,8 +246,8 @@ The rules are:
 These modes will then be activated on every visit to this domain/host/URL."
   ((prompt-on-mode-toggle nil
                           :type boolean
-                          :documentation "Whether user will be asked about adding the mode
-to included/excluded modes in the auto-mode rules on mode activation/deactivation.")
+                          :documentation "Whether the user is asked to confirm
+adding the rule corresponding to a mode toggle.")
    ;; base-mode conflicts with its Nyxt symbol if it's not prefixed
    (non-rememberable-modes '(help-mode web-mode auto-mode nyxt::base-mode)
                            :type list
