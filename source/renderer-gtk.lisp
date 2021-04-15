@@ -725,7 +725,7 @@ Warning: This behaviour may change in the future."
   (setf (gtk:gtk-window-title (gtk-object window)) title))
 
 (define-ffi-method ffi-window-active ((browser gtk-browser))
-  "Return the window object for the currently active window."
+  "Return the window object for the current window."
   (setf (slot-value browser 'last-active-window)
         (or (find-if #'gtk:gtk-window-is-active (window-list) :key #'gtk-object)
             (first (window-list))

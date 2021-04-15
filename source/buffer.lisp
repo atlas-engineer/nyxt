@@ -865,14 +865,13 @@ set of useful URLs or preparing a list to send to a someone else."
         (mapcar #'buffer-delete (buffer-list)))))
 
 (define-command delete-current-buffer (&optional (buffer (current-buffer)))
-  "Delete the currently active buffer, and make the next buffer the
-visible buffer. If no other buffers exist, set the url of the current
-buffer to the start page."
+  "Delete the current buffer, and make the next buffer the current one. If no
+other buffers exist, set the url of the current buffer to the start page."
   (buffer-delete buffer))
 
 (define-command delete-other-buffers (&optional (buffer (current-buffer)))
-  "Delete all other buffers but `buffer` which if not explicitly set defaults
-to the currently active buffer."
+  "Delete all buffers except BUFFER.
+When BUFFER is omitted, it defaults to the current one."
   (let* ((all-buffers (buffer-list))
          (buffers-to-delete (remove buffer all-buffers))
          (count (list-length buffers-to-delete)))

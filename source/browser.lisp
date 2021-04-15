@@ -569,7 +569,7 @@ The following example does a few things:
   ;; Tests:
   ;; - Make two windows and make sure prompt-buffer gets spawned in the right window.
   ;; - Delete the second window and see if the prompt-buffer still works in the first one.
-  "Return the currently active window.
+  "Return the current window.
 If NO-RESCAN is non-nil, fetch the window from the `last-active-window' cache
 instead of asking the renderer for the active window.  It is faster but
 sometimes yields the wrong result."
@@ -590,7 +590,7 @@ sometimes yields the wrong result."
 
 (export-always 'current-prompt-buffer)
 (defun current-prompt-buffer ()
-  "Return the currently active prompt-buffer."
+  "Return the current prompt-buffer."
   (first (active-prompt-buffers (current-window))))
 
 (defmethod write-output-to-log ((browser browser))
