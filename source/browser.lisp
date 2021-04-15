@@ -111,7 +111,7 @@ if there are errors, they will be reported by this function.")
                                        :documentation "Whether to open links
 issued by an external program or issued by Control+<button1> in a new window.")
    (downloads
-    :documentation "List of downloads. Used for rendering by download manager.")
+    :documentation "List of downloads. Used for rendering by the download manager.")
    (startup-timestamp (local-time:now)
                       :export nil
                       :documentation "`local-time:timestamp' of when Nyxt was started.")
