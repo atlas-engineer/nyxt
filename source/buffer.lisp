@@ -94,7 +94,7 @@ forwarded when no binding is found.")
                :type t
                :export nil
                ;; TODO: Store multiple events?  Maybe when implementing keyboard macros.
-               :documentation "The last event that was received for the current buffer.")
+               :documentation "The last event received in the current buffer.")
    (pre-request-hook (make-hook-resource
                       :combination #'combine-composed-hook-until-nil)
                      :type hook-resource
