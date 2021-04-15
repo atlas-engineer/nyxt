@@ -16,7 +16,7 @@
    (last-key nil
              :export nil
              :type (or null keymap:key)
-             :documentation "Last last pressed key.  Useful for `self-insert'.")
+             :documentation "Last pressed key.  Useful for `self-insert'.")
    (fullscreen-p nil
                  :export nil
                  :type boolean
