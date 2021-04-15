@@ -30,7 +30,7 @@ let-bind *browser* to temporarily switch interface.")
 The hook takes no argument.
 
 This hook is run after the `*browser*' is instantiated and before the
-`startup-function' is run.
+`startup' is run.
 
 Add a handler can be added with:
 

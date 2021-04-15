@@ -266,47 +266,6 @@ EXPR is expected to be as per the expression sent in `listen-or-query-socket'."
           (log:warn "Could not extract URLs from ~s." expr)
           nil))))
 
-(export-always 'make-startup-function)
-(defun make-startup-function (&key buffer-fn)
-  "Return a function suitable as a `browser' `startup-function'.
-To change the default buffer, e.g. set it to a given URL:
-
-  (make-startup-function
-   :buffer-fn (lambda () (make-buffer :url \"https://example.org\")))"
-  (flet ((restore-session ()
-           (let ((buffer (current-buffer)))
-             (when (histories-list buffer)
-                 (match (session-restore-prompt *browser*)
-                   (:always-ask (handler-case (restore-history-by-name)
-                                  ;; We handle prompt cancelation, otherwise the rest of
-                                  ;; the function would not be run.
-                                  (nyxt-prompt-buffer-canceled ()
-                                    (log:debug "Prompt buffer interrupted")
-                                    nil)))
-                   (:always-restore (restore (data-profile buffer) (history-path buffer)
-                                             :restore-buffers-p t))
-                   (:never-restore (log:info "Not restoring session.")
-                                   (restore (data-profile buffer) (history-path buffer)))))))
-         (load-start-urls (window urls)
-           (cond
-             (urls (open-urls urls))
-             (buffer-fn
-              (window-set-buffer window (funcall buffer-fn))))))
-    (lambda (&optional urls)
-      (let ((window (current-window)))
-        ;; Since this is the first buffer, we don't use any history for it:
-        ;; - it's not interesting;
-        ;; - most importantly because restoring the history may prompt the
-        ;; user which blocks further action such as the loading of the page,
-        ;; something we don't want for the startup.
-        (window-set-buffer window (help :no-history-p t))
-        ;; Restore session before opening command line URLs, otherwise it will
-        ;; reset the session with the new URLs.
-        (restore-session)
-        (load-start-urls window urls))
-      (alex:when-let ((f (startup-error-reporter-function *browser*)))
-        (funcall f)))))
-
 (export-always 'open-external-urls)
 (defun open-external-urls (urls)
   "Open URLs on the renderer thread and return URLs.

@@ -102,12 +102,6 @@ see `buffer-list', `buffers-get', `buffers-set' and `buffers-delete'.")
                        :documentation "This is used to generate unique buffer
 identifiers in `get-unique-buffer-identifier'.  We can't rely on the windows
 count since deleting windows may result in duplicate identifiers.")
-   (startup-function (make-startup-function)
-                     :type (or function null)
-                     :documentation "The function run on startup.  It takes a
-list of URLs (strings) as optional argument (the command line positional
-arguments).  It is run after the renderer has been initialized, after the
-`*after-init-hook*' has run and after a first window has been spawned.")
    (startup-error-reporter-function nil
                                     :type (or function null)
                                     :export nil
@@ -215,32 +209,57 @@ editor executable."))
   (find buffer (alex:hash-table-values (windows browser)) :key #'active-buffer))
 
 (defmethod finalize ((browser browser) urls startup-timestamp)
-  "Run `*after-init-hook*' then BROWSER's `startup-function'."
+  "Run `*after-init-hook*' then BROWSER's `startup'."
   ;; `messages-appender' requires `*browser*' to be initialized.
   (log4cl:add-appender log4cl:*root-logger* (make-instance 'messages-appender))
   (handler-case
       (hooks:run-hook *after-init-hook*) ; TODO: Run outside the main loop?
     (error (c)
       (log:error "In *after-init-hook*: ~a" c)))
-  ;; Most of the code assumes the existence of a window.  Let's create it here
-  ;; so that the user does not have to bother with it in the `startup-function'.
-  (window-make browser)
-  ;; The `startup-function' must be run _after_ this function returns;
+  ;; `startup' must be run _after_ this function returns;
   ;; `ffi-within-renderer-thread' runs its body on the renderer thread when it's
   ;; idle, so it should do the job.  It's not enough since the
-  ;; `startup-function' may invoke the prompt buffer, which cannot be invoked from
-  ;; the renderer thread: this is why we run the startup-function in a new
+  ;; `startup' may invoke the prompt buffer, which cannot be invoked from
+  ;; the renderer thread: this is why we run the `startup' in a new
   ;; thread from there.
   (ffi-within-renderer-thread
    browser
    (lambda ()
      (run-thread
-       (funcall (startup-function browser) urls))))
+       (startup browser urls))))
   ;; Set 'init-time at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)
         (local-time:timestamp-difference (local-time:now) startup-timestamp))
   (setf (slot-value *browser* 'ready-p) t))
+
+(export-always 'startup)
+(defmethod startup ((browser browser) urls)
+  (flet ((restore-session ()
+           (let ((buffer (current-buffer)))
+             (when (histories-list buffer)
+               (match (session-restore-prompt *browser*)
+                 (:always-ask (handler-case (restore-history-by-name)
+                                ;; We handle prompt cancelation, otherwise the rest of
+                                ;; the function would not be run.
+                                (nyxt-prompt-buffer-canceled ()
+                                  (log:debug "Prompt buffer interrupted")
+                                  nil)))
+                 (:always-restore (restore (data-profile buffer) (history-path buffer)
+                                           :restore-buffers-p t))
+                 (:never-restore (log:info "Not restoring session.")
+                                 (restore (data-profile buffer) (history-path buffer)))))))
+         (load-start-urls (urls)
+           (when urls (open-urls urls))))
+    (window-make browser)
+    (let ((window (current-window)))
+      (window-set-buffer window (help :no-history-p t))
+      ;; Restore session before opening command line URLs, otherwise it will
+      ;; reset the session with the new URLs.
+      (restore-session)
+      (load-start-urls urls))
+    (alex:when-let ((f (startup-error-reporter-function *browser*)))
+      (funcall f))))
 
 ;; Catch a common case for a better error message.
 (defmethod buffers :before ((browser t))

@@ -520,7 +520,7 @@ the "
     (echo "System information copied to clipboard.")))
 
 (define-command dashboard ()
-  "Print a dashboard. Usable as a buffer-fn for make-startup-function."
+  "Print a dashboard."
   (flet ((list-bookmarks (&key (separator " → "))
            (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
              (loop for bookmark in bookmarks
