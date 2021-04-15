@@ -43,10 +43,10 @@ Without handler, return ARG.  This is an acceptable `combination' for
 (define-class browser ()
   ((remote-execution-p nil
                        :type boolean
-                       :documentation "When non-nil, execute Lisp code that is sent to the socket.
-You must understand the risks before enabling this: a privileged user with access
-to your system can then take control of the browser and execute arbitrary code
-under your user profile.")
+                       :documentation "If non-nil, execute Lisp code that is
+sent to the socket.  You must understand the risks before enabling this: a
+privileged user with access to your system can then take control of the browser
+and execute arbitrary code under your user profile.")
 ;; TODO: is it always user's data? Better name maybe?
    (user-data-cache (make-hash-table :test #'equal)
                     :type hash-table
@@ -121,8 +121,8 @@ new window or not.")
               :documentation "Initialization time in seconds.")
    (ready-p nil
             :reader ready-p
-            :documentation "If true, browser is ready for operation: make
-buffers, load data files, open prompt buffer, etc.")
+            :documentation "If non-nil, the browser is ready for operation (make
+buffers, load data files, open prompt buffer, etc).")
    (session-restore-prompt :always-ask
                            :documentation "Ask whether to restore the
 session. Possible values are :always-ask :always-restore :never-restore.")
