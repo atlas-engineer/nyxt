@@ -123,8 +123,8 @@ issued by an external program or issued by Control+<button1> in a new window.")
             :documentation "If non-nil, the browser is ready for operation (make
 buffers, load data files, open prompt buffer, etc).")
    (session-restore-prompt :always-ask
-                           :documentation "Ask whether to restore the
-session. Possible values are :always-ask :always-restore :never-restore.")
+                           :documentation "Ask whether to restore the session.
+The possible values are `:always-ask', `:always-restore' and `:never-restore'.")
    ;; Hooks follow:
    (before-exit-hook (hooks:make-hook-void)
                      :type hooks:hook-void
