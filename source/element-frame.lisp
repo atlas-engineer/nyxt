@@ -150,7 +150,7 @@
     (remove-overlay)))
 
 (define-class frame-source (prompter:source)
-  ((prompter:name "Selection Frame")
+  ((prompter:name "Selection Frame (confirm with right click)")
    (buffer :accessor buffer :initarg :buffer)
    (channel :accessor channel :initarg :channel)
    (prompter:must-match-p t)
