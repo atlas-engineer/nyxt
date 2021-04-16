@@ -287,9 +287,12 @@ This function can be used on browser-less globals like `*init-file-path*'."
   "Look up the buffer-local data in case of `nosave-data-profile'."
   (%get-user-data profile path (user-data-cache profile)))
 
-(export-always 'get-data)
+(export-always 'get-data)               ; TODO: Unexport?
 ;; TODO: Better name? Isn't it too wide?
 (defmethod get-data ((path data-path))
+  "Return the data for PATH.
+Prefer `with-data-unsafe' or `with-data-access' which won't execute the body if
+the data is NIL."
   (data (get-user-data (current-data-profile) path)))
 
 (defmethod (setf get-data) (value (path data-path))
@@ -300,6 +303,7 @@ This function can be used on browser-less globals like `*init-file-path*'."
   "Lock the data for the BODY to avoid race conditions and safely modify it.
 Bind the DATA-VAR to the value of the data from DATA-PATH to reuse it.
 In case there's no data, bind DATA-VAR to DEFAULT and set data to it.
+If DEFAULT is unspecified (nil), do nothing.
 
 For a faster and modification-unsafe version, see `with-data-unsafe'."
   (alex:with-gensyms (lock path-name)
@@ -307,26 +311,30 @@ For a faster and modification-unsafe version, see `with-data-unsafe'."
             (,lock (lock (get-user-data (current-data-profile) ,path-name))))
        (bt:with-recursive-lock-held (,lock)
          (let ((,data-var (or (get-data ,path-name) ,default)))
-           (unwind-protect
-                (progn ,@body)
-             (setf (get-data ,path-name) ,data-var)
-             (store (current-data-profile) ,path-name)))))))
+           (when ,data-var
+             (unwind-protect
+                  (progn ,@body)
+               (setf (get-data ,path-name) ,data-var)
+               (store (current-data-profile) ,path-name))))))))
 
 (export-always 'with-data-unsafe)
-(defmacro with-data-unsafe ((data-var data-path &key key) &body body)
+(defmacro with-data-unsafe ((data-var data-path &key default key) &body body)
   "Bind the data to DATA-VAR for a fast non-modifying lookup.
 Bind the DATA-VAR to the value of the data from DATA-PATH to reuse it.
 In case there's no data, bind DATA-VAR to DEFAULT.
+If DEFAULT is unspecified (nil), do nothing.
 
 If KEY is used, bind the result of applying KEY to the data, to
 DATA-VAR.
 
 Beware: this is not a thread-safe macro, so data may be altered while
 you use this macro! For a modification-safe macro, see `with-data-access'."
-  `(let ((,data-var ,(if key
-                         `(funcall ,key (get-data ,data-path))
-                         `(get-data ,data-path))))
-     (progn ,@body)))
+  `(let ((,data-var (or ,(if key
+                             `(funcall ,key (get-data ,data-path))
+                             `(get-data ,data-path))
+                        ,default)))
+     (when ,data-var
+       ,@body)))
 
 (defvar *gpg-default-recipient* nil)
 
