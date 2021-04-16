@@ -260,10 +260,11 @@ and to index the top of the page.")
    (prompter:must-match-p t)
    (prompter:constructor
     (lambda (source)
-      (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
-                   #'htree:all-contiguous-owned-parents
-                   #'htree:all-parents)
-               (get-data (history-path (buffer source)))))))
+      (with-data-unsafe (history (history-path (buffer source)))
+        (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
+                     #'htree:all-contiguous-owned-parents
+                     #'htree:all-parents)
+                 history)))))
   (:export-class-name-p t))
 
 (defmethod prompter:object-properties ((node history-tree:node))
@@ -289,10 +290,11 @@ and to index the top of the page.")
    (prompter:must-match-p t)
    (prompter:constructor
     (lambda (source)
-      (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
-                   (alex:compose #'htree:owned-children #'htree:current-owner)
-                   (alex:compose #'htree:children #'htree:current-owner-node))
-               (get-data (history-path (buffer source)))))))
+      (with-data-unsafe (history (history-path (buffer source)))
+        (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
+                     (alex:compose #'htree:owned-children #'htree:current-owner)
+                     (alex:compose #'htree:children #'htree:current-owner-node))
+                 history)))))
   (:documentation "Direct children of the current history node.")
   (:export-class-name-p t))
 
@@ -324,7 +326,8 @@ Otherwise go forward to the only child."
    (prompter:must-match-p t)
    (prompter:constructor
     (lambda (source)
-      (htree:all-forward-children (get-data (history-path (buffer source)))))))
+      (with-data-unsafe (history (history-path (buffer source)))
+        (htree:all-forward-children history)))))
   (:export-class-name-p t))
 
 (define-command history-forwards-query (&optional (buffer (current-buffer)))
@@ -348,10 +351,11 @@ Otherwise go forward to the only child."
    (prompter:must-match-p t)
    (prompter:constructor
     (lambda (source)
-      (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
-                   (alex:compose #'htree:all-contiguous-owned-children #'htree:current-owner)
-                   #'htree:all-children)
-               (get-data (history-path (buffer source)))))))
+      (with-data-unsafe (history (history-path (buffer source)))
+        (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
+                     (alex:compose #'htree:all-contiguous-owned-children #'htree:current-owner)
+                     #'htree:all-children)
+                 history)))))
   (:export-class-name-p t))
 
 (define-command history-forwards-all-query (&optional (buffer (current-buffer)))
@@ -371,10 +375,11 @@ Otherwise go forward to the only child."
    (prompter:must-match-p t)
    (prompter:constructor
     (lambda (source)
-      (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
-                   #'htree:all-current-owner-nodes
-                   #'htree:all-current-branch-nodes)
-               (get-data (history-path (buffer source)))))))
+      (with-data-unsafe (history (history-path (buffer source)))
+        (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
+                     #'htree:all-current-owner-nodes
+                     #'htree:all-current-branch-nodes)
+                 history)))))
   (:export-class-name-p t))
 
 (define-command history-all-query (&optional (buffer (current-buffer)))
