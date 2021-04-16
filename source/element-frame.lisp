@@ -190,5 +190,6 @@
                        (closer-mop:subclassp (class-of s)
                                              (find-class 'frame-source)))
                      (prompter:sources (current-prompt-buffer))))
-                   (selection (mapcar #'url (frame-element-get-selection))))
+                   (selection (remove-duplicates (mapcar #'url (frame-element-get-selection))
+                                                 :test #'equal)))
     (calispel:! (channel frame-source) selection)))
