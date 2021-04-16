@@ -44,20 +44,21 @@
 
 (define-command nyxt::select-frame-expedition (&key (buffer (current-buffer)))
   "Run an expedition through a set of URLs selected with a rectangle."
-  (let ((urls (reverse
-               (prompt
-                :default-modes '(prompt-buffer-mode nyxt/web-mode::frame-select-mode)
-                :prompt "Start expedition with the following links:"
-                :sources (list (make-instance 'nyxt/web-mode::frame-source
-                                              :buffer buffer
-                                              :multi-selection-p t
-                                              :channel (make-instance 'calispel:channel)))
-                :after-destructor
-                (lambda ()
-                  (with-current-buffer buffer
-                    (nyxt/web-mode::frame-element-clear)))))))
-    (set-current-buffer
-     (expedition-mode
-      :urls urls
-      :buffer (make-buffer :title ""
-                           :url (first urls))))))
+  (let* ((urls (reverse
+                (prompt
+                 :default-modes '(prompt-buffer-mode nyxt/web-mode::frame-select-mode)
+                 :prompt "Start expedition with the following links:"
+                 :sources (list (make-instance 'nyxt/web-mode::frame-source
+                                               :buffer buffer
+                                               :multi-selection-p t
+                                               :channel (make-instance 'calispel:channel)))
+                 :after-destructor
+                 (lambda ()
+                   (with-current-buffer buffer
+                     (nyxt/web-mode::frame-element-clear))))))
+         (buffer (make-buffer :title "" :url (first urls))))
+    (expedition-mode :urls urls :buffer buffer)
+    ;; Auto mode interferes with expedition mode, automatically disabling it
+    ;; when viewing the next URL in an expedition
+    (disable-modes 'auto-mode buffer)
+    (set-current-buffer buffer)))
