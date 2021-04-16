@@ -310,12 +310,11 @@ For a faster and modification-unsafe version, see `with-data-unsafe'."
     `(let* ((,path-name ,data-path)
             (,lock (lock (get-user-data (current-data-profile) ,path-name))))
        (bt:with-recursive-lock-held (,lock)
-         (let ((,data-var (or (get-data ,path-name) ,default)))
-           (when ,data-var
-             (unwind-protect
-                  (progn ,@body)
-               (setf (get-data ,path-name) ,data-var)
-               (store (current-data-profile) ,path-name))))))))
+         (alex:when-let ((,data-var (or (get-data ,path-name) ,default)))
+           (unwind-protect
+                (progn ,@body)
+             (setf (get-data ,path-name) ,data-var)
+             (store (current-data-profile) ,path-name)))))))
 
 (export-always 'with-data-unsafe)
 (defmacro with-data-unsafe ((data-var data-path &key default key) &body body)
@@ -329,12 +328,12 @@ DATA-VAR.
 
 Beware: this is not a thread-safe macro, so data may be altered while
 you use this macro! For a modification-safe macro, see `with-data-access'."
-  `(let ((,data-var (or ,(if key
-                             `(funcall ,key (get-data ,data-path))
-                             `(get-data ,data-path))
-                        ,default)))
-     (when ,data-var
-       ,@body)))
+  `(sera:and-let* ((,data-var (or (get-data ,data-path)
+                                  ,default))
+                   (,data-var ,(if key
+                                   `(funcall ,key ,data-var)
+                                   data-var)))
+     ,@body))
 
 (defvar *gpg-default-recipient* nil)
 
