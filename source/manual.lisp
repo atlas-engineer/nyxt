@@ -184,9 +184,6 @@ can set a hook like the following in your configuration file:")
 important to make sure we return " (:code "request-data") " here.  See the
 documentation of the respective hooks for more details.")
 
-    (:h3 "Startup behavior")
-    (:p "Please override the " (:code "startup") " method.")
-
     (:h3 "Data paths and data profiles")
     (:p "Nyxt provides a uniform configuration interface for all data files
 persisted to disk (bookmarks, cookies, etc.).  To each file corresponds

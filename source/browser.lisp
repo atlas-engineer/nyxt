@@ -239,7 +239,6 @@ prevents otherwise."))
         (local-time:timestamp-difference (local-time:now) startup-timestamp))
   (setf (slot-value *browser* 'ready-p) t))
 
-(export-always 'startup)
 (defmethod startup ((browser browser) urls)
   (flet ((restore-session ()
            (let ((buffer (current-buffer)))
