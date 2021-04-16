@@ -179,7 +179,7 @@
     (define-scheme "frame"
       scheme:cua
       (list
-       "C-button1" 'frame-source-confirm-selection)))))
+       "button3" 'frame-source-confirm-selection)))))
 
 (defun frame-source-confirm-selection ()
   (alex:when-let* ((frame-source 
