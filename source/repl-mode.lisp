@@ -5,7 +5,8 @@
 
 (define-mode repl-mode ()
   "Mode for interacting with the REPL."
-  ((keymap-scheme
+  ((rememberable-p nil)
+   (keymap-scheme
     (define-scheme "repl"
       scheme:cua
       (list

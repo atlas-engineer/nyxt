@@ -8,7 +8,7 @@
 
 (define-mode message-mode ()
   "Mode for log and message listing."
-  ())
+  ((rememberable-p nil)))
 
 (define-command clear-messages ()
   "Clear the *Messages* buffer."

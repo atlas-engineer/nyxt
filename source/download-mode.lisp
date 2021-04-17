@@ -92,7 +92,8 @@ appearance in the buffer when they are setf'd."
 ;; TODO: Move to separate package
 (define-mode download-mode ()
   "Display list of downloads."
-  ((open-file-function #'default-open-file-function)
+  ((rememberable-p nil)
+   (open-file-function #'default-open-file-function)
    (style
     (cl-css:css
      '((".download"

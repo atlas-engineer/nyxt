@@ -5,7 +5,8 @@
 
 (define-mode diff-mode ()
   "Diff mode is used to view the diffs between two buffers."
-  ((buffer (error "Please supply a buffer.")
+  ((rememberable-p nil)
+   (buffer (error "Please supply a buffer.")
            :documentation "The buffer where the diff will be displayed.")
    (old-html :documentation "String html representation.")
    (new-html :documentation "String html representation.")

@@ -108,6 +108,8 @@ Example:
    (visible-in-status-p
     t
     :documentation "Whether the mode is visible in the status line.")
+   (rememberable-p t
+                   :documentation "Whether this mode is visible to `auto-mode'.")
    (activate :accessor activate :initarg :activate) ; TODO: This can be used in the future to temporarily turn off modes without destroying the object.
    (constructor nil ; TODO: Make constructor / destructor methods?  Then we can use initialize-instance, etc.
                 :type (or function null)

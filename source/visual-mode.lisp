@@ -9,7 +9,8 @@
 
 (define-mode visual-mode ()
   "Visual mode. For documentation on commands and keybindings, see the manual."
-  ((keymap-scheme
+  ((rememberable-p nil)
+   (keymap-scheme
     (define-scheme "visual"
       scheme:cua
       (list
