@@ -29,6 +29,7 @@
                bordeaux-threads
                calispel
                cl-css
+               cl-html-diff
                cl-json
                cl-markup
                cl-ppcre
@@ -58,7 +59,6 @@
                trivial-package-local-nicknames
                trivial-types
                unix-opts
-               cl-html-diff
                ;; Local systems:
                nyxt/user-interface
                nyxt/text-buffer
