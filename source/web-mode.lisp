@@ -34,17 +34,17 @@ search.")
     :documentation "Whether history navigation is restricted by buffer-local history.")
    (box-style (cl-css:css
                '((".nyxt-hint"
-                  :background "linear-gradient(#fcff9e, #efcc00)"
-                  :color "black"
-                  :border "1px black solid"
+                  :background "#003F87"
+                  :color "white"
+                  :font-weight "bold"
+                  :box-shadow "1px 1px 3px 2px rgba(0,0,0,0.10)"
                   :padding "1px 3px 1px 3px"
                   :border-radius "2px"
                   :z-index #.(1- (expt 2 31)))))
               :documentation "The style of the boxes, e.g. link hints.")
    (highlighted-box-style (cl-css:css
                            '((".nyxt-hint.nyxt-highlight-hint"
-                              :font-weight "500"
-                              :background "#fcff9e")))
+                              :background "#42C0FB")))
                           :documentation "The style of highlighted boxes, e.g. link hints.")
    (hints-alphabet "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                    :type string

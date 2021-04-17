@@ -31,7 +31,7 @@
   (defun hint-determine-position (rect)
     "Determines the position of a hint according to the element"
     (ps:create :top  (+ (ps:@ window page-y-offset) (ps:@ rect top))
-               :left (+ (ps:@ window page-x-offset) (- (ps:@ rect left) 20))))
+               :left (+ (ps:@ window page-x-offset) (ps:@ rect left))))
 
   (defun hint-create-element (element hint)
     "Creates a DOM element to be used as a hint"
