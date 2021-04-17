@@ -44,7 +44,7 @@ search.")
               :documentation "The style of the boxes, e.g. link hints.")
    (highlighted-box-style (cl-css:css
                            '((".nyxt-hint.nyxt-highlight-hint"
-                              :background "#42C0FB")))
+                              :background "#37a8e4")))
                           :documentation "The style of highlighted boxes, e.g. link hints.")
    (hints-alphabet "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                    :type string
