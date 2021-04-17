@@ -2,35 +2,41 @@ This document serves as a Software Bill of Materials.  It indicates
 which external dependencies we are directly relying on.
 
 * Foreign Dependencies
-- WebkitGTK+ https://webkitgtk.org
+- GObject Introspection https://wiki.gnome.org/Projects/GObjectIntrospection
 - Qt https://www.qt.io
 - SBCL http://www.sbcl.org
+- WebkitGTK+ https://webkitgtk.org
 
 * Lisp Dependencies (available via Quicklisp)
 - alexandria
 - bordeaux-threads
-- cl-ansi-text
+- calispel
 - cl-css
+- cl-custom-hash-table
+- cl-html-diff
 - cl-json
 - cl-markup
 - cl-ppcre
 - cl-ppcre-unicode
 - cl-prevalence
 - closer-mop
-- moptilities
 - dexador
 - enchant
+- file-attribues
+- fset
+- hu.dwim.defclass-star
 - iolib
-- ironclad
 - local-time
 - log4cl
 - lparallel
 - mk-string-metrics
+- moptilities
+- named-readtables
 - parenscript
+- plump
 - quri
 - serapeum
 - str
-- plump
 - swank
 - trivia
 - trivial-clipboard
@@ -38,7 +44,10 @@ which external dependencies we are directly relying on.
 - trivial-package-local-nicknames
 - trivial-types
 - unix-opts
+
+Renderer-specific dependencies:
 - cl-cffi-gtk
+- cl-gobject-introspection
 - cl-webkit
 - cl-webengine
 - trivial-main-thread
