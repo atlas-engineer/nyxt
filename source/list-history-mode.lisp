@@ -8,4 +8,4 @@
 
 (define-mode list-history-mode ()
   "Mode for listing history."
-  ())
+  ((rememberable-p nil)))

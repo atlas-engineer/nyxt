@@ -9,4 +9,4 @@
 
 (define-mode help-mode ()
   "Mode for displaying documentation."
-  ())
+  ((rememberable-p nil)))

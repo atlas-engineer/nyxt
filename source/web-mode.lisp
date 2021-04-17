@@ -19,7 +19,8 @@
 
 (define-mode web-mode ()
   "Base mode for interacting with documents."
-  ((history-blocklist '("https://duckduckgo.com/l/")
+  ((rememberable-p nil)
+   (history-blocklist '("https://duckduckgo.com/l/")
                       ;; TODO: Find a more automated way to do it.  WebKitGTK
                       ;; automatically removes such redirections from its
                       ;; history.  How?

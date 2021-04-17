@@ -8,7 +8,7 @@
 
 (define-mode buffer-listing-mode ()
   "Mode for buffer-listing."
-  ())
+  ((rememberable-p nil)))
 
 (define-command nyxt::list-buffers (&key (cluster nil))
   "Show the *Buffers* buffer."

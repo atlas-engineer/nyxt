@@ -51,16 +51,14 @@ Package prefix is optional.")
 If the mode specifier is not known, it's omitted from the results."
   (delete nil (mapcar #'mode-invocation mode-list)))
 
-(declaim (ftype (function (list (or auto-mode null))
+(declaim (ftype (function ((or (cons mode-invocation *) null))
                           (or (cons mode-invocation *) null))
                 rememberable-of))
-(defun rememberable-of (modes auto-mode)
-  "Filter MODES based on rememberability by AUTO-MODE."
-  (if auto-mode
-      (set-difference (mode-invocations modes)
-                      (non-rememberable-modes auto-mode)
-                      :test #'equals)
-      modes))
+(defun rememberable-of (mode-invocations)
+  "Filter MODES based on `rememberable-p'."
+  (remove-if (complement #'rememberable-p) mode-invocations
+             :key #'(lambda (mode-invocation)
+                      (make-instance (name mode-invocation)))))
 
 (define-class auto-mode-rule ()
   ((test (error "Slot `test' should be set.")
@@ -96,18 +94,17 @@ If the mode specifier is not known, it's omitted from the results."
 
 (declaim (ftype (function (quri:uri buffer)) enable-matching-modes))
 (defun enable-matching-modes (url buffer)
-  (let ((rule (matching-auto-mode-rule url buffer))
-        (auto-mode (find-mode buffer 'auto-mode)))
+  (let ((rule (matching-auto-mode-rule url buffer)))
     (dolist (mode-invocation (set-difference
                                (included rule)
-                               (rememberable-of (modes buffer) auto-mode)
+                               (rememberable-of (mode-invocations (modes buffer)))
                                :test #'equals))
       (check-type mode-invocation mode-invocation)
       (enable-modes (list (name mode-invocation)) buffer (arguments mode-invocation)))
     (disable-modes (mapcar #'name
                            (if (exact-p rule)
                                (set-difference
-                                (rememberable-of (modes buffer) auto-mode)
+                                (rememberable-of (mode-invocations (modes buffer)))
                                 (included rule) :test #'equals)
                                (excluded rule)))
                    buffer)))
@@ -159,12 +156,11 @@ non-new-page requests, buffer URL is not altered."
     (setf (previous-url auto-mode) (url request-data)))
   request-data)
 
-(declaim (ftype (function (root-mode auto-mode boolean) list)
+(declaim (ftype (function (root-mode auto-mode boolean) (values (or list boolean) &optional))
                 mode-covered-by-auto-mode-p))
 (defun mode-covered-by-auto-mode-p (mode auto-mode enable-p)
   (let ((invocation (mode-invocation mode)))
-    (or (member invocation (non-rememberable-modes auto-mode)
-                :test #'equals)
+    (or (not (rememberable-p mode))
         (let ((matching-rule (matching-auto-mode-rule
                               (url (buffer auto-mode))
                               (buffer auto-mode))))
@@ -244,17 +240,11 @@ The rules are:
 (define-mode auto-mode ()
   "Remember the modes setup for given domain/host/URL and store it in an editable form.
 These modes will then be activated on every visit to this domain/host/URL."
-  ((prompt-on-mode-toggle nil
+  ((rememberable-p nil)
+   (prompt-on-mode-toggle nil
                           :type boolean
                           :documentation "Whether the user is asked to confirm
 adding the rule corresponding to a mode toggle.")
-   ;; base-mode conflicts with its Nyxt symbol if it's not prefixed
-   (non-rememberable-modes '(help-mode web-mode auto-mode nyxt::base-mode)
-                           :type list
-                           :accessor nil
-                           :documentation "Modes that `auto-mode' won't even try to save.
-Append names of modes you want to always control manually to this list.
-Be careful with deleting the defaults -- it can be harmful for your browsing.")
    (previous-url nil
                  :type (or quri:uri null)
                  :documentation "The last URL for which `auto-mode-handler' was fired.
@@ -287,9 +277,6 @@ modes that were in place before the nyxt.atlas.engineer rule was applied are
 restored.")
    (destructor #'clean-up-auto-mode)
    (constructor #'initialize-auto-mode)))
-
-(defmethod non-rememberable-modes ((auto-mode auto-mode))
-  (mode-invocations (slot-value auto-mode 'non-rememberable-modes)))
 
 (define-command save-non-default-modes-for-future-visits ()
   "Save the modes present in `default-modes' and not present in current modes as :excluded,
@@ -349,9 +336,8 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
     (let* ((rule (or (find test rules
                            :key #'test :test #'equal)
                      (make-instance 'auto-mode-rule :test test)))
-           (auto-mode (find-mode (current-buffer) 'auto-mode))
-           (include (rememberable-of include auto-mode))
-           (exclude (rememberable-of exclude auto-mode)))
+           (include (rememberable-of include))
+           (exclude (rememberable-of exclude)))
       (setf (exact-p rule) exact-p
             (included rule) (union include
                                    (when append-p

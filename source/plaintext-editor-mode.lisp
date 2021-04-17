@@ -5,7 +5,8 @@
 
 (define-mode plaintext-editor-mode (editor-mode)
   "Mode for basic plaintext editing."
-  ((style (cl-css:css
+  ((rememberable-p nil)
+   (style (cl-css:css
            '(("body"
               :margin 0)
              ("#editor"
