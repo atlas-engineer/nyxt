@@ -105,7 +105,8 @@ new history for each new prompt buffer.  Here we set the history to be shared gl
                  (".source-content td::-webkit-scrollbar"
                   :display "none")
                  ("#selection"
-                  :background-color "575757"
+                  :background-color "#42C0FB"
+                  :font-weight "bold"
                   :color "white")
                  (.marked :background-color "darkgray"
                           :font-weight "bold"
