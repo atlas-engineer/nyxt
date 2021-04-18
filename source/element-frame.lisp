@@ -25,14 +25,15 @@
                            :left "0"
                            :right "0"
                            :bottom "0"
-                           :background "rgba(0,0,0,0.05)"
+                           :background "rgba(0,0,0,0)"
                            :z-index #.(1- (expt 2 31))))))
         (selection-rectangle-style (cl-css:css
                                     '(("#nyxt-rectangle-selection"
                                        :position "absolute"
                                        :top "0"
                                        :left "0"
-                                       :background "rgba(0,0,0,0.10)"
+                                       :border "dotted 1px black"
+                                       :background "rgba(0,0,0,0.05)"
                                        :z-index #.(1- (expt 2 30)))))))
     (pflet ((add-overlay (overlay-style selection-rectangle-style)
               "Add a selectable overlay to the screen."
