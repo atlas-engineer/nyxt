@@ -393,11 +393,11 @@ Follow the following steps:
 
 1. Add the following line to your Nyxt init file
   #+begin_src lisp
-    (load-after-system :slynk "~/.config/nyxt/my-slink.lisp")
+    (load-after-system :slynk "~/.config/nyxt/my-slynk.lisp")
   #+end_src
-2. Create a file called =my-slink.lisp= where you will specify your
+2. Create a file called =my-slynk.lisp= where you will specify your
    =start-slynk= command
-  #+NAME: my-slink.lisp
+  #+NAME: my-slynk.lisp
   #+begin_src lisp
     (define-command start-slynk (&optional (slynk-port *swank-port*))
         "Start a Slynk server that can be connected to, for instance, in
