@@ -37,7 +37,7 @@ search.")
                   :background "rgba(120,120,120,0.80)"
                   :color "white"
                   :font-weight "bold"
-                  :padding "1px 2px 1px 2px"
+                  :padding "0px 3px 0px 3px"
                   :border-radius "2px"
                   :z-index #.(1- (expt 2 31)))))
               :documentation "The style of the boxes, e.g. link hints.")
