@@ -34,11 +34,10 @@ search.")
     :documentation "Whether history navigation is restricted by buffer-local history.")
    (box-style (cl-css:css
                '((".nyxt-hint"
-                  :background "#003F87"
+                  :background "rgba(120,120,120,0.80)"
                   :color "white"
                   :font-weight "bold"
-                  :box-shadow "1px 1px 3px 2px rgba(0,0,0,0.10)"
-                  :padding "1px 3px 1px 3px"
+                  :padding "1px 2px 1px 2px"
                   :border-radius "2px"
                   :z-index #.(1- (expt 2 31)))))
               :documentation "The style of the boxes, e.g. link hints.")
