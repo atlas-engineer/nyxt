@@ -11,6 +11,9 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 - PATCH when we make backwards-compatible bug fixes.
 
 ** TASK Upcoming
+*** Window management and window splitting
+*** WebExtensions support (would unlock uBlock, etc.)
+If possible!
 *** Package / extension manager
 - There should be a package manager/repository where creators of
   packages can publish, and users can download
