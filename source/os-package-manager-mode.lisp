@@ -85,14 +85,14 @@
               " (current)"
               "")))
 
-(defmethod prompter:object-attributes ((pkg ospm:guix-package)) ; TODO: This is much too slow.
+(defmethod prompter:object-attributes ((pkg ospm:guix-package))
   (let ((result (call-next-method pkg))
         (map `(("Dependencies" nil)
-               ("Outputs" ,(str:join " " (mapcar #'ospm:name (ospm:outputs pkg))))
-               ("Supported systems" ,(str:join " " (ospm:supported-systems pkg)))
-               ("Inputs" ,(str:join " " (ospm:inputs pkg)))
-               ("Native inputs" ,(str:join " " (ospm:native-inputs pkg)))
-               ("Propagated inputs" ,(str:join " " (ospm:propagated-inputs pkg)))
+               ("Outputs" ,(sera:string-join (mapcar #'ospm:name (ospm:outputs pkg)) " "))
+               ("Supported systems" ,(sera:string-join (ospm:supported-systems pkg) " "))
+               ("Inputs" ,(sera:string-join (ospm:inputs pkg) " "))
+               ("Native inputs" ,(sera:string-join (ospm:native-inputs pkg) " "))
+               ("Propagated inputs" ,(sera:string-join (ospm:propagated-inputs pkg) " "))
                ("Licenses" ,(format nil "~{~a~^, ~}" (ospm:licenses pkg))))))
     (delete nil
             (mapcar (lambda (key-value)
