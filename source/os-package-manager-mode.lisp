@@ -86,22 +86,20 @@
               "")))
 
 (defmethod prompter:object-attributes ((pkg ospm:guix-package))
-  (let ((result (call-next-method pkg))
-        (map `(("Dependencies" nil)
-               ("Outputs" ,(sera:string-join (mapcar #'ospm:name (ospm:outputs pkg)) " "))
-               ("Supported systems" ,(sera:string-join (ospm:supported-systems pkg) " "))
-               ("Inputs" ,(sera:string-join (ospm:inputs pkg) " "))
-               ("Native inputs" ,(sera:string-join (ospm:native-inputs pkg) " "))
-               ("Propagated inputs" ,(sera:string-join (ospm:propagated-inputs pkg) " "))
-               ("Licenses" ,(format nil "~{~a~^, ~}" (ospm:licenses pkg))))))
-    (delete nil
-            (mapcar (lambda (key-value)
-                      (alex:if-let ((new-key-value (first (member (first key-value) map :test #'string= :key #'first))))
-                        (if (second new-key-value)
-                            new-key-value
-                            nil)
-                        key-value))
-                    result))))
+  ;; We could have called `call-next-method', then modify the result, but it's
+  ;; too costly for thousands of packages.
+  `(("Name" ,(ospm:name pkg))
+    ("Version" ,(ospm:version pkg))
+    ("Synopsis" ,(ospm:synopsis pkg))
+    ("Description" ,(ospm:description pkg))
+    ("Home page" ,(ospm:home-page pkg))
+    ("Location" ,(ospm:location pkg))
+    ("Outputs" ,(sera:string-join (mapcar #'ospm:name (ospm:outputs pkg)) " "))
+    ("Supported systems" ,(sera:string-join (ospm:supported-systems pkg) " "))
+    ("Inputs" ,(sera:string-join (ospm:inputs pkg) " "))
+    ("Native inputs" ,(sera:string-join (ospm:native-inputs pkg) " "))
+    ("Propagated inputs" ,(sera:string-join (ospm:propagated-inputs pkg) " "))
+    ("Licenses" ,(format nil "~{~a~^, ~}" (ospm:licenses pkg)))))
 
 (define-class os-package-source (prompter:source)
   ((prompter:name "Packages")
