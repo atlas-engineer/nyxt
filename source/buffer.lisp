@@ -928,7 +928,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
   (make-buffer-focus :url (url history-suggestion)))
 
 (defun new-nosave-buffer-load-from-history (history-suggestion)
-  "Load a URL in a new buffer (from history)."
+  "Load a URL in a new nosave buffer (from history)."
   (make-buffer-focus :url (url history-suggestion)))
 
 (define-class global-history-source (prompter:source)
