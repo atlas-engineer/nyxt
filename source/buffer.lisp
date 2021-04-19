@@ -904,14 +904,16 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
              (error (c)
                (log:error "In `buffer-load-hook': ~a" c)
                nil))))
-      (when new-url
-        (check-type new-url quri:uri)
-        (setf url new-url)
-        (if (string= (quri:uri-scheme new-url) "javascript")
-            ;; TODO: Can be a source of inefficiency due to an always-checked conditional.
-            ;; Move somewhere (`request-resource'?) where the impact of conditional will be weaker?
-            (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url)))
-            (ffi-buffer-load buffer url)))))
+    (when new-url
+      (check-type new-url quri:uri)
+      (setf url new-url)
+      (if (internal-buffer-p buffer)
+          (make-buffer-focus :url url)
+          (if (string= (quri:uri-scheme url) "javascript")
+              ;; TODO: Can be a source of inefficiency due to an always-checked conditional.
+              ;; Move somewhere (`request-resource'?) where the impact of conditional will be weaker?
+              (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url)))
+              (ffi-buffer-load buffer url))))))
 
 (defun new-buffer-load (url)
   "Load a URL in a new buffer."
