@@ -844,6 +844,19 @@ Warning: This behaviour may change in the future."
        (ffi-buffer-load new-buffer uri)
        (window-set-buffer (current-window) new-buffer)
        (gtk-object new-buffer))))
+  ;; Remove "download to disk" from the right click context menu because it
+  ;; bypasses request resource signal
+  (gobject:g-signal-connect
+   (gtk-object buffer) "context-menu"
+   (lambda (web-view context-menu event hit-test-result)
+     (declare (ignore web-view event hit-test-result))
+     (let ((length (webkit:webkit-context-menu-get-n-items context-menu)))
+       (dolist (i (alex:iota length))
+         (let ((item (webkit:webkit-context-menu-get-item-at-position context-menu i)))
+           (match (webkit:webkit-context-menu-item-get-stock-action item)
+             ((or :webkit-context-menu-action-download-link-to-disk)
+              (webkit:webkit-context-menu-remove context-menu item))))))
+     nil))
   buffer)
 
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
