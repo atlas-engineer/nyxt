@@ -151,7 +151,9 @@
     ;; The official Guix package should use `sbcl-*' inputs though.
     (native-inputs
      `(("prove" ,cl-prove)
-       ("sbcl" ,sbcl)))
+       ("sbcl" ,sbcl)
+       ;; Only for development, unneeded for the upstream Guix package:
+       ("cl-trivial-benchmark" ,cl-trivial-benchmark)))
     (inputs
      `(("alexandria" ,cl-alexandria)
        ("bordeaux-threads" ,cl-bordeaux-threads)
