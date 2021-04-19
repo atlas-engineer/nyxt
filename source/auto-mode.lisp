@@ -51,16 +51,14 @@ Package prefix is optional.")
 If the mode specifier is not known, it's omitted from the results."
   (delete nil (mapcar #'mode-invocation mode-list)))
 
-(defmethod rememberable-p ((mode-invocation mode-invocation))
-  (rememberable-p (apply #'make-instance (name mode-invocation)
-                         (arguments mode-invocation))))
-
-(declaim (ftype (function ((or (cons (or mode-invocation root-mode) *) null))
-                          (values (or (cons mode-invocation *) null) &optional))
+(declaim (ftype (function ((or (cons mode-invocation *) null))
+                          (or (cons mode-invocation *) null))
                 rememberable-of))
-(defun rememberable-of (modes)
+(defun rememberable-of (mode-invocations)
   "Filter MODES based on `rememberable-p'."
-  (mode-invocations (remove-if (complement #'rememberable-p) modes)))
+  (remove-if (complement #'rememberable-p) mode-invocations
+             :key #'(lambda (mode-invocation)
+                      (make-instance (name mode-invocation)))))
 
 (define-class auto-mode-rule ()
   ((test (error "Slot `test' should be set.")
@@ -99,14 +97,14 @@ If the mode specifier is not known, it's omitted from the results."
   (let ((rule (matching-auto-mode-rule url buffer)))
     (dolist (mode-invocation (set-difference
                                (included rule)
-                               (rememberable-of (modes buffer))
+                               (rememberable-of (mode-invocations (modes buffer)))
                                :test #'equals))
       (check-type mode-invocation mode-invocation)
       (enable-modes (list (name mode-invocation)) buffer (arguments mode-invocation)))
     (disable-modes (mapcar #'name
                            (if (exact-p rule)
                                (set-difference
-                                (rememberable-of (modes buffer))
+                                (rememberable-of (mode-invocations (modes buffer)))
                                 (included rule) :test #'equals)
                                (excluded rule)))
                    buffer)))
