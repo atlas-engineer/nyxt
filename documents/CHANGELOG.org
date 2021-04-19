@@ -11,15 +11,10 @@ Given a version number MAJOR.MINOR.PATCH, we increment:
 - PATCH when we make backwards-compatible bug fixes.
 
 ** TASK Upcoming
-*** Package manager
+*** Package / extension manager
 - There should be a package manager/repository where creators of
   packages can publish, and users can download
 - This technology will probably be built ontop of Quicklisp
-*** Per tab isolation
-- Add support for per-tab Proxy and Tor support
-*** Password manager
-- Add an integrated password manager
-
 *** Add online suggestions from search engines
 ** 2.0.0
 
