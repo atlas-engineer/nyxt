@@ -488,4 +488,4 @@
   :depends-on (nyxt/prompter prove)
   :components ((:file "libraries/prompter/test-package"))
   :perform (test-op (op c)
-                         (nyxt-run-test c "libraries/prompter/tests/")))
+                    (nyxt-run-test c "libraries/prompter/tests/")))
