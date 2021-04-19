@@ -929,7 +929,18 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
 
 (defun new-nosave-buffer-load-from-history (history-suggestion)
   "Load a URL in a new nosave buffer (from history)."
-  (make-buffer-focus :url (url history-suggestion)))
+  (make-buffer-focus :url (url history-suggestion) :nosave-buffer-p t))
+
+(defun buffer-load-from-bookmark (bookmark)
+  (buffer-load (url bookmark)))
+
+(defun new-buffer-load-from-bookmark (bookmark)
+  "Load a URL in a new buffer (from bookmark)."
+  (make-buffer-focus :url (url bookmark)))
+
+(defun new-nosave-buffer-load-from-bookmark (bookmark)
+  "Load a URL in a new nosave buffer (from bookmark)."
+  (make-buffer-focus :url (url bookmark) :nosave-buffer-p t))
 
 (define-class global-history-source (prompter:source)
   ((prompter:name "Global history")
@@ -964,8 +975,8 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
                                    :actions (list (make-unmapped-command buffer-load)
                                                   (make-unmapped-command new-buffer-load-from-history)))
                     (make-instance 'bookmark-source
-                                   ;; TODO: New buffer?
-                                   :multi-selection-p t)))))
+                                   :actions (list (make-unmapped-command buffer-load-from-bookmark)
+                                                  (make-unmapped-command new-buffer-load-from-bookmark)))))))
 
 (define-command set-url-new-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused buffer."
@@ -981,7 +992,9 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
                                    :name "New URL"
                                    :actions (list (make-unmapped-command new-buffer-load)))
                     (make-instance 'global-history-source
-                                   :actions (list (make-unmapped-command new-buffer-load-from-history)))))))
+                                   :actions (list (make-unmapped-command new-buffer-load-from-history)))
+                    (make-instance 'bookmark-source
+                                   :actions (list (make-unmapped-command new-buffer-load-from-bookmark)))))))
 
 (define-command set-url-nosave-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused nosave buffer."
@@ -995,7 +1008,9 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
                                                 (make-unmapped-command new-nosave-buffer-load)))
                   (make-instance 'global-history-source
                                  :actions (list (make-unmapped-command buffer-load)
-                                                (make-unmapped-command new-nosave-buffer-load-from-history))))))
+                                                (make-unmapped-command new-nosave-buffer-load-from-history)))
+                  (make-instance 'bookmark-source
+                                 :actions (list (make-unmapped-command new-nosave-buffer-load-from-bookmark))))))
 
 (defun reload-buffer (&optional (buffer (current-buffer)))
   "Reload a BUFFER or current-buffer if not provided."
