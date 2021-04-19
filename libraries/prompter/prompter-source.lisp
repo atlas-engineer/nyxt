@@ -10,6 +10,11 @@
 ;; they may be defined globally.  Conversely, `prompter' is mostly used
 ;; locally.
 
+;; TODO: Performance: plists are faster, especially when it comes to modifying
+;; existing attributes.
+;; TODO: Performance: Consider computing the attribute values only when active.
+;; Lazy evaluation would make it easy.
+
 (deftype must-match-choices ()
   `(member :always :ignore :confirm))
 
