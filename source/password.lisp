@@ -82,8 +82,8 @@ for which the `executable' slot is non-nil."
                              :prompt "Password file"
                              :sources (list (make-instance
                                              'file-source
-                                             :filter-preprocessor #'directory-or-kdbx-file))))))
-          :until (password:password-correct-p password-interface)
+                                             :filter-preprocessor #'directory-or-kdbx-file)))))))
+    (loop :until (password:password-correct-p password-interface)
           :do (setf (password::master-password password-interface)
                     (first (prompt
                             :prompt "Password"
