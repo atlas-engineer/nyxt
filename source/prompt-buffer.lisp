@@ -270,10 +270,10 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
        (ps:ps
         (setf (ps:chain document (get-element-by-id "suggestions") |innerHTML|)
               (ps:lisp
-               (str:join +newline+
-                         (loop for i from current-source-index to last-source-index
-                               for source = (nth i sources)
-                               collect (source->html source))))))))
+               (sera:string-join (loop for i from current-source-index to last-source-index
+                                       for source = (nth i sources)
+                                       collect (source->html source))
+                                 +newline+))))))
     (prompt-render-prompt prompt-buffer)))
 
 (defun erase-document (prompt-buffer)
