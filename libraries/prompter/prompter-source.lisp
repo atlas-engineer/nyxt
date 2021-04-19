@@ -95,9 +95,10 @@ Suggestions are made with the `suggestion-maker' slot from `source'."))
 (defmethod attributes-values ((attributes t))
   (mapcar #'attribute-value attributes))
 
-(defun format-attributes (attributes &optional downcasedp)
-  (funcall (if downcasedp #'string-downcase #'identity)
-           (str:join " " (mapcar #'princ-to-string (attributes-values attributes)))))
+(defun format-attributes (attributes)
+  "Performance bottleneck: This function is called as many times as they are
+suggestions."
+  (sera:string-join (mapcar #'princ-to-string (attributes-values attributes)) " "))
 
 (defmethod initialize-instance :after ((suggestion suggestion) &key source input)
   "Set SUGGESTION `match-data' if empty and if SOURCE and INPUT initargs are provided.
@@ -109,19 +110,20 @@ The `match-data' is downcased if INPUT is lower-case."
     (setf (attributes suggestion) (default-object-attributes (value suggestion))))
   (when (uiop:emptyp (match-data suggestion))
     (setf (match-data suggestion)
-          (format-attributes
-           (if source
-               (active-attributes suggestion :source source)
-               (attributes suggestion))
-           (if input
-               (str:downcasep input)
-               :downcasep)))))
+          (funcall
+           (if (and input (str:downcasep input))
+               #'string-downcase
+               #'identity)
+           (format-attributes
+            (if source
+                (active-attributes suggestion :source source)
+                (attributes suggestion)))))))
 
 (defmethod match-data ((suggestion suggestion))
   (alex:if-let ((value (slot-value suggestion 'match-data)))
     value
     (setf (match-data suggestion)
-          (format-attributes (attributes suggestion) :downcasedp))))
+          (string-downcase (format-attributes (attributes suggestion))))))
 
 (export-always 'make-suggestion)
 (defmethod make-suggestion ((value t) source &optional input)
