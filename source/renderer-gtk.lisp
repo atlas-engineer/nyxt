@@ -854,7 +854,7 @@ Warning: This behaviour may change in the future."
        (dolist (i (alex:iota length))
          (let ((item (webkit:webkit-context-menu-get-item-at-position context-menu i)))
            (match (webkit:webkit-context-menu-item-get-stock-action item)
-             ((or :webkit-context-menu-action-download-link-to-disk)
+             (:webkit-context-menu-action-download-link-to-disk
               (webkit:webkit-context-menu-remove context-menu item))))))
      nil))
   buffer)
