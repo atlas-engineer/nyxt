@@ -545,6 +545,17 @@ If SIZE is NIL, capicity is infinite."
      (make-instance 'calispel:channel
                     :buffer (make-instance 'jpl-queues:bounded-fifo-queue :capacity size)))))
 
+(defun copy-object (object &rest slot-overrides)
+  (let ((class-sym (class-name (class-of object))))
+    (apply #'make-instance class-sym
+           (append
+            slot-overrides
+            (alexandria:mappend
+             (lambda (slot)
+               (list (intern (symbol-name slot) "KEYWORD")
+                     (slot-value object slot)))
+             (mopu:slot-names class-sym))))))
+
 (defun update (source input new-ready-channel) ; TODO: Store `input' in the source?
   "Update SOURCE to narrow down the list of `suggestions' according to INPUT.
 If a previous suggestion computation was not finished, it is forcefully terminated.
@@ -621,12 +632,7 @@ feedback to the user while the list of suggestions is being computed."
               (preprocess
                ;; We copy the list of initial-suggestions so that the
                ;; preprocessor cannot modify them.
-               (mapcar (lambda (suggestion)
-                         (funcall (suggestion-maker source)
-                          (value suggestion)
-                          source
-                          input))
-                       (initial-suggestions source))))
+               (mapcar #'copy-object (initial-suggestions source))))
              (postprocess!)
              (bt:with-lock-held ((wrote-to-ready-channel-lock source))
                (unless (wrote-to-ready-channel-p source)
