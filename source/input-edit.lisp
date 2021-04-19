@@ -119,7 +119,8 @@
   "Mode for editing input areas in HTML. Overrides many of the
 bindings in other modes, so you will have to disable/enable it as
 necessary."
-  ((keymap-scheme
+  ((rememberable-p nil)
+   (keymap-scheme
     (define-scheme "input-edit-mode"
       scheme:cua
       (list)
