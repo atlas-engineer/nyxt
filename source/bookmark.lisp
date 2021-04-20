@@ -43,7 +43,7 @@ appended to the URL."))
   `(("URL" ,(quri:render-uri (url entry)))
     ("Title" ,(title entry))
     ("Tags" ,(format nil "~{~a ~}" (tags entry)))
-    ("Date" ,(date entry))
+    ("Date" ,(princ-to-string (date entry)))
     ("Shortcut" ,(shortcut entry))
     ("Search URL" ,(search-url entry))))
 

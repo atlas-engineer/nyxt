@@ -221,12 +221,12 @@ If STEPS is negative, go to next pages instead."
      'prompter:suggestion
      :value action
      ;; TODO: Include bindings in attributes.
-     :attributes `(:name ,(symbol-name (typecase action
-                                         (command (name action))
-                                         (t action)))
-                   :documentation ,(first-line (typecase action
-                                                 (command (nyxt::docstring action))
-                                                 (t (documentation action 'function)))))
+     :attributes `(("Name" ,(symbol-name (typecase action
+                                      (command (name action))
+                                      (t action))))
+                   ("Documentation" ,(first-line (typecase action
+                                                   (command (nyxt::docstring action))
+                                                   (t (documentation action 'function))))))
      :source source
      :input input)))
 
