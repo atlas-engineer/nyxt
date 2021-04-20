@@ -40,13 +40,13 @@
   "Execute BODY in a context in which `current-buffer' returns BUFFER."
   ;; We `unwind-protect' to restore the right buffer when nesting this macro.
   `(let ((old-%buffer %buffer))
-     (if (buffer-p buffer)
+     (if (buffer-p ,buffer)
          (unwind-protect
               (let ((%buffer ,buffer))
                 ,@body)
            (setf %buffer old-%buffer))
          ;; TODO: Raise error instead?
-         (log:warn "Expected buffer, got ~a"))))
+         (log:warn "Expected buffer, got ~a" ,buffer))))
 
 (defun user-class-name (class-sym)
   (intern (str:concat "USER-" (string class-sym))
