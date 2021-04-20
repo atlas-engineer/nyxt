@@ -257,7 +257,6 @@ and to index the top of the page.")
 (define-class history-backwards-source (prompter:source)
   ((prompter:name "Parent URLs")
    (buffer :initarg :buffer :accessor buffer :initform nil)
-   (prompter:must-match-p t)
    (prompter:constructor
     (lambda (source)
       (with-data-unsafe (history (history-path (buffer source)))
@@ -287,7 +286,6 @@ and to index the top of the page.")
 (define-class direct-history-forwards-source (prompter:source)
   ((prompter:name "Direct child URLs")
    (buffer :initarg :buffer :accessor buffer :initform nil)
-   (prompter:must-match-p t)
    (prompter:constructor
     (lambda (source)
       (with-data-unsafe (history (history-path (buffer source)))
@@ -323,7 +321,6 @@ Otherwise go forward to the only child."
 (define-class history-forwards-source (prompter:source)
   ((prompter:name "Child URLs")
    (buffer :initarg :buffer :accessor buffer :initform nil)
-   (prompter:must-match-p t)
    (prompter:constructor
     (lambda (source)
       (with-data-unsafe (history (history-path (buffer source)))
@@ -348,7 +345,6 @@ Otherwise go forward to the only child."
 (define-class all-history-forwards-source (prompter:source)
   ((prompter:name "Child URLs")
    (buffer :initarg :buffer :accessor buffer :initform nil)
-   (prompter:must-match-p t)
    (prompter:constructor
     (lambda (source)
       (with-data-unsafe (history (history-path (buffer source)))
@@ -372,7 +368,6 @@ Otherwise go forward to the only child."
 (define-class history-all-source (prompter:source)
   ((prompter:name "History URLs")
    (buffer :initarg :buffer :accessor buffer :initform nil)
-   (prompter:must-match-p t)
    (prompter:constructor
     (lambda (source)
       (with-data-unsafe (history (history-path (buffer source)))
@@ -486,7 +481,6 @@ Otherwise go forward to the only child."
 (define-class ring-source (prompter:source)
   ((prompter:name "Clipboard ring")
    (ring :initarg :ring :accessor ring :initform nil)
-   (prompter:must-match-p t)
    (prompter:constructor
     (lambda (source)
       (containers:container->list (ring source))))
@@ -510,7 +504,6 @@ Otherwise go forward to the only child."
 
 (define-class autofill-source (prompter:source)
   ((prompter:name "Autofills")
-   (prompter:must-match-p t)
    (prompter:constructor (autofills *browser*))
    (prompter:actions
     (list (make-command autofill* (autofills)

@@ -12,7 +12,6 @@
 
 (define-class recent-buffer-source (prompter:source)
   ((prompter:name "Deleted buffers")
-   (prompter:must-match-p t)
    (prompter:multi-selection-p t)
    (prompter:constructor
     (containers:container->list (recent-buffers *browser*)))))

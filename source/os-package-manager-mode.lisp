@@ -103,24 +103,20 @@
 
 (define-class os-package-source (prompter:source)
   ((prompter:name "Packages")
-   (prompter:must-match-p t)
    (prompter:multi-selection-p t)
    (prompter:constructor (ospm:list-packages))
    (prompter:active-attributes-keys '("Name" "Version" "Synopsis"))))
 
 (define-class os-manifest-source (prompter:source)
   ((prompter:name "Manifests")
-   (prompter:must-match-p t)
    (prompter:constructor (mapcar #'namestring (ospm:list-manifests)))))
 
 (define-class os-package-output-source (prompter:source)
   ((prompter:name "Package Outputs")
-   (prompter:must-match-p t)
    (prompter:constructor (ospm:list-package-outputs))))
 
 (define-class os-installed-package-source (prompter:source)
   ((prompter:name "Installed Packages")
-   (prompter:must-match-p t)
    (profile)
    (prompter:constructor
     (lambda (source)
@@ -129,7 +125,6 @@
 
 (define-class os-profile-source (prompter:source)
   ((prompter:name "Profiles")
-   (prompter:must-match-p t)
    (include-manager-p)
    (prompter:constructor
     (lambda (source) (ospm:list-profiles
@@ -138,7 +133,6 @@
 
 (define-class os-generation-source (prompter:source)
   ((prompter:name "Packages")
-   (prompter:must-match-p t)
    (profile)
    (prompter:constructor
     (lambda (source) 

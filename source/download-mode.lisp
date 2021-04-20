@@ -171,8 +171,7 @@ download."
   (download (current-buffer) (url (current-buffer))))
 
 (define-class downloaded-files-source (file-source)
-  ((prompter:must-match-p t)
-   (prompter:constructor (mapcar #'destination-path (downloads *browser*)))
+  ((prompter:constructor (mapcar #'destination-path (downloads *browser*)))
    ;; TODO: Extract to `file-source'?
    ;; TODO: Maybe extract `open-file-function' to `browser'?
    (prompter:actions

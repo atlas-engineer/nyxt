@@ -26,7 +26,6 @@
 
 (define-class quicklisp-source (prompter:source)
   ((prompter:name "Quicklisp systems")
-   (prompter:must-match-p t)
    (prompter:constructor (mapcar #'ql-dist:short-description (ql:system-list)))
    (prompter:actions (list (make-command quickload* (systems)
                              (ql:quickload (first systems)))))))

@@ -46,7 +46,6 @@
 (define-class heading-source (prompter:source)
   ((prompter:name "Headings")
    (buffer :accessor buffer :initarg :buffer)
-   (prompter:must-match-p t)
    (prompter:follow-p t)
    (prompter:persistent-action #'scroll-page-to-heading)
    (prompter:constructor (lambda (source)

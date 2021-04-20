@@ -129,7 +129,6 @@ The handlers take the window as argument."))
 
 (define-class window-source (prompter:source)
   ((prompter:name "Windows")
-   (prompter:must-match-p t)
    (prompter:multi-selection-p t)
    (prompter:constructor (window-list))
    (prompter:actions (list (make-mapped-command window-delete)))))

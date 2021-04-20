@@ -185,7 +185,6 @@ If STEPS is negative, go to next pages instead."
 (define-class prompt-buffer-command-source (prompter:source)
   ((prompter:name "List of prompt buffer commands")
    (parent-prompt-buffer (error "Parent prompt buffer required"))
-   (prompter:must-match-p t)
    (prompter:suggestion-maker 'make-prompt-buffer-command-suggestion)
    (prompter:constructor (nyxt::get-commands (current-prompt-buffer))))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))

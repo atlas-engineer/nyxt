@@ -382,7 +382,6 @@ you use this macro! For a modification-safe macro, see `with-data-access'."
 
 (define-class gpg-key-source (prompter:source)
   ((prompter:name "GPG Private Keys")
-   (prompter:must-match-p nil)
    (prompter:constructor (gpg-private-keys))))
 
 (defmethod prompter:object-attributes ((gpg-key gpg-key))
