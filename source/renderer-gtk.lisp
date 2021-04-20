@@ -118,27 +118,20 @@ not return."
 
 (defmacro define-ffi-method (name args &body body)
   "Make a window."
-  (let* ((docstring (when (stringp (first body))
-                      (prog1
-                          (list (first body))
-                        (setf body (rest body)))))
-         (declares (when (and (listp (first body))
-                              (eq 'declare (first (first body))))
-                     (prog1
-                         (first body)
-                       (setf body (rest body))))))
+  (multiple-value-bind (forms declares docstring)
+      (alex:parse-body body :documentation t)
     `(defmethod ,name ,args
-       ,@docstring
-       ,declares
+       ,@(sera:unsplice docstring)
+       ,@declares
        (if (renderer-thread-p)
            (progn
-             ,@body)
+             ,@forms)
            (let ((channel (make-channel 1)))
              (within-gtk-thread
                (calispel:!
                 channel
                 (progn
-                  ,@body)))
+                  ,@forms)))
              (calispel:? channel))))))
 
 (defmethod ffi-initialize ((browser gtk-browser) urls startup-timestamp)

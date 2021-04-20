@@ -73,9 +73,7 @@ The first string in the body is used to fill the `help' slot.
 
 Without BODY, NAME must be a function symbol and the command wraps over it
 against ARGLIST, if specified. "
-  (let ((documentation (if (stringp (first body))
-                           (first body)
-                           "")))
+  (let ((documentation (nth-value 2 (alex:parse-body body :documentation t))))
     (alex:with-gensyms (fn sexp)
       `(let ((,fn nil)
              (,sexp nil))
@@ -125,75 +123,68 @@ Example:
 \(define-command play-video-in-current-page (&optional (buffer (current-buffer)))
   \"Play video in the currently open buffer.\"
   (uiop:run-program (list \"mpv\" (object-string (url buffer)))))"
-  (let ((documentation (if (stringp (first body))
-                           (prog1
-                               (list (first body))
-                             (setf body (rest body)))
-                           (warn (make-condition
-                                  'command-documentation-style-warning
-                                  :name name))))
-        (declares (when (and (listp (first body))
-                             (eq 'declare (first (first body))))
-                    (prog1
-                        (first body)
-                      (setf body (rest body)))))
-        (before-hook (intern (str:concat (symbol-name name) "-BEFORE-HOOK")))
-        (after-hook (intern (str:concat (symbol-name name) "-AFTER-HOOK"))))
-    `(progn
-       (export-always ',before-hook)
-       (defparameter ,before-hook (hooks:make-hook-void))
-       (export-always ',after-hook)
-       (defparameter ,after-hook (hooks:make-hook-void))
-       (export-always ',name (symbol-package ',name))
-       ;; We define the function at compile-time so that macros from the same
-       ;; file can find the symbol function.
-       (eval-when (:compile-toplevel :load-toplevel :execute)
-         ;; We use defun to define the command instead of storing a lambda because we want
-         ;; to be able to call the foo command from Lisp with (FOO ...).
-         (defun ,name ,arglist
-           ,@documentation
-           ,declares
-           (handler-case
-               (progn
-                 (hooks:run-hook ,before-hook)
-                 ;; (log:debug "Calling command ~a." ',name)
-                 ;; TODO: How can we print the arglist as well?
-                 ;; (log:debug "Calling command (~a ~a)." ',name (list ,@arglist))
-                 (prog1
-                     (progn
-                       ,@body)
-                   (hooks:run-hook ,after-hook)))
-             (nyxt-condition (c)
-               (format t "~s" c)))))
-       ;; Overwrite previous command:
-       (setf *command-list* (delete ',name *command-list* :key #'name))
-       (push (make-instance 'command
-                            :name ',name
-                            :docstring ,@documentation
-                            :fn (symbol-function ',name)
-                            :sexp '(define-command (,@arglist) ,@body))
-             *command-list*))))
+  (multiple-value-bind (forms declares documentation)
+      (alex:parse-body body :documentation t)
+    (unless documentation
+      (warn (make-condition 'command-documentation-style-warning
+                            :name name)))
+    (let ((before-hook (intern (str:concat (symbol-name name) "-BEFORE-HOOK")))
+          (after-hook (intern (str:concat (symbol-name name) "-AFTER-HOOK"))))
+      `(progn
+         (export-always ',before-hook)
+         (defparameter ,before-hook (hooks:make-hook-void))
+         (export-always ',after-hook)
+         (defparameter ,after-hook (hooks:make-hook-void))
+         (export-always ',name (symbol-package ',name))
+         ;; We define the function at compile-time so that macros from the same
+         ;; file can find the symbol function.
+         (eval-when (:compile-toplevel :load-toplevel :execute)
+           ;; We use defun to define the command instead of storing a lambda because we want
+           ;; to be able to call the foo command from Lisp with (FOO ...).
+           (defun ,name ,arglist
+             ,@(sera:unsplice documentation)
+             ,@declares
+             (handler-case
+                 (progn
+                   (hooks:run-hook ,before-hook)
+                   ;; (log:debug "Calling command ~a." ',name)
+                   ;; TODO: How can we print the arglist as well?
+                   ;; (log:debug "Calling command (~a ~a)." ',name (list ,@arglist))
+                   (prog1
+                       (progn
+                         ,@forms)
+                     (hooks:run-hook ,after-hook)))
+               (nyxt-condition (c)
+                 (format t "~s" c)))))
+         ;; Overwrite previous command:
+         (setf *command-list* (delete ',name *command-list* :key #'name))
+         (push (make-instance 'command
+                              :name ',name
+                              :docstring ,documentation
+                              :fn (symbol-function ',name)
+                              :sexp '(define-command (,@arglist) ,@body))
+               *command-list*)))))
 
 ;; TODO: Update define-deprecated-command
 (defmacro define-deprecated-command (name (&rest arglist) &body body)
   "Define NAME, a deprecated command.
 This is just like a command.  It's recommended to explain why the function is
 deprecated and by what in the docstring."
-  (let ((documentation (if (stringp (first body))
-                           (first body)
-                           (warn (make-condition
-                                  'command-documentation-style-warning
-                                  :name name))))
-        (body (if (stringp (first body))
-                  (rest body)
-                  body)))
+  (multiple-value-bind (forms declarations documentation)
+      (alex:parse-body body :documentation t)
+
+    (unless documentation
+      (warn (make-condition
+             'command-documentation-style-warning
+             :name name)))
     `(progn
        (define-command ,name ,arglist
-         ,documentation
+         ,@(sera:unsplice documentation)
+         ,@declarations
          (progn
            ;; TODO: Implement `warn'.
            (echo-warning "~a is deprecated." ',name)
-           ,@body)))))
+           ,@forms)))))
 
 (defun nyxt-packages ()                 ; TODO: Export a customizable *nyxt-packages* instead?
   "Return all package designators that start with 'nyxt' plus Nyxt own libraries."
