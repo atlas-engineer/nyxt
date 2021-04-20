@@ -246,13 +246,13 @@ CLASS can be a class symbol or a list of class symbols, as with
           (eval `(define-configuration ,class
                    ((,slot (read-from-string ,accepted-input)))))))))
 
-(defun append-configuration (form)
+(defun append-configuration (form &key (format-directive "~&~a~%"))
   (with-data-file (file *auto-config-file-path*
                         :direction :output
                         :if-does-not-exist :create
                         :if-exists :append)
     (log:info "Appending configuration form ~a to ~s." form (expand-path *auto-config-file-path*))
-    (format file "~&~a~%" form)))
+    (format file format-directive form)))
 
 (define-command common-settings ()
   "Configure a set of frequently used settings."
@@ -295,7 +295,16 @@ CLASS can be a class symbol or a list of class symbols, as with
      (:h2 "Default zoom ratio")
      (:a :class "button"
          :href (lisp-url `(nyxt::configure-slot 'current-zoom-ratio 'buffer))
-         "Set default zoom ratio"))))
+         "Set default zoom ratio")
+     (:h2 "Disable compositing")
+     (:p "On some systems, compositing can cause issues with rendering. If you
+     are experiencing blank web-views, you can try to disable compositing. After
+     disabling compositing, you will need to restart Nyxt.")
+     (:a :class "button"
+         :href (lisp-url `(nyxt::append-configuration
+                           '(setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1")
+                           :format-directive "~&~S~%"))
+         "Disable compositing"))))
 
 (define-command describe-bindings ()
   "Show a buffer with the list of all known bindings for the current buffer."
