@@ -38,7 +38,7 @@ The total number of visit for a given URL is (+ explicit-visits implicit-visits)
   (format nil "~a  ~a" (object-display (url entry)) (title entry)))
 
 (defmethod prompter:object-attributes ((entry history-entry))
-  `(("URL" ,(object-string (url entry))) ; TODO: Use object-properties instead?
+  `(("URL" ,(object-display (url entry)))
     ("Title" ,(title entry))))
 
 (export-always 'equals)

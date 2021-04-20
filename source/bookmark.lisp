@@ -40,7 +40,7 @@ appended to the URL."))
 
 (defmethod prompter:object-attributes ((entry bookmark-entry))
   ;; TODO: Add annocation slots?
-  `(("URL" ,(quri:render-uri (url entry)))
+  `(("URL" ,(object-display (url entry)))
     ("Title" ,(title entry))
     ("Tags" ,(format nil "~{~a ~}" (tags entry)))
     ("Date" ,(princ-to-string (date entry)))

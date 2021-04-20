@@ -535,7 +535,7 @@ BUFFER's modes."
   (format nil "~a  ~a" (title buffer) (object-display (url buffer))))
 
 (defmethod prompter:object-attributes ((buffer buffer))
-  `(("URL" ,(url buffer))
+  `(("URL" ,(object-display (url buffer)))
     ("Title" ,(title buffer))))
 
 (define-command make-buffer (&key (title "") modes (url "") parent-buffer (load-url-p t))
