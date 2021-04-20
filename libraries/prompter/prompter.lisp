@@ -388,13 +388,6 @@ instead."
       (calispel:! (result-channel prompter) action-result))
     (calispel:! (interrupt-channel prompter) t)))
 
-(export-always 'return-input)
-(defun return-input (prompter)
-  "Send input to PROMPTER's `result-channel'."
-  (setf (returned-p prompter) t)
-  (add-input-to-history prompter)
-  (calispel:! (result-channel prompter) (input prompter)))
-
 (export-always 'toggle-follow)
 (defun toggle-follow (prompter &optional (source (selected-source prompter)))
   "Toggle `follow-p' in SOURCE."
