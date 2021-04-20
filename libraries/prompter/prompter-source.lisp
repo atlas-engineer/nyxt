@@ -34,10 +34,7 @@
 (defmethod object-attributes ((object t))
   "Return an alist of non-dotted pairs (ATTRIBUTE-KEY ATTRIBUTE-VALUE) for OBJECT.
 Attributes are meant to describe the OBJECT structurally.
-- Attribute-keys are strings.
-- Attribute-values can be instantiated from any object type, they are
-automatically passed to `princ-to-string' when the `suggestion' object is
-initialized.
+Both attribute-keys and attribute-values are strings.
 
 For structure and class instances, the alist is made of the exported slots: the
 keys are the sentence-cased slot names and the values the slot values passed to
@@ -82,14 +79,18 @@ The other slots are optional.
 
 Suggestions are made with the `suggestion-maker' slot from `source'."))
 
-(defun non-dotted-alist-p (object)
+(defun non-dotted-alist-p (object &optional value-type)
+  "If VALUE-TYPE is non-nil, check if all values are of the specified type."
   (and (listp object)
        (every #'listp object)
        (every #'listp (mapcar #'rest object))
-       (every (sera:eqs 2) (mapcar #'length object))))
+       (every (sera:eqs 2) (mapcar #'length object))
+       (or (not value-type)
+           (every (lambda (e) (typep (first e) value-type))
+                  (mapcar #'rest object)))))
 
 (defun object-attributes-p (object)
-  (non-dotted-alist-p object))
+  (non-dotted-alist-p object 'string))
 
 (defmethod attribute-key ((attribute t))
   (first attribute))
@@ -103,7 +104,7 @@ Suggestions are made with the `suggestion-maker' slot from `source'."))
 (defun format-attributes (attributes)
   "Performance bottleneck: This function is called as many times as they are
 suggestions."
-  (sera:string-join (mapcar #'princ-to-string (attributes-values attributes)) " "))
+  (sera:string-join (attributes-values attributes) " "))
 
 (defmethod initialize-instance :after ((suggestion suggestion) &key source input)
   "Set SUGGESTION `match-data' if empty and if SOURCE and INPUT initargs are provided.
