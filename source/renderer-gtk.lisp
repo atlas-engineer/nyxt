@@ -70,7 +70,9 @@ data-manager will store the data separately for each buffer.")
 
 (defmethod web-context ((browser gtk-browser))
   (or (slot-value *browser* 'web-context)
-      (setf (slot-value *browser* 'web-context) (make-instance 'webkit:webkit-web-context))))
+      (let ((context (make-instance 'webkit:webkit-web-context)))
+        (webkit:webkit-web-context-set-sandbox-enabled context t)
+        (setf (slot-value *browser* 'web-context) context))))
 
 (defvar gtk-running-p nil
   "Non-nil if the GTK main loop is running.
