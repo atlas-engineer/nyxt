@@ -397,10 +397,9 @@ you use this macro! For a modification-safe macro, see `with-data-access'."
 As second value the email.
 As third value the name."
   (if (uiop:file-exists-p file)
-      (let* ((output (str:split +newline+
-                                (with-output-to-string (s)
-                                  (uiop:run-program (list *gpg-program* "--decrypt" file)
-                                                    :output nil :error-output s))))
+      (let* ((output (sera:lines (with-output-to-string (s)
+                                   (uiop:run-program (list *gpg-program* "--decrypt" file)
+                                                     :output nil :error-output s))))
              (first-line-tokens (str:split " " (first output)))
              (key (let ((key-string (second (member "ID" first-line-tokens :test #'string=))))
                     (if (str:ends-with? "," key-string)

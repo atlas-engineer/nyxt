@@ -32,15 +32,13 @@
             do (setf bindings (keymap:binding-keys (name command) scheme-keymap))
           when (not (null bindings))
             return bindings)
-    (flet ((first-line (string)
-             (first (str:split +newline+ string))))
-      `(("Name" ,(string-downcase (name command)))
-        ("Bindings" ,(format nil "~{~a~^, ~}" bindings))
-        ("Docstring" ,(first-line (nyxt::docstring command)))
-        ("Mode" ,(let ((package-name (str:downcase (uiop:symbol-package-name (name command)))))
-                   (if (sera:in package-name "nyxt" "nyxt-user")
-                       ""
-                       (str:replace-first "nyxt/" "" package-name))))))))
+    `(("Name" ,(string-downcase (name command)))
+      ("Bindings" ,(format nil "~{~a~^, ~}" bindings))
+      ("Docstring" ,(first (sera::lines (nyxt::docstring command))))
+      ("Mode" ,(let ((package-name (str:downcase (uiop:symbol-package-name (name command)))))
+                 (if (sera:in package-name "nyxt" "nyxt-user")
+                     ""
+                     (str:replace-first "nyxt/" "" package-name)))))))
 
 (defmethod prompter:object-attributes ((command command))
   (command-properties command))

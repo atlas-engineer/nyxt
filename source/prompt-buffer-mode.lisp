@@ -215,20 +215,19 @@ If STEPS is negative, go to next pages instead."
 ;; TODO: Should actions be commands?  For now, they can be either commands or symbols.
 (defun make-action-suggestion (action source &optional input)
   "Return a `suggestion' wrapping around ACTION."
-  (flet ((first-line (string)
-           (first (str:split +newline+ string))))
-    (make-instance
-     'prompter:suggestion
-     :value action
-     ;; TODO: Include bindings in attributes.
-     :attributes `(("Name" ,(symbol-name (typecase action
-                                      (command (name action))
-                                      (t action))))
-                   ("Documentation" ,(first-line (typecase action
-                                                   (command (nyxt::docstring action))
-                                                   (t (documentation action 'function))))))
-     :source source
-     :input input)))
+  (make-instance
+   'prompter:suggestion
+   :value action
+   ;; TODO: Include bindings in attributes.
+   :attributes `(("Name" ,(symbol-name (typecase action
+                                         (command (name action))
+                                         (t action))))
+                 ("Documentation" ,(first (sera:lines
+                                           (typecase action
+                                             (command (nyxt::docstring action))
+                                             (t (documentation action 'function)))))))
+   :source source
+   :input input))
 
 (define-class action-source (prompter:source)
   ((prompter:name "List of actions")
