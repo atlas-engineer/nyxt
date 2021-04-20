@@ -856,7 +856,9 @@ Return owner, or nil if there is no owner corresponding to OWNER-IDENTIFIER."
     (remhash owner-id (owners history))
     (when (equal owner-id (current-owner-id history))
       (setf (slot-value history 'current-owner-id)
-            (first-hash-table-key (owners history))))
+            (or (first-hash-table-key (owners history))
+                (progn (add-owner history +default-owner+)
+                       +default-owner+))))
     (disown-all history owner)
     owner))
 
