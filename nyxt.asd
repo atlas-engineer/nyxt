@@ -160,7 +160,8 @@
                          (test-op "nyxt/history-tree/tests")
                          (test-op "nyxt/keymap/tests")
                          (test-op "nyxt/class-star/tests")
-                         (test-op "nyxt/ospm/tests"))))
+                         (test-op "nyxt/ospm/tests")
+                         (test-op "nyxt/prompter/tests"))))
 
 (defun nyxt-run-test (c path &key network-needed-p)
   (and (or (not network-needed-p)
