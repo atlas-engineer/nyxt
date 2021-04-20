@@ -266,6 +266,10 @@ This function can be used on browser-less globals like `*init-file-path*'."
            ("" nil)
            (m (uiop:native-namestring m))))))
 
+(defun parent (data-path)
+  (alex:when-let ((path (expand-path data-path)))
+    (uiop:pathname-directory-pathname path)))
+
 ;; TODO: create subclasses for history, bookmark, auto-mode data to ensure typing?
 (define-class user-data ()
   ((data nil

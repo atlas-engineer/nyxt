@@ -417,16 +417,14 @@ We keep this variable as a means to import the old format to the new one.")
                nil)))))))
 
 (defun histories-list (&optional (buffer (current-buffer)))
-  (let* ((path (expand-path (history-path buffer)))
-         (dir (when path (uiop:pathname-directory-pathname path))))
-    (when dir
-      (mapcar #'pathname-name
-              (remove-if
-               #'(lambda (pathname)
-                   (let ((type (pathname-type pathname)))
-                     (or (not (stringp type))
-                         (not (string-equal "lisp" type)))))
-               (uiop:directory-files dir))))))
+  (alex:when-let ((dir (parent (history-path buffer))))
+    (mapcar #'pathname-name
+            (remove-if
+             #'(lambda (pathname)
+                 (let ((type (pathname-type pathname)))
+                   (or (not (stringp type))
+                       (not (string-equal "lisp" type)))))
+             (uiop:directory-files dir)))))
 
 (define-class history-name-source (prompter:source)
   ((prompter:name "Histories")
@@ -442,7 +440,7 @@ Useful for session snapshots, as `restore-history-by-name' will restore opened b
                                   :sources (list (make-instance 'prompter:raw-source)
                                                  (make-instance 'history-name-source)))))
                     (path (make-instance 'history-data-path
-                                         :dirname (dirname (history-path (current-buffer)))
+                                         :dirname (parent (history-path (current-buffer)))
                                          :basename name)))
       (setf (get-data path) history)
       (store (data-profile (current-buffer)) path))))
@@ -457,7 +455,7 @@ If you want to save the current history file beforehand, call
                                 :prompt "The name of the history to restore"
                                 :sources (list (make-instance 'history-name-source)))))
                   (path (make-instance 'history-data-path
-                                       :dirname (dirname (history-path (current-buffer)))
+                                       :dirname (parent (history-path (current-buffer)))
                                        :basename name)))
     (let ((old-buffers (buffer-list)))
       (setf (get-data path) (make-history-tree))
