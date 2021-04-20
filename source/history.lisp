@@ -351,16 +351,20 @@ We keep this variable as a means to import the old format to the new one.")
                                 (gethash (htree:creator-id owner) old-id->new-id)))
                         (htree:owners history))
                ;; Current owner can be outdated.
-               (sera:and-let* ((new-id (gethash (htree:current-owner-id history) old-id->new-id)))
+               (alex:when-let ((new-id (gethash (htree:current-owner-id history) old-id->new-id)))
                  (when (htree:owner history new-id)
                    (htree:set-current-owner history new-id)))
-               (setf (htree:owners history) new-owners))
+               (setf (htree:owners history) new-owners)
+               ;; Ensure that current owner is set to one of the new owners:
+               (unless (htree:owner history (htree:current-owner-id history))
+                 (htree:set-current-owner history (htree::fallback-owner history))))
              (alex:when-let ((latest-id (first
                                          (first
                                           (sort (alex:hash-table-alist (htree:owners history))
                                                 #'local-time:timestamp>
                                                 :key (alex:compose #'htree:last-access #'rest))))))
-               (switch-buffer :id latest-id)))
+               (unless (equal latest-id htree:+default-owner+)
+                 (switch-buffer :id latest-id))))
 
            (restore-history-tree (history)
              (echo "Loading history of ~a URLs from ~s."
