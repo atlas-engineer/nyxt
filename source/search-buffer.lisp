@@ -148,7 +148,6 @@
    (buffer (current-buffer))
    (minimum-search-length 3)
    (prompter:name "Search buffer")
-   (prompter:must-match-p nil)
    (prompter:follow-p t)
    (prompter:filter nil)
    (prompter:filter-preprocessor

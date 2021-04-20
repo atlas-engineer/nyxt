@@ -163,7 +163,6 @@ lot."
 (define-class history-disowned-source (prompter:source)
   ((prompter:name "Disowned History")
    (buffer :accessor buffer :initarg :buffer)
-   (prompter:must-match-p t)
    (prompter:multi-selection-p t)
    (prompter:constructor
     (lambda (source)
@@ -434,7 +433,6 @@ We keep this variable as a means to import the old format to the new one.")
 
 (define-class history-name-source (prompter:source)
   ((prompter:name "Histories")
-   (prompter:must-match-p t)
    (prompter:constructor (histories-list))))
 
 (define-command store-history-by-name ()

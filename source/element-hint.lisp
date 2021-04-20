@@ -172,7 +172,6 @@ identifier for every hinted element."
 
 (define-class hint-source (prompter:source)
   ((prompter:name "Hints")
-   (prompter:must-match-p t)
    (prompter:follow-p t)
    (prompter:persistent-action (lambda (suggestion)
                                  (highlight-selected-hint :link-hint suggestion)))))

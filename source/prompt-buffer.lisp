@@ -136,11 +136,6 @@ See `prompt' for how to invoke prompts.")))
 
 (defmethod initialize-instance :after ((prompt-buffer prompt-buffer) &key)
   (hooks:run-hook (prompt-buffer-make-hook *browser*) prompt-buffer)
-  ;; We don't want to show the input in the suggestion list when invisible.
-  (when (invisible-input-p prompt-buffer)
-    (dolist (source (prompter:sources prompt-buffer))
-      ;; This way the prompt-buffer won't display the input as a suggestion.
-      (setf (prompter:must-match-p source) t)))
   (initialize-modes prompt-buffer))
 
 (export-always 'current-source)

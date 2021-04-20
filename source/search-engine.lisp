@@ -65,7 +65,6 @@ bookmarks."
 
 (define-class search-engine-source (prompter:source)
   ((prompter:name "Search Engines")
-   (prompter:must-match-p t)
    (prompter:constructor (search-engines (current-buffer)))))
 
 (define-command search-selection ()

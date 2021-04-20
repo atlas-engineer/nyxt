@@ -5,25 +5,21 @@
 
 (define-class function-source (prompter:source)
   ((prompter:name "Functions")
-   (prompter:must-match-p t)
    (prompter:constructor (package-functions))
    (prompter:actions (list (make-unmapped-command describe-function)))))
 
 (define-class class-source (prompter:source)
   ((prompter:name "Classes")
-   (prompter:must-match-p t)
    (prompter:constructor (package-classes))
    (prompter:actions (list (make-unmapped-command describe-class)))))
 
 (define-class slot-source (prompter:source)
   ((prompter:name "Slots")
-   (prompter:must-match-p t)
    (prompter:constructor (package-slots))
    (prompter:actions (list (make-unmapped-command describe-slot)))))
 
 (define-class variable-source (prompter:source)
   ((prompter:name "Variables")
-   (prompter:must-match-p t)
    (prompter:constructor (package-variables))
    (prompter:actions (list (make-unmapped-command describe-variable)))))
 

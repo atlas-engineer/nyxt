@@ -45,7 +45,6 @@
 
 (define-class command-source (prompter:source)
   ((prompter:name "Commands")
-   (prompter:must-match-p t)
    (prompter:constructor (get-commands)))
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
@@ -120,12 +119,10 @@ keyword parameters."
 
 (define-class hook-source (prompter:source)
   ((prompter:name "Hooks")
-   (prompter:must-match-p t)
    (prompter:constructor (get-hooks))))
 
 (define-class handler-source (prompter:source)
   ((prompter:name "Handlers")
-   (prompter:must-match-p t)
    (hook :accessor hook
          :initarg :hook
          :documentation "The hook for which to retrieve handlers for.")
