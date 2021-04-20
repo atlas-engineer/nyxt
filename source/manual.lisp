@@ -321,4 +321,9 @@ nyxt
         (:a
          :href "https://github.com/stumpwm/stumpwm/wiki/FAQ#my-mouse-wheel-doesnt-work-with-gtk3-applications-add-the-following-to"
          "StumpWM FAQ")
-        " for a fix."))))
+        " for a fix.")
+    (:h3 "Blank WebKit web-views")
+    (:p "If you are experiencing problems with blank web-views on some sites you
+    can try to disable compositing. To disable compositing from your
+    initialization file, you can do the following: ")
+    (:code "(setf (uiop:getenv \"WEBKIT_DISABLE_COMPOSITING_MODE\") \"1\")"))))
