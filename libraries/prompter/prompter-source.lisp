@@ -56,7 +56,7 @@ inherited or used across different sources)."
                 (list (string-capitalize (string slot))
                       (princ-to-string (slot-value object slot))))
               (object-public-slots object))
-      (princ-to-string object)))
+      (default-object-attributes object)))
     (t (default-object-attributes object))))
 
 (define-class suggestion ()
