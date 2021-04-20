@@ -100,6 +100,7 @@ against ARGLIST, if specified. "
   "Define a command which `mapcar's FUNCTION-SYMBOL over a list of arguments."
   (let ((name (intern (str:concat (string FUNCTION-SYMBOL) "-*"))))
     `(make-command ,name (arg-list)
+       ,(documentation function-symbol 'function)
        (mapcar ',function-symbol arg-list))))
 
 (export-always 'make-unmapped-command)
@@ -108,6 +109,7 @@ against ARGLIST, if specified. "
 of arguments."
   (let ((name (intern (str:concat (string FUNCTION-SYMBOL) "-1"))))
     `(make-command ,name (arg-list)
+       ,(documentation function-symbol 'function)
        (,function-symbol (first arg-list)))))
 
 (export-always 'define-command)
