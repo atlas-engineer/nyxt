@@ -15,9 +15,6 @@
 ;; TODO: Performance: Consider computing the attribute values only when active.
 ;; Lazy evaluation would make it easy.
 
-(deftype must-match-choices ()
-  `(member :always :ignore :confirm))
-
 (deftype function-symbol ()
   `(and symbol (satisfies fboundp)))
 
@@ -350,14 +347,6 @@ Also see `follow-delay'.")
                  "Execute `persistent-action' after this delay when `follow-p' is
 non-nil.")
 
-   (must-match-p :always ; TODO: Remove and use dedicated source instead?  Then remove `return-input'.
-                 :type (or must-match-choices boolean) ; TODO: Should not allow T, should we?  Anyways, we can probably remove this slot.
-                 :documentation
-                 "Control what to do when input does not match anything.
-- `:always': Reject input.
-- `:confirm': Prompt before accepting the input.
-- `:ignore': Exit and do nothing.")
-
    (keymap nil
            :type (or null keymap:keymap)
            :documentation
@@ -456,10 +445,6 @@ call."))
          (calispel:! wait-channel t))))
     ;; Wait until above thread has acquired the `initial-suggestions-lock'.
     (calispel:? wait-channel))
-  (unless (filter source)
-    ;; If we have no filter, then we have no suggestions beside
-    ;; immediate input, so we must allow them as valid suggestion.
-    (setf (must-match-p source) nil))
   source)
 
 (export-always 'attributes-keys-non-default)

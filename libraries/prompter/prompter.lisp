@@ -351,9 +351,7 @@ If there is no marks, the current selection value is returned as a list of one e
 For instance, if the selected element value is NIL, this returns '(NIL).
 If there is no element, NIL is returned."
   (or (all-marks prompter)
-      (mapcar #'value (uiop:ensure-list (selected-suggestion prompter)))
-      (and (not (must-match-p (selected-source prompter))) ; TODO: Remove when we remove `must-match-p'.
-           (slot-value prompter 'input))))
+      (mapcar #'value (uiop:ensure-list (selected-suggestion prompter)))))
 
 (export-always 'actions)
 (defun actions (prompter)
