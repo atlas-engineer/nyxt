@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/application-mode
-    (:use :common-lisp :nyxt)
+  (:use :common-lisp :nyxt)
   (:documentation "Forward all keybindings to the web view except those in the `override-map'."))
 (in-package :nyxt/application-mode)
 
