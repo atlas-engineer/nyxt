@@ -355,9 +355,11 @@ We keep this variable as a means to import the old format to the new one.")
                  (when (htree:owner history new-id)
                    (htree:set-current-owner history new-id)))
                (setf (htree:owners history) new-owners))
-             (let ((latest-id (first (first (sort (alex:hash-table-alist (htree:owners history))
-                                                  #'local-time:timestamp>
-                                                  :key (alex:compose #'htree:last-access #'cdr))))))
+             (alex:when-let ((latest-id (first
+                                         (first
+                                          (sort (alex:hash-table-alist (htree:owners history))
+                                                #'local-time:timestamp>
+                                                :key (alex:compose #'htree:last-access #'rest))))))
                (switch-buffer :id latest-id)))
 
            (restore-history-tree (history)
