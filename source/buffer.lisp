@@ -658,8 +658,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (when parent-window
       (let ((replacement-buffer (or (first (get-inactive-buffers))
                                     (make-buffer :url :default))))
-        (window-set-buffer parent-window
-                                  replacement-buffer)))
+        (window-set-buffer parent-window replacement-buffer)))
     (ffi-buffer-delete buffer)
     (buffers-delete (id buffer))
     ;; (setf (id buffer) "") ; TODO: Reset ID?
