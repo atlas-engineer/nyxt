@@ -114,7 +114,8 @@ The `match-data' is downcased if INPUT is lower-case."
   (unless (object-attributes-p (attributes suggestion))
     (warn "Attributes of ~s should be a non-dotted alist instead of ~s" (value suggestion) (attributes suggestion))
     (setf (attributes suggestion) (default-object-attributes (value suggestion))))
-  (when (uiop:emptyp (match-data suggestion))
+  ;; Access directly because reader also has a provision for empty values.
+  (when (uiop:emptyp (slot-value suggestion 'match-data))
     (setf (match-data suggestion)
           (funcall
            (if (and input (str:downcasep input))
