@@ -37,10 +37,10 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "M-[" 'select-previous-source
        "tab" 'prompt-buffer-insert-selection
        "return" 'return-selection
-       "C-return" 'return-input         ; TODO: Bind to shift-return instead?
-       "M-return" 'return-selection-over-action       ; TODO: Also bind to C-return?
-       "C-j" 'run-persistent-action
-       "C-g" 'cancel-input
+       "M-return" 'return-selection-over-action
+       "C-return" 'run-persistent-action
+       "C-j" 'run-persistent-action     ; Emacs binding.
+       "C-g" 'cancel-input              ; Emacs binding.
        "f1 b" 'run-prompt-buffer-command
        "f1 m" 'describe-prompt-buffer
        "C-h b" 'run-prompt-buffer-command ; TODO: Move to Emacs bindings.
@@ -146,11 +146,6 @@ If STEPS is negative, go to next pages instead."
   (hide-prompt-buffer prompt-buffer
                       (lambda ()
                         (prompter:return-selection prompt-buffer))))
-
-(define-command return-input (&optional (prompt-buffer (current-prompt-buffer))) ; TODO: Remove if we remove `must-match-p'?
-  "Have the PROMT-BUFFER return the selection, then quit."
-  (hide-prompt-buffer prompt-buffer
-                      (lambda () (prompter:return-input prompt-buffer))))
 
 (defun make-attribute-suggestion (attribute source &optional input)
   "Return a `suggestion' wrapping around ATTRIBUTE. "
