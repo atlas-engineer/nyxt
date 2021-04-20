@@ -845,6 +845,14 @@ As a second value, return the list of all NODE's children, including NODE."
       (delete-disowned-branch-nodes history nodes))
     (setf (creator-node owner) nil)))
 
+(defun fallback-owner (history)
+  "Return an (unspecified) owner ID from HISTORY, or, if there is none,
+add `+default-owner+' to it then return its ID."
+  (or (first-hash-table-key (owners history))
+      (progn
+        (add-owner history +default-owner+)
+        +default-owner+)))
+
 (export-always 'delete-owner)
 (declaim (ftype (function (history-tree t) (or null owner)) delete-owner))
 (defun delete-owner (history owner-id)
@@ -856,9 +864,7 @@ Return owner, or nil if there is no owner corresponding to OWNER-IDENTIFIER."
     (remhash owner-id (owners history))
     (when (equal owner-id (current-owner-id history))
       (setf (slot-value history 'current-owner-id)
-            (or (first-hash-table-key (owners history))
-                (progn (add-owner history +default-owner+)
-                       +default-owner+))))
+            (fallback-owner history)))
     (disown-all history owner)
     owner))
 
