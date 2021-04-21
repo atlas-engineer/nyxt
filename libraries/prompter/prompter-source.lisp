@@ -491,6 +491,10 @@ If you are looking for a source that just returns its plain suggestions, use `so
   "Return SUGGESTION default attribute value."
   (second (first (attributes suggestion))))
 
+(defmethod attributes-default ((object t))
+  "Return OBJECT default attribute value."
+  (second (first (object-attributes object))))
+
 (export-always 'attributes-non-default)
 (defmethod attributes-non-default ((suggestion suggestion))
   "Return SUGGESTION non-default attributes."
