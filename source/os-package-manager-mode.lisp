@@ -125,7 +125,7 @@
 
 (define-class os-generation-source (prompter:source)
   ((prompter:name "Packages")
-   (profile)
+   (profile (error "Profile required."))
    (prompter:constructor
     (lambda (source) 
       (ospm:list-generations (profile source)))))
@@ -357,12 +357,13 @@ OBJECTS can be a list of packages, a generation, etc."
   (assert-package-manager)
   (let* ((profile (first
                    (prompt
-                    :sources (list (make-instance 'os-profile-suggestion-filter
+                    :sources (list (make-instance 'os-profile-source
                                                   :include-manager-p t))
                     :prompt "Profile")))
          (generation (first
                       (prompt
-                       :sources '(os-generation-source)
+                       :sources (list (make-instance 'os-generation-source
+                                                     :profile profile))
                        :prompt "Generation")))
          (buffer (or (find-buffer 'os-package-manager-mode)
                      (nyxt/os-package-manager-mode:os-package-manager-mode
@@ -398,12 +399,12 @@ OBJECTS can be a list of packages, a generation, etc."
   (assert-package-manager)
   (let* ((profile (first
                    (prompt
-                    :sources (list (make-instance 'os-profile-suggestion-filter
+                    :sources (list (make-instance 'os-profile-source
                                                   :include-manager-p t))
                     :prompt "Target profile")))
          (generation (first
                       (prompt
-                       :sources (list (make-instance 'os-generation-suggestion-filter
+                       :sources (list (make-instance 'os-generation-source
                                                      :profile profile))
                        :prompt "Switch to generation"))))
     (operate-os-package "Switching to generation..." #'ospm:switch-generation
