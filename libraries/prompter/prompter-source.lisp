@@ -446,11 +446,11 @@ call."))
 (export-always 'attributes-default)
 (defmethod attributes-default ((suggestion suggestion))
   "Return SUGGESTION default attribute value."
-  (first (first (attributes suggestion))))
+  (second (first (attributes suggestion))))
 
 (defmethod attributes-default ((object t))
   "Return OBJECT default attribute value."
-  (first (first (object-attributes object))))
+  (second (first (object-attributes object))))
 
 (export-always 'attributes-non-default)
 (defmethod attributes-non-default ((suggestion suggestion))
