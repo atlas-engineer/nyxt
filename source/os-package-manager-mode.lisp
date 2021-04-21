@@ -105,6 +105,7 @@
 
 (define-class os-package-output-source (prompter:source)
   ((prompter:name "Package Outputs")
+   (prompter:multi-selection-p t)
    (prompter:constructor (ospm:list-package-outputs))))
 
 (define-class os-installed-package-source (prompter:source)
@@ -246,11 +247,13 @@
              collect (markup:markup*
                       `(:li ,(object-string package-or-output)
                             (:ul
-                             ,@(mapcar (lambda (file)
-                                         `(:li ,(if (viewable-file-type-p file)
-                                                    `(:a :href ,file ,file)
-                                                    file)))
-                                       (ospm:list-files (list package-or-output)))))))))
+                             ,@(or (mapcar (lambda (file)
+                                             `(:li ,(if (viewable-file-type-p file)
+                                                        `(:a :href ,file ,file)
+                                                        file)))
+
+                                           (ospm:list-files (list package-or-output)))
+                                   '("Could not compute file list.  Build the package first."))))))))
      buffer)
     (echo "")
     (set-current-buffer buffer)
