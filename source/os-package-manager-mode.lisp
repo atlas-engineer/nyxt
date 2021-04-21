@@ -423,6 +423,7 @@ OBJECTS can be a list of packages, a generation, etc."
                     :prompt "Target profile")))
          (generations (prompt
                        :sources (list (make-instance 'os-generation-source
+                                                     :multi-selection-p t
                                                      :profile profile))
                        :prompt "Delete generations")))
     (operate-os-package "Deleting generations..." #'ospm:delete-generations
