@@ -531,9 +531,6 @@ BUFFER's modes."
 (defmethod object-string ((buffer buffer))
   (object-string (url buffer)))
 
-(defmethod object-display ((buffer buffer))
-  (format nil "~a  ~a" (title buffer) (object-display (url buffer))))
-
 (defmethod prompter:object-attributes ((buffer buffer))
   `(("URL" ,(object-display (url buffer)))
     ("Title" ,(title buffer))))

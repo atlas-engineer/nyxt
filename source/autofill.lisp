@@ -36,10 +36,3 @@ Can be:
   `(("Key" ,(autofill-key autofill))
     ("Name" ,(autofill-name autofill))
     ("Fill" ,(autofill-fill autofill))))
-
-(defmethod object-display ((autofill autofill))
-  (format nil "~a:  ~a" (autofill-key autofill)
-          (cond ((stringp (autofill-fill autofill))
-                 (autofill-fill autofill))
-                ((functionp (autofill-fill autofill))
-                 (or (autofill-name autofill) "Function")))))
