@@ -528,9 +528,6 @@ BUFFER's modes."
 
 (hooks:define-hook-type buffer (function (buffer)))
 
-(defmethod object-string ((buffer buffer))
-  (render-url (url buffer)))
-
 (defmethod prompter:object-attributes ((buffer buffer))
   `(("URL" ,(render-url (url buffer)))
     ("Title" ,(title buffer))))

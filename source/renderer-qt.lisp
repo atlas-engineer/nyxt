@@ -140,7 +140,7 @@
 (defmethod ffi-buffer-delete ((buffer qt-buffer)))
 
 (defmethod ffi-buffer-load ((buffer qt-buffer) uri)
-  (qt:web-engine-view-load (qt-object buffer) (object-string uri)))
+  (qt:web-engine-view-load (qt-object buffer) (quri:render-uri uri)))
 
 (defmethod ffi-buffer-evaluate-javascript-async ((buffer qt-buffer) javascript)
   (qt:web-engine-page-run-javascript (qt:web-engine-view-page (qt-object buffer)) javascript %callback))

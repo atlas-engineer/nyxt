@@ -29,9 +29,6 @@ Can be:
 (defun make-autofill (&rest args)
   (apply #'make-instance 'autofill args))
 
-(defmethod object-string ((autofill autofill))
-  (autofill-key autofill))
-
 (defmethod prompter:object-attributes ((autofill autofill))
   `(("Key" ,(autofill-key autofill))
     ("Name" ,(autofill-name autofill))

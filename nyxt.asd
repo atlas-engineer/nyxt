@@ -90,7 +90,6 @@
                (:file "search-engine")
                (:file "urls")
                (:file "browser")
-               (:file "object-display")
                (:file "notification")
                (:file "clipboard")
                (:file "message")

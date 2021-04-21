@@ -523,7 +523,7 @@ Otherwise go forward to the only child."
 (defmethod nyxt:on-signal-notify-uri ((mode web-mode) url)
   (declare (type quri:uri url))
   (unless (or (url-empty-p url)
-              (find-if (alex:rcurry #'str:starts-with? (object-string url))
+              (find-if (alex:rcurry #'str:starts-with? (render-url url))
                        (history-blocklist mode)))
     (log:debug "Notify URI ~a for buffer ~a with load status ~a"
                url

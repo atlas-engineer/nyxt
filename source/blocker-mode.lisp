@@ -43,9 +43,6 @@ See `*default-hostlist*' for an example."))
 See the `hostlist' class documentation."
   (apply #'make-instance 'hostlist args))
 
-(defmethod object-string ((hostlist hostlist))
-  (format nil "~s" (trim-list (hosts hostlist))))
-
 (defmethod update ((hostlist hostlist))
   "Fetch HOSTLIST and return it.
 If HOSTLIST has a `path', persist it locally."
@@ -171,7 +168,7 @@ This is an acceptable handler for `request-resource-hook'."
           (log:debug "Dropping ~a for ~a (~a)"
                      (render-url (url request-data))
                      (buffer request-data)
-                     (object-string (buffer request-data)))
+                     (render-url (url (buffer request-data))))
           nil)
         ;; Pass request to the other handlers.
         request-data)))
