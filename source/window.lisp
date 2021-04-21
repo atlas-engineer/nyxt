@@ -72,7 +72,7 @@ Example formatter that prints the buffer indices over the total number of buffer
                      (eq (slot-value buffer 'load-status) :loading))
                 \"(Loading) \"
                 \"\")
-            (object-display (url buffer))
+            (render-url (url buffer))
             (title buffer)))))")
    (window-delete-hook (make-hook-window)
                        :type hook-window

@@ -532,7 +532,7 @@ BUFFER's modes."
   (object-string (url buffer)))
 
 (defmethod prompter:object-attributes ((buffer buffer))
-  `(("URL" ,(object-display (url buffer)))
+  `(("URL" ,(render-url (url buffer)))
     ("Title" ,(title buffer))))
 
 (define-command make-buffer (&key (title "") modes (url "") parent-buffer (load-url-p t))
@@ -955,7 +955,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
   "Set the URL for the current buffer, completing with history."
   (let ((history (set-url-history *browser*)))
     (when history
-      (containers:insert-item history (quri:render-uri (url (current-buffer)))))
+      (containers:insert-item history (render-url (url (current-buffer)))))
     (prompt
      :prompt "Open URL"
      :input (if prefill-current-url-p
@@ -977,7 +977,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
   "Prompt for a URL and set it in a new focused buffer."
   (let ((history (set-url-history *browser*)))
     (when history
-      (containers:insert-item history (quri:render-uri (url (current-buffer)))))
+      (containers:insert-item history (render-url (url (current-buffer)))))
     (prompt
      :prompt "Open URL"
      :input (if prefill-current-url-p

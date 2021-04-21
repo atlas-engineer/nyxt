@@ -33,5 +33,5 @@ Example to use Tor as a proxy both for browsing and downloading:
     (lambda (mode)
       (setf (proxy (buffer mode)) (proxy mode))
       (echo "Proxy set to ~a (allowlisting ~a)."
-            (object-display (server-address (proxy mode)))
+            (render-url (server-address (proxy mode)))
             (allowlist (proxy mode)))))))

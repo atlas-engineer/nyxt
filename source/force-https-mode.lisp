@@ -16,7 +16,7 @@ help on how to proceed."
   (setf (slot-value buffer 'nyxt::load-status) :failed)
   (nyxt::html-set
    (markup:markup
-    (:h1 (format nil "HTTPS → HTTP loop: ~a" (object-display url)))
+    (:h1 (format nil "HTTPS → HTTP loop: ~a" (render-url url)))
     (:p "The HTTPS address you are trying to visit redirects to HTTP while the "
         (:code "force-https-mode") " is on.")
     (:p "Since HTTP connections are not secure,"
@@ -44,7 +44,7 @@ help on how to proceed."
        ;; Warning: Copy URI, else next line would modify the scheme of
        ;; `previous-url' as well.
        (setf (previous-url mode) (quri:copy-uri uri))
-       (log:info "HTTPS enforced on '~a'" (object-display uri))
+       (log:info "HTTPS enforced on '~a'" (render-url uri))
        ;; FIXME: http-only websites are displayed as "https://foo.bar"
        ;; FIXME: some websites (e.g., go.com) simply time-out
        (setf (quri:uri-scheme uri) "https"

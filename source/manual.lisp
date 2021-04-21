@@ -162,7 +162,7 @@ can set a hook like the following in your configuration file:")
           (if (search \"reddit.com\" (quri:uri-host url))
               (progn
                 (setf (quri:uri-host url) \"old.reddit.com\")
-                (log:info \"Switching to old Reddit: ~s\" (object-display url))
+                (log:info \"Switching to old Reddit: ~s\" (render-url url))
                 url)
               url)))
   request-data)

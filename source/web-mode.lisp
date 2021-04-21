@@ -268,7 +268,7 @@ and to index the top of the page.")
 
 (defmethod prompter:object-attributes ((node history-tree:node))
   (let ((entry (htree:data (history-tree:entry node))))
-    `(("URL" ,(object-display (url entry)))
+    `(("URL" ,(render-url (url entry)))
       ("Title" ,(title entry)))))
 
 (define-command history-backwards-query (&optional (buffer (current-buffer)))
@@ -392,7 +392,7 @@ Otherwise go forward to the only child."
   "Return HISTORY-ENTRY title or, if empty, the URL."
   (let ((title (title history-entry)))
     (if (str:emptyp title)
-        (object-display (url history-entry))
+        (render-url (url history-entry))
         title)))
 
 (define-command buffer-history-tree (&optional (buffer (current-buffer)))

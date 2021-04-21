@@ -246,7 +246,7 @@ identifier for every hinted element."
 (defmethod prompter:object-attributes ((hint hint))
   `(("Hint" ,(hint hint))
     ("Body" ,(body hint))
-    ("URL" ,(if (slot-exists-p hint 'url) (object-display (url hint)) ""))))
+    ("URL" ,(if (slot-exists-p hint 'url) (render-url (url hint)) ""))))
 
 (define-class clickable-hint (hint) ())
 

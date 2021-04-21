@@ -5,16 +5,16 @@
 
 (export-always 'object-string)
 (defmethod object-string ((uri quri:uri))
-  (the (values string &optional) (quri:render-uri uri)))
+  (the (values string &optional) (render-url uri)))
 
-(export-always 'object-display)
-(defmethod object-display ((uri quri:uri))
+(export-always 'render-url)
+(declaim (ftype (function (quri:uri) string) render-url))
+(defun render-url (url)
     "Return decoded URL.
-If the URL contains hexadecimal-encoded characters, return their unicode counterpart.
-On errors, return URL."
-    (the (values (or string null) &optional)
-         (or (ignore-errors (ffi-display-uri (quri:render-uri uri)))
-             (quri:render-uri uri))))
+If the URL contains hexadecimal-encoded characters, return their unicode counterpart."
+  (the (values (or string null) &optional)
+       (or (ignore-errors (ffi-display-uri (quri:render-uri url)))
+           (quri:render-uri url))))
 
 (export-always 'generate-search-query)
 (defun generate-search-query (search-string search-url)

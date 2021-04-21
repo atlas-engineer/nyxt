@@ -46,7 +46,7 @@
            (:h1 (format nil "~s" input)) ; Use FORMAT to keep package prefix.
            (:pre (documentation input 'variable))
            (:h2 "Current Value:")
-           (:pre (object-display (symbol-value input))))))
+           (:pre (render-url (symbol-value input))))))
       (prompt
        :prompt "Describe variable:"
        :sources (make-instance 'variable-source))))
@@ -341,7 +341,7 @@ help on how to proceed."
   (setf (slot-value buffer 'load-status) :failed)
   (html-set
    (markup:markup
-    (:h1 (format nil "TLS Certificate Error: ~a" (object-display url)))
+    (:h1 (format nil "TLS Certificate Error: ~a" (render-url url)))
     (:p "The address you are trying to visit has an invalid
 certificate. By default Nyxt refuses to establish a secure connection
 to a host with an erroneous certificate (e.g. self-signed ones). This
@@ -546,7 +546,7 @@ the "
              (loop for bookmark in bookmarks
                    collect (markup:markup (:li (title bookmark) separator
                                                (:a :href (object-string (url bookmark))
-                                                   (object-display (url bookmark)))))))))
+                                                   (render-url (url bookmark)))))))))
     (let ((dashboard-style (cl-css:css
                             '((body
                                :margin-top 0

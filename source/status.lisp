@@ -37,7 +37,7 @@
    (:a :class "button"
        :href (lisp-url '(nyxt:set-url))
        (format nil " ~a — ~a"
-               (object-display (url buffer))
+               (render-url (url buffer))
                (title buffer)))))
 
 (export-always 'format-status-tabs)
