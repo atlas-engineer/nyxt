@@ -31,8 +31,7 @@ looking for ~https://www.example.com~, you could type in ~ele~, ~exa~,
 
 Commands can accept multiple inputs, allowing you to quickly perform an
 operation against multiple objects.  In the example below we search for
-penguins, and only open up links that have the text "animal" within
-them.
+cactuses, and open up several images simultaneously:
 
 #+html: <img src="https://nyxt.atlas.engineer/static/image/multi-select.png?" align="center"/>
 
