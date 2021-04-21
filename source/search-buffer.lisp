@@ -118,7 +118,7 @@
 
 (defmethod prompter:object-attributes ((match search-match))
   `(("Default" ,(body match))
-    ("ID" ,(identifier match))
+    ("ID" ,(princ-to-string (identifier match)))
     ("Buffer ID" ,(id (buffer match)))
     ("Buffer title" ,(title (buffer match)))))
 
