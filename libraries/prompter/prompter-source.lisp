@@ -222,7 +222,7 @@ Called on
 nil if the suggestion is discarded.")
 
    (filter-preprocessor #'delete-inexact-matches
-                        :type (or null function)
+                        :type (or null function function-symbol)
                         :documentation
                         "Function called when
 input is modified, before filtering the suggestions.
@@ -232,7 +232,7 @@ It is passed the following arguments:
 - the input.")
 
    (filter-postprocessor nil
-                         :type (or null function)
+                         :type (or null function function-symbol)
                          :documentation
                          "Function called when input is modified, after
 filtering the suggestions with `filter'.
