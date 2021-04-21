@@ -298,20 +298,6 @@ poll `suggestions' for changes.")
 The source object is sent to the channel.
 If update calculation is aborted, nil is sent instead.")
 
-   (wrote-to-ready-channel-p nil
-                             :type boolean
-                             :export nil
-                             :initarg nil
-                             :documentation "Whether the source was sent
-to the `ready-channel'.")
-
-   (wrote-to-ready-channel-lock (bt:make-lock)
-                                :type bt:lock
-                                :export nil
-                                :initarg nil
-                                :documentation "Protect
-`wrote-to-ready-channel-p' access.")
-
    (update-thread nil
                   :type t
                   :export nil
@@ -567,16 +553,15 @@ The reason we filter in 3 stages is to allow both for asynchronous and
 synchronous filtering.  The benefit of asynchronous filtering is that it sends
 feedback to the user while the list of suggestions is being computed."
   (when (and (update-thread source)
-             ;; TODO: This is prone to a race condition.
+             ;; This is prone to a race condition, but worse case we destroy an
+             ;; already terminated thread.
              (bt:thread-alive-p (update-thread source)))
-    (bt:with-lock-held ((wrote-to-ready-channel-lock source))
-      (unless (wrote-to-ready-channel-p source)
-        (calispel:! (ready-channel source) nil)))
-    ;; Destroy thread _after_ holding the lock, otherwise the lock may be held
-    ;; forever.
+    ;; Note that we may be writing multiple times to this channel, but that's
+    ;; OK, only the first value is read, so worse case the caller sees that the
+    ;; source is terminated even though it just finished updating.
+    (calispel:! (ready-channel source) nil)
     (bt:destroy-thread (update-thread source)))
   (setf (ready-channel source) new-ready-channel)
-  (setf (wrote-to-ready-channel-p source) nil)
   (setf (update-thread source)
         (bt:make-thread
          (lambda ()
@@ -628,7 +613,5 @@ feedback to the user while the list of suggestions is being computed."
                ;; preprocessor cannot modify them.
                (mapcar #'copy-object (initial-suggestions source))))
              (postprocess!)
-             (bt:with-lock-held ((wrote-to-ready-channel-lock source))
-               (unless (wrote-to-ready-channel-p source)
-                 (calispel:! new-ready-channel source)
-                 (setf (wrote-to-ready-channel-p source) t))))))))
+             ;; Signal this source is done:
+             (calispel:! new-ready-channel source))))))
