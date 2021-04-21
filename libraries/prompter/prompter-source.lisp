@@ -553,11 +553,11 @@ The reason we filter in 3 stages is to allow both for asynchronous and
 synchronous filtering.  The benefit of asynchronous filtering is that it sends
 feedback to the user while the list of suggestions is being computed."
   (when (and (update-thread source)
-             ;; This is prone to a race condition, but worse case we destroy an
+             ;; This is prone to a race condition, but worst case we destroy an
              ;; already terminated thread.
              (bt:thread-alive-p (update-thread source)))
     ;; Note that we may be writing multiple times to this channel, but that's
-    ;; OK, only the first value is read, so worse case the caller sees that the
+    ;; OK, only the first value is read, so worst case the caller sees that the
     ;; source is terminated even though it just finished updating.
     (calispel:! (ready-channel source) nil)
     (bt:destroy-thread (update-thread source)))
