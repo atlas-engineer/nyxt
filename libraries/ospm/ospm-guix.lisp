@@ -26,7 +26,7 @@ This can only be derived if `path' has been derived."))
   (:documentation "OS package outputs are meaningful mostly for functional
 package managers like Nix or Guix."))
 
-(push 'guix-manager *supported-managers*)
+(pushnew 'guix-manager *supported-managers*)
 
 (defmethod print-object ((obj (eql 'ospm::\#t)) stream)
   "Specialized printing of Scheme's #t for `cl->scheme-syntax'."
