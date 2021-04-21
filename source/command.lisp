@@ -244,11 +244,6 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
 (defmethod object-string ((slot slot))
   (string-downcase (write-to-string (name slot))))
 
-(defmethod object-display ((slot slot))
-  (string-downcase (format nil "~s (~s)"
-                           (name slot)
-                           (class-sym slot))))
-
 (defmethod prompter:object-attributes ((slot slot))
   `(("Name" ,(name slot))
     ("Class" ,(class-sym slot))))

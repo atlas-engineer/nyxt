@@ -30,11 +30,9 @@ the empty string."))
 (defmethod object-string ((engine search-engine))
   (shortcut engine))
 
-(defmethod object-display ((engine search-engine))
-  (format nil "~a~a ~a"
-          (shortcut engine)
-          (make-string (max 0 (- 10 (length (shortcut engine)))) :initial-element #\no-break_space)
-          (search-url engine)))
+(defmethod prompter:object-attributes ((engine search-engine))
+  `(("Shortcut" ,(shortcut engine))
+    ("Search URL" ,(search-url engine))))
 
 (defun bookmark-search-engines (&optional (bookmarks (get-data (bookmarks-path
                                                                 (or (current-buffer)

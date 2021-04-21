@@ -46,13 +46,6 @@ See the `hostlist' class documentation."
 (defmethod object-string ((hostlist hostlist))
   (format nil "~s" (trim-list (hosts hostlist))))
 
-(defmethod object-display ((hostlist hostlist))
-  (format nil "URL: ~s~&Path: ~s~&Update interval: ~as~&Hosts: ~s"
-          (object-display (url hostlist))
-          (expand-path (path hostlist))
-          (update-interval hostlist)
-          (trim-list (hosts hostlist))))
-
 (defmethod update ((hostlist hostlist))
   "Fetch HOSTLIST and return it.
 If HOSTLIST has a `path', persist it locally."

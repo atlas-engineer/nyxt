@@ -50,19 +50,6 @@ appended to the URL."))
 (defmethod object-string ((entry bookmark-entry)) ; TODO: Delete?
   (object-string (url entry)))
 
-(defmethod object-display ((entry bookmark-entry))
-  (format nil "~a~a  ~a~a"
-          (if (str:emptyp (shortcut entry))
-              ""
-              (str:concat "[" (shortcut entry) "] "))
-          (object-display (url entry))
-          (if (str:emptyp (title entry))
-              ""
-              (title entry))
-          (if (tags entry)
-              (format nil " (~{~a~^, ~})" (tags entry))
-              "")))
-
 (declaim (ftype (function (quri:uri quri:uri) boolean) equal-url))
 (defun equal-url (url1 url2)
   "URLs are equal if the URIs are equal, scheme excluded.
