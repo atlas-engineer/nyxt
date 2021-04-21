@@ -48,7 +48,7 @@ appended to the URL."))
     ("Search URL" ,(search-url entry))))
 
 (defmethod object-string ((entry bookmark-entry)) ; TODO: Delete?
-  (object-string (url entry)))
+  (render-url (url entry)))
 
 (declaim (ftype (function (quri:uri quri:uri) boolean) equal-url))
 (defun equal-url (url1 url2)
@@ -138,7 +138,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
        (loop for bookmark in bookmarks
              collect
              (let ((url-display (render-url (url bookmark)))
-                   (url-href (object-string (url bookmark))))
+                   (url-href (render-url (url bookmark))))
                (markup:markup (:div
                                (:p (:b "Title: ") (title bookmark))
                                (:p (:b "URL: ") (:a :href url-href
@@ -251,7 +251,7 @@ rest in background buffers."
                   :sources (make-instance 'bookmark-source
                                           :multi-selection-p t))))
     (dolist (entry (rest entries))
-      (make-buffer :url (object-string (url entry))))
+      (make-buffer :url (render-url (url entry))))
     (buffer-load (url (first entries)))))
 
 (define-command set-url-from-bookmark-new-buffer ()
@@ -262,7 +262,7 @@ rest in background buffers."
                   :sources (make-instance 'bookmark-source
                                           :multi-selection-p t))))
     (dolist (entry (rest entries))
-      (make-buffer :url (object-string (url entry))))
+      (make-buffer :url (render-url (url entry))))
     (make-buffer-focus :url (url (first entries)))))
 
 (defmethod serialize-object ((entry bookmark-entry) stream)
@@ -274,7 +274,7 @@ rest in background buffers."
                        (funcall slot entry)))))
       (let ((*standard-output* stream))
         (write-string "(:url ")
-        (format t "~s" (object-string (url entry)))
+        (format t "~s" (render-url (url entry)))
         (write-slot 'title)
         (write-slot 'annotation)
         (when (date entry)

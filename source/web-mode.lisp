@@ -405,7 +405,7 @@ Otherwise go forward to the only child."
              (tree `(:ul ,(htree:map-owned-tree
                            #'(lambda (node)
                                `(:li
-                                 (:a :href ,(object-string (url (htree:data node)))
+                                 (:a :href ,(render-url (url (htree:data node)))
                                      ,(let ((title (title-or-fallback (htree:data node))))
                                         (if (eq node (htree:current-owner-node history))
                                             `(:b ,title)
@@ -433,7 +433,7 @@ Otherwise go forward to the only child."
             (mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
             (tree `(:ul ,(htree:map-tree
                           #'(lambda (node)
-                              `(:li (:a :href ,(object-string (url (htree:data node)))
+                              `(:li (:a :href ,(render-url (url (htree:data node)))
                                         ,(let ((title (title-or-fallback (htree:data node))))
                                            (cond
                                              ((eq node (htree:current-owner-node history))

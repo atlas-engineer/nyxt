@@ -122,7 +122,7 @@ Example:
 
 \(define-command play-video-in-current-page (&optional (buffer (current-buffer)))
   \"Play video in the currently open buffer.\"
-  (uiop:run-program (list \"mpv\" (object-string (url buffer)))))"
+  (uiop:run-program (list \"mpv\" (render-url (url buffer)))))"
   (multiple-value-bind (forms declares documentation)
       (alex:parse-body body :documentation t)
     (unless documentation
