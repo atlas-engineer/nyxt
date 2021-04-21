@@ -7,10 +7,22 @@
 
 (define-class manager ()
   ((path ""
-         :type (or string pathname)))
+         :type (or string pathname))
+   (manifest-directory (uiop:xdg-data-home "manifests")
+                       :type (or string pathname)))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:documentation "To customize a manager, you can subclass it then push it to
+`*supporter-managers*'.
+
+Example:
+
+  (define-class my-guix-manager (ospm:guix-manager)
+    ((ospm:manifest-directory \"/home/doe/.package-lists\")))
+  (pushnew 'my-guix-manager ospm:*supported-managers*)
+  ;; Ensure your new manager is set (only necessary if OSPM was already used):
+  (setf ospm:*manager* nil)"))
 
 (define-class os-package ()
   ((name "")
@@ -56,10 +68,6 @@ See `manager'.")
 (export-always '*supported-managers*)
 (defvar *supported-managers* '()
   "The list of supported manager class symbols.")
-
-;; TODO: What would be an ideal default location?
-(defvar profile-directory (uiop:xdg-data-home "profiles"))
-(defvar manifest-directory (uiop:xdg-data-home "manifests"))
 
 (defun manager-found-p (class-sym)
   "Prepend the CLASS-SYM instance to `*detected-managers*' if NAME is an
@@ -138,7 +146,7 @@ With INCLUDE-MANAGER-P, also return the package manager own profile."))
   (manager-list-manifests (manager)))
 
 (defmethod manager-list-manifests ((manager manager))
-  (uiop:directory-files (uiop:ensure-directory-pathname manifest-directory)))
+  (uiop:directory-files (uiop:ensure-directory-pathname (manifest-directory manager))))
 
 (export-always 'list-generations)
 (defun list-generations (&optional profile)
