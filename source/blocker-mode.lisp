@@ -53,7 +53,7 @@ If HOSTLIST has a `path', persist it locally."
     (let ((path (expand-path (path hostlist))))
       (log:info "Updating hostlist ~s from ~s." path
                 (render-url (url hostlist)))
-      (let ((hosts (dex:get (object-string (url hostlist)))))
+      (let ((hosts (dex:get (render-url (url hostlist)))))
         (when path
           (handler-case
               (alex:write-string-into-file hosts (ensure-parent-exists path)

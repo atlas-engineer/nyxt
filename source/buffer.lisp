@@ -529,7 +529,7 @@ BUFFER's modes."
 (hooks:define-hook-type buffer (function (buffer)))
 
 (defmethod object-string ((buffer buffer))
-  (object-string (url buffer)))
+  (render-url (url buffer)))
 
 (defmethod prompter:object-attributes ((buffer buffer))
   `(("URL" ,(render-url (url buffer)))
@@ -715,9 +715,9 @@ proceeding."
         (let ((temp-buffer (make-dummy-buffer))
               (old-buffer (active-buffer window)))
           (log:debug "Swapping old buffer ~a with other window ~a to switch to ~a"
-                     (object-string (url old-buffer))
-                     (object-string (url (active-buffer window-with-same-buffer)))
-                     (object-string (url buffer)))
+                     (render-url (url old-buffer))
+                     (render-url (url (active-buffer window-with-same-buffer)))
+                     (render-url (url buffer)))
           (ffi-window-set-buffer window-with-same-buffer temp-buffer)
           (ffi-window-set-buffer window buffer :focus focus)
           (setf (active-buffer window) buffer)
@@ -752,8 +752,8 @@ proceeding."
 
 (define-command copy-url ()
   "Save current URL to clipboard."
-  (copy-to-clipboard (object-string (url (current-buffer))))
-  (echo "~a copied to clipboard." (object-string (url (current-buffer)))))
+  (copy-to-clipboard (render-url (url (current-buffer))))
+  (echo "~a copied to clipboard." (render-url (url (current-buffer)))))
 
 (define-command copy-title ()
   "Save current page title to clipboard."
@@ -848,8 +848,8 @@ set of useful URLs or preparing a list to send to a someone else."
                    (markup:markup
                     (:div
                      (:p (:b "Title: ") (title buffer))
-                     (:p (:b "URL: ") (:a :href (object-string (url buffer))
-                                          (object-string (url buffer))))
+                     (:p (:b "URL: ") (:a :href (render-url (url buffer))
+                                          (render-url (url buffer))))
                      (:p (:b "Automatically generated summary: ")
                          (:ul
                           (loop for summary-bullet in (analysis:summarize-text
@@ -959,7 +959,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
     (prompt
      :prompt "Open URL"
      :input (if prefill-current-url-p
-                (object-string (url (current-buffer))) "")
+                (render-url (url (current-buffer))) "")
      :history history
      :sources (list (make-instance 'prompter:raw-source
                                    :name "New URL"
@@ -981,7 +981,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
     (prompt
      :prompt "Open URL"
      :input (if prefill-current-url-p
-                (object-string (url (current-buffer))) "")
+                (render-url (url (current-buffer))) "")
      :history history
      :sources (list (make-instance 'prompter:raw-source
                                    :name "New URL"
@@ -996,7 +996,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
   (prompt
    :prompt "Open URL"
    :input (if prefill-current-url-p
-              (object-string (url (current-buffer))) "")
+              (render-url (url (current-buffer))) "")
    :sources (list (make-instance 'prompter:raw-source
                                  :name "New URL"
                                  :actions (list (make-unmapped-command buffer-load)

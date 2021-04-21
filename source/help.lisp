@@ -530,7 +530,7 @@ the "
            (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
              (loop for bookmark in bookmarks
                    collect (markup:markup (:li (title bookmark) separator
-                                               (:a :href (object-string (url bookmark))
+                                               (:a :href (render-url (url bookmark))
                                                    (render-url (url bookmark)))))))))
     (let ((dashboard-style (cl-css:css
                             '((body

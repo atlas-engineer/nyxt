@@ -32,7 +32,7 @@ Entry for the global history.
 The total number of visit for a given URL is (+ explicit-visits implicit-visits)."))
 
 (defmethod object-string ((entry history-entry))
-  (object-string (url entry)))
+  (render-url (url entry)))
 
 (defmethod prompter:object-attributes ((entry history-entry))
   `(("URL" ,(render-url (url entry)))
@@ -189,8 +189,8 @@ lot."
       (loop for entry in (sera:take limit history)
             collect (markup:markup
                      (:li (title entry) (unless (str:emptyp (title entry)) separator)
-                          (:a :href (object-string (url entry))
-                              (object-string (url entry)))))))))
+                          (:a :href (render-url (url entry))
+                              (render-url (url entry)))))))))
 
 (defun history-stored-data (path)
   "Return the history data that needs to be serialized.

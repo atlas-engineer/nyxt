@@ -289,7 +289,7 @@ inferring the matching condition with `url-infer-match'.
 For the storage format see the comment in the head of your `auto-mode-rules-data-path' file."
   (let ((url (first (prompt
                      :prompt "URL:"
-                     :input (object-string (url (current-buffer)))
+                     :input (render-url (url (current-buffer)))
                      :sources (list
                                (make-instance 'prompter:raw-source
                                               :name "New URL")
@@ -316,7 +316,7 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
   ;; One may want to adjust the modes before persisting them as :exact-p rule.
   (let ((url (first (prompt
                      :prompt "URL:"
-                     :input (object-string (url (current-buffer)))
+                     :input (render-url (url (current-buffer)))
                      :sources (list
                                (make-instance 'prompter:raw-source
                                               :name "New URL")

@@ -3,10 +3,6 @@
 
 (in-package :nyxt)
 
-(export-always 'object-string)
-(defmethod object-string ((uri quri:uri))
-  (the (values string &optional) (render-url uri)))
-
 (export-always 'render-url)
 (declaim (ftype (function (quri:uri) string) render-url))
 (defun render-url (url)
