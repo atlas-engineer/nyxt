@@ -44,46 +44,38 @@
 
 (defmethod nyxt:object-string ((pkg ospm:os-package))
   (ospm:name pkg))
-(defmethod nyxt:object-display ((pkg ospm:os-package))
-  (format nil "~a ~a~a~a"
-          (ospm:name pkg)
-          (ospm:version pkg)
-          (make-string (max 1 (- 40
-                                 (+ (length (ospm:name pkg))
-                                    (length (ospm:version pkg)))))
-                       :initial-element #\ )
-          (ospm:synopsis pkg)))
+
+(defmethod prompter:object-attributes ((pkg ospm:os-package))
+  `(("Name" ,(ospm:name pkg))
+    ("Version" ,(ospm:version pkg))
+    ("Synopsis" ,(ospm:synopsis pkg))))
 
 (defmethod nyxt:object-string ((output ospm:os-package-output))
   (format nil "~a:~a"
           (ospm:name (ospm:parent-package output))
           (ospm:name output)))
-(defmethod nyxt:object-display ((output ospm:os-package-output))
+
+(defmethod prompter:object-attributes ((output ospm:os-package-output))
   (let* ((pkg (ospm:parent-package output))
-         (name (format nil "~a~a ~a"
+         (name (format nil "~a~a"
                        (ospm:name pkg)
                        ;; TODO: Make this specializable.
                        (if (string= (ospm:name output) "out")
                            ""
-                           (str:concat ":" (ospm:name output)))
-                       (ospm:version pkg))))
-    (format nil "~a~a~a"
-            name
-            (make-string (max 1 (- 40 (length name)))
-                         :initial-element #\ )
-            (ospm:synopsis pkg))))
+                           (str:concat ":" (ospm:name output))))))
+    `(("Name" ,name)
+      ("Version" ,(ospm:version pkg))
+      ("Synopsis" ,(ospm:synopsis pkg)))))
 
 (defmethod nyxt:object-string ((gen ospm:os-generation))
   (ospm:id gen))
-(defmethod nyxt:object-display ((gen ospm:os-generation))
-  (format nil "~a ~a ~a packages~a"
-          (ospm:id gen)
-          (local-time:format-timestring nil (ospm:date gen)
-                                        :format local-time:+asctime-format+)
-          (ospm:package-count gen)
-          (if (ospm:current? gen)
-              " (current)"
-              "")))
+
+(defmethod prompter:object-attributes ((gen ospm:os-generation))
+  `(("ID" ,(princ-to-string (ospm:id gen)))
+    ("Date" ,(local-time:format-timestring nil (ospm:date gen)
+                                           :format local-time:+asctime-format+))
+    ("Package count" ,(princ-to-string (ospm:package-count gen)))
+    ("Current?" ,(if (ospm:current? gen) "yes" ""))))
 
 (defmethod prompter:object-attributes ((pkg ospm:guix-package))
   ;; We could have called `call-next-method', then modify the result, but it's
