@@ -231,7 +231,7 @@ even be NIL)."))
       parent)))
 
 (export-always 'current-binding)
-(declaim (ftype (function (owner &optional node) (or null binding)) current-binding))
+(declaim (ftype (function (owner &optional (or null node)) (or null binding)) current-binding))
 (defun current-binding (owner &optional (node (current owner)))
   (and node
        (gethash owner (bindings node))))
