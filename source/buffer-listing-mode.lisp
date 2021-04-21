@@ -34,7 +34,7 @@
                       :href (lisp-url `(nyxt::delete-buffer :id ,(id buffer))) "✕")
                   (:a :class "button"
                       :href (lisp-url `(nyxt::switch-buffer :id ,(id buffer))) "→")
-                  (:span (title buffer) " - "(quri:render-uri (url buffer))))))
+                  (:span (title buffer) " - "(render-url (url buffer))))))
            (cluster-markup (cluster-id cluster)
              "Create the presentation for a cluster."
              (markup:markup

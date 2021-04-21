@@ -340,7 +340,7 @@ This is useful to tell REPL instances from binary ones."
   (let ((url (url buffer))
         (title (title buffer)))
     (setf title (if (str:emptyp title) "" title))
-    (setf url (if (url-empty-p url) "<no url/name>" (object-display url)))
+    (setf url (if (url-empty-p url) "<no url/name>" (render-url url)))
     (ffi-window-set-title window
                           (str:concat "Nyxt" (when *run-from-repl-p* " REPL") " - "
                                        title (unless (str:emptyp title) " - ")
@@ -418,7 +418,7 @@ Deal with REQUEST-DATA with the following rules:
            (evaluate-async code))
          nil)
         ((internal-buffer-p buffer)
-         (log:debug "Load URL from internal buffer in new buffer: ~a" (object-display url))
+         (log:debug "Load URL from internal buffer in new buffer: ~a" (render-url url))
          (make-buffer-focus :url (object-string url))
          nil)
         (bound-function
@@ -426,11 +426,11 @@ Deal with REQUEST-DATA with the following rules:
          (funcall bound-function :url url :buffer buffer)
          nil)
         ((new-window-p request-data)
-         (log:debug "Load URL in new buffer: ~a" (object-display url))
+         (log:debug "Load URL in new buffer: ~a" (render-url url))
          (open-urls (list (object-string url)))
          nil)
         ((not (known-type-p request-data))
-         (log:debug "Buffer ~a initiated download of ~s." (id buffer) (object-display url))
+         (log:debug "Buffer ~a initiated download of ~s." (id buffer) (render-url url))
          (download buffer url
                    :proxy-address (proxy-address buffer :downloads-only t)
                    :cookies "")
@@ -441,7 +441,7 @@ Deal with REQUEST-DATA with the following rules:
          (setf (slot-value buffer 'load-status) :finished)
          nil)
         (t
-         (log:debug "Forwarding ~a for buffer ~s" (object-display url) buffer)
+         (log:debug "Forwarding ~a for buffer ~s" (render-url url) buffer)
          request-data)))))
 
 (export-always 'url-dispatching-handler)
@@ -496,8 +496,8 @@ The following example does a few things:
                 (let* ((new-url (funcall action url)))
                   (log:info "Applied ~s URL-dispatcher on ~s and got ~s"
                             (symbol-name name)
-                            (object-display url)
-                            (object-display new-url))
+                            (render-url url)
+                            (render-url new-url))
                   (when new-url
                     (setf (url request-data) new-url)
                     request-data)))
@@ -509,7 +509,7 @@ The following example does a few things:
                          (funcall action url)
                          (log:info "Applied ~s shell-command URL-dispatcher on ~s"
                             (symbol-name name)
-                            (object-display url)))))
+                            (render-url url)))))
              request-data)))
    :name name))
 
@@ -548,14 +548,14 @@ The following example does a few things:
 (defun match-regex (regex &rest other-regex)
   "Return a predicate for URLs matching one of REGES or OTHER-REGEX."
   #'(lambda (url)
-      (some (alex:rcurry #'cl-ppcre:scan (object-display url))
+      (some (alex:rcurry #'cl-ppcre:scan (render-url url))
             (cons regex other-regex))))
 
 (export-always 'match-url)
 (defun match-url (one-url &rest other-urls)
   "Return a predicate for URLs exactly matching ONE-URL or OTHER-URLS."
   #'(lambda (url)
-      (some (alex:rcurry #'string= (object-display url))
+      (some (alex:rcurry #'string= (render-url url))
             (mapcar (lambda (u) (quri:url-decode u :lenient t))
                     (cons one-url other-urls)))))
 

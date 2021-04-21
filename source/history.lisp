@@ -35,7 +35,7 @@ The total number of visit for a given URL is (+ explicit-visits implicit-visits)
   (object-string (url entry)))
 
 (defmethod prompter:object-attributes ((entry history-entry))
-  `(("URL" ,(object-display (url entry)))
+  `(("URL" ,(render-url (url entry)))
     ("Title" ,(title entry))))
 
 (export-always 'equals)
@@ -71,7 +71,7 @@ class."
          stream))
 
 (defun history-tree-key (history-entry)
-  (quri:render-uri (url history-entry)))
+  (render-url (url history-entry)))
 
 (defun make-history-tree (&optional (buffer (current-buffer)))
   "Return a new global history tree for `history-entry' data."

@@ -666,7 +666,7 @@ Warning: This behaviour may change in the future."
              (setf (webkit:webkit-uri-request-uri request) (object-string (url request-data)))
              (log:debug "Don't forward to ~s's renderer (resource request replaced with ~s)."
                         buffer
-                        (object-display (url request-data)))
+                        (render-url (url request-data)))
              ;; Warning: We must ignore the policy decision _before_ we
              ;; start the new load request, or else WebKit will be
              ;; confused about which URL to load.
@@ -682,7 +682,7 @@ Warning: This behaviour may change in the future."
     (cond ((eq load-event :webkit-load-started)
            (setf (slot-value buffer 'load-status) :loading)
            (print-status nil (get-containing-window-for-buffer buffer *browser*))
-           (echo "Loading ~s." (object-display url)))
+           (echo "Loading ~s." (render-url url)))
           ((eq load-event :webkit-load-redirected) nil)
           ;; WARNING: load-committed may be deprecated (reference?).  Prefer load-status and load-finished.
           ((eq load-event :webkit-load-committed)
@@ -692,7 +692,7 @@ Warning: This behaviour may change in the future."
              (setf (slot-value buffer 'load-status) :finished))
            (on-signal-load-finished buffer url)
            (print-status nil (get-containing-window-for-buffer buffer *browser*))
-           (echo "Finished loading ~s." (object-display url))))))
+           (echo "Finished loading ~s." (render-url url))))))
 
 (define-ffi-method on-signal-mouse-target-changed ((buffer gtk-buffer) hit-test-result modifiers)
   (declare (ignore modifiers))
@@ -1031,7 +1031,7 @@ custom (the specified proxy) and none."
       (setf mode :webkit-network-proxy-mode-custom)
       (setf settings
             (webkit:webkit-network-proxy-settings-new
-             (quri:render-uri proxy-uri)
+             (render-url proxy-uri)
              ignore-hosts)))
     (cffi:foreign-free ignore-hosts)
     (webkit:webkit-web-context-set-network-proxy-settings

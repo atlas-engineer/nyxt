@@ -52,7 +52,7 @@ If HOSTLIST has a `path', persist it locally."
   (unless (uiop:emptyp (url hostlist))
     (let ((path (expand-path (path hostlist))))
       (log:info "Updating hostlist ~s from ~s." path
-                (object-display (url hostlist)))
+                (render-url (url hostlist)))
       (let ((hosts (dex:get (object-string (url hostlist)))))
         (when path
           (handler-case
@@ -169,7 +169,7 @@ This is an acceptable handler for `request-resource-hook'."
               (quri:uri-host (url request-data))))
         (progn
           (log:debug "Dropping ~a for ~a (~a)"
-                     (object-display (url request-data))
+                     (render-url (url request-data))
                      (buffer request-data)
                      (object-string (buffer request-data)))
           nil)

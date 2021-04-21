@@ -40,7 +40,7 @@ appended to the URL."))
 
 (defmethod prompter:object-attributes ((entry bookmark-entry))
   ;; TODO: Add annocation slots?
-  `(("URL" ,(object-display (url entry)))
+  `(("URL" ,(render-url (url entry)))
     ("Title" ,(title entry))
     ("Tags" ,(format nil "~{~a ~}" (tags entry)))
     ("Date" ,(princ-to-string (date entry)))
@@ -137,7 +137,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
       (:body
        (loop for bookmark in bookmarks
              collect
-             (let ((url-display (object-display (url bookmark)))
+             (let ((url-display (render-url (url bookmark)))
                    (url-href (object-string (url bookmark))))
                (markup:markup (:div
                                (:p (:b "Title: ") (title bookmark))
@@ -186,7 +186,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
         (bookmark-add (url buffer)
                       :title (title buffer)
                       :tags tags)
-        (echo "Bookmarked ~a." (object-display (url buffer))))))
+        (echo "Bookmarked ~a." (render-url (url buffer))))))
 
 (define-command bookmark-page ()
   "Bookmark the currently opened page(s) in the active buffer."

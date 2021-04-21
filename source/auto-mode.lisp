@@ -190,7 +190,7 @@ The rules are:
                      (cl-ppcre:regex-replace "www[0-9]?\\." (quri:uri-host url) ""))
             `(match-domain ,(quri:uri-domain url))
             `(match-host ,(quri:uri-host url)))
-        `(match-url ,(object-display url)))))
+        `(match-url ,(render-url url)))))
 
 (declaim (ftype (function (boolean t) (function (root-mode)))
                 make-mode-toggle-prompting-handler))
@@ -202,7 +202,7 @@ The rules are:
                        enable-p (mode-name mode))
                       (let ((url (first (prompt
                                          :prompt "URL:"
-                                         :input (object-display (url (buffer mode)))
+                                         :input (render-url (url (buffer mode)))
                                          :sources (make-instance 'prompter:raw-source)))))
                         (add-modes-to-auto-mode-rules (url-infer-match url)
                                                       :append-p t
