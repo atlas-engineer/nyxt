@@ -877,7 +877,7 @@ requested a reload."
         (progn
           (log:debug "Load URL from history entry ~a" entry)
           (load-webkit-history-entry buffer entry))
-        (webkit:webkit-web-view-load-uri (gtk-object buffer) (object-string uri)))))
+        (webkit:webkit-web-view-load-uri (gtk-object buffer) (quri:render-uri uri)))))
 
 (defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript)
   (%within-renderer-thread

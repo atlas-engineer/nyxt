@@ -314,7 +314,7 @@ current buffer."
                                              :proxy proxy-address))
              (push download downloads)
              ;; Add a watcher / renderer for monitoring download
-             (let ((download-render (make-instance 'download :uri (object-string url))))
+             (let ((download-render (make-instance 'download :uri (render-url url))))
                (setf (destination-path download-render)
                      (download-manager:filename download))
                (push download-render (downloads *browser*))
@@ -322,7 +322,7 @@ current buffer."
                  (download-watch download-render download)))
              download)))))
     (:renderer
-     (ffi-buffer-download buffer (object-string url))))
+     (ffi-buffer-download buffer (render-url url))))
   (list-downloads))
 
 (defmethod get-unique-window-identifier ((browser browser))
@@ -419,7 +419,7 @@ Deal with REQUEST-DATA with the following rules:
          nil)
         ((internal-buffer-p buffer)
          (log:debug "Load URL from internal buffer in new buffer: ~a" (render-url url))
-         (make-buffer-focus :url (object-string url))
+         (make-buffer-focus :url (render-url url))
          nil)
         (bound-function
          (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode keys))
@@ -427,7 +427,7 @@ Deal with REQUEST-DATA with the following rules:
          nil)
         ((new-window-p request-data)
          (log:debug "Load URL in new buffer: ~a" (render-url url))
-         (open-urls (list (object-string url)))
+         (open-urls (list (render-url url)))
          nil)
         ((not (known-type-p request-data))
          (log:debug "Buffer ~a initiated download of ~s." (id buffer) (render-url url))
@@ -504,7 +504,7 @@ The following example does a few things:
                (string (let ((action #'(lambda (url)
                                          (uiop:launch-program
                                           (format nil action
-                                                  (object-string url)))
+                                                  (render-url url)))
                                          nil)))
                          (funcall action url)
                          (log:info "Applied ~s shell-command URL-dispatcher on ~s"

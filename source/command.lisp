@@ -241,9 +241,6 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
               :type (or symbol null)))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(defmethod object-string ((slot slot))
-  (string-downcase (write-to-string (name slot))))
-
 (defmethod prompter:object-attributes ((slot slot))
   `(("Name" ,(name slot))
     ("Class" ,(class-sym slot))))
@@ -308,9 +305,6 @@ extra fiddling."
                                   mode-symbols)))
                    *command-list*)
         *command-list*)))
-
-(defmethod object-string ((command command))
-  (str:downcase (name command)))
 
 (declaim (ftype (function (function) (or null command)) function-command))
 (defun function-command (function)

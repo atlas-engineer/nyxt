@@ -27,9 +27,6 @@ the empty string."))
                  :search-url search-url
                  :fallback-url fallback-url))
 
-(defmethod object-string ((engine search-engine))
-  (shortcut engine))
-
 (defmethod prompter:object-attributes ((engine search-engine))
   `(("Shortcut" ,(shortcut engine))
     ("Search URL" ,(search-url engine))))

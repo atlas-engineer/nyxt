@@ -99,11 +99,6 @@ The handlers take the window as argument."))
 
 (hooks:define-hook-type window (function (window)))
 
-(defmethod object-string ((window window))
-  (alex:if-let ((b (active-buffer window)))
-    (object-string b)
-    (format nil "<#WINDOW ~a>" (id window))))
-
 (declaim (ftype (function (browser)) window-make))
 (export-always 'window-make)
 (defun window-make (browser)

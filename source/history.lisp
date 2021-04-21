@@ -31,9 +31,6 @@ not include explicit visits."))
 Entry for the global history.
 The total number of visit for a given URL is (+ explicit-visits implicit-visits)."))
 
-(defmethod object-string ((entry history-entry))
-  (render-url (url entry)))
-
 (defmethod prompter:object-attributes ((entry history-entry))
   `(("URL" ,(render-url (url entry)))
     ("Title" ,(title entry))))
@@ -59,7 +56,7 @@ class."
                                                      serialization-state)
   "Serialize `history-entry' by turning the URL and last access into strings."
   (declare (ignore serialization-state))
-  (prin1 (object-string uri) stream))
+  (prin1 (quri:render-uri uri) stream))
 
 (defmethod s-serialization::serialize-sexp-internal ((timestamp local-time:timestamp)
                                                      stream

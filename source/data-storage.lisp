@@ -392,9 +392,6 @@ you use this macro! For a modification-safe macro, see `with-data-access'."
   `(("ID" ,(gpg-key-key-id gpg-key))
     ("Additional" ,(str:join ", " (mapcar #'gpg-uid-user-id (gpg-key-uids gpg-key))))))
 
-(defmethod object-string ((gpg-key gpg-key))
-  (gpg-key-key-id gpg-key))
-
 (defun gpg-recipient (file)             ; TODO: Find a proper way to do this.
   "Return the key of FILE's recipient if any, `*gpg-recipient*' otherwise.
 As second value the email.

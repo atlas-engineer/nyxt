@@ -47,9 +47,6 @@ appended to the URL."))
     ("Shortcut" ,(shortcut entry))
     ("Search URL" ,(search-url entry))))
 
-(defmethod object-string ((entry bookmark-entry)) ; TODO: Delete?
-  (render-url (url entry)))
-
 (declaim (ftype (function (quri:uri quri:uri) boolean) equal-url))
 (defun equal-url (url1 url2)
   "URLs are equal if the URIs are equal, scheme excluded.
@@ -73,7 +70,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 (defun bookmark-add (url &key date title tags)
   (with-data-access (bookmarks (bookmarks-path (current-buffer)))
     (unless (or (url-empty-p url)
-                (string= "about:blank" (object-string url)))
+                (string= "about:blank" (render-url url)))
       (multiple-value-bind (entry bookmarks-without-url)
           (sera:partition (sera:partial #'equal-url url) bookmarks :key #'url)
         (let* (;; TODO: We should not need ensure-list.  Make sure

@@ -42,18 +42,10 @@
      (ps:ps (ps:chain document
                       (write (ps:lisp (markup:markup (:p "Operation cancelled.")))))))))
 
-(defmethod nyxt:object-string ((pkg ospm:os-package))
-  (ospm:name pkg))
-
 (defmethod prompter:object-attributes ((pkg ospm:os-package))
   `(("Name" ,(ospm:name pkg))
     ("Version" ,(ospm:version pkg))
     ("Synopsis" ,(ospm:synopsis pkg))))
-
-(defmethod nyxt:object-string ((output ospm:os-package-output))
-  (format nil "~a:~a"
-          (ospm:name (ospm:parent-package output))
-          (ospm:name output)))
 
 (defmethod prompter:object-attributes ((output ospm:os-package-output))
   (let* ((pkg (ospm:parent-package output))
@@ -66,9 +58,6 @@
     `(("Name" ,name)
       ("Version" ,(ospm:version pkg))
       ("Synopsis" ,(ospm:synopsis pkg)))))
-
-(defmethod nyxt:object-string ((gen ospm:os-generation))
-  (ospm:id gen))
 
 (defmethod prompter:object-attributes ((gen ospm:os-generation))
   `(("ID" ,(princ-to-string (ospm:id gen)))
@@ -245,7 +234,7 @@
       (:ul
        (loop for package-or-output in packages-or-outputs
              collect (markup:markup*
-                      `(:li ,(object-string package-or-output)
+                      `(:li ,(prompter:attributes-default package-or-output)
                             (:ul
                              ,@(or (mapcar (lambda (file)
                                              `(:li ,(if (viewable-file-type-p file)
@@ -390,7 +379,7 @@ OBJECTS can be a list of packages, a generation, etc."
                                                    :version ,(ospm:version package))
                                                   (ospm:find-os-packages
                                                    ,(ospm:name package)))))
-                           ,(object-string package-output))
+                           ,(prompter:attributes-default package-output))
                        " " ,(ospm:version package))))))
      buffer)
     (echo "")
