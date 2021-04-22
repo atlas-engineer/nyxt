@@ -82,13 +82,6 @@ Note that the function is executed *before* performing an action.")
               "History of inputs for the prompter.
 If nil, no history is used.")
 
-     (keymap nil
-             :type (or null keymap:keymap)
-             :documentation
-             "Keymap for the prompter.
-Useful, say, to switch source.
-It takes precedence over individual source keymaps.")
-
      (help-message ""                   ; TODO: Use.
                    :type (or string function)
                    :documentation

@@ -13,7 +13,6 @@ Non-exhaustive list of features:
 - Customizable initialization and cleanup functions.
 - Notifications sent when suggestion list is updated.
 - Per-source history.
-- Per-source keymaps.
 - Resumable prompters.
 - Persistent action (executed without closing the prompter).
 - Follow-mode (automatically run the persistent action on selection change).

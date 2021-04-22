@@ -514,7 +514,6 @@
                serapeum
                str
                trivial-package-local-nicknames
-               nyxt/keymap
                nyxt/class-star)
   :pathname "libraries/prompter/"
   :components ((:file "package")
