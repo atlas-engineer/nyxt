@@ -82,8 +82,7 @@ If it cannot be derived, return an empty `quri:uri'."
 (defun url-empty-p (url)
   "Small convenience function to check whether the given URL is empty."
   (the (values boolean &optional)
-       (when url
-         (uiop:emptyp (quri:render-uri url)))))
+       (uiop:emptyp (if (quri:uri-p url) (quri:render-uri url) url))))
 
 (declaim (ftype (function (quri:uri) boolean)
                 empty-path-url-p host-only-url-p))
