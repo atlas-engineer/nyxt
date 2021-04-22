@@ -1090,6 +1090,13 @@ ARGS are passed to the mode command."
           (apply #'funcall command :buffer buffer :activate t args)
           (log:warn "Mode command ~a not found." mode)))))
 
+(export-always 'active-modes)
+(defun active-modes (&optional (buffer (current-buffer)))
+  "Return the enabled modes of BUFFER.
+The modes are the mode symbols, as returned by `mode-name'."
+  (mapcar (lambda (mode) (mode-name mode))
+          (modes buffer)))
+
 (define-class active-mode-source (prompter:source)
   ((prompter:name "Active modes")
    (buffers :initarg :buffers :accessor buffers :initform nil)
