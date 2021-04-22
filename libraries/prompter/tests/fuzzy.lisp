@@ -37,10 +37,12 @@
 (prove:subtest "Fuzzy match"
   (let ((source (make-instance 'prompter:raw-source)))
     (flet ((match (input list)
+             (setf (prompter::current-input-downcase-p source)
+                   (str:downcasep input))
              (prompter:value
               (first (sort (mapcar (lambda (suggestion)
-                                     (prompter:fuzzy-match input suggestion))
-                                   (prompter::ensure-suggestions-list source list :input input))
+                                     (prompter:fuzzy-match suggestion source input))
+                                   (prompter::ensure-suggestions-list source list))
                            #'prompter:score>)))))
       (prove:is (match "hel" '("help-mode" "help" "foo-help" "help-foo-bar"))
           "help")

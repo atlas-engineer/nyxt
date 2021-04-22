@@ -87,9 +87,9 @@ inherited or used across different sources)."
 Both the key and the value are strings.")
    (match-data nil
                :type t
-               :writer t
                :documentation "Arbitrary data that can be used by the `filter'
-function and its preprocessors.")
+function and its preprocessors.  It's the responsibility of the filter to ensure
+the match-data is ready for its own use.")
    (score 0.0
           :documentation "A score the can be set by the `filter' function and
 used by the `sort-predicate'."))
@@ -150,41 +150,49 @@ Suggestions are made with the `suggestion-maker' slot from `source'."))
 suggestions."
   (sera:string-join (attributes-values attributes) " "))
 
-(defmethod initialize-instance :after ((suggestion suggestion) &key source input)
-  "Set SUGGESTION `match-data' if empty and if SOURCE and INPUT initargs are provided.
-`match-data' is set by concatenating all the active attributes into a
-space-separated string.
-The `match-data' is downcased if INPUT is lower-case."
+(defmethod initialize-instance :after ((suggestion suggestion) &key)
+  "Check validity."
   (unless (object-attributes-p (attributes suggestion))
     (warn "Attributes of ~s should be a non-dotted alist instead of ~s" (value suggestion) (attributes suggestion))
-    (setf (attributes suggestion) (default-object-attributes (value suggestion))))
-  ;; Access directly because reader also has a provision for empty values.
-  (when (uiop:emptyp (slot-value suggestion 'match-data))
-    (setf (match-data suggestion)
-          (funcall
-           (if (or (not input) (str:downcasep input))
-               #'string-downcase
-               #'identity)
-           (format-attributes
-            (if source
-                (active-attributes suggestion :source source)
-                (attributes suggestion)))))))
+    (setf (attributes suggestion) (default-object-attributes (value suggestion)))))
 
-(defmethod match-data ((suggestion suggestion))
-  (alex:if-let ((value (slot-value suggestion 'match-data)))
-    value
+(defun ensure-non-base-string (s)
+  "Convert S to (simple-array character) type."
+  (if (typep s 'base-string)
+      ;; REVIEW: Maybe simpler to coerce to 'string?
+      (coerce s `(simple-array character (,(length s))))
+      s))
+
+(defun ensure-match-data-string (suggestion source)
+  "Return SUGGESTION's `match-data' as a string.
+If unset, set it to the return value of `format-attributes'."
+  (flet ((maybe-downcase (s)
+           (if (current-input-downcase-p source)
+               (string-downcase s)
+               s)))
     (setf (match-data suggestion)
-          (string-downcase (format-attributes (attributes suggestion))))))
+          (if (and (match-data suggestion)
+                   (typep (match-data suggestion) 'string)
+                   ;; mk-string-metrics requires the (simple-array character)
+                   ;; type, but 'string should be enough.  See
+                   ;; `mk-string-metrics:damerau-levenshtein'.
+                   (not (typep (match-data suggestion) 'base-string)))
+              (if (not (eq (last-input-downcase-p source)
+                           (current-input-downcase-p source)))
+                  (maybe-downcase (match-data suggestion))
+                  (match-data suggestion))
+              (let ((result (ensure-non-base-string
+                             (format-attributes (attributes suggestion)))))
+                (maybe-downcase result)))))
+  (match-data suggestion))
 
 (export-always 'make-suggestion)
-(defmethod make-suggestion ((value t) source &optional input)
+(defmethod make-suggestion ((value t))
   "Return a `suggestion' wrapping around VALUE.
 Attributes are set with `object-attributes'."
   (make-instance 'suggestion
                  :value value
-                 :attributes (object-attributes value)
-                 :source source
-                 :input input))
+                 :attributes (object-attributes value)))
 
 (define-class source ()
   ((name (error "Source must have a name")
@@ -265,8 +273,8 @@ Called on
    (filter #'fuzzy-match
            :type (or null function function-symbol)
            :documentation
-           "Takes `input' and a `suggestion' and return a new suggestion, or
-nil if the suggestion is discarded.")
+           "Takes a `suggestion', the `source' and the `input' and return a new
+suggestion, or nil if the suggestion is discarded.")
 
    (filter-preprocessor #'delete-inexact-matches
                         :type (or null function function-symbol)
@@ -287,6 +295,18 @@ It is passed the following arguments:
 - the filtered suggestions;
 - the source;
 - the input.")
+
+   (current-input-downcase-p nil
+                             :type boolean
+                             :export nil
+                             :documentation "Whether input is downcased.
+This is useful for filters to avoid recomputing it every time.")
+   (last-input-downcase-p nil
+                             :type boolean
+                             :export nil
+                             :documentation "Whether previous input was
+downcased.  This is useful to know if there is a case difference since last time
+and to know if we have to recompute the match-data for instance.")
 
    (sort-predicate #'score>
                    :type (or null function)
@@ -405,7 +425,7 @@ call."))
 
 (defun make-input-suggestion (suggestions source input)
   (declare (ignore suggestions))
-  (list (funcall (suggestion-maker source) input source)))
+  (list (funcall (suggestion-maker source) input)))
 
 (define-class raw-source (source)
   ((name "Input")
@@ -426,7 +446,7 @@ If you are looking for a source that just returns its plain suggestions, use `so
 (defun make-word-suggestions (suggestions source input)
   (declare (ignore suggestions))
   (mapcar (lambda (word)
-            (funcall (suggestion-maker source) word source))
+            (funcall (suggestion-maker source) word))
           (sera:words input)))
 
 (define-class word-source (source)
@@ -438,15 +458,12 @@ If you are looking for a source that just returns its plain suggestions, use `so
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "Prompt source for user input words."))
 
-(defmethod ensure-suggestions-list ((source source) elements
-                                    &key input &allow-other-keys)
+(defmethod ensure-suggestions-list ((source source) elements)
   (mapcar (lambda (suggestion-value)
             (if (suggestion-p suggestion-value)
                 suggestion-value
                 (funcall (suggestion-maker source)
-                         suggestion-value
-                         source
-                         input)))
+                         suggestion-value)))
           (uiop:ensure-list elements)))
 
 (defmethod initialize-instance :after ((source source) &key)
@@ -611,6 +628,7 @@ feedback to the user while the list of suggestions is being computed."
     ;; REVIEW: Is there a cleaner way to do this?
     (ignore-errors (bt:destroy-thread (update-thread source))))
   (setf (ready-channel source) new-ready-channel)
+  (setf input (ensure-non-base-string input))
   (setf (update-thread source)
         (bt:make-thread
          (lambda ()
@@ -626,14 +644,13 @@ feedback to the user while the list of suggestions is being computed."
                         initial-suggestions-copy))
                   (process! (preprocessed-suggestions)
                     (let ((last-notification-time (get-internal-real-time)))
-
                       (setf (slot-value source 'suggestions) '())
                       (if (or (str:empty? input)
                               (not (filter source)))
                           (setf (slot-value source 'suggestions) preprocessed-suggestions)
                           (dolist (suggestion preprocessed-suggestions)
                             (sera:and-let* ((processed-suggestion
-                                             (funcall (filter source) input suggestion)))
+                                             (funcall (filter source) suggestion source input)))
                               (setf (slot-value source 'suggestions)
                                     (insert-item-at suggestion (sort-predicate source)
                                                     (suggestions source)))
@@ -653,9 +670,10 @@ feedback to the user while the list of suggestions is being computed."
                              (maybe-funcall (filter-postprocessor source)
                                             (slot-value source 'suggestions)
                                             source
-                                            input)
-                             :input input)))))
+                                            input))))))
              (wait-for-initial-suggestions)
+             (setf (last-input-downcase-p source) (current-input-downcase-p source))
+             (setf (current-input-downcase-p source) (str:downcasep input))
              (process!
               (preprocess
                ;; We copy the list of initial-suggestions so that the

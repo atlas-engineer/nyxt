@@ -28,11 +28,12 @@ If any input substring matches exactly (but not necessarily a whole word),
 then all suggestions that are not exactly matched by at least one substring are removed.
 
 Suitable as a `source' `filter-preprocessor'."
-  (declare (ignore source))
   (unless (str:empty? input)
     (let ((exactly-matching-substrings (find-exactly-matching-substrings
                                         input
-                                        (mapcar #'match-data suggestions))))
+                                        (mapcar (lambda (suggestion)
+                                                  (ensure-match-data-string suggestion source))
+                                                suggestions))))
       (when exactly-matching-substrings
         (setf suggestions
               (delete-if (lambda (suggestion)
@@ -44,11 +45,10 @@ Suitable as a `source' `filter-preprocessor'."
 (export-always 'filter-exact-matches)
 (defun filter-exact-matches (suggestions source input)
   "Return only SUGGESTIONS that match all the words in INPUT."
-  (declare (ignore source))
   (if (str:empty? input)
       suggestions
       (let ((words (sera:words input)))
         (delete-if (lambda (suggestion)
-                     (notevery (lambda (sub) (search sub (match-data suggestion)))
+                     (notevery (lambda (sub) (search sub (ensure-match-data-string suggestion source)))
                                words))
                    suggestions))))

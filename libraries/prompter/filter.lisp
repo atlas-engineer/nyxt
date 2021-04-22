@@ -36,12 +36,6 @@ Only substrings of SUBSTRING-LENGTH characters or more are considered."
            (length long-substrings))
         0)))
 
-(defun to-unicode (input)
-  "Convert INPUT to (simple-array character) type."
-  (if (typep input 'base-string)
-      (coerce input `(simple-array character (,(length input))))
-      input))
-
 (defun score-suggestion-string (input suggestion-string)
   "Return a SUGGESTION's score for INPUT.
 A higher score means the suggestion-string comes first."
@@ -61,16 +55,14 @@ A higher score means the suggestion-string comes first."
      (score suggestion2)))
 
 (export-always 'fuzzy-match)
-(defun fuzzy-match (input suggestion)
+(defun fuzzy-match (suggestion source input)
   "Score the SUGGESTION according to a fuzzy string distance to the INPUT."
-  (setf input (to-unicode input))
-  (setf (match-data suggestion) (to-unicode (match-data suggestion)))
   (setf (score suggestion)
-        (score-suggestion-string input (match-data suggestion)))
+        (score-suggestion-string input (ensure-match-data-string suggestion source)))
   suggestion)
 
 (export-always 'submatches)
-(defun submatches (input suggestion)      ; TODO: Add tests!
+(defun submatches (suggestion source input)      ; TODO: Add tests!
   "Return SUGGESTION untouched if all INPUT strings are contained in it.
 
 This is suitable as a prompter `filter'.
@@ -84,5 +76,5 @@ It probably makes little sense to use it together with the
                             (lambda (suggestion-match-data)
                               (str:contains? term suggestion-match-data :ignore-case t)))
                           terms))
-           (match-data suggestion))
+           (ensure-match-data-string suggestion source))
       suggestion)))
