@@ -216,10 +216,11 @@ If STEPS is negative, go to next pages instead."
    :attributes `(("Name" ,(symbol-name (typecase action
                                          (command (name action))
                                          (t action))))
-                 ("Documentation" ,(first (sera:lines
-                                           (typecase action
-                                             (command (nyxt::docstring action))
-                                             (t (documentation action 'function)))))))
+                 ("Documentation" ,(or (first (sera:lines
+                                               (typecase action
+                                                 (command (nyxt::docstring action))
+                                                 (t (documentation action 'function)))))
+                                       "")))
    :source source
    :input input))
 
