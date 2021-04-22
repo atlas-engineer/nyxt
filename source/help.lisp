@@ -178,13 +178,28 @@ A command is a special kind of function that can be called with
                                    'nyxt/help-mode:help-mode)
           (let* ((slots (class-public-slots input))
                  (slot-descs (apply #'str:concat (mapcar (alex:rcurry #'describe-slot* input) slots))))
-            (str:concat
-             (markup:markup
-              (:style (style buffer))
-              (:h1 (symbol-name input))
-              (:p (:pre (documentation input 'type)))
-              (:h2 "Slots:"))
-             slot-descs))))
+            (macrolet ((class-link (class-name)
+                         `(markup:markup
+                           (:li (:a :href (lisp-url `(nyxt::describe-class ',class-name))
+                                    ,class-name)))))
+              (str:concat
+               (markup:markup
+                (:style (style buffer))
+                (:h1 (symbol-name input))
+                (:p (:pre (documentation input 'type))))
+               (when (mopu:direct-superclasses input)
+                 (markup:markup
+                  (:h2 "Direct superclasses:")
+                  (:ul (loop for class-name in (mapcar #'class-name (mopu:direct-superclasses input))
+                             collect (class-link class-name)))))
+               (when (mopu:direct-subclasses input)
+                 (markup:markup
+                  (:h2 "Direct subclasses:")
+                  (:ul (loop for class-name in (mapcar #'class-name (mopu:direct-subclasses input))
+                             collect (class-link class-name)))))
+               (markup:markup
+                (:h2 "Slots:"))
+               slot-descs)))))
       (prompt
        :prompt "Describe class"
        :sources (make-instance 'class-source))))
