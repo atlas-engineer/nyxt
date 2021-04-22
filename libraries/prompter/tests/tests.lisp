@@ -201,7 +201,7 @@
       (prove:is (all-source-suggestions prompter)
                 '("foo")))))
 
-(prove:subtest "Alist-plist source"
+(prove:subtest "Alist-plist-hash source"
   (let ((prompter (prompter:make
                    :sources (list
                              (make-instance 'prompter:source
@@ -215,11 +215,15 @@
                              (make-instance 'prompter:source
                                             :name "Dotted alist source"
                                             :constructor '(((key1 . 101) ("key2" . 102))
-                                                           ((key1 . "val1") ("key2" . "val2"))))))))
+                                                           ((key1 . "val1") ("key2" . "val2"))))
+                             (make-instance 'prompter:source
+                                            :name "Hash table source"
+                                            :constructor (list (sera:dict :b 200 "a" 300 17 400)
+                                                               (sera:dict :b 2000 "a" 3000 17 4000)))))))
     (prove:is (length (prompter:sources prompter))
-              3)
+              4)
     (prove:is (mapcar (lambda (s) (length (prompter:suggestions s))) (prompter:sources prompter))
-              '(2 2 2))
+              '(2 2 2 2))
     (prove:is (mapcar #'prompter:attributes
                       (prompter:suggestions (first (prompter:sources prompter))))
               '((("A" "17") ("B" "18"))
@@ -231,6 +235,10 @@
     (prove:is (mapcar #'prompter:attributes
                       (prompter:suggestions (third (prompter:sources prompter))))
               '((("KEY1" "101") ("key2" "102"))
-                (("KEY1" "val1") ("key2" "val2"))))))
+                (("KEY1" "val1") ("key2" "val2"))))
+    (prove:is (mapcar #'prompter:attributes
+                      (prompter:suggestions (fourth (prompter:sources prompter))))
+              '((("17" "400") ("B" "200") ("a" "300"))
+                (("17" "4000") ("B" "2000") ("a" "3000"))))))
 
 (prove:finalize)

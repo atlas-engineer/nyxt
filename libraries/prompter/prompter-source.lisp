@@ -43,6 +43,14 @@ It's useful to separate concerns and compose between different object attributes
 and different sources (for instance, the same `object-attributes' method can be
 inherited or used across different sources)."
   (cond
+    ((hash-table-p object)
+     (let ((result))
+       (maphash (lambda (key value)
+                  (push (list (princ-to-string key)
+                              (princ-to-string value))
+                        result))
+                object)
+       (sort result #'string< :key #'first)))
     ((or (typep object 'standard-object)
          (typep object 'structure-object))
      (or
