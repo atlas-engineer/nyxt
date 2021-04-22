@@ -118,8 +118,8 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                     initial-suggestions-copy
                                     source
                                     (last-word input))))
-   (prompter:filter (lambda (input suggestion)
-                      (prompter:fuzzy-match (last-word input) suggestion)))
+   (prompter:filter (lambda (suggestion source input)
+                      (prompter:fuzzy-match suggestion source (last-word input))))
    (prompter:multi-selection-p t)
    (prompter:constructor (tag-suggestions)))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
