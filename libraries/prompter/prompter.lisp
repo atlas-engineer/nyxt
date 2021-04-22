@@ -82,11 +82,6 @@ Note that the function is executed *before* performing an action.")
               "History of inputs for the prompter.
 If nil, no history is used.")
 
-     (help-message ""                   ; TODO: Use.
-                   :type (or string function)
-                   :documentation
-                   "Help message for this prompter.
-It can be a function of one argument, the prompter, which returns a string.")
      (result-channel (make-channel 1)
                      :type calispel:channel
                      :documentation

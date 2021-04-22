@@ -378,13 +378,7 @@ Also see `follow-delay'.")
    (follow-delay 0.0
                  :documentation
                  "Execute `persistent-action' after this delay when `follow-p' is
-non-nil.")
-
-   (help-message ""                   ; TODO: Use.
-                 :type (or string function)
-                 :documentation
-                 "Help message for this source.
-It can be a function of one argument, the prompter, which returns a string."))
+non-nil."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
