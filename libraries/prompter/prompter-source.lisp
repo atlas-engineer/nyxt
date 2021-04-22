@@ -603,7 +603,9 @@ feedback to the user while the list of suggestions is being computed."
     ;; OK, only the first value is read, so worst case the caller sees that the
     ;; source is terminated even though it just finished updating.
     (calispel:! (ready-channel source) nil)
-    (bt:destroy-thread (update-thread source)))
+    ;; Ignore errors in case thread is already terminated.
+    ;; REVIEW: Is there a cleaner way to do this?
+    (ignore-errors (bt:destroy-thread (update-thread source))))
   (setf (ready-channel source) new-ready-channel)
   (setf (update-thread source)
         (bt:make-thread
