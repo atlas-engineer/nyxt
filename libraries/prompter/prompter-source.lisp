@@ -162,7 +162,7 @@ The `match-data' is downcased if INPUT is lower-case."
   (when (uiop:emptyp (slot-value suggestion 'match-data))
     (setf (match-data suggestion)
           (funcall
-           (if (and input (str:downcasep input))
+           (if (or (not input) (str:downcasep input))
                #'string-downcase
                #'identity)
            (format-attributes

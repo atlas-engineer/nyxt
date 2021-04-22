@@ -79,6 +79,9 @@
       (prove:is (match "FOO" '("foo-dash-bar" "FOO-BAR"))
           "FOO-BAR"
           "input is uppercase (small list).")
+      (prove:is (match "foo" '("zzz" "FOO-BAR"))
+          "FOO-BAR"
+          "lowercase matches uppercase")
       (prove:is (match "[" '("test1" "http://[1:0:0:2::3:0.]/" "test2"))
           "http://[1:0:0:2::3:0.]/"
           "match regex meta-characters"))))
