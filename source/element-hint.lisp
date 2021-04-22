@@ -176,11 +176,20 @@ identifier for every hinted element."
    (prompter:persistent-action (lambda (suggestion)
                                  (highlight-selected-hint :link-hint suggestion)))))
 
+(define-mode nyxt/prompt-buffer-mode::element-hint-mode (nyxt/prompt-buffer-mode:prompt-buffer-mode)
+  "Prompt buffer mode for element hinting."
+  ((keymap-scheme
+    (define-scheme "element-hint"
+      scheme:cua
+      (list
+       "M-i" 'toggle-hints-transparency)))))
+
 (serapeum:export-always 'query-hints)
 (defun query-hints (prompt function &key multi-selection-p annotate-visible-only-p)
   (let* ((buffer (current-buffer)))
     (let ((result (prompt
                    :prompt prompt
+                   :default-modes '(element-hint-mode prompt-buffer-mode)
                    :history nil
                    :sources
                    (make-instance
