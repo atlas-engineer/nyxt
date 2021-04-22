@@ -201,4 +201,36 @@
       (prove:is (all-source-suggestions prompter)
                 '("foo")))))
 
+(prove:subtest "Alist-plist source"
+  (let ((prompter (prompter:make
+                   :sources (list
+                             (make-instance 'prompter:source
+                                            :name "Plist source"
+                                            :constructor '((:a 17 :b 18)
+                                                           (:a "foo" :b "bar")))
+                             (make-instance 'prompter:source
+                                            :name "Alist source"
+                                            :constructor '(((key1 101) ("key2" 102))
+                                                           ((key1 "val1") ("key2" "val2"))))
+                             (make-instance 'prompter:source
+                                            :name "Dotted alist source"
+                                            :constructor '(((key1 . 101) ("key2" . 102))
+                                                           ((key1 . "val1") ("key2" . "val2"))))))))
+    (prove:is (length (prompter:sources prompter))
+              3)
+    (prove:is (mapcar (lambda (s) (length (prompter:suggestions s))) (prompter:sources prompter))
+              '(2 2 2))
+    (prove:is (mapcar #'prompter:attributes
+                      (prompter:suggestions (first (prompter:sources prompter))))
+              '((("A" "17") ("B" "18"))
+                (("A" "foo") ("B" "bar"))))
+    (prove:is (mapcar #'prompter:attributes
+                      (prompter:suggestions (second (prompter:sources prompter))))
+              '((("KEY1" "101") ("key2" "102"))
+                (("KEY1" "val1") ("key2" "val2"))))
+    (prove:is (mapcar #'prompter:attributes
+                      (prompter:suggestions (third (prompter:sources prompter))))
+              '((("KEY1" "101") ("key2" "102"))
+                (("KEY1" "val1") ("key2" "val2"))))))
+
 (prove:finalize)

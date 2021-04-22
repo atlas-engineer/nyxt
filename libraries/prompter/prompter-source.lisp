@@ -51,6 +51,24 @@ inherited or used across different sources)."
                       (princ-to-string (slot-value object slot))))
               (object-public-slots object))
       (default-object-attributes object)))
+    ((plist-p object)
+     (let ((result '()))
+       (alex:doplist (key value object result)
+                     (push (list (string-capitalize key) (princ-to-string value))
+                           result))
+       (nreverse result)))
+    ((undotted-alist-p object)
+     (mapcar (lambda (pair)
+               (list
+                (princ-to-string (first pair))
+                (princ-to-string (second pair))))
+             object))
+    ((alist-p object)
+     (mapcar (lambda (pair)
+               (list
+                (princ-to-string (first pair))
+                (princ-to-string (rest pair))))
+             object))
     (t (default-object-attributes object))))
 
 (define-class suggestion ()
@@ -76,18 +94,39 @@ The other slots are optional.
 
 Suggestions are made with the `suggestion-maker' slot from `source'."))
 
-(defun non-dotted-alist-p (object &optional value-type)
+(defun pair-p (object)
+  (and (listp object)
+       (or (not (listp (rest object)))
+           (null (rest (rest object))))))
+
+(defun undotted-pair-p (object)
+  (and (listp object)
+       (listp (rest object))
+       (null (rest (rest object)))))
+
+(defun alist-p (object)
+  "Return non-nil if OBJECT is an alist, dotted or undotted."
+  (and (listp object)
+       (every #'pair-p object)))
+
+(defun undotted-alist-p (object &optional value-type)
   "If VALUE-TYPE is non-nil, check if all values are of the specified type."
   (and (listp object)
-       (every #'listp object)
-       (every #'listp (mapcar #'rest object))
-       (every (sera:eqs 2) (mapcar #'length object))
+       (every #'undotted-pair-p object)
        (or (not value-type)
            (every (lambda (e) (typep (first e) value-type))
                   (mapcar #'rest object)))))
 
+(defun plist-p (object)
+  "Return non-nil if OBJECT is a plist."
+  (and (listp object)
+       (alex:proper-list-p object)
+       (evenp (length object))
+       (loop :for x :in object :by #'cddr
+             :always (keywordp x))))
+
 (defun object-attributes-p (object)
-  (non-dotted-alist-p object 'string))
+  (undotted-alist-p object 'string))
 
 (defmethod attribute-key ((attribute t))
   (first attribute))
