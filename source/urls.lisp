@@ -4,13 +4,16 @@
 (in-package :nyxt)
 
 (export-always 'render-url)
-(declaim (ftype (function (quri:uri) string) render-url))
+(declaim (ftype (function ((or quri:uri string)) string) render-url))
 (defun render-url (url)
     "Return decoded URL.
 If the URL contains hexadecimal-encoded characters, return their unicode counterpart."
-  (the (values (or string null) &optional)
-       (or (ignore-errors (ffi-display-uri (quri:render-uri url)))
-           (quri:render-uri url))))
+  (let ((url (if (stringp url)
+                 url
+                 (quri:render-uri url))))
+    (the (values (or string null) &optional)
+         (or (ignore-errors (ffi-display-uri url))
+             url))))
 
 (export-always 'generate-search-query)
 (defun generate-search-query (search-string search-url)
