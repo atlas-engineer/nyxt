@@ -264,7 +264,7 @@ CLASS can be a class symbol or a list of class symbols, as with
              :href (lisp-url `(nyxt::configure-slot
                                'default-modes
                                '(buffer web-buffer)
-                               :value '%slot-default)
+                               :value '%slot-default%)
                              `(nyxt/emacs-mode:emacs-mode :activate nil)
                              `(nyxt/vi-mode:vi-normal-mode :activate nil))
              "Use default (CUA)"))
@@ -272,7 +272,7 @@ CLASS can be a class symbol or a list of class symbols, as with
              :href (lisp-url `(nyxt::configure-slot
                                'default-modes
                                '(buffer web-buffer)
-                               :value '(append '(emacs-mode) %slot-default))
+                               :value '(append '(emacs-mode) %slot-default%))
                              `(nyxt/emacs-mode:emacs-mode :activate t)
                              `(nyxt/vi-mode:vi-normal-mode :activate nil))
              "Use Emacs"))
@@ -280,7 +280,7 @@ CLASS can be a class symbol or a list of class symbols, as with
              :href (lisp-url `(nyxt::configure-slot
                                'default-modes
                                '(buffer web-buffer)
-                               :value '(append '(vi-normal-mode) %slot-default))
+                               :value '(append '(vi-normal-mode) %slot-default%))
                              `(nyxt/vi-mode:vi-normal-mode :activate t)
                              `(nyxt/emacs-mode:emacs-mode :activate nil))
              "Use vi"))

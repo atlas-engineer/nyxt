@@ -136,7 +136,7 @@ Example:
   ((request-resource-hook
     (reduce #'hooks:add-hook
             (mapcar #'make-handler-resource (list #'old-reddit-handler #'auto-proxy-handler))
-            :initial-value %slot-default))))")
+            :initial-value %slot-default%))))")
    (default-new-buffer-url (quri:uri "https://nyxt.atlas.engineer/start")
                            :documentation "The URL set to a new blank buffer opened by Nyxt.")
    (scroll-distance 50

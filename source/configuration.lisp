@@ -93,7 +93,7 @@ CLASS-SYM to NEW-SUPERCLASSES.  The class is restored when exiting BODY."
               ,@body)
          (define-user-class ,class-sym ,old-superclasses)))))
 
-(export-always '%slot-default)
+(export-always '%slot-default%)
 (defmacro %define-configuration (name &body slots)
   (let* ((final-name (user-class-name name))
          (temp-name (gentemp (string final-name) (symbol-package name))))
@@ -110,8 +110,8 @@ CLASS-SYM to NEW-SUPERCLASSES.  The class is restored when exiting BODY."
                                           :initform))
                 if known-slot?
                   collect (list (first slot)
-                                :initform `(funcall (lambda (%slot-default)
-                                                      (declare (ignorable %slot-default))
+                                :initform `(funcall (lambda (%slot-default%)
+                                                      (declare (ignorable %slot-default%))
                                                       ,(cadr slot))
                                                     ,initform))
                 else do
@@ -133,20 +133,20 @@ Classes can be modes or a one of the user-configurable classes like `browser',
 `buffer', `prompt-buffer', `window'.  Note that the classes must _not_ be prefixed
 by 'user-'.
 
-The `%slot-default' variable is replaced by the slot initform.
+The `%slot-default%' variable is replaced by the slot initform.
 
 Example that sets some defaults for all buffers:
 
 \(define-configuration (buffer web-buffer)
   ((status-buffer-height 24)
-   (default-modes (append '(vi-normal-mode) %slot-default))))
+   (default-modes (append '(vi-normal-mode) %slot-default%))))
 
 Example to get the `blocker-mode' command to use a new default hostlists:
 
 \(define-configuration nyxt/blocker-mode:blocker-mode
-  ((nyxt/blocker-mode:hostlists (append (list *my-blocked-hosts*) %slot-default))))
+  ((nyxt/blocker-mode:hostlists (append (list *my-blocked-hosts*) %slot-default%))))
 
-In the above, `%slot-default' will be substituted with the default value of
+In the above, `%slot-default%' will be substituted with the default value of
 `default-modes'.
 
 In the last example, `nyxt/blocker-mode:user-blocker-mode' is defined to inherit

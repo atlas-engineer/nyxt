@@ -38,7 +38,7 @@ necessary).")
     (:p "Example:")
     (:pre (:code "
 \(define-configuration buffer
-  ((default-modes (append '(noscript-mode) %slot-default))))"))
+  ((default-modes (append '(noscript-mode) %slot-default%))))"))
     (:p "The above turns on the 'noscript-mode' (disables JavaScript) by default for
 every buffer.")
     (:p "The " (:code "define-configuration") " macro can be used to customize
@@ -67,11 +67,11 @@ add the following to your configuration:")
      (:li "VI bindings:"
       (:pre (:code "
 \(define-configuration (buffer web-buffer)
-  ((default-modes (append '(vi-normal-mode) %slot-default))))")))
+  ((default-modes (append '(vi-normal-mode) %slot-default%))))")))
      (:li "Emacs bindings:"
       (:pre (:code "
 \(define-configuration (buffer web-buffer)
-  ((default-modes (append '(emacs-mode) %slot-default))))"))))
+  ((default-modes (append '(emacs-mode) %slot-default%))))"))))
     (:p "You can create new scheme names with " (:code "keymap:make-scheme-name")
         ".  See also the " (:code "scheme-name") " class and the "
         (:code "define-scheme") " macro.")
@@ -100,7 +100,7 @@ have priorities over the other modes key bindings.")
                    scheme:vi-normal *my-keymap*))))
 
 \(define-configuration (buffer web-buffer)
-  ((default-modes (append '(my-mode) %slot-default))))"))
+  ((default-modes (append '(my-mode) %slot-default%))))"))
 
     (:h3 "Search engines")
     (:p "See the " (:code "search-engines") " buffer slot documentation.
@@ -169,7 +169,7 @@ can set a hook like the following in your configuration file:")
 
 \(define-configuration web-buffer
   ((request-resource-hook
-    (add-hook %slot-default (make-handler-resource #'old-reddit-handler)))))"))
+    (add-hook %slot-default% (make-handler-resource #'old-reddit-handler)))))"))
     (:p "(See " (:code "url-dispatching-handler")
         " for a simpler way to achieve the same result.)")
     (:p "Or, if you want to set multiple handlers at once,")
@@ -179,7 +179,7 @@ can set a hook like the following in your configuration file:")
     (reduce #'hooks:add-hook
             (mapcar #'make-handler-resource (list #'old-reddit-handler
                                                   #'my-other-handler))
-            :initial-value %slot-default))))"))
+            :initial-value %slot-default%))))"))
     (:p "Some hooks like the above example expect a return value, so it's
 important to make sure we return " (:code "request-data") " here.  See the
 documentation of the respective hooks for more details.")

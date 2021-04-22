@@ -142,7 +142,7 @@ Example:
   ((nyxt/blocker-mode:hostlists (list *my-blocked-hosts* nyxt/blocker-mode:*default-hostlist*))))
 
 \(define-configuration buffer
-  ((default-modes (append '(my-blocker-mode) %slot-default))))"
+  ((default-modes (append '(my-blocker-mode) %slot-default%))))"
   ((hostlists (list *default-hostlist*))
    (destructor
     (lambda (mode)

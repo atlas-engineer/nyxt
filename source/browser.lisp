@@ -486,7 +486,7 @@ The following example does a few things:
                                              (uiop:launch-program
                                               `(\"emacs\" ,(quri:uri-path url)))
                                              nil)))
-                                    :initial-value %slot-default))))"
+                                    :initial-value %slot-default%))))"
   (make-handler-resource
    #'(lambda (request-data)
        (let ((url (url request-data)))
