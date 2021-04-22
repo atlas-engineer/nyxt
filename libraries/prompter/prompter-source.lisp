@@ -378,7 +378,14 @@ call."))
    (multi-selection-p nil))
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
-  (:documentation "Prompt source for raw user input."))
+  (:documentation "Prompt source for raw user input.
+Its only suggestion is the user input, thus it has no constructor.
+If you are looking for a source that just returns its plain suggestions, use `source'."))
+
+(defmethod initialize-instance :after ((raw-source raw-source) &key)
+  "Report error when RAW-SOURCE is provided bad initial arguments."
+  (when (constructor raw-source)
+    (error "Raw source should have no constructor: ~a" (constructor raw-source))))
 
 (defun make-word-suggestions (suggestions source input)
   (declare (ignore suggestions))
