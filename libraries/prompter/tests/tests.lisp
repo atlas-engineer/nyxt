@@ -79,8 +79,8 @@
 
 (defvar *prompter-suggestion-update-interval* 1.5)
 
-(defun slow-identity-match (input suggestion)
-  (declare (ignore input))
+(defun slow-identity-match (suggestion source input)
+  (declare (ignore source input))
   (sleep *prompter-suggestion-update-interval*)
   suggestion)
 
