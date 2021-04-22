@@ -176,14 +176,6 @@ identifier for every hinted element."
    (prompter:persistent-action (lambda (suggestion)
                                  (highlight-selected-hint :link-hint suggestion)))))
 
-(define-mode nyxt/prompt-buffer-mode::element-hint-mode (nyxt/prompt-buffer-mode:prompt-buffer-mode)
-  "Prompt buffer mode for element hinting."
-  ((keymap-scheme
-    (define-scheme "element-hint"
-      scheme:cua
-      (list
-       "M-i" 'toggle-hints-transparency)))))
-
 (serapeum:export-always 'query-hints)
 (defun query-hints (prompt function &key multi-selection-p annotate-visible-only-p)
   (let* ((buffer (current-buffer)))
@@ -423,17 +415,3 @@ visible nosave active buffer."
                             (sleep 0.25)))
                  :multi-selection-p t
                  :annotate-visible-only-p annotate-visible-only-p)))
-
-(define-command toggle-hints-transparency (&key (buffer (current-buffer)))
-  "Toggle the on-screen element hints transparency."
-  (pflet ((toggle-transparent ()
-            (defun qsa (context selector)
-              "Alias of document.querySelectorAll"
-              (ps:chain context (query-selector-all selector)))
-            (ps:dolist (element (qsa document ".nyxt-hint"))
-              (if (or (= (ps:chain element style opacity) "1")
-                      (= (ps:chain element style opacity) ""))
-                  (setf (ps:chain element style opacity) "0.2")
-                  (setf (ps:chain element style opacity) "1.0")))))
-    (with-current-buffer buffer
-      (toggle-transparent))))
