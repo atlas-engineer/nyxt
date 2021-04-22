@@ -380,11 +380,6 @@ Also see `follow-delay'.")
                  "Execute `persistent-action' after this delay when `follow-p' is
 non-nil.")
 
-   (keymap nil
-           :type (or null keymap:keymap)
-           :documentation
-           "Keymap specific to this source.")
-
    (help-message ""                   ; TODO: Use.
                  :type (or string function)
                  :documentation
