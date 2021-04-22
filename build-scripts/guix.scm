@@ -10,18 +10,18 @@
 ;;
 ;; To use as the basis for a development environment, run:
 ;;
-;;   guix environment --container --load=build-scripts/guix.scm --ad-hoc glib glib-networking gsettings-desktop-schemas git-minimal
+;;   guix environment --container --load=build-scripts/guix.scm --ad-hoc glib glib-networking gsettings-desktop-schemas
 ;;
 ;; Replace --container by --pure if you still want ASDF to see external
 ;; libraries in ~/common-lisp, etc.
 ;; To build a local executable and then run it:
 ;;
-;;   guix environment --container --load=build-scripts/guix.scm --ad-hoc git-minimal -- make all NYXT_INTERNAL_QUICKLISP=false
+;;   guix environment --container --load=build-scripts/guix.scm -- make all NYXT_INTERNAL_QUICKLISP=false
 ;;   guix environment --pure --load=build-scripts/guix.scm -- ./nyxt
 ;;
 ;; To start in a container, run:
 ;;
-;;   guix environment --load=build-scripts/guix.scm --container --network --share=/PATH/TO/YOUR/NYXT/CHECKOUT=/nyxt --preserve='^DISPLAY$' --expose=/etc/ssl/certs --ad-hoc nss-certs glib glib-networking gsettings-desktop-schemas git-minimal
+;;   guix environment --load=build-scripts/guix.scm --container --network --share=/PATH/TO/YOUR/NYXT/CHECKOUT=/nyxt --preserve='^DISPLAY$' --expose=/etc/ssl/certs --ad-hoc nss-certs glib glib-networking gsettings-desktop-schemas
 ;;
 ;; Replace '/PATH/TO/YOUR/NYXT/CHECKOUT' as appropriate.
 ;; Then in the container environment:
@@ -153,7 +153,9 @@
      `(("prove" ,cl-prove)
        ("sbcl" ,sbcl)
        ;; Only for development, unneeded for the upstream Guix package:
-       ("cl-trivial-benchmark" ,cl-trivial-benchmark)))
+       ("cl-trivial-benchmark" ,cl-trivial-benchmark)
+       ;; To generate the right version in Nyxt, unneeded from 2.0 onwards:
+       ("git" ,git-minimal)))
     (inputs
      `(("alexandria" ,cl-alexandria)
        ("bordeaux-threads" ,cl-bordeaux-threads)
