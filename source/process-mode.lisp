@@ -23,7 +23,7 @@
                                                       (function cond)
                                                       (boolean (constantly cond)))
                                    when (funcall cond-func url mode)
-                                     do (funcall mode url mode)))))))
+                                     do (funcall (action mode) url mode)))))))
 
 (defun clean-up-process-mode (mode)
   (and (cleanup mode)
