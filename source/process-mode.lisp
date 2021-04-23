@@ -12,9 +12,7 @@
   (trivial-package-local-nicknames:add-package-local-nickname :file-attributes :org.shirakumo.file-attributes))
 
 (defun initialize-process-mode (mode)
-  (sera:and-let* ((url (quri:uri (prompt
-                                  :prompt "URL of the document to act on"
-                                  :input (object-string (url (current-buffer)))))))
+  (let ((url (url (current-buffer))))
     (setf (path-url mode) url
           (thread mode) (bt:make-thread
                          #'(lambda ()
