@@ -35,7 +35,7 @@
 (define-command preview-file (&optional file (buffer (current-buffer)))
   "Open a file in the current buffer and call `preview-mode' to continuously
 watch and refresh it."
-  (sera:and-let* ((file (or file (prompt :prompt "File to preview"
+  (alex:when-let ((file (or file (prompt :prompt "File to preview"
                                          :input (quri:uri-path (url (current-buffer)))
                                          :sources (list (make-instance 'file-source))))))
     (buffer-load (quri.uri.file:make-uri-file :path file) :buffer buffer)
