@@ -3,6 +3,9 @@
 
 (in-package :nyxt)
 
+;; A URL is defined by the following components:
+;; URL = scheme:[//authority]path[?query][#fragment]
+
 (export-always 'render-url)
 (declaim (ftype (function ((or quri:uri string)) string) render-url))
 (defun render-url (url)
