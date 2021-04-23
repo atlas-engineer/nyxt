@@ -6,10 +6,6 @@
   (:import-from #:class-star #:define-class)
   (:documentation "Act on file/directory based on a certain condition."))
 (in-package :nyxt/process-mode)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
-  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum)
-  (trivial-package-local-nicknames:add-package-local-nickname :file-attributes :org.shirakumo.file-attributes))
 
 (defun initialize-process-mode (mode)
   (let ((url (url (current-buffer))))
