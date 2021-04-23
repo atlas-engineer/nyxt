@@ -489,7 +489,7 @@ If you are looking for a source that just returns its plain suggestions, use `so
 (export-always 'attributes-default)
 (defmethod attributes-default ((suggestion suggestion))
   "Return SUGGESTION default attribute value."
-  (first (first (attributes suggestion))))
+  (second (first (attributes suggestion))))
 
 (export-always 'attributes-non-default)
 (defmethod attributes-non-default ((suggestion suggestion))
