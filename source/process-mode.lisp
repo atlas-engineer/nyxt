@@ -8,16 +8,15 @@
 (in-package :nyxt/process-mode)
 
 (defun initialize-process-mode (mode)
-  (let ((url (url (current-buffer))))
-    (setf (path-url mode) url
-          (thread mode) (bt:make-thread
-                         #'(lambda ()
-                             (loop with cond = (firing-condition mode)
-                                   with cond-func = (typecase cond
-                                                      (function cond)
-                                                      (boolean (constantly cond)))
-                                   when (funcall cond-func url mode)
-                                     do (funcall (action mode) url mode)))))))
+  (setf (path-url mode) (url (current-buffer))
+        (thread mode) (bt:make-thread
+                       #'(lambda ()
+                           (loop with cond = (firing-condition mode)
+                                 with cond-func = (typecase cond
+                                                    (function cond)
+                                                    (boolean (constantly cond)))
+                                 when (funcall cond-func (path-url mode) mode)
+                                   do (funcall (action mode) (path-url mode) mode))))))
 
 (defun clean-up-process-mode (mode)
   (and (cleanup mode)
