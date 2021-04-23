@@ -8,7 +8,6 @@
 (in-package :nyxt/preview-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
-  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum)
   (trivial-package-local-nicknames:add-package-local-nickname :file-attributes :org.shirakumo.file-attributes))
 
 (defun updated-file-p (path-url mode)
