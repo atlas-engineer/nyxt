@@ -328,10 +328,8 @@ Only available if `multi-selection-p' is non-nil."
 
 (defun prompt-buffer-history-entries (&optional (window (current-window)))
   (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
-    ;; TODO: No need for delete-duplicates if we don't allow duplicates in the first place.
-    (delete-duplicates (containers:container->list
-                        (prompter:history first-prompt-buffer))
-                       :test #'equal)))
+    (containers:container->list
+     (prompter:history first-prompt-buffer))))
 
 (define-class prompt-buffer-history-source (prompter:source)
   ((prompter:name "Prompt buffer input history")
