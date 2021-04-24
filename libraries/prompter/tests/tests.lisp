@@ -17,13 +17,17 @@
   (mapcar #'prompter:value (alex:mappend #'prompter:suggestions
                                          (prompter:sources prompter))))
 
+(defun prompter-thread-p (thread)
+  (str:starts-with-p "Prompter" (bt:thread-name thread)))
+
+(defun all-prompter-threads ()
+  (sera:filter #'prompter-thread-p (bt:all-threads)))
+
 (defmacro with-report-dangling-threads (&body body)
-  (alex:with-gensyms (thread-count)
-    `(let ((,thread-count (length (bt:all-threads))))
-       (unwind-protect (progn ,@body)
-         (prove:is (length (bt:all-threads))
-                   ,thread-count
-                   "No dangling threads")))))
+  `(unwind-protect (progn ,@body)
+     (prove:is (length (all-prompter-threads))
+               0
+               "No dangling threads")))
 
 (prove:subtest "Prompter init"
   (with-report-dangling-threads
