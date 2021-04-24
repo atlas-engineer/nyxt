@@ -25,6 +25,12 @@
 
 (defmacro with-report-dangling-threads (&body body)
   `(unwind-protect (progn ,@body)
+     (let ((remaining-threads (all-live-prompter-threads)))
+       (handler-case (bt:with-timeout ((length remaining-threads))
+                       (mapc #'bt:join-thread remaining-threads))
+         (t ()
+           (prove:fail (format nil "Timed out before joining all prompter threads: ~a"
+                               remaining-threads)))))
      (prove:is (all-live-prompter-threads)
                nil
                "No dangling threads")))
