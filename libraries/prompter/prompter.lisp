@@ -347,13 +347,12 @@ If there is no element, NIL is returned."
 Without marks, it's the list of actions for the current source.
 With marks, it's the intersection of the actions of the sources that contain the
 marked elements."
-  (let ((marked-sources
-          (remove-if (complement #'marks) (sources prompter))))
-    (if marked-sources
-        (reduce #'intersection (mapcar (lambda (source)
-                                         (slot-value source 'actions))
-                                       marked-sources))
-        (slot-value (selected-source prompter) 'actions))))
+  (alex:if-let ((marked-sources
+                 (remove-if (complement #'marks) (sources prompter))))
+    (reduce #'intersection (mapcar (lambda (source)
+                                     (slot-value source 'actions))
+                                   marked-sources))
+    (slot-value (selected-source prompter) 'actions)))
 
 (defun add-input-to-history (prompter)
   (unless (or (null (history prompter))
@@ -390,25 +389,24 @@ If timeout expires for one source, return nil."
   ;; We copy `sync-queue' here so that it remains the same object throughout
   ;; this function, since the slot is subject to be changed concurrently when
   ;; the input is edited.
-  (let ((sync-queue (sync-queue prompter)))
-    (if sync-queue
-        (if (= (length (ready-sources sync-queue))
-               (length (sources prompter)))
-            t
-            (multiple-value-bind (next-source ok)
-                (calispel:? (ready-channel sync-queue) timeout)
-              (cond
-                ((not ok)
-                 nil)
-                ((null next-source)
-                 nil)
-                (t
-                 (push next-source (ready-sources sync-queue))
-                 ;; Update selection when update is done:
-                 (select-first prompter)
-                 next-source))))
-        ;; No sync-queue if no input was ever set.
-        t)))
+  (alex:if-let ((sync-queue (sync-queue prompter)))
+    (if (= (length (ready-sources sync-queue))
+           (length (sources prompter)))
+        t
+        (multiple-value-bind (next-source ok)
+            (calispel:? (ready-channel sync-queue) timeout)
+          (cond
+            ((not ok)
+             nil)
+            ((null next-source)
+             nil)
+            (t
+             (push next-source (ready-sources sync-queue))
+             ;; Update selection when update is done:
+             (select-first prompter)
+             next-source))))
+    ;; No sync-queue if no input was ever set.
+    t))
 
 (export-always 'all-ready-p)
 (defun all-ready-p (prompter &optional timeout)
