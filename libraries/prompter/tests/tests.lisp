@@ -266,4 +266,31 @@
                   (("17" "4000") ("B" "2000") ("a" "3000"))))
       (prompter:all-ready-p prompter))))
 
+(prove:subtest "History"
+  (with-report-dangling-threads
+    (let ((prompter (prompter:make
+                     :sources (list (make-instance 'prompter:source
+                                                   :name "Test source"
+                                                   :constructor '("foo" "bar"))))))
+      (flet ((history ()
+               (containers:container->list (prompter:history prompter)))
+             (sync ()
+               (prompter:all-ready-p prompter)
+               (prompter::add-input-to-history prompter)))
+        (setf (prompter:input prompter) "banana")
+        (sync)
+        (prove:is (history)
+                  '("banana"))
+        (setf (prompter:input prompter) "jackfruit")
+        (sync)
+        (prove:is (history)
+                  '("jackfruit" "banana"))
+        (prove:is (containers:first-item (prompter:history prompter))
+                  "jackfruit")
+        (setf (prompter:input prompter) "banana")
+        (sync)
+        (prove:is (history)
+                  '("banana" "jackfruit"))
+        (prompter:all-ready-p prompter)))))
+
 (prove:finalize)

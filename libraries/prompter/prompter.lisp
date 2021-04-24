@@ -356,9 +356,11 @@ marked elements."
     (slot-value (selected-source prompter) 'actions)))
 
 (defun add-input-to-history (prompter)
+  "Add PROMPTER's current input to its history, if any.
+If input is already in history, move to first position."
   (unless (or (null (history prompter))
               (str:empty? (input prompter)))
-    ;; TODO: Make sure we remove duplicates.
+    (containers:delete-item (history prompter) (input prompter))
     (containers:insert-item (history prompter) (input prompter))))
 
 (export-always 'return-selection)
