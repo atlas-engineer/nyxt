@@ -58,7 +58,6 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "C-/" 'reopen-buffer
                      "C-shift-t" 'reopen-buffer
                      "C-T" 'reopen-buffer
-                     "M-i" 'focus-first-input-field
                      "C-p" 'print-buffer)
 
                     scheme:emacs

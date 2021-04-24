@@ -65,6 +65,7 @@ and to index the top of the page.")
        "M-left" 'history-backwards
        "M-]" 'history-forwards
        "M-[" 'history-backwards
+       "M-i" 'focus-first-input-field
        "C-j" 'follow-hint
        "C-u C-j" 'follow-hint-new-buffer-focus
        "C-J" 'follow-hint-new-buffer
