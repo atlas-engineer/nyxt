@@ -46,7 +46,7 @@ It's suitable for `prompter:filter-preprocessor'."
 
 ;; TODO: Separate package?
 (define-mode file-mode (nyxt/prompt-buffer-mode:prompt-buffer-mode)
-  "Prompt-buffer mode forthe Nyxt-openable file filtering."
+  "Prompt-buffer mode for the Nyxt-openable file filtering."
   ((find-file-in-new-buffer t :documentation "If nil, don't open files and directories in a new buffer.")
    (supported-media-types '("mp3" "ogg" "mp4" "flv" "wmv" "webm" "mkv")
                           :type list-of-strings
@@ -54,35 +54,52 @@ It's suitable for `prompter:filter-preprocessor'."
 Used for file filtering in `find-file'.")
    (find-file-function #'default-find-file-function)))
 
-(defun supported-media-or-directory (filename)
+(defun supported-media-or-directory (filename
+                                     &optional (file-mode (or (find-submode (current-prompt-buffer)
+                                                                            'file-mode)
+                                                              (make-instance 'file-mode))))
   "Return T if this filename's extension is a media that Nyxt can open (or a directory).
 See `supported-media-types' of `file-mode'."
   (or (and (uiop:directory-pathname-p filename)
            (uiop:directory-exists-p filename))
       (sera:and-let* ((extension (pathname-type filename))
-                      (mode (find-submode (current-prompt-buffer) 'file-mode))
-                      (extensions (supported-media-types mode)))
+                      (extensions (supported-media-types file-mode)))
         (find extension extensions :test #'string-equal))))
+
+(define-command open-found-file (&optional (prompt-buffer (current-prompt-buffer)))
+  "Have the PROMT-BUFFER open the file based on its `file-mode', then quit."
+  (hide-prompt-buffer prompt-buffer
+                      (lambda ()
+                        (let* ((files (prompter::resolve-selection prompt-buffer))
+                               (file-mode (find-submode prompt-buffer 'file-mode))
+                               (new-buffer-p (and file-mode (find-file-in-new-buffer file-mode))))
+                          (dolist (file files)
+                            (funcall (find-file-function file-mode) file
+                                     :new-buffer-p new-buffer-p
+                                     :supported-p (supported-media-or-directory file file-mode))))
+                        (prompter:return-selection prompt-buffer))))
+
+(defmethod initialize-instance :after ((mode file-mode) &key)
+  (define-key (scheme-keymap (buffer mode) (nyxt/prompt-buffer-mode:keymap-scheme mode))
+    "return" 'open-found-file))
 
 #+linux
 (defvar *xdg-open-program* "xdg-open")
 
 (export-always 'default-find-file-function)
-(defun default-find-file-function (filename &key (new-buffer-p
-                                                  (find-file-in-new-buffer
-                                                   (find-submode (current-prompt-buffer)
-                                                                 'file-mode))))
+(defun default-find-file-function (filename &key supported-p new-buffer-p)
   "Open FILENAME in Nyxt if supported, or externally otherwise.
 FILENAME is the full path of the file (or directory).
 
 See `supported-media-types' to customize the file types that are opened in
 Nyxt and those that are opened externally.
 
-NEW-BUFFER-P defines whether the file/directory will be open in a new buffer.
+NEW-BUFFER-P defines whether the file/directory is opened in a new buffer.
+SUPPORTED-P says whether the file can be opened by Nyxt.
 
-Can be used as an `find-file-function'."
+Can be used as a `find-file-function'."
   (handler-case
-      (if (supported-media-or-directory filename)
+      (if supported-p
           (if new-buffer-p
               (make-buffer-focus :url (format nil "file://~a" filename))
               (buffer-load (format nil "file://~a" filename)))
@@ -93,7 +110,6 @@ Can be used as an `find-file-function'."
            (list "open" (namestring filename))))
     ;; We can probably signal something and display a notification.
     (error (c) (log:error "Opening ~a: ~a~&" filename c))))
-
 
 (define-command find-file (&key (default-directory (user-homedir-pathname)))
   "Open a file from the filesystem.
@@ -114,14 +130,7 @@ directory name) as parameter."
                           :key #'prompter:value)))
     (prompt
      :input (namestring default-directory)
+     :default-modes '(file-mode)
      :prompt "Open file"
-     :sources (list (make-instance
-                     'file-source
-                     :actions (list (make-command open* (files)
-                                      (dolist (file files)
-                                        (funcall
-                                         (find-file-function
-                                          (find-submode
-                                           (first (old-prompt-buffers *browser*)) 'file-mode))
-                                         file))))
-                     :filter-preprocessor #'supported-media-or-directory-filter)))))
+     :sources (list (make-instance 'file-source
+                                   :filter-preprocessor #'supported-media-or-directory-filter)))))
