@@ -241,15 +241,15 @@ If STEPS is negative, go forward."
 If STEPS is 0, do nothing.
 If STEPS is negative, go backward and select last suggestion."
   (unless (= 0 steps)
-    (let* ((nonempty-sources (remove-if #'empty-source-p (sources prompter)))
-           (source-index (or (position (selected-source prompter)
-                                       nonempty-sources)
-                             0))
-           (new-source (nth (alex:clamp (+ steps source-index) 0 (1- (length (sources prompter))))
-                            nonempty-sources))
-           (suggestion-index (if (< 0 steps)
-                                 0
-                                 (1- (length (suggestions new-source))))))
+    (sera:and-let* ((nonempty-sources (remove-if #'empty-source-p (sources prompter)))
+                    (source-index (or (position (selected-source prompter)
+                                                nonempty-sources)
+                                      0))
+                    (new-source (nth (alex:clamp (+ steps source-index) 0 (1- (length (sources prompter))))
+                                     nonempty-sources))
+                    (suggestion-index (if (< 0 steps)
+                                          0
+                                          (1- (length (suggestions new-source))))))
       (setf (selection prompter)
             (list new-source suggestion-index)))))
 
