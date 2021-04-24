@@ -86,7 +86,7 @@ If nil, no history is used.")
                      :type calispel:channel
                      :documentation
                      "Channel to which the selection is sent on exit.
-Caller should also listen to `interrupt-channel' to know if the minibuffer is quitted.")
+Caller should also listen to `interrupt-channel' to know if the prompter was canceled.")
      (interrupt-channel (make-channel 1)
                         :type calispel:channel
                         :documentation
