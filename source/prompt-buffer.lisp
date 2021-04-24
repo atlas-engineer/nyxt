@@ -44,8 +44,10 @@ new history for each new prompt buffer.  Here we set the history to be shared gl
      ;; (max-lines 10
      ;;               :documentation "Max number of suggestion lines to show.
      ;; You will want edit this to match the changes done to `style'.")
-     (compact-display-p nil
-                        :documentation "Display the prompt buffer in a more compact way.")
+     (hide-single-source-header-p nil
+                                  :documentation "Hide source header when there is only one.")
+     (hide-single-attribute-header-p nil
+                                  :documentation "Hide column header when there is only one.")
      (style #.(cl-css:css
                '((* :font-family "monospace,monospace"
                     :font-size "14px"
@@ -230,7 +232,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                     (markup:raw
                      (markup:markup*
                       `(:div :class "source-name"
-                             ,@(when (and (compact-display-p prompt-buffer)
+                             ,@(when (and (hide-single-source-header-p prompt-buffer)
                                           (sera:single sources))
                                  '(:hidden "true"))
                              (:span :class "source-glyph" "⛯")
@@ -239,7 +241,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                             (markup:raw
                              (markup:markup*
                               `(:tr
-                                ,@(when (and (compact-display-p prompt-buffer)
+                                ,@(when (and (hide-single-source-header-p prompt-buffer)
                                              (sera:single (prompter:active-attributes-keys source)))
                                     '(:hidden "true"))
                                 ,@(loop for attribute-key in (prompter:active-attributes-keys source)
