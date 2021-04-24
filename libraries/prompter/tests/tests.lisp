@@ -25,8 +25,8 @@
 
 (defmacro with-report-dangling-threads (&body body)
   `(unwind-protect (progn ,@body)
-     (prove:is (length (all-prompter-threads))
-               0
+     (prove:is (all-prompter-threads)
+               nil
                "No dangling threads")))
 
 (prove:subtest "Prompter init"
