@@ -265,10 +265,11 @@ rest in background buffers."
 (defmethod serialize-object ((entry bookmark-entry) stream)
   (unless (url-empty-p (url entry))
     (flet ((write-slot (slot)
-             (unless (str:emptyp (funcall slot entry))
-               (format t " :~a ~s"
-                       (str:downcase slot)
-                       (funcall slot entry)))))
+             (let ((entry-slot (funcall slot entry)))
+               (unless (str:emptyp entry-slot)
+                 (format t " :~a ~s"
+                         (str:downcase slot)
+                         entry-slot)))))
       (let ((*standard-output* stream))
         (write-string "(:url ")
         (format t "~s" (render-url (url entry)))
