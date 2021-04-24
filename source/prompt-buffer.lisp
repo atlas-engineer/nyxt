@@ -46,7 +46,7 @@ new history for each new prompt buffer.  Here we set the history to be shared gl
      ;; You will want edit this to match the changes done to `style'.")
      (hide-single-source-header-p nil
                                   :documentation "Hide source header when there is only one.")
-     (hide-single-attribute-header-p nil
+     (hide-single-attribute-header-p t
                                   :documentation "Hide column header when there is only one.")
      (style #.(cl-css:css
                '((* :font-family "monospace,monospace"
