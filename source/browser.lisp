@@ -263,8 +263,7 @@ prevents otherwise."))
       ;; reset the session with the new URLs.
       (restore-session)
       (load-start-urls urls))
-    (alex:when-let ((f (startup-error-reporter-function *browser*)))
-      (funcall f))))
+    (funcall* (startup-error-reporter-function *browser*))))
 
 ;; Catch a common case for a better error message.
 (defmethod buffers :before ((browser t))

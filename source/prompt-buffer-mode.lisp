@@ -199,8 +199,7 @@ If STEPS is negative, go to next pages instead."
                          :prompt "Command to run in current prompt buffer"
                          :sources (list (make-instance 'prompt-buffer-command-source
                                                        :parent-prompt-buffer prompt-buffer))))))
-    (when command
-      (funcall command))))
+    (funcall* command)))
 
 (defun prompt-buffer-actions (&optional (window (current-window)))
   (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))

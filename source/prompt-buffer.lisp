@@ -186,8 +186,7 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
         (show-prompt-buffer next-prompt-buffer))
       (progn
         (ffi-window-set-prompt-buffer-height (window prompt-buffer) 0)))
-  (when return-function
-    (funcall return-function))
+  (funcall* return-function)
   ;; Destroy prompter last, or else `return-function' may not work.
   (prompter:destroy prompt-buffer))
 

@@ -216,3 +216,8 @@ Initialization file use case:
   (delete-if (lambda (name) (eq :internal (nth-value 1 (find-symbol (string name)
                                                                     (symbol-package name)))))
              (mopu:direct-slot-names class-specifier)))
+
+(export-always 'funcall*)
+(defun funcall* (f &rest args)
+  "Like `funcall' but does nothing when F is nil."
+  (when f (apply #'funcall f args)))
