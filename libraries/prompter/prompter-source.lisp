@@ -488,7 +488,8 @@ If you are looking for a source that just returns its plain suggestions, use `so
        (bt:release-lock (initial-suggestions-lock source))
        (when (listp (constructor source))
          ;; Initial suggestions are set synchronously in this case.
-         (calispel:! wait-channel t))))
+         (calispel:! wait-channel t)))
+     :name "Prompter source init thread")
     ;; Wait until above thread has acquired the `initial-suggestions-lock'.
     (calispel:? wait-channel))
   source)
@@ -681,4 +682,5 @@ feedback to the user while the list of suggestions is being computed."
                (mapcar #'copy-object (initial-suggestions source))))
              (postprocess!)
              ;; Signal this source is done:
-             (calispel:! new-ready-channel source))))))
+             (calispel:! new-ready-channel source)))
+         :name "Prompter update thread")))

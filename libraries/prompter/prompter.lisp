@@ -151,7 +151,8 @@ compution is not finished.")))
           (bt:make-thread
            (lambda ()
              (sleep (follow-delay source))
-             (call-persistent-action prompter)))
+             (call-persistent-action prompter))
+           :name "Prompter follow selection thread")
           (call-persistent-action prompter)))))
 
 (export-always 'input)
