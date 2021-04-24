@@ -292,4 +292,125 @@
                   '("banana" "jackfruit"))
         (prompter:all-ready-p prompter)))))
 
+(prove:subtest "Select"
+  (with-report-dangling-threads
+    (let ((prompter (prompter:make
+                     :sources (list (make-instance 'prompter:source
+                                                   :name "Test source"
+                                                   :constructor '("foo" "bar"))
+                                    (make-instance 'prompter:source
+                                                   :name "Test source 2"
+                                                   :constructor '("100 foo" "200")
+                                                   :filter-preprocessor #'prompter:filter-exact-matches)))))
+      (flet ((selection-value ()
+               (prompter:value (prompter:selected-suggestion prompter))))
+        (prompter:all-ready-p prompter)
+        (prompter:select-next prompter)
+        (prove:is (selection-value)
+                  "bar")
+        (prompter:select-next prompter)
+        (prove:is (selection-value)
+                  "100 foo")
+        (prompter:select-next prompter)
+        (prove:is (selection-value)
+                  "200")
+        (prompter:select-next prompter)
+        (prove:is (selection-value)
+                  "200")
+        (prompter:select-previous prompter)
+        (prove:is (selection-value)
+                  "100 foo")
+        (prompter:select-first prompter)
+        (prove:is (selection-value)
+                  "foo")
+        (prompter:select-previous prompter)
+        (prove:is (selection-value)
+                  "foo")
+        (prompter:select-last prompter)
+        (prove:is (selection-value)
+                  "200")
+        (prompter:select-previous-source prompter)
+        (prove:is (selection-value)
+                  "bar")
+        (prompter:select-previous-source prompter)
+        (prove:is (selection-value)
+                  "bar")
+        (prompter:select-next-source prompter)
+        (prove:is (selection-value)
+                  "100 foo")
+        (prompter:select-next-source prompter)
+        (prove:is (selection-value)
+                  "100 foo")
+
+        (setf (prompter:input prompter) "bar")
+        (prompter:all-ready-p prompter)
+        (prove:is (selection-value)
+                  "bar")
+        (prove:is (all-source-suggestions prompter)
+                  '("bar"))
+        (prompter:select-next prompter)
+        (prove:is (selection-value)
+                  "bar")
+        (prompter:select-next-source prompter)
+        (prove:is (selection-value)
+                  "bar"))
+      (prompter:all-ready-p prompter))))
+
+(prove:subtest "Select with steps"
+  (with-report-dangling-threads
+    (let ((prompter (prompter:make
+                     :sources (list (make-instance 'prompter:source
+                                                   :name "Test source"
+                                                   :constructor '("foo" "bar"))
+                                    (make-instance 'prompter:source
+                                                   :name "Test source 2"
+                                                   :constructor '("100 foo" "200")
+                                                   :filter-preprocessor #'prompter:filter-exact-matches)))))
+      (flet ((selection-value ()
+               (prompter:value (prompter:selected-suggestion prompter))))
+        (prompter:all-ready-p prompter)
+        (prompter:select-next prompter 2)
+        (prove:is (selection-value)
+                  "100 foo")
+        (prompter:select-next prompter -2)
+        (prove:is (selection-value)
+                  "foo")
+        (prompter:select-next prompter 99)
+        (prove:is (selection-value)
+                  "200"))
+      (prompter:all-ready-p prompter))))
+
+(prove:subtest "Select with wrap-over"
+  (with-report-dangling-threads
+    (let ((prompter (prompter:make
+                     :sources (list (make-instance 'prompter:source
+                                                   :name "Test source"
+                                                   :constructor '("foo" "bar"))
+                                    (make-instance 'prompter:source
+                                                   :name "Test source 2"
+                                                   :constructor '("100 foo" "200")
+                                                   :filter-preprocessor #'prompter:filter-exact-matches)))))
+      (flet ((selection-value ()
+               (prompter:value (prompter:selected-suggestion prompter))))
+        (prompter:all-ready-p prompter)
+        (prompter:select-last prompter)
+        (prove:is (selection-value)
+                  "200")
+        (prompter:select-next prompter)
+        (prove:is (selection-value)
+                  "200")
+        (prompter::select prompter 1 :wrap-over-p t)
+        (prove:is (selection-value)
+                  "foo")
+        (prompter::select prompter -1 :wrap-over-p t)
+        (prove:is (selection-value)
+                  "200")
+        (prompter::select prompter 2 :wrap-over-p t)
+        (prove:is (selection-value)
+                  "bar")
+        (prompter::select prompter -3 :wrap-over-p t)
+        (prove:is (selection-value)
+                  "100 foo"))
+      (prompter:all-ready-p prompter))))
+
 (prove:finalize)
