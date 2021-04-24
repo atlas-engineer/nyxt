@@ -20,12 +20,12 @@
 (defun prompter-thread-p (thread)
   (str:starts-with-p "Prompter" (bt:thread-name thread)))
 
-(defun all-prompter-threads ()
-  (sera:filter #'prompter-thread-p (bt:all-threads)))
+(defun all-live-prompter-threads ()
+  (sera:filter (alex:conjoin #'prompter-thread-p #'bt:thread-alive-p) (bt:all-threads)))
 
 (defmacro with-report-dangling-threads (&body body)
   `(unwind-protect (progn ,@body)
-     (prove:is (all-prompter-threads)
+     (prove:is (all-live-prompter-threads)
                nil
                "No dangling threads")))
 
