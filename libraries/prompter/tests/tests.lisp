@@ -275,7 +275,6 @@
       (flet ((history ()
                (containers:container->list (prompter:history prompter)))
              (sync ()
-               (prompter:all-ready-p prompter)
                (prompter::add-input-to-history prompter)))
         (setf (prompter:input prompter) "banana")
         (sync)

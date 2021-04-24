@@ -360,7 +360,12 @@ marked elements."
 If input is already in history, move to first position."
   (unless (or (null (history prompter))
               (str:empty? (input prompter)))
-    (containers:delete-item (history prompter) (input prompter))
+    (alex:when-let ((previous-element (containers:element-position
+                                       (history prompter)
+                                       (input prompter)
+                                       :test #'equal)))
+      (containers:delete-item-at (history prompter)
+                                 previous-element))
     (containers:insert-item (history prompter) (input prompter))))
 
 (export-always 'return-selection)
