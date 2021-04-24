@@ -39,11 +39,8 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "return" 'return-selection
        "M-return" 'return-selection-over-action
        "C-return" 'run-persistent-action
-       "C-j" 'run-persistent-action     ; Emacs binding.
-       "C-g" 'cancel-input              ; Emacs binding.
        "f1 b" 'run-prompt-buffer-command
        "f1 m" 'describe-prompt-buffer
-       "C-h b" 'run-prompt-buffer-command ; TODO: Move to Emacs bindings.
        "C-c C-f" 'toggle-follow
        "C-]" 'toggle-attributes-display ; "C-]" is Emacs Helm binding.
        "C-space" 'prompt-buffer-toggle-mark
@@ -54,7 +51,12 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "M-m" 'prompt-buffer-toggle-mark-all
        "C-w" 'copy-selection
        "C-v" 'prompt-buffer-paste
-       "M-h" 'prompt-buffer-history))
+       "M-h" 'prompt-buffer-history)
+      scheme:emacs
+      (list
+       "C-j" 'run-persistent-action     ; Emacs binding.
+       "C-g" 'cancel-input              ; Emacs binding.
+       "C-h b" 'run-prompt-buffer-command))
     ;; TODO: We could have VI bindings for the prompt-buffer too.
     ;; But we need to make sure it's optional + to have an indicator
     ;; for the mode.
