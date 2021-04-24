@@ -37,7 +37,7 @@ new history for each new prompt buffer.  Here we set the history to be shared gl
      (invisible-input-p nil
                         :documentation "If non-nil, input is replaced by placeholder character.
 ;; This is useful to conceal passwords.")
-     (hide-suggestion-count-p nil       ; TODO: Move to `prompter' library?
+     (hide-suggestion-count-p nil
                               :documentation "Show the number of chosen suggestions
 ;; inside brackets. It can be useful to disable, for instance for a yes/no question.")
      ;; TODO: Need max-lines?
