@@ -259,6 +259,7 @@
       (prove:is (mapcar #'prompter:attributes
                         (prompter:suggestions (fourth (prompter:sources prompter))))
                 '((("17" "400") ("B" "200") ("a" "300"))
-                  (("17" "4000") ("B" "2000") ("a" "3000")))))))
+                  (("17" "4000") ("B" "2000") ("a" "3000"))))
+      (prompter:all-ready-p prompter))))
 
 (prove:finalize)
