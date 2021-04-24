@@ -134,8 +134,7 @@
                 :test #'<
                 "Consecutive inputs happened fast enough"))))
 
-(prove:subtest "Yes-No prompt"          ; TODO: This test randomly throws an error:
-  ;; Raised an error Interrupt thread failed: thread #<THREAD "Anonymous thread" FINISHED values: T {1013B856B3}> has exited. (expected: :NON-ERROR)
+(prove:subtest "Yes-No prompt"
   (let* ((source (make-instance 'prompter:yes-no-source
                                 :constructor '("no" "yes")))
          (prompter (prompter:make
