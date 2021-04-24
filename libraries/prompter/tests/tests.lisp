@@ -165,11 +165,11 @@
                                  (first (prompter:sources prompter))))
        '("no" "yes"))
       (setf (prompter:input prompter) "y")
-      (when (prompter:all-ready-p prompter)
-        (let ((filtered-suggestions (prompter:suggestions
-                                     (first (prompter:sources prompter)))))
-          (prove:is (mapcar #'prompter:value filtered-suggestions)
-                    '("yes" "no")))))))
+      (prove:ok (prompter:all-ready-p prompter))
+      (let ((filtered-suggestions (prompter:suggestions
+                                   (first (prompter:sources prompter)))))
+        (prove:is (mapcar #'prompter:value filtered-suggestions)
+                  '("yes" "no"))))))
 
 (prove:subtest "Return result"
   (with-report-dangling-threads
