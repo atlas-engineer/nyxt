@@ -293,11 +293,11 @@ Only available if `multi-selection-p' is non-nil."
   "Copy default property of selection to clipboard."
   (let* ((marks (prompter:all-marks prompt-buffer))
          (props (if marks
-                    (mapcar #'prompter:object-attributes marks) ; TODO: We should use the attribute function of the source, since it does not have to be `object-attributes'.
-                    (list (prompter:attributes (prompter:selected-suggestion
-                                                prompt-buffer)))))
+                    (mapcar #'prompter:attributes-default marks)
+                    (list (prompter:attributes-default (prompter:selected-suggestion
+                                                       prompt-buffer)))))
          ;; Reverse so that text is ordered from oldest mark to newest.
-         (text (str:join +newline+ (mapcar #'second (reverse props)))))
+         (text (str:join +newline+ (reverse props))))
     (unless (str:emptyp text)
       (trivial-clipboard:text text)
       (echo "Copied ~s to clipboard." text))))
