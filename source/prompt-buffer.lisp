@@ -59,7 +59,7 @@ new history for each new prompt buffer.  Here we set the history to be shared gl
                  ("#prompt-area"
                   :background-color "dimgray"
                   :display "grid"
-                  :grid-template-columns "auto auto 1fr"
+                  :grid-template-columns "auto auto 1fr auto"
                   :width "100%"
                   :color "white")
                  ("#prompt"
@@ -68,6 +68,9 @@ new history for each new prompt buffer.  Here we set the history to be shared gl
                  ("#prompt-extra"
                   :line-height "26px"
                   :padding-right "7px")
+                 ("#prompt-modes"
+                  :line-height "26px"
+                  :padding-left "7px")
                  ("#input"
                   :border "none"
                   :outline "none"
@@ -216,7 +219,13 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
                          (length suggestions)))
                 ((not marks)
                  (format nil "[~a]"
-                         (length suggestions))))))))))
+                         (length suggestions))))))
+       (setf (ps:chain document (get-element-by-id "prompt-modes") |innerHTML|)
+             (ps:lisp
+              (format nil "~{~a~^ ~}" (delete "prompt-buffer"
+                                              (mapcar #'format-mode
+                                                      (modes prompt-buffer))
+                                              :test #'string=))))))))
 
 (export 'prompt-render-suggestions)
 (defmethod prompt-render-suggestions ((prompt-buffer prompt-buffer))
@@ -295,7 +304,8 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                               "password"
                                                               "text")
                                                     :id "input"
-                                                    :value (prompter:input prompt-buffer))))
+                                                    :value (prompter:input prompt-buffer)))
+                                      (:div :id "prompt-modes" ""))
                                 (markup:raw
                                  (markup:markup*
                                   `(:div :id "suggestions"
