@@ -116,14 +116,7 @@ new history for each new prompt buffer.  Here we set the history to be shared gl
                  (.selected :background-color "gray"
                             :color "white")))
             :documentation "The CSS applied to a prompt-buffer when it is set-up.")
-     (override-map (let ((map (make-keymap "override-map")))
-                     (define-key map
-                       "escape"
-                       ;; We compute symbol at runtime because
-                       ;; nyxt/prompt-buffer-mode does not exist at
-                       ;; compile-time since it's loaded afterwards.
-                       (find-symbol (string 'cancel-input)
-                                    (find-package 'nyxt/prompt-buffer-mode))))
+     (override-map (make-keymap "override-map")
                    :type keymap:keymap
                    :documentation "Keymap that takes precedence over all modes' keymaps."))
     (:export-class-name-p t)

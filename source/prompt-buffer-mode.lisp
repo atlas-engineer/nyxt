@@ -25,6 +25,7 @@ Actions can be listed and run with `return-selection-over-action' (bound to
     (define-scheme "prompt-buffer"
       scheme:cua
       (list
+       "escape" 'cancel-input
        "down" 'select-next
        "up" 'select-previous
        "C-n" 'select-next
