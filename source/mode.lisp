@@ -58,7 +58,7 @@ Example:
          ,(unless (eq name 'root-mode)
             `(define-command ,name (&rest args
                                     &key
-                                    (buffer (current-buffer))
+                                    (buffer (or (current-prompt-buffer) (current-buffer)))
                                     (activate t explicit?)
                                     &allow-other-keys)
                ,docstring
@@ -80,7 +80,9 @@ Example:
                          (push ,new-mode (modes buffer))
                          (hooks:run-hook (enable-hook ,new-mode) ,new-mode)
                          (hooks:run-hook (enable-mode-hook buffer) ,new-mode))
-                       (print-status)
+                       (if (prompt-buffer-p buffer)
+                           (prompt-render-prompt buffer)
+                           (print-status))
                        (log:debug "~a enabled." ',name))
                      (when ,existing-instance
                        (hooks:run-hook (disable-hook ,existing-instance) ,existing-instance)
@@ -88,7 +90,9 @@ Example:
                        (funcall* (destructor ,existing-instance) ,existing-instance)
                        (setf (modes buffer) (delete ,existing-instance
                                                     (modes buffer)))
-                       (print-status)
+                       (if (prompt-buffer-p buffer)
+                           (prompt-render-prompt buffer)
+                           (print-status))
                        (log:debug "~a disabled." ',name))))
                buffer))))))
 
