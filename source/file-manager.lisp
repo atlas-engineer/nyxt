@@ -51,7 +51,12 @@ It's suitable for `prompter:filter-preprocessor'."
                           :type list-of-strings
                           :documentation "Supported media types.
 Used for file filtering in `find-file'.")
-   (find-file-function #'default-find-file-function)))
+   (find-file-function #'default-find-file-function)
+   (keymap-scheme
+    (define-scheme "file-prompt-buffer"
+      scheme:cua
+      (list
+       "return" 'open-found-file)))))
 
 (defun supported-media-or-directory (filename
                                      &optional (file-mode (or (find-submode (current-prompt-buffer)
@@ -77,10 +82,6 @@ See `supported-media-types' of `file-mode'."
                                      :new-buffer-p new-buffer-p
                                      :supported-p (supported-media-or-directory file file-mode))))
                         (prompter:return-selection prompt-buffer))))
-
-(defmethod initialize-instance :after ((mode file-mode) &key)
-  (define-key (scheme-keymap (buffer mode) (nyxt/prompt-buffer-mode:keymap-scheme mode))
-    "return" 'open-found-file))
 
 #+linux
 (defvar *xdg-open-program* "xdg-open")
@@ -129,7 +130,7 @@ directory name) as parameter."
                           :key #'prompter:value)))
     (prompt
      :input (namestring default-directory)
-     :default-modes '(file-mode)
+     :default-modes '(file-mode nyxt/prompt-buffer-mode:prompt-buffer-mode)
      :prompt "Open file"
      :sources (list (make-instance 'file-source
                                    :filter-preprocessor #'supported-media-or-directory-filter)))))
