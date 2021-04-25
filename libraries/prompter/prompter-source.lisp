@@ -187,9 +187,10 @@ If unset, set it to the return value of `format-attributes'."
   (match-data suggestion))
 
 (export-always 'make-suggestion)
-(defmethod make-suggestion ((value t))
+(defmethod make-suggestion ((value t) &optional source input)
   "Return a `suggestion' wrapping around VALUE.
 Attributes are set with `object-attributes'."
+  (declare (ignore source input))
   (make-instance 'suggestion
                  :value value
                  :attributes (object-attributes value)))
@@ -267,7 +268,7 @@ depending on the source and the input.
 
 Called on
 - arbitrary object
-- source
+- (optional) source
 - (optional) current input.")
 
    (filter #'fuzzy-match
@@ -425,7 +426,8 @@ call."))
 
 (defun make-input-suggestion (suggestions source input)
   (declare (ignore suggestions))
-  (list (funcall (suggestion-maker source) input)))
+  (list (funcall (suggestion-maker source) input
+                 source input)))
 
 (define-class raw-source (source)
   ((name "Input")
@@ -446,7 +448,8 @@ If you are looking for a source that just returns its plain suggestions, use `so
 (defun make-word-suggestions (suggestions source input)
   (declare (ignore suggestions))
   (mapcar (lambda (word)
-            (funcall (suggestion-maker source) word))
+            (funcall (suggestion-maker source) word
+                     source input))
           (sera:words input)))
 
 (define-class word-source (source)
@@ -463,7 +466,8 @@ If you are looking for a source that just returns its plain suggestions, use `so
             (if (suggestion-p suggestion-value)
                 suggestion-value
                 (funcall (suggestion-maker source)
-                         suggestion-value)))
+                         suggestion-value
+                         source)))
           (uiop:ensure-list elements)))
 
 (defmethod initialize-instance :after ((source source) &key)
