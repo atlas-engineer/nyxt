@@ -10,15 +10,13 @@
             (uiop:directory-files directory))))
 
 (defun make-file-suggestions (suggestions source input)
-  (declare (ignore suggestions))
+  (declare (ignore suggestions source))
   (let* ((pathname (pathname input)))
     (mapcar (lambda (file)
               (make-instance 'prompter:suggestion
                              :value file
                              :match-data (namestring file)
-                             :attributes (prompter:object-attributes file)
-                             :source source
-                             :input input))
+                             :attributes (prompter:object-attributes file)))
             (directory-elements (if (uiop:directory-pathname-p pathname)
                                     pathname
                                     (uiop:pathname-directory-pathname pathname))))))

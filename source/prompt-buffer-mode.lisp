@@ -147,13 +147,12 @@ If STEPS is negative, go to next pages instead."
                       (lambda ()
                         (prompter:return-selection prompt-buffer))))
 
-(defun make-attribute-suggestion (attribute source &optional input)
+(defun make-attribute-suggestion (attribute &optional source input)
   "Return a `suggestion' wrapping around ATTRIBUTE. "
+  (declare (ignore source input))
   (make-instance 'prompter:suggestion
                  :value attribute
-                 :attributes `(("Attribute key" ,attribute))
-                 :source source
-                 :input input))
+                 :attributes `(("Attribute key" ,attribute))))
 
 (define-class attribute-source (prompter:source)
   ((prompter:name "List of prompter attributes")
@@ -184,14 +183,12 @@ If STEPS is negative, go to next pages instead."
    (prompter:constructor (nyxt::get-commands (current-prompt-buffer))))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(defun make-prompt-buffer-command-suggestion (command source &optional input)
+(defun make-prompt-buffer-command-suggestion (command source)
   "Return a `suggestion' wrapping around COMMAND."
   (make-instance
    'prompter:suggestion
    :value command
-   :attributes (nyxt::command-properties command (parent-prompt-buffer source))
-   :source source
-   :input input))
+   :attributes (nyxt::command-properties command (parent-prompt-buffer source))))
 
 (define-command run-prompt-buffer-command (&optional (prompt-buffer (current-prompt-buffer)))
   "Prompt for a command to call in PROMPT-BUFFER."
