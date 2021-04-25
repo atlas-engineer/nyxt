@@ -254,9 +254,9 @@ We store the values instead of the suggestion because suggestions objects are
 reinstantiated between each input processing.")
 
    (active-attributes-keys '()
-                          :export t
-                          :accessor nil
-                          :documentation "Keys of the suggestion attributes to
+                           :export t
+                           :accessor nil
+                           :documentation "Keys of the suggestion attributes to
 display and process when filtering.  An empty list means all attributes are
 displayed.")
 
@@ -311,9 +311,9 @@ It is passed the following arguments:
                              :documentation "Whether input is downcased.
 This is useful for filters to avoid recomputing it every time.")
    (last-input-downcase-p nil
-                             :type boolean
-                             :export nil
-                             :documentation "Whether previous input was
+                          :type boolean
+                          :export nil
+                          :documentation "Whether previous input was
 downcased.  This is useful to know if there is a case difference since last time
 and to know if we have to recompute the match-data for instance.")
 
