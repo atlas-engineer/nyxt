@@ -58,7 +58,8 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "C-/" 'reopen-buffer
                      "C-shift-t" 'reopen-buffer
                      "C-T" 'reopen-buffer
-                     "C-p" 'print-buffer)
+                     "C-p" 'print-buffer
+                     "C-o" 'find-file)
 
                     scheme:emacs
                     (list
@@ -92,7 +93,8 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "C-x r u" 'bookmark-url
                      "C-x 5 2" 'make-window
                      "C-x 5 0" 'delete-current-window
-                     "C-x 5 1" 'delete-window)
+                     "C-x 5 1" 'delete-window
+                     "C-x C-f" 'find-file)
 
                     scheme:vi-normal
                     (list
@@ -134,5 +136,6 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "C-w C-w" 'make-window
                      "C-w q" 'delete-current-window
                      "C-w C-q" 'delete-window
-                     "u" 'reopen-buffer))
+                     "u" 'reopen-buffer
+                     "g o" 'find-file))
                   :type keymap:scheme)))
