@@ -295,8 +295,8 @@ This function can be used on browser-less globals like `*init-file-path*'."
 ;; TODO: Better name? Isn't it too wide?
 (defmethod get-data ((path data-path))
   "Return the data for PATH.
-Prefer `with-data-unsafe' or `with-data-access' which won't execute the body if
-the data is NIL."
+Prefer the thread-safe `with-data-access', or the non-thread-safe
+`with-data-unsafe' which won't execute the body if the data is NIL."
   (data (get-user-data (current-data-profile) path)))
 
 (defmethod (setf get-data) (value (path data-path))
@@ -307,16 +307,17 @@ the data is NIL."
   "Lock the data for the BODY to avoid race conditions and safely modify it.
 Bind the DATA-VAR to the value of the data from DATA-PATH to reuse it.
 In case there's no data, bind DATA-VAR to DEFAULT and set data to it.
-If DEFAULT is unspecified (nil), do nothing.
+
+Unlike `with-data-unsafe', the body is executed even when DATA-VAR is bound to
+NIL.
 
 For a faster and modification-unsafe version, see `with-data-unsafe'."
   (alex:with-gensyms (lock path-name)
     `(let* ((,path-name ,data-path)
             (,lock (lock (get-user-data (current-data-profile) ,path-name))))
        (bt:with-recursive-lock-held (,lock)
-         (alex:when-let ((,data-var (or (get-data ,path-name) ,default)))
-           (unwind-protect
-                (progn ,@body)
+         (let ((,data-var (or (get-data ,path-name) ,default)))
+           (unwind-protect (progn ,@body)
              (setf (get-data ,path-name) ,data-var)
              (store (current-data-profile) ,path-name)))))))
 
@@ -325,7 +326,8 @@ For a faster and modification-unsafe version, see `with-data-unsafe'."
   "Bind the data to DATA-VAR for a fast non-modifying lookup.
 Bind the DATA-VAR to the value of the data from DATA-PATH to reuse it.
 In case there's no data, bind DATA-VAR to DEFAULT.
-If DEFAULT is unspecified (nil), do nothing.
+
+If DATA-VAR is NIL, do nothing.
 
 If KEY is used, bind the result of applying KEY to the data, to
 DATA-VAR.
