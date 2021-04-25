@@ -260,6 +260,14 @@ reinstantiated between each input processing.")
 display and process when filtering.  An empty list means all attributes are
 displayed.")
 
+   (hide-attribute-header-p :never
+                            :type (member :always :never :single)
+                            :documentation "Let know the caller whether the
+attribute names are meant to be displayed or not.
+- When `:always', the column attribute header should be hidden.
+- When `:never', the column attribute header should be shown.
+- When `:single', it's hidden if there is only one active attribute.")
+
    (suggestion-maker #'make-suggestion
                      :documentation "Function that wraps an arbitrary
 object into a source `suggestion'.
@@ -419,7 +427,8 @@ call."))
 
 (define-class yes-no-source (source)
   ((name "Confirm")
-   (constructor '("yes" "no")))
+   (constructor '("yes" "no"))
+   (hide-attribute-header-p :always))
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "Prompt source for yes-no questions."))
@@ -433,6 +442,7 @@ call."))
   ((name "Input")
    (filter-preprocessor 'make-input-suggestion)
    (filter nil)
+   (hide-attribute-header-p :always)
    (multi-selection-p nil))
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
@@ -456,6 +466,7 @@ If you are looking for a source that just returns its plain suggestions, use `so
   ((name "Input words")
    (filter-preprocessor 'make-word-suggestions)
    (filter nil)
+   (hide-attribute-header-p :always)
    (multi-selection-p t))
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
