@@ -53,15 +53,38 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "C-w" 'copy-selection
        "C-v" 'prompt-buffer-paste
        "M-h" 'prompt-buffer-history)
+
       scheme:emacs
       (list
        "C-j" 'run-persistent-action     ; Emacs binding.
        "C-g" 'cancel-input              ; Emacs binding.
-       "C-h b" 'run-prompt-buffer-command))
-    ;; TODO: We could have VI bindings for the prompt-buffer too.
-    ;; But we need to make sure it's optional + to have an indicator
-    ;; for the mode.
-    )))
+       "C-h b" 'run-prompt-buffer-command)
+
+      scheme:vi-normal
+      (list
+       "j" 'select-next
+       "k" 'select-previous
+       ;; C-j and C-k are useful in insert mode since "j", "k" are taken.
+       ;; We bind C-j and C-k in normal mode for consistency between the two modes.
+       "C-j" 'select-next
+       "C-k" 'select-previous
+       "C-f" 'select-next-page
+       "C-b" 'select-previous-page
+       "G" 'select-last
+       "g g" 'select-first
+       "J" 'select-next-source
+       "K" 'select-previous-source
+       "z f" 'toggle-follow
+       "z a" 'toggle-attributes-display
+       "y" 'copy-selection
+       "p" 'prompt-buffer-paste)
+
+      scheme:vi-insert
+      (list
+       "C-j" 'select-next
+       "C-k" 'select-previous
+       "C-f" 'select-next-page
+       "C-b" 'select-previous-page)))))
 
 (define-command select-next (&optional (prompt-buffer (current-prompt-buffer)))
   "Select next entry in prompt buffer."
@@ -250,6 +273,7 @@ If STEPS is negative, go to next pages instead."
   "Close the prompt-buffer without further action."
   (prompter:toggle-follow prompt-buffer))
 
+; TODO: Remove the "prompt-buffer-" prefix of all prompt-buffer-mode commands.
 (define-command prompt-buffer-toggle-mark (&key
                                            (prompt-buffer (current-prompt-buffer))
                                            (direction :forward))
