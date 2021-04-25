@@ -46,12 +46,13 @@ vi-normal-mode.")
         (setf (keymap-scheme-name buffer) scheme:vi-normal)
         (setf (forward-input-events-p buffer) nil))))))
 
-(define-command switch-to-vi-normal-mode (&optional (mode (find-submode (current-buffer)
+(define-command switch-to-vi-normal-mode (&optional (mode (find-submode (or (current-prompt-buffer) (current-buffer))
                                                                         'vi-insert-mode)))
   "Switch to the mode remembered to be the matching VI-normal one for this MODE."
   (when mode
     (enable-modes (list (and (previous-vi-normal-mode mode)
-                             (mode-name (previous-vi-normal-mode mode)))))))
+                             (mode-name (previous-vi-normal-mode mode))))
+                  (buffer mode))))
 
 ;; TODO: Move ESCAPE binding to the override map?
 (define-mode vi-insert-mode ()
