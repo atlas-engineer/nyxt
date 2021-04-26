@@ -39,7 +39,7 @@
              (lambda ()
                (loop while t
                      do (sleep (poll-sleep-time mode))
-                        (when (not (zerop (velocity mode)))
+                        (unless (zerop (velocity mode))
                           (with-current-buffer (buffer mode)
                             (nyxt/web-mode::scroll-down
                              :scroll-distance (velocity mode))))))))))
