@@ -27,8 +27,22 @@ so invoke on a separate thread when possible."
               (string= active-tag "TEXTAREA"))
       (ps:chain document active-element (select)))))
 
-(define-parenscript set-caret-on-end ()
-  (ps:chain document (get-selection) (collapse-to-end)))
+(define-parenscript move-caret-to-end ()
+  ;; Inspired by https://stackoverflow.com/questions/4715762/javascript-move-caret-to-last-character.
+  (let ((el (ps:chain document active-element)))
+    (if (string= (ps:chain (typeof (ps:@ el selection-start)))
+                 "number")
+        (progn
+          (setf (ps:chain el selection-end)
+                (ps:chain el value length))
+          (setf (ps:chain el selection-start)
+                (ps:chain el selection-end)))
+        (when (not (string= (ps:chain (typeof (ps:@ el create-text-range)))
+                            "undefined"))
+          (ps:chain el (focus))
+          (let ((range (ps:chain el (create-text-range))))
+            (ps:chain range (collapse false))
+            (ps:chain range (select)))))))
 
 ;; TODO:
 
@@ -52,5 +66,5 @@ so invoke on a separate thread when possible."
       (run-thread
         (select-input-field)
         (%paste :input-text (%edit-with-external-editor (%copy)))
-        (set-caret-on-end))
+        (move-caret-to-end))
       (echo-warning "Please set `external-editor-program' browser slot.")))
