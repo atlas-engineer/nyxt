@@ -68,7 +68,8 @@ new history for each new prompt buffer.  Here we set the history to be shared gl
                   :padding-right "7px")
                  ("#prompt-modes"
                   :line-height "26px"
-                  :padding-left "7px")
+                  :padding-left "3px"
+                  :padding-right "3px")
                  ("#input"
                   :border "none"
                   :outline "none"
