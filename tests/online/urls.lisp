@@ -69,12 +69,12 @@
       "Valid IP URL")
   (ok (valid-url-p "http://192.168.1.1/foo")
       "Valid IP URL with path")
-  (is (nyxt::schemeless-uri= (quri:uri "http://example.org")
-                             (quri:uri "https://example.org/"))
+  (is (nyxt::url-equal (quri:uri "http://example.org")
+                       (quri:uri "https://example.org/"))
       t
       "same schemeless URIs")
-  (is (nyxt::schemeless-uri= (quri:uri "https://example.org")
-                             (quri:uri "https://example.org/foo"))
+  (is (nyxt::url-equal (quri:uri "https://example.org")
+                       (quri:uri "https://example.org/foo"))
       nil
       "different schemeless URIs")
   (is (nyxt::schemeless-url (quri:uri "http://example.org/foo/bar?query=baz#qux"))

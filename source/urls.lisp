@@ -98,15 +98,6 @@ If it cannot be derived, return an empty `quri:uri'."
                (quri:uri-fragment url)
                (quri:uri-userinfo url))))
 
-(declaim (ftype (function (quri:uri quri:uri) boolean) schemeless-uri=))
-(defun schemeless-uri= (uri1 uri2)
-  "Like `quri:uri=' but ignore scheme in comparison.
-Authority is compared case-insensitively (RFC 3986)."
- (and (equal  (or (quri:uri-path uri1) "/") (or (quri:uri-path uri2) "/"))
-      (equal  (quri:uri-query uri1)     (quri:uri-query uri2))
-      (equal  (quri:uri-fragment uri1)  (quri:uri-fragment uri2))
-      (equalp (quri:uri-authority uri1) (quri:uri-authority uri2))))
-
 (declaim (ftype (function (quri:uri) string) schemeless-url))
 (defun schemeless-url (uri)             ; Inspired by `quri:render-uri'.
   "Return URL without its scheme (e.g. it removes 'https://')."
