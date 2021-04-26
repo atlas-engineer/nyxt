@@ -30,8 +30,8 @@
        "n" 'velocity-incf)
       scheme:vi-normal
       (list
-       "k" 'velocity-decf
-       "j" 'velocity-incf)))
+       "K" 'velocity-decf
+       "J" 'velocity-incf)))
    (constructor
     (lambda (mode)
       (setf (thread mode)
