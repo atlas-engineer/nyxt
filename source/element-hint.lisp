@@ -173,6 +173,16 @@ identifier for every hinted element."
 (define-class hint-source (prompter:source)
   ((prompter:name "Hints")
    (prompter:follow-p t)
+   (prompter:filter-postprocessor
+    (lambda (suggestions source input)
+      (declare (ignore source))
+      (multiple-value-bind (matching-hints other-hints)
+          (sera:partition
+           (lambda (hint)
+             (str:starts-with-p input (hint hint) :ignore-case t))
+           suggestions
+           :key #'prompter:value)
+        (append matching-hints other-hints))))
    (prompter:persistent-action (lambda (suggestion)
                                  (highlight-selected-hint :link-hint suggestion)))))
 
