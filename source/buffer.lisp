@@ -900,13 +900,19 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
     (when new-url
       (check-type new-url quri:uri)
       (setf url new-url)
-      (if (internal-buffer-p buffer)
-          (make-buffer-focus :url url)
-          (if (string= (quri:uri-scheme url) "javascript")
-              ;; TODO: Can be a source of inefficiency due to an always-checked conditional.
-              ;; Move somewhere (`request-resource'?) where the impact of conditional will be weaker?
-              (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url)))
-              (ffi-buffer-load buffer url))))))
+      ;; TODO: This condition can be a source of inefficiency.  Besides, it
+      ;; partly duplicates the code in `request-resource'.  Can we factor this
+      ;; out?
+      (cond
+        ((and (internal-buffer-p buffer) (equal "lisp" (quri:uri-scheme url)))
+         (let ((code (quri:url-decode (schemeless-url url) :lenient t)))
+           (log:debug "Evaluate Lisp code from internal buffer: ~a" code)
+           (evaluate-async code)))
+        ((internal-buffer-p buffer)
+         (make-buffer-focus :url url))
+        ((equal "javascript" (quri:uri-scheme url))
+         (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url))))
+        (t (ffi-buffer-load buffer url))))))
 
 (defun new-buffer-load (url)
   "Load a URL in a new buffer."
