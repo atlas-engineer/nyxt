@@ -119,15 +119,19 @@ This way, HTTPS and HTTP is ignored when comparing URIs."
 
 (declaim (ftype (function (quri:uri quri:uri) boolean) url-equal))
 (defun url-equal (url1 url2)
-  "URLs are equal if the URIs are equal, scheme excluded.
-Empty paths are also excluded from the comparison.
-For instance, these are equal:
-- http://example.org
-- https://example.org/"
-  (if (and (quri:uri-http-p url1)
-           (quri:uri-http-p url2))
-      (schemeless-uri= url1 url2)
-      (the (values boolean &optional) (quri:uri= url1 url2))))
+  "Like `quri:uri=' but ignoring the scheme.
+URLs are equal up to `scheme='."
+  (url-eqs url1
+           url2
+           (list #'scheme= 
+                 (lambda (url1 url2) (equal (or (quri:uri-path url1) "/")
+                                       (or (quri:uri-path url2) "/")))
+                 (lambda (url1 url2) (equal (quri:uri-query url1)
+                                       (quri:uri-query url2)))
+                 (lambda (url1 url2) (equal (quri:uri-fragment url1)
+                                       (quri:uri-fragment url2)))
+                 (lambda (url1 url2) (equalp (quri:uri-authority url1)
+                                        (quri:uri-authority url2))))))
 
 (export-always 'lisp-url)
 (declaim (ftype (function (t &rest t) string) lisp-url))
