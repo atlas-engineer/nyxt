@@ -59,5 +59,5 @@
   (decf (velocity cruise-control)))
 
 (define-command velocity-zero (&key (cruise-control (current-cruise-control)))
-  "Zero the velocity."
+  "Zero the velocity. Scrolling will stop."
   (setf (velocity cruise-control) 0))
