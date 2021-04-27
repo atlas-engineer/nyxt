@@ -878,15 +878,16 @@ When BUFFER is omitted, it defaults to the current one."
       (mapcar #'buffer-delete buffers-to-delete))))
 
 (export-always 'buffer-load)
-(declaim (ftype (function ((or quri:uri string history-entry) &key (:buffer buffer)) t)
+(declaim (ftype (function ((or new-url-query quri:uri string history-entry)
+                           &key (:buffer buffer)))
                 buffer-load))
 (defun buffer-load (input-url &key (buffer (current-buffer)))
   "Load INPUT-URL in BUFFER.
 If INPUT-URL is a string, it's transformed to a `quri:uri' by `parse-url'.
 URL is then transformed by BUFFER's `buffer-load-hook'."
   (let* ((url (typecase input-url
-                (string
-                 (parse-url input-url))
+                (new-url-query
+                 (url input-url))
                 (history-entry
                  (url input-url))
                 (t
@@ -954,6 +955,87 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
    (prompter:actions '(buffer-load)))
   (:export-class-name-p t))
 
+(define-class new-url-query ()
+  ((query ""
+          :documentation "Either a URL or a string query passed to `engine'.")
+   (engine nil
+           :type (or null search-engine)))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:documentation "Structure holding the new URL query generated from a user
+ string input.
+If `engine' is set, `query' is passed to it.  See the `url' method.
+If `query' is a valid URL, use it as is.
+If it points to an existing file, 'file://' is automatically prepended to it on
+instantiation.
+If prefixing with 'https://' results in a valid URL, set `query' to this result
+on instantiation.
+Finally, if nothing else, set the `engine' to the `default-search-engine'."))
+
+(defmethod initialize-instance :after ((query new-url-query) &key)
+  (cond
+    ((engine query)
+     ;; First check engine: if set, no need to change anything.
+     nil)
+    ((valid-url-p (query query))
+     ;; Valid URLs should be passed forward.
+     nil)
+    ;; Rest is for invalid URLs:
+    ((uiop:file-exists-p (query query))
+     (setf (query query)
+           (str:concat
+            "file://"
+            (namestring
+             (uiop:ensure-absolute-pathname
+              (query query) *default-pathname-defaults*)))))
+    ((valid-url-p (str:concat "https://" (query query)))
+     (setf (query query)
+           (str:concat "https://" (query query))))
+    (t
+     (setf (engine query)
+           (or (engine query)
+               (default-search-engine (all-search-engines)))))))
+
+(defmethod url ((query new-url-query))
+  (quri:uri
+   (if (engine query)
+       (format nil (search-url (engine query)) (query query))
+       (query query))))
+
+(defmethod prompter:object-attributes ((query new-url-query))
+  `(("URL or new query" ,(query query))
+    ("Search engine?" ,(if (engine query) (shortcut (engine query)) ""))))
+
+(defun input->queries (input)
+  (let* ((terms (sera:tokens input))
+         (engines (remove-if
+                   (sera:partial (complement #'str:starts-with-p) (first terms))
+                   (all-search-engines)
+                   :key #'shortcut)))
+    (append (unless (and engines (string= (first terms) (shortcut (first engines))))
+              (list (make-instance 'new-url-query :query input)))
+            (mapcar (lambda (engine) (make-instance 'new-url-query
+                                                    :query (str:join " " (rest terms))
+                                                    :engine engine))
+                    engines))))
+
+(define-class new-url-or-search-source (prompter:source)
+  ((prompter:name "New URL or search query")
+   (prompter:filter-preprocessor
+    (lambda (suggestions source input)
+      (declare (ignorable suggestions source))
+      (input->queries input)))
+   (prompter:filter nil)
+   (prompter:actions '(buffer-load)))
+  (:export-class-name-p t)
+  (:documentation "This prompter source tries to \"do the right thing\" to
+generate a new URL query from user input.
+- If the query is a URL, open it directly.
+- If it's a file, prefix the query with 'file://'.
+- If it's a search engine shortcut, include it in the suggestions.
+- If it's none of the above, use the `default-search-engine'."))
+
 (define-command set-url (&key (prefill-current-url-p t))
   "Set the URL for the current buffer, completing with history."
   (let ((history (set-url-history *browser*)))
@@ -964,8 +1046,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
      :input (if prefill-current-url-p
                 (render-url (url (current-buffer))) "")
      :history history
-     :sources (list (make-instance 'prompter:raw-source
-                                   :name "New URL"
+     :sources (list (make-instance 'new-url-or-search-source
                                    :actions (list (make-unmapped-command buffer-load)
                                                   (make-unmapped-command new-buffer-load)))
                     (make-instance 'global-history-source
