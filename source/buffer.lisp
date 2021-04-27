@@ -52,7 +52,7 @@ after the mode-specific hook.")
                                         :shortcut "ddg"
                                         :search-url "https://duckduckgo.com/?q=~a"
                                         :fallback-url "https://duckduckgo.com/"))
-                   :type list-of-search-engines
+                   :type (cons search-engine *)
                    :documentation "A list of the `search-engine' objects.
 You can invoke them from the prompt-buffer by prefixing your query with SHORTCUT.
 If the query is empty, FALLBACK-URL is loaded instead.  If
