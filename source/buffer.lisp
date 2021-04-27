@@ -951,7 +951,6 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
                            (declare (ignorable source))
                            (history-initial-suggestions)))
    (prompter:filter-preprocessor nil)   ; Don't remove non-exact results.
-   (prompter:multi-selection-p t)       ; TODO: Disable once tested OK.
    (prompter:actions '(buffer-load)))
   (:export-class-name-p t))
 
