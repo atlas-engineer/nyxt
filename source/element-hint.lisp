@@ -213,7 +213,7 @@ identifier for every hinted element."
                    (make-instance 'link-hint
                                   :hint (alex:assoc-value element :hint)
                                   :identifier (alex:assoc-value element :hint)
-                                  :url (alex:assoc-value element :href)
+                                  :url (quri:uri (alex:assoc-value element :href))
                                   :body (plump:text (plump:parse (alex:assoc-value element :body)))))
                   ("button"
                    (make-instance 'button-hint
@@ -233,7 +233,7 @@ identifier for every hinted element."
                   ("img"
                    (make-instance 'image-hint
                                   :identifier (alex:assoc-value element :identifier)
-                                  :url (alex:assoc-value element :src)
+                                  :url (quri:uri (alex:assoc-value element :src))
                                   :alt (alex:assoc-value element :alt)
                                   :hint (alex:assoc-value element :hint)))
                   ("clickable"
