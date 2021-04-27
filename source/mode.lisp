@@ -58,6 +58,12 @@ Example:
          ,(unless (eq name 'root-mode)
             `(define-command ,name (&rest args
                                     &key
+                                    ;; TODO: Shall we have a function that
+                                    ;; returns the focused buffer?
+                                    ;; `focused-buffer'?  `current-buffer*'?
+                                    ;; Rename `current-buffer' to
+                                    ;; `current-view-buffer' and add
+                                    ;; `current-buffer' for this task?
                                     (buffer (or (current-prompt-buffer) (current-buffer)))
                                     (activate t explicit?)
                                     &allow-other-keys)
