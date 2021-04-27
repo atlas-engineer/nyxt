@@ -185,9 +185,6 @@ and to index the top of the page.")
        "pageup" 'scroll-page-up
        "pagedown" 'scroll-page-down)))))
 
-(defun current-web-mode ()
-  (find-submode (current-buffer) 'web-mode))
-
 (sera:export-always '%clicked-in-input?)
 (define-parenscript %clicked-in-input? ()
   (ps:chain document active-element tag-name))

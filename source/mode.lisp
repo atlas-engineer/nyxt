@@ -187,6 +187,18 @@ It may be MODE-SYMBOL itself."
                                        (find-class mode-full-symbol)))
                (modes buffer)))))
 
+(export-always 'current-mode)
+(defun current-mode (mode-sym)
+  "Return mode instance of MODE-SYM in current buffer.
+Return NIL if none.
+The \"-mode\" suffix is automatically appended to MODE-SYM if missing."
+  (find-submode (current-buffer)
+                (let ((name (string mode-sym)))
+                  (if (str:ends-with-p "-mode" name :ignore-case t)
+                      name
+                      (intern (str:concat name "-MODE")
+                              (symbol-package mode-sym))))))
+
 ;; TODO: Find a better way to uniquely identify commands from mode methods.
 ;; What about symbol properties?  We could use:
 ;;
