@@ -185,3 +185,28 @@ functionality into internal-buffers."
        (apply #'str:concat "lisp://"
               (mapcar (alex:compose #'quri:url-encode #'write-to-string)
                       (cons lisp-form more-lisp-forms)))))
+
+(declaim (ftype (function (quri:uri quri:uri) boolean) path=))
+(defun path= (url1 url2)
+  "Return non-nil when URL1 and URL2 have the same path."
+  ;; See https://github.com/fukamachi/quri/issues/48.
+  (equalp (string-right-trim "/" (or (quri:uri-path url1) ""))
+          (string-right-trim "/" (or (quri:uri-path url2) ""))))
+
+(declaim (ftype (function (quri:uri quri:uri) boolean) scheme=))
+(defun scheme= (url1 url2)
+  "Return non-nil when URL1 and URL2 have the same scheme.
+HTTP and HTTPS belong to the same equivalence class."
+  (or (equalp (quri:uri-scheme url1) (quri:uri-scheme url2))
+      (and (quri:uri-http-p url1) (quri:uri-http-p url2))))
+
+(declaim (ftype (function (quri:uri quri:uri) boolean) domain=))
+(defun domain= (url1 url2)
+  "Return non-nil when URL1 and URL2 have the same domain."
+  (equalp (quri:uri-domain url1) (quri:uri-domain url2)))
+
+(declaim (ftype (function (quri:uri quri:uri) boolean) host=))
+(defun host= (url1 url2)
+  "Return non-nil when URL1 and URL2 have the same host.
+This is a more restrictive requirement than `domain='."
+  (equalp (quri:uri-host url1) (quri:uri-host url2)))
