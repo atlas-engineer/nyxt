@@ -455,8 +455,13 @@ suggestions."
 
 (export-always 'all-marks)
 (defun all-marks (prompter)
-  "Return the list of the marked suggestion values in the prompter."
+  "Return the list of the marked suggestions in the prompter."
   (alex:mappend #'marks (sources prompter)))
+
+(export-always 'all-suggestions)
+(defun all-suggestions (prompter)
+  "Return the list of the suggestions in the prompter."
+  (alex:mappend #'suggestions (sources prompter)))
 
 (defun default-action (prompter)
   (first (actions prompter)))
