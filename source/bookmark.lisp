@@ -73,23 +73,20 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                 (string= "about:blank" (render-url url)))
       (multiple-value-bind (entries bookmarks-without-url)
           (sera:partition (sera:partial #'equal-url url) bookmarks :key #'url)
-        (let* (;; TODO: We should not need ensure-list.  Make sure
-               ;; prompter does not return "" on empty input.
-               (tags (uiop:ensure-list tags)))
-          (let ((entry (if entries
-                           (first entries)
-                           (make-instance 'bookmark-entry
-                                          :url url))))
+        (let ((entry (if entries
+                         (first entries)
+                         (make-instance 'bookmark-entry
+                                        :url url))))
 
-            (unless (str:emptyp title)
-              (setf (title entry) title))
-            (setf tags (delete "" tags :test #'string=))
-            (setf tags (delete-duplicates tags :test #'string=))
-            (setf (tags entry) (sort tags #'string<))
-            (when date
-              (setf (date entry) date))
-            (push entry bookmarks-without-url)
-            (setf bookmarks bookmarks-without-url)))))))
+          (unless (str:emptyp title)
+            (setf (title entry) title))
+          (setf tags (delete "" tags :test #'string=))
+          (setf tags (delete-duplicates tags :test #'string=))
+          (setf (tags entry) (sort tags #'string<))
+          (when date
+            (setf (date entry) date))
+          (push entry bookmarks-without-url)
+          (setf bookmarks bookmarks-without-url))))))
 
 (define-class bookmark-source (prompter:source)
   ((prompter:name "Bookmarks")
@@ -170,12 +167,19 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
       (echo "Buffer has no URL.")
       (let* (;; (body (with-current-buffer buffer
              ;;         (ffi-buffer-get-document buffer)))
-             ;; TODO: Allow removing tags when none are selected.
              (tags (prompt
                     :prompt "Tag(s)"
                     :sources (list
                               (make-instance 'prompter:word-source
                                              :name "New tags"
+                                             ;; On no input, suggest the empty tag which effectively acts as "no tag".
+                                             ;; Without it, we would be force to
+                                             ;; specify a tag.
+                                             :filter-postprocessor
+                                             (lambda (suggestions source input)
+                                               (declare (ignore source input))
+                                               (or suggestions
+                                                   (list "")))
                                              :multi-selection-p t)
                               (make-instance 'tag-source
                                              :marks (url-bookmark-tags (url buffer))
