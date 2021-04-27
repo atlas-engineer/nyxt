@@ -28,22 +28,22 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "escape" 'cancel-input
        "down" 'select-next
        "up" 'select-previous
-       "C-n" 'select-next
-       "C-p" 'select-previous
-       "M-n" 'select-next-page
-       "M-p" 'select-previous-page
-       "M->" 'select-last
-       "M-<" 'select-first
-       "M-]" 'select-next-source
-       "M-[" 'select-previous-source
+       "home" 'select-first
+       "end" 'select-last
+       "pagehome" 'select-first
+       "pageend" 'select-last
+       "C-up" 'select-first
+       "C-down" 'select-last
+       "C-pagedown" 'select-next-source
+       "C-pageup" 'select-previous-source
        "tab" 'prompt-buffer-insert-selection
        "return" 'return-selection
        "M-return" 'return-selection-over-action
        "C-return" 'run-persistent-action
        "f1 b" 'run-prompt-buffer-command
        "f1 m" 'describe-prompt-buffer
-       "C-c C-f" 'toggle-follow
-       "C-]" 'toggle-attributes-display ; "C-]" is Emacs Helm binding.
+       "C-c C-f" 'toggle-follow         ; TODO: This is the Emacs Helm binding.  Better?
+       "C-]" 'toggle-attributes-display ; TODO: This is the Emacs Helm binding.  Better?
        "C-space" 'prompt-buffer-toggle-mark
        "shift-space" 'prompt-buffer-toggle-mark-backwards
        "M-space" 'prompt-buffer-toggle-mark
@@ -56,8 +56,16 @@ Actions can be listed and run with `return-selection-over-action' (bound to
 
       scheme:emacs
       (list
-       "C-j" 'run-persistent-action     ; Emacs binding.
-       "C-g" 'cancel-input              ; Emacs binding.
+       "C-n" 'select-next
+       "C-p" 'select-previous
+       "M-n" 'select-next-page
+       "M-p" 'select-previous-page
+       "M->" 'select-last
+       "M-<" 'select-first
+       "M-]" 'select-next-source        ; Emacs Helm binding.
+       "M-[" 'select-previous-source    ; Emacs Helm binding.
+       "C-j" 'run-persistent-action     ; Emacs Helm binding.
+       "C-g" 'cancel-input
        "C-h b" 'run-prompt-buffer-command)
 
       scheme:vi-normal
