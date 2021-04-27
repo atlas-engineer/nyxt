@@ -836,7 +836,7 @@ Warning: This behaviour may change in the future."
            (uri (webkit:webkit-uri-request-uri
                  (webkit:webkit-navigation-action-get-request
                   (gobject:pointer navigation-action)))))
-       (ffi-buffer-load new-buffer uri)
+       (ffi-buffer-load new-buffer (quri:uri uri))
        (window-set-buffer (current-window) new-buffer)
        (gtk-object new-buffer))))
   ;; Remove "download to disk" from the right click context menu because it

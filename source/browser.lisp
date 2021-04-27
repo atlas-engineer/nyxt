@@ -426,7 +426,7 @@ Deal with REQUEST-DATA with the following rules:
          nil)
         ((new-window-p request-data)
          (log:debug "Load URL in new buffer: ~a" (render-url url))
-         (open-urls (list (render-url url)))
+         (open-urls (list url))
          nil)
         ((not (known-type-p request-data))
          (log:debug "Buffer ~a initiated download of ~s." (id buffer) (render-url url))
