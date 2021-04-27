@@ -187,7 +187,8 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
   ;; Destroy prompter last, or else `return-function' may not work.
   (prompter:destroy prompt-buffer))
 
-(defun suggestion-and-mark-count (prompt-buffer suggestions marks)
+(defun suggestion-and-mark-count (prompt-buffer suggestions marks
+                                  &key multi-selection-p)
   (cond
     ((not suggestions)
      "")
@@ -198,7 +199,10 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
              (length marks)
              (length suggestions)))
     ((not marks)
-     (format nil "[~a]"
+     (format nil "[~a~a]"
+             (if multi-selection-p
+                 "0/"
+                 "")
              (length suggestions)))))
 
 (defun prompt-render-prompt (prompt-buffer)
@@ -209,7 +213,10 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
      (ps:ps
        (setf (ps:chain document (get-element-by-id "prompt-extra") |innerHTML|)
              (ps:lisp
-              (suggestion-and-mark-count prompt-buffer suggestions marks)))
+              (suggestion-and-mark-count
+               prompt-buffer suggestions marks
+               :multi-selection-p (some #'prompter:multi-selection-p
+                                        (prompter:sources prompt-buffer)))))
        (setf (ps:chain document (get-element-by-id "prompt-modes") |innerHTML|)
              (ps:lisp
               (format nil "~{~a~^ ~}" (delete "prompt-buffer"
@@ -238,7 +245,8 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                              ,(prompter:name source)
                              ,(suggestion-and-mark-count prompt-buffer
                                                          (prompter:suggestions source)
-                                                         (prompter:marks source)))))
+                                                         (prompter:marks source)
+                                                         :multi-selection-p (prompter:multi-selection-p source)))))
                     (when (prompter:suggestions source)
                       (markup:raw
                        (markup:markup
