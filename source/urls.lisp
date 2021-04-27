@@ -210,3 +210,14 @@ HTTP and HTTPS belong to the same equivalence class."
   "Return non-nil when URL1 and URL2 have the same host.
 This is a more restrictive requirement than `domain='."
   (equalp (quri:uri-host url1) (quri:uri-host url2)))
+
+(declaim (ftype (function (quri:uri quri:uri list) boolean) url-eqs))
+(defun url-eqs (url1 url2 eq-fn-list)
+  "Return non-nil when URL1 and URL2 are \"equal\" as dictated by EQ-FN-LIST.
+
+EQ-FN-LIST is a list of functions that take URL1 and URL2 as arguments and
+return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
+`quri:uri=' and `url-equal' are examples of equivalence relations."
+  ;; (and (fn1 url1 url2) (fn2 url1 url2) ...) stops as soon as any fn returns
+  ;; nil, unlike the solution below.
+  (every #'identity (mapcar (lambda (fn) (funcall fn url1 url2)) eq-fn-list)))
