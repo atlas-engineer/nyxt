@@ -12,7 +12,8 @@
 
 (define-mode style-mode ()
   "Mode for styling documents."
-  ((css-cache-path (make-instance 'css-cache-data-path
+  ((rememberable-p nil)
+   (css-cache-path (make-instance 'css-cache-data-path
                                   :dirname (uiop:xdg-data-home
                                             nyxt::+data-root+
                                             "style-mode-css-cache")))
