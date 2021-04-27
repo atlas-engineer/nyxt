@@ -43,8 +43,8 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
       (and uri
            (quri:uri-p uri)
            (valid-scheme-p (quri:uri-scheme uri))
-           ;; `new-url-query' automatically fall back to HTTPS if it makes for a
-           ;; valid URL:
+           ;; `new-url-query' automatically falls back to HTTPS if it makes for
+           ;; a valid URL:
            (or (not (http-p (quri:uri-scheme uri)))
                (and
                 ;; "http://" does not have a host.

@@ -165,7 +165,7 @@ down.")
                      :type hook-uri->uri
                      :accessor nil
                      :export nil ; TODO: Export?  Maybe not since `request-resource-hook' mostly supersedes it.
-                     :documentation "Hook run in `buffer-load' before the load.
+                     :documentation "Hook run in `buffer-load' before loading.
 The handlers take the URL going to be loaded as argument
 and must return a (possibly new) URL.")
    (buffer-delete-hook (make-hook-buffer)
