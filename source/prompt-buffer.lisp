@@ -187,31 +187,29 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
   ;; Destroy prompter last, or else `return-function' may not work.
   (prompter:destroy prompt-buffer))
 
+(defun suggestion-and-mark-count (prompt-buffer suggestions marks)
+  (cond
+    ((not suggestions)
+     "")
+    ((hide-suggestion-count-p prompt-buffer)
+     "")
+    (marks
+     (format nil "[~a/~a]"
+             (length marks)
+             (length suggestions)))
+    ((not marks)
+     (format nil "[~a]"
+             (length suggestions)))))
+
 (defun prompt-render-prompt (prompt-buffer)
-  (let* ((source (current-source prompt-buffer))
-         (suggestions (prompter:suggestions source))
-         (marks (prompter:marks source)))
+  (let* ((suggestions (prompter:all-suggestions prompt-buffer))
+         (marks (prompter:all-marks prompt-buffer)))
     (ffi-prompt-buffer-evaluate-javascript-async
      (window prompt-buffer)
      (ps:ps
        (setf (ps:chain document (get-element-by-id "prompt-extra") |innerHTML|)
              (ps:lisp
-              (cond
-                ((not suggestions)
-                 "")
-                ((hide-suggestion-count-p prompt-buffer)
-                 "")
-                (marks
-                 (format nil "[~a/~a]"
-                         (length marks)
-                         (length suggestions)))
-                ((and (not marks)
-                      (prompter:multi-selection-p source))
-                 (format nil "[0/~a]"
-                         (length suggestions)))
-                ((not marks)
-                 (format nil "[~a]"
-                         (length suggestions))))))
+              (suggestion-and-mark-count prompt-buffer suggestions marks)))
        (setf (ps:chain document (get-element-by-id "prompt-modes") |innerHTML|)
              (ps:lisp
               (format nil "~{~a~^ ~}" (delete "prompt-buffer"
@@ -237,7 +235,10 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                           (sera:single sources))
                                  '(:hidden "true"))
                              (:span :class "source-glyph" "⛯")
-                             ,(prompter:name source))))
+                             ,(prompter:name source)
+                             ,(suggestion-and-mark-count prompt-buffer
+                                                         (prompter:suggestions source)
+                                                         (prompter:marks source)))))
                     (when (prompter:suggestions source)
                       (markup:raw
                        (markup:markup
