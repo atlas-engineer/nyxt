@@ -265,7 +265,7 @@ rest in background buffers."
                   :sources (make-instance 'bookmark-source
                                           :multi-selection-p t))))
     (dolist (entry (rest entries))
-      (make-buffer :url (render-url (url entry))))
+      (make-buffer :url (url entry)))
     (make-buffer-focus :url (url (first entries)))))
 
 (defmethod serialize-object ((entry bookmark-entry) stream)
