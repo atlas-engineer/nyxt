@@ -51,7 +51,7 @@
       (initialize-display mode)
       (update-evaluation-history-display mode)))))
 
-(define-command return-input (&optional (repl (current-repl)))
+(define-command return-input (&optional (repl (current-mode 'repl)))
   "Return inputted text."
   (pflet ((input-text ()
            (ps:chain document (get-element-by-id "input-buffer") value)))
@@ -62,18 +62,12 @@
       (reset-input repl)
       (update-evaluation-history-display repl))))
 
-(define-command reset-input (&optional (repl (current-repl)))
+(define-command reset-input (&optional (repl (current-mode 'repl)))
   "Clear the inputted text."
   (with-current-buffer (buffer repl)
     (pflet ((clear-input-buffer-text ()
            (setf (ps:chain document (get-element-by-id "input-buffer") value) "")))
       (clear-input-buffer-text))))
-
-(defun current-repl ()
-  (find-submode (current-buffer) 'repl-mode))
-
-(defmethod active-repl-p ((window nyxt:window))
-  (current-repl))
 
 (defmethod initialize-display ((repl repl-mode))
   (let* ((content (markup:markup
