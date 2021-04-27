@@ -71,23 +71,25 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   (with-data-access (bookmarks (bookmarks-path (current-buffer)))
     (unless (or (url-empty-p url)
                 (string= "about:blank" (render-url url)))
-      (multiple-value-bind (entry bookmarks-without-url)
+      (multiple-value-bind (entries bookmarks-without-url)
           (sera:partition (sera:partial #'equal-url url) bookmarks :key #'url)
         (let* (;; TODO: We should not need ensure-list.  Make sure
                ;; prompter does not return "" on empty input.
                (tags (uiop:ensure-list tags)))
-          (unless entry
-            (setf entry (make-instance 'bookmark-entry
-                                       :url url)))
-          (unless (str:emptyp title)
-            (setf (title entry) title))
-          (setf tags (delete "" tags :test #'string=))
-          (setf tags (delete-duplicates tags :test #'string=))
-          (setf (tags entry) (sort tags #'string<))
-          (when date
-            (setf (date entry) date))
-          (push entry bookmarks-without-url)
-          (setf bookmarks bookmarks-without-url))))))
+          (let ((entry (if entries
+                           (first entries)
+                           (make-instance 'bookmark-entry
+                                          :url url))))
+
+            (unless (str:emptyp title)
+              (setf (title entry) title))
+            (setf tags (delete "" tags :test #'string=))
+            (setf tags (delete-duplicates tags :test #'string=))
+            (setf (tags entry) (sort tags #'string<))
+            (when date
+              (setf (date entry) date))
+            (push entry bookmarks-without-url)
+            (setf bookmarks bookmarks-without-url)))))))
 
 (define-class bookmark-source (prompter:source)
   ((prompter:name "Bookmarks")
