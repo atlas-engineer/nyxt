@@ -884,35 +884,36 @@ When BUFFER is omitted, it defaults to the current one."
   "Load INPUT-URL in BUFFER.
 If INPUT-URL is a string, it's transformed to a `quri:uri' by `parse-url'.
 URL is then transformed by BUFFER's `buffer-load-hook'."
-  (sera:and-let* ((url (typecase input-url
-                         (string
-                          (parse-url input-url))
-                         (history-entry
-                          (url input-url))
-                         (t
-                          input-url)))
-                  (new-url
-                   (handler-case
-                       (hooks:run-hook (slot-value buffer 'buffer-load-hook) url)
-                     (error (c)
-                       (log:error "In `buffer-load-hook': ~a" c)
-                       nil))))
-    (check-type new-url quri:uri)
-    (setf url new-url)
-    ;; TODO: This condition can be a source of inefficiency.  Besides, it
-    ;; partly duplicates the code in `request-resource'.  Can we factor this
-    ;; out?
-    (cond
-      ((and (internal-buffer-p buffer) (equal "lisp" (quri:uri-scheme url)))
-       (let ((code (quri:url-decode (schemeless-url url) :lenient t)))
-         (log:debug "Evaluate Lisp code from internal buffer: ~a" code)
-         (evaluate-async code)))
-      ((internal-buffer-p buffer)
-       ;; REVIEW: `request-resource' renders the URL, should we do it here as well?
-       (make-buffer-focus :url url))
-      ((equal "javascript" (quri:uri-scheme url))
-       (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url))))
-      (t (ffi-buffer-load buffer url)))))
+  (let* ((url (typecase input-url
+                (string
+                 (parse-url input-url))
+                (history-entry
+                 (url input-url))
+                (t
+                 input-url)))
+         (new-url
+           (handler-case
+               (hooks:run-hook (slot-value buffer 'buffer-load-hook) url)
+             (error (c)
+               (log:error "In `buffer-load-hook': ~a" c)
+               nil))))
+    (when new-url
+      (check-type new-url quri:uri)
+      (setf url new-url)
+      ;; TODO: This condition can be a source of inefficiency.  Besides, it
+      ;; partly duplicates the code in `request-resource'.  Can we factor this
+      ;; out?
+      (cond
+        ((and (internal-buffer-p buffer) (equal "lisp" (quri:uri-scheme url)))
+         (let ((code (quri:url-decode (schemeless-url url) :lenient t)))
+           (log:debug "Evaluate Lisp code from internal buffer: ~a" code)
+           (evaluate-async code)))
+        ((internal-buffer-p buffer)
+         ;; REVIEW: `request-resource' renders the URL, should we do it here as well?
+         (make-buffer-focus :url url))
+        ((equal "javascript" (quri:uri-scheme url))
+         (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url))))
+        (t (ffi-buffer-load buffer url))))))
 
 (defun new-buffer-load (url)
   "Load a URL in a new buffer."
