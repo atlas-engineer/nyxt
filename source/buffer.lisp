@@ -917,11 +917,11 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
 
 (defun new-buffer-load (url)
   "Load a URL in a new buffer."
-  (make-buffer-focus :url url))
+  (make-buffer-focus :url (url url)))
 
 (defun new-nosave-buffer-load (url)
   "Load a URL in a new nosave buffer."
-  (make-buffer-focus :url url :nosave-buffer-p t))
+  (make-buffer-focus :url (url url) :nosave-buffer-p t))
 
 (defun new-buffer-load-from-history (history-suggestion)
   "Load a URL in a new buffer (from history)."
@@ -1066,8 +1066,7 @@ generate a new URL query from user input.
      :input (if prefill-current-url-p
                 (render-url (url (current-buffer))) "")
      :history history
-     :sources (list (make-instance 'prompter:raw-source
-                                   :name "New URL"
+     :sources (list (make-instance 'new-url-or-search-source
                                    :actions (list (make-unmapped-command new-buffer-load)))
                     (make-instance 'global-history-source
                                    :actions (list (make-unmapped-command new-buffer-load-from-history)))
@@ -1080,7 +1079,7 @@ generate a new URL query from user input.
    :prompt "Open URL"
    :input (if prefill-current-url-p
               (render-url (url (current-buffer))) "")
-   :sources (list (make-instance 'prompter:raw-source
+   :sources (list (make-instance 'new-url-or-search-source
                                  :name "New URL"
                                  :actions (list (make-unmapped-command buffer-load)
                                                 (make-unmapped-command new-nosave-buffer-load)))
