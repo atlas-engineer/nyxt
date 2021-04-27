@@ -74,7 +74,7 @@ If nil, look for CSS in `style-file' or `style-url'.")
                    :dirname (dirname (css-cache-path mode))
                    :basename (uri->name uri))))
 
-(defmethod nyxt:on-signal-notify-uri ((mode style-mode) url)
+(defmethod nyxt:on-signal-load-finished ((mode style-mode) url)
   (declare (ignore url))
   (apply-style mode))
 
