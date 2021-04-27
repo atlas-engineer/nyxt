@@ -7,52 +7,52 @@
 
 (subtest "Parse URL"
   (let* ((*browser* (make-instance 'user-browser)))
-    (is (nyxt::parse-url "https://nyxt.atlas.engineer")
+    (is (url (make-instance 'nyxt:new-url-query :query "https://nyxt.atlas.engineer"))
         (quri:uri "https://nyxt.atlas.engineer")
         :test #'quri:uri=
         "full URL")
-    (is (nyxt::parse-url "nyxt.atlas.engineer")
+    (is (url (first (nyxt::input->queries "nyxt.atlas.engineer")))
         (quri:uri "https://nyxt.atlas.engineer")
         :test #'quri:uri=
         "URL without protocol")
-    (is (nyxt::parse-url "wiki wikipedia")
+    (is (url (first (nyxt::input->queries "wiki wikipedia")))
         (quri:uri "https://en.wikipedia.org/w/index.php?search=wikipedia")
         :test #'quri:uri=
         "search engine")
-    (is (nyxt::parse-url "nyxt browser")
-        (quri:uri "https://duckduckgo.com/?q=nyxt+browser")
+    (is (url (first (nyxt::input->queries "nyxt browser")))
+        (quri:uri "https://duckduckgo.com/?q=nyxt browser")
         :test #'quri:uri=
         "default search engine")
-    (is (nyxt::parse-url "wiki wikipedia")
+    (is (url (first (nyxt::input->queries "wiki wikipedia")))
         (quri:uri "https://en.wikipedia.org/w/index.php?search=wikipedia")
         :test #'quri:uri=
         "wiki search engine")
-    (is (nyxt::parse-url "file:///readme.org")
+    (is (url (first (nyxt::input->queries "file:///readme.org")))
         (quri:uri "file:///readme.org")
         :test #'quri:uri=
         "local file")
-    (is (nyxt::parse-url "foo")
+    (is (url (first (nyxt::input->queries "foo")))
         (quri:uri "https://duckduckgo.com/?q=foo")
         :test #'quri:uri=
         "empty domain")
-    (is (nyxt::parse-url "algo")
+    (is (url (first (nyxt::input->queries "algo")))
         (quri:uri "https://duckduckgo.com/?q=algo")
         :test #'quri:uri=
         "same domain and TLD")
-    (is (nyxt::parse-url "http://localhost:8080")
+    (is (url (first (nyxt::input->queries "http://localhost:8080")))
         (quri:uri "http://localhost:8080")
         :test #'quri:uri=
         "localhost")
-    (is (nyxt::parse-url "*spurious*")
-        (quri:uri "https://duckduckgo.com/?q=%2Aspurious%2A")
+    (is (url (first (nyxt::input->queries "*spurious*")))
+        (quri:uri "https://duckduckgo.com/?q=*spurious*")
         :test #'quri:uri=
         "ignore wildcards")
-    (is (nyxt::parse-url "about:blank")
+    (is (url (first (nyxt::input->queries "about:blank")))
         (quri:uri "about:blank")
         :test #'quri:uri=
         "about:blank")
-    (is (nyxt::parse-url "foo:blank")
-        (quri:uri "https://duckduckgo.com/?q=foo%3Ablank")
+    (is (url (first (nyxt::input->queries "foo:blank")))
+        (quri:uri "https://duckduckgo.com/?q=foo:blank")
         :test #'quri:uri=
         "valid syntax but unknown scheme")))
 
