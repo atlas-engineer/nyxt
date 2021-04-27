@@ -69,4 +69,4 @@ bookmarks."
                          :prompt "Search engine:"
                          :sources (make-instance 'search-engine-source)))))
     (when engine
-      (buffer-load (generate-search-query selection (search-url engine))))))
+      (buffer-load (make-instance 'new-url-query :query selection :engine engine)))))

@@ -15,15 +15,6 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
          (or (ignore-errors (ffi-display-uri url))
              url))))
 
-(export-always 'generate-search-query)
-(defun generate-search-query (search-string search-url)
-  (let* ((encoded-search-string
-           ;; We need to encode the search string to escape special characters.
-           ;; Besides, we separate search patterns by a "+".
-           (cl-ppcre:regex-replace-all "(%20)+" (quri:url-encode search-string) "+"))
-         (url (format nil search-url encoded-search-string)))
-    url))
-
 (export-always 'valid-url-p)
 (defun valid-url-p (url)
   ;; List of URI schemes: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
@@ -52,8 +43,8 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
       (and uri
            (quri:uri-p uri)
            (valid-scheme-p (quri:uri-scheme uri))
-           ;; `parse-url' tries to guess
-           ;; the URL from the user input by prefixing it with HTTPS:
+           ;; `new-url-query' automatically fall back to HTTPS if it makes for a
+           ;; valid URL:
            (or (not (http-p (quri:uri-scheme uri)))
                (and
                 ;; "http://" does not have a host.
@@ -125,44 +116,6 @@ Authority is compared case-insensitively (RFC 3986)."
 This way, HTTPS and HTTP is ignored when comparing URIs."
   (string< (schemeless-url uri1)
            (schemeless-url uri2)))
-
-(declaim (ftype (function (string) (values (or quri:uri null) t &optional)) parse-url))
-(defun parse-url (input-url)
-  "From user input, return the full URL to visit.
-
-If the first word references a search engine, generate a search query.
-If the input starts with an URI scheme, open it as is.
-If the input is actually a file path, open it.
-Suppose the user omitted the scheme: if the input prefixed by 'https://' gives a valid URI, go to it.
-Otherwise, build a search query with the default search engine."
-  (let* ((search-engines (all-search-engines))
-         (terms (str:split " " input-url :omit-nulls t))
-         (engine (find (first terms)
-                       search-engines :test #'string= :key #'shortcut)))
-    (if engine
-        (let ((new-input (str:join " " (rest terms))))
-          (if (and (not (str:emptyp (fallback-url engine)))
-                   (str:emptyp new-input))
-              (quri:uri (fallback-url engine))
-              (quri:uri (generate-search-query new-input (search-url engine)))))
-        (let ((recognized-scheme (and (valid-url-p input-url)
-                                      (quri:uri-scheme (quri:uri input-url)))))
-          (cond
-            ((and recognized-scheme
-                  (not (string= "file" recognized-scheme)))
-             (quri:uri input-url))
-            ((or (string= "file" recognized-scheme)
-                 (uiop:file-exists-p input-url))
-             (quri:uri (if (string= "file" recognized-scheme)
-                           input-url
-                           (format nil "file://~a"
-                                   (uiop:ensure-absolute-pathname
-                                    input-url *default-pathname-defaults*)))))
-            ((valid-url-p (str:concat "https://" input-url))
-             (quri:uri (str:concat "https://" input-url)))
-            (t (alex:if-let ((default (default-search-engine search-engines)))
-                 (quri:uri (generate-search-query input-url (search-url default)))
-                 (quri:uri input-url))))))))
 
 (export-always 'lisp-url)
 (declaim (ftype (function (t &rest t) string) lisp-url))

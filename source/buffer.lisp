@@ -165,7 +165,7 @@ down.")
                      :type hook-uri->uri
                      :accessor nil
                      :export nil ; TODO: Export?  Maybe not since `request-resource-hook' mostly supersedes it.
-                     :documentation "Hook run in `buffer-load' after `parse-url' was processed.
+                     :documentation "Hook run in `buffer-load' before the load.
 The handlers take the URL going to be loaded as argument
 and must return a (possibly new) URL.")
    (buffer-delete-hook (make-hook-buffer)
@@ -883,7 +883,6 @@ When BUFFER is omitted, it defaults to the current one."
                 buffer-load))
 (defun buffer-load (input-url &key (buffer (current-buffer)))
   "Load INPUT-URL in BUFFER.
-If INPUT-URL is a string, it's transformed to a `quri:uri' by `parse-url'.
 URL is then transformed by BUFFER's `buffer-load-hook'."
   (let* ((url (typecase input-url
                 (new-url-query
