@@ -241,7 +241,7 @@ rest in background buffers."
                   :sources (make-instance 'bookmark-source
                                           :multi-selection-p t))))
     (dolist (entry (rest entries))
-      (make-buffer :url (render-url (url entry))))
+      (make-buffer :url (url entry)))
     (buffer-load (url (first entries)))))
 
 (define-command set-url-from-bookmark-new-buffer ()
