@@ -237,8 +237,9 @@ If STEPS is negative, go to next pages instead."
     (prompter:actions first-prompt-buffer)))
 
 ;; TODO: Should actions be commands?  For now, they can be either commands or symbols.
-(defun make-action-suggestion (action source &optional input)
+(defun make-action-suggestion (action &optional source input)
   "Return a `suggestion' wrapping around ACTION."
+  (declare (ignore source input))
   (make-instance
    'prompter:suggestion
    :value action
@@ -250,9 +251,7 @@ If STEPS is negative, go to next pages instead."
                                                (typecase action
                                                  (command (nyxt::docstring action))
                                                  (t (documentation action 'function)))))
-                                       "")))
-   :source source
-   :input input))
+                                       "")))))
 
 (define-class action-source (prompter:source)
   ((prompter:name "List of actions")
