@@ -50,8 +50,9 @@ vi-normal-mode.")
                                                                         'vi-insert-mode)))
   "Switch to the mode remembered to be the matching VI-normal one for this MODE."
   (when mode
-    (enable-modes (list (and (previous-vi-normal-mode mode)
-                             (mode-name (previous-vi-normal-mode mode))))
+    (enable-modes (list (or (and (previous-vi-normal-mode mode)
+                                 (mode-name (previous-vi-normal-mode mode)))
+                            'vi-normal-mode))
                   (buffer mode))))
 
 ;; TODO: Move ESCAPE binding to the override map?
