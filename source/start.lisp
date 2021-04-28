@@ -261,12 +261,13 @@ Return the short error message and the full error message as second value."
 EXPR is expected to be as per the expression sent in `listen-or-query-socket'."
   (let ((urls (ignore-errors (second (second (read-from-string expr nil))))))
     (if (and urls (every #'stringp urls))
-        (open-external-urls urls)
+        (open-external-urls (mapcar #'quri:uri urls))
         (progn
           (log:warn "Could not extract URLs from ~s." expr)
           nil))))
 
 (export-always 'open-external-urls)
+(declaim (ftype (function ((cons quri:uri *))) open-external-urls))
 (defun open-external-urls (urls)
   "Open URLs on the renderer thread and return URLs.
 This is a convenience wrapper to make remote code execution to open URLs as
@@ -330,6 +331,7 @@ short as possible."
                              (sb-posix:stat-mode (sb-posix:stat path)))))))
          (socket-p path))))
 
+(declaim (ftype (function ((or null (cons quri:uri *)))) listen-or-query-socket))
 (defun listen-or-query-socket (urls)
   "If another Nyxt is listening on the socket, tell it to open URLS.
 Otherwise bind socket and return the listening thread."
@@ -486,10 +488,11 @@ Load INIT-FILE if non-nil.
 Instantiate `*browser*'.
 Start Nyxt and load URLS if any.
 Finally,run the `*after-init-hook*'."
-  (let ((thread (when (expand-path *socket-path*)
-                  (listen-or-query-socket free-args)))
-        (startup-timestamp (local-time:now))
-        (startup-error-reporter nil))
+  (let* ((urls (ignore-errors (mapcar #'quri:uri free-args)))
+         (thread (when (expand-path *socket-path*)
+                   (listen-or-query-socket urls)))
+         (startup-timestamp (local-time:now))
+         (startup-error-reporter nil))
     (when (or thread
               (getf *options* :no-socket)
               (null (expand-path *socket-path*)))
@@ -520,7 +523,7 @@ Finally,run the `*after-init-hook*'."
       ;; is the case with the SLY mrepl thread.
       (bt:make-thread (lambda ()
                         (in-package :nyxt-user)))
-      (ffi-initialize *browser* free-args startup-timestamp))))
+      (ffi-initialize *browser* urls startup-timestamp))))
 
 (define-command nyxt-init-time ()
   "Return the duration of Nyxt initialization."

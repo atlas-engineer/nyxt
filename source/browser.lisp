@@ -346,7 +346,7 @@ This is useful to tell REPL instances from binary ones."
                                        url))))
 
 ;; REVIEW: Do we need :NO-FOCUS? It's not used anywhere.
-(declaim (ftype (function (list-of-strings &key (:no-focus boolean)))))
+(declaim (ftype (function ((cons quri:uri *) &key (:no-focus boolean)))))
 (defun open-urls (urls &key no-focus)
   "Create new buffers from URLs.
 First URL is focused if NO-FOCUS is nil."
