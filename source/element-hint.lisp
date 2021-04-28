@@ -265,7 +265,7 @@ identifier for every hinted element."
 (define-class button-hint (clickable-hint) ())
 
 (define-class link-hint (hint)
-  ((url ""))
+  ((url (quri:uri "")))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-class input-hint (focusable-hint)
