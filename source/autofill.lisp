@@ -32,4 +32,7 @@ Can be:
 (defmethod prompter:object-attributes ((autofill autofill))
   `(("Key" ,(autofill-key autofill))
     ("Name" ,(autofill-name autofill))
-    ("Fill" ,(autofill-fill autofill))))
+    ("Fill" ,(let ((f (autofill-fill autofill)))
+               (typecase f
+                 (string (write-to-string f))
+                 (t "function"))))))
