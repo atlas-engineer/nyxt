@@ -663,7 +663,9 @@ Warning: This behaviour may change in the future."
              (webkit:webkit-policy-decision-use response-policy-decision)
              nil)
             (t
-             (setf (webkit:webkit-uri-request-uri request) (render-url (url request-data)))
+             ;; Low-level URL string, we must not render the puni codes so use
+             ;; `quri:render-uri'.
+             (setf (webkit:webkit-uri-request-uri request) (quri:render-uri (url request-data)))
              (log:debug "Don't forward to ~s's renderer (resource request replaced with ~s)."
                         buffer
                         (render-url (url request-data)))
