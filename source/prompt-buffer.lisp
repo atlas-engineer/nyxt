@@ -35,11 +35,11 @@ new history for each new prompt buffer.  Here we set the history to be shared gl
      ;; TODO: Need a changed-callback?  Probably not, see `search-buffer'.  But
      ;; can we run the postprocessor without running the filter?
      (invisible-input-p nil
-                        :documentation "If non-nil, input is replaced by placeholder character.
-;; This is useful to conceal passwords.")
+                        :documentation "If non-nil, input is replaced by a
+placeholder character.  This is useful to conceal passwords.")
      (hide-suggestion-count-p nil
-                              :documentation "Show the number of chosen suggestions
-;; inside brackets. It can be useful to disable, for instance for a yes/no question.")
+                              :documentation "Whether to show the number of
+chosen suggestions inside brackets.")
      ;; TODO: Need max-lines?
      ;; (max-lines 10
      ;;               :documentation "Max number of suggestion lines to show.
@@ -124,8 +124,8 @@ new history for each new prompt buffer.  Here we set the history to be shared gl
     (:export-accessor-names-p t)
     (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
     (:documentation "The prompt buffer is the interface for user interactions.
-Each prompt spawns a new object: this makes it possible to nest prompts , such
-as invoking `prompt-buffer-history'.
+Each prompt spawns a new object: this makes it possible to nest prompts, such as
+invoking `prompt-buffer-history'.
 
 See `prompt' for how to invoke prompts.")))
 
