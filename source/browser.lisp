@@ -545,7 +545,7 @@ The following example does a few things:
 
 (export-always 'match-regex)
 (defun match-regex (regex &rest other-regex)
-  "Return a predicate for URLs matching one of REGES or OTHER-REGEX."
+  "Return a predicate for URLs matching one of REGEX or OTHER-REGEX."
   #'(lambda (url)
       (some (alex:rcurry #'cl-ppcre:scan (render-url url))
             (cons regex other-regex))))
