@@ -267,6 +267,10 @@ attribute names are meant to be displayed or not.
 - When `:always', the column attribute header should be hidden.
 - When `:never', the column attribute header should be shown.
 - When `:single', it's hidden if there is only one active attribute.")
+   (hide-suggestion-count-p nil
+                            :type boolean
+                            :documentation "Let know the caller whether the
+suggestion count is meant to be displayed or not.")
 
    (suggestion-maker #'make-suggestion
                      :documentation "Function that wraps an arbitrary
@@ -443,6 +447,7 @@ call."))
    (filter-preprocessor 'make-input-suggestion)
    (filter nil)
    (hide-attribute-header-p :always)
+   (hide-suggestion-count-p t)
    (multi-selection-p nil))
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
