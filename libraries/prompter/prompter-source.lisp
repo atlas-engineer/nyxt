@@ -223,7 +223,7 @@ It's called when `destroy' is called over `prompter'.")
                         "Suggestions used on initialization, before any
 user input is processed.
 On initialization this list is transformed to a list of `suggestion's
-where attributes are set from `suggestion-attribute-function'.
+with `suggestion-maker'.
 This list is never modified after initialization.")
 
    (initial-suggestions-lock (bt:make-lock)
@@ -514,7 +514,9 @@ If you are looking for a source that just returns its plain suggestions, use `so
   (second (first (attributes suggestion))))
 
 (defmethod attributes-default ((object t))
-  "Return OBJECT default attribute value."
+  "Return OBJECT default attribute value.
+Since the OBJECT is taken outside of a source context, attributes are derived
+from `object-attributes'."
   (second (first (object-attributes object))))
 
 (export-always 'attributes-non-default)
