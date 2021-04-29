@@ -67,9 +67,10 @@ get/set-content (which is necessary for operation)."
                       :prompt "Open file"
                       :input (namestring (uiop:getcwd))
                       :sources
-                      (list (make-instance 'prompter:raw-source)
-                            (make-instance 'file-source
-                                           :name "Absolute file path"))))))
+                      (list (make-instance 'file-source
+                                           :name "Absolute file path")
+                            (make-instance 'prompter:raw-source
+                                           :name "New file"))))))
     (open-file buffer file)
     ;; TODO: Maybe make `editor-mode' and `editor-buffer' pathname-friendly?
     (setf (file buffer) (namestring file))
