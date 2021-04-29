@@ -23,7 +23,7 @@
                (mapcar #'mode-name (modes buffer)))
         #'local-time:timestamp> :key #'last-access))
 
-(defun command-properties (command &optional (buffer (active-buffer (current-window :no-rescan))))
+(defun command-attributes (command &optional (buffer (active-buffer (current-window :no-rescan))))
   (let ((scheme-name (keymap-scheme-name buffer))
         (bindings '()))
     (loop for mode in (modes buffer)
@@ -41,7 +41,7 @@
                      (str:replace-first "nyxt/" "" package-name)))))))
 
 (defmethod prompter:object-attributes ((command command))
-  (command-properties command))
+  (command-attributes command))
 
 (define-class command-source (prompter:source)
   ((prompter:name "Commands")
