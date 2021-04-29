@@ -227,7 +227,7 @@ If STEPS is negative, go to next pages instead."
   (make-instance
    'prompter:suggestion
    :value command
-   :attributes (nyxt::command-properties command (parent-prompt-buffer source))))
+   :attributes (nyxt::command-attributes command (parent-prompt-buffer source))))
 
 (define-command run-prompt-buffer-command (&optional (prompt-buffer (current-prompt-buffer)))
   "Prompt for a command to call in PROMPT-BUFFER."
