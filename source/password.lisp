@@ -66,28 +66,26 @@ for which the `executable' slot is non-nil."
                       (class-name (class-of (password-interface buffer))))))))
 
 (defmethod password:complete-interface ((password-interface password:keepassxc-interface))
-  (flet ((directory-or-kdbx-file (suggestions source input)
-           (remove-if-not #'(lambda (suggestion)
-                              (or (string-equal (pathname-type (prompter:value suggestion)) "kdbx")
-                                  (uiop:directory-pathname-p (prompter:value suggestion))))
-                          (make-file-suggestions suggestions source input))))
-    (loop :until (and (password::password-file password-interface)
-                      (string-equal "kdbx"
-                                    (pathname-type (pathname (password::password-file
-                                                              password-interface)))))
-          :do (setf (password::password-file password-interface)
-                    (namestring
-                     (first (prompt
-                             :prompt "Password file"
-                             :sources (list (make-instance
-                                             'file-source
-                                             :filter-preprocessor #'directory-or-kdbx-file)))))))
-    (loop :until (password:password-correct-p password-interface)
-          :do (setf (password::master-password password-interface)
-                    (first (prompt
-                            :prompt "Password"
-                            :sources (list (make-instance 'prompter:raw-source))
-                            :invisible-input-p t))))))
+  (loop :until (and (password::password-file password-interface)
+                    (string-equal "kdbx"
+                                  (pathname-type (pathname (password::password-file
+                                                            password-interface)))))
+        :do (setf (password::password-file password-interface)
+                  (namestring
+                   (first (prompt
+                           :prompt "Password file"
+                           :sources (list (make-instance
+                                           'file-source
+                                           :filter-preprocessor
+                                           (make-file-source-preprocessor
+                                            (alex:disjoin (match-externsion "kdbx")
+                                                          #'uiop:directory-pathname-p)))))))))
+  (loop :until (password:password-correct-p password-interface)
+        :do (setf (password::master-password password-interface)
+                  (first (prompt
+                          :prompt "Password"
+                          :sources (list (make-instance 'prompter:raw-source))
+                          :invisible-input-p t)))))
 
 (defmacro with-password (password-interface &body body)
   `(if (password:password-correct-p ,password-interface)
