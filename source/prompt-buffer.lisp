@@ -243,10 +243,12 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                  '(:hidden "true"))
                              (:span :class "source-glyph" "⛯")
                              ,(prompter:name source)
-                             ,(suggestion-and-mark-count prompt-buffer
-                                                         (prompter:suggestions source)
-                                                         (prompter:marks source)
-                                                         :multi-selection-p (prompter:multi-selection-p source)))))
+                             ,(if (prompter:hide-suggestion-count-p source)
+                                  ""
+                                  (suggestion-and-mark-count prompt-buffer
+                                                             (prompter:suggestions source)
+                                                             (prompter:marks source)
+                                                             :multi-selection-p (prompter:multi-selection-p source))))))
                     (when (prompter:suggestions source)
                       (markup:raw
                        (markup:markup
