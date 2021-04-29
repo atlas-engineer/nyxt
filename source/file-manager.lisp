@@ -9,22 +9,36 @@
     (append (uiop:subdirectories directory)
             (uiop:directory-files directory))))
 
-(defun make-file-suggestions (suggestions source input)
-  (declare (ignore suggestions source))
-  (let* ((pathname (pathname input)))
-    (mapcar (lambda (file)
-              (make-instance 'prompter:suggestion
-                             :value file
-                             :match-data (namestring file)
-                             :attributes (prompter:object-attributes file)))
-            (directory-elements (if (uiop:directory-pathname-p pathname)
-                                    pathname
-                                    (uiop:pathname-directory-pathname pathname))))))
+(defmethod prompter:object-attributes ((path pathname))
+  ;; TODO: Add dirname, basename, extension.
+  ;; It will be useful when we have per-attribute filtering.
+  `(("Path" ,(namestring path))))
+
+(defun match-externsion (ext)
+  (lambda (pathname)
+    (string-equal (pathname-type pathname) ext)))
+
+(defun make-file-source-preprocessor (&rest filters)
+  "Return a preprocessor that lists all files satisfying all FILTERS.
+It's suitable for `prompter:filter-preprocessor'."
+  (lambda (suggestions source input)
+    (declare (ignore suggestions))
+    (let ((pathname (pathname input)))
+      (prompter:filter-exact-matches
+       ;; TODO: Export `ensure-suggestions-list'?
+       (prompter::ensure-suggestions-list
+        source
+        (sera:filter
+         (apply #'alex:conjoin (or filters (list #'identity)))
+         (directory-elements (if (uiop:directory-pathname-p pathname)
+                                 pathname
+                                 (uiop:pathname-directory-pathname pathname)))))
+       source
+       input))))
 
 (define-class file-source (prompter:source)
   ((prompter:name "Files")
-   (prompter:constructor (directory-elements (uiop:getcwd)))
-   (prompter:filter-preprocessor 'make-file-suggestions)
+   (prompter:filter-preprocessor (make-file-source-preprocessor))
    (prompter:multi-selection-p t))
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
