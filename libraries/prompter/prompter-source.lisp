@@ -347,17 +347,17 @@ from the prompter.")
                     "A string to explain persistent-action of this source. It also
 accepts a function which takes the source as argument.")
 
-   (multiline nil                     ; TODO: Unused?
-              :type (or boolean integer)
-              :documentation
-              "If non-nil, each candidate can span over multiple lines.
-If an integer, it specifies the maximum number of lines allow per candidate.")
+;;    (multiline nil                     ; TODO: Unused?
+;;               :type (or boolean integer)
+;;               :documentation
+;;               "If non-nil, each candidate can span over multiple lines.
+;; If an integer, it specifies the maximum number of lines allow per candidate.")
 
-   (requires-pattern 0                ; TODO: Use!
-                     :documentation
-                     "Compute and display suggestions only if the pattern has
-at least this number of characters.  When 0, always compute and display
-suggestions.")
+;;    (requires-pattern 0                ; TODO: Use!
+;;                      :documentation
+;;                      "Compute and display suggestions only if the pattern has
+;; at least this number of characters.  When 0, always compute and display
+;; suggestions.")
 
    (update-notifier (make-channel)
                     :type calispel:channel
@@ -385,10 +385,10 @@ If update calculation is aborted, nil is sent instead.")
                   :documentation "Thread where the `filter-preprocessor', `filter' and
 `filter-postprocessor' are run.  We store it in a slot so that we can terminate it.")
 
-   (suggestion-limit 0       ; TODO: Implement.  Move to Nyxt's prompt-buffer?
-                     :documentation
-                     "Don't display more suggestions than this.
-If 0, there is no limit.")
+;;    (suggestion-limit 0       ; TODO: Implement.  Move to Nyxt's prompt-buffer?
+;;                      :documentation
+;;                      "Don't display more suggestions than this.
+;; If 0, there is no limit.")
 
    (multi-selection-p nil
                       :type boolean
