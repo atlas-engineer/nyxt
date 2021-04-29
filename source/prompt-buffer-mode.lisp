@@ -82,6 +82,9 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "g g" 'select-first
        "J" 'select-next-source
        "K" 'select-previous-source
+       ;; Same as with C-j.
+       "C-J" 'select-next-source
+       "C-K" 'select-previous-source
        "z f" 'toggle-follow
        "z a" 'toggle-attributes-display
        "y" 'copy-selection
@@ -91,6 +94,8 @@ Actions can be listed and run with `return-selection-over-action' (bound to
       (list
        "C-j" 'select-next
        "C-k" 'select-previous
+       "C-J" 'select-next-source
+       "C-K" 'select-previous-source
        "C-f" 'select-next-page
        "C-b" 'select-previous-page)))))
 
