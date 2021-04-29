@@ -23,10 +23,14 @@ If possible!
 
 *** TASK 2-pre-release-7 (Upcoming)
 
+- Enabled WebKitGTK process sandboxing.
+
 - Added Support for popups and "Open in new window" context menu item.
 
 - New simple built-in editor capabilities so that you can easily script
   Nyxt without opening up an external editor.
+
+- Rename =%slot-default= to =%slot-default%=.
 
 - New =focus-first-input-field= command.  (Thanks to @aadcg!)
 
@@ -40,6 +44,9 @@ If possible!
 
 - Prompt buffer improvements:
 
+  - Renamed "properties" to "attributes" and use string alists instead
+    of plists.
+
   - All buffer-related prompt buffer source now show the current buffer at
     the top, except when buffer switchin in which case the previous buffer
     is shown at the top.
@@ -47,12 +54,26 @@ If possible!
   - New =describe-prompt-buffer= command (bound to =f1 m= by default in
     the prompt buffer).
 
+  - Removed =return-input=.
+    It's simpler and more explicit to use raw-sources and the like.
+
   - New =compact-display-p= configuration option to automatically hide
     source and column header when there is a single source or column.
 
-  - Re-add global input history to the prompt buffer.
+  - Added bookmark source to =set-url= and friends.
+
+  - Re-added global input history to the prompt buffer.
 
   - Fix invisible input for commands like password queries.
+
+  - Counts of suggestions and marks and displayed per source as well.
+
+  - Restored =M-i= binding for to toggle hint transparency.
+
+  - Emacs and VI keymap schemes are fully supported in the prompt buffer.
+
+- Remove =object-string= and =object=display=, now superseded by
+  =attributes-default= and =object-attributes=.
 
 - Modes can be easily configured how they get displayed in the status
   area:
@@ -64,6 +85,8 @@ If possible!
   - If set, the =glyph= slot will be displayed instead of the mode name.
 
 - New Jump to heading across all tabs.
+
+- Add superclass and subclass link to =describe-class=.
 
 - Move all =Makefile= recipes to the =nyxt.asd=.
   Now the whole build and install process can be fully driven from
@@ -83,6 +106,11 @@ If possible!
 
 - On WebKit process crashes, automatically delete the unusable buffer.
 
+- New =buffer-loaded-hook=.
+
+- Show search engine suggestions when setting new URL.
+  A new =new-url-query= source replaces the former raw-source.
+
 - Display a more meaningful message on page load error.
 
 - Bug fixes
@@ -97,6 +125,8 @@ If possible!
   - Fix many commands that broke with the new prompt buffer API
     (=reload-buffers=, =bookmark-url=, =bookmark-page=, =search-buffer=...).
 
+  - Fix case sensitivity in prompt buffer.
+
   - Avoid HTTP->HTTPS->HTTP loops with force-https-mode.
 
   - Fix auto-mode on restored or reopened buffers.
@@ -105,9 +135,20 @@ If possible!
 
   - Fix OSPM with non-SBCL compilers.
 
+  - Fix most OSPM commands.
+
   - Fix license query for OSPM Guix.
 
   - Fix last bookmark tag spurious modification.
+
+  - Don't load URLs in internal buffers.
+
+  - Fix =lisp://= URL support in =buffer-load= (e.g. when using link hints).
+
+  - Fix =edit-with-external-editor= when result is shorter than the
+    original content.
+
+  - Fix matching hints to display first in source.
 
 *** 2-pre-release-6
 
