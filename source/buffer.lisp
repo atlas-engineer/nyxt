@@ -914,7 +914,6 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
            (log:debug "Evaluate Lisp code from internal buffer: ~a" code)
            (evaluate-async code)))
         ((internal-buffer-p buffer)
-         ;; REVIEW: `request-resource' renders the URL, should we do it here as well?
          (make-buffer-focus :url url))
         ((equal "javascript" (quri:uri-scheme url))
          (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url))))

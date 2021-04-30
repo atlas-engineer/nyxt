@@ -418,7 +418,7 @@ Deal with REQUEST-DATA with the following rules:
          nil)
         ((internal-buffer-p buffer)
          (log:debug "Load URL from internal buffer in new buffer: ~a" (render-url url))
-         (make-buffer-focus :url (render-url url))
+         (make-buffer-focus :url url)
          nil)
         (bound-function
          (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode keys))
