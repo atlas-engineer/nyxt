@@ -867,7 +867,7 @@ page from the cache.
 
 We don't use the cache if URI matches BUFFER's URL since this means the user
 requested a reload."
-  ;; (declare (type quri:uri uri))
+  (declare (type quri:uri uri))
   (let* ((history (webkit-history buffer))
          (entry (or (find uri history :test #'quri:uri= :key #'webkit-history-entry-uri)
                     (find uri history :test #'quri:uri= :key #'webkit-history-entry-original-uri))))
