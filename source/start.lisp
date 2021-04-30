@@ -261,24 +261,27 @@ Return the short error message and the full error message as second value."
 EXPR is expected to be as per the expression sent in `listen-or-query-socket'."
   (let ((urls (ignore-errors (second (second (read-from-string expr nil))))))
     (if (and urls (every #'stringp urls))
-        (open-external-urls (mapcar #'quri:uri urls))
+        (open-external-urls urls)
         (progn
           (log:warn "Could not extract URLs from ~s." expr)
           nil))))
 
 (export-always 'open-external-urls)
-(declaim (ftype (function ((cons quri:uri *))) open-external-urls))
-(defun open-external-urls (urls)
-  "Open URLs on the renderer thread and return URLs.
+(declaim (ftype (function ((cons string *))) open-external-urls))
+(defun open-external-urls (url-strings)
+  "Open URL-STRINGS on the renderer thread and return URLs.
 This is a convenience wrapper to make remote code execution to open URLs as
-short as possible."
-  (if urls
-      (log:info "Externally requested URL(s): ~{~a~^, ~}" urls)
-      (log:info "Externally pinged."))
-  (ffi-within-renderer-thread
-   *browser*
-   (lambda () (open-urls urls)))
-  urls)
+short as possible.
+It takes URL-STRINGS so that the URL argument can be `cl-read' in case
+`remote-execution-p' is nil."
+  (let ((urls (mapcar #'quri:uri url-strings)))
+    (if urls
+        (log:info "Externally requested URL(s): ~{~a~^, ~}" urls)
+        (log:info "Externally pinged."))
+    (ffi-within-renderer-thread
+     *browser*
+     (lambda () (open-urls urls)))
+    urls))
 
 (defun listen-socket ()
   (let ((socket-path (expand-path *socket-path*)))
@@ -343,7 +346,7 @@ Otherwise bind socket and return the listening thread."
            (log:info "Nyxt already started."))
        (iolib:with-open-socket (s :address-family :local
                                   :remote-filename socket-path)
-         (format s "~s" `(open-external-urls ',urls)))
+         (format s "~s" `(open-external-urls ',(mapcar #'render-url urls))))
        nil)
       ((and (uiop:file-exists-p socket-path)
             (not (file-is-socket-p socket-path)))
