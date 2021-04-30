@@ -14,5 +14,5 @@ Non-exhaustive list of features:
 - Notifications sent when suggestion list is updated.
 - Per-source history.
 - Resumable prompters.
-- Persistent action (executed without closing the prompter).
+- Follow function (executed without closing the prompter).
 - Follow-mode (automatically run the persistent action on selection change).
