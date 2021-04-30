@@ -378,8 +378,8 @@ instead."
     (setf action #'identity))
   (setf (returned-p prompter) t)
   (add-input-to-history prompter)
-  (alex:if-let ((selection-value (resolve-selection prompter)))
-    (let ((action-result (funcall action selection-value)))
+  (alex:if-let ((selection-values (resolve-selection prompter)))
+    (let ((action-result (funcall action selection-values)))
       (calispel:! (result-channel prompter) action-result))
     (calispel:! (interrupt-channel prompter) t)))
 
