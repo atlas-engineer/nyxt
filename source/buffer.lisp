@@ -578,6 +578,19 @@ See `make-buffer' for a description of the arguments."
   (declare (ignorable title modes url load-url-p))
   (apply #'make-buffer (append (list :buffer-class 'user-nosave-buffer) args)))
 
+(declaim (ftype (function (&key (:url quri:uri)
+                                (:parent-buffer (or null buffer))
+                                (:nosave-buffer-p boolean)))
+                make-buffer-focus))
+(define-command make-buffer-focus (&key (url (quri:uri "")) parent-buffer nosave-buffer-p)
+  "Switch to a new buffer.
+See `make-buffer'."
+  (let ((buffer (if nosave-buffer-p
+                    (make-nosave-buffer :url url)
+                    (make-buffer :url url :parent-buffer parent-buffer))))
+    (set-current-buffer buffer)
+    buffer))
+
 (define-command make-internal-buffer (&key (title "") modes no-history-p)
   "Create a new buffer.
 MODES is a list of mode symbols.
@@ -816,19 +829,6 @@ proceeding."
     (if (eql 1 (length matching-buffers))
         (set-current-buffer (first matching-buffers))
         (switch-buffer-domain :domain domain))))
-
-(declaim (ftype (function (&key (:url quri:uri)
-                                (:parent-buffer (or null buffer))
-                                (:nosave-buffer-p boolean)))
-                make-buffer-focus))
-(define-command make-buffer-focus (&key (url (quri:uri "")) parent-buffer nosave-buffer-p)
-  "Switch to a new buffer.
-See `make-buffer'."
-  (let ((buffer (if nosave-buffer-p
-                    (make-nosave-buffer :url url)
-                    (make-buffer :url url :parent-buffer parent-buffer))))
-    (set-current-buffer buffer)
-    buffer))
 
 (define-command delete-buffer (&key id)
   "Query the buffer(s) to delete."
