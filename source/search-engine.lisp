@@ -64,6 +64,10 @@ the empty string."))
   ((prompter:name "Search Engines")
    (prompter:constructor (all-search-engines))))
 
+(define-class search-engine-url-source (prompter:source)
+  ((prompter:name "Search Engines")
+   (prompter:constructor (delete nil (mapcar #'fallback-url (all-search-engines))))))
+
 (define-command search-selection ()
   "Search selected text using the queried search engine."
   (let* ((selection (%copy))
