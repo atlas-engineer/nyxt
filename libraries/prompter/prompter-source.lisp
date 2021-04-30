@@ -390,7 +390,7 @@ when `follow-p' is non-nil.")
                                     (cons (or function function-symbol) *))
                           :documentation
                           "The first function of this list is called
-automatically when on the selection when it's changed.  It does not interrupt or
+automatically on the selection when it's changed.  It does not interrupt or
 return the prompter.
 For convenience, it may be initialized with a single function, in which case it
 will be automatically turned into a list."))
