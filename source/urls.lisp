@@ -194,8 +194,8 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
 (export-always 'match-scheme)
 (defun match-scheme (scheme &rest other-schemes)
   "Return a predicate for URLs matching one of SCHEME or OTHER-SCHEMES."
-  #'(lambda (url)
-      (some (alex:curry #'string= (quri:uri-scheme url))
+  #'(lambda (buffer-or-url)
+      (some (alex:curry #'string= (quri:uri-scheme (url buffer-or-url)))
             (cons scheme other-schemes))))
 
 (declaim (ftype (function (string &rest string) (function (quri:uri) boolean))
@@ -203,8 +203,8 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
 (export-always 'match-host)
 (defun match-host (host &rest other-hosts)
   "Return a predicate for URLs matching one of HOST or OTHER-HOSTS."
-  #'(lambda (url)
-      (some (alex:curry #'string= (quri:uri-host url))
+  #'(lambda (buffer-or-url)
+      (some (alex:curry #'string= (quri:uri-host (url buffer-or-url)))
             (cons host other-hosts))))
 
 (declaim (ftype (function (string &rest string) (function (quri:uri) boolean))
@@ -212,8 +212,8 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
 (export-always 'match-domain)
 (defun match-domain (domain &rest other-domains)
   "Return a predicate for URLs matching one of DOMAIN or OTHER-DOMAINS."
-  #'(lambda (url)
-      (some (alex:curry #'string= (quri:uri-domain url))
+  #'(lambda (buffer-or-url)
+      (some (alex:curry #'string= (quri:uri-domain (url buffer-or-url)))
             (cons domain other-domains))))
 
 (declaim (ftype (function (string &rest string) (function (quri:uri) boolean))
@@ -221,8 +221,8 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
 (export-always 'match-file-extension)
 (defun match-file-extension (extension &rest other-extensions)
   "Return a predicate for URLs matching one of EXTENSION or OTHER-EXTENSIONS."
-  #'(lambda (url)
-      (some (alex:curry #'string= (pathname-type (or (quri:uri-path url) "")))
+  #'(lambda (buffer-or-url)
+      (some (alex:curry #'string= (pathname-type (or (quri:uri-path (url buffer-or-url)) "")))
             (cons extension other-extensions))))
 
 (declaim (ftype (function (string &rest string) (function (quri:uri) boolean))
@@ -230,8 +230,8 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
 (export-always 'match-regex)
 (defun match-regex (regex &rest other-regex)
   "Return a predicate for URLs matching one of REGEX or OTHER-REGEX."
-  #'(lambda (url)
-      (some (alex:rcurry #'cl-ppcre:scan (render-url url))
+  #'(lambda (buffer-or-url)
+      (some (alex:rcurry #'cl-ppcre:scan (render-url (url buffer-or-url)))
             (cons regex other-regex))))
 
 (declaim (ftype (function (string &rest string) (function (quri:uri) boolean))
@@ -239,7 +239,7 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
 (export-always 'match-url)
 (defun match-url (one-url &rest other-urls)
   "Return a predicate for URLs exactly matching ONE-URL or OTHER-URLS."
-  #'(lambda (url)
-      (some (alex:rcurry #'string= (render-url url))
+  #'(lambda (buffer-or-url)
+      (some (alex:rcurry #'string= (render-url (url buffer-or-url)))
             (mapcar (lambda (u) (quri:url-decode u :lenient t))
                     (cons one-url other-urls)))))
