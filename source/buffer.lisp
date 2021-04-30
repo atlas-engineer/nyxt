@@ -1200,15 +1200,6 @@ ARGS are passed to the mode command."
                              (set-difference (mode-list) common-modes)))))
   (:export-class-name-p t))
 
-(define-command disable-mode-for-current-buffer (&key (buffer (current-buffer)))
-  "Disable queried mode(s)."
-  (let ((modes (prompt
-                :prompt "Disable mode(s)"
-                :sources (make-instance 'active-mode-source
-                                        :buffers buffer))))
-    (disable-modes (mapcar #'mode-name modes) buffer)))
-
-
 (define-command disable-mode-for-buffer ()
   "Disable queried mode(s) for select buffer(s)."
   (let* ((buffers (prompt
@@ -1222,14 +1213,6 @@ ARGS are passed to the mode command."
                                          :buffers buffers))))
     (loop for buffer in buffers
           do (disable-modes (mapcar #'mode-name modes) buffer))))
-
-(define-command enable-mode-for-current-buffer (&key (buffer (current-buffer)))
-  "Enable queried mode(s)."
-  (let ((modes (prompt
-                :prompt "Enable mode(s)"
-                :sources (make-instance 'inactive-mode-source
-                                        :buffers buffer))))
-    (enable-modes (uiop:ensure-list modes) buffer)))
 
 (define-command enable-mode-for-buffer ()
   "Enable queried mode(s) for select buffer(s)."
