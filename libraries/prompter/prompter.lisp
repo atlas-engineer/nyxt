@@ -151,9 +151,9 @@ compution is not finished.")))
           (bt:make-thread
            (lambda ()
              (sleep (follow-delay source))
-             (call-persistent-action prompter))
+             (call-follow-mode-function prompter))
            :name "Prompter follow selection thread")
-          (call-persistent-action prompter)))))
+          (call-follow-mode-function prompter)))))
 
 (export-always 'input)
 (defmethod (setf input) (text (prompter prompter))
@@ -177,12 +177,11 @@ Signal destruction by sending a value to PROMPTER's `interrupt-channel'."
   ;; TODO: Interrupt before or after destructor?
   (calispel:! (interrupt-channel prompter) t))
 
-(export-always 'call-persistent-action)
-(defun call-persistent-action (prompter)
-  (sera:and-let* ((action (persistent-action (selected-source prompter)))
+(export-always 'call-follow-mode-function)
+(defun call-follow-mode-function (prompter)
+  (sera:and-let* ((action (first (follow-mode-functions (selected-source prompter))))
                   (suggestion (selected-suggestion prompter)))
-    (funcall action
-             (value suggestion))))
+    (funcall action (value suggestion))))
 
 (defun select (prompter steps &key wrap-over-p)
   "Select suggestion by jumping STEPS forward.

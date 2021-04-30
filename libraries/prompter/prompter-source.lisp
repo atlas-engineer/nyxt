@@ -335,18 +335,6 @@ of this source.
 This is the low-level implementation, see the `actions' function for the public
 interface.")
 
-   (persistent-action nil ; TODO: Should be a list so we can support as many persistent actions as we want.
-                      :type (or null function)
-                      :documentation
-                      "Function called over the selection without returning
-from the prompter.")
-
-   (persistent-help ""                ; TODO: Implement.
-                    :type (or string function)
-                    :documentation
-                    "A string to explain persistent-action of this source. It also
-accepts a function which takes the source as argument.")
-
    (update-notifier (make-channel)
                     :type calispel:channel
                     :documentation "A channel which is written to when `filter'
@@ -388,13 +376,24 @@ See `resume-sources'.")
    (follow-p nil
              :type boolean
              :documentation
-             "Whether `persistent-action' is automatically executed.
-Also see `follow-delay'.")
+             "Whether the first `follow-mode-functions' is automatically
+executed.  Also see `follow-delay'.")
 
    (follow-delay 0.0
                  :documentation
-                 "Execute `persistent-action' after this delay when `follow-p' is
-non-nil."))
+                 "Execute the first `follow-mode-functions' after this delay
+when `follow-p' is non-nil.")
+
+   (follow-mode-functions '()
+                          :type (or null
+                                    (or function function-symbol)
+                                    (cons (or function function-symbol) *))
+                          :documentation
+                          "The first function of this list is called
+automatically when on the selection when it's changed.  It does not interrupt or
+return the prompter.
+For convenience, it may be initialized with a single function, in which case it
+will be automatically turned into a list."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
@@ -495,6 +494,8 @@ If you are looking for a source that just returns its plain suggestions, use `so
      :name "Prompter source init thread")
     ;; Wait until above thread has acquired the `initial-suggestions-lock'.
     (calispel:? wait-channel))
+  (setf (follow-mode-functions source)
+        (uiop:ensure-list (follow-mode-functions source)))
   source)
 
 (export-always 'attributes-keys-non-default)
