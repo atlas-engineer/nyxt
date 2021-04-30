@@ -183,8 +183,8 @@ identifier for every hinted element."
            suggestions
            :key #'prompter:value)
         (append matching-hints other-hints))))
-   (prompter:persistent-action (lambda (suggestion)
-                                 (highlight-selected-hint :link-hint suggestion)))))
+   (prompter:follow-mode-functions (lambda (suggestion)
+                                     (highlight-selected-hint :link-hint suggestion)))))
 
 (serapeum:export-always 'query-hints)
 (defun query-hints (prompt function &key multi-selection-p annotate-visible-only-p)

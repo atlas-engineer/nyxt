@@ -165,10 +165,10 @@
           (progn
             (remove-search-hints)
             '()))))
-   (prompter:persistent-action (lambda (suggestion)
-                                 ;; TODO: rewrite prompt-buffer-selection-highlight-hint
-                                 (set-current-buffer (buffer suggestion) :focus nil)
-                                 (prompt-buffer-selection-highlight-hint :scroll t)))
+   (prompter:follow-mode-functions (lambda (suggestion)
+                                     ;; TODO: rewrite prompt-buffer-selection-highlight-hint
+                                     (set-current-buffer (buffer suggestion) :focus nil)
+                                     (prompt-buffer-selection-highlight-hint :scroll t)))
    (prompter:destructor (lambda (prompter source)
                           (declare (ignore prompter source))
                           (remove-focus))))

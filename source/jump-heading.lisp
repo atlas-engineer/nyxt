@@ -47,7 +47,7 @@
   ((prompter:name "Headings")
    (buffer :accessor buffer :initarg :buffer)
    (prompter:follow-p t)
-   (prompter:persistent-action #'scroll-page-to-heading)
+   (prompter:follow-mode-functions #'scroll-page-to-heading)
    (prompter:constructor (lambda (source)
                            (get-headings :buffer (buffer source))))
    (prompter:actions (list (make-unmapped-command scroll-page-to-heading)))))

@@ -39,7 +39,7 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "tab" 'prompt-buffer-insert-selection
        "return" 'return-selection
        "M-return" 'return-selection-over-action
-       "C-return" 'run-persistent-action
+       "C-return" 'run-follow-mode-function
        "f1 b" 'run-prompt-buffer-command
        "f1 m" 'describe-prompt-buffer
        "C-c C-f" 'toggle-follow         ; TODO: This is the Emacs Helm binding.  Better?
@@ -64,7 +64,7 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "M-<" 'select-first
        "M-]" 'select-next-source        ; Emacs Helm binding.
        "M-[" 'select-previous-source    ; Emacs Helm binding.
-       "C-j" 'run-persistent-action     ; Emacs Helm binding.
+       "C-j" 'run-follow-mode-function
        "C-g" 'cancel-input
        "C-h b" 'run-prompt-buffer-command)
 
@@ -273,9 +273,9 @@ If STEPS is negative, go to next pages instead."
                           (lambda ()
                             (prompter:return-selection prompt-buffer action))))))
 
-(define-command run-persistent-action (&optional (prompt-buffer (current-prompt-buffer)))
-  "Run persistent action over selected suggestion without closing PROMPT-BUFFER."
-  (prompter:call-persistent-action prompt-buffer))
+(define-command run-follow-mode-function (&optional (prompt-buffer (current-prompt-buffer)))
+  "Run follow-mode function over selected suggestion without closing PROMPT-BUFFER."
+  (prompter:call-follow-mode-function prompt-buffer))
 
 (define-command cancel-input (&optional (prompt-buffer (current-prompt-buffer))) ; TODO: Rename.
   "Close the prompt-buffer without further action."
