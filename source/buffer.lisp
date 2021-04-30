@@ -930,6 +930,13 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
   "Load a URL in a new nosave buffer."
   (make-buffer-focus :url (url suggestion-value) :nosave-buffer-p t))
 
+(defun maybe-new-nosave-buffer-load (suggestion-value)
+  "Load a URL in a nosave buffer.
+If current-buffer is not a nosave buffer, then make a new one."
+  (if (nosave-buffer-p (current-buffer))
+      (buffer-load suggestion-value)
+      (new-nosave-buffer-load suggestion-value)))
+
 (defun new-buffer-load-from-history (history-entry)
   "Load a URL in a new buffer (from history)."
   (make-buffer-focus :url (url history-entry)))
@@ -1092,13 +1099,14 @@ generate a new URL query from user input.
               (render-url (url (current-buffer))) "")
    :sources (list (make-instance 'new-url-or-search-source
                                  :name "New URL"
-                                 :actions (list (make-unmapped-command buffer-load)
+                                 :actions (list (make-unmapped-command maybe-new-nosave-buffer-load)
                                                 (make-unmapped-command new-nosave-buffer-load)))
                   (make-instance 'global-history-source
-                                 :actions (list (make-unmapped-command buffer-load)
+                                 :actions (list (make-unmapped-command maybe-new-nosave-buffer-load)
                                                 (make-unmapped-command new-nosave-buffer-load-from-history)))
                   (make-instance 'bookmark-source
-                                 :actions (list (make-unmapped-command new-nosave-buffer-load-from-bookmark))))))
+                                 :actions (list (make-unmapped-command maybe-new-nosave-buffer-load)
+                                                (make-unmapped-command new-nosave-buffer-load-from-bookmark))))))
 
 (defun reload-buffer (&optional (buffer (current-buffer)))
   "Reload a BUFFER or current-buffer if not provided."
