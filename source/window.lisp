@@ -145,7 +145,7 @@ The handlers take the window as argument."))
 (define-command make-window (&optional buffer)
   "Create a new window."
   (let ((window (window-make *browser*))
-        (buffer (or buffer (make-buffer :url :default))))
+        (buffer (or buffer (make-buffer))))
     (window-set-buffer window buffer)
     (values window buffer)))
 

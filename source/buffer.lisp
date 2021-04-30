@@ -537,41 +537,46 @@ BUFFER's modes."
   `(("URL" ,(render-url (url buffer)))
     ("Title" ,(title buffer))))
 
-(define-command make-buffer (&key (title "") modes (url "") parent-buffer (load-url-p t))
+(declaim (ftype (function (&key (:title string)
+                                (:modes (or null (cons symbol *)))
+                                (:url quri:uri)
+                                (:parent-buffer (or null buffer))
+                                (:load-url-p boolean)
+                                (:buffer-class (or null symbol))))
+                make-buffer))
+(define-command make-buffer (&key (title "") modes (url (quri:uri "")) parent-buffer
+                             (load-url-p t) buffer-class)
   "Create a new buffer.
 MODES is a list of mode symbols.
-If URL is `:default', use `default-new-buffer-url'.
+If URL is empty, use `default-new-buffer-url'.
+To load nothing, set it to about:blank.
 PARENT-BUFFER is useful when we want to record buffer- and history relationships.
 LOAD-URL-P controls whether to load URL right at buffer creation."
-  (let* ((buffer (buffer-make *browser*
-                              :title title
-                              :default-modes modes
-                              :parent-buffer parent-buffer))
-         (url (if (eq url :default)
+  (let* ((buffer (apply #'buffer-make *browser*
+                        :title title
+                        :default-modes modes
+                        :parent-buffer parent-buffer
+                        (when buffer-class
+                          (list :buffer-class buffer-class))))
+         (url (if (url-empty-p url)
                   (default-new-buffer-url buffer)
                   url)))
-    (unless (url-empty-p url)
-      (if load-url-p
-          (buffer-load url :buffer buffer)
-          (setf (url buffer) (quri:uri url))))
+    (if load-url-p
+        (buffer-load url :buffer buffer)
+        (setf (url buffer) (quri:uri url)))
     buffer))
 
-(define-command make-nosave-buffer (&key (title "") modes (url "") (load-url-p t))
+(declaim (ftype (function (&key (:title string)
+                                (:modes (or null (cons symbol *)))
+                                (:url quri:uri)
+                                (:load-url-p boolean)))
+                make-nosave-buffer))
+(define-command make-nosave-buffer (&rest args
+                                    &key title modes url load-url-p)
   "Create a new buffer that won't save anything to the filesystem.
-MODES is a list of mode symbols.
-If URL is `:default', use `default-new-buffer-url'.
-LOAD-URL-P controls whether to load URL right at buffer creation."
-  (let* ((buffer (buffer-make *browser* :title title
-                                        :default-modes modes
-                                        :buffer-class 'user-nosave-buffer))
-         (url (if (eq url :default)
-                  (default-new-buffer-url buffer)
-                  url)))
-    (unless (url-empty-p url)
-      (if load-url-p
-          (buffer-load url :buffer buffer)
-          (setf (url buffer) (quri:uri url))))
-    buffer))
+See `make-buffer' for a description of the arguments."
+  (declare (ignorable title modes url load-url-p))
+  (apply #'make-buffer (append (list :buffer-class 'user-nosave-buffer) args)))
 
 (define-command make-internal-buffer (&key (title "") modes no-history-p)
   "Create a new buffer.
@@ -656,7 +661,8 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   (let ((parent-window (find buffer (window-list) :key 'active-buffer)))
     (when parent-window
       (let ((replacement-buffer (or (first (get-inactive-buffers))
-                                    (make-buffer :url :default))))
+                                    (make-buffer :load-url-p nil
+                                                 :url (quri:uri "about:blank")))))
         (window-set-buffer parent-window replacement-buffer)))
     (ffi-buffer-delete buffer)
     (buffers-delete (id buffer))
@@ -811,7 +817,11 @@ proceeding."
         (set-current-buffer (first matching-buffers))
         (switch-buffer-domain :domain domain))))
 
-(define-command make-buffer-focus (&key (url :default) parent-buffer nosave-buffer-p)
+(declaim (ftype (function (&key (:url quri:uri)
+                                (:parent-buffer (or null buffer))
+                                (:nosave-buffer-p boolean)))
+                make-buffer-focus))
+(define-command make-buffer-focus (&key (url (quri:uri "")) parent-buffer nosave-buffer-p)
   "Switch to a new buffer.
 See `make-buffer'."
   (let ((buffer (if nosave-buffer-p

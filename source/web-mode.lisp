@@ -423,7 +423,7 @@ Otherwise go forward to the only child."
   "Open a new buffer displaying the whole history tree."
   (nyxt::with-current-html-buffer (output-buffer "*History*"
                                                  'nyxt/history-tree-mode:history-tree-mode)
-    (with-data-unsafe (history (let ((dummy-buffer (make-buffer)))
+    (with-data-unsafe (history (let ((dummy-buffer (nyxt::make-dummy-buffer)))
                                  (prog1
                                      (history-path dummy-buffer)
                                    (delete-buffer :id (id dummy-buffer)))))
