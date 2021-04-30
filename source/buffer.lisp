@@ -1072,7 +1072,10 @@ generate a new URL query from user input.
                                                   (make-unmapped-command new-buffer-load-from-history)))
                     (make-instance 'bookmark-source
                                    :actions (list (make-unmapped-command buffer-load-from-bookmark)
-                                                  (make-unmapped-command new-buffer-load-from-bookmark)))))))
+                                                  (make-unmapped-command new-buffer-load-from-bookmark)))
+                    (make-instance 'search-engine-url-source
+                                   :actions (list (make-unmapped-command buffer-load)
+                                                  (make-unmapped-command new-buffer-load)))))))
 
 (define-command set-url-new-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused buffer."
@@ -1089,7 +1092,9 @@ generate a new URL query from user input.
                     (make-instance 'global-history-source
                                    :actions (list (make-unmapped-command new-buffer-load-from-history)))
                     (make-instance 'bookmark-source
-                                   :actions (list (make-unmapped-command new-buffer-load-from-bookmark)))))))
+                                   :actions (list (make-unmapped-command new-buffer-load-from-bookmark)))
+                    (make-instance 'search-engine-url-source
+                                   :actions (list (make-unmapped-command new-buffer-load)))))))
 
 (define-command set-url-nosave-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused nosave buffer."
@@ -1105,7 +1110,10 @@ generate a new URL query from user input.
                                  :actions (list (make-unmapped-command buffer-load)
                                                 (make-unmapped-command new-nosave-buffer-load-from-history)))
                   (make-instance 'bookmark-source
-                                 :actions (list (make-unmapped-command new-nosave-buffer-load-from-bookmark))))))
+                                 :actions (list (make-unmapped-command new-nosave-buffer-load-from-bookmark)))
+                  (make-instance 'search-engine-url-source
+                                 :actions (list (make-unmapped-command buffer-load)
+                                                (make-unmapped-command new-nosave-buffer-load))))))
 
 (defun reload-buffer (&optional (buffer (current-buffer)))
   "Reload a BUFFER or current-buffer if not provided."
