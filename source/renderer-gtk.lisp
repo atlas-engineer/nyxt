@@ -197,6 +197,18 @@ Such contexts are not needed for internal buffers."
                      :web-context (make-context context-buffer))
       (make-instance 'webkit:webkit-web-view)))
 
+(defun make-decide-policy-handler (buffer)
+  (lambda (web-view response-policy-decision policy-decision-type-response)
+    (declare (ignore web-view))
+    ;; Even if errors are caught with `with-protect', we must ignore the policy
+    ;; decision on error, lest we load a web page in an internal buffer for
+    ;; instance.
+    (handler-case
+        (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)
+      (error (c)
+        (echo-warning "decide policy error: ~a" c)
+        (webkit:webkit-policy-decision-ignore response-policy-decision)))))
+
 (defmethod initialize-instance :after ((buffer status-buffer) &key)
   (%within-renderer-thread-async
    (lambda ()
@@ -204,9 +216,7 @@ Such contexts are not needed for internal buffers."
        (setf gtk-object (make-web-view))
        (gobject:g-signal-connect
         gtk-object "decide-policy"
-        (lambda (web-view response-policy-decision policy-decision-type-response)
-          (declare (ignore web-view))
-          (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)))))))
+        (make-decide-policy-handler buffer))))))
 
 (defmethod initialize-instance :after ((window gtk-window) &key)
   (%within-renderer-thread-async
@@ -768,9 +778,7 @@ Warning: This behaviour may change in the future."
       (ffi-buffer-enable-smooth-scrolling buffer nil))
   (gobject:g-signal-connect
    (gtk-object buffer) "decide-policy"
-   (lambda (web-view response-policy-decision policy-decision-type-response)
-     (declare (ignore web-view))
-     (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)))
+   (make-decide-policy-handler buffer))
   (gobject:g-signal-connect
    (gtk-object buffer) "load-changed"
    (lambda (web-view load-event)
