@@ -42,19 +42,16 @@
 
 (export-always 'format-status-tabs)
 (defun format-status-tabs ()
-  (flet ((buffer-domains ()
-           (remove-duplicates
-            (remove nil
-                    (mapcar #'(lambda (i) (quri:uri-domain (url i)))
-                            (buffer-list :sort-by-time t)))
-            :test #'equal)))
-    (markup:markup
-     (:span
-      (loop for domain in (buffer-domains)
-            collect (markup:markup
-                     (:a :class "tab"
-                         :href
-                         (lisp-url `(nyxt::switch-buffer-or-query-domain ,domain)) domain)))))))
+  (markup:markup
+   (:span
+    (loop for domain in (remove-duplicates
+                         (sera:filter-map #'quri:uri-domain
+                                          (mapcar #'url (sort-by-time (buffer-list))))
+                         :test #'equal)
+          collect (markup:markup
+                   (:a :class "tab"
+                       :href
+                       (lisp-url `(nyxt::switch-buffer-or-query-domain ,domain)) domain))))))
 
 (defun format-status (window)
   (let ((buffer (current-buffer window)))
@@ -62,13 +59,13 @@
      (:div :id "container"
            (:div :id "controls"
                  (markup:raw (format-status-buttons)))
-           (:div :class "arrow arrow-right" 
+           (:div :class "arrow arrow-right"
                  :style "background-color:rgb(80,80,80)" "")
            (:div :id "url"
                  (markup:raw
                   (format-status-load-status buffer)
                   (format-status-url buffer)))
-           (:div :class "arrow arrow-right" 
+           (:div :class "arrow arrow-right"
                  :style "background-color:rgb(120,120,120)" "")
            (:div :id "tabs"
                  (markup:raw

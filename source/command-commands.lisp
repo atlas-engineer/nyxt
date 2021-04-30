@@ -19,9 +19,7 @@
   `(("Name" ,(str:downcase (hooks:name handler)))))
 
 (defun get-commands (&optional (buffer (current-buffer)))
-  (sort (apply #'list-commands
-               (mapcar #'mode-name (modes buffer)))
-        #'local-time:timestamp> :key #'last-access))
+  (sort-by-time (apply #'list-commands (mapcar #'mode-name (modes buffer)))))
 
 (defun command-attributes (command &optional (buffer (active-buffer (current-window :no-rescan))))
   (let ((scheme-name (keymap-scheme-name buffer))

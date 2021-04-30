@@ -175,14 +175,14 @@ lot."
 (defun history-html-list (&key (limit 100) ; Export?
                             (separator " → "))
   (with-data-unsafe (history (history-path (current-buffer)))
-    (let* ((history (when history
-                      (mapcar #'first
-                              (sort (alex:hash-table-alist (htree:entries history))
-                                    #'local-time:timestamp>
-                                    :key (lambda (entry-nodes)
-                                           (let ((nodes (rest entry-nodes)))
-                                             (apply #'local-time:timestamp-maximum
-                                                    (mapcar #'htree:last-access nodes)))))))))
+    (let* ((history
+             (when history
+               (mapcar #'first
+                       (sort-by-time (alex:hash-table-alist (htree:entries history))
+                                     :key (lambda (entry-nodes)
+                                            (let ((nodes (rest entry-nodes)))
+                                              (apply #'local-time:timestamp-maximum
+                                                     (mapcar #'htree:last-access nodes)))))))))
       (loop for entry in (sera:take limit history)
             collect (markup:markup
                      (:li (title entry) (unless (str:emptyp (title entry)) separator)
@@ -353,9 +353,8 @@ We keep this variable as a means to import the old format to the new one.")
                  (htree:set-current-owner history (htree::fallback-owner history))))
              (alex:when-let ((latest-id (first
                                          (first
-                                          (sort (alex:hash-table-alist (htree:owners history))
-                                                #'local-time:timestamp>
-                                                :key (alex:compose #'htree:last-access #'rest))))))
+                                          (sort-by-time (alex:hash-table-alist (htree:owners history))
+                                                        :key (alex:compose #'htree:last-access #'rest))))))
                (unless (equal latest-id htree:+default-owner+)
                  (switch-buffer :id latest-id))))
 

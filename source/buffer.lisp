@@ -686,15 +686,12 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (store (data-profile buffer) (history-path buffer))))
 
 (export-always 'buffer-list)
-(defun buffer-list (&key sort-by-time domain)
-  (let* ((buffer-list (alex:hash-table-values (buffers *browser*)))
-         (buffer-list (if sort-by-time (sort
-                                        buffer-list #'local-time:timestamp> :key #'last-access)
-                          buffer-list))
-         (buffer-list (if domain (remove-if-not
-                                  (lambda (i) (equal domain (quri:uri-domain (url i)))) buffer-list)
-                          buffer-list)))
-    buffer-list))
+(defun buffer-list ()
+  (alex:hash-table-values (buffers *browser*)))
+
+(defun sort-by-time (sequence &key (key #'last-access))
+  "Return a timely ordered SEQUENCE by KEY.  More recent elements come first."
+  (sort sequence #'local-time:timestamp> :key key))
 
 (defun buffers-get (id)
   (gethash id (slot-value *browser* 'buffers)))
@@ -759,8 +756,7 @@ proceeding."
 
 (defun last-active-buffer ()
   "Return buffer with most recent `last-access'."
-  (first (sort (buffer-list)
-               #'local-time:timestamp> :key #'last-access)))
+  (first (sort-by-time (buffer-list))))
 
 (defun get-inactive-buffers ()
   "Return inactive buffers sorted by last-access timestamp, or NIL if none."
@@ -769,7 +765,7 @@ proceeding."
         (buffers (buffer-list)))
     (alex:when-let ((diff (set-difference buffers active-buffers)))
        ;; Display the most recent inactive buffer.
-       (sort diff #'local-time:timestamp> :key #'last-access))))
+       (sort-by-time diff))))
 
 (define-command copy-url ()
   "Save current URL to clipboard."
@@ -782,7 +778,7 @@ proceeding."
   (echo "~a copied to clipboard." (title (current-buffer))))
 
 (defun buffer-initial-suggestions (&key current-is-last-p domain)
-  (let ((buffers (buffer-list :sort-by-time t :domain domain)))
+  (let ((buffers (apply (match-domain domain) (sort-by-time (buffer-list)))))
     (when current-is-last-p
       (setf buffers (alex:rotate buffers -1)))
     buffers))
@@ -819,13 +815,13 @@ proceeding."
     (prompt
      :prompt "Switch to buffer in current domain:"
      :sources (make-instance 'buffer-source
-                             :constructor (buffer-list :sort-by-time t
-                                                       :domain domain)))))
+                             :constructor (apply (match-domain domain)
+                                                 (sort-by-time (buffer-list)))))))
 
 (defun switch-buffer-or-query-domain (domain)
-  "Switch to a buffer if it exists for a given domain, otherwise query
+  "Switch to a buffer if it exists for a given DOMAIN, otherwise query
   the user."
-  (let* ((matching-buffers (buffer-list :domain domain)))
+  (let ((matching-buffers (apply (match-domain domain) (buffer-list))))
     (if (eql 1 (length matching-buffers))
         (set-current-buffer (first matching-buffers))
         (switch-buffer-domain :domain domain))))
@@ -1093,7 +1089,7 @@ generate a new URL query from user input.
 That is to say, the one with the most recent access time after the current buffer.
 The current buffer access time is set to be the last so that if we keep calling
 this command it cycles through all buffers."
-  (let* ((buffers (buffer-list :sort-by-time t))
+  (let* ((buffers (sort-by-time (buffer-list)))
          (last-buffer (alex:last-elt buffers))
          (current-buffer (current-buffer)))
     (when (second buffers)
@@ -1105,7 +1101,7 @@ this command it cycles through all buffers."
 
 (define-command switch-buffer-next ()   ; TODO: Rename switch-buffer-oldest
   "Switch to the oldest buffer in the list of buffers."
-  (let* ((buffers (buffer-list :sort-by-time t))
+  (let* ((buffers (sort-by-time (buffer-list)))
          (oldest-buffer (alex:last-elt buffers)))
     (when (eq oldest-buffer (current-buffer))
       ;; Current buffer may already be the oldest, e.g. if other buffer was
