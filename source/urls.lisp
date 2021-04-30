@@ -3,6 +3,23 @@
 
 (in-package :nyxt)
 
+(export-always 'url)
+(defmethod url ((uri quri:uri))
+  uri)
+
+(defmethod url ((url-string string))
+  (quri:uri url-string))
+
+(defun has-url-method-p (object)
+  "Return non-nil if OBJECT has `url' specialization."
+  (some (lambda (method)
+          (subtypep (type-of object) (class-name
+                                      (first (closer-mop:method-specializers method)))))
+        (closer-mop:generic-function-methods  #'url)))
+
+(deftype url-designator ()
+  `(satisfies has-url-method-p))
+
 (export-always 'render-url)
 (declaim (ftype (function ((or quri:uri string)) string) render-url))
 (defun render-url (url)

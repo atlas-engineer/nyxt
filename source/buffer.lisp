@@ -893,19 +893,12 @@ When BUFFER is omitted, it defaults to the current one."
       (mapcar #'buffer-delete buffers-to-delete))))
 
 (export-always 'buffer-load)
-(declaim (ftype (function ((or new-url-query quri:uri string history-entry)
-                           &key (:buffer buffer)))
+(declaim (ftype (function (url-designator &key (:buffer buffer)))
                 buffer-load))
-(defun buffer-load (input-url &key (buffer (current-buffer)))
+(defun buffer-load (url-designator &key (buffer (current-buffer)))
   "Load INPUT-URL in BUFFER.
 URL is then transformed by BUFFER's `buffer-load-hook'."
-  (let* ((url (typecase input-url
-                (new-url-query
-                 (url input-url))
-                (history-entry
-                 (url input-url))
-                (t
-                 input-url)))
+  (let* ((url (url url-designator))
          (new-url
            (handler-case
                (hooks:run-hook (slot-value buffer 'buffer-load-hook) url)
