@@ -929,21 +929,21 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
          (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url))))
         (t (ffi-buffer-load buffer url))))))
 
-(defun new-buffer-load (suggestion)
+(defun new-buffer-load (suggestion-value)
   "Load a URL in a new buffer."
-  (make-buffer-focus :url (url suggestion)))
+  (make-buffer-focus :url (url suggestion-value)))
 
-(defun new-nosave-buffer-load (suggestion)
+(defun new-nosave-buffer-load (suggestion-value)
   "Load a URL in a new nosave buffer."
-  (make-buffer-focus :url (url suggestion) :nosave-buffer-p t))
+  (make-buffer-focus :url (url suggestion-value) :nosave-buffer-p t))
 
-(defun new-buffer-load-from-history (history-suggestion)
+(defun new-buffer-load-from-history (history-entry)
   "Load a URL in a new buffer (from history)."
-  (make-buffer-focus :url (url history-suggestion)))
+  (make-buffer-focus :url (url history-entry)))
 
-(defun new-nosave-buffer-load-from-history (history-suggestion)
+(defun new-nosave-buffer-load-from-history (history-entry)
   "Load a URL in a new nosave buffer (from history)."
-  (make-buffer-focus :url (url history-suggestion) :nosave-buffer-p t))
+  (make-buffer-focus :url (url history-entry) :nosave-buffer-p t))
 
 (defun buffer-load-from-bookmark (bookmark)
   (buffer-load (url bookmark)))
