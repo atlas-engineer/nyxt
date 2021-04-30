@@ -1245,6 +1245,43 @@ ARGS are passed to the mode command."
     (loop for buffer in buffers
           do (enable-modes (uiop:ensure-list modes) buffer))))
 
+(defun all-mode-names ()
+  (mapcar #'name (sera:filter #'mode-toggler-p (list-commands))))
+
+(defun make-mode-suggestion (mode &optional source input)
+  "Return a `suggestion' wrapping around ATTRIBUTE. "
+  (declare (ignore source input))
+  (make-instance 'prompter:suggestion
+                 :value mode
+                 :attributes `(("Mode" ,(string-downcase (symbol-name mode)))
+                               ("Documentation" ,(or (first (sera:lines (documentation mode 'function)))
+                                                     "")))))
+
+(define-class mode-source (prompter:source)
+  ((prompter:name "Modes")
+   (prompter:multi-selection-p t)
+   (prompter:constructor (sort (all-mode-names) #'string< :key #'symbol-name))
+   (prompter:suggestion-maker 'make-mode-suggestion))
+  (:export-class-name-p t))
+
+(define-command toggle-modes (&key (buffer (current-buffer)))
+  "Enable marked modes, disable unmarked modes for BUFFER."
+  (let* ((modes-to-enable (prompt
+                           :prompt "Mark modes to enable, unmark to disable"
+                           :sources (make-instance 'mode-source
+                                                   :actions (list 'identity
+                                                                  (make-command force-disable-auto-mode (modes)
+                                                                    "Return selection but force disabling auto-mode.
+This is convenient when you use auto-mode by default and you want to toggle a
+mode permanently for this buffer."
+                                                                    (delete (read-from-string "nyxt/auto-mode:auto-mode" )
+                                                                            modes)))
+                                                   :marks (mapcar #'mode-name (modes buffer)))))
+         (modes-to-disable (set-difference (all-mode-names) modes-to-enable
+                                           :test #'string=)))
+    (disable-modes (uiop:ensure-list modes-to-disable) buffer)
+    (enable-modes (uiop:ensure-list modes-to-enable) buffer)))
+
 (define-command open-inspector ()
   "Open the inspector, a graphical tool to inspect and change the content of the buffer."
   (ffi-inspector-show (current-buffer)))
