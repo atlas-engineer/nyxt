@@ -46,13 +46,10 @@ the empty string."))
                      bookmarks)))
 
 (defun all-search-engines ()
-  "Return the `search-engines' from the `browser' instance plus those in
-bookmarks."
+  "Return the `search-engines' from the current buffer."
   (let ((buffer (or (current-buffer)
                     (make-instance 'user-buffer))))
-    ;; Make sure `default-search-engine' returns the same value after the append.
-    (append (bookmark-search-engines)
-            (search-engines buffer))))
+    (search-engines buffer)))
 
 (defun default-search-engine (&optional (search-engines (all-search-engines)))
   "Return the last search engine of the SEARCH-ENGINES."
