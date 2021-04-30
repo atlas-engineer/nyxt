@@ -12,7 +12,8 @@ instance from the `set-url' commands.")
                :type string
                :documentation "The URL containing a '~a' which will be replaced with the search query.")
    (fallback-url nil
-                 :type (or string null)
+                 :type (or null quri:uri)
+                 :writer t
                  :documentation "The URL to fall back to when given an empty
 query.  This is optional: if nil, use `search-url' instead with ~a expanded to
 the empty string."))
@@ -20,8 +21,12 @@ the empty string."))
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
+(defmethod fallback-url ((engine search-engine))
+  (or (slot-value engine 'fallback-url)
+      (quri:uri (format nil (search-url engine) ""))))
+
 (export-always 'make-search-engine)
-(defun make-search-engine (shortcut search-url &optional (fallback-url ""))
+(defun make-search-engine (shortcut search-url &optional fallback-url)
   (make-instance 'search-engine
                  :shortcut shortcut
                  :search-url search-url

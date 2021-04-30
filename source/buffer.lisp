@@ -47,11 +47,11 @@ after the mode-specific hook.")
    (search-engines (list (make-instance 'search-engine
                                         :shortcut "wiki"
                                         :search-url "https://en.wikipedia.org/w/index.php?search=~a"
-                                        :fallback-url "https://en.wikipedia.org/")
+                                        :fallback-url (quri:uri "https://en.wikipedia.org/"))
                          (make-instance 'search-engine
                                         :shortcut "ddg"
                                         :search-url "https://duckduckgo.com/?q=~a"
-                                        :fallback-url "https://duckduckgo.com/"))
+                                        :fallback-url (quri:uri "https://duckduckgo.com/")))
                    :type (cons search-engine *)
                    :documentation "A list of the `search-engine' objects.
 You can invoke them from the prompt-buffer by prefixing your query with SHORTCUT.
