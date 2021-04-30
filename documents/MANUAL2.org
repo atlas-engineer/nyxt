@@ -1,0 +1,182 @@
+#+TITLE: Nyxt User Manual
+
+* Introduction
+Nyxt is designed to meet the needs of those who wish to navigate the
+vast source of information of the Internet, unrestrained.
+
+Nyxt is an extensible web browser.  You can expect all the features of
+other web browsers you may have used; some unique more advanced
+features; and the ability to extend it as you wish.  While some
+programming expertise is needed to achieve the last point, all
+non-programmers can benefit from their work.  Nyxt sets the foundations
+so that programmers can write extensions with ease.
+
+* Installation
+
+** On MacOS
+# TODO
+
+** On GNU/Linux
+# https://nyxt.atlas.engineer/download
+Get it from your distribution package manager
+
+Nyxt is currently packaged for:
+
+- Alpine
+- Debian and derivatives (Ubuntu, LinuxMint)
+- [[https://source.atlas.engineer/view/repository/macports-port][MacPorts]]
+- [[https://aur.archlinux.org/packages/nyxt][Arch Linux AUR]] (and the [[https://aur.archlinux.org/packages/nyxt-browser-git/][-git PKGBUILD]])
+- [[https://nixos.org/nix/][Nix]]: Install with =nix-env --install nyxt=.
+- [[https://guix.gnu.org][Guix]]: Install with =guix install nyxt=.
+
+If your distribution provides a Nyxt package, reach out to us and we
+will include it in this list. If the package is outdated, please ping
+the package maintainers for an update.
+
+If your distribution does not package Nyxt, read on.  Ubuntu 18.04
+package (x86-64)
+
+It should work on other distributions based on this version of Ubuntu.It
+will probably not work on other Debian-based distributions.
+
+All distributions (x86-64)
+
+SHA-256 checksum:
+
+14d68e8621d049d8a2ba640ddfccad208e60ae507a2a0e4a98f9724fcd0524cb
+
+This is a complete bundle that includes all the recursive dependencies and requires nothing but a recent-enough Linux kernel, hence its rather big size! As soon as you download Nyxt for GNU/Linux,
+
+    extract the archive (e.g. with tar xf /path/to/download/file)
+    execute ./usr/local/bin/nyxt to get started!
+
+The archive does not have to be extracted to the filesystem root
+(/). This pack relies either on the "user namespace" feature of the
+Linux kernel or on PRoot to set up a virtual root folder for Nyxt in the
+root of the extracted archive.
+
+If Nyxt does not work for you at this point, you might have to enable
+user namespaces. Try to run the following in a shell:
+
+sudo sysctl -w kernel.unprivileged_userns_clone=1
+
+    If the previous command did not work
+    You might have to issue the following instead:
+
+    sudo sh -c 'echo 0 > /proc/sys/kernel/userns_restrict'
+
+    or, depending on your kernel compilation options:
+
+    sudo sh -c 'echo 1 > /proc/sys/kernel/unprivileged_userns_clone'
+
+    If none of the above works, your kernel might not support user namespaces. You might have to compile a custom kernel to enable this feature, but at this point it's probably easier to install Guix and run
+
+    guix install nyxt
+
+    or even build Nyxt from source. Refer to your distribution for more help.
+
+You can produce this Guix pack yourself with
+
+guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt nyxt
+
+which should yield:
+
+/gnu/store/jycbbqgziaj8sqh7gwh15ifjd1hkpjcx-tarball-pack.tar.xz
+
+on the Guix commit:
+
+a2f3a456bec357394fe550d927c26bbbdaa7ba6e
+
+You can find the documentation for Nyxt within Nyxt. If you need
+support, please find us on #nyxt on the Freenode IRC network, on our
+forums, or open up an issue on our GitHub:
+https://github.com/atlas-engineer/nyxt.
+
+** From Source
+[[file:~/common-lisp/nyxt/documents/README.org::+TITLE: Nyxt Developer Readme][info here]]
+
+The latest source is available from https://github.com/atlas-engineer/nyxt.
+
+You can find the documentation for Nyxt within Nyxt. If you need
+support, please find us on #nyxt on the Freenode IRC network, on our
+forums, or open up an issue on our GitHub:
+https://github.com/atlas-engineer/nyxt.
+
+* Getting started
+Describe the screen an basic concepts.  Make it interactive.
+
+** Buffers
+
+** Prompt buffer
+
+** Keys
+
+** Commands
+
+** Modes
+
+** Message Area
+
+** Status Area
+
+** Window
+
+* Getting Around
+Describe how to move around in buffers, and how to navigate the web.
+
+* Basic Features
+
+** Navigation
+
+** Bookmarks
+
+** Search
+
+** Hinting System
+
+** Spell Checker
+
+** Noimage/sound/sript
+
+** Download Manager
+
+* Advanced Features
+
+** Repl
+
+** Auto mode
+
+** Visual Mode
+
+** OS package manager mode
+
+* Help
+
+** Getting Help
+
+** Nyxt Help System
+
+* Customisation
+
+** UI
+
+** Init File
+
+** Hooks
+[[https://nyxt.atlas.engineer/article/hooks.org][here]]
+
+** Theme
+
+* Contributing
+[[https://nyxt.atlas.engineer/article/technical-design.org][here]]
+
+* Acknowledgements
+
+* Licence
+
+* COMMENT Sources of information
+- [[https://www.patreon.com/nyxt][Patreon]]
+- [[https://nyxt.atlas.engineer/][Nyxt's website]]
+- [[https://nyxt.atlas.engineer/articles][Articles]]
+- [[file:~/common-lisp/nyxt/README.org::*Nyxt browser][Nyxt's README]]
+- [[file:~/common-lisp/nyxt/documents/README.org::+TITLE: Nyxt Developer Readme][Nyxt's Developer README]]
