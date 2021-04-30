@@ -1008,7 +1008,7 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
     (t
      (setf (engine query)
            (or (engine query)
-               (default-search-engine (all-search-engines)))))))
+               (default-search-engine))))))
 
 (defmethod url ((query new-url-query))
   (quri:uri

@@ -22,18 +22,17 @@
    (date (local-time:now))
    (tags '()
          :type list-of-strings)
-   (shortcut ""
-             :documentation "
-This allows the following URL queries from the minibuffer:
 
-- SHORTCUT: Open the associated bookmark.
-- SHORTCUT TERM: Use SEARCH-URL to search TERM.  If SEARCH-URL is empty, fallback on other search engines.")
+   ;; TODO: Remove slots for 2.0.
+   (shortcut ""
+             :export nil
+             :accessor nil
+             :documentation "Deprecated, use `search-engine' instead.")
+
    (search-url ""
-               :documentation "
-The URL to use when SHORTCUT is the first word in the input.
-The search term is placed at '~a' in the SEARCH-URL if any, or at the end otherwise.
-SEARCH-URL maybe either be a full URL or a path.  If the latter, the path is
-appended to the URL."))
+               :export nil
+               :accessor nil
+               :documentation "Deprecated, use `search-engine' instead."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
@@ -43,9 +42,7 @@ appended to the URL."))
   `(("URL" ,(render-url (url entry)))
     ("Title" ,(title entry))
     ("Tags" ,(format nil "~{~a ~}" (tags entry)))
-    ("Date" ,(princ-to-string (date entry)))
-    ("Shortcut" ,(shortcut entry))
-    ("Search URL" ,(search-url entry))))
+    ("Date" ,(princ-to-string (date entry)))))
 
 (export-always 'equals)
 (defmethod equals ((e1 bookmark-entry) (e2 bookmark-entry))
@@ -284,8 +281,6 @@ rest in background buffers."
             (write-string " ")
             (write tag))
           (write-string ")"))
-        (write-slot 'shortcut)
-        (write-slot 'search-url)
         (write-string ")")))))
 
 (defmethod deserialize-bookmarks (stream)
