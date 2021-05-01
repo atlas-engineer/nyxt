@@ -57,8 +57,12 @@ If possible!
   - Removed =return-input=.
     It's simpler and more explicit to use raw-sources and the like.
 
-  - New =compact-display-p= configuration option to automatically hide
-    source and column header when there is a single source or column.
+  - New =hide-single-source-header-p= and =hide-attribute-header-p=
+    configuration options.
+
+    When enabled, automatically hide the source header and the
+    attributes header, respectively, when there is a single source or a
+    single attribute, respectively.
 
   - Added bookmark source to =set-url= and friends.
 
