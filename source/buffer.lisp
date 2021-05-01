@@ -930,20 +930,9 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
   "Load a URL in a new nosave buffer."
   (make-buffer-focus :url (url suggestion-value) :nosave-buffer-p t))
 
-(defun maybe-new-nosave-buffer-load (suggestion-value)
-  "Load a URL in a nosave buffer.
-If current-buffer is not a nosave buffer, then make a new one."
-  (if (nosave-buffer-p (current-buffer))
-      (buffer-load suggestion-value)
-      (new-nosave-buffer-load suggestion-value)))
-
 (defun new-buffer-load-from-history (history-entry)
   "Load a URL in a new buffer (from history)."
   (make-buffer-focus :url (url history-entry)))
-
-(defun new-nosave-buffer-load-from-history (history-entry)
-  "Load a URL in a new nosave buffer (from history)."
-  (make-buffer-focus :url (url history-entry) :nosave-buffer-p t))
 
 (defun buffer-load-from-bookmark (bookmark)
   (buffer-load (url bookmark)))
@@ -951,10 +940,6 @@ If current-buffer is not a nosave buffer, then make a new one."
 (defun new-buffer-load-from-bookmark (bookmark)
   "Load a URL in a new buffer (from bookmark)."
   (make-buffer-focus :url (url bookmark)))
-
-(defun new-nosave-buffer-load-from-bookmark (bookmark)
-  "Load a URL in a new nosave buffer (from bookmark)."
-  (make-buffer-focus :url (url bookmark) :nosave-buffer-p t))
 
 (define-class global-history-source (prompter:source)
   ((prompter:name "Global history")
@@ -1096,21 +1081,19 @@ generate a new URL query from user input.
                     (make-instance 'search-engine-url-source
                                    :actions (list (make-unmapped-command new-buffer-load)))))))
 
-(define-command set-url-nosave-buffer (&key (prefill-current-url-p t))
+(define-command set-url-new-nosave-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused nosave buffer."
   (prompt
-   :prompt "Open URL"
+   :prompt "Open URL in new nosave buffer"
    :input (if prefill-current-url-p
               (render-url (url (current-buffer))) "")
    :sources (list (make-instance 'new-url-or-search-source
                                  :name "New URL"
-                                 :actions (list (make-unmapped-command maybe-new-nosave-buffer-load)
-                                                (make-unmapped-command new-nosave-buffer-load)))
+                                 :actions (list (make-unmapped-command new-nosave-buffer-load)))
                   (make-instance 'global-history-source
-                                 :actions (list (make-unmapped-command maybe-new-nosave-buffer-load)
-                                                (make-unmapped-command new-nosave-buffer-load-from-history)))
+                                 :actions (list (make-unmapped-command new-nosave-buffer-load)))
                   (make-instance 'bookmark-source
-                                 :actions (list (make-unmapped-command new-nosave-buffer-load-from-bookmark)))
+                                 :actions (list (make-unmapped-command new-nosave-buffer-load)))
                   (make-instance 'search-engine-url-source
                                  :actions (list (make-unmapped-command new-nosave-buffer-load))))))
 

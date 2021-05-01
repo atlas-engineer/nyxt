@@ -22,7 +22,7 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "C-pagedown" 'switch-buffer-next
                      "C-l" 'set-url
                      "M-l" 'set-url-new-buffer
-                     "C-u M-l" 'set-url-nosave-buffer
+                     "C-u M-l" 'set-url-new-nosave-buffer
                      "f5" 'reload-current-buffer
                      "C-r" 'reload-current-buffer
                      "C-R" 'reload-buffer
@@ -105,7 +105,7 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "B" 'make-buffer-focus
                      "o" 'set-url
                      "O" 'set-url-new-buffer
-                     "g o" 'set-url-nosave-buffer
+                     "g o" 'set-url-new-nosave-buffer
                      "m u" 'bookmark-url
                      "m d" 'bookmark-delete
                      "R" 'reload-current-buffer
