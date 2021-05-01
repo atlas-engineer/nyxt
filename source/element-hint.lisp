@@ -323,7 +323,7 @@ I.e. the grey text initially seen in it.")
   (echo "Unsupported operation for hint: can't open in new buffer."))
 
 (defmethod %copy-hint-url ((link-hint link-hint))
-  (trivial-clipboard:text (url link-hint)))
+  (trivial-clipboard:text (render-url (url link-hint))))
 
 (defmethod %copy-hint-url ((hint hint))
   (echo "Unsupported operation for hint: can't copy URL."))
