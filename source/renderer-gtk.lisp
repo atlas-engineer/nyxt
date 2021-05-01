@@ -466,8 +466,8 @@ See `gtk-browser's `modifier-translator' slot."
         t)))
 
 (define-ffi-method on-signal-key-release-event ((sender gtk-window) event)
-  "We don't handle key release events.
-Warning: This behaviour may change in the future."
+  ;; TODO: Should we move this to key-press-event to improve prompt buffer
+  ;; responsiveness?
   (declare (ignore event))
   (let ((prompt-buffer (first (active-prompt-buffers sender))))
     (cond
