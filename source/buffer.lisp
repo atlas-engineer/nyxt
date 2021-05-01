@@ -922,25 +922,6 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
          (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url))))
         (t (ffi-buffer-load buffer url))))))
 
-(defun new-buffer-load (suggestion-value)
-  "Load a URL in a new buffer."
-  (make-buffer-focus :url (url suggestion-value)))
-
-(defun new-nosave-buffer-load (suggestion-value)
-  "Load a URL in a new nosave buffer."
-  (make-buffer-focus :url (url suggestion-value) :nosave-buffer-p t))
-
-(defun new-buffer-load-from-history (history-entry)
-  "Load a URL in a new buffer (from history)."
-  (make-buffer-focus :url (url history-entry)))
-
-(defun buffer-load-from-bookmark (bookmark)
-  (buffer-load (url bookmark)))
-
-(defun new-buffer-load-from-bookmark (bookmark)
-  "Load a URL in a new buffer (from bookmark)."
-  (make-buffer-focus :url (url bookmark)))
-
 (define-class global-history-source (prompter:source)
   ((prompter:name "Global history")
    ;; REVIEW: Collect history suggestions asynchronously or not?  It's fast
@@ -1040,7 +1021,11 @@ generate a new URL query from user input.
 
 (define-command set-url (&key (prefill-current-url-p t))
   "Set the URL for the current buffer, completing with history."
-  (let ((history (set-url-history *browser*)))
+  (let ((history (set-url-history *browser*))
+        (actions (list (make-unmapped-command buffer-load)
+                       (make-command new-buffer-load (suggestion-values)
+                         "Load a URL in a new buffer."
+                         (make-buffer-focus :url (url (first suggestion-values)))))))
     (when history
       (containers:insert-item history (render-url (url (current-buffer)))))
     (prompt
@@ -1048,23 +1033,18 @@ generate a new URL query from user input.
      :input (if prefill-current-url-p
                 (render-url (url (current-buffer))) "")
      :history history
-     :sources (list (make-instance 'new-url-or-search-source
-                                   :actions (list (make-unmapped-command buffer-load)
-                                                  (make-unmapped-command new-buffer-load)))
-                    (make-instance 'global-history-source
-                                   ;; TODO: Multi-selection?
-                                   :actions (list (make-unmapped-command buffer-load)
-                                                  (make-unmapped-command new-buffer-load-from-history)))
-                    (make-instance 'bookmark-source
-                                   :actions (list (make-unmapped-command buffer-load-from-bookmark)
-                                                  (make-unmapped-command new-buffer-load-from-bookmark)))
-                    (make-instance 'search-engine-url-source
-                                   :actions (list (make-unmapped-command buffer-load)
-                                                  (make-unmapped-command new-buffer-load)))))))
+     :sources (list (make-instance 'new-url-or-search-source :actions actions)
+                    ;; TODO: Multi-selection?
+                    (make-instance 'global-history-source :actions actions)
+                    (make-instance 'bookmark-source :actions actions)
+                    (make-instance 'search-engine-url-source :actions actions)))))
 
 (define-command set-url-new-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused buffer."
-  (let ((history (set-url-history *browser*)))
+  (let ((history (set-url-history *browser*))
+        (actions (list (make-command new-buffer-load (suggestion-values)
+                         "Load a URL in a new buffer."
+                         (make-buffer-focus :url (url (first suggestion-values)))))))
     (when history
       (containers:insert-item history (render-url (url (current-buffer)))))
     (prompt
@@ -1072,30 +1052,25 @@ generate a new URL query from user input.
      :input (if prefill-current-url-p
                 (render-url (url (current-buffer))) "")
      :history history
-     :sources (list (make-instance 'new-url-or-search-source
-                                   :actions (list (make-unmapped-command new-buffer-load)))
-                    (make-instance 'global-history-source
-                                   :actions (list (make-unmapped-command new-buffer-load-from-history)))
-                    (make-instance 'bookmark-source
-                                   :actions (list (make-unmapped-command new-buffer-load-from-bookmark)))
-                    (make-instance 'search-engine-url-source
-                                   :actions (list (make-unmapped-command new-buffer-load)))))))
+     :sources (list (make-instance 'new-url-or-search-source :actions actions)
+                    (make-instance 'global-history-source :actions actions)
+                    (make-instance 'bookmark-source :actions actions)
+                    (make-instance 'search-engine-url-source :actions actions)))))
 
 (define-command set-url-new-nosave-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused nosave buffer."
-  (prompt
-   :prompt "Open URL in new nosave buffer"
-   :input (if prefill-current-url-p
-              (render-url (url (current-buffer))) "")
-   :sources (list (make-instance 'new-url-or-search-source
-                                 :name "New URL"
-                                 :actions (list (make-unmapped-command new-nosave-buffer-load)))
-                  (make-instance 'global-history-source
-                                 :actions (list (make-unmapped-command new-nosave-buffer-load)))
-                  (make-instance 'bookmark-source
-                                 :actions (list (make-unmapped-command new-nosave-buffer-load)))
-                  (make-instance 'search-engine-url-source
-                                 :actions (list (make-unmapped-command new-nosave-buffer-load))))))
+  (let ((actions (list (make-command new-nosave-buffer-load (suggestion-values)
+                         "Load a URL in a new nosave buffer."
+                         (make-buffer-focus :url (url (first suggestion-values))
+                                            :nosave-buffer-p t)))))
+    (prompt
+     :prompt "Open URL in new nosave buffer"
+     :input (if prefill-current-url-p
+                (render-url (url (current-buffer))) "")
+     :sources (list (make-instance 'new-url-or-search-source :actions actions)
+                    (make-instance 'global-history-source :actions actions)
+                    (make-instance 'bookmark-source :actions actions)
+                    (make-instance 'search-engine-url-source :actions actions)))))
 
 (defun reload-buffer (&optional (buffer (current-buffer)))
   "Reload a BUFFER or current-buffer if not provided."
