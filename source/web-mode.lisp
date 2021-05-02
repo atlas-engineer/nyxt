@@ -22,6 +22,11 @@
 (define-mode web-mode ()
   "Base mode for interacting with documents."
   ((rememberable-p nil)
+   (document-model
+    nil
+    :type (or null plump:node)
+    :documentation "A parsed representation of the page currently opened.
+Created from the page code with the help of `plump:parse'. See `update-dom'.")
    (history-blocklist '("https://duckduckgo.com/l/")
                       ;; TODO: Find a more automated way to do it.  WebKitGTK
                       ;; automatically removes such redirections from its
@@ -186,6 +191,26 @@ and to index the top of the page.")
        "s-space" 'scroll-page-up
        "pageup" 'scroll-page-up
        "pagedown" 'scroll-page-down)))))
+
+(define-command update-document-model (&optional (mode (current-mode 'web-mode)))
+  "Update the WEB-MODE's `dom' with the page source augmented with Nyxt identifiers."
+  (ffi-buffer-evaluate-javascript
+   (buffer mode)
+   (ps:ps
+     (defvar nyxt-identifier-counter 0)
+     (defun add-nyxt-identifiers (node)
+       (ps:chain node (set-attribute "nyxt-identifier" (ps:stringify nyxt-identifier-counter)))
+       (incf nyxt-identifier-counter)
+       (dolist (child (ps:chain node children))
+         (add-nyxt-identifiers child)))
+     (setf nyxt-identifier-counter 0)
+     (add-nyxt-identifiers (ps:chain document body))))
+  (setf (document-model mode)
+        (plump:parse (ffi-buffer-get-document (buffer mode)))))
+
+(defmethod document-model :around ((mode web-mode))
+  (or (call-next-method)
+      (update-document-model mode)))
 
 (sera:export-always '%clicked-in-input?)
 (defun %clicked-in-input? (&optional (buffer (current-buffer)))
