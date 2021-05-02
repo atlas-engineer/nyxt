@@ -10,10 +10,7 @@
 (define-command toggle-hints-transparency (&key (buffer (current-buffer)))
   "Toggle the on-screen element hints transparency."
   (pflet ((toggle-transparent ()
-            (defun qsa (context selector)
-              "Alias of document.querySelectorAll"
-              (ps:chain context (query-selector-all selector)))
-            (ps:dolist (element (qsa document ".nyxt-hint"))
+            (ps:dolist (element (nyxt:qsa document ".nyxt-hint"))
               (if (or (= (ps:chain element style opacity) "1")
                       (= (ps:chain element style opacity) ""))
                   (setf (ps:chain element style opacity) "0.2")

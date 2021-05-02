@@ -18,10 +18,7 @@
 
 (defun get-headings (&key (buffer (current-buffer)))
   (pflet ((get-headings ()
-           (defun qsa (context selector)
-             "Alias of document.querySelectorAll"
-             (ps:chain context (query-selector-all selector)))
-           (let ((headings (qsa document "h1, h2, h3, h4, h5, h6")))
+           (let ((headings (nyxt:qsa document "h1, h2, h3, h4, h5, h6")))
              (ps:chain |json| (stringify
                                (loop for heading in headings
                                      collect (ps:chain heading inner-text)))))))
@@ -33,9 +30,7 @@
 
 (defun scroll-page-to-heading (heading)
   (pflet ((scroll-page-to-heading (heading)
-            (defun qsa (context selector)
-              (ps:chain context (query-selector-all selector)))
-            (let ((headings (qsa document "h1, h2, h3, h4, h5, h6")))
+            (let ((headings (nyxt:qsa document "h1, h2, h3, h4, h5, h6")))
               (loop for heading in headings do
                        (when (equal (ps:lisp (inner-text heading))
                                     (ps:chain heading inner-text))

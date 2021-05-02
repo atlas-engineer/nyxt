@@ -3,6 +3,16 @@
 
 (in-package :nyxt)
 
+(export-always 'qs)
+(ps:defpsmacro qs (context selector)
+  "Alias of document.querySelector"
+  `(ps:chain ,context (query-selector ,selector)))
+
+(export-always 'qsa)
+(ps:defpsmacro qsa (context selector)
+  "Alias of document.querySelectorAll"
+  `(ps:chain ,context (query-selector-all ,selector)))
+
 (export-always 'define-parenscript)
 (defmacro define-parenscript (script-name args &body script-body)
   "Define parenscript function SCRIPT-NAME.
@@ -27,8 +37,6 @@ The function can be passed ARGS."
 
 (export-always 'document-get-paragraph-contents)
 (define-parenscript document-get-paragraph-contents (&key (limit 100000))
-  (defun qsa (context selector)
-    (ps:chain context (query-selector-all selector)))
   (let ((result ""))
     (loop for element in (qsa document (list "p"))
           do (setf result (+ result

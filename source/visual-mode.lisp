@@ -78,17 +78,9 @@
           (setf (mark-set mode) t))))))
 
 (define-parenscript add-paragraph-hints (&key annotate-visible-only-p)
-  (defun qs (context selector)
-    "Alias of document.querySelector"
-    (ps:chain context (query-selector selector)))
-
-  (defun qsa (context selector)
-    "Alias of document.querySelectorAll"
-    (ps:chain context (query-selector-all selector)))
-
   (defun qsa-text-nodes ()
     "Gets all text nodes"
-    (let ((elements (qsa document "body, body *"))
+    (let ((elements (nyxt:qsa document "body, body *"))
           child)
       (loop for element in elements
             do (setf child (ps:@ element child-nodes 0))
@@ -106,7 +98,7 @@
     (ps:chain -string (from-char-code n)))
 
   (defun add-stylesheet ()
-    (unless (qs document "#nyxt-stylesheet")
+    (unless (nyxt:qs document "#nyxt-stylesheet")
       (ps:try
        (ps:let* ((style-element (ps:chain document (create-element "style")))
                  (box-style (ps:lisp (nyxt/web-mode::box-style (current-mode 'web))))
@@ -206,10 +198,7 @@ identifier for every hinted element."
     ("Body" ,(nyxt/web-mode::body hint))))
 
 (define-parenscript set-caret-on-start (&key nyxt-identifier)
-  (defun qs (context selector)
-    "Alias of document.querySelector"
-    (ps:chain context (query-selector selector)))
-  (let ((el (qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))))
+  (let ((el (nyxt:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))))
         (range (ps:chain document (create-range)))
         (sel (ps:chain window (get-selection))))
     (ps:chain window (focus))
