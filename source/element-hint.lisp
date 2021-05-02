@@ -4,20 +4,12 @@
 (in-package :nyxt/web-mode)
 
 (define-parenscript add-element-hints (&key annotate-visible-only-p)
-  (defun qs (context selector)
-    "Alias of document.querySelector"
-    (ps:chain context (query-selector selector)))
-
-  (defun qsa (context selector)
-    "Alias of document.querySelectorAll"
-    (ps:chain context (query-selector-all selector)))
-
   (defun code-char (n)
     "Alias of String.fromCharCode"
     (ps:chain -string (from-char-code n)))
 
   (defun add-stylesheet ()
-    (unless (qs document "#nyxt-stylesheet")
+    (unless (nyxt:qs document "#nyxt-stylesheet")
       (ps:try
        (ps:let* ((style-element (ps:chain document (create-element "style")))
                  (box-style (ps:lisp (box-style (current-mode 'web))))
@@ -124,38 +116,29 @@ identifier for every hinted element."
              (aref alphabet (rem n alphabet-length))) "")))
 
   (add-stylesheet)
-  (hints-add (qsa document (list "a" "button" "input" "textarea" "img"))))
+  (hints-add (nyxt:qsa document (list "a" "button" "input" "textarea" "img"))))
 
 (define-parenscript remove-element-hints ()
   (defun hints-remove-all ()
     "Removes all the elements"
-    (ps:dolist (element (qsa document ".nyxt-hint"))
+    (ps:dolist (element (nyxt:qsa document ".nyxt-hint"))
       (ps:chain element (remove))))
   (hints-remove-all))
 
 (define-parenscript click-element (&key nyxt-identifier)
-  (defun qs (context selector)
-    "Alias of document.querySelector"
-    (ps:chain context (query-selector selector)))
-  (ps:chain (qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (click)))
+  (ps:chain (nyxt:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (click)))
 
 (define-parenscript focus-element (&key nyxt-identifier)
-  (defun qs (context selector)
-    "Alias of document.querySelector"
-    (ps:chain context (query-selector selector)))
-  (ps:chain (qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (focus))
-  (ps:chain (qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (select)))
+  (ps:chain (nyxt:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (focus))
+  (ps:chain (nyxt:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (select)))
 
 (define-parenscript highlight-selected-hint (&key link-hint scroll)
-  (defun qs (context selector)
-    "Alias of document.querySelector"
-    (ps:chain context (query-selector selector)))
 
   (defun update-hints ()
-    (ps:let* ((new-element (qs document (ps:lisp (format nil "#nyxt-hint-~a" (identifier link-hint))))))
+    (ps:let* ((new-element (nyxt:qs document (ps:lisp (format nil "#nyxt-hint-~a" (identifier link-hint))))))
       (when new-element
         (unless ((ps:@ new-element class-list contains) "nyxt-highlight-hint")
-          (ps:let ((old-elements (qsa document ".nyxt-highlight-hint")))
+          (ps:let ((old-elements (nyxt:qsa document ".nyxt-highlight-hint")))
             (ps:dolist (e old-elements)
               (setf (ps:@ e class-name) "nyxt-hint"))))
         (setf (ps:@ new-element class-name) "nyxt-hint nyxt-highlight-hint")
@@ -166,7 +149,7 @@ identifier for every hinted element."
   (update-hints))
 
 (define-parenscript remove-focus ()
-  (ps:let ((old-elements (qsa document ".nyxt-highlight-hint")))
+  (ps:let ((old-elements (nyxt:qsa document ".nyxt-highlight-hint")))
     (ps:dolist (e old-elements)
       (setf (ps:@ e class-name) "nyxt-hint"))))
 

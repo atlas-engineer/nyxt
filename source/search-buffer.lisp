@@ -9,16 +9,8 @@
   (defvar *nodes* (ps:new (-Object)))
   (defvar *node-replacements* (array))
 
-  (defun qs (context selector)
-    "Alias of document.querySelector"
-    (ps:chain context (query-selector selector)))
-
-  (defun qsa (context selector)
-    "Alias of document.querySelectorAll"
-    (ps:chain context (query-selector-all selector)))
-
   (defun add-stylesheet ()
-    (unless (qs document "#nyxt-stylesheet")
+    (unless (nyxt:qs document "#nyxt-stylesheet")
       (ps:try
        (ps:let* ((style-element (ps:chain document (create-element "style")))
                  (box-style (ps:lisp (box-style (current-mode 'web))))
@@ -97,7 +89,7 @@
 
   (defun remove-search-nodes ()
     "Removes all the search elements"
-    (ps:dolist (node (qsa document ".nyxt-search-node"))
+    (ps:dolist (node (nyxt:qsa document ".nyxt-search-node"))
       (ps:chain node (replace-with (aref *nodes* (ps:@ node id))))))
 
   (let ((*matches* (array))
@@ -133,12 +125,9 @@
 (define-command remove-search-hints ()
   "Remove all search hints."
   (pflet ((remove-search-hints ()
-            (defun qsa (context selector)
-              "Alias of document.querySelectorAll"
-              (ps:chain context (query-selector-all selector)))
             (defun remove-search-nodes ()
               "Removes all the search elements"
-              (ps:dolist (node (qsa document ".nyxt-search-node"))
+              (ps:dolist (node (nyxt:qsa document ".nyxt-search-node"))
                 (ps:chain node (replace-with (aref *nodes* (ps:@ node id))))))
             (remove-search-nodes)))
     (remove-search-hints)))
