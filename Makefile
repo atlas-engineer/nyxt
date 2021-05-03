@@ -10,7 +10,7 @@ LISP ?= sbcl
 LISP_FLAGS ?= --no-userinit --non-interactive
 
 NYXT_INTERNAL_QUICKLISP=true
-NYXT_RENDERER=gtk
+NYXT_RENDERER=gobject/gtk
 
 .PHONY: help
 help:

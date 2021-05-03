@@ -18,6 +18,9 @@
 (defvar *bindir* (or (uiop:getenv "BINDIR")
                      (format nil "~a/bin" *prefix*)))
 
+(defvar *nyxt-renderer* (or (uiop:getenv "NYXT_RENDERER")
+                            "gobject/gtk"))
+
 (defsystem "nyxt"
   :version "2" ; Pre-release 6
   :author "Atlas Engineer LLC"
@@ -336,7 +339,8 @@
 (defsystem "nyxt/install"
   :depends-on (alexandria
                str
-               nyxt/gtk-application nyxt/version)    ; TODO: Make renderer customizable?
+               #.(format nil "~a-application" *nyxt-renderer*)
+               nyxt/version)
   :perform (compile-op
             (o c)
             (flet ((ensure-parent-exists (file)
