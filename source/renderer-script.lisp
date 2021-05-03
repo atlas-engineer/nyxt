@@ -103,21 +103,21 @@ BODY must return the HTML markup as a string."
 
 (defpsmacro insert-at (tag input-text)
   "Insert text at a tag."
-  `(let ((start (chain tag selection-start))
+  `(let ((origin (chain tag selection-start))
          (end (chain ,tag selection-end)))
      (setf (chain ,tag value)
-           (+ (chain ,tag value (substring 0 start))
+           (+ (chain ,tag value (substring 0 origin))
               ,input-text
               (chain ,tag value
                      (substring end
                                 (chain ,tag value length)))))
-     (if (= start end)
+     (if (= origin end)
          (progn
-           (setf (chain ,tag selection-start) (+ start (ps:chain ,input-text length)))
+           (setf (chain ,tag selection-start) (+ origin (ps:chain ,input-text length)))
            (setf (chain ,tag selection-end) (ps:chain ,tag selection-start)))
          (progn
-           (setf (chain ,tag selection-start) start)
-           (setf (chain ,tag selection-end) (+ start (ps:chain ,input-text length)))))))
+           (setf (chain ,tag selection-start) origin)
+           (setf (chain ,tag selection-end) (+ origin (ps:chain ,input-text length)))))))
 
 (defpsmacro element-drawable-p (element)
   "Is the element drawable?"

@@ -49,6 +49,5 @@ It's not recommended to use `nyxt' itself to avoid clobbering internal symbols."
 
 (uiop:define-package nyxt/parenscript
     (:nicknames :nyxt/ps)
-  (:use :common-lisp :nyxt :parenscript)
-  (:import-from #:serapeum #:export-always)
+  (:use :common-lisp :parenscript :nyxt)
   (:export :qs :qsa :insert-at :element-drawable-p :element-in-view-port-p))
