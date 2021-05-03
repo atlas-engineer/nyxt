@@ -459,6 +459,7 @@ If you are looking for a source that just returns its plain suggestions, use `so
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "Prompt source for user input words."))
 
+(export-always 'ensure-suggestions-list)
 (defmethod ensure-suggestions-list ((source source) elements)
   (mapcar (lambda (suggestion-value)
             (if (suggestion-p suggestion-value)
