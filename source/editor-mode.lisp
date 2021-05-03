@@ -47,14 +47,14 @@ get/set-content (which is necessary for operation)."
 (defgeneric set-content (editor content)
   (:documentation "Set the content of the editor."))
 
-(defmethod write-file ((buffer editor-buffer) &key (if-exists :error))
+(defmethod write-file-with-editor ((buffer editor-buffer) &key (if-exists :error))
   (alexandria:if-let ((editor (editor buffer)))
     (alexandria:write-string-into-file (get-content editor)
                                        (file buffer)
                                        :if-exists if-exists)
     (echo "Editor buffer cannot write file without configured editor mode.")))
 
-(defmethod open-file ((buffer editor-buffer) file)
+(defmethod open-file-with-editor ((buffer editor-buffer) file)
   (alexandria:if-let ((editor (editor buffer)))
     (if (uiop:file-exists-p file)
         (set-content editor (uiop:read-file-string file))
@@ -72,7 +72,7 @@ get/set-content (which is necessary for operation)."
                                            :actions '(identity))
                             (make-instance 'prompter:raw-source
                                            :name "New file"))))))
-    (open-file buffer file)
+    (open-file-with-editor buffer file)
     ;; TODO: Maybe make `editor-mode' and `editor-buffer' pathname-friendly?
     (setf (file buffer) (namestring file))
     (setf (title buffer) (namestring file))
@@ -80,7 +80,7 @@ get/set-content (which is necessary for operation)."
 
 (define-command editor-write-file (&key (buffer (current-buffer)) (if-exists :error))
   "Write the FILE of the BUFFER to storage."
-  (write-file buffer :if-exists if-exists)
+  (write-file-with-editor buffer :if-exists if-exists)
   (echo "File ~a written to storage." (file buffer)))
 
 (define-command nyxt::open-new-editor-with-file ()

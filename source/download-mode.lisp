@@ -158,4 +158,4 @@ download."
 
 (define-command download-open-file ()
   "Open a downloaded file."
-  (find-file :default-directory (expand-path (download-path (current-buffer)))))
+  (open-file :default-directory (expand-path (download-path (current-buffer)))))
