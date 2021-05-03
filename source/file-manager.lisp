@@ -39,50 +39,42 @@ It's suitable for `prompter:filter-preprocessor'."
 (define-class file-source (prompter:source)
   ((prompter:name "Files")
    (prompter:filter-preprocessor (make-file-source-preprocessor))
-   (prompter:multi-selection-p t))
+   (prompter:multi-selection-p t)
+   (find-file-in-new-buffer-p t :documentation "If nil, don't open files and directories in a new buffer.")
+   (supported-media-types '("mp3" "ogg" "mp4" "flv" "wmv" "webm" "mkv")
+                          :type list-of-strings
+                          :documentation "Media types that Nyxt can open.
+Others are opened with OS-specific mechanisms.")
+   (find-file-function #'default-find-file-function))
   (:export-class-name-p t)
+  (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "Prompt source for file(s) on the disk."))
 
-;; TODO: Separate package?
-(define-mode file-mode (nyxt/prompt-buffer-mode:prompt-buffer-mode)
-  "Prompt-buffer mode for the Nyxt-openable file filtering."
-  ((find-file-in-new-buffer t :documentation "If nil, don't open files and directories in a new buffer.")
-   (supported-media-types '("mp3" "ogg" "mp4" "flv" "wmv" "webm" "mkv")
-                          :type list-of-strings
-                          :documentation "Supported media types.
-Used for file filtering in `find-file'.")
-   (find-file-function #'default-find-file-function)
-   (keymap-scheme
-    (define-scheme "file-prompt-buffer"
-      scheme:cua
-      (list
-       "return" 'open-found-file)))))
 
 (defun supported-media-or-directory (filename
-                                     &optional (file-mode (or (find-submode (current-prompt-buffer)
-                                                                            'file-mode)
-                                                              (make-instance 'file-mode))))
+                                     &optional (file-source (make-instance 'file-source)))
   "Return T if this filename's extension is a media that Nyxt can open (or a directory).
 See `supported-media-types' of `file-mode'."
   (or (and (uiop:directory-pathname-p filename)
            (uiop:directory-exists-p filename))
       (sera:and-let* ((extension (pathname-type filename))
-                      (extensions (supported-media-types file-mode)))
+                      (extensions (supported-media-types file-source)))
         (find extension extensions :test #'string-equal))))
 
-(define-command open-found-file (&optional (prompt-buffer (current-prompt-buffer)))
-  "Have the PROMT-BUFFER open the file based on its `file-mode', then quit."
-  (hide-prompt-buffer prompt-buffer
-                      (lambda ()
-                        (let* ((files (prompter::resolve-selection prompt-buffer))
-                               (file-mode (find-submode prompt-buffer 'file-mode))
-                               (new-buffer-p (and file-mode (find-file-in-new-buffer file-mode))))
-                          (dolist (file files)
-                            (funcall (find-file-function file-mode) file
-                                     :new-buffer-p new-buffer-p
-                                     :supported-p (supported-media-or-directory file file-mode))))
-                        (prompter:return-selection prompt-buffer))))
+(defmethod initialize-instance :after ((source file-source) &key)
+  (setf (slot-value source 'prompter:actions)
+        (list (make-command open-file* (files)
+                (let* ((new-buffer-p (find-file-in-new-buffer-p source)))
+                  ;; Open first file according to `find-file-in-new-buffer-p'
+                  (funcall (find-file-function source) (first files)
+                           :new-buffer-p new-buffer-p
+                           :supported-p (supported-media-or-directory (first files) source))
+                  ;; Open the rest of the files in new buffers unconditionally.
+                  (dolist (file (rest files))
+                    (funcall (find-file-function source) file
+                             :new-buffer-p t
+                             :supported-p (supported-media-or-directory file source))))))))
 
 #+linux
 (defvar *xdg-open-program* "xdg-open")
@@ -102,8 +94,8 @@ Can be used as a `find-file-function'."
   (handler-case
       (if supported-p
           (if new-buffer-p
-              (make-buffer-focus :url (format nil "file://~a" filename))
-              (buffer-load (format nil "file://~a" filename)))
+              (make-buffer-focus :url (quri::make-uri-file :path filename))
+              (buffer-load (quri::make-uri-file :path filename)))
           (uiop:launch-program
            #+linux
            (list *xdg-open-program* (namestring filename))
@@ -124,14 +116,7 @@ directory.
 By default, it uses the `xdg-open' command. The user can override the
 `find-file-function' of `file-mode' which takes the filename (or
 directory name) as parameter."
-  ;; TODO: How do we set the current directory permanently?
-  (flet ((supported-media-or-directory-filter (suggestions source input)
-           (remove-if-not #'supported-media-or-directory
-                          (make-file-suggestions suggestions source input)
-                          :key #'prompter:value)))
-    (prompt
-     :input (namestring default-directory)
-     :default-modes '(file-mode nyxt/prompt-buffer-mode:prompt-buffer-mode)
-     :prompt "Open file"
-     :sources (list (make-instance 'file-source
-                                   :filter-preprocessor #'supported-media-or-directory-filter)))))
+  (prompt
+   :input (namestring default-directory)
+   :prompt "Open file"
+   :sources (list (make-instance 'file-source))))
