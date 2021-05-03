@@ -25,8 +25,7 @@ It's suitable for `prompter:filter-preprocessor'."
     (declare (ignore suggestions))
     (let ((pathname (pathname input)))
       (prompter:filter-exact-matches
-       ;; TODO: Export `ensure-suggestions-list'?
-       (prompter::ensure-suggestions-list
+       (prompter:ensure-suggestions-list
         source
         (sera:filter
          (apply #'alex:conjoin (or filters (list #'identity)))
