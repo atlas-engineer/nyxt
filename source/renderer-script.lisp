@@ -3,16 +3,6 @@
 
 (in-package :nyxt)
 
-(export-always 'qs)
-(ps:defpsmacro qs (context selector)
-  "Alias of document.querySelector"
-  `(ps:chain ,context (query-selector ,selector)))
-
-(export-always 'qsa)
-(ps:defpsmacro qsa (context selector)
-  "Alias of document.querySelectorAll"
-  `(ps:chain ,context (query-selector-all ,selector)))
-
 (export-always 'define-parenscript)
 (defmacro define-parenscript (script-name args &body script-body)
   "Define parenscript function SCRIPT-NAME.
@@ -116,3 +106,20 @@ BODY must return the HTML markup as a string."
       ,buffer-var)
      (set-current-buffer ,buffer-var)
      ,buffer-var))
+
+(uiop:define-package nyxt/parenscript
+    (:nicknames :nyxt/ps)
+  (:use :common-lisp :nyxt :parenscript)
+  (:import-from #:serapeum #:export-always))
+
+(in-package :nyxt/parenscript)
+
+(export-always 'qs)
+(defpsmacro qs (context selector)
+  "Alias of document.querySelector"
+  `(chain ,context (query-selector ,selector)))
+
+(export-always 'qsa)
+(defpsmacro qsa (context selector)
+  "Alias of document.querySelectorAll"
+  `(chain ,context (query-selector-all ,selector)))

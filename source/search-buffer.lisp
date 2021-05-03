@@ -10,7 +10,7 @@
   (defvar *node-replacements* (array))
 
   (defun add-stylesheet ()
-    (unless (nyxt:qs document "#nyxt-stylesheet")
+    (unless (nyxt/ps:qs document "#nyxt-stylesheet")
       (ps:try
        (ps:let* ((style-element (ps:chain document (create-element "style")))
                  (box-style (ps:lisp (box-style (current-mode 'web))))
@@ -89,7 +89,7 @@
 
   (defun remove-search-nodes ()
     "Removes all the search elements"
-    (ps:dolist (node (nyxt:qsa document ".nyxt-search-node"))
+    (ps:dolist (node (nyxt/ps:qsa document ".nyxt-search-node"))
       (ps:chain node (replace-with (aref *nodes* (ps:@ node id))))))
 
   (let ((*matches* (array))
@@ -127,7 +127,7 @@
   (pflet ((remove-search-hints ()
             (defun remove-search-nodes ()
               "Removes all the search elements"
-              (ps:dolist (node (nyxt:qsa document ".nyxt-search-node"))
+              (ps:dolist (node (nyxt/ps:qsa document ".nyxt-search-node"))
                 (ps:chain node (replace-with (aref *nodes* (ps:@ node id))))))
             (remove-search-nodes)))
     (remove-search-hints)))
