@@ -7,7 +7,7 @@
   :defsystem-depends-on (linux-packaging)
   :class "linux-packaging:deb"
   :build-operation "linux-packaging:build-op"
-  :depends-on (nyxt/gtk)
+  :depends-on (nyxt/gobject/gtk)
   :package-name "nyxt"
   :version #.(asdf:system-version (asdf:find-system :nyxt))
   :author #.(asdf:system-author (asdf:find-system :nyxt))
