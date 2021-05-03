@@ -35,27 +35,11 @@ The function can be passed ARGS."
 
 (export-always '%paste)
 (define-parenscript %paste (&key (input-text (ring-insert-clipboard (clipboard-ring *browser*))))
-  (defun insert-at (tag input-text)     ; TODO: Factor with `prompt-buffer-paste'.
-    (let ((start (ps:chain tag selection-start))
-          (end (ps:chain tag selection-end)))
-      (setf (ps:chain tag value)
-            (+ (ps:chain tag value (substring 0 start))
-               input-text
-               (ps:chain tag value
-                         (substring end
-                                    (ps:chain tag value length)))))
-      (if (= start end)
-          (progn
-            (setf (ps:chain tag selection-start) (+ start (ps:chain input-text length)))
-            (setf (ps:chain tag selection-end) (ps:chain tag selection-start)))
-          (progn
-            (setf (ps:chain tag selection-start) start)
-            (setf (ps:chain tag selection-end) (+ start (ps:chain input-text length)))))))
   (let ((active-element (ps:chain document active-element))
         (tag (ps:chain document active-element tag-name)))
     (when (or (string= tag "INPUT")
               (string= tag "TEXTAREA"))
-      (insert-at active-element (ps:lisp input-text)))))
+      (nyxt/ps:insert-at active-element (ps:lisp input-text)))))
 
 (export-always '%copy)
 (define-parenscript %copy ()
@@ -107,19 +91,46 @@ BODY must return the HTML markup as a string."
      (set-current-buffer ,buffer-var)
      ,buffer-var))
 
-(uiop:define-package nyxt/parenscript
-    (:nicknames :nyxt/ps)
-  (:use :common-lisp :nyxt :parenscript)
-  (:import-from #:serapeum #:export-always))
-
 (in-package :nyxt/parenscript)
 
-(export-always 'qs)
 (defpsmacro qs (context selector)
   "Alias of document.querySelector"
   `(chain ,context (query-selector ,selector)))
 
-(export-always 'qsa)
 (defpsmacro qsa (context selector)
   "Alias of document.querySelectorAll"
   `(chain ,context (query-selector-all ,selector)))
+
+(defpsmacro insert-at (tag input-text)
+  "Insert text at a tag."
+  `(let ((start (chain tag selection-start))
+         (end (chain ,tag selection-end)))
+     (setf (chain ,tag value)
+           (+ (chain ,tag value (substring 0 start))
+              ,input-text
+              (chain ,tag value
+                     (substring end
+                                (chain ,tag value length)))))
+     (if (= start end)
+         (progn
+           (setf (chain ,tag selection-start) (+ start (ps:chain ,input-text length)))
+           (setf (chain ,tag selection-end) (ps:chain ,tag selection-start)))
+         (progn
+           (setf (chain ,tag selection-start) start)
+           (setf (chain ,tag selection-end) (+ start (ps:chain ,input-text length)))))))
+
+(defpsmacro element-drawable-p (element)
+  "Is the element drawable?"
+  `(if (or (ps:chain ,element offset-width)
+           (ps:chain ,element offset-height)
+           (ps:chain ,element (get-client-rects) length))
+       t nil))
+
+(defpsmacro element-in-view-port-p (element)
+  "Is the element in the view port?"
+  `(ps:let* ((rect (ps:chain ,element (get-bounding-client-rect))))
+     (if (and (>= (ps:chain rect top) 0)
+              (>= (ps:chain rect left) 0)
+              (<= (ps:chain rect right) (ps:chain window inner-width))
+              (<= (ps:chain rect bottom) (ps:chain window inner-height)))
+         t nil)))

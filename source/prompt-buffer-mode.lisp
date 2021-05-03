@@ -141,12 +141,6 @@ If STEPS is negative, go to previous pages instead."
             (ffi-prompt-buffer-evaluate-javascript
              (current-window)
              (ps:ps
-               (defun element-in-view-port-p (element)
-                 ;; We are only concerned with vertical visibility.
-                 (ps:let* ((rect (ps:chain element (get-bounding-client-rect))))
-                   (if (and (>= (ps:chain rect top) 0)
-                            (<= (ps:chain rect bottom) (ps:chain window inner-height)))
-                       t nil)))
                (defun step-row (row)
                  (ps:chain
                   (aref (ps:chain row parent-node rows)
@@ -155,7 +149,7 @@ If STEPS is negative, go to previous pages instead."
                                   (+ (if (< 0 (ps:lisp steps)) 1 -1)
                                      (ps:chain row row-index)))))))
                (defun find-first-element-out-of-view (row)
-                 (if (element-in-view-port-p row)
+                 (if (nyxt/ps:element-in-view-port-p row)
                      (let ((new-row (step-row row)))
                        (if (eq new-row row)
                            row
@@ -343,24 +337,8 @@ Only available if `multi-selection-p' is non-nil."
   (ffi-prompt-buffer-evaluate-javascript
    window
    (ps:ps
-     (defun insert-at (tag input-text)
-       (let ((begin (ps:chain tag selection-start))
-             (end (ps:chain tag selection-end)))
-         (setf (ps:chain tag value)
-               (+ (ps:chain tag value (substring 0 begin))
-                  input-text
-                  (ps:chain tag value
-                            (substring end
-                                       (ps:chain tag value length)))))
-         (if (= begin end)
-             (progn
-               (setf (ps:chain tag selection-start) (+ begin (ps:chain input-text length)))
-               (setf (ps:chain tag selection-end) (ps:chain tag selection-start)))
-             (progn
-               (setf (ps:chain tag selection-start) begin)
-               (setf (ps:chain tag selection-end) (+ begin (ps:chain input-text length)))))))
-     (insert-at (ps:chain document (get-element-by-id "input"))
-                (ps:lisp (ring-insert-clipboard (nyxt::clipboard-ring *browser*)))))))
+     (nyxt/ps:insert-at (ps:chain document (get-element-by-id "input"))
+                        (ps:lisp (ring-insert-clipboard (nyxt::clipboard-ring *browser*)))))))
 
 (defun prompt-buffer-history-entries (&optional (window (current-window)))
   (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
