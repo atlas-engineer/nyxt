@@ -2,9 +2,9 @@ name: Build .deb package for latest Ubuntu
 
 on:
   push:
-    tags: '*'
+    # tags: '*'
     ## To test, uncomment the line below with branch name used for review.
-    # branches: [ MY-WORK-BRANCH ]
+    branches: [ engine-gobject ]
 
 jobs:
   build:
