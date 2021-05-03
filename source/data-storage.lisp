@@ -295,9 +295,11 @@ This function can be used on browser-less globals like `*init-file-path*'."
 ;; TODO: Better name? Isn't it too wide?
 (defmethod get-data ((path data-path))
   "Return the data for PATH.
+Second value is NIL if `get-user-data' returned NIL.
 Prefer the thread-safe `with-data-access', or the non-thread-safe
 `with-data-unsafe' which won't execute the body if the data is NIL."
-  (data (get-user-data (current-data-profile) path)))
+  (alex:when-let ((user-data (get-user-data (current-data-profile) path)))
+    (values (data user-data) user-data)))
 
 (defmethod (setf get-data) (value (path data-path))
   (setf (data (get-user-data (current-data-profile) path)) value))
@@ -308,13 +310,16 @@ Prefer the thread-safe `with-data-access', or the non-thread-safe
 Bind the DATA-VAR to the value of the data from DATA-PATH to reuse it.
 In case there's no data, bind DATA-VAR to DEFAULT and set data to it.
 
+The body is not executed when `get-user-data' expands to nil.
+
 Unlike `with-data-unsafe', the body is executed even when DATA-VAR is bound to
 NIL.
 
 For a faster and modification-unsafe version, see `with-data-unsafe'."
-  (alex:with-gensyms (lock path-name)
-    `(let* ((,path-name ,data-path)
-            (,lock (lock (get-user-data (current-data-profile) ,path-name))))
+  (alex:with-gensyms (path-name user-data lock)
+    `(sera:and-let* ((,path-name ,data-path)
+                     (,user-data (get-user-data (current-data-profile) ,path-name))
+                     (,lock (lock ,user-data)))
        (bt:with-recursive-lock-held (,lock)
          (let ((,data-var (or (get-data ,path-name) ,default)))
            (unwind-protect (progn ,@body)
