@@ -67,8 +67,9 @@ get/set-content (which is necessary for operation)."
                       :prompt "Open file"
                       :input (namestring (uiop:getcwd))
                       :sources
-                      (list (make-instance 'file-source
-                                           :name "Absolute file path")
+                      (list (make-instance 'user-file-source
+                                           :name "Absolute file path"
+                                           :actions '(identity))
                             (make-instance 'prompter:raw-source
                                            :name "New file"))))))
     (open-file buffer file)
