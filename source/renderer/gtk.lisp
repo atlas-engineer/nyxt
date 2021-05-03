@@ -368,7 +368,8 @@ response.  The BODY is wrapped with `with-protect'."
 
        (gtk:gtk-container-add gtk-object root-box-layout)
        (setf (slot-value *browser* 'last-active-window) window)
-       (gtk:gtk-widget-show-all gtk-object)
+       (unless *headless-p*
+         (gtk:gtk-widget-show-all gtk-object))
        (connect-signal window "key_press_event" nil (widget event)
          (declare (ignore widget))
          #+darwin
@@ -1058,7 +1059,8 @@ See `gtk-browser's `modifier-translator' slot."
   (let ((old-buffer (active-buffer window)))
     (gtk:gtk-container-remove (main-buffer-container window) (gtk-object old-buffer))
     (gtk:gtk-box-pack-start (main-buffer-container window) (gtk-object buffer) :expand t :fill t)
-    (gtk:gtk-widget-show (gtk-object buffer))
+    (unless *headless-p*
+      (gtk:gtk-widget-show (gtk-object buffer)))
     (when focus
       (gtk:gtk-widget-grab-focus (gtk-object buffer)))
     (nyxt/web-extensions::tabs-on-activated old-buffer buffer)
@@ -1076,7 +1078,8 @@ See `gtk-browser's `modifier-translator' slot."
             (push buffer (panel-buffers-right window))))
   (setf (gtk:gtk-widget-size-request (gtk-object buffer))
         (list (width buffer) -1))
-  (gtk:gtk-widget-show (gtk-object buffer)))
+  (unless *headless-p*
+    (gtk:gtk-widget-show (gtk-object buffer))))
 
 (define-ffi-method ffi-window-set-panel-buffer-width ((window gtk-window) (buffer panel-buffer) width)
   "Set the width of a panel buffer."
