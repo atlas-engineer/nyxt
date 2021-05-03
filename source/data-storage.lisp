@@ -505,14 +505,23 @@ exists."
   "Read a file from a file:// type URL into a string."
   (uiop:read-file-string (quri:uri-path (quri:uri url))))
 
+(defvar *chmod-program* "chmod"
+  "Only for use in `set-permissions'.
+Packagers may customize this variable.")
+
 (defun set-permissions (path &rest mode-pairs)
   "Merge MODE-PAIRS into PATH permissions.
 Example:
   (set-permission FILE :group-read nil :group-write nil :group-execute nil
                        :other-read nil :other-write nil :other-execute nil)"
-  (let ((attr (file-attributes:decode-attributes (file-attributes:attributes path))))
-    (match (serapeum:batches mode-pairs 2)
-      ((cons key value)
-       (setf (getf attr key) value)))
-    (setf (file-attributes:attributes path)
-          (file-attributes:encode-attributes attr))))
+  (handler-case
+      (let ((attr (file-attributes:decode-attributes (file-attributes:attributes path))))
+        (match (serapeum:batches mode-pairs 2)
+          ((cons key value)
+           (setf (getf attr key) value)))
+        (setf (file-attributes:attributes path)
+              (file-attributes:encode-attributes attr)))
+    (t ()
+      ;; REVIEW: `file-attributes' may fail if distributed binaries was built
+      ;; with a libc different from the one on the target system.
+      (uiop:run-program (list *chmod-program* "600" path)))))
