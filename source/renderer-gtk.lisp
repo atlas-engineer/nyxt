@@ -735,7 +735,7 @@ See `gtk-browser's `modifier-translator' slot."
             (slot-value browser 'last-active-window))))
 
 (define-ffi-method ffi-window-set-buffer ((window gtk-window) (buffer gtk-buffer) &key (focus t))
-  "Set BROWSER's WINDOW buffer to BUFFER. "
+  "Set BROWSER's WINDOW buffer to BUFFER."
   (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
   (gtk:gtk-box-pack-start (box-layout window) (gtk-object buffer) :expand t)
   (gtk:gtk-widget-show (gtk-object buffer))

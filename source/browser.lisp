@@ -584,6 +584,7 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-buffer-title (buffer))
 (define-ffi-generic ffi-window-make (browser)
   (:method (browser)
+    (declare (ignore browser))
     (make-instance 'user-window)))
 (define-ffi-generic ffi-window-to-foreground (window)
   (:method (window)
