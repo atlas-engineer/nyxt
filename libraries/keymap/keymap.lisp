@@ -337,7 +337,7 @@ Parents are ordered by priority, the first parent has highest priority.")))
 ;; types that use `satisfies' for non-top-level symbols.
 ;; We can verify this with:
 ;;
-;;   (compile 'foo (lambda () (keymap::define-key keymap "C-x C-f" 'find-file)))
+;;   (compile 'foo (lambda () (keymap::define-key keymap "C-x C-f" 'open-file)))
 (defmacro define-key (keymap keyspecs bound-value &rest more-keyspecs-value-pairs)
   "Bind KEYS to BOUND-VALUE in KEYMAP.
 Return KEYMAP.
@@ -353,19 +353,19 @@ In other words, it remaps OTHER-VALUE to VALUE.
 
 Examples:
 
-  (define-key foo-map \"C-x C-f\" 'find-file)
+  (define-key foo-map \"C-x C-f\" 'open-file)
 
   (define-key foo-map
-              \"C-x C-f\" 'find-file
+              \"C-x C-f\" 'open-file
               \"C-h k\" 'describe-key)
 
 \"C-M-1 x\" on a QWERTY:
 
-  (define-key foo-map '((:code 10 :modifiers (\"C\" \"M\") (:value \"x\"))) 'find-file)
+  (define-key foo-map '((:code 10 :modifiers (\"C\" \"M\") (:value \"x\"))) 'open-file)
 
 or the shorter:
 
-  (define-key foo-map \"C-M-#1\" 'find-file)
+  (define-key foo-map \"C-M-#1\" 'open-file)
 
 Remapping keys:
 
