@@ -190,12 +190,24 @@ If STEPS is negative, go to next pages instead."
 (define-class attribute-source (prompter:source)
   ((prompter:name "List of prompter attributes")
    (prompter:multi-selection-p t)
-   (prompter:suggestion-maker 'make-attribute-suggestion)))
+   (prompter:suggestion-maker 'make-attribute-suggestion)
+   (prompter:actions
+    (list (make-command return-marks-only (suggestion-values)
+            "Return marked suggestions only.
+They are returned untouched.
+This is useful for prompters where it makes sense to select nothing."
+            (multiple-value-bind (suggestion source)
+                (prompter:selected-suggestion (current-prompt-buffer))
+              (if (and (typep source 'attribute-source)
+                       (not (prompter:marks source)))
+                  (remove (prompter:value suggestion) suggestion-values
+                   :test #'equal)
+                  suggestion-values)))))))
 
 (define-command toggle-attributes-display (&optional (prompt-buffer (current-prompt-buffer)))
   "Prompt for which prompter attributes to display."
   (let ((attributes (prompt
-                     :prompt "Attributes to display"
+                     :prompt "Mark attributes to display"
                      :sources (list (make-instance 'attribute-source
                                                    :marks (intersection
                                                            (prompter:active-attributes-keys (current-source prompt-buffer))
@@ -204,10 +216,9 @@ If STEPS is negative, go to next pages instead."
                                                            :test #'string=)
                                                    :constructor (prompter:attributes-keys-non-default
                                                                  (current-source prompt-buffer)))))))
-    (when attributes
-      (setf (prompter:active-attributes-keys (current-source prompt-buffer))
-            attributes)
-      (prompt-render-suggestions prompt-buffer))))
+    (setf (prompter:active-attributes-keys (current-source prompt-buffer))
+          attributes)
+    (prompt-render-suggestions prompt-buffer)))
 
 (define-class prompt-buffer-command-source (prompter:source)
   ((prompter:name "List of prompt buffer commands")
