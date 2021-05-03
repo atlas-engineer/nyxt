@@ -83,6 +83,7 @@
                (:file "data-storage")
                (:file "configuration")
                (:file "command")
+               (:file "parenscript-macro")
                (:file "renderer-script")
                (:file "buffer")
                (:file "window")

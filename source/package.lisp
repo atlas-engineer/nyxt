@@ -46,8 +46,3 @@ It's not recommended to use `nyxt' itself to avoid clobbering internal symbols."
   (:import-from #:class-star #:define-class)
   (:import-from #:serapeum #:export-always)
   (:documentation "Mode for prompter buffer."))
-
-(uiop:define-package nyxt/parenscript
-    (:nicknames :nyxt/ps)
-  (:use :common-lisp :parenscript :nyxt)
-  (:export :qs :qsa :insert-at :element-drawable-p :element-in-view-port-p))
