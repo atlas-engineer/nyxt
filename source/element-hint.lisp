@@ -9,7 +9,7 @@
     (ps:chain -string (from-char-code n)))
 
   (defun add-stylesheet ()
-    (unless (nyxt:qs document "#nyxt-stylesheet")
+    (unless (nyxt/ps:qs document "#nyxt-stylesheet")
       (ps:try
        (ps:let* ((style-element (ps:chain document (create-element "style")))
                  (box-style (ps:lisp (box-style (current-mode 'web))))
@@ -116,29 +116,29 @@ identifier for every hinted element."
              (aref alphabet (rem n alphabet-length))) "")))
 
   (add-stylesheet)
-  (hints-add (nyxt:qsa document (list "a" "button" "input" "textarea" "img"))))
+  (hints-add (nyxt/ps:qsa document (list "a" "button" "input" "textarea" "img"))))
 
 (define-parenscript remove-element-hints ()
   (defun hints-remove-all ()
     "Removes all the elements"
-    (ps:dolist (element (nyxt:qsa document ".nyxt-hint"))
+    (ps:dolist (element (nyxt/ps:qsa document ".nyxt-hint"))
       (ps:chain element (remove))))
   (hints-remove-all))
 
 (define-parenscript click-element (&key nyxt-identifier)
-  (ps:chain (nyxt:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (click)))
+  (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (click)))
 
 (define-parenscript focus-element (&key nyxt-identifier)
-  (ps:chain (nyxt:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (focus))
-  (ps:chain (nyxt:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (select)))
+  (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (focus))
+  (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (select)))
 
 (define-parenscript highlight-selected-hint (&key link-hint scroll)
 
   (defun update-hints ()
-    (ps:let* ((new-element (nyxt:qs document (ps:lisp (format nil "#nyxt-hint-~a" (identifier link-hint))))))
+    (ps:let* ((new-element (nyxt/ps:qs document (ps:lisp (format nil "#nyxt-hint-~a" (identifier link-hint))))))
       (when new-element
         (unless ((ps:@ new-element class-list contains) "nyxt-highlight-hint")
-          (ps:let ((old-elements (nyxt:qsa document ".nyxt-highlight-hint")))
+          (ps:let ((old-elements (nyxt/ps:qsa document ".nyxt-highlight-hint")))
             (ps:dolist (e old-elements)
               (setf (ps:@ e class-name) "nyxt-hint"))))
         (setf (ps:@ new-element class-name) "nyxt-hint nyxt-highlight-hint")
@@ -149,7 +149,7 @@ identifier for every hinted element."
   (update-hints))
 
 (define-parenscript remove-focus ()
-  (ps:let ((old-elements (nyxt:qsa document ".nyxt-highlight-hint")))
+  (ps:let ((old-elements (nyxt/ps:qsa document ".nyxt-highlight-hint")))
     (ps:dolist (e old-elements)
       (setf (ps:@ e class-name) "nyxt-hint"))))
 
