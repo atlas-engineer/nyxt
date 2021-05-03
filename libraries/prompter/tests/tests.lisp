@@ -23,14 +23,25 @@
 (defun all-live-prompter-threads ()
   (sera:filter (alex:conjoin #'prompter-thread-p #'bt:thread-alive-p) (bt:all-threads)))
 
+(defun join-thread* (thread)
+  "Like `bt:join-thread' but don't fail on already aborted threads."
+  ;; CCL's `join-thread' works with aborted threads, but SBCL emits a
+  ;; `join-thread-error' condition.
+  (handler-case (bt:join-thread thread)
+    #+sbcl
+    (sb-thread:join-thread-error ()
+      nil)))
+
 (defmacro with-report-dangling-threads (&body body)
   `(unwind-protect (progn ,@body)
      (let ((remaining-threads (all-live-prompter-threads)))
-       (handler-case (bt:with-timeout ((length remaining-threads))
-                       (mapc #'bt:join-thread remaining-threads))
-         (t ()
-           (prove:fail (format nil "Timed out before joining all prompter threads: ~a"
-                               remaining-threads)))))
+       ;; Time out should be correlated to the number of threads since it may
+       ;; take some time to destroy them on weak hardware.
+       (handler-case (bt:with-timeout ((* 2 (length remaining-threads)))
+                       (mapc #'join-thread* remaining-threads))
+         (t (c)
+           (prove:fail (format nil "Error when joining ~a: ~a"
+                               remaining-threads c)))))
      (prove:is (all-live-prompter-threads)
                nil
                "No dangling threads")))
