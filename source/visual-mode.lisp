@@ -134,20 +134,6 @@ identifier for every hinted element."
     (ps:let ((hint-element (hint-create-element element hint)))
       (ps:chain document body (append-child hint-element))))
 
-  (defun element-drawable-p (element)
-    (if (or (ps:chain element offset-width)
-            (ps:chain element offset-height)
-            (ps:chain element (get-client-rects) length))
-        t nil))
-
-  (defun element-in-view-port-p (element)
-    (ps:let* ((rect (ps:chain element (get-bounding-client-rect))))
-      (if (and (>= (ps:chain rect top) 0)
-               (>= (ps:chain rect left) 0)
-               (<= (ps:chain rect right) (ps:chain window inner-width))
-               (<= (ps:chain rect bottom) (ps:chain window inner-height)))
-          t nil)))
-
   (defun object-create (element hint)
     (ps:create "type" "p" "hint" hint "identifier" hint "body" (ps:@ element |innerHTML|)))
 
@@ -158,13 +144,13 @@ identifier for every hinted element."
       (ps:chain |json|
                 (stringify
                  (loop for i from 0 to (- elements-length 1)
-                       when (and (element-drawable-p (elt elements i))
-                                 (element-in-view-port-p (elt elements i)))
+                       when (and (nyxt/ps:element-drawable-p (elt elements i))
+                                 (nyxt/ps:element-in-view-port-p (elt elements i)))
                          do (hint-add (elt elements i) (elt hints i))
-                       when (or (and (element-drawable-p (elt elements i))
+                       when (or (and (nyxt/ps:element-drawable-p (elt elements i))
                                      (not (ps:lisp annotate-visible-only-p)))
-                                (and (element-drawable-p (elt elements i))
-                                     (element-in-view-port-p (elt elements i))))
+                                (and (nyxt/ps:element-drawable-p (elt elements i))
+                                     (nyxt/ps:element-in-view-port-p (elt elements i))))
                          collect (object-create (elt elements i) (elt hints i)))))))
 
   (defun hints-determine-chars-length (length)
