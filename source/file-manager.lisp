@@ -50,9 +50,12 @@ Others are opened with OS-specific mechanisms.")
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "Prompt source for file(s) on the disk."))
 
+;; FIXME: Configuring this in init.lisp requires nyxt:: prefix.
+;; How do we export it? :export-class-name-p doesn't work, it seems.
+(define-user-class file-source)
 
 (defun supported-media-or-directory (filename
-                                     &optional (file-source (make-instance 'file-source)))
+                                     &optional (file-source (make-instance 'user-file-source)))
   "Return T if this filename's extension is a media that Nyxt can open (or a directory).
 See `supported-media-types' of `file-mode'."
   (or (and (uiop:directory-pathname-p filename)
@@ -118,4 +121,4 @@ directory name) as parameter."
   (prompt
    :input (namestring default-directory)
    :prompt "Open file"
-   :sources (list (make-instance 'file-source))))
+   :sources (list (make-instance 'user-file-source))))

@@ -236,7 +236,7 @@ Return the short error message and the full error message as second value."
                         (uiop:getcwd)))
    :sources
    ;; TODO: Load several files at once? `file-source' allows that.
-   (make-instance 'file-source
+   (make-instance 'user-file-source
                   :actions (list (make-command load-file* (files)
                                    (dolist (file files)
                                      (load-lisp file)))))))
