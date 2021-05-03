@@ -18,6 +18,10 @@ close the connection.")
   "Whether the Nyxt-internal debugger pops up when an error happens.
 Allows the user to fix immediate errors in runtime, given enough understanding.")
 
+(defvar *headless-p* nil
+  "If non-nil, don't display anything.
+This is convenient for testing purposes or to drive Nyxt programmatically.")
+
 (export-always '*browser*)
 (defvar *browser* nil
   "The entry-point object to a complete instance of Nyxt.
