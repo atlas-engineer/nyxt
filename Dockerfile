@@ -6,5 +6,5 @@ RUN dnf install -y ruby ruby-devel rubygems rpm-build sbcl libffi-devel redhat-r
 # COPY . /nyxt
 # RUN cd /nyxt
 
-COPY build-scripts/build-ubuntu-package.sh /usr/local/bin/
-ENTRYPOINT ["build-ubuntu-package.sh"]
+COPY build-scripts/build-fedora-package.sh /usr/local/bin/
+ENTRYPOINT ["build-fedora-package.sh"]
