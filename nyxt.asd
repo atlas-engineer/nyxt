@@ -223,9 +223,9 @@
   :perform (compile-op (o c)
                        (uiop:run-program `("git"
                                            "-C" ,(namestring (system-relative-pathname c ""))
-                                           ;; TODO: Pass --force to ensure submodules are checked out?
-                                           "submodule" "update" "--init")
-                                         :ignore-error-status t)))
+                                           "submodule" "update" "--init" "--force")
+                                         :ignore-error-status t
+                                         :output t)))
 
 (defsystem "nyxt/quicklisp"
   :depends-on (nyxt/submodules)
