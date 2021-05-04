@@ -51,6 +51,8 @@ sbcl \
     --eval "(format t \"==> Quicklisp local project directories: ~s~%\" ql:*local-project-directories*)" \
     --eval "(format t \"==> Quicklisp local systems: ~a~%\" (ql:list-local-systems))" \
     --eval "(format t \"==> Quickloading linux-packaging...~%\")" \
+    --eval "(format t \"==> Quri path: ~a~%\" (nth-value 2 (asdf:locate-system :quri)))" \
+    --eval "(asdf:load-system :quri)" \
     --eval "(ql:quickload :linux-packaging :silent t)" \
     --eval "(format t \"==> Quickloading :nyxt...~%\")" \
     --eval "(ql:quickload :nyxt :silent t)" \
