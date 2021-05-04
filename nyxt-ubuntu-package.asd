@@ -15,6 +15,7 @@
   :description #.(asdf:system-description (asdf:find-system :nyxt))
   :license #.(asdf:system-license (asdf:find-system :nyxt))
   :additional-dependencies ("libfixposix-dev" ; Because we need libfixposix.so, not just libfixposix.so.3.
+                            "libwebkit2gtk-4.0-dev" ; Same.
                             "glib-networking"
                             "gsettings-desktop-schemas"
                             "xclip"
