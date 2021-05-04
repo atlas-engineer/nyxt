@@ -36,19 +36,19 @@ Create it if it does not exist."
 The channel return value is a `download'.")
 
 (defclass download ()
-  ((requested-uri :accessor requested-uri
-                  :initarg :requested-uri
+  ((requested-url :accessor requested-url
+                  :initarg :requested-url
                   :initform (quri:uri "")
                   :type quri:uri
-                  :documentation "The URI that the user requested.  This may be
+                  :documentation "The URL that the user requested.  This may be
 different from the actual location of the download, e.g. in case of automatic
-redirection.  See RESOLVED-URI.")
-   (resolved-uri :accessor resolved-uri
-                 :initarg :resolved-uri
+redirection.  See RESOLVED-URL.")
+   (resolved-url :accessor resolved-url
+                 :initarg :resolved-url
                  :initform (quri:uri "")
                  :type quri:uri
                  :documentation "The actual source of the download.
-This may be different from the URI the user requested, see REQUESTED-URI.")
+This may be different from the URL the user requested, see REQUESTED-URL.")
    (file :accessor file
          :initarg :file
          :initform ""
@@ -135,17 +135,17 @@ Only send if last update was more than `update-interval' seconds ago."
                                     (:proxy (or quri:uri null))
                                     (:cookies (or string null))))
                 resolve))
-(defun resolve (uri &key
+(defun resolve (url &key
                       (directory (default-download-directory))
                       proxy
                       cookies)
-  "Start downloading URI concurrently and return a corresponding `download' object.
+  "Start downloading URL concurrently and return a corresponding `download' object.
 If DIRECTORY is nil, `default-download-directory' will be used.  COOKIES can
 specify a cookie jar as a string, which is useful for authenticated downloads.
 PROXY is the full proxy address, e.g. \"socks5://127.0.0.1:9050\"."
   (unless *notifications*
     (setf *notifications* (make-instance 'calispel:channel)))
-  (let ((download (cache :uri uri
+  (let ((download (cache :url url
                          :directory (download-directory directory)
                          :cookies cookies
                          :proxy proxy)))

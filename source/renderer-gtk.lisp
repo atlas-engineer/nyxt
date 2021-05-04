@@ -54,7 +54,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 
 (define-class gtk-buffer ()
   ((gtk-object)
-   (proxy-uri (quri:uri ""))
+   (proxy-url (quri:uri ""))
    (proxy-ignored-hosts '())
    (data-manager-path (make-instance 'data-manager-data-path
                                      :dirname (uiop:xdg-cache-home +data-root+))
@@ -582,7 +582,7 @@ See `gtk-browser's `modifier-translator' slot."
                                                         (id buffer))))))
   (ffi-buffer-make buffer))
 
-(define-ffi-method ffi-buffer-uri ((buffer gtk-buffer))
+(define-ffi-method ffi-buffer-url ((buffer gtk-buffer))
   (quri:uri (webkit:webkit-web-view-uri (gtk-object buffer))))
 
 (define-ffi-method ffi-buffer-title ((buffer gtk-buffer))
@@ -801,14 +801,14 @@ See `gtk-browser's `modifier-translator' slot."
   ;; TLS certificate handling
   (gobject:g-signal-connect
    (gtk-object buffer) "load-failed-with-tls-errors"
-   (lambda (web-view failing-uri certificate errors)
+   (lambda (web-view failing-url certificate errors)
      (declare (ignore web-view errors))
-     (on-signal-load-failed-with-tls-errors buffer certificate (quri:uri failing-uri))))
+     (on-signal-load-failed-with-tls-errors buffer certificate (quri:uri failing-url))))
   (gobject:g-signal-connect
    (gtk-object buffer) "notify::uri"
    (lambda (web-view param-spec)
      (declare (ignore web-view param-spec))
-     (on-signal-notify-uri buffer nil)))
+     (on-signal-notify-url buffer nil)))
   (gobject:g-signal-connect
    (gtk-object buffer) "notify::title"
    (lambda (web-view param-spec)
@@ -822,15 +822,15 @@ See `gtk-browser's `modifier-translator' slot."
      (delete-buffer :id (id buffer))))
   (gobject:g-signal-connect
    (gtk-object buffer) "load-failed"
-   (lambda (web-view load-event failing-uri error)
+   (lambda (web-view load-event failing-url error)
      (declare (ignore load-event web-view error))
      (unless (member (slot-value buffer 'load-status) '(:finished :failed))
-       (echo "Failed to load URL ~a in buffer ~a." failing-uri (id buffer))
+       (echo "Failed to load URL ~a in buffer ~a." failing-url (id buffer))
        (setf (slot-value buffer 'load-status) :failed)
        (html-set
         (markup:markup
          (:h1 "Page could not be loaded.")
-         (:h2 "URL: " failing-uri)
+         (:h2 "URL: " failing-url)
          (:p "Please check:"
              (:ul
               (:li "Your Internet connection.")
@@ -843,10 +843,10 @@ See `gtk-browser's `modifier-translator' slot."
    (lambda (web-view navigation-action)
      (declare (ignore web-view))
      (let ((new-buffer (buffer-make *browser*))
-           (uri (webkit:webkit-uri-request-uri
+           (url (webkit:webkit-uri-request-uri
                  (webkit:webkit-navigation-action-get-request
                   (gobject:pointer navigation-action)))))
-       (ffi-buffer-load new-buffer (quri:uri uri))
+       (ffi-buffer-load new-buffer (quri:uri url))
        (window-set-buffer (current-window) new-buffer)
        (gtk-object new-buffer))))
   ;; Remove "download to disk" from the right click context menu because it
@@ -867,27 +867,27 @@ See `gtk-browser's `modifier-translator' slot."
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
   (gtk:gtk-widget-destroy (gtk-object buffer)))
 
-(define-ffi-method ffi-buffer-load ((buffer gtk-buffer) uri)
-  "Load URI in BUFFER.
+(define-ffi-method ffi-buffer-load ((buffer gtk-buffer) url)
+  "Load URL in BUFFER.
 An optimization technique is to make use of the renderer history cache.
 For WebKit, if the URL matches an entry in the webkit-history then we fetch the
 page from the cache.
 
-We don't use the cache if URI matches BUFFER's URL since this means the user
+We don't use the cache if URL matches BUFFER's URL since this means the user
 requested a reload."
-  (declare (type quri:uri uri))
+  (declare (type quri:uri url))
   (let* ((history (webkit-history buffer))
-         (entry (or (find uri history :test #'quri:uri= :key #'webkit-history-entry-uri)
-                    (find uri history :test #'quri:uri= :key #'webkit-history-entry-original-uri))))
+         (entry (or (find url history :test #'quri:uri= :key #'webkit-history-entry-url)
+                    (find url history :test #'quri:uri= :key #'webkit-history-entry-original-url))))
     ;; Mark buffer as :loading right away so functions like `window-set-buffer'
     ;; don't try to reload if they are called before the "load-change" signal
     ;; is emitted.
     (setf (slot-value buffer 'load-status) :loading)
-    (if (and entry (not (quri:uri= uri (url buffer))))
+    (if (and entry (not (quri:uri= url (url buffer))))
         (progn
           (log:debug "Load URL from history entry ~a" entry)
           (load-webkit-history-entry buffer entry))
-        (webkit:webkit-web-view-load-uri (gtk-object buffer) (quri:render-uri uri)))))
+        (webkit:webkit-web-view-load-uri (gtk-object buffer) (quri:render-uri url)))))
 
 (defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript)
   (%within-renderer-thread
@@ -955,9 +955,9 @@ requested a reload."
 (defmethod ffi-buffer-enable-sound ((buffer gtk-buffer) value)
   (webkit:webkit-web-view-set-is-muted (gtk-object buffer) (not value)))
 
-(defmethod ffi-buffer-download ((buffer gtk-buffer) uri)
-  (let* ((webkit-download (webkit:webkit-web-view-download-uri (gtk-object buffer) uri))
-         (download (make-instance 'download :uri uri)))
+(defmethod ffi-buffer-download ((buffer gtk-buffer) url)
+  (let* ((webkit-download (webkit:webkit-web-view-download-uri (gtk-object buffer) url))
+         (download (make-instance 'download :url url)))
     (setf (cancel-function download)
           #'(lambda ()
               (setf (status download) :canceled)
@@ -1020,16 +1020,16 @@ requested a reload."
         value))
 
 (define-ffi-method ffi-buffer-set-proxy ((buffer gtk-buffer)
-                                 &optional (proxy-uri (quri:uri ""))
+                                 &optional (proxy-url (quri:uri ""))
                                    (ignore-hosts (list nil)))
-  "Redirect network connections of BUFFER to proxy server PROXY-URI.
+  "Redirect network connections of BUFFER to proxy server PROXY-URL.
 Hosts in IGNORE-HOSTS (a list of strings) ignore the proxy.
 For the user-level interface, see `proxy-mode'.
 
 Note: WebKit supports three proxy 'modes': default (the system proxy),
 custom (the specified proxy) and none."
-  (declare (type quri:uri proxy-uri))
-  (setf (proxy-uri buffer) proxy-uri)
+  (declare (type quri:uri proxy-url))
+  (setf (proxy-url buffer) proxy-url)
   (setf (proxy-ignored-hosts buffer) ignore-hosts)
   (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
          (settings (cffi:null-pointer))
@@ -1037,20 +1037,20 @@ custom (the specified proxy) and none."
          (ignore-hosts (cffi:foreign-alloc :string
                                            :initial-contents ignore-hosts
                                            :null-terminated-p t)))
-    (unless (url-empty-p proxy-uri)
+    (unless (url-empty-p proxy-url)
       (setf mode :webkit-network-proxy-mode-custom)
       (setf settings
             (webkit:webkit-network-proxy-settings-new
-             (render-url proxy-uri)
+             (render-url proxy-url)
              ignore-hosts)))
     (cffi:foreign-free ignore-hosts)
     (webkit:webkit-web-context-set-network-proxy-settings
      context mode settings)))
 
 (define-ffi-method ffi-buffer-get-proxy ((buffer gtk-buffer))
-  "Return the proxy URI and list of ignored hosts (a list of strings) as second value."
+  "Return the proxy URL and list of ignored hosts (a list of strings) as second value."
   (the (values (or quri:uri null) list-of-strings)
-       (values (proxy-uri buffer)
+       (values (proxy-url buffer)
                (proxy-ignored-hosts buffer))))
 
 (define-ffi-method ffi-buffer-set-zoom-level ((buffer gtk-buffer) value)
@@ -1099,7 +1099,7 @@ custom (the specified proxy) and none."
        (ps:ps (setf (ps:@ document body |innerHTML|)
                     (ps:lisp text)))))))
 
-(define-ffi-method ffi-display-uri (text)
+(define-ffi-method ffi-display-url (text)
   (webkit:webkit-uri-for-display text))
 
 (declaim (ftype (function (webkit:webkit-cookie-manager cookie-policy)) set-cookie-policy))
@@ -1131,8 +1131,8 @@ LANGUAGE is a list of strings like '(\"en_US\" \"fr_FR\")."
 
 (defstruct webkit-history-entry
   title
-  uri
-  original-uri
+  url
+  original-url
   gtk-object)
 
 (define-ffi-method webkit-history ((buffer gtk-buffer))
@@ -1160,8 +1160,8 @@ As a second value, return the current buffer index starting from 0."
           when item
             do (push (make-webkit-history-entry
                       :title (webkit:webkit-back-forward-list-item-get-title item)
-                      :uri (quri:uri (webkit:webkit-back-forward-list-item-get-uri item))
-                      :original-uri (quri:uri (webkit:webkit-back-forward-list-item-get-original-uri item))
+                      :url (quri:uri (webkit:webkit-back-forward-list-item-get-uri item))
+                      :original-url (quri:uri (webkit:webkit-back-forward-list-item-get-original-uri item))
                       :gtk-object item)
                      history-list))
     (values history-list current-index)))

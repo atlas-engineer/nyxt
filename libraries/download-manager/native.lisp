@@ -4,9 +4,9 @@
 ;;; Native Common Lisp download manager backend.
 (in-package :download-manager)
 
-(defmethod cache ((type (eql :uri)) uri &rest args)
-  (log:debug uri args)
-  (apply #'locally-cache uri args))
+(defmethod cache ((type (eql :url)) url &rest args)
+  (log:debug url args)
+  (apply #'locally-cache url args))
 
 (defun parse-cookie-jar-string (cookie-jar-string host path)
   "Host is for instance \"example.org\" and path is \"/foo/bar\"."
@@ -15,28 +15,28 @@
                       (cl-cookie:parse-set-cookie-header c host path))
                     (cl-ppcre:split " *; *" cookie-jar-string))))
 
-(defun locally-cache (requested-uri
+(defun locally-cache (requested-url
                       &key
                       (directory (download-directory))
                       cookies
                       proxy)
   (let* ((cookies-jar
            (unless (str:emptyp cookies)
-             (parse-cookie-jar-string cookies (quri:uri-host requested-uri)
-                                      (quri:uri-path requested-uri)))))
+             (parse-cookie-jar-string cookies (quri:uri-host requested-url)
+                                      (quri:uri-path requested-url)))))
     (handler-case
-        (multiple-value-bind (stream status response-headers resolved-uri)
-            (dex:get (quri:render-uri requested-uri)
+        (multiple-value-bind (stream status response-headers resolved-url)
+            (dex:get (quri:render-uri requested-url)
                      :want-stream t :force-binary t :keep-alive nil
                      :proxy (and proxy (quri:render-uri proxy)) :cookie-jar cookies-jar)
           ;; TODO: Allow caller to set the target filename?
           (let* ((file (merge-pathnames
-                        directory (extract-filename requested-uri
+                        directory (extract-filename requested-url
                                                     response-headers))))
             ;; TODO: Touch file now to ensure uniqueness when actually downloading?
             (make-instance 'download
-                           :requested-uri requested-uri
-                           :resolved-uri (quri:uri resolved-uri)
+                           :requested-url requested-url
+                           :resolved-url (quri:uri resolved-url)
                            :header response-headers
                            :file file
                            :status status
@@ -56,8 +56,8 @@
                             :if-exists :supersede
                             :element-type '(unsigned-byte 8))
       (log:info "Downloading ~s~%  to ~s."
-                (or (ignore-errors (quri:url-decode (quri:render-uri (resolved-uri download))))
-                    (quri:render-uri (resolved-uri download)))
+                (or (ignore-errors (quri:url-decode (quri:render-uri (resolved-url download))))
+                    (quri:render-uri (resolved-url download)))
                 (namestring (file download)))
       (loop :for byte-position = (read-sequence buffer (downstream download))
 
@@ -94,8 +94,8 @@ Return NIL if filename is not a string or a pathname."
   (when (stringp filename)
     (file-namestring (string-trim "\"" filename))))
 
-(defun extract-filename (uri &optional headers)
-  "Extract a filename to save the contents of a URI under."
+(defun extract-filename (url &optional headers)
+  "Extract a filename to save the contents of a URL under."
   ;; See https://en.wikipedia.org/wiki/List_of_HTTP_header_fields.
   (or (normalize-filename
        (second (assoc "filename"
@@ -103,7 +103,7 @@ Return NIL if filename is not a string or a pathname."
                        (gethash "content-disposition" headers))
                       :test #'string=)))
       (let ((basename
-              (ignore-errors (file-namestring (quri:uri-path uri)))))
+              (ignore-errors (file-namestring (quri:uri-path url)))))
         (if (or (null basename) (string= "" basename))
             "index.html"
             basename))))

@@ -4,8 +4,8 @@
 (in-package :nyxt)
 
 (export-always 'url)
-(defmethod url ((uri quri:uri))
-  uri)
+(defmethod url ((url quri:uri))
+  url)
 
 (defmethod url ((url-string string))
   (quri:uri url-string))
@@ -29,7 +29,7 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
                  url
                  (quri:render-uri url))))
     (the (values (or string null) &optional)
-         (or (ignore-errors (ffi-display-uri url))
+         (or (ignore-errors (ffi-display-url url))
              url))))
 
 (export-always 'valid-url-p)
@@ -49,7 +49,7 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
              "thismessage" "tip" "tn3270" "turn" "turns" "tv" "urn" "vemmi" "vnc" "ws" "wss"
              "xcon" "xcon-userid" "xmlrpc.beep" "xmlrpc.beeps" "xmpp" "z39.50r" "z39.50s"))
          (valid-schemes (append nyxt-schemes iana-schemes))
-         (uri (ignore-errors (quri:uri url))))
+         (url (ignore-errors (quri:uri url))))
     (flet ((hostname-found-p (name)
              (handler-case (iolib/sockets:lookup-hostname name)
                (t () nil)))
@@ -57,23 +57,23 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
              (find scheme valid-schemes :test #'string=))
            (http-p (scheme)
              (find scheme '("http" "https") :test #'string=)))
-      (and uri
-           (quri:uri-p uri)
-           (valid-scheme-p (quri:uri-scheme uri))
+      (and url
+           (quri:uri-p url)
+           (valid-scheme-p (quri:uri-scheme url))
            ;; `new-url-query' automatically falls back to HTTPS if it makes for
            ;; a valid URL:
-           (or (not (http-p (quri:uri-scheme uri)))
+           (or (not (http-p (quri:uri-scheme url)))
                (and
                 ;; "http://" does not have a host.
                 ;; A valid URL may have an empty domain, e.g. http://192.168.1.1.
-                (quri:uri-host uri)
+                (quri:uri-host url)
                 ;; "http://algo" has the "algo" hostname but it's probably invalid
                 ;; unless it's found on the local network.  We also need to
                 ;; support "localhost" and the current system hostname.
                 ;; get-host-by-name may signal a ns-try-again-condition which is
                 ;; not an error, so we can't use `ignore-errors' here.
-                (or (quri:ip-addr-p (quri:uri-host uri))
-                    (hostname-found-p (quri:uri-host uri)))))))))
+                (or (quri:ip-addr-p (quri:uri-host url))
+                    (hostname-found-p (quri:uri-host url)))))))))
 
 (declaim (ftype (function (t) quri:uri) ensure-url))
 (defun ensure-url (thing)
@@ -107,23 +107,23 @@ If it cannot be derived, return an empty `quri:uri'."
                (quri:uri-userinfo url))))
 
 (declaim (ftype (function (quri:uri) string) schemeless-url))
-(defun schemeless-url (uri)             ; Inspired by `quri:render-uri'.
+(defun schemeless-url (url)             ; Inspired by `quri:render-uri'.
   "Return URL without its scheme (e.g. it removes 'https://')."
   ;; Warning: We can't just set `quri:uri-scheme' to nil because that would
   ;; change the port (e.g. HTTP defaults to 80, HTTPS to 443).
   (format nil
           "~@[~A~]~@[~A~]~@[?~A~]~@[#~A~]"
-          (quri:uri-authority uri)
-          (or (quri:uri-path uri) "/")
-          (quri:uri-query uri)
-          (quri:uri-fragment uri)))
+          (quri:uri-authority url)
+          (or (quri:uri-path url) "/")
+          (quri:uri-query url)
+          (quri:uri-fragment url)))
 
-(declaim (ftype (function (quri:uri quri:uri) boolean) url<))
-(defun uri< (uri1 uri2)
-  "Like `string<' but ignore the URI scheme.
+(declaim (ftype (function (quri:uri quri:uri) (or null fixnum)) url<))
+(defun url< (url1 url2)
+  "Like `string<' but ignore the URL scheme.
 This way, HTTPS and HTTP is ignored when comparing URIs."
-  (string< (schemeless-url uri1)
-           (schemeless-url uri2)))
+  (string< (schemeless-url url1)
+           (schemeless-url url2)))
 
 (declaim (ftype (function (quri:uri quri:uri) boolean) url-equal))
 (defun url-equal (url1 url2)

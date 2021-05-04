@@ -25,7 +25,7 @@
                       ;; automatically removes such redirections from its
                       ;; history.  How?
                       :type list-of-strings
-                      :documentation "URI prefixes to not save in history.
+                      :documentation "URL prefixes to not save in history.
 Example: DuckDuckGo redirections should be ignored or else going backward in
 history after consulting a result reloads the result, not the duckduckgo
 search.")
@@ -518,12 +518,12 @@ Otherwise go forward to the only child."
    :prompt "Autofill"
    :sources (make-instance 'autofill-source)))
 
-(defmethod nyxt:on-signal-notify-uri ((mode web-mode) url)
+(defmethod nyxt:on-signal-notify-url ((mode web-mode) url)
   (declare (type quri:uri url))
   (unless (or (url-empty-p url)
               (find-if (alex:rcurry #'str:starts-with? (render-url url))
                        (history-blocklist mode)))
-    (log:debug "Notify URI ~a for buffer ~a with load status ~a"
+    (log:debug "Notify URL ~a for buffer ~a with load status ~a"
                url
                (buffer mode)
                (slot-value (buffer mode) 'nyxt::load-status))
@@ -538,9 +538,9 @@ Otherwise go forward to the only child."
   url)
 
 (defmethod nyxt:on-signal-notify-title ((mode web-mode) title)
-  ;; Title may be updated after the URI, so we need to set the history entry again
-  ;; with `on-signal-notify-uri'.
-  (on-signal-notify-uri mode (url (buffer mode)))
+  ;; Title may be updated after the URL, so we need to set the history entry again
+  ;; with `on-signal-notify-url'.
+  (on-signal-notify-url mode (url (buffer mode)))
   title)
 
 (defmethod nyxt:on-signal-load-committed ((mode web-mode) url)

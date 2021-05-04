@@ -6,7 +6,7 @@
 (hooks:define-hook-type keymaps-buffer (function (list-of-keymaps buffer)
                                                  (values &optional list-of-keymaps buffer)))
 (export-always '(make-hook-keymaps-buffer make-handler-keymaps-buffer))
-(hooks:define-hook-type uri->uri (function (quri:uri) quri:uri))
+(hooks:define-hook-type url->url (function (quri:uri) quri:uri))
 
 (define-class buffer ()
   ((id ""
@@ -160,9 +160,9 @@ distance scroll-left or scroll-right will scroll.")
                       :documentation "The ratio of the page to scroll.
 A value of 0.95 means that the bottom 5% will be the top 5% when scrolling
 down.")
-   (buffer-load-hook (make-hook-uri->uri
+   (buffer-load-hook (make-hook-url->url
                       :combination #'hooks:combine-composed-hook)
-                     :type hook-uri->uri
+                     :type hook-url->url
                      :accessor nil
                      :export nil ; TODO: Export?  Maybe not since `request-resource-hook' mostly supersedes it.
                      :documentation "Hook run in `buffer-load' before loading.
@@ -478,29 +478,29 @@ See `buffer-make'."
   (and (web-buffer-p buffer)
        (eq (slot-value buffer 'load-status) :failed)))
 
-(export-always 'on-signal-notify-uri)
-(defmethod on-signal-notify-uri ((buffer buffer) no-uri)
-  "Set BUFFER's `url' slot, then dispatch `on-signal-notify-uri' over the
+(export-always 'on-signal-notify-url)
+(defmethod on-signal-notify-url ((buffer buffer) no-url)
+  "Set BUFFER's `url' slot, then dispatch `on-signal-notify-url' over the
 BUFFER's modes."
-  (declare (ignore no-uri))
-  (let ((view-url (ffi-buffer-uri buffer)))
+  (declare (ignore no-url))
+  (let ((view-url (ffi-buffer-url buffer)))
     (when (or (not (load-failed-p buffer))
               (not (url-empty-p view-url)))
-      ;; When a buffer fails to load and `ffi-buffer-uri' returns an empty
+      ;; When a buffer fails to load and `ffi-buffer-url' returns an empty
       ;; URL, we don't set (url buffer) to keep access to the old value.
-      (setf (url buffer) (ffi-buffer-uri buffer))))
+      (setf (url buffer) (ffi-buffer-url buffer))))
   (dolist (mode (modes buffer))
-    (on-signal-notify-uri mode (url buffer)))
+    (on-signal-notify-url mode (url buffer)))
   (url buffer))
 
-(defmethod on-signal-notify-uri ((buffer internal-buffer) no-uri)
-  "Internal buffers don't load external resources and as such don't need URI
+(defmethod on-signal-notify-url ((buffer internal-buffer) no-url)
+  "Internal buffers don't load external resources and as such don't need URL
 change notifications.
 In particular, we don't want to register a URL in the history via the `web-mode'
 notification."
   ;; TODO: We should not ignore this notification since it may be used by modes.
   ;; In particular, we receive a legit notify::uri when clicking on an anchor URL.
-  (declare (ignore no-uri))
+  (declare (ignore no-url))
   (url buffer))
 
 (export-always 'on-signal-notify-title)
