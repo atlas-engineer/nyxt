@@ -346,7 +346,8 @@ Otherwise bind socket and return the listening thread."
            (log:info "Nyxt already started."))
        (iolib:with-open-socket (s :address-family :local
                                   :remote-filename socket-path)
-         (format s "~s" `(open-external-urls ',(mapcar #'render-url urls))))
+         ;; Can't use `render-url' at this point because the GTK loop is not running.
+         (format s "~s" `(open-external-urls ',(mapcar #'quri:render-uri urls))))
        nil)
       ((and (uiop:file-exists-p socket-path)
             (not (file-is-socket-p socket-path)))
