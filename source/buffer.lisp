@@ -478,9 +478,9 @@ See `buffer-make'."
   (and (web-buffer-p buffer)
        (eq (slot-value buffer 'load-status) :failed)))
 
-(export-always 'on-signal-notify-url)
-(defmethod on-signal-notify-url ((buffer buffer) no-url)
-  "Set BUFFER's `url' slot, then dispatch `on-signal-notify-url' over the
+(export-always 'on-signal-notify-uri)
+(defmethod on-signal-notify-uri ((buffer buffer) no-url)
+  "Set BUFFER's `url' slot, then dispatch `on-signal-notify-uri' over the
 BUFFER's modes."
   (declare (ignore no-url))
   (let ((view-url (ffi-buffer-url buffer)))
@@ -490,10 +490,10 @@ BUFFER's modes."
       ;; URL, we don't set (url buffer) to keep access to the old value.
       (setf (url buffer) (ffi-buffer-url buffer))))
   (dolist (mode (modes buffer))
-    (on-signal-notify-url mode (url buffer)))
+    (on-signal-notify-uri mode (url buffer)))
   (url buffer))
 
-(defmethod on-signal-notify-url ((buffer internal-buffer) no-url)
+(defmethod on-signal-notify-uri ((buffer internal-buffer) no-url)
   "Internal buffers don't load external resources and as such don't need URL
 change notifications.
 In particular, we don't want to register a URL in the history via the `web-mode'

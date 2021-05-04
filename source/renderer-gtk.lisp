@@ -804,7 +804,7 @@ See `gtk-browser's `modifier-translator' slot."
    (gtk-object buffer) "notify::uri"
    (lambda (web-view param-spec)
      (declare (ignore web-view param-spec))
-     (on-signal-notify-url buffer nil)))
+     (on-signal-notify-uri buffer nil)))
   (gobject:g-signal-connect
    (gtk-object buffer) "notify::title"
    (lambda (web-view param-spec)

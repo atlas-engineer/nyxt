@@ -518,7 +518,7 @@ Otherwise go forward to the only child."
    :prompt "Autofill"
    :sources (make-instance 'autofill-source)))
 
-(defmethod nyxt:on-signal-notify-url ((mode web-mode) url)
+(defmethod nyxt:on-signal-notify-uri ((mode web-mode) url)
   (declare (type quri:uri url))
   (unless (or (url-empty-p url)
               (find-if (alex:rcurry #'str:starts-with? (render-url url))
@@ -539,8 +539,8 @@ Otherwise go forward to the only child."
 
 (defmethod nyxt:on-signal-notify-title ((mode web-mode) title)
   ;; Title may be updated after the URL, so we need to set the history entry again
-  ;; with `on-signal-notify-url'.
-  (on-signal-notify-url mode (url (buffer mode)))
+  ;; with `on-signal-notify-uri'.
+  (on-signal-notify-uri mode (url (buffer mode)))
   title)
 
 (defmethod nyxt:on-signal-load-committed ((mode web-mode) url)

@@ -260,13 +260,13 @@ If there is no corresponding keymap, return nil."
                          scheme:cua)
                      (keymap-scheme mode)))
 
-(defmethod on-signal-notify-url ((mode root-mode) url)
+(defmethod on-signal-notify-uri ((mode root-mode) url)
   (set-window-title)
   (print-status)
   url)
 
 (defmethod on-signal-notify-title ((mode root-mode) title)
-  (on-signal-notify-url mode (url (buffer mode)))
+  (on-signal-notify-uri mode (url (buffer mode)))
   title)
 
 (defmethod on-signal-load-committed ((mode root-mode) url)
