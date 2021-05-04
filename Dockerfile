@@ -12,6 +12,7 @@ RUN dnf install -y autoconf automake libtool
 
 # Copy repo content inside container:
 COPY . /root/nyxt
+## TODO: Following is useless?
 RUN cd /root/nyxt
 
 # COPY build-scripts/build-fedora-package.sh /usr/local/bin/

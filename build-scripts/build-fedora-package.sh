@@ -49,7 +49,7 @@ git clone --depth=1 --branch=3.3.4 https://gitlab.common-lisp.net/asdf/asdf.git 
 mkdir -p ~/.config/common-lisp/source-registry.conf.d/
 echo "(:tree \"$(pwd)/\")" >> ~/.config/common-lisp/source-registry.conf.d/linux-packaging.conf
 ## TODO: This should not be necessary since :nyxt/quicklisp alreay takes  care of it.
-echo "(:tree \"$(pwd)/_build/submodules\")" >> ~/.config/common-lisp/source-registry.conf.d/asdf.conf
+echo "(:tree \"$(pwd)/nyxt/_build/submodules\")" >> ~/.config/common-lisp/source-registry.conf.d/asdf.conf
 
 echo
 echo "==> ASDF diagnostic"
@@ -65,6 +65,8 @@ echo "==> Git?"
 which git
 git --version
 
+## TODO: Current directory should not matter.
+# cd nyxt
 echo
 echo "==> Build package"
 sbcl \
