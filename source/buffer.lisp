@@ -47,11 +47,22 @@ after the mode-specific hook.")
    (search-engines (list (make-instance 'search-engine
                                         :shortcut "wiki"
                                         :search-url "https://en.wikipedia.org/w/index.php?search=~a"
-                                        :fallback-url (quri:uri "https://en.wikipedia.org/"))
+                                        :fallback-url (quri:uri "https://en.wikipedia.org/")
+                                        :completion-function
+                                        (make-search-completion-function
+                                         :base-url "https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=~a"
+                                         :processing-function (alex:compose #'second #'json:decode-json-from-string)))
                          (make-instance 'search-engine
                                         :shortcut "ddg"
                                         :search-url "https://duckduckgo.com/?q=~a"
-                                        :fallback-url (quri:uri "https://duckduckgo.com/")))
+                                        :fallback-url (quri:uri "https://duckduckgo.com/")
+                                        :completion-function
+                                        (make-search-completion-function
+                                         :base-url "https://duckduckgo.com/ac/?q=~a"
+                                         :processing-function
+                                         #'(lambda (results)
+                                             (mapcar #'cdar
+                                                     (json:decode-json-from-string results))))))
                    :type (cons search-engine *)
                    :documentation "A list of the `search-engine' objects.
 You can invoke them from the prompt-buffer by prefixing your query with SHORTCUT.
@@ -1001,10 +1012,19 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
                                          (mapcar #'shortcut engines)
                                          :test #'string=))
               (list (make-instance 'new-url-query :query input)))
-            (mapcar (lambda (engine) (make-instance 'new-url-query
-                                                    :query (str:join " " (rest terms))
-                                                    :engine engine))
-                    engines))))
+            (alex:mappend (lambda (engine)
+                            (append
+                             (list (make-instance 'new-url-query
+                                                  :query (str:join " " (rest terms))
+                                                  :engine engine))
+                             ;; Some engines (I'm looking at you, Wikipedia!)
+                             ;; return garbage in response to an empty request.
+                             (when (and (completion-function engine) (rest terms))
+                               (mapcar (alex:curry #'make-instance 'new-url-query
+                                                   :engine engine :query)
+                                       (funcall (completion-function engine)
+                                                (str:join " " (rest terms)))))))
+                          engines))))
 
 (define-class new-url-or-search-source (prompter:source)
   ((prompter:name "New URL or search query")
