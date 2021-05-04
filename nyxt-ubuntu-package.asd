@@ -14,7 +14,8 @@
   :homepage #.(asdf:system-homepage (asdf:find-system :nyxt))
   :description #.(asdf:system-description (asdf:find-system :nyxt))
   :license #.(asdf:system-license (asdf:find-system :nyxt))
-  :additional-dependencies ("glib-networking"
+  :additional-dependencies ("libfixposix-dev" ; Because we need libfixposix.so, not just libfixposix.so.3.
+                            "glib-networking"
                             "gsettings-desktop-schemas"
                             "xclip"
                             "enchant"
