@@ -30,11 +30,6 @@ lisp_eval:=$(LISP) $(LISP_FLAGS) \
 	--eval
 lisp_quit:=--eval '(uiop:quit)'
 
-.PHONY: clean-fasls
-clean-fasls:
-	$(lisp_eval) '($(load_or_quickload) :swank)' \
-		'(asdf:make :nyxt/clean-fasls)' $(lisp_quit)
-
 ## load_or_quickload is a bit slow on :nyxt/$(NYXT_RENDERER)-application, so we
 ## keep a Make dependency on the Lisp files.
 lisp_files := nyxt.asd $(shell find . -type f -name '*.lisp')
@@ -85,4 +80,4 @@ clean-submodules:
 	git submodule deinit  --all
 
 .PHONY: clean
-clean: clean-fasls clean-submodules
+clean: clean-submodules
