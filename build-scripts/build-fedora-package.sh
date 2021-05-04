@@ -16,7 +16,7 @@ echo "==> libfixposix"
 git clone --depth=1 --branch=v0.4.3 https://github.com/sionescu/libfixposix
 cd libfixposix
 autoreconf -fi
-./configure
+./configure --prefix=/usr
 make
 sudo make install
 sudo ldconfig # REVIEW: Unnecessary?
