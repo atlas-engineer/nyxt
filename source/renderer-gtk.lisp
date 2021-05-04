@@ -718,6 +718,10 @@ See `gtk-browser's `modifier-translator' slot."
       (print-message "")
       (setf (url-at-point buffer) (quri:uri "")))))
 
+(define-ffi-method ffi-window-make ((browser gtk-browser))
+  "Make a window."
+  (make-instance 'user-window))
+
 (define-ffi-method ffi-window-to-foreground ((window gtk-window))
   "Show window in foreground."
   (gtk:gtk-window-present (gtk-object window))
