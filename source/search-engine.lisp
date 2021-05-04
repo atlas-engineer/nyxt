@@ -16,7 +16,11 @@ instance from the `set-url' commands.")
                  :writer t
                  :documentation "The URL to fall back to when given an empty
 query.  This is optional: if nil, use `search-url' instead with ~a expanded to
-the empty string."))
+the empty string.")
+   (completion-function nil
+                        :type (or null (function (string) list-of-strings))
+                        :documentation "A function taking a user input and returning a list of suggested search queries.
+Can be built via `make-search-completion-function'"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
@@ -31,6 +35,28 @@ the empty string."))
                  :shortcut shortcut
                  :search-url search-url
                  :fallback-url fallback-url))
+
+(export-always 'make-search-completion-function)
+(declaim (ftype (function (&key (:base-url string)
+                                (:request-function (function (string &rest *) *))
+                                (:processing-function (function (*) list-of-strings)))
+                          (function (string) list-of-strings))
+                make-search-completion-function))
+(defun make-search-completion-function (&key base-url
+                                          (request-function #'dex:get)
+                                          (processing-function #'cl-json:decode-json-from-string))
+  "Return a function suitable to be a `completion-function' of `search-engine'.
+
+BASE-URL is a one-placeholder format string (e.g.,
+\"https://duckduckgo.com/ac/?q=~a\") to request completions from.
+REQUEST-FUNCTION is the function to make this request with. Defaults to
+`dex:get'. Takes a URL built from user input and BASE-URL.
+PROCESSING-FUNCTION is a function to process whatever the REQUEST-FUNCTION
+returns. Should return a list of strings."
+  #'(lambda (input)
+      (funcall processing-function
+               (funcall request-function
+                        (format nil base-url (quri:url-encode input))))))
 
 (defmethod prompter:object-attributes ((engine search-engine))
   `(("Shortcut" ,(shortcut engine))
