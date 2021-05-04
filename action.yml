@@ -1,5 +1,0 @@
-name: 'build-rpm-action'
-description: 'Build rpm package.'
-runs:
-  using: 'docker'
-  image: 'Dockerfile'
