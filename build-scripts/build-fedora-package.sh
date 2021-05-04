@@ -6,6 +6,10 @@
 
 set -xeu
 
+echo "==> Current working directory"
+pwd
+cd ~/nyxt
+
 sudo gem install --no-document fpm &> /dev/null
 
 export PATH=~/.gem/ruby/$(ls ~/.gem/ruby)/bin:$PATH
