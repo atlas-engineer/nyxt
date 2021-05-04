@@ -239,11 +239,18 @@
                                            *quicklisp-dir*
                                            (system-relative-pathname c *quicklisp-dir*)))))
                        (setf (symbol-value (read-from-string "ql:*local-project-directories*"))
-                             (cons
-                              (uiop:truenamize (uiop:ensure-directory-pathname
-                                                (if (uiop:absolute-pathname-p *submodules-dir*)
-                                                    *submodules-dir*
-                                                    (system-relative-pathname c *submodules-dir*))))
+                             (append
+                              (list
+                               ;; Register this directory so that nyxt.asd is included.
+                               ;; It's important since `ql:update-dist' may
+                               ;; clear the ASDF configuration and this file
+                               ;; could be forgotten if it was loaded with
+                               ;; `asdf:load-asd'.
+                               (uiop:truenamize (uiop:pathname-directory-pathname (asdf:system-source-file c)))
+                               (uiop:truenamize (uiop:ensure-directory-pathname
+                                                 (if (uiop:absolute-pathname-p *submodules-dir*)
+                                                     *submodules-dir*
+                                                     (system-relative-pathname c *submodules-dir*)))))
                               (symbol-value (read-from-string "ql:*local-project-directories*"))))
                        (funcall (read-from-string "ql:update-dist")
                                 "quicklisp" :prompt nil)))
