@@ -59,6 +59,10 @@ sbcl \
   --eval '(format t "- ASDF user source registry directory: ~a~%" (asdf/source-registry:user-source-registry-directory))' \
   --quit
 
+echo "==> Git?"
+which git
+git --version
+
 echo
 echo "==> Build package"
 sbcl \
