@@ -252,6 +252,7 @@
                                                      *submodules-dir*
                                                      (system-relative-pathname c *submodules-dir*)))))
                               (symbol-value (read-from-string "ql:*local-project-directories*"))))
+                       (funcall (read-from-string "ql:register-local-projects"))
                        (funcall (read-from-string "ql:update-dist")
                                 "quicklisp" :prompt nil)))
 
