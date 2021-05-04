@@ -19,6 +19,10 @@
         (quri:uri "https://en.wikipedia.org/w/index.php?search=wikipedia")
         :test #'quri:uri=
         "search engine")
+    (is (url (first (nyxt::input->queries "wiki wiki+pédia")))
+        (quri:uri "https://en.wikipedia.org/w/index.php?search=wiki%2Bpédia")
+        :test #'quri:uri=
+        "search engine with special characters")
     (is (url (first (nyxt::input->queries "nyxt browser")))
         (quri:uri "https://duckduckgo.com/?q=nyxt browser")
         :test #'quri:uri=
