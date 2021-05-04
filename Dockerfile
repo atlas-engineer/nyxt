@@ -2,6 +2,12 @@ FROM fedora:34
 
 RUN dnf groupinstall -y "Development Tools"
 RUN dnf install -y ruby ruby-devel rubygems rpm-build sbcl libffi-devel redhat-rpm-config git zlib-devel
+# For iolib:
+RUN dnf install -y gcc-c++
+# Rest of deps
+RUN dnf install -y webkit2gtk3 glib-networking gsettings-desktop-schemas xclip enchant2
+## TODO: libfixposix?
+## TODO: notify-osd?
 
 # Copy repo content inside container:
 COPY . /root/nyxt
