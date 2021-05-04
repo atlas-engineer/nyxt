@@ -500,11 +500,11 @@ Parent directories are created if necessary."
 exists."
   ;; check if a string starts with file to avoid excessive processing
   (when (str:starts-with-p "file" url)
-    (let ((uri (quri:uri url)))
+    (let ((url (quri:uri url)))
       (if check-exists-p
-          (and (equalp "file" (quri:uri-scheme uri))
-               (uiop:probe-file* (quri:uri-path uri)))
-          (equalp "file" (quri:uri-scheme uri))))))
+          (and (equalp "file" (quri:uri-scheme url))
+               (uiop:probe-file* (quri:uri-path url)))
+          (equalp "file" (quri:uri-scheme url))))))
 
 (defun read-file-string (url)
   "Read a file from a file:// type URL into a string."

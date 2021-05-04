@@ -51,12 +51,12 @@ class."
     (setf (slot-value he 'url) (ensure-url (slot-value he 'url))))
   (slot-value he 'url))
 
-(defmethod s-serialization::serialize-sexp-internal ((uri quri:uri)
+(defmethod s-serialization::serialize-sexp-internal ((url quri:uri)
                                                      stream
                                                      serialization-state)
   "Serialize `history-entry' by turning the URL and last access into strings."
   (declare (ignore serialization-state))
-  (prin1 (quri:render-uri uri) stream))
+  (prin1 (quri:render-uri url) stream))
 
 (defmethod s-serialization::serialize-sexp-internal ((timestamp local-time:timestamp)
                                                      stream
@@ -75,18 +75,18 @@ class."
   (htree:make :key 'history-tree-key :current-owner-id (id buffer)))
 
 (declaim (ftype (function (quri:uri &key (:title string) (:buffer buffer)) t) history-add))
-(defun history-add (uri &key (title "") (buffer (current-buffer)))
+(defun history-add (url &key (title "") (buffer (current-buffer)))
   "Add URL to the global/buffer-local history.
 The `implicit-visits' count is incremented."
   (with-data-access (history (history-path (current-buffer))
                      :default (make-history-tree))
-    (unless (or (url-empty-p uri)
+    (unless (or (url-empty-p url)
                 ;; If buffer was not registered in the global history, don't
                 ;; proceed.  See `buffer-make'.
                 (not (htree:owner history (id buffer))))
       (htree:with-current-owner (history (id buffer))
         (htree:add-child (make-instance 'history-entry
-                                        :url uri
+                                        :url url
                                         :title title)
                          history))
       (let* ((entry (htree:data (htree:current (htree:owner history (id buffer))))))

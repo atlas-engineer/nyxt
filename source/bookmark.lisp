@@ -311,7 +311,7 @@ rest in background buffers."
     ;; already a customizable function.
     (setf (get-data path)
           (sort (get-data path)
-                #'uri< :key #'url))
+                #'url< :key #'url))
     (write-string "(" file)
     (dolist (entry (get-data path))
       (write-char #\newline file)

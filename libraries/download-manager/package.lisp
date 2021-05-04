@@ -10,8 +10,8 @@
    #:*notifications*
    #:default-download-directory
    #:download
-   #:resolved-uri
-   #:requested-uri
+   #:resolved-url
+   #:requested-url
    #:header
    #:file
    #:filename

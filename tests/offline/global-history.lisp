@@ -36,7 +36,7 @@
           (nyxt::history-add (quri:uri "http://example.org") :title "foo")
           (is (length (htree:all-data (nyxt:get-data path)))
               1
-              "history has still 1 entry after adding same URI")
+              "history has still 1 entry after adding same URL")
           (let ((entry (first (htree:all-data (nyxt:get-data path)))))
             (is (title entry)
                 "foo"

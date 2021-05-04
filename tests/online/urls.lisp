@@ -80,27 +80,27 @@
   (is (nyxt::schemeless-url (quri:uri "http://example.org/foo/bar?query=baz#qux"))
       "example.org/foo/bar?query=baz#qux"
       "schemeless URL")
-  (is (nyxt::uri< (quri:uri "http://example.org")
+  (is (nyxt::url< (quri:uri "http://example.org")
                   (quri:uri "http://example.org"))
       nil
       "comparing same URL")
-  (is (nyxt::uri< (quri:uri "http://example.org")
+  (is (nyxt::url< (quri:uri "http://example.org")
                   (quri:uri "http://example.org/"))
       nil
       "comparing same URL but for trailing slash")
-  (is (nyxt::uri< (quri:uri "https://example.org")
+  (is (nyxt::url< (quri:uri "https://example.org")
                   (quri:uri "http://example.org"))
       nil
       "comparing same URL but for scheme")
-  (is (nyxt::uri< (quri:uri "https://example.org")
+  (is (nyxt::url< (quri:uri "https://example.org")
                   (quri:uri "http://example.org/"))
       nil
       "comparing same URL but for scheme and trailing slash")
-  (is (null (nyxt::uri< (quri:uri "https://example.org/a")
+  (is (null (nyxt::url< (quri:uri "https://example.org/a")
                         (quri:uri "http://example.org/b")))
       nil
       "comparing different URLs (HTTPS first)")
-  (is (null (nyxt::uri< (quri:uri "http://example.org/a")
+  (is (null (nyxt::url< (quri:uri "http://example.org/a")
                         (quri:uri "https://example.org/b")))
       nil
       "comparing different URLs (HTTP first)"))

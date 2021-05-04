@@ -4,7 +4,7 @@
 (in-package :nyxt)
 
 (define-class download ()
-  ((uri (error "URI required.")
+  ((url (error "URL required.")
         :documentation "A string representation of a URL to be shown in the
 interface.")
    (status :unloaded
@@ -34,8 +34,8 @@ cancelling a download. This can be set by the download engine.")
                                  :text "✕"
                                  :url (lisp-url '(echo "Can't cancel download.")))
                   :documentation "The download is referenced by its
-URI. The URL for this button is therefore encoded as a funcall to
-cancel-download with an argument of the URI to cancel.")
+URL. The URL for this button is therefore encoded as a funcall to
+cancel-download with an argument of the URL to cancel.")
    (open-button (make-instance 'user-interface:button
                                :text "🗁"
                                :url (lisp-url '(echo "Can't open file, file path unknown.")))
@@ -48,18 +48,18 @@ within the button's URL when the destinaton path is set.")
 the *Downloads* buffer. The browser class contains a list of these
 download objects: `downloads'."))
 
-(defun cancel-download (uri)
+(defun cancel-download (url)
   "This function is called by the cancel-button with an argument of
-the URI. It will search the URIs of all the existing downloads, if it
+the URL. It will search the URLs of all the existing downloads, if it
 finds it, it will invoke its cancel-function."
-  (alex:when-let ((download (find uri (downloads *browser*) :key #'uri :test #'equal)))
+  (alex:when-let ((download (find url (downloads *browser*) :key #'url :test #'equal)))
     (funcall (cancel-function download))
-    (echo "Download cancelled: ~a." uri)))
+    (echo "Download cancelled: ~a." url)))
 
 (defmethod (setf cancel-function) (cancel-function (download download))
   (setf (slot-value download 'cancel-function) cancel-function)
   (setf (user-interface:url (cancel-button download))
-        (lisp-url `(cancel-download ,(uri download)))))
+        (lisp-url `(cancel-download ,(url download)))))
 
 (defmethod (setf status) (value (download download))
   (setf (slot-value download 'status) value)
@@ -145,7 +145,7 @@ download."
      (:hr)
      (:div
       (loop for download in (downloads *browser*)
-            for uri = (uri download)
+            for url = (url download)
             for status-text = (status-text download)
             for progress-text = (progress-text download)
             for progress = (progress download)
@@ -159,7 +159,7 @@ download."
                           ;; TODO: Disable the buttons when download status is failed / canceled.
                           (markup:raw (user-interface:object-string cancel-button))
                           (markup:raw (user-interface:object-string open-button)))
-                      (:p :class "download-url" (:a :href uri uri))
+                      (:p :class "download-url" (:a :href url url))
                       (:div :class "progress-bar-container"
                             (markup:raw (user-interface:object-string progress)))
                       (:div :class "status"

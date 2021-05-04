@@ -31,29 +31,29 @@ help on how to proceed."
 
 (defun force-https-handler (request-data)
   "Impose HTTPS on any link with HTTP scheme."
-  (let ((uri (url request-data))
+  (let ((url (url request-data))
         (mode (find-submode (buffer request-data) 'force-https-mode)))
     (cond
-      ((string/= (quri:uri-scheme uri) "http")
+      ((string/= (quri:uri-scheme url) "http")
        request-data)
-      ((quri:uri= (previous-url mode) uri)
-       (log:info "HTTPS->HTTP redirection loop detected, stop forcing '~a'" uri)
-       (https->http-loop-help (buffer request-data) uri)
+      ((quri:uri= (previous-url mode) url)
+       (log:info "HTTPS->HTTP redirection loop detected, stop forcing '~a'" url)
+       (https->http-loop-help (buffer request-data) url)
        nil)
       (t
-       ;; Warning: Copy URI, else next line would modify the scheme of
+       ;; Warning: Copy URL, else next line would modify the scheme of
        ;; `previous-url' as well.
-       (setf (previous-url mode) (quri:copy-uri uri))
-       (log:info "HTTPS enforced on '~a'" (render-url uri))
+       (setf (previous-url mode) (quri:copy-uri url))
+       (log:info "HTTPS enforced on '~a'" (render-url url))
        ;; FIXME: http-only websites are displayed as "https://foo.bar"
        ;; FIXME: some websites (e.g., go.com) simply time-out
-       (setf (quri:uri-scheme uri) "https"
-             (quri:uri-port uri) (quri.port:scheme-default-port "https")
-             (url request-data) uri)
+       (setf (quri:uri-scheme url) "https"
+             (quri:uri-port url) (quri.port:scheme-default-port "https")
+             (url request-data) url)
        request-data))))
 
 (define-mode force-https-mode ()
-  "Impose HTTPS on every queried URI.
+  "Impose HTTPS on every queried URL.
 Use at your own risk -- it can break websites whose certificates are not known
 and websites that still don't have HTTPS version (shame on them!).
 

@@ -10,13 +10,13 @@
 (plan nil)
 
 (subtest "Simple HTTP/HTTPS downloads"
-  (let ((uris '("https://abcl.org"
+  (let ((urls '("https://abcl.org"
                 "http://en.wikipedia.org/wiki/Main_Page"
                 "https://duckduckgo.com"
                 "https://atlas.engineer")))
-    (dolist (uri uris)
+    (dolist (url urls)
       (ok
-       (download-manager:resolve (quri:uri uri))
-       (format nil "Able to download <~a>~%" uri)))))
+       (download-manager:resolve (quri:uri url))
+       (format nil "Able to download <~a>~%" url)))))
 
 (finalize)

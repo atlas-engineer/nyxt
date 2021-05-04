@@ -79,18 +79,18 @@
                   '("foo" "bar"))))))
 
 (class-star:define-class url ()
-  ((uri "")
+  ((url "")
    (title ""))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (defmethod prompter:object-attributes ((url url))
-  `(("URI" ,(uri url))
+  `(("URL" ,(url url))
     ("Title" ,(title url))))
 
 (prove:subtest "Multi-attribute matching"
   (with-report-dangling-threads
-    (let* ((url1 (make-instance 'url :uri "http://example.org" :title "Example"))
-           (url2 (make-instance 'url :uri "http://nyxt.atlas.engineer" :title "Nyxt homepage"))
+    (let* ((url1 (make-instance 'url :url "http://example.org" :title "Example"))
+           (url2 (make-instance 'url :url "http://nyxt.atlas.engineer" :title "Nyxt homepage"))
            (prompter (prompter:make
                       :sources (list (make-instance 'prompter:source
                                                     :name "Test source"
@@ -102,13 +102,13 @@
           (prove:is (mapcar #'prompter:value filtered-suggestions)
                     (list url2))))
       (setf (prompter:active-attributes-keys (prompter:selected-source prompter))
-            '("URI"))
+            '("URL"))
       (prove:is (prompter:active-attributes-keys (prompter:selected-source prompter))
-                '("URI"))
+                '("URL"))
       (prove:is (prompter:active-attributes
                  (prompter:selected-suggestion prompter)
                  :source (prompter:selected-source prompter))
-                `(("URI" ,(uri url2) ))))))
+                `(("URL" ,(url url2) ))))))
 
 (defvar *prompter-suggestion-update-interval* 1.5)
 
