@@ -48,7 +48,7 @@ sbcl \
 echo
 echo "==> Build package"
 sbcl \
-    --eval '(setf *debugger-hook* (lambda (c h) (declare (ignore h)) (format t "~A~%" c) (sb-ext:quit :unix-status -1)))' \
+    --disable-debugger \
     --eval '(require "asdf")' \
     --load ~/quicklisp/setup.lisp \
     --eval "(ql:quickload :linux-packaging)" \
