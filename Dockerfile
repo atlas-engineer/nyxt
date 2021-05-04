@@ -6,5 +6,7 @@ RUN dnf install -y ruby ruby-devel rubygems rpm-build sbcl libffi-devel redhat-r
 # Copy repo content inside container:
 COPY . .
 
-COPY build-scripts/build-fedora-package.sh /usr/local/bin/
-ENTRYPOINT ["build-fedora-package.sh"]
+# COPY build-scripts/build-fedora-package.sh /usr/local/bin/
+# ENTRYPOINT ["build-fedora-package.sh"]
+
+RUN build-scripts/build-fedora-package.sh
