@@ -51,12 +51,12 @@ class."
     (setf (slot-value he 'url) (ensure-url (slot-value he 'url))))
   (slot-value he 'url))
 
-(defmethod s-serialization::serialize-sexp-internal ((url quri:uri)
+(defmethod s-serialization::serialize-sexp-internal ((uri quri:uri)
                                                      stream
                                                      serialization-state)
   "Serialize `history-entry' by turning the URL and last access into strings."
   (declare (ignore serialization-state))
-  (prin1 (quri:render-uri url) stream))
+  (prin1 (quri:render-uri uri) stream))
 
 (defmethod s-serialization::serialize-sexp-internal ((timestamp local-time:timestamp)
                                                      stream
