@@ -4,7 +4,7 @@
 
 # Inspired by https://gitlab.com/ralt/linux-packaging/-/blob/eae586eaad5d6448121c53412ff3f2de712b24ca/.ci/build.sh.
 
-set -xe
+set -xeu
 
 sudo gem install --no-document fpm &> /dev/null
 
