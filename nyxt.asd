@@ -367,10 +367,11 @@
   :entry-point "nyxt:entry-point")
 
 #+sb-core-compression
-(defmethod perform ((o image-op) (c system))
-  (uiop:dump-image (output-file o c)
-                   :executable t
-                   :compression (uiop:getenv "NYXT_COMPRESS")))
+(handler-bind ((warning #'muffle-warning))
+  (defmethod perform ((o image-op) (c system))
+    (uiop:dump-image (output-file o c)
+                     :executable t
+                     :compression (uiop:getenv "NYXT_COMPRESS"))))
 
 (defsystem "nyxt/install"
   :depends-on (alexandria
