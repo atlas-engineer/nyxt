@@ -10,3 +10,6 @@
 [submodule "quicklisp-libraries/cl-cffi-gtk"]
 	path = _build/submodules/cl-cffi-gtk
 	url = https://github.com/Ferada/cl-cffi-gtk
+[submodule "quicklisp-libraries/quri"]
+	path = _build/submodules/quri
+	url = https://github.com/fukamachi/quri
