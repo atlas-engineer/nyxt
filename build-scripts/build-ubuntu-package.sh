@@ -31,8 +31,6 @@ git clone --depth=1 --branch=3.3.4 https://gitlab.common-lisp.net/asdf/asdf.git 
 
 mkdir -p ~/.config/common-lisp/source-registry.conf.d/
 echo "(:tree \"$(pwd)/\")" >> ~/.config/common-lisp/source-registry.conf.d/linux-packaging.conf
-## TODO: We should not have to do the following as it should be taken care of by :nyxt/quicklisp.
-echo "(:tree \"$PWD/_build/submodules\")" >> ~/.config/common-lisp/source-registry.conf.d/asdf.conf
 
 echo
 echo "==> ASDF diagnostic"
