@@ -41,9 +41,6 @@ git clone --depth=1 --branch=sbcl-2.1.0 https://github.com/sbcl/sbcl.git ~/sbcl 
 
 export SBCL_HOME=/usr/local/lib/sbcl
 
-curl -O https://beta.quicklisp.org/quicklisp.lisp && sbcl --load quicklisp.lisp --eval '(quicklisp-quickstart:install)' --eval '(ql:add-to-init-file)' --quit &> /dev/null
-rm quicklisp.lisp
-
 mkdir -p ~/common-lisp
 git clone --depth=1 https://gitlab.com/ralt/linux-packaging.git ~/common-lisp/linux-packaging/ &> /dev/null
 ## Modern ASDF needed.
@@ -67,7 +64,7 @@ echo "==> Build package"
 sbcl \
     --disable-debugger \
     --eval '(require "asdf")' \
-    --load ~/quicklisp/setup.lisp \
+		--eval '(asdf:load-system :nyxt/quicklisp)' \
     --eval "(ql:quickload :linux-packaging)" \
     --eval "(ql:quickload :nyxt)" \
     --eval "(ql:quickload :nyxt-fedora-package)" \
