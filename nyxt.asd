@@ -233,12 +233,20 @@
 (defsystem "nyxt/quicklisp"
   :depends-on (nyxt/submodules)
   :perform (compile-op (o c)
-                       (load (system-relative-pathname
-                              c
-                              (format nil "~a/setup.lisp" *quicklisp-dir*)))
+                       (handler-bind ((warning #'muffle-warning))
+                         ;; Quicklisp's setup.lisp cannot be asdf:load-ed, we
+                         ;; must use `load' here apparently, but ASDF triggers a
+                         ;; warning on `load' calls inside ASDF operatings.
+                         (load (format nil "~a/setup.lisp"
+                                       (if (uiop:absolute-pathname-p *quicklisp-dir*)
+                                           *quicklisp-dir*
+                                           (system-relative-pathname c *quicklisp-dir*)))))
                        (setf (symbol-value (read-from-string "ql:*local-project-directories*"))
                              (cons
-                              (uiop:truenamize (uiop:ensure-directory-pathname *submodules-dir*))
+                              (uiop:truenamize (uiop:ensure-directory-pathname
+                                                (if (uiop:absolute-pathname-p *submodules-dir*)
+                                                    *submodules-dir*
+                                                    (system-relative-pathname c *submodules-dir*))))
                               (symbol-value (read-from-string "ql:*local-project-directories*"))))
                        (funcall (read-from-string "ql:update-dist")
                                 "quicklisp" :prompt nil)))
