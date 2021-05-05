@@ -19,7 +19,7 @@
                      (format nil "~a/bin" *prefix*)))
 
 (defvar *nyxt-renderer* (or (uiop:getenv "NYXT_RENDERER")
-                            "gobject/gtk"))
+                            "gi-gtk"))
 
 (defsystem "nyxt"
   :version "2" ; Pre-release 6
@@ -331,12 +331,12 @@
   :pathname "source/"
   :components ((:file "renderer-gtk")))
 
-(defsystem "nyxt/gobject/gtk"
+(defsystem "nyxt/gi-gtk"
   :depends-on (nyxt/gtk
                cl-gobject-introspection
                bordeaux-threads)
   :pathname "source/"
-  :components ((:file "renderer-gobject-gtk")))
+  :components ((:file "renderer-gi-gtk")))
 
 (defsystem "nyxt/qt"
   :depends-on (nyxt
@@ -360,8 +360,8 @@
   :build-pathname "nyxt"
   :entry-point "nyxt:entry-point")
 
-(defsystem "nyxt/gobject/gtk-application"
-  :depends-on (nyxt/gobject/gtk)
+(defsystem "nyxt/gi-gtk-application"
+  :depends-on (nyxt/gi-gtk)
   :build-operation "program-op"
   :build-pathname "nyxt"
   :entry-point "nyxt:entry-point")
