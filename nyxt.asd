@@ -105,6 +105,7 @@
                (:file "auto-mode")
                (:file "external-editor")
                (:file "file-manager")
+               (:file "dom")
                #+quicklisp
                (:file "lisp-system")
                ;; Core Modes
