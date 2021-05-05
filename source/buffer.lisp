@@ -778,8 +778,11 @@ proceeding."
   (echo "~a copied to clipboard." (title (current-buffer))))
 
 (defun buffer-initial-suggestions (&key current-is-last-p domain)
-  (let ((buffers (apply (match-domain domain) (sort-by-time (buffer-list)))))
-    (when current-is-last-p
+  (let ((buffers (sera:filter (if domain
+                                  (match-domain domain)
+                                  #'identity)
+                              (sort-by-time (buffer-list)))))
+    (when (and buffers current-is-last-p)
       (setf buffers (alex:rotate buffers -1)))
     buffers))
 
@@ -815,13 +818,13 @@ proceeding."
     (prompt
      :prompt "Switch to buffer in current domain:"
      :sources (make-instance 'buffer-source
-                             :constructor (apply (match-domain domain)
-                                                 (sort-by-time (buffer-list)))))))
+                             :constructor (sera:filter (match-domain domain)
+                                                       (sort-by-time (buffer-list)))))))
 
 (defun switch-buffer-or-query-domain (domain)
   "Switch to a buffer if it exists for a given DOMAIN, otherwise query
   the user."
-  (let ((matching-buffers (apply (match-domain domain) (buffer-list))))
+  (let ((matching-buffers (sera:filter (match-domain domain) (buffer-list))))
     (if (eql 1 (length matching-buffers))
         (set-current-buffer (first matching-buffers))
         (switch-buffer-domain :domain domain))))
