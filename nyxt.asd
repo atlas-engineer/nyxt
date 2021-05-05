@@ -311,6 +311,11 @@
                      :executable t
                      :compression (uiop:getenv "NYXT_COMPRESS"))))
 
+(defmethod perform :before ((o image-op) (c system))
+  "Register immutable systems to prevent compiled images of Nyxt from
+trying to recompile dependencies"
+  (map () 'asdf:register-immutable-system (asdf:already-loaded-systems)))
+
 (defsystem "nyxt/install"
   :depends-on (alexandria
                str
