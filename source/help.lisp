@@ -527,11 +527,13 @@ the "
   "Save system information into the clipboard."
   (let* ((*print-length* nil)
          (nyxt-information (format nil
-                                   (str:concat "Nyxt version: ~a ~%"
+                                   (str:concat "Nyxt version: ~a~%"
+                                               "Renderer: ~a~%"
                                                "Operating system kernel: ~a ~a~%"
                                                "Lisp implementation: ~a ~a~%"
                                                "Features: ~a~%")
                                    +version+
+                                   +renderer+
                                    (software-type) (software-version)
                                    (lisp-implementation-type) (lisp-implementation-version)
                                    *features*)))
