@@ -18,7 +18,7 @@
   (defun renderer-thread-p ()
     (string= "main thread" (bt:thread-name (bt:current-thread))))
   (defmethod ffi-initialize ((browser gtk-browser) urls startup-timestamp)
-    (log:debug "Initializing GObject-GTK Interface")
+    (log:debug "Initializing GI-GTK Interface")
     (setf gtk-running-p t)
     (let ((main-thread (bt:make-thread
                         (lambda ()
