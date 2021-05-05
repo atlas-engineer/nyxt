@@ -187,22 +187,24 @@ If STEPS is negative, go to next pages instead."
                  :value attribute
                  :attributes `(("Attribute key" ,attribute))))
 
+(defun return-marks-only (suggestion-values)
+  "Return marked suggestions only.
+They are returned untouched.
+This is useful for prompters where we want either marks or nothing, but not the
+current unmarked selection."
+  (multiple-value-bind (suggestion source)
+      (prompter:selected-suggestion (current-prompt-buffer))
+    (if (and (typep source 'attribute-source)
+             (not (prompter:marks source)))
+        (remove (prompter:value suggestion) suggestion-values
+                :test #'equal)
+        suggestion-values)))
+
 (define-class attribute-source (prompter:source)
   ((prompter:name "List of prompter attributes")
    (prompter:multi-selection-p t)
    (prompter:suggestion-maker 'make-attribute-suggestion)
-   (prompter:actions
-    (list (make-command return-marks-only (suggestion-values)
-            "Return marked suggestions only.
-They are returned untouched.
-This is useful for prompters where it makes sense to select nothing."
-            (multiple-value-bind (suggestion source)
-                (prompter:selected-suggestion (current-prompt-buffer))
-              (if (and (typep source 'attribute-source)
-                       (not (prompter:marks source)))
-                  (remove (prompter:value suggestion) suggestion-values
-                   :test #'equal)
-                  suggestion-values)))))))
+   (prompter:actions '(return-marks-only))))
 
 (define-command toggle-attributes-display (&optional (prompt-buffer (current-prompt-buffer)))
   "Prompt for which prompter attributes to display."
