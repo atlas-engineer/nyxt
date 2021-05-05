@@ -26,7 +26,7 @@
     nil
     :type (or null plump:node)
     :documentation "A parsed representation of the page currently opened.
-Created from the page code with the help of `plump:parse'. See `update-dom'.")
+Created from the page code with the help of `plump:parse'. See `update-document-model'.")
    (history-blocklist '("https://duckduckgo.com/l/")
                       ;; TODO: Find a more automated way to do it.  WebKitGTK
                       ;; automatically removes such redirections from its
@@ -206,11 +206,14 @@ and to index the top of the page.")
      (setf nyxt-identifier-counter 0)
      (add-nyxt-identifiers (ps:chain document body))))
   (setf (document-model mode)
-        (plump:parse (ffi-buffer-get-document (buffer mode)))))
+        (nyxt/dom:named-parse (ffi-buffer-get-document (buffer mode)))))
 
 (defmethod document-model :around ((mode web-mode))
   (or (call-next-method)
       (update-document-model mode)))
+
+(defmethod get-nyxt-id ((element plump:element))
+  (plump:get-attribute element "nyxt-identifier"))
 
 (sera:export-always '%clicked-in-input?)
 (defun %clicked-in-input? (&optional (buffer (current-buffer)))
