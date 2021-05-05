@@ -50,6 +50,7 @@
                serapeum
                str
                plump
+               clss
                swank
                trivia
                trivial-clipboard
