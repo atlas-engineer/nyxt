@@ -29,7 +29,7 @@ lisp_eval:=$(LISP) $(LISP_FLAGS) \
 	--eval '(require "asdf")' \
 	--eval '(when (string= "$(NYXT_INTERNAL_QUICKLISP)" "true") (setf asdf:*default-source-registries* nil) (asdf:clear-configuration) (asdf:load-asd "$(makefile_dir)/nyxt-quicklisp.asd") (asdf:load-system :nyxt-quicklisp))' \
 	--eval '(asdf:load-asd "$(makefile_dir)/nyxt.asd")' \
-  --eval '(when (find-package :ql) (funcall (read-from-string "ql:quickload" :cffi)))' \
+  --eval '(when (find-package :ql) (funcall (read-from-string "ql:quickload") :cffi))' \
   --eval '(when (and (find-package :cffi) (uiop:getenv "GUIX_ENVIRONMENT")) (pushnew (pathname (format nil "~a/lib/" (uiop:getenv "GUIX_ENVIRONMENT"))) (symbol-value (read-from-string "cffi:*foreign-library-directories*" )) :test (quote equal)))' \
 	--eval
 lisp_quit:=--eval '(uiop:quit)'
