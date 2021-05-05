@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: Atlas Engineer LLC
 # SPDX-License-Identifier: BSD-3-Clause
 
+# This file is meant to be used with the nyxt/gtk system
+
 { pkgs ? import <nixpkgs> {} } :
 with builtins;
 let inherit (pkgs) stdenv; in
