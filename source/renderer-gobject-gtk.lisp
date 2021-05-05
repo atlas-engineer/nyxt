@@ -13,6 +13,7 @@
 
 (in-package :nyxt)
 
+(setf +renderer+ "GObject-GTK")
 (handler-bind ((warning #'muffle-warning))
   (defun renderer-thread-p ()
     (string= "main thread" (bt:thread-name (bt:current-thread))))
