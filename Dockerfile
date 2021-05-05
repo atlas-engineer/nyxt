@@ -5,9 +5,7 @@ RUN dnf install -y ruby ruby-devel rubygems rpm-build sbcl libffi-devel redhat-r
 # For iolib:
 RUN dnf install -y gcc-c++
 # Rest of deps
-RUN dnf install -y webkit2gtk3 glib-networking gsettings-desktop-schemas xclip enchant2
-# To build libfixposix
-RUN dnf install -y autoconf automake libtool
+RUN dnf install -y webkit2gtk3 glib-networking gsettings-desktop-schemas xclip enchant2 libfixposix libfixposix-devel
 ## TODO: notify-osd?
 
 # Copy repo content inside container:

@@ -12,16 +12,6 @@ cd
 echo "==> New working directory"
 pwd
 
-echo "==> libfixposix"
-git clone --depth=1 --branch=v0.4.3 https://github.com/sionescu/libfixposix
-cd libfixposix
-autoreconf -fi
-./configure --prefix=/usr
-make
-sudo make install
-sudo ldconfig # REVIEW: Unnecessary?
-cd
-
 echo "==> Gem install"
 sudo gem install --no-document fpm &> /dev/null
 
