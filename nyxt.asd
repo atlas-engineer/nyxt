@@ -313,7 +313,8 @@
 
 (defmethod perform :before ((o image-op) (c system))
   "Register immutable systems to prevent compiled images of Nyxt from
-trying to recompile dependencies"
+trying to recompile dependencies.
+See `asdf::*immutable-systems*'."
   (map () 'asdf:register-immutable-system (asdf:already-loaded-systems)))
 
 (defsystem "nyxt/install"
