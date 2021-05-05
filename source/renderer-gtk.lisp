@@ -3,6 +3,8 @@
 
 (in-package :nyxt)
 
+(setf +renderer+ "GTK")
+
 (define-class gtk-browser ()
   (#+darwin
    (modifiers '()
