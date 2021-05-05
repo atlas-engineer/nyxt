@@ -276,6 +276,12 @@
                                   (uiop:inter-directory-separator))))
                        (asdf:clear-configuration)
                        (format t "; CL_SOURCE_REGISTRY: ~s~%" (uiop:getenv "CL_SOURCE_REGISTRY"))
+                       ;; When running `ql:update-dist' from an .asd system
+                       ;; that's not in an ASDF registry, it will complain that
+                       ;; it cannot find the "nyxt" system which is required by
+                       ;; "nyxt/quicklisp".  So we must reload the .asd before
+                       ;; running `ql:update-dist'.
+                       (asdf:load-asd (asdf:system-source-file c))
                        (funcall (read-from-string "ql:update-dist")
                                 "quicklisp" :prompt nil)))
 
