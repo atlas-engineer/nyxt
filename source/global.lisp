@@ -42,7 +42,10 @@ Add a handler can be added with:
   "The port that Swank will open a new server on (default Emacs SLIME port
 is 4005, default set to 4006 in Nyxt to avoid collisions).")
 
-(defparameter +renderer+ "")
+(defparameter +renderer+ nil "The renderer used by Nyxt. This value is meant to
+be set to a string by the renderer itself. This variable exists to allow for
+reporting by users, it does not create any functional differences in the
+execution of Nyxt.")
 
 (export-always '+newline+)
 (alex:define-constant +newline+ (string #\newline) :test #'equal)
