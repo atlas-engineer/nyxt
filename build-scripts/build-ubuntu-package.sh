@@ -48,8 +48,6 @@ sbcl \
     --disable-debugger \
     --eval '(require "asdf")' \
 		--eval '(asdf:load-system :nyxt/quicklisp)' \
-    --eval "(format t \"==> Quicklisp local project directories: ~s~%\" ql:*local-project-directories*)" \
-    --eval "(format t \"==> Quicklisp local systems: ~a~%\" (ql:list-local-systems))" \
     --eval "(format t \"==> Quickloading linux-packaging...~%\")" \
     --eval "(ql:quickload :linux-packaging :silent t)" \
     --eval "(format t \"==> Quickloading :nyxt...~%\")" \
