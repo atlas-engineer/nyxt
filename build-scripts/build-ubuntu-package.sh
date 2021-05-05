@@ -47,7 +47,7 @@ echo "==> Build package"
 sbcl \
     --disable-debugger \
     --eval '(require "asdf")' \
-		--eval '(asdf:load-system :nyxt/quicklisp)' \
+		--eval '(asdf:load-system :nyxt-quicklisp)' \
     --eval "(format t \"==> Quickloading linux-packaging...~%\")" \
     --eval "(ql:quickload :linux-packaging :silent t)" \
     --eval "(format t \"==> Quickloading :nyxt...~%\")" \
