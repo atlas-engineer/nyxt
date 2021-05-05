@@ -382,7 +382,7 @@
 (defsystem "nyxt/install"
   :depends-on (alexandria
                str
-               #.(format nil "~a-application" *nyxt-renderer*)
+               #.(format nil "nyxt/~a-application" *nyxt-renderer*)
                nyxt/version)
   :perform (compile-op
             (o c)
