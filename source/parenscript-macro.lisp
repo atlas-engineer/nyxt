@@ -2,20 +2,23 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package nyxt/parenscript
-    (:nicknames :nyxt/ps)
-  (:use :common-lisp :parenscript :nyxt)
-  (:export :qs :qsa :insert-at :element-drawable-p :element-in-view-port-p))
+  (:nicknames #:nyxt/ps)
+  (:use #:common-lisp #:parenscript)
+  (:import-from #:serapeum #:export-always))
 
 (in-package :nyxt/parenscript)
 
+(export-always 'qs)
 (defpsmacro qs (context selector)
   "Alias of document.querySelector"
   `(chain ,context (query-selector ,selector)))
 
+(export-always 'qsa)
 (defpsmacro qsa (context selector)
   "Alias of document.querySelectorAll"
   `(chain ,context (query-selector-all ,selector)))
 
+(export-always 'insert-at)
 (defpsmacro insert-at (tag input-text)
   "Insert text at a tag."
   `(let ((origin (chain ,tag selection-start))
@@ -34,6 +37,7 @@
            (setf (chain ,tag selection-start) origin)
            (setf (chain ,tag selection-end) (+ origin (chain ,input-text length)))))))
 
+(export-always 'element-drawable-p)
 (defpsmacro element-drawable-p (element)
   "Is the element drawable?"
   `(if (or (chain ,element offset-width)
@@ -41,6 +45,7 @@
            (chain ,element (get-client-rects) length))
        t nil))
 
+(export-always 'element-in-view-port-p)
 (defpsmacro element-in-view-port-p (element)
   "Is the element in the view port?"
   `(let* ((rect (chain ,element (get-bounding-client-rect))))
