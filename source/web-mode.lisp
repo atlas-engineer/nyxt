@@ -527,10 +527,9 @@ Otherwise go forward to the only child."
                url
                (buffer mode)
                (slot-value (buffer mode) 'nyxt::load-status))
-    ;; TODO: This dirty hack prevents a middle-click from adding URL to the
-    ;; history of the parent buffer.  Find a more reliable way to store URLs in
-    ;; history.
-    (unless (eq (slot-value (buffer mode) 'nyxt::load-status) :unloaded)
+    (when (eq (slot-value (buffer mode) 'nyxt::load-status) :finished)
+      ;; We also add history entries here for when URL changes with initiating
+      ;; any load, e.g. when clicking on an anchor.
       (with-current-buffer (buffer mode)
         (nyxt::history-add url :title (title (buffer mode))
                                :buffer (buffer mode)))))
@@ -548,6 +547,9 @@ Otherwise go forward to the only child."
   nil)
 
 (defmethod nyxt:on-signal-load-finished ((mode web-mode) url)
+  (with-current-buffer (buffer mode)
+    (nyxt::history-add url :title (title (buffer mode))
+                           :buffer (buffer mode)))
   (unzoom-page :buffer (buffer mode)
                :ratio (current-zoom-ratio (buffer mode)))
   url)
