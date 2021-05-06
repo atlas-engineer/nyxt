@@ -10,11 +10,20 @@
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "Socket files are typically stored in a dedicated directory."))
 
-(defmethod expand-data-path ((profile data-profile) (path socket-data-path))
+(defmethod expand-data-path ((profile data-profile) (data-path socket-data-path))
   "Return finalized path for socket files."
-  (expand-default-path path :root (namestring (if (str:emptyp (namestring (dirname path)))
-                                                  (uiop:xdg-runtime-dir +data-root+)
-                                                  (dirname path)))))
+  (unless (getf *options* :no-socket)
+    (let ((path (or (getf *options* :socket)
+                    (uiop:getenv "NYXT_SOCKET")
+                    (expand-default-path
+                     data-path
+                     :root (namestring (if (str:emptyp (namestring (dirname data-path)))
+                                           (uiop:xdg-runtime-dir +data-root+)
+                                           (dirname data-path)))))))
+      (unless (uiop:emptyp path)
+        (unless (uiop:file-exists-p path)
+          (log:warn "Socket ~s does not exist." path))
+        path))))
 
 (export-always '*socket-path*)
 (defvar *socket-path* (make-instance 'socket-data-path :basename "nyxt.socket")
@@ -66,7 +75,7 @@ Return nil if `*init-file-path*' is nil."
     (:name :no-init
      :short #\I
      :long "no-init"
-     :description "Do not load the user init file.")
+     :description "Do not load the initialization file.")
     (:name :auto-config
      :short #\c
      :long "auto-config"
@@ -416,37 +425,6 @@ Examples:
   ;; Options should be accessible anytime, even when run from the REPL.
   (setf *options* options)
 
-  ;; Preset socket here, we want --no-socket to work regardless of the user
-  ;; config data-profile.
-  ;; We also want to expand xdg-data-home dynamically.
-  (setf *socket-path*
-        (cond
-          ((getf *options* :no-socket)
-           nil)
-          (*socket-path*
-           (make-instance 'data-path
-                          :basename (or (getf *options* :socket)
-                                        (uiop:getenv "NYXT_SOCKET")
-                                        (basename *socket-path*))
-                          :dirname (uiop:xdg-data-home +data-root+)))))
-
-  (setf *init-file-path*
-        (cond
-          ((or (getf *options* :no-init)
-               ;; If users pass '--init ""', we should not designate a directory and
-               ;; nullify the init instead.
-               (string= "" (getf *options* :init)))
-           nil)
-          ((getf *options* :init)
-           (alex:when-let* ((init-path (make-instance 'init-data-path
-                                                      :basename (getf *options* :init)))
-                            (init (expand-path init-path)))
-             (unless (uiop:file-exists-p init)
-               (log:warn "Init file ~s does not exist." init))
-             init-path))
-          (t
-           *init-file-path*)))
-
   (if (getf *options* :verbose)
       (progn
         (log:config :debug)
@@ -461,7 +439,7 @@ Examples:
      (format t "Nyxt version ~a~&" +version+))
 
     ((getf options :list-data-profiles)
-     (load-lisp (expand-path *init-file-path*):package (find-package :nyxt-user))
+     (load-lisp (expand-path *init-file-path*) :package (find-package :nyxt-user))
      (mapcar (lambda (pair)
                (format t "~a~10t~a~&" (first pair) (indent (second pair) 10)))
              (mapcar #'rest (package-data-profiles))))
