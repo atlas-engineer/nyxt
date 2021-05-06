@@ -386,8 +386,12 @@ Otherwise bind socket and return the listening thread."
                                                        #'symbol-name
                                                        #'opts::name)
                                          opts::*options*))
-  (format nil "Start the browser, loading URLs if any.
-URLs is a list of strings.
+  (format nil "Parse command line or REPL options then start the browser.
+Load URLS if any (a list of strings).
+
+This functions focuses on OPTIONS parsing, see `start-browser' for the actual
+startup procedure.
+
 The OPTIONS are the same as the command line options.
 
 ~a
@@ -486,13 +490,14 @@ The evaluation may happen on its own instance or on an already running instance.
     (load-lisp (expand-path *init-file-path*) :package (find-package :nyxt-user)))
   (load-or-eval :remote (getf *options* :remote)))
 
-(defun start-browser (free-args)
-  "Load AUTO-CONFIG-FILE.
-Load INIT-FILE if non-nil.
+(defun start-browser (url-strings)
+  "Start Nyxt.
+First load AUTO-CONFIG-FILE.
+Then load INIT-FILE if non-nil.
 Instantiate `*browser*'.
-Start Nyxt and load URLS if any.
-Finally,run the `*after-init-hook*'."
-  (let* ((urls (ignore-errors (mapcar #'quri:uri free-args)))
+Finally, run the browser, load URL-STRINGS if any, then run
+`*after-init-hook*'."
+  (let* ((urls (ignore-errors (mapcar #'quri:uri url-strings)))
          (thread (when (expand-path *socket-path*)
                    (listen-or-query-socket urls)))
          (startup-timestamp (local-time:now))
