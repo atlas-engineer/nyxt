@@ -275,6 +275,14 @@ instance must be non-nil.")
 `foo' function:")
     (:pre (:code "nyxt --data-profile nosave --remote --load foo.lisp --eval '(foo)'"))
 
+    (:h2 "Extensions")
+    (:p "To install an extension, copy inside the "
+        (:code "*extensions-path*") " (default to "
+        (:code "~/.local/share/nyxt/extensions")".")
+    (:p "Extensions are regular Common Lisp systems.")
+    (:p "A catalogue of extensions is available in the "
+        (:code "document/EXTENSIONS.org") "file in the source repository.")
+
     (:h2 "Troubleshooting")
     (:h3 "Playing videos")
     (:p "Nyxt delegates video support to third-party plugins.")
