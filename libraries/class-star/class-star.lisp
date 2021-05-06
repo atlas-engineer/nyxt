@@ -206,17 +206,15 @@ The predicate returns non-nil when the argument is of the `name' class.")
               `(progn
                  ,result
                  (eval-when (:compile-toplevel :load-toplevel :execute)
-                   ;; XXX: This is the export fix: the export may fail if the
-                   ;; symbol belongs to another package.
-                   ;; This can happen when inheriting from an external class and
-                   ;; overriding a symbol, e.g.
-                   ;; (define-class foo-override (other-package:foo)
-                   ;;   ((other-package:foo-slot ...)))
-                   (ignore-errors
-                    (export '(,@(append (when hu.dwim.defclass-star::*export-class-name-p*
-                                          (list name))
-                                 hu.dwim.defclass-star::*symbols-to-export*))
-                            ,(package-name *package*))))
+                   ;; Don't try to export symbols that don't belong to *package*.
+                   ;; This can happen when inheriting from a class and
+                   ;; overriding some slot.
+                   (export '(,@(remove-if (lambda (sym)
+                                                (not (eq (symbol-package sym) *package*)))
+                                    (append (when hu.dwim.defclass-star::*export-class-name-p*
+                                              (list name))
+                                     hu.dwim.defclass-star::*symbols-to-export*)))
+                           ,(package-name *package*)))
                  (find-class ',name nil))
               result))))))
 
