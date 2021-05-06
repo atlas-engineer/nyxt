@@ -117,7 +117,7 @@ Can be used as a `open-file-function'."
     ;; We can probably signal something and display a notification.
     (error (c) (log:error "Opening ~a: ~a~&" filename c))))
 
-(define-command open-file (&key (default-directory (user-homedir-pathname)))
+(define-command open-file (&key (default-directory *default-pathname-defaults*))
   "Open a file from the filesystem.
 
 The user is prompted with the prompt-buffer, files are browsable with
