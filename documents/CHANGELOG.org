@@ -29,7 +29,10 @@ If possible!
   This should fix many issues, like the hang when cancelling the print dialog.
 
 - Nyxt extensions are now officially supported.
-  They can be loaded with ASDF.
+  They are written as regular Common Lisp libraries.
+  Install them to =*extensions-path*= (default to
+  =~/.local/share/nyxt/extensions=) then load them from your
+  initialization file.
 
 - Added Support for popups and "Open in new window" context menu item.
 
