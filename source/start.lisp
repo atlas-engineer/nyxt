@@ -193,23 +193,23 @@ Don't run this from a REPL, prefer `start' instead."
     (setf *run-from-repl-p* nil)             ; Not a REPL.
     (apply #'start (append options (list :urls free-args)))))
 
-(declaim (ftype (function (trivial-types:pathname-designator &key (:package (or null package))))
+(declaim (ftype (function ((or null trivial-types:pathname-designator)
+                           &key (:package (or null package))))
                 load-lisp))
 (defun load-lisp (file &key package)
   "Load the Lisp FILE (or stream).
 Return the short error message and the full error message as second value."
   (let ((*package* (or (find-package package) *package*)))
     (flet ((unsafe-load ()
-             (when (equal "" file)
-               (error "Can't load empty file name."))
-             (cond
-               ((streamp file)
-                (load file))
-               ((uiop:file-exists-p file)
-                (log:info "Loading Lisp file ~s." file)
-                (load file))
-               (t
-                (log:debug "Lisp file ~s does not exist." file)))
+             (unless (uiop:emptyp file)
+               (cond
+                 ((streamp file)
+                  (load file))
+                 ((uiop:file-exists-p file)
+                  (log:info "Loading Lisp file ~s." file)
+                  (load file))
+                 (t
+                  (log:debug "Lisp file ~s does not exist." file))))
              nil))
       (if *run-from-repl-p*
           (unsafe-load)
@@ -454,8 +454,7 @@ Examples:
      (format t "Nyxt version ~a~&" +version+))
 
     ((getf options :list-data-profiles)
-     (alex:when-let ((init (expand-path *init-file-path*)))
-       (load-lisp init :package (find-package :nyxt-user)))
+     (load-lisp (expand-path *init-file-path*):package (find-package :nyxt-user))
      (mapcar (lambda (pair)
                (format t "~a~10t~a~&" (first pair) (indent (second pair) 10)))
              (mapcar #'rest (package-data-profiles))))
@@ -500,8 +499,7 @@ The evaluation may happen on its own instance or on an already running instance.
   (unless (or (getf *options* :no-auto-config)
               (not (expand-path *auto-config-file-path*)))
     (load-lisp (expand-path *auto-config-file-path*) :package (find-package :nyxt-user)))
-  (alex:when-let ((init (expand-path *init-file-path*)))
-    (load-lisp init :package (find-package :nyxt-user)))
+  (load-lisp (expand-path *init-file-path*):package (find-package :nyxt-user))
   (load-or-eval :remote (getf *options* :remote)))
 
 (defun start-browser (url-strings)
@@ -524,15 +522,14 @@ Finally, run the browser, load URL-STRINGS if any, then run
                   (not (expand-path *auto-config-file-path*)))
         (load-lisp (expand-path *auto-config-file-path*)
                    :package (find-package :nyxt-user)))
-      (alex:when-let ((init (expand-path *init-file-path*)))
-        (match (multiple-value-list (load-lisp init
-                                               :package (find-package :nyxt-user)))
-          (nil nil)
-          ((list message full-message)
-           (setf startup-error-reporter
-                 (lambda ()
-                   (notify (str:concat message "."))
-                   (error-in-new-window "*Init file errors*" full-message))))))
+      (match (multiple-value-list (load-lisp (expand-path *init-file-path*)
+                                             :package (find-package :nyxt-user)))
+        (nil nil)
+        ((list message full-message)
+         (setf startup-error-reporter
+               (lambda ()
+                 (notify (str:concat message "."))
+                 (error-in-new-window "*Init file errors*" full-message)))))
       (load-or-eval :remote nil)
       (setf *browser* (make-instance 'user-browser
                                      :startup-error-reporter-function startup-error-reporter
