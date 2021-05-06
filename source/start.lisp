@@ -407,6 +407,10 @@ Examples:
               :verbose t
               :with-path '(\"history\" \"/tmp/nyxt/history.lisp\"))"
           (with-output-to-string (s) (opts:describe :stream s)))
+  ;; Extensions should be made accessible straight from the beginning,
+  ;; e.g. before a script is run.
+  (pushnew 'nyxt-source-registry asdf:*default-source-registries*)
+
   ;; Options should be accessible anytime, even when run from the REPL.
   (setf *options* options)
 

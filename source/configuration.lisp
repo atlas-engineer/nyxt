@@ -23,6 +23,24 @@
 (defvar *init-file-path* (make-instance 'init-data-path :basename "init")
   "The path of the initialization file.")
 
+(define-class extensions-data-path (data-path)
+  ((ref "extensions"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+
+(export-always '*extensions-path*)
+(defvar *extensions-path* (make-instance 'extensions-data-path
+                                         :dirname (uiop:xdg-data-home +data-root+ "extensions"))
+  "The directory where extensions are stored.
+This is set globally so that extensions can be loaded even if there is no
+`*browser*' instance.")
+
+(export-always 'nyxt-source-registry)
+(defun nyxt-source-registry ()
+  `(:source-registry
+    (:tree ,(expand-path *extensions-path*))
+    :inherit-configuration))
+
 (defparameter %buffer nil)              ; TODO: Make a monad?
 
 (export-always 'current-buffer)
