@@ -76,18 +76,19 @@ See `supported-media-types' of `file-mode'."
         (find extension extensions :test #'string-equal))))
 
 (defmethod initialize-instance :after ((source file-source) &key)
-  (setf (slot-value source 'prompter:actions)
-        (list (make-command open-file* (files)
-                (let* ((new-buffer-p (open-file-in-new-buffer-p source)))
-                  ;; Open first file according to `open-file-in-new-buffer-p'
-                  (funcall (open-file-function source) (first files)
-                           :new-buffer-p new-buffer-p
-                           :supported-p (supported-media-or-directory (first files) source))
-                  ;; Open the rest of the files in new buffers unconditionally.
-                  (dolist (file (rest files))
-                    (funcall (open-file-function source) file
-                             :new-buffer-p t
-                             :supported-p (supported-media-or-directory file source))))))))
+  (unless (slot-boundp source 'prompter:actions)
+    (setf (slot-value source 'prompter:actions)
+          (list (make-command open-file* (files)
+                  (let* ((new-buffer-p (open-file-in-new-buffer-p source)))
+                    ;; Open first file according to `open-file-in-new-buffer-p'
+                    (funcall (open-file-function source) (first files)
+                             :new-buffer-p new-buffer-p
+                             :supported-p (supported-media-or-directory (first files) source))
+                    ;; Open the rest of the files in new buffers unconditionally.
+                    (dolist (file (rest files))
+                      (funcall (open-file-function source) file
+                               :new-buffer-p t
+                               :supported-p (supported-media-or-directory file source)))))))))
 
 #+linux
 (defvar *xdg-open-program* "xdg-open")
