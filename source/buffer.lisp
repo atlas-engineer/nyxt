@@ -44,6 +44,9 @@ after the mode-specific hook.")
 after the mode-specific hook.")
    (keymap-scheme-name scheme:cua
                        :documentation "The keymap scheme that will be used for all modes in the current buffer.")
+   (search-auto-complete-p t
+                           :type boolean
+                           :documentation "Whether search suggestions are requested and displayed.")
    (search-engines (list (make-instance 'search-engine
                                         :shortcut "wiki"
                                         :search-url "https://en.wikipedia.org/w/index.php?search=~a"
