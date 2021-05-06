@@ -282,7 +282,7 @@ and to index the top of the page.")
       (load-history-url input))))
 
 (define-class direct-history-forwards-source (prompter:source)
-  ((prompter:name "Direct child URLs")
+  ((prompter:name "First child of all forward-branches")
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
     (lambda (source)
@@ -317,7 +317,7 @@ Otherwise go forward to the only child."
         (history-forwards))))
 
 (define-class history-forwards-source (prompter:source)
-  ((prompter:name "Child URLs")
+  ((prompter:name "All children URLs of the current forward-branch")
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
     (lambda (source)
@@ -364,7 +364,7 @@ Otherwise go forward to the only child."
       (load-history-url input))))
 
 (define-class history-all-source (prompter:source)
-  ((prompter:name "History URLs")
+  ((prompter:name "All history URLs")
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
     (lambda (source)
