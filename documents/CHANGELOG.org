@@ -17,13 +17,19 @@ If possible!
 *** Package / extension manager
 - There should be a package manager/repository where creators of
   packages can publish, and users can download
-- This technology will probably be built ontop of Quicklisp
+- This technology will probably be built on top of Quicklisp or CLPM.
 *** Add online suggestions from search engines
 ** 2.0.0
 
 *** TASK 2-pre-release-7 (Upcoming)
 
 - Enabled WebKitGTK process sandboxing.
+
+- Use GI-GTK render by default.
+  This should fix many issues, like the hang when cancelling the print dialog.
+
+- Nyxt extensions are now officially supported.
+  They can be loaded with ASDF.
 
 - Added Support for popups and "Open in new window" context menu item.
 
@@ -41,6 +47,8 @@ If possible!
   - Visual error reporting.
 
 - Rename =paste-from-clipboard-ring= to =paste-from-clipboard-ring=.
+
+- Rename most instances of "URI" to "URL".
 
 - Prompt buffer improvements:
 
@@ -78,6 +86,10 @@ If possible!
 
 - Remove =object-string= and =object=display=, now superseded by
   =attributes-default= and =object-attributes=.
+
+- Remove =buffer-list= arguments.  (Thanks for @aadcg!)
+  You can further transform the list with =sort-by-time= and
+  =match-domain= in place of the former keyword arguments.
 
 - Modes can be easily configured how they get displayed in the status
   area:
@@ -123,6 +135,8 @@ If possible!
     on Lisp errors.
 
     =funcall-safely= has been superseded by =with-protect=.
+
+  - Fix =--init= command line option.
 
   - Fix WM class and name on both Xorg and Wayland.
 
