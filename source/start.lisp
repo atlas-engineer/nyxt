@@ -261,16 +261,16 @@ Return the short error message and the full error message as second value."
 (defun parse-urls (expr)
   "Do _not_ evaluate EXPR and try to open URLs that were send to it.
 EXPR is expected to be as per the expression sent in `listen-or-query-socket'."
-  (let ((urls (ignore-errors (second (second (read-from-string expr nil))))))
+  (let ((urls (ignore-errors (rest (read-from-string expr nil)))))
     (if (and urls (every #'stringp urls))
-        (open-external-urls urls)
+        (apply #'open-external-urls urls)
         (progn
-          (log:warn "Could not extract URLs from ~s." expr)
+          (log:debug "Could not extract URLs from ~s." expr)
           nil))))
 
 (export-always 'open-external-urls)
-(declaim (ftype (function ((cons string *))) open-external-urls))
-(defun open-external-urls (url-strings)
+(declaim (ftype (function (&rest string)) open-external-urls))
+(defun open-external-urls (&rest url-strings)
   "Open URL-STRINGS on the renderer thread and return URLs.
 This is a convenience wrapper to make remote code execution to open URLs as
 short as possible.
@@ -349,7 +349,7 @@ Otherwise bind socket and return the listening thread."
        (iolib:with-open-socket (s :address-family :local
                                   :remote-filename socket-path)
          ;; Can't use `render-url' at this point because the GTK loop is not running.
-         (format s "~s" `(open-external-urls ',(mapcar #'quri:render-uri urls))))
+         (format s "~s" `(open-external-urls ,@(mapcar #'quri:render-uri urls))))
        nil)
       ((and (uiop:file-exists-p socket-path)
             (not (file-is-socket-p socket-path)))
