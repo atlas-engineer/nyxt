@@ -1049,7 +1049,7 @@ generate a new URL query from user input.
     (when history
       (containers:insert-item history (render-url (url (current-buffer)))))
     (prompt
-     :prompt "Open URL"
+     :prompt "Open URL in new buffer"
      :input (if prefill-current-url-p
                 (render-url (url (current-buffer))) "")
      :history history
