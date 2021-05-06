@@ -428,7 +428,10 @@ Examples:
 
   (setf *init-file-path*
         (cond
-          ((getf *options* :no-init)
+          ((or (getf *options* :no-init)
+               ;; If users pass '--init ""', we should not designate a directory and
+               ;; nullify the init instead.
+               (string= "" (getf *options* :init)))
            nil)
           ((getf *options* :init)
            (alex:when-let* ((init-path (make-instance 'init-data-path
