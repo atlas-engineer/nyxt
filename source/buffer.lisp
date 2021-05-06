@@ -462,7 +462,7 @@ If DOWNLOADS-ONLY is non-nil, then it only returns the proxy address (if any)
 when `proxied-downloads-p' is true."
   (let* ((proxy (and buffer (proxy buffer)))
          (proxied-downloads (and proxy (proxied-downloads-p proxy))))
-    (when (or (not downloads-only)
+    (when (or (and (not downloads-only) proxy)
               proxied-downloads)
       (server-address proxy))))
 
