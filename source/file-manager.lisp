@@ -37,8 +37,6 @@ It's suitable for `prompter:filter-preprocessor'."
 
 (define-class file-source (prompter:source)
   ((prompter:name "Files")
-   (prompter:actions nil :documentation "Actions will be calculated/populated in
-   initialize-instance :after.")
    (prompter:filter-preprocessor (make-file-source-preprocessor))
    (prompter:multi-selection-p t)
    (open-file-in-new-buffer-p t :documentation "If nil, don't open files and directories in a new buffer.")
@@ -63,9 +61,12 @@ Accepts the name of the file as the first argument and has two keyword arguments
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "Prompt source for file(s) on the disk."))
 
+(define-class open-file-source (file-source) ())
+
 ;; FIXME: Configuring this in init.lisp requires nyxt:: prefix.
 ;; How do we export it? :export-class-name-p doesn't work, it seems.
 (define-user-class file-source)
+(define-user-class open-file-source)
 
 (defun supported-media-or-directory (filename
                                      &optional (file-source (make-instance 'user-file-source)))
@@ -77,20 +78,21 @@ See `supported-media-types' of `file-mode'."
                       (extensions (supported-media-types file-source)))
         (find extension extensions :test #'string-equal))))
 
-(defmethod initialize-instance :after ((source file-source) &key)
-  (unless (slot-value source 'prompter:actions)
-    (setf (slot-value source 'prompter:actions)
-          (list (make-command open-file* (files)
-                  (let* ((new-buffer-p (open-file-in-new-buffer-p source)))
-                    ;; Open first file according to `open-file-in-new-buffer-p'
-                    (funcall (open-file-function source) (first files)
-                             :new-buffer-p new-buffer-p
-                             :supported-p (supported-media-or-directory (first files) source))
-                    ;; Open the rest of the files in new buffers unconditionally.
-                    (dolist (file (rest files))
-                      (funcall (open-file-function source) file
-                               :new-buffer-p t
-                               :supported-p (supported-media-or-directory file source)))))))))
+(defmethod initialize-instance :after ((source open-file-source) &key)
+  (setf (slot-value source 'prompter:actions)
+        (append
+         (list (make-command open-file* (files)
+                 (let* ((new-buffer-p (open-file-in-new-buffer-p source)))
+                   ;; Open first file according to `open-file-in-new-buffer-p'
+                   (funcall (open-file-function source) (first files)
+                            :new-buffer-p new-buffer-p
+                            :supported-p (supported-media-or-directory (first files) source))
+                   ;; Open the rest of the files in new buffers unconditionally.
+                   (dolist (file (rest files))
+                     (funcall (open-file-function source) file
+                              :new-buffer-p t
+                              :supported-p (supported-media-or-directory file source))))))
+         (slot-value source 'prompter:actions))))
 
 #+linux
 (defvar *xdg-open-program* "xdg-open")
@@ -135,4 +137,4 @@ directory name) as parameter."
   (prompt
    :input (namestring default-directory)
    :prompt "Open file"
-   :sources (list (make-instance 'user-file-source))))
+   :sources (list (make-instance 'user-open-file-source))))
