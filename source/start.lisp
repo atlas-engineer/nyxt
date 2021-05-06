@@ -207,7 +207,9 @@ Return the short error message and the full error message as second value."
                 (load file))
                ((uiop:file-exists-p file)
                 (log:info "Loading Lisp file ~s." file)
-                (load file)))
+                (load file))
+               (t
+                (log:debug "Lisp file ~s does not exist." file)))
              nil))
       (if *run-from-repl-p*
           (unsafe-load)
@@ -424,6 +426,20 @@ Examples:
                                         (basename *socket-path*))
                           :dirname (uiop:xdg-data-home +data-root+)))))
 
+  (setf *init-file-path*
+        (cond
+          ((getf *options* :no-init)
+           nil)
+          ((getf *options* :init)
+           (alex:when-let* ((init-path (make-instance 'init-data-path
+                                                      :basename (getf *options* :init)))
+                            (init (expand-path init-path)))
+             (unless (uiop:file-exists-p init)
+               (log:warn "Init file ~s does not exist." init))
+             init-path))
+          (t
+           *init-file-path*)))
+
   (if (getf *options* :verbose)
       (progn
         (log:config :debug)
@@ -438,9 +454,8 @@ Examples:
      (format t "Nyxt version ~a~&" +version+))
 
     ((getf options :list-data-profiles)
-     (unless (or (getf *options* :no-init)
-                 (not (expand-path *init-file-path*)))
-       (load-lisp (expand-path *init-file-path*) :package (find-package :nyxt-user)))
+     (alex:when-let ((init (expand-path *init-file-path*)))
+       (load-lisp init :package (find-package :nyxt-user)))
      (mapcar (lambda (pair)
                (format t "~a~10t~a~&" (first pair) (indent (second pair) 10)))
              (mapcar #'rest (package-data-profiles))))
@@ -485,9 +500,8 @@ The evaluation may happen on its own instance or on an already running instance.
   (unless (or (getf *options* :no-auto-config)
               (not (expand-path *auto-config-file-path*)))
     (load-lisp (expand-path *auto-config-file-path*) :package (find-package :nyxt-user)))
-  (unless (or (getf *options* :no-init)
-              (not (expand-path *init-file-path*)))
-    (load-lisp (expand-path *init-file-path*) :package (find-package :nyxt-user)))
+  (alex:when-let ((init (expand-path *init-file-path*)))
+    (load-lisp init :package (find-package :nyxt-user)))
   (load-or-eval :remote (getf *options* :remote)))
 
 (defun start-browser (url-strings)
@@ -510,9 +524,8 @@ Finally, run the browser, load URL-STRINGS if any, then run
                   (not (expand-path *auto-config-file-path*)))
         (load-lisp (expand-path *auto-config-file-path*)
                    :package (find-package :nyxt-user)))
-      (unless (or (getf *options* :no-init)
-                  (not (expand-path *init-file-path*)))
-        (match (multiple-value-list (load-lisp (expand-path *init-file-path*)
+      (alex:when-let ((init (expand-path *init-file-path*)))
+        (match (multiple-value-list (load-lisp init
                                                :package (find-package :nyxt-user)))
           (nil nil)
           ((list message full-message)
