@@ -28,9 +28,14 @@
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
+(defmethod expand-data-path ((profile data-profile) (path extensions-data-path))
+  "Return finalized path for extension directory."
+  (expand-default-path path :root (namestring (if (str:emptyp (namestring (dirname path)))
+                                                  (uiop:xdg-data-home +data-root+ "extensions")
+                                                  (dirname path)))))
+
 (export-always '*extensions-path*)
-(defvar *extensions-path* (make-instance 'extensions-data-path
-                                         :dirname (uiop:xdg-data-home +data-root+ "extensions"))
+(defvar *extensions-path* (make-instance 'extensions-data-path)
   "The directory where extensions are stored.
 This is set globally so that extensions can be loaded even if there is no
 `*browser*' instance.")
