@@ -87,6 +87,10 @@ If possible!
 
   - Emacs and VI keymap schemes are fully supported in the prompt buffer.
 
+- Restored ~open-file~ command.
+  It's a completely revamped version of the old command.  It now
+  leverages the prompt-buffer.
+
 - Remove =object-string= and =object=display=, now superseded by
   =attributes-default= and =object-attributes=.
 
