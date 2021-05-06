@@ -37,6 +37,8 @@ It's suitable for `prompter:filter-preprocessor'."
 
 (define-class file-source (prompter:source)
   ((prompter:name "Files")
+   (prompter:actions nil :documentation "Actions will be calculated/populated in
+   initialize-instance :after.")
    (prompter:filter-preprocessor (make-file-source-preprocessor))
    (prompter:multi-selection-p t)
    (open-file-in-new-buffer-p t :documentation "If nil, don't open files and directories in a new buffer.")
@@ -76,7 +78,7 @@ See `supported-media-types' of `file-mode'."
         (find extension extensions :test #'string-equal))))
 
 (defmethod initialize-instance :after ((source file-source) &key)
-  (unless (slot-boundp source 'prompter:actions)
+  (unless (slot-value source 'prompter:actions)
     (setf (slot-value source 'prompter:actions)
           (list (make-command open-file* (files)
                   (let* ((new-buffer-p (open-file-in-new-buffer-p source)))
