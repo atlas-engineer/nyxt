@@ -44,7 +44,18 @@ It's suitable for `prompter:filter-preprocessor'."
                           :type list-of-strings
                           :documentation "Media types that Nyxt can open.
 Others are opened with OS-specific mechanisms.")
-   (open-file-function #'default-open-file-function))
+   (open-file-function #'default-open-file-function
+                       ;; TODO: Allow `data-path's?
+                       :type (function ((or string pathname) &key
+                                        (:supported-p boolean)
+                                        (:new-buffer-p boolean)))
+                       :documentation "The function to open the file with.
+Accepts the name of the file as the first argument and has two keyword arguments:
+
+- :supported-p denotes whether file is considered supported by Nyxt (i.e., its
+  extension is one of `supported-media-types').
+- :new-buffer-p says whether the file needs to be opened in a new buffer. It
+  most probably will be equal to `open-file-in-new-buffer-p'."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
