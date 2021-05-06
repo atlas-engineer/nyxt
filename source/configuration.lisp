@@ -6,17 +6,37 @@
 (define-class init-data-path (data-path)
   ()
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+
+(define-class auto-init-data-path (init-data-path)
+  ()
+  (:export-class-name-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+
+(defun expand-init-path (data-path option no-option)
+  "Helper for `init-data-path''s `expand-data-path'."
+  (unless (getf *options* no-option)
+    (let ((path (or (getf *options* option)
+                    (expand-default-path
+                     data-path
+                     :root (namestring (if (str:emptyp (namestring (dirname data-path)))
+                                           (uiop:xdg-config-home +data-root+)
+                                           (dirname data-path)))))))
+      (unless (uiop:emptyp path)
+        (when (and (getf *options* option) (not (uiop:file-exists-p path)))
+          (log:warn "File ~s does not exist." path))
+        path))))
 
 (defmethod expand-data-path ((profile data-profile) (path init-data-path))
   "Return finalized path for initialization files."
-  (expand-default-path path :root (namestring (if (str:emptyp (namestring (dirname path)))
-                                                  (uiop:xdg-config-home +data-root+)
-                                                  (dirname path)))))
+  (expand-init-path path :init :no-init))
+
+(defmethod expand-data-path ((profile data-profile) (path auto-init-data-path))
+  "Return finalized path for automatic configuration files."
+  (expand-init-path path :auto-config :no-auto-config))
 
 (export-always '*auto-config-file-path*)
-(defvar *auto-config-file-path* (make-instance 'init-data-path :basename "auto-config")
+(defvar *auto-config-file-path* (make-instance 'auto-init-data-path :basename "auto-config")
   "The path of the generated configuration file.")
 
 (export-always '*init-file-path*)
