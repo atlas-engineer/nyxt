@@ -104,7 +104,7 @@
            (lambda _
              (setenv "HOME" "/tmp")
              #t))
-         (add-before 'build 'set-version
+         (add-before 'build 'set-version ; TODO: Remove for 2.0.
            (lambda _
              (setenv "NYXT_VERSION" ,version)
              #t))
@@ -123,12 +123,7 @@
                                   (string-append (assoc-ref inputs lib) "/lib"))
                                 libs)
                            ":"))
-                    (gi-path (string-join
-                              (map (lambda (lib)
-                                     (string-append (assoc-ref inputs lib)
-                                                    "/lib/girepository-1.0"))
-                                   libs)
-                              ":"))
+                    (gi-path (getenv "GI_TYPELIB_PATH"))
                     (xdg-path (string-join
                                (map (lambda (lib)
                                       (string-append (assoc-ref inputs lib) "/share"))
@@ -154,7 +149,7 @@
        ("sbcl" ,sbcl)
        ;; Only for development, unneeded for the upstream Guix package:
        ("cl-trivial-benchmark" ,cl-trivial-benchmark)
-       ;; To generate the right version in Nyxt, unneeded from 2.0 onwards:
+       ;; To generate the right version in Nyxt.  TODO: unneeded from 2.0 onwards:
        ("git" ,git-minimal)))
     (inputs
      `(("alexandria" ,cl-alexandria)
