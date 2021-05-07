@@ -212,9 +212,9 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   (with-data-access (bookmarks (bookmarks-path (current-buffer)))
     (let ((entries (prompt
                     :prompt "Delete bookmark(s)"
-                    :multi-selection-p t
                     ;; :default-modes '(minibuffer-tag-mode minibuffer-mode)
-                    :sources (make-instance 'bookmark-source))))
+                    :sources (make-instance 'bookmark-source
+                                            :multi-selection-p t))))
       (setf bookmarks
             (set-difference bookmarks
                             entries :test #'equals)))))
