@@ -21,7 +21,7 @@
   (with-current-buffer buffer
     (map 'list
          (lambda (e)
-           (make-instance 'heading :inner-text (nyxt/dom:inner-text e) :element e :buffer buffer))
+           (make-instance 'heading :inner-text (plump:text e) :element e :buffer buffer))
          (clss:select "h1, h2, h3, h4, h5, h6" (document-model (current-mode 'web))))))
 
 (define-parenscript scroll-to-element (&key nyxt-identifier)
