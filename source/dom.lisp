@@ -96,9 +96,3 @@
 (export-always 'named-parse)
 (defun named-parse (input)
   (name-dom-elements (plump:parse input)))
-
-(export-always 'inner-text)
-(defmethod inner-text ((element plump:node))
-  (if (plump:text-node-p element)
-      (plump:text element)
-      (apply #'str:concat (map 'list #'inner-text (plump:children element)))))
