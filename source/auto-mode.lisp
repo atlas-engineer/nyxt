@@ -168,7 +168,8 @@ Mode is covered if:
 - There is a rule it matches and:
   - when mode is ENABLED-P and part of `included' modes in the rule, or
   - when mode is not ENABLED-P and part of `excluded' modes in the rule.
-- If there's no matching rule but it's part of `last-active-modes' and needs to be ENABLED-P."
+- If there's no matching rule but it's part of `last-active-modes' and needs to be ENABLED-P.
+- If it's getting disabled (not ENABLED-P) after being enabled by a rule on the previous page."
   (let ((invocation (mode-invocation mode)))
     (flet ((invocation-member (list)
              (member invocation list :test #'equals)))
@@ -180,7 +181,11 @@ Mode is covered if:
           ;; Mode is covered by auto-mode only if it is both in
           ;; last-active-modes and gets enabled.  If it gets disabled, user
           ;; should be prompted, because they may want to persist it.
-          (and enable-p (invocation-member (last-active-modes auto-mode)))))))
+          (and enable-p (invocation-member (last-active-modes auto-mode)))
+          (and (not enable-p)
+               (invocation-member
+                (when (previous-url auto-mode)
+                  (included (matching-auto-mode-rule (previous-url auto-mode) (buffer auto-mode))))))))))
 
 (declaim (ftype (function (string) list) url-infer-match))
 (defun url-infer-match (url)
