@@ -666,4 +666,6 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
                     (data (htree:data node))
                     (scroll-position (nyxt::scroll-position data)))
       (setf (nyxt:document-scroll-position (buffer mode)) scroll-position)))
+  ;; Need to force document-model re-parsing.
+  (setf (document-model mode) nil)
   url)
