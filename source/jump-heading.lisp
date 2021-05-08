@@ -5,6 +5,7 @@
 
 (define-class heading ()
   ((inner-text "" :documentation "The inner text of the heading within the document.")
+   (element nil :documentation "The header-representing element of `document-model'.")
    (buffer :documentation "The buffer to which this heading belongs."))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "A heading. The inner-text must not be modified, so that we
@@ -17,26 +18,20 @@
   `(("Title" ,(title heading))))
 
 (defun get-headings (&key (buffer (current-buffer)))
-  (pflet ((get-headings ()
-           (let ((headings (nyxt/ps:qsa document "h1, h2, h3, h4, h5, h6")))
-             (ps:chain |json| (stringify
-                               (loop for heading in headings
-                                     collect (ps:chain heading inner-text)))))))
-    (with-current-buffer buffer
-      (mapcar (lambda (i) (make-instance 'heading
-                                         :inner-text i
-                                         :buffer buffer))
-              (cl-json:decode-json-from-string (get-headings))))))
+  (with-current-buffer buffer
+    (map 'list
+         (lambda (e)
+           (make-instance 'heading :inner-text (nyxt/dom:inner-text e) :element e :buffer buffer))
+         (clss:select "h1, h2, h3, h4, h5, h6" (document-model (current-mode 'web))))))
 
+(define-parenscript scroll-to-element (&key nyxt-identifier)
+  (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier)))
+            (scroll-into-view t)))
+
+;; TODO: Make a method on plump:node? Extract to nyxt/dom?
 (defun scroll-page-to-heading (heading)
-  (pflet ((scroll-page-to-heading (heading)
-            (let ((headings (nyxt/ps:qsa document "h1, h2, h3, h4, h5, h6")))
-              (loop for heading in headings do
-                       (when (equal (ps:lisp (inner-text heading))
-                                    (ps:chain heading inner-text))
-                         (ps:chain heading (scroll-into-view t)))))))
-    (set-current-buffer (buffer heading) :focus nil)
-    (scroll-page-to-heading heading)))
+  (set-current-buffer (buffer heading) :focus nil)
+  (scroll-to-element :nyxt-identifier (get-nyxt-id (element heading))))
 
 (define-class heading-source (prompter:source)
   ((prompter:name "Headings")
