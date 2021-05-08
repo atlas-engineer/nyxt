@@ -46,29 +46,43 @@
   ;;                        (slot-value (elt (slot-value item 'plump-dom::%children) 0)
   ;;                                    'plump-dom::%text))
   ;;              (clss:select ".item-name" (plump:parse (dex:get "https://htmlreference.io/")))))
-  ;;
-  ;; TODO: There's h-element pseudo-tag, do we need more pseudo-tags?
-  ;; - table-part-element for td, th, tr, thead, tfoot, tbody, table
-  ;; - list-part-element for ul, ol, li
-  ;; - semantic-element for main, aside, section, footer
-  a-element abbr-element address-element area-element article-element aside-element audio-element
-  b-element base-element bdi-element bdo-element blockquote-element body-element br-element
-  button-element canvas-element caption-element cite-element code-element col-element
-  colgroup-element data-element datalist-element dd-element del-element details-element dfn-element
-  dialog-element div-element dl-element dt-element em-element embed-element fieldset-element
-  figcaption-element figure-element footer-element form-element h-element ; pseudo-tag
-  (h1-element h-element) (h2-element h-element) (h3-element h-element) (h4-element h-element)
-  (h5-element h-element) (h6-element h-element) head-element header-element hgroup-element
-  hr-element html-element i-element iframe-element img-element input-element ins-element kbd-element
-  label-element legend-element li-element link-element main-element map-element mark-element
-  meta-element meter-element nav-element noframes-element noscript-element object-element
-  ol-element optgroup-element option-element output-element p-element param-element picture-element
-  pre-element progress-element q-element rp-element rt-element rtc-element ruby-element s-element
-  samp-element script-element section-element select-element slot-element small-element
-  source-element span-element strong-element style-element sub-element summary-element sup-element
-  table-element tbody-element td-element template-element textarea-element tfoot-element th-element
-  thead-element time-element title-element tr-element track-element u-element ul-element
-  var-element video-element wbr-element)
+  ;; Pseudo-tags:
+  text-element (h-element text-element) list-element structure-element semantic-element
+  ;; HTML5 elements:
+  (a-element text-element) abbr-element address-element area-element
+  (article-element semantic-element) (aside-element semantic-element)
+  audio-element (b-element text-element) base-element bdi-element bdo-element
+  blockquote-element body-element br-element button-element canvas-element
+  caption-element cite-element code-element col-element colgroup-element
+  data-element datalist-element (dd-element list-element) (del-element text-element) details-element
+  dfn-element div-element (dl-element list-element) (dt-element list-element) em-element
+  embed-element fieldset-element (figcaption-element semantic-element) figure-element
+  (footer-element semantic-element) form-element (h1-elementh-element) (h2-element h-element)
+  (h3-element h-element) (h4-element h-element) (h5-element h-element) (h6-element h-element)
+  head-element (header-element semantic-element) hr-element html-element (i-element text-element)
+  iframe-element img-element input-element ins-element kbd-element label-element legend-element
+  (li-element list-element) link-element (main-element semantic-element) map-element
+  (mark-element semantic-element) meta-element meter-element (nav-element semantic-element)
+  noscript-element object-element (ol-element list-element) optgroup-element
+  (option-element text-element) output-element p-element param-element pre-element progress-element
+  q-element rp-element rt-element rtc-element ruby-element samp-element script-element
+  (section-element semantic-element) select-element small-element source-element span-element
+  (strong-element text-element) style-element (sub-element text-element)
+  summary-element (sup-element text-element) table-element tbody-element td-element textarea-element
+  tfoot-element th-element thead-element (time-element semantic-element) title-element tr-element
+  track-element (ul-element list-element) var-element video-element
+  ;; obsolete elements (from https://www.w3.org/TR/2010/WD-html5-20100304/obsolete.html):
+  applet-element acronym-element bgsound-element dir-element frame-element frameset-element
+  noframes-element isindex-element (listing-element text-element) (xmp-element text-element)
+  nextid-element noembed-element (plaintext-element text-element) (rb-element ruby-element)
+  (basefont-element text-element) (big-element text-element) (blink-element text-element)
+  (center-element text-element) (font-element text-element) (marquee-element text-element)
+  (multicol-element text-element) (nobr-element text-element) (s-element text-element)
+  (spacer-element text-element) (strike-element text-element) (tt-element text-element)
+  (u-element text-element)
+  ;; Experimental elements:
+  dialog-element hgroup-element picture-element slot-element template-element
+  (wbr-element text-element))
 
 (defmethod name-dom-elements ((node plump:node))
   (alex:when-let* ((tag-p (plump:element-p node))
