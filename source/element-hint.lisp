@@ -34,14 +34,21 @@
       (setf (ps:@ element text-content) hint)
       element))
 
-  (dotimes (i (ps:lisp (length nyxt-identifiers)))
-    (let ((element (nyxt/ps:qs document (+ "[nyxt-identifier=\""
-                                           (aref (ps:lisp (list 'quote nyxt-identifiers)) i) "\"]")))
-          (hint (aref (ps:lisp (list 'quote hints)) i)))
-      (when element
-        (ps:chain element (set-attribute "nyxt-hint" hint))
-        (ps:let ((hint-element (hint-create-element element hint)))
-          (ps:chain document body (append-child hint-element)))))))
+  (let ((fragment (ps:chain document (create-document-fragment)))
+        (ids (ps:lisp (list 'quote nyxt-identifiers)))
+        (hints (ps:lisp (list 'quote hints))))
+    (dotimes (i (ps:lisp (length nyxt-identifiers)))
+      (let ((element (nyxt/ps:qs document (+ "[nyxt-identifier=\""
+                                             (aref ids i)
+                                             "\"]")))
+            (hint (aref hints i)))
+        (when element
+          (ps:chain element (set-attribute "nyxt-hint" hint))
+          (ps:let ((hint-element (hint-create-element element hint)))
+            (ps:chain fragment (append-child hint-element))))))
+    (ps:chain document body (append-child fragment))
+    ;; Returning fragment makes WebKit choke.
+    nil))
 
 (defun add-element-hints (&key (selectors '("a" "button" "input" "textarea")))
   ;; TODO: Use hint generator from https://github.com/atlas-engineer/nyxt/issues/1290 maybe?
