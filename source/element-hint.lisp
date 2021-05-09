@@ -15,18 +15,17 @@
        (ps:chain style-element sheet (insert-rule highlighted-style 1)))
      (:catch (error)))))
 
-(define-parenscript hint-element (nyxt-identifier hint)
+(define-parenscript hint-elements (nyxt-identifiers hints)
   (defun hint-determine-position (rect)
     "Determines the position of a hint according to the element"
     (ps:create :top  (+ (ps:@ window page-y-offset) (ps:@ rect top))
                :left (+ (ps:@ window page-x-offset) (ps:@ rect left))))
 
-  (defun hint-create-element (element hint)
+  (defun hint-create-element (original-element hint)
     "Creates a DOM element to be used as a hint"
-    (ps:let* ((rect (ps:chain element (get-bounding-client-rect)))
+    (ps:let* ((rect (ps:chain original-element (get-bounding-client-rect)))
               (position (hint-determine-position rect))
-              (element (ps:chain document (create-element "span")))
-              (hint (ps:lisp hint)))
+              (element (ps:chain document (create-element "span"))))
       (setf (ps:@ element class-name) "nyxt-hint")
       (setf (ps:@ element style position) "absolute")
       (setf (ps:@ element style left) (+ (ps:@ position left) "px"))
@@ -35,10 +34,14 @@
       (setf (ps:@ element text-content) hint)
       element))
 
-  (let ((element (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier)))))
-    (ps:chain element (set-attribute "nyxt-identifier" (ps:lisp hint)))
-    (ps:let ((hint-element (hint-create-element element (ps:lisp hint))))
-      (ps:chain document body (append-child hint-element)))))
+  (dotimes (i (ps:lisp (length nyxt-identifiers)))
+    (let ((element (nyxt/ps:qs document (+ "[nyxt-identifier=\""
+                                           (aref (ps:lisp (list 'quote nyxt-identifiers)) i) "\"]")))
+          (hint (aref (ps:lisp (list 'quote hints)) i)))
+      (when element
+        (ps:chain element (set-attribute "nyxt-hint" hint))
+        (ps:let ((hint-element (hint-create-element element hint)))
+          (ps:chain document body (append-child hint-element)))))))
 
 (defun add-element-hints (&key (selectors '("a" "button" "input" "textarea")))
   ;; TODO: Use hint generator from https://github.com/atlas-engineer/nyxt/issues/1290 maybe?
@@ -60,8 +63,8 @@
                                             selectors))
            (hints (generate-hints (length hintable-elements))))
       (add-stylesheet)
+      (hint-elements (mapcar #'get-nyxt-id hintable-elements) hints)
       (mapcar #'(lambda (elem hint)
-                  (hint-element (get-nyxt-id elem) hint)
                   (plump:set-attribute elem "nyxt-hint" hint)
                   elem)
               hintable-elements hints))))
@@ -83,7 +86,7 @@
 (define-parenscript highlight-selected-hint (&key element scroll)
   (defun update-hints ()
     (ps:let* ((new-element (nyxt/ps:qs document (ps:lisp (format nil "#nyxt-hint-~a"
-                                                         (plump:get-attribute "nyxt-hint" element))))))
+                                                         (plump:get-attribute element "nyxt-hint"))))))
       (when new-element
         (unless ((ps:@ new-element class-list contains) "nyxt-highlight-hint")
           (ps:let ((old-elements (nyxt/ps:qsa document ".nyxt-highlight-hint")))
@@ -110,7 +113,7 @@
       (multiple-value-bind (matching-hints other-hints)
           (sera:partition
            (lambda (element)
-             (str:starts-with-p input (plump:get-attribute "nyxt-hint" element) :ignore-case t))
+             (str:starts-with-p input (plump:get-attribute element "nyxt-hint") :ignore-case t))
            suggestions
            :key #'prompter:value)
         (append matching-hints other-hints))))
@@ -153,16 +156,15 @@
   `(("Hint" ,(plump:get-attribute a "nyxt-hint"))
     ,@(when (plump:get-attribute a "href")
         (list `("URL" ,(plump:get-attribute a "href"))))
-    ("Body" ,(plump:serialize (elt (plump:children a) 0)))
+    ,@(when (plump:children a)
+        (list `("Body" ,(plump:text a))))
     ("Type" "Link")))
 
 (defmethod prompter:object-attributes ((button nyxt/dom:button-element))
   `(("Hint" ,(plump:get-attribute button "nyxt-hint"))
-    ("Body" ,(plump:serialize (elt (plump:children button) 0)))
+    ,@(when (plump:children button)
+        (list `("Body" ,(plump:text button))))
     ("Type" "Button")))
-
-;; (defmethod %follow-hint ((link-hint plump:select))
-;;   (buffer-load (url link-hint)))
 
 (defmethod %follow-hint ((a nyxt/dom:a-element))
   (click-element :nyxt-identifier (get-nyxt-id a)))
