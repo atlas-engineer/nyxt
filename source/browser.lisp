@@ -602,8 +602,6 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-buffer-load (buffer url))
 (define-ffi-generic ffi-buffer-evaluate-javascript (buffer javascript))
 (define-ffi-generic ffi-buffer-evaluate-javascript-async (buffer javascript))
-(define-ffi-generic ffi-prompt-buffer-evaluate-javascript (window javascript))
-(define-ffi-generic ffi-prompt-buffer-evaluate-javascript-async (window javascript))
 (define-ffi-generic ffi-buffer-enable-javascript (buffer value))
 (define-ffi-generic ffi-buffer-enable-javascript-markup (buffer value))
 (define-ffi-generic ffi-buffer-enable-smooth-scrolling (buffer value))

@@ -206,8 +206,8 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
 (defun prompt-render-prompt (prompt-buffer)
   (let* ((suggestions (prompter:all-suggestions prompt-buffer))
          (marks (prompter:all-marks prompt-buffer)))
-    (ffi-prompt-buffer-evaluate-javascript-async
-     (window prompt-buffer)
+    (ffi-buffer-evaluate-javascript-async
+     prompt-buffer
      (ps:ps
        (setf (ps:chain document (get-element-by-id "prompt-extra") |innerHTML|)
              (ps:lisp
@@ -275,8 +275,8 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                              "marked")
                                                     (loop for (nil attribute) in (prompter:active-attributes suggestion :source source)
                                                           collect (markup:markup (:td attribute))))))))))))))
-      (ffi-prompt-buffer-evaluate-javascript-async
-       (window prompt-buffer)
+      (ffi-buffer-evaluate-javascript-async
+       prompt-buffer
        (ps:ps
          (setf (ps:chain document (get-element-by-id "suggestions") |innerHTML|)
                (ps:lisp
@@ -287,16 +287,16 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
     (prompt-render-prompt prompt-buffer)))
 
 (defun erase-document (prompt-buffer)
-  (ffi-prompt-buffer-evaluate-javascript-async
-   (window prompt-buffer)
+  (ffi-buffer-evaluate-javascript-async
+   prompt-buffer
    (ps:ps
      (ps:chain document (open))
      (ps:chain document (close)))))
 
 (defun prompt-render-skeleton (prompt-buffer)
   (erase-document prompt-buffer)
-  (ffi-prompt-buffer-evaluate-javascript-async
-   (window prompt-buffer)
+  (ffi-buffer-evaluate-javascript-async
+   prompt-buffer
    (ps:ps (ps:chain document
                     (write
                      (ps:lisp (markup:markup
@@ -318,8 +318,8 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                              '(:hidden "true")))))))))))))
 
 (defun prompt-render-focus (prompt-buffer)
-  (ffi-prompt-buffer-evaluate-javascript-async
-   (window prompt-buffer)
+  (ffi-buffer-evaluate-javascript-async
+   prompt-buffer
    (ps:ps (ps:chain document
                     (get-element-by-id "input")
                     (focus)))))
@@ -348,13 +348,11 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
 
 (defun set-prompt-buffer-input (input)
   "Set HTML INPUT in PROMPT-BUFFER."
-  (let ((window (current-window)))
-    (when (first (active-prompt-buffers window))
-      (ffi-prompt-buffer-evaluate-javascript
-       window
-       (ps:ps
-         (setf (ps:chain document (get-element-by-id "input") value)
-               (ps:lisp input)))))))
+  (ffi-buffer-evaluate-javascript
+   (current-prompt-buffer)
+   (ps:ps
+     (setf (ps:chain document (get-element-by-id "input") value)
+           (ps:lisp input)))))
 
 (export-always 'prompt)
 (sera:eval-always
