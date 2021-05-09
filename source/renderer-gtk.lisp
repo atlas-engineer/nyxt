@@ -467,6 +467,9 @@ See `gtk-browser's `modifier-translator' slot."
         ;; Do not forward modifier-only to renderer.
         t)))
 
+(defmethod gtk-object ((prompt-buffer prompt-buffer))
+  (prompt-buffer-view (window prompt-buffer)))
+
 (define-ffi-method on-signal-key-release-event ((sender gtk-window) event)
   ;; TODO: Should we move this to key-press-event to improve prompt buffer
   ;; responsiveness?
@@ -478,8 +481,8 @@ See `gtk-browser's `modifier-translator' slot."
        nil)
       ((prompt-buffer-p prompt-buffer)
        (run-thread
-         (let ((input (ffi-prompt-buffer-evaluate-javascript
-                       (current-window)
+         (let ((input (ffi-buffer-evaluate-javascript
+                       prompt-buffer
                        (ps:ps (ps:chain document (get-element-by-id "input")
                                         value)))))
            (set-prompt-input prompt-buffer input)
@@ -911,21 +914,6 @@ requested a reload."
       javascript
       nil
       #'javascript-error-handler))))
-
-(defmethod ffi-prompt-buffer-evaluate-javascript ((window gtk-window) javascript)
-  (%within-renderer-thread
-   (lambda (&optional channel)
-     (webkit2:webkit-web-view-evaluate-javascript
-      (prompt-buffer-view window)
-      javascript
-      (if channel
-          (lambda (result)
-            (calispel:! channel result))
-          #'identity)
-      #'javascript-error-handler))))
-
-(define-ffi-method ffi-prompt-buffer-evaluate-javascript-async ((window gtk-window) javascript)
-  (webkit2:webkit-web-view-evaluate-javascript (prompt-buffer-view window) javascript))
 
 (define-ffi-method ffi-buffer-enable-javascript ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-enable-javascript

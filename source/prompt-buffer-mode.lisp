@@ -138,8 +138,8 @@ Actions can be listed and run with `return-selection-over-action' (bound to
 If STEPS is negative, go to previous pages instead."
   (unless (= 0 steps)
     (let ((step-page-index              ; TODO: Add multi-source support.
-            (ffi-prompt-buffer-evaluate-javascript
-             (current-window)
+            (ffi-buffer-evaluate-javascript
+             prompt-buffer
              (ps:ps
                (defun step-row (row)
                  (ps:chain
@@ -345,10 +345,10 @@ Only available if `multi-selection-p' is non-nil."
       (trivial-clipboard:text text)
       (echo "Copied ~s to clipboard." text))))
 
-(define-command prompt-buffer-paste (&optional (window (current-window)))
+(define-command prompt-buffer-paste ()
   "Paste clipboard text to input."
-  (ffi-prompt-buffer-evaluate-javascript
-   window
+  (ffi-buffer-evaluate-javascript
+   (current-prompt-buffer)
    (ps:ps
      (nyxt/ps:insert-at (ps:chain document (get-element-by-id "input"))
                         (ps:lisp (ring-insert-clipboard (nyxt::clipboard-ring *browser*)))))))
