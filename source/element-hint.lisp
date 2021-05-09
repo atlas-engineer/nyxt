@@ -87,6 +87,10 @@
   (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (focus))
   (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (select)))
 
+(define-parenscript check-element (&key nyxt-identifier (value t))
+  (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier)))
+            (set-attribute "checked" (ps:lisp value))))
+
 (define-parenscript highlight-selected-hint (&key element scroll)
   (defun update-hints ()
     (ps:let* ((new-element (nyxt/ps:qs document (ps:lisp (format nil "#nyxt-hint-~a"
@@ -177,7 +181,11 @@
   (click-element :nyxt-identifier (get-nyxt-id button)))
 
 (defmethod %follow-hint ((input nyxt/dom:input-element))
-  (focus-element :nyxt-identifier (get-nyxt-id input)))
+  (str:string-case (plump:get-attribute "type" input)
+    ("button" (click-element :nyxt-identifier (get-nyxt-id input)))
+    ("radio" (check-element :nyxt-identifier (get-nyxt-id input)))
+    ("checkbox" (check-element :nyxt-identifier (get-nyxt-id input)))
+    (otherwise (focus-element :nyxt-identifier (get-nyxt-id input)))))
 
 (defmethod %follow-hint ((textarea nyxt/dom:textarea-element))
   (focus-element :nyxt-identifier (get-nyxt-id textarea)))
