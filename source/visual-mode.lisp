@@ -4,6 +4,7 @@
 (uiop:define-package :nyxt/visual-mode
   (:use :common-lisp :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
+  (:import-from #:nyxt/web-mode #:query-hints #:get-nyxt-id)
   (:documentation "Visual mode."))
 (in-package :nyxt/visual-mode)
 
@@ -77,111 +78,9 @@
       (if (equal (keymap-scheme-name (buffer mode)) scheme:vi-normal)
           (setf (mark-set mode) t))))))
 
-(define-parenscript add-paragraph-hints (&key annotate-visible-only-p)
-  (defun qsa-text-nodes ()
-    "Gets all text nodes"
-    (let ((elements (nyxt/ps:qsa document "body, body *"))
-          child)
-      (loop for element in elements
-            do (setf child (ps:@ element child-nodes 0))
-            if (and (ps:chain element (has-child-nodes))
-                    (eql (ps:@ child node-type) 3)
-                    (not (ps:chain (array "B" "I" "STRONG" "SUP" "SUB"
-                                          "DEL" "S" "STRIKE" "U" "TT"
-                                          "OPTION" "A")
-                                   (includes (ps:@ element tag-name)))))
-              collect element)))
-
-
-  (defun code-char (n)
-    "Alias of String.fromCharCode"
-    (ps:chain -string (from-char-code n)))
-
-  (defun add-stylesheet ()
-    (unless (nyxt/ps:qs document "#nyxt-stylesheet")
-      (ps:try
-       (ps:let* ((style-element (ps:chain document (create-element "style")))
-                 (box-style (ps:lisp (nyxt/web-mode::box-style (current-mode 'web))))
-                 (highlighted-style (ps:lisp (nyxt/web-mode::highlighted-box-style (current-mode 'web)))))
-         (setf (ps:@ style-element id) "nyxt-stylesheet")
-         (ps:chain document head (append-child style-element))
-         (ps:chain style-element sheet (insert-rule box-style 0))
-         (ps:chain style-element sheet (insert-rule highlighted-style 1)))
-       (:catch (error)))))
-
-  (defun hint-determine-position (rect)
-    "Determines the position of a hint according to the element"
-    (ps:create :top  (+ (ps:@ window page-y-offset) (ps:@ rect top))
-               :left (+ (ps:@ window page-x-offset) (- (ps:@ rect left) 20))))
-
-  (defun hint-create-element (element hint)
-    "Creates a DOM element to be used as a hint"
-    (ps:let* ((rect (ps:chain element (get-bounding-client-rect)))
-              (position (hint-determine-position rect))
-              (element (ps:chain document (create-element "span"))))
-      (setf (ps:@ element class-name) "nyxt-hint")
-      (setf (ps:@ element style position) "absolute")
-      (setf (ps:@ element style left) (+ (ps:@ position left) "px"))
-      (setf (ps:@ element style top) (+ (ps:@ position top) "px"))
-      (setf (ps:@ element id) (+ "nyxt-hint-" hint))
-      (setf (ps:@ element text-content) hint)
-      element))
-
-  (defun hint-add (element hint)
-    "Adds a hint on a single element. Additionally sets a unique
-identifier for every hinted element."
-    (ps:chain element (set-attribute "nyxt-identifier" hint))
-    (ps:let ((hint-element (hint-create-element element hint)))
-      (ps:chain document body (append-child hint-element))))
-
-  (defun object-create (element hint)
-    (ps:create "type" "p" "hint" hint "identifier" hint "body" (ps:@ element |innerHTML|)))
-
-  (defun hints-add (elements)
-    "Adds hints on elements"
-    (ps:let* ((elements-length (length elements))
-              (hints (hints-generate elements-length)))
-      (ps:chain |json|
-                (stringify
-                 (loop for i from 0 to (- elements-length 1)
-                       when (and (nyxt/ps:element-drawable-p (elt elements i))
-                                 (nyxt/ps:element-in-view-port-p (elt elements i)))
-                         do (hint-add (elt elements i) (elt hints i))
-                       when (or (and (nyxt/ps:element-drawable-p (elt elements i))
-                                     (not (ps:lisp annotate-visible-only-p)))
-                                (and (nyxt/ps:element-drawable-p (elt elements i))
-                                     (nyxt/ps:element-in-view-port-p (elt elements i))))
-                         collect (object-create (elt elements i) (elt hints i)))))))
-
-  (defun hints-determine-chars-length (length)
-    "Finds out how many chars long the hints must be"
-    (floor (+ 1 (/ (log length) (log 26)))))
-
-  (defun hints-generate (length)
-    "Generates hints that will appear on the elements"
-    (strings-generate length (hints-determine-chars-length length)))
-
-  (defun strings-generate (length chars-length)
-    "Generates strings of specified length"
-    (ps:let ((minimum (1+ (ps:chain -math (pow 26 (- chars-length 1))))))
-      (loop for i from minimum to (+ minimum length)
-            collect (string-generate i))))
-
-  (defun string-generate (n)
-    "Generates a string from a number"
-    (if (>= n 0)
-        (+ (string-generate (floor (- (/ n 26) 1)))
-           (code-char (+ 65
-                         (rem n 26)))) ""))
-
-  (add-stylesheet)
-  (hints-add (qsa-text-nodes)))
-
-(defclass paragraph-hint (nyxt/web-mode::hint) ())
-
-(defmethod prompter:object-attributes ((hint paragraph-hint))
-  `(("Hint" ,(nyxt/web-mode::hint hint))
-    ("Body" ,(nyxt/web-mode::body hint))))
+(defmethod prompter:object-attributes ((element nyxt/dom:text-element))
+  `(("Hint" ,(plump:get-attribute element "nyxt-hint"))
+    ("Text" ,(plump:text element))))
 
 (define-parenscript set-caret-on-start (&key nyxt-identifier)
   (let ((el (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))))
@@ -193,17 +92,8 @@ identifier for every hinted element."
     (ps:chain sel (remove-all-ranges))
     (ps:chain sel (add-range range))))
 
-(defmethod follow-hint ((paragraph-hint paragraph-hint))
-  (set-caret-on-start :nyxt-identifier (nyxt/web-mode::identifier paragraph-hint)))
-
-(defun paragraph-elements-from-json (elements-json)
-  (loop for element in (cl-json:decode-json-from-string elements-json)
-        collect (let ((object-type (cdr (assoc :type element))))
-                  (cond ((equal "p" object-type)
-                         (make-instance 'paragraph-hint
-                                        :identifier (cdr (assoc :identifier element))
-                                        :hint (cdr (assoc :hint element))
-                                        :body (plump:text (plump:parse (cdr (assoc :body element))))))))))
+(defmethod %follow-hint ((element nyxt/dom:text-element))
+  (set-caret-on-start :nyxt-identifier (get-nyxt-id element)))
 
 (define-parenscript block-page-keypresses ()
   (setf (ps:@ window block-keypresses)
@@ -228,23 +118,11 @@ identifier for every hinted element."
 
 (define-command select-paragraph ()
   "Add hints to text elements on the page and query them."
-  (let ((buffer (current-buffer)))
-    (let ((result (first
-                   (prompt
-                    :prompt "Set caret on element"
-                    :history nil
-                    :sources
-                    (make-instance
-                     'nyxt/web-mode::hint-source
-                     :constructor
-                     (paragraph-elements-from-json
-                      (add-paragraph-hints
-                       :annotate-visible-only-p t)))
-                    :after-destructor
-                    (lambda ()
-                      (with-current-buffer buffer
-                        (nyxt/web-mode::remove-element-hints)))))))
-      (funcall #'follow-hint result))))
+  (query-hints "Set caret on element"
+               (lambda (results) (%follow-hint (first results)))
+               :selector "a, b, del, h, i, option, strong, sub,
+sup, listing, xmp, plaintext, basefont, big, blink, center, font, marquee,
+multicol, nobr, s, spacer, strike, tt, u, wbr"))
 
 (define-parenscript is-collapsed ()
   ;; returns "true" if mark's start and end are the same value
@@ -252,7 +130,6 @@ identifier for every hinted element."
     (let ((sel (ps:chain window (get-selection))))
       (ps:@ sel is-collapsed)))
   (is-collapsed))
-
 
 (define-parenscript collapse-to-focus ()
   "Collapse the selection"
