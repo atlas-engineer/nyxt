@@ -50,7 +50,7 @@
     ;; Returning fragment makes WebKit choke.
     nil))
 
-(defun add-element-hints (&key (selectors '("a" "button" "input" "textarea")))
+(defun add-element-hints (&key (selector "a, button, input, textarea"))
   ;; TODO: Use hint generator from https://github.com/atlas-engineer/nyxt/issues/1290 maybe?
   (labels ((select-from-alphabet (code char-length alphabet)
              (let* ((exponents (nreverse (loop for pow below char-length
@@ -65,9 +65,7 @@
                     (char-length (ceiling (log length (length alphabet)))))
                (loop for i below length collect (select-from-alphabet i char-length alphabet)))))
     (let* ((dom (update-document-model))
-           (hintable-elements (alex:mappend #'(lambda (selector)
-                                                (coerce (clss:select selector dom) 'list))
-                                            selectors))
+           (hintable-elements (coerce (clss:select selector dom) 'list))
            (hints (generate-hints (length hintable-elements))))
       (add-stylesheet)
       (hint-elements (mapcar #'get-nyxt-id hintable-elements) hints)
@@ -128,7 +126,7 @@
                                      (highlight-selected-hint :element suggestion)))))
 
 (serapeum:export-always 'query-hints)
-(defun query-hints (prompt function &key multi-selection-p)
+(defun query-hints (prompt function &key multi-selection-p (selector "a, button, input, textarea"))
   (let* ((buffer (current-buffer)))
     (let ((result (prompt
                    :prompt prompt
@@ -138,7 +136,7 @@
                    (make-instance
                     'hint-source
                     :multi-selection-p multi-selection-p
-                    :constructor (add-element-hints))
+                    :constructor (add-element-hints :selector selector))
                    :after-destructor
                    (lambda ()
                      (with-current-buffer buffer
