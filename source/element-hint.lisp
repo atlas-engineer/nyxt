@@ -42,10 +42,9 @@
                                              (aref ids i)
                                              "\"]")))
             (hint (aref hints i)))
-        (when element
-          (ps:chain element (set-attribute "nyxt-hint" hint))
-          (ps:let ((hint-element (hint-create-element element hint)))
-            (ps:chain fragment (append-child hint-element))))))
+        (ps:chain element (set-attribute "nyxt-hint" hint))
+        (ps:let ((hint-element (hint-create-element element hint)))
+          (ps:chain fragment (append-child hint-element)))))
     (ps:chain document body (append-child fragment))
     ;; Returning fragment makes WebKit choke.
     nil))
