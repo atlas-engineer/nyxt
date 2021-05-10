@@ -364,13 +364,14 @@ Only available if `multi-selection-p' is non-nil."
 
 (define-command prompt-buffer-history (&optional (prompt-buffer (current-prompt-buffer)))
   "Choose a prompt-buffer input history entry to insert as input."
-  (if (prompter:history prompt-buffer)
-      (let ((input (first (prompt
-                           :prompt "Input history"
-                           :sources (list (make-instance 'prompt-buffer-history-source))))))
-        (unless (str:empty? input)
-          (nyxt::set-prompt-buffer-input input)))
-      (echo "Prompt buffer has no history.")))
+  (let ((history (prompter:history prompt-buffer)))
+    (if (and history (not (containers:empty-p history)))
+        (let ((input (first (prompt
+                             :prompt "Input history"
+                             :sources (list (make-instance 'prompt-buffer-history-source))))))
+          (unless (str:empty? input)
+            (nyxt::set-prompt-buffer-input input)))
+        (echo "Prompt buffer has no history."))))
 
 (define-command prompt-buffer-insert-selection (&optional (prompt-buffer (current-prompt-buffer)))
   "Insert current selection default property in the prompt buffer input."
