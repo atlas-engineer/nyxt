@@ -535,7 +535,6 @@ Finally, run the browser, load URL-STRINGS if any, then run
         ((list message full-message)
          (setf startup-error-reporter
                (lambda ()
-                 (notify (str:concat message "."))
                  (error-in-new-window "*Init file errors*" full-message)))))
       (load-or-eval :remote nil)
       (setf *browser* (make-instance 'user-browser

@@ -89,7 +89,6 @@
                (:file "search-engine")
                (:file "urls")
                (:file "browser")
-               (:file "notification")
                (:file "clipboard")
                (:file "message")
                (:file "input")
