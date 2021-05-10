@@ -376,6 +376,10 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 
 (define-user-class internal-buffer)
 
+(define-class info-buffer (internal-buffer) ())
+
+(define-user-class info-buffer)
+
 (define-class editor-buffer (internal-buffer)
   ((file :documentation "The file being edited.")
    (url (quri:uri "editor-buffer"))
