@@ -176,9 +176,7 @@ If STEPS is negative, go to next pages instead."
 
 (define-command return-selection (&optional (prompt-buffer (current-prompt-buffer)))
   "Have the PROMT-BUFFER return the selection, then quit."
-  (hide-prompt-buffer prompt-buffer
-                      (lambda ()
-                        (prompter:return-selection prompt-buffer))))
+  (prompter:return-selection prompt-buffer))
 
 (defun make-attribute-suggestion (attribute &optional source input)
   "Return a `suggestion' wrapping around ATTRIBUTE. "
@@ -276,9 +274,7 @@ current unmarked selection."
                         :prompt "Action to run on selection"
                         :sources (list (make-instance 'action-source))))))
     (when action
-      (hide-prompt-buffer prompt-buffer
-                          (lambda ()
-                            (prompter:return-selection prompt-buffer action))))))
+      (prompter:return-selection prompt-buffer action))))
 
 (define-command run-follow-mode-function (&optional (prompt-buffer (current-prompt-buffer)))
   "Run follow-mode function over selected suggestion without closing PROMPT-BUFFER."

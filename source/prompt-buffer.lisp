@@ -162,36 +162,28 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
          (prompt-buffer-open-height (window prompt-buffer))))))
 
 (export-always 'hide-prompt-buffer)
-(defun hide-prompt-buffer (prompt-buffer &optional return-function)
-  "Run RETURN-FUNCTION, then hide PROMPT-BUFFER, display next active one.
-Return RETURN-FUNCTION result.
-The `current-prompt-buffer' is guaranteed to be the one that RETURN-FUNCTION
-belongs to during the execution of RETURN-FUNCTION.
-In case of nested prompt buffers, you can access the parent prompt buffer by
-storing its value in a slot of the child."
-  (let ((result (funcall* return-function)))
-    ;; Note that PROMPT-BUFFER is not necessarily first in the list, e.g. a new
-    ;; prompt-buffer was invoked before the old one reaches here.
-    (alex:deletef (active-prompt-buffers (window prompt-buffer)) prompt-buffer)
-    (when (resumable-p prompt-buffer)
-      (flet ((prompter= (prompter1 prompter2)
-               (and (string= (prompter:prompt prompter1)
-                             (prompter:prompt prompter2))
-                    (string= (prompter:input prompter1)
-                             (prompter:input prompter2)))))
-        ;; Delete a previous, similar prompt, if any.
-        (alex:deletef (old-prompt-buffers *browser*)
-                      prompt-buffer
-                      :test #'prompter=)
-        (push prompt-buffer (old-prompt-buffers *browser*))))
-    (if (active-prompt-buffers (window prompt-buffer))
-        (let ((next-prompt-buffer (first (active-prompt-buffers (window prompt-buffer)))))
-          (show-prompt-buffer next-prompt-buffer))
-        (progn
-          (ffi-window-set-prompt-buffer-height (window prompt-buffer) 0)))
-    ;; Destroy prompter last, or else `return-function' may not work.
-    (prompter:destroy prompt-buffer)
-    result))
+(defun hide-prompt-buffer (prompt-buffer)
+  "Hide PROMPT-BUFFER, display next active one."
+  ;; Note that PROMPT-BUFFER is not necessarily first in the list, e.g. a new
+  ;; prompt-buffer was invoked before the old one reaches here.
+  (alex:deletef (active-prompt-buffers (window prompt-buffer)) prompt-buffer)
+  (when (resumable-p prompt-buffer)
+    (flet ((prompter= (prompter1 prompter2)
+             (and (string= (prompter:prompt prompter1)
+                           (prompter:prompt prompter2))
+                  (string= (prompter:input prompter1)
+                           (prompter:input prompter2)))))
+      ;; Delete a previous, similar prompt, if any.
+      (alex:deletef (old-prompt-buffers *browser*)
+                    prompt-buffer
+                    :test #'prompter=)
+      (push prompt-buffer (old-prompt-buffers *browser*))))
+  (if (active-prompt-buffers (window prompt-buffer))
+      (let ((next-prompt-buffer (first (active-prompt-buffers (window prompt-buffer)))))
+        (show-prompt-buffer next-prompt-buffer))
+      (progn
+        (ffi-window-set-prompt-buffer-height (window prompt-buffer) 0)))
+  (prompter:destroy prompt-buffer))
 
 (defun suggestion-and-mark-count (prompt-buffer suggestions marks
                                   &key multi-selection-p)
@@ -384,7 +376,8 @@ Example use:
 
 See the documentation of `prompt-buffer' to know more about the options."
     (let ((result-channel (make-channel 1))
-          (interrupt-channel (make-channel 1)))
+          (interrupt-channel (make-channel 1))
+          (parent-thread-prompt-buffer nil))
       (ffi-within-renderer-thread
        *browser*
        (lambda ()
@@ -394,12 +387,14 @@ See the documentation of `prompt-buffer' to know more about the options."
                                               :window (current-window)
                                               :result-channel result-channel
                                               :interrupt-channel interrupt-channel)))))
+           (setf parent-thread-prompt-buffer prompt-buffer)
            (show-prompt-buffer prompt-buffer))))
-      ;; Wait until it's destroyed and get the selections from `return-selection'.
       (calispel:fair-alt
         ((calispel:? result-channel results)
+         (hide-prompt-buffer parent-thread-prompt-buffer)
          results)
         ((calispel:? interrupt-channel)
+         (hide-prompt-buffer parent-thread-prompt-buffer)
          (error 'nyxt-prompt-buffer-canceled))))))
 
 (defmethod prompter:object-attributes ((prompt-buffer prompt-buffer))
