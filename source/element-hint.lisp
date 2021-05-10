@@ -49,7 +49,7 @@
     ;; Returning fragment makes WebKit choke.
     nil))
 
-(defun add-element-hints (&key (selector "a, button, input, textarea"))
+(defun add-element-hints (&key (selector "a, button, input, textarea, details"))
   ;; TODO: Use hint generator from https://github.com/atlas-engineer/nyxt/issues/1290 maybe?
   (labels ((select-from-alphabet (code char-length alphabet)
              (let* ((exponents (nreverse (loop for pow below char-length
@@ -91,6 +91,12 @@
   (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier)))
             (set-attribute "checked" (ps:lisp value))))
 
+(define-parenscript toggle-details-element (&key nyxt-identifier)
+  (ps:let ((element (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier)))))
+    (if (ps:chain element (get-attribute "open"))
+        (ps:chain element (remove-attribute "open"))
+        (ps:chain element (set-attribute "open" t)))))
+
 (define-parenscript highlight-selected-hint (&key element scroll)
   (defun update-hints ()
     (ps:let* ((new-element (nyxt/ps:qs document (ps:lisp (format nil "#nyxt-hint-~a"
@@ -129,7 +135,8 @@
                                      (highlight-selected-hint :element suggestion)))))
 
 (serapeum:export-always 'query-hints)
-(defun query-hints (prompt function &key multi-selection-p (selector "a, button, input, textarea"))
+(defun query-hints (prompt function &key multi-selection-p
+                                      (selector "a, button, input, textarea, details"))
   (let* ((buffer (current-buffer)))
     (let ((result (prompt
                    :prompt prompt
@@ -174,6 +181,12 @@
         (list `("Body" ,(plump:text button))))
     ("Type" "Button")))
 
+(defmethod prompter:object-attributes ((details nyxt/dom:details-element))
+  `(("Hint" ,(plump:get-attribute details "nyxt-hint"))
+    ,@(when (clss:select "summary" details)
+        (list `("Summary" ,(plump:text (elt (clss:select "summary" details) 0)))))
+    ("Type" "Details")))
+
 (defmethod %follow-hint ((a nyxt/dom:a-element))
   (click-element :nyxt-identifier (get-nyxt-id a)))
 
@@ -189,6 +202,9 @@
 
 (defmethod %follow-hint ((textarea nyxt/dom:textarea-element))
   (focus-element :nyxt-identifier (get-nyxt-id textarea)))
+
+(defmethod %follow-hint ((details nyxt/dom:details-element))
+  (toggle-details-element :nyxt-identifier (get-nyxt-id details)))
 
 (defmethod %follow-hint-new-buffer-focus ((a nyxt/dom:a-element) &optional parent-buffer)
   (make-buffer-focus :url (plump:get-attribute "href" a)
