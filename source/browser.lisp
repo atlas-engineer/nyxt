@@ -496,7 +496,7 @@ The following example does a few things:
                   (log:info "Applied ~s URL-dispatcher on ~s and got ~s"
                             (symbol-name name)
                             (render-url url)
-                            (render-url new-url))
+                            (when new-url (render-url new-url)))
                   (when new-url
                     (setf (url request-data) new-url)
                     request-data)))
