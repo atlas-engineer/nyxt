@@ -1020,6 +1020,11 @@ generate a new URL query from user input.
 - If it's a search engine shortcut, include it in the suggestions.
 - If it's none of the above, use the `default-search-engine'."))
 
+(defun pushnew-url-history (history url)
+  "URL is not pushed if empty."
+  (when (and history (not (url-empty-p (url (current-buffer)))))
+      (prompter::history-pushnew history (render-url (url (current-buffer))))))
+
 (define-command set-url (&key (prefill-current-url-p t))
   "Set the URL for the current buffer, completing with history."
   (let ((history (set-url-history *browser*))
@@ -1027,8 +1032,7 @@ generate a new URL query from user input.
                        (make-command new-buffer-load (suggestion-values)
                          "Load a URL in a new buffer."
                          (make-buffer-focus :url (url (first suggestion-values)))))))
-    (when history
-      (containers:insert-item history (render-url (url (current-buffer)))))
+    (pushnew-url-history history (url (current-buffer)))
     (prompt
      :prompt "Open URL"
      :input (if prefill-current-url-p
@@ -1046,8 +1050,7 @@ generate a new URL query from user input.
         (actions (list (make-command new-buffer-load (suggestion-values)
                          "Load a URL in a new buffer."
                          (make-buffer-focus :url (url (first suggestion-values)))))))
-    (when history
-      (containers:insert-item history (render-url (url (current-buffer)))))
+    (pushnew-url-history history (url (current-buffer)))
     (prompt
      :prompt "Open URL in new buffer"
      :input (if prefill-current-url-p
