@@ -42,7 +42,11 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 
 (define-class gtk-window ()
   ((gtk-object)
-   (box-layout)
+   (root-box-layout)
+   (horizontal-box-layout)
+   (info-buffer-container-left)
+   (info-buffer-container-right)
+   (active-buffer-container)
    (prompt-buffer-container)
    (prompt-buffer-view)
    (status-container)
@@ -225,8 +229,12 @@ Such contexts are not needed for internal buffers."
 (defmethod initialize-instance :after ((window gtk-window) &key)
   (%within-renderer-thread-async
    (lambda ()
-     (with-slots (gtk-object box-layout active-buffer
-                  prompt-buffer-container prompt-buffer-view
+     (with-slots (gtk-object root-box-layout horizontal-box-layout
+                  info-buffer-container-left
+                  info-buffer-container-right
+                  active-buffer-container
+                  active-buffer prompt-buffer-container
+                  prompt-buffer-view
                   status-buffer status-container
                   message-container message-view
                   id key-string-buffer) window
@@ -235,9 +243,21 @@ Such contexts are not needed for internal buffers."
                                        :type :toplevel
                                        :default-width 1024
                                        :default-height 768))
-       (setf box-layout (make-instance 'gtk:gtk-box
+       (setf root-box-layout (make-instance 'gtk:gtk-box
                                        :orientation :vertical
                                        :spacing 0))
+       (setf horizontal-box-layout (make-instance 'gtk:gtk-box
+                                                  :orientation :horizontal
+                                                  :spacing 0))
+       (setf info-buffer-container-left (make-instance 'gtk:gtk-box
+                                                  :orientation :horizontal
+                                                  :spacing 0))
+       (setf info-buffer-container-right (make-instance 'gtk:gtk-box
+                                                  :orientation :horizontal
+                                                  :spacing 0))
+       (setf active-buffer-container (make-instance 'gtk:gtk-box
+                                                    :orientation :vertical
+                                                    :spacing 0))
        (setf prompt-buffer-container (make-instance 'gtk:gtk-box
                                                  :orientation :vertical
                                                  :spacing 0))
@@ -251,27 +271,31 @@ Such contexts are not needed for internal buffers."
        (setf active-buffer (make-dummy-buffer))
 
        ;; Add the views to the box layout and to the window
-       (gtk:gtk-box-pack-start box-layout (gtk-object active-buffer))
+       (gtk:gtk-box-pack-start active-buffer-container (gtk-object active-buffer) :expand t :fill t)
+       (gtk:gtk-box-pack-start horizontal-box-layout info-buffer-container-left :expand nil)
+       (gtk:gtk-box-pack-start horizontal-box-layout active-buffer-container :expand t :fill t)
+       (gtk:gtk-box-pack-start horizontal-box-layout info-buffer-container-right :expand nil)
+       (gtk:gtk-box-pack-start root-box-layout horizontal-box-layout :expand t :fill t)
 
        (setf message-view (make-web-view))
-       (gtk:gtk-box-pack-end box-layout message-container :expand nil)
+       (gtk:gtk-box-pack-end root-box-layout message-container :expand nil)
        (gtk:gtk-box-pack-start message-container message-view :expand t)
        (setf (gtk:gtk-widget-size-request message-container)
              (list -1 (message-buffer-height window)))
 
        (setf status-buffer (make-instance 'user-status-buffer))
-       (gtk:gtk-box-pack-end box-layout status-container :expand nil)
+       (gtk:gtk-box-pack-end root-box-layout status-container :expand nil)
        (gtk:gtk-box-pack-start status-container (gtk-object status-buffer) :expand t)
        (setf (gtk:gtk-widget-size-request status-container)
              (list -1 (height status-buffer)))
 
        (setf prompt-buffer-view (make-web-view))
-       (gtk:gtk-box-pack-end box-layout prompt-buffer-container :expand nil)
+       (gtk:gtk-box-pack-end root-box-layout prompt-buffer-container :expand nil)
        (gtk:gtk-box-pack-start prompt-buffer-container prompt-buffer-view :expand t)
        (setf (gtk:gtk-widget-size-request prompt-buffer-container)
              (list -1 0))
 
-       (gtk:gtk-container-add gtk-object box-layout)
+       (gtk:gtk-container-add gtk-object root-box-layout)
        (setf (slot-value *browser* 'last-active-window) window)
        (gtk:gtk-widget-show-all gtk-object)
        (gobject:g-signal-connect
@@ -300,7 +324,7 @@ Such contexts are not needed for internal buffers."
 
 (define-ffi-method on-signal-destroy ((window gtk-window))
   ;; remove buffer from window to avoid corruption of buffer
-  (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
+  (gtk:gtk-container-remove (root-box-layout window) (gtk-object (active-buffer window)))
   (window-delete window))
 
 (define-ffi-method ffi-window-delete ((window gtk-window))
@@ -767,12 +791,25 @@ See `gtk-browser's `modifier-translator' slot."
 
 (define-ffi-method ffi-window-set-buffer ((window gtk-window) (buffer gtk-buffer) &key (focus t))
   "Set BROWSER's WINDOW buffer to BUFFER."
-  (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
-  (gtk:gtk-box-pack-start (box-layout window) (gtk-object buffer) :expand t)
+  (gtk:gtk-container-remove (active-buffer-container window) (gtk-object (active-buffer window)))
+  (gtk:gtk-box-pack-start (active-buffer-container window) (gtk-object buffer) :expand t :fill t)
   (gtk:gtk-widget-show (gtk-object buffer))
   (when focus
     (gtk:gtk-widget-grab-focus (gtk-object buffer)))
   buffer)
+
+(define-ffi-method ffi-window-add-info-buffer ((window gtk-window) (buffer info-buffer) side)
+  "Add an info buffer to a window."
+  (match side
+    (:left (gtk:gtk-box-pack-start (info-buffer-container-left window) (gtk-object buffer)))
+    (:right (gtk:gtk-box-pack-end (info-buffer-container-right window) (gtk-object buffer))))
+  (setf (gtk:gtk-widget-size-request (gtk-object buffer)) 
+        (list (width buffer) -1))
+  (gtk:gtk-widget-show (gtk-object buffer)))
+
+(define-ffi-method ffi-window-remove-info-buffer ((window gtk-window) (buffer info-buffer))
+  "Remove an info buffer from a window."
+  (gtk:gtk-container-remove (horizontal-box-layout window) (gtk-object buffer)))
 
 (define-ffi-method ffi-window-set-prompt-buffer-height ((window gtk-window) height)
   (setf (gtk:gtk-widget-size-request (prompt-buffer-container window))
