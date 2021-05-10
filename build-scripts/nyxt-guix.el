@@ -144,13 +144,17 @@ implementation.  Example:
                         (concat (nyxt-cache-dir) "/sbcl-nyxt.image"))))
   (setq root (expand-file-name (or root
                                    (concat nyxt-guix-profile-directory "/nyxt"))))
-  (let ((guix-def (concat nyxt-checkout "/build-scripts/guix.scm")))
+  (let ((cl-source-registry (format "%s:%s"
+                                    nyxt-checkout
+                                    (or (getenv "CL_SOURCE_REGISTRY") "")))
+        (guix-def (concat nyxt-checkout "/build-scripts/guix.scm")))
+    (setenv "CL_SOURCE_REGISTRY" cl-source-registry)
     (cl-flet ((guix-environment (&rest command-args)
                                 (nyxt-guix-lazy-environment-command
                                  root
                                  :load guix-def
                                  :ad-hoc (cons "lisp-repl-core-dumper" ad-hoc)
-                                 :preserve preserve
+                                 :preserve (cons "CL_SOURCE_REGISTRY" preserve)
                                  :container container
                                  :network t
                                  :share (list (file-name-directory image-path)
