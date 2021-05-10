@@ -354,18 +354,23 @@ marked elements."
                                    marked-sources))
     (slot-value (selected-source prompter) 'actions)))
 
+(defun history-pushnew (history element &key (test #'equal) )
+  (alex:when-let ((previous-element-index (containers:element-position
+                                     history
+                                     element
+                                     :test test)))
+    (containers:delete-item-at history
+                               previous-element-index))
+  (containers:insert-item history element))
+
+
 (defun add-input-to-history (prompter)
   "Add PROMPTER's current input to its history, if any.
 If input is already in history, move to first position."
   (unless (or (null (history prompter))
               (str:empty? (input prompter)))
-    (alex:when-let ((previous-element (containers:element-position
-                                       (history prompter)
-                                       (input prompter)
-                                       :test #'equal)))
-      (containers:delete-item-at (history prompter)
-                                 previous-element))
-    (containers:insert-item (history prompter) (input prompter))))
+    (history-pushnew (history prompter)
+                     (input prompter))))
 
 (export-always 'return-selection)
 (defun return-selection (prompter &optional (action (default-action prompter)))
