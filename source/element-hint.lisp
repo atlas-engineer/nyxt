@@ -49,7 +49,7 @@
     ;; Returning fragment makes WebKit choke.
     nil))
 
-(defun add-element-hints (&key (selector "a, button, input, textarea, details"))
+(defun add-element-hints (&key (selector "a, button, input, textarea, details, select"))
   ;; TODO: Use hint generator from https://github.com/atlas-engineer/nyxt/issues/1290 maybe?
   (labels ((select-from-alphabet (code char-length alphabet)
              (let* ((exponents (nreverse (loop for pow below char-length
@@ -97,6 +97,13 @@
         (ps:chain element (remove-attribute "open"))
         (ps:chain element (set-attribute "open" t)))))
 
+(define-parenscript select-option-element (&key nyxt-identifier parent-select-identifier)
+  (ps:let* ((element (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))))
+            (parent-select (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" parent-select-identifier)))))
+    (if (ps:chain element (get-attribute "multiple"))
+        (ps:chain element (set-attribute "selected" t))
+        (setf (ps:@ parent-select value) (ps:@ element value)))))
+
 (define-parenscript highlight-selected-hint (&key element scroll)
   (defun update-hints ()
     (ps:let* ((new-element (nyxt/ps:qs document (ps:lisp (format nil "#nyxt-hint-~a"
@@ -136,7 +143,7 @@
 
 (serapeum:export-always 'query-hints)
 (defun query-hints (prompt function &key multi-selection-p
-                                      (selector "a, button, input, textarea, details"))
+                                      (selector "a, button, input, textarea, details, select"))
   (let* ((buffer (current-buffer)))
     (let ((result (prompt
                    :prompt prompt
@@ -188,6 +195,15 @@
   (when (clss:select "summary" details)
     `(("Summary" ,(plump:text (elt (clss:select "summary" details) 0))))))
 
+(defmethod prompter:object-attributes ((select nyxt/dom:select-element))
+  `(("Options" ,(str:shorten 80 (str:join ", " (map 'list #'plump:text
+                                                    (clss:select "option" select)))))))
+
+(defmethod prompter:object-attributes ((option nyxt/dom:option-element))
+  `(("Text" ,(plump:text option))
+    ,@(when (plump:get-attribute option "value")
+        `(("Value" ,(plump:get-attribute option "value"))))))
+
 (defmethod %follow-hint ((a nyxt/dom:a-element))
   (click-element :nyxt-identifier (get-nyxt-id a)))
 
@@ -206,6 +222,23 @@
 
 (defmethod %follow-hint ((details nyxt/dom:details-element))
   (toggle-details-element :nyxt-identifier (get-nyxt-id details)))
+
+(define-class options-source (prompter:source)
+  ((prompter:name "Options"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:documentation "Prompt source for select tag options."))
+
+(defmethod %follow-hint ((select nyxt/dom:select-element))
+  (sera:and-let* ((options (coerce (clss:select "option" select) 'list))
+                  (values (prompt :prompt "Value to select"
+                                  :sources (make-instance 'options-source
+                                                          :constructor options
+                                                          :multi-selection-p
+                                                          (plump:get-attribute select "multiple")))))
+    (dolist (option (mapcar (alex:rcurry #'find options :test #'equalp) values))
+      (select-option-element :nyxt-identifier (get-nyxt-id option)
+                             :parent-select-identifier (get-nyxt-id select)))))
 
 (defmethod %follow-hint-new-buffer-focus ((a nyxt/dom:a-element) &optional parent-buffer)
   (make-buffer-focus :url (plump:get-attribute "href" a)
