@@ -154,7 +154,8 @@
       (funcall function result))))
 
 (defmethod prompter:object-attributes :around ((element plump:element))
-  `(("Hint" ,(plump:get-attribute element "nyxt-hint"))
+  `(,@(when (plump:get-attribute element "nyxt-hint")
+        `(("Hint" ,(plump:get-attribute element "nyxt-hint"))))
     ,@(call-next-method)
     ("Type" ,(str:capitalize (str:string-case
                                  (plump:tag-name element)
