@@ -470,7 +470,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                             nil)))
 
 (declaim (ftype (function (buffer &key (:downloads-only boolean))) proxy-adress))
-(defun proxy-address (buffer &key (downloads-only nil))
+(defun proxy-url (buffer &key (downloads-only nil))
   "Return the proxy address, nil if not set.
 If DOWNLOADS-ONLY is non-nil, then it only returns the proxy address (if any)
 when `proxied-downloads-p' is true."
