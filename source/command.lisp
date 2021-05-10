@@ -243,8 +243,8 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (defmethod prompter:object-attributes ((slot slot))
-  `(("Name" ,(name slot))
-    ("Class" ,(class-sym slot))))
+  `(("Name" ,(string (name slot)))
+    ("Class" ,(string (class-sym slot)))))
 
 (defun exported-p (sym)
   (eq :external

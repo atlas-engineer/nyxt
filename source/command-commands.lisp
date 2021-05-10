@@ -13,7 +13,7 @@
 
 (defmethod prompter:object-attributes ((hook-description hook-description))
   `(("Name" ,(name hook-description))
-    ("Value" ,(value hook-description))))
+    ("Value" ,(princ-to-string (value hook-description)))))
 
 (defmethod prompter:object-attributes ((handler hooks:handler))
   `(("Name" ,(str:downcase (hooks:name handler)))))
