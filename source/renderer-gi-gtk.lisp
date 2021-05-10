@@ -24,8 +24,9 @@
                         (lambda ()
                           (with-protect ("Error on GTK thread: ~a" :condition)
                             (glib:g-set-prgname "nyxt")
+                            #+GTK-3-4
                             (gdk:gdk-set-program-class "Nyxt")
-                            (gir:invoke ((gir:ffi "Gtk") 'main))))
+                            (gir:invoke ((gir:ffi "Gtk" "3.0") 'main))))
                         :name "main thread")))
       (finalize browser urls startup-timestamp)
       (unless *run-from-repl-p*
