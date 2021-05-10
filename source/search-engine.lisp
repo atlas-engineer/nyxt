@@ -41,9 +41,9 @@ Can be built via `make-search-completion-function'"))
 (defun proxied-get (url &rest args)
   "A version of `dex:get' that enables proxy in case `current-buffer' has one enabled."
   (let ((args (append args (list :proxy (and (web-buffer-p (current-buffer))
-                                             (proxy-address (current-buffer))
+                                             (proxy-url (current-buffer))
                                              (quri:render-uri
-                                              (proxy-address (current-buffer))))))))
+                                              (proxy-url (current-buffer))))))))
     (apply #'dex:get url args)))
 
 (export-always 'make-search-completion-function)
