@@ -1022,8 +1022,8 @@ generate a new URL query from user input.
 
 (defun pushnew-url-history (history url)
   "URL is not pushed if empty."
-  (when (and history (not (url-empty-p (url (current-buffer)))))
-      (prompter::history-pushnew history (render-url (url (current-buffer))))))
+  (when (and history (not (url-empty-p url)))
+      (prompter::history-pushnew history (render-url url))))
 
 (define-command set-url (&key (prefill-current-url-p t))
   "Set the URL for the current buffer, completing with history."
