@@ -376,7 +376,11 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 
 (define-user-class internal-buffer)
 
-(define-class info-buffer (internal-buffer) ())
+(define-class info-buffer (internal-buffer)
+  ((width 250 :documentation "The width in pixels."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-user-class info-buffer)
 
