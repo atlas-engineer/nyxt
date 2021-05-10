@@ -49,7 +49,7 @@
     ;; Returning fragment makes WebKit choke.
     nil))
 
-(defun add-element-hints (&key (selector "a, button, input, textarea, details, select"))
+(defun add-element-hints (&key selector)
   ;; TODO: Use hint generator from https://github.com/atlas-engineer/nyxt/issues/1290 maybe?
   (labels ((select-from-alphabet (code char-length alphabet)
              (let* ((exponents (nreverse (loop for pow below char-length
