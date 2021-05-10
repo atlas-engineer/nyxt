@@ -136,12 +136,11 @@ directory where ASDF will find it]]):
 - gsettings-desktop-schemas (for WebKitGTK+)
 - libfixposix
 - xclip (for clipboard support)
-- notify-osd (optional)
 - enchant (for spellchecking)
 
 - Debian-based distributions:
   #+begin_src sh
-    sudo apt install sbcl libwebkit2gtk-4.0-dev glib-networking gsettings-desktop-schemas libfixposix-dev xclip notify-osd enchant
+    sudo apt install sbcl libwebkit2gtk-4.0-dev glib-networking gsettings-desktop-schemas libfixposix-dev xclip enchant
   #+end_src
 
 - Fedora:
@@ -217,7 +216,6 @@ details about how to install it on your system.
 - Qt 5 WebEngine
 - libfixposix
 - xclip (for clipboard support)
-- notify-osd (optional)
 - enchant (for spellchecking)
 
 *** macOS dependencies
