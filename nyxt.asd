@@ -38,8 +38,8 @@
                moptilities
                dexador
                enchant
-               file-attributes
                iolib
+               iolib/os
                local-time
                log4cl
                mk-string-metrics
@@ -350,7 +350,7 @@ See `asdf::*immutable-systems*'."
               (let ((binary-file (format nil "~a/nyxt" *bindir*)))
                 (ensure-parent-exists binary-file)
                 (uiop:copy-file (system-relative-pathname c "nyxt") binary-file)
-                ;; TODO: Use file-attributes instead of chmod?  Too verbose?
+                ;; TODO: Use iolib/os:file-permissions instead of chmod?  Too verbose?
                 (uiop:run-program (list "chmod" "+x" binary-file))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

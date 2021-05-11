@@ -295,9 +295,10 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
                                  :local-filename socket-path)
         ;; We don't want group members or others to flood the socket or, worse,
         ;; execute code.
-        (set-permissions socket-path
-                         :group-read nil :group-write nil :group-execute nil
-                         :other-read nil :other-write nil :other-execute nil)
+        (setf (iolib/os:file-permissions socket-path)
+              (set-difference (iolib/os:file-permissions socket-path)
+                              '(:group-read :group-write :group-exec
+                                :other-read :other-write :other-exec)))
         (loop as connection = (iolib:accept-connection s)
               while connection
               do (progn
