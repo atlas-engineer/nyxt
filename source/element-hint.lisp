@@ -63,7 +63,7 @@
              (let* ((alphabet (hints-alphabet (current-mode 'web)))
                     (char-length (ceiling (log length (length alphabet)))))
                (loop for i below length collect (select-from-alphabet i char-length alphabet)))))
-    (let* ((dom (update-document-model))
+    (let* ((dom (document-model (current-mode 'web)))
            (hintable-elements (coerce (clss:select selector dom) 'list))
            (hints (generate-hints (length hintable-elements))))
       (add-stylesheet)
