@@ -281,7 +281,7 @@ instance must be non-nil.")
         (:code "~/.local/share/nyxt/extensions")".")
     (:p "Extensions are regular Common Lisp systems.")
     (:p "A catalogue of extensions is available in the "
-        (:code "document/EXTENSIONS.org") "file in the source repository.")
+        (:code "document/EXTENSIONS.org") " file in the source repository.")
 
     (:h2 "Troubleshooting")
     (:h3 "Playing videos")
