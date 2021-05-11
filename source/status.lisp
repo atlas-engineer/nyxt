@@ -24,6 +24,17 @@
    (:a :class "button" :title "Execute" :href (lisp-url '(nyxt:execute-command)) "⚙")
    (:a :class "button" :title "Buffers" :href (lisp-url '(nyxt/buffer-listing-mode:list-buffers)) "≡")))
 
+(export-always 'format-status-vi-mode)
+(defun format-status-vi-mode (&optional (buffer (current-buffer)))
+  (cond ((find-submode buffer 'vi-normal-mode)
+         (markup:markup
+          (:a :class "button" :title "Vi normal mode" :href (lisp-url '(nyxt/vi-mode:vi-insert-mode)) "N")))
+        ((find-submode buffer 'vi-insert-mode)
+         (markup:markup
+          (:a :class "button" :title "Vi insert mode" :href (lisp-url '(nyxt/vi-mode:vi-normal-mode)) "I")))
+        (t (markup:markup
+            (:span "")))))
+
 (export-always 'format-status-load-status)
 (defun format-status-load-status (buffer)
   (markup:markup
@@ -54,12 +65,27 @@
                        (lisp-url `(nyxt::switch-buffer-or-query-domain ,domain)) domain))))))
 
 (defun format-status (window)
-  (let ((buffer (current-buffer window)))
+  (let* ((buffer (current-buffer window))
+         (vi-mode-color (cond ((find-submode buffer 'vi-normal-mode)
+                               "background-color:rgb(100,100,100);")
+                              ((find-submode buffer 'vi-insert-mode)
+                               "background-color:rgb(105,38,38);")))
+         (url-class (if vi-mode-color
+                        ""
+                        "")))
+                        ;; "overlap")))
     (markup:markup
      (:div :id "container"
            (:div :id "controls" :class "arrow-right"
                  (markup:raw (format-status-buttons)))
            (:div :id "url" :class "arrow-right"
+                 :style "background-color:rgb(80,80,80)" "")
+           (:div :id "vi-mode"
+                 :style vi-mode-color
+                 (markup:raw (format-status-vi-mode buffer)))
+           (:div :class "arrow arrow-right"
+                 :style vi-mode-color "")
+           (:div :id "url"
                  (markup:raw
                   (format-status-load-status buffer)
                   (format-status-url buffer)))
