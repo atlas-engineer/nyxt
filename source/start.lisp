@@ -427,10 +427,10 @@ Examples:
   ;; Options should be accessible anytime, even when run from the REPL.
   (setf *options* options)
 
-  (if (getf *options* :verbose)
+  (if (getf options :verbose)
       (progn
         (log:config :debug)
-        (format t "Arguments parsed: ~a and ~a~&" *options* urls))
+        (format t "Arguments parsed: ~a and ~a~&" options urls))
       (log:config :pattern "<%p> [%D{%H:%M:%S}] %m%n"))
 
   (cond
