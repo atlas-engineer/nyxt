@@ -412,6 +412,7 @@ Examples:
   ;; Extensions should be made accessible straight from the beginning,
   ;; e.g. before a script is run.
   (pushnew 'nyxt-source-registry asdf:*default-source-registries*)
+  (asdf:clear-configuration)
 
   ;; Options should be accessible anytime, even when run from the REPL.
   (setf *options* options)
