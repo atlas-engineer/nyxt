@@ -382,14 +382,20 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                 :clip-path "polygon(0 50%, 100% 100%, 100% 0)")
                ("#container"
                 :display "grid"
-                ;; Columns: controls, arrow, url, arrow, tabs, arrow, modes
-                :grid-template-columns "115px 10px 1fr 10px 2fr 10px 250px"
+                ;; Columns: controls, arrow, vi-status, arrow, url, arrow, tabs, arrow, modes
+                :grid-template-columns "115px 10px 20px 10px 1fr 10px 2fr 10px 250px"
                 :overflow-y "hidden")
                ("#controls"
                 :background-color "rgb(80,80,80)"
                 :padding-left "5px"
                 :overflow "hidden"
                 :white-space "nowrap")
+               ("#vi-mode"
+                :margin-left "-10px"
+                :padding-left "10px"
+                :text-align "center")
+               (".overlap"
+                :grid-column-start "span 2")
                ("#url"
                 :background-color "rgb(120,120,120)"
                 :min-width "100px"
