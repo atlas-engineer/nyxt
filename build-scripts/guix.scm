@@ -167,7 +167,6 @@
        ("cluffer" ,cl-cluffer)
        ("dexador" ,cl-dexador)
        ("enchant" ,cl-enchant)
-       ("file-attributes" ,cl-file-attributes)
        ("fset" ,cl-fset)
        ("hu.dwim.defclass-star" ,cl-hu.dwim.defclass-star)
        ("iolib" ,cl-iolib)
