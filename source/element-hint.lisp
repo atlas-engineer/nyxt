@@ -106,8 +106,12 @@
 
 (define-parenscript highlight-selected-hint (&key element scroll)
   (defun update-hints ()
-    (ps:let* ((new-element (nyxt/ps:qs document (ps:lisp (format nil "#nyxt-hint-~a"
-                                                         (plump:get-attribute element "nyxt-hint"))))))
+    (ps:let* ((new-element (nyxt/ps:qs document
+                                       (ps:lisp (format
+                                                 nil "#nyxt-hint-~a"
+                                                 (typecase element
+                                                   (plump:element (plump:get-attribute element "nyxt-hint"))
+                                                   (search-match (identifier element))))))))
       (when new-element
         (unless ((ps:@ new-element class-list contains) "nyxt-highlight-hint")
           (ps:let ((old-elements (nyxt/ps:qsa document ".nyxt-highlight-hint")))
@@ -296,8 +300,7 @@
            (and (slot-exists-p hint 'buffer)
                 (equal (buffer hint) buffer)))
           (with-current-buffer buffer
-            (highlight-selected-hint :element hint
-                                     :scroll scroll))
+            (highlight-selected-hint :element hint :scroll scroll))
           (remove-focus)))))
 
 (define-command follow-hint ()
