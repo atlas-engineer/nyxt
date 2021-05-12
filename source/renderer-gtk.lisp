@@ -56,7 +56,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 
 (define-class gtk-buffer ()
   ((gtk-object)
-   (proxy-url (quri:uri ""))
+   (gtk-proxy-url (quri:uri ""))
    (proxy-ignored-hosts '())
    (data-manager-path (make-instance 'data-manager-data-path
                                      :dirname (uiop:xdg-cache-home +data-root+))
@@ -1024,7 +1024,7 @@ For the user-level interface, see `proxy-mode'.
 Note: WebKit supports three proxy 'modes': default (the system proxy),
 custom (the specified proxy) and none."
   (declare (type quri:uri proxy-url))
-  (setf (proxy-url buffer) proxy-url)
+  (setf (gtk-proxy-url buffer) proxy-url)
   (setf (proxy-ignored-hosts buffer) ignore-hosts)
   (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
          (settings (cffi:null-pointer))
@@ -1045,7 +1045,7 @@ custom (the specified proxy) and none."
 (define-ffi-method ffi-buffer-get-proxy ((buffer gtk-buffer))
   "Return the proxy URL and list of ignored hosts (a list of strings) as second value."
   (the (values (or quri:uri null) list-of-strings)
-       (values (proxy-url buffer)
+       (values (gtk-proxy-url buffer)
                (proxy-ignored-hosts buffer))))
 
 (define-ffi-method ffi-buffer-set-zoom-level ((buffer gtk-buffer) value)
