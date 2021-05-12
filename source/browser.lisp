@@ -10,8 +10,8 @@
 (export-always '(make-hook-resource make-handler-resource))
 
 (define-class proxy ()
-  ((server-address (quri:uri "socks5://127.0.0.1:9050")
-                   :documentation "The address of the proxy server.
+  ((url (quri:uri "socks5://127.0.0.1:9050")
+        :documentation "The address of the proxy server.
 It's made of three components: protocol, host and port.
 Example: \"http://192.168.1.254:8080\".")
    (allowlist '("localhost" "localhost:8080")

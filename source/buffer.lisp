@@ -463,7 +463,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
   (setf (slot-value buffer 'proxy) proxy)
   (if proxy
       (ffi-buffer-set-proxy buffer
-                            (server-address proxy)
+                            (url proxy)
                             (allowlist proxy))
       (ffi-buffer-set-proxy buffer
                             (quri:uri "")
@@ -478,7 +478,7 @@ when `proxied-downloads-p' is true."
          (proxied-downloads (and proxy (proxied-downloads-p proxy))))
     (when (or (and (not downloads-only) proxy)
               proxied-downloads)
-      (server-address proxy))))
+      (url proxy))))
 
 (defmethod initialize-modes ((buffer buffer))
   "Initialize BUFFER modes.

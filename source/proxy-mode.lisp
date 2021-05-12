@@ -15,14 +15,14 @@ Example to use Tor as a proxy both for browsing and downloading:
 
 \(define-configuration nyxt/proxy-mode:proxy-mode
   ((nyxt/proxy-mode:proxy (make-instance 'proxy
-                                         :server-address (quri:uri \"socks5://localhost:9050\")
+                                         :url (quri:uri \"socks5://localhost:9050\")
                                          :allowlist '(\"localhost\" \"localhost:8080\")
                                          :proxied-downloads-p t))))
 
 \(define-configuration buffer
   ((default-modes (append '(proxy-mode) %slot-default%))))"
   ((proxy (make-instance 'proxy
-                 :server-address (quri:uri "socks5://localhost:9050")
+                 :url (quri:uri "socks5://localhost:9050")
                  :allowlist '("localhost" "localhost:8080")
                  :proxied-downloads-p t)
           :type proxy)
@@ -33,5 +33,5 @@ Example to use Tor as a proxy both for browsing and downloading:
     (lambda (mode)
       (setf (proxy (buffer mode)) (proxy mode))
       (echo "Proxy set to ~a (allowlisting ~a)."
-            (render-url (server-address (proxy mode)))
+            (render-url (url (proxy mode)))
             (allowlist (proxy mode)))))))
