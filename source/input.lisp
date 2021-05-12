@@ -32,9 +32,10 @@ Example:
     keymap))
 
 (export-always 'current-keymaps)
-(defun current-keymaps (&optional (buffer (if (active-prompt-buffers (current-window))
-                                              (current-prompt-buffer)
-                                              (current-buffer))))
+(defun current-keymaps (&optional (buffer (let ((prompt-buffer (current-prompt-buffer)))
+                                            (if (and prompt-buffer (ffi-focused-p prompt-buffer))
+                                                prompt-buffer
+                                                (current-buffer)))))
   "Return the list of `keymap' for the current buffer, ordered by priority.
 If non-empty, return the result of BUFFER's `current-keymaps-hook' instead."
   (let ((keymaps
