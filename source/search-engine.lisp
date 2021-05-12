@@ -36,37 +36,30 @@ Can be built via `make-search-completion-function'"))
                  :search-url search-url
                  :fallback-url fallback-url))
 
-;; TODO: Move elsewhere?
-;; TODO: Add `proxied-post'?
-(defun proxied-get (url &rest args)
-  "A version of `dex:get' that enables proxy in case `current-buffer' has one enabled."
-  (let ((args (append args (list :proxy (and (web-buffer-p (current-buffer))
-                                             (proxy-url (current-buffer))
-                                             (quri:render-uri
-                                              (proxy-url (current-buffer))))))))
-    (apply #'dex:get url args)))
-
 (export-always 'make-search-completion-function)
 (declaim (ftype (function (&key (:base-url string)
                                 (:request-function (function (string &rest *) *))
+                                (:request-args list)
                                 (:processing-function (function (*) list-of-strings)))
                           (function (string) list-of-strings))
                 make-search-completion-function))
 (defun make-search-completion-function (&key base-url
-                                          (request-function #'proxied-get)
+                                          (request-function #'dex:get)
+                                          request-args
                                           (processing-function #'cl-json:decode-json-from-string))
   "Return a function suitable to be a `completion-function' of `search-engine'.
 
 BASE-URL is a one-placeholder format string (e.g.,
 \"https://duckduckgo.com/ac/?q=~a\") to request completions from.
 REQUEST-FUNCTION is the function to make this request with. Defaults to
-`proxied-get'. Takes a URL built from user input and BASE-URL.
+`dex:get'. Takes a URL built from user input and BASE-URL.
 PROCESSING-FUNCTION is a function to process whatever the REQUEST-FUNCTION
 returns. Should return a list of strings."
   #'(lambda (input)
       (funcall processing-function
-               (funcall request-function
-                        (format nil base-url (quri:url-encode input))))))
+               (apply request-function
+                      (cons (format nil base-url (quri:url-encode input))
+                            request-args)))))
 
 (defmethod prompter:object-attributes ((engine search-engine))
   `(("Shortcut" ,(shortcut engine))
