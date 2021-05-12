@@ -424,9 +424,8 @@ Otherwise go forward to the only child."
   (nyxt::with-current-html-buffer (output-buffer "*History*"
                                                  'nyxt/history-tree-mode:history-tree-mode)
     (with-data-unsafe (history (let ((dummy-buffer (nyxt::make-dummy-buffer)))
-                                 (prog1
-                                     (history-path dummy-buffer)
-                                   (delete-buffer :id (id dummy-buffer)))))
+                                 (prog1 (history-path dummy-buffer)
+                                   (ffi-buffer-delete dummy-buffer))))
       (let ((markup:*auto-escape* nil)
             (mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
             (tree `(:ul ,(htree:map-tree
