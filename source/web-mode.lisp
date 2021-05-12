@@ -420,12 +420,10 @@ Otherwise go forward to the only child."
                         tree)))))))))
 
 (define-command history-tree ()         ; TODO: Factor this with `buffer-history-tree'.
-  "Open a new buffer displaying the whole history tree."
+  "Open a new buffer displaying the whole history branch the current buffer is on."
   (nyxt::with-current-html-buffer (output-buffer "*History*"
                                                  'nyxt/history-tree-mode:history-tree-mode)
-    (with-data-unsafe (history (let ((dummy-buffer (nyxt::make-dummy-buffer)))
-                                 (prog1 (history-path dummy-buffer)
-                                   (ffi-buffer-delete dummy-buffer))))
+    (with-data-unsafe (history (history-path (current-buffer)))
       (let ((markup:*auto-escape* nil)
             (mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
             (tree `(:ul ,(htree:map-tree
