@@ -1165,3 +1165,6 @@ As a second value, return the current buffer index starting from 0."
   (webkit:webkit-web-view-go-to-back-forward-list-item
    (gtk-object buffer)
    (webkit-history-entry-gtk-object history-entry)))
+
+(define-ffi-method ffi-focused-p ((buffer gtk-buffer))
+  (gtk:gtk-widget-is-focus (gtk-object buffer)))
