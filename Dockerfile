@@ -1,7 +1,7 @@
 FROM fedora:34
 
 RUN dnf groupinstall -y "Development Tools"
-RUN dnf install -y ruby ruby-devel rubygems rpm-build sbcl libffi-devel redhat-rpm-config git zlib-devel
+RUN dnf install -y ruby ruby-devel rubygems rubygem-rexml rpm-build sbcl libffi-devel redhat-rpm-config git zlib-devel
 # For iolib:
 RUN dnf install -y gcc-c++
 # Rest of deps
