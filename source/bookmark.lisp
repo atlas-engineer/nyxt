@@ -137,7 +137,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
     (alex:when-let ((existing (find url bookmarks :key #'url :test #'url-equal)))
       (tags existing))))
 
-(define-command bookmark-current-page (&optional (buffer (current-buffer)))
+(define-command bookmark-current-url (&optional (buffer (current-buffer)))
   "Bookmark the URL of BUFFER."
   ;; TODO: Re-use extract-keywords to implement tag suggestion source.
   ;; (flet ((extract-keywords (html limit)
@@ -175,13 +175,13 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                       :tags tags)
         (echo "Bookmarked ~a." (render-url (url buffer))))))
 
-(define-command bookmark-page ()
+(define-command bookmark-buffer-url ()
   "Bookmark the currently opened page(s) in the active buffer."
   (prompt
    :input "Bookmark URL from buffer(s)"
    :sources (make-instance 'buffer-source
                            :multi-selection-p t
-                           :actions (list (make-unmapped-command bookmark-current-page)))))
+                           :actions (list (make-unmapped-command bookmark-current-url)))))
 
 (define-command bookmark-url (&key url)
   "Allow the user to bookmark a URL via minibuffer input."
@@ -207,27 +207,25 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                                :marks (url-bookmark-tags url))))))
           (bookmark-add url :tags tags)))))
 
-(define-command bookmark-delete ()
-  "Delete bookmark(s)."
-  (with-data-access (bookmarks (bookmarks-path (current-buffer)))
-    (let ((entries (prompt
-                    :prompt "Delete bookmark(s)"
-                    ;; :default-modes '(minibuffer-tag-mode minibuffer-mode)
-                    :sources (make-instance 'bookmark-source
-                                            :multi-selection-p t))))
-      (setf bookmarks
-            (set-difference bookmarks
-                            entries :test #'equals)))))
-
-(defun delete-bookmark (url)
-  "Delete a bookmark by the URL. This function depends on equals only
-comparing URLs."
-  (with-data-access (bookmarks (bookmarks-path (current-buffer)))
-    (setf bookmarks
-          (set-difference
-           bookmarks
-           (list (make-instance 'bookmark-entry :url (quri:uri url)))
-           :test #'equals))))
+(define-command delete-bookmark (&optional url)
+  "Delete bookmark(s). Delete a bookmark by the URL. This function depends on
+equals only comparing URLs."
+  (if url
+      (with-data-access (bookmarks (bookmarks-path (current-buffer)))
+        (setf bookmarks
+              (set-difference
+               bookmarks
+               (list (make-instance 'bookmark-entry :url (quri:uri url)))
+               :test #'equals)))
+      (with-data-access (bookmarks (bookmarks-path (current-buffer)))
+        (let ((entries (prompt
+                        :prompt "Delete bookmark(s)"
+                        ;; :default-modes '(minibuffer-tag-mode minibuffer-mode)
+                        :sources (make-instance 'bookmark-source
+                                                :multi-selection-p t))))
+          (setf bookmarks
+                (set-difference bookmarks
+                                entries :test #'equals))))))
 
 (define-command set-url-from-bookmark ()
   "Set the URL for the current buffer from a bookmark.

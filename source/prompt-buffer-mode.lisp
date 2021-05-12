@@ -38,7 +38,7 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "C-down" 'select-last
        "C-pagedown" 'select-next-source
        "C-pageup" 'select-previous-source
-       "tab" 'prompt-buffer-insert-selection
+       "tab" 'insert-selection
        "return" 'return-selection
        "M-return" 'return-selection-over-action
        "C-return" 'run-follow-mode-function
@@ -46,15 +46,15 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "f1 m" 'describe-prompt-buffer
        "C-c C-f" 'toggle-follow         ; TODO: This is the Emacs Helm binding.  Better?
        "C-]" 'toggle-attributes-display ; TODO: This is the Emacs Helm binding.  Better?
-       "C-space" 'prompt-buffer-toggle-mark
-       "shift-space" 'prompt-buffer-toggle-mark-backwards
-       "M-space" 'prompt-buffer-toggle-mark
-       "M-a" 'prompt-buffer-mark-all
-       "M-u" 'prompt-buffer-unmark-all
-       "M-m" 'prompt-buffer-toggle-mark-all
+       "C-space" 'toggle-mark
+       "shift-space" 'toggle-mark-backwards
+       "M-space" 'toggle-mark
+       "M-a" 'mark-all
+       "M-u" 'unmark-all
+       "M-m" 'toggle-mark-all
        "C-w" 'copy-selection
-       "C-v" 'prompt-buffer-paste
-       "M-h" 'prompt-buffer-history)
+       "C-v" 'paste
+       "M-h" 'history)
 
       scheme:emacs
       (list
@@ -291,7 +291,7 @@ current unmarked selection."
   (prompter:toggle-follow prompt-buffer))
 
 ; TODO: Remove the "prompt-buffer-" prefix of all prompt-buffer-mode commands.
-(define-command prompt-buffer-toggle-mark (&key
+(define-command toggle-mark (&key
                                            (prompt-buffer (current-prompt-buffer))
                                            (direction :forward))
   "Mark selection.
@@ -303,27 +303,27 @@ select next."
     (:forward (select-next prompt-buffer))
     (:backward (select-previous prompt-buffer))))
 
-(define-command prompt-buffer-toggle-mark-backwards (&key
+(define-command toggle-mark-backwards (&key
                                                      (prompt-buffer (current-prompt-buffer)))
   "Mark selection.
 Only available if pomrpt-buffer `multi-selection-p' is non-nil.  DIRECTION can be
 `:forward' or `:backward' and specifies which suggestion to select next."
-  (prompt-buffer-toggle-mark :prompt-buffer prompt-buffer
+  (toggle-mark :prompt-buffer prompt-buffer
                              :direction :backward))
 
-(define-command prompt-buffer-mark-all (&optional (prompt-buffer (current-prompt-buffer)))
+(define-command mark-all (&optional (prompt-buffer (current-prompt-buffer)))
   "Mark all visible suggestions in current source.
 Only available if `multi-selection-p' is non-nil."
   (prompter:mark-all prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
-(define-command prompt-buffer-unmark-all (&optional (prompt-buffer (current-prompt-buffer)))
+(define-command unmark-all (&optional (prompt-buffer (current-prompt-buffer)))
   "Unmark all visible suggestions in current source.
 Only available if `multi-selection-p' is non-nil."
   (prompter:unmark-all prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
-(define-command prompt-buffer-toggle-mark-all (&optional
+(define-command toggle-mark-all (&optional
                                                (prompt-buffer (current-prompt-buffer)))
   "Toggle the mark over all visible suggestions in current source.
 Only available if `multi-selection-p' is non-nil."
@@ -343,7 +343,7 @@ Only available if `multi-selection-p' is non-nil."
       (trivial-clipboard:text text)
       (echo "Copied ~s to clipboard." text))))
 
-(define-command prompt-buffer-paste ()
+(define-command paste ()
   "Paste clipboard text to input."
   (ffi-buffer-evaluate-javascript
    (current-prompt-buffer)
@@ -351,16 +351,16 @@ Only available if `multi-selection-p' is non-nil."
      (nyxt/ps:insert-at (ps:chain document (get-element-by-id "input"))
                         (ps:lisp (ring-insert-clipboard (nyxt::clipboard-ring *browser*)))))))
 
-(defun prompt-buffer-history-entries (&optional (window (current-window)))
+(defun history-entries (&optional (window (current-window)))
   (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
     (containers:container->list
      (prompter:history first-prompt-buffer))))
 
 (define-class prompt-buffer-history-source (prompter:source)
   ((prompter:name "Prompt buffer input history")
-   (prompter:constructor (prompt-buffer-history-entries))))
+   (prompter:constructor (history-entries))))
 
-(define-command prompt-buffer-history (&optional (prompt-buffer (current-prompt-buffer)))
+(define-command history (&optional (prompt-buffer (current-prompt-buffer)))
   "Choose a prompt-buffer input history entry to insert as input."
   (let ((history (prompter:history prompt-buffer)))
     (if (and history (not (containers:empty-p history)))
@@ -371,7 +371,7 @@ Only available if `multi-selection-p' is non-nil."
             (nyxt::set-prompt-buffer-input input)))
         (echo "Prompt buffer has no history."))))
 
-(define-command prompt-buffer-insert-selection (&optional (prompt-buffer (current-prompt-buffer)))
+(define-command insert-selection (&optional (prompt-buffer (current-prompt-buffer)))
   "Insert current selection default property in the prompt buffer input."
   (alex:when-let ((selection (prompter:attributes-default
                               (prompter:selected-suggestion prompt-buffer))))

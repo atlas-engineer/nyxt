@@ -45,5 +45,5 @@
                   (setf (thread mode)
                         (run-thread
                           (loop while (buffer mode)
-                                do (nyxt::reload-buffer (buffer mode))
+                                do (nyxt::reload-buffers (list (buffer mode)))
                                    (sleep (sleep-time mode)))))))))
