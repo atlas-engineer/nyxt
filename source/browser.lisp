@@ -650,3 +650,4 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-display-url (text))
 (define-ffi-generic ffi-buffer-cookie-policy (buffer value))
 (define-ffi-generic ffi-set-preferred-languages (buffer value))
+(define-ffi-generic ffi-focused-p (buffer))
