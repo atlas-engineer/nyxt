@@ -25,13 +25,13 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "C-u M-l" 'set-url-new-nosave-buffer
                      "f5" 'reload-current-buffer
                      "C-r" 'reload-current-buffer
-                     "C-R" 'reload-buffer
+                     "C-R" 'reload-buffers
                      "C-m o" 'set-url-from-bookmark
                      "C-m C-o" 'set-url-from-bookmark-new-buffer
-                     "C-m s" 'bookmark-current-page
-                     "C-d" 'bookmark-current-page
-                     "C-m C-s" 'bookmark-page
-                     "C-m k" 'bookmark-delete
+                     "C-m s" 'bookmark-current-url
+                     "C-d" 'bookmark-current-url
+                     "C-m C-s" 'bookmark-buffer-url
+                     "C-m k" 'delete-bookmark
                      "C-t" 'make-buffer-focus
                      "C-m u" 'bookmark-url
                      "C-b" 'list-bookmarks
@@ -87,9 +87,9 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "M-x" 'execute-command
                      "C-x r j" 'set-url-from-bookmark
                      "C-x r J" 'set-url-from-bookmark-new-buffer
-                     "C-x r M" 'bookmark-current-page
-                     "C-x r m" 'bookmark-page
-                     "C-x r k" 'bookmark-delete
+                     "C-x r M" 'bookmark-current-url
+                     "C-x r m" 'bookmark-buffer-url
+                     "C-x r k" 'delete-bookmark
                      "C-x r u" 'bookmark-url
                      "C-x 5 2" 'make-window
                      "C-x 5 0" 'delete-current-window
@@ -109,13 +109,13 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "O" 'set-url-new-buffer
                      "g o" 'set-url-new-nosave-buffer
                      "m u" 'bookmark-url
-                     "m d" 'bookmark-delete
+                     "m d" 'delete-bookmark
                      "R" 'reload-current-buffer
                      "r" 'reload-buffers
                      "m o" 'set-url-from-bookmark
                      "m O" 'set-url-from-bookmark-new-buffer
-                     "m m" 'bookmark-page
-                     "m M" 'bookmark-current-page
+                     "m m" 'bookmark-buffer-url
+                     "m M" 'bookmark-current-url
                      "y u" 'copy-url
                      "y t" 'copy-title
                      ;; TODO: Use "f1 *" instead?

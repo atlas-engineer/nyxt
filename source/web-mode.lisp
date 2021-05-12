@@ -75,12 +75,12 @@ and to index the top of the page.")
        "C-c" 'copy
        "button9" 'history-forwards
        "button8" 'history-backwards
-       "C-+" 'zoom-in-page
-       "C-=" 'zoom-in-page              ; Because + shifted = on QWERTY.
-       "C-hyphen" 'zoom-out-page
-       "C-0" 'unzoom-page
-       "C-button4" 'zoom-in-page
-       "C-button5" 'zoom-out-page
+       "C-+" 'zoom-page
+       "C-=" 'zoom-page              ; Because + shifted = on QWERTY.
+       "C-hyphen" 'unzoom-page
+       "C-0" 'reset-page-zoom
+       "C-button4" 'zoom-page
+       "C-button5" 'unzoom-page
        "C-M-c" 'open-inspector
        "C-m g" 'bookmark-hint
        "C-f" 'search-buffer
@@ -131,10 +131,10 @@ and to index the top of the page.")
        "button8" 'history-backwards
        "C-p" 'scroll-up
        "C-n" 'scroll-down
-       "C-x C-+" 'zoom-in-page
-       "C-x C-=" 'zoom-in-page ; Because + shifted = on QWERTY.
-       "C-x C-hyphen" 'zoom-out-page
-       "C-x C-0" 'unzoom-page
+       "C-x C-+" 'zoom-page
+       "C-x C-=" 'zoom-page ; Because + shifted = on QWERTY.
+       "C-x C-hyphen" 'unzoom-page
+       "C-x C-0" 'reset-page-zoom
        "C-m g" 'bookmark-hint
        "C-s s" 'search-buffer
        "C-s k" 'remove-search-hints
@@ -161,14 +161,14 @@ and to index the top of the page.")
        "g F" 'follow-hint-nosave-buffer-focus
        "button9" 'history-forwards
        "button8" 'history-backwards
-       "+" 'zoom-in-page
-       "hyphen" 'zoom-out-page
-       "0" 'unzoom-page
-       "z i" 'zoom-in-page
-       "z o" 'zoom-out-page
-       "z z" 'unzoom-page
+       "+" 'zoom-page
+       "hyphen" 'unzoom-page
+       "0" 'reset-page-zoom
+       "z i" 'zoom-page
+       "z o" 'unzoom-page
+       "z z" 'reset-page-zoom
        "g h" 'jump-to-heading
-       "g H" 'jump-to-heading-across-buffers
+       "g H" 'jump-to-heading-buffers
        "/" 'search-buffer
        "?" 'remove-search-hints
        "m f" 'bookmark-hint
@@ -547,6 +547,6 @@ Otherwise go forward to the only child."
   (with-current-buffer (buffer mode)
     (nyxt::history-add url :title (title (buffer mode))
                            :buffer (buffer mode)))
-  (unzoom-page :buffer (buffer mode)
+  (reset-page-zoom :buffer (buffer mode)
                :ratio (current-zoom-ratio (buffer mode)))
   url)

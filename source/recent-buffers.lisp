@@ -24,7 +24,7 @@
     (dolist (buffer buffers)
       (containers:delete-item-if (recent-buffers *browser*)
                                  (buffer-match-predicate buffer))
-      (reload-buffer (buffer-make *browser* :dead-buffer buffer))
+      (reload-buffers (list (buffer-make *browser* :dead-buffer buffer)))
       (when (and (eq buffer (first buffers))
                  (focus-on-reopened-buffer-p *browser*))
         (set-current-buffer buffer)))))
@@ -35,7 +35,7 @@
       (let ((buffer (buffer-make
                      *browser*
                      :dead-buffer (containers:delete-first (recent-buffers *browser*)))))
-        (reload-buffer buffer)
+        (reload-buffers (list buffer))
         (when (focus-on-reopened-buffer-p *browser*)
           (set-current-buffer buffer)))
       (echo "There are no recently-deleted buffers.")))

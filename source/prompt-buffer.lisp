@@ -125,7 +125,7 @@ chosen suggestions inside brackets.")
     (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
     (:documentation "The prompt buffer is the interface for user interactions.
 Each prompt spawns a new object: this makes it possible to nest prompts, such as
-invoking `prompt-buffer-history'.
+invoking `prompt-buffer:history'.
 
 See `prompt' for how to invoke prompts.")))
 

@@ -103,7 +103,7 @@ Example (Tor-proxied completion function for Wikipedia):
   ((prompter:name "Search Engines")
    (prompter:constructor (delete nil (mapcar #'fallback-url (all-search-engines))))))
 
-(define-command search-selection ()
+(define-command query-selection-in-search-engine ()
   "Search selected text using the queried search engine."
   (let* ((selection (%copy))
          (engine (first (prompt

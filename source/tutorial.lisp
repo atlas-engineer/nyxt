@@ -73,16 +73,16 @@ not altered even if the marked elements don't show.")
    (:p "When at least one suggestion is marked, only the marked suggestions are processed
 upon return.  The suggestion under the cursor is not processed if not marked.")
    (:ul
-    (:li  (command-markup 'nyxt/prompt-buffer-mode:prompt-buffer-toggle-mark
+    (:li  (command-markup 'nyxt/prompt-buffer-mode:toggle-mark
                           :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
           ": Select or deselect the current suggestion.")
-    (:li  (command-markup 'nyxt/prompt-buffer-mode:prompt-buffer-mark-all
+    (:li  (command-markup 'nyxt/prompt-buffer-mode:mark-all
                           :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
           ": Select all currently-displayed suggestions.")
-    (:li  (command-markup 'nyxt/prompt-buffer-mode:prompt-buffer-unmark-all
+    (:li  (command-markup 'nyxt/prompt-buffer-mode:unmark-all
                           :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
           ": Deselect all currently-displayed suggestions.")
-    (:li  (command-markup 'nyxt/prompt-buffer-mode:prompt-buffer-toggle-mark-all
+    (:li  (command-markup 'nyxt/prompt-buffer-mode:toggle-mark-all
                           :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
           ": Toggle the mark of all currently-displayed suggestions."))
    (:h3 "Message Area")
@@ -162,15 +162,15 @@ Bookmarks can have the following settings:")
 bookmark when inputted in one of the 'set-url' commands."))
    (:p "Bookmark-related commands")
    (:ul
-    (:li (command-markup 'bookmark-current-page) ": Bookmark current page.
+    (:li (command-markup 'bookmark-current-url) ": Bookmark current page.
 Prompt for tags.  The input defaults to the existing tags: if some tags are
 removed from the input, they are also removed from the existing bookmark.")
-    (:li (command-markup 'bookmark-page) ": Same as above but prompt for a buffer first.")
+    (:li (command-markup 'bookmark-buffer-url) ": Same as above but prompt for a buffer first.")
     (:li (command-markup 'bookmark-url) ": Same as above but prompt for a URL first.")
     (:li (command-markup 'nyxt/web-mode:bookmark-hint) ": Same as above but prompt for a hinted URL first.")
     (:li (command-markup 'set-url-from-bookmark) ": Open bookmark in current buffer.")
     (:li (command-markup 'set-url-from-bookmark-new-buffer) ": Open bookmark in new buffer.")
-    (:li (command-markup 'bookmark-delete) ": Delete queried bookmarks.")
+    (:li (command-markup 'delete-bookmark) ": Delete queried bookmarks.")
     (:li (command-markup 'list-bookmarks) ": Display a new buffer containing the
 list of all bookmarks."))
    (:p "You can filter them with selectors: use '+', '-' or write a compound
@@ -264,9 +264,9 @@ An example:")
 
    (:h3 "Miscellaneous")
    (:ul
-    (:li (command-markup 'nyxt/web-mode:zoom-in-page)
-         ", " (command-markup 'nyxt/web-mode:zoom-out-page)
+    (:li (command-markup 'nyxt/web-mode:zoom-page)
          ", " (command-markup 'nyxt/web-mode:unzoom-page)
+         ", " (command-markup 'nyxt/web-mode:reset-page-zoom)
          ": Control the page zoom.")
     (:li (command-markup 'nyxt/web-mode:jump-to-heading) ": Query a heading (a
 section) of the current page and jump to it.")

@@ -768,7 +768,7 @@ proceeding."
     (print-status nil window)
     (when (and (web-buffer-p buffer)
                (eq (slot-value buffer 'load-status) :unloaded))
-      (reload-buffer buffer))))
+      (reload-buffers (list buffer)))))
 
 (defun last-active-buffer ()
   "Return buffer with most recent `last-access'."
@@ -1105,21 +1105,19 @@ generate a new URL query from user input.
                     (make-instance 'bookmark-source :actions actions)
                     (make-instance 'search-engine-url-source :actions actions)))))
 
-(defun reload-buffer (&optional (buffer (current-buffer)))
-  "Reload a BUFFER or current-buffer if not provided."
-  (buffer-load (url buffer) :buffer buffer))
-
 (define-command reload-current-buffer ()
   "Reload current buffer."
-  (reload-buffer (current-buffer)))
+  (reload-buffers (list (current-buffer))))
 
-(define-command reload-buffers ()
+(define-command reload-buffers (&optional buffers)
   "Reload queried buffer(s)."
-  (prompt
-   :prompt "Reload buffer(s)"
-   :sources (make-instance 'buffer-source
-                           :multi-selection-p t
-                           :actions (list (make-mapped-command reload-buffer)))))
+  (if buffers
+      (mapcar (lambda (buffer) (buffer-load (url buffer) :buffer buffer)) buffers)
+      (prompt
+       :prompt "Reload buffer(s)"
+       :sources (make-instance 'buffer-source
+                               :multi-selection-p t
+                               :actions (list 'reload-buffers)))))
 
 (define-command switch-buffer-previous ()
   "Switch to the previous buffer in the list of buffers.
@@ -1198,7 +1196,7 @@ ARGS are passed to the mode command."
                              (set-difference (mode-list) common-modes)))))
   (:export-class-name-p t))
 
-(define-command disable-mode-for-buffer ()
+(define-command disable-mode ()
   "Disable queried mode(s) for select buffer(s)."
   (let* ((buffers (prompt
                    :prompt "Disable mode(s) for buffer(s)"
@@ -1212,7 +1210,7 @@ ARGS are passed to the mode command."
     (loop for buffer in buffers
           do (disable-modes (mapcar #'mode-name modes) buffer))))
 
-(define-command enable-mode-for-buffer ()
+(define-command enable-mode ()
   "Enable queried mode(s) for select buffer(s)."
   (let* ((buffers (prompt
                    :prompt "Enable mode(s) for buffer(s)"

@@ -54,7 +54,7 @@
    :sources (list (make-instance 'heading-source
                                  :buffer buffer))))
 
-(define-command jump-to-heading-across-buffers ()
+(define-command jump-to-heading-buffers ()
   "Jump to a particular heading, of type h1, h2, h3, h4, h5, or h6 across a set
 of buffers."
   (let ((buffers (prompt
