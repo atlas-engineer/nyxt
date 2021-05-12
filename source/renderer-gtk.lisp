@@ -493,12 +493,17 @@ See `gtk-browser's `modifier-translator' slot."
       ;; Do not forward release event when prompt-buffer is up.
       (t t))))
 
+(defun sender-window (sender)
+  (or (find sender (window-list) :key #'active-prompt-buffers)
+      (find sender (window-list) :key #'active-buffer)
+      (current-window)))
+
 (define-ffi-method on-signal-button-press-event ((sender gtk-buffer) event)
   (let* ((button (gdk:gdk-event-button-button event))
          ;; REVIEW: No need to store X and Y?
          ;; (x (gdk:gdk-event-button-x event))
          ;; (y (gdk:gdk-event-button-y event))
-         (window (find sender (window-list) :key #'active-buffer))
+         (window (sender-window sender))
          (key-string (format nil "button~s" button))
          (modifiers (funcall (modifier-translator *browser*)
                              (button-event-modifiers event)
@@ -527,7 +532,7 @@ See `gtk-browser's `modifier-translator' slot."
                        6)
                       ((< 0 (gdk:gdk-event-scroll-delta-x event))
                        7)))))
-         (window (find sender (window-list) :key #'active-buffer))
+         (window (sender-window sender))
          (key-string (format nil "button~s" button))
          (modifiers (funcall (modifier-translator *browser*)
                              (scroll-event-modifiers event)
