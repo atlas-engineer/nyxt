@@ -368,8 +368,9 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 (define-user-class editor-buffer)
 
 (defun make-dummy-buffer ()
-  ;; Internal buffers are lighter than full-blown buffers which can have a
-  ;; WebKit context, etc.
+  "Internal buffers are lighter than full-blown buffers which can have a
+WebKit context, etc.
+Delete it with `ffi-buffer-delete'."
   (make-instance 'user-internal-buffer))
 
 (define-class status-buffer (user-internal-buffer)
@@ -684,6 +685,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 
 (declaim (ftype (function (buffer)) buffer-delete))
 (defun buffer-delete (buffer)
+  "For dummy buffers, use `ffi-buffer-delete' instead."
   (hooks:run-hook (buffer-delete-hook buffer) buffer)
   (let ((parent-window (find buffer (window-list) :key 'active-buffer)))
     (when parent-window
