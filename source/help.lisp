@@ -46,6 +46,42 @@
                   (make-instance 'class-source)
                   (make-instance 'slot-source))))
 
+(defun value->html (value &key (help-mode (current-mode 'help)))
+  "Return the HTML representation of VALUE."
+  (cond
+    ((consp value)
+     (markup:markup
+      (:ul
+       (loop for e in value
+             for i below (length value)
+             collect (markup:markup
+                      (:li (:a :href (lisp-url `(describe-value
+                                                 (nth ,i ,(nyxt/help-mode:target help-mode))))
+                               e)))))))
+    ((has-attributes-method-p value)
+     (markup:markup
+      (:ul
+       (loop for (attribute-key attribute-value) in (prompter:object-attributes
+                                                     value)
+             collect (markup:markup
+                      (:li attribute-key ": " (:code attribute-value)))))))
+    (t
+     (princ-to-string value))))
+
+(defun describe-value (value)
+  "Inspect VALUE and show it in a help buffer."
+  (with-current-html-buffer (buffer "*Help-value*" 'nyxt/help-mode:help-mode)
+    (let ((help-mode (find-mode buffer 'help-mode)))
+      (setf (nyxt/help-mode:target help-mode) value)
+      (markup:markup
+       (:style (style buffer))
+       (:h1 (princ-to-string value))
+       (:p (markup:raw (value->html value :help-mode help-mode)))))))
+
+(defun has-attributes-method-p (object)
+  "Return non-nil if OBJECT has `prompter:object-attributes' specialization."
+  (has-method-p object #'prompter:object-attributes))
+
 (define-command describe-variable (&optional variable-suggestion)
   "Inspect a variable and show it in a help buffer."
   (if variable-suggestion
@@ -53,14 +89,14 @@
         (with-current-html-buffer (buffer
                                    (str:concat "*Help-" (symbol-name input) "*")
                                    'nyxt/help-mode:help-mode)
-          (markup:markup
-           (:style (style buffer))
-           (:h1 (format nil "~s" input)) ; Use FORMAT to keep package prefix.
-           (:pre (documentation input 'variable))
-           (:h2 "Current Value:")
-           (:ul
-            (loop for (attribute-key attribute-value) in (prompter:object-attributes (symbol-value input))
-                  collect (markup:markup (:li attribute-key ":" (:code attribute-value))))))))
+          (let ((help-mode (find-mode buffer 'help-mode)))
+            (setf (nyxt/help-mode:target help-mode) input)
+            (markup:markup
+             (:style (style buffer))
+             (:h1 (format nil "~s" input)) ; Use FORMAT to keep package prefix.
+             (:pre (documentation input 'variable))
+             (:h2 "Current Value:")
+             (:p (markup:raw (value->html (symbol-value input) :help-mode help-mode)))))))
       (prompt
        :prompt "Describe variable:"
        :sources (make-instance 'variable-source))))
