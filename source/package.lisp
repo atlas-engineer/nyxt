@@ -22,16 +22,30 @@
   (:export :repl-mode))
 
 (uiop:define-package nyxt-user
-  (:use #:common-lisp #:trivia #:nyxt)
+  (:use #:common-lisp #:nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:import-from #:class-star #:define-class)
   (:documentation "
 Package left for the user to fiddle with.
 If the configuration file package is left unspecified, it default to this.
-It's not recommended to use `nyxt' itself to avoid clobbering internal symbols."))
-(eval-when (:compile-toplevel :load-toplevel :execute)
+It's not recommended to use `nyxt' itself to avoid clobbering internal symbols.
+
+By default, the `:nyxt' and `:common-lisp' packages are `:use'd.
+
+To import more symbols, you can use the `import' function.
+For instance, to access `match' directly (without having to prefix it with
+`trivia:', add this at the top of your configuration file:
+
+  (import 'trivia:match)
+
+You can also use package local nicknames if you want to abbreviate package
+prefix.
+For instance, to be able to use `alex:' and `sera:' in place of `alexandria:'
+and `serapeum:':
+
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria :nyxt-user)
-  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum :nyxt-user)
+  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum :nyxt-user)"))
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks :nyxt-user))
 
 ;; Unlike other modes, nyxt/prompt-buffer-mode is declared here because
