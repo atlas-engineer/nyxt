@@ -46,7 +46,9 @@
            (:h1 (format nil "~s" input)) ; Use FORMAT to keep package prefix.
            (:pre (documentation input 'variable))
            (:h2 "Current Value:")
-           (:pre (render-url (symbol-value input))))))
+           (:ul
+            (loop for (attribute-key attribute-value) in (prompter:object-attributes (symbol-value input))
+                  collect (markup:markup (:li attribute-key ":" (:code attribute-value))))))))
       (prompt
        :prompt "Describe variable:"
        :sources (make-instance 'variable-source))))
