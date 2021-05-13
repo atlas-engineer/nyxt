@@ -54,7 +54,13 @@ BASE-URL is a one-placeholder format string (e.g.,
 REQUEST-FUNCTION is the function to make this request with. Defaults to
 `dex:get'. Takes a URL built from user input and BASE-URL.
 PROCESSING-FUNCTION is a function to process whatever the REQUEST-FUNCTION
-returns. Should return a list of strings."
+returns. Should return a list of strings.
+
+Example (Tor-proxied completion function for Wikipedia):
+\(make-search-completion-function
+ :base-url \"https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=~a\"
+ :processing-function (alex:compose #'second #'json:decode-json-from-string)
+ :request-args '(:proxy \"socks5://localhost:9050\"))"
   #'(lambda (input)
       (funcall processing-function
                (apply request-function
