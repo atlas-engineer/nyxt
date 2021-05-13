@@ -20,11 +20,11 @@
                             "enchant"
                             ;; TODO: Remove notify-osd?
                             "notify-osd")
-  :additional-files (("assets/nyxt.desktop" . "usr/share/applications/")
-                     ("assets/nyxt_16x16.png" . #p"usr/share/icons/hicolor/16x16/apps/nyxt.png")
-                     ("assets/nyxt_32x32.png" . #p"usr/share/icons/hicolor/32x32/apps/nyxt.png")
-                     ("assets/nyxt_128x128.png" . #p"usr/share/icons/hicolor/128x128/apps/nyxt.png")
-                     ("assets/nyxt_256x256.png" . #p"usr/share/icons/hicolor/256x256/apps/nyxt.png")
-                     ("assets/nyxt_512x512.png" . #p"usr/share/icons/hicolor/512x512/apps/nyxt.png"))
+  :additional-files ((#.(uiop:strcat (namestring (asdf:system-source-directory :nyxt)) "assets/nyxt.desktop") . "usr/share/applications/")
+                     (#.(uiop:strcat (namestring (asdf:system-source-directory :nyxt)) "assets/nyxt_16x16.png") . #p"usr/share/icons/hicolor/16x16/apps/nyxt.png")
+                     (#.(uiop:strcat (namestring (asdf:system-source-directory :nyxt)) "assets/nyxt_32x32.png") . #p"usr/share/icons/hicolor/32x32/apps/nyxt.png")
+                     (#.(uiop:strcat (namestring (asdf:system-source-directory :nyxt)) "assets/nyxt_128x128.png") . #p"usr/share/icons/hicolor/128x128/apps/nyxt.png")
+                     (#.(uiop:strcat (namestring (asdf:system-source-directory :nyxt)) "assets/nyxt_256x256.png") . #p"usr/share/icons/hicolor/256x256/apps/nyxt.png")
+                     (#.(uiop:strcat (namestring (asdf:system-source-directory :nyxt)) "assets/nyxt_512x512.png") . #p"usr/share/icons/hicolor/512x512/apps/nyxt.png"))
   :build-pathname "nyxt"
   :entry-point "nyxt:entry-point")

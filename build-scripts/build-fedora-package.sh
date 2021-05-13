@@ -8,9 +8,13 @@ set -xeu
 
 echo "==> Old working directory"
 pwd
-cd
+ls
+ls ~/
 echo "==> New working directory"
+## TODO: Current directory should not matter.
+cd ~/nyxt
 pwd
+echo
 
 echo "==> Gem install"
 sudo gem install --no-document fpm &> /dev/null
@@ -39,7 +43,7 @@ git clone --depth=1 --branch=3.3.4 https://gitlab.common-lisp.net/asdf/asdf.git 
 mkdir -p ~/.config/common-lisp/source-registry.conf.d/
 echo "(:tree \"$(pwd)/\")" >> ~/.config/common-lisp/source-registry.conf.d/linux-packaging.conf
 ## TODO: This should not be necessary since :nyxt/quicklisp alreay takes  care of it.
-echo "(:tree \"$(pwd)/nyxt/_build/submodules\")" >> ~/.config/common-lisp/source-registry.conf.d/asdf.conf
+echo "(:tree \"$(pwd)/_build/submodules\")" >> ~/.config/common-lisp/source-registry.conf.d/asdf.conf
 
 echo
 echo "==> ASDF diagnostic"
@@ -55,9 +59,6 @@ echo "==> Git?"
 which git
 git --version
 
-## TODO: Current directory should not matter.
-# cd nyxt
-echo
 echo "==> Build package"
 sbcl \
     --disable-debugger \
