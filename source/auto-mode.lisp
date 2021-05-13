@@ -4,6 +4,7 @@
 (uiop:define-package :nyxt/auto-mode
   (:use :common-lisp :nyxt)
   (:import-from #:class-star #:define-class)
+  (:import-from #:keymap #:define-key #:define-scheme)
   (:documentation "Mode for automatic URL-based mode toggling."))
 (in-package :nyxt/auto-mode)
 
@@ -255,6 +256,11 @@ The rules are:
   "Remember the modes setup for given domain/host/URL and store it in an editable form.
 These modes will then be activated on every visit to this domain/host/URL."
   ((rememberable-p nil)
+   (keymap-scheme
+    (define-scheme "auto-mode"
+      scheme:cua
+      (list
+       "C-R" 'reload-with-modes)))
    (prompt-on-mode-toggle nil
                           :type boolean
                           :documentation "Whether the user is asked to confirm
@@ -339,6 +345,30 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
     (add-modes-to-auto-mode-rules (url-infer-match url)
                                   :include (mode-invocations (modes (current-buffer)))
                                   :exact-p t)))
+
+(define-command reload-with-modes (&optional (buffer (current-buffer)))
+  "Reload the buffer with the queried modes.
+This bypasses auto-mode.
+Auto-mode is re-enabled once the page is reloaded."
+  (let* ((modes-to-enable (prompt
+                           :prompt "Mark modes to enable, unmark to disable"
+                           :sources (make-instance 'mode-source
+                                                   :marks (remove 'nyxt/auto-mode:auto-mode
+                                                                  (mapcar #'mode-name (modes (current-buffer)))))))
+         (modes-to-disable (cons 'nyxt/auto-mode:auto-mode
+                                 (set-difference (nyxt::all-mode-names) modes-to-enable
+                                                 :test #'string=))))
+    (hooks:add-hook (request-resource-hook buffer)
+                    (make-handler-resource
+                     (lambda (request-data)
+                       (auto-mode :activate t)
+                       (hooks:remove-hook (request-resource-hook buffer)
+                                          'auto-mode-reenable)
+                       request-data)
+                     :name 'auto-mode-reenable))
+    (disable-modes (uiop:ensure-list modes-to-disable) buffer)
+    (enable-modes (uiop:ensure-list modes-to-enable) buffer)
+    (nyxt::reload-buffer buffer)))
 
 (declaim (ftype (function (list &key (:append-p boolean) (:exclude (or (cons mode-invocation *) null))
                                 (:include (or (cons mode-invocation *) null)) (:exact-p boolean))
