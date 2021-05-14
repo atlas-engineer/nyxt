@@ -10,8 +10,8 @@
 (export-always '(make-hook-resource make-handler-resource))
 
 (define-class proxy ()
-  ((server-address (quri:uri "socks5://127.0.0.1:9050")
-                   :documentation "The address of the proxy server.
+  ((url (quri:uri "socks5://127.0.0.1:9050")
+        :documentation "The address of the proxy server.
 It's made of three components: protocol, host and port.
 Example: \"http://192.168.1.254:8080\".")
    (allowlist '("localhost" "localhost:8080")
@@ -292,17 +292,17 @@ reached (during which no new progress has been made)."
 ;; need to query the cookies for URL.  Thus we need to add an IPC endpoint to
 ;; query cookies.
 (export-always 'download)
-(defmethod download ((buffer buffer) url &key cookies (proxy-address :auto))
+(defmethod download ((buffer buffer) url &key cookies (proxy-url :auto))
   "Download URL.
-When PROXY-ADDRESS is :AUTO (the default), the proxy address is guessed from the
+When PROXY-URL is :AUTO (the default), the proxy address is guessed from the
 current buffer."
   (hooks:run-hook (before-download-hook *browser*) url) ; TODO: Set URL to download-hook result?
   (match (download-engine buffer)
     (:lisp
      (alex:when-let* ((path (download-path buffer))
                       (download-dir (expand-path path)))
-       (when (eq proxy-address :auto)
-         (setf proxy-address (proxy-address buffer :downloads-only t)))
+       (when (eq proxy-url :auto)
+         (setf proxy-url (proxy-url buffer :downloads-only t)))
        (let* ((download nil))
          (with-protect ("Download error: ~a" :condition)
            (with-data-access (downloads path)
@@ -310,7 +310,7 @@ current buffer."
                    (download-manager:resolve url
                                              :directory download-dir
                                              :cookies cookies
-                                             :proxy proxy-address))
+                                             :proxy proxy-url))
              (push download downloads)
              ;; Add a watcher / renderer for monitoring download
              (let ((download-render (make-instance 'download :url (render-url url))))
@@ -431,7 +431,7 @@ Deal with REQUEST-DATA with the following rules:
         ((not (known-type-p request-data))
          (log:debug "Buffer ~a initiated download of ~s." (id buffer) (render-url url))
          (download buffer url
-                   :proxy-address (proxy-address buffer :downloads-only t)
+                   :proxy-url (proxy-url buffer :downloads-only t)
                    :cookies "")
          ;; TODO: WebKitGTK emits "load-failed" if we call
          ;; webkit-policy-decision-ignore on a download requestion.
@@ -650,3 +650,4 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-display-url (text))
 (define-ffi-generic ffi-buffer-cookie-policy (buffer value))
 (define-ffi-generic ffi-set-preferred-languages (buffer value))
+(define-ffi-generic ffi-focused-p (buffer))

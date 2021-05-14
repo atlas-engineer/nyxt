@@ -56,7 +56,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 
 (define-class gtk-buffer ()
   ((gtk-object)
-   (proxy-url (quri:uri ""))
+   (gtk-proxy-url (quri:uri ""))
    (proxy-ignored-hosts '())
    (data-manager-path (make-instance 'data-manager-data-path
                                      :dirname (uiop:xdg-cache-home +data-root+))
@@ -493,12 +493,17 @@ See `gtk-browser's `modifier-translator' slot."
       ;; Do not forward release event when prompt-buffer is up.
       (t t))))
 
+(defun sender-window (sender)
+  (or (find sender (window-list) :key #'active-prompt-buffers)
+      (find sender (window-list) :key #'active-buffer)
+      (current-window)))
+
 (define-ffi-method on-signal-button-press-event ((sender gtk-buffer) event)
   (let* ((button (gdk:gdk-event-button-button event))
          ;; REVIEW: No need to store X and Y?
          ;; (x (gdk:gdk-event-button-x event))
          ;; (y (gdk:gdk-event-button-y event))
-         (window (find sender (window-list) :key #'active-buffer))
+         (window (sender-window sender))
          (key-string (format nil "button~s" button))
          (modifiers (funcall (modifier-translator *browser*)
                              (button-event-modifiers event)
@@ -527,7 +532,7 @@ See `gtk-browser's `modifier-translator' slot."
                        6)
                       ((< 0 (gdk:gdk-event-scroll-delta-x event))
                        7)))))
-         (window (find sender (window-list) :key #'active-buffer))
+         (window (sender-window sender))
          (key-string (format nil "button~s" button))
          (modifiers (funcall (modifier-translator *browser*)
                              (scroll-event-modifiers event)
@@ -1019,7 +1024,7 @@ For the user-level interface, see `proxy-mode'.
 Note: WebKit supports three proxy 'modes': default (the system proxy),
 custom (the specified proxy) and none."
   (declare (type quri:uri proxy-url))
-  (setf (proxy-url buffer) proxy-url)
+  (setf (gtk-proxy-url buffer) proxy-url)
   (setf (proxy-ignored-hosts buffer) ignore-hosts)
   (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
          (settings (cffi:null-pointer))
@@ -1040,7 +1045,7 @@ custom (the specified proxy) and none."
 (define-ffi-method ffi-buffer-get-proxy ((buffer gtk-buffer))
   "Return the proxy URL and list of ignored hosts (a list of strings) as second value."
   (the (values (or quri:uri null) list-of-strings)
-       (values (proxy-url buffer)
+       (values (gtk-proxy-url buffer)
                (proxy-ignored-hosts buffer))))
 
 (define-ffi-method ffi-buffer-set-zoom-level ((buffer gtk-buffer) value)
@@ -1160,3 +1165,6 @@ As a second value, return the current buffer index starting from 0."
   (webkit:webkit-web-view-go-to-back-forward-list-item
    (gtk-object buffer)
    (webkit-history-entry-gtk-object history-entry)))
+
+(define-ffi-method ffi-focused-p ((buffer gtk-buffer))
+  (gtk:gtk-widget-is-focus (gtk-object buffer)))

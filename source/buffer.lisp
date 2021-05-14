@@ -44,14 +44,28 @@ after the mode-specific hook.")
 after the mode-specific hook.")
    (keymap-scheme-name scheme:cua
                        :documentation "The keymap scheme that will be used for all modes in the current buffer.")
+   (search-auto-complete-p t
+                           :type boolean
+                           :documentation "Whether search suggestions are requested and displayed.")
    (search-engines (list (make-instance 'search-engine
                                         :shortcut "wiki"
                                         :search-url "https://en.wikipedia.org/w/index.php?search=~a"
-                                        :fallback-url (quri:uri "https://en.wikipedia.org/"))
+                                        :fallback-url (quri:uri "https://en.wikipedia.org/")
+                                        :completion-function
+                                        (make-search-completion-function
+                                         :base-url "https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=~a"
+                                         :processing-function (alex:compose #'second #'json:decode-json-from-string)))
                          (make-instance 'search-engine
                                         :shortcut "ddg"
                                         :search-url "https://duckduckgo.com/?q=~a"
-                                        :fallback-url (quri:uri "https://duckduckgo.com/")))
+                                        :fallback-url (quri:uri "https://duckduckgo.com/")
+                                        :completion-function
+                                        (make-search-completion-function
+                                         :base-url "https://duckduckgo.com/ac/?q=~a"
+                                         :processing-function
+                                         #'(lambda (results)
+                                             (mapcar #'cdar
+                                                     (json:decode-json-from-string results))))))
                    :type (cons search-engine *)
                    :documentation "A list of the `search-engine' objects.
 You can invoke them from the prompt-buffer by prefixing your query with SHORTCUT.
@@ -455,14 +469,14 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
   (setf (slot-value buffer 'proxy) proxy)
   (if proxy
       (ffi-buffer-set-proxy buffer
-                            (server-address proxy)
+                            (url proxy)
                             (allowlist proxy))
       (ffi-buffer-set-proxy buffer
                             (quri:uri "")
                             nil)))
 
 (declaim (ftype (function (buffer &key (:downloads-only boolean))) proxy-adress))
-(defun proxy-address (buffer &key (downloads-only nil))
+(defun proxy-url (buffer &key (downloads-only nil))
   "Return the proxy address, nil if not set.
 If DOWNLOADS-ONLY is non-nil, then it only returns the proxy address (if any)
 when `proxied-downloads-p' is true."
@@ -470,7 +484,7 @@ when `proxied-downloads-p' is true."
          (proxied-downloads (and proxy (proxied-downloads-p proxy))))
     (when (or (and (not downloads-only) proxy)
               proxied-downloads)
-      (server-address proxy))))
+      (url proxy))))
 
 (defmethod initialize-modes ((buffer buffer))
   "Initialize BUFFER modes.
@@ -1007,10 +1021,19 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
                                          (mapcar #'shortcut engines)
                                          :test #'string=))
               (list (make-instance 'new-url-query :query input)))
-            (mapcar (lambda (engine) (make-instance 'new-url-query
-                                                    :query (str:join " " (rest terms))
-                                                    :engine engine))
-                    engines))))
+            (alex:mappend (lambda (engine)
+                            (append
+                             (list (make-instance 'new-url-query
+                                                  :query (str:join " " (rest terms))
+                                                  :engine engine))
+                             ;; Some engines (I'm looking at you, Wikipedia!)
+                             ;; return garbage in response to an empty request.
+                             (when (and (completion-function engine) (rest terms))
+                               (mapcar (alex:curry #'make-instance 'new-url-query
+                                                   :engine engine :query)
+                                       (funcall (completion-function engine)
+                                                (str:join " " (rest terms)))))))
+                          engines))))
 
 (define-class new-url-or-search-source (prompter:source)
   ((prompter:name "New URL or search query")

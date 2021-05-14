@@ -28,6 +28,8 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "escape" 'cancel-input
        "down" 'select-next
        "up" 'select-previous
+       "button5" 'select-next
+       "button4" 'select-previous
        "home" 'select-first
        "end" 'select-last
        "pagehome" 'select-first
