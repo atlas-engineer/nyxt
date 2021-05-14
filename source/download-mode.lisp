@@ -21,6 +21,11 @@ interface.")
                           :type float
                           :documentation "A number between 0 and 100
 showing the percentage a download is complete.")
+   (bytes-downloaded "-"
+                     :reader bytes-downloaded
+                     :documentation "The number of bytes downloaded.")
+   (bytes-text (make-instance 'user-interface:paragraph) :documentation "The
+   interface element showing how many bytes have been downloaded.")
    (destination-path :initarg :destination-path
                      :reader destination-path
                      :documentation "A string represent where the file
@@ -73,6 +78,11 @@ finds it, it will invoke its cancel-function."
   (setf (user-interface:text (progress-text download))
         (format nil "Completion: ~,2f%." (completion-percentage download))))
 
+(defmethod (setf bytes-downloaded) (bytes (download download))
+  (setf (slot-value download 'bytes-downloaded) bytes)
+  (setf (user-interface:text (bytes-text download))
+        (format nil "Bytes downloaded: ~a." (bytes-downloaded download))))
+
 (defmethod (setf destination-path) (path (download download))
   (check-type path string)
   (setf (slot-value download 'destination-path) path)
@@ -85,6 +95,7 @@ buffer. This allows the user-interface objects to update their
 appearance in the buffer when they are setf'd."
   (user-interface:connect (status-text download) buffer)
   (user-interface:connect (progress-text download) buffer)
+  (user-interface:connect (bytes-text download) buffer)
   (user-interface:connect (open-button download) buffer)
   (user-interface:connect (cancel-button download) buffer)
   (user-interface:connect (progress download) buffer))
@@ -134,6 +145,7 @@ download."
             for url = (url download)
             for status-text = (status-text download)
             for progress-text = (progress-text download)
+            for bytes-text = (bytes-text download)
             for progress = (progress download)
             for open-button = (open-button download)
             for cancel-button = (cancel-button download)
@@ -150,6 +162,7 @@ download."
                             (markup:raw (user-interface:object-string progress)))
                       (:div :class "status"
                             (markup:raw (user-interface:object-string progress-text))
+                            (markup:raw (user-interface:object-string bytes-text))
                             (markup:raw (user-interface:object-string status-text))))))))))
 
 (define-command download-url ()

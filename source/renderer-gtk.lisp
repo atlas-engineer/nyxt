@@ -962,6 +962,8 @@ requested a reload."
      webkit-download "received-data"
      (lambda (webkit-download data-length)
        (declare (ignore data-length))
+       (setf (bytes-downloaded download)
+             (webkit:webkit-download-get-received-data-length webkit-download))
        (setf (completion-percentage download)
              (* 100 (webkit:webkit-download-estimated-progress webkit-download)))))
     (gobject:g-signal-connect
