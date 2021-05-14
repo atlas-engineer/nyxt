@@ -48,7 +48,7 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "f1 k" 'describe-key
                      "f1 b" 'describe-bindings
                      "f11" 'toggle-fullscreen
-                     "C-o" 'load-file
+                     "C-O" 'load-file
                      "C-j" 'list-downloads
                      "C-space" 'execute-command
                      "C-n" 'make-window
@@ -130,12 +130,10 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "C-h s" 'describe-slot
                      "C-h k" 'describe-key
                      "C-h b" 'describe-bindings
-                     "C-o" 'load-file
                      ":" 'execute-command
                      "W" 'make-window
                      "C-w C-w" 'make-window
                      "C-w q" 'delete-current-window
                      "C-w C-q" 'delete-window
-                     "u" 'reopen-buffer
-                     "g o" 'open-file))
+                     "u" 'reopen-buffer))
                   :type keymap:scheme)))
