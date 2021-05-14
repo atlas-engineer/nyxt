@@ -395,7 +395,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                 :padding-left "10px"
                 :text-align "center")
                (".overlap"
-                :grid-column-start "span 2")
+                :grid-column "span 3")
                ("#url"
                 :background-color "rgb(120,120,120)"
                 :min-width "100px"
