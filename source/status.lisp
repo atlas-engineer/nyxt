@@ -28,10 +28,12 @@
 (defun format-status-vi-mode (&optional (buffer (current-buffer)))
   (cond ((find-submode buffer 'vi-normal-mode)
          (markup:markup
-          (:a :class "button" :title "Vi normal mode" :href (lisp-url '(nyxt/vi-mode:vi-insert-mode)) "N")))
+          (:div
+           (:a :class "button" :title "vi-normal-mode" :href (lisp-url '(nyxt/vi-mode:vi-insert-mode)) "N"))))
         ((find-submode buffer 'vi-insert-mode)
          (markup:markup
-          (:a :class "button" :title "Vi insert mode" :href (lisp-url '(nyxt/vi-mode:vi-normal-mode)) "I")))
+          (:div
+           (:a :class "button" :title "vi-insert-mode" :href (lisp-url '(nyxt/vi-mode:vi-normal-mode)) "I"))))
         (t (markup:markup
             (:span "")))))
 
@@ -69,11 +71,13 @@
          (vi-mode-color (cond ((find-submode buffer 'vi-normal-mode)
                                "background-color:rgb(100,100,100);")
                               ((find-submode buffer 'vi-insert-mode)
-                               "background-color:rgb(105,38,38);")))
-         (url-class (if vi-mode-color
-                        ""
-                        "")))
-                        ;; "overlap")))
+                               "background-color:#37a8e4;")))
+         ;; hide vi-mode status and adjacent arrow when not enabled
+         (vi-mode-display (when (not vi-mode-color)
+                              "display: none;"))
+         (vi-mode-style (concatenate 'string vi-mode-color vi-mode-display))
+         (url-class (when (not vi-mode-color)
+                             "overlap")))
     (markup:markup
      (:div :id "container"
            (:div :id "controls" :class "arrow-right"
@@ -81,11 +85,12 @@
            (:div :id "url" :class "arrow-right"
                  :style "background-color:rgb(80,80,80)" "")
            (:div :id "vi-mode"
-                 :style vi-mode-color
+                 :style vi-mode-style
                  (markup:raw (format-status-vi-mode buffer)))
            (:div :class "arrow arrow-right"
-                 :style vi-mode-color "")
+                 :style vi-mode-style "")
            (:div :id "url"
+                 :class url-class
                  (markup:raw
                   (format-status-load-status buffer)
                   (format-status-url buffer)))

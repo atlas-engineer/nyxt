@@ -442,8 +442,15 @@ Delete it with `ffi-buffer-delete'."
                ("#controls"
                 :background-color "rgb(80,80,80)"
                 :padding-left "5px"
+                :overflow "hidden"
                 :white-space "nowrap"
                 :z-index "3")
+               ("#vi-mode"
+                :margin-left "-10px"
+                :padding-left "10px"
+                :text-align "center")
+               (".overlap"
+                :grid-column "span 3")
                ("#url"
                 :background-color "gray"
                 :min-width "100px"
