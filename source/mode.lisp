@@ -89,8 +89,8 @@ Example:
                        (if (and (prompt-buffer-p buffer)
                                 (eq (first (active-prompt-buffers (window buffer)))
                                     buffer))
-                           (prompt-render-prompt buffer))
-                       (print-status)
+                           (prompt-render-prompt buffer)
+                           (print-status))
                        (log:debug "~a enabled." ',name))
                      (when ,existing-instance
                        (hooks:run-hook (disable-hook ,existing-instance) ,existing-instance)
@@ -101,8 +101,8 @@ Example:
                        (if (and (prompt-buffer-p buffer)
                                 (eq (first (active-prompt-buffers (window buffer)))
                                     buffer))
-                           (print-status)
-                           (prompt-render-prompt buffer))
+                           (prompt-render-prompt buffer)
+                           (print-status))
                        (log:debug "~a disabled." ',name))))
                buffer))))))
 
