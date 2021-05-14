@@ -284,6 +284,8 @@ reached (during which no new progress has been made)."
           when (download-manager:finished-p d)
             do (hooks:run-hook (after-download-hook *browser*))
           do (sleep 0.1) ; avoid excessive polling
+             (setf (bytes-downloaded download-render)
+                   (download-manager:bytes-fetched download-object))
              (setf (completion-percentage download-render)
                    (* 100 (/ (download-manager:bytes-fetched download-object)
                              (max 1 (download-manager:bytes-total download-object))))))))
