@@ -7,18 +7,19 @@
 ;;;; are released into the public domain, per the license available
 ;;;; here: https://www.squarefree.com/bookmarklets/copyright.html
 
-(in-package :nyxt)
+(in-package :nyxt/web-mode)
 
-(defmacro define-bookmarklet-command (name documentation source)
+(defmacro nyxt::define-bookmarklet-command (name documentation source)
   "Define a bookmarklet command, the source can either be a JavaScript string to
 evaluate, or a file:// URL with a file path to a JavaScript source file."
   `(define-command ,name (&optional (buffer (current-buffer)))
      ,documentation
      (let* ((source ,source)
-            (source (if (file-url-p source)
-                        (read-file-string source)
+            (source (if (nyxt::file-url-p source)
+                        (nyxt::read-file-string source)
                         source)))
        (ffi-buffer-evaluate-javascript-async buffer source))))
+(sera:export-always 'nyxt::define-bookmarklet-command :nyxt)
 
 (define-bookmarklet-command color-internal-external-links
   "Color internal links red, external links blue, and in-page links orange."
