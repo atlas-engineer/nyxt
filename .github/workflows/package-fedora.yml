@@ -15,7 +15,10 @@ jobs:
       id: buildrpm
       run: |
         docker build -t example:${{ github.sha }} . --file Dockerfile
-        docker cp example:${{ github.sha }}:$(docker exec -it example:${{ github.sha }} bash -c 'ls -1 /root/nyxt/*.rpm') .
+        echo "list"
+        docker images
+        echo "CP"
+        docker cp $(docker ps --latest --quiet):$(docker exec -it $(docker ps --latest --quiet) bash -c 'ls -1 /root/nyxt/*.rpm') .
     # - name: Copy output
     #   id: rpmoutput
     #   run: docker cp example:${{ github.sha }}:$(docker exec -it example:${{ github.sha }} bash -c 'ls -1 /root/nyxt/*.rpm') .
