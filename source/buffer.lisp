@@ -1010,28 +1010,33 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
     ("Search engine?" ,(if (engine query) (shortcut (engine query)) ""))))
 
 (defun input->queries (input)
-  (let* ((terms (sera:tokens input))
-         (engines (remove-if
-                   (sera:partial (complement #'str:starts-with-p) (first terms))
-                   (all-search-engines)
-                   :key #'shortcut)))
-    (append (unless (and engines (member (first terms)
-                                         (mapcar #'shortcut engines)
-                                         :test #'string=))
-              (list (make-instance 'new-url-query :query input)))
-            (alex:mappend (lambda (engine)
-                            (append
-                             (list (make-instance 'new-url-query
-                                                  :query (str:join " " (rest terms))
-                                                  :engine engine))
-                             ;; Some engines (I'm looking at you, Wikipedia!)
-                             ;; return garbage in response to an empty request.
-                             (when (and (completion-function engine) (rest terms))
-                               (mapcar (alex:curry #'make-instance 'new-url-query
-                                                   :engine engine :query)
-                                       (funcall (completion-function engine)
-                                                (str:join " " (rest terms)))))))
-                          engines))))
+  (flet ((make-engine-completions (engine input)
+           (when (and (current-buffer)
+                      (search-auto-complete-p (current-buffer))
+                      (completion-function engine)
+                      ;; Some engines (I'm looking at you, Wikipedia!)
+                      ;; return garbage in response to an empty request.
+                      (not (str:emptyp input)))
+             (mapcar (alex:curry #'make-instance 'new-url-query
+                                 :engine engine :query)
+                     (funcall (completion-function engine) input)))))
+    (let* ((terms (sera:tokens input))
+           (engines (remove-if
+                     (sera:partial (complement #'str:starts-with-p) (first terms))
+                     (all-search-engines)
+                     :key #'shortcut)))
+      (append (unless (and engines (member (first terms)
+                                           (mapcar #'shortcut engines)
+                                           :test #'string=))
+                (cons (make-instance 'new-url-query :query input)
+                      (make-engine-completions (default-search-engine) input)))
+              (alex:mappend (lambda (engine)
+                              (append
+                               (list (make-instance 'new-url-query
+                                                    :query (str:join " " (rest terms))
+                                                    :engine engine))
+                               (make-engine-completions engine (str:join " " (rest terms)))))
+                            engines)))))
 
 (define-class new-url-or-search-source (prompter:source)
   ((prompter:name "New URL or search query")
