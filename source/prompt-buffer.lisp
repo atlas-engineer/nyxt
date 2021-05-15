@@ -18,8 +18,7 @@ All ARGS are declared as `ignorable'."
 
 (sera:eval-always
   (define-class prompt-buffer (user-internal-buffer prompter:prompter)
-    ((default-modes '(prompt-buffer-mode))
-     (window nil
+    ((window nil
              :type (or null window)
              :export nil
              :documentation "The window in which the prompt buffer is showing.")
@@ -131,9 +130,16 @@ See `prompt' for how to invoke prompts.")))
 
 (define-user-class prompt-buffer)
 
-(defmethod initialize-instance :after ((prompt-buffer prompt-buffer) &key)
+(defmethod initialize-modes ((prompt-buffer prompt-buffer) &key)
+  "Initialize PROMPT-BUFFER modes."
+  (call-next-method prompt-buffer :exclude '(web-mode base-mode))
+  (make-mode 'prompt-buffer-mode prompt-buffer))
+
+(defmethod initialize-instance :after ((prompt-buffer prompt-buffer) &key extra-modes)
   (hooks:run-hook (prompt-buffer-make-hook *browser*) prompt-buffer)
-  (initialize-modes prompt-buffer))
+  (initialize-modes prompt-buffer)
+  (mapc (alex:rcurry #'make-mode prompt-buffer) extra-modes)
+  (setf (slot-value prompt-buffer 'default-modes) (mapc #'mode-name (modes prompt-buffer))))
 
 (export-always 'current-source)
 (defun current-source (&optional (prompt-buffer (current-prompt-buffer)))
@@ -361,7 +367,9 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                            `(&key ,@(delete-duplicates
                                      (append
                                       (public-initargs 'prompt-buffer)
-                                      (public-initargs 'prompter:prompter)))))
+                                      (public-initargs 'prompter:prompter)
+                                      ;; `initialize-instance' :after arguments:
+                                      '(extra-modes)))))
       "Open the prompt buffer, ready for user input.
 PROMPTER and PROMPT-BUFFER are plists of keyword arguments passed to the
 prompt-buffer constructor.

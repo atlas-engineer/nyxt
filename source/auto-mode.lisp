@@ -230,7 +230,7 @@ The rules are:
 (defun initialize-auto-mode (mode)
   (unless (last-active-modes mode)
     (setf (last-active-modes mode)
-          (mode-invocations (default-modes (buffer mode)))))
+          (mode-invocations (modes (buffer mode)))))
   (when (prompt-on-mode-toggle mode)
     (hooks:add-hook (enable-mode-hook (buffer mode))
                     (nyxt::make-handler-mode

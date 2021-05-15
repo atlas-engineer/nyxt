@@ -19,8 +19,8 @@ Example to use Tor as a proxy both for browsing and downloading:
                                          :allowlist '(\"localhost\" \"localhost:8080\")
                                          :proxied-downloads-p t))))
 
-\(define-configuration buffer
-  ((default-modes (append '(proxy-mode) %slot-default%))))"
+(defmethod initialize-modes :after ((buffer buffer))
+  (make-mode 'proxy-mode buffer))"
   ((proxy (make-instance 'proxy
                  :url (quri:uri "socks5://localhost:9050")
                  :allowlist '("localhost" "localhost:8080")

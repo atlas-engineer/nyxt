@@ -131,8 +131,8 @@ Example:
   \"Blocker mode with custom hosts from `*my-blocked-hosts*'.\"
   ((nyxt/blocker-mode:hostlists (list *my-blocked-hosts* nyxt/blocker-mode:*default-hostlist*))))
 
-\(define-configuration buffer
-  ((default-modes (append '(my-blocker-mode) %slot-default%))))"
+\(defmethod initialize-modes :after ((buffer buffer))
+  (make-mode 'my-blocker-mode buffer))"
   ((hostlists (list *default-hostlist*))
    (destructor
     (lambda (mode)

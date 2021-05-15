@@ -37,8 +37,8 @@ file " (:code (expand-path *init-file-path*)) " (create the parent folders if
 necessary).")
     (:p "Example:")
     (:pre (:code "
-\(define-configuration buffer
-  ((default-modes (append '(noscript-mode) %slot-default%))))"))
+(defmethod initialize-modes :after ((buffer buffer))
+ (make-mode 'noscript-mode buffer))"))
     (:p "The above turns on the 'noscript-mode' (disables JavaScript) by default for
 every buffer.")
     (:p "The " (:code "define-configuration") " macro can be used to customize
@@ -54,10 +54,7 @@ the `web-buffer' and the `internal-buffer' classes inherit from the `buffer'
 class.")
     (:p "You can configure a `buffer' slot and it will automatically become the
 new default for both the `internal-buffer' and `web-buffer' classes unless this
-slot is specialized by these child classes.  For example, since the
-`default-modes' slot is specialized by the `web-buffer' class, if you want to
-include `my-mode' you'll need to configure both the `buffer' and the
-`web-buffer' classes.")
+slot is specialized by these child classes.")
 
     (:h3 "Keybinding configuration")
     (:p "Nyxt supports multiple " (:i "bindings schemes") " such as CUA (the default), Emacs or VI.  Changing scheme is as simple as running the corresponding mode, e.g. "
@@ -66,12 +63,12 @@ add the following to your configuration:")
     (:ul
      (:li "VI bindings:"
       (:pre (:code "
-\(define-configuration (buffer web-buffer)
-  ((default-modes (append '(vi-normal-mode) %slot-default%))))")))
+(defmethod initialize-modes :after ((buffer buffer))
+  (make-mode 'vi-normal-mode buffer))")))
      (:li "Emacs bindings:"
       (:pre (:code "
-\(define-configuration (buffer web-buffer)
-  ((default-modes (append '(emacs-mode) %slot-default%))))"))))
+(defmethod initialize-modes :after ((buffer buffer))
+  (make-mode 'vi-normal-mode buffer))"))))
     (:p "You can create new scheme names with " (:code "keymap:make-scheme-name")
         ".  See also the " (:code "scheme-name") " class and the "
         (:code "define-scheme") " macro.")
@@ -99,8 +96,8 @@ have priorities over the other modes key bindings.")
                    scheme:emacs *my-keymap*
                    scheme:vi-normal *my-keymap*))))
 
-\(define-configuration (buffer web-buffer)
-  ((default-modes (append '(my-mode) %slot-default%))))"))
+(defmethod initialize-modes :after ((buffer buffer))
+  (make-mode 'my-mode buffer))"))
 
     (:h3 "Search engines")
     (:p "See the " (:code "search-engines") " buffer slot documentation.

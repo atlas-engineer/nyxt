@@ -63,8 +63,8 @@ To permanently bypass the \"Unacceptable TLS Certificate\" error:
 
 Example:
 
-\(define-configuration buffer
-  ((default-modes (append '(force-https-mode) %slot-default%))))"
+\(defmethod initialize-modes ((buffer buffer))
+ (make-mode 'force-https-mode buffer))"
   ((previous-url (quri:uri ""))
    (destructor
     (lambda (mode)

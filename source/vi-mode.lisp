@@ -14,8 +14,8 @@ in your configuration file.
 
 Example:
 
-\(define-configuration buffer
-  ((default-modes (append '(vi-normal-mode) %slot-default%))))"
+(defmethod initialize-modes :after ((buffer buffer))
+  (make-mode 'vi-normal-mode buffer))"
   ((previous-keymap-scheme-name nil
     :type (or keymap:scheme-name null)
     :documentation "The previous keymap scheme that will be used when ending

@@ -160,7 +160,7 @@ identifier for every hinted element."
   (let* ((buffer (current-buffer)))
     (let ((result (prompt
                    :prompt prompt
-                   :default-modes '(element-hint-mode prompt-buffer-mode)
+                   :extra-modes '(element-hint-mode)
                    :history nil
                    :sources
                    (make-instance

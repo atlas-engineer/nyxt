@@ -181,8 +181,10 @@ The `%slot-default%' variable is replaced by the slot initform.
 Example that sets some defaults for all buffers:
 
 \(define-configuration (buffer web-buffer)
-  ((status-buffer-height 24)
-   (default-modes (append '(vi-normal-mode) %slot-default%))))
+  ((status-buffer-height 24)))
+
+\(defmethod initialize-mode :after ((buffer buffer))
+  (make-mode 'vi-normal-mode buffer))
 
 Example to get the `blocker-mode' command to use a new default hostlists:
 
@@ -190,7 +192,7 @@ Example to get the `blocker-mode' command to use a new default hostlists:
   ((nyxt/blocker-mode:hostlists (append (list *my-blocked-hosts*) %slot-default%))))
 
 In the above, `%slot-default%' will be substituted with the default value of
-`default-modes'.
+`hostlists'.
 
 In the last example, `nyxt/blocker-mode:user-blocker-mode' is defined to inherit
 from the original `blocker-mode' and a generated class containing the

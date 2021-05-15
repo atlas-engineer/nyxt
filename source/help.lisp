@@ -278,26 +278,22 @@ CLASS can be a class symbol or a list of class symbols, as with
             buffers.")
      (:h2 "Keybinding style")
      (:p (:a :class "button"
-             :href (lisp-url `(nyxt::configure-slot
-                               'default-modes
-                               '(buffer web-buffer)
-                               :value '%slot-default%)
+             :href (lisp-url `(defmethod initialize-modes :after ((buffer buffer))
+                                (call-next-method))
                              `(nyxt/emacs-mode:emacs-mode :activate nil)
                              `(nyxt/vi-mode:vi-normal-mode :activate nil))
              "Use default (CUA)"))
      (:p (:a :class "button"
-             :href (lisp-url `(nyxt::configure-slot
-                               'default-modes
-                               '(buffer web-buffer)
-                               :value '(append '(emacs-mode) %slot-default%))
+             :href (lisp-url `(defmethod initialize-modes :after ((buffer buffer))
+                                (call-next-method)
+                                (make-mode 'emacs-mode buffer))
                              `(nyxt/emacs-mode:emacs-mode :activate t)
                              `(nyxt/vi-mode:vi-normal-mode :activate nil))
              "Use Emacs"))
      (:p (:a :class "button"
-             :href (lisp-url `(nyxt::configure-slot
-                               'default-modes
-                               '(buffer web-buffer)
-                               :value '(append '(vi-normal-mode) %slot-default%))
+             :href (lisp-url `(defmethod initialize-modes :after ((buffer buffer))
+                                (call-next-method)
+                                (make-mode 'vi-normal-mode buffer))
                              `(nyxt/vi-mode:vi-normal-mode :activate t)
                              `(nyxt/emacs-mode:emacs-mode :activate nil))
              "Use vi"))
@@ -460,7 +456,7 @@ The version number is stored in the clipboard."
 (declaim (ftype (function (function-symbol &key (:modes list))) binding-keys))
 (defun binding-keys (fn &key (modes (if (current-buffer)
                                         (modes (current-buffer))
-                                        (mapcar #'make-instance (default-mode-symbols)))))
+                                        *default-modes*)))
   ;; We can't use `(modes (make-instance 'buffer))' because modes are only
   ;; instantiated after the buffer web view, which is not possible if there is
   ;; no *browser*.
