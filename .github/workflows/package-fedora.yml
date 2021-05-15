@@ -12,12 +12,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: docker build -t example:${{ github.sha }} . --file Dockerfile --tag ${{ github.repository}}:$(date +%s)
+      run: docker build -t example:${{ github.sha }} . --file Dockerfile
     - uses: shrink/actions-docker-extract@v1
       id: extract
       with:
         image: example:${{ github.sha }}
-        path: /root/nyxt/*.rpm
+        path: /foo
     - name: Upload Dist
       uses: actions/upload-artifact@v2
       with:

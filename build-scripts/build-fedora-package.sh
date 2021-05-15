@@ -6,6 +6,9 @@
 
 set -xeu
 
+echo "==> Docker extraction test"
+echo "foobar" > /foo
+
 echo "==> Old working directory"
 pwd
 ls
