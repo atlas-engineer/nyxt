@@ -14,13 +14,26 @@ jobs:
     - name: Build the Docker image
       id: buildrpm
       run: docker build -t example:${{ github.sha }} . --file Dockerfile
-    - uses: shrink/actions-docker-extract@v1
-      id: extract
-      with:
-        image: example:${{ github.sha }}
-        path: ${{ steps.buildrpm.outputs.rpm }}
+    - name: Copy output
+      id: rpmoutput
+      run: docker cp example:${{ github.sha }}:$(docker exec -it example:${{ github.sha }} bash -c 'ls -1 /root/nyxt/*.rpm') .
+    # - name: Set output
+    #   id: rpmoutput
+    #   run: echo "::set-output name=rpm::$(docker exec -it example:${{ github.sha }} bash -c 'ls -1 /root/nyxt/*.rpm')"
+    # - uses: shrink/actions-docker-extract@v1
+    #   id: extract
+    #   with:
+    #     image: example:${{ github.sha }}
+    #     path: ${{ steps.rpmoutput.outputs.rpm }}
+    # - name: Upload Dist
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     path: ${{ steps.extract.outputs.destination }}
+    #     name: dist
     - name: Upload Dist
       uses: actions/upload-artifact@v2
+      ## TODO: Don't wrap deb in zip file.
       with:
-        path: ${{ steps.extract.outputs.destination }}
-        name: dist
+        name: nyxt-fedora
+        ## We need './' to avoid Yaml errors.
+        path: ./*.rpm
