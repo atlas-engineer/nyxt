@@ -74,4 +74,4 @@ sbcl \
 
 echo "==> DONE!"
 pwd
-ls *.rpm
+echo "::set-output name=rpm::$(ls -1 *.rpm)"
