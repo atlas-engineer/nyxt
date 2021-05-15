@@ -13,10 +13,12 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build the Docker image
       id: buildrpm
-      run: docker build -t example:${{ github.sha }} . --file Dockerfile
-    - name: Copy output
-      id: rpmoutput
-      run: docker cp example:${{ github.sha }}:$(docker exec -it example:${{ github.sha }} bash -c 'ls -1 /root/nyxt/*.rpm') .
+      run: |
+        docker build -t example:${{ github.sha }} . --file Dockerfile
+        docker cp example:${{ github.sha }}:$(docker exec -it example:${{ github.sha }} bash -c 'ls -1 /root/nyxt/*.rpm') .
+    # - name: Copy output
+    #   id: rpmoutput
+    #   run: docker cp example:${{ github.sha }}:$(docker exec -it example:${{ github.sha }} bash -c 'ls -1 /root/nyxt/*.rpm') .
     # - name: Set output
     #   id: rpmoutput
     #   run: echo "::set-output name=rpm::$(docker exec -it example:${{ github.sha }} bash -c 'ls -1 /root/nyxt/*.rpm')"
