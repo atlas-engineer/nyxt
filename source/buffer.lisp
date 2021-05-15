@@ -72,7 +72,7 @@ You can invoke them from the prompt-buffer by prefixing your query with SHORTCUT
 If the query is empty, FALLBACK-URL is loaded instead.  If
 FALLBACK-URL is empty, SEARCH-URL is used on an empty search.
 
-The default search engine (as pre `default-search-engine') is used when the
+The default search engine (as per `default-search-engine') is used when the
 query is not a valid URL, or the first keyword is not recognized.")
    (current-keymaps-hook
     (make-hook-keymaps-buffer
