@@ -17,7 +17,7 @@ jobs:
       id: extract
       with:
         image: example:${{ github.sha }}
-        path: /foo
+        path: /root/nyxt/*.rpm
     - name: Upload Dist
       uses: actions/upload-artifact@v2
       with:

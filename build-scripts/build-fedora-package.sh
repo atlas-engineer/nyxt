@@ -6,9 +6,6 @@
 
 set -xeu
 
-echo "==> Docker extraction test"
-echo "foobar" > /foo
-
 echo "==> Old working directory"
 pwd
 ls
@@ -74,3 +71,7 @@ sbcl \
     --eval "(ql:quickload :nyxt-fedora-package)" \
     --eval "(asdf:make :nyxt-fedora-package)" \
     --quit
+
+echo "==> DONE!"
+pwd
+ls *.rpm
