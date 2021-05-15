@@ -968,6 +968,8 @@ on instantiation.
 Finally, if nothing else, set the `engine' to the `default-search-engine'."))
 
 (defmethod initialize-instance :after ((query new-url-query) &key)
+  ;; Trim whitespace, in particular to detect URL properly.
+  (setf (query query) (str:trim (query query)))
   (cond
     ((engine query)
      ;; First check engine: if set, no need to change anything.
