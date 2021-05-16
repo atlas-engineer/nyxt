@@ -637,9 +637,9 @@ non-nil.
 Return results as cons cells tree if FLATTEN is nil and as a flat
 list otherwise.
 COLLECT-FUNCTION is the function of two arguments that glues the
-current node to the result of further traversal."
-  (labels ((collect (node children)
-             (funcall collect-function node children))
+current node result to the result of further traversal."
+  (labels ((collect (result further-results)
+             (funcall collect-function result further-results))
            (traverse (node)
              (when node
                (collect (funcall function node)
