@@ -30,7 +30,9 @@ See the `data-path' class and the `expand-path' function.")
 Modes are instantiated after the `default-modes' slot, with `initialize-modes'
 and not in the initform so that the instantiation form can access the
 initialized buffer.")
-   (default-modes '(web-mode base-mode)
+   (default-modes '()
+                  :writer t
+                  :export t
                   :type list-of-symbols
                   :documentation "The symbols of the modes to instantiate on buffer creation.
 The mode instances are stored in the `modes' slot.")
@@ -245,12 +247,23 @@ separated from one another, so that each has its own behaviour and settings."))
 
 (define-user-class buffer)
 
+(defgeneric default-modes (buffer)
+  (:method-combination append)
+  (:method append ((buffer buffer))
+    '(web-mode base-mode))
+  (:documentation "Return the default modes appended to the default modes
+inherited from the superclasses.
+Duplicates are removed."))
+
+(defmethod default-modes :around ((buffer buffer))
+  "Return the list of default modes for BUFFER.
+Duplicates are removed."
+  (remove-duplicates (call-next-method)
+                     ;; Mode at the beginning of the list have higher priorities.
+                     :from-end t))
+
 (define-class web-buffer (user-buffer)
-  ((default-modes '(certificate-exception-mode web-mode base-mode)
-                  :type list-of-symbols
-                  :documentation "The symbols of the modes to instantiate on buffer creation.
-The mode instances are stored in the `modes' slot.")
-   (load-status :unloaded ; TODO: Rename to `status' to be consistent with download-mode?
+  ((load-status :unloaded ; TODO: Rename to `status' to be consistent with download-mode?
                 :type (member :loading
                               :finished
                               :unloaded
@@ -286,20 +299,24 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 
 (define-user-class web-buffer)
 
+(defmethod default-modes append ((buffer web-buffer))
+  '(certificate-exception-mode))
+
 (defmethod initialize-instance :after ((buffer web-buffer) &key)
   (when (expand-path (cookies-path buffer))
     (ensure-parent-exists (expand-path (cookies-path buffer)))))
 
 (define-class nosave-buffer (user-web-buffer)
-  ((data-profile (make-instance 'nosave-data-profile))
-   (default-modes '(reduce-tracking-mode certificate-exception-mode
-                    web-mode base-mode)))
+  ((data-profile (make-instance 'nosave-data-profile)))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-user-class nosave-buffer)
+
+(defmethod default-modes append ((buffer nosave-buffer))
+  '(certificate-exception-mode))
 
 (define-class internal-buffer (user-buffer)
   ((style #.(cl-css:css
@@ -355,7 +372,6 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 
 (define-class editor-buffer (internal-buffer)
   ((file :documentation "The file being edited.")
-   (default-modes '(plaintext-editor-mode base-mode))
    (url (quri:uri "editor-buffer"))
    (title "editor-buffer"))
   (:export-class-name-p t)
@@ -364,6 +380,12 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "Each editor buffer matches a file. Each editor buffer
   contains an editor mode instance."))
+
+(defmethod default-modes append ((buffer editor-buffer))
+  '(plaintext-editor-mode))
+(defmethod default-modes :around ((buffer editor-buffer))
+  ;; REVIEW: Really remove web-mode from editor-buffer?
+  (remove 'web-mode (call-next-method)))
 
 (define-user-class editor-buffer)
 
