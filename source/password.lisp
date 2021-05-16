@@ -83,7 +83,7 @@ for which the `executable' slot is non-nil."
   (loop :until (password:password-correct-p password-interface)
         :do (setf (password::master-password password-interface)
                   (first (prompt
-                          :prompt "Password"
+                          :prompt "File password"
                           :sources (list (make-instance 'prompter:raw-source))
                           :invisible-input-p t)))))
 
