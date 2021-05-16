@@ -136,6 +136,25 @@ CLASS-SYM to NEW-SUPERCLASSES.  The class is restored when exiting BODY."
               ,@body)
          (define-user-class ,class-sym ,old-superclasses)))))
 
+(declaim (ftype (function ((or symbol function))) method-combination-name))
+(defun method-combination-name (fun)
+  (let ((fun (if (functionp fun)
+                 fun
+                 (symbol-function fun))))
+    (funcall
+     #+sbcl
+     'sb-pcl::method-combination-type-name
+     #+ccl
+     'ccl::method-combination-name
+     #-(or sbcl ccl)
+     (error "Not implemented")
+     (closer-mop:generic-function-method-combination fun))))
+
+(declaim (ftype (function ((or symbol function)) boolean) standard-method-combination-p))
+(defun standard-method-combination-p (fun)
+  (eq 'standard
+      (method-combination-name fun)))
+
 (export-always '%slot-default%)
 (defmacro %define-configuration (name &body slots)
   (let* ((final-name (user-class-name name))
@@ -145,21 +164,32 @@ CLASS-SYM to NEW-SUPERCLASSES.  The class is restored when exiting BODY."
         (error "define-configuration argument ~a is not a known class." name)))
     `(progn
        (define-class ,temp-name ()
-         ,(loop with super-class = (closer-mop:ensure-finalized (find-class final-name))
-                for slot in (first slots)
-                for known-slot? = (find (first slot) (mopu:slot-names super-class))
-                for initform = (and known-slot?
-                                    (getf (mopu:slot-properties super-class (first slot))
-                                          :initform))
-                if known-slot?
-                  collect (list (first slot)
-                                :initform `(funcall (lambda (%slot-default%)
-                                                      (declare (ignorable %slot-default%))
-                                                      ,(cadr slot))
-                                                    ,initform))
-                else do
-                  (log:warn "Undefined slot ~a in ~a" (first slot) final-name))
+         ,(let ((super-class (closer-mop:ensure-finalized (find-class final-name))))
+            (loop for slot in (sera:filter #'standard-method-combination-p (first slots)
+                                           :key #'first)
+                  for known-slot? = (find (first slot) (mopu:slot-names super-class))
+                  for initform = (and known-slot?
+                                      (getf (mopu:slot-properties super-class (first slot))
+                                            :initform))
+                  if known-slot?
+                    collect (list (first slot)
+                                  :initform `(funcall (lambda (%slot-default%)
+                                                        (declare (ignorable %slot-default%))
+                                                        ,(cadr slot))
+                                                      ,initform))
+                  else do
+                    (log:warn "Undefined slot ~a in ~a" (first slot) final-name)))
          (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+       ;; Non-standard accessors, e.g. `default-modes':
+       ,@(loop for slot in (remove-if #'standard-method-combination-p (first slots)
+                                      :key #'first)
+               for slot-name = (first slot)
+               collect
+               `(defmethod ,slot-name :around ((,(user-class-name name) ,(user-class-name name)))
+                  (funcall (lambda (%slot-default%)
+                             (declare (ignorable %slot-default%))
+                             ,(cadr slot))
+                           (call-next-method))))
        (define-user-class ,name ,(cons temp-name
                                        (mapcar #'class-name
                                                (mopu:direct-superclasses final-name)))))))
