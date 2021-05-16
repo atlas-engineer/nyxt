@@ -178,7 +178,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 (define-command bookmark-page ()
   "Bookmark the currently opened page(s) in the active buffer."
   (prompt
-   :input "Bookmark URL from buffer(s)"
+   :prompt "Bookmark URL from buffer(s)"
    :sources (make-instance 'buffer-source
                            :multi-selection-p t
                            :actions (list (make-unmapped-command bookmark-current-page)))))
