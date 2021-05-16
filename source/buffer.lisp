@@ -30,12 +30,6 @@ See the `data-path' class and the `expand-path' function.")
 Modes are instantiated after the `default-modes' slot, with `initialize-modes'
 and not in the initform so that the instantiation form can access the
 initialized buffer.")
-   (default-modes '()
-                  :writer t
-                  :export t
-                  :type list-of-symbols
-                  :documentation "The symbols of the modes to instantiate on buffer creation.
-The mode instances are stored in the `modes' slot.")
    (enable-mode-hook (make-hook-mode)
                      :type hook-mode
                      :documentation "Hook run on every mode activation,
@@ -247,17 +241,19 @@ separated from one another, so that each has its own behaviour and settings."))
 
 (define-user-class buffer)
 
+(export-always 'default-modes)
 (defgeneric default-modes (buffer)
   (:method-combination append)
   (:method append ((buffer buffer))
     '(web-mode base-mode))
-  (:documentation "Return the default modes appended to the default modes
-inherited from the superclasses.
-Duplicates are removed."))
+  (:documentation "The symbols of the modes to instantiate on buffer creation.
+The mode instances are stored in the `modes' BUFFER slot.
+
+The default modes returned by this method are appended to the default modes
+inherited from the superclasses.  Duplicates are removed."))
 
 (defmethod default-modes :around ((buffer buffer))
-  "Return the list of default modes for BUFFER.
-Duplicates are removed."
+  "Remove the duplicates from the `default-modes'."
   (remove-duplicates (call-next-method)
                      ;; Mode at the beginning of the list have higher priorities.
                      :from-end t))
