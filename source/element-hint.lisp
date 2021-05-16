@@ -160,7 +160,7 @@ identifier for every hinted element."
   (let* ((buffer (current-buffer)))
     (let ((result (prompt
                    :prompt prompt
-                   :default-modes '(element-hint-mode prompt-buffer-mode)
+                   :default-modes '(element-hint-mode) ; TODO: Unknown keyword arg.
                    :history nil
                    :sources
                    (make-instance

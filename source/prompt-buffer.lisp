@@ -18,8 +18,7 @@ All ARGS are declared as `ignorable'."
 
 (sera:eval-always
   (define-class prompt-buffer (user-internal-buffer prompter:prompter)
-    ((default-modes '(prompt-buffer-mode))
-     (window nil
+    ((window nil
              :type (or null window)
              :export nil
              :documentation "The window in which the prompt buffer is showing.")
@@ -130,6 +129,11 @@ invoking `prompt-buffer:history'.
 See `prompt' for how to invoke prompts.")))
 
 (define-user-class prompt-buffer)
+
+(defmethod default-modes append ((buffer prompt-buffer))
+  '(prompt-buffer-mode))
+(defmethod default-modes :around ((buffer prompt-buffer))
+  (set-difference (call-next-method) '(web-mode base-mode)))
 
 (defmethod initialize-instance :after ((prompt-buffer prompt-buffer) &key)
   (hooks:run-hook (prompt-buffer-make-hook *browser*) prompt-buffer)
