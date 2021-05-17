@@ -566,13 +566,14 @@ See `gtk-browser's `modifier-translator' slot."
                           (make-instance 'webkit:webkit-web-context
                                          :website-data-manager manager))
                         (web-context *browser*)))
-           (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
-      (when (expand-path (gtk-extensions-path buffer))
+           (cookie-manager (webkit:webkit-web-context-get-cookie-manager context))
+           (extensions-path (expand-path (gtk-extensions-path buffer))))
+      (when extensions-path
         (gobject:g-signal-connect
          context "initialize-web-extensions"
          #'(lambda (context)
              (webkit:webkit-web-context-set-web-extensions-directory
-              context (expand-path (gtk-extensions-path buffer))))))
+              context extensions-path))))
       (when (and buffer
                  (web-buffer-p buffer)
                  (expand-path (cookies-path buffer)))
