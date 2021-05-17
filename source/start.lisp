@@ -285,7 +285,7 @@ This is a convenience wrapper to make remote code execution to open URLs as
 short as possible.
 It takes URL-STRINGS so that the URL argument can be `cl-read' in case
 `remote-execution-p' is nil."
-  (let ((urls (mapcar #'quri:uri url-strings)))
+  (let ((urls (strings->urls url-strings)))
     (if urls
         (log:info "Externally requested URL(s): ~{~a~^, ~}" urls)
         (log:info "Externally pinged."))
@@ -494,7 +494,7 @@ Then load INIT-FILE if non-nil.
 Instantiate `*browser*'.
 Finally, run the browser, load URL-STRINGS if any, then run
 `*after-init-hook*'."
-  (let* ((urls (ignore-errors (mapcar #'quri:uri url-strings)))
+  (let* ((urls (strings->urls url-strings))
          (thread (when (expand-path *socket-path*)
                    (listen-or-query-socket urls)))
          (startup-timestamp (local-time:now))

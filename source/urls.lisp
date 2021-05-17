@@ -10,6 +10,22 @@
 (defmethod url ((url-string string))
   (quri:uri url-string))
 
+(defun string->url (url-string)
+  "Return the `quri:uri' object corresponding to URL-STRING.
+If URL-STRING is a path pointing to an existing file, return a `quri:uri' object
+ with the `file' scheme.
+If URL-STRING cannot be converted to a `quri:uri' object, return an empty `quri:uri'."
+  (or (ignore-errors
+       (if (uiop:file-exists-p url-string)
+           (quri:uri (str:concat "file://" url-string))
+           (quri:uri url-string)))
+      (quri:uri "")))
+
+(defun strings->urls (url-strings)
+  "Return the list of `quri:uri's corresponding to URL-STRINGS.
+If a URL string cannot be converted to a `quri:uri', it is discarded from the result."
+  (remove-if #'url-empty-p (mapcar #'string->url url-strings)))
+
 (defun has-url-method-p (object)
   "Return non-nil if OBJECT has `url' specialization."
   (some (lambda (method)
