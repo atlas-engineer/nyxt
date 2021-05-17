@@ -56,17 +56,17 @@ Example:
          ;; TODO: Can we delete the last mode?  What does it mean to have no mode?
          ;; Should probably always have root-mode.
          ,(unless (eq name 'root-mode)
-            `(define-command ,name (&rest args
-                                    &key
-                                    ;; TODO: Shall we have a function that
-                                    ;; returns the focused buffer?
-                                    ;; `focused-buffer'?  `current-buffer*'?
-                                    ;; Rename `current-buffer' to
-                                    ;; `current-view-buffer' and add
-                                    ;; `current-buffer' for this task?
-                                    (buffer (or (current-prompt-buffer) (current-buffer)))
-                                    (activate t explicit?)
-                                    &allow-other-keys)
+            `(define-command-global ,name (&rest args
+                                           &key
+                                           ;; TODO: Shall we have a function that
+                                           ;; returns the focused buffer?
+                                           ;; `focused-buffer'?  `current-buffer*'?
+                                           ;; Rename `current-buffer' to
+                                           ;; `current-view-buffer' and add
+                                           ;; `current-buffer' for this task?
+                                           (buffer (or (current-prompt-buffer) (current-buffer)))
+                                           (activate t explicit?)
+                                           &allow-other-keys)
                ,docstring
                (unless (find 'buffer (mopu:superclasses buffer) :key #'class-name)
                  ;; Warning: (typep buffer 'buffer) would not work for prompt-buffers
@@ -234,11 +234,12 @@ defined in any package and is unique.
 
 If MODE-SYMBOL is a mode that inherits from another without defining its own
 toggle command, return the toggle command of the parent."
-  (or (find (string mode-symbol) *command-list*
-            :key (lambda (command) (string (name command)))
-            :test #'string=)
-      (alex:when-let ((m (find-class mode-symbol nil)))
-        (mode-command (class-name (original-class m))))))
+  (unless (eq mode-symbol 'root-mode)   ; `root-mode' has not command.
+    (or (find (string mode-symbol) *command-list*
+              :key (lambda (command) (string (name command)))
+              :test #'string=)
+        (alex:when-let ((m (find-class mode-symbol nil)))
+          (mode-command (class-name (original-class m)))))))
 
 (defun make-mode (mode-symbol buffer)
   ;; (log:debug mode-symbol buffer (mode-command mode-symbol))

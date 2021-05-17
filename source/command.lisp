@@ -23,6 +23,10 @@ This is useful to build commands out of anonymous functions.")
          :documentation "S-expression of the definition of top-level commands or
 commands wrapping over lambdas.
 This is nil for local commands that wrap over named functions.")
+   (global-p nil
+             :type boolean
+             :documentation "If non-nil, this command can be run from anywhere.
+Otherwise the command can only be run if its corresponding package mode is enabled.")
    (last-access (local-time:now)
                 :type local-time:timestamp
                 :documentation "Last time this command was called from prompt buffer.
@@ -63,6 +67,9 @@ We need a `command' class for multiple reasons:
 (define-condition command-documentation-style-warning  ; TODO: Remove and force docstring instead.
     (documentation-style-warning)
   ((subject-type :initform 'command)))
+
+(defun find-command (name)
+  (find name *command-list* :key #'name))
 
 (export-always 'make-command)
 (defmacro make-command (name arglist &body body)
@@ -165,6 +172,16 @@ Example:
                               :fn (symbol-function ',name)
                               :sexp '(define-command (,@arglist) ,@body))
                *command-list*)))))
+
+(export-always 'define-command-global)
+(defmacro define-command-global (name (&rest arglist) &body body)
+  "Like `define-command' but mark the command as global.
+This means it will be listed in `command-source' when the global option is on.
+This is mostly useful for third-party packages to define globally-accessible
+commands without polluting Nyxt packages."
+  `(progn
+    (define-command ,name (,@arglist) ,@body)
+    (setf (global-p (find-command ',name)) t) ))
 
 ;; TODO: Update define-deprecated-command
 (defmacro define-deprecated-command (name (&rest arglist) &body body)
@@ -278,34 +295,30 @@ A mode toggler is a command of the same name as its associated mode."
    (closer-mop:subclassp (find-class (name command) nil)
                          (find-class 'root-mode))))
 
-(defun list-commands (&rest mode-symbols)
+(defun list-commands (&key global-p mode-symbols)
   "List commands.
-Commands are instances of the `command' class.  When MODE-SYMBOLS are provided,
-list only the commands that belong to the corresponding mode packages or of a
-parent mode packages.  Otherwise list all commands.
-
-If 'BASE-MODE is in MODE-SYMBOLS, mode togglers and commands from the
-`nyxt-user' package are included.  This is useful since mode togglers are
-usually part of their own mode / package and would not be listed otherwise.
-For `nyxt-user' commands, users expect them to be listed out of the box without
-extra fiddling."
+Commands are instances of the `command' class.
+When MODE-SYMBOLS are provided, list only the commands that belong to the
+corresponding mode packages or of a parent mode packages.
+Otherwise list all commands.
+With MODE-SYMBOLS and GLOBAL-P, include global commands.
+Commands of the `nyxt-user' package are always listed."
   ;; TODO: Make sure we list commands of inherited modes.
-  (let ((list-togglers-p (member 'base-mode mode-symbols)))
-    (if mode-symbols
-        (remove-if (lambda (c)
-                     (and (or (not list-togglers-p)
-                              (and (not (mode-toggler-p c))
-                                   (not (eq (find-package 'nyxt-user)
-                                            (symbol-package (name c))))))
-                          (notany (lambda (m)
-                                    (eq (symbol-package (name c))
-                                        ;; root-mode does not have a mode-command.
-                                        (alex:when-let ((mc (and (not (eq m 'root-mode))
-                                                                 (mode-command m))))
-                                          (symbol-package (name mc)))))
-                                  mode-symbols)))
-                   *command-list*)
-        *command-list*)))
+  (if mode-symbols
+      (remove-if
+       (lambda (command)
+         (and (or (not global-p)
+                  (not (global-p command)))
+              (not (eq (symbol-package (name command))
+                       (find-package 'nyxt-user)))
+              (notany
+               (lambda (mode-symbol)
+                 (eq (symbol-package (name command))
+                     (alex:when-let ((mode-command (mode-command mode-symbol)))
+                       (symbol-package (name mode-command)))))
+               mode-symbols)))
+       *command-list*)
+      *command-list*))
 
 (declaim (ftype (function (function) (or null command)) function-command))
 (defun function-command (function)
