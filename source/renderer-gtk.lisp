@@ -842,11 +842,12 @@ See `gtk-browser's `modifier-translator' slot."
         (markup:markup
          (:h1 "Page could not be loaded.")
          (:h2 "URL: " failing-url)
-         (:p "Please check:"
-             (:ul
-              (:li "Your Internet connection.")
-              (:li "That the URL is valid.")
-              (:li "That the resource at the URL is reachable."))))
+         (:ul
+          (:li "Try again in a moment, maybe the site will be available again.")
+          (:li "If the problem persists for every site, check your Internet connection.")
+          (:li "Make sure the URL is valid."
+               (when (quri:uri-https-p (quri:uri failing-url))
+                 "If this site has does not support HTTPS, try with HTTP (insecure)."))))
         buffer))
      t))
   (gobject:g-signal-connect
