@@ -50,28 +50,32 @@
     ;; Returning fragment makes WebKit choke.
     nil))
 
+(declaim (ftype (function (t fixnum string) string) select-from-alphabet))
+(defun select-from-alphabet (code char-length alphabet)
+  (let* ((exponents (nreverse (loop for pow below char-length
+                                    collect (expt (length alphabet) pow)))))
+    (coerce (loop for exp in exponents
+                  for quotinent = (floor (/ code exp))
+                  collect (aref alphabet quotinent)
+                  do (decf code (* quotinent exp)))
+            'string)))
+
+(declaim (ftype (function (integer) list-of-strings) generate-hints))
+(defun generate-hints (length)
+  (let* ((alphabet (hints-alphabet (current-mode 'web)))
+         (char-length (ceiling (log length (length alphabet)))))
+    (loop for i below length collect (select-from-alphabet i char-length alphabet))))
+
 (defun add-element-hints (&key selector)
-  (labels ((select-from-alphabet (code char-length alphabet)
-             (let* ((exponents (nreverse (loop for pow below char-length
-                                               collect (expt (length alphabet) pow)))))
-               (coerce (loop for exp in exponents
-                             for quotinent = (floor (/ code exp))
-                             collect (aref alphabet quotinent)
-                             do (decf code (* quotinent exp)))
-                       'string)))
-           (generate-hints (length)
-             (let* ((alphabet (hints-alphabet (current-mode 'web)))
-                    (char-length (ceiling (log length (length alphabet)))))
-               (loop for i below length collect (select-from-alphabet i char-length alphabet)))))
-    (let* ((dom (document-model (current-mode 'web)))
-           (hintable-elements (coerce (clss:select selector dom) 'list))
-           (hints (generate-hints (length hintable-elements))))
-      (add-stylesheet)
-      (hint-elements (mapcar #'get-nyxt-id hintable-elements) hints)
-      (mapcar #'(lambda (elem hint)
-                  (plump:set-attribute elem "nyxt-hint" hint)
-                  elem)
-              hintable-elements hints))))
+  (let* ((dom (document-model (current-mode 'web)))
+         (hintable-elements (clss:select selector dom))
+         (hints (generate-hints (length hintable-elements))))
+    (add-stylesheet)
+    (hint-elements (map 'list #'get-nyxt-id hintable-elements) hints)
+    (loop for elem across hintable-elements
+          for hint in hints
+          do (plump:set-attribute elem "nyxt-hint" hint)
+          collect elem)))
 
 (define-parenscript remove-element-hints ()
   (defun hints-remove-all ()
