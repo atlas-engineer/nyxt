@@ -183,7 +183,7 @@ This is mostly useful for third-party packages to define globally-accessible
 commands without polluting Nyxt packages."
   `(progn
     (define-command ,name (,@arglist) ,@body)
-    (setf (global-p (find-command ',name)) t) ))
+    (setf (global-p (find-command ',name)) t)))
 
 ;; TODO: Update define-deprecated-command
 (defmacro define-deprecated-command (name (&rest arglist) &body body)
