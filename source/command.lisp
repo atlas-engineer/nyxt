@@ -303,16 +303,13 @@ Commands are instances of the `command' class.
 When MODE-SYMBOLS are provided, list only the commands that belong to the
 corresponding mode packages or of a parent mode packages.
 Otherwise list all commands.
-With MODE-SYMBOLS and GLOBAL-P, include global commands.
-Commands of the `nyxt-user' package are always listed."
+With MODE-SYMBOLS and GLOBAL-P, include global commands."
   ;; TODO: Make sure we list commands of inherited modes.
   (if mode-symbols
       (remove-if
        (lambda (command)
          (and (or (not global-p)
                   (not (global-p command)))
-              (not (eq (symbol-package (name command))
-                       (find-package 'nyxt-user)))
               (notany
                (lambda (mode-symbol)
                  (eq (symbol-package (name command))
