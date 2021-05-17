@@ -10,32 +10,35 @@
       (and (quri:uri= (url buffer) (url other-buffer))
            (string= (title buffer) (title other-buffer))))))
 
+(defun reopen-dead-buffer (buffer)
+  (containers:delete-item-if (recent-buffers *browser*)
+                             (buffer-match-predicate buffer))
+  (let ((new-buffer (buffer-make *browser* :dead-buffer buffer)))
+    (reload-buffer new-buffer)
+    new-buffer))
+
 (define-class recent-buffer-source (prompter:source)
   ((prompter:name "Deleted buffers")
    (prompter:multi-selection-p t)
    (prompter:constructor
-    (containers:container->list (recent-buffers *browser*)))))
+    (containers:container->list (recent-buffers *browser*)))
+   (prompter:actions (list
+                      (make-command reopen-dead-buffer-focus (buffer-list)
+                        "Reopen BUFFER and switch to it."
+                        (mapc #'reopen-dead-buffer buffer-list)
+                        (set-current-buffer (or (first (prompter:marks (current-source)))
+                                                (current-suggestion-value (current-prompt-buffer)))))
+                      (make-mapped-command reopen-dead-buffer)))))
 
 (define-command reopen-buffer ()
   "Reopen queried deleted buffer(s)."
-  (let* ((buffers (prompt
-                   :prompt "Ropen buffer(s):"
-                   :sources (make-instance 'recent-buffer-source))))
-    (dolist (buffer buffers)
-      (containers:delete-item-if (recent-buffers *browser*)
-                                 (buffer-match-predicate buffer))
-      (reload-buffers (list (buffer-make *browser* :dead-buffer buffer)))
-      (when (and (eq buffer (first buffers))
-                 (focus-on-reopened-buffer-p *browser*))
-        (set-current-buffer buffer)))))
+  (prompt
+   :prompt "Reopen buffer(s):"
+   :sources (make-instance 'recent-buffer-source)))
 
 (define-command reopen-last-buffer ()
   "Open a new buffer with the URL of the most recently deleted buffer."
   (if (plusp (containers:size (recent-buffers *browser*)))
-      (let ((buffer (buffer-make
-                     *browser*
-                     :dead-buffer (containers:delete-first (recent-buffers *browser*)))))
-        (reload-buffers (list buffer))
-        (when (focus-on-reopened-buffer-p *browser*)
-          (set-current-buffer buffer)))
+      (set-current-buffer
+       (reopen-dead-buffer (containers:first-item (recent-buffers *browser*))))
       (echo "There are no recently-deleted buffers.")))

@@ -75,11 +75,6 @@ This can be used to resume former buffers.")
    (recent-buffers (make-ring :size 50)
                    :export nil
                    :documentation "A ring that keeps track of deleted buffers.")
-   (focus-on-reopened-buffer-p t ; TODO: Replace this with prompt-buffer Helm-style actions.
-                               :documentation "When reopening a closed buffer,
-focus on it instead of opening it in the background.
-
-Warning: This setting may be deprecated in a future release, don't rely on it.")
    (windows (make-hash-table :test #'equal)
             :export nil)
    (total-window-count 0
