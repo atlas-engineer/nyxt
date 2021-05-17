@@ -75,6 +75,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 (define-class bookmark-source (prompter:source)
   ((prompter:name "Bookmarks")
    (prompter:constructor (get-data (bookmarks-path (current-buffer))))
+   (prompter:multi-selection-p t)
    (prompter:active-attributes-keys '("URL" "Title" "Tags"))))
 
 (defun tag-suggestions ()
@@ -231,25 +232,18 @@ equals only comparing URLs."
   "Set the URL for the current buffer from a bookmark.
 With multiple selections, open the first bookmark in the current buffer, the
 rest in background buffers."
-  (let ((entries (prompt
-                  :prompt "Open bookmark(s)"
-                  ;; :default-modes '(minibuffer-tag-mode minibuffer-mode) ; TODO: Replace this behaviour.
-                  :sources (make-instance 'bookmark-source
-                                          :multi-selection-p t))))
-    (dolist (entry (rest entries))
-      (make-buffer :url (url entry)))
-    (buffer-load (url (first entries)))))
-
-(define-command set-url-from-bookmark-new-buffer ()
-  "Open selected bookmarks in new buffers."
-  (let ((entries (prompt
-                  :prompt "Open bookmark(s) in new buffers"
-                  ;; :default-modes '(minibuffer-tag-mode minibuffer-mode) ; TODO: Replace this behaviour.
-                  :sources (make-instance 'bookmark-source
-                                          :multi-selection-p t))))
-    (dolist (entry (rest entries))
-      (make-buffer :url (url entry)))
-    (make-buffer-focus :url (url (first entries)))))
+  (prompt
+   :prompt "Open bookmark(s)"
+   ;; :default-modes '(minibuffer-tag-mode minibuffer-mode) ; TODO: Replace this behaviour.
+   :sources (make-instance 'bookmark-source
+                           :actions (list (make-command buffer-load* (suggestion-values)
+                                            "Load first selected bookmark in current buffer and the rest in new buffer(s)."
+                                            (mapc (lambda (url) (make-buffer :url url)) (rest suggestion-values))
+                                            (buffer-load (url (first suggestion-values))))
+                                          (make-command new-buffer-load (suggestion-values)
+                                            "Load bookmark(s) in new buffer(s)."
+                                            (mapc (lambda (url) (make-buffer :url url)) (rest suggestion-values))
+                                            (make-buffer-focus :url (url (first suggestion-values))))))))
 
 (defmethod serialize-object ((entry bookmark-entry) stream)
   (unless (url-empty-p (url entry))
