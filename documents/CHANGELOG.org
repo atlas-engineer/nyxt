@@ -19,7 +19,14 @@ If possible!
   packages can publish, and users can download
 - This technology will probably be built on top of Quicklisp or CLPM.
 *** Add online suggestions from search engines
-** 2.0.0
+** 2 series
+
+*** TASK 2.0.0 (Upcoming)
+
+- Commands defined with =define-command= are no longer listed in
+  =execute-command=.
+  Use =define-command-global= to define global commands that are always
+  listed.
 
 *** 2-pre-release-7
 
