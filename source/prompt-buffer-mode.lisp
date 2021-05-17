@@ -222,11 +222,12 @@ current unmarked selection."
           attributes)
     (prompt-render-suggestions prompt-buffer)))
 
-(define-class prompt-buffer-command-source (prompter:source)
-  ((prompter:name "List of prompt buffer commands")
+(define-class prompt-buffer-command-source (command-source)
+  ((prompter:name "Prompt buffer commands")
    (parent-prompt-buffer (error "Parent prompt buffer required"))
-   (prompter:suggestion-maker 'make-prompt-buffer-command-suggestion)
-   (prompter:constructor (nyxt::get-commands (current-prompt-buffer))))
+   (global-p nil)
+   (buffer (current-prompt-buffer))
+   (prompter:suggestion-maker 'make-prompt-buffer-command-suggestion))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (defun make-prompt-buffer-command-suggestion (command source)
