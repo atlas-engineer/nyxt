@@ -499,8 +499,8 @@ See `buffer-make'."
 BUFFER's modes."
   (declare (ignore no-url))
   (let ((view-url (ffi-buffer-url buffer)))
-    (when (or (not (load-failed-p buffer))
-              (not (url-empty-p view-url)))
+    (unless (or (load-failed-p buffer)
+                (url-empty-p view-url))
       ;; When a buffer fails to load and `ffi-buffer-url' returns an empty
       ;; URL, we don't set (url buffer) to keep access to the old value.
       (setf (url buffer) (ffi-buffer-url buffer))))
