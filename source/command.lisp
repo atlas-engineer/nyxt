@@ -323,10 +323,7 @@ Commands of the `nyxt-user' package are always listed."
 (declaim (ftype (function (function) (or null command)) function-command))
 (defun function-command (function)
   "Return the command associated to FUNCTION, if any."
-  (find-if (lambda (cmd)
-             (eq function (fn cmd)))
-           (list-commands)))
-
+  (find-if (sera:eqs function) (list-commands) :key #'fn))
 
 (defun run (command &rest args)
   "Run COMMAND over ARGS and return its result.
