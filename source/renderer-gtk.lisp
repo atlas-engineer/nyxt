@@ -698,10 +698,13 @@ See `gtk-browser's `modifier-translator' slot."
              nil))))))
 
 (define-ffi-method on-signal-load-changed ((buffer gtk-buffer) load-event)
-  (sera:and-let* ((url (webkit:webkit-web-view-uri (gtk-object buffer)))
-                  ;; `url' can be nil if buffer didn't have any URL associated
-                  ;; to the web view, e.g. the start page.
-                  (url (quri:uri url)))
+  ;; `url' can be nil if buffer didn't have any URL associated
+  ;; to the web view, e.g. the start page, or if the load failed.
+  (let* ((url (ignore-errors
+               (quri:uri (webkit:webkit-web-view-uri (gtk-object buffer)))))
+         (url (if (url-empty-p url)
+                  (url buffer)
+                  url)))
     (cond ((eq load-event :webkit-load-started)
            (setf (slot-value buffer 'load-status) :loading)
            (print-status nil (get-containing-window-for-buffer buffer *browser*))
