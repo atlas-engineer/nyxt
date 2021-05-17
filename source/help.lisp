@@ -604,7 +604,7 @@ the "
                              '((".nyxt-source"
                                 :overflow "auto"))))))
     (format f "~{~a ~%~}"
-            (loop for command in *command-list*
+            (loop for command in (list-commands)
                   collect (markup:markup
                            (:details
                             (:summary (format nil "~(~a~)" (symbol-name (name command))))
