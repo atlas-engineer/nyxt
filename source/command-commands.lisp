@@ -18,9 +18,6 @@
 (defmethod prompter:object-attributes ((handler hooks:handler))
   `(("Name" ,(str:downcase (hooks:name handler)))))
 
-(defun get-commands (&optional (buffer (current-buffer)))
-  (sort-by-time (apply #'list-commands (mapcar #'mode-name (modes buffer)))))
-
 (defun command-attributes (command &optional (buffer (active-buffer (current-window :no-rescan))))
   (let ((scheme-name (keymap-scheme-name buffer))
         (bindings '()))
@@ -43,7 +40,16 @@
 
 (define-class command-source (prompter:source)
   ((prompter:name "Commands")
-   (prompter:constructor (get-commands)))
+   (global-p t
+             :type boolean
+             :documentation "If non-nil, include global commands in the suggestions.")
+   (buffer (current-buffer)
+           :type buffer)
+   (prompter:constructor (lambda (source)
+                           (sort-by-time
+                            (list-commands
+                             :global-p (global-p source)
+                             :mode-symbols (mapcar #'mode-name (modes (buffer source))))))))
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "Prompter source to execute commands."))
