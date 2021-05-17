@@ -136,12 +136,14 @@ Example:
     (unless documentation
       (warn (make-condition 'command-documentation-style-warning
                             :name name)))
-    (let ((before-hook (intern (str:concat (symbol-name name) "-BEFORE-HOOK")))
-          (after-hook (intern (str:concat (symbol-name name) "-AFTER-HOOK"))))
+    (let ((before-hook (intern (str:concat (symbol-name name) "-BEFORE-HOOK")
+                               (symbol-package name)))
+          (after-hook (intern (str:concat (symbol-name name) "-AFTER-HOOK")
+                              (symbol-package name))))
       `(progn
-         (export-always ',before-hook)
+         (export-always ',before-hook (symbol-package ',name))
          (defparameter ,before-hook (hooks:make-hook-void))
-         (export-always ',after-hook)
+         (export-always ',after-hook (symbol-package ',name))
          (defparameter ,after-hook (hooks:make-hook-void))
          (export-always ',name (symbol-package ',name))
          ;; We define the function at compile-time so that macros from the same
