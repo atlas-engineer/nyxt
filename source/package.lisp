@@ -6,7 +6,7 @@
 (pushnew
  (intern (format nil "NYXT-~a"
                  (first (uiop:parse-version
-                         (asdf:system-version (asdf:find-system :nyxt)))))
+                         (asdf:component-version (asdf:find-system :nyxt)))))
          "KEYWORD")
  *features*)
 
