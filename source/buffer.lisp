@@ -903,7 +903,7 @@ set of useful URLs or preparing a list to send to a someone else."
                      (:hr ""))))))))
     (when delete (mapcar #'buffer-delete buffers))))
 
-(define-command delete-all-buffers (&key confirmation-p)
+(define-command delete-all-buffers (&key (confirmation-p t))
   "Delete all buffers, with confirmation."
   (let ((count (length (buffer-list))))
     (if confirmation-p
