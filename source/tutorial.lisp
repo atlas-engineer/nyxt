@@ -169,7 +169,6 @@ removed from the input, they are also removed from the existing bookmark.")
     (:li (command-markup 'bookmark-url) ": Same as above but prompt for a URL first.")
     (:li (command-markup 'nyxt/web-mode:bookmark-hint) ": Same as above but prompt for a hinted URL first.")
     (:li (command-markup 'set-url-from-bookmark) ": Open bookmark in current buffer.")
-    (:li (command-markup 'set-url-from-bookmark-new-buffer) ": Open bookmark in new buffer.")
     (:li (command-markup 'delete-bookmark) ": Delete queried bookmarks.")
     (:li (command-markup 'list-bookmarks) ": Display a new buffer containing the
 list of all bookmarks."))
