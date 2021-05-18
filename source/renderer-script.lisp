@@ -28,7 +28,7 @@ The function can be passed ARGS."
 (export-always 'document-get-paragraph-contents)
 (define-parenscript document-get-paragraph-contents (&key (limit 100000))
   (let ((result ""))
-    (loop for element in (qsa document (list "p"))
+    (loop for element in (nyxt/ps:qsa document (list "p"))
           do (setf result (+ result
                              (ps:chain element text-content))))
     (ps:chain result (slice 0 (ps:lisp limit)))))
