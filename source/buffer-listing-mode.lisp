@@ -10,7 +10,7 @@
   "Mode for buffer-listing."
   ((rememberable-p nil)))
 
-(define-command nyxt::list-buffers (&key (cluster nil))
+(define-command-global list-buffers (&key (cluster nil))
   "Show the *Buffers* buffer."
   (labels ((cluster-buffers ()
              "Return buffers as hash table, where each value is a cluster (list of documents)."

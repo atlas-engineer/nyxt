@@ -83,7 +83,7 @@ get/set-content (which is necessary for operation)."
   (write-file-with-editor buffer :if-exists if-exists)
   (echo "File ~a written to storage." (file buffer)))
 
-(define-command nyxt::open-new-editor-with-file ()
+(define-command-global open-new-editor-with-file ()
   "Open a new editor and query a file."
   (let ((buffer (make-editor-buffer)))
     (set-current-buffer buffer)

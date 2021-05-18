@@ -197,7 +197,7 @@
       (echo message)
       (error message))))
 
-(define-command nyxt::describe-os-package ()
+(define-command-global describe-os-package ()
   "Show description of select packages."
   (assert-package-manager)
   (let* ((packages (prompt
@@ -212,7 +212,7 @@
           '(".html" ".htm") )))
 
 ;; TODO: open in editor, with select program, leverage file-manager
-(define-command nyxt::list-os-package-files ()
+(define-command-global list-os-package-files ()
   "List files of select packages."
   (assert-package-manager)
   (let* ((packages-or-outputs (if (typep (ospm:manager) 'ospm:guix-manager)
@@ -295,7 +295,7 @@ OBJECTS can be a list of packages, a generation, etc."
           (set-current-buffer buffer)
           buffer))))
 
-(define-command nyxt::install-os-package ()
+(define-command-global install-os-package ()
   "Install select packages."
   (assert-package-manager)
   ;; TODO: Allow profile creation.  Need multi-source support for that?
@@ -308,7 +308,7 @@ OBJECTS can be a list of packages, a generation, etc."
                     :prompt "Install OS package(s)")))
     (operate-os-package "Installing packages..." #'ospm:install profile packages)))
 
-(define-command nyxt::uninstall-os-package ()
+(define-command-global uninstall-os-package ()
   "Uninstall select packages."
   (assert-package-manager)
   (let* ((profile (first
@@ -321,7 +321,7 @@ OBJECTS can be a list of packages, a generation, etc."
                     :prompt "Uninstall OS package(s)")))
     (operate-os-package "Uninstalling packages..." #'ospm:uninstall profile packages)))
 
-(define-command nyxt::install-package-manifest ()
+(define-command-global install-package-manifest ()
   "Install select manifest to a profile."
   (assert-package-manager)
   (let* ((profile (first
@@ -334,7 +334,7 @@ OBJECTS can be a list of packages, a generation, etc."
                      :prompt "Manifest"))))
     (operate-os-package "Installing package manifest..." #'ospm:install-manifest profile manifest)))
 
-(define-command nyxt::edit-package-manifest ()
+(define-command-global edit-package-manifest ()
   "Edit select manifest."
   (assert-package-manager)
   (let ((manifest (first
@@ -344,7 +344,7 @@ OBJECTS can be a list of packages, a generation, etc."
     (echo "Opening ~s with ~a" manifest (external-editor-program *browser*))
     (uiop:launch-program (list (external-editor-program *browser*) manifest))))
 
-(define-command nyxt::describe-os-generation ()
+(define-command-global describe-os-generation ()
   "Show the packages of a given profile generation."
   (assert-package-manager)
   (let* ((profile (first
@@ -386,7 +386,7 @@ OBJECTS can be a list of packages, a generation, etc."
     (set-current-buffer buffer)
     buffer))
 
-(define-command nyxt::switch-os-generation ()
+(define-command-global switch-os-generation ()
   "Switch generation of selected profile."
   (assert-package-manager)
   (let* ((profile (first
@@ -402,7 +402,7 @@ OBJECTS can be a list of packages, a generation, etc."
     (operate-os-package "Switching to generation..." #'ospm:switch-generation
                         profile generation)))
 
-(define-command nyxt::delete-os-generations ()
+(define-command-global delete-os-generations ()
   "Delete generations of selected profile."
   (assert-package-manager)
   (let* ((profile (first

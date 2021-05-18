@@ -15,7 +15,7 @@
   (setf (slot-value *browser* 'messages-content) '())
   (echo "Messages cleared."))
 
-(define-command nyxt::list-messages ()
+(define-command-global list-messages ()
   "Show the *Messages* buffer."
   (with-current-html-buffer (buffer "*Messages*" 'nyxt/message-mode:message-mode)
     (markup:markup

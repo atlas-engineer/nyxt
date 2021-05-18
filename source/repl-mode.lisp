@@ -96,7 +96,7 @@
      (ps:ps (setf (ps:chain document (get-element-by-id "evaluation-history") |innerHTML|)
                   (ps:lisp (generate-evaluation-history-html repl)))))))
 
-(define-command nyxt::lisp-repl ()
+(define-command-global lisp-repl ()
   "Show Lisp REPL."
   (let* ((repl-buffer (make-internal-buffer :title "*Lisp REPL*" :modes '(nyxt/repl-mode:repl-mode base-mode))))
     (set-current-buffer repl-buffer)
