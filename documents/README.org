@@ -204,7 +204,7 @@ directory where ASDF will find it]]):
 
 #+begin_src sh
   mkdir -p ~/common-lisp
-  git clone git@github.com:atlas-engineer/cl-webengine.git ~/common-lisp/cl-webengine
+  git clone https://github.com/atlas-engineer/cl-webengine.git ~/common-lisp/cl-webengine
 #+end_src
 
 Please follow the instructions in the cl-webengine repository for
