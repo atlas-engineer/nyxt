@@ -519,8 +519,8 @@ The version number is stored in the clipboard."
      (markup:markup
       (:style (style buffer))
       (:h1 "Nyxt tutorial")
-      (:p "The following tutorial introduces the core concepts and the
-basic usage.  For more details, especially regarding the configuration, see
+      (:p "The following tutorial introduces core concepts and
+basic usage.  For more details, especially regarding configuration, see
 the "
           (:code (command-markup 'manual)) "."))
      (tutorial-content))))

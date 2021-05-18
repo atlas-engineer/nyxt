@@ -7,15 +7,14 @@
   (markup:markup
    (:h2 "Core Concepts")
    (:h3 "Keybindings and Commands")
-   (:p "Commands in Nyxt are invoked by pressing specific keys or from
+   (:p "Commands are invoked by pressing specific keys or from
 the " (:code "execute-command") " menu (" (:code (binding-keys 'execute-command))
 ").")
-   (:p "In Nyxt, keybindings are represented as in 'control-space' or
-equivalently 'C-space'. In this example, 'C' is a shortcut for the modifier
-'control', and 'space' represents the character ' '. Example: to input the 'C-x'
-keybinding you would keep 'control' pressed and then hit 'x'.  Multiple
-key presses can be chained: in 'C-x C-M-left', you would have to press 'C-x',
-let go of all keys, and then press 'control', 'meta' and 'left'.")
+   (:p "Keybindings are represented like this: 'C-x'. In this example, 'C' is a
+shortcut for the modifier 'control', and 'x' represents the character 'x'. To
+input the 'C-x' keybinding you would keep 'control' pressed and then hit 'x'.
+Multiple key presses can be chained: in 'C-x C-s', you would have to press
+'C-x', and then press 'C-s'.")
    (:p "Modifier keys legend:")
    (:ul
     (:li (:code "control") " (" (:code "C") "): Control key")
@@ -28,6 +27,7 @@ let go of all keys, and then press 'control', 'meta' and 'left'.")
    (:h3 "Quickstart keys")
    (:ul
     (:li (:code (binding-keys 'set-url)) ": Load URL")
+    (:li (:code (binding-keys 'reload-current-buffer)) ": Reload buffer")
     (:li (:code (binding-keys 'set-url-new-buffer)) ": Load URL in new buffer")
     (:li (:code (binding-keys 'switch-buffer-previous)) ", " (:code (binding-keys 'switch-buffer-next)) ": Switch buffer")
     (:li (:code (binding-keys 'nyxt/web-mode:history-backwards)) ": Backwards history")
@@ -39,23 +39,24 @@ let go of all keys, and then press 'control', 'meta' and 'left'.")
     (:li (:code (binding-keys 'describe-bindings)) ": List all bindings for the current buffer"))
 
    (:h3 "Buffers")
-   (:p "Nyxt uses the concept of buffers instead of the more limited
-\"tabs\". Buffer states are fully separated, each buffer having its
-own behavior and settings.")
+   (:p "Nyxt uses the concept of buffers instead of tabs. Unlike tabs, buffers
+are fully separated, each buffer having its own behavior and settings.")
    (:h3 "Modes")
    (:p "Each buffer has its own list of modes, ordered by priority.  A mode is a
-set of functions, hooks, keybindings and other facilities that modify the
+set of functions, hooks, keybindings and other facilities that may modify the
 behavior of a buffer.  For example, 'blocker-mode' can be used for domain-based
 adblocking while 'noscript-mode' disables JavaScript.")
-   (:p "Each buffer has separate instance of modes, which means that altering
-the settings of a mode in a buffer does not impact the other buffers.  Mode
-functions are only available when the mode is enabled for the current buffer.")
+   (:p "Each buffer has separate instances of modes, which means that altering
+the settings of a mode in a buffer does not impact other buffers.  Mode specific
+functions/commands are only available when a mode is enabled for the current
+buffer.")
    (:p "Each mode has an associated " (:i "mode toggler") " which is a command
 of the same name that toggles the mode for the current buffer.")
+
    (:h3 "Prompt buffer")
    (:p "The prompt buffer is a menu that will appear when a command requests user
 input. For example, when invoking the " (:code "set-url") " command, you must
-supply the URL you would like to navigate to. The prompt buffer can provide
+supply the URL you would like to navigate to.  The prompt buffer can provide
 suggestions.  The list of suggestions will automatically narrow down to those
 matching your input as you type.")
    (:ul
@@ -84,15 +85,20 @@ upon return.  The suggestion under the cursor is not processed if not marked.")
           ": Deselect all currently-displayed suggestions.")
     (:li  (command-markup 'nyxt/prompt-buffer-mode:toggle-mark-all
                           :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
-          ": Toggle the mark of all currently-displayed suggestions."))
+          ": Toggle the mark of all currently-displayed suggestions.")
+    (:li  (command-markup 'nyxt/prompt-buffer-mode:toggle-attributes-display
+                          :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
+          ": Change which attributes are displayed in the suggestions list."))
+
    (:h3 "Message Area")
    (:p "The message area represents a space (typically at the bottom of a
 window) where Nyxt outputs messages back to you. To view the history of all
 messages, invoke the command " (:code "list-messages") ".")
+
    (:h3 "Status Area")
    (:p "The status area is where information about the state of that buffer is
-printed. By default, this includes the active modes, the URL, and the title of
-the current buffer.")
+printed (typically at the bottom of a window). By default, this includes the
+active modes, the URL, and the title of the current buffer.")
 
    (:h2 "Basic controls")
    (:h3 "Moving within a buffer")
@@ -157,9 +163,7 @@ Bookmarks can have the following settings:")
    (:ul
     (:li (:code ":url") ": The URL of the bookmark.")
     (:li (:code ":title") ": The title of the bookmark.")
-    (:li (:code ":tags") ": A list of strings.  Useful to categorize and filter bookmarks.")
-    (:li (:code ":shortcut") ": A single-word string.  Directly opens the
-bookmark when inputted in one of the 'set-url' commands."))
+    (:li (:code ":tags") ": A list of strings.  Useful to categorize and filter bookmarks."))
    (:p "Bookmark-related commands")
    (:ul
     (:li (command-markup 'bookmark-current-url) ": Bookmark current page.
@@ -172,17 +176,11 @@ removed from the input, they are also removed from the existing bookmark.")
     (:li (command-markup 'delete-bookmark) ": Delete queried bookmarks.")
     (:li (command-markup 'list-bookmarks) ": Display a new buffer containing the
 list of all bookmarks."))
-   (:p "You can filter them with selectors: use '+', '-' or write a compound
-query inside parenthesis in which you can use 'and', 'or' and 'not'. Examples:")
-   (:ul
-    (:li "+lisp -blog ")
-    (:li "+blog (or lisp emacs) ")
-    (:li "+foo -bar (or (and john doe) (not (and tic tac toe)))"))
 
    (:h3 "Visual mode")
-   (:p "No mouse needed for selecting text anymore - Nyxt's "
+   (:p "Select text without a mouse. Nyxt's "
        (:code "visual-mode") " imitates Vim's visual mode (and comes with the
-CUA and Emacs-like keybindings out of the box, too). Activate it with "
+CUA and Emacs-like keybindings out of the box, too). Activate it with the "
        (command-markup 'nyxt/visual-mode:visual-mode) " command.")
    (:p "Visual mode provides the following commands: ")
    (:ul
@@ -252,7 +250,7 @@ selection backward by a line).")
        (command-markup 'nyxt/visual-mode:toggle-mark
                        :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
        " is bound to Shift-space, as C-space is bound to 'execute-command,
-overriding any mode keybinding. But if you want to toggle mark with C-space,
+overriding any mode keybinding. If you want to toggle mark with C-space,
 you'll need to set your own override-map such that C-space is not bound.
 An example:")
    (:pre (:code "
@@ -271,8 +269,8 @@ An example:")
 section) of the current page and jump to it.")
     (:li (command-markup 'nyxt/web-mode::autofill) ": See the "
          (:code "autofills") " browser slot.")
-    (:li (command-markup 'download-open-file) ", " (command-markup 'download-open-file)
-         ": Open file in Nyxt or externally.  See " (:code "*open-file-function*") ".")
+    (:li (command-markup 'download-open-file)
+         ": Open file in Nyxt or externally.  See " (:code "open-file-function") ".")
     (:li (command-markup 'edit-with-external-editor)
          ": Edit selected HTML input tag with an external editor.")
     (:li (command-markup 'quit) ": Close all Nyxt windows and quit."))
