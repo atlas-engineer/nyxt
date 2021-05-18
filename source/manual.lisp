@@ -20,17 +20,17 @@ it's running!")
         (:a :href "https://nyxt.atlas.engineer/learn-lisp" "Learn Lisp")
         ". It contains numerous pointers to other resources, including
         free books both for beginners and seasoned programmers.")
-    (:p "Nyxt provides a mechanism for new users unfamiliar with Lisp
-to customize Nyxt. Start by invoking the
-commands " (:code "describe-class") " or " (:code "describe-slot") ".
-You can press the button marked 'Configure' to change the value of a
-setting. The settings will be applied immediately and saved for future
-sessions.")
+    (:p "Nyxt provides a mechanism for new users unfamiliar with Lisp to
+customize Nyxt. Start by invoking the commands " (:code "describe-class") "
+or " (:code "describe-slot") ".  You can press the button marked 'Configure' to
+change the value of a setting. The settings will be applied immediately and
+saved for future sessions. Please note that these settings will not alter
+existing object instances.")
     (:p "Settings created by Nyxt are stored in "
         (:code (expand-path *auto-config-file-path*)) ".")
     (:p "Any settings can be overridden manually by "
         (:code (expand-path *init-file-path*)) ".")
-    (:p "The following section assumes that you know some basic Common Lisp or a
+    (:p "The following section assumes knowledge of basic Common Lisp or a
 similar programming language.")
     (:p "Nyxt configuration can be persisted in the user
 file " (:code (expand-path *init-file-path*)) " (create the parent folders if
@@ -42,38 +42,40 @@ necessary).")
     (:p "The above turns on the 'noscript-mode' (disables JavaScript) by default for
 every buffer.")
     (:p "The " (:code "define-configuration") " macro can be used to customize
-the slots of the classes like the browser, buffers, windows, etc.  Refer to the
+the slots of classes like the browser, buffers, windows, etc.  Refer to the
 class and slot documentation for the individual details.")
     (:p "To find out about all modes known to Nyxt,
-run " (:code "describe-command") " and type 'mode' to list them all.")
+run " (:code "describe-command") " and type 'mode'.")
 
     (:h3 "Web buffers and internal buffers")
-    (:p "`internal-buffer' is used for Nyxt-specific, internal pages such as the
-tutorial and the description pages.  `web-buffer' is used for web pages.  Both
+    (:p "A `internal-buffer' is used for Nyxt-specific, internal pages such as the
+tutorial and the description pages.  A `web-buffer' is used for web pages.  Both
 the `web-buffer' and the `internal-buffer' classes inherit from the `buffer'
 class.")
-    (:p "You can configure a `buffer' slot and it will automatically become the
-new default for both the `internal-buffer' and `web-buffer' classes unless this
-slot is specialized by these child classes.")
+    (:p "You can configure a `buffer' slot and it will cascade down as a new
+default for both the `internal-buffer' and `web-buffer' classes- unless this slot
+is specialized by these child classes.")
 
     (:h3 "Keybinding configuration")
-    (:p "Nyxt supports multiple " (:i "bindings schemes") " such as CUA (the default), Emacs or VI.  Changing scheme is as simple as running the corresponding mode, e.g. "
+    (:p "Nyxt supports multiple " (:i "bindings schemes") " such as CUA (the
+    default), Emacs or vi.  Changing scheme is as simple as running the
+    corresponding mode, e.g. "
         (:code "emacs-mode") ".  To make the change persistent across sessions,
 add the following to your configuration:")
     (:ul
-     (:li "VI bindings:"
+     (:li "vi bindings:"
       (:pre (:code "
-\(define-configuration (buffer web-buffer)
+\(define-configuration buffer
   ((default-modes (append '(vi-normal-mode) %slot-default%))))")))
      (:li "Emacs bindings:"
       (:pre (:code "
-\(define-configuration (buffer web-buffer)
+\(define-configuration buffer
   ((default-modes (append '(emacs-mode) %slot-default%))))"))))
     (:p "You can create new scheme names with " (:code "keymap:make-scheme-name")
-        ".  See also the " (:code "scheme-name") " class and the "
+        ".  Also see the " (:code "scheme-name") " class and the "
         (:code "define-scheme") " macro.")
     (:p "The " (:code "override-map") " is a keymap which has priority over
-everything.  By default, it has only very few bindings like the one
+all other keymaps.  By default, it has few bindings like the one
 for " (:code "execute-command") ".  You can use it to set keys globally:")
     (:pre (:code "
 \(define-configuration buffer
@@ -81,8 +83,8 @@ for " (:code "execute-command") ".  You can use it to set keys globally:")
                    (define-key map
                      \"M-x\" 'execute-command)))))"))
     (:p "A more flexible way is to create your own mode with your custom
-keybindings.  When this mode is added first to the buffer mode list, its keys
-have priorities over the other modes key bindings.")
+keybindings.  When this mode is added first to the buffer mode list, its
+keybindings have priorities over the other modes.")
     (:pre (:code "
 \(defvar *my-keymap* (make-keymap \"my-map\"))
 \(define-key *my-keymap*
@@ -111,7 +113,7 @@ documentation.")
 
     (:h3 "Downloads")
     (:p "See the " (:code "list-downloads") " command and the "
-        (:code "download-path") " browser slot documentation.")
+        (:code "download-path") " buffer slot documentation.")
 
     (:h3 "Proxy and Tor")
     (:p "See the " (:code "proxy-mode") " documentation.")
@@ -119,11 +121,12 @@ documentation.")
     (:h3 "Custom commands")
     (:p "Creating your own invokable commands is similar to creating a Common
 Lisp function, except the form is " (:code "define-command") " instead of "
-        (:code "defun") ".")
+        (:code "defun") ". If you want this command to be invokable outside of
+        the context of of a mode, use " (:code "define-command-global") ".")
     (:p "Example:")
     (:pre (:code
-           "(define-command bookmark-url ()
-  \"Qury the user which URL to bookmark.\"
+           "(define-command-global bookmark-url ()
+  \"Query the user which URL to bookmark.\"
   (let ((url (prompt
               :prompt \"Bookmark URL\"
               :sources (make-instance 'prompter:raw-source))))
@@ -166,7 +169,7 @@ can set a hook like the following in your configuration file:")
 
 \(define-configuration web-buffer
   ((request-resource-hook
-    (add-hook %slot-default% (make-handler-resource #'old-reddit-handler)))))"))
+    (hooks:add-hook %slot-default% (make-handler-resource #'old-reddit-handler)))))"))
     (:p "(See " (:code "url-dispatching-handler")
         " for a simpler way to achieve the same result.)")
     (:p "Or, if you want to set multiple handlers at once,")
@@ -201,11 +204,11 @@ See its documentation for more details.")
 GnuPG key is used to decrypt and encrypt the file transparently.  Refer to the
 GnuPG documentation for how to set it up.")
     (:p "Note that the socket and the initialization data-paths cannot be set in
-your configuration (the socket is used before the initialization file is loaded)."
-        "Instead you can specify these paths from their respective command-line option."
-        "You can instantiate a unique, separate Nyxt instance when you provide a new socket path."
-        "This is particularly useful in combination with data profiles, e.g. to
-        develop Nyxt or extensions.")
+your configuration (the socket is used before the initialization file is
+loaded).  Instead you can specify these paths from their respective command-line
+option.  You can instantiate a unique, separate Nyxt instance when you provide a
+new socket path.  This is particularly useful in combination with data profiles,
+e.g. to develop Nyxt or extensions.")
     (:p "Example to create a development data-profile that stores all data in "
         (:code "/tmp/nyxt") " and stores bookmark in an encrypted file:")
     (:pre (:code "
@@ -275,7 +278,7 @@ instance must be non-nil.")
     (:h2 "Extensions")
     (:p "To install an extension, copy inside the "
         (:code "*extensions-path*") " (default to "
-        (:code "~/.local/share/nyxt/extensions")".")
+        (:code "~/.local/share/nyxt/extensions")").")
     (:p "Extensions are regular Common Lisp systems.")
     (:p "A catalogue of extensions is available in the "
         (:code "document/EXTENSIONS.org") " file in the source repository.")
