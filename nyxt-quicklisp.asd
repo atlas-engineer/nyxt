@@ -31,16 +31,22 @@
     (load (format nil "~a/setup.lisp" (ensure-absolute-path *quicklisp-dir* component)))))
 
 (defun register-submodules (component)
+  ;; We set `ql:*local-project-directories*' so that Quicklisp prefers the
+  ;; submodules to its own version of the packages.
+  (setf (symbol-value (read-from-string "ql:*local-project-directories*"))
+        (cons
+         (uiop:truenamize (uiop:ensure-directory-pathname
+                           (ensure-absolute-path *submodules-dir* component)))
+         (symbol-value (read-from-string "ql:*local-project-directories*"))))
   ;; Ideally we should avoid writing global, stateful files to the user file
   ;; system.  So instead of writing to the ASDF config file, we register the
   ;; sudmodule directory with CL_SOURCE_REGISTRY.  This locally overrides
   ;; CL_SOURCE_REGISTRY, but it's fine since submodules are only meant for
   ;; non-developers (who probably don't set CL_SOURCE_REGISTRY).
   ;;
-  ;; We must set this globally and we can't use
-  ;; `ql:*local-project-directories*' because the information
-  ;; would be lost within a Lisp compiler subprocess
-  ;; (e.g. as used by linux-packaging).
+  ;; We must set this globally and we can't just use
+  ;; `ql:*local-project-directories*' because the information would be lost
+  ;; within a Lisp compiler subprocess (e.g. as used by linux-packaging).
   (setf (uiop:getenv "CL_SOURCE_REGISTRY")
         (uiop:strcat
          (namestring
