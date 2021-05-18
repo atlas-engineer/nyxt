@@ -1078,11 +1078,11 @@ generate a new URL query from user input.
   (let ((history (set-url-history *browser*))
         (actions (list (make-command buffer-load* (suggestion-values)
                          "Load first selected URL in current buffer and the rest in new buffer(s)."
-                         (mapc (lambda (url) (make-buffer :url url)) (rest suggestion-values))
+                         (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
                          (buffer-load (url (first suggestion-values))))
                        (make-command new-buffer-load (suggestion-values)
                          "Load URL(s) in new buffer(s)."
-                         (mapc (lambda (url) (make-buffer :url url)) (rest suggestion-values))
+                         (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
                          (make-buffer-focus :url (url (first suggestion-values)))))))
     (pushnew-url-history history (url (current-buffer)))
     (prompt
@@ -1100,7 +1100,7 @@ generate a new URL query from user input.
   (let ((history (set-url-history *browser*))
         (actions (list (make-command new-buffer-load (suggestion-values)
                          "Load URL(s) in new buffer(s)"
-                         (mapc (lambda (url) (make-buffer :url url))
+                         (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
                                (rest suggestion-values))
                          (make-buffer-focus :url (url (first suggestion-values)))))))
     (pushnew-url-history history (url (current-buffer)))
@@ -1119,7 +1119,7 @@ generate a new URL query from user input.
   (let ((actions
          (list (make-command new-nosave-buffer-load (suggestion-values)
                  "Load URL(s) in new nosave buffer(s)"
-                 (mapc (lambda (url) (make-nosave-buffer :url url))
+                 (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion)))
                        (rest suggestion-values))
                  (make-buffer-focus :url (url (first suggestion-values))
                                     :nosave-buffer-p t)))))
