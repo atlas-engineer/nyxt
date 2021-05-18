@@ -14,7 +14,7 @@
   (containers:delete-item-if (recent-buffers *browser*)
                              (buffer-match-predicate buffer))
   (let ((new-buffer (buffer-make *browser* :dead-buffer buffer)))
-    (reload-buffer new-buffer)
+    (reload-buffers (list new-buffer))
     new-buffer))
 
 (define-class recent-buffer-source (prompter:source)
