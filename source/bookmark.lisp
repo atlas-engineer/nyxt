@@ -341,7 +341,7 @@ rest in background buffers."
                                          'file-source
                                          :filter-preprocessor
                                          (make-file-source-preprocessor
-                                          (alex:disjoin (match-externsion "html")
+                                          (alex:disjoin (match-extension "html")
                                                         #'uiop:directory-pathname-p))))))))
     (if (and (uiop:file-exists-p html-file)
              (equal (pathname-type html-file) "html"))

@@ -78,7 +78,7 @@ for which the `executable' slot is non-nil."
                                            'file-source
                                            :filter-preprocessor
                                            (make-file-source-preprocessor
-                                            (alex:disjoin (match-externsion "kdbx")
+                                            (alex:disjoin (match-extension "kdbx")
                                                           #'uiop:directory-pathname-p)))))))))
   (loop :until (password:password-correct-p password-interface)
         :do (setf (password::master-password password-interface)

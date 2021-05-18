@@ -14,7 +14,7 @@
   ;; It will be useful when we have per-attribute filtering.
   `(("Path" ,(namestring path))))
 
-(defun match-externsion (ext)
+(defun match-extension (ext)
   (lambda (pathname)
     (string-equal (pathname-type pathname) ext)))
 
