@@ -228,30 +228,23 @@ equals only comparing URLs."
                 (set-difference bookmarks
                                 entries :test #'equals))))))
 
-(define-command set-url-from-bookmark (&key (actions (list :buffer-load :new-buffer-load)))
+(define-command set-url-from-bookmark
+    (&key (actions (list (make-command buffer-load* (suggestion-values)
+                           "Load first selected bookmark in current buffer and the rest in new buffer(s)."
+                           (mapc (lambda (url) (make-buffer :url url)) (rest suggestion-values))
+                           (buffer-load (url (first suggestion-values))))
+                         (make-command new-buffer-load (suggestion-values)
+                           "Load bookmark(s) in new buffer(s)."
+                           (mapc (lambda (url) (make-buffer :url url)) (rest suggestion-values))
+                           (make-buffer-focus :url (url (first suggestion-values)))))))
   "Set the URL for the current buffer from a bookmark.
 With multiple selections, open the first bookmark in the current buffer, the
 rest in background buffers."
-  (let* ((possible-actions
-           (list :buffer-load
-                 (make-command buffer-load* (suggestion-values)
-                   "Load first selected bookmark in current buffer and the rest in new buffer(s)."
-                   (mapc (lambda (url) (make-buffer :url url)) (rest suggestion-values))
-                   (buffer-load (url (first suggestion-values))))
-                 :new-buffer-load
-                 (make-command new-buffer-load (suggestion-values)
-                   "Load bookmark(s) in new buffer(s)."
-                   (mapc (lambda (url) (make-buffer :url url)) (rest suggestion-values))
-                   (make-buffer-focus :url (url (first suggestion-values))))))
-         (selected-actions
-           (loop for action in actions
-                 when (getf possible-actions action)
-                 collect (getf possible-actions action))))
-    (prompt
-     :prompt "Open bookmark(s)"
-     ;; :default-modes '(minibuffer-tag-mode minibuffer-mode) ; TODO: Replace this behaviour.
-     :sources (make-instance 'bookmark-source
-                             :actions selected-actions))))
+  (prompt
+   :prompt "Open bookmark(s)"
+   ;; :default-modes '(minibuffer-tag-mode minibuffer-mode) ; TODO: Replace this behaviour.
+   :sources (make-instance 'bookmark-source
+                           :actions actions)))
 
 (defmethod serialize-object ((entry bookmark-entry) stream)
   (unless (url-empty-p (url entry))
