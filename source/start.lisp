@@ -65,6 +65,9 @@ Return nil if `*init-file-path*' is nil."
     (:name :version
      :long "version"
      :description "Print version and exit.")
+    (:name :system-information
+     :long "system-information"
+     :description "Print system information and exit.")
     (:name :init
      :short #\i
      :long "init"
@@ -439,6 +442,9 @@ Examples:
 
     ((getf options :version)
      (format t "Nyxt version ~a~&" +version+))
+
+    ((getf options :system-information)
+     (princ (system-information)))
 
     ((getf options :list-data-profiles)
      (load-lisp (expand-path *init-file-path*) :package (find-package :nyxt-user))
