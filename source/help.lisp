@@ -525,20 +525,43 @@ the "
           (:code (command-markup 'manual)) "."))
      (tutorial-content))))
 
+(defun system-information ()            ; TODO: Rename report-system-information?
+  "Return a system information report as a string."
+  (labels ((->string (obj) (princ-to-string obj))
+           (quicklisp-information ()
+             #+quicklisp
+             (str:concat
+              "Quicklisp dist version: " (getf +quicklisp-build-information+ :dist-version) +newline+
+              "Quicklisp client version: " (getf +quicklisp-build-information+ :client-version) +newline+
+              "Local project directories: " (->string (getf +quicklisp-build-information+ :local-project-directories)) +newline+
+              "Critical dependencies" (->string (getf +quicklisp-build-information+ :critical-dependencies)) +newline+))
+           (asdf-information ()
+             (str:concat
+              "ASDF version: " (getf +asdf-build-information+ :version) +newline+
+              "Critical dependencies: " (->string (getf +asdf-build-information+ :critical-dependencies)) +newline+))
+           (guix-information ()       ; TODO: Test in Live Nyxt.
+             (getf +guix-build-information+ :version)))
+    (str:concat
+     "Nyxt version: " +version+ +newline+
+     "Renderer version: " +renderer+ +newline+
+     "Operating system kernel: " (software-type) " " (software-version) +newline+
+     "Lisp implementation: " (lisp-implementation-type) " " (lisp-implementation-version) +newline+
+     "Features: " (->string *features*) +newline+
+     +newline+
+
+     (asdf-information) +newline+
+
+     #+quicklisp
+     (str:concat
+      (quicklisp-information) +newline+)
+
+     (when (sera:resolve-executable "guix")
+       (str:concat "Guix version: " (guix-information) +newline+)))))
+
 (define-command copy-system-information ()
   "Save system information into the clipboard."
   (let* ((*print-length* nil)
-         (nyxt-information (format nil
-                                   (str:concat "Nyxt version: ~a~%"
-                                               "Renderer: ~a~%"
-                                               "Operating system kernel: ~a ~a~%"
-                                               "Lisp implementation: ~a ~a~%"
-                                               "Features: ~a~%")
-                                   +version+
-                                   +renderer+
-                                   (software-type) (software-version)
-                                   (lisp-implementation-type) (lisp-implementation-version)
-                                   *features*)))
+         (nyxt-information (system-information)))
     (copy-to-clipboard nyxt-information)
     (log:info nyxt-information)
     (echo "System information copied to clipboard.")))

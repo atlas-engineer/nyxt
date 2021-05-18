@@ -50,6 +50,41 @@ execution of Nyxt.")
 (export-always '+newline+)
 (alex:define-constant +newline+ (string #\newline) :test #'equal)
 
+(alex:define-constant +nyxt-critical-dependencies+
+  '(:cl-cffi-gtk
+    :cl-gobject-introspection
+    :cl-webkit2)
+  :test #'equal)
+
+(defvar +asdf-build-information+
+  `(:version ,(asdf:asdf-version)
+    :critical-dependencies ,(mapcar (lambda (s)
+                                      (nth-value 2 (asdf:locate-system s)))
+                                    +nyxt-critical-dependencies+))
+  "Build-time ASDF information.
+Don't set this, it would lose its meaning.")
+
+(defvar +guix-build-information+
+  (when (sera:resolve-executable "guix")
+    `(:version
+      ;; `guix describe' is not reliable within `guix environment'.
+      ,(fourth (sera:tokens
+                (first (sera:lines
+                        (uiop:run-program '("guix" "--version") :output :string)))))))
+  "Build-time Guix information.
+Don't set this, it would lose its meaning.")
+
+(defvar +quicklisp-build-information+
+  #+quicklisp
+  `(:dist-version ,(ql:dist-version "quicklisp")
+    :client-version ,(ql:client-version)
+    :local-project-directories ,ql:*local-project-directories*
+    :critical-dependencies ,(mapcar #'ql-dist:find-system +nyxt-critical-dependencies+))
+  #-quicklisp
+  nil
+  "Build-time Quicklisp information.
+Don't set this, it would lose its meaning.")
+
 (export-always '+version+)
 (alex:define-constant +version+
   (or (uiop:getenv "NYXT_VERSION")      ; This is useful for build systems without Git.
