@@ -18,7 +18,8 @@ assignees: ''
 - How you installed Nyxt (Guix pack, package manager, build from source):
 - Information from command copy-system-information:
 
-  If you can't run copy-system-information, please provide the following:
+  If you can't run copy-system-information, try `nyxt --system-information` from
+  a shell.  It this still does not work, please provide the following:
   - Nyxt version (from =M-x nyxt-version= or =nyxt --version=):
   - Lisp implementation/version (if built from source):
   - Kernel name+version:
