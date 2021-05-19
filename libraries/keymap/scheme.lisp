@@ -103,8 +103,13 @@ The scheme keymaps are named \"my-mode-cua-map\" and \"my-mode-emacs-map\"."
 (declaim (ftype (function (scheme-name scheme) (or keymap null)) get-keymap))
 (defun get-keymap (name scheme)
   "Return keymap corresponding to NAME in SCHEME.
-Return nil if not found."
-  (gethash name scheme))
+If no keymap is associated to NAME in SCHEME, try with NAME's `parents'.
+For instance, if SCHEME has a `scheme:cua' keymap and no `scheme:emacs' keymap,
+this function returns the `scheme:cua' keymap when NAME is `scheme:emacs'.
+Return nil if nothing is found."
+  (or (gethash name scheme)
+      (when (parents name)
+        (some (alexandria:rcurry #'get-keymap scheme) (parents name)))))
 
 (declaim (ftype (function (scheme-name keymap &rest (or scheme-name keymap)) scheme) make-scheme))
 (defun make-scheme (name keymap &rest more-name+keymap-pairs)

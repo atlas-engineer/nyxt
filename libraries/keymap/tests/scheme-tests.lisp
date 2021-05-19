@@ -68,6 +68,21 @@
     (prove:is (list (gethash scheme:cua scheme))
               (keymap:parents (gethash scheme:emacs scheme)))))
 
+(prove:subtest "Get keymap"
+  (let* ((scheme (keymap:define-scheme "test"
+                   scheme:cua (list "C-c" 'copy
+                                    "C-v" 'paste)
+                   scheme:emacs (list "M-w" 'copy
+                                      "M-y" 'paste)))
+         (cua-keymap (keymap:make-keymap "test-cua-map"))
+         (emacs-keymap (keymap:make-keymap "test-emacs-map")))
+    (prove:ok (keymap:get-keymap scheme:emacs scheme))
+    (prove:ok (keymap:get-keymap scheme:cua scheme))
+    (prove:isnt (keymap:get-keymap scheme:cua scheme)
+                (keymap:get-keymap scheme:emacs scheme))
+    (prove:is (keymap:get-keymap scheme:cua scheme)
+              (keymap:get-keymap scheme:vi-normal scheme))))
+
 ;; (prove:subtest "Make scheme with type errors" ; TODO: How do we test macro-expansion-time error?
 ;;   (prove:is-error (keymap:define-scheme
 ;;                       scheme:cua (list "C-" 'copy))
