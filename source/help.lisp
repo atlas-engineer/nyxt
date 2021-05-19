@@ -168,7 +168,7 @@ A command is a special kind of function that can be called with
        (unless (user-class-p class)
          (list (markup:markup
                 (:li (:a :class "button"
-                         :href (lisp-url `(nyxt::configure-slot ',slot ',class))
+                         :href (lisp-url `(nyxt::configure-slot ',slot ',class :type ',(getf props :type)))
                          "Configure"))))))))))
 
 (define-command describe-class (&optional class-suggestion)
@@ -248,16 +248,17 @@ CLASS can be a class symbol or a list of class symbols, as with
                    ((,slot ,value)))))
         (let ((accepted-input
                 (loop while t do
-                         (let ((input (first (prompt
-                                              :prompt (format nil "Configure slot value ~a" slot)
-                                              :sources (make-instance 'prompter:raw-source)))))
-                           ;; no type specified, no need to keep querying
-                           (unless type (return input))
-                           (when (typep (read-from-string input) type)
-                             (return input))))))
+                  (let ((input (read-from-string
+                                (first (prompt
+                                        :prompt (format nil "Configure slot value ~a" slot)
+                                        :sources (make-instance 'prompter:raw-source))))))
+                    ;; no type specified, no need to keep querying
+                    (unless type (return input))
+                    (when (typep input type)
+                      (return input))))))
           (set-slot slot class accepted-input)
           (eval `(define-configuration ,class
-                   ((,slot (read-from-string ,accepted-input)))))))))
+                   ((,slot ,accepted-input))))))))
 
 (defun append-configuration (form &key (format-directive "~&~a~%"))
   (with-data-file (file *auto-config-file-path*
