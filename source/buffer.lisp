@@ -25,11 +25,11 @@ See the `data-path' class and the `expand-path' function.")
    (last-access (local-time:now)
                 :export nil
                 :documentation "Timestamp when the buffer was last switched to.")
-   (modes :initform '()
+   (modes '()
           :documentation "The list of mode instances.
-Modes are instantiated after the `default-modes' slot, with `initialize-modes'
-and not in the initform so that the instantiation form can access the
-initialized buffer.")
+Modes are instantiated over the result of the `default-modes' method, with
+`initialize-modes' and not in the initform so that the instantiation form can
+access the initialized buffer.")
    (enable-mode-hook (make-hook-mode)
                      :type hook-mode
                      :documentation "Hook run on every mode activation,
