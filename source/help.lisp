@@ -260,7 +260,7 @@ CLASS can be a class symbol or a list of class symbols, as with
           (eval `(define-configuration ,class
                    ((,slot ,accepted-input))))))))
 
-(defun append-configuration (form &key (format-directive "~&~a~%"))
+(defun append-configuration (form &key (format-directive "~&~s~%"))
   (with-data-file (file *auto-config-file-path*
                         :direction :output
                         :if-does-not-exist :create
@@ -316,8 +316,7 @@ CLASS can be a class symbol or a list of class symbols, as with
      disabling compositing, you will need to restart Nyxt.")
      (:a :class "button"
          :href (lisp-url `(nyxt::append-configuration
-                           '(setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1")
-                           :format-directive "~&~S~%"))
+                           '(setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1")))
          "Disable compositing"))))
 
 (define-command describe-bindings ()
