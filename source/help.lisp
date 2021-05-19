@@ -238,7 +238,7 @@ A command is a special kind of function that can be called with
 CLASS can be a class symbol or a list of class symbols, as with
 `define-configuration'."
   (flet ((set-slot (slot class input)
-           (echo "Slot ~a updated with value ~s." slot input)
+           (echo "Update slot ~s to ~s." slot input)
            (append-configuration `(define-configuration ,class
                                     ((,slot ,input))))))
     (if new-value-supplied-p
@@ -265,7 +265,7 @@ CLASS can be a class symbol or a list of class symbols, as with
                         :direction :output
                         :if-does-not-exist :create
                         :if-exists :append)
-    (log:info "Appending configuration form ~a to ~s." form (expand-path *auto-config-file-path*))
+    (log:info "Appending to ~s:~&~s" (expand-path *auto-config-file-path*) form)
     (format file format-directive form)))
 
 (define-command common-settings ()
