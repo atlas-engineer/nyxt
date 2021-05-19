@@ -53,6 +53,7 @@
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "Prompter source to execute commands."))
+(define-user-class command-source)
 
 (define-command execute-command ()
   "Execute a command by name."

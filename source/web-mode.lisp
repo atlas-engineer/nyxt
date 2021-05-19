@@ -263,6 +263,7 @@ and to index the top of the page.")
                      #'htree:all-parents)
                  history)))))
   (:export-class-name-p t))
+(define-user-class history-backwards-source)
 
 (defmethod prompter:object-attributes ((node history-tree:node))
   (let ((entry (htree:data (history-tree:entry node))))
@@ -293,6 +294,7 @@ and to index the top of the page.")
                  history)))))
   (:documentation "Direct children of the current history node.")
   (:export-class-name-p t))
+(define-user-class direct-history-forwards-source)
 
 (define-command history-forwards-direct-children (&optional (buffer (current-buffer)))
   "Query child URL to navigate to."
@@ -324,6 +326,7 @@ Otherwise go forward to the only child."
       (with-data-unsafe (history (history-path (buffer source)))
         (htree:all-forward-children history)))))
   (:export-class-name-p t))
+(define-user-class history-forwards-source)
 
 (define-command history-forwards-query (&optional (buffer (current-buffer)))
   "Query forward-URL to navigate to."
@@ -351,6 +354,7 @@ Otherwise go forward to the only child."
                      #'htree:all-children)
                  history)))))
   (:export-class-name-p t))
+(define-user-class all-history-forwards-source)
 
 (define-command history-forwards-all-query (&optional (buffer (current-buffer)))
   "Query URL to forward to, from all child branches."
@@ -374,6 +378,7 @@ Otherwise go forward to the only child."
                      #'htree:all-current-branch-nodes)
                  history)))))
   (:export-class-name-p t))
+(define-user-class history-all-source)
 
 (define-command history-all-query (&optional (buffer (current-buffer)))
   "Query URL to go to, from the whole history."
@@ -483,6 +488,7 @@ Otherwise go forward to the only child."
     (list (make-command paste* (ring-items)
             (%paste :input-text (first ring-items))))))
   (:export-class-name-p t))
+(define-user-class ring-source)
 
 (define-command paste-from-clipboard-ring ()
   "Show `*browser*' clipboard ring and paste selected entry."
@@ -508,6 +514,7 @@ Otherwise go forward to the only child."
                     ((functionp (autofill-fill selected-fill))
                      (%paste :input-text (funcall (autofill-fill selected-fill))))))))))
   (:export-class-name-p t))
+(define-user-class autofill-source)
 
 (define-command autofill ()
   "Fill in a field with a value from a saved list."
