@@ -528,8 +528,8 @@ the "
 (defun system-information ()            ; TODO: Rename report-system-information?
   "Return a system information report as a string."
   (labels ((->string (obj) (princ-to-string obj))
+           #+quicklisp
            (quicklisp-information ()
-             #+quicklisp
              (str:concat
               "Quicklisp dist version: " (getf +quicklisp-build-information+ :dist-version) +newline+
               "Quicklisp client version: " (getf +quicklisp-build-information+ :client-version) +newline+
