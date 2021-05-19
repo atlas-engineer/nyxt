@@ -501,7 +501,7 @@ when `proxied-downloads-p' is true."
 
 (defmethod initialize-modes ((buffer buffer))
   "Initialize BUFFER modes.
-This must be called after BUFFER has been created by the renderer.
+This is called after BUFFER has been created by the renderer.
 See `buffer-make'."
   (dolist (mode-symbol (reverse (default-modes buffer)))
     (make-mode mode-symbol buffer)))
@@ -587,7 +587,7 @@ PARENT-BUFFER is useful when we want to record buffer- and history relationships
 LOAD-URL-P controls whether to load URL right at buffer creation."
   (let* ((buffer (apply #'buffer-make *browser*
                         :title title
-                        :default-modes modes
+                        :extra-modes modes
                         :parent-buffer parent-buffer
                         (when buffer-class
                           (list :buffer-class buffer-class))))
@@ -629,30 +629,30 @@ See `make-buffer'."
 MODES is a list of mode symbols.
 If URL is `:default', use `default-new-buffer-url'."
   (buffer-make *browser* :title title
-                         :default-modes modes
+                         :extra-modes modes
                          :buffer-class 'user-internal-buffer
                          :no-history-p no-history-p))
 
 (define-command make-editor-buffer (&key (title "") modes)
   "Create a new editor buffer."
   (buffer-make *browser* :title title
-                         :default-modes modes
+                         :extra-modes modes
                          :buffer-class 'user-editor-buffer))
 
 (declaim (ftype (function (browser &key (:title string)
                                    (:data-profile data-profile)
-                                   (:default-modes list)
+                                   (:extra-modes list)
                                    (:dead-buffer buffer)
                                    (:nosave-buffer-p boolean)
                                    (:buffer-class symbol)
                                    (:parent-buffer buffer)
                                    (:no-history-p boolean)))
                 buffer-make))
-(defun buffer-make (browser &key data-profile title default-modes
+(defun buffer-make (browser &key data-profile title extra-modes
                                  dead-buffer (buffer-class 'user-web-buffer)
                                  parent-buffer no-history-p
                                  (nosave-buffer-p (nosave-buffer-p parent-buffer)))
-  "Make buffer with title TITLE and modes DEFAULT-MODES.
+  "Make buffer with title TITLE and with EXTRA-MODES.
 Run `*browser*'s `buffer-make-hook' over the created buffer before returning it.
 If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   (let ((buffer (if dead-buffer
@@ -663,12 +663,12 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
                     (apply #'make-instance buffer-class
                            :id (get-unique-buffer-identifier *browser*)
                            (append (when title `(:title ,title))
-                                   (when default-modes `(:default-modes ,default-modes))
                                    (when data-profile `(:data-profile ,data-profile)))))))
     (hooks:run-hook (buffer-before-make-hook *browser*) buffer)
     ;; Modes might require that buffer exists, so we need to initialize them
     ;; after the view has been created.
     (initialize-modes buffer)
+    (mapc (alex:rcurry #'make-mode buffer) extra-modes)
     (when dead-buffer                   ; TODO: URL should be already set.  Useless?
       (setf (url buffer) (url dead-buffer)))
     (buffers-set (id buffer) buffer)

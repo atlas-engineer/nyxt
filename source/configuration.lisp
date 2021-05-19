@@ -219,7 +219,7 @@ Example to get the `blocker-mode' command to use a new default hostlists:
 \(define-configuration nyxt/blocker-mode:blocker-mode
   ((nyxt/blocker-mode:hostlists (append (list *my-blocked-hosts*) %slot-default%))))
 
-In the above, `%slot-default%' will be substituted with the default value of
+In the above, `%slot-default%' will be substituted with the return value of
 `default-modes'.
 
 In the last example, `nyxt/blocker-mode:user-blocker-mode' is defined to inherit

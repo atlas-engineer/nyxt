@@ -135,9 +135,10 @@ See `prompt' for how to invoke prompts.")))
 (defmethod default-modes :around ((buffer prompt-buffer))
   (set-difference (call-next-method) '(web-mode base-mode)))
 
-(defmethod initialize-instance :after ((prompt-buffer prompt-buffer) &key)
+(defmethod initialize-instance :after ((prompt-buffer prompt-buffer) &key extra-modes)
   (hooks:run-hook (prompt-buffer-make-hook *browser*) prompt-buffer)
-  (initialize-modes prompt-buffer))
+  (initialize-modes prompt-buffer)
+  (mapc (alex:rcurry #'make-mode prompt-buffer) extra-modes))
 
 (export-always 'current-source)
 (defun current-source (&optional (prompt-buffer (current-prompt-buffer)))
@@ -364,9 +365,10 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                            '(&rest args)
                            `(&key ,@(delete-duplicates
                                      (append
-                                      '(extra-modes)
                                       (public-initargs 'prompt-buffer)
-                                      (public-initargs 'prompter:prompter)))))
+                                      (public-initargs 'prompter:prompter)
+                                      ;; `initialize-instance' :after arguments:
+                                      '(extra-modes)))))
       "Open the prompt buffer, ready for user input.
 PROMPTER and PROMPT-BUFFER are plists of keyword arguments passed to the
 prompt-buffer constructor.
@@ -385,15 +387,11 @@ See the documentation of `prompt-buffer' to know more about the options."
        *browser*
        (lambda ()
          (let ((prompt-buffer (apply #'make-instance 'user-prompt-buffer
-                                     (append (alex:remove-from-plist args :extra-modes)
+                                     (append args
                                              (list
                                               :window (current-window)
                                               :result-channel result-channel
                                               :interrupt-channel interrupt-channel)))))
-           ;; REVIEW: More elegant way to initialize extra modes?
-           ;; We could subclass the prompt buffer, but that more boilerplate
-           ;; code for the user.
-           (mapc (alex:rcurry #'make-mode prompt-buffer) extra-modes)
            (setf parent-thread-prompt-buffer prompt-buffer)
            (show-prompt-buffer prompt-buffer))))
       (calispel:fair-alt
