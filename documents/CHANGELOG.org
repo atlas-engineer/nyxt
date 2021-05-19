@@ -23,10 +23,101 @@ If possible!
 
 *** TASK 2.0.0 (Upcoming)
 
+- Search engine auto-completion.
+  See the engine suggestions in the prompt buffer as you type.
+
+  By default, support for DuckDuckGo and Wikipedia is included.
+
+- =set-url= and friends now allow for multiple selection (e.g. opening
+  multiple bookmarks at once).
+
 - Commands defined with =define-command= are no longer listed in
   =execute-command=.
   Use =define-command-global= to define global commands that are always
   listed.
+
+- Display number of downloaded bytes.
+
+- Buffer default modes can now be customize via the =default-modes=
+  generic function.  This function uses the =append= method combination.
+  =define-configuration= now supports customizing these methods just as
+  for slots.
+
+  In practice, this means that adding a mode (like =emacs-mode=) to the
+  defaults of =buffer= will propagate to all sub-buffer types.
+
+- New =define-command-global= function.
+  Commands defined using =define-command= only appear in
+  =execute-command= if the mode they belong to is enabled.
+
+- =reopen-last-buffer= always switches to it.
+  Deprecated =focus-on-reopened-buffer-p= has been removed.
+
+- Backward incompatible changes:
+
+  - Commands defined with =define-command= in =:nyxt-user= are no longer
+    visible in =execute-command=.  Use =define-command-global= instead.
+
+  - By default, =trivia= is unused in the =:nyxt-user= package.
+    Besides, Alexandria and Serapeum's nicknames (=:alex= and =:sera=)
+    are unset.
+
+    Users must not set them manually if they want to use them.
+
+  - Removed the =notify= function.
+    This removes the dependency on the notify-osd external program.
+
+    This function was not generic enough and used only once.
+    Notifications will be reintroduced later with a more generic interface.
+
+  - Removed =set-url-from-bookmark-new-buffer=.
+
+    It's redundant with =set-url= or =set-url-from-bookmark= second
+    action.
+
+    For users who really want a direct binding to this behaviour, you
+    can now use the =:actions= keyword argument to easily create your
+    custom version of =set-url-from-bookmark=.
+
+  - Many commands got renamed for consistency:
+
+    - =bookmark-current-page= to =bookmark-current-url=
+    - =enable/disable-mode-for-buffer= to =enable/disable-mode=
+    - Zoom commands to shorter equivalents.
+    - =bookmark-page= to =bookmark-buffer-url=
+    - =bookmark-delete= to =delete-bookmark=
+    - =jump-to-heading-across-buffers= to =jump-to-heading-buffers=
+    - =search-selection= to =query-selection-in-search-engine=
+    - =reload-buffers= to =reload-buffer=
+
+- New =--system-information= command line option.
+
+  This is useful to report the user environment when Nyxt does not start.
+
+- Removed Common Lisp =file-attributes= dependency.
+
+- New =:nyxt-2= entry in Common Lisp =*features*=.
+
+  This is useful for users and extension writers to handle backward
+  incompatible code.
+
+- Bug fixes.  (Thanks for @franburstall for the continuous testing!)
+
+  - Fixed some prompt buffer suggestion display (like
+    =hook-description=).
+
+  - Fixed crash when right-clicking on some elements, like the Slack
+    composition area.
+
+  - Fixed crashes on click and scroll in prompt buffer.
+
+  - Removed duplicates from prompt buffer history.
+
+  - Fixed some commands, like =describe-variable= and =history-tree=.
+
+  - Fixed =url-dispatching-handler= when handler returns =NIL=.
+
+  - Fixed loading of local HTML files when pass as command line argument.
 
 *** 2-pre-release-7
 
