@@ -1306,14 +1306,18 @@ mode permanently for this buffer."
   ;; https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input
   ;; TODO: The following results in 2 DOM traversal.  We should probably do the
   ;; whole thing in a single Parenscript instead.
-  (pflet ((nth-input-type (i) (ps:chain document
-                                        (get-elements-by-tag-name "INPUT")
-                                        (item (ps:lisp i))
-                                        type))
-          (nth-input-focus (i) (ps:chain document
-                                         (get-elements-by-tag-name "INPUT")
-                                         (item (ps:lisp i))
-                                         (focus))))
+  (pflet ((nth-input-type (i)
+                          (let* ((input (ps:chain document
+                                                  (get-elements-by-tag-name "INPUT")))
+                                 (item (when input (ps:chain input (item (ps:lisp i))))))
+                            (when item
+                              (ps:chain item type))))
+          (nth-input-focus (i)
+                           (let* ((input (ps:chain document
+                                                   (get-elements-by-tag-name "INPUT")))
+                                  (item (when input (ps:chain input (item (ps:lisp i))))))
+                             (when item
+                               (ps:chain item (focus))))))
     (nth-input-focus (do ((i 0 (1+ i)))
                          ((notany
                            (lambda (type) (equalp (nth-input-type i) type))
