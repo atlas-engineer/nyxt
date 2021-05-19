@@ -122,8 +122,7 @@ should find its place there.")
 `request-resource-hook' handlers run.
 The functions are expected to take key arguments like `:url'.")
    (request-resource-hook (make-hook-resource
-                           :combination #'combine-composed-hook-until-nil
-                           :handlers (list #'request-resource))
+                           :combination #'combine-composed-hook-until-nil)
                           :type hook-resource
                           :documentation "Hook run on every resource load.
 The handlers are composed, passing a `request-data'
@@ -943,7 +942,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
       (check-type new-url quri:uri)
       (setf url new-url)
       ;; TODO: This condition can be a source of inefficiency.  Besides, it
-      ;; partly duplicates the code in `request-resource'.  Can we factor this
+      ;; partly duplicates the code in `preprocess-request'.  Can we factor this
       ;; out?
       (cond
         ((and (internal-buffer-p buffer) (equal "lisp" (quri:uri-scheme url)))

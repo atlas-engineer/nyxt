@@ -652,50 +652,58 @@ See `gtk-browser's `modifier-translator' slot."
       (setf modifiers (funcall (modifier-translator *browser*)
                                (webkit:webkit-navigation-action-get-modifiers navigation-action))))
     (setf url (quri:uri (webkit:webkit-uri-request-uri request)))
-    (if (null (hooks:handlers (request-resource-hook buffer)))
-        (progn
-          (log:debug "Forward to ~s's renderer (no request-resource-hook handlers)."
-                     buffer)
-          (webkit:webkit-policy-decision-use response-policy-decision)
-          nil)
-        (let ((request-data
-                (hooks:run-hook
-                 (request-resource-hook buffer)
-                 (hooks:run-hook (pre-request-hook buffer)
-                                 (make-instance 'request-data
-                                                :buffer buffer
-                                                :url (quri:copy-uri url)
-                                                :keys (unless (uiop:emptyp mouse-button)
-                                                        (list (keymap:make-key
-                                                               :value mouse-button
-                                                               :modifiers modifiers)))
-                                                :event-type event-type
-                                                :new-window-p is-new-window
-                                                :known-type-p is-known-type)))))
-          (cond
-            ((not (typep request-data 'request-data))
-             (log:debug "Don't forward to ~s's renderer (non request data)."
-                        buffer)
-             (webkit:webkit-policy-decision-ignore response-policy-decision)
-             nil)
-            ((quri:uri= url (url request-data))
-             (log:debug "Forward to ~s's renderer (unchanged URL)."
-                        buffer)
-             (webkit:webkit-policy-decision-use response-policy-decision)
-             nil)
-            (t
-             ;; Low-level URL string, we must not render the puni codes so use
-             ;; `quri:render-uri'.
-             (setf (webkit:webkit-uri-request-uri request) (quri:render-uri (url request-data)))
-             (log:debug "Don't forward to ~s's renderer (resource request replaced with ~s)."
-                        buffer
-                        (render-url (url request-data)))
-             ;; Warning: We must ignore the policy decision _before_ we
-             ;; start the new load request, or else WebKit will be
-             ;; confused about which URL to load.
-             (webkit:webkit-policy-decision-ignore response-policy-decision)
-             (webkit:webkit-web-view-load-request (gtk-object buffer) request)
-             nil))))))
+    (let ((request-data (preprocess-request
+                         (make-instance 'request-data
+                                        :buffer buffer
+                                        :url (quri:copy-uri url)
+                                        :keys (unless (uiop:emptyp mouse-button)
+                                                (list (keymap:make-key
+                                                       :value mouse-button
+                                                       :modifiers modifiers)))
+                                        :event-type event-type
+                                        :new-window-p is-new-window
+                                        :known-type-p is-known-type))))
+      (if request-data
+          (if (null (hooks:handlers (request-resource-hook buffer)))
+              (progn
+                (log:debug "Forward to ~s's renderer (no request-resource-hook handlers)."
+                           buffer)
+                (webkit:webkit-policy-decision-use response-policy-decision)
+                nil)
+              (let ((request-data
+                      (hooks:run-hook
+                       (request-resource-hook buffer)
+                       (hooks:run-hook (pre-request-hook buffer)
+                                       request-data))))
+                (cond
+                  ((not (typep request-data 'request-data))
+                   (log:debug "Don't forward to ~s's renderer (non request data)."
+                              buffer)
+                   (webkit:webkit-policy-decision-ignore response-policy-decision)
+                   nil)
+                  ((quri:uri= url (url request-data))
+                   (log:debug "Forward to ~s's renderer (unchanged URL)."
+                              buffer)
+                   (webkit:webkit-policy-decision-use response-policy-decision)
+                   nil)
+                  (t
+                   ;; Low-level URL string, we must not render the puni codes so use
+                   ;; `quri:render-uri'.
+                   (setf (webkit:webkit-uri-request-uri request) (quri:render-uri (url request-data)))
+                   (log:debug "Don't forward to ~s's renderer (resource request replaced with ~s)."
+                              buffer
+                              (render-url (url request-data)))
+                   ;; Warning: We must ignore the policy decision _before_ we
+                   ;; start the new load request, or else WebKit will be
+                   ;; confused about which URL to load.
+                   (webkit:webkit-policy-decision-ignore response-policy-decision)
+                   (webkit:webkit-web-view-load-request (gtk-object buffer) request)
+                   nil))))
+          (progn
+            (log:debug "Don't forward to ~s's renderer (non request data)."
+                       buffer)
+            (webkit:webkit-policy-decision-ignore response-policy-decision)
+            nil)))))
 
 (define-ffi-method on-signal-load-changed ((buffer gtk-buffer) load-event)
   ;; `url' can be nil if buffer didn't have any URL associated
