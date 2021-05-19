@@ -835,6 +835,7 @@ proceeding."
                                          (eq buffer (current-buffer)))
                                (set-current-buffer buffer))))))
   (:export-class-name-p t))
+(define-user-class buffer-source)
 
 (define-command switch-buffer (&key id)
   "Switch the active buffer in the current window."
@@ -967,6 +968,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
    (prompter:filter-preprocessor nil)   ; Don't remove non-exact results.
    (prompter:actions '(buffer-load)))
   (:export-class-name-p t))
+(define-user-class global-history-source)
 
 (define-class new-url-query ()
   ((query ""
@@ -1067,6 +1069,7 @@ generate a new URL query from user input.
 - If it's a file, prefix the query with 'file://'.
 - If it's a search engine shortcut, include it in the suggestions.
 - If it's none of the above, use the `default-search-engine'."))
+(define-user-class new-url-or-search-source)
 
 (defun pushnew-url-history (history url)
   "URL is not pushed if empty."
@@ -1209,6 +1212,7 @@ ARGS are passed to the mode command."
                             :test (lambda (i y) (equal (mode-name i)
                                                        (mode-name y)))))))
   (:export-class-name-p t))
+(define-user-class active-mode-source)
 
 (define-class inactive-mode-source (prompter:source)
   ((prompter:name "Inactive modes")
@@ -1222,6 +1226,7 @@ ARGS are passed to the mode command."
                                                    (uiop:ensure-list (buffers source))))))
                              (set-difference (mode-list) common-modes)))))
   (:export-class-name-p t))
+(define-user-class inactive-mode-source)
 
 (define-command disable-mode ()
   "Disable queried mode(s) for select buffer(s)."
@@ -1269,6 +1274,7 @@ ARGS are passed to the mode command."
    (prompter:constructor (sort (all-mode-names) #'string< :key #'symbol-name))
    (prompter:suggestion-maker 'make-mode-suggestion))
   (:export-class-name-p t))
+(define-user-class mode-source)
 
 (define-command toggle-modes (&key (buffer (current-buffer)))
   "Enable marked modes, disable unmarked modes for BUFFER."
