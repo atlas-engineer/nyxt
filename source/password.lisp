@@ -75,7 +75,7 @@ for which the `executable' slot is non-nil."
                    (first (prompt
                            :prompt "Password file"
                            :sources (list (make-instance
-                                           'file-source
+                                           'user-file-source
                                            :filter-preprocessor
                                            (make-file-source-preprocessor
                                             (alex:disjoin (match-extension "kdbx")

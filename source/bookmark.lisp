@@ -338,7 +338,7 @@ rest in background buffers."
                                ;; TODO: Is there a more intuitive directory for bookmarks?
                                :input (namestring (uiop:getcwd))
                                :sources (make-instance
-                                         'file-source
+                                         'user-file-source
                                          :filter-preprocessor
                                          (make-file-source-preprocessor
                                           (alex:disjoin (match-extension "html")

@@ -60,12 +60,9 @@ Accepts the name of the file as the first argument and has two keyword arguments
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "Prompt source for file(s) on the disk."))
-
-(define-class open-file-source (file-source) ())
-
-;; FIXME: Configuring this in init.lisp requires nyxt:: prefix.
-;; How do we export it? :export-class-name-p doesn't work, it seems.
 (define-user-class file-source)
+
+(define-class open-file-source (user-file-source) ())
 (define-user-class open-file-source)
 
 (defun supported-media-or-directory (filename
