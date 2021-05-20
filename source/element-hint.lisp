@@ -15,7 +15,7 @@
        (ps:chain style-element sheet (insert-rule highlighted-style 1)))
      (:catch (error)))))
 
-(define-parenscript hint-elements (nyxt-identifiers hints annotate-visible-only-p)
+(define-parenscript hint-elements (nyxt-identifiers hints)
   (defun hint-determine-position (rect)
     "Determines the position of a hint according to the element"
     (ps:create :top  (+ (ps:@ window page-y-offset) (ps:@ rect top))
@@ -42,10 +42,7 @@
                                              (aref ids i)
                                              "\"]")))
             (hint (aref hints i)))
-        (when (and element
-                   (or (not (ps:lisp annotate-visible-only-p))
-                       (and (nyxt/ps:element-drawable-p element)
-                            (nyxt/ps:element-in-view-port-p element))))
+        (when element
           (ps:chain element (set-attribute "nyxt-hint" hint))
           (ps:let ((hint-element (hint-create-element element hint)))
             (ps:chain fragment (append-child hint-element))))))
@@ -69,12 +66,12 @@
          (char-length (ceiling (log length (length alphabet)))))
     (loop for i below length collect (select-from-alphabet i char-length alphabet))))
 
-(defun add-element-hints (&key selector annotate-visible-only-p)
+(defun add-element-hints (&key selector)
   (let* ((dom (document-model (current-mode 'web)))
          (hintable-elements (clss:select selector dom))
          (hints (generate-hints (length hintable-elements))))
     (add-stylesheet)
-    (hint-elements (map 'list #'get-nyxt-id hintable-elements) hints annotate-visible-only-p)
+    (hint-elements (map 'list #'get-nyxt-id hintable-elements) hints)
     (loop for elem across hintable-elements
           for hint in hints
           do (plump:set-attribute elem "nyxt-hint" hint)
@@ -154,8 +151,7 @@
 
 (serapeum:export-always 'query-hints)
 (defun query-hints (prompt function &key multi-selection-p
-                                      (selector "a, button, input, textarea, details, select")
-                                      annotate-visible-only-p)
+                                      (selector "a, button, input, textarea, details, select"))
   (let* ((buffer (current-buffer)))
     (let ((result (prompt
                    :prompt prompt
@@ -165,8 +161,7 @@
                    (make-instance
                     'hint-source
                     :multi-selection-p multi-selection-p
-                    :constructor (add-element-hints :selector selector
-                                                    :annotate-visible-only-p annotate-visible-only-p))
+                    :constructor (add-element-hints :selector selector))
                    :after-destructor
                    (lambda ()
                      (with-current-buffer buffer
@@ -312,23 +307,21 @@
             (highlight-selected-hint :element hint :scroll scroll))
           (remove-focus)))))
 
-(define-command follow-hint (&key annotate-visible-only-p)
+(define-command follow-hint ()
   "Show a set of element hints, and go to the user inputted one in the current
 buffer."
-  (query-hints "Go to element" (lambda (results) (%follow-hint (first results)))
-               :annotate-visible-only-p annotate-visible-only-p))
+  (query-hints "Go to element" (lambda (results) (%follow-hint (first results)))))
 
-(define-command follow-hint-new-buffer (&key annotate-visible-only-p)
+(define-command follow-hint-new-buffer ()
   "Show a set of element hints, and open the user inputted one in a new
 buffer (not set to visible active buffer)."
   (let ((buffer (current-buffer)))
     (query-hints "Open element in new buffer"
                  (lambda (result) (mapcar (alex:rcurry #'%follow-hint-new-buffer buffer)
                                           result))
-                 :multi-selection-p t
-                 :annotate-visible-only-p annotate-visible-only-p)))
+                 :multi-selection-p t)))
 
-(define-command follow-hint-new-buffer-focus (&key annotate-visible-only-p)
+(define-command follow-hint-new-buffer-focus ()
   "Show a set of element hints, and open the user inputted one in a new
 visible active buffer."
   (let ((buffer (current-buffer)))
@@ -337,42 +330,37 @@ visible active buffer."
                    (%follow-hint-new-buffer-focus (first result) buffer)
                    (mapcar (alex:rcurry #'%follow-hint-new-buffer buffer)
                            (rest result)))
-                 :multi-selection-p t
-                 :annotate-visible-only-p annotate-visible-only-p)))
+                 :multi-selection-p t)))
 
-(define-command follow-hint-nosave-buffer (&key annotate-visible-only-p)
+(define-command follow-hint-nosave-buffer ()
   "Show a set of element hints, and open the user inputted one in a new
 nosave buffer (not set to visible active buffer)."
   (query-hints "Open element in new buffer"
                (lambda (result) (mapcar #'%follow-hint-nosave-buffer result))
-               :multi-selection-p t
-               :annotate-visible-only-p annotate-visible-only-p))
+               :multi-selection-p t))
 
-(define-command follow-hint-nosave-buffer-focus (&key annotate-visible-only-p)
+(define-command follow-hint-nosave-buffer-focus ()
   "Show a set of element hints, and open the user inputted one in a new
 visible nosave active buffer."
   (query-hints "Go to element in new buffer"
                (lambda (result)
                  (%follow-hint-nosave-buffer-focus (first result))
                  (mapcar #'%follow-hint-nosave-buffer (rest result)))
-               :multi-selection-p t
-               :annotate-visible-only-p annotate-visible-only-p))
+               :multi-selection-p t))
 
-(define-command copy-hint-url (&key annotate-visible-only-p)
+(define-command copy-hint-url ()
   "Show a set of element hints, and copy the URL of the user inputted one."
-  (query-hints "Copy element URL" (lambda (result)  (%copy-hint-url (first result)))
-               :annotate-visible-only-p annotate-visible-only-p))
+  (query-hints "Copy element URL" (lambda (result)  (%copy-hint-url (first result)))))
 
-(define-command bookmark-hint (&key annotate-visible-only-p)
+(define-command bookmark-hint ()
   "Show link hints on screen, and allow the user to bookmark one"
   (query-hints "Bookmark hint"
                (lambda (result)
                  (let ((url (url (first result))))
                    (bookmark-url :url url)))
-               :multi-selection-p t
-               :annotate-visible-only-p annotate-visible-only-p))
+               :multi-selection-p t))
 
-(define-command download-hint-url (&key annotate-visible-only-p)
+(define-command download-hint-url ()
   "Download the file under the URL(s) hinted by the user."
   (let ((buffer (current-buffer)))
     (query-hints "Download link URL"
@@ -381,5 +369,4 @@ visible nosave active buffer."
                          ;; TODO: sleep should NOT be necessary to avoid breaking download
                          do (download buffer (url link))
                             (sleep 0.25)))
-                 :multi-selection-p t
-                 :annotate-visible-only-p annotate-visible-only-p)))
+                 :multi-selection-p t)))
