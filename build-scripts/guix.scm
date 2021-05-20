@@ -104,10 +104,6 @@
            (lambda _
              (setenv "HOME" "/tmp")
              #t))
-         (add-before 'build 'set-version ; TODO: Remove for 2.0.
-           (lambda _
-             (setenv "NYXT_VERSION" ,version)
-             #t))
          (add-before 'check 'configure-tests
            (lambda _
              (setenv "NYXT_TESTS_NO_NETWORK" "1")
@@ -149,7 +145,7 @@
        ("sbcl" ,sbcl)
        ;; Only for development, unneeded for the upstream Guix package:
        ("cl-trivial-benchmark" ,cl-trivial-benchmark)
-       ;; To generate the right version in Nyxt.  TODO: unneeded from 2.0 onwards:
+       ;; To generate the right version in Nyxt.  Unneeded for the upstream Guix package.
        ("git" ,git-minimal)))
     (inputs
      `(("alexandria" ,cl-alexandria)

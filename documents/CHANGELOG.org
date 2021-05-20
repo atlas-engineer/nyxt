@@ -21,7 +21,7 @@ If possible!
 *** Add online suggestions from search engines
 ** 2 series
 
-*** TASK 2.0.0 (Upcoming)
+*** 2.0.0
 
 - Search engine auto-completion.
   See the engine suggestions in the prompt buffer as you type.
