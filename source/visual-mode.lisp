@@ -116,14 +116,13 @@
 (define-parenscript make-page-uneditable ()
   (setf (ps:@ document body content-editable) "false"))
 
-(define-command select-paragraph (&key annotate-visible-only-p)
+(define-command select-paragraph ()
   "Add hints to text elements on the page and query them."
   (query-hints "Set caret on element"
                (lambda (results) (%follow-hint (first results)))
                :selector "a, b, del, h, i, option, strong, sub,
 sup, listing, xmp, plaintext, basefont, big, blink, center, font, marquee,
-multicol, nobr, s, spacer, strike, tt, u, wbr"
-               :annotate-visible-only-p annotate-visible-only-p))
+multicol, nobr, s, spacer, strike, tt, u, wbr"))
 
 (define-parenscript is-collapsed ()
   ;; returns "true" if mark's start and end are the same value
