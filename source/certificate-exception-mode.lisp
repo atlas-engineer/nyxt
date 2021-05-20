@@ -39,7 +39,7 @@ To make this change permanent, you can customize
   (if (find-submode buffer 'certificate-exception-mode)
       (let ((input (first (prompt
                            :prompt "URL host to exception list:"
-                           :sources (list (make-instance 'nyxt/web-mode::history-all-source
+                           :sources (list (make-instance 'nyxt/web-mode::user-history-all-source
                                                          :buffer buffer))))))
         (unless (url-empty-p (url (htree:data input)))
           (let ((host (quri:uri-host (url (htree:data input)))))

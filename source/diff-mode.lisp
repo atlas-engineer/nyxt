@@ -60,7 +60,7 @@ the highest standard on accessibility.")
            (ffi-buffer-get-document
             (prompt
              :prompt prompt
-             :sources (list (make-instance 'buffer-source))))))
+             :sources (list (make-instance 'user-buffer-source))))))
     ;; change buffer here, not at the constructor
     (set-current-buffer
      (diff-mode :old-html (fetch-html-from-buffer

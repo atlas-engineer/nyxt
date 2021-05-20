@@ -29,7 +29,7 @@
    :prompt "Describe:"
    :sources (list (make-instance 'variable-source)
                   (make-instance 'function-source)
-                  (make-instance 'command-source
+                  (make-instance 'user-command-source
                                  :actions (list (make-unmapped-command describe-command)))
                   (make-instance 'class-source)
                   (make-instance 'slot-source))))
@@ -125,7 +125,7 @@ A command is a special kind of function that can be called with
                           (write-to-string (sexp command))))))))
       (prompt
        :prompt "Describe command"
-       :sources (make-instance 'command-source
+       :sources (make-instance 'user-command-source
                                :actions (list (make-unmapped-command describe-command))))))
 
 (define-command describe-slot (&optional slot)

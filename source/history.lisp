@@ -111,7 +111,7 @@ then become available for deletion with `delete-history-entry'."
   (let ((buffers (or (alex:ensure-list buffer)
                      (prompt
                       :prompt "Reset histories of buffer(s)"
-                      :sources (list (make-instance 'buffer-source
+                      :sources (list (make-instance 'user-buffer-source
                                                     :actions '()))))))
     (with-data-access (history (history-path (current-buffer)))
       (dolist (buffer buffers)

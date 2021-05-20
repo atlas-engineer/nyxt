@@ -60,7 +60,7 @@
   (unless (active-prompt-buffers (current-window))
     (let ((command (first (prompt
                            :prompt "Execute command"
-                           :sources (make-instance 'command-source)
+                           :sources (make-instance 'user-command-source)
                            :hide-suggestion-count-p t))))
       (setf (last-access command) (local-time:now))
       (run-async command))))
@@ -71,7 +71,7 @@ keyword parameters."
   ;; TODO: prefill default-values when prompting optional/key arguments
    (let* ((command (first (prompt
                            :prompt "Execute extended command"
-                           :sources (make-instance 'command-source)
+                           :sources (make-instance 'user-command-source)
                            :hide-suggestion-count-p t)))
           (argument-list (swank::arglist (fn command)))
           (required-arguments (nth-value 0 (alex:parse-ordinary-lambda-list

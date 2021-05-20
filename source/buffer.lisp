@@ -842,7 +842,7 @@ proceeding."
       (set-current-buffer (buffers-get id))
       (prompt
        :prompt "Switch to buffer"
-       :sources (list (make-instance 'buffer-source
+       :sources (list (make-instance 'user-buffer-source
                                      ;; For commodity, the current buffer shouldn't be the first one on the list.
                                      :constructor (buffer-initial-suggestions :current-is-last-p t))))))
 
@@ -851,7 +851,7 @@ proceeding."
   (let ((domain (or domain (quri:uri-domain (url buffer)))))
     (prompt
      :prompt "Switch to buffer in current domain:"
-     :sources (make-instance 'buffer-source
+     :sources (make-instance 'user-buffer-source
                              :constructor (sera:filter (match-domain domain)
                                                        (sort-by-time (buffer-list)))))))
 
@@ -869,7 +869,7 @@ proceeding."
       (buffer-delete (gethash id (slot-value *browser* 'buffers)))
       (prompt
        :prompt "Delete buffer(s)"
-       :sources (make-instance 'buffer-source
+       :sources (make-instance 'user-buffer-source
                                :multi-selection-p t
                                :actions (list (make-mapped-command buffer-delete))))))
 
@@ -879,7 +879,7 @@ single buffer, optionally delete them. This function is useful for archiving a
 set of useful URLs or preparing a list to send to a someone else."
   (let ((buffers (prompt
                   :prompt "Reduce buffer(s)"
-                  :sources (make-instance 'buffer-source
+                  :sources (make-instance 'user-buffer-source
                                           :actions '()
                                           :multi-selection-p t))))
     (with-current-html-buffer (reduced-buffer "*Reduced Buffers*" 'base-mode)
@@ -1092,8 +1092,8 @@ generate a new URL query from user input.
      :input (if prefill-current-url-p
                 (render-url (url (current-buffer))) "")
      :history history
-     :sources (list (make-instance 'new-url-or-search-source :actions actions)
-                    (make-instance 'global-history-source :actions actions)
+     :sources (list (make-instance 'user-new-url-or-search-source :actions actions)
+                    (make-instance 'user-global-history-source :actions actions)
                     (make-instance 'bookmark-source :actions actions)
                     (make-instance 'search-engine-url-source :actions actions)))))
 
@@ -1111,8 +1111,8 @@ generate a new URL query from user input.
      :input (if prefill-current-url-p
                 (render-url (url (current-buffer))) "")
      :history history
-     :sources (list (make-instance 'new-url-or-search-source :actions actions)
-                    (make-instance 'global-history-source :actions actions)
+     :sources (list (make-instance 'user-new-url-or-search-source :actions actions)
+                    (make-instance 'user-global-history-source :actions actions)
                     (make-instance 'bookmark-source :actions actions)
                     (make-instance 'search-engine-url-source :actions actions)))))
 
@@ -1129,8 +1129,8 @@ generate a new URL query from user input.
      :prompt "Open URL in new nosave buffer"
      :input (if prefill-current-url-p
                 (render-url (url (current-buffer))) "")
-     :sources (list (make-instance 'new-url-or-search-source :actions actions)
-                    (make-instance 'global-history-source :actions actions)
+     :sources (list (make-instance 'user-new-url-or-search-source :actions actions)
+                    (make-instance 'user-global-history-source :actions actions)
                     (make-instance 'bookmark-source :actions actions)
                     (make-instance 'search-engine-url-source :actions actions)))))
 
@@ -1144,7 +1144,7 @@ generate a new URL query from user input.
       (mapcar (lambda (buffer) (buffer-load (url buffer) :buffer buffer)) buffers)
       (prompt
        :prompt "Reload buffer(s)"
-       :sources (make-instance 'buffer-source
+       :sources (make-instance 'user-buffer-source
                                :multi-selection-p t
                                :actions (list 'reload-buffers)))))
 
@@ -1231,12 +1231,12 @@ ARGS are passed to the mode command."
   "Disable queried mode(s) for select buffer(s)."
   (let* ((buffers (prompt
                    :prompt "Disable mode(s) for buffer(s)"
-                   :sources (make-instance 'buffer-source
+                   :sources (make-instance 'user-buffer-source
                                            :multi-selection-p t
                                            :actions '())))
          (modes (prompt
                  :prompt "Disable mode(s)"
-                 :sources (make-instance 'active-mode-source
+                 :sources (make-instance 'user-active-mode-source
                                          :buffers buffers))))
     (loop for buffer in buffers
           do (disable-modes (mapcar #'mode-name modes) buffer))))
@@ -1245,12 +1245,12 @@ ARGS are passed to the mode command."
   "Enable queried mode(s) for select buffer(s)."
   (let* ((buffers (prompt
                    :prompt "Enable mode(s) for buffer(s)"
-                   :sources (make-instance 'buffer-source
+                   :sources (make-instance 'user-buffer-source
                                            :multi-selection-p t
                                            :actions '())))
          (modes (prompt
                  :prompt "Enable mode(s)"
-                 :sources (make-instance 'inactive-mode-source
+                 :sources (make-instance 'user-inactive-mode-source
                                          :buffers buffers))))
     (loop for buffer in buffers
           do (enable-modes (uiop:ensure-list modes) buffer))))
@@ -1279,7 +1279,7 @@ ARGS are passed to the mode command."
   "Enable marked modes, disable unmarked modes for BUFFER."
   (let* ((modes-to-enable (prompt
                            :prompt "Mark modes to enable, unmark to disable"
-                           :sources (make-instance 'mode-source
+                           :sources (make-instance 'user-mode-source
                                                    :actions (list 'identity
                                                                   (make-command force-disable-auto-mode (modes)
                                                                     "Return selection but force disabling auto-mode.

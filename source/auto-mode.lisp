@@ -311,7 +311,7 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
                      :sources (list
                                (make-instance 'prompter:raw-source
                                               :name "New URL")
-                               (make-instance 'global-history-source
+                               (make-instance 'user-global-history-source
                                               :actions '()))))))
     (when (typep url 'nyxt::history-entry)
       (setf url (url url)))
@@ -338,7 +338,7 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
                      :sources (list
                                (make-instance 'prompter:raw-source
                                               :name "New URL")
-                               (make-instance 'global-history-source
+                               (make-instance 'user-global-history-source
                                               :actions '()))))))
     (when (typep url 'nyxt::history-entry)
       (setf url (url url)))
@@ -352,7 +352,7 @@ This bypasses auto-mode.
 Auto-mode is re-enabled once the page is reloaded."
   (let* ((modes-to-enable (prompt
                            :prompt "Mark modes to enable, unmark to disable"
-                           :sources (make-instance 'mode-source
+                           :sources (make-instance 'user-mode-source
                                                    :marks (remove 'nyxt/auto-mode:auto-mode
                                                                   (mapcar #'mode-name (modes (current-buffer)))))))
          (modes-to-disable (cons 'nyxt/auto-mode:auto-mode

@@ -59,7 +59,7 @@
 of buffers."
   (let ((buffers (prompt
                   :prompt "Select headings from buffers:"
-                  :sources (make-instance 'buffer-source
+                  :sources (make-instance 'user-buffer-source
                                           :multi-selection-p t
                                           :actions nil))))
     (prompt

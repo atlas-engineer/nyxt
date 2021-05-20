@@ -181,7 +181,7 @@
   "Start a search on the current buffer."
   (let ((buffers (prompt
                   :prompt "Search buffer(s)"
-                  :sources (list (make-instance 'buffer-source ; TODO: Define class?
+                  :sources (list (make-instance 'user-buffer-source ; TODO: Define class?
                                                 :actions '()
                                                 :multi-selection-p t)))))
     (prompt

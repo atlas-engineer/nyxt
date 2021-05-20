@@ -274,7 +274,7 @@ and to index the top of the page.")
   "Query parent URL to navigate back to."
   (let ((input (first (prompt
                        :prompt "Navigate backwards to"
-                       :sources (make-instance 'history-backwards-source
+                       :sources (make-instance 'user-history-backwards-source
                                                :buffer buffer)))))
     (when input
       (with-data-access (history (history-path buffer))
@@ -300,7 +300,7 @@ and to index the top of the page.")
   "Query child URL to navigate to."
   (let ((input (first (prompt
                        :prompt "Navigate forwards to"
-                       :sources (make-instance 'direct-history-forwards-source
+                       :sources (make-instance 'user-direct-history-forwards-source
                                                :buffer buffer)))))
     (when input
       (with-data-access (history (history-path buffer))
@@ -332,7 +332,7 @@ Otherwise go forward to the only child."
   "Query forward-URL to navigate to."
   (let ((input (first (prompt
                        :prompt "Navigate forwards to"
-                       :sources (list (make-instance 'history-forwards-source
+                       :sources (list (make-instance 'user-history-forwards-source
                                                      :buffer buffer))))))
     (when input
       (with-data-access (history (history-path buffer))
@@ -360,7 +360,7 @@ Otherwise go forward to the only child."
   "Query URL to forward to, from all child branches."
   (let ((input (first (prompt
                        :prompt "Navigate forwards to (all branches)"
-                       :sources (list (make-instance 'all-history-forwards-source
+                       :sources (list (make-instance 'user-all-history-forwards-source
                                                      :buffer buffer))))))
     (when input
       (with-data-access (history (history-path buffer))
@@ -384,7 +384,7 @@ Otherwise go forward to the only child."
   "Query URL to go to, from the whole history."
   (let ((input (prompt
                 :prompt "Navigate to"
-                :sources (list (make-instance 'history-all-source
+                :sources (list (make-instance 'user-history-all-source
                                               :buffer buffer)))))
     (when input
       (with-data-access (history (history-path buffer))
@@ -494,7 +494,7 @@ Otherwise go forward to the only child."
   "Show `*browser*' clipboard ring and paste selected entry."
   (prompt
    :prompt "Paste from ring"
-   :sources (list (make-instance 'ring-source
+   :sources (list (make-instance 'user-ring-source
                                  :ring (nyxt::clipboard-ring *browser*)))))
 
 (define-command copy ()
@@ -520,7 +520,7 @@ Otherwise go forward to the only child."
   "Fill in a field with a value from a saved list."
   (prompt
    :prompt "Autofill"
-   :sources (make-instance 'autofill-source)))
+   :sources (make-instance 'user-autofill-source)))
 
 (defmethod nyxt:on-signal-notify-uri ((mode web-mode) url)
   (declare (type quri:uri url))
