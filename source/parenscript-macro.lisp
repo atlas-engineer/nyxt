@@ -18,6 +18,11 @@
   "Alias of document.querySelectorAll"
   `(chain ,context (query-selector-all ,selector)))
 
+(export-always 'qs-nyxt-id)
+(defpsmacro qs-nyxt-id (context id)
+  "document.querySelector tailored for Nyxt IDs."
+  `(chain ,context (query-selector (lisp (format nil "[nyxt-identifier=\"~a\"]" ,id)))))
+
 (export-always 'insert-at)
 (defpsmacro insert-at (tag input-text)
   "Insert text at a tag."

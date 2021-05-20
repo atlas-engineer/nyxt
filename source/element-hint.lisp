@@ -85,25 +85,25 @@
   (hints-remove-all))
 
 (define-parenscript click-element (&key nyxt-identifier)
-  (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (click)))
+  (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier) (click)))
 
 (define-parenscript focus-element (&key nyxt-identifier)
-  (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (focus))
-  (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (select)))
+  (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier) (focus))
+  (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier) (select)))
 
 (define-parenscript check-element (&key nyxt-identifier (value t))
-  (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier)))
+  (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier)
             (set-attribute "checked" (ps:lisp value))))
 
 (define-parenscript toggle-details-element (&key nyxt-identifier)
-  (ps:let ((element (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier)))))
+  (ps:let ((element (nyxt/ps:qs-nyxt-id document nyxt-identifier)))
     (if (ps:chain element (get-attribute "open"))
         (ps:chain element (remove-attribute "open"))
         (ps:chain element (set-attribute "open" t)))))
 
 (define-parenscript select-option-element (&key nyxt-identifier parent-select-identifier)
-  (ps:let* ((element (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))))
-            (parent-select (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" parent-select-identifier)))))
+  (ps:let* ((element (nyxt/ps:qs-nyxt-id document nyxt-identifier))
+            (parent-select (nyxt/ps:qs-nyxt-id document parent-select-identifier)))
     (if (ps:chain element (get-attribute "multiple"))
         (ps:chain element (set-attribute "selected" t))
         (setf (ps:@ parent-select value) (ps:@ element value)))))

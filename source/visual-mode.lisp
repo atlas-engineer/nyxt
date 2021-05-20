@@ -83,7 +83,7 @@
     ("Text" ,(plump:text element))))
 
 (define-parenscript set-caret-on-start (&key nyxt-identifier)
-  (let ((el (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))))
+  (let ((el (nyxt/ps:qs-nyxt-id document nyxt-identifier))
         (range (ps:chain document (create-range)))
         (sel (ps:chain window (get-selection))))
     (ps:chain window (focus))
