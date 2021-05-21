@@ -41,9 +41,9 @@ edge weights."))
                             (cosine-similarity document-a document-b))))))
 
 (defmethod text-rank ((collection document-collection) &key (epsilon 0.001)
-                                                            (damping 0.85)
-                                                            (initial-rank)
-                                                            (iteration-limit 100))
+                                                         (damping 0.85)
+                                                         (initial-rank)
+                                                         (iteration-limit 100))
   "This method is used to calculate the text rankings for a document
    collection. The `epsilon' is the maximum delta for a given node
    rank change during an iteration to be considered convergent. The
@@ -53,39 +53,40 @@ edge weights."))
    algorithm may traverse the graph before giving up (if the algorithm
    does not converge)."
   (with-accessors ((documents documents)) collection
-    (labels ((set-initial-rank ()
-               "Set the initial rank of all documents to a supplied
+    (unless (zerop (length documents))
+      (labels ((set-initial-rank ()
+                 "Set the initial rank of all documents to a supplied
                 value OR 1/length of the documents."
-               (let ((initial-rank (or initial-rank (/ 1 (length documents)))))
-                 (mapcar (lambda (document) (setf (rank document) initial-rank)) documents)))
-             (graph-neighbors (document)
-               "Return a list of neighbors. In a fully connected graph,
+                 (let ((initial-rank (or initial-rank (/ 1 (length documents)))))
+                   (mapcar (lambda (document) (setf (rank document) initial-rank)) documents)))
+               (graph-neighbors (document)
+                 "Return a list of neighbors. In a fully connected graph,
                 all nodes are a neighbor except for the node itself."
-               (remove document documents))
-             (graph-neighbor-edge-sum (document)
-               "Add up the edges of all neighbors of a given node."
-               (let ((sum (- (reduce #'+ (alexandria:hash-table-values (edges document))) 1)))
-                 (if (> sum 0) sum 1)))
-             (document-similarity (document-a document-b)
-               (gethash document-b (edges document-a) 0))
-             (convergedp (previous-score current-score)
-               "Check if a delta qualifies for convergence."
-               (<=  (abs (- previous-score current-score)) epsilon))
-             (calculate-rank (document)
-               "Calculate the rank of a document."
-               (loop for neighbor in (graph-neighbors document)
-                     sum (/ (* damping (rank neighbor) (document-similarity document neighbor))
-                            (graph-neighbor-edge-sum neighbor)))))
-      (set-initial-rank)
-      (loop with converged = nil
-            for iteration from 0 to iteration-limit until converged
-            do (setf converged t)
-               (loop for document in documents
-                     for old-rank = (rank document)
-                     for new-rank = (calculate-rank document)
-                     do (setf (rank document) new-rank)
-                     unless (convergedp old-rank new-rank)
-                     do (setf converged nil))))))
+                 (remove document documents))
+               (graph-neighbor-edge-sum (document)
+                 "Add up the edges of all neighbors of a given node."
+                 (let ((sum (- (reduce #'+ (alexandria:hash-table-values (edges document))) 1)))
+                   (if (> sum 0) sum 1)))
+               (document-similarity (document-a document-b)
+                 (gethash document-b (edges document-a) 0))
+               (convergedp (previous-score current-score)
+                 "Check if a delta qualifies for convergence."
+                 (<=  (abs (- previous-score current-score)) epsilon))
+               (calculate-rank (document)
+                 "Calculate the rank of a document."
+                 (loop for neighbor in (graph-neighbors document)
+                       sum (/ (* damping (rank neighbor) (document-similarity document neighbor))
+                              (graph-neighbor-edge-sum neighbor)))))
+        (set-initial-rank)
+        (loop with converged = nil
+              for iteration from 0 to iteration-limit until converged
+              do (setf converged t)
+                 (loop for document in documents
+                       for old-rank = (rank document)
+                       for new-rank = (calculate-rank document)
+                       do (setf (rank document) new-rank)
+                       unless (convergedp old-rank new-rank)
+                         do (setf converged nil)))))))
 
 (defun summarize-text (text &key (summary-length 3) (show-rank-p nil))
   (let ((collection (make-instance 'document-collection)))
@@ -100,4 +101,4 @@ edge weights."))
                    (mapcar (if show-rank-p
                                (lambda (i) (cons (rank i) (string-contents i)))
                                #'string-contents)
-                    (sort (documents collection) #'> :key #'rank)))))
+                           (sort (documents collection) #'> :key #'rank)))))
