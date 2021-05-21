@@ -122,7 +122,7 @@ documentation.")
     (:p "Creating your own invokable commands is similar to creating a Common
 Lisp function, except the form is " (:code "define-command") " instead of "
         (:code "defun") ". If you want this command to be invokable outside of
-        the context of of a mode, use " (:code "define-command-global") ".")
+        the context of a mode, use " (:code "define-command-global") ".")
     (:p "Example:")
     (:pre (:code
            "(define-command-global bookmark-url ()
