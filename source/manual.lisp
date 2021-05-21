@@ -21,7 +21,7 @@ it's running!")
         ". It contains numerous pointers to other resources, including
         free books both for beginners and seasoned programmers.")
     (:p "Nyxt provides a mechanism for new users unfamiliar with Lisp to
-customize Nyxt. Start by invoking the comm/ands " (:code "describe-class") "
+customize Nyxt. Start by invoking the commands " (:code "describe-class") "
 or " (:code "describe-slot") ".  You can press the button marked 'Configure' to
 change the value of a setting. The settings will be applied immediately and
 saved for future sessions. Please note that these settings will not alter
