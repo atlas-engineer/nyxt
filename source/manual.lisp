@@ -21,7 +21,7 @@ it's running!")
         ". It contains numerous pointers to other resources, including
         free books both for beginners and seasoned programmers.")
     (:p "Nyxt provides a mechanism for new users unfamiliar with Lisp to
-customize Nyxt. Start by invoking the commands " (:code "describe-class") "
+customize Nyxt. Start by invoking the comm/ands " (:code "describe-class") "
 or " (:code "describe-slot") ".  You can press the button marked 'Configure' to
 change the value of a setting. The settings will be applied immediately and
 saved for future sessions. Please note that these settings will not alter
@@ -122,7 +122,7 @@ documentation.")
     (:p "Creating your own invokable commands is similar to creating a Common
 Lisp function, except the form is " (:code "define-command") " instead of "
         (:code "defun") ". If you want this command to be invokable outside of
-        the context of of a mode, use " (:code "define-command-global") ".")
+        the context of a mode, use " (:code "define-command-global") ".")
     (:p "Example:")
     (:pre (:code
            "(define-command-global bookmark-url ()
