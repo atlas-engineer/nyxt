@@ -68,7 +68,7 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "C-x left" 'switch-buffer-previous
                      "C-x right" 'switch-buffer-next
                      "C-x b" 'switch-buffer
-                     "C-x C-b" 'list-buffers
+                     "C-x C-b" 'nyxt/buffer-listing-mode::list-buffers
                      "C-M-l" 'copy-url
                      "C-M-i" 'copy-title
                      "C-h C-h" 'help

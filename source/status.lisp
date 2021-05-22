@@ -22,7 +22,7 @@
    (:a :class "button" :title "Forwards" :href (lisp-url '(nyxt/web-mode:history-forwards)) "→")
    (:a :class "button" :title "Reload" :href (lisp-url '(nyxt:reload-current-buffer)) "↺")
    (:a :class "button" :title "Execute" :href (lisp-url '(nyxt:execute-command)) "⚙")
-   (:a :class "button" :title "Buffers" :href (lisp-url '(nyxt::list-buffers)) "≡")))
+   (:a :class "button" :title "Buffers" :href (lisp-url '(nyxt/buffer-listing-mode:list-buffers)) "≡")))
 
 (export-always 'format-status-load-status)
 (defun format-status-load-status (buffer)
