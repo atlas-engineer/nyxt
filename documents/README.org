@@ -347,7 +347,7 @@ Then in a shell execute the following:
 2. Execute ~(require :asdf)~ if ASDF is not already loaded.
 3. Execute ~(asdf:load-asd "/full/path/to/nyxt.asd")~ to load the Nyxt
    system definition (you must use absolute pathnames).
-4. Execute ~(ql:quickload :nyxt/gtk)~ to load the Nyxt system into your
+4. Execute ~(ql:quickload :nyxt/gi-gtk)~ to load the Nyxt system into your
    Lisp image.
 5. Execute ~(nyxt:start)~ to open your first Nyxt window.
 
