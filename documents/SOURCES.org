@@ -12,6 +12,7 @@ which external dependencies we are directly relying on.
 - bordeaux-threads
 - calispel
 - cl-css
+- cl-containers
 - cl-custom-hash-table
 - cl-html-diff
 - cl-json
@@ -22,7 +23,6 @@ which external dependencies we are directly relying on.
 - closer-mop
 - dexador
 - enchant
-- file-attribues
 - fset
 - hu.dwim.defclass-star
 - iolib
@@ -44,6 +44,9 @@ which external dependencies we are directly relying on.
 - trivial-package-local-nicknames
 - trivial-types
 - unix-opts
+
+* Lisp Dependencies (vendored)
+- cluffer
 
 Renderer-specific dependencies:
 - cl-cffi-gtk
