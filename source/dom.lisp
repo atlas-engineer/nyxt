@@ -57,7 +57,7 @@
   data-element datalist-element (dd-element list-element) (del-element text-element) details-element
   dfn-element div-element (dl-element list-element) (dt-element list-element) em-element
   embed-element fieldset-element (figcaption-element semantic-element) figure-element
-  (footer-element semantic-element) form-element (h1-elementh-element) (h2-element h-element)
+  (footer-element semantic-element) form-element (h1-element) (h2-element h-element)
   (h3-element h-element) (h4-element h-element) (h5-element h-element) (h6-element h-element)
   head-element (header-element semantic-element) hr-element html-element (i-element text-element)
   iframe-element img-element input-element ins-element kbd-element label-element legend-element
