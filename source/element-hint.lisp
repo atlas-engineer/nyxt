@@ -218,14 +218,12 @@
 (defmethod %follow-hint ((button nyxt/dom:button-element))
   (click-element :nyxt-identifier (get-nyxt-id button)))
 
-(defmethod %follow-hint ((checkbox nyxt/dom:checkbox-element))
-  (check-element :nyxt-identifier (get-nyxt-id checkbox)))
-
-(defmethod %follow-hint ((radio nyxt/dom:radio-element))
-  (check-element :nyxt-identifier (get-nyxt-id radio)))
-
 (defmethod %follow-hint ((input nyxt/dom:input-element))
-  (focus-element :nyxt-identifier (get-nyxt-id input)))
+  (str:string-case (plump:get-attribute "type" input)
+    ("button" (click-element :nyxt-identifier (get-nyxt-id input)))
+    ("radio" (check-element :nyxt-identifier (get-nyxt-id input)))
+    ("checkbox" (check-element :nyxt-identifier (get-nyxt-id input)))
+    (otherwise (focus-element :nyxt-identifier (get-nyxt-id input)))))
 
 (defmethod %follow-hint ((textarea nyxt/dom:textarea-element))
   (focus-element :nyxt-identifier (get-nyxt-id textarea)))
