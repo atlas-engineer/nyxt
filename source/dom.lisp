@@ -48,6 +48,7 @@
   ;;              (clss:select ".item-name" (plump:parse (dex:get "https://htmlreference.io/")))))
   ;; Pseudo-tags:
   text-element (h-element text-element) list-element structure-element semantic-element
+  (checkbox-element input-element) (radio-element input-element) (file-chooser-element input-element)
   ;; HTML5 elements:
   (a-element text-element) abbr-element address-element area-element
   (article-element semantic-element) (aside-element semantic-element)
