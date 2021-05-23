@@ -85,46 +85,9 @@
   dialog-element hgroup-element picture-element slot-element template-element
   (wbr-element text-element))
 
-(defun infer-role-class (node role)
-  "Infer NODE class based on WAI-ARIA role.
-Based on https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles"
-  (str:string-case role
-    ("article" 'article-element)
-    ("button" 'button-element)
-    ("cell" 'td-element)
-    ("checkbox" 'checkbox-element)
-    ("form" 'form-element)
-    ("header" (case (plump:get-attribute node "aria-level")
-                (1 'h1-element)
-                (2 'h2-element)
-                (3 'h3-element)
-                (4 'h4-element)
-                (5 'h5-element)
-                (6 'h6-element)))
-    ("list" 'ul-element)
-    ("listitem" 'li-element)
-    ("mark" 'mark-element)
-    ("navigation" 'nav-element)
-    ("row" 'tr-element)
-    ("switch" 'checkbox-element)
-    ("table" 'table-element)
-    ("textbox" 'textarea-element)
-    (t (gethash (plump:tag-name node) *nyxt-dom-classes*))))
-
-(defun infer-class (node)
-  (cond
-    ((plump:has-attribute node "role")
-     (infer-role-class node (plump:get-attribute node "role")))
-    ((clss:node-matches-p "a[type=button]" node) 'button-element)
-    ((clss:node-matches-p "input[type=button]" node) 'button-element)
-    ((clss:node-matches-p "input[type=checkbox]" node) 'checkbox-element)
-    ((clss:node-matches-p "input[type=radio]" node) 'radio-element)
-    ((clss:node-matches-p "input[type=file]" node) 'file-chooser-element)
-    (t (gethash (plump:tag-name node) *nyxt-dom-classes*))))
-
 (defmethod name-dom-elements ((node plump:node))
   (alex:when-let* ((tag-p (plump:element-p node))
-                   (class (infer-class node)))
+                   (class (gethash (plump:tag-name node) *nyxt-dom-classes*)))
     (change-class node class))
   (when (plump:nesting-node-p node)
     (loop for child across (plump:children node)
