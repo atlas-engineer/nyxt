@@ -99,7 +99,8 @@ See `supported-media-types' of `file-mode'."
 namestring, however for xdg-open to properly function it must have file:///"
   ;; check for zerop to assure we don't have an edge case in the file name
   (if (zerop (search "file:/" name-file))
-      (format nil "file:///~a" (subseq name-file (length "file:/")))))
+      (format nil "file:///~a" (subseq name-file (length "file:/")))
+      name-file))
 
 (export-always 'default-open-file-function)
 (defun default-open-file-function (filename &key supported-p new-buffer-p)
