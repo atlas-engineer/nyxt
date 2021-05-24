@@ -94,6 +94,13 @@ See `supported-media-types' of `file-mode'."
 #+linux
 (defvar *xdg-open-program* "xdg-open")
 
+(defun inject-proper-xdg-name (name-file)
+  "injects the proper xdg name for files. Common lisp gives back file:/ from a
+namestring, however for xdg-open to properly function it must have file:///"
+  ;; check for zerop to assure we don't have an edge case in the file name
+  (if (zerop (search "file:/" name-file))
+      (format nil "file:///~a" (subseq name-file (length "file:/")))))
+
 (export-always 'default-open-file-function)
 (defun default-open-file-function (filename &key supported-p new-buffer-p)
   "Open FILENAME in Nyxt if supported, or externally otherwise.
@@ -113,7 +120,7 @@ Can be used as a `open-file-function'."
               (buffer-load (quri::make-uri-file :path filename)))
           (uiop:launch-program
            #+linux
-           (list *xdg-open-program* (namestring filename))
+           (list *xdg-open-program* (inject-proper-xdg-name (namestring filename)))
            #+darwin
            (list "open" (namestring filename))))
     ;; We can probably signal something and display a notification.
