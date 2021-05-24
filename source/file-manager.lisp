@@ -106,7 +106,9 @@ NEW-BUFFER-P defines whether the file/directory is opened in a new buffer.
 SUPPORTED-P says whether the file can be opened by Nyxt.
 
 Can be used as a `open-file-function'."
-  (let ((file-url (quri::make-uri-file :path filename)))
+  (let ((file-url (if (valid-url-p filename)
+                      (quri:uri filename)
+                      (quri::make-uri-file :path filename))))
     (handler-case
         (if supported-p
             (if new-buffer-p
