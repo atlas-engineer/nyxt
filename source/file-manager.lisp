@@ -94,14 +94,6 @@ See `supported-media-types' of `file-mode'."
 #+linux
 (defvar *xdg-open-program* "xdg-open")
 
-(defun inject-proper-xdg-name (name-file)
-  "injects the proper xdg name for files. Common lisp gives back file:/ from a
-namestring, however for xdg-open to properly function it must have file:///"
-  ;; check for zerop to assure we don't have an edge case in the file name
-  (if (zerop (search "file:/" name-file))
-      (format nil "file:///~a" (subseq name-file (length "file:/")))
-      name-file))
-
 (export-always 'default-open-file-function)
 (defun default-open-file-function (filename &key supported-p new-buffer-p)
   "Open FILENAME in Nyxt if supported, or externally otherwise.
@@ -114,18 +106,19 @@ NEW-BUFFER-P defines whether the file/directory is opened in a new buffer.
 SUPPORTED-P says whether the file can be opened by Nyxt.
 
 Can be used as a `open-file-function'."
-  (handler-case
-      (if supported-p
-          (if new-buffer-p
-              (make-buffer-focus :url (quri::make-uri-file :path filename))
-              (buffer-load (quri::make-uri-file :path filename)))
-          (uiop:launch-program
-           #+linux
-           (list *xdg-open-program* (inject-proper-xdg-name (namestring filename)))
-           #+darwin
-           (list "open" (namestring filename))))
-    ;; We can probably signal something and display a notification.
-    (error (c) (log:error "Opening ~a: ~a~&" filename c))))
+  (let ((file-url (quri::make-uri-file :path filename)))
+    (handler-case
+        (if supported-p
+            (if new-buffer-p
+                (make-buffer-focus :url file-url)
+                (buffer-load file-url))
+            (uiop:launch-program
+             #+linux
+             (list *xdg-open-program* (quri:render-uri file-url))
+             #+darwin
+             (list "open" (namestring filename))))
+      ;; We can probably signal something and display a notification.
+      (error (c) (log:error "Opening ~a: ~a~&" filename c)))))
 
 (define-command open-file (&key (default-directory *default-pathname-defaults*))
   "Open a file from the filesystem.
