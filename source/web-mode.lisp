@@ -536,7 +536,11 @@ Otherwise go forward to the only child."
       ;; any load, e.g. when clicking on an anchor.
       (with-current-buffer (buffer mode)
         (nyxt::history-add url :title (title (buffer mode))
-                               :buffer (buffer mode)))))
+                               :buffer (buffer mode))
+        (with-data-access (history (history-path (buffer mode)))
+          (setf (nyxt::scroll-position
+                 (htree:data (htree:current (htree:owner history (id (buffer mode))))))
+                (nyxt:document-scroll-position))))))
 
   url)
 
@@ -555,5 +559,10 @@ Otherwise go forward to the only child."
     (nyxt::history-add url :title (title (buffer mode))
                            :buffer (buffer mode)))
   (reset-page-zoom :buffer (buffer mode)
-               :ratio (current-zoom-ratio (buffer mode)))
+                   :ratio (current-zoom-ratio (buffer mode)))
+  (with-data-unsafe (history (history-path (buffer mode)))
+    (alex:when-let ((scroll-position
+                     (nyxt::scroll-position
+                      (htree:data (htree:current (htree:owner history (id (buffer mode))))))))
+      (setf (nyxt:document-scroll-position) scroll-position)))
   url)

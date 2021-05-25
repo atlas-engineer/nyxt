@@ -30,6 +30,8 @@ Example:
 (define-list-type 'symbol)
 (export-always 'list-of-characters)
 (define-list-type 'character)
+(export-always 'list-of-numbers)
+(define-list-type 'number)
 (export-always 'list-of-strings)
 (define-list-type 'string)
 (export-always 'list-of-keymaps)
