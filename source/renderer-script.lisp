@@ -25,6 +25,31 @@ The function can be passed ARGS."
                   collect (transform-definition name lambda-list body))
        ,@body)))
 
+(define-parenscript %document-scroll-position (&optional (y 0 y-provided-p) (x 0 x-provided-p))
+  (let ((x (ps:lisp x))
+        (y (ps:lisp y)))
+    (if (or (ps:lisp x-provided-p) (ps:lisp y-provided-p))
+        (ps:chain window (scroll-to x y))
+        (list (ps:chain window page-y-offset)
+              (ps:chain window page-x-offset)))))
+
+(export-always 'document-scroll-position)
+(defmethod document-scroll-position (&optional (buffer (current-buffer)))
+  "Get current scroll position of set it.
+If passed no arguments, returns a list of two elements: vertical (Y) and
+horisontal (X) offset.
+If `setf'-d to a single value (or a single list) -- sets Y to it.
+If `setf'-d to a list of two values -- sets Y to `first' and X to `second' element."
+  (with-current-buffer buffer
+    (mapcar #'parse-integer
+            (str:split "," (%document-scroll-position)))))
+
+(defmethod (setf document-scroll-position) (value &optional (buffer (current-buffer)))
+  (with-current-buffer buffer
+      (destructuring-bind (y &optional x)
+          (uiop:ensure-list value)
+        (%document-scroll-position y x))))
+
 (export-always 'document-get-paragraph-contents)
 (define-parenscript document-get-paragraph-contents (&key (limit 100000))
   (let ((result ""))
