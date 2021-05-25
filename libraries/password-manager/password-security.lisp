@@ -29,4 +29,8 @@
                         "-a" password-name "-s" service "-g")
                   :error-output '(:string :stripped t)))))))
 
+(defmethod clip-username ((password-interface security-interface) &key password-name service)
+  (declare (ignore password-name service))
+  (error "Username clipping is not supported by security interface."))
+
 (defmethod password-correct-p ((password-interface security-interface)) t)

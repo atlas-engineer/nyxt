@@ -39,13 +39,26 @@
   (execute password-interface (list "show" "--clip" password-name)
     :output '(:string :stripped t)))
 
+(defmethod clip-username ((password-interface password-store-interface) &key password-name service)
+  (declare (ignore service))
+  (let ((username-line (1+ (position "[Ll]ogin|[Uu]ser(name)?:"
+                                     (ppcre:split "\\n"
+                                                  (execute password-interface
+                                                      (list "show" password-name)
+                                                    :output '(:string :stripped t)))
+                                     :test #'ppcre:all-matches))))
+    (execute password-interface (list "show" (format nil "--clip=~d" username-line) password-name)
+      :output '(:string :stripped t))))
+
 (defmethod save-password ((password-interface password-store-interface)
-                          &key password-name password service)
+                          &key password-name username password service)
   (declare (ignore service))
   (if (str:emptyp password)
       (execute password-interface (list "generate" password-name))
-      (with-open-stream (st (make-string-input-stream password))
-        (execute password-interface (list "insert" "--echo" password-name)
+      (with-open-stream (st (make-string-input-stream (format nil "~a~&username:~a"
+                                                              password
+                                                              username)))
+        (execute password-interface (list "insert" "--multiline" password-name)
           :input st))))
 
 (defmethod password-correct-p ((password-interface password-store-interface))

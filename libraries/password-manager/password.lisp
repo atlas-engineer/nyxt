@@ -24,8 +24,14 @@
   (:documentation "Retrieve specific password by name."))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
+  (export 'clip-username))
+(defgeneric clip-username (password-interface &key password-name service)
+  (:documentation "Retrieve specific login by name of the password entry."))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (export 'save-password))
-(defgeneric save-password (password-interface &key password-name password service)
+(defgeneric save-password (password-interface
+                           &key password-name username password service)
   (:documentation "Save password to database.
 If PASSWORD-NAME is empty, then generate a new password."))
 

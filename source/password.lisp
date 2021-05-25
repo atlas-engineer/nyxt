@@ -55,8 +55,12 @@ for which the `executable' slot is non-nil."
             (new-password (first (prompt
                                   :invisible-input-p t
                                   :prompt "New password (leave empty to generate)"
-                                  :sources (make-instance 'prompter:raw-source)))))
+                                  :sources (make-instance 'prompter:raw-source))))
+            (username (first (prompt
+                              :prompt "Username (can be empty)"
+                              :sources (make-instance 'prompter:raw-source)))))
        (password:save-password (password-interface buffer)
+                               :username username
                                :password-name password-name
                                :password new-password)))
     ((null (password-interface buffer))
@@ -122,5 +126,18 @@ for which the `executable' slot is non-nil."
                                                                    :buffer buffer
                                                                    :password-instance (password-interface buffer)))))))
           (password:clip-password (password-interface buffer) :password-name password-name)
+          (echo "Password saved to clipboard for ~a seconds." (password:sleep-timer (password-interface buffer)))))
+      (echo-warning "No password manager found.")))
+
+(define-command copy-username (&optional (buffer (current-buffer)))
+  "Query username and copy to clipboard."
+  (password-debug-info)
+  (if (password-interface buffer)
+      (with-password (password-interface buffer)
+        (let ((password-name (first (prompt
+                                     :sources (list (make-instance 'password-source
+                                                                   :buffer buffer
+                                                                   :password-instance (password-interface buffer)))))))
+          (password:clip-username (password-interface buffer) :password-name password-name)
           (echo "Password saved to clipboard for ~a seconds." (password:sleep-timer (password-interface buffer)))))
       (echo-warning "No password manager found.")))
