@@ -450,7 +450,7 @@ After you have found a TASK item that is available:
 
 ** IRC Channel
 
-#+html: You can find Nyxt on Freenode IRC: <a href="https://webchat.freenode.net/#nyxt">#nyxt</a>
+#+html: You can find Nyxt on Libera IRC: <a href="https://kiwiirc.com/nextclient/irc.libera.chat/nyxt">#nyxt</a>
 
 # requires the org-make-toc emacs extension
 # Local Variables:
