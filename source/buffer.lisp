@@ -405,40 +405,38 @@ Delete it with `ffi-buffer-delete'."
                 :padding 0
                 :margin 0
                 :line-height "20px")
-               (".arrow"
-                :width "10px"
-                :height "20px")
                (".arrow-right"
-                :clip-path "polygon(0 100%, 100% 50%, 0 0)")
+                :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)")
                (".arrow-left"
-                :clip-path "polygon(0 50%, 100% 100%, 100% 0)")
+                :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0% 50%)")
                ("#container"
                 :display "grid"
-                ;; Columns: controls, arrow, url, arrow, tabs, arrow, modes
-                :grid-template-columns "115px 10px 1fr 10px 2fr 10px 250px"
+                ;; Columns: controls, url, tabs, modes
+                :grid-template-columns "120px 2fr 3fr 240px"
                 :overflow-y "hidden")
                ("#controls"
                 :background-color "rgb(80,80,80)"
                 :padding-left "5px"
-                :overflow "hidden"
-                :white-space "nowrap")
+                :z-index "3")
                ("#url"
                 :background-color "rgb(120,120,120)"
                 :min-width "100px"
                 :text-overflow "ellipsis"
                 :overflow-x "hidden"
                 :white-space "nowrap"
-                :padding-left "15px"
                 :padding-right "10px"
-                :margin-left "-10px")
-               ("#tabs"
-                :min-width "100px"
-                :background-color "rgb(160,160,160)"
                 :padding-left "15px"
                 :margin-left "-10px"
-                :margin-right "-10px"
+                :z-index "2")
+               ("#tabs"
+                :background-color "rgb(160,160,160)"
+                :min-width "100px"
                 :overflow-x "scroll"
-                :text-align "left")
+                :text-align "left"
+                :padding-left "15px"
+                :padding-right "10px"
+                :margin-left "-10px"
+                :z-index "1")
                ("#tabs::-webkit-scrollbar"
                 :display "none")
                (.tab
@@ -453,9 +451,12 @@ Delete it with `ffi-buffer-delete'."
                 :background-color "rgb(120,120,120)"
                 :color "rgb(230, 230, 230)"
                 :text-align "right"
+                :padding-left "10px"
                 :padding-right "5px"
                 :overflow-x "scroll"
-                :white-space "nowrap")
+                :white-space "nowrap"
+                :margin-left "-10px"
+                :z-index "2")
                ("#modes::-webkit-scrollbar"
                 :display "none")
                (.button
