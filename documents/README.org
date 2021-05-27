@@ -397,7 +397,7 @@ Follow the following steps:
    =start-slynk= command
   #+NAME: my-slynk.lisp
   #+begin_src lisp
-    (define-command start-slynk (&optional (slynk-port *swank-port*))
+    (define-command-global start-slynk (&optional (slynk-port *swank-port*))
         "Start a Slynk server that can be connected to, for instance, in
     Emacs via SLY.
 
