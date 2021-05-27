@@ -27,9 +27,9 @@
 (export-always 'format-status-load-status)
 (defun format-status-load-status (buffer)
   (markup:markup
-   (:span (if (and (web-buffer-p buffer)
-                   (eq (slot-value buffer 'load-status) :loading))
-              "Loading: " ""))))
+   (:div :class (when (and (web-buffer-p buffer)
+                           (eq (slot-value buffer 'load-status) :loading))
+                  "loader") "")))
 
 (export-always 'format-status-url)
 (defun format-status-url (buffer)

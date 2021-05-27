@@ -405,6 +405,17 @@ Delete it with `ffi-buffer-delete'."
                 :padding 0
                 :margin 0
                 :line-height "20px")
+               (.loader
+                :border "2px solid rgba(0,0,0,0)"
+                :border-top-color "#37a8e4"
+                :border-radius "50%"
+                :display "inline-block"
+                :width "7px"
+                :height "7px"
+                :animation "spin 1s linear infinite")
+               ("@keyframes spin"
+                ("0%" :transform "rotate(0deg)")
+                ("100%" :transform "rotate(360deg)"))
                (".arrow-right"
                 :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)")
                (".arrow-left"
