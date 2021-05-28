@@ -408,6 +408,7 @@ Delete it with `ffi-buffer-delete'."
                (.loader
                 :border "2px solid rgba(0,0,0,0)"
                 :border-top-color "#37a8e4"
+                :border-left-color "#37a8e4"
                 :border-radius "50%"
                 :display "inline-block"
                 :width "7px"
