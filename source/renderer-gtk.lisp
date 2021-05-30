@@ -820,6 +820,29 @@ See `gtk-browser's `modifier-translator' slot."
    (gtk-object buffer) "scroll-event"
    (lambda (web-view event) (declare (ignore web-view))
      (on-signal-scroll-event buffer event)))
+  (gobject:g-signal-connect
+   (gtk-object buffer) "script-dialog"
+   (lambda (web-view dialog) (declare (ignore web-view))
+     (let ((dialog (gobject:pointer dialog)))
+       (webkit:webkit-script-dialog-ref dialog)
+       (run-thread
+         (case (webkit:webkit-script-dialog-get-dialog-type dialog)
+           (:webkit-script-dialog-alert (echo (webkit:webkit-script-dialog-get-message dialog)))
+           (:webkit-script-dialog-prompt
+            (webkit:webkit-script-dialog-prompt-set-text
+             dialog
+             (first
+              (prompt
+               :input (webkit:webkit-script-dialog-prompt-get-default-text dialog)
+               :prompt (webkit:webkit-script-dialog-get-message dialog)
+               :sources (list (make-instance 'prompter:raw-source))))))
+           ((:webkit-script-dialog-confirm :webkit-script-dialog-before-unload-confirm)
+            (webkit:webkit-script-dialog-confirm-set-confirmed
+             dialog (if-confirm
+                     ((webkit:webkit-script-dialog-get-message dialog))
+                     t nil))))
+         (webkit:webkit-script-dialog-close dialog)))
+     t))
   ;; TLS certificate handling
   (gobject:g-signal-connect
    (gtk-object buffer) "load-failed-with-tls-errors"
