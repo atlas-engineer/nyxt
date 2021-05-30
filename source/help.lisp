@@ -476,35 +476,21 @@ The version number is stored in the clipboard."
                              :no-history-p no-history-p)
     (markup:markup
      (:style (style buffer))
-     (:style (cl-css:css '((:h2
-                            :font-weight 300
-                            :padding-top "10px"))))
+     (:style (cl-css:css '(("#documentation .button"
+                            :min-width "100px"))))
      (:h1 "Welcome to Nyxt ☺")
-     (:p "Attention: Nyxt is under active development. Feel free to "
-         (:a :href "https://github.com/atlas-engineer/nyxt/issues"
-             "report")
-         " bugs, instabilities or feature wishes.")
-     (:p "You can help with Nyxt development by supporting us in various ways:"
-         (:ul
-          (:li "Support continuous development on "
-               (:a :href "https://www.patreon.com/nyxt"
-                   "Patreon")
-               ".")
-          (:li "Spread the word on social media and "
-               (:a :href "https://github.com/atlas-engineer/nyxt"
-                   "star the project on GitHub")
-               ".")))
-     (:hr )
+     (:br )
      (:h2 "Quick configuration")
      (:p (:a :class "button" :href (lisp-url `(nyxt::common-settings)) "Common settings")
          " Switch between Emacs/vi/CUA key bindings, set home page URL, and zoom level.")
      (:h2 "Documentation")
-     (:p (:a :class "button" :href (lisp-url `(nyxt::describe-bindings)) "List bindings")
-         " List all bindings for the current buffer.")
-     (:p (:a :class "button" :href (lisp-url `(nyxt::tutorial)) "Tutorial")
-         " An introduction to Nyxt core concepts.")
-     (:p (:a :class "button" :href (lisp-url `(nyxt::manual)) "Manual")
-         " Full documentation about Nyxt, how it works and how to configure it."))))
+     (:table :id "documentation"
+      (:tr (:td (:a :class "button" :href (lisp-url `(nyxt::describe-bindings)) "List bindings"))
+           (:td "List all bindings for the current buffer."))
+      (:tr (:td (:a :class "button" :href (lisp-url `(nyxt::tutorial)) "Tutorial"))
+           (:td "An introduction to Nyxt core concepts."))
+      (:tr (:td (:a :class "button" :href (lisp-url `(nyxt::manual)) "Manual"))
+           (:td "Full documentation about Nyxt, how it works and how to configure it."))))))
 
 (define-command manual ()
   "Show the manual."
