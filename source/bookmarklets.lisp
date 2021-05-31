@@ -12,7 +12,7 @@
 (defmacro nyxt::define-bookmarklet-command (name documentation source)
   "Define a bookmarklet command, the source can either be a JavaScript string to
 evaluate, or a file:// URL with a file path to a JavaScript source file."
-  `(define-command ,name (&optional (buffer (current-buffer)))
+  `(define-command-global ,name (&optional (buffer (current-buffer)))
      ,documentation
      (let* ((source ,source)
             (source (if (nyxt::file-url-p source)
