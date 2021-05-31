@@ -418,9 +418,11 @@ Delete it with `ffi-buffer-delete'."
                 ("0%" :transform "rotate(0deg)")
                 ("100%" :transform "rotate(360deg)"))
                (".arrow-right"
-                :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)")
+                :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)"
+                :margin-right "-10px")
                (".arrow-left"
-                :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0% 50%)")
+                :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0% 50%)"
+                :margin-left "-10px")
                ("#container"
                 :display "grid"
                 ;; Columns: controls, url, tabs, modes
@@ -438,7 +440,6 @@ Delete it with `ffi-buffer-delete'."
                 :white-space "nowrap"
                 :padding-right "10px"
                 :padding-left "15px"
-                :margin-left "-10px"
                 :z-index "2")
                ("#tabs"
                 :background-color "rgb(160,160,160)"
@@ -447,7 +448,6 @@ Delete it with `ffi-buffer-delete'."
                 :text-align "left"
                 :padding-left "15px"
                 :padding-right "10px"
-                :margin-left "-10px"
                 :z-index "1")
                ("#tabs::-webkit-scrollbar"
                 :display "none")
@@ -467,7 +467,6 @@ Delete it with `ffi-buffer-delete'."
                 :padding-right "5px"
                 :overflow-x "scroll"
                 :white-space "nowrap"
-                :margin-left "-10px"
                 :z-index "2")
                ("#modes::-webkit-scrollbar"
                 :display "none")
