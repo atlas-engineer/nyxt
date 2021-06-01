@@ -33,14 +33,16 @@
     (apply '+ (mapcar (lambda (time multiplier) (* time multiplier))
                       times to-seconds-multipliers))))
 
-(define-mode watch-mode (nyxt/process-mode:process-mode)
+(define-mode watch-mode (nyxt/repeat-mode:repeat-mode)
   "Reload the current buffer at regular time intervals."
-  ((action #'(lambda (path-url mode)
-               (unless (sleep-time mode)
-                 (setf (sleep-time mode) (seconds-from-user-input)))
-               (loop
-                 (if (quri:uri= path-url (url (buffer mode)))
-                     (nyxt::reload-buffer (buffer mode))
-                     (buffer-load path-url :buffer (buffer mode)))
-                 (sleep (sleep-time mode)))))
-   (sleep-time :documentation "The amount of time to sleep between reloads.")))
+  ;; Reload every 5 minutes by default.
+  ((firing-condition (nyxt/repeat-mode:repeat-seconds 300))
+   (nyxt/repeat-mode:repetitive-action
+    #'(lambda (mode)
+        (buffer-load (path-url mode) :buffer (buffer mode))))))
+
+(define-command-global watch-buffer (&optional (buffer (current-buffer)))
+  "Reload BUFFER at a prompted interval, instead of default 5 minutes."
+  (let ((interval (seconds-from-user-input)))
+    (enable-modes 'watch-mode buffer
+                  (list :firing-condition (nyxt/repeat-mode:repeat-seconds (or interval 300))))))
