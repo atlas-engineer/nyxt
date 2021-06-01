@@ -185,8 +185,10 @@ Mode is covered if:
           (and enable-p (invocation-member (last-active-modes auto-mode)))
           (and (not enable-p)
                (invocation-member
-                (when (previous-url auto-mode)
-                  (included (matching-auto-mode-rule (previous-url auto-mode) (buffer auto-mode))))))))))
+                (alex:when-let* ((previous-url (previous-url auto-mode))
+                                 (matching-rule (matching-auto-mode-rule previous-url
+                                                                         (buffer auto-mode))))
+                  (included matching-rule))))))))
 
 (declaim (ftype (function (string) list) url-infer-match))
 (defun url-infer-match (url)
