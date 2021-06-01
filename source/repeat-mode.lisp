@@ -23,11 +23,12 @@
 
 (define-mode repeat-mode (nyxt/process-mode:process-mode)
   "Mode to repeat a simple action/function repetitively until stopped."
-  ((firing-condition (repeat-seconds 5))
-   (action #'(lambda (path-url mode)
-               (declare (ignore path-url))
-               (when (repetitive-action mode)
-                 (funcall (repetitive-action mode) mode))))
+  ((nyxt/process-mode:firing-condition (repeat-seconds 5))
+   (nyxt/process-mode:action
+    #'(lambda (path-url mode)
+        (declare (ignore path-url))
+        (when (repetitive-action mode)
+          (funcall (repetitive-action mode) mode))))
    (repetitive-action nil
                       :type (or null (function (repeat-mode)))
                       :documentation "The action to repeat.
