@@ -20,7 +20,7 @@
 (defun clean-up-process-mode (mode)
   (and (cleanup mode)
        (funcall (cleanup mode) (path-url mode) mode))
-  (bt:join-thread (thread mode)))
+  (bt:destroy-thread (thread mode)))
 
 (define-mode process-mode ()
   "Conditional execution a file/directory-related actions in a separate thread.
