@@ -8,7 +8,7 @@
 (in-package :nyxt/process-mode)
 
 (defun initialize-process-mode (mode)
-  (setf (path-url mode) (url (current-buffer))
+  (setf (path-url mode) (or (path-url mode) (url (current-buffer)))
         (thread mode) (bt:make-thread
                        #'(lambda ()
                            (loop with cond = (firing-condition mode)
