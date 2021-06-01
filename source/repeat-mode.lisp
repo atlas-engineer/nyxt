@@ -8,17 +8,21 @@
 
 (serapeum:export-always 'repeat-seconds)
 (defun repeat-seconds (seconds)
-  (lambda (&rest args)
-    (declare (ignore args))
-    (sleep seconds)
-    t))
+  #'(lambda (&rest args)
+      (declare (ignore args))
+      (sleep seconds)
+      t))
 
 (defun initialize-repeat-mode (mode)
   (unless (repetitive-action mode)
-    (setf (repetitive-action mode)
-          (first
-           (prompt :prompt "Command to repeat"
-                   :sources (list (make-instance 'nyxt:command-source))))))
+    (let ((prompted-action
+            (first
+             (prompt :prompt "Command to repeat"
+                     :sources (list (make-instance 'nyxt:command-source))))))
+      (setf (repetitive-action mode)
+            #'(lambda (mode)
+                (declare (ignore mode))
+                (nyxt::run prompted-action)))))
   (nyxt/process-mode::initialize-process-mode mode))
 
 (define-mode repeat-mode (nyxt/process-mode:process-mode)
