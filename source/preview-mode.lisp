@@ -7,8 +7,7 @@
   (:documentation "Refresh file when changed on disk."))
 (in-package :nyxt/preview-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
-  (trivial-package-local-nicknames:add-package-local-nickname :file-attributes :org.shirakumo.file-attributes))
+  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria))
 
 (defun updated-file-p (path-url mode)
   (and
@@ -16,7 +15,8 @@
    (or (null (last-access mode))
        (local-time:timestamp>
         (local-time:universal-to-timestamp
-         (file-attributes:modification-time (quri:uri-path path-url)))
+         (sb-posix:stat-mtime
+          (sb-posix:stat (quri:uri-path path-url))))
         (last-access mode)))))
 
 (define-mode preview-mode (nyxt/process-mode:process-mode)
