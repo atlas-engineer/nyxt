@@ -9,7 +9,7 @@
 
 (defun initialize-process-mode (mode)
   (setf (path-url mode) (or (path-url mode) (url (current-buffer)))
-        (thread mode) (run-tread
+        (thread mode) (run-thread
                        (loop with cond = (firing-condition mode)
                              with cond-func = (typecase cond
                                                 (function cond)
