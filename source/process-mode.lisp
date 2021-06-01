@@ -9,19 +9,18 @@
 
 (defun initialize-process-mode (mode)
   (setf (path-url mode) (or (path-url mode) (url (current-buffer)))
-        (thread mode) (bt:make-thread
-                       #'(lambda ()
-                           (loop with cond = (firing-condition mode)
-                                 with cond-func = (typecase cond
-                                                    (function cond)
-                                                    (boolean (constantly cond)))
-                                 when (funcall cond-func (path-url mode) mode)
-                                   do (funcall (action mode) (path-url mode) mode))))))
+        (thread mode) (run-tread
+                       (loop with cond = (firing-condition mode)
+                             with cond-func = (typecase cond
+                                                (function cond)
+                                                (boolean (constantly cond)))
+                             when (funcall cond-func (path-url mode) mode)
+                               do (funcall (action mode) (path-url mode) mode)))))
 
 (defun clean-up-process-mode (mode)
   (and (cleanup mode)
        (funcall (cleanup mode) (path-url mode) mode))
-  (bt:destroy-thread (thread mode)))
+  (bt:join-thread (thread mode)))
 
 (define-mode process-mode ()
   "Conditional execution a file/directory-related actions in a separate thread.
