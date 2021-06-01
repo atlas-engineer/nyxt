@@ -39,7 +39,7 @@
   ((firing-condition (nyxt/repeat-mode:repeat-seconds 300))
    (nyxt/repeat-mode:repetitive-action
     #'(lambda (mode)
-        (buffer-load (path-url mode) :buffer (buffer mode))))))
+        (buffer-load (nyxt/process-mode:path-url mode) :buffer (buffer mode))))))
 
 (define-command-global watch-buffer (&optional (buffer (current-buffer)))
   "Reload BUFFER at a prompted interval, instead of default 5 minutes."

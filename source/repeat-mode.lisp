@@ -37,7 +37,7 @@ Function taking a repeat-mode instance.")))
   "Repeat a command every SECONDS (prompts if SECONDS are not set)."
   (let ((seconds (or seconds
                      (ignore-errors
-                      (parse-int
+                      (parse-integer
                        (first (prompt :prompt "Repeat every X seconds"
                                       :input "5"
                                       :sources (list (make-instance 'prompter:raw-source)))))))))
