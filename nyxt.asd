@@ -134,6 +134,7 @@
                (:file "os-package-manager-mode")
                (:file "visual-mode")
                (:file "process-mode")
+               (:file "repeat-mode")
                (:file "watch-mode")
                (:file "preview-mode")
                (:file "diff-mode")
