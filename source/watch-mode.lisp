@@ -36,7 +36,7 @@
 (define-mode watch-mode (nyxt/repeat-mode:repeat-mode)
   "Reload the current buffer at regular time intervals."
   ;; Reload every 5 minutes by default.
-  ((nyxt/process-mode:firing-condition (nyxt/repeat-mode:repeat-seconds 300))
+  ((nyxt/repeat-mode:repeat-interval 300)
    (nyxt/repeat-mode:repetitive-action
     #'(lambda (mode)
         (buffer-load (nyxt/process-mode:path-url mode) :buffer (buffer mode))))))
@@ -44,5 +44,4 @@
 (define-command-global watch-buffer (&optional (buffer (current-buffer)))
   "Reload BUFFER at a prompted interval, instead of default 5 minutes."
   (let ((interval (seconds-from-user-input)))
-    (enable-modes 'watch-mode buffer
-                  (list :firing-condition (nyxt/repeat-mode:repeat-seconds (or interval 300))))))
+    (enable-modes 'watch-mode buffer (list :repeat-interval interval))))
