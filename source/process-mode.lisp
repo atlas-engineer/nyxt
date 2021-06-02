@@ -35,14 +35,14 @@ Possible applications:
              :documentation "The path to where `process-mode' needs to track things at.
 Is not necessarily the same as current buffer URL.")
    (firing-condition t
-                     :type (or boolean function)
+                     :type (or boolean (function (quri:uri process-mode)))
                      :documentation "The condition for the action firing.
 Can be boolean (T to always fire, NIL to never fire), or function over URL and mode instance.")
    (action nil
-           :type (or (function (quri:uri root-mode)) null)
+           :type (or (function (quri:uri process-mode)) null)
            :documentation "The action (function) to do with file URL and `process-mode' instance.")
    (cleanup nil
-            :type (or (function (quri:uri root-mode)) null)
+            :type (or (function (quri:uri process-mode)) null)
             :documentation "Function to run when process ends.
 Accepts the path to the acted-on document and `process-mode' instance.")
    (thread nil
