@@ -20,6 +20,7 @@ stdenv.mkDerivation {
     pkgs.enchant.out
     pkgs.gsettings-desktop-schemas.out
     pkgs.glib-networking.out
+    pkgs.gobject-introspection.out
     pkgs.pango.out
     pkgs.cairo.out
     pkgs.gdk-pixbuf.out
@@ -52,6 +53,7 @@ stdenv.mkDerivation {
   LD_LIBRARY_PATH = with stdenv.lib; "${makeLibraryPath [ pkgs.gsettings-desktop-schemas.out
                                                           pkgs.enchant.out
                                                           pkgs.glib-networking.out
+                                                          pkgs.gobject-introspection.out
                                                           pkgs.webkitgtk
                                                           pkgs.gtk3
                                                           pkgs.pango.out
