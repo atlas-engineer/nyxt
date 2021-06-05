@@ -855,8 +855,7 @@ proceeding."
       (prompt
        :prompt "Switch to buffer"
        :sources (list (make-instance 'user-buffer-source
-                                     ;; For commodity, the current buffer shouldn't be the first one on the list.
-                                     :constructor (buffer-initial-suggestions :current-is-last-p t))))))
+                                     :constructor (buffer-initial-suggestions :current-is-last-p nil))))))
 
 (define-command switch-buffer-domain (&key domain (buffer (current-buffer)))
   "Switch the active buffer in the current window from the current domain."
