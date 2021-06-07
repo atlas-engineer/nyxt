@@ -843,6 +843,42 @@ See `gtk-browser's `modifier-translator' slot."
                      t nil))))
          (webkit:webkit-script-dialog-close dialog)))
      t))
+  (gobject:g-signal-connect
+   (gtk-object buffer) "run-file-chooser"
+   (lambda (web-view file-chooser-request)
+     (declare (ignore web-view))
+     (gobject:g-object-ref (gobject:pointer file-chooser-request))
+     (run-thread
+       (let ((files (mapcar
+                     #'namestring
+                     (prompt :prompt (format
+                                      nil "File~@[s~*~] to input"
+                                      (webkit:webkit-file-chooser-request-select-multiple
+                                       file-chooser-request))
+                             :input (or
+                                     (and
+                                      (webkit:webkit-file-chooser-request-selected-files
+                                       file-chooser-request)
+                                      (first
+                                       (webkit:webkit-file-chooser-request-selected-files
+                                        file-chooser-request)))
+                                     (namestring (uiop:getcwd)))
+                             :sources (list (make-instance 'file-source))))))
+         (when files
+           (webkit:webkit-file-chooser-request-select-files
+            file-chooser-request
+            (cffi:foreign-alloc :string
+                                :initial-contents (if (webkit:webkit-file-chooser-request-select-multiple
+                                                       file-chooser-request)
+                                                      (mapcar #'cffi:foreign-string-alloc files)
+                                                      (list (cffi:foreign-string-alloc (first files))))
+                                :count (if (webkit:webkit-file-chooser-request-select-multiple
+                                            file-chooser-request)
+                                           (length files)
+                                           1)
+                                :null-terminated-p t)))
+         (webkit:webkit-file-chooser-request-cancel file-chooser-request)))
+     t))
   ;; TLS certificate handling
   (gobject:g-signal-connect
    (gtk-object buffer) "load-failed-with-tls-errors"
