@@ -265,15 +265,13 @@ CLASS can be a class symbol or a list of class symbols, as with
                                        (first (prompt
                                                :prompt (format nil "Configure slot value ~a" slot)
                                                :sources (make-instance 'prompter:raw-source))))))
-                           ;; no type specified, no need to keep querying
-                           (unless type (return input))
-                           (if (typep input type)
-                               (return input)
-                               (progn
-                                 (echo-warning
-                                  "There's a type mismatch: ~a should be a ~a, while you provided ~a"
-                                  slot type (type-of input))
-                                 nil))))))
+                           (cond ((not type) (return input))
+                                 ((typep input type) (return input))
+                                 (t (progn
+                                      (echo-warning
+                                       "There's a type mismatch: ~a should be a ~a, while you provided ~a"
+                                       slot type (type-of input))
+                                      nil)))))))
           (set-slot slot class accepted-input)
           (eval `(define-configuration ,class
                    ((,slot ,accepted-input))))))))
