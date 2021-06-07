@@ -147,25 +147,34 @@ Example:
             (mapcar #'make-handler-resource (list #'old-reddit-handler #'auto-proxy-handler))
             :initial-value %slot-default%))))")
    (default-new-buffer-url (quri:uri "https://nyxt.atlas.engineer/start")
+                           :type url-designator
                            :documentation "The URL set to a new blank buffer opened by Nyxt.")
    (scroll-distance 50
+                    :type integer
                     :documentation "The distance scroll-down or scroll-up will scroll.")
    (smooth-scrolling nil
                      :documentation "Whether to scroll smoothly with the mouse.")
    (horizontal-scroll-distance 50
+                               :type integer
                                :documentation "Horizontal scroll distance. The
 distance scroll-left or scroll-right will scroll.")
    (current-zoom-ratio 1.0
+                       :type (float 0 5)
                        :documentation "The current zoom relative to the default zoom.")
    (zoom-ratio-step 0.2
+                    :type (float 0 5)
                     :documentation "The step size for zooming in and out.")
    (zoom-ratio-min 0.2
+                   :type (float 0 5)
                    :documentation "The minimum zoom ratio relative to the default.")
    (zoom-ratio-max 5.0
+                   :type (float 0 5)
                    :documentation "The maximum zoom ratio relative to the default.")
    (zoom-ratio-default 1.0
+                       :type (float 0 5)
                        :documentation "The default zoom ratio.")
    (page-scroll-ratio 0.90
+                      :type (float 0 5)
                       :documentation "The ratio of the page to scroll.
 A value of 0.95 means that the bottom 5% will be the top 5% when scrolling
 down.")
