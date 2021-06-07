@@ -246,7 +246,7 @@ A command is a special kind of function that can be called with
                                                (string (sera:class-name-of source))))))))))))
 
 (defun configure-slot (slot class &key (value nil new-value-supplied-p)
-                                    (type (getf (mopu:slot-properties (find-class class) slot) :type)))
+                                       (type (getf (mopu:slot-properties (find-class class) slot) :type)))
   "Set the value of a slot in a users auto-config.lisp.
 CLASS can be a class symbol or a list of class symbols, as with
 `define-configuration'."
@@ -261,19 +261,19 @@ CLASS can be a class symbol or a list of class symbols, as with
                    ((,slot ,value)))))
         (let ((accepted-input
                 (loop while t do
-                  (let ((input (read-from-string
-                                (first (prompt
-                                        :prompt (format nil "Configure slot value ~a" slot)
-                                        :sources (make-instance 'prompter:raw-source))))))
-                    ;; no type specified, no need to keep querying
-                    (unless type (return input))
-                    (if (typep input type)
-                        (return input)
-                        (progn
-                          (echo-warning
-                           "There's a type mismatch: ~a should be a ~a, while you provided ~a"
-                           slot type (type-of input))
-                          nil))))))
+                         (let ((input (read-from-string
+                                       (first (prompt
+                                               :prompt (format nil "Configure slot value ~a" slot)
+                                               :sources (make-instance 'prompter:raw-source))))))
+                           ;; no type specified, no need to keep querying
+                           (unless type (return input))
+                           (if (typep input type)
+                               (return input)
+                               (progn
+                                 (echo-warning
+                                  "There's a type mismatch: ~a should be a ~a, while you provided ~a"
+                                  slot type (type-of input))
+                                 nil))))))
           (set-slot slot class accepted-input)
           (eval `(define-configuration ,class
                    ((,slot ,accepted-input))))))))
