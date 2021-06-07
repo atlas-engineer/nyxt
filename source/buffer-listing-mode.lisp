@@ -52,7 +52,7 @@
       (markup:markup
        (:style (style buffer))
        (:h1 "Buffers")
-       (:a :class "button" :href (lisp-url '(nyxt::list-buffers)) "Update")
+       (:a :class "button" :href (lisp-url '(nyxt/buffer-listing-mode::list-buffers)) "Update")
        (:br "")
        (:div
         (if cluster
