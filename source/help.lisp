@@ -8,6 +8,18 @@
    (prompter:constructor (package-functions))
    (prompter:actions (list (make-unmapped-command describe-function)))))
 
+(defmethod prompter:object-attributes ((symbol symbol))
+  `(("Name" ,(symbol-name symbol))
+    ("Documentation"
+     ,(or (cond
+            ((fboundp symbol)
+             (documentation symbol 'function))
+            ((and (find-class symbol nil)
+                  (mopu:subclassp (find-class symbol) (find-class 'standard-object)))
+             (documentation symbol 'type))
+            (t (documentation symbol t)))
+          ""))))
+
 (define-class class-source (prompter:source)
   ((prompter:name "Classes")
    (prompter:constructor (package-classes))
