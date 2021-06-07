@@ -159,22 +159,22 @@ Example:
                                :documentation "Horizontal scroll distance. The
 distance scroll-left or scroll-right will scroll.")
    (current-zoom-ratio 1.0
-                       :type (float 0 5)
+                       :type float
                        :documentation "The current zoom relative to the default zoom.")
    (zoom-ratio-step 0.2
-                    :type (float 0 5)
+                    :type float
                     :documentation "The step size for zooming in and out.")
    (zoom-ratio-min 0.2
-                   :type (float 0 5)
+                   :type float
                    :documentation "The minimum zoom ratio relative to the default.")
    (zoom-ratio-max 5.0
-                   :type (float 0 5)
+                   :type float
                    :documentation "The maximum zoom ratio relative to the default.")
    (zoom-ratio-default 1.0
-                       :type (float 0 5)
+                       :type float
                        :documentation "The default zoom ratio.")
    (page-scroll-ratio 0.90
-                      :type (float 0 5)
+                      :type float
                       :documentation "The ratio of the page to scroll.
 A value of 0.95 means that the bottom 5% will be the top 5% when scrolling
 down.")
