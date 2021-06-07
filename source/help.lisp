@@ -245,7 +245,8 @@ A command is a special kind of function that can be called with
                                                 `(describe-class ',(sera:class-name-of source)))
                                                (string (sera:class-name-of source))))))))))))
 
-(defun configure-slot (slot class &key (value nil new-value-supplied-p) (type nil))
+(defun configure-slot (slot class &key (value nil new-value-supplied-p)
+                                    (type (getf (mopu:slot-properties (find-class class) slot) :type)))
   "Set the value of a slot in a users auto-config.lisp.
 CLASS can be a class symbol or a list of class symbols, as with
 `define-configuration'."
@@ -266,8 +267,13 @@ CLASS can be a class symbol or a list of class symbols, as with
                                         :sources (make-instance 'prompter:raw-source))))))
                     ;; no type specified, no need to keep querying
                     (unless type (return input))
-                    (when (typep input type)
-                      (return input))))))
+                    (if (typep input type)
+                        (return input)
+                        (progn
+                          (echo-warning
+                           "There's a type mismatch: ~a should be a ~a, while you provided ~a"
+                           slot type (type-of input))
+                          nil))))))
           (set-slot slot class accepted-input)
           (eval `(define-configuration ,class
                    ((,slot ,accepted-input))))))))
