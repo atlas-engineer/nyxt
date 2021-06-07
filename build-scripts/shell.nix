@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: Atlas Engineer LLC
 # SPDX-License-Identifier: BSD-3-Clause
 
-# This file is meant to be used with the nyxt/gtk system
+# This file is meant to be used with the nyxt/gi-gtk system
 
 { pkgs ? import <nixpkgs> {} } :
 with builtins;
@@ -17,6 +17,7 @@ stdenv.mkDerivation {
   ];
 
   buildInputs = [
+    pkgs.gobjectIntrospection
     pkgs.enchant.out
     pkgs.gsettings-desktop-schemas.out
     pkgs.glib-networking.out
@@ -53,6 +54,7 @@ stdenv.mkDerivation {
                                                           pkgs.enchant.out
                                                           pkgs.glib-networking.out
                                                           pkgs.webkitgtk
+                                                          pkgs.gobjectIntrospection
                                                           pkgs.gtk3
                                                           pkgs.pango.out
                                                           pkgs.cairo.out
