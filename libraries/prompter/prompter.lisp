@@ -216,7 +216,8 @@ to next source, or previous source if STEPS is negative."
                (relative-index (- new-index
                                   (source-length (previous-sources new-source)))))
           (setf (selection prompter)
-                (list new-source relative-index)))))))
+                ;; relative-index can turn out to be negative at this moment
+                (list new-source (max relative-index 0))))))))
 
 (export-always 'select-next)
 (defun select-next (prompter &optional (steps 1))
