@@ -494,3 +494,35 @@ Parent directories are created if necessary."
        (when ,path
          (with-maybe-gpg-file (,stream ,path ,@options)
            ,@body)))))
+
+(defun ensure-unique-file (file)
+  "Return FILE if unique or suffix it with a number otherwise.
+Warning: This is not atomic, no lock is made on any file, so it's not safe from
+race conditions."
+  (loop with original-name = file
+        with suffix = 1
+        while (uiop:file-exists-p file)
+        do (setf file (format nil  "~a.~a" original-name suffix) )
+        do (incf suffix))
+  file)
+
+(export-always 'with-data-file-output)
+(defmacro with-data-file-output ((stream data-path) &body body)
+  "Open DATA-PATH for writing.
+The stream is written to a temporary file and renamed to the final DATA-PATH
+path upon closing.
+This measure protects against half-written files when an error occurs in the BODY."
+  (alex:with-gensyms (temp-path final-path)
+    `(sera:and-let* ((,final-path (expand-path ,data-path))
+                     (,temp-path (ensure-unique-file ,final-path)))
+       (unwind-protect (prog1 (with-maybe-gpg-file (,stream ,temp-path
+                                                            :direction :output
+                                                            :if-does-not-exist :create
+                                                            :if-exists :supersede)
+                                ,@body)
+                         (rename-file
+                          (uiop:ensure-pathname ,temp-path)
+                          (uiop:ensure-pathname ,final-path)))
+         (let ((,temp-path (uiop:ensure-pathname ,temp-path)))
+           (when (uiop:file-exists-p ,temp-path)
+             (delete-file ,temp-path)))))))

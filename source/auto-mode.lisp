@@ -440,10 +440,7 @@ Auto-mode is re-enabled once the page is reloaded."
               rules))))
 
 (defmethod store ((profile data-profile) (path auto-mode-rules-data-path) &key &allow-other-keys)
-  (with-data-file (file path
-                        :direction :output
-                        :if-does-not-exist :create
-                        :if-exists :supersede)
+  (with-data-file-output (file path)
     (let ((*package* (find-package :nyxt/auto-mode))
           (rules (get-data path)))
       (write-string ";; List of auto-mode rules.
