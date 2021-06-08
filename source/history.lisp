@@ -29,7 +29,7 @@ not include explicit visits.")
    (scroll-position '()
                     :type list-of-numbers
                     :documentation "The scroll position user was at when last visiting the page.
-Is a list of a form (Y &OPTIONAL X)."))
+It's a list of a form (Y &OPTIONAL X)."))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "
 Entry for the global history.
