@@ -190,7 +190,7 @@
     (prompt
      :prompt "Search text"
      :sources (mapcar (lambda (buffer)
-                        (make-instance 'search-buffer-source
+                        (make-instance 'user-search-buffer-source
                                        :name (format nil "Search ~a" (if (url-empty-p (url buffer))
                                                                          (title buffer)
                                                                          (url buffer)))
