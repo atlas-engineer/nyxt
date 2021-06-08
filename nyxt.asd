@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 #+sbcl
-(sb-ext:assert-version->= 1 5 0)
+(sb-ext:assert-version->= 2 0 0)
 
 (defvar *prefix* (format nil "~a/~a"
                          (or (uiop:getenv "DESTDIR") "")
