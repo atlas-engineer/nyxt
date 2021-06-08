@@ -193,10 +193,7 @@ instance of Nyxt."
 
 (defmethod store ((profile data-profile) (path history-data-path) &key &allow-other-keys)
   "Store the global/buffer-local history to the PATH."
-  (with-data-file (file path
-                        :direction :output
-                        :if-does-not-exist :create
-                        :if-exists :supersede)
+  (with-data-file-output (file path)
     ;; We READ the output of serialize-sexp to make it more human-readable.
     (let ((*package* (find-package :nyxt))
           (*print-length* nil))
