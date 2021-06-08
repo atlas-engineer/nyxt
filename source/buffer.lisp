@@ -1033,14 +1033,20 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
            (or (engine query)
                (default-search-engine))))))
 
+(defun encode-url-char (c)
+  (if (find c '("+" "&" "%") :test #'string=)
+      (quri:url-encode c)
+      c))
+
 (defmethod url ((query new-url-query))
   (quri:uri
    (cond
      ((and (engine query)
            (not (uiop:emptyp (query query))))
       (format nil (search-url (engine query))
-              (str:replace-all "+" (quri:url-encode "+")
-                               (query query))))
+              (str:join ""
+                (mapcar #'encode-url-char
+                        (map 'list #'string (query query))))))
      ((engine query)
       (fallback-url (engine query)))
      (t (query query)))))
