@@ -161,7 +161,10 @@
    (prompter:destructor (lambda (prompter source)
                           (declare (ignore prompter source))
                           (remove-focus))))
+  (:export-accessor-names-p t)
+  (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+(define-user-class search-buffer-source)
 
 (defmethod initialize-instance :after ((source search-buffer-source) &key)
   (setf (prompter:name source)
@@ -174,7 +177,7 @@
   (prompt
    :prompt "Search text"
    :sources (list
-             (make-instance 'search-buffer-source
+             (make-instance 'user-search-buffer-source
                             :case-sensitive-p case-sensitive-p))))
 
 (define-command search-buffers (&key case-sensitive-p)
