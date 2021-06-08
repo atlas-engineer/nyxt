@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/preview-mode
-  (:use :common-lisp :trivia :nyxt)
+    (:use :common-lisp :trivia :nyxt)
   (:import-from #:class-star #:define-class)
   (:documentation "Refresh file when changed on disk."))
 (in-package :nyxt/preview-mode)
@@ -10,14 +10,12 @@
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria))
 
 (defun updated-file-p (path-url mode)
-  (and
-   (quri:uri-file-p path-url)
-   (or (null (last-access mode))
-       (local-time:timestamp>
-        (local-time:universal-to-timestamp
-         (sb-posix:stat-mtime
-          (sb-posix:stat (quri:uri-path path-url))))
-        (last-access mode)))))
+  (when (quri:uri-file-p path-url)
+    (or (null (last-access mode))
+        (local-time:timestamp>
+         (local-time:universal-to-timestamp
+          (uiop:safe-file-write-date (quri:uri-path path-url)))
+         (last-access mode)))))
 
 (define-mode preview-mode (nyxt/process-mode:process-mode)
   "Refreshes the buffer when associated local file is changed."
