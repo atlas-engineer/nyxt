@@ -54,7 +54,7 @@ If HOSTLIST has a `path', persist it locally."
         (when path
           (handler-case
               (alex:write-string-into-file hosts (ensure-parent-exists path)
-                                           :if-exists :overwrite
+                                           :if-exists :supersede
                                            :if-does-not-exist :create)
             (error (c)
               (log:error "Could not persist hostlist ~s: ~a" path c))))

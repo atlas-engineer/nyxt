@@ -618,7 +618,7 @@ the "
 
 (defun dump-command-descriptions (file)
   "Dump the command descriptions as an HTML file."
-  (with-open-file (f file :direction :output :if-exists :overwrite)
+  (with-open-file (f file :direction :output :if-exists :supersede)
     (format f "~a" (markup:markup
                     (:p "Listed below are the current commands, their
                          documentation, and their source. Non-command

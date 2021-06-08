@@ -300,7 +300,7 @@ rest in background buffers."
   (with-data-file (file path
                         :direction :output
                         :if-does-not-exist :create
-                        :if-exists :overwrite)
+                        :if-exists :supersede)
     ;; TODO: Make sorting customizable?  Note that `store-sexp-bookmarks' is
     ;; already a customizable function.
     (setf (get-data path)

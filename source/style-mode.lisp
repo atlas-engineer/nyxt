@@ -63,7 +63,7 @@ If nil, look for CSS in `style-file' or `style-url'.")
         (error ()
           (log:info "Downloading ~s." (expand-path path))
           (let ((file-contents (dex:get (render-url url))))
-            (with-open-file (f (expand-path path) :direction :output :if-exists :overwrite)
+            (with-open-file (f (expand-path path) :direction :output :if-exists :supersede)
               (format f "~a" file-contents))
             file-contents))))))
 
