@@ -144,7 +144,7 @@ compution is not finished.")))
   prompter)
 
 (defmethod (setf selection) (value (prompter prompter))
-  (setf (slot-value prompter 'selection) value)
+  (setf (slot-value prompter 'selection) (max value 0))
   (let ((source (selected-source prompter)))
     (when (follow-p source)
       (if (< 0 (follow-delay source))
@@ -216,8 +216,7 @@ to next source, or previous source if STEPS is negative."
                (relative-index (- new-index
                                   (source-length (previous-sources new-source)))))
           (setf (selection prompter)
-                ;; relative-index can turn out to be negative at this moment
-                (list new-source (max relative-index 0))))))))
+                (list new-source relative-index)))))))
 
 (export-always 'select-next)
 (defun select-next (prompter &optional (steps 1))
