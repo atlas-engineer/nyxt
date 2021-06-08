@@ -2,25 +2,10 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/process-mode
-  (:use :common-lisp :trivia :nyxt)
+    (:use :common-lisp :trivia :nyxt)
   (:import-from #:class-star #:define-class)
   (:documentation "Act on file/directory based on a certain condition."))
 (in-package :nyxt/process-mode)
-
-(defun initialize-process-mode (mode)
-  (setf (path-url mode) (or (path-url mode) (url (current-buffer)))
-        (thread mode) (run-thread
-                       (loop with cond = (firing-condition mode)
-                             with cond-func = (typecase cond
-                                                (function cond)
-                                                (boolean (constantly cond)))
-                             when (funcall cond-func (path-url mode) mode)
-                               do (funcall (action mode) (path-url mode) mode)))))
-
-(defun clean-up-process-mode (mode)
-  (and (cleanup mode)
-       (funcall (cleanup mode) (path-url mode) mode))
-  (bt:destroy-thread (thread mode)))
 
 (define-mode process-mode ()
   "Conditional execution a file/directory-related actions in a separate thread.
@@ -49,5 +34,21 @@ Accepts the path to the acted-on document and `process-mode' instance.")
            :type (or bt:thread null)
            :export nil
            :documentation "The thread that `action' happen in.")
-   (constructor #'initialize-process-mode)
-   (destructor #'clean-up-process-mode)))
+   (constructor #'initialize)
+   (destructor #'destroy)))
+
+(defmethod initialize ((mode process-mode))
+  (setf (path-url mode) (or (path-url mode) (url (current-buffer)))
+        (thread mode) (run-thread
+                        (loop with cond = (firing-condition mode)
+                              with cond-func = (typecase cond
+                                                 (function cond)
+                                                 (boolean (constantly cond)))
+                              when (funcall cond-func (path-url mode) mode)
+                              do (with-current-buffer (buffer mode)
+                                   (funcall (action mode) (path-url mode) mode))))))
+
+(defmethod destroy ((mode process-mode))
+  (and (cleanup mode)
+       (funcall (cleanup mode) (path-url mode) mode))
+  (bt:destroy-thread (thread mode)))
