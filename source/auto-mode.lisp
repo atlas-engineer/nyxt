@@ -443,7 +443,7 @@ Auto-mode is re-enabled once the page is reloaded."
   (with-data-file (file path
                         :direction :output
                         :if-does-not-exist :create
-                        :if-exists :overwrite)
+                        :if-exists :supersede)
     (let ((*package* (find-package :nyxt/auto-mode))
           (rules (get-data path)))
       (write-string ";; List of auto-mode rules.
