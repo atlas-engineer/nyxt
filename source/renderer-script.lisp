@@ -35,11 +35,11 @@ The function can be passed ARGS."
 
 (export-always 'document-scroll-position)
 (defmethod document-scroll-position (&optional (buffer (current-buffer)))
-  "Get current scroll position of set it.
-If passed no arguments, returns a list of two elements: vertical (Y) and
-horisontal (X) offset.
-If `setf'-d to a single value (or a single list) -- sets Y to it.
-If `setf'-d to a list of two values -- sets Y to `first' and X to `second' element."
+  "Get current scroll position or set it.
+If passed no arguments, return a list of two elements: vertical (Y) and
+horizontal (X) offset.
+If `setf'-d to a single value (or a single list) -- set Y to it.
+If `setf'-d to a list of two values -- set Y to `first' and X to `second' element."
   (with-current-buffer buffer
     (mapcar #'parse-integer
             (str:split "," (%document-scroll-position)))))
