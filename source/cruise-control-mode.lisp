@@ -8,19 +8,17 @@
 
 (in-package :nyxt/cruise-control-mode)
 
-(define-mode cruise-control-mode ()
+(define-mode cruise-control-mode (nyxt/repeat-mode:repeat-mode)
   "Mode for automatically scrolling up and down the page."
   ((velocity 0 :documentation "The distance the page is scrolling up or down
   each update interval. A positive velocity corresponds to scrolling down, a
   negative velocity corresponds to scrolling up.")
-   (poll-sleep-time 0.10 :documentation "The amount of time spent sleeping between
-   each update interval (movement of the page). A poll-sleep-time of 2 means
-   that every 2 seconds the page will update its position.")
-   (thread :documentation "Runs the operations to scroll the page up and down.")
+   (nyxt/repeat-mode:repeat-interval 0.10)
    (keymap-scheme
     (define-scheme "cruise-control-mode"
       scheme:cua
       (list
+       "escape" 'cruise-control-mode
        "0" 'velocity-zero
        "up" 'velocity-decf
        "down" 'velocity-incf)
@@ -32,20 +30,12 @@
       (list
        "K" 'velocity-decf
        "J" 'velocity-incf)))
-   (constructor
+   (nyxt/repeat-mode:repeat-action
     (lambda (mode)
-      (setf (thread mode)
-            (bt:make-thread
-             (lambda ()
-               (loop while t
-                     do (sleep (poll-sleep-time mode))
-                        (unless (zerop (velocity mode))
-                          (with-current-buffer (buffer mode)
-                            (nyxt/web-mode::scroll-down
-                             :scroll-distance (velocity mode))))))))))
-   (destructor
-    (lambda (mode)
-      (bt:destroy-thread (thread mode))))))
+      (unless (zerop (velocity mode))
+        (with-current-buffer (buffer mode)
+          (nyxt/web-mode::scroll-down
+           :scroll-distance (velocity mode))))))))
 
 (defun current-cruise-control (&key (buffer (current-buffer)))
   (find-submode buffer 'cruise-control-mode))
