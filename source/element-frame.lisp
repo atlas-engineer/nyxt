@@ -153,7 +153,7 @@
     (remove-overlay)))
 
 (define-class frame-source (prompter:source)
-  ((prompter:name "Selection Frame (confirm with right click)")
+  ((prompter:name "Selection Frame (confirm with C-s)")
    (buffer :accessor buffer :initarg :buffer)
    (channel :accessor channel :initarg :channel)
    (prompter:constructor (lambda (source)
@@ -181,7 +181,7 @@
     (define-scheme "frame"
       scheme:cua
       (list
-       "button3" 'frame-source-confirm-selection)))))
+       "C-s" 'frame-source-confirm-selection)))))
 
 (defun frame-source-confirm-selection ()
   (alex:when-let* ((frame-source 
