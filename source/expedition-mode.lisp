@@ -21,7 +21,8 @@
       scheme:emacs
       (list
        "M-n" 'expedition-next
-       "M-p" 'expedition-previous)))))
+       "M-p" 'expedition-previous)))
+   (rememberable-p nil)))
 
 (defun current-expedition ()
   (find-submode (current-buffer) 'expedition-mode))
@@ -56,9 +57,7 @@
                  (lambda ()
                    (with-current-buffer buffer
                      (nyxt/web-mode::frame-element-clear))))))
+         (urls (mapcar #'quri:uri urls))
          (buffer (make-buffer :title "" :url (first urls))))
     (expedition-mode :urls urls :buffer buffer)
-    ;; Auto mode interferes with expedition mode, automatically disabling it
-    ;; when viewing the next URL in an expedition
-    (disable-modes 'auto-mode buffer)
     (set-current-buffer buffer)))
