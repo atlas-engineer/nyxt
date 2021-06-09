@@ -46,7 +46,7 @@
   "Run an expedition through a set of URLs selected with a rectangle."
   (let* ((urls (reverse
                 (prompt
-                 :default-modes '(prompt-buffer-mode nyxt/web-mode::frame-select-mode)
+                 :extra-modes '(nyxt/web-mode::frame-select-mode)
                  :prompt "Start expedition with the following links:"
                  :sources (list (make-instance 'nyxt/web-mode::frame-source
                                                :buffer buffer

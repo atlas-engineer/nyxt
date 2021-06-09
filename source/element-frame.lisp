@@ -156,7 +156,6 @@
   ((prompter:name "Selection Frame (confirm with right click)")
    (buffer :accessor buffer :initarg :buffer)
    (channel :accessor channel :initarg :channel)
-   (prompter:must-match-p t)
    (prompter:constructor (lambda (source)
                            (frame-element-select)
                            (calispel:? (channel source))))))
@@ -164,7 +163,7 @@
 (define-command select-frame-new-buffer (&key (buffer (current-buffer)))
   "Select a frame and open the links in new buffers."
   (prompt
-   :default-modes '(prompt-buffer-mode frame-select-mode)
+   :extra-modes '(frame-select-mode)
    :prompt "Open selected links in new buffers:"
    :sources (list (make-instance 'frame-source
                                  :buffer buffer
