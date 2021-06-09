@@ -43,7 +43,7 @@
         (buffer-load (nth (index expedition) (urls expedition))))
       (echo "Start of expedition.")))
 
-(define-command nyxt::select-frame-expedition (&key (buffer (current-buffer)))
+(define-command-global select-frame-expedition (&key (buffer (current-buffer)))
   "Run an expedition through a set of URLs selected with a rectangle."
   (let* ((urls (reverse
                 (prompt
