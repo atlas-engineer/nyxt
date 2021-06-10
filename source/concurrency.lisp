@@ -63,5 +63,5 @@ This supersedes `bt:make-thread' in Nyxt.  Don't use the latter unless you know
 what you are doing!"
   `(bt:make-thread
     (lambda ()
-      (with-protect ("Error on separate thead: ~a" :condition)
+      (with-protect ("Error on separate thread: ~a" :condition)
         ,@body))))

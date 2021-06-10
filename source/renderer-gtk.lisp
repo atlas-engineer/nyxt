@@ -94,7 +94,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
 (defmacro within-gtk-thread (&body body)
   "Protected `gtk:within-gtk-thread'."
   `(gtk:within-gtk-thread
-     (with-protect ("Error on GTK thead: ~a" :condition)
+     (with-protect ("Error on GTK thread: ~a" :condition)
        ,@body)))
 
 (defmethod ffi-within-renderer-thread ((browser gtk-browser) thunk)
