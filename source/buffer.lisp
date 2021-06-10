@@ -737,7 +737,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (with-data-access (history (history-path buffer))
       (setf (nyxt::scroll-position
              (htree:data (htree:current (htree:owner history (id buffer)))))
-            (nyxt:document-scroll-position))
+            (nyxt:document-scroll-position buffer))
       (htree:delete-owner history (id buffer)))
     (add-to-recent-buffers buffer)
     (store (data-profile buffer) (history-path buffer))))

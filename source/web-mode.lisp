@@ -540,7 +540,7 @@ Otherwise go forward to the only child."
         (with-data-access (history (history-path (buffer mode)))
           (setf (nyxt::scroll-position
                  (htree:data (htree:current (htree:owner history (id (buffer mode))))))
-                (nyxt:document-scroll-position))))))
+                (nyxt:document-scroll-position (buffer mode)))))))
 
   url)
 
@@ -564,5 +564,5 @@ Otherwise go forward to the only child."
     (alex:when-let ((scroll-position
                      (nyxt::scroll-position
                       (htree:data (htree:current (htree:owner history (id (buffer mode))))))))
-      (setf (nyxt:document-scroll-position) scroll-position)))
+      (setf (nyxt:document-scroll-position (buffer mode)) scroll-position)))
   url)
