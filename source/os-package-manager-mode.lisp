@@ -342,7 +342,7 @@ OBJECTS can be a list of packages, a generation, etc."
                     :sources '(os-manifest-source)
                     :prompt "Manifest"))))
     (echo "Opening ~s with ~a" manifest (external-editor-program *browser*))
-    (uiop:launch-program (list (external-editor-program *browser*) manifest))))
+    (uiop:launch-program (append (external-editor-program *browser*) (list manifest)))))
 
 (define-command-global describe-os-generation ()
   "Show the packages of a given profile generation."

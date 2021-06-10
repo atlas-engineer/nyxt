@@ -16,8 +16,8 @@ so invoke on a separate thread when possible."
     (log:debug "External editor ~s opens ~s"
                (external-editor-program *browser*) p)
     (with-protect ("Failed editing: ~a" :condition)
-      (uiop:run-program (list (external-editor-program *browser*)
-                              (uiop:native-namestring p))
+      (uiop:run-program (append (external-editor-program *browser*)
+                                (list (uiop:native-namestring p)))
                         :ignore-error-status t))
     (uiop:read-file-string p)))
 

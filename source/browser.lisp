@@ -171,10 +171,12 @@ a list of more languages available, please view the documentation for
 cl-enchant (broker-list-dicts).")
    (external-editor-program (or (uiop:getenv "VISUAL")
                                 (uiop:getenv "EDITOR"))
-                            :type (or string null)
+                            :type (or (cons string *) string null)
+                            :writer t
+                            :export t
                             :documentation "The external editor to use for
-editing files. It should be specified as a complete string path to the
-editor executable."))
+editing files.  You can specify the full command line arguments with a list of
+strings."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
@@ -187,6 +189,9 @@ A typical Nyxt session encompasses a single instance of this class, but nothing
 prevents otherwise."))
 
 (define-user-class browser)
+
+(defmethod external-editor-program ((browser browser))
+  (alex:ensure-list (slot-value browser 'external-editor-program)))
 
 (defun %get-user-data (profile path cache)
   (sera:and-let* ((expanded-path (expand-path path)))
