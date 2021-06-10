@@ -23,7 +23,7 @@
 It's suitable for `prompter:filter-preprocessor'."
   (lambda (suggestions source input)
     (declare (ignore suggestions))
-    (let ((pathname (pathname input)))
+    (let ((pathname (uiop:ensure-pathname input)))
       (prompter:filter-exact-matches
        (prompter:ensure-suggestions-list
         source
