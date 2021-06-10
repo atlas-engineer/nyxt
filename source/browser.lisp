@@ -117,6 +117,10 @@ issued by an external program or issued by Control+<button1> in a new window.")
             :reader ready-p
             :documentation "If non-nil, the browser is ready for operation (make
 buffers, load data files, open prompt buffer, etc).")
+   (native-dialogs t
+                   :type boolean
+                   :documentation "Whether to use prompt-buffer-reliant script dialogs and file-chooser.
+If nil, renderer-provided dialogs are used.")
    (session-restore-prompt :always-ask
                            :documentation "Ask whether to restore the session.
 The possible values are `:always-ask', `:always-restore' and `:never-restore'.")
