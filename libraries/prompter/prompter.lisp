@@ -210,7 +210,6 @@ to next source, or previous source if STEPS is negative."
                  (index (+ (second (selection prompter))
                            (source-length previous-sources)))
                  (new-index (+ index steps)))
-            (declare (type unsigned-byte new-index))
             (setf new-index
                   (if wrap-over-p
                       (mod new-index limit)
