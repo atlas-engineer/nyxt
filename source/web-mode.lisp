@@ -457,11 +457,7 @@ Otherwise go forward to the only child."
   (with-current-html-buffer (buffer "*History list*" 'nyxt/list-history-mode:list-history-mode)
     (markup:markup
      (:style (style buffer))
-     (:style (cl-css:css
-              '((a
-                 :color "black")
-                ("a:hover"
-                 :color "gray"))))
+     (:style (style (find-submode output-buffer 'nyxt/list-history-mode:list-history-mode)))
      (:h1 "History")
      (:ul (nyxt::history-html-list :limit limit)))))
 

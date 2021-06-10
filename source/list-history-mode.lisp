@@ -8,4 +8,10 @@
 
 (define-mode list-history-mode ()
   "Mode for listing history."
-  ((rememberable-p nil)))
+  ((rememberable-p nil)
+   (style
+    (cl-css:css
+     '((a
+        :color "black")
+       ("a:hover"
+        :color "gray"))))))
