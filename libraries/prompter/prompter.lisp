@@ -203,21 +203,24 @@ to next source, or previous source if STEPS is negative."
              (previous-sources (source)
                (let ((current-source-position (position source (sources prompter))))
                  (subseq (sources prompter) 0 current-source-position))))
-      (let* ((limit (source-length (sources prompter)))
-             (previous-sources (previous-sources (first (selection prompter))))
-             (index (+ (second (selection prompter))
-                       (source-length previous-sources)))
-             (new-index (+ index steps)))
-        (setf new-index
-              (if wrap-over-p
-                  (mod new-index limit)
-                  (alex:clamp new-index 0 (1- limit))))
-        (let* ((new-source (index->source new-index))
-               (relative-index (- new-index
-                                  (source-length (previous-sources new-source)))))
-          (setf (selection prompter)
-                ;; relative-index can turn out to be negative at this moment
-                (list new-source (max relative-index 0))))))))
+      (let ((limit (source-length (sources prompter))))
+        (declare (type unsigned-byte limit))
+        (unless (= 0 limit)
+          (let* ((previous-sources (previous-sources (first (selection prompter))))
+                 (index (+ (second (selection prompter))
+                           (source-length previous-sources)))
+                 (new-index (+ index steps)))
+            (declare (type unsigned-byte new-index))
+            (setf new-index
+                  (if wrap-over-p
+                      (mod new-index limit)
+                      (alex:clamp new-index 0 (max (1- limit) 0))))
+            (let* ((new-source (index->source new-index))
+                   (relative-index (- new-index
+                                      (source-length (previous-sources new-source)))))
+              (declare (type unsigned-byte relative-index))
+              (setf (selection prompter)
+                    (list new-source relative-index)))))))))
 
 (export-always 'select-next)
 (defun select-next (prompter &optional (steps 1))
