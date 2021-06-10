@@ -114,10 +114,6 @@ identifier for every hinted element."
 (define-parenscript click-element (&key nyxt-identifier)
   (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (click)))
 
-(define-parenscript focus-element (&key nyxt-identifier)
-  (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (focus))
-  (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier))) (select)))
-
 (define-parenscript highlight-selected-hint (&key link-hint scroll)
 
   (defun update-hints ()
@@ -261,7 +257,8 @@ I.e. the grey text initially seen in it.")
   (click-element :nyxt-identifier (identifier clickable-hint)))
 
 (defmethod %follow-hint ((focusable-hint focusable-hint))
-  (focus-element :nyxt-identifier (identifier focusable-hint)))
+  (focus-element ()
+    (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" (identifier focusable-hint))))))
 
 (defmethod %follow-hint-new-buffer-focus ((link-hint link-hint) &optional parent-buffer)
   (make-buffer-focus :url (url link-hint)

@@ -1332,28 +1332,9 @@ mode permanently for this buffer."
   (pflet ((print-buffer () (print)))
          (print-buffer)))
 
-(define-command focus-first-input-field (&key (type-blacklist '("hidden"
-                                                                "checkbox"
-                                                                "button")))
-  "Move the focus to the first input field of `buffer'."
-  ;; The list of input types can be found below.
-  ;; https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input
-  ;; TODO: The following results in 2 DOM traversal.  We should probably do the
-  ;; whole thing in a single Parenscript instead.
-  (pflet ((nth-input-type (i)
-                          (let* ((input (ps:chain document
-                                                  (get-elements-by-tag-name "INPUT")))
-                                 (item (when input (ps:chain input (item (ps:lisp i))))))
-                            (when item
-                              (ps:chain item type))))
-          (nth-input-focus (i)
-                           (let* ((input (ps:chain document
-                                                   (get-elements-by-tag-name "INPUT")))
-                                  (item (when input (ps:chain input (item (ps:lisp i))))))
-                             (when item
-                               (ps:chain item (focus))))))
-    (nth-input-focus (do ((i 0 (1+ i)))
-                         ((notany
-                           (lambda (type) (equalp (nth-input-type i) type))
-                           type-blacklist)
-                          i)))))
+(define-deprecated-command focus-first-input-field (&key (type-blacklist '("hidden"
+                                                                           "checkbox"
+                                                                           "button")))
+  "Superseded by `nyxt/web-mode:focus-first-input-field'."
+  (funcall (find-symbol "FOCUS-FIRST-INPUT-FIELD" (find-package :nyxt/web-mode))
+           :type-blacklist type-blacklist))

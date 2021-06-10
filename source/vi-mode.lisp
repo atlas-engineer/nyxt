@@ -25,7 +25,6 @@ vi-normal-mode.")
       scheme:vi-normal
       (list
         "i" 'vi-insert-mode
-        "M-i" 'vi-focus-first-input-field
         "button1" 'vi-button1)))
    (destructor
     (lambda (mode)
@@ -113,7 +112,5 @@ vi-normal-mode.")
   (declare (ignore url))
   (vi-normal-mode))
 
-(define-command vi-focus-first-input-field ()
-  "Like `focus-first-input-field' but switch to `vi-insert-mode' as well."
-  (focus-first-input-field)
+(defmethod nyxt/web-mode:element-focused ((mode vi-normal-mode))
   (vi-insert-mode))
