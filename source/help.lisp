@@ -311,10 +311,15 @@ CLASS can be a class symbol or a list of class symbols, as with
                              `(nyxt/vi-mode:vi-normal-mode :activate nil))
              "Use Emacs"))
      (:p (:a :class "button"
-             :href (lisp-url `(nyxt::configure-slot
-                               'default-modes
-                               '(buffer web-buffer)
-                               :value '(append '(vi-normal-mode) %slot-default%))
+             :href (lisp-url `(progn
+                                (nyxt::configure-slot
+                                 'default-modes
+                                 '(buffer web-buffer)
+                                 :value '(append '(vi-normal-mode) %slot-default%))
+                                (nyxt::configure-slot
+                                 'default-modes
+                                 'prompt-buffer
+                                 :value '(append '(vi-insert-mode) %slot-default%)))
                              `(nyxt/vi-mode:vi-normal-mode :activate t)
                              `(nyxt/emacs-mode:emacs-mode :activate nil))
              "Use vi"))
