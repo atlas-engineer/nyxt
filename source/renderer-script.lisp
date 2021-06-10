@@ -41,8 +41,8 @@ horizontal (X) offset.
 If `setf'-d to a single value (or a single list) -- set Y to it.
 If `setf'-d to a list of two values -- set Y to `first' and X to `second' element."
   (with-current-buffer buffer
-    (mapcar #'parse-integer
-            (str:split "," (%document-scroll-position)))))
+    (alex:when-let ((position (%document-scroll-position)))
+      (mapcar #'parse-integer (str:split "," position)))))
 
 (defmethod (setf document-scroll-position) (value &optional (buffer (current-buffer)))
   (with-current-buffer buffer
