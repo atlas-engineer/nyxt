@@ -3,8 +3,10 @@
 
 (uiop:define-package :nyxt/web-mode
   (:use :common-lisp :trivia :nyxt)
+  (:shadow #:focus-first-input-field)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:import-from #:class-star #:define-class)
+  (:import-from #:serapeum #:export-always)
   (:documentation "Mode for web pages"))
 (in-package :nyxt/web-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -528,6 +530,50 @@ Otherwise go forward to the only child."
   (prompt
    :prompt "Autofill"
    :sources (make-instance 'user-autofill-source)))
+
+(export-always 'element-focused)
+(defgeneric element-focused (mode)      ; TODO: Make hook instead?
+  (:method ((mode t))
+    nil)
+  (:documentation "Method run when `focus-element' is called."))
+
+(defmacro focus-element ((&optional buffer) &body element-script)
+  "Select the element pointed to by ELEMENT-SCRIPT.
+ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
+  (alex:with-gensyms (element)
+    `(progn
+       (ffi-buffer-evaluate-javascript (or ,buffer (current-buffer))
+                                       (ps:ps (let ((,element (progn ,@element-script)))
+                                                (ps:chain ,element (focus))
+                                                (ps:chain ,element (select)))))
+       (dolist (mode (modes (or ,buffer (current-buffer))))
+         (element-focused mode)))))
+
+(define-command focus-first-input-field (&key (type-blacklist '("hidden"
+                                                                "checkbox"
+                                                                "button")))
+  "Move the focus to the first input field of `buffer'."
+  ;; The list of input types can be found below.
+  ;; https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input
+  ;; TODO: The following results in 2 DOM traversal.  We should probably do the
+  ;; whole thing in a single Parenscript instead.
+  (pflet ((nth-input-type (i)
+                          (let* ((input (ps:chain document
+                                                  (get-elements-by-tag-name "INPUT")))
+                                 (item (when input (ps:chain input (item (ps:lisp i))))))
+                            (when item
+                              (ps:chain item type)))))
+    (let ((i (do ((i 0 (1+ i)))
+                 ((notany
+                   (lambda (type) (equalp (nth-input-type i) type))
+                   type-blacklist)
+                  i))))
+      (focus-element ()
+        (let* ((input (ps:chain document
+                                (get-elements-by-tag-name "INPUT")))
+               (item (when input (ps:chain input (item (ps:lisp i))))))
+          (when item
+            item))))))
 
 (defmethod nyxt:on-signal-notify-uri ((mode web-mode) url)
   (declare (type quri:uri url))

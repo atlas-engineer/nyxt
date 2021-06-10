@@ -185,7 +185,8 @@ commands without polluting Nyxt packages."
     (define-command ,name (,@arglist) ,@body)
     (setf (global-p (find-command ',name)) t)))
 
-;; TODO: Update define-deprecated-command
+;; TODO: Should `define-deprecated-command' report the version number of deprecation?
+;; Maybe OK to just remove all deprecated commands on major releases.
 (defmacro define-deprecated-command (name (&rest arglist) &body body)
   "Define NAME, a deprecated command.
 This is just like a command.  It's recommended to explain why the function is
