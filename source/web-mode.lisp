@@ -499,6 +499,17 @@ Otherwise go forward to the only child."
     (copy-to-clipboard input)
     (echo "Text copied.")))
 
+(define-parenscript %copy-placeholder ()
+  (ps:chain document active-element placeholder))
+
+(define-command copy-placeholder ()
+  "Copy placeholder text to clipboard."
+  (let ((current-value (%copy-placeholder)))
+    (if (string-equal current-value "undefined")
+        (echo "No active selected placeholder.")
+        (progn (copy-to-clipboard current-value)
+               (echo "Placeholder copied.")))))
+
 (define-class autofill-source (prompter:source)
   ((prompter:name "Autofills")
    (prompter:constructor (autofills *browser*))
