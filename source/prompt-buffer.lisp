@@ -73,7 +73,7 @@ chosen suggestions inside brackets.")
                   :border "none"
                   :outline "none"
                   :padding "3px"
-                  :background-color "#E8E8E8"
+                  :background-color "gainsboro"
                   :width "100%"
                   :autofocus "true")
                  (".source"
@@ -93,7 +93,7 @@ chosen suggestions inside brackets.")
                   :width "100%")
                  (".source-content"
                   :margin-left "16px"
-                  :background-color "#F7F7F7"
+                  :background-color "white"
                   :width "100%"
                   :table-layout "fixed")
                  (".source-content td"
@@ -104,7 +104,7 @@ chosen suggestions inside brackets.")
                   :font-weight "normal"
                   :padding-left "3px"
                   :text-align "left"
-                  :background-color "#E8E8E8")
+                  :background-color "gainsboro")
                  (".source-content td::-webkit-scrollbar"
                   :display "none")
                  ("#selection"
