@@ -366,7 +366,9 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
                (|.button:visited|
                 :color "white")
                (|.button:active|
-                :color "white")))))
+                :color "white")
+               (a
+                :color "gray")))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -408,9 +410,9 @@ Delete it with `ffi-buffer-delete'."
     :documentation "Display the modes as a list of glyphs.")
    (style #.(cl-css:css
              '((body
-                :background "rgb(200, 200, 200)"
+                :background "lightgray"
                 :font-size "14px"
-                :color "rgb(32, 32, 32)"
+                :color "black"
                 :padding 0
                 :margin 0
                 :line-height "20px")
@@ -442,7 +444,7 @@ Delete it with `ffi-buffer-delete'."
                 :padding-left "5px"
                 :z-index "3")
                ("#url"
-                :background-color "rgb(120,120,120)"
+                :background-color "gray"
                 :min-width "100px"
                 :text-overflow "ellipsis"
                 :overflow-x "hidden"
@@ -451,7 +453,7 @@ Delete it with `ffi-buffer-delete'."
                 :padding-left "15px"
                 :z-index "2")
                ("#tabs"
-                :background-color "rgb(160,160,160)"
+                :background-color "darkgray"
                 :min-width "100px"
                 :overflow-x "scroll"
                 :text-align "left"
@@ -461,7 +463,7 @@ Delete it with `ffi-buffer-delete'."
                ("#tabs::-webkit-scrollbar"
                 :display "none")
                (.tab
-                :color "rgb(250, 250, 250)"
+                :color "white"
                 :white-space "nowrap"
                 :text-decoration "none"
                 :padding-left "5px"
@@ -469,8 +471,8 @@ Delete it with `ffi-buffer-delete'."
                (".tab:hover"
                 :color "black")
                ("#modes"
-                :background-color "rgb(120,120,120)"
-                :color "rgb(230, 230, 230)"
+                :background-color "gray"
+                :color "gainsboro"
                 :text-align "right"
                 :padding-left "10px"
                 :padding-right "5px"
@@ -480,7 +482,7 @@ Delete it with `ffi-buffer-delete'."
                ("#modes::-webkit-scrollbar"
                 :display "none")
                (.button
-                :color "rgb(250, 250, 250)"
+                :color "white"
                 :text-decoration "none"
                 :padding-left "2px"
                 :padding-right "2px"

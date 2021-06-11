@@ -56,7 +56,7 @@
        (:br "")
        (:div
         (if cluster
-            (append (list (internal-buffers-markup)) 
+            (append (list (internal-buffers-markup))
                     (loop for cluster-key being the hash-key
                           using (hash-value cluster) of (cluster-buffers)
                           collect (cluster-markup cluster-key cluster)))

@@ -29,7 +29,7 @@
                               :border "none"
                               :outline "none"
                               :padding "3px"
-                              :background-color "#E8E8E8"
+                              :background-color "gainsboro"
                               :autofocus "true")
              ("#evaluation-history"
               :font-size "12px"

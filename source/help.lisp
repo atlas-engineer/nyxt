@@ -584,8 +584,6 @@ the "
                             '((body
                                :margin-top 0
                                :margin-bottom 0)
-                              ("a"
-                               :color "gray")
                               ("#title"
                                :font-size "400%")
                               (.section
