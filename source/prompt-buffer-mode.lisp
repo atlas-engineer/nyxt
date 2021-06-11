@@ -58,6 +58,7 @@ Actions can be listed and run with `return-selection-over-action' (bound to
 
       scheme:emacs
       (list
+       "C-y" 'paste
        "C-n" 'select-next
        "C-p" 'select-previous
        "M-n" 'select-next-page
@@ -90,7 +91,7 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "z f" 'toggle-follow
        "z a" 'toggle-attributes-display
        "y" 'copy-selection
-       "p" 'prompt-buffer-paste)
+       "p" 'paste)
 
       scheme:vi-insert
       (list
