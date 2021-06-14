@@ -568,6 +568,14 @@ sometimes yields the wrong result."
                    :if-does-not-exist :create
                    :if-exists :append))))))
 
+
+
+(define-command show-clipboard ()
+  "Show the current clipboard."
+  (echo (ring-insert-clipboard (clipboard-ring *browser*))))
+
+
+
 (defmacro define-ffi-generic (name arguments &body options)
   `(progn
      (export-always ',name)
