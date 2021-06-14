@@ -206,7 +206,7 @@ and to index the top of the page.")
      (setf nyxt-identifier-counter 0)
      (add-nyxt-identifiers (ps:chain document body))))
   (setf (document-model mode)
-        (nyxt/dom:named-parse (ffi-buffer-get-document (buffer mode)))))
+        (nyxt/dom::named-json-parse (nyxt/dom::get-document-body-json))))
 
 (defmethod document-model :around ((mode web-mode))
   (or (call-next-method)
