@@ -120,8 +120,9 @@
       object))
   (ps:chain -j-s-o-n (stringify (process-element (ps:chain document body)))))
 
-(declaim (ftype (function (string) (values (or plump-dom:root null) &optional)) parse-json-document))
-(defun parse-json-document (input)
+(export-always 'named-json-parse)
+(declaim (ftype (function (string) (values (or plump-dom:root null) &optional)) named-json-parse))
+(defun named-json-parse (input)
   (labels ((json-to-plump (json-alist parent)
              (let ((element
                      (cond
@@ -149,7 +150,4 @@
     (let ((json (json:decode-json-from-string input))
           (root (plump:make-root)))
       (json-to-plump json root)
-      root)))
-
-(defun named-json-parse (input)
-  (name-dom-elements (parse-json-document input)))
+      (name-dom-elements root))))
