@@ -97,6 +97,7 @@
 (export-always 'named-html-parse)
 (declaim (ftype (function (string) (values (or plump-dom:root null) &optional)) named-parse))
 (defun named-html-parse (input)
+  "Assign tag classes (e.g., `input-element') to the nodes in the `plump:parse'-d input."
   (name-dom-elements (plump:parse input)))
 
 (define-parenscript get-document-body-json ()
