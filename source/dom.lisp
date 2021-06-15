@@ -94,7 +94,7 @@
           do (name-dom-elements child)))
   node)
 
-(export-always 'named-parse)
+(export-always 'named-html-parse)
 (declaim (ftype (function (string) (values (or plump-dom:root null) &optional)) named-parse))
 (defun named-html-parse (input)
   (name-dom-elements (plump:parse input)))
