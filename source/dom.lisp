@@ -152,7 +152,7 @@ JSON should have the format like what `get-document-body-json' produces:
                                     (cons (symbol-name (first pair))
                                           (rest pair)))
                                 (alex:assoc-value json-alist :attributes))
-                        :test 'equal
+                        :test 'equalp
                         :size (length (alex:assoc-value json-alist
                                                         :attributes)))))
                element)))
