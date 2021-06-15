@@ -922,7 +922,11 @@ requested a reload."
           (lambda (result)
             (calispel:! channel result))
           #'identity)
-      #'javascript-error-handler))))
+      (lambda (condition)
+        (javascript-error-handler condition)
+        ;; Notify the listener that we are done.
+        (when channel
+          (calispel:! channel nil)))))))
 
 (defmethod ffi-buffer-evaluate-javascript-async ((buffer gtk-buffer) javascript)
   (%within-renderer-thread-async
