@@ -3,6 +3,7 @@
 
 (uiop:define-package :nyxt/proxy-mode
   (:use :common-lisp :trivia :nyxt)
+  (:shadow #:proxy) ; Because of exported slot of the same below.
   (:documentation "Proxy mode can be used to do all the networking (optionally
 including downloads) via a proxy server.
 It can also be configured to forward all the networking through local services
@@ -24,17 +25,17 @@ Example to use Tor as a proxy both for browsing and downloading:
 
 \(define-configuration buffer
   ((default-modes (append '(proxy-mode) %slot-default%))))"
-  ((proxy (make-instance 'proxy
+  ((proxy (make-instance 'nyxt:proxy
                          :url (quri:uri "socks5://localhost:9050")
                          :allowlist '("localhost" "localhost:8080")
                          :proxied-downloads-p t)
-          :type proxy)
+          :type nyxt:proxy)
    (destructor
     (lambda (mode)
-      (setf (proxy (buffer mode)) nil)))
+      (setf (nyxt:proxy (buffer mode)) nil)))
    (constructor
     (lambda (mode)
-      (setf (proxy (buffer mode)) (proxy mode))
+      (setf (nyxt:proxy (buffer mode)) (proxy mode))
       (echo "Proxy set to ~a (allowlisting ~a)."
             (render-url (url (proxy mode)))
             (allowlist (proxy mode)))))))
