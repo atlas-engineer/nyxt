@@ -122,7 +122,7 @@
                (lambda (results) (%follow-hint (first results)))
                :selector "a, b, del, h, i, option, strong, sub,
 sup, listing, xmp, plaintext, basefont, big, blink, center, font, marquee,
-multicol, nobr, s, spacer, strike, tt, u, wbr"))
+multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite"))
 
 (define-parenscript is-collapsed ()
   ;; returns "true" if mark's start and end are the same value
