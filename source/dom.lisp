@@ -119,7 +119,7 @@
                 (equal (ps:@ element node-name) "#comment"))
         (setf (ps:@ object :text) (ps:@ element text-content)))
       object))
-  (ps:chain -j-s-o-n (stringify (process-element (ps:chain document body)))))
+  (ps:chain -j-s-o-n (stringify (process-element (nyxt/ps:qs document "html")))))
 
 (export-always 'named-json-parse)
 (declaim (ftype (function (string) (values (or plump-dom:root null) &optional)) named-json-parse))
