@@ -54,7 +54,7 @@
   (article-element semantic-element) (aside-element semantic-element)
   audio-element (b-element text-element) base-element bdi-element bdo-element
   blockquote-element body-element br-element button-element canvas-element
-  caption-element cite-element code-element col-element colgroup-element
+  caption-element (cite-element text-element) (code-element text-element) col-element colgroup-element
   data-element datalist-element (dd-element list-element) (del-element text-element) details-element
   dfn-element div-element (dl-element list-element) (dt-element list-element) em-element
   embed-element fieldset-element (figcaption-element semantic-element) figure-element
