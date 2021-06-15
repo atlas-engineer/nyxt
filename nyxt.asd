@@ -332,17 +332,8 @@ See `asdf::*immutable-systems*'."
             (flet ((ensure-parent-exists (file)
                      (uiop:ensure-all-directories-exist
                       (list (directory-namestring file)))))
-              (let ((desktop-file (format nil "~a/applications/nyxt.desktop" *datadir*)))
-                (ensure-parent-exists desktop-file)
-                (with-open-file (desktop-stream desktop-file :direction :output
-                                                             :if-exists :supersede)
-                  (princ
-                   (funcall (read-from-string "str:replace-all")
-                            "VERSION"
-                            (symbol-value (read-from-string "nyxt:+version+"))
-                            (funcall (read-from-string "alexandria:read-file-into-string")
-                                     (system-relative-pathname c "assets/nyxt.desktop")))
-                   desktop-stream)))
+              (uiop:copy-file (system-relative-pathname c "assets/nyxt.desktop")
+                              (format nil "~a/applications/nyxt.desktop" *datadir*))
               (mapc (lambda (icon-size)
                       (let ((icon-file (format nil "~a/icons/hicolor/~ax~a/apps/nyxt.png"
                                                *datadir* icon-size icon-size)))
