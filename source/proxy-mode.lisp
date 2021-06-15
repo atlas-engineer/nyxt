@@ -2,8 +2,11 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/proxy-mode
-    (:use :common-lisp :trivia :nyxt)
-  (:documentation "Proxy mode (e.g. Tor et al.)"))
+  (:use :common-lisp :trivia :nyxt)
+  (:documentation "Proxy mode can be used to do all the networking (optionally
+including downloads) via a proxy server.
+It can also be configured to forward all the networking through local services
+like Tor."))
 (in-package :nyxt/proxy-mode)
 
 (define-mode proxy-mode ()
@@ -22,9 +25,9 @@ Example to use Tor as a proxy both for browsing and downloading:
 \(define-configuration buffer
   ((default-modes (append '(proxy-mode) %slot-default%))))"
   ((proxy (make-instance 'proxy
-                 :url (quri:uri "socks5://localhost:9050")
-                 :allowlist '("localhost" "localhost:8080")
-                 :proxied-downloads-p t)
+                         :url (quri:uri "socks5://localhost:9050")
+                         :allowlist '("localhost" "localhost:8080")
+                         :proxied-downloads-p t)
           :type proxy)
    (destructor
     (lambda (mode)
