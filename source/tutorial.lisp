@@ -176,7 +176,12 @@ removed from the input, they are also removed from the existing bookmark.")
     (:li (command-markup 'delete-bookmark) ": Delete queried bookmarks.")
     (:li (command-markup 'list-bookmarks) ": Display a new buffer containing the
 list of all bookmarks."))
-
+   (:h3 "Enable and Disable modes")
+   (:p "The command " (:code "enable-mode") " allows the user to apply a
+mode (such as " (:code "nosound-mode") " or " (:code "dark-mode") ") to multiple
+buffers at once. Conversely, it is possible to revert this action
+executing "(:code "disable-mode") " while choosing exactly the same buffers and
+the same mode previously selected.")
    (:h3 "Visual mode")
    (:p "Select text without a mouse. Nyxt's "
        (:code "visual-mode") " imitates Vim's visual mode (and comes with the
