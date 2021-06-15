@@ -54,24 +54,26 @@
   (article-element semantic-element) (aside-element semantic-element)
   audio-element (b-element text-element) base-element bdi-element bdo-element
   blockquote-element body-element br-element button-element canvas-element
-  caption-element (cite-element text-element) (code-element text-element) col-element colgroup-element
-  data-element datalist-element (dd-element list-element) (del-element text-element) details-element
-  dfn-element div-element (dl-element list-element) (dt-element list-element) em-element
-  embed-element fieldset-element (figcaption-element semantic-element) figure-element
-  (footer-element semantic-element) form-element (h1-element) (h2-element h-element)
-  (h3-element h-element) (h4-element h-element) (h5-element h-element) (h6-element h-element)
-  head-element (header-element semantic-element) hr-element html-element (i-element text-element)
-  iframe-element img-element input-element ins-element kbd-element label-element legend-element
+  caption-element (cite-element text-element) (code-element text-element) col-element
+  colgroup-element data-element datalist-element (dd-element list-element)
+  (del-element text-element) details-element dfn-element div-element (dl-element list-element)
+  (dt-element list-element) em-element embed-element fieldset-element
+  (figcaption-element semantic-element) figure-element (footer-element semantic-element)
+  form-element (h1-element h-element) (h2-element h-element) (h3-element h-element)
+  (h4-element h-element) (h5-element h-element) (h6-element h-element) head-element
+  (header-element semantic-element) hr-element html-element (i-element text-element) iframe-element
+  img-element input-element ins-element kbd-element label-element legend-element
   (li-element list-element) link-element (main-element semantic-element) map-element
   (mark-element semantic-element) meta-element meter-element (nav-element semantic-element)
   noscript-element object-element (ol-element list-element) optgroup-element
-  (option-element text-element) output-element p-element param-element pre-element progress-element
-  q-element rp-element rt-element rtc-element ruby-element samp-element script-element
-  (section-element semantic-element) select-element small-element source-element span-element
-  (strong-element text-element) style-element (sub-element text-element)
-  summary-element (sup-element text-element) table-element tbody-element td-element textarea-element
-  tfoot-element th-element thead-element (time-element semantic-element) title-element tr-element
-  track-element (ul-element list-element) var-element video-element
+  (option-element text-element) output-element (p-element text-element) param-element
+  (pre-element text-element) progress-element q-element rp-element rt-element rtc-element
+  ruby-element samp-element script-element (section-element semantic-element) select-element
+  small-element source-element (span-element text-element) (strong-element text-element)
+  style-element (sub-element text-element) summary-element (sup-element text-element) table-element
+  tbody-element td-element textarea-element tfoot-element th-element thead-element
+  (time-element semantic-element) title-element tr-element track-element (ul-element list-element)
+  var-element video-element
   ;; obsolete elements (from https://www.w3.org/TR/2010/WD-html5-20100304/obsolete.html):
   applet-element acronym-element bgsound-element dir-element frame-element frameset-element
   noframes-element isindex-element (listing-element text-element) (xmp-element text-element)
