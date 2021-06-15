@@ -790,6 +790,70 @@ See `gtk-browser's `modifier-translator' slot."
   (setf (gtk:gtk-widget-size-request (message-container window))
         (list -1 height)))
 
+(defun process-file-chooser-request (web-view file-chooser-request)
+  (declare (ignore web-view))
+  (when (native-dialogs *browser*)
+    (gobject:g-object-ref (gobject:pointer file-chooser-request))
+    (run-thread
+      (let ((files (mapcar
+                    #'namestring
+                    (prompt :prompt (format
+                                     nil "File~@[s~*~] to input"
+                                     (webkit:webkit-file-chooser-request-select-multiple
+                                      file-chooser-request))
+                            :input (or
+                                    (and
+                                     (webkit:webkit-file-chooser-request-selected-files
+                                      file-chooser-request)
+                                     (first
+                                      (webkit:webkit-file-chooser-request-selected-files
+                                       file-chooser-request)))
+                                    (namestring (uiop:getcwd)))
+                            :sources (list (make-instance 'file-source))))))
+        (if files
+            (webkit:webkit-file-chooser-request-select-files
+             file-chooser-request
+             (cffi:foreign-alloc :string
+                                 :initial-contents (if (webkit:webkit-file-chooser-request-select-multiple
+                                                        file-chooser-request)
+                                                       (mapcar #'cffi:foreign-string-alloc files)
+                                                       (list (cffi:foreign-string-alloc (first files))))
+                                 :count (if (webkit:webkit-file-chooser-request-select-multiple
+                                             file-chooser-request)
+                                            (length files)
+                                            1)
+                                 :null-terminated-p t))
+            (webkit:webkit-file-chooser-request-cancel file-chooser-request))
+        t))))
+
+(defun process-script-dialog (web-view dialog)
+  (declare (ignore web-view))
+  (when (native-dialogs *browser*)
+    (let ((dialog (gobject:pointer dialog)))
+      (webkit:webkit-script-dialog-ref dialog)
+      (run-thread
+        (case (webkit:webkit-script-dialog-get-dialog-type dialog)
+          (:webkit-script-dialog-alert (echo (webkit:webkit-script-dialog-get-message dialog)))
+          (:webkit-script-dialog-prompt
+           (let ((text (first (ignore-errors
+                               (prompt
+                                :input (webkit:webkit-script-dialog-prompt-get-default-text dialog)
+                                :prompt (webkit:webkit-script-dialog-get-message dialog)
+                                :sources (list (make-instance 'prompter:raw-source)))))))
+             (if text
+                 (webkit:webkit-script-dialog-prompt-set-text dialog text)
+                 (progn
+                   (webkit:webkit-script-dialog-prompt-set-text dialog (cffi:null-pointer))
+                   (webkit:webkit-script-dialog-close dialog)))))
+          ((:webkit-script-dialog-confirm :webkit-script-dialog-before-unload-confirm)
+           (webkit:webkit-script-dialog-confirm-set-confirmed
+            dialog (if-confirm
+                    ((webkit:webkit-script-dialog-get-message dialog))
+                    t nil))))
+        (webkit:webkit-script-dialog-close dialog)
+        (webkit:webkit-script-dialog-unref dialog))
+      t)))
+
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
   (setf (gtk-object buffer) (make-web-view
@@ -822,65 +886,10 @@ See `gtk-browser's `modifier-translator' slot."
      (on-signal-scroll-event buffer event)))
   (gobject:g-signal-connect
    (gtk-object buffer) "script-dialog"
-   (lambda (web-view dialog) (declare (ignore web-view))
-     (when (native-dialogs *browser*)
-       (let ((dialog (gobject:pointer dialog)))
-         (webkit:webkit-script-dialog-ref dialog)
-         (run-thread
-           (case (webkit:webkit-script-dialog-get-dialog-type dialog)
-             (:webkit-script-dialog-alert (echo (webkit:webkit-script-dialog-get-message dialog)))
-             (:webkit-script-dialog-prompt
-              (webkit:webkit-script-dialog-prompt-set-text
-               dialog
-               (first
-                (prompt
-                 :input (webkit:webkit-script-dialog-prompt-get-default-text dialog)
-                 :prompt (webkit:webkit-script-dialog-get-message dialog)
-                 :sources (list (make-instance 'prompter:raw-source))))))
-             ((:webkit-script-dialog-confirm :webkit-script-dialog-before-unload-confirm)
-              (webkit:webkit-script-dialog-confirm-set-confirmed
-               dialog (if-confirm
-                       ((webkit:webkit-script-dialog-get-message dialog))
-                       t nil))))
-           (webkit:webkit-script-dialog-close dialog))
-         t))))
+   #'process-script-dialog)
   (gobject:g-signal-connect
    (gtk-object buffer) "run-file-chooser"
-   (lambda (web-view file-chooser-request)
-     (declare (ignore web-view))
-     (when (native-dialogs *browser*)
-       (gobject:g-object-ref (gobject:pointer file-chooser-request))
-       (run-thread
-         (let ((files (mapcar
-                       #'namestring
-                       (prompt :prompt (format
-                                        nil "File~@[s~*~] to input"
-                                        (webkit:webkit-file-chooser-request-select-multiple
-                                         file-chooser-request))
-                               :input (or
-                                       (and
-                                        (webkit:webkit-file-chooser-request-selected-files
-                                         file-chooser-request)
-                                        (first
-                                         (webkit:webkit-file-chooser-request-selected-files
-                                          file-chooser-request)))
-                                       (namestring (uiop:getcwd)))
-                               :sources (list (make-instance 'file-source))))))
-           (when files
-             (webkit:webkit-file-chooser-request-select-files
-              file-chooser-request
-              (cffi:foreign-alloc :string
-                                  :initial-contents (if (webkit:webkit-file-chooser-request-select-multiple
-                                                         file-chooser-request)
-                                                        (mapcar #'cffi:foreign-string-alloc files)
-                                                        (list (cffi:foreign-string-alloc (first files))))
-                                  :count (if (webkit:webkit-file-chooser-request-select-multiple
-                                              file-chooser-request)
-                                             (length files)
-                                             1)
-                                  :null-terminated-p t)))
-           (webkit:webkit-file-chooser-request-cancel file-chooser-request)
-           t)))))
+   #'process-file-chooser-request)
   ;; TLS certificate handling
   (gobject:g-signal-connect
    (gtk-object buffer) "load-failed-with-tls-errors"
