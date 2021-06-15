@@ -122,7 +122,15 @@
 
 (export-always 'named-json-parse)
 (declaim (ftype (function (string) (values (or plump-dom:root null) &optional)) named-json-parse))
-(defun named-json-parse (input)
+(defun named-json-parse (JSON)
+  "Return a `plump:root' of a DOM-tree produced from the JSON.
+
+JSON should have the format like what `get-document-body-json' produces:
+- A nested hierarchy of objects (with only one root object), where
+  - Every object has a 'name' (usually a tag name or '#text'/'#comment').
+  - Some objects can have 'attributes' (a string->string dictionary).
+  - Some objects have a subarray ('children') of objects working by these three
+    rules."
   (labels ((json-to-plump (json-alist parent)
              (let ((element
                      (cond
