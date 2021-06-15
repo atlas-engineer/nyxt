@@ -495,7 +495,7 @@ The version number is stored in the clipboard."
      (:style (cl-css:css '(("#documentation .button"
                             :min-width "100px"))))
      (:h1 "Welcome to Nyxt ☺")
-     (:br )
+     (:p (:a :href "https://nyxt.atlas.engineer" "https://nyxt.atlas.engineer"))
      (:h2 "Quick configuration")
      (:p (:a :class "button" :href (lisp-url `(nyxt::common-settings)) "Common settings")
          " Switch between Emacs/vi/CUA key bindings, set home page URL, and zoom level.")
