@@ -4,7 +4,7 @@
 (in-package :nyxt/web-mode)
 
 (define-parenscript add-stylesheet ()
-  (unless (ps:chain document (query-selector "#nyxt-stylesheet"))
+  (unless (nyxt/ps:qs document "#nyxt-stylesheet")
     (ps:try
      (ps:let* ((style-element (ps:chain document (create-element "style")))
                (box-style (ps:lisp (box-style (current-mode 'web))))
