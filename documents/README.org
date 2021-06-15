@@ -304,7 +304,7 @@ If you use the internal Quicklisp distribution (i.e. with the default
 =NYXT_INTERNAL_QUICKLISP=true=), the distribution is updated
 automatically for you.
 
-You will also need to manually update the [[Lisp specific dependencies]].
+You will also need to manually update the [[#lisp-dependencies][Lisp specific dependencies]].
 
 * Run Nyxt in a security sandbox
 
@@ -336,7 +336,7 @@ a container on GNU/Linux.
 If you are developing Nyxt, you may prefer to run Nyxt directly from
 source so that you can skip the compilation step and iterate faster.
 
-Make sure that Quicklisp is set up and up-to-date (see [[Update local Lisp
+Make sure that Quicklisp is set up and up-to-date (see [[#update-local-lisp-libraries][Update local Lisp
 libraries]]) as explained in the Quicklisp section.
 
 Then in a shell execute the following:
