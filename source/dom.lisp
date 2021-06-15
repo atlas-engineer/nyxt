@@ -123,7 +123,7 @@
 
 (export-always 'named-json-parse)
 (declaim (ftype (function (string) (values (or plump-dom:root null) &optional)) named-json-parse))
-(defun named-json-parse (JSON)
+(defun named-json-parse (json)
   "Return a `plump:root' of a DOM-tree produced from the JSON.
 
 JSON should have the format like what `get-document-body-json' produces:
@@ -156,7 +156,7 @@ JSON should have the format like what `get-document-body-json' produces:
                         :size (length (alex:assoc-value json-alist
                                                         :attributes)))))
                element)))
-    (let ((json (json:decode-json-from-string input))
+    (let ((json (json:decode-json-from-string json))
           (root (plump:make-root)))
       (json-to-plump json root)
       (name-dom-elements root))))
