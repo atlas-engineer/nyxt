@@ -539,16 +539,11 @@ Otherwise go forward to the only child."
                (buffer mode)
                (slot-value (buffer mode) 'nyxt::load-status))
     (when (eq (slot-value (buffer mode) 'nyxt::load-status) :finished)
-      ;; We also add history entries here for when URL changes with initiating
+      ;; We also add history entries here when URL changes without initiating
       ;; any load, e.g. when clicking on an anchor.
       (with-current-buffer (buffer mode)
         (nyxt::history-add url :title (title (buffer mode))
-                               :buffer (buffer mode))
-        (with-data-access (history (history-path (buffer mode)))
-          (setf (nyxt::scroll-position
-                 (htree:data (htree:current (htree:owner history (id (buffer mode))))))
-                (nyxt:document-scroll-position (buffer mode)))))))
-
+                               :buffer (buffer mode)))))
   url)
 
 (defmethod nyxt:on-signal-notify-title ((mode web-mode) title)
