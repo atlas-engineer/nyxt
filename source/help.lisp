@@ -245,11 +245,15 @@ A command is a special kind of function that can be called with
                                                 `(describe-class ',(sera:class-name-of source)))
                                                (string (sera:class-name-of source))))))))))))
 
-(defun configure-slot (slot class &key (value nil new-value-supplied-p)
-                                       (type (getf (mopu:slot-properties (find-class class) slot) :type)))
+(defun configure-slot (slot class &key
+                                    (value nil new-value-supplied-p)
+                                    ;; SLOT may also be a method, as with
+                                    ;; `default-modes', in which case there is no type.
+                                    (type (ignore-errors
+                                           (getf (mopu:slot-properties (find-class class) slot)
+                                                 :type))))
   "Set the value of a slot in a users auto-config.lisp.
-CLASS can be a class symbol or a list of class symbols, as with
-`define-configuration'."
+CLASS is a class symbol."
   (flet ((set-slot (slot class input)
            (echo "Update slot ~s to ~s." slot input)
            (append-configuration `(define-configuration ,class
@@ -295,16 +299,14 @@ CLASS can be a class symbol or a list of class symbols, as with
      (:h2 "Keybinding style")
      (:p (:a :class "button"
              :href (lisp-url `(nyxt::configure-slot
-                               'default-modes
-                               '(buffer web-buffer)
+                               'default-modes 'buffer
                                :value '%slot-default%)
                              `(nyxt/emacs-mode:emacs-mode :activate nil)
                              `(nyxt/vi-mode:vi-normal-mode :activate nil))
              "Use default (CUA)"))
      (:p (:a :class "button"
              :href (lisp-url `(nyxt::configure-slot
-                               'default-modes
-                               '(buffer web-buffer)
+                               'default-modes 'buffer
                                :value '(append '(emacs-mode) %slot-default%))
                              `(nyxt/emacs-mode:emacs-mode :activate t)
                              `(nyxt/vi-mode:vi-normal-mode :activate nil))
@@ -312,8 +314,7 @@ CLASS can be a class symbol or a list of class symbols, as with
      (:p (:a :class "button"
              :href (lisp-url `(progn
                                 (nyxt::configure-slot
-                                 'default-modes
-                                 '(buffer web-buffer)
+                                 'default-modes 'buffer
                                  :value '(append '(vi-normal-mode) %slot-default%))
                                 (nyxt::configure-slot
                                  'default-modes
