@@ -145,7 +145,7 @@ JSON should have the format like what `get-document-body-json' produces:
                (when (typep element 'plump:nesting-node)
                  (setf (plump:children element)
                        (plump:ensure-child-array
-                        (map 'vector (alex:rcurry #'json-to-plump parent)
+                        (map 'vector (alex:rcurry #'json-to-plump element)
                              (alex:assoc-value json-alist :children)))))
                (when (typep element 'plump:element)
                  (setf (plump:attributes element)
