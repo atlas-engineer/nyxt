@@ -194,7 +194,7 @@ prevents otherwise."))
   (alex:ensure-list (slot-value browser 'external-editor-program)))
 
 (defun %get-user-data (profile path cache)
-  (sera:and-let* ((expanded-path (expand-path path)))
+  (sera:and-let* ((expanded-path (expand-data-path profile path)))
     (multiple-value-bind (user-data found?)
         (gethash expanded-path cache)
       (if found?
