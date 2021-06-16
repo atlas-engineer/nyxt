@@ -217,7 +217,9 @@ prevents otherwise."))
 (defmethod finalize ((browser browser) urls startup-timestamp)
   "Run `*after-init-hook*' then BROWSER's `startup'."
   ;; `messages-appender' requires `*browser*' to be initialized.
-  (log4cl:add-appender log4cl:*root-logger* (make-instance 'messages-appender))
+  (unless (find-if (sera:eqs 'messages-appender) (log4cl:all-appenders)
+                   :key #'sera:class-name-of)
+    (log4cl:add-appender log4cl:*root-logger* (make-instance 'messages-appender)))
   (handler-case
       (hooks:run-hook *after-init-hook*) ; TODO: Run outside the main loop?
     (error (c)
