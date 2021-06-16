@@ -22,10 +22,10 @@
      (:style (style buffer))
      (:h1 "Messages")
      (:a :class "button"
-         :href (lisp-url '(nyxt::list-messages)) "Update")
+         :href (lisp-url '(nyxt/message-mode::list-messages)) "Update")
      (:a :class "button"
          :href (lisp-url '(nyxt/message-mode:clear-messages)
-                         '(nyxt::list-messages))
+                         '(nyxt/message-mode::list-messages))
          "Clear")
      (:ul
       (loop for message in (reverse (nyxt:messages-content *browser*))
