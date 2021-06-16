@@ -141,7 +141,8 @@ JSON should have the format like what `get-document-body-json' produces:
                         (plump:make-text-node parent (alex:assoc-value json-alist :text)))
                        ((string-equal (alex:assoc-value json-alist :name) "#comment")
                         (plump:make-comment parent (alex:assoc-value json-alist :text)))
-                       (t (plump:make-element parent (alex:assoc-value json-alist :name))))))
+                       (t (plump:make-element parent (str:downcase
+                                                      (alex:assoc-value json-alist :name)))))))
                (when (typep element 'plump:nesting-node)
                  (setf (plump:children element)
                        (plump:ensure-child-array
@@ -151,7 +152,7 @@ JSON should have the format like what `get-document-body-json' produces:
                  (setf (plump:attributes element)
                        (alex:alist-hash-table
                         (mapcar #'(lambda (pair)
-                                    (cons (symbol-name (first pair))
+                                    (cons (str:downcase (symbol-name (first pair)))
                                           (rest pair)))
                                 (alex:assoc-value json-alist :attributes))
                         :test 'equalp
