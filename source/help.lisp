@@ -261,17 +261,17 @@ CLASS can be a class symbol or a list of class symbols, as with
                    ((,slot ,value)))))
         (let ((accepted-input
                 (loop while t do
-                         (let ((input (read-from-string
-                                       (first (prompt
-                                               :prompt (format nil "Configure slot value ~a" slot)
-                                               :sources (make-instance 'prompter:raw-source))))))
-                           (cond ((not type) (return input))
-                                 ((typep input type) (return input))
-                                 (t (progn
-                                      (echo-warning
-                                       "There's a type mismatch: ~a should be a ~a, while you provided ~a"
-                                       slot type (type-of input))
-                                      nil)))))))
+                  (let ((input (read-from-string
+                                (first (prompt
+                                        :prompt (format nil "Configure slot value ~a" slot)
+                                        :sources (make-instance 'prompter:raw-source))))))
+                    (cond ((not type) (return input))
+                          ((typep input type) (return input))
+                          (t (progn
+                               (echo-warning
+                                "There's a type mismatch: ~a should be a ~a, while you provided ~a"
+                                slot type (type-of input))
+                               nil)))))))
           (set-slot slot class accepted-input)
           (eval `(define-configuration ,class
                    ((,slot ,accepted-input))))))))
@@ -290,9 +290,8 @@ CLASS can be a class symbol or a list of class symbols, as with
     (markup:markup
      (:style (style buffer))
      (:h1 "Common Settings")
-     (:p "Set the values for frequently configured
-            settings. Changes made will apply to newly created
-            buffers.")
+     (:p "Set the values for frequently configured settings. "
+         "Changes only apply to newly created buffers.")
      (:h2 "Keybinding style")
      (:p (:a :class "button"
              :href (lisp-url `(nyxt::configure-slot
