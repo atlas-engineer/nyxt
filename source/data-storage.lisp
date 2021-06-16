@@ -520,9 +520,11 @@ This measure protects against half-written files when an error occurs in the BOD
                                                             :if-does-not-exist :create
                                                             :if-exists :supersede)
                                 ,@body)
-                         (rename-file
-                          (uiop:ensure-pathname ,temp-path)
-                          (uiop:ensure-pathname ,final-path)))
-         (let ((,temp-path (uiop:ensure-pathname ,temp-path)))
-           (when (uiop:file-exists-p ,temp-path)
-             (delete-file ,temp-path)))))))
+                         (unless (equalp ,temp-path ,final-path)
+                           (rename-file
+                            (uiop:ensure-pathname ,temp-path)
+                            (uiop:ensure-pathname ,final-path))))
+         (unless (equalp ,temp-path ,final-path)
+           (let ((,temp-path (uiop:ensure-pathname ,temp-path)))
+             (when (uiop:file-exists-p ,temp-path)
+               (delete-file ,temp-path))))))))
