@@ -740,8 +740,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (ffi-buffer-delete buffer)
     (buffers-delete (id buffer))
     ;; (setf (id buffer) "") ; TODO: Reset ID?
-    (add-to-recent-buffers buffer)
-    (store (data-profile buffer) (history-path buffer))))
+    (add-to-recent-buffers buffer)))
 
 (export-always 'buffer-list)
 (defun buffer-list ()
