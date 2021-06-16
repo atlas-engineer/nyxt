@@ -36,6 +36,7 @@ Example to use Tor as a proxy both for browsing and downloading:
    (constructor
     (lambda (mode)
       (setf (nyxt:proxy (buffer mode)) (proxy mode))
-      (echo "Proxy set to ~a (allowlisting ~a)."
+      (echo "Buffer ~a proxy set to ~a, allowlisting ~a."
+            (id (buffer mode))
             (render-url (url (proxy mode)))
             (allowlist (proxy mode)))))))
