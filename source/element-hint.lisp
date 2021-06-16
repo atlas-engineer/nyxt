@@ -68,7 +68,7 @@
 
 (defun add-element-hints (&key selector)
   (let* ((dom (document-model (current-mode 'web)))
-         (hintable-elements (remove-duplicates (clss:select selector dom)))
+         (hintable-elements (clss:select selector dom))
          (hints (generate-hints (length hintable-elements))))
     (add-stylesheet)
     (hint-elements (map 'list #'get-nyxt-id hintable-elements) hints)
