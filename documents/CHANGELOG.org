@@ -21,6 +21,36 @@ If possible!
 *** Add online suggestions from search engines
 ** 2 series
 
+*** TASK 2.1.0 (Upcoming)
+
+- New =process-mode=.
+
+- New =cruise-control-mode=.
+
+- Page scroll position is now remembered in history.
+
+- Replace "Loading:" text with spinner.
+
+- Bug fixes:
+
+  - Fix broken "hamburger" button to list buffers.
+
+  - Make bookmarklets callable from =execute-command=.
+
+  - Quit gracefully when =C-c= is pressed in the parent shell.
+
+  - Fix search engine queries with =&= and =%= characters.
+
+  - Make =search-buffer-source= customizable with =define-configuration=.
+    (Thanks to @mariari.)
+
+  - Support command-line argument in external-editor-program.
+
+  - Fix proxy-mode configuration. (Thanks to @Zwo1in.)
+
+  - Fix history corruptions when an error occurred while saving the
+    history to disk.
+
 *** 2.0.0
 
 - Search engine auto-completion.
