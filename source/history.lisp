@@ -428,21 +428,24 @@ We keep this variable as a means to import the old format to the new one.")
 
 (define-class history-name-source (prompter:source)
   ((prompter:name "Histories")
-   (prompter:constructor (histories-list))))
+   (prompter:constructor (histories-list))
+   (prompter:hide-attribute-header-p :single)))
 
 (define-command store-history-by-name ()
   "Store the history data in the file named by user input.
 Useful for session snapshots, as `restore-history-by-name' will restore opened buffers."
-  (with-data-access (history (history-path (current-buffer)))
-    (sera:and-let* ((name (first (prompt
-                                  :prompt "The name to store history with"
-                                  :sources (list (make-instance 'prompter:raw-source)
-                                                 (make-instance 'history-name-source)))))
-                    (path (make-instance 'history-data-path
-                                         :dirname (parent (history-path (current-buffer)))
-                                         :basename name)))
-      (%set-data path history)
-      (store (data-profile (current-buffer)) path))))
+  (sera:and-let* ((name (first (prompt
+                                :prompt "The name to store history with"
+                                :sources (list (make-instance 'prompter:raw-source)
+                                               (make-instance 'history-name-source)))))
+                  (path (make-instance 'history-data-path
+                                       :dirname (parent (history-path (current-buffer)))
+                                       :basename name)))
+    (with-data-unsafe (history (history-path (current-buffer)))
+      (%set-data path history))
+    (let ((profile (data-profile (current-buffer))))
+      (store profile path)
+      (echo "History stored to ~s." (expand-data-path profile path)))))
 
 (define-command restore-history-by-name ()
   "Delete all the buffers of the current session/history and import the history chosen by user.
