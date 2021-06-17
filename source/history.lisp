@@ -360,7 +360,9 @@ We keep this variable as a means to import the old format to the new one.")
              (echo "Loading history of ~a URLs from ~s."
                    (hash-table-count (htree:entries history))
                    (expand-path path))
-             (setf (get-data path) history)
+             ;; REVIEW: Do we really need %set-data?  Alternatively, the following works:
+             ;; (setf (data (get-user-data profile path)) history)
+             (%set-data path history)
              (when restore-buffers-p
                (restore-buffers history))
              history)
@@ -437,7 +439,7 @@ Useful for session snapshots, as `restore-history-by-name' will restore opened b
                     (path (make-instance 'history-data-path
                                          :dirname (parent (history-path (current-buffer)))
                                          :basename name)))
-      (setf (get-data path) history)
+      (%set-data path history)
       (store (data-profile (current-buffer)) path))))
 
 (define-command restore-history-by-name ()
@@ -453,10 +455,10 @@ If you want to save the current history file beforehand, call
                                        :dirname (parent (history-path (current-buffer)))
                                        :basename name)))
     (let ((old-buffers (buffer-list)))
-      (setf (get-data path) (make-history-tree))
+      (%set-data path (make-history-tree))
       (sera:and-let* ((new-history (restore (data-profile (current-buffer)) path
                                             :restore-buffers-p t)))
         ;; TODO: Maybe modify `history-path' of all the buffers instead of polluting history?
-        (setf (get-data (history-path (current-buffer))) new-history)
+        (%set-data (history-path (current-buffer)) new-history)
         (dolist (buffer old-buffers)
           (buffer-delete buffer))))))

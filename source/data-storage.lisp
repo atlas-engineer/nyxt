@@ -287,6 +287,9 @@ This function can be used on browser-less globals like `*init-file-path*'."
 (defgeneric get-user-data (profile path)
   (:documentation "Access the browsing-related data depending on the `data-profile'."))
 
+(defgeneric set-user-data (profile path value)
+  (:documentation "Set the browsing-related data depending on the `data-profile'."))
+
 (defmethod get-user-data ((profile nosave-data-profile) (path data-path))
   "Look up the buffer-local data in case of `nosave-data-profile'."
   (%get-user-data profile path (user-data-cache profile)))
@@ -298,11 +301,16 @@ This function can be used on browser-less globals like `*init-file-path*'."
 Second value is NIL if `get-user-data' returned NIL.
 Prefer the thread-safe `with-data-access', or the non-thread-safe
 `with-data-unsafe' which won't execute the body if the data is NIL."
-  (alex:when-let ((user-data (get-user-data (current-data-profile) path)))
-    (values (data user-data) user-data)))
+  (let ((profile (current-data-profile)))
+    (alex:when-let ((user-data (get-user-data profile path)))
+      ;; TODO: What if we restore to NIL?  Would we keep restoring?
+      (bt:with-recursive-lock-held ((lock user-data))
+        (unless (data user-data)
+          (restore profile path)))
+      (values (data user-data) user-data))))
 
-(defmethod (setf get-data) (value (path data-path))
-  (setf (data (get-user-data (current-data-profile) path)) value))
+(defmethod %set-data ((path data-path) value)
+  (set-user-data (current-data-profile) path value))
 
 (export-always 'with-data-access)
 (defmacro with-data-access ((data-var data-path &key default) &body body)
@@ -323,7 +331,7 @@ For a faster and modification-unsafe version, see `with-data-unsafe'."
        (bt:with-recursive-lock-held (,lock)
          (let ((,data-var (or (get-data ,path-name) ,default)))
            (unwind-protect (progn ,@body)
-             (setf (get-data ,path-name) ,data-var)
+             (%set-data ,path-name ,data-var)
              (store (current-data-profile) ,path-name)))))))
 
 (export-always 'with-data-unsafe)

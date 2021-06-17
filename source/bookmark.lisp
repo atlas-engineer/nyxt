@@ -300,9 +300,9 @@ rest in background buffers."
   (with-data-file-output (file path)
     ;; TODO: Make sorting customizable?  Note that `store-sexp-bookmarks' is
     ;; already a customizable function.
-    (setf (get-data path)
-          (sort (get-data path)
-                #'url< :key #'url))
+    (%set-data path
+              (sort (get-data path)
+                    #'url< :key #'url))
     (write-string "(" file)
     (dolist (entry (get-data path))
       (write-char #\newline file)
@@ -323,7 +323,7 @@ rest in background buffers."
                       (deserialize-bookmarks file)))))
         (when data
           (echo "Loading ~a bookmarks from ~s." (length data) (expand-path path))
-          (setf (get-data path) data)))
+          (%set-data path data)))
     (error (c)
       (echo-warning "Failed to load bookmarks from ~s: ~a"
                     (expand-path path) c))))

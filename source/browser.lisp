@@ -209,6 +209,10 @@ prevents otherwise."))
 (defmethod get-user-data ((profile data-profile) (path data-path))
   (%get-user-data profile path (user-data-cache *browser*)))
 
+(defmethod set-user-data ((profile data-profile) (path data-path) value)
+  (setf (data (%get-user-data profile path (user-data-cache *browser*)))
+        value))
+
 (defmethod get-containing-window-for-buffer ((buffer buffer)
                                              (browser browser))
   "Get the window containing a buffer."

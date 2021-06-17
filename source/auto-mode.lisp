@@ -491,4 +491,4 @@ Auto-mode is re-enabled once the page is reloaded."
                       (deserialize-auto-mode-rules file))))))
       (when data
         (echo "Loading ~a auto-mode rules from ~s." (length data) (expand-path path))
-        (setf (get-data path) data)))))
+        (nyxt::%set-data path data)))))
