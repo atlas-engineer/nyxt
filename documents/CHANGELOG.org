@@ -27,8 +27,6 @@ If possible!
 
 - New =cruise-control-mode=.
 
-- Page scroll position is now remembered in history.
-
 - Replace "Loading:" text with spinner.
 
 - Bug fixes:
