@@ -202,8 +202,6 @@ prevents otherwise."))
           (let ((user-data (make-instance 'user-data)))
             (setf (gethash expanded-path cache)
                   user-data)
-            (bt:with-recursive-lock-held ((lock user-data))
-              (restore profile path))
             user-data)))))
 
 (defmethod get-user-data ((profile data-profile) (path data-path))

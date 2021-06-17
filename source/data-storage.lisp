@@ -285,10 +285,10 @@ This function can be used on browser-less globals like `*init-file-path*'."
 
 (export-always 'get-user-data)
 (defgeneric get-user-data (profile path)
-  (:documentation "Access the browsing-related data depending on the `data-profile'."))
+  (:documentation "Return the `user-data' object associated to PROFILE and PATH."))
 
 (defgeneric set-user-data (profile path value)
-  (:documentation "Set the browsing-related data depending on the `data-profile'."))
+  (:documentation "Set the `user-data' object's `data' to VALUE."))
 
 (defmethod get-user-data ((profile nosave-data-profile) (path data-path))
   "Look up the buffer-local data in case of `nosave-data-profile'."
@@ -298,16 +298,19 @@ This function can be used on browser-less globals like `*init-file-path*'."
 ;; TODO: Better name? Isn't it too wide?
 (defmethod get-data ((path data-path))
   "Return the data for PATH.
+Data is restored with the `restore' method if required.
 Second value is NIL if `get-user-data' returned NIL.
 Prefer the thread-safe `with-data-access', or the non-thread-safe
 `with-data-unsafe' which won't execute the body if the data is NIL."
   (let ((profile (current-data-profile)))
-    (alex:when-let ((user-data (get-user-data profile path)))
-      ;; TODO: What if we restore to NIL?  Would we keep restoring?
-      (bt:with-recursive-lock-held ((lock user-data))
-        (unless (data user-data)
-          (restore profile path)))
-      (values (data user-data) user-data))))
+    (alex:if-let ((user-data (get-user-data profile path)))
+      (progn
+        ;; TODO: What if we restore to NIL?  Would we keep restoring?
+        (bt:with-recursive-lock-held ((lock user-data))
+          (unless (data user-data)
+            (restore profile path)))
+        (values (data user-data) user-data))
+      (values nil nil))))
 
 (defmethod %set-data ((path data-path) value)
   (set-user-data (current-data-profile) path value))
