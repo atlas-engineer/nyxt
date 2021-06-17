@@ -331,7 +331,9 @@ We keep this variable as a means to import the old format to the new one.")
                             ;; Node-less owners can safely be ignored.
                             (when current-node
                               (let ((new-buffer (make-buffer :title (title (htree:data current-node))
+
                                                              :url (url (htree:data current-node))
+                                                             :no-history-p t
                                                              :load-url-p nil)))
                                 (setf (gethash owner-id old-id->new-id) (id new-buffer))
                                 (setf (gethash (id new-buffer) new-owners) owner)))))))
