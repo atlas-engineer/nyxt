@@ -835,11 +835,12 @@ See `gtk-browser's `modifier-translator' slot."
         (case (webkit:webkit-script-dialog-get-dialog-type dialog)
           (:webkit-script-dialog-alert (echo (webkit:webkit-script-dialog-get-message dialog)))
           (:webkit-script-dialog-prompt
-           (let ((text (first (ignore-errors
-                               (prompt
-                                :input (webkit:webkit-script-dialog-prompt-get-default-text dialog)
-                                :prompt (webkit:webkit-script-dialog-get-message dialog)
-                                :sources (list (make-instance 'prompter:raw-source)))))))
+           (let ((text (first (handler-case
+                                  (prompt
+                                   :input (webkit:webkit-script-dialog-prompt-get-default-text dialog)
+                                   :prompt (webkit:webkit-script-dialog-get-message dialog)
+                                   :sources (list (make-instance 'prompter:raw-source)))
+                                (nyxt-prompt-buffer-canceled (c) (declare (ignore c)) nil)))))
              (if text
                  (webkit:webkit-script-dialog-prompt-set-text dialog text)
                  (progn
