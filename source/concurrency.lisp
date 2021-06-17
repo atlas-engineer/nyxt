@@ -45,15 +45,15 @@ If SIZE is NIL, capicity is infinite."
 (defun drain-channel (channel &optional timeout)
   "Listen to CHANNEL until a value is available, then return all CHANNEL values
 as a list.
-TIMEOUT specifies how long to wait when draining values after the first one.
+TIMEOUT specifies how long to wait for a value after the first one.
 This is a blocking operation."
   (labels ((fetch ()
              (multiple-value-bind (value received?)
-                 (calispel:? channel 0)
+                 (calispel:? channel timeout)
                (if received?
                    (cons value (fetch))
                    nil))))
-    (cons (calispel:? channel timeout)
+    (cons (calispel:? channel)
           (nreverse (fetch)))))
 
 (export-always 'run-thread)
