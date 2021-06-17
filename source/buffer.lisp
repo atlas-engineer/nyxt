@@ -594,11 +594,12 @@ BUFFER's modes."
                                 (:modes (or null (cons symbol *)))
                                 (:url quri:uri)
                                 (:parent-buffer (or null buffer))
+                                (:no-history-p boolean)
                                 (:load-url-p boolean)
                                 (:buffer-class (or null symbol))))
                 make-buffer))
 (define-command make-buffer (&key (title "") modes (url (quri:uri "")) parent-buffer
-                             (load-url-p t) buffer-class)
+                             no-history-p (load-url-p t) buffer-class)
   "Create a new buffer.
 MODES is a list of mode symbols.
 If URL is empty, use `default-new-buffer-url'.
@@ -609,6 +610,7 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
                         :title title
                         :extra-modes modes
                         :parent-buffer parent-buffer
+                        :no-history-p no-history-p
                         (when buffer-class
                           (list :buffer-class buffer-class))))
          (url (if (url-empty-p url)
