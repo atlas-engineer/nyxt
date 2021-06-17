@@ -64,4 +64,5 @@ what you are doing!"
   `(bt:make-thread
     (lambda ()
       (with-protect ("Error on separate thread: ~a" :condition)
-        ,@body))))
+        ,@body))
+    :name "Nyxt anonymous thread"))

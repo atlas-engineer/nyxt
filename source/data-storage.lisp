@@ -240,7 +240,14 @@ Define a method for your `data-path' type to make it restorable."))
     (let ((user-data (get-user-data profile path)))
       (unless (channel user-data)
         (setf (channel user-data) (make-channel))
-        (run-thread (worker)))
+        ;; Invoke `bt:make-thread' manually to specify a name.
+        (let ((thread
+                (bt:make-thread
+                 (lambda ()
+                   (with-protect ("Error on separate thread: ~a" :condition)
+                     (worker)))
+                 :name "Nyxt async-data-path worker")))
+          (push thread (non-terminating-threads *browser*))))
       ;; We pass `path', but anything would do since the value is ignored.
       (calispel:! (channel user-data) path))))
 

@@ -168,6 +168,8 @@ not return."
         (gtk:gtk-main))))
 
 (define-ffi-method ffi-kill-browser ((browser gtk-browser))
+  ;; TODO: Terminating the GTK thread from the REPL seems to prevent Nyxt from
+  ;; starting again.
   (unless *run-from-repl-p*
     (gtk:leave-gtk-main)))
 

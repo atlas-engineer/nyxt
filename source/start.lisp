@@ -158,7 +158,8 @@ Example: --with-path bookmarks=/path/to/bookmarks
         (log:info "Deleting socket ~s." socket-path)
         (uiop:delete-file-if-exists socket-path))))
   (unless *run-from-repl-p*
-    (uiop:quit 0 nil)))
+    (uiop:quit 0 nil))
+  (mapc #'bt:destroy-thread (non-terminating-threads *browser*)))
 
 (define-command quit-after-clearing-session (&key confirmation-p) ; TODO: Rename?
   "Close all buffers then quit Nyxt."

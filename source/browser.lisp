@@ -56,6 +56,10 @@ arbitrary code under your user profile.")
                   :documentation "Thread that listens on socket.
 See `*socket-path*'.
 This slot is mostly meant to clean up the thread if necessary.")
+   (non-terminating-threads '()
+                            :type (or list (cons bt:thread *))
+                            :documentation "List of threads that don't terminate
+and that ought to be killed when quitting.")
    (messages-content '()
                      :export t
                      :reader messages-content
