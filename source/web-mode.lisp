@@ -530,17 +530,18 @@ Otherwise go forward to the only child."
     nil)
   (:documentation "Method run when `focus-element' is called."))
 
-(defmacro focus-element ((&optional buffer) &body element-script)
+(defmacro focus-element ((&optional (buffer '(current-buffer))) &body element-script)
   "Select the element pointed to by ELEMENT-SCRIPT.
 ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
   (alex:with-gensyms (element)
-    `(progn
-       (ffi-buffer-evaluate-javascript (or ,buffer (current-buffer))
-                                       (ps:ps (let ((,element (progn ,@element-script)))
-                                                (ps:chain ,element (focus))
-                                                (ps:chain ,element (select)))))
-       (dolist (mode (modes (or ,buffer (current-buffer))))
-         (element-focused mode)))))
+    (alex:once-only (buffer)
+      `(progn
+         (ffi-buffer-evaluate-javascript ,buffer
+                                         (ps:ps (let ((,element (progn ,@element-script)))
+                                                  (ps:chain ,element (focus))
+                                                  (ps:chain ,element (select)))))
+         (dolist (mode (modes ,buffer))
+           (element-focused mode))))))
 
 (define-command focus-first-input-field (&key (type-blacklist '("hidden"
                                                                 "checkbox"
