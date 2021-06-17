@@ -532,7 +532,7 @@ Otherwise go forward to the only child."
    :sources (make-instance 'user-autofill-source)))
 
 (export-always 'element-focused)
-(defgeneric element-focused (mode)      ; TODO: Make hook instead?
+(defgeneric element-focused (mode) ; TODO: Make hook instead?  Or use both, have the default method call hook.
   (:method ((mode t))
     nil)
   (:documentation "Method run when `focus-element' is called."))
