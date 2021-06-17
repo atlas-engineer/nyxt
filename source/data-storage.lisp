@@ -28,17 +28,7 @@ This can be used to set the path from command line.  See
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-class async-data-path (data-path)
-  ((channel nil
-            :type (or null calispel:channel)
-            :documentation "Channel that can be used to communicate with the
-thread persisting the data to disk.")
-   (timeout 0.0
-            :documentation "Time to wait on channel for other messages before
-storing.  A timeout of 0 means that as soon as 1 message is received, the thread
-will store the data immediately.  This can waste a store cycle if another
-messages is receieve a fraction of a second after that.  Increasing the timeout
-allows the thread to capture more batches together.  Obviously a higher timeout
-means the store operations are systematically delayed."))
+  ()
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
@@ -52,8 +42,7 @@ means the store operations are systematically delayed."))
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 (define-class history-data-path (async-data-path)
-  ((ref "history")
-   (timeout 0.05))
+  ((ref "history"))
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 (define-class download-data-path (data-path) ; TODO: Rename to downloads-data-path?
@@ -238,20 +227,22 @@ Define a method for your `data-path' type to make it restorable."))
 
 (defmethod store :around ((profile data-profile) (path async-data-path) &key &allow-other-keys)
   (labels ((worker ()
-             (let ((store-ops (drain-channel (channel path) (timeout path))))
+             (let* ((user-data (get-user-data profile path))
+                    (store-ops (drain-channel (channel user-data) (timeout user-data))))
                (when (< 1 (length store-ops))
                  (log:debug "Skipping ~a unnecessary ~a store ops"
-                           (1- (length store-ops))
-                           path))
+                            (1- (length store-ops))
+                            path))
                ;; TODO: Lock here? Seems to dead-lock history forward/backward.
                ;; (bt:with-recursive-lock-held ((lock (get-user-data profile path))))
                (call-next-method))
              (worker)))
-    (unless (channel path)
-      (setf (channel path) (make-channel))
-      (run-thread (worker)))
-    ;; We pass `path', but anything would do since the value is ignored.
-    (calispel:! (channel path) path)))
+    (let ((user-data (get-user-data profile path)))
+      (unless (channel user-data)
+        (setf (channel user-data) (make-channel))
+        (run-thread (worker)))
+      ;; We pass `path', but anything would do since the value is ignored.
+      (calispel:! (channel user-data) path))))
 
 (export-always 'expand-path)
 (declaim (ftype (function ((or null data-path)) (or string null)) expand-path))
@@ -277,7 +268,25 @@ This function can be used on browser-less globals like `*init-file-path*'."
          :documentation "The meaningful data to store. Examples: history data, session, bookmarks.")
    (lock (bt:make-recursive-lock)
          :type bt:lock
-         :documentation "The lock to guard from race conditions on the access to this data."))
+         :documentation "The lock to guard from race conditions when accessing this data."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:documentation "In-memory data wrapper with lock."))
+
+(define-class async-user-data (user-data)
+  ((channel nil
+            :type (or null calispel:channel)
+            :documentation "Channel that can be used to communicate with the
+thread persisting the data to disk.")
+   (timeout 0.05
+            :type (or null real)
+            :documentation "Time to wait on channel for other messages before
+storing.  A timeout of 0 means that as soon as 1 message is received, the thread
+will store the data immediately.  This can waste a store cycle if another
+messages is receieve a fraction of a second after that.  Increasing the timeout
+allows the thread to capture more batches together.  Obviously a higher timeout
+means the store operations are systematically delayed."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
@@ -289,6 +298,15 @@ This function can be used on browser-less globals like `*init-file-path*'."
 
 (defgeneric set-user-data (profile path value)
   (:documentation "Set the `user-data' object's `data' to VALUE."))
+
+(defgeneric user-data-type (profile path)
+  (:documentation "Return the type symbol of the `user-data'"))
+
+(defmethod user-data-type ((profile data-profile) (path data-path))
+  'user-data)
+
+(defmethod user-data-type ((profile data-profile) (path async-data-path))
+  'async-user-data)
 
 (defmethod get-user-data ((profile nosave-data-profile) (path data-path))
   "Look up the buffer-local data in case of `nosave-data-profile'."

@@ -199,7 +199,7 @@ prevents otherwise."))
         (gethash expanded-path cache)
       (if found?
           user-data
-          (let ((user-data (make-instance 'user-data)))
+          (let ((user-data (make-instance (user-data-type profile path))))
             (setf (gethash expanded-path cache)
                   user-data)
             user-data)))))
