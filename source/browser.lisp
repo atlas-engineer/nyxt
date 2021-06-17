@@ -48,8 +48,8 @@ executed.  You must understand the risks before enabling this: a privileged user
 with access to your system can then take control of the browser and execute
 arbitrary code under your user profile.")
 ;; TODO: is it always user's data? Better name maybe?
-   (user-data-cache (make-hash-table :test #'equal)
-                    :type hash-table
+   (user-data-cache (make-instance 'cache)
+                    :type cache
                     :documentation "Table that maps the expanded `data-path's to the `user-data' (possibly) stored there.")
    (socket-thread nil                   ; TODO: Unexport?
                   :type t
@@ -199,14 +199,15 @@ prevents otherwise."))
 
 (defun %get-user-data (profile path cache)
   (sera:and-let* ((expanded-path (expand-data-path profile path)))
-    (multiple-value-bind (user-data found?)
-        (gethash expanded-path cache)
-      (if found?
-          user-data
-          (let ((user-data (make-instance (user-data-type profile path))))
-            (setf (gethash expanded-path cache)
-                  user-data)
-            user-data)))))
+    (with-locked-cache cache
+      (multiple-value-bind (user-data found?)
+          (getcache expanded-path cache)
+        (if found?
+            user-data
+            (let ((user-data (make-instance (user-data-type profile path))))
+              (setf (getcache expanded-path cache)
+                    user-data)
+              user-data))))))
 
 (defmethod get-user-data ((profile data-profile) (path data-path))
   (%get-user-data profile path (user-data-cache *browser*)))

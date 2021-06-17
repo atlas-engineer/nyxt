@@ -9,6 +9,27 @@
 
 (defvar *gpg-program* "gpg")
 
+(define-class cache ()
+  ((table (make-hash-table :test #'equal)
+          :type hash-table
+          :documentation "The content of the cache.
+Keys are expanded data paths as strings, values are `user-data'.")
+   (lock (bt:make-lock)
+         :type bt:lock
+         :documentation "Protect against concurrent accesses."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+
+(defmethod getcache (key (cache cache))
+  (gethash key (table cache)))
+
+(defmethod (setf getcache) (value key (cache cache))
+  (setf (gethash key (table cache)) value))
+
+(defmacro with-locked-cache (cache &body body)
+  `(bt:with-lock-held ((lock ,cache))
+     ,@body))
 
 (define-class data-path ()
   ((dirname ""
@@ -92,8 +113,8 @@ This can be used to set the path from command line.  See
 
 (define-class nosave-data-profile (data-profile)
   ((name :initform "nosave")
-   (user-data-cache (make-hash-table :test #'equal)
-                    :type hash-table
+   (user-data-cache (make-instance 'cache)
+                    :type cache
                     :documentation "Buffer-local `user-data-cache' to isolate the data of a nosave buffer."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -318,6 +339,10 @@ means the store operations are systematically delayed."))
 (defmethod get-user-data ((profile nosave-data-profile) (path data-path))
   "Look up the buffer-local data in case of `nosave-data-profile'."
   (%get-user-data profile path (user-data-cache profile)))
+
+(defmethod set-user-data ((profile nosave-data-profile) (path data-path) value)
+  (setf (data (%get-user-data profile path (user-data-cache profile)))
+        value))
 
 (export-always 'get-data)               ; TODO: Unexport?
 ;; TODO: Better name? Isn't it too wide?
