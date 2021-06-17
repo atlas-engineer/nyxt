@@ -562,7 +562,10 @@ The suffix is incremented until the result does not exist.
 Warning: This is not atomic, no lock is made on any file, so it's not safe from
 race conditions."
   (labels ((suffix (file suffix)
-             (let ((new-file (format nil "~a.~a" file suffix)))
+             (let ((new-file (format nil "~a.~a~a" file
+                                     (if (string-equal (pathname-type file) "gpg")
+                                         (str:concat suffix ".gpg")
+                                         suffix))))
                (if (uiop:file-exists-p new-file)
                    (suffix file (1+ suffix))
                    new-file))))
