@@ -492,103 +492,127 @@ As third value the name."
        :input stream)
       (echo-warning "Set `*gpg-default-recipient*' to save ~s." gpg-file)))
 
-(defmacro with-gpg-file ((stream gpg-file &rest options) &body body)
-  "Like `with-open-file' but use
+(defun call-with-gpg-file (gpg-file options fun)
+  "Like `call-with-open-file' but use `gpg' to read and write to file.
 OPTIONS are as for `open''s `:direction'.
 Other options are not supported.  File is overwritten if it exists, while
 nothing is done if file is missing."
   ;; TODO: Support all of `open' options.
-  (alex:with-gensyms (in clear-data result recipient)
-    (if (member (getf options :direction) '(:io :input nil))
-        `(when (uiop:file-exists-p ,gpg-file)
-           (let ((,clear-data (with-output-to-string (out)
-                                (uiop:run-program
-                                 (list *gpg-program* "--decrypt" ,gpg-file)
-                                 :output out))))
-             (with-input-from-string (,stream ,clear-data)
-               (prog1             ; TODO: Shouldn't we `unwind-protect' instead?
-                   (progn
-                     ,@body)
-                 ,(when (eq (getf options :direction) :io)
-                    ;; TODO: Need to handle error when gpg-file key is not available.
-                    `(gpg-write ,stream ,gpg-file (gpg-recipient ,gpg-file)))))))
-        `(let ((,result nil)
-               (,recipient (gpg-recipient ,gpg-file)))
-           (if ,recipient
-               (with-input-from-string (,in (with-output-to-string (,stream)
-                                              (setf ,result (progn ,@body))))
-                 (gpg-write ,in ,gpg-file ,recipient))
-               (let ((,recipient (first (prompt
-                                         :prompt "Recipient:"
-                                         :sources '(gpg-key-source)))))
-                 (with-input-from-string (,in (with-output-to-string (,stream)
-                                                (setf ,result (progn ,@body))))
-                   (gpg-write ,in ,gpg-file (gpg-key-key-id ,recipient)))))
-           ,result))))
+  (if (member (getf options :direction) '(:io :input nil))
+      (when (uiop:file-exists-p gpg-file)
+        (let ((clear-data (with-output-to-string (out)
+                            (uiop:run-program
+                             (list *gpg-program* "--decrypt" gpg-file)
+                             :output out))))
+          (with-input-from-string (stream clear-data)
+            (prog1                ; TODO: Shouldn't we `unwind-protect' instead?
+                (funcall fun stream)
+              (when (eq (getf options :direction) :io)
+                ;; TODO: Need to handle error when gpg-file key is not available.
+                (gpg-write stream gpg-file (gpg-recipient gpg-file)))))))
+      (let ((result nil)
+            (recipient (gpg-recipient gpg-file)))
+        (if recipient
+            (with-input-from-string (in (with-output-to-string (stream)
+                                          (setf result (funcall fun stream))))
+              (gpg-write in gpg-file recipient))
+            (let ((recipient (first (prompt
+                                     :prompt "Recipient:"
+                                     :sources '(gpg-key-source)))))
+              (with-input-from-string (in (with-output-to-string (stream)
+                                            (setf result (funcall fun stream))))
+                (gpg-write in gpg-file (gpg-key-key-id recipient)))))
+        result)))
 
-(defmacro with-maybe-gpg-file ((stream filespec &rest options) &body body)
-  "Evaluate BODY with STREAM bound to DATA-PATH.
-DATA-PATH can be a GPG-encrypted file if it ends with a .gpg extension.
-If DATA-PATH expands to NIL or the empty string, do nothing.
-OPTIONS are as for `open'.
-Parent directories are created if necessary."
-  `(if (string-equal "gpg" (pathname-type ,filespec))
-       (with-gpg-file (,stream ,filespec ,@options)
-         ,@body)
-       (progn
-         ,(when (and (member (getf options :direction) '(:io :output))
-                     (let ((l (nth-value 2 (get-properties options '(:if-does-not-exist)))))
-                       (or (null l)
-                           (eq (getf l :if-does-not-exist) :create))))
-            `(ensure-parent-exists ,filespec))
-         (with-open-file (,stream ,filespec ,@options)
-           ,@body))))
+(defun call-with-open-file (filespec options fun) ; Inspired by SBCL's `with-open-file'.
+  (let ((stream (apply #'open filespec options))
+        (abortp t))
+    (unwind-protect
+         (multiple-value-prog1
+             (funcall fun stream)
+           (setq abortp nil))
+      (when stream
+        (close stream :abort abortp)))))
+
+(defun call-with-maybe-gpg-file (filespec options fun)
+  "Call FUN over a stream bound to FILESPEC.
+See `with-data-file' for OPTIONS."
+  (when (eq (getf options :direction) :output) ; TODO: Also :io?
+    (let ((option (nth-value 2 (get-properties options '(:if-exists)))))
+      (if (null option)
+          (alex:appendf options '(:if-exists :supersede))
+          ;; TODO: Check at compile time?  Would need to do in `with-data-file' then.
+          (check-type (getf option :if-exists)
+                      (member :error nil :append :supersede)))))
+
+  (let ((option (nth-value 2 (get-properties options '(:direction)))))
+    (when (or (null option)
+              (eq (getf option :direction) :input))
+      (let ((option (nth-value 2 (get-properties options '(:if-does-not-exist)))))
+        (when (null option)
+          (alex:appendf options '(:if-does-not-exist nil))))))
+
+  (when (and (member (getf options :direction) '(:io :output))
+             (let ((option (nth-value 2 (get-properties options '(:if-does-not-exist)))))
+               (or (null option)
+                   (eq (getf option :if-does-not-exist) :create))))
+    (ensure-parent-exists filespec))
+
+  (flet ((defer-open (filespec options)
+           (if (string-equal "gpg" (pathname-type filespec))
+               (call-with-gpg-file filespec options fun)
+               (call-with-open-file filespec options fun))))
+
+    (let ((exists? (uiop:file-exists-p filespec)))
+      (if (and (eq (getf options :direction) :output)
+               (or (and exists?
+                        (not (member (getf options :if-exists) '(:error nil))))
+                   (and (not exists?)
+                        (not (member (getf options :if-does-not-exist) '(:error nil))))))
+
+          ;; File to be written to.
+          (let* ((abs-file (uiop:ensure-absolute-pathname
+                            filespec
+                            *default-pathname-defaults*))
+                 (file-var abs-file))
+            (uiop:with-staging-pathname (file-var)
+              (when exists?
+                (setf (iolib/os:file-permissions file-var)
+                      (iolib/os:file-permissions abs-file)))
+              (when (and (eq (getf options :if-exists) :append)
+                         exists?)
+                (uiop:copy-file abs-file file-var))
+              (let ((output-options (append '(:direction :output :if-exists :append)
+                                            (alex:remove-from-plist options :direction :if-exists :if-does-not-exist))))
+
+                (defer-open file-var output-options))))
+
+          ;; File not written to.
+          (defer-open filespec options)))))
 
 (export-always 'with-data-file)
 (defmacro with-data-file ((stream data-path &rest options) &body body)
   "Evaluate BODY with STREAM bound to DATA-PATH.
 DATA-PATH can be a GPG-encrypted file if it ends with a .gpg extension.
+See `call-with-gpg-file'.
 If DATA-PATH expands to NIL or the empty string, do nothing.
-OPTIONS are as for `open'.
+
+When `:direction' is `:output', all writes go through temporary file (see
+`uiop:with-staging-pathname') which gets renamed to the final file.  On error,
+the final file remains untouched, or absent if it didn't exist in the first place.
+
+OPTIONS are as for `open', except
+
+- when `:direction' is `:output'
+  - `:if-exists' can be `:error', `nil', `:append' or `:supersede' (the default);
+
+- when `:direction' is `:input'
+  - `:if-does-not-exists' is `nil' by default.
+
 Parent directories are created if necessary."
   (alex:with-gensyms (path)
     `(let ((,path (expand-path ,data-path)))
        (when ,path
-         (with-maybe-gpg-file (,stream ,path ,@options)
-           ,@body)))))
-
-(defun ensure-unique-file (file)
-  "Return FILE with numeric suffix appended.
-The suffix is incremented until the result does not exist.
-Warning: This is not atomic, no lock is made on any file, so it's not safe from
-race conditions."
-  (labels ((suffix (file suffix)
-             (let ((new-file (format nil "~a.~a~a" file
-                                     (if (string-equal (pathname-type file) "gpg")
-                                         (str:concat suffix ".gpg")
-                                         suffix))))
-               (if (uiop:file-exists-p new-file)
-                   (suffix file (1+ suffix))
-                   new-file))))
-    (suffix file 1)))
-
-(export-always 'with-data-file-output)
-(defmacro with-data-file-output ((stream data-path) &body body)
-  "Open DATA-PATH for writing.
-The stream is written to a temporary file and renamed to the final DATA-PATH
-path upon closing.
-This measure protects against half-written files when an error occurs in the BODY."
-  (alex:with-gensyms (temp-path final-path)
-    `(sera:and-let* ((,final-path (expand-path ,data-path))
-                       (,temp-path (ensure-unique-file ,final-path)))
-         (unwind-protect (prog1 (with-maybe-gpg-file (,stream ,temp-path
-                                                              :direction :output
-                                                              :if-does-not-exist :create
-                                                              :if-exists :error)
-                                  ,@body)
-                           (rename-file
-                            (uiop:ensure-pathname ,temp-path)
-                            (uiop:ensure-pathname ,final-path)))
-           (when (uiop:file-exists-p ,temp-path)
-             (log:warn "Error when writing to ~s, see temp file ~s."
-                       ,final-path ,temp-path))))))
+         ;; (with-maybe-gpg-file (,stream ,path ,@options)
+         ;;   ,@body)
+         (call-with-maybe-gpg-file ,path ',options (lambda (,stream) ,@body))))))
