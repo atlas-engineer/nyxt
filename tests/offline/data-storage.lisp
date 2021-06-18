@@ -11,12 +11,15 @@
 
 (defparameter +basename+ ".nyxt-data-storage")
 
+(defun basename* (path)
+  (first (last (pathname-directory (uiop:ensure-directory-pathname path)))))
+
 (defmethod nyxt:expand-data-path ((profile data-profile) (path test-data-path))
   "Return finalized path for initialization files."
   (if (uiop:emptyp (nyxt:basename path))
       (let ((tmp (uiop:tmpize-pathname (uiop:subpathname* (nyxt:dirname path)
                                                           +basename+))))
-        (setf (nyxt:basename path) (pathname-name tmp))
+        (setf (nyxt:basename path) (basename* tmp))
         (call-next-method))
       (call-next-method)))
 

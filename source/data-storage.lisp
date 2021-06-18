@@ -571,14 +571,16 @@ See `with-data-file' for OPTIONS."
                         (not (member (getf options :if-does-not-exist) '(:error nil))))))
 
           ;; File to be written to.
-          (let* ((abs-file (uiop:ensure-absolute-pathname
-                            filespec
-                            *default-pathname-defaults*))
+          (let* ((abs-file (uiop:ensure-pathname filespec))
                  (file-var abs-file))
             (uiop:with-staging-pathname (file-var)
               (when exists?
                 (setf (iolib/os:file-permissions file-var)
-                      (iolib/os:file-permissions abs-file)))
+                      ;; iolib takes native-namestrings.
+                      ;; For instance, CCL escapes ".", `native-namestring
+                      ;; ensures to unescape it.
+                      (iolib/os:file-permissions
+                       (uiop:native-namestring abs-file))))
               (when (and (eq (getf options :if-exists) :append)
                          exists?)
                 (uiop:copy-file abs-file file-var))
