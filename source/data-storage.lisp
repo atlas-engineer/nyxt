@@ -465,32 +465,38 @@ you use this macro! For a modification-safe macro, see `with-data-access'."
   "Return the key of FILE's recipient if any, `*gpg-recipient*' otherwise.
 As second value the email.
 As third value the name."
-  (if (uiop:file-exists-p file)
-      (let* ((output (sera:lines (with-output-to-string (s)
-                                   (uiop:run-program (list *gpg-program* "--decrypt" file)
-                                                     :output nil :error-output s))))
-             (first-line-tokens (str:split " " (first output)))
-             (key (let ((key-string (second (member "ID" first-line-tokens :test #'string=))))
-                    (if (str:ends-with? "," key-string)
-                        (subseq key-string 0 (1- (length key-string)))
-                        key-string)))
-             (second-line (str:trim (second output)))
-             (mail-start (position #\space second-line :from-end t))
-             (mail (str:trim (reduce (lambda (target rep) (str:replace-all rep "" target))
-                                     '(">" "<" "\"") :initial-value (subseq second-line mail-start))))
-             (name (str:replace-all "\"" "" (subseq second-line 0 mail-start))))
-        (values key mail name))
-      *gpg-default-recipient*))
+  (let ((file (uiop:native-namestring file)))
+    (if (uiop:file-exists-p file)
+        (handler-case
+            (let* ((output (sera:lines (with-output-to-string (s)
+                                         (uiop:run-program (list *gpg-program* "--decrypt" file)
+                                                           :output nil :error-output s))))
+                   (first-line-tokens (str:split " " (first output)))
+                   (key (let ((key-string (second (member "ID" first-line-tokens :test #'string=))))
+                          (if (str:ends-with? "," key-string)
+                              (subseq key-string 0 (1- (length key-string)))
+                              key-string)))
+                   (second-line (str:trim (second output)))
+                   (mail-start (position #\space second-line :from-end t))
+                   (mail (str:trim (reduce (lambda (target rep) (str:replace-all rep "" target))
+                                           '(">" "<" "\"") :initial-value (subseq second-line mail-start))))
+                   (name (str:replace-all "\"" "" (subseq second-line 0 mail-start))))
+              (values key mail name))
+          (error ()
+            *gpg-default-recipient*))
+        *gpg-default-recipient*)))
 
-(defun gpg-write (stream gpg-file recipient)
-  "Write STREAM to GPG-FILE using RECIPIENT key."
-  (if recipient
-      ;; TODO: Handle GPG errors.
-      (uiop:run-program
-       (list *gpg-program* "--output" gpg-file "--recipient" recipient
-             "--batch" "--yes" "--encrypt")
-       :input stream)
-      (echo-warning "Set `*gpg-default-recipient*' to save ~s." gpg-file)))
+(defun gpg-write (stream gpg-file &optional recipient)
+  "Write STREAM to GPG-FILE using RECIPIENT key.
+If RECIPIENT is not provided, use default key."
+  (let ((native-file (uiop:native-namestring gpg-file)))
+    (uiop:run-program
+     `(,*gpg-program* "--output" ,native-file
+                      ,@(if recipient
+                            `("--recipient" ,recipient)
+                            '("--default-recipient-self"))
+                      "--batch" "--yes" "--encrypt")
+     :input stream)))
 
 (defun call-with-gpg-file (gpg-file options fun)
   "Like `call-with-open-file' but use `gpg' to read and write to file.
@@ -511,17 +517,16 @@ nothing is done if file is missing."
                 ;; TODO: Need to handle error when gpg-file key is not available.
                 (gpg-write stream gpg-file (gpg-recipient gpg-file)))))))
       (let ((result nil)
-            (recipient (gpg-recipient gpg-file)))
-        (if recipient
-            (with-input-from-string (in (with-output-to-string (stream)
-                                          (setf result (funcall fun stream))))
-              (gpg-write in gpg-file recipient))
-            (let ((recipient (first (prompt
-                                     :prompt "Recipient:"
-                                     :sources '(gpg-key-source)))))
-              (with-input-from-string (in (with-output-to-string (stream)
-                                            (setf result (funcall fun stream))))
-                (gpg-write in gpg-file (gpg-key-key-id recipient)))))
+            (recipient (or (gpg-recipient gpg-file)
+                           (and *browser*
+                                (ignore-errors
+                                 (gpg-key-key-id
+                                  (first (prompt
+                                          :prompt "Recipient:"
+                                          :sources '(gpg-key-source)))))))))
+        (with-input-from-string (in (with-output-to-string (stream)
+                                      (setf result (funcall fun stream))))
+          (gpg-write in gpg-file recipient))
         result)))
 
 (defun call-with-open-file (filespec options fun) ; Inspired by SBCL's `with-open-file'.

@@ -6,10 +6,12 @@
 (plan nil)
 
 (define-class test-data-path (nyxt:data-path)
-  ((nyxt:dirname (uiop:temporary-directory)))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  ((nyxt:dirname (uiop:temporary-directory))))
+
+(define-class test-gpg-data-path (test-data-path) ())
 
 (defparameter +basename+ ".nyxt-data-storage")
+(defparameter +gpg-basename+ ".nyxt-data-storage.gpg")
 
 (defun basename* (path)
   (first (last (pathname-directory (uiop:ensure-directory-pathname path)))))
@@ -23,8 +25,22 @@
         (call-next-method))
       (call-next-method)))
 
+(defmethod nyxt:expand-data-path ((profile data-profile) (path test-gpg-data-path))
+  "Return finalized path for initialization files."
+  (if (uiop:emptyp (nyxt:basename path))
+      (let ((tmp (uiop:tmpize-pathname (uiop:subpathname* (nyxt:dirname path)
+                                                          +gpg-basename+))))
+        (setf (nyxt:basename path) (basename* tmp))
+        (call-next-method))
+      (call-next-method)))
+
 (defmacro with-test-path (sym &body body)
   `(let ((,sym (make-instance 'test-data-path)))
+     (unwind-protect (progn ,@body)
+       (uiop:delete-file-if-exists  (nyxt:expand-path ,sym)))))
+
+(defmacro with-test-gpg-path (sym &body body)
+  `(let ((,sym (make-instance 'test-gpg-data-path)))
      (unwind-protect (progn ,@body)
        (uiop:delete-file-if-exists  (nyxt:expand-path ,sym)))))
 
@@ -106,8 +122,16 @@
     (is (iolib/os:file-permissions (nyxt:expand-path data-path))
         '(:user-read :user-write))))
 
-(subtest "Data-path: GPG"
-  )
+;; TODO: Test GPG.
+;; The following only works if there is some GnuPG setup, which might not be the
+;; case on every system.  Set up a dummy GnuPG recipient?
+
+;; (subtest "Data-path: GPG"
+;;   (with-test-gpg-path data-path
+;;     (nyxt:with-data-file (s data-path :direction :output)
+;;       (write-string "foo" s))
+;;     (nyxt:with-data-file (s data-path)
+;;       (is (read s) 'foo))))
 
 ;; TODO: Test `:direction :io'.
 ;; TODO: Test that directory gets created.  How do we create a temp directory?
