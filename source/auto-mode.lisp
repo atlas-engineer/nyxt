@@ -483,9 +483,7 @@ Auto-mode is re-enabled once the page is reloaded."
 (defmethod restore ((profile data-profile) (path auto-mode-rules-data-path) &key &allow-other-keys)
   (with-protect ("Failed to load auto-mode-rules from ~s: ~a"
                       (expand-path path) :condition)
-    (let ((data (with-data-file (file path
-                                      :direction :input
-                                      :if-does-not-exist nil)
+    (let ((data (with-data-file (file path)
                   (when file
                     (let ((*package* (find-package :nyxt/auto-mode)))
                       (deserialize-auto-mode-rules file))))))

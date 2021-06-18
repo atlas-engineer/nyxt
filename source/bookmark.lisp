@@ -316,9 +316,7 @@ rest in background buffers."
 (defmethod restore ((profile data-profile) (path bookmarks-data-path) &key &allow-other-keys)
   "Restore the bookmarks from the buffer `bookmarks-path'."
   (handler-case
-      (let ((data (with-data-file (file path
-                                        :direction :input
-                                        :if-does-not-exist nil)
+      (let ((data (with-data-file (file path)
                     (when file
                       (deserialize-bookmarks file)))))
         (when data
