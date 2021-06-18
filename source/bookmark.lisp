@@ -297,7 +297,7 @@ rest in background buffers."
 
 (defmethod store ((profile data-profile) (path bookmarks-data-path) &key &allow-other-keys)
   "Store the bookmarks to the buffer `bookmarks-path'."
-  (with-data-file-output (file path)
+  (with-data-file (file path :direction :output)
     ;; TODO: Make sorting customizable?  Note that `store-sexp-bookmarks' is
     ;; already a customizable function.
     (%set-data path
