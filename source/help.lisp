@@ -283,7 +283,6 @@ CLASS is a class symbol."
 (defun append-configuration (form &key (format-directive "~&~s~%"))
   (with-data-file (file *auto-config-file-path*
                         :direction :output
-                        :if-does-not-exist :create
                         :if-exists :append)
     (log:info "Appending to ~s:~&~s" (expand-path *auto-config-file-path*) form)
     (format file format-directive form)))

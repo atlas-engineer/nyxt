@@ -392,9 +392,7 @@ We keep this variable as a means to import the old format to the new one.")
       (let* ((path (if (uiop:file-exists-p (expand-path path))
                        path
                        flat-history-path))
-             (data (with-data-file (file path
-                                         :direction :input
-                                         :if-does-not-exist nil)
+             (data (with-data-file (file path)
                      (when file
                        ;; We need to make sure current package is :nyxt so that
                        ;; symbols are printed with consistent namespaces.
