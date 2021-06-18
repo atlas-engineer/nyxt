@@ -531,7 +531,7 @@ DATA-PATH can be a GPG-encrypted file if it ends with a .gpg extension.
 If DATA-PATH expands to NIL or the empty string, do nothing.
 OPTIONS are as for `open'.
 Parent directories are created if necessary."
-  `(if (str:ends-with? ".gpg" ,filespec :ignore-case t)
+  `(if (string-equal "gpg" (pathname-type ,filespec))
        (with-gpg-file (,stream ,filespec ,@options)
          ,@body)
        (progn
