@@ -332,8 +332,10 @@ See `asdf::*immutable-systems*'."
             (flet ((ensure-parent-exists (file)
                      (uiop:ensure-all-directories-exist
                       (list (directory-namestring file)))))
-              (uiop:copy-file (system-relative-pathname c "assets/nyxt.desktop")
-                              (format nil "~a/applications/nyxt.desktop" *datadir*))
+              (let ((desktop-file (format nil "~a/applications/nyxt.desktop" *datadir*)))
+                (ensure-parent-exists desktop-file)
+                (uiop:copy-file (system-relative-pathname c "assets/nyxt.desktop")
+                                (format nil "~a/applications/nyxt.desktop" *datadir*)))
               (mapc (lambda (icon-size)
                       (let ((icon-file (format nil "~a/icons/hicolor/~ax~a/apps/nyxt.png"
                                                *datadir* icon-size icon-size)))
