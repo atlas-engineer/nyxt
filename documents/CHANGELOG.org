@@ -25,7 +25,16 @@ If possible!
 
 - New =process-mode=.
 
+  Process mode enables you to automate the repetition of tedious
+  tasks. For example, you can have process mode refresh a page whenever
+  you save a file. This could be useful for previewing LaTeX documents,
+  or working on websites!
+
 - New =cruise-control-mode=.
+
+  Cruise control mode allows you to scroll down the page at a fixed
+  speed. This mode is particularly well suited for reading long
+  articles.
 
 - Replace "Loading:" text with spinner.
 
