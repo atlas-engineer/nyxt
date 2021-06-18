@@ -224,9 +224,10 @@ function result as a boolean in conditions."
 (declaim (ftype (function (trivial-types:pathname-designator) trivial-types:pathname-designator)
                 ensure-parent-exists))
 (defun ensure-parent-exists (path)
-  "Create parent directories of PATH if they don't exist and return PATH."
-  (ensure-directories-exist (directory-namestring path))
-  path)
+  "Create parent directories of PATH if they don't exist and return coerced PATH."
+  (let ((path (uiop:ensure-pathname path)))
+    (ensure-directories-exist (directory-namestring path))
+    path))
 
 (export-always 'store)
 (defgeneric store (profile path &key &allow-other-keys)
