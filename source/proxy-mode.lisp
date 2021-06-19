@@ -23,7 +23,7 @@ Example to use Tor as a proxy both for browsing and downloading:
                                          :allowlist '(\"localhost\" \"localhost:8080\")
                                          :proxied-downloads-p t))))
 
-\(define-configuration buffer
+\(define-configuration web-buffer
   ((default-modes (append '(proxy-mode) %slot-default%))))"
   ((proxy (make-instance 'nyxt:proxy
                          :url (quri:uri "socks5://localhost:9050")
