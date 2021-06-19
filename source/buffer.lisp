@@ -472,7 +472,7 @@ Delete it with `ffi-buffer-delete'."
                 :color "black")
                ("#modes"
                 :background-color "gray"
-                :color "gainsboro"
+                :color "white"
                 :text-align "right"
                 :padding-left "10px"
                 :padding-right "5px"
