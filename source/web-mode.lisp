@@ -576,21 +576,25 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
           (when item
             item))))))
 
-(defmethod nyxt:on-signal-notify-uri ((mode web-mode) url)
-  (declare (type quri:uri url))
+(defun add-url-to-history (url buffer mode)
   (unless (or (url-empty-p url)
               (find-if (alex:rcurry #'str:starts-with? (render-url url))
                        (history-blocklist mode)))
     (log:debug "Notify URL ~a for buffer ~a with load status ~a"
                url
-               (buffer mode)
-               (slot-value (buffer mode) 'nyxt::load-status))
-    (when (eq (slot-value (buffer mode) 'nyxt::load-status) :finished)
+               buffer
+               (slot-value buffer 'nyxt::load-status))
+    (when (eq (slot-value buffer 'nyxt::load-status) :finished)
       ;; We also add history entries here when URL changes without initiating
       ;; any load, e.g. when clicking on an anchor.
-      (with-current-buffer (buffer mode)
-        (nyxt::history-add url :title (title (buffer mode))
-                               :buffer (buffer mode)))))
+      (with-current-buffer buffer
+        (nyxt::history-add url :title (title buffer)
+                               :buffer buffer)))
+    url))
+
+(defmethod nyxt:on-signal-notify-uri ((mode web-mode) url)
+  (declare (type quri:uri url))
+  (add-url-to-history url (buffer mode) mode)
   url)
 
 (defmethod nyxt:on-signal-notify-title ((mode web-mode) title)
@@ -604,9 +608,7 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
   nil)
 
 (defmethod nyxt:on-signal-load-finished ((mode web-mode) url)
-  (with-current-buffer (buffer mode)
-    (nyxt::history-add url :title (title (buffer mode))
-                           :buffer (buffer mode)))
+  (add-url-to-history url (buffer mode) mode)
   (reset-page-zoom :buffer (buffer mode)
                    :ratio (current-zoom-ratio (buffer mode)))
   (with-data-unsafe (history (history-path (buffer mode)))
