@@ -620,6 +620,4 @@ Parent directories are created if necessary."
   (alex:with-gensyms (path)
     `(let ((,path (expand-path ,data-path)))
        (when ,path
-         ;; (with-maybe-gpg-file (,stream ,path ,@options)
-         ;;   ,@body)
          (call-with-maybe-gpg-file ,path ',options (lambda (,stream) ,@body))))))
