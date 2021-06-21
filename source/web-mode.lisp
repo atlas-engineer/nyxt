@@ -384,10 +384,10 @@ Otherwise go forward to the only child."
 
 (define-command history-all-query (&optional (buffer (current-buffer)))
   "Query URL to go to, from the whole history."
-  (let ((input (prompt
-                :prompt "Navigate to"
-                :sources (list (make-instance 'user-history-all-source
-                                              :buffer buffer)))))
+  (let ((input (first (prompt
+                       :prompt "Navigate to"
+                       :sources (list (make-instance 'user-history-all-source
+                                                     :buffer buffer))))))
     (when input
       (with-data-access (history (history-path buffer))
         (htree:visit-all history input))
