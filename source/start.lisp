@@ -294,7 +294,7 @@ EXPR is expected to be as per the expression sent in `listen-or-query-socket'."
     (if (and urls (every #'stringp urls))
         (apply #'open-external-urls urls)
         (progn
-          (log:debug "Could not extract URLs from ~s." expr)
+          (log:warn "Could not extract URLs from ~s." expr)
           nil))))
 
 (export-always 'open-external-urls)
