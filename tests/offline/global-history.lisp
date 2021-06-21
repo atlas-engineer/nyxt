@@ -37,6 +37,8 @@
           (is (length (htree:all-data (nyxt:get-data path)))
               1
               "history has still 1 entry after adding same URL")
+          (is (nyxt::implicit-visits (first (htree:all-data (nyxt:get-data path))))
+              2)
           (let ((entry (first (htree:all-data (nyxt:get-data path)))))
             (is (title entry)
                 "foo"
