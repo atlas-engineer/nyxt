@@ -38,13 +38,20 @@ To make this change permanent, you can customize
       '(\"nyxt.atlas.engineer\" \"example.org\"))"
   (if (find-submode buffer 'certificate-exception-mode)
       (let ((input (first (prompt
-                           :prompt "URL host to exception list:"
-                           :sources (list (make-instance 'nyxt/web-mode::user-history-all-source
+                           :prompt "URL host to add to exception list:"
+                           :input (render-url (url buffer))
+                           :sources (list
+                                     (make-instance 'prompter:raw-source
+                                                    :name "URL")
+                                     (make-instance 'nyxt/web-mode::user-history-all-source
                                                          :buffer buffer))))))
-        (unless (url-empty-p (url (htree:data input)))
-          (let ((host (quri:uri-host (url (htree:data input)))))
-            (echo "Added exception for ~s." host)
-            (pushnew host (certificate-exceptions buffer) :test #'string=))))
+        (sera:and-let* ((url (if (stringp input)
+                                 (quri:uri input)
+                                 (url (htree:data input))))
+                        (host (and (not (url-empty-p url))
+                                   (quri:uri-host url))))
+          (echo "Added exception for ~s." host)
+          (pushnew host (certificate-exceptions buffer) :test #'string=)))
       (echo "Enable certificate-exception-mode first.")))
 
 ;; TODO: Implement command remove-domain-from-certificate-exceptions.
