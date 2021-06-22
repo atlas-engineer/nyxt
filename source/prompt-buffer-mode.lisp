@@ -102,6 +102,25 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "C-f" 'select-next-page
        "C-b" 'select-previous-page)))))
 
+(defmacro define-command-prompt (name (&rest arglist) &body body)
+  "Like `define-command' but automatically inserts a `prompt-buffer' argument
+and warn when its nil."
+  (multiple-value-bind (forms declares documentation)
+      (alex:parse-body body :documentation t)
+    (multiple-value-bind (required optional rest keywords aok? aux key?)
+        (alex:parse-ordinary-lambda-list arglist)
+      (if keywords
+          (push '((:prompt-buffer prompt-buffer) (current-prompt-buffer) nil)
+                keywords)
+          (push '(prompt-buffer (current-prompt-buffer) nil)
+                optional))
+      `(define-command ,name ,(sera:unparse-ordinary-lambda-list required optional rest keywords aok? aux key?)
+         ,@(sera:unsplice documentation)
+         ,@declares
+         (if prompt-buffer
+             (progn ,@forms)
+             (log:warn "Can't call ~a on nil prompt buffer" ,name))))))
+
 (define-command select-next (&optional (prompt-buffer (current-prompt-buffer)))
   "Select next entry in prompt buffer."
   (prompter:select-next prompt-buffer)
