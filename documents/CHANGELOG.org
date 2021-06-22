@@ -38,6 +38,20 @@ If possible!
 
 - Replace "Loading:" text with spinner.
 
+- Smarter VI mode behaviour.
+
+  It now automatically switches to vi-insert-mode when it makes sense.
+
+- Native dialogs.
+
+  When a website pops up a dialog to the user, use the prompt buffer
+  instead of a GTK dialog.
+
+  This behaviour can be controlled with the =native-dialogs= =browser= slot.
+
+- Add raw-source to =add-domain-to-certificate-exceptions= to allow for
+  arbitrary URL hosts.
+
 - Bug fixes:
 
   - Fix broken "hamburger" button to list buffers.
@@ -57,6 +71,8 @@ If possible!
 
   - Fix history corruptions when an error occurred while saving the
     history to disk.
+
+  - Fix =history-all-query=. (Thanks to @franburstall.)
 
 *** 2.0.0
 
