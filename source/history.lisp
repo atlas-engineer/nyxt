@@ -78,12 +78,74 @@ class."
   "Return a new global history tree for `history-entry' data."
   (htree:make :key 'history-tree-key :current-owner-id (id buffer)))
 
+(defparameter *threshold-frequent-url-to-bookmark* 20)
+
+(defun %urls-visited-over-threshold (threshold)
+  "Return a list '(number-of-visits url-instance url-title) 
+of all URLs which were visited more times than the threshold."
+  (let*
+      ((history-entries-raw
+         (with-data-unsafe (history (history-path (current-buffer)))
+           (alex:hash-table-keys (htree:entries history))))
+       (pair-frequency-url (mapcar #'(lambda (e) (list (implicit-visits (htree:data e))
+                                                       (url (htree:data e))
+                                                       (title (htree:data e))))
+                                   history-entries-raw)))
+    (remove-if-not #'(lambda (e) (> (first e) threshold)) pair-frequency-url)))
+
+(defun %list-bookmarks ()
+  "List all instances of URLs currently bookmarked."
+  (mapcar #'(lambda (e) (url e))
+          (with-data-access (bookmarks (bookmarks-path (current-buffer)))
+            bookmarks)))
+
+(defun %%concatenate-url (url-instance)
+  "After receiving an instace of an URL, concatenate
+scheme, host and path to form a fully complete URL address."
+  (let ((scheme (quri:uri-scheme url-instance))
+        (host   (quri:uri-host   url-instance))
+        (path   (quri:uri-path   url-instance)))
+    (concatenate 'string scheme "://" host path)))
+
+(defun %is-url-new-to-bookmarks (url)
+  "Return NIL if URL is already bookmarked or
+return the URL's full address if it is new to the bookmark list."
+  (let ((bookmarks-list (mapcar #'(lambda (e) (%%concatenate-url (url e)))
+                                (with-data-access (bookmarks (bookmarks-path (current-buffer)))
+                                  bookmarks))))
+    (if (member url bookmarks-list :test #'string=)
+        nil
+        url)))
+
+(defun %bookmark-a-frequently-visited-url (url-instance title-data)
+  "Add an especific URL to the bookmark list."  ; (bookmark-add (quri:uri (car url-info-list)) :title title)
+  (let* ((url-address (%%concatenate-url url-instance))
+         (tags (prompt
+                :prompt "Tag(s)"
+                :sources (list
+                          (make-instance 'prompter:word-source
+                                         :name "New tags"
+                                         :multi-selection-p t)
+                          (make-instance 'tag-source
+                                         :marks (url-bookmark-tags url-instance))))))
+    (bookmark-add  (quri:uri url-address) :title title-data :tags tags)))
+
+(defun bookmark-frequently-visited-urls ()
+  "Add websites frequently visited that are not
+included on the bookmarklist."
+  (dolist (url-data  (%urls-visited-over-threshold *threshold-frequent-url-to-bookmark*))
+    (let* ((url-instance (second url-data))
+           (url-address (%%concatenate-url url-instance))
+           (title        (third url-data)))
+      (if (%is-url-new-to-bookmarks url-address)
+          (%bookmark-a-frequently-visited-url url-instance title)))))
+
 (declaim (ftype (function (quri:uri &key (:title string) (:buffer buffer)) t) history-add))
 (defun history-add (url &key (title "") (buffer (current-buffer)))
   "Add URL to the global/buffer-local history.
 The `implicit-visits' count is incremented."
   (with-data-access (history (history-path (current-buffer))
-                     :default (make-history-tree))
+                             :default (make-history-tree))
     (unless (or (url-empty-p url)
                 ;; If buffer was not registered in the global history, don't
                 ;; proceed.  See `buffer-make'.
@@ -94,8 +156,11 @@ The `implicit-visits' count is incremented."
                                         :title title)
                          history))
       (let* ((entry (htree:data (htree:current (htree:owner history (id buffer))))))
+
         (setf (title entry) title)
-        (incf (implicit-visits entry))))))
+        (incf (implicit-visits entry))
+        ;(bookmark-frequently-visited-urls)
+        ))))
 
 (define-command delete-history-entry (&key (buffer (current-buffer)))
   "Delete queried history entries."
