@@ -292,10 +292,9 @@ current unmarked selection."
   "Close the prompt-buffer without further action."
   (prompter:toggle-follow prompt-buffer))
 
-; TODO: Remove the "prompt-buffer-" prefix of all prompt-buffer-mode commands.
 (define-command toggle-mark (&key
-                                           (prompt-buffer (current-prompt-buffer))
-                                           (direction :forward))
+                             (prompt-buffer (current-prompt-buffer))
+                             (direction :forward))
   "Mark selection.
 Only available if current prompt-buffer source `multi-selection-p' is non-nil.
 DIRECTION can be `:forward' or `:backward' and specifies which suggestion to
@@ -306,12 +305,12 @@ select next."
     (:backward (select-previous prompt-buffer))))
 
 (define-command toggle-mark-backwards (&key
-                                                     (prompt-buffer (current-prompt-buffer)))
+                                       (prompt-buffer (current-prompt-buffer)))
   "Mark selection.
 Only available if pomrpt-buffer `multi-selection-p' is non-nil.  DIRECTION can be
 `:forward' or `:backward' and specifies which suggestion to select next."
   (toggle-mark :prompt-buffer prompt-buffer
-                             :direction :backward))
+               :direction :backward))
 
 (define-command mark-all (&optional (prompt-buffer (current-prompt-buffer)))
   "Mark all visible suggestions in current source.
@@ -326,7 +325,7 @@ Only available if `multi-selection-p' is non-nil."
   (prompt-render-suggestions prompt-buffer))
 
 (define-command toggle-mark-all (&optional
-                                               (prompt-buffer (current-prompt-buffer)))
+                                 (prompt-buffer (current-prompt-buffer)))
   "Toggle the mark over all visible suggestions in current source.
 Only available if `multi-selection-p' is non-nil."
   (prompter:toggle-mark-all prompt-buffer)
