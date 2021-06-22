@@ -100,11 +100,11 @@ The `implicit-visits' count is incremented."
 
 (define-command delete-history-entry (&key (buffer (current-buffer)))
   "Delete queried history entries."
-  (with-data-access (history (history-path buffer))
-    (let ((entries (prompt
-                    :prompt "Delete entries"
-                    :sources (list (make-instance 'history-disowned-source
-                                                  :buffer buffer)))))
+  (let ((entries (prompt
+                  :prompt "Delete entries"
+                  :sources (list (make-instance 'history-disowned-source
+                                                :buffer buffer)))))
+    (with-data-access (history (history-path buffer))
       (dolist (entry entries)
         (htree:delete-data history entry)))))
 
