@@ -63,7 +63,7 @@ If HOSTLIST has a `path', persist it locally."
 (defvar update-lock (bt:make-lock))
 
 (defmethod update-hostlist-with-lock ((hostlist hostlist))
-  (run-thread
+  (run-thread "blocker-mode hostlist updater"
     (when (bt:acquire-lock update-lock nil)
        (update hostlist)
        (bt:release-lock update-lock))))
