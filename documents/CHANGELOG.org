@@ -21,7 +21,7 @@ If possible!
 *** Add online suggestions from search engines
 ** 2 series
 
-*** TASK 2.1.0 (Upcoming)
+*** 2.1.0
 
 - New =process-mode=.
 
