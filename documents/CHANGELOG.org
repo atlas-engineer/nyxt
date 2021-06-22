@@ -74,6 +74,9 @@ If possible!
 
   - Fix =history-all-query=. (Thanks to @franburstall.)
 
+  - Fix =search-buffer= when input contains regexp-special characters
+    (such as =(=).
+
 *** 2.0.0
 
 - Search engine auto-completion.
