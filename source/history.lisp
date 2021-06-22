@@ -95,8 +95,7 @@ The `implicit-visits' count is incremented."
                          history))
       (let* ((entry (htree:data (htree:current (htree:owner history (id buffer))))))
         (setf (title entry) title)
-        (incf (implicit-visits entry))
-        (setf (nyxt::scroll-position entry) (nyxt:document-scroll-position buffer))))))
+        (incf (implicit-visits entry))))))
 
 (define-command delete-history-entry (&key (buffer (current-buffer)))
   "Delete queried history entries."
