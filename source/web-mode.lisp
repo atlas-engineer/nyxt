@@ -612,8 +612,9 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
   (reset-page-zoom :buffer (buffer mode)
                    :ratio (current-zoom-ratio (buffer mode)))
   (with-data-unsafe (history (history-path (buffer mode)))
-    (alex:when-let ((scroll-position
-                     (nyxt::scroll-position
-                      (htree:data (htree:current (htree:owner history (id (buffer mode))))))))
+    (sera:and-let* ((owner (htree:owner history (id (buffer mode))))
+                    (node (htree:current owner))
+                    (data (htree:data node))
+                    (scroll-position (nyxt::scroll-position data)))
       (setf (nyxt:document-scroll-position (buffer mode)) scroll-position)))
   url)

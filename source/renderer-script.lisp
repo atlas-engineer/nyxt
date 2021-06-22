@@ -45,10 +45,11 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
       (mapcar #'parse-integer (str:split "," position)))))
 
 (defmethod (setf document-scroll-position) (value &optional (buffer (current-buffer)))
-  (with-current-buffer buffer
+  (when value
+    (with-current-buffer buffer
       (destructuring-bind (y &optional x)
           (uiop:ensure-list value)
-        (%document-scroll-position y x))))
+        (%document-scroll-position y x)))))
 
 (export-always 'document-get-paragraph-contents)
 (define-parenscript document-get-paragraph-contents (&key (limit 100000))
