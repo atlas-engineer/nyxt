@@ -208,25 +208,26 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                                :marks (url-bookmark-tags url))))))
           (bookmark-add url :tags tags)))))
 
-(define-command delete-bookmark (&optional url)
-  "Delete bookmark(s). Delete a bookmark by the URL. This function depends on
-equals only comparing URLs."
-  (if url
+(define-command delete-bookmark (&optional urls-or-bookmark-entries)
+  "Delete bookmark(s) matching URLS-OR-BOOKMARK-ENTRIES.
+URLS is either a list or a single element."
+  (if urls-or-bookmark-entries
       (with-data-access (bookmarks (bookmarks-path (current-buffer)))
         (setf bookmarks
               (set-difference
                bookmarks
-               (list (make-instance 'bookmark-entry :url (quri:uri url)))
+               (mapcar (lambda (url)
+                         (if (bookmark-entry-p url)
+                             url
+                             (make-instance 'bookmark-entry :url (quri:uri url))))
+                       (uiop:ensure-list urls-or-bookmark-entries))
                :test #'equals)))
-      (with-data-access (bookmarks (bookmarks-path (current-buffer)))
-        (let ((entries (prompt
-                        :prompt "Delete bookmark(s)"
-                        ;; :default-modes '(minibuffer-tag-mode minibuffer-mode)
-                        :sources (make-instance 'bookmark-source
-                                                :multi-selection-p t))))
-          (setf bookmarks
-                (set-difference bookmarks
-                                entries :test #'equals))))))
+      (let ((entries (prompt
+                      :prompt "Delete bookmark(s)"
+                      ;; :default-modes '(minibuffer-tag-mode minibuffer-mode)
+                      :sources (make-instance 'bookmark-source
+                                              :multi-selection-p t))))
+        (delete-bookmark entries))))
 
 (define-command set-url-from-bookmark
     (&key (actions (list (make-command buffer-load* (suggestion-values)
