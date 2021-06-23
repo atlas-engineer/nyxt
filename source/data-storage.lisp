@@ -295,6 +295,10 @@ This function can be used on browser-less globals like `*init-file-path*'."
   ((data nil
          :type t
          :documentation "The meaningful data to store. Examples: history data, session, bookmarks.")
+   (restored-p nil
+               :type boolean
+               :export nil
+               :documentation "Whether the data was `restore'd.")
    (lock (bt:make-recursive-lock)
          :type bt:lock
          :documentation "The lock to guard from race conditions when accessing this data."))
@@ -356,10 +360,10 @@ Prefer the thread-safe `with-data-access', or the non-thread-safe
   (let ((profile (current-data-profile)))
     (alex:if-let ((user-data (get-user-data profile path)))
       (progn
-        ;; TODO: What if we restore to NIL?  Would we keep restoring?
         (bt:with-recursive-lock-held ((lock user-data))
-          (unless (data user-data)
-            (restore profile path)))
+          (unless (restored-p user-data)
+            (restore profile path)
+            (setf (restored-p user-data) t)))
         (values (data user-data) user-data))
       (values nil nil))))
 
