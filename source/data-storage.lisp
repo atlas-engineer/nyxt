@@ -561,11 +561,13 @@ See `with-data-file' for OPTIONS."
         (when (null option)
           (alex:appendf options '(:if-does-not-exist nil))))))
 
-  (when (and (member (getf options :direction) '(:io :output))
-             (let ((option (nth-value 2 (get-properties options '(:if-does-not-exist)))))
-               (or (null option)
-                   (eq (getf option :if-does-not-exist) :create))))
-    (ensure-parent-exists filespec))
+  (when (member (getf options :direction) '(:io :output))
+    (let ((option (nth-value 2 (get-properties options '(:if-does-not-exist)))))
+      (when (null option)
+        (alex:appendf options '(:if-does-not-exist :create)))
+      (when (or (or (null option)
+                    (eq (getf option :if-does-not-exist) :create)))
+        (ensure-parent-exists filespec))))
 
   (flet ((defer-open (filespec options)
            (if (string-equal "gpg" (pathname-type filespec))
@@ -616,6 +618,7 @@ OPTIONS are as for `open', except
 
 - when `:direction' is `:output'
   - `:if-exists' can be `:error', `nil', `:append' or `:supersede' (the default);
+  - `:if-does-not-exists' is `:create' by default;
 
 - when `:direction' is `:input'
   - `:if-does-not-exists' is `nil' by default.
