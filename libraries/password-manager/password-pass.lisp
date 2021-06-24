@@ -39,16 +39,48 @@
   (execute password-interface (list "show" "--clip" password-name)
     :output '(:string :stripped t)))
 
+(defvar *multiline-separator* ": *"
+  "A regular expression to separate keys from values in the `pass' multiline format.")
+
+(defun parse-multiline (content)
+  "Return an alist of the multiple entries.
+An entry is a sequence of
+- a key string,
+- a colon,
+- optional spaces,
+- a value string.
+
+This is meant to handle the organization suggestion from
+http://www.passwordstore.org/#organization.
+
+Lines that don't match the format are ignored.
+The first line (the password) is skipped."
+  (let ((lines (str:split (string #\newline)
+                          content)))
+    (delete nil (mapcar (lambda (line)
+                          (let ((entry (ppcre:split *multiline-separator* line :limit 2)))
+                            (when (= 2 (length entry))
+                              entry)))
+                        ;; Skip first line to ignore password:
+                        (rest lines)))))
+
+(defvar *username-keys* '("login" "user" "username")
+  "A list of string keys used to find the `pass' username in `clip-username'.")
+
 (defmethod clip-username ((password-interface password-store-interface) &key password-name service)
+  "Save the multiline entry that's prefixed with on of the `*username-keys*' to clipboard.
+Case is ignored.
+The prefix is discarded from the result and returned."
   (declare (ignore service))
-  (let ((username-line (1+ (position "[Ll]ogin|[Uu]ser(name)?:"
-                                     (ppcre:split "\\n"
-                                                  (execute password-interface
-                                                      (list "show" password-name)
-                                                    :output '(:string :stripped t)))
-                                     :test #'ppcre:all-matches))))
-    (execute password-interface (list "show" (format nil "--clip=~d" username-line) password-name)
-      :output '(:string :stripped t))))
+  (let* ((entries (parse-multiline (execute password-interface
+                                       (list "show" password-name)
+                                     :output '(:string :stripped t))))
+         (username-entry (some (lambda (key)
+                                 (find key entries :test #'string-equal :key #'first))
+                               *username-keys*)))
+    (when username-entry
+      (trivial-clipboard:text (second username-entry))
+      (second username-entry))))
 
 (defmethod save-password ((password-interface password-store-interface)
                           &key password-name username password service)
