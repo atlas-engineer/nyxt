@@ -138,6 +138,7 @@ for which the `executable' slot is non-nil."
                                      :sources (list (make-instance 'password-source
                                                                    :buffer buffer
                                                                    :password-instance (password-interface buffer)))))))
-          (password:clip-username (password-interface buffer) :password-name password-name)
-          (echo "Password saved to clipboard for ~a seconds." (password:sleep-timer (password-interface buffer)))))
+          (if (password:clip-username (password-interface buffer) :password-name password-name)
+              (echo "Username saved to clipboard.")
+              (echo "No username found."))))
       (echo-warning "No password manager found.")))
