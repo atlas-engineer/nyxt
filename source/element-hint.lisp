@@ -153,6 +153,12 @@
 (defun query-hints (prompt function &key multi-selection-p
                                       annotate-visible-only-p
                                       (selector "a, button, input, textarea, details, select"))
+  "Prompt to choose several elements out of those matching SELECTOR, hinting them visually.
+MULTI-SELECTION-P is whether several elements can be chosen.
+ANNOTATE-VISIBLE-ONLY-P is deprecated and has no influence on the function.
+PROMPT is a text to show while prompting for hinted elements.
+FUNCTION is the action to perform on the selected elements."
+  (declare (ignore annotate-visible-only-p))
   (let* ((buffer (current-buffer)))
     (let ((result (prompt
                    :prompt prompt
