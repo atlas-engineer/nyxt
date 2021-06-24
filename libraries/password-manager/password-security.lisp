@@ -15,7 +15,7 @@
 (push 'security-interface *interfaces*)
 
 (defmethod list-passwords ((password-interface security-interface))
-  (error "Listing passwords not supported by security interface."))
+  (error "Listing passwords not supported by the 'security' interface."))
 
 (defmethod clip-password ((password-interface security-interface) &key password-name service)
   (clip-password-string password-interface
