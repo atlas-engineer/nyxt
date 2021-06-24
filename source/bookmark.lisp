@@ -232,11 +232,11 @@ URLS is either a list or a single element."
 (define-command set-url-from-bookmark
     (&key (actions (list (make-command buffer-load* (suggestion-values)
                            "Load first selected bookmark in current buffer and the rest in new buffer(s)."
-                           (mapc (lambda (url) (make-buffer :url url)) (rest suggestion-values))
+                           (mapc (lambda (url) (make-buffer :url (url url))) (rest suggestion-values))
                            (buffer-load (url (first suggestion-values))))
                          (make-command new-buffer-load (suggestion-values)
                            "Load bookmark(s) in new buffer(s)."
-                           (mapc (lambda (url) (make-buffer :url url)) (rest suggestion-values))
+                           (mapc (lambda (url) (make-buffer :url (url url))) (rest suggestion-values))
                            (make-buffer-focus :url (url (first suggestion-values)))))))
   "Set the URL for the current buffer from a bookmark.
 With multiple selections, open the first bookmark in the current buffer, the
