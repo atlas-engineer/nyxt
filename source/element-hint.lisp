@@ -151,6 +151,7 @@
 
 (serapeum:export-always 'query-hints)
 (defun query-hints (prompt function &key multi-selection-p
+                                      annotate-visible-only-p
                                       (selector "a, button, input, textarea, details, select"))
   (let* ((buffer (current-buffer)))
     (let ((result (prompt
