@@ -1064,10 +1064,16 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
 
 (defun input->queries (input)
   (let* ((terms (sera:tokens input))
-         (engines (remove-if
-                   (sera:partial (complement #'str:starts-with-p) (first terms))
-                   (all-search-engines)
-                   :key #'shortcut)))
+         (engines (let ((all-prefixed-engines
+                          (remove-if
+                           (sera:partial (complement #'str:starts-with-p) (first terms))
+                           (all-search-engines)
+                           :key #'shortcut)))
+                    (multiple-value-bind (matches non-matches)
+                        (sera:partition (lambda (e)
+                                          (string= (first terms) e))
+                                        all-prefixed-engines :key #'shortcut)
+                      (append matches non-matches)))))
     (append (unless (and engines (member (first terms)
                                          (mapcar #'shortcut engines)
                                          :test #'string=))
