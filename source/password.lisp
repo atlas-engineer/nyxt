@@ -25,6 +25,7 @@ for which the `executable' slot is non-nil."
   ((prompter:name "Passwords")
    (buffer :accessor buffer :initarg :buffer)
    (password-instance :accessor password-instance :initarg :password-instance)
+   (prompter:hide-attribute-header-p :single)
    (prompter:constructor
     (lambda (source)
       (password:list-passwords (password-instance source))))))
@@ -122,6 +123,7 @@ for which the `executable' slot is non-nil."
   (if (password-interface buffer)
       (with-password (password-interface buffer)
         (let ((password-name (first (prompt
+                                     :prompt "Password"
                                      :sources (list (make-instance 'password-source
                                                                    :buffer buffer
                                                                    :password-instance (password-interface buffer)))))))
@@ -135,6 +137,7 @@ for which the `executable' slot is non-nil."
   (if (password-interface buffer)
       (with-password (password-interface buffer)
         (let ((password-name (first (prompt
+                                     :prompt "Username"
                                      :sources (list (make-instance 'password-source
                                                                    :buffer buffer
                                                                    :password-instance (password-interface buffer)))))))
