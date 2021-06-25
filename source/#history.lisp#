@@ -81,11 +81,11 @@ class."
 (defun bookmark-frequently-visited-urls ()
   "Add websites frequently visited that are not included on the bookmarklist.
 
-The local function urls-visited-over-thresold returns all URLs which were
-visited more times than the threshold.
+The local function urls-visited-over-thresold returns all URLs instances which
+were visited more times than the threshold.
 
-The local function is-url-new-to-bookmarks returns the URL address if it new to
-the bookmark list and NIL if it is already there "
+The local function is-url-new-to-bookmarks returns the URL address itself if it
+new to the bookmark list and NIL if it is already there "
   (labels ((urls-visited-over-threshold (threshold)
              (let*
                  ((history-entries-raw
