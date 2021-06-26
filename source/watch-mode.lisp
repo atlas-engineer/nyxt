@@ -36,7 +36,8 @@
 (define-mode watch-mode (nyxt/repeat-mode:repeat-mode)
   "Reload the current buffer at regular time intervals."
   ;; Reload every 5 minutes by default.
-  ((nyxt/repeat-mode:repeat-interval 300)
+  ((rememberable-p t)
+   (nyxt/repeat-mode:repeat-interval 300)
    (nyxt/repeat-mode:repeat-action
     #'(lambda (mode)
         (buffer-load (nyxt/process-mode:path-url mode) :buffer (buffer mode))))))

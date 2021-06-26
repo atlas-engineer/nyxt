@@ -15,7 +15,8 @@ Possible applications:
 - Live preview of documents (`preview-mode').
 - Refreshing the website at regular intervals (`watch-mode').
 - Live tracking of filesystem/data in a file/directory."
-  ((path-url nil
+  ((rememberable-p nil)
+   (path-url nil
              :type (or quri:uri null)
              :documentation "The path to where `process-mode' needs to track things at.
 Is not necessarily the same as current buffer URL.")
