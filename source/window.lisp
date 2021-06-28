@@ -15,11 +15,11 @@ It's a function of the window argument that returns the title as a string.")
    (active-prompt-buffers '()
                           :export nil
                           :documentation "The stack of current prompt buffers.")
-   (info-buffers-left (list)
+   (panel-buffers-left (list)
                       :accessor nil
                       :documentation "A list of info buffers appearing on the
 left side of the window.")
-   (info-buffers-right (list)
+   (panel-buffers-right (list)
                        :accessor nil
                        :documentation "A list of info buffers appearing on the
 right side of the window.")
@@ -97,17 +97,17 @@ The handlers take the window as argument."))
 
 (define-user-class window)
 
-(defmethod window-info-buffers ((window window))
-  (append (slot-value window 'info-buffers-left)
-          (slot-value window 'info-buffers-right)))
+(defmethod window-panel-buffers ((window window))
+  (append (slot-value window 'panel-buffers-left)
+          (slot-value window 'panel-buffers-right)))
 
-(defmethod window-add-info-buffer ((window window) (buffer info-buffer) side)
+(defmethod window-add-panel-buffer ((window window) (buffer panel-buffer) side)
   "Add an info buffer to a window. Side can either be :right or :left."
-  (ffi-window-add-info-buffer window buffer side))
+  (ffi-window-add-panel-buffer window buffer side))
 
-(defmethod window-remove-info-buffer ((window window) (buffer info-buffer))
+(defmethod window-remove-panel-buffer ((window window) (buffer panel-buffer))
   "Remove an info buffer from a window."
-  (ffi-window-remove-info-buffer window buffer))
+  (ffi-window-remove-panel-buffer window buffer))
 
 (defmethod (setf active-buffer) (buffer (window window))
   (setf (slot-value window 'active-buffer) buffer)
