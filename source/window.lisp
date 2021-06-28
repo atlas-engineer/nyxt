@@ -102,11 +102,18 @@ The handlers take the window as argument."))
           (slot-value window 'panel-buffers-right)))
 
 (defmethod window-add-panel-buffer ((window window) (buffer panel-buffer) side)
-  "Add an info buffer to a window. Side can either be :right or :left."
+  "Add a panel buffer to a window. Side can either be :right or :left."
+  (cond
+    ((eql side :left) (push buffer (slot-value window 'panel-buffers-left)))
+    ((eql side :right) (push buffer (slot-value window 'panel-buffers-right))))
   (ffi-window-add-panel-buffer window buffer side))
 
 (defmethod window-remove-panel-buffer ((window window) (buffer panel-buffer))
-  "Remove an info buffer from a window."
+  "Remove a panel buffer from a window."
+  (setf (slot-value window 'panel-buffers-left)
+        (remove buffer (slot-value window 'panel-buffers-left)))
+  (setf (slot-value window 'panel-buffers-right)
+        (remove buffer (slot-value window 'panel-buffers-right)))
   (ffi-window-remove-panel-buffer window buffer))
 
 (defmethod (setf active-buffer) (buffer (window window))
