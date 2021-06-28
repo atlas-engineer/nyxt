@@ -104,12 +104,12 @@ keybindings have priorities over the other modes.")
     (:h3 "Search engines")
     (:p "See the " (:code "search-engines") " buffer slot documentation.
 Bookmarks can also be used as search engines, see the corresponding section.")
-    (:p "Nyxt comes with two default broswers as duckduckgo and wiki. you can append new search engines easily using the following template.")
+    (:p "Nyxt comes with two default browsers: DuckDuckGo and Wikipedia.
+you can append new search engines easily using the following template.")
     (:pre (:code "
 \(defvar `*my-search-engines*'
 \"list of search engines.\"
   (list
-   '(\"google\" \"https://www.google.com/search?q=~a\" \"https://www.google.com/\")\
    '(\"python3\" \"https://docs.python.org/3/search.html?q=~a\" \"https://docs.python.org/3\")\
    '(\"doi\" \"https://dx.doi.org/~a\" \"https://dx.doi.org/\")\))
 
@@ -117,17 +117,18 @@ Bookmarks can also be used as search engines, see the corresponding section.")
   ((search-engines (append (mapcar (lambda (engine) (apply 'make-search-engine engine))
                                    *my-search-engines*)
                            %slot-default%))))"))
-    (:p " It is to be noted that the last member in the search-engines is the default search engine of the browser. For example, in order to make google as the default browser, the above code can slightly be modified as follows.")
+    (:p " It is to be noted that the last member in the search-engines is the default
+search engine of the browser. For example, in order to make python3 as the default browser,
+the above code can slightly be modified as follows.")
         (:pre (:code "
 \(defvar *my-search-engines*
   (list
-   '(\"python3\" \"https://docs.python.org/3/search.html?q=~a\" \"https://docs.python.org/3\")
    '(\"doi\" \"https://dx.doi.org/~a\" \"https://dx.doi.org/\")
-   '(\"google\" \"https://www.google.com/search?q=~a\" \"https://www.google.com/\")))
+   '(\"python3\" \"https://docs.python.org/3/search.html?q=~a\" \"https://docs.python.org/3\")))
 
 (define-configuration buffer
   ((search-engines (append %slot-default% (mapcar (lambda (engine) (apply 'make-search-engine engine))
-                                   *my-search-engines*)))))"))
+                                                  *my-search-engines*)))))"))
 
     (:h3 "URL-dispatchers")
     (:p "You can configure which actions to take depending on the URL to be
