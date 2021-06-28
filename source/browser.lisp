@@ -617,6 +617,7 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-window-set-buffer (window buffer &key focus))
 (define-ffi-generic ffi-window-add-panel-buffer (window buffer side))
 (define-ffi-generic ffi-window-remove-panel-buffer (window buffer))
+(define-ffi-generic ffi-window-set-panel-buffer-width (window buffer width))
 (define-ffi-generic ffi-window-set-prompt-buffer-height (window height))
 (define-ffi-generic ffi-window-set-status-buffer-height (window height))
 (define-ffi-generic ffi-window-set-message-buffer-height (window height))
