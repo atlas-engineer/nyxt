@@ -87,7 +87,7 @@
 (define-parenscript click-element (&key nyxt-identifier)
   (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier) (click)))
 
-(define-parenscript focus-element (&key nyxt-identifier)
+(define-parenscript focus-select-element (&key nyxt-identifier)
   (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier) (focus))
   (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier) (select)))
 
@@ -230,10 +230,10 @@ FUNCTION is the action to perform on the selected elements."
     ("button" (click-element :nyxt-identifier (get-nyxt-id input)))
     ("radio" (check-element :nyxt-identifier (get-nyxt-id input)))
     ("checkbox" (check-element :nyxt-identifier (get-nyxt-id input)))
-    (otherwise (focus-element :nyxt-identifier (get-nyxt-id input)))))
+    (otherwise (focus-select-element :nyxt-identifier (get-nyxt-id input)))))
 
 (defmethod %follow-hint ((textarea nyxt/dom:textarea-element))
-  (focus-element :nyxt-identifier (get-nyxt-id textarea)))
+  (focus-select-element :nyxt-identifier (get-nyxt-id textarea)))
 
 (defmethod %follow-hint ((details nyxt/dom:details-element))
   (toggle-details-element :nyxt-identifier (get-nyxt-id details)))
