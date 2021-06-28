@@ -799,13 +799,18 @@ See `gtk-browser's `modifier-translator' slot."
   buffer)
 
 (define-ffi-method ffi-window-add-panel-buffer ((window gtk-window) (buffer panel-buffer) side)
-  "Add an info buffer to a window."
+  "Add a panel buffer to a window."
   (match side
     (:left (gtk:gtk-box-pack-start (panel-buffer-container-left window) (gtk-object buffer)))
     (:right (gtk:gtk-box-pack-end (panel-buffer-container-right window) (gtk-object buffer))))
   (setf (gtk:gtk-widget-size-request (gtk-object buffer)) 
         (list (width buffer) -1))
   (gtk:gtk-widget-show (gtk-object buffer)))
+
+(define-ffi-method ffi-window-set-panel-buffer-width ((window gtk-window) (buffer panel-buffer) width)
+  "Set the width of a panel buffer."
+  (setf (gtk:gtk-widget-size-request (gtk-object buffer))
+        (list width -1)))
 
 (define-ffi-method ffi-window-remove-panel-buffer ((window gtk-window) (buffer panel-buffer))
   "Remove an info buffer from a window."
