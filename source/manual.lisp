@@ -104,7 +104,7 @@ keybindings have priorities over the other modes.")
     (:h3 "Search engines")
     (:p "See the " (:code "search-engines") " buffer slot documentation.
 Bookmarks can also be used as search engines, see the corresponding section.")
-    (:p "Nyxt comes with two default browsers: DuckDuckGo and Wikipedia.
+    (:p "Nyxt comes with two default search engines: DuckDuckGo and Wikipedia.
 you can append new search engines easily using the following template.")
     (:pre (:code "
 \(defvar `*my-search-engines*'
