@@ -222,6 +222,13 @@ and to index the top of the page.")
   "Scroll to top if no input element is active, forward event otherwise."
   (call-non-input-command-or-forward #'scroll-to-top :buffer buffer))
 
+(define-command go-next ()
+  "Navigate to the previous element according to the HTML rel attribute."
+  (pflet ((go-next ()
+                   (ps:chain document
+                             (query-selector-all "[rel=next]") 0 (click))))
+    (go-next)))
+
 (defun load-history-url (url-or-node
                          &key (buffer (current-buffer))
                               (message "History entry is already the current URL."))
