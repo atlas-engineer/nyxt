@@ -84,7 +84,7 @@ class."
 The local function urls-visited-over-thresold returns all URLs instances which
 were visited more times than the threshold.
 
-The local function is-url-new-to-bookmarks returns the URL address itself if it
+The local function is-url-new-to-bookmarks-p returns the URL address itself if it
 new to the bookmark list and NIL if it is already there "
   (labels ((urls-visited-over-threshold (threshold)
              (let*
@@ -97,7 +97,7 @@ new to the bookmark list and NIL if it is already there "
                   (urls-frequently-visited
                     (mapcar #'(lambda (e) (url (htree:data e))) history-entries-above-threshold)))
                urls-frequently-visited))
-           (is-url-new-to-bookmarks (url-address)
+           (is-url-new-to-bookmarks-p (url-address)
              (let ((bookmarks-address-list
                      (mapcar #'(lambda (e)  (render-url (url e)))
                              (with-data-access (bookmarks (bookmarks-path (current-buffer)))
@@ -106,7 +106,7 @@ new to the bookmark list and NIL if it is already there "
                     nil
                     url-address))))
     (dolist (url-instance  (urls-visited-over-threshold (url->bookmark-visit-threshold *browser*)))
-      (if (is-url-new-to-bookmarks (render-url url-instance))
+      (if (is-url-new-to-bookmarks-p (render-url url-instance))
           (bookmark-url :url (render-url url-instance))))))
 
 (declaim (ftype (function (quri:uri &key (:title string) (:buffer buffer)) t) history-add))
