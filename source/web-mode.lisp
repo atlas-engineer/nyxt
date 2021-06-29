@@ -238,6 +238,13 @@ This was useful before Nyxt 2.0 as a workaround for hangs that would occur on pa
                              (query-selector-all "[rel=next]") 0 (click))))
     (go-next)))
 
+(define-command go-previous ()
+  "Navigate to the previous element according to the HTML rel attribute."
+  (pflet ((go-previous ()
+                       (ps:chain document
+                                 (query-selector-all "[rel=prev]") 0 (click))))
+    (go-previous)))
+
 (defun load-history-url (url-or-node
                          &key (buffer (current-buffer))
                               (message "History entry is already the current URL."))
