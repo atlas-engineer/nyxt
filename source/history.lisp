@@ -79,16 +79,11 @@ class."
   (htree:make :key 'history-tree-key :current-owner-id (id buffer)))
 
 (define-command bookmark-frequently-visited-urls ()
-  "Add websites frequently visited that are not included on the bookmarklist.
-
-The local function urls-visited-over-thresold returns all URLs instances which
-were visited more times than the threshold.
-
-The local function is-url-new-to-bookmarks-p returns the URL address itself if it
-new to the bookmark list and NIL if it is already there "
+  "Add websites frequently visited that are not included on the bookmarklist."
+  ;; The local function urls-visited-over-thresold returns all URLs instances which
+  ;; were visited more times than the threshold.
   (labels ((urls-visited-over-threshold (threshold)
-             (let*
-                 ((history-entries-raw
+            (let* ((history-entries-raw
                     (with-data-unsafe (history (history-path (current-buffer)))
                       (alex:hash-table-keys (htree:entries history))))
                   (history-entries-above-threshold  
@@ -96,7 +91,9 @@ new to the bookmark list and NIL if it is already there "
                                    history-entries-raw))
                   (urls-frequently-visited
                     (mapcar #'(lambda (e) (url (htree:data e))) history-entries-above-threshold)))
-               urls-frequently-visited)) 
+                    urls-frequently-visited))
+           ;; The local function is-url-new-to-bookmarks-p returns the URL address itself if it
+           ;; new to the bookmark list and NIL if it is already there 
            (is-url-new-to-bookmarks-p (url-address)
              (let ((bookmarks-address-list
                      (mapcar #'(lambda (e)  (render-url (url e)))
@@ -126,11 +123,8 @@ The `implicit-visits' count is incremented."
                                         :title title)
                          history))
       (let* ((entry (htree:data (htree:current (htree:owner history (id buffer))))))
-
         (setf (title entry) title)
-        (incf (implicit-visits entry))
-        ;(bookmark-frequently-visited-urls)
-        ))))
+        (incf (implicit-visits entry))))))
 
 (define-command delete-history-entry (&key (buffer (current-buffer)))
   "Delete queried history entries."
