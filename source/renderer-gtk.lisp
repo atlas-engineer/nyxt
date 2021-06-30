@@ -244,23 +244,23 @@ Such contexts are not needed for internal buffers."
                                        :default-width 1024
                                        :default-height 768))
        (setf root-box-layout (make-instance 'gtk:gtk-box
-                                       :orientation :vertical
-                                       :spacing 0))
+                                            :orientation :vertical
+                                            :spacing 0))
        (setf horizontal-box-layout (make-instance 'gtk:gtk-box
                                                   :orientation :horizontal
                                                   :spacing 0))
        (setf panel-buffer-container-left (make-instance 'gtk:gtk-box
-                                                  :orientation :horizontal
-                                                  :spacing 0))
+                                                        :orientation :horizontal
+                                                        :spacing 0))
        (setf panel-buffer-container-right (make-instance 'gtk:gtk-box
-                                                  :orientation :horizontal
-                                                  :spacing 0))
+                                                         :orientation :horizontal
+                                                         :spacing 0))
        (setf main-buffer-container (make-instance 'gtk:gtk-box
+                                                  :orientation :vertical
+                                                  :spacing 0))
+       (setf prompt-buffer-container (make-instance 'gtk:gtk-box
                                                     :orientation :vertical
                                                     :spacing 0))
-       (setf prompt-buffer-container (make-instance 'gtk:gtk-box
-                                                 :orientation :vertical
-                                                 :spacing 0))
        (setf message-container (make-instance 'gtk:gtk-box
                                               :orientation :vertical
                                               :spacing 0))
@@ -1144,7 +1144,7 @@ requested a reload."
 
 (define-ffi-method ffi-buffer-webgl-enabled-p ((buffer gtk-buffer))
   (webkit:webkit-settings-enable-webgl
-         (webkit:webkit-web-view-get-settings (gtk-object buffer))))
+   (webkit:webkit-web-view-get-settings (gtk-object buffer))))
 
 (define-ffi-method ffi-buffer-enable-webgl ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-enable-webgl
@@ -1152,8 +1152,8 @@ requested a reload."
         value))
 
 (define-ffi-method ffi-buffer-set-proxy ((buffer gtk-buffer)
-                                 &optional (proxy-url (quri:uri ""))
-                                   (ignore-hosts (list nil)))
+                                         &optional (proxy-url (quri:uri ""))
+                                         (ignore-hosts (list nil)))
   "Redirect network connections of BUFFER to proxy server PROXY-URL.
 Hosts in IGNORE-HOSTS (a list of strings) ignore the proxy.
 For the user-level interface, see `proxy-mode'.
@@ -1288,14 +1288,14 @@ As a second value, return the current buffer index starting from 0."
     (loop for i from (- length) to length
           for item = (webkit:webkit-back-forward-list-get-nth-item bf-list i)
           when (eq item current)
-            do (setf current-index (- length (length history-list))) ; Index from 0.
+          do (setf current-index (- length (length history-list))) ; Index from 0.
           when item
-            do (push (make-webkit-history-entry
-                      :title (webkit:webkit-back-forward-list-item-get-title item)
-                      :url (quri:uri (webkit:webkit-back-forward-list-item-get-uri item))
-                      :original-url (quri:uri (webkit:webkit-back-forward-list-item-get-original-uri item))
-                      :gtk-object item)
-                     history-list))
+          do (push (make-webkit-history-entry
+                    :title (webkit:webkit-back-forward-list-item-get-title item)
+                    :url (quri:uri (webkit:webkit-back-forward-list-item-get-uri item))
+                    :original-url (quri:uri (webkit:webkit-back-forward-list-item-get-original-uri item))
+                    :gtk-object item)
+                   history-list))
     (values history-list current-index)))
 
 (defmethod load-webkit-history-entry ((buffer gtk-buffer) history-entry)
