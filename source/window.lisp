@@ -103,9 +103,10 @@ The handlers take the window as argument."))
 
 (defmethod window-add-panel-buffer ((window window) (buffer panel-buffer) side)
   "Add a panel buffer to a window. Side can either be :right or :left."
-  (cond
-    ((eql side :left) (push buffer (slot-value window 'panel-buffers-left)))
-    ((eql side :right) (push buffer (slot-value window 'panel-buffers-right))))
+  (push buffer
+        (slot-value window (cond
+                             ((eq side :left) 'panel-buffer-left)
+                             ((eq side :right) 'panel-buffer-right))))
   (ffi-window-add-panel-buffer window buffer side))
 
 (defmethod window-remove-panel-buffer ((window window) (buffer panel-buffer))
