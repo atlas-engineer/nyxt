@@ -131,6 +131,37 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                        :href (lisp-url `(nyxt::delete-bookmark ,url-href)) "Delete"))
                                (:hr ""))))))))))
 
+(define-command-global show-bookmarks-panel ()
+  "Show the bookmarks in a panel."
+  (let ((panel-buffer (make-instance 'panel-buffer
+                                     :id (get-unique-buffer-identifier *browser*))))
+    (window-add-panel-buffer (current-window) panel-buffer :left)
+    (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
+      (nyxt::html-set
+       (markup:markup (:style (style panel-buffer))
+                      (:style (cl-css:css
+                               '((body
+                                  :margin "0"
+                                  :padding-left "5px"
+                                  :border-right "2px solid lightgray")
+                                 (p
+                                  :font-size "12px"
+                                  :margin "0"
+                                  :white-space "nowrap"
+                                  :overflow-x "scroll")
+                                 (div
+                                  :margin-bottom "10px"))))
+                      (:body
+                       (:h1 "Bookmarks")
+                       (loop for bookmark in bookmarks
+                             collect
+                                (let ((url-href (render-url (url bookmark))))
+                                  (markup:markup (:div
+                                                  (:p (title bookmark))
+                                                  (:p (:a :href url-href url-href))))))))
+       panel-buffer)
+      panel-buffer)))
+
 (export-always 'url-bookmark-tags)
 (defun url-bookmark-tags (url)
   "Return the list of tags of the bookmark corresponding to URL."
