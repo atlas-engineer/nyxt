@@ -1253,31 +1253,76 @@ generate a new URL query from user input.
                                :multi-selection-p t
                                :actions (list 'reload-buffers)))))
 
-(define-command switch-buffer-previous ()
-  "Switch to the previous buffer in the list of buffers.
-That is to say, the one with the most recent access time after the current buffer.
-The current buffer access time is set to be the last so that if we keep calling
-this command it cycles through all buffers."
-  (let* ((buffers (sort-by-time (buffer-list)))
-         (last-buffer (alex:last-elt buffers))
-         (current-buffer (current-buffer)))
-    (when (second buffers)
-      (set-current-buffer (second buffers))
-      ;; Set the last-access time after switching buffer, since switching
-      ;; buffers already sets the slot.
-      (setf (last-access current-buffer)
-            (local-time:timestamp- (last-access last-buffer) 1 :sec)))))
+(defun buffer-parent (&optional (buffer (current-buffer)))
+  (with-data-unsafe (history (history-path buffer))
+    (sera:and-let* ((owner (htree:owner history (id buffer)))
+                    (parent-id (htree:creator-id owner)))
+      (gethash parent-id (buffers *browser*)))))
 
-(define-command switch-buffer-next ()   ; TODO: Rename switch-buffer-oldest
-  "Switch to the oldest buffer in the list of buffers."
-  (let* ((buffers (sort-by-time (buffer-list)))
-         (oldest-buffer (alex:last-elt buffers)))
-    (when (eq oldest-buffer (current-buffer))
-      ;; Current buffer may already be the oldest, e.g. if other buffer was
-      ;; opened in the background.
-      (setf oldest-buffer (or (second (nreverse buffers))
-                              oldest-buffer)))
-    (set-current-buffer oldest-buffer)))
+(defun buffer-children (&optional (buffer (current-buffer)))
+  (let* ((current-history (get-data (history-path buffer)))
+         (buffers (remove-if (complement (sera:eqs current-history))
+                             (buffer-list)
+                             :key (alex:compose #'get-data #'history-path))))
+    (with-data-unsafe (history (history-path buffer))
+      (sera:filter
+       (sera:equals (id buffer))
+       buffers
+       :key (lambda (b) (alex:when-let ((owner (htree:owner history (id b))))
+                          (htree:creator-id owner)))))))
+
+(defun buffer-siblings (&optional (buffer (current-buffer)))
+  (let* ((current-history (get-data (history-path buffer)))
+         (buffers (remove-if (complement (sera:eqs current-history))
+                             (buffer-list)
+                             :key (alex:compose #'get-data #'history-path))))
+    (with-data-unsafe (history (history-path buffer))
+      (let* ((owner (htree:owner history (id buffer)))
+             (current-parent-id (when owner (htree:creator-id owner)))
+             (common-parent-buffers
+               (sera:filter
+                (sera:equals current-parent-id)
+                buffers
+                :key (lambda (b) (alex:when-let ((owner (htree:owner history (id b))))
+                                   (htree:creator-id owner)))))
+             (common-parent-buffers
+               (sort common-parent-buffers #'string< :key #'id)))
+        (sera:split-sequence-if (sera:equals (id buffer))
+         common-parent-buffers
+         :key #'id
+         :remove-empty-subseqs t)))))
+
+(defun buffer-sibling-previous (&optional (buffer (current-buffer)))
+  (alex:when-let ((previous-siblings (first (buffer-siblings buffer))))
+    (alex:last-elt previous-siblings)))
+
+(defun buffer-sibling-next (&optional (buffer (current-buffer)))
+  (first (second (buffer-siblings buffer))))
+
+(define-command switch-buffer-previous (&optional (buffer (current-buffer)))
+  "Switch to the previous sibling buffer.
+A sibling buffer is a buffer with the same parent.
+The 'previous' one here means the one with the closest ID below it.
+If there is no sibling, go to the parent."
+  (alex:when-let ((previous (or (buffer-sibling-previous buffer)
+                                (buffer-parent buffer))))
+    (set-current-buffer previous)))
+
+(define-command switch-buffer-next (&optional (buffer (current-buffer)))
+  "Switch to the next sibling buffer.
+A sibling buffer is a buffer with the same parent.
+The 'next' one here means the one with the closest ID above it.
+If there is no sibling, go to the parent."
+  (alex:when-let ((next (or (buffer-sibling-next buffer)
+                            (buffer-parent buffer))))
+    (set-current-buffer next)))
+
+(define-command switch-buffer-last ()
+  "Switch to the last showing buffer in the list of buffers.
+That is to say, the one with the most recent access time after the current buffer."
+  (let* ((buffers (sort-by-time (buffer-list))))
+    (when (second buffers)
+      (set-current-buffer (second buffers)))))
 
 (export-always 'mode-name)
 (defun mode-name (mode)
