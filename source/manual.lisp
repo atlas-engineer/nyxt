@@ -105,7 +105,7 @@ keybindings have priorities over the other modes.")
     (:p "See the " (:code "search-engines") " buffer slot documentation.
 Bookmarks can also be used as search engines, see the corresponding section.")
     (:p "Nyxt comes with two search engines by default: DuckDuckGo and Wikipedia.
-you can append new search engines easily using the following template.")
+The following example shows one way to add new search engines.")
     (:pre (:code "
 \(defvar `*my-search-engines*'
 \"list of search engines.\"
@@ -117,9 +117,9 @@ you can append new search engines easily using the following template.")
   ((search-engines (append (mapcar (lambda (engine) (apply 'make-search-engine engine))
                                    *my-search-engines*)
                            %slot-default%))))"))
-    (:p " It is to be noted that the last member in the search-engines is the default
-search engine of the browser. For example, in order to make python3 as the default browser,
-the above code can slightly be modified as follows.")
+    (:p "Note that the last search engine is the default one. For example, in
+order to make python3 the default, the above code can be slightly modified as
+follows.")
         (:pre (:code "
 \(defvar *my-search-engines*
   (list
@@ -127,8 +127,9 @@ the above code can slightly be modified as follows.")
    '(\"python3\" \"https://docs.python.org/3/search.html?q=~a\" \"https://docs.python.org/3\")))
 
 (define-configuration buffer
-  ((search-engines (append %slot-default% (mapcar (lambda (engine) (apply 'make-search-engine engine))
-                                                  *my-search-engines*)))))"))
+  ((search-engines (append %slot-default%
+                           (mapcar (lambda (engine) (apply 'make-search-engine engine))
+                                   *my-search-engines*)))))"))
 
     (:h3 "URL-dispatchers")
     (:p "You can configure which actions to take depending on the URL to be
