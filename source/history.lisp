@@ -317,6 +317,8 @@ For each owner, make a buffer, swap old owner identifier for the new buffer ID
 and maintain a table of (old-id -> new-id).  Finally go through all the owners
 and update their creator."
   (with-data-access (history history-path)
+    (log:info "Restoring ~a buffers from history."
+              (hash-table-count (htree:owners history)))
     (let ((old-id->new-id (make-hash-table :test #'equalp))
           (new-owners (make-hash-table :test #'equalp)))
       ;; We can't `maphash' over (htree:owners history) because
@@ -455,8 +457,7 @@ If you want to save the current history file beforehand, call
                                        :dirname (parent (history-path (current-buffer)))
                                        :basename name)))
     (let ((old-buffers (buffer-list)))
-      (%set-data path (make-history-tree))
-      (sera:and-let* ((new-history (restore (data-profile (current-buffer)) path)))
+      (sera:and-let* ((new-history (get-data path)))
         ;; TODO: Maybe modify `history-path' of all the buffers instead of polluting history?
         (%set-data (history-path (current-buffer)) new-history)
         (restore-history-buffers (history-path (current-buffer)))

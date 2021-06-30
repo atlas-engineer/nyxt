@@ -362,7 +362,7 @@ Prefer the thread-safe `with-data-access', or the non-thread-safe
       (progn
         (bt:with-recursive-lock-held ((lock user-data))
           (unless (restored-p user-data)
-            (restore profile path)
+            (%set-data path (restore profile path))
             (setf (restored-p user-data) t)))
         (values (data user-data) user-data))
       (values nil nil))))
