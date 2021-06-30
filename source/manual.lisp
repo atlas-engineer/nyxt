@@ -104,8 +104,14 @@ keybindings have priorities over the other modes.")
     (:h3 "Search engines")
     (:p "See the " (:code "search-engines") " buffer slot documentation.
 Bookmarks can also be used as search engines, see the corresponding section.")
-    (:p "Nyxt comes with two search engines by default: DuckDuckGo and Wikipedia.
-The following example shows one way to add new search engines.")
+    (:p "Nyxt comes with some default search engines for "
+        (:code (format nil "~{~a~^, ~}"
+                       (mapcar (lambda (engine)
+                                 (quri:uri-host (quri:uri (getf engine :search-url))))
+                               (rest (getf (mopu:slot-properties 'buffer 'search-engines)
+                                           :initform)))))
+        ". "
+        "The following example shows one way to add new search engines.")
     (:pre (:code "
 \(defvar `*my-search-engines*'
 \"list of search engines.\"
