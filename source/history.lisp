@@ -78,7 +78,7 @@ class."
   "Return a new global history tree for `history-entry' data."
   (htree:make :key 'history-tree-key :current-owner-id (id buffer)))
 
-(defun bookmark-frequently-visited-urls ()
+(define-command bookmark-frequently-visited-urls ()
   "Add websites frequently visited that are not included on the bookmarklist.
 
 The local function urls-visited-over-thresold returns all URLs instances which
@@ -96,7 +96,7 @@ new to the bookmark list and NIL if it is already there "
                                    history-entries-raw))
                   (urls-frequently-visited
                     (mapcar #'(lambda (e) (url (htree:data e))) history-entries-above-threshold)))
-               urls-frequently-visited))
+               urls-frequently-visited)) 
            (is-url-new-to-bookmarks-p (url-address)
              (let ((bookmarks-address-list
                      (mapcar #'(lambda (e)  (render-url (url e)))
