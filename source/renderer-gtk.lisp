@@ -46,7 +46,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
    (horizontal-box-layout)
    (panel-buffer-container-left)
    (panel-buffer-container-right)
-   (active-buffer-container)
+   (main-buffer-container)
    (prompt-buffer-container)
    (prompt-buffer-view)
    (status-container)
@@ -232,7 +232,7 @@ Such contexts are not needed for internal buffers."
      (with-slots (gtk-object root-box-layout horizontal-box-layout
                   panel-buffer-container-left
                   panel-buffer-container-right
-                  active-buffer-container
+                  main-buffer-container
                   active-buffer prompt-buffer-container
                   prompt-buffer-view
                   status-buffer status-container
@@ -255,7 +255,7 @@ Such contexts are not needed for internal buffers."
        (setf panel-buffer-container-right (make-instance 'gtk:gtk-box
                                                   :orientation :horizontal
                                                   :spacing 0))
-       (setf active-buffer-container (make-instance 'gtk:gtk-box
+       (setf main-buffer-container (make-instance 'gtk:gtk-box
                                                     :orientation :vertical
                                                     :spacing 0))
        (setf prompt-buffer-container (make-instance 'gtk:gtk-box
@@ -271,9 +271,9 @@ Such contexts are not needed for internal buffers."
        (setf active-buffer (make-dummy-buffer))
 
        ;; Add the views to the box layout and to the window
-       (gtk:gtk-box-pack-start active-buffer-container (gtk-object active-buffer) :expand t :fill t)
+       (gtk:gtk-box-pack-start main-buffer-container (gtk-object active-buffer) :expand t :fill t)
        (gtk:gtk-box-pack-start horizontal-box-layout panel-buffer-container-left :expand nil)
-       (gtk:gtk-box-pack-start horizontal-box-layout active-buffer-container :expand t :fill t)
+       (gtk:gtk-box-pack-start horizontal-box-layout main-buffer-container :expand t :fill t)
        (gtk:gtk-box-pack-start horizontal-box-layout panel-buffer-container-right :expand nil)
        (gtk:gtk-box-pack-start root-box-layout horizontal-box-layout :expand t :fill t)
 
@@ -791,8 +791,8 @@ See `gtk-browser's `modifier-translator' slot."
 
 (define-ffi-method ffi-window-set-buffer ((window gtk-window) (buffer gtk-buffer) &key (focus t))
   "Set BROWSER's WINDOW buffer to BUFFER."
-  (gtk:gtk-container-remove (active-buffer-container window) (gtk-object (active-buffer window)))
-  (gtk:gtk-box-pack-start (active-buffer-container window) (gtk-object buffer) :expand t :fill t)
+  (gtk:gtk-container-remove (main-buffer-container window) (gtk-object (active-buffer window)))
+  (gtk:gtk-box-pack-start (main-buffer-container window) (gtk-object buffer) :expand t :fill t)
   (gtk:gtk-widget-show (gtk-object buffer))
   (when focus
     (gtk:gtk-widget-grab-focus (gtk-object buffer)))
