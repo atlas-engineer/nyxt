@@ -17,11 +17,11 @@ It's a function of the window argument that returns the title as a string.")
                           :documentation "The stack of current prompt buffers.")
    (panel-buffers-left (list)
                       :accessor nil
-                      :documentation "A list of info buffers appearing on the
+                      :documentation "A list of panel buffers appearing on the
 left side of the window.")
    (panel-buffers-right (list)
                        :accessor nil
-                       :documentation "A list of info buffers appearing on the
+                       :documentation "A list of panel buffers appearing on the
 right side of the window.")
    (key-stack '()
               :documentation "A stack that keeps track of the key chords a user has pressed.")
