@@ -72,7 +72,8 @@ Return nil if `*init-file-path*' is nil."
      :short #\i
      :long "init"
      :arg-parser #'identity
-     :description "Set path to initialization file.")
+     :description (format nil "Set path to initialization file.
+Default: ~s" (expand-path *init-file-path*)))
     (:name :no-init
      :short #\I
      :long "no-init"
@@ -81,7 +82,8 @@ Return nil if `*init-file-path*' is nil."
      :short #\c
      :long "auto-config"
      :arg-parser #'identity
-     :description "Set path to auto-config file.")
+     :description (format nil "Set path to auto-config file.
+Default: ~s" (expand-path *auto-config-file-path*)))
     (:name :no-auto-config
      :short #\C
      :long "no-auto-config"
