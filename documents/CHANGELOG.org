@@ -21,6 +21,23 @@ If possible!
 *** Add online suggestions from search engines
 ** 2 series
 
+*** TASK 2.1.1 (Upcoming)
+
+- =reopen-buffer= restores the scroll position.
+
+- New =copy-username= command for password managers.
+
+- Bug fixes:
+
+  - Fix history double-restore which led to many random crashes.
+
+  - Create file and parent directories of configuration files if they
+    don't exist.
+
+  - Fix =set-url-from-bookmark= on multi-selection.
+
+  - Fix =process-mode= to not run action when it's nil.
+
 *** 2.1.0
 
 - New =process-mode=.
