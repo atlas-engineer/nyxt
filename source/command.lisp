@@ -136,6 +136,9 @@ Example:
     (unless documentation
       (warn (make-condition 'command-documentation-style-warning
                             :name name)))
+    (alex:when-let ((req-args (alex:parse-ordinary-lambda-list arglist)))
+      (error "Commands cannot have required parameters (~s), consider optional or keyword parameters instead."
+             req-args))
     (let ((before-hook (intern (str:concat (symbol-name name) "-BEFORE-HOOK")
                                (symbol-package name)))
           (after-hook (intern (str:concat (symbol-name name) "-AFTER-HOOK")
