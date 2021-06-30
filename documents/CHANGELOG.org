@@ -21,7 +21,7 @@ If possible!
 *** Add online suggestions from search engines
 ** 2 series
 
-*** TASK 2.1.1 (Upcoming)
+*** 2.1.1
 
 - =reopen-buffer= restores the scroll position.
 
