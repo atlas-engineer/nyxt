@@ -113,7 +113,7 @@ Bookmarks can also be used as search engines, see the corresponding section.")
         ". "
         "The following example shows one way to add new search engines.")
     (:pre (:code "
-\(defvar `*my-search-engines*'
+\(defvar *my-search-engines*
 \"list of search engines.\"
   (list
    '(\"python3\" \"https://docs.python.org/3/search.html?q=~a\" \"https://docs.python.org/3\")\
