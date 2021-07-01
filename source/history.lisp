@@ -80,9 +80,10 @@ class."
 
 (define-command bookmark-frequently-visited-urls ()
   "Add websites frequently visited that are not included on the bookmarklist."
-  ;; The local function urls-visited-over-thresold returns all URLs instances which
-  ;; were visited more times than the threshold.
+   
   (labels ((urls-visited-over-threshold (threshold)
+             "The local function urls-visited-over-thresold returns all URLs
+             instances which were visited more times than the threshold."
             (let* ((history-entries-raw
                     (with-data-unsafe (history (history-path (current-buffer)))
                       (alex:hash-table-keys (htree:entries history))))
@@ -92,9 +93,10 @@ class."
                   (urls-frequently-visited
                     (mapcar #'(lambda (e) (url (htree:data e))) history-entries-above-threshold)))
                     urls-frequently-visited))
-           ;; The local function is-url-new-to-bookmarks-p returns the URL address itself if it
-           ;; new to the bookmark list and NIL if it is already there 
            (is-url-new-to-bookmarks-p (url-address)
+             "The local function is-url-new-to-bookmarks-p returns the URL
+             address itself if it new to the bookmark list and NIL if it is
+             already there "
              (let ((bookmarks-address-list
                      (mapcar #'(lambda (e)  (render-url (url e)))
                              (with-data-access (bookmarks (bookmarks-path (current-buffer)))
