@@ -105,7 +105,7 @@ class."
                     url-address))))
     (dolist (url-instance  (urls-visited-over-threshold (url->bookmark-visit-threshold *browser*)))
       (if (is-url-new-to-bookmarks-p (render-url url-instance))
-          (if-confirm ("Do you want to bookmark ~a?" (render-url url-instance))
+          (if-confirm ("Bookmark ~a?" (render-url url-instance))
                       (bookmark-url :url (render-url url-instance)))))))
 
 (declaim (ftype (function (quri:uri &key (:title string) (:buffer buffer)) t) history-add))
