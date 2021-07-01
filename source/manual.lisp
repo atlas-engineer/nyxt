@@ -114,10 +114,10 @@ Bookmarks can also be used as search engines, see the corresponding section.")
         "The following example shows one way to add new search engines.")
     (:pre (:code "
 \(defvar *my-search-engines*
-\"list of search engines.\"
   (list
    '(\"python3\" \"https://docs.python.org/3/search.html?q=~a\" \"https://docs.python.org/3\")\
-   '(\"doi\" \"https://dx.doi.org/~a\" \"https://dx.doi.org/\")\))
+   '(\"doi\" \"https://dx.doi.org/~a\" \"https://dx.doi.org/\")\)
+  \"List of search engines.\")
 
 (define-configuration buffer
   ((search-engines (append (mapcar (lambda (engine) (apply 'make-search-engine engine))
