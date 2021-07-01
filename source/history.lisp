@@ -78,11 +78,11 @@ class."
   "Return a new global history tree for `history-entry' data."
   (htree:make :key 'history-tree-key :current-owner-id (id buffer)))
 
-(define-command bookmark-frequently-visited-urls ()
+(define-command "bookmark-frequently-visited-urls" ()
   "Add frequently visited URLs that are not included in the bookmarks."
   (labels ((urls-visited-over-threshold (threshold)
-             "The local function urls-visited-over-thresold returns all URLs
-             instances which were visited more times than the threshold."
+            "The local function urls-visited-over-thresold returns all URLs
+            instances which were visited more times than the threshold."
             (let* ((history-entries-raw
                     (with-data-unsafe (history (history-path (current-buffer)))
                       (alex:hash-table-keys (htree:entries history))))
@@ -97,7 +97,7 @@ class."
              address itself if it new to the bookmark list and NIL if it is
              already there "
              (let ((bookmarks-address-list
-                     (mapcar #'(lambda (e)  (render-url (url e)))
+                     (mapcar #'(lambda (e) (render-url (url e)))
                              (with-data-access (bookmarks (bookmarks-path (current-buffer)))
                                                 bookmarks)))) 
                (if (member url-address bookmarks-address-list :test #'string=)
