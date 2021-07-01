@@ -11,6 +11,9 @@ assignees: ''
 
 **Precise recipe to reproduce the issue**
 
+For website-specic issues:
+Can you reproduce this issue with Epiphany / GNOME Web (https://wiki.gnome.org/Apps/Web)?
+
 **Information**
 - OS name+version:
 - Graphics card and driver:
