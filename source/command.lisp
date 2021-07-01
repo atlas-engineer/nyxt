@@ -118,8 +118,10 @@ of arguments."
        ,(documentation function-symbol 'function)
        (,function-symbol (first arg-list)))))
 
-(export-always 'define-command)
-(defmacro define-command (name (&rest arglist) &body body)
+(defmacro %define-command (name (&key deprecated-p
+                                   pre-form
+                                   global-p)
+                           (&rest arglist) &body body)
   "Define new command NAME.
 `define-command' has a syntax similar to `defun'.
 ARGLIST must be a list of optional arguments or key arguments.
@@ -154,6 +156,7 @@ Example:
            (defun ,name ,arglist
              ,@(sera:unsplice documentation)
              ,@declares
+             ,pre-form
              (handler-case
                  (progn
                    (hooks:run-hook ,before-hook)
@@ -166,14 +169,22 @@ Example:
                      (hooks:run-hook ,after-hook)))
                (nyxt-condition (c)
                  (format t "~s" c)))))
-         ;; Overwrite previous command:
-         (setf *command-list* (delete ',name *command-list* :key #'name))
-         (push (make-instance 'command
-                              :name ',name
-                              :docstring ,documentation
-                              :fn (symbol-function ',name)
-                              :sexp '(define-command (,@arglist) ,@body))
-               *command-list*)))))
+         (let ((new-command (make-instance 'command
+                                           :name ',name
+                                           :docstring ,documentation
+                                           :fn (symbol-function ',name)
+                                           :sexp '(define-command (,@arglist) ,@body)
+                                           :global-p ,global-p)))
+           (unless ,deprecated-p
+             ;; Overwrite previous command:
+             (setf *command-list* (delete ',name *command-list* :key #'name))
+             (push new-command
+                   *command-list*))
+           new-command)))))
+
+(export-always 'define-command)
+(defmacro define-command (name (&rest arglist) &body body)
+  `(%define-command ,name () (,@arglist) ,@body))
 
 (export-always 'define-command-global)
 (defmacro define-command-global (name (&rest arglist) &body body)
@@ -181,9 +192,7 @@ Example:
 This means it will be listed in `command-source' when the global option is on.
 This is mostly useful for third-party packages to define globally-accessible
 commands without polluting Nyxt packages."
-  `(progn
-    (define-command ,name (,@arglist) ,@body)
-    (setf (global-p (find-command ',name)) t)))
+  `(%define-command ,name (:global-p t) (,@arglist) ,@body))
 
 ;; TODO: Should `define-deprecated-command' report the version number of deprecation?
 ;; Maybe OK to just remove all deprecated commands on major releases.
@@ -191,21 +200,11 @@ commands without polluting Nyxt packages."
   "Define NAME, a deprecated command.
 This is just like a command.  It's recommended to explain why the function is
 deprecated and by what in the docstring."
-  (multiple-value-bind (forms declarations documentation)
-      (alex:parse-body body :documentation t)
-
-    (unless documentation
-      (warn (make-condition
-             'command-documentation-style-warning
-             :name name)))
-    `(progn
-       (define-command ,name ,arglist
-         ,@(sera:unsplice documentation)
-         ,@declarations
-         (progn
-           ;; TODO: Implement `warn'.
-           (echo-warning "~a is deprecated." ',name)
-           ,@forms)))))
+  `(%define-command ,name (:deprecated-p t
+                           ;; TODO: Implement `warn'.
+                           :pre-form (echo-warning "~a is deprecated." ',name))
+       (,@arglist)
+     ,@body))
 
 (defun nyxt-packages ()                 ; TODO: Export a customizable *nyxt-packages* instead?
   "Return all package designators that start with 'nyxt' plus Nyxt own libraries."
