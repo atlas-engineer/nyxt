@@ -78,9 +78,8 @@ class."
   "Return a new global history tree for `history-entry' data."
   (htree:make :key 'history-tree-key :current-owner-id (id buffer)))
 
-(define-command bookmark-frequently-visited-urls ()
-  "Add websites frequently visited that are not included on the bookmarklist."
-   
+(define-command "bookmark-frequently-visited-urls" ()
+  "Add frequently visited URLs that are not included in the bookmarks."
   (labels ((urls-visited-over-threshold (threshold)
              "The local function urls-visited-over-thresold returns all URLs
              instances which were visited more times than the threshold."
