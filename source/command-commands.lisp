@@ -69,7 +69,6 @@
 (define-command execute-extended-command (&optional command)
    "Execute a command by name, also supply required, optional, and
 keyword parameters."
-  ;; TODO: prefill default-values when prompting optional/key arguments
   ;; TODO: Display type and catch type errors.
   (let* ((command (or command
                       (first (prompt
@@ -82,27 +81,30 @@ keyword parameters."
          (alex:parse-ordinary-lambda-list lambda-list)
        (declare (ignore rest aok? aux key?))
        (setf (last-access command) (local-time:now))
-       (labels ((prompt-arg (prompt)
+       (labels ((prompt-arg (prompt &optional input)
                   (read-from-string
                    (first (prompt
                            :prompt prompt
+                           :input (write-to-string input)
                            :sources (make-instance 'prompter:raw-source)))
                    nil nil))
-                (prompt-args (params)
-                  (mapcar (lambda (param)
-                            (prompt-arg param))
-                          params))
-                (prompt-kwargs (params)
-                  (alex:mappend (lambda-match
-                                  ((cons key _)
-                                   (copy-list (list (first key)
-                                                    (prompt-arg (second key))))))
-                                params)))
+                (parse-args (params)
+                  (alex:mappend
+                   (lambda-match
+                     ((and param (type symbol))
+                      (list (prompt-arg param)))
+                     ((list (list keyword name) default _)
+                      (list keyword
+                            (prompt-arg name default)))
+                     ((list name default _)
+                      (list (prompt-arg name default))))
+                   params)))
          (apply #'run-async
                 command
-                (append (alex:mappend #'prompt-args
-                                      (list required-arguments optional-arguments))
-                        (prompt-kwargs keyword-arguments)))))))
+                (alex:mappend #'parse-args
+                              (list required-arguments
+                                    optional-arguments
+                                    keyword-arguments)))))))
 
 (defun get-hooks ()
   (flet ((list-hooks (object)
