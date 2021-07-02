@@ -11,7 +11,7 @@ assignees: ''
 
 **Precise recipe to reproduce the issue**
 
-For website-specic issues:
+For website-specific issues:
 Can you reproduce this issue with Epiphany / GNOME Web (https://wiki.gnome.org/Apps/Web)?
 
 **Information**
