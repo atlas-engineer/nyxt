@@ -102,24 +102,28 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "C-f" 'select-next-page
        "C-b" 'select-previous-page)))))
 
-(defmacro define-command-prompt (name (&rest arglist) &body body)
-  "Like `define-command' but automatically inserts a `prompt-buffer' argument
-and warn when its nil."
+(defmacro define-command-prompt (name (prompt-buffer &rest arglist) &body body)
+  "Like `define-command' but the first argument is special:
+- it is considered a keyword argument if `&keyword' is in arglist, `&optional' otherwise,
+- it is bound to `(current-prompt-buffer)` if unspecified,
+- the body is skipped and a warning is emitted when it's nil."
   (multiple-value-bind (forms declares documentation)
       (alex:parse-body body :documentation t)
     (multiple-value-bind (required optional rest keywords aok? aux key?)
         (alex:parse-ordinary-lambda-list arglist)
-      (if keywords
-          (push '((:prompt-buffer prompt-buffer) (current-prompt-buffer) nil)
-                keywords)
-          (push '(prompt-buffer (current-prompt-buffer) nil)
-                optional))
-      `(define-command ,name ,(sera:unparse-ordinary-lambda-list required optional rest keywords aok? aux key?)
-         ,@(sera:unsplice documentation)
-         ,@declares
-         (if prompt-buffer
-             (progn ,@forms)
-             (log:warn "Can't call ~a on nil prompt buffer" ',name))))))
+      (flet ((unparse-arguments (prompt-buffer-sym)
+               (if keywords
+                   (push `((,(intern (string prompt-buffer-sym) "KEYWORD") ,prompt-buffer-sym) (current-prompt-buffer) nil)
+                         keywords)
+                   (push `(,prompt-buffer-sym (current-prompt-buffer) nil)
+                         optional))
+               (sera:unparse-ordinary-lambda-list required optional rest keywords aok? aux key?)))
+        `(define-command ,name ,(unparse-arguments prompt-buffer)
+           ,@(sera:unsplice documentation)
+           ,@declares
+           (if prompt-buffer
+               (progn ,@forms)
+               (log:warn "Can't call ~a on nil prompt buffer" ',name)))))))
 
 (define-command-prompt select-next ()
   "Select next entry in prompt buffer."
