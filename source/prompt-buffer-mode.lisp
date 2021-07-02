@@ -125,7 +125,7 @@ Actions can be listed and run with `return-selection-over-action' (bound to
                (progn ,@forms)
                (log:warn "Can't call ~a on nil prompt buffer" ',name)))))))
 
-(define-command-prompt select-next ()
+(define-command-prompt select-next (prompt-buffer)
   "Select next entry in prompt buffer."
   (prompter:select-next prompt-buffer)
   ;; TODO: Update display?  The library should probably decide when to update
@@ -133,32 +133,32 @@ Actions can be listed and run with `return-selection-over-action' (bound to
   ;; decides when redraw, it has more control.
   (prompt-render-suggestions prompt-buffer))
 
-(define-command-prompt select-previous ()
+(define-command-prompt select-previous (prompt-buffer)
   "Select next entry in prompt buffer."
   (prompter:select-previous prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
-(define-command-prompt select-first ()
+(define-command-prompt select-first (prompt-buffer)
   "Select first entry in prompt buffer."
   (prompter:select-first prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
-(define-command-prompt select-last ()
+(define-command-prompt select-last (prompt-buffer)
   "Select first entry in prompt buffer."
   (prompter:select-last prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
-(define-command-prompt select-next-source ()
+(define-command-prompt select-next-source (prompt-buffer)
   "Select next soruce in prompt buffer."
   (prompter:select-next-source prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
-(define-command-prompt select-previous-source ()
+(define-command-prompt select-previous-source (prompt-buffer)
   "Select previous source in prompt buffer."
   (prompter:select-previous-source prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
-(define-command-prompt select-next-page (&key (steps 1))
+(define-command-prompt select-next-page (prompt-buffer &key (steps 1))
   "Select entry by STEPS next page in prompt buffer.
 If STEPS is negative, go to previous pages instead."
   (unless (= 0 steps)
@@ -193,12 +193,12 @@ If STEPS is negative, go to previous pages instead."
     ;; decides when redraw, it has more control.
     (prompt-render-suggestions prompt-buffer)))
 
-(define-command-prompt select-previous-page (&key (steps 1))
+(define-command-prompt select-previous-page (prompt-buffer &key (steps 1))
   "Select entry by STEPS previous page in prompt buffer.
 If STEPS is negative, go to next pages instead."
   (select-next-page :prompt-buffer prompt-buffer :steps (- steps)))
 
-(define-command-prompt return-selection ()
+(define-command-prompt return-selection (prompt-buffer)
   "Have the PROMT-BUFFER return the selection, then quit."
   (prompter:return-selection prompt-buffer))
 
@@ -228,7 +228,7 @@ current unmarked selection."
    (prompter:suggestion-maker 'make-attribute-suggestion)
    (prompter:actions '(return-marks-only))))
 
-(define-command-prompt toggle-attributes-display ()
+(define-command-prompt toggle-attributes-display (prompt-buffer)
   "Prompt for which prompter attributes to display."
   (let ((attributes (prompt
                      :prompt "Mark attributes to display"
@@ -259,7 +259,7 @@ current unmarked selection."
    :value command
    :attributes (nyxt::command-attributes command (parent-prompt-buffer source))))
 
-(define-command-prompt run-prompt-buffer-command ()
+(define-command-prompt run-prompt-buffer-command (prompt-buffer)
   "Prompt for a command to call in PROMPT-BUFFER."
   (let ((command (first (prompt
                          :prompt "Command to run in current prompt buffer"
@@ -293,7 +293,7 @@ current unmarked selection."
    (prompter:constructor (prompt-buffer-actions))
    (prompter:suggestion-maker 'make-action-suggestion)))
 
-(define-command-prompt return-selection-over-action ()
+(define-command-prompt return-selection-over-action (prompt-buffer)
   "Prompt for an action to run over PROMPT-BUFFER selection."
   (let ((action (first (prompt
                         :prompt "Action to run on selection"
@@ -301,19 +301,19 @@ current unmarked selection."
     (when action
       (prompter:return-selection prompt-buffer action))))
 
-(define-command-prompt run-follow-mode-function ()
+(define-command-prompt run-follow-mode-function (prompt-buffer)
   "Run follow-mode function over selected suggestion without closing PROMPT-BUFFER."
   (prompter:call-follow-mode-function prompt-buffer))
 
-(define-command-prompt cancel-input () ; TODO: Rename.
+(define-command-prompt cancel-input (prompt-buffer) ; TODO: Rename.
   "Close the prompt-buffer without further action."
   (hide-prompt-buffer prompt-buffer))
 
-(define-command-prompt toggle-follow ()
+(define-command-prompt toggle-follow (prompt-buffer)
   "Close the prompt-buffer without further action."
   (prompter:toggle-follow prompt-buffer))
 
-(define-command-prompt toggle-mark (&key (direction :forward))
+(define-command-prompt toggle-mark (prompt-buffer &key (direction :forward))
   "Mark selection.
 Only available if current prompt-buffer source `multi-selection-p' is non-nil.
 DIRECTION can be `:forward' or `:backward' and specifies which suggestion to
@@ -323,32 +323,32 @@ select next."
     (:forward (select-next prompt-buffer))
     (:backward (select-previous prompt-buffer))))
 
-(define-command-prompt toggle-mark-backwards ()
+(define-command-prompt toggle-mark-backwards (prompt-buffer)
   "Mark selection.
 Only available if pomrpt-buffer `multi-selection-p' is non-nil.  DIRECTION can be
 `:forward' or `:backward' and specifies which suggestion to select next."
   (toggle-mark :prompt-buffer prompt-buffer
                :direction :backward))
 
-(define-command-prompt mark-all ()
+(define-command-prompt mark-all (prompt-buffer)
   "Mark all visible suggestions in current source.
 Only available if `multi-selection-p' is non-nil."
   (prompter:mark-all prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
-(define-command-prompt unmark-all ()
+(define-command-prompt unmark-all (prompt-buffer)
   "Unmark all visible suggestions in current source.
 Only available if `multi-selection-p' is non-nil."
   (prompter:unmark-all prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
-(define-command-prompt toggle-mark-all ()
+(define-command-prompt toggle-mark-all (prompt-buffer)
   "Toggle the mark over all visible suggestions in current source.
 Only available if `multi-selection-p' is non-nil."
   (prompter:toggle-mark-all prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
-(define-command-prompt copy-selection ()
+(define-command-prompt copy-selection (prompt-buffer)
   "Copy default property of selection to clipboard."
   (let* ((marks (prompter:all-marks prompt-buffer))
          (props (if marks
@@ -361,7 +361,7 @@ Only available if `multi-selection-p' is non-nil."
       (trivial-clipboard:text text)
       (echo "Copied ~s to clipboard." text))))
 
-(define-command-prompt paste ()
+(define-command-prompt paste (prompt-buffer)
   "Paste clipboard text to input."
   (ffi-buffer-evaluate-javascript
    prompt-buffer
@@ -378,7 +378,7 @@ Only available if `multi-selection-p' is non-nil."
   ((prompter:name "Prompt buffer input history")
    (prompter:constructor (history-entries))))
 
-(define-command history (&optional (prompt-buffer (current-prompt-buffer)))
+(define-command-prompt history (prompt-buffer)
   "Choose a prompt-buffer input history entry to insert as input."
   (let ((history (prompter:history prompt-buffer)))
     (if (and history (not (containers:empty-p history)))
@@ -389,7 +389,7 @@ Only available if `multi-selection-p' is non-nil."
             (nyxt::set-prompt-buffer-input input)))
         (echo "Prompt buffer has no history."))))
 
-(define-command-prompt insert-selection ()
+(define-command-prompt insert-selection (prompt-buffer)
   "Insert current selection default property in the prompt buffer input."
   (alex:when-let ((selection (prompter:attributes-default
                               (prompter:selected-suggestion prompt-buffer))))
