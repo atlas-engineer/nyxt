@@ -66,10 +66,29 @@
       (setf (last-access command) (local-time:now))
       (run-async command))))
 
+(defun parse-function-lambda-list-types (fn)
+  #-sbcl
+  (declare (ignore fn))
+  #-sbcl
+  (warn "Function type parsing is not supported on this Lisp implementation.")
+  #+sbcl
+  (let* ((types (second (sb-introspect:function-type fn)))
+         (keywords '())
+         (type-batches (sera:split-sequence-if (lambda (type)
+                                                 (when (find type lambda-list-keywords)
+                                                   (push type keywords)))
+                                               types))
+         (keyword-type-pairs (pairlis keywords (rest type-batches))))
+    (alex:nreversef keywords)
+    (values (first type-batches)
+            (alex:assoc-value keyword-type-pairs '&optional)
+            (alex:assoc-value keyword-type-pairs '&rest)
+            (alex:assoc-value keyword-type-pairs '&key))))
+
 (define-command execute-extended-command (&optional command)
-   "Execute a command by name, also supply required, optional, and
-keyword parameters."
-  ;; TODO: Display type and catch type errors.
+   "Query the user for the arguments to pass to a given COMMAND.
+User input is evaluated Lisp."
+  ;; TODO: Add support for &rest arguments.
   (let* ((command (or command
                       (first (prompt
                               :prompt "Execute extended command"
@@ -80,31 +99,45 @@ keyword parameters."
                            aok? aux key?)
          (alex:parse-ordinary-lambda-list lambda-list)
        (declare (ignore rest aok? aux key?))
-       (setf (last-access command) (local-time:now))
-       (labels ((prompt-arg (prompt &optional input)
-                  (read-from-string
-                   (first (prompt
-                           :prompt prompt
-                           :input (write-to-string input)
-                           :sources (make-instance 'prompter:raw-source)))
-                   nil nil))
-                (parse-args (params)
-                  (alex:mappend
-                   (lambda-match
-                     ((and param (type symbol))
-                      (list (prompt-arg param)))
-                     ((list (list keyword name) default _)
-                      (list keyword
-                            (prompt-arg name default)))
-                     ((list name default _)
-                      (list (prompt-arg name default))))
-                   params)))
-         (apply #'run-async
-                command
-                (alex:mappend #'parse-args
-                              (list required-arguments
-                                    optional-arguments
-                                    keyword-arguments)))))))
+       (multiple-value-bind (required-types optional-types rest-types keyword-types)
+           (parse-function-lambda-list-types (fn command))
+         (declare (ignore rest-types))
+         (labels ((prompt-arg (prompt &optional type input)
+                    (let ((value
+                            (first
+                             (evaluate
+                              (first (prompt
+                                      :prompt (if type
+                                                  (format nil "~a (~a)" prompt type)
+                                                  prompt)
+                                      :input (write-to-string input)
+                                      :sources (make-instance 'prompter:raw-source
+                                                              :name "Evaluated input")))))))
+                      (if (or (not type)
+                              (typep value type))
+                          value
+                          (progn
+                            (echo "~s has type ~s, expected ~s."
+                                  value (type-of value) type)
+                            (prompt-arg prompt type input)))))
+                  (parse-args (params)
+                    (alex:mappend
+                     (lambda-match
+                       ((cons (and param (type symbol)) type)
+                        (list (prompt-arg param type)))
+                       ((cons (list (list keyword name) default _) type)
+                        (list keyword
+                              (prompt-arg name type default)))
+                       ((cons (list name default _) type)
+                        (list (prompt-arg name type default))))
+                     params)))
+           (setf (last-access command) (local-time:now))
+           (apply #'run-async
+                  command
+                  (alex:mappend #'parse-args
+                                (list (pairlis required-arguments required-types)
+                                      (pairlis optional-arguments optional-types)
+                                      (pairlis keyword-arguments (mapcar #'second keyword-types))))))))))
 
 (defun get-hooks ()
   (flet ((list-hooks (object)
