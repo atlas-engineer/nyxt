@@ -436,6 +436,11 @@ Delete it with `ffi-buffer-delete'."
                 :margin-left "-10px")
                ("#container"
                 :display "grid"
+                ;; Columns: controls, url, tabs, modes
+                :grid-template-columns "120px 2fr 3fr 240px"
+                :overflow-y "hidden")
+               ("#container-vi"
+                :display "grid"
                 ;; Columns: controls, vi-status, url, tabs, modes
                 :grid-template-columns "120px 30px 2fr 3fr 240px"
                 :overflow-y "hidden")

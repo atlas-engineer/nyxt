@@ -72,7 +72,7 @@
                          ((find-submode buffer 'vi-insert-mode)
                           "vi-insert-mode"))))
     (markup:markup
-     (:div :id "container"
+     (:div :id (if vi-class "container-vi" "container")
            (:div :id "controls" :class "arrow-right"
                  (markup:raw (format-status-buttons)))
            (markup:raw
