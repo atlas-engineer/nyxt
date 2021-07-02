@@ -66,41 +66,43 @@
       (setf (last-access command) (local-time:now))
       (run-async command))))
 
-(define-command execute-extended-command ()
+(define-command execute-extended-command (&optional command)
    "Execute a command by name, also supply required, optional, and
 keyword parameters."
   ;; TODO: prefill default-values when prompting optional/key arguments
-   (let* ((command (first (prompt
-                           :prompt "Execute extended command"
-                           :sources (make-instance 'user-command-source)
-                           :hide-suggestion-count-p t)))
-          (argument-list (swank::arglist (fn command))))
-     (multiple-value-bind (required-arguments optional-arguments rest key-arguments
+  ;; TODO: Display type and catch type errors.
+  (let* ((command (or command
+                      (first (prompt
+                              :prompt "Execute extended command"
+                              :sources (make-instance 'user-command-source)
+                              :hide-suggestion-count-p t))))
+          (lambda-list (swank::arglist (fn command))))
+     (multiple-value-bind (required-arguments optional-arguments rest keyword-arguments
                            aok? aux key?)
-         (alex:parse-ordinary-lambda-list argument-list)
-       (declare (ignore rest aok? aux key?)))
-     (apply command
-            (append
-             (when required-arguments
-               (loop for argument in required-arguments
-                     collect (read-from-string
-                              (first (prompt
-                                      :prompt argument
-                                      :sources (make-instance 'prompter:raw-source))))))
-             (when optional-arguments
-               (loop for argument in optional-arguments
-                     collect (read-from-string
-                              (first (prompt
-                                      :prompt (first argument)
-                                      :sources (make-instance 'prompter:raw-source))))))
-             (when key-arguments
-               (loop for argument in key-arguments
-                     collect (first (car argument))
-                     collect (read-from-string
-                              (first (prompt
-                                      :prompt (second (car argument))
-                                      :sources (make-instance 'prompter:raw-source))))))))
-     (setf (last-access command) (local-time:now))))
+         (alex:parse-ordinary-lambda-list lambda-list)
+       (declare (ignore rest aok? aux key?))
+       (setf (last-access command) (local-time:now))
+       (labels ((prompt-arg (prompt)
+                  (read-from-string
+                   (first (prompt
+                           :prompt prompt
+                           :sources (make-instance 'prompter:raw-source)))
+                   nil nil))
+                (prompt-args (params)
+                  (mapcar (lambda (param)
+                            (prompt-arg param))
+                          params))
+                (prompt-kwargs (params)
+                  (alex:mappend (lambda-match
+                                  ((cons key _)
+                                   (copy-list (list (first key)
+                                                    (prompt-arg (second key))))))
+                                params)))
+         (apply #'run-async
+                command
+                (append (alex:mappend #'prompt-args
+                                      (list required-arguments optional-arguments))
+                        (prompt-kwargs keyword-arguments)))))))
 
 (defun get-hooks ()
   (flet ((list-hooks (object)
