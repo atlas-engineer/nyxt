@@ -77,7 +77,7 @@ class."
 (defun make-history-tree (&optional (buffer (current-buffer)))
   "Return a new global history tree for `history-entry' data."
   (htree:make :key 'history-tree-key :current-owner-id (id buffer)))
-
+;; save point before pivoting the command
 (define-command bookmark-frequently-visited-urls ()
   "Add frequently visited URLs that are not included in the bookmarks."
   (labels ((urls-visited-over-threshold (threshold)
