@@ -73,10 +73,10 @@
                                "background-color:#37a8e4;")))
          ;; hide vi-mode status and adjacent arrow when not enabled
          (vi-mode-display (when (not vi-mode-color)
-                              "display: none;"))
+                            "display: none;"))
          (vi-mode-style (concatenate 'string vi-mode-color vi-mode-display))
          (url-class (when (not vi-mode-color)
-                             "overlap")))
+                      "overlap")))
     (markup:markup
      (:div :id "container"
            (:div :id "controls" :class "arrow-right"
