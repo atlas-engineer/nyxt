@@ -915,6 +915,7 @@ proceeding."
   (:export-class-name-p t))
 (define-user-class buffer-source)
 
+(declaim (ftype (function (&key (:id string))) switch-buffer))
 (define-command switch-buffer (&key id)
   "Switch the active buffer in the current window."
   (if id
