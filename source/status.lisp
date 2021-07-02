@@ -24,7 +24,6 @@
    (:a :class "button" :title "Execute" :href (lisp-url '(nyxt:execute-command)) "⚙")
    (:a :class "button" :title "Buffers" :href (lisp-url '(nyxt/buffer-listing-mode:list-buffers)) "≡")))
 
-(export-always 'format-status-vi-mode)
 (defun format-status-vi-mode (&optional (buffer (current-buffer)))
   (cond ((find-submode buffer 'vi-normal-mode)
          (markup:markup
