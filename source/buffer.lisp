@@ -437,20 +437,23 @@ Delete it with `ffi-buffer-delete'."
                ("#container"
                 :display "grid"
                 ;; Columns: controls, vi-status, url, tabs, modes
-                :grid-template-columns "120px 20px 2fr 3fr 240px"
+                :grid-template-columns "120px 30px 2fr 3fr 240px"
                 :overflow-y "hidden")
                ("#controls"
                 :background-color "rgb(80,80,80)"
                 :padding-left "5px"
                 :overflow "hidden"
                 :white-space "nowrap"
-                :z-index "3")
+                :z-index "4")
                ("#vi-mode"
-                :margin-left "-10px"
+                :padding-right "10px"
                 :padding-left "10px"
-                :text-align "center")
-               (".overlap"
-                :grid-column "span 3")
+                :text-align "center"
+                :z-index "3")
+               (".vi-normal-mode"
+                :background-color "rgb(100,100,100)")
+               (".vi-insert-mode"
+                :background-color "#37a8e4")
                ("#url"
                 :background-color "gray"
                 :min-width "100px"

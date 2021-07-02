@@ -67,29 +67,20 @@
 
 (defun format-status (window)
   (let* ((buffer (current-buffer window))
-         (vi-mode-color (cond ((find-submode buffer 'vi-normal-mode)
-                               "background-color:rgb(100,100,100);")
-                              ((find-submode buffer 'vi-insert-mode)
-                               "background-color:#37a8e4;")))
-         ;; hide vi-mode status and adjacent arrow when not enabled
-         (vi-mode-display (when (not vi-mode-color)
-                            "display: none;"))
-         (vi-mode-style (concatenate 'string vi-mode-color vi-mode-display))
-         (url-class (when (not vi-mode-color)
-                      "overlap")))
+         (vi-class (cond ((find-submode buffer 'vi-normal-mode)
+                          "vi-normal-mode")
+                         ((find-submode buffer 'vi-insert-mode)
+                          "vi-insert-mode"))))
     (markup:markup
      (:div :id "container"
            (:div :id "controls" :class "arrow-right"
                  (markup:raw (format-status-buttons)))
+           (markup:raw
+            (when vi-class
+              (markup:markup
+               (:div :id "vi-mode" :class (str:concat vi-class " arrow-right")
+                     (markup:raw (format-status-vi-mode buffer))))))
            (:div :id "url" :class "arrow-right"
-                 :style "background-color:rgb(80,80,80)" "")
-           (:div :id "vi-mode"
-                 :style vi-mode-style
-                 (markup:raw (format-status-vi-mode buffer)))
-           (:div :class "arrow arrow-right"
-                 :style vi-mode-style "")
-           (:div :id "url"
-                 :class url-class
                  (markup:raw
                   (format-status-load-status buffer)
                   (format-status-url buffer)))
