@@ -346,11 +346,15 @@ This is blocking, see `run-async' for an asynchronous way to run commands."
 See `run' for a way to run commands in a synchronous fashion and return the
 result."
   (run-thread
-    (with-current-buffer (current-buffer) ; See `run' for why we bind current buffer.
-      (handler-case (apply #'funcall command args)
-        (nyxt-prompt-buffer-canceled ()
-          (log:debug "Prompt buffer interrupted")
-          nil)))))
+    ;; It's important to rebind `args' since it may otherwise be shared with the
+    ;; caller.
+    (let ((command command)
+          (args args))
+      (with-current-buffer (current-buffer) ; See `run' for why we bind current buffer.
+        (handler-case (apply #'funcall command args)
+          (nyxt-prompt-buffer-canceled ()
+            (log:debug "Prompt buffer interrupted")
+            nil))))))
 
 (define-command noop ()                 ; TODO: Replace with ESCAPE special command that allows dispatched to cancel current key stack.
   "A command that does nothing.
