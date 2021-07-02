@@ -74,13 +74,11 @@ keyword parameters."
                            :prompt "Execute extended command"
                            :sources (make-instance 'user-command-source)
                            :hide-suggestion-count-p t)))
-          (argument-list (swank::arglist (fn command)))
-          (required-arguments (nth-value 0 (alex:parse-ordinary-lambda-list
-                                            argument-list)))
-          (optional-arguments (nth-value 1 (alex:parse-ordinary-lambda-list
-                                            argument-list)))
-          (key-arguments (nth-value 3 (alex:parse-ordinary-lambda-list
-                                       argument-list))))
+          (argument-list (swank::arglist (fn command))))
+     (multiple-value-bind (required-arguments optional-arguments rest key-arguments
+                           aok? aux key?)
+         (alex:parse-ordinary-lambda-list argument-list)
+       (declare (ignore rest aok? aux key?)))
      (apply command
             (append
              (when required-arguments
