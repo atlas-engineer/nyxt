@@ -90,22 +90,22 @@ class."
                      (remove-if-not #'(lambda (e) (> (implicit-visits (htree:data e)) threshold))
                                    history-entries-raw)))
              (mapcar #'(lambda (e) (url (htree:data e))) history-entries-above-threshold)))
-           (bookmarked-url-p (url-address)
-             "The local function  "`bookmarked-url-p" returns the URL
-            address itself if it new to the bookmark list and NIL if it is
-            already there "
-            (let ((bookmarks-address-list
-                     (mapcar #'(lambda (e) (render-url (url e)))
+           (bookmarked-url-p (url)
+            "The local function  "`bookmarked-url-p" returns the URL
+            itself if it is new to the bookmark list and NIL if it is
+            already there."
+             (let ((bookmarks-address-list
+                     (mapcar #'(lambda (e) (url e))
                              (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
-                                               bookmarks))))
-               (if (member url-address bookmarks-address-list :test #'string=)
-                    nil
-                    url-address))))
-  (dolist (url (urls-visited-over-threshold (url->bookmark-visit-threshold *browser*)))
-    (let ((url-address (render-url url)))
-      (if (bookmarked-url-p url-address)
-          (if-confirm ("Bookmark ~a?" url-address)
-                      (bookmark-url :url url-address)))))))
+                               bookmarks))))
+               (if (member url bookmarks-address-list :test #'quri:uri=)
+                   nil
+                   url))))
+    (dolist (url (urls-visited-over-threshold (url->bookmark-visit-threshold *browser*)))
+      (let ((url-address (render-url url)))
+        (if (bookmarked-url-p url)
+            (if-confirm ("Bookmark ~a?" url-address)
+                        (bookmark-url :url url-address)))))))
 
 (declaim (ftype (function (quri:uri &key (:title string) (:buffer buffer)) t) history-add))
 (defun history-add (url &key (title "") (buffer (current-buffer)))
