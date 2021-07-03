@@ -77,8 +77,8 @@ class."
 (defun make-history-tree (&optional (buffer (current-buffer)))
   "Return a new global history tree for `history-entry' data."
   (htree:make :key 'history-tree-key :current-owner-id (id buffer)))
-;; save point before pivoting the command
-(define-command bookmark-frequently-visited-urls ()
+
+(defun bookmark-frequent-visit ()
   "Add frequently visited URLs that are not included in the bookmarks."
   (labels ((urls-visited-over-threshold (threshold)
             "The local function "`urls-visited-over-thresold" returns all URLs
@@ -106,6 +106,20 @@ class."
         (if (bookmarked-url-p url)
             (if-confirm ("Bookmark ~a?" url-address)
                         (bookmark-url :url url-address)))))))
+
+(define-command bookmark-frequent-history-entries (&key (buffer (current-buffer)))
+  "Prompts the user for history entries (the user can select them all), and then
+call bookmark-frequent-visit over the selection."
+  (let ((entries (prompt
+                  :prompt "Select entries"
+                  :sources (list (make-instance 'history-disowned-source
+                                                :buffer buffer)))))
+    #+nil
+    (with-data-access (history (history-path buffer))
+      (dolist (entry entries)
+        (format t "~S ~S ~S ~%" entry entries history)
+        entries))
+     entries))
 
 (declaim (ftype (function (quri:uri &key (:title string) (:buffer buffer)) t) history-add))
 (defun history-add (url &key (title "") (buffer (current-buffer)))
