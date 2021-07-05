@@ -15,14 +15,8 @@ It's a function of the window argument that returns the title as a string.")
    (active-prompt-buffers '()
                           :export nil
                           :documentation "The stack of current prompt buffers.")
-   (panel-buffers-left (list)
-                      :accessor nil
-                      :documentation "A list of panel buffers appearing on the
-left side of the window.")
-   (panel-buffers-right (list)
-                       :accessor nil
-                       :documentation "A list of panel buffers appearing on the
-right side of the window.")
+   (panel-buffers (list)
+                  :documentation "A list of panel buffers appearing on the window.")
    (key-stack '()
               :documentation "A stack that keeps track of the key chords a user has pressed.")
    (last-key nil
@@ -97,24 +91,15 @@ The handlers take the window as argument."))
 
 (define-user-class window)
 
-(defmethod window-panel-buffers ((window window))
-  (append (slot-value window 'panel-buffers-left)
-          (slot-value window 'panel-buffers-right)))
-
 (defmethod window-add-panel-buffer ((window window) (buffer panel-buffer) side)
   "Add a panel buffer to a window. Side can either be :right or :left."
-  (push buffer
-        (slot-value window (cond
-                             ((eq side :left) 'panel-buffer-left)
-                             ((eq side :right) 'panel-buffer-right))))
+  (push buffer (panel-buffers window))
   (ffi-window-add-panel-buffer window buffer side))
 
 (defmethod window-remove-panel-buffer ((window window) (buffer panel-buffer))
   "Remove a panel buffer from a window."
-  (setf (slot-value window 'panel-buffers-left)
-        (remove buffer (slot-value window 'panel-buffers-left)))
-  (setf (slot-value window 'panel-buffers-right)
-        (remove buffer (slot-value window 'panel-buffers-right)))
+  (setf (panel-buffers window)
+        (remove buffer (panel-buffers window)))
   (ffi-window-remove-panel-buffer window buffer))
 
 (defmethod (setf active-buffer) (buffer (window window))
