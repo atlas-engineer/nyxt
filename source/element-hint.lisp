@@ -233,11 +233,9 @@ FUNCTION is the action to perform on the selected elements."
     ,@(when (plump:get-attribute option "value")
         `(("Value" ,(plump:get-attribute option "value"))))))
 
-(defmethod %follow-hint ((a nyxt/dom:a-element))
-  (click-element :nyxt-identifier (get-nyxt-id a)))
 
-(defmethod %follow-hint ((button nyxt/dom:button-element))
-  (click-element :nyxt-identifier (get-nyxt-id button)))
+(defmethod %follow-hint ((element plump:element))
+  (click-element :nyxt-identifier (get-nyxt-id element)))
 
 (defmethod %follow-hint ((input nyxt/dom:input-element))
   (str:string-case (plump:get-attribute "type" input)
