@@ -16,6 +16,16 @@
                                    (list :modes modes)
                                    '())))))
 
+(defmacro command-docstring-first-sentence (fn)
+  "Print FN first docstring sentence in HTML."
+  ;; Warning: We should not use markup:markup here because too much use of it
+  ;; inside another `markup:markup' takes forever to expand.
+  `(markup:raw
+    (format nil "<span>~a</span>"
+            (str:concat (or (first (str:split ". " (documentation ,fn 'function)))
+                            (error "Undocumented function ~a." ,fn))
+                        "."))))
+
 (declaim (ftype (function (string &rest keymap:keymap)
                           keymap:keymap)
                 make-keymap))
