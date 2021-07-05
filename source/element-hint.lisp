@@ -108,6 +108,11 @@
         (ps:chain element (set-attribute "selected" t))
         (setf (ps:@ parent-select value) (ps:@ element value)))))
 
+(define-parenscript hover-element (&key nyxt-identifier)
+  (ps:let ((element (nyxt/ps:qs-nyxt-id document nyxt-identifier))
+           (event (ps:new (*Event "mouseenter"))))
+    (ps:chain element (dispatch-event event))))
+
 (define-parenscript highlight-selected-hint (&key element scroll)
   (defun update-hints ()
     (ps:let* ((new-element (nyxt/ps:qs document
