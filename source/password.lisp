@@ -136,6 +136,7 @@ for which the `executable' slot is non-nil."
       (with-password (password-interface buffer)
         (first (prompt
                 :prompt "Password"
+                :input (quri:uri-domain (url buffer))
                 :sources (list (make-instance
                                 'password-source
                                 :buffer buffer
@@ -149,6 +150,7 @@ for which the `executable' slot is non-nil."
       (with-password (password-interface buffer)
         (let ((password-name (first (prompt
                                      :prompt "Username"
+                                     :input (quri:uri-domain (url buffer))
                                      :sources (list (make-instance 'password-source
                                                                    :buffer buffer
                                                                    :password-instance (password-interface buffer)))))))
