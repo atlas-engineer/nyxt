@@ -188,8 +188,13 @@ and to index the top of the page.")
        "pagedown" 'scroll-page-down)))))
 
 (sera:export-always '%clicked-in-input?)
-(define-parenscript %clicked-in-input? ()
-  (ps:chain document active-element tag-name))
+(defun %clicked-in-input? (&optional (buffer (current-buffer)))
+  ;; We don't use define-parenscript because we need to control over which
+  ;; buffer we query.
+  (ffi-buffer-evaluate-javascript buffer
+                                  (ps:ps
+                                    (ps:chain document active-element
+                                              tag-name))))
 
 (sera:export-always 'input-tag-p)
 (declaim (ftype (function ((or string null)) boolean) input-tag-p))
