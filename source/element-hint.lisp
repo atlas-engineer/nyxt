@@ -170,7 +170,7 @@
 (serapeum:export-always 'query-hints)
 (defun query-hints (prompt function &key multi-selection-p
                                       annotate-visible-only-p
-                                      (selector "a, button, input, textarea, details, select"))
+                                      (selector "a, button, input, textarea, details, select, img"))
   "Prompt to choose several elements out of those matching SELECTOR, hinting them visually.
 MULTI-SELECTION-P is whether several elements can be chosen.
 ANNOTATE-VISIBLE-ONLY-P is deprecated and has no influence on the function.
@@ -200,6 +200,7 @@ FUNCTION is the action to perform on the selected elements."
     ("Type" ,(str:capitalize (str:string-case
                                  (plump:tag-name element)
                                ("a" "link")
+                               ("img" "image")
                                (otherwise (plump:tag-name element)))))))
 
 (defmethod prompter:object-attributes ((input nyxt/dom:input-element))
@@ -233,6 +234,12 @@ FUNCTION is the action to perform on the selected elements."
     ,@(when (plump:get-attribute option "value")
         `(("Value" ,(plump:get-attribute option "value"))))))
 
+(defmethod prompter:object-attributes ((img nyxt/dom:img-element))
+  (append
+   (when (url img)
+     `(("URL" ,(url img))))
+   (when (body img)
+    `(("Body" ,(str:shorten 80 (body img)))))))
 
 (defmethod %follow-hint ((element plump:element))
   (click-element :nyxt-identifier (get-nyxt-id element)))
@@ -297,6 +304,9 @@ FUNCTION is the action to perform on the selected elements."
 
 (defmethod %copy-hint-url ((a nyxt/dom:a-element))
   (trivial-clipboard:text (url a)))
+
+(defmethod %copy-hint-url ((img nyxt/dom:img-element))
+  (trivial-clipboard:text (url img)))
 
 (defmethod %copy-hint-url ((element plump:element))
   (echo "Unsupported operation for hint: can't copy URL."))
@@ -369,7 +379,8 @@ visible nosave active buffer."
 
 (define-command copy-hint-url ()
   "Show a set of element hints, and copy the URL of the user inputted one."
-  (query-hints "Copy element URL" (lambda (result)  (%copy-hint-url (first result)))))
+  (query-hints "Copy element URL" (lambda (result)  (%copy-hint-url (first result)))
+               :selector "a, img"))
 
 (define-command bookmark-hint ()
   "Show link hints on screen, and allow the user to bookmark one"
@@ -377,7 +388,8 @@ visible nosave active buffer."
                (lambda (result)
                  (dolist (url (mapcar #'url result))
                    (bookmark-url :url url)))
-               :multi-selection-p t))
+               :multi-selection-p t
+               :selector "a, img"))
 
 (define-command download-hint-url ()
   "Download the file under the URL(s) hinted by the user."
@@ -388,4 +400,5 @@ visible nosave active buffer."
                          ;; TODO: sleep should NOT be necessary to avoid breaking download
                          do (download buffer (url link))
                             (sleep 0.25)))
-                 :multi-selection-p t)))
+                 :multi-selection-p t
+                 :selector "a, img")))
