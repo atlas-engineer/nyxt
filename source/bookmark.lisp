@@ -141,9 +141,11 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
        (markup:markup (:style (style panel-buffer))
                       (:style (cl-css:css
                                '((body
+                                  :box-shadow "-5px -10px 20px 0 rgba(180, 180, 180, 0.50) inset"
+                                  :background-color "#F7F7F7"
                                   :margin "0"
                                   :padding-left "5px"
-                                  :border-right "2px solid lightgray")
+                                  :border-right "1px solid lightgray")
                                  (p
                                   :font-size "12px"
                                   :margin "0"
