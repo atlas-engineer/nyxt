@@ -26,19 +26,23 @@
                             (error "Undocumented function ~a." ,fn))
                         "."))))
 
+(deftype nyxt-keymap-value ()
+  '(or keymap:keymap function-symbol command))
+
 (declaim (ftype (function (string &rest keymap:keymap)
                           keymap:keymap)
                 make-keymap))
 (export-always 'make-keymap)
 (defun make-keymap (name &rest parents)
-  "Like `keymap:make-keymap' but only allow binding function symbols.
+  "Like `keymap:make-keymap' but only allow binding function symbols, commands
+or keymaps.
 
 Example:
 
 \(defvar *my-keymap* (make-keymap \"my-map\")
   \"My keymap.\")"
   (let ((keymap (apply #'keymap:make-keymap name parents)))
-    (setf (keymap:bound-type keymap) '(or keymap:keymap function-symbol))
+    (setf (keymap:bound-type keymap) 'nyxt-keymap-value)
     keymap))
 
 (export-always 'current-keymaps)
@@ -114,7 +118,7 @@ Return nil to forward to renderer or non-nil otherwise."
 
         (t
          (multiple-value-bind (bound-function matching-keymap translated-key)
-             (the (or symbol keymap:keymap null)
+             (the nyxt-keymap-value
                   (keymap:lookup-key key-stack (current-keymaps)))
            (declare (ignore matching-keymap))
            (cond
@@ -123,7 +127,7 @@ Return nil to forward to renderer or non-nil otherwise."
               (log:debug "Prefix binding ~a" (keyspecs key-stack translated-key))
               t)
 
-             ((typep bound-function 'function-symbol) ; TODO: Only accept commands?
+             ((typep bound-function '(or function-symbol command)) ; TODO: Only accept commands?
               (log:debug "Found key binding ~a to ~a" (keyspecs key-stack translated-key) bound-function)
               ;; We save the last key separately to keep it available to the
               ;; command even after key-stack has been reset in the other
