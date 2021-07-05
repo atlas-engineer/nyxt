@@ -23,8 +23,7 @@
   `(markup:raw
     (format nil "<span>~a</span>"
             (str:concat (or (first (str:split ". " (documentation ,fn 'function)))
-                            (error "Undocumented function ~a." ,fn))
-                        "."))))
+                            (error "Undocumented function ~a." ,fn))))))
 
 (deftype nyxt-keymap-value ()
   '(or keymap:keymap function-symbol command))
