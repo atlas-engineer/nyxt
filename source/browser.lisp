@@ -350,17 +350,25 @@ current buffer."
 (declaim (ftype (function (&optional window buffer)) set-window-title))
 (export-always 'set-window-title)
 (defun set-window-title (&optional (window (current-window)) (buffer (current-buffer)))
-  "Set current window title to 'Nyxt - TITLE - URL.
-If Nyxt was started from a REPL, use 'Nyxt REPL...' instead.
+  "Set current window title to the return value of (title window). "
+  (declare (ignore buffer)) ; TODO: BUFFER is kept for backward compatibility.  Remove with 3.0.
+  (ffi-window-set-title window (funcall (title window) window)))
+
+(declaim (ftype (function (window) string) window-default-title))
+(export-always 'window-default-title)
+(defun window-default-title (window)
+  "Return a window title in the form 'Nyxt - URL'.
+If Nyxt was started from a REPL, use 'Nyxt REPL - URL' instead.
 This is useful to tell REPL instances from binary ones."
-  (let ((url (url buffer))
-        (title (title buffer)))
+  (let* ((buffer (active-buffer window))
+         (url (url buffer))
+         (title (title buffer)))
     (setf title (if (str:emptyp title) "" title))
     (setf url (if (url-empty-p url) "<no url/name>" (render-url url)))
-    (ffi-window-set-title window
-                          (str:concat "Nyxt" (when *run-from-repl-p* " REPL") " - "
-                                       title (unless (str:emptyp title) " - ")
-                                       url))))
+    (the (values string &optional)
+         (str:concat "Nyxt" (when *run-from-repl-p* " REPL") " - "
+                     title (unless (str:emptyp title) " - ")
+                     url))))
 
 ;; REVIEW: Do we need :NO-FOCUS? It's not used anywhere.
 (declaim (ftype (function ((cons quri:uri *) &key (:no-focus boolean)))))
