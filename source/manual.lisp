@@ -279,7 +279,7 @@ use the package prefixed class name/slot designators within
 the " (:code "define-configuration") " macro.")
     (:ul
      (:li (command-markup 'save-new-password) ": Query for name and new password to persist in the database.")
-     (:li (command-markup 'copy-password) ": Copy selected password to the clipboard."))
+     (:li (command-markup 'copy-password) ": " (command-docstring-first-sentence 'copy-password)))
 
     (:h3 "Appearance")
     (:p "Much of the visual style can be configured by the user.  Search the
