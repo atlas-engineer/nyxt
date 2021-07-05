@@ -134,7 +134,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 (define-command-global show-bookmarks-panel ()
   "Show the bookmarks in a panel."
   (let ((panel-buffer (make-instance 'panel-buffer
-                                     :id (get-unique-buffer-identifier *browser*))))
+                                     :title "*Bookmarks Panel*")))
     (window-add-panel-buffer (current-window) panel-buffer :left)
     (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
       (nyxt::html-set
