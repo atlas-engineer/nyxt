@@ -19,7 +19,7 @@
                             "glib-networking"
                             "gsettings-desktop-schemas"
                             "xclip"
-                            "enchant")
+                            "enchant-2")
   :additional-files (("assets/nyxt.desktop" . "usr/share/applications/")
                      ("assets/nyxt_16x16.png" . #p"usr/share/icons/hicolor/16x16/apps/nyxt.png")
                      ("assets/nyxt_32x32.png" . #p"usr/share/icons/hicolor/32x32/apps/nyxt.png")
