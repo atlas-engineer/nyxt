@@ -48,7 +48,12 @@ We need a `command' class for multiple reasons:
   called.  The only way to do this is to persist the command instances."))
 
 (defmethod initialize-instance :after ((command command) &key)
-  (closer-mop:set-funcallable-instance-function command (fn command)))
+  (closer-mop:set-funcallable-instance-function command
+                                                (lambda (&rest args)
+                                                  (apply (fn command)
+                                                         (or args
+                                                             (mapcar #'prompt-argument
+                                                                     (parse-function-lambda-list-types (fn command))))))))
 
 (defmethod print-object ((command command) stream)
   (print-unreadable-object (command stream :type t :identity t)
