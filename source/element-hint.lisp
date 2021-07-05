@@ -152,7 +152,20 @@
            :key #'prompter:value)
         (append matching-hints other-hints))))
    (prompter:follow-mode-functions (lambda (suggestion)
-                                     (highlight-selected-hint :element suggestion)))))
+                                     (highlight-selected-hint :element suggestion)))
+   (prompter:actions (list 'identity
+                           (make-command click* (elements)
+                             (dolist (element (rest elements))
+                               (click-element :nyxt-identifier (get-nyxt-id element)))
+                             (click-element :nyxt-identifier (get-nyxt-id (first elements))))
+                           (make-command focus* (elements)
+                             (dolist (element (rest elements))
+                               (focus-select-element :nyxt-identifier (get-nyxt-id element)))
+                             (focus-select-element :nyxt-identifier (get-nyxt-id (first elements))))
+                           (make-command hover* (elements)
+                             (dolist (element (rest elements))
+                               (hover-element :nyxt-identifier (get-nyxt-id element)))
+                             (hover-element :nyxt-identifier (get-nyxt-id (first elements))))))))
 
 (serapeum:export-always 'query-hints)
 (defun query-hints (prompt function &key multi-selection-p
