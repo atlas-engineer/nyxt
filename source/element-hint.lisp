@@ -186,7 +186,9 @@ FUNCTION is the action to perform on the selected elements."
                    (make-instance
                     'hint-source
                     :multi-selection-p multi-selection-p
-                    :constructor (add-element-hints :selector selector))
+                    :constructor (lambda (source)
+                                   (declare (ignore source))
+                                   (add-element-hints :selector selector)))
                    :after-destructor
                    (lambda ()
                      (with-current-buffer buffer
