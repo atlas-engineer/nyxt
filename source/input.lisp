@@ -136,16 +136,18 @@ Return nil to forward to renderer or non-nil otherwise."
                 (setf key-stack nil))
               t)
 
-             ((and buffer (not (forward-input-events-p buffer)))
-              (log:debug "Skipping input event key ~s" (keyspecs key-stack))
-              (setf key-stack nil)
-              t)
-
              ((or (and buffer (forward-input-events-p buffer))
                   (pointer-event-p (first (last key-stack))))
               (log:debug "Forward key ~s" (keyspecs key-stack))
               (setf key-stack nil)
               nil)
+
+             ((and buffer (not (forward-input-events-p buffer)))
+              ;; After checking `pointer-event-p', otherwise pointer events
+              ;; might not be forwarded.
+              (log:debug "Skipping input event key ~s" (keyspecs key-stack))
+              (setf key-stack nil)
+              t)
 
              (t
               (log:debug "Fallback forward key ~s" (keyspecs key-stack))
