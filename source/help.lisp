@@ -57,13 +57,12 @@
              for i below (length value)
              collect (markup:markup
                       (:li (:a :href (lisp-url `(describe-value
-                                                 (nth ,i ,(nyxt/help-mode:target help-mode))))
+                                                 (nth ,i ,(nyxt/help-mode:inspected-value help-mode))))
                                e)))))))
     ((has-attributes-method-p value)
      (markup:markup
       (:ul
-       (loop for (attribute-key attribute-value) in (prompter:object-attributes
-                                                     value)
+       (loop for (attribute-key attribute-value) in (prompter:object-attributes value)
              collect (markup:markup
                       (:li attribute-key ": " (:code attribute-value)))))))
     (t
@@ -73,7 +72,7 @@
   "Inspect VALUE and show it in a help buffer."
   (with-current-html-buffer (buffer "*Help-value*" 'nyxt/help-mode:help-mode)
     (let ((help-mode (find-mode buffer 'help-mode)))
-      (setf (nyxt/help-mode:target help-mode) value)
+      (setf (nyxt/help-mode:inspected-value help-mode) value)
       (markup:markup
        (:style (style buffer))
        (:h1 (princ-to-string value))
@@ -91,7 +90,7 @@
                                    (str:concat "*Help-" (symbol-name input) "*")
                                    'nyxt/help-mode:help-mode)
           (let ((help-mode (find-mode buffer 'help-mode)))
-            (setf (nyxt/help-mode:target help-mode) input)
+            (setf (nyxt/help-mode:inspected-value help-mode) input)
             (markup:markup
              (:style (style buffer))
              (:h1 (format nil "~s" input)) ; Use FORMAT to keep package prefix.
