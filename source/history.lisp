@@ -92,7 +92,7 @@ class."
              (mapcar #'(lambda (e) (url (htree:data e))) history-entries-above-threshold)))
            (bookmarked-url-p (url)
             "The local function  "`bookmarked-url-p" returns the URL
-            itself if it is new to the bookmark list and NIL if it is
+            itself if it is new to the bookmark list or NIL if it is
             already there."
              (let ((bookmarks-address-list
                      (mapcar #'(lambda (e) (url e))
