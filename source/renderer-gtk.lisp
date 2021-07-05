@@ -46,6 +46,8 @@ want to change the behaviour of modifiers, for instance swap 'control' and
    (horizontal-box-layout)
    (panel-buffer-container-left)
    (panel-buffer-container-right)
+   (panel-buffers-left)
+   (panel-buffers-right)
    (main-buffer-container)
    (prompt-buffer-container)
    (prompt-buffer-view)
@@ -801,8 +803,10 @@ See `gtk-browser's `modifier-translator' slot."
 (define-ffi-method ffi-window-add-panel-buffer ((window gtk-window) (buffer panel-buffer) side)
   "Add a panel buffer to a window."
   (match side
-    (:left (gtk:gtk-box-pack-start (panel-buffer-container-left window) (gtk-object buffer)))
-    (:right (gtk:gtk-box-pack-end (panel-buffer-container-right window) (gtk-object buffer))))
+    (:left (gtk:gtk-box-pack-start (panel-buffer-container-left window) (gtk-object buffer))
+           (push buffer (panel-buffers-left window)))
+    (:right (gtk:gtk-box-pack-end (panel-buffer-container-right window) (gtk-object buffer))
+            (push buffer (panel-buffers-right window))))
   (setf (gtk:gtk-widget-size-request (gtk-object buffer)) 
         (list (width buffer) -1))
   (gtk:gtk-widget-show (gtk-object buffer)))
@@ -814,7 +818,10 @@ See `gtk-browser's `modifier-translator' slot."
 
 (define-ffi-method ffi-window-remove-panel-buffer ((window gtk-window) (buffer panel-buffer))
   "Remove an info buffer from a window."
-  (gtk:gtk-container-remove (horizontal-box-layout window) (gtk-object buffer)))
+  (cond ((find buffer (panel-buffers-left window))
+         (gtk:gtk-container-remove (panel-buffer-container-left window) (gtk-object buffer)))
+        ((find buffer (panel-buffers-right window))
+         (gtk:gtk-container-remove (panel-buffer-container-right window) (gtk-object buffer)))))
 
 (define-ffi-method ffi-window-set-prompt-buffer-height ((window gtk-window) height)
   (setf (gtk:gtk-widget-size-request (prompt-buffer-container window))
