@@ -48,12 +48,6 @@ for which the `executable' slot is non-nil."
                (class-name (class-of interface))
                (password:executable interface))))
 
-(defun has-method-p (object generic-function)
-  "Return non-nil if OBJECT is a specializer of a method of GENERIC-FUNCTION."
-  (find-if (alex:curry #'typep object)
-           (alex:mappend #'closer-mop:method-specializers
-                         (closer-mop:generic-function-methods generic-function))))
-
 (define-command save-new-password (&optional (buffer (current-buffer)))
   "Save password to password interface."
   (password-debug-info)
