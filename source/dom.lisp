@@ -163,3 +163,45 @@ JSON should have the format like what `get-document-body-json' produces:
           (root (plump:make-root)))
       (json-to-plump json root)
       (name-dom-elements root))))
+
+(defmethod url ((element plump:element))
+  (when (plump:has-attribute element "href")
+    (plump:get-attribute element "href")))
+
+(defmethod url ((img img-element))
+  (alex:when-let ((src (plump:get-attribute img "src")))
+    (if (valid-url-p src)
+        src
+        (sera:and-let* ((url (url (current-buffer)))
+                        (uri (ignore-errors
+                              (quri:make-uri :scheme (quri:uri-scheme url)
+                                             :host (quri:uri-host url)
+                                             :port (quri:uri-port url)
+                                             :path src))))
+          (render-url uri)))))
+
+(defmethod body ((element plump:element))
+  (when (plump:children element)
+    (plump:text element)))
+
+(defmethod body ((input input-element))
+  (alex:when-let ((body (or (plump:get-attribute input "value")
+                            (plump:get-attribute input "placeholder"))))
+    body))
+
+(defmethod body ((textarea textarea-element))
+  (alex:when-let ((body (or (plump:get-attribute textarea "value")
+                            (plump:get-attribute textarea "placeholder"))))
+    body))
+
+(defmethod body ((details details-element))
+  (when (clss:select "summary" details)
+    (plump:text (elt (clss:select "summary" details) 0))))
+
+(defmethod body ((select select-element))
+  (str:join ", " (map 'list #'plump:text
+                      (clss:select "option" select))))
+
+(defmethod body ((img img-element))
+  (when (plump:has-attribute img "alt")
+    (plump:get-attribute img "alt")))
