@@ -817,10 +817,12 @@ See `gtk-browser's `modifier-translator' slot."
         (list width -1)))
 
 (define-ffi-method ffi-window-remove-panel-buffer ((window gtk-window) (buffer panel-buffer))
-  "Remove an info buffer from a window."
+  "Remove a panel buffer from a window."
   (cond ((find buffer (panel-buffers-left window))
+         (setf (panel-buffers-left window) (remove buffer (panel-buffers-left window)))
          (gtk:gtk-container-remove (panel-buffer-container-left window) (gtk-object buffer)))
         ((find buffer (panel-buffers-right window))
+         (setf (panel-buffers-right window) (remove buffer (panel-buffers-right window)))
          (gtk:gtk-container-remove (panel-buffer-container-right window) (gtk-object buffer)))))
 
 (define-ffi-method ffi-window-set-prompt-buffer-height ((window gtk-window) height)
