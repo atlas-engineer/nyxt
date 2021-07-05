@@ -29,7 +29,8 @@
             return bindings)
     `(("Name" ,(string-downcase (name command)))
       ("Bindings" ,(format nil "~{~a~^, ~}" bindings))
-      ("Docstring" ,(first (sera::lines (nyxt::docstring command))))
+      ("Docstring" ,(or (first (sera::lines (nyxt::docstring command)))
+                        ""))
       ("Mode" ,(let ((package-name (str:downcase (uiop:symbol-package-name (name command)))))
                  (if (sera:in package-name "nyxt" "nyxt-user")
                      ""
