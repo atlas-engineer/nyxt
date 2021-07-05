@@ -115,9 +115,10 @@ A command is a special kind of function that can be called with
                                                (list (first pair)
                                                      (keymap:name (second pair))))
                                              key-keymap-pairs))
-               (source-file (getf (getf (swank:find-definition-for-thing (fn command))
-                                        :location)
-                                  :file)))
+               (source-file
+                 (alex:when-let ((location (getf (swank:find-definition-for-thing (fn command))
+                                                 :location)))
+                   (alex:last-elt location))))
           (markup:markup
            (:style (style buffer))
            (:h1 (symbol-name (name command))
@@ -132,7 +133,9 @@ A command is a special kind of function that can be called with
                 (documentation (fn command) t)))
            (:h2 "Bindings")
            (:p (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
-           (:h2 (format nil "Source (~a): " source-file))
+           (:h2 (format nil "Source~a: " (if source-file
+                                             (format nil " (~a)" source-file)
+                                             "")))
            (:pre (:code (let ((*print-case* :downcase))
                           (write-to-string (sexp command))))))))
       (prompt
