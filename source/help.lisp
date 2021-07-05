@@ -9,15 +9,16 @@
    (prompter:actions (list (make-unmapped-command describe-function)))))
 
 (defmethod prompter:object-attributes ((symbol symbol))
-  `(("Name" ,(symbol-name symbol))
+  `(("Name" ,(write-to-string symbol))
     ("Documentation"
      ,(or (cond
             ((fboundp symbol)
-             (documentation symbol 'function))
+             (first (sera:lines (documentation symbol 'function))))
             ((and (find-class symbol nil)
                   (mopu:subclassp (find-class symbol) (find-class 'standard-object)))
-             (documentation symbol 'type))
-            (t (documentation symbol t)))
+             (first (sera:lines) (documentation symbol 'type)))
+            (t
+             (first (sera:lines) (documentation symbol 'variable))))
           ""))))
 
 (define-class class-source (prompter:source)
