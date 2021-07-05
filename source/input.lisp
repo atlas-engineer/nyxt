@@ -38,7 +38,7 @@ Example:
 \(defvar *my-keymap* (make-keymap \"my-map\")
   \"My keymap.\")"
   (let ((keymap (apply #'keymap:make-keymap name parents)))
-    (setf (keymap:bound-type keymap) '(or keymap:keymap function-symbol lambda))
+    (setf (keymap:bound-type keymap) '(or keymap:keymap function-symbol))
     keymap))
 
 (export-always 'current-keymaps)
