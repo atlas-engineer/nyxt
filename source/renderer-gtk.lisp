@@ -465,7 +465,10 @@ See `gtk-browser's `modifier-translator' slot."
                                                :value key-string
                                                :modifiers modifiers
                                                :status :pressed)))
-          (funcall (input-dispatcher sender) event (active-buffer sender) sender printable-value))
+          (funcall (input-dispatcher sender) event
+                   (or (current-prompt-buffer)
+                       (active-buffer sender))
+                   sender printable-value))
         ;; Do not forward modifier-only to renderer.
         t)))
 
