@@ -203,37 +203,33 @@ FUNCTION is the action to perform on the selected elements."
                                (otherwise (plump:tag-name element)))))))
 
 (defmethod prompter:object-attributes ((input nyxt/dom:input-element))
-  (when (plump:get-attribute input "placeholder")
-    `(("Placeholder" ,(plump:get-attribute input "placeholder")))))
+  (when (body input)
+    `(("Body" ,(str:shorten 80 (body input))))))
 
 (defmethod prompter:object-attributes ((textarea nyxt/dom:textarea-element))
-  (append
-   (when (plump:get-attribute textarea "placeholder")
-     `(("Placeholder" ,(plump:get-attribute textarea "placeholder"))))
-   (when (plump:get-attribute textarea "value")
-     `(("Value" ,(str:shorten 80 (plump:get-attribute textarea "value")))))))
+  (when (body textarea)
+    `(("Body" ,(str:shorten 80 (body textarea))))))
 
 (defmethod prompter:object-attributes ((a nyxt/dom:a-element))
   (append
-   (when (plump:get-attribute a "href")
-     `(("URL" ,(plump:get-attribute a "href"))))
-   (when (plump:children a)
-     `(("Body" ,(plump:text a))))))
+   (when (url a)
+     `(("URL" ,(url a))))
+   (when (body a)
+    `(("Body" ,(str:shorten 80 (body a)))))))
 
 (defmethod prompter:object-attributes ((button nyxt/dom:button-element))
-  (when (plump:children button)
-    `(("Body" ,(plump:text button)))))
+  (when (body button)
+    `(("Body" ,(str:shorten 80 (body button))))))
 
 (defmethod prompter:object-attributes ((details nyxt/dom:details-element))
-  (when (clss:select "summary" details)
-    `(("Summary" ,(plump:text (elt (clss:select "summary" details) 0))))))
+  (when (body details)
+    `(("Body" ,(str:shorten 80 (body details))))))
 
 (defmethod prompter:object-attributes ((select nyxt/dom:select-element))
-  `(("Options" ,(str:shorten 80 (str:join ", " (map 'list #'plump:text
-                                                    (clss:select "option" select)))))))
+  `(("Body" ,(str:shorten 80 (body select)))))
 
 (defmethod prompter:object-attributes ((option nyxt/dom:option-element))
-  `(("Text" ,(plump:text option))
+  `(("Body" ,(body option))
     ,@(when (plump:get-attribute option "value")
         `(("Value" ,(plump:get-attribute option "value"))))))
 
