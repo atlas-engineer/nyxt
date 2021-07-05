@@ -268,7 +268,7 @@ FUNCTION is the action to perform on the selected elements."
                              :parent-select-identifier (get-nyxt-id select)))))
 
 (defmethod %follow-hint-new-buffer-focus ((a nyxt/dom:a-element) &optional parent-buffer)
-  (make-buffer-focus :url (plump:get-attribute "href" a)
+  (make-buffer-focus :url (url a)
                      :parent-buffer parent-buffer
                      :nosave-buffer-p (nosave-buffer-p parent-buffer)))
 
@@ -277,26 +277,26 @@ FUNCTION is the action to perform on the selected elements."
   (echo "Unsupported operation for hint: can't open in new buffer."))
 
 (defmethod %follow-hint-new-buffer ((a nyxt/dom:a-element) &optional parent-buffer)
-  (make-buffer :url (plump:get-attribute "href" a) :parent-buffer parent-buffer))
+  (make-buffer :url (url a) :parent-buffer parent-buffer))
 
 (defmethod %follow-hint-new-buffer ((element plump:element) &optional parent-buffer)
   (declare (ignore parent-buffer))
   (echo "Unsupported operation for hint: can't open in new buffer."))
 
 (defmethod %follow-hint-nosave-buffer-focus ((a nyxt/dom:a-element))
-  (make-buffer-focus :url (plump:get-attribute "href" a) :nosave-buffer-p t))
+  (make-buffer-focus :url (url a) :nosave-buffer-p t))
 
 (defmethod %follow-hint-nosave-buffer-focus ((element plump:element))
   (echo "Unsupported operation for hint: can't open in new buffer."))
 
 (defmethod %follow-hint-nosave-buffer ((a nyxt/dom:a-element))
-  (make-nosave-buffer :url (plump:get-attribute "href" a)))
+  (make-nosave-buffer :url (url a)))
 
 (defmethod %follow-hint-nosave-buffer ((element plump:element))
   (echo "Unsupported operation for hint: can't open in new buffer."))
 
 (defmethod %copy-hint-url ((a nyxt/dom:a-element))
-  (trivial-clipboard:text (plump:get-attribute "href" a)))
+  (trivial-clipboard:text (url a)))
 
 (defmethod %copy-hint-url ((element plump:element))
   (echo "Unsupported operation for hint: can't copy URL."))
@@ -375,7 +375,7 @@ visible nosave active buffer."
   "Show link hints on screen, and allow the user to bookmark one"
   (query-hints "Bookmark hint"
                (lambda (result)
-                 (let ((url (url (first result))))
+                 (dolist (url (mapcar #'url result))
                    (bookmark-url :url url)))
                :multi-selection-p t))
 
