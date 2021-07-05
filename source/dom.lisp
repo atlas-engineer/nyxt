@@ -180,6 +180,7 @@ JSON should have the format like what `get-document-body-json' produces:
                                              :path src))))
           (render-url uri)))))
 
+;; REVIEW: Export to :nyxt? We are forced to use it with nyxt/dom: prefix.
 (defmethod body ((element plump:element))
   (when (plump:children element)
     (plump:text element)))

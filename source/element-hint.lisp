@@ -204,33 +204,33 @@ FUNCTION is the action to perform on the selected elements."
                                (otherwise (plump:tag-name element)))))))
 
 (defmethod prompter:object-attributes ((input nyxt/dom:input-element))
-  (when (body input)
-    `(("Body" ,(str:shorten 80 (body input))))))
+  (when (nyxt/dom:body input)
+    `(("Body" ,(str:shorten 80 (nyxt/dom:body input))))))
 
 (defmethod prompter:object-attributes ((textarea nyxt/dom:textarea-element))
-  (when (body textarea)
-    `(("Body" ,(str:shorten 80 (body textarea))))))
+  (when (nyxt/dom:body textarea)
+    `(("Body" ,(str:shorten 80 (nyxt/dom:body textarea))))))
 
 (defmethod prompter:object-attributes ((a nyxt/dom:a-element))
   (append
    (when (url a)
      `(("URL" ,(url a))))
-   (when (body a)
-    `(("Body" ,(str:shorten 80 (body a)))))))
+   (when (nyxt/dom:body a)
+    `(("Body" ,(str:shorten 80 (nyxt/dom:body a)))))))
 
 (defmethod prompter:object-attributes ((button nyxt/dom:button-element))
-  (when (body button)
-    `(("Body" ,(str:shorten 80 (body button))))))
+  (when (nyxt/dom:body button)
+    `(("Body" ,(str:shorten 80 (nyxt/dom:body button))))))
 
 (defmethod prompter:object-attributes ((details nyxt/dom:details-element))
-  (when (body details)
-    `(("Body" ,(str:shorten 80 (body details))))))
+  (when (nyxt/dom:body details)
+    `(("Body" ,(str:shorten 80 (nyxt/dom:body details))))))
 
 (defmethod prompter:object-attributes ((select nyxt/dom:select-element))
-  `(("Body" ,(str:shorten 80 (body select)))))
+  `(("Body" ,(str:shorten 80 (nyxt/dom:body select)))))
 
 (defmethod prompter:object-attributes ((option nyxt/dom:option-element))
-  `(("Body" ,(body option))
+  `(("Body" ,(nyxt/dom:body option))
     ,@(when (plump:get-attribute option "value")
         `(("Value" ,(plump:get-attribute option "value"))))))
 
@@ -238,8 +238,8 @@ FUNCTION is the action to perform on the selected elements."
   (append
    (when (url img)
      `(("URL" ,(url img))))
-   (when (body img)
-    `(("Body" ,(str:shorten 80 (body img)))))))
+   (when (nyxt/dom:body img)
+    `(("Body" ,(str:shorten 80 (nyxt/dom:body img)))))))
 
 (defmethod %follow-hint ((element plump:element))
   (click-element :nyxt-identifier (get-nyxt-id element)))
