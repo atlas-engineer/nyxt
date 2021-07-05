@@ -50,7 +50,7 @@
     ;; Returning fragment makes WebKit choke.
     nil))
 
-(declaim (ftype (function (t fixnum string) string) select-from-alphabet))
+(declaim (ftype (function (t fixnum string) (values string &optional)) select-from-alphabet))
 (defun select-from-alphabet (code char-length alphabet)
   (let* ((exponents (nreverse (loop for pow below char-length
                                     collect (expt (length alphabet) pow)))))
