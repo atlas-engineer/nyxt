@@ -140,20 +140,14 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
       (nyxt::html-set
        (markup:markup (:style (style panel-buffer))
                       (:style (cl-css:css
-                               '((body
-                                  :background-color "#F7F7F7"
-                                  :margin "0"
-                                  :padding "10px"
-                                  :border-right "1px solid darkgray"
-                                  :border-left "1px solid darkgray")
-                                 (p
+                               '((p
                                   :font-size "12px"
                                   :margin "0"
                                   :white-space "nowrap"
                                   :overflow-x "hidden"
                                   :text-overflow "ellipsis")
                                  (div
-                                  :margin-bottom "10px"))))
+                                  :padding-bottom "10px"))))
                       (:body
                        (:h1 "Bookmarks")
                        (loop for bookmark in bookmarks
