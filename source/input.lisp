@@ -22,9 +22,10 @@
   ;; inside another `markup:markup' takes forever to expand.
   `(markup:raw
     (format nil "<span>~a</span>"
-            (str:concat (or (first (str:split ". " (documentation ,fn 'function)))
-                            (error "Undocumented function ~a." ,fn))
-                        "."))))
+            (sera:ensure-suffix
+             (or (first (ppcre:split "\\.\\s" (documentation ,fn 'function)))
+                 (error "Undocumented function ~a." ,fn))
+             "."))))
 
 (deftype nyxt-keymap-value ()
   '(or keymap:keymap function-symbol command))
