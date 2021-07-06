@@ -377,7 +377,34 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 (define-user-class internal-buffer)
 
 (define-class panel-buffer (internal-buffer)
-  ((width 250 :documentation "The width in pixels."))
+  ((width 250 :documentation "The width in pixels.")
+   (style (cl-css:css
+           '((body
+              :background-color "#F7F7F7"
+              :margin "0"
+              :padding "10px"
+              :border-right "1px solid darkgray"
+              :border-left "1px solid darkgray")
+             (h1
+              :font-family "Helvetica Neue, Helvetica"
+              :font-weight 500)
+             (h2
+              :font-family "Helvetica Neue, Helvetica"
+              :font-weight 500)
+             (h3
+              :font-family "Helvetica Neue, Helvetica"
+              :font-weight 500)
+             (h4
+              :font-family "Helvetica Neue, Helvetica"
+              :font-weight 500)
+             (h5
+              :font-family "Helvetica Neue, Helvetica"
+              :font-weight 500)
+             (h6
+              :font-family "Helvetica Neue, Helvetica"
+              :font-weight 500)
+             (a
+              :color "gray")))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
