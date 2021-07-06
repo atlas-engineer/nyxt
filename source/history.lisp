@@ -127,7 +127,7 @@ class."
                              (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
                                bookmarks))))
                (if (member url bookmarks-address-list :test #'quri:uri=)
-                   nilq
+                   nil
                    url))))
     (dolist (url (urls-visited-over-threshold (url->bookmark-visit-threshold *browser*)))
       (let ((url-address (render-url url)))
