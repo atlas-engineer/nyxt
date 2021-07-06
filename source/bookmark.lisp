@@ -131,21 +131,21 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                        :href (lisp-url `(nyxt::delete-bookmark ,url-href)) "Delete"))
                                (:hr ""))))))))))
 
-(define-command-global show-bookmarks-panel ()
+(define-command-global show-bookmarks-panel (&key (side :left))
   "Show the bookmarks in a panel."
   (let ((panel-buffer (make-instance 'panel-buffer
                                      :title "*Bookmarks Panel*")))
-    (window-add-panel-buffer (current-window) panel-buffer :left)
+    (window-add-panel-buffer (current-window) panel-buffer side)
     (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
       (nyxt::html-set
        (markup:markup (:style (style panel-buffer))
                       (:style (cl-css:css
                                '((body
-                                  :box-shadow "-5px -10px 20px 0 rgba(180, 180, 180, 0.50) inset"
                                   :background-color "#F7F7F7"
                                   :margin "0"
-                                  :padding-left "5px"
-                                  :border-right "1px solid lightgray")
+                                  :padding "10px"
+                                  :border-right "1px solid darkgray"
+                                  :border-left "1px solid darkgray")
                                  (p
                                   :font-size "12px"
                                   :margin "0"
