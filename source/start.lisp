@@ -546,8 +546,8 @@ Finally, run the browser, load URL-STRINGS if any, then run
       (load-or-eval :remote nil)
       (setf *browser* (make-instance 'user-browser
                                      :startup-error-reporter-function startup-error-reporter
-                                     :startup-timestamp startup-timestamp))
-      (setf (socket-thread *browser*) thread)
+                                     :startup-timestamp startup-timestamp
+                                     :socket-thread thread))
       ;; Defaulting to :nyxt-user is convenient when evaluating code (such as
       ;; remote execution or the integrated REPL).
       ;; This must be done in a separate thread because the calling thread may

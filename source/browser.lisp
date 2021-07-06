@@ -224,6 +224,17 @@ prevents otherwise."))
   "Get the window containing a buffer."
   (find buffer (alex:hash-table-values (windows browser)) :key #'active-buffer))
 
+(defun reset-browser (browser &key message)
+  (setf *browser*
+        (make-instance 'user-browser
+                       :startup-error-reporter-function (if message
+                                                            (lambda ()
+                                                              (echo-warning "Resetting state and restarting due to `startup' error: ~a" message)
+                                                              (error-in-new-window "*Initialization errors*" message))
+                                                            (startup-error-reporter-function browser))
+         :startup-timestamp (startup-timestamp browser)
+         :socket-thread (socket-thread browser))))
+
 (defmethod finalize ((browser browser) urls startup-timestamp)
   "Run `*after-init-hook*' then BROWSER's `startup'."
   ;; `messages-appender' requires `*browser*' to be initialized.
@@ -244,7 +255,14 @@ prevents otherwise."))
    browser
    (lambda ()
      (run-thread
-       (startup browser urls))))
+       (handler-case
+           (startup browser urls)
+         (t (c)
+           (reset-all-user-classes)
+           ;; Broken windows may have been created, let's destroy them.
+           (mapc #'ffi-window-delete (window-list))
+           (reset-browser browser :message c)
+           (startup *browser* urls))))))
   ;; Set 'init-time at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)
