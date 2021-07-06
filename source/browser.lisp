@@ -163,9 +163,8 @@ The handlers take the URL as argument.")
                         :type hook-download
                         :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")
-   (autofills (list (make-autofill :key "Name" :fill "My Name")
+   (autofills (list (make-autofill :name "Name" :fill "My Name")
                     (make-autofill :name "Hello Printer"
-                                   :key "Function example"
                                    :fill (lambda () (format nil "hello!"))))
               :documentation "To autofill run the command `autofill'.
 Use this slot to customize the autofill values available.
