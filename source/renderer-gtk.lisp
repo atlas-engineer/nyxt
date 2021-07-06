@@ -1148,16 +1148,17 @@ custom (the specified proxy) and none."
     (setf (webkit:webkit-web-view-zoom-level (gtk-object buffer)) value)))
 
 (define-ffi-method ffi-generate-input-event ((window gtk-window) event)
-  ;; The "send_event" field is used to mark the event as an "unconsumed"
-  ;; keypress.  The distinction allows us to avoid looping indefinitely.
-  (etypecase event
-    (gdk:gdk-event-button
-     (setf (gdk:gdk-event-button-send-event event) t))
-    (gdk:gdk-event-key
-     (setf (gdk:gdk-event-key-send-event event) t))
-    (gdk:gdk-event-scroll
-     (setf (gdk:gdk-event-scroll-send-event event) t)))
-  (gtk:gtk-main-do-event event))
+  (when event
+    ;; The "send_event" field is used to mark the event as an "unconsumed"
+    ;; keypress.  The distinction allows us to avoid looping indefinitely.
+    (etypecase event
+      (gdk:gdk-event-button
+       (setf (gdk:gdk-event-button-send-event event) t))
+      (gdk:gdk-event-key
+       (setf (gdk:gdk-event-key-send-event event) t))
+      (gdk:gdk-event-scroll
+       (setf (gdk:gdk-event-scroll-send-event event) t)))
+    (gtk:gtk-main-do-event event)))
 
 (define-ffi-method ffi-generated-input-event-p ((window gtk-window) event)
   (gdk:gdk-event-send-event event))
