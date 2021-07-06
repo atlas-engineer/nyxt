@@ -37,7 +37,8 @@
 (defmethod clip-password ((password-interface password-store-interface) &key password-name service)
   (declare (ignore service))
   (execute password-interface (list "show" "--clip" password-name)
-    :output '(:string :stripped t)))
+    ;; Outputting to string blocks `pass'.
+    :output 'nil))
 
 (defvar *multiline-separator* ": *"
   "A regular expression to separate keys from values in the `pass' multiline format.")
