@@ -130,6 +130,12 @@ This is useful for local changes to a class, or to add generated superclasses."
                                :direct-superclasses superclasses-with-original
                                :documentation (documentation class-sym 'type)))))
 
+(defun reset-user-class (class-sym)
+  (set-user-class class-sym (gethash class-sym *user-classes*)))
+
+(defun reset-all-user-classes ()
+  (mapc #'reset-user-class (alex:hash-table-keys *user-classes*)))
+
 (defun user-class-p (class-specifier)
   (sera:true (gethash (if (symbolp class-specifier)
                           class-specifier
