@@ -16,6 +16,7 @@ It's a function of the window argument that returns the title as a string.")
                           :export nil
                           :documentation "The stack of current prompt buffers.")
    (panel-buffers (list)
+                  :export nil
                   :documentation "A list of panel buffers appearing on the window.")
    (key-stack '()
               :documentation "A stack that keeps track of the key chords a user has pressed.")
