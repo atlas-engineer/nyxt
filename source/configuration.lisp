@@ -93,6 +93,13 @@ This is set globally so that extensions can be loaded even if there is no
   (intern (str:concat "USER-" (string class-sym))
           (symbol-package class-sym)))
 
+(defvar *user-classes* (make-hash-table)
+  "Keys are the user class symbols (without the 'USER-' prefix), values their
+superclasses as specified by `define-user-class'.
+
+In particular, generated user classes from `define-configuration' are not
+included.")
+
 (export-always 'define-user-class)
 (defmacro define-user-class (name &optional superclasses)
   "Define the user class of NAME.
@@ -104,19 +111,30 @@ This may be called multiple times.
 NAME must be an existing class.
 NAME is automatically appended to SUPERCLASSES, so that 'user-NAME' inherits
 from NAME last."
-  (let ((user-name (user-class-name name))
+  `(set-user-class ',name ',superclasses :register-p))
+
+(defun set-user-class (class-sym &optional superclasses register-p)
+  "See `define-user-class'
+When register-p is nil, does not register in `*user-classes*'.
+This is useful for local changes to a class, or to add generated superclasses."
+  (let ((user-class-name (user-class-name class-sym))
         (superclasses-with-original (remove-duplicates
-                                     (append superclasses (list name)))))
-    `(progn
-       (export-always ',user-name (symbol-package ',user-name))
-       ;; Probably no need to call the defclass macro if we just need to
-       ;; set the superclasses.
-       (closer-mop:ensure-class ',user-name
-                                :direct-superclasses ',superclasses-with-original
-                                :documentation (documentation ',name 'type)))))
+                                     (append superclasses (list class-sym)))))
+    (progn
+      (export-always user-class-name (symbol-package user-class-name))
+      ;; Probably no need to call the defclass macro if we just need to
+      ;; set the superclasses.
+      (when (and register-p (hash-table-p *user-classes*))
+        (setf (gethash class-sym *user-classes*) superclasses-with-original))
+      (closer-mop:ensure-class user-class-name
+                               :direct-superclasses superclasses-with-original
+                               :documentation (documentation class-sym 'type)))))
 
 (defun user-class-p (class-specifier)
-  (not (mopu:direct-slot-names class-specifier)))
+  (sera:true (gethash (if (symbolp class-specifier)
+                          class-specifier
+                          (class-name class-specifier))
+                      *user-classes*)))
 
 (defmacro with-user-class ((class-sym new-superclasses) &body body) ; TODO: Export if users ever demand it.
   "Dynamically override the superclasses of the user class corresponding to
@@ -130,9 +148,9 @@ CLASS-SYM to NEW-SUPERCLASSES.  The class is restored when exiting BODY."
     (let ((old-superclasses (mapcar #'class-name (mopu:direct-superclasses user-class))))
       `(unwind-protect
             (progn
-              (define-user-class ,class-sym ,new-superclasses)
+              (set-user-class ',class-sym ',new-superclasses)
               ,@body)
-         (define-user-class ,class-sym ,old-superclasses)))))
+         (set-user-class ',class-sym ',old-superclasses)))))
 
 (declaim (ftype (function ((or symbol function))) method-combination-name))
 (defun method-combination-name (fun)
@@ -188,9 +206,9 @@ CLASS-SYM to NEW-SUPERCLASSES.  The class is restored when exiting BODY."
                              (declare (ignorable %slot-default%))
                              ,(cadr slot))
                            (call-next-method))))
-       (define-user-class ,name ,(cons temp-name
-                                       (mapcar #'class-name
-                                               (mopu:direct-superclasses final-name)))))))
+       (set-user-class ',name ',(cons temp-name
+                                      (mapcar #'class-name
+                                              (mopu:direct-superclasses final-name)))))))
 
 (defun get-initform (class-symbol class-slot)
   (getf (mopu:slot-properties (find-class class-symbol) class-slot) :initform))
