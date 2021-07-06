@@ -17,9 +17,7 @@
                     (uiop:getenv "NYXT_SOCKET")
                     (expand-default-path
                      data-path
-                     :root (namestring (if (str:emptyp (namestring (dirname data-path)))
-                                           (uiop:xdg-runtime-dir +data-root+)
-                                           (dirname data-path)))))))
+                     :root (namestring (uiop:xdg-runtime-dir +data-root+))))))
       (unless (uiop:emptyp path)
         path))))
 

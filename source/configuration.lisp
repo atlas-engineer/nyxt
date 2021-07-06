@@ -19,9 +19,7 @@
     (let ((path (or (getf *options* option)
                     (expand-default-path
                      data-path
-                     :root (namestring (if (str:emptyp (namestring (dirname data-path)))
-                                           (uiop:xdg-config-home +data-root+)
-                                           (dirname data-path)))))))
+                     :root (namestring (uiop:xdg-config-home +data-root+))))))
       (unless (uiop:emptyp path)
         (when (and (getf *options* option) (not (uiop:file-exists-p path)))
           (log:warn "File ~s does not exist." path))
