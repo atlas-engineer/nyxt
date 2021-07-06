@@ -27,7 +27,7 @@ If a URL string cannot be converted to a `quri:uri', it is discarded from the re
   (remove-if #'url-empty-p (mapcar #'string->url url-strings)))
 
 (defun has-method-p (object generic-function)
-  "Return non-nil if OBJECT has `url' specialization."
+  "Return non-nil if OBJECT has GENERIC-FUNCTION specialization."
   (some (lambda (method)
           (subtypep (type-of object) (class-name
                                       (first (closer-mop:method-specializers method)))))
