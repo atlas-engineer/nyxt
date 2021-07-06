@@ -114,31 +114,28 @@ User input is evaluated Lisp."
                               :sources (make-instance 'user-command-source)
                               :hide-suggestion-count-p t))))
          (lambda-list (swank::arglist (fn command))))
-    (multiple-value-bind (required-arguments optional-arguments rest keyword-arguments
-                          aok? aux key?)
-        (alex:parse-ordinary-lambda-list lambda-list)
-      (declare (ignore rest aok? aux key?))
-      (multiple-value-bind (required-types optional-types rest-types keyword-types)
-          (parse-function-lambda-list-types (fn command))
-        (declare (ignore rest-types))
-        (flet ((parse-args (params)
-                 (alex:mappend
-                  (lambda-match
-                    ((cons (and param (type symbol)) type)
-                     (list (prompt-argument param type)))
-                    ((cons (list (list keyword name) default _) type)
-                     (list keyword
-                           (prompt-argument name type default)))
-                    ((cons (list name default _) type)
-                     (list (prompt-argument name type default))))
-                  params)))
-          (setf (last-access command) (local-time:now))
-          (apply #'run-async
-                 command
-                 (alex:mappend #'parse-args
-                               (list (pairlis required-arguments required-types)
-                                     (pairlis optional-arguments optional-types)
-                                     (pairlis keyword-arguments (mapcar #'second keyword-types))))))))))
+    (multiple-value-match (alex:parse-ordinary-lambda-list lambda-list)
+      ((required-arguments optional-arguments _ keyword-arguments)
+       (multiple-value-match (parse-function-lambda-list-types (fn command))
+         ((required-types optional-types _ keyword-types)
+          (flet ((parse-args (params)
+                   (alex:mappend
+                    (lambda-match
+                      ((cons (and param (type symbol)) type)
+                       (list (prompt-argument param type)))
+                      ((cons (list (list keyword name) default _) type)
+                       (list keyword
+                             (prompt-argument name type default)))
+                      ((cons (list name default _) type)
+                       (list (prompt-argument name type default))))
+                    params)))
+            (setf (last-access command) (local-time:now))
+            (apply #'run-async
+                   command
+                   (alex:mappend #'parse-args
+                                 (list (pairlis required-arguments required-types)
+                                       (pairlis optional-arguments optional-types)
+                                       (pairlis keyword-arguments (mapcar #'second keyword-types))))))))))))
 
 (defun get-hooks ()
   (flet ((list-hooks (object)
