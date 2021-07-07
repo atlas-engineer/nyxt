@@ -43,10 +43,40 @@ When omitted, data-path designates a directory.")
    (ref ""
         :documentation "The reference name of the data-path.
 This can be used to set the path from command line.  See
-`expand-default-path'."))
+`expand-default-path'.")
+   (editable t
+             :documentation "If the file can be editted using a text editor.
+It's not always the case, take the socket for instance."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+
+(defvar *data-paths* (tg:make-weak-hash-table :weakness :key :test 'equal)
+  "Set of all `data-path's objects.
+It's a weak hash table to that garbage-collected data-paths are automatically
+removed, for instance on buffer deletion.")
+
+(defmethod initialize-instance :after ((path data-path) &key)
+  (setf (gethash path *data-paths*) path))
+
+(defmethod prompter:object-attributes ((path data-path))
+  `(("Path" ,(expand-path path))
+    ("Type" ,(string (sera:class-name-of path)))
+    ("Reference" ,(ref path))
+    ("Dirname" ,(namestring (dirname path)))
+    ("Basename" ,(namestring (basename path)))))
+
+(define-class data-path-source (prompter:source)
+  ((prompter:name "User files")
+   (prompter:active-attributes-keys '("Path" "Type" "Reference"))
+   (prompter:constructor (let ((path-map (make-hash-table :test 'equal)))
+                           (dolist (path (alex:hash-table-keys *data-paths*))
+                             (sera:and-let* ((data-path-p path)
+                                             (editable? (editable path))
+                                             (full-path (expand-path path))
+                                             (exists? (uiop:file-exists-p (uiop:ensure-pathname full-path))))
+                               (setf (gethash full-path path-map) path)))
+                           (alexandria:hash-table-values path-map)))))
 
 (define-class async-data-path (data-path)
   ()

@@ -54,6 +54,7 @@
                trivia
                trivial-clipboard
                trivial-features
+               trivial-garbage
                trivial-package-local-nicknames
                trivial-types
                unix-opts
