@@ -5,12 +5,15 @@
 
 (export-always 'format-status-modes)
 (defun format-status-modes (buffer window)
-  (format nil "~:[~;⚠ nosave ~]~{~a~^ ~}"
-          (nosave-buffer-p buffer)
-          (mapcar (if (glyph-mode-presentation-p (status-buffer window))
-                      #'glyph
-                      #'format-mode)
-                  (sera:filter #'visible-in-status-p (modes buffer)))))
+  (markup:markup
+   (:span (when (nosave-buffer-p buffer) "⚠ nosave"))
+   (:span (loop for mode in (sera:filter #'visible-in-status-p (modes buffer))
+                collect (markup:markup
+                         (:a :class "button" :href (lisp-url `(describe-class ',(mode-name mode)))
+                             :title (format nil "Describe ~a" (mode-name mode))
+                             (if (glyph-mode-presentation-p (status-buffer window))
+                                 (glyph mode)
+                                 (format-mode mode))))))))
 
 (defun list-modes (buffer)
   (format nil "~{~a~^ ~}" (mapcar #'format-mode (modes buffer))))
@@ -89,4 +92,5 @@
                   (format-status-tabs)))
            (:div :id "modes" :class "arrow-left"
                  :title (list-modes buffer)
-                 (format-status-modes buffer window))))))
+                 (markup:raw
+                  (format-status-modes buffer window)))))))
