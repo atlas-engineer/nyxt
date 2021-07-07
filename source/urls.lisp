@@ -52,6 +52,23 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
          (or (ignore-errors (ffi-display-url url))
              url))))
 
+(defmacro defmemo (name params &body body) ; TODO: Replace with https://github.com/AccelerationNet/function-cache?
+  (alex:with-gensyms (memo-table args result result?)
+    `(let ((,memo-table (make-hash-table :test 'equal)))
+       (defun ,name (&rest ,args)
+         (multiple-value-bind (,result ,result?)
+             (gethash ,args ,memo-table)
+           (if ,result?
+               ,result
+               (setf (gethash ,args ,memo-table)
+                     (apply (lambda ,params
+                              ,@body)
+                            ,args))))))))
+
+(defmemo lookup-hostname (name)
+  "Memoized verison of `iolib/sockets:lookup-hostname'."
+  (iolib/sockets:lookup-hostname name))
+
 (export-always 'valid-url-p)
 (defun valid-url-p (url)
   ;; List of URI schemes: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
@@ -71,7 +88,7 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
          (valid-schemes (append nyxt-schemes iana-schemes))
          (url (ignore-errors (quri:uri url))))
     (flet ((hostname-found-p (name)
-             (handler-case (iolib/sockets:lookup-hostname name)
+             (handler-case (lookup-hostname name)
                (t () nil)))
            (valid-scheme-p (scheme)
              (find scheme valid-schemes :test #'string=))
