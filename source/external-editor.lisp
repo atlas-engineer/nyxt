@@ -68,3 +68,16 @@ so invoke on a separate thread when possible."
         (%paste :input-text (%edit-with-external-editor (%copy)))
         (move-caret-to-end))
       (echo-warning "Please set `external-editor-program' browser slot.")))
+
+(define-command edit-user-file-with-external-editor ()
+  "Edit the queried user file using `external-editor-program'.
+If the user file is GPG-encrypted, the editor must be capable of decrypting it."
+  (if (external-editor-program *browser*)
+      (let* ((file (first (prompt :prompt "Edit user file in external editor"
+                                  :sources 'data-path-source)))
+             (path (expand-path file)))
+
+        (echo "Using \"~{~a~^ ~}\" to edit ~s." (external-editor-program *browser*) path)
+        (uiop:launch-program `(,@(external-editor-program *browser*)
+                               ,path)))
+      (echo-warning "Please set `external-editor-program' browser slot.")))
