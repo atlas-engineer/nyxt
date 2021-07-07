@@ -4,7 +4,7 @@
 (in-package :nyxt)
 
 (define-class socket-data-path (data-path)
-  ()
+  ((editable nil))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))

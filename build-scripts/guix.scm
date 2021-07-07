@@ -181,6 +181,7 @@
        ("trivia" ,cl-trivia)
        ("trivial-clipboard" ,cl-trivial-clipboard)
        ("trivial-features" ,cl-trivial-features)
+       ("trivial-garbage" ,cl-trivial-garbage)
        ("trivial-package-local-nicknames" ,cl-trivial-package-local-nicknames)
        ("trivial-types" ,cl-trivial-types)
        ("unix-opts" ,cl-unix-opts)
