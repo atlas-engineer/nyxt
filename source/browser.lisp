@@ -349,9 +349,9 @@ current buffer."
 (declaim (ftype (function (&optional window buffer)) set-window-title))
 (export-always 'set-window-title)
 (defun set-window-title (&optional (window (current-window)) (buffer (current-buffer)))
-  "Set current window title to the return value of (title window). "
+  "Set current window title to the return value of (titler window). "
   (declare (ignore buffer)) ; TODO: BUFFER is kept for backward compatibility.  Remove with 3.0.
-  (ffi-window-set-title window (funcall (title window) window)))
+  (ffi-window-set-title window (funcall (titler window) window)))
 
 (declaim (ftype (function (window) string) window-default-title))
 (export-always 'window-default-title)

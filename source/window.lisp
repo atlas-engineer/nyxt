@@ -7,10 +7,10 @@
 
 (define-class window ()
   ((id "")
-   (title
+   (titler
     'window-default-title
     :type (or function function-symbol)
-    :documentation "Title of the window.
+    :documentation "Return the title of the window.
 It's a function of the window argument that returns the title as a string.")
    (active-buffer :accessor nil :reader active-buffer :export nil)
    (active-prompt-buffers
