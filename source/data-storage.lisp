@@ -137,7 +137,7 @@ Return `*global-data-profile*' otherwise."
   ;; dead-lock.  To prevent this, we look for the last active window without
   ;; relying on the renderer.
   (if (and *browser* (slot-value *browser* 'last-active-window))
-      (let ((buffer (or (current-buffer)
+      (let ((buffer (or (current-buffer (slot-value *browser* 'last-active-window))
                         (make-instance 'user-buffer))))
         (or (and buffer (data-profile buffer))
             *global-data-profile*))
