@@ -258,7 +258,7 @@ separated from one another, so that each has its own behaviour and settings."))
 The mode instances are stored in the `modes' BUFFER slot.
 
 The default modes returned by this method are appended to the default modes
-inherited from the superclasses.  Duplicates are removed."))
+inherited from the superclasses."))
 
 (defmethod default-modes :around ((buffer buffer))
   "Remove the duplicates from the `default-modes'."

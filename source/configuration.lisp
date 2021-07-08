@@ -202,6 +202,8 @@ CLASS-SYM to NEW-SUPERCLASSES.  The class is restored when exiting BODY."
                   else do
                     (log:warn "Undefined slot ~a in ~a" (first slot) final-name)))
          (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+       ;; TODO: Register the user methods and add function to remove them, like
+       ;; `reset-user-class'.
        ;; Non-standard accessors, e.g. `default-modes':
        ,@(loop for slot in (remove-if #'standard-method-combination-p (first slots)
                                       :key #'first)
