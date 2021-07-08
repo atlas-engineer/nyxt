@@ -5,12 +5,12 @@
 
 (defun manual-content ()
   (str:concat
-   (markup:markup
+   (markup
     (:h1 "Nyxt manual")
     (:p "This manual first includes the tutorial, then covers the configuration
 of Nyxt."))
    (tutorial-content)
-   (markup:markup
+   (markup
     (:h2 "Configuration")
     (:p "Nyxt is written in the Common Lisp programming language which offers a
 great perk: everything in the browser can be customized by the user, even while
@@ -105,11 +105,11 @@ keybindings have priorities over the other modes.")
     (:p "See the " (:code "search-engines") " buffer slot documentation.
 Bookmarks can also be used as search engines, see the corresponding section.")
     (:p "Nyxt comes with some default search engines for "
-        (:code (format nil "~{~a~^, ~}"
-                       (mapcar (lambda (engine)
-                                 (quri:uri-host (quri:uri (getf engine :search-url))))
-                               (rest (getf (mopu:slot-properties 'buffer 'search-engines)
-                                           :initform)))))
+        (:code (who:str (format nil "~{~a~^, ~}"
+                                (mapcar (lambda (engine)
+                                          (quri:uri-host (quri:uri (getf engine :search-url))))
+                                        (rest (getf (mopu:slot-properties 'buffer 'search-engines)
+                                                    :initform))))))
         ". "
         "The following example shows one way to add new search engines.")
     (:pre (:code "

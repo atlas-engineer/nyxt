@@ -47,6 +47,9 @@
                   (make-instance 'class-source)
                   (make-instance 'slot-source))))
 
+(defmacro markup (&body body)
+  `(who:with-html-output-to-string (ignored) (who:htm ,@body)))
+
 (defun value->html (value &key (help-mode (current-mode 'help)))
   "Return the HTML representation of VALUE."
   (cond
@@ -554,14 +557,14 @@ The version number is stored in the clipboard."
 (define-command manual ()
   "Show the manual."
   (with-current-html-buffer (buffer "*Manual*" 'nyxt/help-mode:help-mode)
-    (str:concat (markup:markup (:style (style buffer)))
+    (str:concat (markup (:style (who:str (style buffer))))
                 (manual-content))))
 
 (define-command tutorial ()
   "Show the tutorial."
   (with-current-html-buffer (buffer "*Tutorial*" 'nyxt/help-mode:help-mode)
     (str:concat
-     (markup:markup
+     (markup
       (:style (style buffer))
       (:h1 "Nyxt tutorial")
       (:p "The following tutorial introduces core concepts and
