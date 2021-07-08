@@ -36,15 +36,23 @@
      (:a :class "button"
          :href (lisp-url '(nyxt/macro-edit-mode::save-macro)) "Save macro"))))
 
-(defun render-functions (macro-editor)
+(defmethod render-functions ((macro-editor macro-edit-mode))
   (flet ((render-functions ()
            (markup:markup
             (:table
              (loop for key being the hash-keys of (functions macro-editor)
                    using (hash-value value)
                    collect (markup:markup
-                            (:tr (:td (:a :class "button" :href "xyz" "✕"))
-                                 (:td (:a :class "button" :href "xyz" "🛈"))
+                            (:tr (:td (:a :class "button"
+                                          :href (lisp-url `(nyxt/macro-edit-mode::remove-function
+                                                            (current-mode 'macro-edit-mode)
+                                                            ,key))
+                                          "✕"))
+                                 (:td (:a :class "button"
+                                          :href (lisp-url `(nyxt/macro-edit-mode::command-help
+                                                            (current-mode 'macro-edit-mode)
+                                                            ,key))
+                                          "🛈"))
                                  (:td (symbol-name (name value))))))))))
     (ffi-buffer-evaluate-javascript-async
      (buffer macro-editor)
@@ -53,6 +61,19 @@
              (ps:lisp
               (render-functions)))))))
 
+(defmethod command-help ((macro-editor macro-edit-mode) command-id)
+  (nyxt:describe-command (gethash command-id (functions macro-editor))))
+
+(defmethod add-function ((macro-editor macro-edit-mode) command)
+  (setf (gethash (get-unique-function-identifier macro-editor) p
+                 (functions macro-editor))
+        command)
+  (render-functions macro-editor))
+
+(defmethod remove-function ((macro-editor macro-edit-mode) command-id)
+  (remhash command-id (functions macro-editor))
+  (render-functions macro-editor))
+
 (define-command add-command (&optional (macro-editor (current-mode 'macro-edit-mode)))
   "Add a command to the macro."
   (let ((command 
@@ -60,9 +81,7 @@
            (prompt
             :prompt "Describe command"
             :sources (make-instance 'user-command-source)))))
-    (setf (gethash (get-unique-function-identifier macro-editor) 
-                   (functions macro-editor))
-          command)))
+    (add-function macro-editor command)))
 
 (define-command save-macro (&optional (macro-editor (current-mode 'macro-edit-mode)))
   "Save the macro to the auto-config.lisp file."
