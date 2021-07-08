@@ -224,16 +224,32 @@ prevents otherwise."))
   "Get the window containing a buffer."
   (find buffer (alex:hash-table-values (windows browser)) :key #'active-buffer))
 
-(defun reset-browser (browser &key message)
-  (setf *browser*
-        (make-instance 'user-browser
-                       :startup-error-reporter-function (if message
-                                                            (lambda ()
-                                                              (echo-warning "Resetting state and restarting due to `startup' error: ~a" message)
-                                                              (error-in-new-window "*Initialization errors*" message))
-                                                            (startup-error-reporter-function browser))
-         :startup-timestamp (startup-timestamp browser)
-         :socket-thread (socket-thread browser))))
+(defun restart-with-message (&optional condition)
+  (flet ((set-error-message (message full-message)
+           (let ((*package* (find-package :cl))) ; Switch package to use non-nicknamed packages.
+             (write-to-string
+              `(serapeum/contrib/hooks:add-hook
+                nyxt:*after-init-hook*
+                (serapeum/contrib/hooks:make-handler-void
+                 (lambda ()
+                   (setf (nyxt::startup-error-reporter-function *browser*)
+                         (lambda ()
+                           (nyxt:echo-warning "Restarted without init file due to error: ~a." ,message)
+                           (nyxt::error-in-new-window "*Initialization error*" ,full-message))))
+                 :name 'error-reporter))))))
+    (let* ((message (princ-to-string condition))
+           (full-message (format nil "Startup error: ~a.~%~&Restarted Nyxt without init file ~s."
+                                 message
+                                 (expand-path *init-file-path*)))
+           (new-command-line (append (uiop:raw-command-line-arguments)
+                                     `("--no-init"
+                                       "--eval"
+                                       ,(set-error-message message full-message)))))
+      (log:warn "Restarting with ~s."
+                (append (uiop:raw-command-line-arguments)
+                        '("--no-init")))
+      (uiop:launch-program new-command-line)
+      (quit))))
 
 (defmethod finalize ((browser browser) urls startup-timestamp)
   "Run `*after-init-hook*' then BROWSER's `startup'."
@@ -255,15 +271,23 @@ prevents otherwise."))
    browser
    (lambda ()
      (run-thread
-       (handler-case
+       ;; Restart on init error, in case `*init-file-path*' broke the state.
+       ;; We only `handler-case' when there is an init file, this way we avoid
+       ;; looping indefinitely.
+       (if (or (getf *options* :no-init)
+               (not (uiop:file-exists-p (expand-path *init-file-path*))))
            (startup browser urls)
-         (t (c)
-           (reset-all-user-classes)
-           ;; Broken windows may have been created, let's destroy them.
-           (mapc #'ffi-window-delete (window-list))
-           (reset-browser browser :message c)
-           (startup *browser* urls))))))
-  ;; Set 'init-time at the end of finalize to take the complete startup time
+           (handler-case (startup browser urls)
+             (error (c)
+               (log:error "Startup failed (probably due to a mistake in ~s):~&~a"
+                          (expand-path *init-file-path*) c)
+               (if *run-from-repl-p*
+                   (progn
+                     (quit)
+                     (reset-all-user-classes)
+                     (apply #'start (append *options* (list :urls urls :no-init t))))
+                   (restart-with-message c))))))))
+  ;; Set `init-time' at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)
         (local-time:timestamp-difference (local-time:now) startup-timestamp))
