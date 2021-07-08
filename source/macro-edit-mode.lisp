@@ -30,10 +30,28 @@
      (:p "Commands")
      (:p (:a :class "button"
              :href (lisp-url '(nyxt/macro-edit-mode::add-command)) "+ Add command"))
+     (:div :id "commands" "")
      (:br)
      (:hr)
      (:a :class "button"
          :href (lisp-url '(nyxt/macro-edit-mode::save-macro)) "Save macro"))))
+
+(defun render-functions (macro-editor)
+  (flet ((render-functions ()
+           (markup:markup
+            (:table
+             (loop for key being the hash-keys of (functions macro-editor)
+                   using (hash-value value)
+                   collect (markup:markup
+                            (:tr (:td (:a :class "button" :href "xyz" "✕"))
+                                 (:td (:a :class "button" :href "xyz" "🛈"))
+                                 (:td (symbol-name (name value))))))))))
+    (ffi-buffer-evaluate-javascript-async
+     (buffer macro-editor)
+     (ps:ps
+       (setf (ps:chain document (get-element-by-id "commands") |innerHTML|)
+             (ps:lisp
+              (render-functions)))))))
 
 (define-command add-command (&optional (macro-editor (current-mode 'macro-edit-mode)))
   "Add a command to the macro."
