@@ -78,36 +78,7 @@ class."
   "Return a new global history tree for `history-entry' data."
   (htree:make :key 'history-tree-key :current-owner-id (id buffer)))
 
-(defun bookmark-frequent-visit ()
-  "Add frequently visited URLs that are not included in the bookmarks."
-  (labels ((urls-visited-over-threshold (threshold)
-            "The local function "`urls-visited-over-thresold" returns all URLs
-            instances which were visited more times than the threshold."
-             (let* ((history-entries-raw
-                     (with-data-unsafe (history (history-path (current-buffer)))
-                       (alex:hash-table-keys (htree:entries history))))
-                   (history-entries-above-threshold
-                     (remove-if-not #'(lambda (e) (> (implicit-visits (htree:data e)) threshold))
-                                   history-entries-raw)))
-             (mapcar #'(lambda (e) (url (htree:data e))) history-entries-above-threshold)))
-           (bookmarked-url-p (url)
-            "The local function  "`bookmarked-url-p" returns the URL
-            itself if it is new to the bookmark list or NIL if it is
-            already there."
-             (let ((bookmarks-address-list
-                     (mapcar #'(lambda (e) (url e))
-                             (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
-                               bookmarks))))
-               (if (member url bookmarks-address-list :test #'quri:uri=)
-                   nil
-                   url))))
-    (dolist (url (urls-visited-over-threshold (url->bookmark-visit-threshold *browser*)))
-      (let ((url-address (render-url url)))
-        (if (bookmarked-url-p url)
-            (if-confirm ("Bookmark ~a?" url-address)
-                        (bookmark-url :url url-address)))))))
-
-(defun tweaked-bookmark-frequent-visit (history-entries-selected)
+(defun bookmark-frequent-visit (history-entries-selected)
   "Add frequently visited URLs that are not included in the bookmarks.  The
    sample space of visited URLs is received as an argument and previously
    defined by the user. "
@@ -142,13 +113,7 @@ call bookmark-frequent-visit over the selection."
                   :prompt "Select entries"
                   :sources (list (make-instance 'history-disowned-source
                                                 :buffer buffer)))))
-    #+nil
-    (with-data-access (history (history-path buffer))
-      (dolist (entry entries)
-        (format t "~S ~S ~S ~%" entry entries history)
-        entries))
-    (with-data-access (history (history-path buffer))
-      (tweaked-bookmark-frequent-visit entries))))
+    (bookmark-frequent-visit entries)))
 
 (declaim (ftype (function (quri:uri &key (:title string) (:buffer buffer)) t) history-add))
 (defun history-add (url &key (title "") (buffer (current-buffer)))
