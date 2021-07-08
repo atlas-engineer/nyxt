@@ -590,7 +590,11 @@ the "
      "Nyxt version: " +version+ +newline+
      "Renderer version: " +renderer+ +newline+
      "Operating system kernel: " (software-type) " " (software-version) +newline+
-     "Lisp implementation: " (lisp-implementation-type) " " (lisp-implementation-version) +newline+
+     "Lisp implementation: " (lisp-implementation-type) " " (lisp-implementation-version)
+     #+sbcl
+     (format nil " (Dynamic space size: ~a)" (sb-ext:dynamic-space-size))
+     +newline+
+
      "Features: " (->string *features*) +newline+
      +newline+
 
