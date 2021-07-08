@@ -78,7 +78,7 @@ The handlers take the window as argument."))
 
 (defmethod window-add-panel-buffer ((window window) (buffer panel-buffer) side)
   "Add a panel buffer to a window. Side can either be :right or :left."
-  (push buffer (panel-buffers window))
+  (pushnew buffer (panel-buffers window))
   (ffi-window-add-panel-buffer window buffer side))
 
 (defmethod window-remove-panel-buffer ((window window) (buffer panel-buffer))
