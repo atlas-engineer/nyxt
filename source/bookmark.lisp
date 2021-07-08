@@ -134,31 +134,27 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 
 (define-command-global show-bookmarks-panel (&key (side :left))
   "Show the bookmarks in a panel."
-  (let ((panel-buffer (make-instance 'panel-buffer
-                                     :title "*Bookmarks Panel*")))
-    (window-add-panel-buffer (current-window) panel-buffer side)
-    (nyxt::html-set
-     (markup:markup (:style (style panel-buffer))
-                    (:style (cl-css:css
-                             '((p
-                                :font-size "12px"
-                                :margin "0"
-                                :white-space "nowrap"
-                                :overflow-x "hidden"
-                                :text-overflow "ellipsis")
-                               (div
-                                :padding-bottom "10px"))))
-                    (:body
-                     (:h1 "Bookmarks")
-                     (or (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
-                           (loop for bookmark in bookmarks
-                                 collect
-                                 (let ((url-href (render-url (url bookmark))))
-                                   (markup:markup (:div
-                                                   (:p (title bookmark))
-                                                   (:p (:a :href url-href url-href)))))))
-                         (format nil "No bookmarks in ~s." (expand-path (bookmarks-path (current-buffer)))))))
-     panel-buffer)))
+  (with-current-panel (panel-buffer "*Bookmarks Panel*" :side side)
+    (markup:markup (:style (style panel-buffer))
+                   (:style (cl-css:css
+                            '((p
+                               :font-size "12px"
+                               :margin "0"
+                               :white-space "nowrap"
+                               :overflow-x "hidden"
+                               :text-overflow "ellipsis")
+                              (div
+                               :padding-bottom "10px"))))
+                   (:body
+                    (:h1 "Bookmarks")
+                    (or (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
+                          (loop for bookmark in bookmarks
+                                collect
+                                (let ((url-href (render-url (url bookmark))))
+                                  (markup:markup (:div
+                                                  (:p (title bookmark))
+                                                  (:p (:a :href url-href url-href)))))))
+                        (format nil "No bookmarks in ~s." (expand-path (bookmarks-path (current-buffer)))))))))
 
 (export-always 'url-bookmark-tags)
 (defun url-bookmark-tags (url)
