@@ -615,11 +615,12 @@ See `gtk-browser's `modifier-translator' slot."
 
 (defmethod initialize-instance :after ((buffer gtk-buffer) &key)
   (let ((path (data-manager-path buffer)))
-    (setf (data-manager-path buffer)
-          (make-instance 'data-manager-data-path
-                         :dirname (pathname (str:concat (namestring (dirname path))
-                                                        "/nyxt-data-manager-"
-                                                        (id buffer))))))
+    (when (id buffer)
+      (setf (data-manager-path buffer)
+            (make-instance 'data-manager-data-path
+                           :dirname (pathname (str:concat (namestring (dirname path))
+                                                          "/nyxt-data-manager-"
+                                                          (id buffer)))))))
   (ffi-buffer-make buffer))
 
 (define-ffi-method ffi-buffer-url ((buffer gtk-buffer))
