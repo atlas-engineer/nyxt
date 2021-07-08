@@ -26,7 +26,7 @@
      (:style (style buffer))
      (:h1 "Macro edit")
      (:p "Name")
-     (:input :type "text")
+     (:input :type "text" :id "macro-name")
      (:p "Commands")
      (:p (:a :class "button"
              :href (lisp-url '(nyxt/macro-edit-mode::add-command)) "+ Add command"))
@@ -73,6 +73,12 @@
 (defmethod remove-function ((macro-editor macro-edit-mode) command-id)
   (remhash command-id (functions macro-editor))
   (render-functions macro-editor))
+
+(defmethod get-macro-name ((macro-editor macro-edit-mode))
+  (ffi-buffer-evaluate-javascript
+   (buffer macro-editor)
+   (ps:ps
+     (ps:chain document (get-element-by-id "macro-name") value))))
 
 (define-command add-command (&optional (macro-editor (current-mode 'macro-edit-mode)))
   "Add a command to the macro."
