@@ -2,13 +2,15 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/macro-edit-mode
-  (:use :common-lisp :trivia :nyxt)
+    (:use :common-lisp :trivia :nyxt)
   (:documentation "Mode for editing macros."))
 (in-package :nyxt/macro-edit-mode)
 
 (define-mode macro-edit-mode ()
   "Mode for creating and editing macros."
-  ((rememberable-p nil)))
+  ((functions
+    (make-hash-table)
+    :documentation "A list of functions the user has added to their macro.")))
 
 (define-command-global edit-macro ()
   "Edit a macro."
@@ -16,4 +18,12 @@
     (markup:markup
      (:style (style buffer))
      (:h1 "Macro edit")
-     (:p "Hello world!"))))
+     (:p "Name")
+     (:input :type "text")
+     (:p "Commands")
+     (:p (:a :class "button"
+             :href "xyz" "+ Add command"))
+     (:br)
+     (:hr)
+     (:a :class "button"
+         :href "xyz" "Save macro"))))
