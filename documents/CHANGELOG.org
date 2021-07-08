@@ -40,6 +40,18 @@ If possible!
 
 *** 2.1.0
 
+- New =expedition-mode=
+
+  Expedition mode stores a set of links that you can then traverse
+  forwards and backwards as if you are on an expedition through the
+  Internet!
+
+- New =select-frame-*=
+
+  Select frame allows the user to drag-select multiple elements on
+  screen. For example, the user can drag-select to open up all of the
+  links of a search result.
+
 - New =process-mode=.
 
   Process mode enables you to automate the repetition of tedious
