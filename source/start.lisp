@@ -105,12 +105,16 @@ The socket can also be set from the NYXT_SOCKET environment variable.")
        :short #\e
        :long "eval"
        :arg-parser #'identity
-       :description "Eval the Lisp expressions.  Can be specified multiple times.")
+       :description "Eval the Lisp expressions.  Can be specified multiple times.
+Without --quit or --remote, the evaluation is done after parsing the init file
+(if any) and before initializing the browser.")
       (:name :load
        :short #\l
        :long "load"
        :arg-parser #'identity
-       :description "Load the Lisp file.  Can be specified multiple times.")
+       :description "Load the Lisp file.  Can be specified multiple times.
+Without --quit or --remote, the loading is done after parsing the init file
+(if any) and before initializing the browser.")
       (:name :quit
        :short #\q
        :long "quit"
