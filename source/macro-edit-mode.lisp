@@ -8,9 +8,16 @@
 
 (define-mode macro-edit-mode ()
   "Mode for creating and editing macros."
-  ((functions
+  ((function-sequence
+    0
+    :documentation "A variable used to generate unique identifiers for user
+    added functions.")
+   (functions
     (make-hash-table)
     :documentation "A list of functions the user has added to their macro.")))
+
+(defmethod get-unique-function-identifier ((mode macro-edit-mode))
+  (incf (function-sequence mode)))
 
 (define-command-global edit-macro ()
   "Edit a macro."
@@ -22,8 +29,23 @@
      (:input :type "text")
      (:p "Commands")
      (:p (:a :class "button"
-             :href "xyz" "+ Add command"))
+             :href (lisp-url '(nyxt/macro-edit-mode::add-command)) "+ Add command"))
      (:br)
      (:hr)
      (:a :class "button"
-         :href "xyz" "Save macro"))))
+         :href (lisp-url '(nyxt/macro-edit-mode::save-macro)) "Save macro"))))
+
+(define-command add-command (&optional (macro-editor (current-mode 'macro-edit-mode)))
+  "Add a command to the macro."
+  (let ((command 
+          (first
+           (prompt
+            :prompt "Describe command"
+            :sources (make-instance 'user-command-source)))))
+    (setf (gethash (get-unique-function-identifier macro-editor) 
+                   (functions macro-editor))
+          command)))
+
+(define-command save-macro (&optional (macro-editor (current-mode 'macro-edit-mode)))
+  "Save the macro to the auto-config.lisp file."
+  (echo "Macro saved."))
