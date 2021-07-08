@@ -222,7 +222,7 @@ place of PATH `basename'.
                   (namestring (basename path)))))
     (cond
       ((uiop:emptyp name)
-       root)
+       (namestring (uiop:ensure-directory-pathname root)))
       ((search "/" name)
        name)
       (t
