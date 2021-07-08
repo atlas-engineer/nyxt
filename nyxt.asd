@@ -109,6 +109,7 @@
                (:file "editor-mode")
                (:file "plaintext-editor-mode")
                (:file "buffer-listing-mode")
+               (:file "macro-edit-mode")
                (:file "base-mode")
                (:file "repl-mode")
                (:file "help-mode")
