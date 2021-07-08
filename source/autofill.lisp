@@ -4,10 +4,15 @@
 (in-package :nyxt)
 
 (define-class autofill ()
-  ((name
+  ((key
+    ""
+    :accessor autofill-key
+    :documentation "Unique and short key to identify the autofill by. This will
+    be removed in 3.0.0.")
+   (name
     ""
     :type string
-    :accessor name
+    :accessor autofill-name
     :documentation "Displayable name of the autofill.
 Is especially useful for function autofills as `autofill-fill' doesn't tell
 anything meaningful for these.")
@@ -24,6 +29,7 @@ Please note that this accessor cannot be renamed to `fill' because
 it will be in conflict with common-lisp:fill."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
+  (:export-predicate-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (export-always 'make-autofill)
@@ -31,7 +37,7 @@ it will be in conflict with common-lisp:fill."))
   (apply #'make-instance 'autofill args))
 
 (defmethod prompter:object-attributes ((autofill autofill))
-  `(("Name" ,(name autofill))
+  `(("Name" ,(autofill-name autofill))
     ("Fill" ,(let ((f (autofill-fill autofill)))
                (typecase f
                  (string (write-to-string f))
