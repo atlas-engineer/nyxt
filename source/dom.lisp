@@ -169,16 +169,8 @@ JSON should have the format like what `get-document-body-json' produces:
     (plump:get-attribute element "href")))
 
 (defmethod url ((img img-element))
-  (alex:when-let ((src (plump:get-attribute img "src")))
-    (if (valid-url-p src)
-        src
-        (sera:and-let* ((url (url (current-buffer)))
-                        (uri (ignore-errors
-                              (quri:make-uri :scheme (quri:uri-scheme url)
-                                             :host (quri:uri-host url)
-                                             :port (quri:uri-port url)
-                                             :path src))))
-          (render-url uri)))))
+  (when (plump:has-attribute img "src")
+    (plump:get-attribute img "src")))
 
 ;; REVIEW: Export to :nyxt? We are forced to use it with nyxt/dom: prefix.
 (export-always 'body)
