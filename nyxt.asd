@@ -75,6 +75,7 @@
                (:file "time")
                (:file "types")
                (:file "conditions")
+               (:file "debug")
                (:file "user-interface")
                ;; Core functionality
                (:file "global")
