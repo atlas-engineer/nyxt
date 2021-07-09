@@ -346,67 +346,63 @@ instance of Nyxt."
 This is deprecated.
 We keep this variable as a means to import the old format to the new one.")
 
+(defun restore-history-buffers (history-path)
+  "Restore buffers corresponding to the HISTORY-PATH owners.
+
+This modifies the history owners as follows.
+For each owner, make a buffer, swap old owner identifier for the new buffer ID
+and maintain a table of (old-id -> new-id).  Finally go through all the owners
+and update their creator."
+  (with-data-access (history history-path)
+    (log:info "Restoring ~a buffers from history."
+              (hash-table-count (htree:owners history)))
+    (let ((old-id->new-id (make-hash-table :test #'equalp))
+          (new-owners (make-hash-table :test #'equalp)))
+      ;; We can't `maphash' over (htree:owners history) because
+      ;; `make-buffer' modifies the owners hash table.
+      (mapc (lambda-match
+              ((cons owner-id owner)
+               ;; `htree:+default-owner+' may be present if the
+               ;; history is created (e.g. restored) while no web
+               ;; buffer exists.  In all cases, this owner is
+               ;; uninteresting.
+               (unless (equal owner-id htree:+default-owner+)
+                 (let ((current-node (htree:current
+                                      (htree:owner history owner-id))))
+                   ;; Node-less owners can safely be ignored.
+                   (when current-node
+                     (let ((new-buffer (make-buffer :title (title (htree:data current-node))
+
+                                                    :url (url (htree:data current-node))
+                                                    :no-history-p t
+                                                    :load-url-p nil)))
+                       (setf (gethash owner-id old-id->new-id) (id new-buffer))
+                       (setf (gethash (id new-buffer) new-owners) owner)))))))
+            (alex:hash-table-alist (htree:owners history)))
+      (maphash (lambda (_ owner)
+                 (declare (ignore _))
+                 (setf (htree:creator-id owner)
+                       (gethash (htree:creator-id owner) old-id->new-id)))
+               (htree:owners history))
+      ;; Current owner can be outdated.
+      (alex:when-let ((new-id (gethash (htree:current-owner-id history) old-id->new-id)))
+        (when (htree:owner history new-id)
+          (htree:set-current-owner history new-id)))
+      (setf (htree:owners history) new-owners)
+      ;; Ensure that current owner is set to one of the new owners:
+      (unless (htree:owner history (htree:current-owner-id history))
+        (htree:set-current-owner history (htree::fallback-owner history))))
+    (alex:when-let ((latest-id (first
+                                (first
+                                 (sort-by-time (alex:hash-table-alist (htree:owners history))
+                                               :key (alex:compose #'htree:last-access #'rest))))))
+      (unless (equal latest-id htree:+default-owner+)
+        (switch-buffer :id latest-id)))))
+
 (defmethod restore ((profile data-profile) (path history-data-path)
-                    &key restore-buffers-p &allow-other-keys)
+                    &key &allow-other-keys)
   "Restore the global/buffer-local history and session from the PATH."
-  (labels ((restore-buffers (history)
-             "For each owner, make buffer, swap owner identifier for buffer id.
-             Keep table of old-id -> new-id, then go through all the owners and update their creator."
-             (let ((old-id->new-id (make-hash-table :test #'equalp))
-                   (new-owners (make-hash-table :test #'equalp)))
-               ;; We can't `maphash' over (htree:owners history) because
-               ;; `make-buffer' modifies the owners hash table.
-               (mapc (lambda-match
-                       ((cons owner-id owner)
-                        ;; `htree:+default-owner+' may be present if the
-                        ;; history is created (e.g. restored) while no web
-                        ;; buffer exists.  In all cases, this owner is
-                        ;; uninteresting.
-                        (unless (equal owner-id htree:+default-owner+)
-                          (let ((current-node (htree:current
-                                               (htree:owner history owner-id))))
-                            ;; Node-less owners can safely be ignored.
-                            (when current-node
-                              (let ((new-buffer (make-buffer :title (title (htree:data current-node))
-
-                                                             :url (url (htree:data current-node))
-                                                             :no-history-p t
-                                                             :load-url-p nil)))
-                                (setf (gethash owner-id old-id->new-id) (id new-buffer))
-                                (setf (gethash (id new-buffer) new-owners) owner)))))))
-                     (alex:hash-table-alist (htree:owners history)))
-               (maphash (lambda (_ owner)
-                          (declare (ignore _))
-                          (setf (htree:creator-id owner)
-                                (gethash (htree:creator-id owner) old-id->new-id)))
-                        (htree:owners history))
-               ;; Current owner can be outdated.
-               (alex:when-let ((new-id (gethash (htree:current-owner-id history) old-id->new-id)))
-                 (when (htree:owner history new-id)
-                   (htree:set-current-owner history new-id)))
-               (setf (htree:owners history) new-owners)
-               ;; Ensure that current owner is set to one of the new owners:
-               (unless (htree:owner history (htree:current-owner-id history))
-                 (htree:set-current-owner history (htree::fallback-owner history))))
-             (alex:when-let ((latest-id (first
-                                         (first
-                                          (sort-by-time (alex:hash-table-alist (htree:owners history))
-                                                        :key (alex:compose #'htree:last-access #'rest))))))
-               (unless (equal latest-id htree:+default-owner+)
-                 (switch-buffer :id latest-id))))
-
-           (restore-history-tree (history)
-             (echo "Loading history of ~a URLs from ~s."
-                   (hash-table-count (htree:entries history))
-                   (expand-path path))
-             ;; REVIEW: Do we really need %set-data?  Alternatively, the following works:
-             ;; (setf (data (get-user-data profile path)) history)
-             (%set-data path history)
-             (when restore-buffers-p
-               (restore-buffers history))
-             history)
-
-           (restore-flat-history (old-history old-path)
+  (labels ((restore-flat-history (old-history old-path)
              (echo "Importing deprecated global history of ~a URLs from ~s."
                    (hash-table-count old-history)
                    (expand-path old-path))
@@ -443,7 +439,10 @@ We keep this variable as a means to import the old format to the new one.")
                        version +version+))
            (ctypecase history
              (htree:history-tree
-              (restore-history-tree history))
+              (echo "Loading history of ~a URLs from ~s."
+                    (hash-table-count (htree:entries history))
+                    (expand-path path))
+              history)
 
              (hash-table
               (restore-flat-history history path))))
@@ -495,10 +494,9 @@ If you want to save the current history file beforehand, call
                                        :dirname (parent (history-path (current-buffer)))
                                        :basename name)))
     (let ((old-buffers (buffer-list)))
-      (%set-data path (make-history-tree))
-      (sera:and-let* ((new-history (restore (data-profile (current-buffer)) path
-                                            :restore-buffers-p t)))
+      (sera:and-let* ((new-history (get-data path)))
         ;; TODO: Maybe modify `history-path' of all the buffers instead of polluting history?
         (%set-data (history-path (current-buffer)) new-history)
+        (restore-history-buffers (history-path (current-buffer)))
         (dolist (buffer old-buffers)
           (buffer-delete buffer))))))

@@ -59,6 +59,12 @@ chosen suggestions inside brackets.")
                   :grid-template-columns "auto auto 1fr auto"
                   :width "100%"
                   :color "white")
+                 ("#prompt-area-vi"
+                  :background-color "dimgray"
+                  :display "grid"
+                  :grid-template-columns "auto auto 1em 1fr auto"
+                  :width "100%"
+                  :color "white")
                  ("#prompt"
                   :padding-left "10px"
                   :line-height "26px")
@@ -69,6 +75,13 @@ chosen suggestions inside brackets.")
                   :line-height "26px"
                   :padding-left "3px"
                   :padding-right "3px")
+                 ("#vi-mode"
+                  :margin "2px"
+                  :padding "1px")
+                 (".vi-normal-mode"
+                  :background-color "rgb(80,80,80)")
+                 (".vi-insert-mode"
+                  :background-color "#37a8e4")
                  ("#input"
                   :border "none"
                   :outline "none"
@@ -210,7 +223,14 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
 
 (defun prompt-render-prompt (prompt-buffer)
   (let* ((suggestions (prompter:all-suggestions prompt-buffer))
-         (marks (prompter:all-marks prompt-buffer)))
+         (marks (prompter:all-marks prompt-buffer))
+         (vi-class (cond ((find-submode prompt-buffer 'vi-normal-mode)
+                          "vi-normal-mode")
+                         ((find-submode prompt-buffer 'vi-insert-mode)
+                          "vi-insert-mode")))
+         (vi-letter (match vi-class
+                      ("vi-normal-mode" "N")
+                      ("vi-insert-mode" "I"))))
     (ffi-buffer-evaluate-javascript-async
      prompt-buffer
      (ps:ps
@@ -220,6 +240,10 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
                prompt-buffer suggestions marks
                :multi-selection-p (some #'prompter:multi-selection-p
                                         (prompter:sources prompt-buffer)))))
+       (when (ps:lisp vi-class)
+         (let ((vi-indicator (ps:chain document (get-element-by-id "vi-mode"))))
+           (setf (ps:chain vi-indicator |innerHTML|) (ps:lisp vi-letter))
+           (setf (ps:chain vi-indicator class-name) (ps:lisp vi-class))))
        (setf (ps:chain document (get-element-by-id "prompt-modes") |innerHTML|)
              (ps:lisp
               (format nil "~{~a~^ ~}" (delete "prompt-buffer"
@@ -300,27 +324,33 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
 
 (defun prompt-render-skeleton (prompt-buffer)
   (erase-document prompt-buffer)
-  (ffi-buffer-evaluate-javascript-async
-   prompt-buffer
-   (ps:ps (ps:chain document
-                    (write
-                     (ps:lisp (markup:markup
-                               (:head (:style (style prompt-buffer)))
-                               (:body
-                                (:div :id "prompt-area"
-                                      (:div :id "prompt" (prompter:prompt prompt-buffer))
-                                      (:div :id "prompt-extra" "[?/?]")
-                                      (:div (:input :type (if (invisible-input-p prompt-buffer)
-                                                              "password"
-                                                              "text")
-                                                    :id "input"
-                                                    :value (prompter:input prompt-buffer)))
-                                      (:div :id "prompt-modes" ""))
-                                (markup:raw
-                                 (markup:markup*
-                                  `(:div :id "suggestions"
-                                         ,@(when (invisible-input-p prompt-buffer)
-                                             '(:hidden "true")))))))))))))
+  (let ((vi-mode? (or (find-submode prompt-buffer 'vi-normal-mode)
+                      (find-submode prompt-buffer 'vi-insert-mode))))
+    (ffi-buffer-evaluate-javascript-async
+     prompt-buffer
+     (ps:ps (ps:chain document
+                      (write
+                       (ps:lisp (markup:markup
+                                 (:head (:style (style prompt-buffer)))
+                                 (:body
+                                  (:div :id (if vi-mode? "prompt-area-vi" "prompt-area")
+                                        (:div :id "prompt" (prompter:prompt prompt-buffer))
+                                        (:div :id "prompt-extra" "[?/?]")
+                                        (markup:raw
+                                         (when vi-mode?
+                                           (markup:markup
+                                            (:div :id "vi-mode" ""))))
+                                        (:div (:input :type (if (invisible-input-p prompt-buffer)
+                                                                "password"
+                                                                "text")
+                                                      :id "input"
+                                                      :value (prompter:input prompt-buffer)))
+                                        (:div :id "prompt-modes" ""))
+                                  (markup:raw
+                                   (markup:markup*
+                                    `(:div :id "suggestions"
+                                           ,@(when (invisible-input-p prompt-buffer)
+                                               '(:hidden "true"))))))))))))))
 
 (defun prompt-render-focus (prompt-buffer)
   (ffi-buffer-evaluate-javascript-async

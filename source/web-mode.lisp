@@ -188,8 +188,13 @@ and to index the top of the page.")
        "pagedown" 'scroll-page-down)))))
 
 (sera:export-always '%clicked-in-input?)
-(define-parenscript %clicked-in-input? ()
-  (ps:chain document active-element tag-name))
+(defun %clicked-in-input? (&optional (buffer (current-buffer)))
+  ;; We don't use define-parenscript because we need to control over which
+  ;; buffer we query.
+  (ffi-buffer-evaluate-javascript buffer
+                                  (ps:ps
+                                    (ps:chain document active-element
+                                              tag-name))))
 
 (sera:export-always 'input-tag-p)
 (declaim (ftype (function ((or string null)) boolean) input-tag-p))
@@ -206,8 +211,10 @@ and to index the top of the page.")
          (nyxt::last-event buffer))
         (funcall command))))
 
-(define-command paste-or-set-url (&optional (buffer (current-buffer)))
-  "Paste text if active element is an input tag, forward event otherwise."
+(nyxt::define-deprecated-command paste-or-set-url (&optional (buffer (current-buffer)))
+  "Paste text if active element is an input tag, forward event otherwise.
+
+This was useful before Nyxt 2.0 as a workaround for hangs that would occur on pasting."
   (let ((response (%clicked-in-input?)))
     (let ((url-empty (url-empty-p (url-at-point buffer))))
       (if (and (input-tag-p response) url-empty)
@@ -223,6 +230,20 @@ and to index the top of the page.")
 (define-command maybe-scroll-to-top (&optional (buffer (current-buffer)))
   "Scroll to top if no input element is active, forward event otherwise."
   (call-non-input-command-or-forward #'scroll-to-top :buffer buffer))
+
+(define-command go-next ()
+  "Navigate to the next element according to the HTML 'rel' attribute."
+  (pflet ((go-next ()
+                   (ps:chain document
+                             (query-selector-all "[rel=next]") 0 (click))))
+    (go-next)))
+
+(define-command go-previous ()
+  "Navigate to the previous element according to the HTML 'rel' attribute."
+  (pflet ((go-previous ()
+                       (ps:chain document
+                                 (query-selector-all "[rel=prev]") 0 (click))))
+    (go-previous)))
 
 (defun load-history-url (url-or-node
                          &key (buffer (current-buffer))

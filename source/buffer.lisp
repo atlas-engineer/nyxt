@@ -258,7 +258,7 @@ separated from one another, so that each has its own behaviour and settings."))
 The mode instances are stored in the `modes' BUFFER slot.
 
 The default modes returned by this method are appended to the default modes
-inherited from the superclasses.  Duplicates are removed."))
+inherited from the superclasses."))
 
 (defmethod default-modes :around ((buffer buffer))
   "Remove the duplicates from the `default-modes'."
@@ -376,6 +376,41 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 
 (define-user-class internal-buffer)
 
+(define-class panel-buffer (internal-buffer)
+  ((width 250 :documentation "The width in pixels.")
+   (style (cl-css:css
+           '((body
+              :background-color "#F7F7F7"
+              :margin "0"
+              :padding "10px"
+              :border-right "1px solid darkgray"
+              :border-left "1px solid darkgray")
+             (h1
+              :font-family "Helvetica Neue, Helvetica"
+              :font-weight 500)
+             (h2
+              :font-family "Helvetica Neue, Helvetica"
+              :font-weight 500)
+             (h3
+              :font-family "Helvetica Neue, Helvetica"
+              :font-weight 500)
+             (h4
+              :font-family "Helvetica Neue, Helvetica"
+              :font-weight 500)
+             (h5
+              :font-family "Helvetica Neue, Helvetica"
+              :font-weight 500)
+             (h6
+              :font-family "Helvetica Neue, Helvetica"
+              :font-weight 500)
+             (a
+              :color "gray")))))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+
+(define-user-class panel-buffer)
+
 (define-class editor-buffer (internal-buffer)
   ((file :documentation "The file being edited.")
    (url (quri:uri "editor-buffer"))
@@ -439,10 +474,26 @@ Delete it with `ffi-buffer-delete'."
                 ;; Columns: controls, url, tabs, modes
                 :grid-template-columns "120px 2fr 3fr 240px"
                 :overflow-y "hidden")
+               ("#container-vi"
+                :display "grid"
+                ;; Columns: controls, vi-status, url, tabs, modes
+                :grid-template-columns "120px 30px 2fr 3fr 240px"
+                :overflow-y "hidden")
                ("#controls"
                 :background-color "rgb(80,80,80)"
                 :padding-left "5px"
+                :overflow "hidden"
+                :white-space "nowrap"
+                :z-index "4")
+               ("#vi-mode"
+                :padding-right "10px"
+                :padding-left "10px"
+                :text-align "center"
                 :z-index "3")
+               (".vi-normal-mode"
+                :background-color "rgb(100,100,100)")
+               (".vi-insert-mode"
+                :background-color "#37a8e4")
                ("#url"
                 :background-color "gray"
                 :min-width "100px"
@@ -604,8 +655,8 @@ BUFFER's modes."
                              no-history-p (load-url-p t) buffer-class)
   "Create a new buffer.
 MODES is a list of mode symbols.
-If URL is empty, use `default-new-buffer-url'.
-To load nothing, set it to about:blank.
+If URL is empty, the `default-new-buffer-url' buffer slot is used instead.
+To load nothing, set it to 'about:blank'.
 PARENT-BUFFER is useful when we want to record buffer- and history relationships.
 LOAD-URL-P controls whether to load URL right at buffer creation."
   (let* ((buffer (apply #'buffer-make *browser*
@@ -809,7 +860,7 @@ proceeding."
     ;; So that `current-buffer' returns the new value if buffer was
     ;; switched inside a `with-current-buffer':
     (setf %buffer nil)
-    (set-window-title window buffer)
+    (set-window-title window)
     (print-status nil window)
     (when (and (web-buffer-p buffer)
                (eq (slot-value buffer 'load-status) :unloaded))
@@ -864,6 +915,7 @@ proceeding."
   (:export-class-name-p t))
 (define-user-class buffer-source)
 
+(declaim (ftype (function (&key (:id string))) switch-buffer))
 (define-command switch-buffer (&key id)
   "Switch the active buffer in the current window."
   (if id
@@ -1064,10 +1116,16 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
 
 (defun input->queries (input)
   (let* ((terms (sera:tokens input))
-         (engines (remove-if
-                   (sera:partial (complement #'str:starts-with-p) (first terms))
-                   (all-search-engines)
-                   :key #'shortcut)))
+         (engines (let ((all-prefixed-engines
+                          (remove-if
+                           (sera:partial (complement #'str:starts-with-p) (first terms))
+                           (all-search-engines)
+                           :key #'shortcut)))
+                    (multiple-value-bind (matches non-matches)
+                        (sera:partition (lambda (e)
+                                          (string= (first terms) e))
+                                        all-prefixed-engines :key #'shortcut)
+                      (append matches non-matches)))))
     (append (unless (and engines (member (first terms)
                                          (mapcar #'shortcut engines)
                                          :test #'string=))

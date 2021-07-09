@@ -137,7 +137,7 @@ Return `*global-data-profile*' otherwise."
   ;; dead-lock.  To prevent this, we look for the last active window without
   ;; relying on the renderer.
   (if (and *browser* (slot-value *browser* 'last-active-window))
-      (let ((buffer (or (current-buffer)
+      (let ((buffer (or (current-buffer (slot-value *browser* 'last-active-window))
                         (make-instance 'user-buffer))))
         (or (and buffer (data-profile buffer))
             *global-data-profile*))
@@ -295,6 +295,10 @@ This function can be used on browser-less globals like `*init-file-path*'."
   ((data nil
          :type t
          :documentation "The meaningful data to store. Examples: history data, session, bookmarks.")
+   (restored-p nil
+               :type boolean
+               :export nil
+               :documentation "Whether the data was `restore'd.")
    (lock (bt:make-recursive-lock)
          :type bt:lock
          :documentation "The lock to guard from race conditions when accessing this data."))
@@ -356,10 +360,10 @@ Prefer the thread-safe `with-data-access', or the non-thread-safe
   (let ((profile (current-data-profile)))
     (alex:if-let ((user-data (get-user-data profile path)))
       (progn
-        ;; TODO: What if we restore to NIL?  Would we keep restoring?
         (bt:with-recursive-lock-held ((lock user-data))
-          (unless (data user-data)
-            (restore profile path)))
+          (unless (restored-p user-data)
+            (%set-data path (restore profile path))
+            (setf (restored-p user-data) t)))
         (values (data user-data) user-data))
       (values nil nil))))
 
@@ -557,11 +561,13 @@ See `with-data-file' for OPTIONS."
         (when (null option)
           (alex:appendf options '(:if-does-not-exist nil))))))
 
-  (when (and (member (getf options :direction) '(:io :output))
-             (let ((option (nth-value 2 (get-properties options '(:if-does-not-exist)))))
-               (or (null option)
-                   (eq (getf option :if-does-not-exist) :create))))
-    (ensure-parent-exists filespec))
+  (when (member (getf options :direction) '(:io :output))
+    (let ((option (nth-value 2 (get-properties options '(:if-does-not-exist)))))
+      (when (null option)
+        (alex:appendf options '(:if-does-not-exist :create)))
+      (when (or (or (null option)
+                    (eq (getf option :if-does-not-exist) :create)))
+        (ensure-parent-exists filespec))))
 
   (flet ((defer-open (filespec options)
            (if (string-equal "gpg" (pathname-type filespec))
@@ -612,6 +618,7 @@ OPTIONS are as for `open', except
 
 - when `:direction' is `:output'
   - `:if-exists' can be `:error', `nil', `:append' or `:supersede' (the default);
+  - `:if-does-not-exists' is `:create' by default;
 
 - when `:direction' is `:input'
   - `:if-does-not-exists' is `nil' by default.

@@ -19,7 +19,8 @@
 
 (define-mode preview-mode (nyxt/process-mode:process-mode)
   "Refreshes the buffer when associated local file is changed."
-  ((nyxt/process-mode:firing-condition #'updated-file-p)
+  ((rememberable-p t)
+   (nyxt/process-mode:firing-condition #'updated-file-p)
    (nyxt/process-mode:action
     #'(lambda (path-url mode)
         (buffer-load path-url :buffer (buffer mode))

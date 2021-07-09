@@ -111,25 +111,50 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 (define-command list-bookmarks ()
   "List all bookmarks in a new buffer."
   (with-current-html-buffer (bookmarks-buffer "*Bookmarks*" 'base-mode)
-    (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
-      (markup:markup
-      (:style (style bookmarks-buffer))
-      (:h1 "Bookmarks")
-      (:body
-       (loop for bookmark in bookmarks
-             collect
-             (let ((url-display (render-url (url bookmark)))
-                   (url-href (render-url (url bookmark))))
-               (markup:markup (:div
-                               (:p (:b "Title: ") (title bookmark))
-                               (:p (:b "URL: ") (:a :href url-href
-                                                    url-display))
-                               (:p (:b "Tags: ")
-                                   (when (tags bookmark)
-                                     (format nil " (~{~a~^, ~})" (tags bookmark))))
-                               (:p (:a :class "button"
-                                       :href (lisp-url `(nyxt::delete-bookmark ,url-href)) "Delete"))
-                               (:hr ""))))))))))
+    (markup:markup
+     (:style (style bookmarks-buffer))
+     (:h1 "Bookmarks")
+     (:body
+      (or (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
+            (loop for bookmark in bookmarks
+                  collect
+                  (let ((url-display (render-url (url bookmark)))
+                        (url-href (render-url (url bookmark))))
+                    (markup:markup (:div
+                                    (:p (:b "Title: ") (title bookmark))
+                                    (:p (:b "URL: ") (:a :href url-href
+                                                         url-display))
+                                    (:p (:b "Tags: ")
+                                        (when (tags bookmark)
+                                          (format nil " (~{~a~^, ~})" (tags bookmark))))
+                                    (:p (:a :class "button"
+                                            :href (lisp-url `(nyxt::delete-bookmark ,url-href)) "Delete"))
+                                    (:hr ""))))))
+          (format nil "No bookmarks in ~s." (expand-path (bookmarks-path (current-buffer)))))))))
+
+(define-command-global show-bookmarks-panel (&key (side :left))
+  "Show the bookmarks in a panel."
+  (with-current-panel (panel-buffer "*Bookmarks Panel*" :side side)
+    (markup:markup (:style (style panel-buffer))
+                   (:style (cl-css:css
+                            '((p
+                               :font-size "12px"
+                               :margin "0"
+                               :white-space "nowrap"
+                               :overflow-x "hidden"
+                               :text-overflow "ellipsis")
+                              (div
+                               :padding-bottom "10px"))))
+                   (:body
+                    (:h1 "Bookmarks")
+                    (or (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
+                          (loop for bookmark in bookmarks
+                                collect
+                                (let ((url-href (render-url (url bookmark))))
+                                  (markup:markup (:div
+                                                  (:p (title bookmark))
+                                                  (:p (:a :href url-href url-href)))))))
+                        (format nil "No bookmarks in ~s." (expand-path (bookmarks-path (current-buffer)))))))))
 
 (export-always 'url-bookmark-tags)
 (defun url-bookmark-tags (url)
@@ -208,34 +233,35 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                                :marks (url-bookmark-tags url))))))
           (bookmark-add url :tags tags)))))
 
-(define-command delete-bookmark (&optional url)
-  "Delete bookmark(s). Delete a bookmark by the URL. This function depends on
-equals only comparing URLs."
-  (if url
+(define-command delete-bookmark (&optional urls-or-bookmark-entries)
+  "Delete bookmark(s) matching URLS-OR-BOOKMARK-ENTRIES.
+URLS is either a list or a single element."
+  (if urls-or-bookmark-entries
       (with-data-access (bookmarks (bookmarks-path (current-buffer)))
         (setf bookmarks
               (set-difference
                bookmarks
-               (list (make-instance 'bookmark-entry :url (quri:uri url)))
+               (mapcar (lambda (url)
+                         (if (bookmark-entry-p url)
+                             url
+                             (make-instance 'bookmark-entry :url (quri:uri url))))
+                       (uiop:ensure-list urls-or-bookmark-entries))
                :test #'equals)))
-      (with-data-access (bookmarks (bookmarks-path (current-buffer)))
-        (let ((entries (prompt
-                        :prompt "Delete bookmark(s)"
-                        ;; :default-modes '(minibuffer-tag-mode minibuffer-mode)
-                        :sources (make-instance 'bookmark-source
-                                                :multi-selection-p t))))
-          (setf bookmarks
-                (set-difference bookmarks
-                                entries :test #'equals))))))
+      (let ((entries (prompt
+                      :prompt "Delete bookmark(s)"
+                      ;; :default-modes '(minibuffer-tag-mode minibuffer-mode)
+                      :sources (make-instance 'bookmark-source
+                                              :multi-selection-p t))))
+        (delete-bookmark entries))))
 
 (define-command set-url-from-bookmark
     (&key (actions (list (make-command buffer-load* (suggestion-values)
                            "Load first selected bookmark in current buffer and the rest in new buffer(s)."
-                           (mapc (lambda (url) (make-buffer :url url)) (rest suggestion-values))
+                           (mapc (lambda (url) (make-buffer :url (url url))) (rest suggestion-values))
                            (buffer-load (url (first suggestion-values))))
                          (make-command new-buffer-load (suggestion-values)
                            "Load bookmark(s) in new buffer(s)."
-                           (mapc (lambda (url) (make-buffer :url url)) (rest suggestion-values))
+                           (mapc (lambda (url) (make-buffer :url (url url))) (rest suggestion-values))
                            (make-buffer-focus :url (url (first suggestion-values)))))))
   "Set the URL for the current buffer from a bookmark.
 With multiple selections, open the first bookmark in the current buffer, the

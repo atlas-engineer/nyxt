@@ -25,21 +25,28 @@ for which the `executable' slot is non-nil."
   ((prompter:name "Passwords")
    (buffer :accessor buffer :initarg :buffer)
    (password-instance :accessor password-instance :initarg :password-instance)
+   (prompter:hide-attribute-header-p :single)
    (prompter:constructor
     (lambda (source)
-      (password:list-passwords (password-instance source))))))
+      (password:list-passwords (password-instance source))))
+   (prompter:actions
+    (list (make-command clip-password (password-name)
+            (let ((buffer (buffer (current-source)))
+                  (password-name (first password-name)))
+              (password:clip-password (password-interface buffer) :password-name password-name)
+              (echo "Password saved to clipboard for ~a seconds." (password:sleep-timer (password-interface buffer)))))
+          (make-command clip-username (password-name)
+            (let ((buffer (buffer (current-source)))
+                  (password-name (first password-name)))
+              (if (password:clip-username (password-interface buffer) :password-name password-name)
+                  (echo "Username saved to clipboard.")
+                  (echo "No username found."))))))))
 
 (defun password-debug-info ()
   (alex:when-let ((interface (password-interface (current-buffer))))
     (log:debug "Password interface ~a uses executable ~s."
                (class-name (class-of interface))
                (password:executable interface))))
-
-(defun has-method-p (object generic-function)
-  "Return non-nil if OBJECT is a specializer of a method of GENERIC-FUNCTION."
-  (find-if (alex:curry #'typep object)
-           (alex:mappend #'closer-mop:method-specializers
-                         (closer-mop:generic-function-methods generic-function))))
 
 (define-command save-new-password (&optional (buffer (current-buffer)))
   "Save password to password interface."
@@ -55,8 +62,12 @@ for which the `executable' slot is non-nil."
             (new-password (first (prompt
                                   :invisible-input-p t
                                   :prompt "New password (leave empty to generate)"
-                                  :sources (make-instance 'prompter:raw-source)))))
+                                  :sources (make-instance 'prompter:raw-source))))
+            (username (first (prompt
+                              :prompt "Username (can be empty)"
+                              :sources (make-instance 'prompter:raw-source)))))
        (password:save-password (password-interface buffer)
+                               :username username
                                :password-name password-name
                                :password new-password)))
     ((null (password-interface buffer))
@@ -117,10 +128,27 @@ for which the `executable' slot is non-nil."
   (password-debug-info)
   (if (password-interface buffer)
       (with-password (password-interface buffer)
+        (first (prompt
+                :prompt "Password"
+                :input (quri:uri-domain (url buffer))
+                :sources (list (make-instance
+                                'password-source
+                                :buffer buffer
+                                :password-instance (password-interface buffer))))))
+      (echo-warning "No password manager found.")))
+
+(define-command copy-username (&optional (buffer (current-buffer)))
+  "Query username and copy to clipboard."
+  (password-debug-info)
+  (if (password-interface buffer)
+      (with-password (password-interface buffer)
         (let ((password-name (first (prompt
+                                     :prompt "Username"
+                                     :input (quri:uri-domain (url buffer))
                                      :sources (list (make-instance 'password-source
                                                                    :buffer buffer
                                                                    :password-instance (password-interface buffer)))))))
-          (password:clip-password (password-interface buffer) :password-name password-name)
-          (echo "Password saved to clipboard for ~a seconds." (password:sleep-timer (password-interface buffer)))))
+          (if (password:clip-username (password-interface buffer) :password-name password-name)
+              (echo "Username saved to clipboard.")
+              (echo "No username found."))))
       (echo-warning "No password manager found.")))

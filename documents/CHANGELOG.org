@@ -21,7 +21,36 @@ If possible!
 *** Add online suggestions from search engines
 ** 2 series
 
+*** 2.1.1
+
+- =reopen-buffer= restores the scroll position.
+
+- New =copy-username= command for password managers.
+
+- Bug fixes:
+
+  - Fix history double-restore which led to many random crashes.
+
+  - Create file and parent directories of configuration files if they
+    don't exist.
+
+  - Fix =set-url-from-bookmark= on multi-selection.
+
+  - Fix =process-mode= to not run action when it's nil.
+
 *** 2.1.0
+
+- New =expedition-mode=
+
+  Expedition mode stores a set of links that you can then traverse
+  forwards and backwards as if you are on an expedition through the
+  Internet!
+
+- New =select-frame-*=
+
+  Select frame allows the user to drag-select multiple elements on
+  screen. For example, the user can drag-select to open up all of the
+  links of a search result.
 
 - New =process-mode=.
 

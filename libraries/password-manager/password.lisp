@@ -13,29 +13,35 @@
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'list-passwords))
+;; From Serapeum:
+(defmacro export-always (symbols &optional (package nil package-supplied?))
+  "Like `export', but also evaluated at compile time."
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (export ,symbols ,@(and package-supplied? (list package)))))
+
+(export-always 'list-passwords)
 (defgeneric list-passwords (password-interface)
   (:documentation "Retrieve all available passwords."))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'clip-password))
+(export-always 'clip-password)
 (defgeneric clip-password (password-interface &key password-name service)
   (:documentation "Retrieve specific password by name."))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'save-password))
-(defgeneric save-password (password-interface &key password-name password service)
+(export-always 'clip-username)
+(defgeneric clip-username (password-interface &key password-name service)
+  (:documentation "Retrieve specific login by name of the password entry."))
+
+(export-always 'save-password)
+(defgeneric save-password (password-interface
+                           &key password-name username password service)
   (:documentation "Save password to database.
 If PASSWORD-NAME is empty, then generate a new password."))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'password-correct-p))
+(export-always 'password-correct-p)
 (defgeneric password-correct-p (password-interface)
   (:documentation "Return T if set password is correct, NIL otherwise."))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export 'complete-interface))
+(export-always 'complete-interface)
 (defgeneric complete-interface (password-interface)
   (:method ((password-interface password-interface))
     password-interface)
@@ -71,6 +77,5 @@ Return nil if COMMAND is not found anywhere."
    (uiop:run-program (format nil "command -v ~A" command)
                      :output '(:string :stripped t))))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '*interfaces*))
+(export-always '*interfaces*)
 (defvar *interfaces* (list))

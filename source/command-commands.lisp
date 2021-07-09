@@ -29,7 +29,8 @@
             return bindings)
     `(("Name" ,(string-downcase (name command)))
       ("Bindings" ,(format nil "~{~a~^, ~}" bindings))
-      ("Docstring" ,(first (sera::lines (nyxt::docstring command))))
+      ("Docstring" ,(or (first (sera::lines (nyxt::docstring command)))
+                        ""))
       ("Mode" ,(let ((package-name (str:downcase (uiop:symbol-package-name (name command)))))
                  (if (sera:in package-name "nyxt" "nyxt-user")
                      ""
@@ -65,43 +66,76 @@
       (setf (last-access command) (local-time:now))
       (run-async command))))
 
-(define-command execute-extended-command ()
-   "Execute a command by name, also supply required, optional, and
-keyword parameters."
-  ;; TODO: prefill default-values when prompting optional/key arguments
-   (let* ((command (first (prompt
-                           :prompt "Execute extended command"
-                           :sources (make-instance 'user-command-source)
-                           :hide-suggestion-count-p t)))
-          (argument-list (swank::arglist (fn command)))
-          (required-arguments (nth-value 0 (alex:parse-ordinary-lambda-list
-                                            argument-list)))
-          (optional-arguments (nth-value 1 (alex:parse-ordinary-lambda-list
-                                            argument-list)))
-          (key-arguments (nth-value 3 (alex:parse-ordinary-lambda-list
-                                       argument-list))))
-     (apply command
-            (append
-             (when required-arguments
-               (loop for argument in required-arguments
-                     collect (read-from-string
-                              (first (prompt
-                                      :prompt argument
-                                      :sources (make-instance 'prompter:raw-source))))))
-             (when optional-arguments
-               (loop for argument in optional-arguments
-                     collect (read-from-string
-                              (first (prompt
-                                      :prompt (first argument)
-                                      :sources (make-instance 'prompter:raw-source))))))
-             (when key-arguments
-               (loop for argument in key-arguments
-                     collect (first (car argument))
-                     collect (read-from-string
-                              (first (prompt
-                                      :prompt (second (car argument))
-                                      :sources (make-instance 'prompter:raw-source))))))))
-     (setf (last-access command) (local-time:now))))
+(defun parse-function-lambda-list-types (fn)
+  #-sbcl
+  (declare (ignore fn))
+  #-sbcl
+  (warn "Function type parsing is not supported on this Lisp implementation.")
+  #+sbcl
+  (let* ((types (second (sb-introspect:function-type fn)))
+         (keywords '())
+         (type-batches (sera:split-sequence-if (lambda (type)
+                                                 (when (find type lambda-list-keywords)
+                                                   (push type keywords)))
+                                               types))
+         (keyword-type-pairs (pairlis keywords (rest type-batches))))
+    (alex:nreversef keywords)
+    (values (first type-batches)
+            (alex:assoc-value keyword-type-pairs '&optional)
+            (alex:assoc-value keyword-type-pairs '&rest)
+            (alex:assoc-value keyword-type-pairs '&key))))
+
+(defun prompt-argument (prompt &optional type input)
+  (let ((value
+          (first
+           (evaluate
+            (first (prompt
+                    :prompt (if type
+                                (format nil "~a (~a)" prompt type)
+                                prompt)
+                    :input (write-to-string input)
+                    :sources (make-instance 'prompter:raw-source
+                                            :name "Evaluated input")))))))
+    (if (or (not type)
+            (typep value type))
+        value
+        (progn
+          (echo "~s has type ~s, expected ~s."
+                value (type-of value) type)
+         (prompt-argument prompt type input)))))
+
+(define-command execute-extended-command (&optional command)
+  "Query the user for the arguments to pass to a given COMMAND.
+User input is evaluated Lisp."
+  ;; TODO: Add support for &rest arguments.
+  (let* ((command (or command
+                      (first (prompt
+                              :prompt "Execute extended command"
+                              :sources (make-instance 'user-command-source)
+                              :hide-suggestion-count-p t))))
+         (lambda-list (swank::arglist (fn command))))
+    (multiple-value-match (alex:parse-ordinary-lambda-list lambda-list)
+      ((required-arguments optional-arguments _ keyword-arguments)
+       (multiple-value-match (parse-function-lambda-list-types (fn command))
+         ((required-types optional-types _ keyword-types)
+          (flet ((parse-args (params)
+                   (alex:mappend
+                    (lambda-match
+                      ((cons (and param (type symbol)) type)
+                       (list (prompt-argument param type)))
+                      ((cons (list (list keyword name) default _) type)
+                       (list keyword
+                             (prompt-argument name type default)))
+                      ((cons (list name default _) type)
+                       (list (prompt-argument name type default))))
+                    params)))
+            (setf (last-access command) (local-time:now))
+            (apply #'run-async
+                   command
+                   (alex:mappend #'parse-args
+                                 (list (pairlis required-arguments required-types)
+                                       (pairlis optional-arguments optional-types)
+                                       (pairlis keyword-arguments (mapcar #'second keyword-types))))))))))))
 
 (defun get-hooks ()
   (flet ((list-hooks (object)
