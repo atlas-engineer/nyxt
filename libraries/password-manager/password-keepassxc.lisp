@@ -28,14 +28,28 @@
                                       password-name
                                       ;; Timeout for password
                                       (format nil "~a" (sleep-timer password-interface)))
+      :input st :output '(:string :stripped t))))
+
+(defmethod clip-username ((password-interface keepassxc-interface) &key password-name service)
+  (declare (ignore service))
+  (with-input-from-string (st (master-password password-interface))
+    (execute password-interface (list "clip"
+                                      "--attribute" "username"
+                                      (password-file password-interface)
+                                      password-name
+                                      ;; Timeout for password
+                                      (format nil "~a" (sleep-timer password-interface)))
              :input st :output '(:string :stripped t))))
 
-(defmethod save-password ((password-interface keepassxc-interface) &key password-name password service)
+(defmethod save-password ((password-interface keepassxc-interface)
+                          &key password-name username password service)
   (declare (ignore service))
   (with-input-from-string (st (format nil "~a~C~a"
                                       (master-password password-interface)
                                       #\newline password))
-    (execute password-interface (list "add" "--password-prompt" (password-file password-interface)
+    (execute password-interface (list "add"
+                                      "--username" username
+                                      "--password-prompt" (password-file password-interface)
                                       (if (str:emptyp password-name)
                                           "--generate"
                                           password-name))

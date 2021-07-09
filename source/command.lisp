@@ -48,7 +48,12 @@ We need a `command' class for multiple reasons:
   called.  The only way to do this is to persist the command instances."))
 
 (defmethod initialize-instance :after ((command command) &key)
-  (closer-mop:set-funcallable-instance-function command (fn command)))
+  (closer-mop:set-funcallable-instance-function command
+                                                (lambda (&rest args)
+                                                  (apply (fn command)
+                                                         (or args
+                                                             (mapcar #'prompt-argument
+                                                                     (parse-function-lambda-list-types (fn command))))))))
 
 (defmethod print-object ((command command) stream)
   (print-unreadable-object (command stream :type t :identity t)
@@ -79,14 +84,14 @@ With BODY, the command binds ARGLIST and executes the body.
 The first string in the body is used to fill the `help' slot.
 
 Without BODY, NAME must be a function symbol and the command wraps over it
-against ARGLIST, if specified. "
+against ARGLIST, if specified."
   (check-type name symbol)
   (let ((documentation (nth-value 2 (alex:parse-body body :documentation t))))
     (alex:with-gensyms (fn sexp)
       `(let ((,fn nil)
              (,sexp nil))
          (cond
-           ((and ',arglist ',body)
+           (',body
             (setf ,fn (lambda (,@arglist) ,@body)
                   ,sexp '(lambda (,@arglist) ,@body)))
            ((and ',arglist (typep ',name 'function-symbol))
@@ -118,8 +123,10 @@ of arguments."
        ,(documentation function-symbol 'function)
        (,function-symbol (first arg-list)))))
 
-(export-always 'define-command)
-(defmacro define-command (name (&rest arglist) &body body)
+(defmacro %define-command (name (&key deprecated-p
+                                   pre-form
+                                   global-p)
+                           (&rest arglist) &body body)
   "Define new command NAME.
 `define-command' has a syntax similar to `defun'.
 ARGLIST must be a list of optional arguments or key arguments.
@@ -154,6 +161,7 @@ Example:
            (defun ,name ,arglist
              ,@(sera:unsplice documentation)
              ,@declares
+             ,pre-form
              (handler-case
                  (progn
                    (hooks:run-hook ,before-hook)
@@ -166,14 +174,22 @@ Example:
                      (hooks:run-hook ,after-hook)))
                (nyxt-condition (c)
                  (format t "~s" c)))))
-         ;; Overwrite previous command:
-         (setf *command-list* (delete ',name *command-list* :key #'name))
-         (push (make-instance 'command
-                              :name ',name
-                              :docstring ,documentation
-                              :fn (symbol-function ',name)
-                              :sexp '(define-command (,@arglist) ,@body))
-               *command-list*)))))
+         (let ((new-command (make-instance 'command
+                                           :name ',name
+                                           :docstring ,documentation
+                                           :fn (symbol-function ',name)
+                                           :sexp '(define-command (,@arglist) ,@body)
+                                           :global-p ,global-p)))
+           (unless ,deprecated-p
+             ;; Overwrite previous command:
+             (setf *command-list* (delete ',name *command-list* :key #'name))
+             (push new-command
+                   *command-list*))
+           new-command)))))
+
+(export-always 'define-command)
+(defmacro define-command (name (&rest arglist) &body body)
+  `(%define-command ,name () (,@arglist) ,@body))
 
 (export-always 'define-command-global)
 (defmacro define-command-global (name (&rest arglist) &body body)
@@ -181,9 +197,7 @@ Example:
 This means it will be listed in `command-source' when the global option is on.
 This is mostly useful for third-party packages to define globally-accessible
 commands without polluting Nyxt packages."
-  `(progn
-    (define-command ,name (,@arglist) ,@body)
-    (setf (global-p (find-command ',name)) t)))
+  `(%define-command ,name (:global-p t) (,@arglist) ,@body))
 
 ;; TODO: Should `define-deprecated-command' report the version number of deprecation?
 ;; Maybe OK to just remove all deprecated commands on major releases.
@@ -191,21 +205,11 @@ commands without polluting Nyxt packages."
   "Define NAME, a deprecated command.
 This is just like a command.  It's recommended to explain why the function is
 deprecated and by what in the docstring."
-  (multiple-value-bind (forms declarations documentation)
-      (alex:parse-body body :documentation t)
-
-    (unless documentation
-      (warn (make-condition
-             'command-documentation-style-warning
-             :name name)))
-    `(progn
-       (define-command ,name ,arglist
-         ,@(sera:unsplice documentation)
-         ,@declarations
-         (progn
-           ;; TODO: Implement `warn'.
-           (echo-warning "~a is deprecated." ',name)
-           ,@forms)))))
+  `(%define-command ,name (:deprecated-p t
+                           ;; TODO: Implement `warn'.
+                           :pre-form (echo-warning "~a is deprecated." ',name))
+       (,@arglist)
+     ,@body))
 
 (defun nyxt-packages ()                 ; TODO: Export a customizable *nyxt-packages* instead?
   "Return all package designators that start with 'nyxt' plus Nyxt own libraries."
@@ -347,11 +351,15 @@ This is blocking, see `run-async' for an asynchronous way to run commands."
 See `run' for a way to run commands in a synchronous fashion and return the
 result."
   (run-thread
-    (with-current-buffer (current-buffer) ; See `run' for why we bind current buffer.
-      (handler-case (apply #'funcall command args)
-        (nyxt-prompt-buffer-canceled ()
-          (log:debug "Prompt buffer interrupted")
-          nil)))))
+    ;; It's important to rebind `args' since it may otherwise be shared with the
+    ;; caller.
+    (let ((command command)
+          (args args))
+      (with-current-buffer (current-buffer) ; See `run' for why we bind current buffer.
+        (handler-case (apply #'funcall command args)
+          (nyxt-prompt-buffer-canceled ()
+            (log:debug "Prompt buffer interrupted")
+            nil))))))
 
 (define-command noop ()                 ; TODO: Replace with ESCAPE special command that allows dispatched to cancel current key stack.
   "A command that does nothing.

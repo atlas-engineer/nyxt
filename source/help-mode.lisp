@@ -9,4 +9,6 @@
 
 (define-mode help-mode ()
   "Mode for displaying documentation."
-  ((rememberable-p nil)))
+  ((rememberable-p nil)
+   (inspected-value nil
+                    :type t)))

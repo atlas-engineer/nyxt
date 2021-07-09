@@ -168,9 +168,8 @@ The handlers take the URL as argument.")
                         :type hook-download
                         :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")
-   (autofills (list (make-autofill :key "Name" :fill "My Name")
+   (autofills (list (make-autofill :name "Name" :fill "My Name")
                     (make-autofill :name "Hello Printer"
-                                   :key "Function example"
                                    :fill (lambda () (format nil "hello!"))))
               :documentation "To autofill run the command `autofill'.
 Use this slot to customize the autofill values available.
@@ -230,6 +229,33 @@ prevents otherwise."))
   "Get the window containing a buffer."
   (find buffer (alex:hash-table-values (windows browser)) :key #'active-buffer))
 
+(defun restart-with-message (&optional condition)
+  (flet ((set-error-message (message full-message)
+           (let ((*package* (find-package :cl))) ; Switch package to use non-nicknamed packages.
+             (write-to-string
+              `(serapeum/contrib/hooks:add-hook
+                nyxt:*after-init-hook*
+                (serapeum/contrib/hooks:make-handler-void
+                 (lambda ()
+                   (setf (nyxt::startup-error-reporter-function *browser*)
+                         (lambda ()
+                           (nyxt:echo-warning "Restarted without init file due to error: ~a." ,message)
+                           (nyxt::error-in-new-window "*Initialization error*" ,full-message))))
+                 :name 'error-reporter))))))
+    (let* ((message (princ-to-string condition))
+           (full-message (format nil "Startup error: ~a.~%~&Restarted Nyxt without init file ~s."
+                                 message
+                                 (expand-path *init-file-path*)))
+           (new-command-line (append (uiop:raw-command-line-arguments)
+                                     `("--no-init"
+                                       "--eval"
+                                       ,(set-error-message message full-message)))))
+      (log:warn "Restarting with ~s."
+                (append (uiop:raw-command-line-arguments)
+                        '("--no-init")))
+      (uiop:launch-program new-command-line)
+      (quit))))
+
 (defmethod finalize ((browser browser) urls startup-timestamp)
   "Run `*after-init-hook*' then BROWSER's `startup'."
   ;; `messages-appender' requires `*browser*' to be initialized.
@@ -250,8 +276,23 @@ prevents otherwise."))
    browser
    (lambda ()
      (run-thread
-       (startup browser urls))))
-  ;; Set 'init-time at the end of finalize to take the complete startup time
+       ;; Restart on init error, in case `*init-file-path*' broke the state.
+       ;; We only `handler-case' when there is an init file, this way we avoid
+       ;; looping indefinitely.
+       (if (or (getf *options* :no-init)
+               (not (uiop:file-exists-p (expand-path *init-file-path*))))
+           (startup browser urls)
+           (handler-case (startup browser urls)
+             (error (c)
+               (log:error "Startup failed (probably due to a mistake in ~s):~&~a"
+                          (expand-path *init-file-path*) c)
+               (if *run-from-repl-p*
+                   (progn
+                     (quit)
+                     (reset-all-user-classes)
+                     (apply #'start (append *options* (list :urls urls :no-init t))))
+                   (restart-with-message c))))))))
+  ;; Set `init-time' at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)
         (local-time:timestamp-difference (local-time:now) startup-timestamp))
@@ -268,10 +309,12 @@ prevents otherwise."))
                                 (nyxt-prompt-buffer-canceled ()
                                   (log:debug "Prompt buffer interrupted")
                                   nil)))
-                 (:always-restore (restore (data-profile buffer) (history-path buffer)
-                                           :restore-buffers-p t))
-                 (:never-restore (log:info "Not restoring session.")
-                                 (restore (data-profile buffer) (history-path buffer)))))))
+                 (:always-restore
+                  (get-data (history-path buffer))
+                  (restore-history-buffers (history-path (current-buffer))))
+                 (:never-restore
+                  (log:info "Not restoring session.")
+                  (get-data (history-path buffer)))))))
          (load-start-urls (urls)
            (when urls (open-urls urls))))
     (window-make browser)
@@ -353,17 +396,25 @@ current buffer."
 (declaim (ftype (function (&optional window buffer)) set-window-title))
 (export-always 'set-window-title)
 (defun set-window-title (&optional (window (current-window)) (buffer (current-buffer)))
-  "Set current window title to 'Nyxt - TITLE - URL.
-If Nyxt was started from a REPL, use 'Nyxt REPL...' instead.
+  "Set current window title to the return value of (titler window). "
+  (declare (ignore buffer)) ; TODO: BUFFER is kept for backward compatibility.  Remove with 3.0.
+  (ffi-window-set-title window (funcall (titler window) window)))
+
+(declaim (ftype (function (window) string) window-default-title))
+(export-always 'window-default-title)
+(defun window-default-title (window)
+  "Return a window title in the form 'Nyxt - URL'.
+If Nyxt was started from a REPL, use 'Nyxt REPL - URL' instead.
 This is useful to tell REPL instances from binary ones."
-  (let ((url (url buffer))
-        (title (title buffer)))
+  (let* ((buffer (active-buffer window))
+         (url (url buffer))
+         (title (title buffer)))
     (setf title (if (str:emptyp title) "" title))
     (setf url (if (url-empty-p url) "<no url/name>" (render-url url)))
-    (ffi-window-set-title window
-                          (str:concat "Nyxt" (when *run-from-repl-p* " REPL") " - "
-                                       title (unless (str:emptyp title) " - ")
-                                       url))))
+    (the (values string &optional)
+         (str:concat "Nyxt" (when *run-from-repl-p* " REPL") " - "
+                     title (unless (str:emptyp title) " - ")
+                     url))))
 
 ;; REVIEW: Do we need :NO-FOCUS? It's not used anywhere.
 (declaim (ftype (function ((cons quri:uri *) &key (:no-focus boolean)))))
@@ -610,6 +661,9 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-window-set-title (window title))
 (define-ffi-generic ffi-window-active (browser))
 (define-ffi-generic ffi-window-set-buffer (window buffer &key focus))
+(define-ffi-generic ffi-window-add-panel-buffer (window buffer side))
+(define-ffi-generic ffi-window-remove-panel-buffer (window buffer))
+(define-ffi-generic ffi-window-set-panel-buffer-width (window buffer width))
 (define-ffi-generic ffi-window-set-prompt-buffer-height (window height))
 (define-ffi-generic ffi-window-set-status-buffer-height (window height))
 (define-ffi-generic ffi-window-set-message-buffer-height (window height))

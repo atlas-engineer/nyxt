@@ -42,7 +42,13 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 
 (define-class gtk-window ()
   ((gtk-object)
-   (box-layout)
+   (root-box-layout)
+   (horizontal-box-layout)
+   (panel-buffer-container-left)
+   (panel-buffer-container-right)
+   (panel-buffers-left)
+   (panel-buffers-right)
+   (main-buffer-container)
    (prompt-buffer-container)
    (prompt-buffer-view)
    (status-container)
@@ -213,6 +219,19 @@ Such contexts are not needed for internal buffers."
         (echo-warning "decide policy error: ~a" c)
         (webkit:webkit-policy-decision-ignore response-policy-decision)))))
 
+(defmacro connect-signal (object signal (&rest args) &body body)
+  "Connect SIGNAL to GTK OBJECT with a lambda that takes ARGS.
+The BODY is wrapped with `with-protect'."
+  (multiple-value-bind (forms declares documentation)
+      (alex:parse-body body :documentation t)
+    `(gobject:g-signal-connect
+     ,object ,signal
+     (lambda (,@args)
+       ,@(sera:unsplice documentation)
+       ,@declares
+       (with-protect ("Error in signal thread: ~a" :condition)
+         ,@forms)))))
+
 (defmethod initialize-instance :after ((buffer status-buffer) &key)
   (%within-renderer-thread-async
    (lambda ()
@@ -225,8 +244,12 @@ Such contexts are not needed for internal buffers."
 (defmethod initialize-instance :after ((window gtk-window) &key)
   (%within-renderer-thread-async
    (lambda ()
-     (with-slots (gtk-object box-layout active-buffer
-                  prompt-buffer-container prompt-buffer-view
+     (with-slots (gtk-object root-box-layout horizontal-box-layout
+                  panel-buffer-container-left
+                  panel-buffer-container-right
+                  main-buffer-container
+                  active-buffer prompt-buffer-container
+                  prompt-buffer-view
                   status-buffer status-container
                   message-container message-view
                   id key-string-buffer) window
@@ -235,12 +258,24 @@ Such contexts are not needed for internal buffers."
                                        :type :toplevel
                                        :default-width 1024
                                        :default-height 768))
-       (setf box-layout (make-instance 'gtk:gtk-box
-                                       :orientation :vertical
-                                       :spacing 0))
+       (setf root-box-layout (make-instance 'gtk:gtk-box
+                                            :orientation :vertical
+                                            :spacing 0))
+       (setf horizontal-box-layout (make-instance 'gtk:gtk-box
+                                                  :orientation :horizontal
+                                                  :spacing 0))
+       (setf panel-buffer-container-left (make-instance 'gtk:gtk-box
+                                                        :orientation :horizontal
+                                                        :spacing 0))
+       (setf panel-buffer-container-right (make-instance 'gtk:gtk-box
+                                                         :orientation :horizontal
+                                                         :spacing 0))
+       (setf main-buffer-container (make-instance 'gtk:gtk-box
+                                                  :orientation :vertical
+                                                  :spacing 0))
        (setf prompt-buffer-container (make-instance 'gtk:gtk-box
-                                                 :orientation :vertical
-                                                 :spacing 0))
+                                                    :orientation :vertical
+                                                    :spacing 0))
        (setf message-container (make-instance 'gtk:gtk-box
                                               :orientation :vertical
                                               :spacing 0))
@@ -251,56 +286,56 @@ Such contexts are not needed for internal buffers."
        (setf active-buffer (make-dummy-buffer))
 
        ;; Add the views to the box layout and to the window
-       (gtk:gtk-box-pack-start box-layout (gtk-object active-buffer))
+       (gtk:gtk-box-pack-start main-buffer-container (gtk-object active-buffer) :expand t :fill t)
+       (gtk:gtk-box-pack-start horizontal-box-layout panel-buffer-container-left :expand nil)
+       (gtk:gtk-box-pack-start horizontal-box-layout main-buffer-container :expand t :fill t)
+       (gtk:gtk-box-pack-start horizontal-box-layout panel-buffer-container-right :expand nil)
+       (gtk:gtk-box-pack-start root-box-layout horizontal-box-layout :expand t :fill t)
 
        (setf message-view (make-web-view))
-       (gtk:gtk-box-pack-end box-layout message-container :expand nil)
+       (gtk:gtk-box-pack-end root-box-layout message-container :expand nil)
        (gtk:gtk-box-pack-start message-container message-view :expand t)
        (setf (gtk:gtk-widget-size-request message-container)
              (list -1 (message-buffer-height window)))
 
        (setf status-buffer (make-instance 'user-status-buffer))
-       (gtk:gtk-box-pack-end box-layout status-container :expand nil)
+       (gtk:gtk-box-pack-end root-box-layout status-container :expand nil)
        (gtk:gtk-box-pack-start status-container (gtk-object status-buffer) :expand t)
        (setf (gtk:gtk-widget-size-request status-container)
              (list -1 (height status-buffer)))
 
        (setf prompt-buffer-view (make-web-view))
-       (gtk:gtk-box-pack-end box-layout prompt-buffer-container :expand nil)
+       (gtk:gtk-box-pack-end root-box-layout prompt-buffer-container :expand nil)
        (gtk:gtk-box-pack-start prompt-buffer-container prompt-buffer-view :expand t)
        (setf (gtk:gtk-widget-size-request prompt-buffer-container)
              (list -1 0))
 
-       (gtk:gtk-container-add gtk-object box-layout)
+       (gtk:gtk-container-add gtk-object root-box-layout)
        (setf (slot-value *browser* 'last-active-window) window)
        (gtk:gtk-widget-show-all gtk-object)
-       (gobject:g-signal-connect
-        gtk-object "key_press_event"
-        (lambda (widget event) (declare (ignore widget))
-          #+darwin
-          (push-modifier *browser* event)
-          (on-signal-key-press-event window event)))
-       (gobject:g-signal-connect
-        gtk-object "key_release_event"
-        (lambda (widget event) (declare (ignore widget))
-          #+darwin
-          (pop-modifier *browser* event)
-          (on-signal-key-release-event window event)))
-       (gobject:g-signal-connect
-        gtk-object "destroy"
-        (lambda (widget) (declare (ignore widget))
-          (on-signal-destroy window)))
-       (gobject:g-signal-connect
-        gtk-object "window-state-event"
-        (lambda (widget event) (declare (ignore widget))
-          (setf (fullscreen-p window)
-                (find :fullscreen
-                      (gdk:gdk-event-window-state-new-window-state event)))
-          nil))))))
+       (connect-signal gtk-object "key_press_event" (widget event)
+         (declare (ignore widget))
+         #+darwin
+         (push-modifier *browser* event)
+         (on-signal-key-press-event window event))
+       (connect-signal gtk-object "key_release_event" (widget event)
+         (declare (ignore widget))
+         #+darwin
+         (pop-modifier *browser* event)
+         (on-signal-key-release-event window event))
+       (connect-signal gtk-object "destroy" (widget)
+         (declare (ignore widget))
+         (on-signal-destroy window))
+       (connect-signal gtk-object "window-state-event" (widget event)
+         (declare (ignore widget))
+         (setf (fullscreen-p window)
+               (find :fullscreen
+                     (gdk:gdk-event-window-state-new-window-state event)))
+         nil)))))
 
 (define-ffi-method on-signal-destroy ((window gtk-window))
   ;; remove buffer from window to avoid corruption of buffer
-  (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
+  (gtk:gtk-container-remove (root-box-layout window) (gtk-object (active-buffer window)))
   (window-delete window))
 
 (define-ffi-method ffi-window-delete ((window gtk-window))
@@ -465,7 +500,10 @@ See `gtk-browser's `modifier-translator' slot."
                                                :value key-string
                                                :modifiers modifiers
                                                :status :pressed)))
-          (funcall (input-dispatcher sender) event (active-buffer sender) sender printable-value))
+          (funcall (input-dispatcher sender) event
+                   (or (current-prompt-buffer)
+                       (active-buffer sender))
+                   sender printable-value))
         ;; Do not forward modifier-only to renderer.
         t)))
 
@@ -571,11 +609,9 @@ See `gtk-browser's `modifier-translator' slot."
            (cookie-manager (webkit:webkit-web-context-get-cookie-manager context))
            (extensions-path (expand-path (gtk-extensions-path buffer))))
       (when extensions-path
-        (gobject:g-signal-connect
-         context "initialize-web-extensions"
-         #'(lambda (context)
-             (webkit:webkit-web-context-set-web-extensions-directory
-              context extensions-path))))
+        (connect-signal context "initialize-web-extensions" (context)
+          (webkit:webkit-web-context-set-web-extensions-directory
+           context extensions-path)))
       (when (and buffer
                  (web-buffer-p buffer)
                  (expand-path (cookies-path buffer)))
@@ -764,12 +800,37 @@ See `gtk-browser's `modifier-translator' slot."
 
 (define-ffi-method ffi-window-set-buffer ((window gtk-window) (buffer gtk-buffer) &key (focus t))
   "Set BROWSER's WINDOW buffer to BUFFER."
-  (gtk:gtk-container-remove (box-layout window) (gtk-object (active-buffer window)))
-  (gtk:gtk-box-pack-start (box-layout window) (gtk-object buffer) :expand t)
+  (gtk:gtk-container-remove (main-buffer-container window) (gtk-object (active-buffer window)))
+  (gtk:gtk-box-pack-start (main-buffer-container window) (gtk-object buffer) :expand t :fill t)
   (gtk:gtk-widget-show (gtk-object buffer))
   (when focus
     (gtk:gtk-widget-grab-focus (gtk-object buffer)))
   buffer)
+
+(define-ffi-method ffi-window-add-panel-buffer ((window gtk-window) (buffer panel-buffer) side)
+  "Add a panel buffer to a window."
+  (match side
+    (:left (gtk:gtk-box-pack-start (panel-buffer-container-left window) (gtk-object buffer))
+           (push buffer (panel-buffers-left window)))
+    (:right (gtk:gtk-box-pack-end (panel-buffer-container-right window) (gtk-object buffer))
+            (push buffer (panel-buffers-right window))))
+  (setf (gtk:gtk-widget-size-request (gtk-object buffer)) 
+        (list (width buffer) -1))
+  (gtk:gtk-widget-show (gtk-object buffer)))
+
+(define-ffi-method ffi-window-set-panel-buffer-width ((window gtk-window) (buffer panel-buffer) width)
+  "Set the width of a panel buffer."
+  (setf (gtk:gtk-widget-size-request (gtk-object buffer))
+        (list width -1)))
+
+(define-ffi-method ffi-window-remove-panel-buffer ((window gtk-window) (buffer panel-buffer))
+  "Remove a panel buffer from a window."
+  (cond ((find buffer (panel-buffers-left window))
+         (setf (panel-buffers-left window) (remove buffer (panel-buffers-left window)))
+         (gtk:gtk-container-remove (panel-buffer-container-left window) (gtk-object buffer)))
+        ((find buffer (panel-buffers-right window))
+         (setf (panel-buffers-right window) (remove buffer (panel-buffers-right window)))
+         (gtk:gtk-container-remove (panel-buffer-container-right window) (gtk-object buffer)))))
 
 (define-ffi-method ffi-window-set-prompt-buffer-height ((window gtk-window) height)
   (setf (gtk:gtk-widget-size-request (prompt-buffer-container window))
@@ -794,68 +855,70 @@ See `gtk-browser's `modifier-translator' slot."
 
 (defun process-file-chooser-request (web-view file-chooser-request)
   (declare (ignore web-view))
-  (when (native-dialogs *browser*)
-    (gobject:g-object-ref (gobject:pointer file-chooser-request))
-    (run-thread
-      (let ((files (mapcar
-                    #'namestring
-                    (prompt :prompt (format
-                                     nil "File~@[s~*~] to input"
-                                     (webkit:webkit-file-chooser-request-select-multiple
-                                      file-chooser-request))
-                            :input (or
-                                    (and
-                                     (webkit:webkit-file-chooser-request-selected-files
-                                      file-chooser-request)
-                                     (first
-                                      (webkit:webkit-file-chooser-request-selected-files
-                                       file-chooser-request)))
-                                    (namestring (uiop:getcwd)))
-                            :sources (list (make-instance 'file-source))))))
-        (if files
-            (webkit:webkit-file-chooser-request-select-files
-             file-chooser-request
-             (cffi:foreign-alloc :string
-                                 :initial-contents (if (webkit:webkit-file-chooser-request-select-multiple
-                                                        file-chooser-request)
-                                                       (mapcar #'cffi:foreign-string-alloc files)
-                                                       (list (cffi:foreign-string-alloc (first files))))
-                                 :count (if (webkit:webkit-file-chooser-request-select-multiple
-                                             file-chooser-request)
-                                            (length files)
-                                            1)
-                                 :null-terminated-p t))
-            (webkit:webkit-file-chooser-request-cancel file-chooser-request))
-        t))))
+  (with-protect ("Failed to process file chooser request: ~a" :condition)
+    (when (native-dialogs *browser*)
+      (gobject:g-object-ref (gobject:pointer file-chooser-request))
+      (run-thread
+        (let ((files (mapcar
+                      #'namestring
+                      (prompt :prompt (format
+                                       nil "File~@[s~*~] to input"
+                                       (webkit:webkit-file-chooser-request-select-multiple
+                                        file-chooser-request))
+                              :input (or
+                                      (and
+                                       (webkit:webkit-file-chooser-request-selected-files
+                                        file-chooser-request)
+                                       (first
+                                        (webkit:webkit-file-chooser-request-selected-files
+                                         file-chooser-request)))
+                                      (namestring (uiop:getcwd)))
+                              :sources (list (make-instance 'file-source))))))
+          (if files
+              (webkit:webkit-file-chooser-request-select-files
+               file-chooser-request
+               (cffi:foreign-alloc :string
+                                   :initial-contents (if (webkit:webkit-file-chooser-request-select-multiple
+                                                          file-chooser-request)
+                                                         (mapcar #'cffi:foreign-string-alloc files)
+                                                         (list (cffi:foreign-string-alloc (first files))))
+                                   :count (if (webkit:webkit-file-chooser-request-select-multiple
+                                               file-chooser-request)
+                                              (length files)
+                                              1)
+                                   :null-terminated-p t))
+              (webkit:webkit-file-chooser-request-cancel file-chooser-request))
+          t)))))
 
 (defun process-script-dialog (web-view dialog)
   (declare (ignore web-view))
-  (when (native-dialogs *browser*)
-    (let ((dialog (gobject:pointer dialog)))
-      (webkit:webkit-script-dialog-ref dialog)
-      (run-thread
-        (case (webkit:webkit-script-dialog-get-dialog-type dialog)
-          (:webkit-script-dialog-alert (echo (webkit:webkit-script-dialog-get-message dialog)))
-          (:webkit-script-dialog-prompt
-           (let ((text (first (handler-case
-                                  (prompt
-                                   :input (webkit:webkit-script-dialog-prompt-get-default-text dialog)
-                                   :prompt (webkit:webkit-script-dialog-get-message dialog)
-                                   :sources (list (make-instance 'prompter:raw-source)))
-                                (nyxt-prompt-buffer-canceled (c) (declare (ignore c)) nil)))))
-             (if text
-                 (webkit:webkit-script-dialog-prompt-set-text dialog text)
-                 (progn
-                   (webkit:webkit-script-dialog-prompt-set-text dialog (cffi:null-pointer))
-                   (webkit:webkit-script-dialog-close dialog)))))
-          ((:webkit-script-dialog-confirm :webkit-script-dialog-before-unload-confirm)
-           (webkit:webkit-script-dialog-confirm-set-confirmed
-            dialog (if-confirm
-                    ((webkit:webkit-script-dialog-get-message dialog))
-                    t nil))))
-        (webkit:webkit-script-dialog-close dialog)
-        (webkit:webkit-script-dialog-unref dialog))
-      t)))
+  (with-protect ("Failed to process dialog: ~a" :condition)
+    (when (native-dialogs *browser*)
+      (let ((dialog (gobject:pointer dialog)))
+        (webkit:webkit-script-dialog-ref dialog)
+        (run-thread
+          (case (webkit:webkit-script-dialog-get-dialog-type dialog)
+            (:webkit-script-dialog-alert (echo (webkit:webkit-script-dialog-get-message dialog)))
+            (:webkit-script-dialog-prompt
+             (let ((text (first (handler-case
+                                    (prompt
+                                     :input (webkit:webkit-script-dialog-prompt-get-default-text dialog)
+                                     :prompt (webkit:webkit-script-dialog-get-message dialog)
+                                     :sources (list (make-instance 'prompter:raw-source)))
+                                  (nyxt-prompt-buffer-canceled (c) (declare (ignore c)) nil)))))
+               (if text
+                   (webkit:webkit-script-dialog-prompt-set-text dialog text)
+                   (progn
+                     (webkit:webkit-script-dialog-prompt-set-text dialog (cffi:null-pointer))
+                     (webkit:webkit-script-dialog-close dialog)))))
+            ((:webkit-script-dialog-confirm :webkit-script-dialog-before-unload-confirm)
+             (webkit:webkit-script-dialog-confirm-set-confirmed
+              dialog (if-confirm
+                      ((webkit:webkit-script-dialog-get-message dialog))
+                      t nil))))
+          (webkit:webkit-script-dialog-close dialog)
+          (webkit:webkit-script-dialog-unref dialog))
+        t))))
 
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
@@ -868,25 +931,19 @@ See `gtk-browser's `modifier-translator' slot."
   (gobject:g-signal-connect
    (gtk-object buffer) "decide-policy"
    (make-decide-policy-handler buffer))
-  (gobject:g-signal-connect
-   (gtk-object buffer) "load-changed"
-   (lambda (web-view load-event)
-     (declare (ignore web-view))
-     (on-signal-load-changed buffer load-event)))
-  (gobject:g-signal-connect
-   (gtk-object buffer) "mouse-target-changed"
-   (lambda (web-view hit-test-result modifiers)
-     (declare (ignore web-view))
-     (on-signal-mouse-target-changed buffer hit-test-result modifiers)))
+  (connect-signal (gtk-object buffer) "load-changed" (web-view load-event)
+    (declare (ignore web-view))
+    (on-signal-load-changed buffer load-event))
+  (connect-signal (gtk-object buffer) "mouse-target-changed" (web-view hit-test-result modifiers)
+    (declare (ignore web-view))
+    (on-signal-mouse-target-changed buffer hit-test-result modifiers))
   ;; Mouse events are captured by the web view first, so we must intercept them here.
-  (gobject:g-signal-connect
-   (gtk-object buffer) "button-press-event"
-   (lambda (web-view event) (declare (ignore web-view))
-     (on-signal-button-press-event buffer event)))
-  (gobject:g-signal-connect
-   (gtk-object buffer) "scroll-event"
-   (lambda (web-view event) (declare (ignore web-view))
-     (on-signal-scroll-event buffer event)))
+  (connect-signal (gtk-object buffer) "button-press-event" (web-view event)
+    (declare (ignore web-view))
+    (on-signal-button-press-event buffer event))
+  (connect-signal (gtk-object buffer) "scroll-event" (web-view event)
+    (declare (ignore web-view))
+    (on-signal-scroll-event buffer event))
   (gobject:g-signal-connect
    (gtk-object buffer) "script-dialog"
    #'process-script-dialog)
@@ -894,70 +951,56 @@ See `gtk-browser's `modifier-translator' slot."
    (gtk-object buffer) "run-file-chooser"
    #'process-file-chooser-request)
   ;; TLS certificate handling
-  (gobject:g-signal-connect
-   (gtk-object buffer) "load-failed-with-tls-errors"
-   (lambda (web-view failing-url certificate errors)
-     (declare (ignore web-view errors))
-     (on-signal-load-failed-with-tls-errors buffer certificate (quri:uri failing-url))))
-  (gobject:g-signal-connect
-   (gtk-object buffer) "notify::uri"
-   (lambda (web-view param-spec)
-     (declare (ignore web-view param-spec))
-     (on-signal-notify-uri buffer nil)))
-  (gobject:g-signal-connect
-   (gtk-object buffer) "notify::title"
-   (lambda (web-view param-spec)
-     (declare (ignore web-view param-spec))
-     (on-signal-notify-title buffer nil)))
-  (gobject:g-signal-connect
-   (gtk-object buffer) "web-process-crashed"
-   (lambda (web-view)
-     (echo-warning "Web process crashed for buffer ~a" (id buffer))
-     (log:debug "Web process crashed for web view ~a" web-view)
-     (delete-buffer :id (id buffer))))
-  (gobject:g-signal-connect
-   (gtk-object buffer) "load-failed"
-   (lambda (web-view load-event failing-url error)
-     (declare (ignore load-event web-view error))
-     (unless (member (slot-value buffer 'load-status) '(:finished :failed))
-       (echo "Failed to load URL ~a in buffer ~a." failing-url (id buffer))
-       (setf (slot-value buffer 'load-status) :failed)
-       (html-set
-        (markup:markup
-         (:h1 "Page could not be loaded.")
-         (:h2 "URL: " failing-url)
-         (:ul
-          (:li "Try again in a moment, maybe the site will be available again.")
-          (:li "If the problem persists for every site, check your Internet connection.")
-          (:li "Make sure the URL is valid."
-               (when (quri:uri-https-p (quri:uri failing-url))
-                 "If this site has does not support HTTPS, try with HTTP (insecure)."))))
-        buffer))
-     t))
-  (gobject:g-signal-connect
-   (gtk-object buffer) "create"
-   (lambda (web-view navigation-action)
-     (declare (ignore web-view))
-     (let ((new-buffer (buffer-make *browser*))
-           (url (webkit:webkit-uri-request-uri
-                 (webkit:webkit-navigation-action-get-request
-                  (gobject:pointer navigation-action)))))
-       (ffi-buffer-load new-buffer (quri:uri url))
-       (window-set-buffer (current-window) new-buffer)
-       (gtk-object new-buffer))))
+  (connect-signal (gtk-object buffer) "load-failed-with-tls-errors" (web-view failing-url certificate errors)
+    (declare (ignore web-view errors))
+    (on-signal-load-failed-with-tls-errors buffer certificate (quri:uri failing-url)))
+  (connect-signal (gtk-object buffer) "notify::uri" (web-view param-spec)
+    (declare (ignore web-view param-spec))
+    (on-signal-notify-uri buffer nil))
+  (connect-signal (gtk-object buffer) "notify::title" (web-view param-spec)
+    (declare (ignore web-view param-spec))
+    (on-signal-notify-title buffer nil))
+  (connect-signal (gtk-object buffer) "web-process-crashed" (web-view)
+    (echo-warning "Web process crashed for buffer ~a" (id buffer))
+    (log:debug "Web process crashed for web view ~a" web-view)
+    (delete-buffer :id (id buffer)))
+  (connect-signal (gtk-object buffer) "load-failed" (web-view load-event failing-url error)
+    (declare (ignore load-event web-view error))
+    (unless (member (slot-value buffer 'load-status) '(:finished :failed))
+      (echo "Failed to load URL ~a in buffer ~a." failing-url (id buffer))
+      (setf (slot-value buffer 'load-status) :failed)
+      (html-set
+       (markup:markup
+        (:h1 "Page could not be loaded.")
+        (:h2 "URL: " failing-url)
+        (:ul
+         (:li "Try again in a moment, maybe the site will be available again.")
+         (:li "If the problem persists for every site, check your Internet connection.")
+         (:li "Make sure the URL is valid."
+              (when (quri:uri-https-p (quri:uri failing-url))
+                "If this site has does not support HTTPS, try with HTTP (insecure)."))))
+       buffer))
+    t)
+  (connect-signal (gtk-object buffer) "create" (web-view navigation-action)
+    (declare (ignore web-view))
+    (let ((new-buffer (buffer-make *browser*))
+          (url (webkit:webkit-uri-request-uri
+                (webkit:webkit-navigation-action-get-request
+                 (gobject:pointer navigation-action)))))
+      (ffi-buffer-load new-buffer (quri:uri url))
+      (window-set-buffer (current-window) new-buffer)
+      (gtk-object new-buffer)))
   ;; Remove "download to disk" from the right click context menu because it
   ;; bypasses request resource signal
-  (gobject:g-signal-connect
-   (gtk-object buffer) "context-menu"
-   (lambda (web-view context-menu event hit-test-result)
-     (declare (ignore web-view event hit-test-result))
-     (let ((length (webkit:webkit-context-menu-get-n-items context-menu)))
-       (dolist (i (alex:iota length))
-         (let ((item (webkit:webkit-context-menu-get-item-at-position context-menu i)))
-           (match (webkit:webkit-context-menu-item-get-stock-action item)
-             (:webkit-context-menu-action-download-link-to-disk
-              (webkit:webkit-context-menu-remove context-menu item))))))
-     nil))
+  (connect-signal (gtk-object buffer) "context-menu" (web-view context-menu event hit-test-result)
+    (declare (ignore web-view event hit-test-result))
+    (let ((length (webkit:webkit-context-menu-get-n-items context-menu)))
+      (dolist (i (alex:iota length))
+        (let ((item (webkit:webkit-context-menu-get-item-at-position context-menu i)))
+          (match (webkit:webkit-context-menu-item-get-stock-action item)
+            (:webkit-context-menu-action-download-link-to-disk
+             (webkit:webkit-context-menu-remove context-menu item))))))
+    nil)
   buffer)
 
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
@@ -1048,49 +1091,39 @@ requested a reload."
               (setf (status download) :canceled)
               (webkit:webkit-download-cancel webkit-download)))
     (push download (downloads *browser*))
-    (gobject:g-signal-connect
-     webkit-download "received-data"
-     (lambda (webkit-download data-length)
-       (declare (ignore data-length))
-       (setf (bytes-downloaded download)
-             (webkit:webkit-download-get-received-data-length webkit-download))
-       (setf (completion-percentage download)
-             (* 100 (webkit:webkit-download-estimated-progress webkit-download)))))
-    (gobject:g-signal-connect
-     webkit-download "decide-destination"
-     (lambda (webkit-download suggested-file-name)
-       (alex:when-let* ((download-dir (download-path buffer))
-                        (download-directory (expand-path download-dir))
-                        (path (str:concat download-directory suggested-file-name))
-                        (unique-path (download-manager::ensure-unique-file path))
-                        (file-path (format nil "file://~a" unique-path)))
-         (if (string= path unique-path)
-             (echo "Destination ~s exists, saving as ~s." path unique-path)
-             (log:debug "Downloading file to ~s." unique-path))
-         (webkit:webkit-download-set-destination webkit-download file-path))))
-    (gobject:g-signal-connect
-     webkit-download "created-destination"
-     (lambda (webkit-download destination)
-       (declare (ignore destination))
-       (setf (destination-path download)
-             (webkit:webkit-download-destination webkit-download))))
-    (gobject:g-signal-connect
-     webkit-download "failed"
-     (lambda (webkit-download error)
-       (declare (ignore error))
-       (unless (eq (status download) :canceled)
-         (setf (status download) :failed))
-       (echo "Download failed for ~s."
-             (webkit:webkit-uri-request-uri
-              (webkit:webkit-download-get-request webkit-download)))))
-    (gobject:g-signal-connect
-     webkit-download "finished"
-     (lambda (webkit-download)
-       (declare (ignore webkit-download))
-       (unless (member (status download) '(:canceled :failed))
-         (setf (status download) :finished)
-         ;; If download was too small, it may not have been updated.
-         (setf (completion-percentage download) 100))))))
+    (connect-signal webkit-download "received-data" (webkit-download data-length)
+      (declare (ignore data-length))
+      (setf (bytes-downloaded download)
+            (webkit:webkit-download-get-received-data-length webkit-download))
+      (setf (completion-percentage download)
+            (* 100 (webkit:webkit-download-estimated-progress webkit-download))))
+    (connect-signal webkit-download "decide-destination" (webkit-download suggested-file-name)
+      (alex:when-let* ((download-dir (download-path buffer))
+                       (download-directory (expand-path download-dir))
+                       (path (str:concat download-directory suggested-file-name))
+                       (unique-path (download-manager::ensure-unique-file path))
+                       (file-path (format nil "file://~a" unique-path)))
+        (if (string= path unique-path)
+            (echo "Destination ~s exists, saving as ~s." path unique-path)
+            (log:debug "Downloading file to ~s." unique-path))
+        (webkit:webkit-download-set-destination webkit-download file-path)))
+    (connect-signal webkit-download "created-destination" (webkit-download destination)
+      (declare (ignore destination))
+      (setf (destination-path download)
+            (webkit:webkit-download-destination webkit-download)))
+    (connect-signal webkit-download "failed" (webkit-download error)
+      (declare (ignore error))
+      (unless (eq (status download) :canceled)
+        (setf (status download) :failed))
+      (echo "Download failed for ~s."
+            (webkit:webkit-uri-request-uri
+             (webkit:webkit-download-get-request webkit-download))))
+    (connect-signal webkit-download "finished" (webkit-download)
+      (declare (ignore webkit-download))
+      (unless (member (status download) '(:canceled :failed))
+        (setf (status download) :finished)
+        ;; If download was too small, it may not have been updated.
+        (setf (completion-percentage download) 100)))))
 
 (define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-user-agent
@@ -1099,7 +1132,7 @@ requested a reload."
 
 (define-ffi-method ffi-buffer-webgl-enabled-p ((buffer gtk-buffer))
   (webkit:webkit-settings-enable-webgl
-         (webkit:webkit-web-view-get-settings (gtk-object buffer))))
+   (webkit:webkit-web-view-get-settings (gtk-object buffer))))
 
 (define-ffi-method ffi-buffer-enable-webgl ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-enable-webgl
@@ -1107,8 +1140,8 @@ requested a reload."
         value))
 
 (define-ffi-method ffi-buffer-set-proxy ((buffer gtk-buffer)
-                                 &optional (proxy-url (quri:uri ""))
-                                   (ignore-hosts (list nil)))
+                                         &optional (proxy-url (quri:uri ""))
+                                         (ignore-hosts (list nil)))
   "Redirect network connections of BUFFER to proxy server PROXY-URL.
 Hosts in IGNORE-HOSTS (a list of strings) ignore the proxy.
 For the user-level interface, see `proxy-mode'.
@@ -1145,16 +1178,17 @@ custom (the specified proxy) and none."
     (setf (webkit:webkit-web-view-zoom-level (gtk-object buffer)) value)))
 
 (define-ffi-method ffi-generate-input-event ((window gtk-window) event)
-  ;; The "send_event" field is used to mark the event as an "unconsumed"
-  ;; keypress.  The distinction allows us to avoid looping indefinitely.
-  (etypecase event
-    (gdk:gdk-event-button
-     (setf (gdk:gdk-event-button-send-event event) t))
-    (gdk:gdk-event-key
-     (setf (gdk:gdk-event-key-send-event event) t))
-    (gdk:gdk-event-scroll
-     (setf (gdk:gdk-event-scroll-send-event event) t)))
-  (gtk:gtk-main-do-event event))
+  (when event
+    ;; The "send_event" field is used to mark the event as an "unconsumed"
+    ;; keypress.  The distinction allows us to avoid looping indefinitely.
+    (etypecase event
+      (gdk:gdk-event-button
+       (setf (gdk:gdk-event-button-send-event event) t))
+      (gdk:gdk-event-key
+       (setf (gdk:gdk-event-key-send-event event) t))
+      (gdk:gdk-event-scroll
+       (setf (gdk:gdk-event-scroll-send-event event) t)))
+    (gtk:gtk-main-do-event event)))
 
 (define-ffi-method ffi-generated-input-event-p ((window gtk-window) event)
   (gdk:gdk-event-send-event event))
@@ -1243,14 +1277,14 @@ As a second value, return the current buffer index starting from 0."
     (loop for i from (- length) to length
           for item = (webkit:webkit-back-forward-list-get-nth-item bf-list i)
           when (eq item current)
-            do (setf current-index (- length (length history-list))) ; Index from 0.
+          do (setf current-index (- length (length history-list))) ; Index from 0.
           when item
-            do (push (make-webkit-history-entry
-                      :title (webkit:webkit-back-forward-list-item-get-title item)
-                      :url (quri:uri (webkit:webkit-back-forward-list-item-get-uri item))
-                      :original-url (quri:uri (webkit:webkit-back-forward-list-item-get-original-uri item))
-                      :gtk-object item)
-                     history-list))
+          do (push (make-webkit-history-entry
+                    :title (webkit:webkit-back-forward-list-item-get-title item)
+                    :url (quri:uri (webkit:webkit-back-forward-list-item-get-uri item))
+                    :original-url (quri:uri (webkit:webkit-back-forward-list-item-get-original-uri item))
+                    :gtk-object item)
+                   history-list))
     (values history-list current-index)))
 
 (defmethod load-webkit-history-entry ((buffer gtk-buffer) history-entry)

@@ -5,12 +5,15 @@
 
 (export-always 'format-status-modes)
 (defun format-status-modes (buffer window)
-  (format nil "~:[~;⚠ nosave ~]~{~a~^ ~}"
-          (nosave-buffer-p buffer)
-          (mapcar (if (glyph-mode-presentation-p (status-buffer window))
-                      #'glyph
-                      #'format-mode)
-                  (sera:filter #'visible-in-status-p (modes buffer)))))
+  (markup:markup
+   (:span (when (nosave-buffer-p buffer) "⚠ nosave"))
+   (:span (loop for mode in (sera:filter #'visible-in-status-p (modes buffer))
+                collect (markup:markup
+                         (:a :class "button" :href (lisp-url `(describe-class ',(mode-name mode)))
+                             :title (format nil "Describe ~a" (mode-name mode))
+                             (if (glyph-mode-presentation-p (status-buffer window))
+                                 (glyph mode)
+                                 (format-mode mode))))))))
 
 (defun list-modes (buffer)
   (format nil "~{~a~^ ~}" (mapcar #'format-mode (modes buffer))))
@@ -23,6 +26,18 @@
    (:a :class "button" :title "Reload" :href (lisp-url '(nyxt:reload-current-buffer)) "↺")
    (:a :class "button" :title "Execute" :href (lisp-url '(nyxt:execute-command)) "⚙")
    (:a :class "button" :title "Buffers" :href (lisp-url '(nyxt/buffer-listing-mode:list-buffers)) "≡")))
+
+(defun format-status-vi-mode (&optional (buffer (current-buffer)))
+  (cond ((find-submode buffer 'vi-normal-mode)
+         (markup:markup
+          (:div
+           (:a :class "button" :title "vi-normal-mode" :href (lisp-url '(nyxt/vi-mode:vi-insert-mode)) "N"))))
+        ((find-submode buffer 'vi-insert-mode)
+         (markup:markup
+          (:div
+           (:a :class "button" :title "vi-insert-mode" :href (lisp-url '(nyxt/vi-mode:vi-normal-mode)) "I"))))
+        (t (markup:markup
+            (:span "")))))
 
 (export-always 'format-status-load-status)
 (defun format-status-load-status (buffer)
@@ -54,11 +69,20 @@
                        (lisp-url `(nyxt::switch-buffer-or-query-domain ,domain)) domain))))))
 
 (defun format-status (window)
-  (let ((buffer (current-buffer window)))
+  (let* ((buffer (current-buffer window))
+         (vi-class (cond ((find-submode buffer 'vi-normal-mode)
+                          "vi-normal-mode")
+                         ((find-submode buffer 'vi-insert-mode)
+                          "vi-insert-mode"))))
     (markup:markup
-     (:div :id "container"
+     (:div :id (if vi-class "container-vi" "container")
            (:div :id "controls" :class "arrow-right"
                  (markup:raw (format-status-buttons)))
+           (markup:raw
+            (when vi-class
+              (markup:markup
+               (:div :id "vi-mode" :class (str:concat vi-class " arrow-right")
+                     (markup:raw (format-status-vi-mode buffer))))))
            (:div :id "url" :class "arrow-right"
                  (markup:raw
                   (format-status-load-status buffer)
@@ -68,4 +92,5 @@
                   (format-status-tabs)))
            (:div :id "modes" :class "arrow-left"
                  :title (list-modes buffer)
-                 (format-status-modes buffer window))))))
+                 (markup:raw
+                  (format-status-modes buffer window)))))))

@@ -9,15 +9,16 @@
    (prompter:actions (list (make-unmapped-command describe-function)))))
 
 (defmethod prompter:object-attributes ((symbol symbol))
-  `(("Name" ,(symbol-name symbol))
+  `(("Name" ,(write-to-string symbol))
     ("Documentation"
      ,(or (cond
             ((fboundp symbol)
-             (documentation symbol 'function))
+             (first (sera:lines (documentation symbol 'function))))
             ((and (find-class symbol nil)
                   (mopu:subclassp (find-class symbol) (find-class 'standard-object)))
-             (documentation symbol 'type))
-            (t (documentation symbol t)))
+             (first (sera:lines (documentation symbol 'type))))
+            (t
+             (first (sera:lines (documentation symbol 'variable)))))
           ""))))
 
 (define-class class-source (prompter:source)
@@ -46,6 +47,41 @@
                   (make-instance 'class-source)
                   (make-instance 'slot-source))))
 
+(defun value->html (value &key (help-mode (current-mode 'help)))
+  "Return the HTML representation of VALUE."
+  (cond
+    ((consp value)
+     (markup:markup
+      (:ul
+       (loop for e in value
+             for i below (length value)
+             collect (markup:markup
+                      (:li (:a :href (lisp-url `(describe-value
+                                                 (nth ,i ,(nyxt/help-mode:inspected-value help-mode))))
+                               e)))))))
+    ((has-attributes-method-p value)
+     (markup:markup
+      (:ul
+       (loop for (attribute-key attribute-value) in (prompter:object-attributes value)
+             collect (markup:markup
+                      (:li attribute-key ": " (:code attribute-value)))))))
+    (t
+     (princ-to-string value))))
+
+(defun describe-value (value)
+  "Inspect VALUE and show it in a help buffer."
+  (with-current-html-buffer (buffer "*Help-value*" 'nyxt/help-mode:help-mode)
+    (let ((help-mode (find-mode buffer 'help-mode)))
+      (setf (nyxt/help-mode:inspected-value help-mode) value)
+      (markup:markup
+       (:style (style buffer))
+       (:h1 (princ-to-string value))
+       (:p (markup:raw (value->html value :help-mode help-mode)))))))
+
+(defun has-attributes-method-p (object)
+  "Return non-nil if OBJECT has `prompter:object-attributes' specialization."
+  (has-method-p object #'prompter:object-attributes))
+
 (define-command describe-variable (&optional variable-suggestion)
   "Inspect a variable and show it in a help buffer."
   (if variable-suggestion
@@ -53,14 +89,14 @@
         (with-current-html-buffer (buffer
                                    (str:concat "*Help-" (symbol-name input) "*")
                                    'nyxt/help-mode:help-mode)
-          (markup:markup
-           (:style (style buffer))
-           (:h1 (format nil "~s" input)) ; Use FORMAT to keep package prefix.
-           (:pre (documentation input 'variable))
-           (:h2 "Current Value:")
-           (:ul
-            (loop for (attribute-key attribute-value) in (prompter:object-attributes (symbol-value input))
-                  collect (markup:markup (:li attribute-key ":" (:code attribute-value))))))))
+          (let ((help-mode (find-mode buffer 'help-mode)))
+            (setf (nyxt/help-mode:inspected-value help-mode) input)
+            (markup:markup
+             (:style (style buffer))
+             (:h1 (format nil "~s" input)) ; Use FORMAT to keep package prefix.
+             (:pre (documentation input 'variable))
+             (:h2 "Current Value:")
+             (:p (markup:raw (value->html (symbol-value input) :help-mode help-mode)))))))
       (prompt
        :prompt "Describe variable:"
        :sources (make-instance 'variable-source))))
@@ -115,9 +151,10 @@ A command is a special kind of function that can be called with
                                                (list (first pair)
                                                      (keymap:name (second pair))))
                                              key-keymap-pairs))
-               (source-file (getf (getf (swank:find-definition-for-thing (fn command))
-                                        :location)
-                                  :file)))
+               (source-file
+                 (alex:when-let ((location (getf (swank:find-definition-for-thing (fn command))
+                                                 :location)))
+                   (alex:last-elt location))))
           (markup:markup
            (:style (style buffer))
            (:h1 (symbol-name (name command))
@@ -132,7 +169,9 @@ A command is a special kind of function that can be called with
                 (documentation (fn command) t)))
            (:h2 "Bindings")
            (:p (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
-           (:h2 (format nil "Source (~a): " source-file))
+           (:h2 (format nil "Source~a: " (if source-file
+                                             (format nil " (~a)" source-file)
+                                             "")))
            (:pre (:code (let ((*print-case* :downcase))
                           (write-to-string (sexp command))))))))
       (prompt
@@ -498,7 +537,7 @@ The version number is stored in the clipboard."
      (:style (style buffer))
      (:style (cl-css:css '(("#documentation .button"
                             :min-width "100px"))))
-     (:h1 "Welcome to Nyxt ☺")
+     (:h1 "Welcome to Nyxt :-)")
      (:p (:a :href "https://nyxt.atlas.engineer" "https://nyxt.atlas.engineer"))
      (:h2 "Quick configuration")
      (:p (:a :class "button" :href (lisp-url `(nyxt::common-settings)) "Common settings")
@@ -551,7 +590,11 @@ the "
      "Nyxt version: " +version+ +newline+
      "Renderer version: " +renderer+ +newline+
      "Operating system kernel: " (software-type) " " (software-version) +newline+
-     "Lisp implementation: " (lisp-implementation-type) " " (lisp-implementation-version) +newline+
+     "Lisp implementation: " (lisp-implementation-type) " " (lisp-implementation-version)
+     #+sbcl
+     (format nil " (Dynamic space size: ~a)" (sb-ext:dynamic-space-size))
+     +newline+
+
      "Features: " (->string *features*) +newline+
      +newline+
 

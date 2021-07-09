@@ -104,6 +104,38 @@ keybindings have priorities over the other modes.")
     (:h3 "Search engines")
     (:p "See the " (:code "search-engines") " buffer slot documentation.
 Bookmarks can also be used as search engines, see the corresponding section.")
+    (:p "Nyxt comes with some default search engines for "
+        (:code (format nil "~{~a~^, ~}"
+                       (mapcar (lambda (engine)
+                                 (quri:uri-host (quri:uri (getf engine :search-url))))
+                               (rest (getf (mopu:slot-properties 'buffer 'search-engines)
+                                           :initform)))))
+        ". "
+        "The following example shows one way to add new search engines.")
+    (:pre (:code "
+\(defvar *my-search-engines*
+  (list
+   '(\"python3\" \"https://docs.python.org/3/search.html?q=~a\" \"https://docs.python.org/3\")\
+   '(\"doi\" \"https://dx.doi.org/~a\" \"https://dx.doi.org/\")\)
+  \"List of search engines.\")
+
+(define-configuration buffer
+  ((search-engines (append (mapcar (lambda (engine) (apply 'make-search-engine engine))
+                                   *my-search-engines*)
+                           %slot-default%))))"))
+    (:p "Note that the last search engine is the default one. For example, in
+order to make python3 the default, the above code can be slightly modified as
+follows.")
+        (:pre (:code "
+\(defvar *my-search-engines*
+  (list
+   '(\"doi\" \"https://dx.doi.org/~a\" \"https://dx.doi.org/\")
+   '(\"python3\" \"https://docs.python.org/3/search.html?q=~a\" \"https://docs.python.org/3\")))
+
+(define-configuration buffer
+  ((search-engines (append %slot-default%
+                           (mapcar (lambda (engine) (apply 'make-search-engine engine))
+                                   *my-search-engines*)))))"))
 
     (:h3 "URL-dispatchers")
     (:p "You can configure which actions to take depending on the URL to be
@@ -247,7 +279,7 @@ use the package prefixed class name/slot designators within
 the " (:code "define-configuration") " macro.")
     (:ul
      (:li (command-markup 'save-new-password) ": Query for name and new password to persist in the database.")
-     (:li (command-markup 'copy-password) ": Copy selected password to the clipboard."))
+     (:li (command-markup 'copy-password) ": " (command-docstring-first-sentence 'copy-password)))
 
     (:h3 "Appearance")
     (:p "Much of the visual style can be configured by the user.  Search the

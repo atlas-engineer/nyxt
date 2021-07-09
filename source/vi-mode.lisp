@@ -92,14 +92,15 @@ vi-normal-mode.")
         (vi-normal-mode :activate nil :buffer buffer)
         (setf (keymap-scheme-name buffer) scheme:vi-insert))))))
 
-(define-command vi-button1 (&optional (buffer (current-buffer)))
+(define-command vi-button1 (&optional (buffer (or (current-prompt-buffer)
+                                                  (current-buffer))))
   "Enable VI insert mode when focus is on an input element on the web page."
   ;; First we generate a button1 event so that the web view element is clicked
   ;; (e.g. a text field gets focus).
   (ffi-generate-input-event
    (current-window)
    (nyxt::last-event buffer))
-  (let ((response (nyxt/web-mode:%clicked-in-input?)))
+  (let ((response (nyxt/web-mode:%clicked-in-input? buffer)))
     (cond
       ((and (nyxt/web-mode:input-tag-p response)
             (find-submode buffer 'vi-normal-mode))

@@ -9,8 +9,9 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks))
 
-;; Moving modes out of the `modes' slot is a bad idea: too many parts rely on
-;; the presence of the `modes' slot.
+;;; Moving modes out of the `modes' slot is a bad idea: too many parts rely on
+;;; the presence of the `modes' slot. Instead, use a hook to temporarily override
+;;; the keymaps of all modes (except the override-map).
 
 (define-mode application-mode ()
   "Mode that forwards all keys to the renderer."
@@ -24,8 +25,8 @@
           (hooks:add-hook (current-keymaps-hook (buffer mode))
                           (make-handler-keymaps-buffer #'keep-override-map))
           (make-hook-keymaps-buffer
-             :combination #'hooks:combine-composed-hook
-             :handlers (list #'keep-override-map)))))))
+           :combination #'hooks:combine-composed-hook
+           :handlers (list #'keep-override-map)))))))
 
 (declaim (ftype (function (list-of-keymaps buffer) (values list-of-keymaps buffer))
                 keep-override-map))

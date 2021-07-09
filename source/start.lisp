@@ -17,9 +17,7 @@
                     (uiop:getenv "NYXT_SOCKET")
                     (expand-default-path
                      data-path
-                     :root (namestring (if (str:emptyp (namestring (dirname data-path)))
-                                           (uiop:xdg-runtime-dir +data-root+)
-                                           (dirname data-path)))))))
+                     :root (namestring (uiop:xdg-runtime-dir +data-root+))))))
       (unless (uiop:emptyp path)
         path))))
 
@@ -52,94 +50,107 @@ Return nil if `*init-file-path*' is nil."
   (opts:describe)
   (uiop:quit))
 
-(sera:eval-always ; We eval at read-time because we parse `opts::*options*' in `start'.
-  (opts:define-opts
-    (:name :help
-     :description "Print this help and exit."
-     :short #\h
-     :long "help")
-    (:name :verbose
-     :short #\v
-     :long "verbose"
-     :description "Print debugging information to stdout.")
-    (:name :version
-     :long "version"
-     :description "Print version and exit.")
-    (:name :system-information
-     :long "system-information"
-     :description "Print system information and exit.")
-    (:name :init
-     :short #\i
-     :long "init"
-     :arg-parser #'identity
-     :description "Set path to initialization file.")
-    (:name :no-init
-     :short #\I
-     :long "no-init"
-     :description "Do not load the initialization file.")
-    (:name :auto-config
-     :short #\c
-     :long "auto-config"
-     :arg-parser #'identity
-     :description "Set path to auto-config file.")
-    (:name :no-auto-config
-     :short #\C
-     :long "no-auto-config"
-     :description "Do not load the user auto-config file.")
-    (:name :socket
-     :short #\s
-     :long "socket"
-     :arg-parser #'identity
-     :description "Set path to socket.
+(sera:eval-always
+  (defun define-opts ()
+    "Define command line options.
+This must be called on startup so that code is executed in the user environment
+and not the build environment."
+    (opts:define-opts
+      (:name :help
+       :description "Print this help and exit."
+       :short #\h
+       :long "help")
+      (:name :verbose
+       :short #\v
+       :long "verbose"
+       :description "Print debugging information to stdout.")
+      (:name :version
+       :long "version"
+       :description "Print version and exit.")
+      (:name :system-information
+       :long "system-information"
+       :description "Print system information and exit.")
+      (:name :init
+       :short #\i
+       :long "init"
+       :arg-parser #'identity
+       :description (format nil "Set path to initialization file.
+Default: ~s" (expand-path *init-file-path*)))
+      (:name :no-init
+       :short #\I
+       :long "no-init"
+       :description "Do not load the initialization file.")
+      (:name :auto-config
+       :short #\c
+       :long "auto-config"
+       :arg-parser #'identity
+       :description (format nil "Set path to auto-config file.
+Default: ~s" (expand-path *auto-config-file-path*)))
+      (:name :no-auto-config
+       :short #\C
+       :long "no-auto-config"
+       :description "Do not load the user auto-config file.")
+      (:name :socket
+       :short #\s
+       :long "socket"
+       :arg-parser #'identity
+       :description "Set path to socket.
 Unless evaluating remotely (see --remote), Nyxt starts in single-instance mode when a socket is set.
 The socket can also be set from the NYXT_SOCKET environment variable.")
-    (:name :no-socket
-     :short #\S
-     :long "no-socket"
-     :description "Do not use any socket.")
-    (:name :eval
-     :short #\e
-     :long "eval"
-     :arg-parser #'identity
-     :description "Eval the Lisp expressions.  Can be specified multiple times.")
-    (:name :load
-     :short #\l
-     :long "load"
-     :arg-parser #'identity
-     :description "Load the Lisp file.  Can be specified multiple times.")
-    (:name :quit
-     :short #\q
-     :long "quit"
-     :description "Quit after --load or --eval.")
-    (:name :script
-     :long "script"
-     :arg-parser #'identity
-     :description "Load the Lisp file (skip #! line if any), skip init file, then exit.
+      (:name :no-socket
+       :short #\S
+       :long "no-socket"
+       :description "Do not use any socket.")
+      (:name :eval
+       :short #\e
+       :long "eval"
+       :arg-parser #'identity
+       :description "Eval the Lisp expressions.  Can be specified multiple times.
+Without --quit or --remote, the evaluation is done after parsing the init file
+(if any) and before initializing the browser.")
+      (:name :load
+       :short #\l
+       :long "load"
+       :arg-parser #'identity
+       :description "Load the Lisp file.  Can be specified multiple times.
+Without --quit or --remote, the loading is done after parsing the init file
+(if any) and before initializing the browser.")
+      (:name :quit
+       :short #\q
+       :long "quit"
+       :description "Quit after --load or --eval.")
+      (:name :script
+       :long "script"
+       :arg-parser #'identity
+       :description "Load the Lisp file (skip #! line if any), skip init file, then exit.
 Set to '-' to read standard input instead.")
-    (:name :remote
-     :short #\r
-     :long "remote"
-     :description "Send the --eval and --load arguments to the running instance of Nyxt.
+      (:name :remote
+       :short #\r
+       :long "remote"
+       :description "Send the --eval and --load arguments to the running instance of Nyxt.
 Implies --quit.
 The remote instance must be listening on a socket which you can specify with --socket
 and have the `remote-execution-p' browser slot to non-nil.")
-    (:name :data-profile
-     :short #\d
-     :long "data-profile"
-     :arg-parser #'identity
-     :description "Use the given data profile. ")
-    (:name :list-data-profiles
-     :long "list-data-profiles"
-     :description "List the known data profiles and exit.
+      (:name :data-profile
+       :short #\d
+       :long "data-profile"
+       :arg-parser #'identity
+       :description "Use the given data profile. ")
+      (:name :list-data-profiles
+       :long "list-data-profiles"
+       :description "List the known data profiles and exit.
 Known profiles are found among global variables that are a subclass of
 `data-profile'.")
-    (:name :with-path
-     :long "with-path"
-     :arg-parser (lambda (arg) (str:split "=" arg :limit 2))
-     :description "Set data path reference to the given path.
+      (:name :with-path
+       :long "with-path"
+       :arg-parser (lambda (arg) (str:split "=" arg :limit 2))
+       :description "Set data path reference to the given path.
 Can be specified multiple times.  An empty path means it won't be used.
 Example: --with-path bookmarks=/path/to/bookmarks
-         --with-path session=")))
+         --with-path session="))))
+;; Also define command line options at read-time because we parse
+;; `opts::*options*' in `start'.
+(sera:eval-always (define-opts))
 
 (define-command quit ()
   "Quit Nyxt."
@@ -201,6 +212,7 @@ before running this command."
   "Read the CLI arguments and start the browser.
 This is the entry point of the binary program.
 Don't run this from a REPL, prefer `start' instead."
+  (define-opts)
   (multiple-value-bind (options free-args)
       (handler-bind ((opts:unknown-option #'handle-malformed-cli-arg)
                      (opts:missing-arg #'handle-malformed-cli-arg)
@@ -538,8 +550,8 @@ Finally, run the browser, load URL-STRINGS if any, then run
       (load-or-eval :remote nil)
       (setf *browser* (make-instance 'user-browser
                                      :startup-error-reporter-function startup-error-reporter
-                                     :startup-timestamp startup-timestamp))
-      (setf (socket-thread *browser*) thread)
+                                     :startup-timestamp startup-timestamp
+                                     :socket-thread thread))
       ;; Defaulting to :nyxt-user is convenient when evaluating code (such as
       ;; remote execution or the integrated REPL).
       ;; This must be done in a separate thread because the calling thread may
