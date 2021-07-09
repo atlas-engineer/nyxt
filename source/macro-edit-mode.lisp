@@ -95,7 +95,7 @@
         (commands (mapcar
                    (lambda (command) (write `(,(name command)) :stream nil))
                    (alexandria:hash-table-values (functions macro-editor)))))
-    `(define-command-global ,name '() ,@commands)))
+    `(define-command-global ,name () "User generated macro form" ,@commands)))
 
 (define-command add-command (&optional (macro-editor (current-mode 'macro-edit-mode)))
   "Add a command to the macro."
@@ -112,10 +112,12 @@
 
 (define-command save-macro (&optional (macro-editor (current-mode 'macro-edit-mode)))
   "Save the macro to the auto-config.lisp file."
-  (echo "Macro saved. ~a" macro-name))
+  (if (macro-form-valid-p macro-editor)
+      (nyxt::append-configuration (generate-macro-form macro-editor))
+      (echo "Your macro form is invalid; check if you have a title and functions.")))
 
 (define-command evaluate-macro (&optional (macro-editor (current-mode 'macro-edit-mode)))
   "Evaluate the macro for testing."
   (if (macro-form-valid-p macro-editor)
-      (eval (generate-macro-form macro-editor))
+      (progn (eval (generate-macro-form macro-editor)) (echo "Macro evaluated."))
       (echo "Your macro form is invalid; check if you have a title and functions.")))
