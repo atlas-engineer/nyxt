@@ -411,8 +411,8 @@ Example use:
   :sources (list (make-instance 'prompter:source :filter #'my-suggestion-filter)))
 
 See the documentation of `prompt-buffer' to know more about the options."
-    (let ((result-channel (make-channel 1))
-          (interrupt-channel (make-channel 1))
+    (let ((result-channel (make-channel))
+          (interrupt-channel (make-channel))
           (parent-thread-prompt-buffer nil))
       (ffi-within-renderer-thread
        *browser*
