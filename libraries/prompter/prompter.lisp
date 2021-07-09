@@ -388,7 +388,7 @@ instead."
   (alex:if-let ((selection-values (resolve-selection prompter)))
     (let ((action-result (funcall action selection-values)))
       (calispel:! (result-channel prompter) action-result))
-    (calispel:! (interrupt-channel prompter) t)))
+    (destroy prompter)))
 
 (export-always 'toggle-follow)
 (defun toggle-follow (prompter &optional (source (selected-source prompter)))
