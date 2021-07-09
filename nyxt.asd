@@ -109,7 +109,6 @@
                (:file "editor-mode")
                (:file "plaintext-editor-mode")
                (:file "buffer-listing-mode")
-               (:file "macro-edit-mode")
                (:file "base-mode")
                (:file "repl-mode")
                (:file "help-mode")
@@ -154,6 +153,7 @@
                (:file "zoom")
                ;; Needs web-mode
                (:file "help")
+               (:file "macro-edit-mode")
                (:file "status")
                ;; Depends on everything else:
                (:file "about")
