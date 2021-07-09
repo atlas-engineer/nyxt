@@ -209,29 +209,26 @@ and to index the top of the page.")
   (setf (document-model mode)
         (nyxt/dom::named-json-parse (nyxt/dom::get-document-body-json))))
 
-(define-parenscript %count-dom-elements ()
-  (defvar dom-counter 0)
-  (defun count-dom-elements (node)
-    (incf dom-counter)
-    (dolist (child (ps:chain node children))
-      (count-dom-elements child))
-    dom-counter)
-  (setf dom-counter 0)
-  (count-dom-elements (nyxt/ps:qs document "html")))
-
-(defun count-dom-elements ()
-  (parse-integer (%count-dom-elements) :junk-allowed t))
-
 (defmethod document-model :around ((mode web-mode))
-  (let ((value (call-next-method))
-        (element-count (count-dom-elements)))
-    (if (and value
-             ;; Check whether the difference in element count is significant.
-             (< (abs (- (length (clss:select "*" value))
-                        element-count))
-                10))
-        value
-        (update-document-model mode))))
+  (pflet ((%count-dom-elements
+           ()
+           (defvar dom-counter 0)
+           (defun count-dom-elements (node)
+             (incf dom-counter)
+             (dolist (child (ps:chain node children))
+               (count-dom-elements child))
+             dom-counter)
+           (setf dom-counter 0)
+           (count-dom-elements (nyxt/ps:qs document "html"))))
+    (let ((value (call-next-method))
+          (element-count (parse-integer (%count-dom-elements) :junk-allowed t)))
+      (if (and value
+               ;; Check whether the difference in element count is significant.
+               (< (abs (- (length (clss:select "*" value))
+                          element-count))
+                  10))
+          value
+          (update-document-model mode)))))
 
 (defmethod get-nyxt-id ((element plump:element))
   (plump:get-attribute element "nyxt-identifier"))
