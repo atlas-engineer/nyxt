@@ -170,7 +170,7 @@
 (serapeum:export-always 'query-hints)
 (defun query-hints (prompt function &key multi-selection-p
                                       annotate-visible-only-p
-                                      (selector "a, button, input, textarea, details, select, img"))
+                                      (selector "a, button, input, textarea, details, select, img:not([alt=\"\"])"))
   "Prompt to choose several elements out of those matching SELECTOR, hinting them visually.
 MULTI-SELECTION-P is whether several elements can be chosen.
 ANNOTATE-VISIBLE-ONLY-P is deprecated and has no influence on the function.
