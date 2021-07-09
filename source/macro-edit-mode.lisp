@@ -40,7 +40,7 @@
      (:a :class "button"
          :href (lisp-url '(nyxt/macro-edit-mode::save-macro)) "Save macro")
      (:a :class "button"
-         :href (lisp-url '(nyxt/macro-edit-mode::save-macro)) "Evaluate macro"))))
+         :href (lisp-url '(nyxt/macro-edit-mode::evaluate-macro)) "Evaluate macro"))))
 
 (defmethod render-functions ((macro-editor macro-edit-mode))
   (flet ((render-functions ()
@@ -106,9 +106,16 @@
             :sources (make-instance 'user-command-source)))))
     (add-function macro-editor command)))
 
+(defmethod macro-form-valid-p ((macro-editor macro-edit-mode))
+  (and (name macro-editor)
+       (alexandria:hash-table-values (functions macro-editor))))
+
 (define-command save-macro (&optional (macro-editor (current-mode 'macro-edit-mode)))
   "Save the macro to the auto-config.lisp file."
-  (alexandria:if-let ((macro-name (name macro-editor))
-                      (functions (alexandria:hash-table-values (functions macro-editor))))
-    (echo "Macro saved. ~a" macro-name)
-    (echo "Macros require a name and functions.")))
+  (echo "Macro saved. ~a" macro-name))
+
+(define-command evaluate-macro (&optional (macro-editor (current-mode 'macro-edit-mode)))
+  "Evaluate the macro for testing."
+  (if (macro-form-valid-p macro-editor)
+      (eval (generate-macro-form macro-editor))
+      (echo "Your macro form is invalid; check if you have a title and functions.")))
