@@ -247,7 +247,7 @@ FUNCTION is the action to perform on the selected elements."
   (click-element :nyxt-identifier (get-nyxt-id element)))
 
 (defmethod %follow-hint ((input nyxt/dom:input-element))
-  (str:string-case (plump:get-attribute "type" input)
+  (str:string-case (plump:get-attribute input "type")
     ("button" (click-element :nyxt-identifier (get-nyxt-id input)))
     ("radio" (check-element :nyxt-identifier (get-nyxt-id input)))
     ("checkbox" (check-element :nyxt-identifier (get-nyxt-id input)))
