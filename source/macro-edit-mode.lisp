@@ -8,7 +8,11 @@
 
 (define-mode macro-edit-mode ()
   "Mode for creating and editing macros."
-  ((function-sequence
+  ((name
+    ""
+    :documentation "The name used for the macro."
+    :accessor nil)
+   (function-sequence
     0
     :documentation "A variable used to generate unique identifiers for user
     added functions.")
@@ -34,7 +38,9 @@
      (:br)
      (:hr)
      (:a :class "button"
-         :href (lisp-url '(nyxt/macro-edit-mode::save-macro)) "Save macro"))))
+         :href (lisp-url '(nyxt/macro-edit-mode::save-macro)) "Save macro")
+     (:a :class "button"
+         :href (lisp-url '(nyxt/macro-edit-mode::save-macro)) "Evaluate macro"))))
 
 (defmethod render-functions ((macro-editor macro-edit-mode))
   (flet ((render-functions ()
@@ -65,7 +71,7 @@
   (nyxt:describe-command (gethash command-id (functions macro-editor))))
 
 (defmethod add-function ((macro-editor macro-edit-mode) command)
-  (setf (gethash (get-unique-function-identifier macro-editor) p
+  (setf (gethash (get-unique-function-identifier macro-editor)
                  (functions macro-editor))
         command)
   (render-functions macro-editor))
@@ -74,11 +80,22 @@
   (remhash command-id (functions macro-editor))
   (render-functions macro-editor))
 
-(defmethod get-macro-name ((macro-editor macro-edit-mode))
-  (ffi-buffer-evaluate-javascript
-   (buffer macro-editor)
-   (ps:ps
-     (ps:chain document (get-element-by-id "macro-name") value))))
+(defmethod name ((macro-editor macro-edit-mode))
+  (let ((name
+          (ffi-buffer-evaluate-javascript
+           (buffer macro-editor)
+           (ps:ps
+             (ps:chain document (get-element-by-id "macro-name") value)))))
+    (cond ((not (str:emptyp name)) (setf (slot-value macro-editor 'name) name))
+          ((slot-value macro-editor 'name) (slot-value macro-editor 'name))
+          (t nil))))
+
+(defmethod generate-macro-form ((macro-editor macro-edit-mode))
+  (let ((name (intern (name macro-editor)))
+        (commands (mapcar
+                   (lambda (command) (write `(,(name command)) :stream nil))
+                   (alexandria:hash-table-values (functions macro-editor)))))
+    `(define-command-global ,name '() ,@commands)))
 
 (define-command add-command (&optional (macro-editor (current-mode 'macro-edit-mode)))
   "Add a command to the macro."
@@ -91,4 +108,7 @@
 
 (define-command save-macro (&optional (macro-editor (current-mode 'macro-edit-mode)))
   "Save the macro to the auto-config.lisp file."
-  (echo "Macro saved."))
+  (alexandria:if-let ((macro-name (name macro-editor))
+                      (functions (alexandria:hash-table-values (functions macro-editor))))
+    (echo "Macro saved. ~a" macro-name)
+    (echo "Macros require a name and functions.")))
