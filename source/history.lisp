@@ -106,6 +106,36 @@ class."
             (if-confirm ("Bookmark ~a?" url-address)
                         (bookmark-url :url url-address)))))))
 
+(defun bookmark-frequent-visit ()
+  "Add frequently visited URLs that are not included in the bookmarks."
+  (labels ((urls-visited-over-threshold (threshold)
+            "The local function "`urls-visited-over-thresold" returns all URLs
+            instances which were visited more times than the threshold."
+             (let* ((history-entries-raw
+                     (with-data-unsafe (history (history-path (current-buffer)))
+                       (alex:hash-table-keys (htree:entries history))))
+                   (history-entries-above-threshold
+                     (remove-if-not #'(lambda (e) (> (implicit-visits (htree:data e)) threshold))
+                                   history-entries-raw)))
+             (mapcar #'(lambda (e) (url (htree:data e))) history-entries-above-threshold)))
+           (bookmarked-url-p (url)
+            "The local function  "`bookmarked-url-p" returns the URL
+            itself if it is new to the bookmark list and NIL if it is
+            already there."
+             (let ((bookmarks-address-list
+                     (mapcar #'(lambda (e) (url e))
+                             (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
+                               bookmarks))))
+               (if (member url bookmarks-address-list :test #'quri:uri=)
+                   nil
+                   url))))
+    (dolist (url (urls-visited-over-threshold (url->bookmark-visit-threshold *browser*)))
+      (let ((url-address (render-url url)))
+        (if (bookmarked-url-p url)
+            (if-confirm ("Bookmark ~a?" url-address)
+                        (bookmark-url :url url-address)))))))
+
+>>>>>>> parent of 5000d07e... history.lisp: minor advances to use selected history entries before bookmarking what is over the threshold.
 (define-command bookmark-frequent-history-entries (&key (buffer (current-buffer)))
   "Prompts the user for history entries (the user can select them all), and then
 call bookmark-frequent-visit over the selection."
@@ -114,6 +144,7 @@ call bookmark-frequent-visit over the selection."
                   :sources (list (make-instance 'history-disowned-source
                                                 :buffer buffer)))))
     (bookmark-frequent-visit entries)))
+
 
 (declaim (ftype (function (quri:uri &key (:title string) (:buffer buffer)) t) history-add))
 (defun history-add (url &key (title "") (buffer (current-buffer)))
