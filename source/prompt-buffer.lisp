@@ -210,7 +210,7 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
                                   &key multi-selection-p pad-p)
   (alex:maxf (max-suggestions prompt-buffer)
              (length suggestions))
-  (flet ((decimals (n)
+  (labels ((decimals (n)
            (cond
              ((< n 0)
               (decimals (- n)))
