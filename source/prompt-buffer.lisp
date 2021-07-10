@@ -40,6 +40,7 @@ placeholder character.  This is useful to conceal passwords.")
                               :documentation "Whether to show the number of
 chosen suggestions inside brackets.")
      (max-suggestions 0
+                      :export nil
                       :documentation "Maximum number of total suggestions that were listed at some point.")
      ;; TODO: Need max-lines?
      ;; (max-lines 10
