@@ -39,6 +39,8 @@ placeholder character.  This is useful to conceal passwords.")
      (hide-suggestion-count-p nil
                               :documentation "Whether to show the number of
 chosen suggestions inside brackets.")
+     (max-suggestions 0
+                      :documentation "Maximum number of total suggestions that were listed at some point.")
      ;; TODO: Need max-lines?
      ;; (max-lines 10
      ;;               :documentation "Max number of suggestion lines to show.
@@ -204,22 +206,33 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
   (prompter:destroy prompt-buffer))
 
 (defun suggestion-and-mark-count (prompt-buffer suggestions marks
-                                  &key multi-selection-p)
-  (cond
-    ((not suggestions)
-     "")
-    ((hide-suggestion-count-p prompt-buffer)
-     "")
-    (marks
-     (format nil "[~a/~a]"
-             (length marks)
-             (length suggestions)))
-    ((not marks)
-     (format nil "[~a~a]"
-             (if multi-selection-p
-                 "0/"
-                 "")
-             (length suggestions)))))
+                                  &key multi-selection-p pad-p)
+  (alex:maxf (max-suggestions prompt-buffer)
+             (length suggestions))
+  (flet ((decimals (n)
+           (cond
+             ((< n 0)
+              (decimals (- n)))
+             ((< n 10)
+              1)
+             (t (1+ (decimals (truncate n 10)))))))
+    (cond
+      ((not suggestions)
+       "")
+      ((hide-suggestion-count-p prompt-buffer)
+       "")
+      (t
+       (let ((padding (if pad-p
+                          (prin1-to-string (decimals (max-suggestions prompt-buffer)))
+                          "0")))
+         (format nil (str:concat "[~a~" padding ",,,' @a]")
+                 (cond
+                   ((or marks multi-selection-p)
+                    (format nil
+                            (str:concat "~" padding ",,,' @a/")
+                            (length marks)))
+                   (t ""))
+                 (length suggestions)))))))
 
 (defun prompt-render-prompt (prompt-buffer)
   (let* ((suggestions (prompter:all-suggestions prompt-buffer))
@@ -238,6 +251,7 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
              (ps:lisp
               (suggestion-and-mark-count
                prompt-buffer suggestions marks
+               :pad-p t
                :multi-selection-p (some #'prompter:multi-selection-p
                                         (prompter:sources prompt-buffer)))))
        (when (ps:lisp vi-class)
