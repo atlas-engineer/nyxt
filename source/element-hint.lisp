@@ -188,7 +188,8 @@ FUNCTION is the action to perform on the selected elements."
                    (lambda ()
                      (with-current-buffer buffer
                        (remove-element-hints))))))
-      (funcall function result))))
+      (when result
+        (funcall function result)))))
 
 (defmethod prompter:object-attributes :around ((element plump:element))
   `(,@(when (plump:get-attribute element "nyxt-hint")
