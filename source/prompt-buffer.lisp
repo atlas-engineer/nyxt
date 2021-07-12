@@ -385,7 +385,19 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
   (sera:nlet maybe-update-view ((next-source (prompter:next-ready-p prompt-buffer)))
     (cond
       ;; Nothing to do:
-      ((eq t next-source) t)
+      ((eq t next-source)
+       ;; The renderer might have taken been too long to render the prompt
+       ;; buffer and its HTML input, causing the latter to not be in sync with
+       ;; what was send as input to the prompter sources.  Thus when we are done
+       ;; watching, check if we are in sync; if not, try again.
+       (let ((input (ffi-buffer-evaluate-javascript
+                     prompt-buffer
+                     (ps:ps (ps:chain document (get-element-by-id "input")
+                                      value)))))
+         (unless (string= input (prompter:input prompt-buffer))
+           (set-prompt-input prompt-buffer input)
+           (watch-prompt prompt-buffer)))
+       t)
       ((null next-source) nil)
       (t ;; At least one source got updated.
        (prompt-render-suggestions prompt-buffer)
