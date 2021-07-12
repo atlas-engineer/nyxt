@@ -12,18 +12,11 @@
     ""
     :documentation "The name used for the macro."
     :accessor nil)
-   (current-function-id
-    0
-    :documentation "A variable used to generate unique identifiers for user
-    added functions.")
    (functions
     (make-hash-table)
     :documentation "A hash table of functions the user has added to their
 macro. The key represents a unique identifier for a command, and the value
 represents a command.")))
-
-(defmethod get-unique-function-identifier ((mode macro-edit-mode))
-  (incf (current-function-id mode)))
 
 (define-command-global edit-macro ()
   "Edit a macro."
@@ -73,7 +66,7 @@ represents a command.")))
   (nyxt:describe-command (gethash command-id (functions macro-editor))))
 
 (defmethod add-function ((macro-editor macro-edit-mode) command)
-  (setf (gethash (get-unique-function-identifier macro-editor)
+  (setf (gethash (parse-integer (symbol-name (gensym "")))
                  (functions macro-editor))
         command)
   (render-functions macro-editor))
