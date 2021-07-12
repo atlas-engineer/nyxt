@@ -70,8 +70,10 @@
   (let* ((dom (document-model (current-mode 'web)))
          (hintable-elements (clss:select selector dom))
          (hints (generate-hints (length hintable-elements))))
-    (add-stylesheet)
-    (hint-elements (map 'list #'get-nyxt-id hintable-elements) hints)
+    (run-thread "stylesheet adder"
+      (add-stylesheet))
+    (run-thread "element hint drawing"
+      (hint-elements (map 'list #'get-nyxt-id hintable-elements) hints))
     (loop for elem across hintable-elements
           for hint in hints
           do (plump:set-attribute elem "nyxt-hint" hint)
