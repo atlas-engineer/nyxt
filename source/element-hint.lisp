@@ -279,7 +279,7 @@ FUNCTION is the action to perform on the selected elements."
                              :parent-select-identifier (get-nyxt-id select)))))
 
 (defmethod %follow-hint-new-buffer-focus ((a nyxt/dom:a-element) &optional parent-buffer)
-  (make-buffer-focus :url (url a)
+  (make-buffer-focus :url (quri:uri (url a))
                      :parent-buffer parent-buffer
                      :nosave-buffer-p (nosave-buffer-p parent-buffer)))
 
@@ -295,7 +295,7 @@ FUNCTION is the action to perform on the selected elements."
   (echo "Unsupported operation for hint: can't open in new buffer."))
 
 (defmethod %follow-hint-nosave-buffer-focus ((a nyxt/dom:a-element))
-  (make-buffer-focus :url (url a) :nosave-buffer-p t))
+  (make-buffer-focus :url (quri:uri (url a)) :nosave-buffer-p t))
 
 (defmethod %follow-hint-nosave-buffer-focus ((element plump:element))
   (echo "Unsupported operation for hint: can't open in new buffer."))
