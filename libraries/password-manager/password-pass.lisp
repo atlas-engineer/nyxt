@@ -56,14 +56,15 @@ http://www.passwordstore.org/#organization.
 
 Lines that don't match the format are ignored.
 The first line (the password) is skipped."
-  (let ((lines (str:split (string #\newline)
-                          content)))
-    (delete nil (mapcar (lambda (line)
-                          (let ((entry (ppcre:split *multiline-separator* line :limit 2)))
-                            (when (= 2 (length entry))
-                              entry)))
-                        ;; Skip first line to ignore password:
-                        (rest lines)))))
+  (unless (uiop:emptyp content)
+    (let ((lines (str:split (string #\newline)
+                            content)))
+      (delete nil (mapcar (lambda (line)
+                            (let ((entry (ppcre:split *multiline-separator* line :limit 2)))
+                              (when (= 2 (length entry))
+                                entry)))
+                          ;; Skip first line to ignore password:
+                          (rest lines))))))
 
 (defvar *username-keys* '("login" "user" "username")
   "A list of string keys used to find the `pass' username in `clip-username'.")
@@ -73,15 +74,17 @@ The first line (the password) is skipped."
 Case is ignored.
 The prefix is discarded from the result and returned."
   (declare (ignore service))
-  (let* ((entries (parse-multiline (execute password-interface
-                                       (list "show" password-name)
-                                     :output '(:string :stripped t))))
-         (username-entry (some (lambda (key)
-                                 (find key entries :test #'string-equal :key #'first))
-                               *username-keys*)))
-    (when username-entry
-      (trivial-clipboard:text (second username-entry))
-      (second username-entry))))
+  (when password-name
+    (let* ((content (execute password-interface (list "show" password-name)
+                      :output '(:string :stripped t)))
+           (entries (parse-multiline content))
+           (username-entry (when entries
+                             (some (lambda (key)
+                                     (find key entries :test #'string-equal :key #'first))
+                                   *username-keys*))))
+      (when username-entry
+        (trivial-clipboard:text (second username-entry))
+        (second username-entry)))))
 
 (defmethod save-password ((password-interface password-store-interface)
                           &key password-name username password service)
