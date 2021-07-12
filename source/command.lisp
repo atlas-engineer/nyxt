@@ -86,7 +86,8 @@ The first string in the body is used to fill the `help' slot.
 Without BODY, NAME must be a function symbol and the command wraps over it
 against ARGLIST, if specified."
   (check-type name symbol)
-  (let ((documentation (nth-value 2 (alex:parse-body body :documentation t))))
+  (let ((documentation (or (nth-value 2 (alex:parse-body body :documentation t))
+                           "")))
     (alex:with-gensyms (fn sexp)
       `(let ((,fn nil)
              (,sexp nil))
