@@ -11,9 +11,10 @@
                 collect (markup:markup
                          (:a :class "button" :href (lisp-url `(describe-class ',(mode-name mode)))
                              :title (format nil "Describe ~a" (mode-name mode))
-                             (if (glyph-mode-presentation-p (status-buffer window))
-                                 (glyph mode)
-                                 (format-mode mode))))))))
+                             (markup:raw
+                              (if (glyph-mode-presentation-p (status-buffer window))
+                                  (glyph mode)
+                                  (format-mode mode)))))))))
 
 (defun list-modes (buffer)
   (format nil "~{~a~^ ~}" (mapcar #'format-mode (modes buffer))))
