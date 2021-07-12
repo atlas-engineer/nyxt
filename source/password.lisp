@@ -21,6 +21,19 @@ for which the `executable' slot is non-nil."
               instance)))
         password:*interfaces*))
 
+(defvar password-source-actions
+  (list (make-command clip-password (password-name)
+          (let ((buffer (buffer (current-source)))
+                (password-name (first password-name)))
+            (password:clip-password (password-interface buffer) :password-name password-name)
+            (echo "Password saved to clipboard for ~a seconds." (password:sleep-timer (password-interface buffer)))))
+        (make-command clip-username (password-name)
+          (let ((buffer (buffer (current-source)))
+                (password-name (first password-name)))
+            (if (password:clip-username (password-interface buffer) :password-name password-name)
+                (echo "Username saved to clipboard.")
+                (echo "No username found."))))))
+
 (define-class password-source (prompter:source)
   ((prompter:name "Passwords")
    (buffer :accessor buffer :initarg :buffer)
@@ -29,18 +42,7 @@ for which the `executable' slot is non-nil."
    (prompter:constructor
     (lambda (source)
       (password:list-passwords (password-instance source))))
-   (prompter:actions
-    (list (make-command clip-password (password-name)
-            (let ((buffer (buffer (current-source)))
-                  (password-name (first password-name)))
-              (password:clip-password (password-interface buffer) :password-name password-name)
-              (echo "Password saved to clipboard for ~a seconds." (password:sleep-timer (password-interface buffer)))))
-          (make-command clip-username (password-name)
-            (let ((buffer (buffer (current-source)))
-                  (password-name (first password-name)))
-              (if (password:clip-username (password-interface buffer) :password-name password-name)
-                  (echo "Username saved to clipboard.")
-                  (echo "No username found."))))))))
+   (prompter:actions password-source-actions)))
 
 (defun password-debug-info ()
   (alex:when-let ((interface (password-interface (current-buffer))))
@@ -142,13 +144,13 @@ for which the `executable' slot is non-nil."
   (password-debug-info)
   (if (password-interface buffer)
       (with-password (password-interface buffer)
-        (let ((password-name (first (prompt
-                                     :prompt "Username"
-                                     :input (quri:uri-domain (url buffer))
-                                     :sources (list (make-instance 'password-source
-                                                                   :buffer buffer
-                                                                   :password-instance (password-interface buffer)))))))
-          (if (password:clip-username (password-interface buffer) :password-name password-name)
-              (echo "Username saved to clipboard.")
-              (echo "No username found."))))
+        (prompt
+         :prompt "Username"
+         :input (quri:uri-domain (url buffer))
+         :sources (list (make-instance 'password-source
+                                       :buffer buffer
+                                       :password-instance (password-interface buffer)
+                                       :actions (sera:filter (sera:eqs 'clip-username)
+                                                             password-source-actions
+                                                             :key #'name)))))
       (echo-warning "No password manager found.")))
