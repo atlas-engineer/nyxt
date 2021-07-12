@@ -9,7 +9,7 @@
    (:span (when (nosave-buffer-p buffer) "⚠ nosave"))
    (:span (:a :class "button"
               :href (lisp-url '(nyxt:toggle-modes))
-              :title (str:concat "Enabled modes: " (list-modes buffer))) "🛈")
+              :title (str:concat "Enabled modes: " (list-modes buffer))) "⊕")
    (:span (loop for mode in (sera:filter #'visible-in-status-p (modes buffer))
                 collect (markup:markup
                          (:a :class "button" :href (lisp-url `(describe-class ',(mode-name mode)))
