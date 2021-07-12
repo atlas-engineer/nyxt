@@ -16,7 +16,8 @@ Example:
 
 \(define-configuration buffer
   ((default-modes (append '(vi-normal-mode) %slot-default%))))"
-  ((previous-keymap-scheme-name nil
+  ((glyph "vi:N")
+   (previous-keymap-scheme-name nil
     :type (or keymap:scheme-name null)
     :documentation "The previous keymap scheme that will be used when ending
 vi-normal-mode.")
@@ -60,7 +61,8 @@ vi-normal-mode.")
 See `vi-normal-mode'."
   ;; We could inherit from vi-normal-mode to save the declaration of this slot
   ;; but then (find-submode ... 'vi-normal-mode) would match vi-insert-mode.
-  ((previous-keymap-scheme-name nil
+  ((glyph "vi:I")
+   (previous-keymap-scheme-name nil
     :type (or keymap:scheme-name null)
     :documentation "The previous keymap scheme that will be used when ending
 vi-normal-mode.")
