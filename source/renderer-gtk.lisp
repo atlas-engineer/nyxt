@@ -489,10 +489,20 @@ See `gtk-browser's `modifier-translator' slot."
                          (derive-key-string keyval-name character)))
          (modifiers (funcall (modifier-translator *browser*)
                              (key-event-modifiers event)
-                             event)))
+                             event))
+         (buffer (or (current-prompt-buffer)
+                     (active-buffer sender))))
     (if modifiers
         (log:debug key-string keycode character keyval-name modifiers)
         (log:debug key-string keycode character keyval-name))
+    (when (prompt-buffer-p buffer)
+      (run-thread
+       (let ((input (ffi-buffer-evaluate-javascript
+                     buffer
+                     (ps:ps (ps:chain document (get-element-by-id "input")
+                                      value)))))
+         (set-prompt-input buffer input)
+         (watch-prompt buffer))))
     (if key-string
         (progn
           (alex:appendf (key-stack sender)
@@ -501,8 +511,7 @@ See `gtk-browser's `modifier-translator' slot."
                                                :modifiers modifiers
                                                :status :pressed)))
           (funcall (input-dispatcher sender) event
-                   (or (current-prompt-buffer)
-                       (active-buffer sender))
+                   buffer
                    sender printable-value))
         ;; Do not forward modifier-only to renderer.
         t)))
@@ -511,27 +520,9 @@ See `gtk-browser's `modifier-translator' slot."
   (prompt-buffer-view (window prompt-buffer)))
 
 (define-ffi-method on-signal-key-release-event ((sender gtk-window) event)
-  ;; TODO: Should we move this to key-press-event to improve prompt buffer
-  ;; responsiveness?
-  (declare (ignore event))
-  (let ((prompt-buffer (first (active-prompt-buffers sender))))
-    (cond
-      ((not prompt-buffer)
-       ;; Forward release event to the web view.
-       nil)
-      ((prompt-buffer-p prompt-buffer)
-       (run-thread
-         (let ((input (ffi-buffer-evaluate-javascript
-                       prompt-buffer
-                       (ps:ps (ps:chain document (get-element-by-id "input")
-                                        value)))))
-           (set-prompt-input prompt-buffer input)
-           (watch-prompt prompt-buffer)))
-       ;; Forward to HTML input: it's necessary to handle input methods,
-       ;; e.g. "control-shift u".
-       nil)
-      ;; Do not forward release event when prompt-buffer is up.
-      (t t))))
+  (declare (ignore sender event))
+  ;; REVIEW: Is there any use for handling release events?
+  nil)
 
 (defun sender-window (sender)
   (or (find sender (window-list) :key #'active-prompt-buffers)
