@@ -123,9 +123,8 @@
             (ps:dolist (e old-elements)
               (setf (ps:@ e class-name) "nyxt-hint"))))
         (setf (ps:@ new-element class-name) "nyxt-hint nyxt-highlight-hint")
-        (if (ps:lisp scroll)
-            (ps:chain new-element (scroll-into-view
-                                   (ps:create block "nearest")))))))
+        (when (ps:lisp scroll)
+          (ps:chain new-element (scroll-into-view (ps:create block "nearest")))))))
 
   (update-hints))
 
