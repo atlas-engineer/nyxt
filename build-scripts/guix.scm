@@ -159,6 +159,7 @@
        ("cl-markup" ,cl-markup)
        ("cl-ppcre" ,cl-ppcre)
        ("cl-prevalence" ,cl-prevalence)
+       ("cl-who" ,cl-who)
        ("closer-mop" ,cl-closer-mop)
        ("cluffer" ,cl-cluffer)
        ("dexador" ,cl-dexador)

@@ -29,10 +29,11 @@
                cl-css
                cl-html-diff
                cl-json
-               cl-markup
+               cl-markup ; TODO: Replace with cl-who everywhere.
                cl-ppcre
                cl-ppcre-unicode
                cl-prevalence
+               cl-who
                closer-mop
                cl-containers
                moptilities

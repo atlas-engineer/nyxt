@@ -7,20 +7,21 @@
 
 (defmacro command-markup (fn &key (modes nil explicit-modes-p))
   "Print FN in HTML followed its bindings in parentheses."
-  ;; Warning: We should not use markup:markup here because too much use of it
-  ;; inside another `markup:markup' takes forever to expand.
-  `(markup:raw
+  `(who:str
     (format nil "<span><code>~a</code> (<code>~a</code>)</span>"
             (string-downcase (symbol-name ,fn))
             (binding-keys ,fn ,@(if explicit-modes-p
                                    (list :modes modes)
                                    '())))))
 
+(defmacro command-keys (fn)
+  "Return `binding-keys' of FN for `who' markup."
+  `(who:str
+    (binding-keys ,fn)))
+
 (defmacro command-docstring-first-sentence (fn)
-  "Print FN first docstring sentence in HTML."
-  ;; Warning: We should not use markup:markup here because too much use of it
-  ;; inside another `markup:markup' takes forever to expand.
-  `(markup:raw
+  "Print FN first docstring sentence in an HTML span."
+  `(who:str
     (format nil "<span>~a</span>"
             (sera:ensure-suffix
              (or (first (ppcre:split "\\.\\s" (documentation ,fn 'function)))

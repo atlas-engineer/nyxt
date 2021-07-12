@@ -4,11 +4,11 @@
 (in-package :nyxt)
 
 (defun tutorial-content ()
-  (markup:markup
+  (markup
    (:h2 "Core Concepts")
    (:h3 "Keybindings and Commands")
    (:p "Commands are invoked by pressing specific keys or from
-the " (:code "execute-command") " menu (" (:code (binding-keys 'execute-command))
+the " (:code "execute-command") " menu (" (:code (command-keys 'execute-command))
 ").")
    (:p "Keybindings are represented like this: 'C-x'. In this example, 'C' is a
 shortcut for the modifier 'control', and 'x' represents the character 'x'. To
@@ -26,17 +26,17 @@ Multiple key presses can be chained: in 'C-x C-s', you would have to press
 
    (:h3 "Quickstart keys")
    (:ul
-    (:li (:code (binding-keys 'set-url)) ": Load URL")
-    (:li (:code (binding-keys 'reload-current-buffer)) ": Reload buffer")
-    (:li (:code (binding-keys 'set-url-new-buffer)) ": Load URL in new buffer")
-    (:li (:code (binding-keys 'switch-buffer-previous)) ", " (:code (binding-keys 'switch-buffer-next)) ": Switch buffer")
-    (:li (:code (binding-keys 'nyxt/web-mode:history-backwards)) ": Backwards history")
-    (:li (:code (binding-keys 'nyxt/web-mode:history-forwards)) ": Forwards history")
-    (:li (:code (binding-keys 'nyxt/web-mode:follow-hint)) ": Follow link in current buffer")
-    (:li (:code (binding-keys 'nyxt/web-mode:follow-hint-new-buffer)) ": Follow link in new buffer")
-    (:li (:code (binding-keys 'quit)) ": Quit")
-    (:li (:code (binding-keys 'execute-command)) ": Run a command by name")
-    (:li (:code (binding-keys 'describe-bindings)) ": List all bindings for the current buffer"))
+    (:li (:code (command-keys 'set-url)) ": Load URL")
+    (:li (:code (command-keys 'reload-current-buffer)) ": Reload buffer")
+    (:li (:code (command-keys 'set-url-new-buffer)) ": Load URL in new buffer")
+    (:li (:code (command-keys 'switch-buffer-previous)) ", " (:code (command-keys 'switch-buffer-next)) ": Switch buffer")
+    (:li (:code (command-keys 'nyxt/web-mode:history-backwards)) ": Backwards history")
+    (:li (:code (command-keys 'nyxt/web-mode:history-forwards)) ": Forwards history")
+    (:li (:code (command-keys 'nyxt/web-mode:follow-hint)) ": Follow link in current buffer")
+    (:li (:code (command-keys 'nyxt/web-mode:follow-hint-new-buffer)) ": Follow link in new buffer")
+    (:li (:code (command-keys 'quit)) ": Quit")
+    (:li (:code (command-keys 'execute-command)) ": Run a command by name")
+    (:li (:code (command-keys 'describe-bindings)) ": List all bindings for the current buffer"))
 
    (:h3 "Buffers")
    (:p "Nyxt uses the concept of buffers instead of tabs. Unlike tabs, buffers
