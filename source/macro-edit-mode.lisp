@@ -12,7 +12,7 @@
     ""
     :documentation "The name used for the macro."
     :accessor nil)
-   (function-sequence
+   (current-function-id
     0
     :documentation "A variable used to generate unique identifiers for user
     added functions.")
@@ -23,7 +23,7 @@ macro. The key represents a unique identifier for a command, and the value
 represents a command.")))
 
 (defmethod get-unique-function-identifier ((mode macro-edit-mode))
-  (incf (function-sequence mode)))
+  (incf (current-function-id mode)))
 
 (define-command-global edit-macro ()
   "Edit a macro."
