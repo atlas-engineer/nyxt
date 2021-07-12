@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/macro-edit-mode
-    (:use :common-lisp :trivia :nyxt)
+  (:use :common-lisp :trivia :nyxt)
   (:documentation "Mode for editing macros."))
 (in-package :nyxt/macro-edit-mode)
 
@@ -18,7 +18,9 @@
     added functions.")
    (functions
     (make-hash-table)
-    :documentation "A list of functions the user has added to their macro.")))
+    :documentation "A hash table of functions the user has added to their
+macro. The key represents a unique identifier for a command, and the value
+represents a command.")))
 
 (defmethod get-unique-function-identifier ((mode macro-edit-mode))
   (incf (function-sequence mode)))
@@ -81,11 +83,10 @@
   (render-functions macro-editor))
 
 (defmethod name ((macro-editor macro-edit-mode))
-  (let ((name
-          (ffi-buffer-evaluate-javascript
-           (buffer macro-editor)
-           (ps:ps
-             (ps:chain document (get-element-by-id "macro-name") value)))))
+  (let ((name (ffi-buffer-evaluate-javascript
+               (buffer macro-editor)
+               (ps:ps
+                (ps:chain document (get-element-by-id "macro-name") value)))))
     (cond ((not (str:emptyp name)) (setf (slot-value macro-editor 'name) name))
           ((slot-value macro-editor 'name) (slot-value macro-editor 'name))
           (t nil))))
@@ -93,7 +94,7 @@
 (defmethod generate-macro-form ((macro-editor macro-edit-mode))
   (let ((name (intern (name macro-editor)))
         (commands (mapcar
-                   (lambda (command) (write `(,(name command)) :stream nil))
+                   (lambda (command) `(,(name command)))
                    (alexandria:hash-table-values (functions macro-editor)))))
     `(define-command-global ,name () "User generated macro form" ,@commands)))
 
@@ -114,10 +115,10 @@
   "Save the macro to the auto-config.lisp file."
   (if (macro-form-valid-p macro-editor)
       (nyxt::append-configuration (generate-macro-form macro-editor))
-      (echo "Your macro form is invalid; check if you have a title and functions.")))
+      (echo "Macro form is invalid; check it has a title and functions.")))
 
 (define-command evaluate-macro (&optional (macro-editor (current-mode 'macro-edit-mode)))
   "Evaluate the macro for testing."
   (if (macro-form-valid-p macro-editor)
       (progn (eval (generate-macro-form macro-editor)) (echo "Macro evaluated."))
-      (echo "Your macro form is invalid; check if you have a title and functions.")))
+      (echo "Macro form is invalid; check it has a title and functions.")))
