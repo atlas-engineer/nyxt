@@ -85,7 +85,8 @@
 
 (define-parenscript focus-select-element (&key nyxt-identifier)
   (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier) (focus))
-  (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier) (select)))
+  (when (functionp (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier) select))
+      (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier) (select))))
 
 (define-parenscript check-element (&key nyxt-identifier (value t))
   (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier)
