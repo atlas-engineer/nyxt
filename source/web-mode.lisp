@@ -22,6 +22,11 @@
 (define-mode web-mode ()
   "Base mode for interacting with documents."
   ((rememberable-p nil)
+   (document-model-delta-threshold
+    10
+    :documentation "Update the document model when the amount of elements on the
+    page change greater than this amount."
+    :export nil)
    (document-model
     nil
     :type (or null plump:node)
@@ -224,9 +229,8 @@ and to index the top of the page.")
           (element-count (parse-integer (%count-dom-elements) :junk-allowed t)))
       (if (and value
                ;; Check whether the difference in element count is significant.
-               (< (abs (- (length (clss:select "*" value))
-                          element-count))
-                  10))
+               (< (abs (- (length (clss:select "*" value)) element-count))
+                  (document-model-delta-threshold mode)))
           value
           (update-document-model mode)))))
 
