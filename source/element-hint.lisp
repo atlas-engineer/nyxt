@@ -16,20 +16,14 @@
      (:catch (error)))))
 
 (define-parenscript hint-elements (nyxt-identifiers hints)
-  (defun hint-determine-position (rect)
-    "Determines the position of a hint according to the element"
-    (ps:create :top  (+ (ps:@ window page-y-offset) (ps:@ rect top))
-               :left (+ (ps:@ window page-x-offset) (ps:@ rect left))))
-
   (defun hint-create-element (original-element hint)
     "Creates a DOM element to be used as a hint"
     (ps:let* ((rect (ps:chain original-element (get-bounding-client-rect)))
-              (position (hint-determine-position rect))
               (element (ps:chain document (create-element "span"))))
       (setf (ps:@ element class-name) "nyxt-hint")
       (setf (ps:@ element style position) "absolute")
-      (setf (ps:@ element style left) (+ (ps:@ position left) "px"))
-      (setf (ps:@ element style top) (+ (ps:@ position top) "px"))
+      (setf (ps:@ element style left) (+ (ps:@ window page-x-offset) (ps:@ rect left) "px"))
+      (setf (ps:@ element style top) (+ (ps:@ window page-y-offset) (ps:@ rect top) "px"))
       (setf (ps:@ element id) (+ "nyxt-hint-" hint))
       (setf (ps:@ element text-content) hint)
       element))
