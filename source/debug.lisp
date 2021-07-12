@@ -59,8 +59,7 @@ Example:
 
   (sb-ext:search-roots (find-nyxt-object 'user-web-buffer) :print :verbose)
 
-See also `find-object-by-address' (SBCL only).
-"
+See also `find-object-by-address' (SBCL only)."
   (sera:filter (lambda (object-pointer)
                  (eq class-sym
                      (sera:class-name-of (tg:weak-pointer-value object-pointer))))
