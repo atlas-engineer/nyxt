@@ -91,7 +91,11 @@
            (:div :id "tabs"
                  (markup:raw
                   (format-status-tabs)))
-           (:div :id "modes" :class "arrow-left"
-                 :title (list-modes buffer)
+           (:div :id "modes" :class "modes arrow-left"
                  (markup:raw
-                  (format-status-modes buffer window)))))))
+                  (format-status-modes buffer window)))
+           (:div :id "mode-ellipsis" :class "modes"
+                 :title (list-modes buffer)
+                 (:a :class "button" :href (lisp-url `(toggle-modes))
+                     :title (list-modes buffer)
+                     "…"))))))

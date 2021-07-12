@@ -471,13 +471,13 @@ Delete it with `ffi-buffer-delete'."
                 :margin-left "-10px")
                ("#container"
                 :display "grid"
-                ;; Columns: controls, url, tabs, modes
-                :grid-template-columns "120px 2fr 3fr 240px"
+                ;; Columns: controls, url, tabs, modes, mode-ellipsis
+                :grid-template-columns "120px 2fr 3fr 240px 2em"
                 :overflow-y "hidden")
                ("#container-vi"
                 :display "grid"
-                ;; Columns: controls, vi-status, url, tabs, modes
-                :grid-template-columns "120px 30px 2fr 3fr 240px"
+                ;; Columns: controls, vi-status, url, tabs, modes, mode-ellipsis
+                :grid-template-columns "120px 30px 2fr 3fr 240px 2em"
                 :overflow-y "hidden")
                ("#controls"
                 :background-color "rgb(80,80,80)"
@@ -521,8 +521,9 @@ Delete it with `ffi-buffer-delete'."
                 :padding-right "5px")
                (".tab:hover"
                 :color "black")
+               (".modes"
+                :background-color "gray")
                ("#modes"
-                :background-color "gray"
                 :color "white"
                 :text-align "right"
                 :padding-left "10px"
