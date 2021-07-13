@@ -62,3 +62,25 @@
                           collect (cluster-markup cluster-key cluster)))
             (loop for buffer in (buffer-list)
                   collect (buffer-markup buffer))))))))
+
+(define-command-global show-buffers-panel (&key (side :left))
+  "Show the bookmarks in a panel."
+  (flet ((buffer-markup (buffer)
+           "Create the presentation for a buffer."
+           (markup:markup
+            (:p (:a :class "button"
+                    :href (lisp-url `(nyxt::switch-buffer :id ,(id buffer)))
+                    (:span :title (title buffer) :class "title" (title buffer)))))))
+    (nyxt::with-current-panel (panel-buffer "*Buffers Panel*" :side side)
+      (markup:markup (:style (style panel-buffer))
+                     (:style (cl-css:css
+                              '((".button"
+                                 :white-space "nowrap"
+                                 :overflow-x "hidden"
+                                 :display "block"
+                                 :text-overflow "ellipsis"))))
+                     (:body
+                      (:h1 "Buffers")
+                      (:a :class "button" :href (lisp-url '(nyxt/buffer-listing-mode::show-buffers-panel)) "Update ↺")
+                      (loop for buffer in (buffer-list)
+                            collect (buffer-markup buffer)))))))

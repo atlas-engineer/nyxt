@@ -404,7 +404,22 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
               :font-family "Helvetica Neue, Helvetica"
               :font-weight 500)
              (a
-              :color "gray")))))
+              :color "gray")
+             (.button
+              :display "inline-block"
+              :background-color "darkgray"
+              :color "white"
+              :text-decoration "none"
+              :border-radius "2px"
+              :padding "6px"
+              :margin-left "2px"
+              :margin-right "2px")
+             (|.button:hover|
+              :color "black")
+             (|.button:visited|
+              :color "white")
+             (|.button:active|
+              :color "white")))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
