@@ -139,7 +139,7 @@ directory where ASDF will find it]]):
 
 - Debian-based distributions:
   #+begin_src sh
-    sudo apt install sbcl libwebkit2gtk-4.0-dev glib-networking gsettings-desktop-schemas libfixposix-dev xclip enchant
+    sudo apt install sbcl libwebkit2gtk-4.0-dev glib-networking gsettings-desktop-schemas libfixposix-dev xclip enchant-2
   #+end_src
 
 - Fedora:
