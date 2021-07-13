@@ -118,7 +118,8 @@
               (loop for child in (ps:chain element child-nodes)
                     collect (process-element child))))
       (when (or (equal (ps:@ element node-name) "#text")
-                (equal (ps:@ element node-name) "#comment"))
+                (equal (ps:@ element node-name) "#comment")
+                (equal (ps:@ element node-name) "#cdata-section"))
         (setf (ps:@ object :text) (ps:@ element text-content)))
       object))
   (ps:chain -j-s-o-n (stringify (process-element (nyxt/ps:qs document "html")))))
@@ -139,6 +140,8 @@ JSON should have the format like what `get-document-body-json' produces:
                      (cond
                        ((string-equal (alex:assoc-value json-alist :name) "#text")
                         (plump:make-text-node parent (alex:assoc-value json-alist :text)))
+                       ((string-equal (alex:assoc-value json-alist :name) "#cdata-section")
+                        (plump:make-cdata parent :text (alex:assoc-value json-alist :text)))
                        ((string-equal (alex:assoc-value json-alist :name) "#comment")
                         (plump:make-comment parent (alex:assoc-value json-alist :text)))
                        (t (plump:make-element parent (str:downcase
