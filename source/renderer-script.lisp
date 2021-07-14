@@ -130,7 +130,7 @@ BODY must return the HTML markup as a string."
                                    (panel-buffers window)
                                    :key #'title
                                    :test #'string=)
-                             (make-instance 'panel-buffer
+                             (make-instance 'user-panel-buffer
                                             :title ,title))))
        (window-add-panel-buffer window ,buffer-var ,side)
        (html-set
