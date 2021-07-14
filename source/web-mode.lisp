@@ -693,3 +693,10 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
   ;; Need to force document-model re-parsing.
   (setf (document-model mode) nil)
   url)
+
+(define-command show-qrcode-of-current-url (&optional (buffer (current-buffer)))
+  "Show the QR code containing the URL for the current buffer."
+  (with-current-buffer buffer
+    (let ((pathname (str:concat (namestring uiop:*temporary-directory*) "qrcode.png")))
+        (cl-qrencode:encode-png (quri:render-uri (url (current-buffer))) :fpath pathname)
+        (uiop:run-program (list "nyxt" pathname)))))

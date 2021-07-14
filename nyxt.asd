@@ -32,6 +32,7 @@
                cl-ppcre
                cl-ppcre-unicode
                cl-prevalence
+               cl-qrencode
                closer-mop
                cl-containers
                moptilities
