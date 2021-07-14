@@ -169,7 +169,8 @@
                                  :buffer buffer
                                  :multi-selection-p t
                                  :channel (make-instance 'calispel:channel)
-                                 :actions (list (make-mapped-command nyxt::new-buffer-load))))
+                                 :actions (list (make-command open-new-buffers (urls)
+                                                  (mapcar (lambda (i) (make-buffer :url (quri:uri i))) urls)))))
    :after-destructor
    (lambda ()
      (with-current-buffer buffer
