@@ -184,6 +184,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                (:file "help")
                (:file "status")
                ;; Depends on everything else:
+               (:file "web-extensions")
                (:file "about")
                (:file "start")
                (:file "tutorial")
