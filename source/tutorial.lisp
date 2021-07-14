@@ -136,13 +136,11 @@ to quickly find whatever buffer you are looking for.")
     (:li (command-markup 'nyxt/web-mode:copy-placeholder) ": " (command-docstring-first-sentence 'nyxt/web-mode:copy-placeholder))
     (:li (command-markup 'nyxt/web-mode:copy-hint-url) ": " (command-docstring-first-sentence 'nyxt/web-mode:copy-hint-url)))
    (:p "Leveraging password managers: ")
-   #+nil
    (:ul 
     (:li (command-markup 'copy-username) ": " (command-docstring-first-sentence 'copy-username))
     (:li (command-markup 'copy-password) ": " (command-docstring-first-sentence 'copy-password))
     (:li (command-markup 'copy-password-prompt-details) ": " (command-docstring-first-sentence 'copy-password-prompt-details)))
    (:p "And more: ")
-   #+nil 
    (:ul
     (:li (command-markup 'nyxt/web-mode:paste-from-clipboard-ring) ": " (command-docstring-first-sentence 'nyxt/web-mode:paste-from-clipboard-ring))
     (:li (command-markup 'copy-system-information) ": " (command-docstring-first-sentence 'copy-system-information)))
