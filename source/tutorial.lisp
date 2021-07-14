@@ -4,7 +4,7 @@
 (in-package :nyxt)
 
 (defun tutorial-content ()
-  (markup:markup
+  (spinneret:with-html-string
    (:h2 "Core Concepts")
    (:h3 "Keybindings and Commands")
    (:p "Commands are invoked by pressing specific keys or from
