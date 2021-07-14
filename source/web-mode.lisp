@@ -695,6 +695,15 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
 (define-command show-qrcode-of-current-url (&optional (buffer (current-buffer)))
   "Show the QR code containing the URL for the current buffer."
   (with-current-buffer buffer
-    (let ((pathname (str:concat (namestring uiop:*temporary-directory*) "qrcode.png")))
-        (cl-qrencode:encode-png (quri:render-uri (url (current-buffer))) :fpath pathname)
-        (uiop:run-program (list "nyxt" pathname)))))
+    (let* ((pathname (expand-path
+                     (make-instance 'data-path :basename "qrcode.png")))
+          (url (quri:render-uri (url (current-buffer))))
+          (title (str:concat "QRcode for " url)))
+      (unwind-protect
+           (progn
+             (cl-qrencode:encode-png url :fpath pathname)
+             (make-buffer-focus :url (quri::make-uri-file :path pathname))
+             (sleep 0.1) ;; TODO it seems I cannot open the buffer in time if I delete the file at the end
+             (setf (title (current-buffer)) title)
+             )
+        (uiop:delete-file-if-exists pathname)))))
