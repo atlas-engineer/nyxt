@@ -1027,9 +1027,12 @@ requested a reload."
       (gtk-object buffer)
       javascript
       (if channel
-          (lambda (result)
+          (lambda (result jsc-result)
+            (declare (ignore jsc-result))
             (calispel:! channel result))
-          #'identity)
+          (lambda (result jsc-result)
+            (declare (ignore jsc-result))
+            result))
       (lambda (condition)
         (javascript-error-handler condition)
         ;; Notify the listener that we are done.
