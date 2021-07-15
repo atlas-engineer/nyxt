@@ -1265,11 +1265,12 @@ generate a new URL query from user input.
                              (buffer-list)
                              :key (alex:compose #'get-data #'history-path))))
     (with-data-unsafe (history (history-path buffer))
-      (sera:filter
-       (sera:equals (id buffer))
-       buffers
-       :key (lambda (b) (alex:when-let ((owner (htree:owner history (id b))))
-                          (htree:creator-id owner)))))))
+      (sort (sera:filter
+              (sera:equals (id buffer))
+              buffers
+              :key (lambda (b) (alex:when-let ((owner (htree:owner history (id b))))
+                                 (htree:creator-id owner))))
+            #'string< :key #'id))))
 
 (defun buffer-first-root (&optional (buffer (current-buffer)))
   (alex:if-let ((parent (buffer-parent buffer)))
