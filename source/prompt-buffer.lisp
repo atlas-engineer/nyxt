@@ -341,31 +341,25 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
   (erase-document prompt-buffer)
   (let ((vi-mode? (or (find-submode prompt-buffer 'vi-normal-mode)
                       (find-submode prompt-buffer 'vi-insert-mode))))
-    (ffi-buffer-evaluate-javascript-async
-     prompt-buffer
-     (ps:ps (ps:chain document
-                      (write
-                       (ps:lisp (markup:markup
-                                 (:head (:style (style prompt-buffer)))
-                                 (:body
-                                  (:div :id (if vi-mode? "prompt-area-vi" "prompt-area")
-                                        (:div :id "prompt" (prompter:prompt prompt-buffer))
-                                        (:div :id "prompt-extra" "[?/?]")
-                                        (markup:raw
-                                         (when vi-mode?
-                                           (markup:markup
-                                            (:div :id "vi-mode" ""))))
-                                        (:div (:input :type (if (invisible-input-p prompt-buffer)
-                                                                "password"
-                                                                "text")
-                                                      :id "input"
-                                                      :value (prompter:input prompt-buffer)))
-                                        (:div :id "prompt-modes" ""))
-                                  (markup:raw
-                                   (markup:markup*
-                                    `(:div :id "suggestions"
-                                           ,@(when (invisible-input-p prompt-buffer)
-                                               '(:hidden "true"))))))))))))))
+    (html-set (spinneret:with-html-string
+                (:head (:style (style prompt-buffer)))
+                (:body
+                 (:div :id (if vi-mode? "prompt-area-vi" "prompt-area")
+                       (:div :id "prompt" (prompter:prompt prompt-buffer))
+                       (:div :id "prompt-extra" "[?/?]")
+                       (when vi-mode?
+                         (:div :id "vi-mode" ""))
+                       (:div (:input :type (if (invisible-input-p prompt-buffer)
+                                               "password"
+                                               "text")
+                                     :id "input"
+                                     :value (prompter:input prompt-buffer)))
+                       (:div :id "prompt-modes" ""))
+                 (:div :id "suggestions"
+                       :style (if (invisible-input-p prompt-buffer)
+                                  "visibility:hidden;"
+                                  "visibility:visible;"))))
+              prompt-buffer)))
 
 (defun prompt-render-focus (prompt-buffer)
   (ffi-buffer-evaluate-javascript-async
