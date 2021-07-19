@@ -81,11 +81,11 @@ The handlers take the window as argument."))
   (pushnew buffer (panel-buffers window))
   (ffi-window-add-panel-buffer window buffer side))
 
-(defmethod window-remove-panel-buffer ((window window) (buffer panel-buffer))
+(defmethod window-delete-panel-buffer ((window window) (buffer panel-buffer))
   "Remove a panel buffer from a window."
   (setf (panel-buffers window)
         (remove buffer (panel-buffers window)))
-  (ffi-window-remove-panel-buffer window buffer))
+  (ffi-window-delete-panel-buffer window buffer))
 
 (define-class panel-buffer-source (prompter:source)
   ((prompter:name "Panel buffers")
@@ -102,7 +102,7 @@ The handlers take the window as argument."))
                      :prompt "Delete a panel buffer:"
                      :sources (make-instance 'panel-buffer-source
                                              :window window)))))
-    (mapc (lambda (i) (window-remove-panel-buffer window i)) panels)))
+    (mapc (lambda (i) (window-delete-panel-buffer window i)) panels)))
 
 (defmethod (setf active-buffer) (buffer (window window))
   (setf (slot-value window 'active-buffer) buffer)

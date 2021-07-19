@@ -815,7 +815,7 @@ See `gtk-browser's `modifier-translator' slot."
   (setf (gtk:gtk-widget-size-request (gtk-object buffer))
         (list width -1)))
 
-(define-ffi-method ffi-window-remove-panel-buffer ((window gtk-window) (buffer panel-buffer))
+(define-ffi-method ffi-window-delete-panel-buffer ((window gtk-window) (buffer panel-buffer))
   "Remove a panel buffer from a window."
   (cond ((find buffer (panel-buffers-left window))
          (setf (panel-buffers-left window) (remove buffer (panel-buffers-left window)))
