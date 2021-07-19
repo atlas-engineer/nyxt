@@ -94,13 +94,15 @@ The handlers take the window as argument."))
    (prompter:constructor (lambda (source)
                            (panel-buffers (window source))))))
 
-(define-command-global delete-panel-buffer (&key (window (current-window)))
+(define-command-global delete-panel-buffer (&key (window (current-window))
+                                            panels)
   "Prompt the user to delete a panel buffer."
-  (let ((panels (prompt
-                 :prompt "Delete a panel buffer:"
-                 :sources (make-instance 'panel-buffer-source
-                                         :window window))))
-    (mapcar (lambda (i) (window-remove-panel-buffer window i)) panels)))
+  (let ((panels (or panels
+                    (prompt
+                     :prompt "Delete a panel buffer:"
+                     :sources (make-instance 'panel-buffer-source
+                                             :window window)))))
+    (mapc (lambda (i) (window-remove-panel-buffer window i)) panels)))
 
 (defmethod (setf active-buffer) (buffer (window window))
   (setf (slot-value window 'active-buffer) buffer)
