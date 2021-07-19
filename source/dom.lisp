@@ -168,18 +168,20 @@ JSON should have the format like what `get-document-body-json' produces:
       (name-dom-elements root))))
 
 (defmethod url :around ((element plump:element))
-  (alex:when-let* ((result (call-next-method))
-                   (url (nyxt::ensure-url result)))
-    (render-url
-     (if (valid-url-p result)
-         url
-         (apply #'quri:copy-uri (url (current-buffer))
-                (append (when (quri:uri-scheme url) `(:scheme ,(quri:uri-scheme url)))
-                        (when (quri:uri-userinfo url) `(:userinfo ,(quri:uri-userinfo url)))
-                        (when (quri:uri-host url) `(:host ,(quri:uri-host url)))
-                        (when (quri:uri-port url) `(:port ,(quri:uri-port url)))
-                        (when (quri:uri-path url) `(:path ,(quri:uri-path url)))
-                        (when (quri:uri-fragment url) `(:fragment ,(quri:uri-fragment url)))))))))
+  (flet ((merge-url* (url default-url)
+           (apply #'quri:copy-uri default-url
+                  (append (when (quri:uri-scheme url) `(:scheme ,(quri:uri-scheme url)))
+                          (when (quri:uri-userinfo url) `(:userinfo ,(quri:uri-userinfo url)))
+                          (when (quri:uri-host url) `(:host ,(quri:uri-host url)))
+                          (when (quri:uri-port url) `(:port ,(quri:uri-port url)))
+                          (when (quri:uri-path url) `(:path ,(quri:uri-path url)))
+                          (when (quri:uri-fragment url) `(:fragment ,(quri:uri-fragment url)))))))
+    (alex:when-let* ((result (call-next-method))
+                     (url (nyxt::ensure-url result)))
+      (render-url
+       (if (valid-url-p result)
+           url
+           (merge-url* url (url (current-buffer))))))))
 
 (defmethod url ((element plump:element))
   (when (plump:has-attribute element "href")
