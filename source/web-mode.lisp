@@ -476,19 +476,22 @@ Otherwise go forward to the only child."
   (with-current-html-buffer (output-buffer (format nil "*History-~a*" (id buffer))
                                            'nyxt/history-tree-mode:history-tree-mode)
     (with-data-unsafe (history (history-path buffer))
-      (let* ((mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
-             (tree (eval `(spinneret:with-html-string
-                            (:ul ,(htree:map-owned-tree
-                                   #'(lambda (node)
-                                       `(:li
-                                         (:a :href ,(render-url (url (htree:data node)))
-                                             ,(let ((title (title-or-fallback (htree:data node))))
-                                                (if (eq node (htree:current-owner-node history))
-                                                    `(:b ,title)
-                                                    title)))))
-                                   history
-                                   :include-root t
-                                   :collect-function #'(lambda (a b) `(,@a ,(when b `(:ul ,@b))))))))))
+      (let ((mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
+            (tree (spinneret:with-html-string
+                    (:ul (:raw (htree:map-owned-tree
+                                #'(lambda (node)
+                                    (spinneret:with-html-string
+                                      (:li
+                                       (:a :href (render-url (url (htree:data node)))
+                                           (let ((title (title-or-fallback (htree:data node))))
+                                             (if (eq node (htree:current-owner-node history))
+                                                 (:b title)
+                                                 title))))))
+                                history
+                                :include-root t
+                                :collect-function #'(lambda (a b) (str:concat a (when b
+                                                                                  (spinneret:with-html-string
+                                                                                    (:ul (:raw (str:join "" b)))))))))))))
         (spinneret:with-html-string
           (:body (:h1 "History")
                  (:style (style output-buffer))
@@ -501,20 +504,23 @@ Otherwise go forward to the only child."
                                                  'nyxt/history-tree-mode:history-tree-mode)
     (with-data-unsafe (history (history-path (current-buffer)))
       (let ((mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
-            (tree (eval `(spinneret:with-html-string
-                           (:ul ,(htree:map-tree
-                                  #'(lambda (node)
-                                      `(:li (:a :href ,(render-url (url (htree:data node)))
-                                                ,(let ((title (title-or-fallback (htree:data node))))
-                                                   (cond
-                                                     ((eq node (htree:current-owner-node history))
-                                                      `(:i (:b ,title)))
-                                                     ((htree:owned-p (htree:current-owner history) node)
-                                                      `(:b ,title))
-                                                     (t title)))))) ; Color?  Smaller?
-                                  history
-                                  :include-root t
-                                  :collect-function #'(lambda (a b) `(,@a ,(when b `(:ul ,@b))))))))))
+            (tree (spinneret:with-html-string
+                    (:ul (:raw (htree:map-tree
+                                #'(lambda (node)
+                                    (spinneret:with-html-string
+                                      (:li (:a :href (render-url (url (htree:data node)))
+                                               (let ((title (title-or-fallback (htree:data node))))
+                                                 (cond
+                                                   ((eq node (htree:current-owner-node history))
+                                                    (:i (:b title)))
+                                                   ((htree:owned-p (htree:current-owner history) node)
+                                                    (:b title))
+                                                   (t title))))))) ; Color?  Smaller?
+                                history
+                                :include-root t
+                                :collect-function #'(lambda (a b) (str:concat a (when b
+                                                                                  (spinneret:with-html-string
+                                                                                    (:ul (:raw (str:join "" b)))))))))))))
         (spinneret:with-html-string
           (:body (:h1 "History")
                  (:style (style output-buffer))
