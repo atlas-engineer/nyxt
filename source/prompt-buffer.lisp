@@ -275,50 +275,43 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
          (last-source-index (1- (length sources))))
     ;; TODO: Factor out attribute printing.
     (flet ((source->html (source)
-             (markup:markup
-              (:div :class "source"
-                    (markup:raw
-                     (markup:markup*
-                      `(:div :class "source-name"
-                             ,@(when (and (hide-single-source-header-p prompt-buffer)
-                                          (sera:single sources))
-                                 '(:hidden "true"))
-                             (:span :class "source-glyph" "⛯")
-                             ,(prompter:name source)
-                             ,(if (prompter:hide-suggestion-count-p source)
-                                  ""
-                                  (suggestion-and-mark-count prompt-buffer
-                                                             (prompter:suggestions source)
-                                                             (prompter:marks source)
-                                                             :multi-selection-p (prompter:multi-selection-p source))))))
-                    (when (prompter:suggestions source)
-                      (markup:raw
-                       (markup:markup
-                        (:table :class "source-content"
-                                (markup:raw
-                                 (markup:markup*
-                                  `(:tr
-                                    ,@(when (or (eq (prompter:hide-attribute-header-p source) :always)
-                                                (and (eq (prompter:hide-attribute-header-p source) :single)
-                                                     (sera:single (prompter:active-attributes-keys source))))
-                                        '(:hidden "true"))
-                                    ,@(loop for attribute-key in (prompter:active-attributes-keys source)
-                                            collect `(:th ,attribute-key)))))
-                                (loop ;; TODO: Only print as many lines as fit the height.  But how can we know in advance?
-                                      ;; Maybe first make the table, then add the element one by one _if_ there are into view.
-                                      with max-suggestion-count = 10
-                                      repeat max-suggestion-count
-                                      with cursor-index = (prompter:selected-suggestion-position prompt-buffer)
-                                      for suggestion-index from (max 0 (- cursor-index (/ max-suggestion-count 2)))
-                                      for suggestion in (nthcdr suggestion-index (prompter:suggestions source))
-                                      collect (markup:markup
-                                               (:tr :id (when (equal (list suggestion source)
-                                                                     (multiple-value-list (prompter:selected-suggestion prompt-buffer)))
-                                                          "selection")
-                                                    :class (when (prompter:marked-p source (prompter:value suggestion))
-                                                             "marked")
-                                                    (loop for (nil attribute) in (prompter:active-attributes suggestion :source source)
-                                                          collect (markup:markup (:td attribute))))))))))))))
+             (spinneret:with-html-string
+               (:div :class "source"
+                     (:div :class "source-name"
+                           :style (if (and (hide-single-source-header-p prompt-buffer)
+                                           (sera:single sources))
+                                      "visibility:hidden;"
+                                      "visibility:visible")
+                           (:span :class "source-glyph" "⛯")
+                           (prompter:name source)
+                           (if (prompter:hide-suggestion-count-p source)
+                               ""
+                               (suggestion-and-mark-count prompt-buffer
+                                                          (prompter:suggestions source)
+                                                          (prompter:marks source)
+                                                          :multi-selection-p (prompter:multi-selection-p source))))
+                     (when (prompter:suggestions source)
+                       (:table :class "source-content"
+                               (:tr :style (if (or (eq (prompter:hide-attribute-header-p source) :always)
+                                                   (and (eq (prompter:hide-attribute-header-p source) :single)
+                                                        (sera:single (prompter:active-attributes-keys source))))
+                                               "visibility:hidden;"
+                                               "visibility:visible;")
+                                    (loop for attribute-key in (prompter:active-attributes-keys source)
+                                          collect (:th attribute-key)))
+                               (loop ;; TODO: Only print as many lines as fit the height.
+                                     with max-suggestion-count = 10
+                                     repeat max-suggestion-count
+                                     with cursor-index = (prompter:selected-suggestion-position prompt-buffer)
+                                     for suggestion-index from (max 0 (- cursor-index (/ max-suggestion-count 2)))
+                                     for suggestion in (nthcdr suggestion-index (prompter:suggestions source))
+                                     collect (:tr :id (when (equal (list suggestion source)
+                                                                   (multiple-value-list (prompter:selected-suggestion prompt-buffer)))
+                                                        "selection")
+                                                  :class (when (prompter:marked-p source (prompter:value suggestion))
+                                                           "marked")
+                                                  (loop for (nil attribute) in (prompter:active-attributes suggestion :source source)
+                                                        collect (:td attribute))))))))))
       (ffi-buffer-evaluate-javascript-async
        prompt-buffer
        (ps:ps
