@@ -597,7 +597,7 @@ the "
      (format nil " (Dynamic space size: ~a)" (sb-ext:dynamic-space-size))
      +newline+
 
-     "Features: " (->string *features*) +newline+
+     "Features: " (prin1-to-string *features*) +newline+
      +newline+
 
      (asdf-information) +newline+
