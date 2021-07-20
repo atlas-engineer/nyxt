@@ -497,12 +497,7 @@ See `gtk-browser's `modifier-translator' slot."
         (log:debug key-string keycode character keyval-name))
     (when (prompt-buffer-p buffer)
       (run-thread
-       (let ((input (ffi-buffer-evaluate-javascript
-                     buffer
-                     (ps:ps (ps:chain document (get-element-by-id "input")
-                                      value)))))
-         (set-prompt-input buffer input)
-         (watch-prompt buffer))))
+        (update-prompt-input buffer)))
     (if key-string
         (progn
           (alex:appendf (key-stack sender)

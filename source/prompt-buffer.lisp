@@ -176,7 +176,7 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
     (push prompt-buffer (active-prompt-buffers (window prompt-buffer)))
     (prompt-render prompt-buffer)
     (run-thread
-      (watch-prompt prompt-buffer))
+      (update-prompt-input prompt-buffer))
     (ffi-window-set-prompt-buffer-height
      (window prompt-buffer)
      (or height
@@ -379,42 +379,43 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
   (prompt-render-focus prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
-(defun watch-prompt (prompt-buffer)
+(defun update-prompt-input (prompt-buffer &optional input)
   "This blocks and updates the view."
-  ;; TODO: Stop loop when prompt-buffer is no longer current.
-  (sera:nlet maybe-update-view ((next-source (prompter:next-ready-p prompt-buffer)))
-    (cond
-      ;; Nothing to do:
-      ((eq t next-source)
-       ;; The renderer might have taken been too long to render the prompt
-       ;; buffer and its HTML input, causing the latter to not be in sync with
-       ;; what was send as input to the prompter sources.  Thus when we are done
-       ;; watching, check if we are in sync; if not, try again.
-       (let ((input (ffi-buffer-evaluate-javascript
-                     prompt-buffer
-                     (ps:ps (ps:chain document (get-element-by-id "input")
-                                      value)))))
-         (unless (string= input (prompter:input prompt-buffer))
-           (set-prompt-input prompt-buffer input)
-           (watch-prompt prompt-buffer)))
-       t)
-      ((null next-source) nil)
-      (t ;; At least one source got updated.
-       (prompt-render-suggestions prompt-buffer)
-       (maybe-update-view (prompter:next-ready-p prompt-buffer))))))
+  (let ((input (or input
+                   (ffi-buffer-evaluate-javascript
+                    prompt-buffer
+                    (ps:ps (ps:chain document (get-element-by-id "input")
+                                     value))))))
+    (setf (prompter:input prompt-buffer) input)
+    ;; TODO: Stop loop when prompt-buffer is no longer current.
+    (sera:nlet maybe-update-view ((next-source (prompter:next-ready-p prompt-buffer)))
+      (cond
+        ;; Nothing to do:
+        ((eq t next-source)
+         ;; The renderer might have taken been too long to render the prompt
+         ;; buffer and its HTML input, causing the latter to not be in sync with
+         ;; what was send as input to the prompter sources.  Thus when we are done
+         ;; watching, check if we are in sync; if not, try again.
+         (let ((input (ffi-buffer-evaluate-javascript
+                       prompt-buffer
+                       (ps:ps (ps:chain document (get-element-by-id "input")
+                                        value)))))
+           (unless (string= input (prompter:input prompt-buffer))
+             (update-prompt-input prompt-buffer input)))
+         t)
+        ((null next-source) nil)
+        (t ;; At least one source got updated.
+         (prompt-render-suggestions prompt-buffer)
+         (maybe-update-view (prompter:next-ready-p prompt-buffer)))))))
 
-(defun set-prompt-input (prompt-buffer input) ; TODO: Useless?
-  "Set prompter's INPUT in PROMPT-BUFFER."
-  (setf (prompter:input prompt-buffer)
-        input))
-
-(defun set-prompt-buffer-input (input)
+(defun set-prompt-buffer-input (input &optional (prompt-buffer (current-prompt-buffer)))
   "Set HTML INPUT in PROMPT-BUFFER."
   (ffi-buffer-evaluate-javascript
-   (current-prompt-buffer)
+   prompt-buffer
    (ps:ps
      (setf (ps:chain document (get-element-by-id "input") value)
-           (ps:lisp input)))))
+           (ps:lisp input))))
+  (update-prompt-input prompt-buffer input))
 
 (export-always 'prompt)
 (sera:eval-always
