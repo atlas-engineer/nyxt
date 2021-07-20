@@ -13,12 +13,6 @@
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-;; From Serapeum:
-(defmacro export-always (symbols &optional (package nil package-supplied?))
-  "Like `export', but also evaluated at compile time."
-  `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (export ,symbols ,@(and package-supplied? (list package)))))
-
 (export-always 'list-passwords)
 (defgeneric list-passwords (password-interface)
   (:documentation "Retrieve all available passwords."))
@@ -69,11 +63,6 @@ If PASSWORD-NAME is empty, then generate a new password."))
 
 
 ;;; Commands to wrap together.
-
-(defun executable-find (command)
-  "Search for COMMAND in the PATH and return the absolute file name.
-Return nil if COMMAND is not found anywhere."
-  (serapeum:resolve-executable command))
 
 (export-always '*interfaces*)
 (defvar *interfaces* (list))
