@@ -195,7 +195,7 @@ The handlers take the buffer as argument.")
                        :documentation "Hook run before `buffer-delete' takes effect.
 The handlers take the buffer as argument.")
    (password-interface (make-password-interface)
-                       :type password::password-interface
+                       :type (or null password::password-interface)
                        :documentation "The current password interface.
 See `password:*interfaces*' for the list of all currently registered interfaces.
 To use, say, KeepassXC, set this slot to
