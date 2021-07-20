@@ -19,11 +19,11 @@ Can you reproduce this issue with Epiphany / GNOME Web (https://wiki.gnome.org/A
 - Graphics card and driver:
 - Desktop environment / Window manager name+version:
 - How you installed Nyxt (Guix pack, package manager, build from source):
-- Information from command copy-system-information:
+- Information from `show-system-information`:
 
-  If you can't run copy-system-information, try `nyxt --system-information` from
+  If you can't run `show-system-information`, try `nyxt --system-information` from
   a shell.  It this still does not work, please provide the following:
-  - Nyxt version (from =M-x nyxt-version= or =nyxt --version=):
+  - Nyxt version (from the `nyxt-version` command or `nyxt --version` from a shell):
   - Lisp implementation/version (if built from source):
   - Kernel name+version:
   - WebKitGTK+ | QtWebEngine version:
