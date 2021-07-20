@@ -29,7 +29,6 @@
                cl-css
                cl-html-diff
                cl-json
-               cl-markup
                cl-ppcre
                cl-ppcre-unicode
                cl-prevalence
@@ -396,7 +395,7 @@ See `asdf::*immutable-systems*'."
                (:file "dbscan")))
 
 (defsystem "nyxt/user-interface"
-  :depends-on (cl-markup)
+  :depends-on (spinneret)
   :pathname "libraries/user-interface/"
   :components ((:file "package")
                (:file "user-interface")))
