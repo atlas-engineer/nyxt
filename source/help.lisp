@@ -609,10 +609,25 @@ the "
      (when (sera:resolve-executable "guix")
        (str:concat "Guix version: " (guix-information) +newline+)))))
 
-(define-command copy-system-information ()
-  "Save system information into the clipboard."
+(define-deprecated-command copy-system-information ()
+  "Save system information into the clipboard.
+Deprecated in favour of `show-system-information'."
   (let* ((*print-length* nil)
          (nyxt-information (system-information)))
+    (copy-to-clipboard nyxt-information)
+    (log:info nyxt-information)
+    (echo "System information copied to clipboard.")))
+
+(define-command show-system-information ()
+  "Show buffer with Lisp version, Lisp features, OS kernel, etc.
+System information is also saved into the clipboard."
+  (let* ((*print-length* nil)
+         (nyxt-information (system-information)))
+    (with-current-html-buffer (buffer "*System information*" 'base-mode)
+      (markup:markup
+       (:style (style buffer))
+       (:h1 "System information")
+       (:pre nyxt-information)))
     (copy-to-clipboard nyxt-information)
     (log:info nyxt-information)
     (echo "System information copied to clipboard.")))
