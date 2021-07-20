@@ -610,7 +610,7 @@ System information is also saved into the clipboard."
   (let* ((*print-length* nil)
          (nyxt-information (system-information)))
     (with-current-html-buffer (buffer "*System information*" 'base-mode)
-      (markup:markup
+      (spinneret:with-html-string
        (:style (style buffer))
        (:h1 "System information")
        (:pre nyxt-information)))
