@@ -4,7 +4,7 @@
 (in-package :password)
 
 (define-class keepassxc-interface (password-interface)
-  ((executable (sera:resolve-executable "keepassxc-cli"))
+  ((executable (namestring (sera:resolve-executable "keepassxc-cli")))
    (password-file)
    (master-password nil
                     :type (or null string)))
