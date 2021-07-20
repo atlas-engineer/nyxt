@@ -428,7 +428,8 @@ See `asdf::*immutable-systems*'."
                str
                trivial-clipboard
                uiop
-               nyxt/class-star)
+               nyxt/class-star
+               serapeum)
   :pathname "libraries/password-manager/"
   :components ((:file "package")
                (:file "password")

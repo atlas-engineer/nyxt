@@ -73,9 +73,7 @@ If PASSWORD-NAME is empty, then generate a new password."))
 (defun executable-find (command)
   "Search for COMMAND in the PATH and return the absolute file name.
 Return nil if COMMAND is not found anywhere."
-  (ignore-errors
-   (uiop:run-program (format nil "command -v ~A" command)
-                     :output '(:string :stripped t))))
+  (serapeum:resolve-executable command))
 
 (export-always '*interfaces*)
 (defvar *interfaces* (list))
