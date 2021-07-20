@@ -16,7 +16,6 @@ which external dependencies we are directly relying on.
 - cl-custom-hash-table
 - cl-html-diff
 - cl-json
-- cl-markup
 - cl-ppcre
 - cl-ppcre-unicode
 - cl-prevalence
@@ -36,6 +35,7 @@ which external dependencies we are directly relying on.
 - plump
 - quri
 - serapeum
+- spinneret
 - str
 - swank
 - trivia
