@@ -40,7 +40,8 @@
     (ffi-buffer-evaluate-javascript-async
      (current-buffer)
      (ps:ps (ps:chain document
-                      (write (ps:lisp (markup:markup (:p "Operation cancelled.")))))))))
+                      (write (ps:lisp (spinneret:with-html-string
+                                        (:p "Operation cancelled.")))))))))
 
 (defmethod prompter:object-attributes ((pkg ospm:os-package))
   `(("Name" ,(ospm:name pkg))
@@ -127,66 +128,61 @@
                       :activate t
                       :buffer (make-internal-buffer :title "*OS packages*")))))
     (flet ((format-inputs (inputs)
-             (alex:mappend
-              (lambda (input)
-                `((:a :href (lisp-url
-                             '(%describe-os-package
-                               (ospm:find-os-packages ,input)))
-                      ,input)
-                  " "))
-              inputs))
+             (spinneret:with-html
+               (dolist (input inputs)
+                 (:a :href (lisp-url
+                            '(%describe-os-package
+                              (ospm:find-os-packages input)))
+                     input))))
            (format-outputs (outputs)
-             `(:div
-               (:table
-                ,@(alex:mappend
-                   (lambda (output)
-                     `((:tr
-                        (:td ,(ospm:name output))
-                        ,@(when (ospm:expanded-output-p output)
-                            `((:td
-                               ,(sera:format-file-size-human-readable
-                                 nil
-                                 (ospm:size output)))
-                              (:td ,(ospm:path output)))))))
-                   outputs))
-               ,@(when (and (<= 2 (length outputs))
+             (spinneret:with-html
+               (:div
+                 (:table
+                  (dolist (output outputs)
+                    (:tr
+                     (:td (ospm:name output))
+                     (when (ospm:expanded-output-p output)
+                       (:td
+                        (sera:format-file-size-human-readable
+                         nil
+                         (ospm:size output)))
+                       (:td (ospm:path output))))))
+                 (when (and (<= 2 (length outputs))
                             (ospm:expanded-output-p (first outputs)))
-                   `((:li "Total size: " ,(sera:format-file-size-human-readable
-                                           nil
-                                           (reduce #'+ (mapcar #'ospm:size outputs)))))))))
+                   (:li "Total size: " (sera:format-file-size-human-readable
+                                        nil
+                                        (reduce #'+ (mapcar #'ospm:size outputs)))))))))
       (nyxt::html-set
-       (markup:markup
-        (:style (style buffer))
-        (:h1 "Packages")
-        (:ul
-         (loop for package in packages
-               collect (markup:markup*
-                        `(:li ,(ospm:name package) " " ,(ospm:version package)
-                              (:ul
-                               ,@(when (typep package 'ospm:guix-package)
-                                   `((:li "Outputs: "
-                                          ,@(unless (ospm:expanded-outputs-p package)
-                                              `((:a :class "button"
-                                                    :href ,(lisp-url '(echo "Computing path & size...")
-                                                                     `(ospm:expand-outputs (first (ospm:find-os-packages
-                                                                                                   ,(ospm:name package)
-                                                                                                   :version ,(ospm:version package))))
-                                                                     `(%describe-os-package
-                                                                       (ospm:find-os-packages ,(ospm:name package)
-                                                                                              :version ,(ospm:version package))))
-                                                    "Compute path & size")))
-                                          ,(format-outputs (ospm:outputs package)))
-                                     (:li "Supported systems: " ,(str:join " " (ospm:supported-systems package)))
-                                     (:li "Inputs: " ,@(format-inputs (ospm:inputs package)))
-                                     (:li "Propagated inputs: " ,@(format-inputs (ospm:propagated-inputs package)))
-                                     (:li "Native inputs: " ,@(format-inputs (ospm:native-inputs package)))
-                                     (:li "Location: " ,(ospm:location package))))
-                               (:li "Home-page: " (:a :href ,(ospm:home-page package)
-                                                      ,(ospm:home-page package)))
-                               (:li "Licenses: " ,(str:join ", " (ospm:licenses package)))
-                               (:li "Synopsis: " ,(ospm:synopsis package))
-                               ,(when (typep package 'ospm:guix-package)
-                                  `(:li "Description: " ,(ospm:description package)))))))))
+       (spinneret:with-html-string
+         (:style (style buffer))
+         (:h1 "Packages")
+         (:ul (dolist (package packages)
+                (:li (ospm:name package) " " (ospm:version package)
+                     (:ul
+                      (when (typep package 'ospm:guix-package)
+                        (:li "Outputs: "
+                             (unless (ospm:expanded-outputs-p package)
+                               (:a :class "button"
+                                   :href (lisp-url '(echo "Computing path & size...")
+                                                   `(ospm:expand-outputs (first (ospm:find-os-packages
+                                                                                 ,(ospm:name package)
+                                                                                 :version ,(ospm:version package))))
+                                                   `(%describe-os-package
+                                                     (ospm:find-os-packages ,(ospm:name package)
+                                                                            :version ,(ospm:version package))))
+                                   "Compute path & size"))
+                             (format-outputs (ospm:outputs package)))
+                        (:li "Supported systems: " (str:join " " (ospm:supported-systems package)))
+                        (:li "Inputs: " (format-inputs (ospm:inputs package)))
+                        (:li "Propagated inputs: " (format-inputs (ospm:propagated-inputs package)))
+                        (:li "Native inputs: " (format-inputs (ospm:native-inputs package)))
+                        (:li "Location: " (ospm:location package)))
+                      (:li "Home-page: " (:a :href (ospm:home-page package)
+                                             (ospm:home-page package)))
+                      (:li "Licenses: " (str:join ", " (ospm:licenses package)))
+                      (:li "Synopsis: " (ospm:synopsis package))
+                      (when (typep package 'ospm:guix-package)
+                        (:li "Description: " (ospm:description package))))))))
        buffer))
     (set-current-buffer buffer)
     buffer))
@@ -228,21 +224,20 @@
                       :buffer (make-internal-buffer :title "*OS packages*")))))
     (echo "Computing file list...")
     (nyxt::html-set
-     (markup:markup
-      (:style (style buffer))
-      (:h1 "Package files")
-      (:ul
-       (loop for package-or-output in packages-or-outputs
-             collect (markup:markup*
-                      `(:li ,(prompter:attributes-default package-or-output)
-                            (:ul
-                             ,@(or (mapcar (lambda (file)
-                                             `(:li ,(if (viewable-file-type-p file)
-                                                        `(:a :href ,file ,file)
-                                                        file)))
-
-                                           (ospm:list-files (list package-or-output)))
-                                   '("Could not compute file list.  Build the package first."))))))))
+     (spinneret:with-html-string
+       (:style (style buffer))
+       (:h1 "Package files")
+       (:ul
+        (dolist (package-or-output packages-or-outputs)
+          (:li (prompter:attributes-default package-or-output)
+               (:ul
+                (let ((files (mapcar #'namestring (ospm:list-files (list package-or-output)))))
+                  (if files
+                      (dolist (file files)
+                        (:li (if (viewable-file-type-p file)
+                                 (:a :href file file)
+                                 file)))
+                      "Could not compute file list.  Build the package first.")))))))
      buffer)
     (echo "")
     (set-current-buffer buffer)
@@ -271,13 +266,13 @@ OBJECTS can be a list of packages, a generation, etc."
               (setf (nyxt/os-package-manager-mode:current-process-info mode) process-info)
               (nyxt::html-set "" buffer) ; Reset content between operations.
               (nyxt::html-write
-               (markup:markup
-                (:style (style buffer))
-                (:h1 title)
-                (:p
-                 (:a :class "button"
-                     :href (lisp-url '(nyxt/os-package-manager-mode:cancel-package-operation))
-                     "Cancel")))
+               (spinneret:with-html-string
+                 (:style (style buffer))
+                 (:h1 title)
+                 (:p
+                  (:a :class "button"
+                      :href (lisp-url '(nyxt/os-package-manager-mode:cancel-package-operation))
+                      "Cancel")))
                buffer)
               (format-command-stream
                process-info
@@ -285,12 +280,12 @@ OBJECTS can be a list of packages, a generation, etc."
                  ;; TODO: Make shell formating function and add support for
                  ;; special characters, e.g. progress bars.
                  (nyxt::html-write
-                  (markup:markup
-                   (:code (str:replace-all " " " " s))
-                   (:br))
+                  (spinneret:with-html-string
+                    (:code (str:replace-all " " " " s))
+                    (:br))
                   buffer)))
               (nyxt::html-write
-               (markup:markup (:p "Done."))
+               (spinneret:with-html-string (:p "Done."))
                buffer)))
           (set-current-buffer buffer)
           buffer))))
@@ -363,24 +358,22 @@ OBJECTS can be a list of packages, a generation, etc."
                       :buffer (make-internal-buffer :title "*OS packages*")))))
     (echo "Loading package database...")
     (nyxt::html-set
-     (markup:markup
-      (:style (style buffer))
-      (:h2 (format nil "Packages for generation ~a" (ospm:id generation)))
-      (:p "Profile " profile)
-      (:ul
-       (loop for package-output in (ospm:list-packages (ospm:path generation))
-             for package = (ospm:parent-package package-output)
-             collect
-                (markup:markup*
-                 `(:li (:a :class "button"
-                           :href ,(lisp-url `(%describe-os-package
-                                              (or (ospm:find-os-packages
-                                                   ,(ospm:name package)
-                                                   :version ,(ospm:version package))
-                                                  (ospm:find-os-packages
-                                                   ,(ospm:name package)))))
-                           ,(prompter:attributes-default package-output))
-                       " " ,(ospm:version package))))))
+     (spinneret:with-html-string
+       (:style (style buffer))
+       (:h2 (format nil "Packages for generation ~a" (ospm:id generation)))
+       (:p "Profile " profile)
+       (:ul
+        (dolist (package-output (ospm:list-packages (ospm:path generation)))
+          (let ((package (ospm:parent-package package-output)))
+            (:li (:a :class "button"
+                     :href (lisp-url `(%describe-os-package
+                                       (or (ospm:find-os-packages
+                                            ,(ospm:name package)
+                                            :version ,(ospm:version package))
+                                           (ospm:find-os-packages
+                                            ,(ospm:name package)))))
+                     (prompter:attributes-default package-output))
+                 " " (ospm:version package))))))
      buffer)
     (echo "")
     (set-current-buffer buffer)
