@@ -10,8 +10,14 @@
   "Mode for buffer-listing."
   ((rememberable-p nil)))
 
-(define-command-global list-buffers (&key (cluster nil))
-  "Show the *Buffers* buffer."
+(define-command-global list-buffers (&key (cluster nil)
+                                     linear-view-p) ; TODO: Document `cluster'.
+  "Show a buffer listing all buffer trees.
+Buffers have relationships.  When a buffer is spawned from another one (e.g. by
+middle-clicking on a link), the new buffer is a child buffer.
+This kind of relationships creates 'trees' of buffers.
+
+With LINEAR-VIEW-P, list buffers linearly instead."
   (labels ((cluster-buffers ()
              "Return buffers as hash table, where each value is a cluster (list of documents)."
              (let ((collection (make-instance 'analysis::document-collection)))
@@ -28,21 +34,29 @@
                (analysis::dbscan collection :minimum-points 3 :epsilon 0.065)
                (analysis::clusters collection)))
            (buffer-markup (buffer)
-             "Create the presentation for a buffer."
+             "Present a buffer in HTML."
              (spinneret:with-html
-               (:p (:a :class "button"
-                       :href (lisp-url `(nyxt::delete-buffer :id ,(id buffer))) "✕")
-                   (:a :class "button"
-                       :href (lisp-url `(nyxt::switch-buffer :id ,(id buffer))) "→")
-                   (:span (title buffer) " - "(render-url (url buffer))))))
+              (:p (:a :class "button"
+                      :href (lisp-url `(nyxt::delete-buffer :id ,(id buffer))) "✕")
+                  (:a :class "button"
+                      :href (lisp-url `(nyxt::switch-buffer :id ,(id buffer))) "→")
+                  (:span (title buffer) "  "
+                         (:u (render-url (url buffer)))))))
+           (buffer-tree->html (root-buffer)
+             "Present a single buffer tree in HTML."
+             (spinneret:with-html
+              (:div (buffer-markup root-buffer))
+              (:ul
+               (dolist (child-buffer (nyxt::buffer-children root-buffer))
+                 (:li (buffer-tree->html child-buffer))))))
            (cluster-markup (cluster-id cluster)
-             "Create the presentation for a cluster."
+             "Present a cluster in HTML."
              (spinneret:with-html
                (:div (:h2 (format nil "Cluster ~a" cluster-id))
                      (loop for document in cluster
                            collect (buffer-markup (analysis::source document))))))
            (internal-buffers-markup ()
-             "Create the presentation for the internal buffers."
+             "Present the internal buffers in HTML."
              (spinneret:with-html
                (:div (:h2 "Internal Buffers")
                      (loop for buffer in (buffer-list)
@@ -52,16 +66,24 @@
       (spinneret:with-html-string
         (:style (style buffer))
         (:h1 "Buffers")
-        (:a :class "button" :href (lisp-url '(nyxt/buffer-listing-mode::list-buffers)) "Update")
+        (:a :class "button"
+            :href (lisp-url '(nyxt/buffer-listing-mode::list-buffers))
+            "Tree display")
+        (:a :class "button"
+            :href (lisp-url '(nyxt/buffer-listing-mode::list-buffers :linear-view-p t))
+            "Linear display")
         (:br "")
         (:div
          (if cluster
              (append (list (internal-buffers-markup))
                      (loop for cluster-key being the hash-key
-                           using (hash-value cluster) of (cluster-buffers)
+                             using (hash-value cluster) of (cluster-buffers)
                            collect (cluster-markup cluster-key cluster)))
-             (loop for buffer in (buffer-list)
-                   collect (buffer-markup buffer))))))))
+             (dolist (buffer (buffer-list))
+               (if linear-view-p
+                   (buffer-markup buffer)
+                   (unless (nyxt::buffer-parent buffer)
+                     (buffer-tree->html buffer))))))))))
 
 (define-command-global show-buffers-panel (&key (side :left))
   "Show the bookmarks in a panel."
@@ -84,35 +106,3 @@
                                    (:a :class "button" :href (lisp-url '(nyxt/buffer-listing-mode::show-buffers-panel)) "Update ↺")
                                    (loop for buffer in (buffer-list)
                                          collect (buffer-markup buffer)))))))
-
-(define-command-global list-buffer-trees ()
-  "Draw the list of buffer trees.
-Buffers have relationships.  When a buffer is spawned from another one (e.g. by
-middle-clicking on a link), the new buffer is a child buffer.
-This kind of relationships creates 'trees' of buffers."
-  (labels ((buffer-markup (buffer)
-             "Present a buffer in HTML."
-             (spinneret:with-html
-              (:p (:a :class "button"
-                      :href (lisp-url `(nyxt::delete-buffer :id ,(id buffer))) "✕")
-                  (:a :class "button"
-                      :href (lisp-url `(nyxt::switch-buffer :id ,(id buffer))) "→")
-                  (:span (title buffer) "  "
-                         (:u (render-url (url buffer)))))))
-           (buffer-tree->html (root-buffer)
-             "Render a single buffer tree to HTML."
-             (spinneret:with-html
-              (:div (buffer-markup root-buffer))
-              (:ul
-               (dolist (child-buffer (nyxt::buffer-children root-buffer))
-                 (:li (buffer-tree->html child-buffer)))))))
-    (with-current-html-buffer (buffer "*Buffers trees*" 'nyxt/buffer-listing-mode:buffer-listing-mode)
-      (spinneret:with-html-string
-       (:style (style buffer))
-       (:h1 "Buffers")
-       (:a :class "button" :href (lisp-url '(nyxt/buffer-listing-mode::list-buffer-trees)) "Update")
-       (:br "")
-        (:div
-         (dolist (buffer (buffer-list))
-           (unless (nyxt::buffer-parent buffer)
-             (buffer-tree->html buffer))))))))
