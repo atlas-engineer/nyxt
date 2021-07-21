@@ -44,11 +44,11 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                          (:u (render-url (url buffer)))))))
            (buffer-tree->html (root-buffer)
              "Present a single buffer tree in HTML."
-             (spinneret:with-html
+             (spinneret:with-html-string
               (:div (buffer-markup root-buffer))
               (:ul
                (dolist (child-buffer (nyxt::buffer-children root-buffer))
-                 (:li (buffer-tree->html child-buffer))))))
+                 (:li (:raw (buffer-tree->html child-buffer)))))))
            (cluster-markup (cluster-id cluster)
              "Present a cluster in HTML."
              (spinneret:with-html
@@ -83,7 +83,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                (if linear-view-p
                    (buffer-markup buffer)
                    (unless (nyxt::buffer-parent buffer)
-                     (buffer-tree->html buffer))))))))))
+                     (:raw (buffer-tree->html buffer)))))))))))
 
 (define-command-global show-buffers-panel (&key (side :left))
   "Show the bookmarks in a panel."
