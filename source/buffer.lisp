@@ -249,6 +249,10 @@ separated from one another, so that each has its own behaviour and settings."))
 
 (define-user-class buffer)
 
+(defmethod print-object ((buffer buffer) stream)
+  (print-unreadable-object (buffer stream :type t :identity t)
+    (format stream "~a" (id buffer))))
+
 (export-always 'default-modes)
 (defgeneric default-modes (buffer)
   (:method-combination append)
