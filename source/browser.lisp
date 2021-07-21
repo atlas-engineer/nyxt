@@ -371,7 +371,7 @@ current buffer."
                                              :proxy proxy-url))
              (push download downloads)
              ;; Add a watcher / renderer for monitoring download
-             (let ((download-render (make-instance 'download :url (render-url url))))
+             (let ((download-render (make-instance 'user-download :url (render-url url))))
                (setf (destination-path download-render)
                      (download-manager:filename download))
                (push download-render (downloads *browser*))
