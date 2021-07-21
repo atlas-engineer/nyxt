@@ -305,7 +305,8 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                "display:revert;")
                                     (loop for attribute-key in (prompter:active-attributes-keys source)
                                           collect (:th attribute-key)))
-                               (loop ;; TODO: Only print as many lines as fit the height.
+                               (loop ;; TODO: Only print as many lines as fit the height.  But how can we know in advance?
+                                     ;; Maybe first make the table, then add the element one by one _if_ there are into view.
                                      with max-suggestion-count = 10
                                      repeat max-suggestion-count
                                      with cursor-index = (prompter:selected-suggestion-position prompt-buffer)
