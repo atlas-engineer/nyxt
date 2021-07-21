@@ -57,7 +57,7 @@ be done automatically, but then how would we access the weak pointers?
   "Return the list of all Nyxt object pointers of type CLASS-SYM.
 Example:
 
-  (sb-ext:search-roots (find-nyxt-objects 'user-web-buffer) :print nil)
+  (sb-ext:search-roots (find-nyxt-objects 'user-web-buffer) :print :verbose)
 
 Use `:print :verbose' is you want a human-readable overview.
 See also `find-object-by-address' (SBCL only)."
