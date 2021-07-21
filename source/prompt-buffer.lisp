@@ -195,7 +195,12 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
                                (prompter:prompt prompter2))
                       (string= (prompter:input prompter1)
                                (prompter:input prompter2)))))
-          ;; Delete a previous, similar prompt, if any.
+          ;; Delete previous, similar prompts, if any.
+          (mapc (lambda (old-prompt)
+                  (when (and (prompter= old-prompt prompt-buffer)
+                             (not (eq old-prompt prompt-buffer)))
+                    (ffi-buffer-delete old-prompt)))
+                (old-prompt-buffers *browser*))
           (alex:deletef (old-prompt-buffers *browser*)
                         prompt-buffer
                         :test #'prompter=)
