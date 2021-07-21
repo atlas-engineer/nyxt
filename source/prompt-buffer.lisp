@@ -382,7 +382,8 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                      value))))))
     (setf (prompter:input prompt-buffer) input)
     ;; TODO: Stop loop when prompt-buffer is no longer current.
-    (sera:nlet maybe-update-view ((next-source (prompter:next-ready-p prompt-buffer)))
+    (sera:nlet maybe-update-view ((next-source (when (find prompt-buffer (active-prompt-buffers (window prompt-buffer)))
+                                                 (prompter:next-ready-p prompt-buffer))))
       (cond
         ;; Nothing to do:
         ((eq t next-source)
@@ -399,8 +400,9 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
          t)
         ((null next-source) nil)
         (t ;; At least one source got updated.
-         (prompt-render-suggestions prompt-buffer)
-         (maybe-update-view (prompter:next-ready-p prompt-buffer)))))))
+           (prompt-render-suggestions prompt-buffer)
+           (maybe-update-view (when (find prompt-buffer (active-prompt-buffers (window prompt-buffer)))
+                                (prompter:next-ready-p prompt-buffer))))))))
 
 (defun set-prompt-buffer-input (input &optional (prompt-buffer (current-prompt-buffer)))
   "Set HTML INPUT in PROMPT-BUFFER."
