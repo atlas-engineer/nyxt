@@ -92,7 +92,7 @@ middle-clicking on a link), the new buffer is a child buffer.
 This kind of relationships creates 'trees' of buffers."
   (labels ((buffer-markup (buffer)
              "Present a buffer in HTML."
-             (markup:markup
+             (spinneret:with-html
               (:p (:a :class "button"
                       :href (lisp-url `(nyxt::delete-buffer :id ,(id buffer))) "✕")
                   (:a :class "button"
@@ -101,20 +101,18 @@ This kind of relationships creates 'trees' of buffers."
                          (:u (render-url (url buffer)))))))
            (buffer-tree->html (root-buffer)
              "Render a single buffer tree to HTML."
-             (markup:markup
-              (:div (markup:raw (buffer-markup root-buffer)))
+             (spinneret:with-html
+              (:div (buffer-markup root-buffer))
               (:ul
-               (loop for child-buffer in (nyxt::buffer-children root-buffer)
-                     collect (markup:markup
-                              (:li
-                               (markup:raw (buffer-tree->html child-buffer)))))))))
-    (with-current-html-buffer (buffer "*Buffers*" 'nyxt/buffer-listing-mode:buffer-listing-mode)
-      (markup:markup
+               (dolist (child-buffer (nyxt::buffer-children root-buffer))
+                 (:li (buffer-tree->html child-buffer)))))))
+    (with-current-html-buffer (buffer "*Buffers trees*" 'nyxt/buffer-listing-mode:buffer-listing-mode)
+      (spinneret:with-html-string
        (:style (style buffer))
        (:h1 "Buffers")
-       (:a :class "button" :href (lisp-url '(nyxt/buffer-listing-mode::list-buffers)) "Update")
+       (:a :class "button" :href (lisp-url '(nyxt/buffer-listing-mode::list-buffer-trees)) "Update")
        (:br "")
-       (:div
-        (loop for buffer in (buffer-list)
-              unless (nyxt::buffer-parent buffer)
-                collect (buffer-tree->html buffer)))))))
+        (:div
+         (dolist (buffer (buffer-list))
+           (unless (nyxt::buffer-parent buffer)
+             (buffer-tree->html buffer))))))))
