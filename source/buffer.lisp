@@ -1272,24 +1272,6 @@ generate a new URL query from user input.
                                  (htree:creator-id owner))))
             #'string< :key #'id))))
 
-(defun buffer-first-root (&optional (buffer (current-buffer)))
-  (alex:if-let ((parent (buffer-parent buffer)))
-    (buffer-first-root parent)
-    (first (first (buffer-siblings buffer)))))
-
-(defun buffer-last-child (&optional (buffer (current-buffer)))
-  (alex:if-let ((next-siblings (second (buffer-siblings buffer))))
-    (buffer-last-child (alex:last-elt next-siblings))
-    (alex:if-let ((children (buffer-children buffer)))
-      (buffer-last-child (alex:last-elt children))
-      buffer)))
-
-(defun buffer-next-parent-sibling (&optional (buffer (current-buffer)))
-  (alex:when-let ((parent (buffer-parent buffer)))
-    (alex:if-let ((next-siblings (second (buffer-siblings buffer))))
-      (first next-siblings)
-      (buffer-next-parent-sibling parent))))
-
 (defun buffer-siblings (&optional (buffer (current-buffer)))
   (let* ((current-history (get-data (history-path buffer)))
          (buffers (remove-if (complement (sera:eqs current-history))
@@ -1310,34 +1292,47 @@ generate a new URL query from user input.
          common-parent-buffers
          :key #'id)))))
 
-(defun buffer-sibling-previous (&optional (buffer (current-buffer)))
-  (alex:when-let ((previous-siblings (first (buffer-siblings buffer))))
-    (alex:last-elt previous-siblings)))
-
-(defun buffer-sibling-next (&optional (buffer (current-buffer)))
-  (first (second (buffer-siblings buffer))))
-
 (define-command switch-buffer-previous (&optional (buffer (current-buffer)))
   "Switch to the previous buffer in the buffer tree.
 The tree is browse in a depth-first fashion.
 When there is no previous buffer, go to the last one so as to cycle."
-  (alex:when-let ((previous (or (alex:when-let ((previous-sibling (buffer-sibling-previous buffer)))
-                                  (alex:if-let ((children (buffer-children previous-sibling)))
-                                    (buffer-last-child (first children))
-                                    previous-sibling))
-                                (buffer-parent buffer)
-                                (buffer-last-child buffer))))
-    (set-current-buffer previous)))
+  (labels ((buffer-last-child (&optional (buffer (current-buffer)))
+             (alex:if-let ((next-siblings (second (buffer-siblings buffer))))
+               (buffer-last-child (alex:last-elt next-siblings))
+               (alex:if-let ((children (buffer-children buffer)))
+                 (buffer-last-child (alex:last-elt children))
+                 buffer)))
+           (buffer-sibling-previous (&optional (buffer (current-buffer)))
+             (alex:when-let ((previous-siblings (first (buffer-siblings buffer))))
+               (alex:last-elt previous-siblings))))
+    (alex:when-let ((previous (or (alex:when-let ((previous-sibling (buffer-sibling-previous buffer)))
+                                    (alex:if-let ((children (buffer-children previous-sibling)))
+                                      (buffer-last-child (first children))
+                                      previous-sibling))
+                                  (buffer-parent buffer)
+                                  (buffer-last-child buffer))))
+      (set-current-buffer previous))))
 
 (define-command switch-buffer-next (&optional (buffer (current-buffer)))
   "Switch to the next buffer in the buffer tree.
 The tree is browse in a depth-first fashion.
 When there is no next buffer, go to the first one so as to cycle."
-  (alex:when-let ((next (or (first (buffer-children buffer))
-                            (buffer-sibling-next buffer)
-                            (buffer-next-parent-sibling buffer)
-                            (buffer-first-root buffer))))
-    (set-current-buffer next)))
+  (labels ((buffer-first-root (&optional (buffer (current-buffer)))
+             (alex:if-let ((parent (buffer-parent buffer)))
+               (buffer-first-root parent)
+               (first (first (buffer-siblings buffer)))))
+           (buffer-next-parent-sibling (&optional (buffer (current-buffer)))
+             (alex:when-let ((parent (buffer-parent buffer)))
+               (alex:if-let ((next-siblings (second (buffer-siblings buffer))))
+                 (first next-siblings)
+                 (buffer-next-parent-sibling parent))))
+           (buffer-sibling-next (&optional (buffer (current-buffer)))
+             (first (second (buffer-siblings buffer)))))
+    (alex:when-let ((next (or (first (buffer-children buffer))
+                              (buffer-sibling-next buffer)
+                              (buffer-next-parent-sibling buffer)
+                              (buffer-first-root buffer))))
+      (set-current-buffer next))))
 
 (define-command switch-buffer-last ()
   "Switch to the last showing buffer in the list of buffers.
