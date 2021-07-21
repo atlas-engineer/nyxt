@@ -175,8 +175,9 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
   (when prompt-buffer
     (push prompt-buffer (active-prompt-buffers (window prompt-buffer)))
     (prompt-render prompt-buffer)
-    (run-thread
-      (update-prompt-input prompt-buffer))
+    (run-thread "Show prompt watcher"
+      (let ((prompt-buffer prompt-buffer))
+        (update-prompt-input prompt-buffer)))
     (ffi-window-set-prompt-buffer-height
      (window prompt-buffer)
      (or height
