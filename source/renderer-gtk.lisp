@@ -50,7 +50,8 @@ want to change the behaviour of modifiers, for instance swap 'control' and
    (panel-buffers-right)
    (main-buffer-container)
    (prompt-buffer-container)
-   (prompt-buffer-view)
+   (prompt-buffer-view
+    :documentation "Shared web view between all prompt buffers of this window.")
    (status-container)
    (message-container)
    (message-view)
@@ -915,9 +916,10 @@ See `gtk-browser's `modifier-translator' slot."
 
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
-  (setf (gtk-object buffer) (make-web-view
-                             :context-buffer (unless (internal-buffer-p buffer)
-                                               buffer)))
+  (unless (gtk-object buffer) ; Buffer may already have a view, e.g. the prompt-buffer.
+    (setf (gtk-object buffer) (make-web-view
+                               :context-buffer (unless (internal-buffer-p buffer)
+                                                 buffer))))
   (if (smooth-scrolling buffer)
       (ffi-buffer-enable-smooth-scrolling buffer t)
       (ffi-buffer-enable-smooth-scrolling buffer nil))
