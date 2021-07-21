@@ -496,8 +496,11 @@ See `gtk-browser's `modifier-translator' slot."
         (log:debug key-string keycode character keyval-name modifiers)
         (log:debug key-string keycode character keyval-name))
     (when (prompt-buffer-p buffer)
-      (run-thread
-        (update-prompt-input buffer)))
+      (run-thread "Prompt updater"
+        ;; Rebind prompt-buffer to ensure the watcher does not mix up the
+        ;; different prompt-buffers.
+        (let ((prompt-buffer buffer))
+          (update-prompt-input prompt-buffer))))
     (if key-string
         (progn
           (alex:appendf (key-stack sender)
@@ -801,7 +804,7 @@ See `gtk-browser's `modifier-translator' slot."
            (push buffer (panel-buffers-left window)))
     (:right (gtk:gtk-box-pack-end (panel-buffer-container-right window) (gtk-object buffer))
             (push buffer (panel-buffers-right window))))
-  (setf (gtk:gtk-widget-size-request (gtk-object buffer)) 
+  (setf (gtk:gtk-widget-size-request (gtk-object buffer))
         (list (width buffer) -1))
   (gtk:gtk-widget-show (gtk-object buffer)))
 
