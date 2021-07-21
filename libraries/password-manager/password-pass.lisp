@@ -4,7 +4,7 @@
 (in-package :password)
 
 (define-class password-store-interface (password-interface)
-  ((executable (namestring (sera:resolve-executable "pass")))
+  ((executable (pathname->string (sera:resolve-executable "pass")))
    (sleep-timer (or (uiop:getenv "PASSWORD_STORE_CLIP_TIME") 45))
    (password-directory (or (uiop:getenv "PASSWORD_STORE_DIR")
                            (namestring (format nil "~a/.password-store"

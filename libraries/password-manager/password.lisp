@@ -63,6 +63,10 @@ If PASSWORD-NAME is empty, then generate a new password."))
 
 
 ;;; Commands to wrap together.
+(defun pathname->string (pathname)
+  "Like `namestring' but return NIL if PATHNAME is NIL."
+  (when pathname
+    (namestring pathname)))
 
 (export-always '*interfaces*)
 (defvar *interfaces* (list))

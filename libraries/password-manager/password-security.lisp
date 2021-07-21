@@ -7,7 +7,7 @@
 ;;; on BSD and Darwin systems to interface with the system keychain
 
 (define-class security-interface (password-interface)
-  ((executable (namestring (sera:resolve-executable "security"))))
+  ((executable (pathname->string (sera:resolve-executable "security"))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
