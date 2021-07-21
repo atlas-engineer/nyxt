@@ -318,7 +318,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                            "marked")
                                                   (loop for (nil attribute) in (prompter:active-attributes suggestion :source source)
                                                         collect (:td attribute))))))))))
-      (ffi-buffer-evaluate-javascript-async
+      (ffi-buffer-evaluate-javascript
        prompt-buffer
        (ps:ps
          (setf (ps:chain document (get-element-by-id "suggestions") |innerHTML|)
