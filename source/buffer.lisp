@@ -1298,7 +1298,7 @@ generate a new URL query from user input.
 
 (define-command switch-buffer-previous (&optional (buffer (current-buffer)))
   "Switch to the previous buffer in the buffer tree.
-The tree is browse in a depth-first fashion.
+The tree is browsed in a depth-first fashion.
 When there is no previous buffer, go to the last one so as to cycle."
   (labels ((buffer-last-child (&optional (buffer (current-buffer)))
              (alex:if-let ((next-siblings (second (buffer-siblings buffer))))
@@ -1319,13 +1319,13 @@ When there is no previous buffer, go to the last one so as to cycle."
 
 (define-command switch-buffer-next (&optional (buffer (current-buffer)))
   "Switch to the next buffer in the buffer tree.
-The tree is browse in a depth-first fashion.
+The tree is browsed in a depth-first fashion.
 When there is no next buffer, go to the first one so as to cycle."
-  (labels ((buffer-first-root (&optional (buffer (current-buffer)))
+  (labels ((buffer-first-root (buffer)
              (alex:if-let ((parent (buffer-parent buffer)))
                (buffer-first-root parent)
                (first (first (buffer-siblings buffer)))))
-           (buffer-next-parent-sibling (&optional (buffer (current-buffer)))
+           (buffer-next-parent-sibling (buffer)
              (alex:when-let ((parent (buffer-parent buffer)))
                (alex:if-let ((next-siblings (second (buffer-siblings buffer))))
                  (first next-siblings)
