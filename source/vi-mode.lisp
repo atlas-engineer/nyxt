@@ -15,7 +15,14 @@ in your configuration file.
 Example:
 
 \(define-configuration buffer
-  ((default-modes (append '(vi-normal-mode) %slot-default%))))"
+  ((default-modes (append '(vi-normal-mode) %slot-default%))))
+
+In `vi-insert-mode', CUA bindings are still available unless
+`application-mode-p' is non-nil in `vi-insert-mode'.
+You can also enable `application-mode' manually to forward all keybindings to
+the web page.
+
+See also `vi-insert-mode'."
   ((glyph "vi:N")
    (previous-keymap-scheme-name nil
     :type (or keymap:scheme-name null)
@@ -48,7 +55,8 @@ vi-normal-mode.")
 
 (define-command switch-to-vi-normal-mode (&optional (mode (find-submode (or (current-prompt-buffer) (current-buffer))
                                                                         'vi-insert-mode)))
-  "Switch to the mode remembered to be the matching VI-normal one for this MODE."
+  "Switch to the mode remembered to be the matching VI-normal one for this MODE.
+See also `vi-normal-mode' and `vi-insert-mode'."
   (when mode
     (enable-modes (list (or (and (previous-vi-normal-mode mode)
                                  (mode-name (previous-vi-normal-mode mode)))
@@ -73,8 +81,13 @@ vi-normal-mode.")
     (define-scheme "vi"
       scheme:vi-insert
       (list
+       "C-z" 'nyxt/application-mode:application-mode
        "escape" 'switch-to-vi-normal-mode
        "button1" 'vi-button1)))
+   (application-mode-p nil
+                       :type boolean
+                       :documentation "Whether to default to `application-mode'
+                       when entering `vi-insert-mode'.")
    (destructor
     (lambda (mode)
       (setf (keymap-scheme-name (buffer mode))
@@ -90,11 +103,14 @@ vi-normal-mode.")
                 (previous-vi-normal-mode mode)
                 vi-normal))
         (vi-normal-mode :activate nil :buffer buffer)
-        (setf (keymap-scheme-name buffer) scheme:vi-insert))))))
+        (setf (keymap-scheme-name buffer) scheme:vi-insert)
+        (when (application-mode-p mode)
+          (nyxt/application-mode:application-mode :active t)))))))
 
 (define-command vi-button1 (&optional (buffer (or (current-prompt-buffer)
                                                   (current-buffer))))
-  "Enable VI insert mode when focus is on an input element on the web page."
+  "Enable VI insert mode when focus is on an input element on the web page.
+See also `vi-normal-mode' and `vi-insert-mode'."
   ;; First we generate a button1 event so that the web view element is clicked
   ;; (e.g. a text field gets focus).
   (ffi-generate-input-event
