@@ -83,7 +83,7 @@ class."
   (labels ((urls-visited-over-threshold (threshold)
              "The local function `urls-visited-over-thresold' returns all URLs
              instances which were visited more times than the threshold."
-             (let* ((history-entries-above-threshold
+             (let ((history-entries-above-threshold
                       (remove-if-not #'(lambda (e) (> (implicit-visits e) threshold))
                                      history-entries)))
                (mapcar #'url history-entries-above-threshold)))
@@ -102,6 +102,36 @@ class."
             (if-confirm ("Bookmark ~a?" url-address)
                         (bookmark-url :url url-address)))))))
 
+;; Inserir no REPL para ter o input
+;; (defvar local-repl-history-entries (prompt
+;;                                     :prompt "Select entries"
+;;                                     :sources (list (make-instance 'history-disowned-source
+;;                                                                   :buffer (current-buffer)))))
+
+(defun pierre-bookmark-frequent-visit (history-entries)
+  "Bookmark frequently visited history-entries URLs."
+  (let ((bookmark-urls
+          (mapcar #'url (get-data (bookmarks-path (current-buffer))))))
+    (labels ((urls-visited-over-threshold (threshold)
+               "The local function `urls-visited-over-thresold' returns all URLs
+             instances which were visited more times than the threshold."
+               (let ((history-entries-above-threshold
+                       (remove-if-not #'(lambda (e) (> (implicit-visits e) threshold))
+                                      history-entries)))
+                 (mapcar #'url history-entries-above-threshold)))
+             (bookmarked-url-p (url)
+               "The local function  `bookmarked-url-p' returns the URL
+            itself if it is new to the bookmark list and NIL if it is
+            already there."
+               (if (member url bookmark-urls :test #'quri:uri=)
+                   nil
+                   url)))
+      (dolist (url (urls-visited-over-threshold (url->bookmark-visit-threshold *browser*)))
+        (let ((url-address (render-url url)))
+          (unless (bookmarked-url-p url)
+                  (if-confirm ("Bookmark ~a?" url-address)
+                              (bookmark-url :url url-address))))))))
+
 (define-command bookmark-frequent-history-entries (&key (buffer (current-buffer)))
   "Prompts the user for history entries (the user can select them all), and then
 bookmark those that are frequently visited but not already bookmarked. See also the
@@ -110,7 +140,7 @@ bookmark those that are frequently visited but not already bookmarked. See also 
                   :prompt "Select entries"
                   :sources (list (make-instance 'history-disowned-source
                                                 :buffer buffer)))))
-    (bookmark-frequent-visit entries)))
+    (pierre-bookmark-frequent-visit entries)))
 
 (declaim (ftype (function (quri:uri &key (:title string) (:buffer buffer)) t) history-add))
 (defun history-add (url &key (title "") (buffer (current-buffer)))
