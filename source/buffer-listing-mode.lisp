@@ -35,13 +35,16 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                (analysis::clusters collection)))
            (buffer-markup (buffer)
              "Present a buffer in HTML."
-             (spinneret:with-html
-              (:p (:a :class "button"
-                      :href (lisp-url `(nyxt::delete-buffer :id ,(id buffer))) "✕")
-                  (:a :class "button"
-                      :href (lisp-url `(nyxt::switch-buffer :id ,(id buffer))) "→")
-                  (:span (title buffer) "  "
-                         (:u (render-url (url buffer)))))))
+             ;; To avoid spurious spaces.
+             ;; See https://github.com/ruricolist/spinneret/issues/37.
+             (let ((*print-pretty* nil))
+               (spinneret:with-html
+                 (:p (:a :class "button"
+                         :href (lisp-url `(nyxt::delete-buffer :id ,(id buffer))) "✕")
+                     (:a :class "button"
+                         :href (lisp-url `(nyxt::switch-buffer :id ,(id buffer))) "→")
+                     (:span (title buffer) "  "
+                            (:u (render-url (url buffer))))))))
            (buffer-tree->html (root-buffer)
              "Present a single buffer tree in HTML."
              (spinneret:with-html-string
