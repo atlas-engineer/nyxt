@@ -848,19 +848,22 @@ See `gtk-browser's `modifier-translator' slot."
       (run-thread
         (let ((files (mapcar
                       #'namestring
-                      (prompt :prompt (format
-                                       nil "File~@[s~*~] to input"
-                                       (webkit:webkit-file-chooser-request-select-multiple
-                                        file-chooser-request))
-                              :input (or
-                                      (and
-                                       (webkit:webkit-file-chooser-request-selected-files
-                                        file-chooser-request)
-                                       (first
-                                        (webkit:webkit-file-chooser-request-selected-files
-                                         file-chooser-request)))
-                                      (namestring (uiop:getcwd)))
-                              :sources (list (make-instance 'file-source))))))
+                      (handler-case
+                          (prompt :prompt (format
+                                           nil "File~@[s~*~] to input"
+                                           (webkit:webkit-file-chooser-request-select-multiple
+                                            file-chooser-request))
+                                  :input (or
+                                          (and
+                                           (webkit:webkit-file-chooser-request-selected-files
+                                            file-chooser-request)
+                                           (first
+                                            (webkit:webkit-file-chooser-request-selected-files
+                                             file-chooser-request)))
+                                          (namestring (uiop:getcwd)))
+                                  :sources (list (make-instance 'file-source)))
+                        (nyxt-prompt-buffer-canceled ()
+                          nil)))))
           (if files
               (webkit:webkit-file-chooser-request-select-files
                file-chooser-request
