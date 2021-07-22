@@ -104,7 +104,8 @@ class."
 
 (define-command bookmark-frequent-history-entries (&key (buffer (current-buffer)))
   "Prompts the user for history entries (the user can select them all), and then
-call bookmark-frequent-visit over the selection."
+bookmark those that are frequently visited but not already bookmarked. See also the
+`url->bookmark-visit-threshold' browser slot."
   (let ((entries (prompt
                   :prompt "Select entries"
                   :sources (list (make-instance 'history-disowned-source
