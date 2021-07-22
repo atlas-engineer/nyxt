@@ -86,7 +86,7 @@ class."
              (let* ((history-entries-above-threshold
                       (remove-if-not #'(lambda (e) (> (implicit-visits e) threshold))
                                      history-entries)))
-               (mapcar #'(lambda (e) (url e)) history-entries-above-threshold)))
+               (mapcar #'url history-entries-above-threshold)))
            (bookmarked-url-p (url)
              "The local function  "`bookmarked-url-p" returns the URL
             itself if it is new to the bookmark list and NIL if it is
