@@ -78,16 +78,14 @@ class."
   "Return a new global history tree for `history-entry' data."
   (htree:make :key 'history-tree-key :current-owner-id (id buffer)))
 
-(defun bookmark-frequent-visit (history-entries-selected)
-  "Add frequently visited URLs that are not included in the bookmarks.  The
-   sample space of visited URLs is received as an argument and previously
-   defined by the user. "
+(defun bookmark-frequent-visit (history-entries)
+  "Bookmark frequently visited history-entries URLs."
   (labels ((urls-visited-over-threshold (threshold)
              "The local function "`urls-visited-over-thresold" returns all URLs
              instances which were visited more times than the threshold."
              (let* ((history-entries-above-threshold
                       (remove-if-not #'(lambda (e) (> (implicit-visits e) threshold))
-                                     history-entries-selected)))
+                                     history-entries)))
                (mapcar #'(lambda (e) (url e)) history-entries-above-threshold)))
            (bookmarked-url-p (url)
              "The local function  "`bookmarked-url-p" returns the URL
