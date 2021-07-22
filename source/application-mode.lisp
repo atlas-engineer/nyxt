@@ -3,6 +3,7 @@
 
 (uiop:define-package :nyxt/application-mode
   (:use :common-lisp :nyxt)
+  (:import-from #:keymap #:define-key #:define-scheme)
   (:documentation "Forward all keybindings to the web view except those in the `override-map'."))
 (in-package :nyxt/application-mode)
 
@@ -14,11 +15,18 @@
 ;;; the keymaps of all modes (except the override-map).
 
 (define-mode application-mode ()
-  "Mode that forwards all keys to the renderer."
-  ((destructor
+  "Mode that forwards all keys to the renderer.
+See the mode `keymap-scheme' for special bindings."
+  ((keymap-scheme
+    (define-scheme "application"
+      scheme:cua
+      (list
+       "C-z" 'application-mode)))
+   (destructor
     (lambda (mode)
       (hooks:remove-hook (current-keymaps-hook (buffer mode))
-                         'keep-override-map)))
+                         'keep-override-map)
+      (echo "Application-mode disabled.")))
    (constructor
     (lambda (mode)
       (if (current-keymaps-hook (buffer mode))
@@ -26,11 +34,14 @@
                           (make-handler-keymaps-buffer #'keep-override-map))
           (make-hook-keymaps-buffer
            :combination #'hooks:combine-composed-hook
-           :handlers (list #'keep-override-map)))))))
+           :handlers (list #'keep-override-map)))
+      (echo "Application-mode enabled.")))))
 
 (declaim (ftype (function (list-of-keymaps buffer) (values list-of-keymaps buffer))
                 keep-override-map))
 (defun keep-override-map (keymaps buffer)
   (if (nyxt::active-prompt-buffers (current-window))
       (values keymaps buffer)
-      (values (list (override-map buffer)) buffer)))
+      (values (list (override-map buffer)
+                    (keymap (find-submode buffer 'application-mode)))
+              buffer)))
