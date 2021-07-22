@@ -91,9 +91,9 @@ class."
              "The local function  `bookmarked-url-p' returns the URL
             itself if it is new to the bookmark list and NIL if it is
             already there."
-             (let ((bookmarks-address-list
+             (let ((bookmark-urls
                      (mapcar #'url (get-data (bookmarks-path (current-buffer))))))
-               (if (member url bookmarks-address-list :test #'quri:uri=)
+               (if (member url bookmark-urls :test #'quri:uri=)
                    nil
                    url))))
     (dolist (url (urls-visited-over-threshold (url->bookmark-visit-threshold *browser*)))
