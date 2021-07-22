@@ -11,7 +11,7 @@
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
 
 (define-mode style-mode ()
-  "Mode for styling documents."
+  "A mode for styling documents."
   ((css-cache-path (make-instance 'css-cache-data-path
                                   :dirname (uiop:xdg-data-home
                                             nyxt::+data-root+
