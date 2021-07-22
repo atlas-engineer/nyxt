@@ -1327,7 +1327,7 @@ When there is no next buffer, go to the first one so as to cycle."
                (first (first (buffer-siblings buffer)))))
            (buffer-next-parent-sibling (buffer)
              (alex:when-let ((parent (buffer-parent buffer)))
-               (alex:if-let ((next-siblings (second (buffer-siblings buffer))))
+               (alex:if-let ((next-siblings (second (buffer-siblings parent))))
                  (first next-siblings)
                  (buffer-next-parent-sibling parent))))
            (buffer-sibling-next (&optional (buffer (current-buffer)))
