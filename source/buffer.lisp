@@ -1282,19 +1282,26 @@ generate a new URL query from user input.
                              (buffer-list)
                              :key (alex:compose #'get-data #'history-path))))
     (with-data-unsafe (history (history-path buffer))
-      (let* ((owner (htree:owner history (id buffer)))
-             (current-parent-id (when owner (htree:creator-id owner)))
-             (common-parent-buffers
-               (sera:filter
-                (sera:equals current-parent-id)
-                buffers
-                :key (lambda (b) (alex:when-let ((owner (htree:owner history (id b))))
-                                   (htree:creator-id owner)))))
-             (common-parent-buffers
-               (sort common-parent-buffers #'string< :key #'id)))
-        (sera:split-sequence-if (sera:equals (id buffer))
-         common-parent-buffers
-         :key #'id)))))
+      (flet ((existing-creator-id (owner)
+               "If owner's creator does not exist anymore
+(i.e. parent has been deleted), return NIL so has mimick top-level owners."
+               (if (htree:owner history (htree:creator-id owner))
+                   (htree:creator-id owner)
+                   nil)))
+        (let* ((owner (htree:owner history (id buffer)))
+               (current-parent-id (when owner (existing-creator-id owner)))
+               (common-parent-buffers
+                 (sera:filter
+                  (sera:equals current-parent-id)
+                  buffers
+                  :key (lambda (b)
+                         (alex:when-let ((owner (htree:owner history (id b))))
+                           (existing-creator-id owner)))))
+               (common-parent-buffers
+                 (sort common-parent-buffers #'string< :key #'id)))
+          (sera:split-sequence-if (sera:equals (id buffer))
+                                  common-parent-buffers
+                                  :key #'id))))))
 
 (define-command switch-buffer-previous (&optional (buffer (current-buffer)))
   "Switch to the previous buffer in the buffer tree.
