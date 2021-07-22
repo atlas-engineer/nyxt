@@ -92,9 +92,7 @@ class."
             itself if it is new to the bookmark list and NIL if it is
             already there."
              (let ((bookmarks-address-list
-                     (mapcar #'(lambda (e) (url e))
-                             (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
-                               bookmarks))))
+                     (mapcar #'url (get-data (bookmarks-path (current-buffer))))))
                (if (member url bookmarks-address-list :test #'quri:uri=)
                    nil
                    url))))
