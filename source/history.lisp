@@ -81,7 +81,7 @@ class."
 (defun bookmark-frequent-visit (history-entries)
   "Bookmark frequently visited history-entries URLs."
   (labels ((urls-visited-over-threshold (threshold)
-             "The local function "`urls-visited-over-thresold" returns all URLs
+             "The local function `urls-visited-over-thresold' returns all URLs
              instances which were visited more times than the threshold."
              (let* ((history-entries-above-threshold
                       (remove-if-not #'(lambda (e) (> (implicit-visits e) threshold))
