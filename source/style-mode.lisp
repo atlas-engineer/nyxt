@@ -80,7 +80,7 @@ If nil, look for CSS in `style-file' or `style-url'.")
 
 (define-mode dark-mode (style-mode)
   "A mode for styling documents with a dark background. Unlike other modes, to
-disable `dark-mode' it is necessary to disable it and reload the buffer."
+effectively disable `dark-mode' you must also reload the buffer."
   ((css-cache-path (make-instance 'css-cache-data-path
                                   :dirname (uiop:xdg-data-home
                                             nyxt::+data-root+
