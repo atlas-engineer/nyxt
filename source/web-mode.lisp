@@ -67,6 +67,7 @@ and to index the top of the page.")
     (define-scheme "web"
       scheme:cua
       (list
+       "C-z" 'nyxt/application-mode:application-mode
        "C-M-right" 'history-forwards-all-query
        "C-M-left" 'history-all-query
        "C-shift-h" 'history-all-query
