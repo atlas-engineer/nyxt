@@ -848,11 +848,14 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 Run WINDOW's `window-set-buffer-hook' over WINDOW and BUFFER before
 proceeding."
   (hooks:run-hook (window-set-buffer-hook window) window buffer)
-  ;; The current buffer last-access time is set to now to ensure it becomes the
-  ;; second newest buffer.  If we didn't update the access time, the buffer
-  ;; last-access time could be older than, say, buffers opened in the
-  ;; background.
-  (setf (last-access (active-buffer window)) (local-time:now))
+  ;; When not focusing, that is, when previewing we don't update the
+  ;; `last-access' so as to not disturb the ordering.
+  (when focus
+    ;; The current buffer last-access time is set to now to ensure it becomes the
+    ;; second newest buffer.  If we didn't update the access time, the buffer
+    ;; last-access time could be older than, say, buffers opened in the
+    ;; background.
+    (setf (last-access (active-buffer window)) (local-time:now)))
   (let ((window-with-same-buffer (find buffer (delete window (window-list))
                                        :key #'active-buffer)))
     ;; When switching buffers, `current-buffer' is still the old one,
@@ -878,7 +881,8 @@ proceeding."
         (progn
           (ffi-window-set-buffer window buffer :focus focus)
           (setf (active-buffer window) buffer)))
-    (setf (last-access buffer) (local-time:now))
+    (when focus
+      (setf (last-access buffer) (local-time:now)))
     ;; So that `current-buffer' returns the new value if buffer was
     ;; switched inside a `with-current-buffer':
     (setf %buffer nil)
@@ -937,15 +941,19 @@ proceeding."
   (:export-class-name-p t))
 (define-user-class buffer-source)
 
-(-> switch-buffer (&key (:id string)) *)
-(define-command switch-buffer (&key id)
-  "Switch the active buffer in the current window."
+(-> switch-buffer (&key (:id string) (:current-is-last-p boolean)) *)
+(define-command switch-buffer (&key id (current-is-last-p t))
+  "Switch the active buffer in the current window.
+Buffers are ordered by last access.
+With CURRENT-IS-LAST-P, the current buffer is listed last so as to list the
+second latest buffer first."
   (if id
       (set-current-buffer (buffers-get id))
       (prompt
        :prompt "Switch to buffer"
        :sources (list (make-instance 'user-buffer-source
-                                     :constructor (buffer-initial-suggestions :current-is-last-p nil))))))
+                                     :constructor (buffer-initial-suggestions
+                                                   :current-is-last-p current-is-last-p))))))
 
 (define-command switch-buffer-domain (&key domain (buffer (current-buffer)))
   "Switch the active buffer in the current window from the current domain."
