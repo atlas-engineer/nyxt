@@ -12,7 +12,6 @@ This mode is a good candidate to be passed to `make-buffer'."
                     scheme:cua
                     (list
                      "C-q" 'quit
-                     "C-z" 'nyxt/application-mode:application-mode
                      "C-[" 'switch-buffer-previous
                      "C-]" 'switch-buffer-next
                      "M-down" 'switch-buffer
