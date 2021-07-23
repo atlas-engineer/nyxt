@@ -695,10 +695,18 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
   url)
 
 (define-command show-qrcode-of-current-url (&optional (buffer (current-buffer)))
-  "Show the QR code containing the URL for the current buffer."
+  "In a new buffer, show the QR code containing the URL for the current buffer."
   (with-current-buffer buffer
-    (let* ((pathname (expand-path
-                     (make-instance 'data-path :basename "qrcode.png")))
-          (url (quri:render-uri (url (current-buffer)))))
-      (cl-qrencode:encode-png url :fpath pathname)
-      (make-buffer-focus :url (quri::make-uri-file :path pathname)))))
+    (let* ((stream (flexi-streams:make-in-memory-output-stream))
+           (url (quri:render-uri (url (current-buffer))))
+           (title (format nil "Buffer ~a URL QRcode " (id buffer))))
+      (cl-qrencode:encode-png-stream url stream)
+      (with-current-html-buffer (buffer (format nil "*~a*" title) 'base-mode)
+        (spinneret:with-html-string
+          (:style (style buffer))
+          (:h1 title)
+          (:p (:u url))
+          (:p (:img :src (str:concat "data:image/png;base64,"
+                                     (cl-base64:usb8-array-to-base64-string
+                                      (flexi-streams:get-output-stream-sequence stream)))
+                    :alt url)))))))
