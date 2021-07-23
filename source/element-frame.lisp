@@ -178,11 +178,5 @@
        (frame-element-clear)))))
 
 (defun frame-source-selection ()
-  (alex:when-let* ((frame-source 
-                    (find-if 
-                     (lambda (s)
-                       (closer-mop:subclassp (class-of s)
-                                             (find-class 'frame-source)))
-                     (prompter:sources (current-prompt-buffer)))))
-    (remove-duplicates (mapcar #'url (frame-element-get-selection))
-                       :test #'equal)))
+  (remove-duplicates (mapcar #'url (frame-element-get-selection))
+                     :test #'equal))
