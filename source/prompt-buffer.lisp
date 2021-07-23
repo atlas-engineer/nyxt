@@ -280,8 +280,8 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                      (:div :class "source-name"
                            :style (if (and (hide-single-source-header-p prompt-buffer)
                                            (sera:single sources))
-                                      "visibility:hidden;"
-                                      "visibility:visible")
+                                      "dislay:none;"
+                                      "display:revert")
                            (:span :class "source-glyph" "⛯")
                            (prompter:name source)
                            (if (prompter:hide-suggestion-count-p source)
@@ -295,8 +295,8 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                (:tr :style (if (or (eq (prompter:hide-attribute-header-p source) :always)
                                                    (and (eq (prompter:hide-attribute-header-p source) :single)
                                                         (sera:single (prompter:active-attributes-keys source))))
-                                               "visibility:hidden;"
-                                               "visibility:visible;")
+                                               "display:none;"
+                                               "display:revert;")
                                     (loop for attribute-key in (prompter:active-attributes-keys source)
                                           collect (:th attribute-key)))
                                (loop ;; TODO: Only print as many lines as fit the height.
