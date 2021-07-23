@@ -29,12 +29,8 @@ See the mode `keymap-scheme' for special bindings."
       (echo "Application-mode disabled.")))
    (constructor
     (lambda (mode)
-      (if (current-keymaps-hook (buffer mode))
-          (hooks:add-hook (current-keymaps-hook (buffer mode))
-                          (make-handler-keymaps-buffer #'keep-override-map))
-          (make-hook-keymaps-buffer
-           :combination #'hooks:combine-composed-hook
-           :handlers (list #'keep-override-map)))
+      (hooks:add-hook (current-keymaps-hook (buffer mode))
+                      (make-handler-keymaps-buffer #'keep-override-map))
       (echo "Application-mode enabled.")))))
 
 (declaim (ftype (function (list-of-keymaps buffer) (values list-of-keymaps buffer))
