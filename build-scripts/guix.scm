@@ -150,6 +150,7 @@
     (inputs
      `(("alexandria" ,cl-alexandria)
        ("bordeaux-threads" ,cl-bordeaux-threads)
+       ("cl-base64" ,cl-base64)
        ("cl-calispel" ,cl-calispel)
        ("cl-containers" ,cl-containers)
        ("cl-css" ,cl-css)
@@ -164,6 +165,7 @@
        ("cluffer" ,cl-cluffer)
        ("dexador" ,cl-dexador)
        ("enchant" ,cl-enchant)
+       ("flexi-streams" ,cl-flexi-streams)
        ("fset" ,cl-fset)
        ("hu.dwim.defclass-star" ,cl-hu.dwim.defclass-star)
        ("iolib" ,cl-iolib)

@@ -26,6 +26,7 @@
   :depends-on (alexandria
                bordeaux-threads
                calispel
+               cl-base64
                cl-css
                cl-html-diff
                cl-json
@@ -38,6 +39,7 @@
                moptilities
                dexador
                enchant
+               flexi-streams
                iolib
                iolib/os
                local-time
