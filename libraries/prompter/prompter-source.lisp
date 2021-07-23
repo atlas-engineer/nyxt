@@ -342,7 +342,7 @@ interface.")
    (update-notifier (make-channel)
                     :type calispel:channel
                     :documentation "A channel which is written to when `filter'
-commits a change to `suggetsions'.  A notification is only send if at least
+commits a change to `suggestions'.  A notification is only sent if at least
 `notification-delay' has passed.  This is useful so that clients don't have to
 poll `suggestions' for changes.")
 
