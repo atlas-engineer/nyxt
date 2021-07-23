@@ -153,44 +153,36 @@
     (remove-overlay)))
 
 (define-class frame-source (prompter:source)
-  ((prompter:name "Selection Frame (confirm with C-s)")
+  ((prompter:name "Selection Frame")
    (buffer :accessor buffer :initarg :buffer)
-   (channel :accessor channel :initarg :channel)
+   (prompter:filter-preprocessor (lambda (initial-suggestions-copy source input)
+                                   (declare (ignore initial-suggestions-copy source input))
+                                   (frame-source-selection)))
    (prompter:constructor (lambda (source)
+                           (declare (ignore source))
                            (frame-element-select)
-                           (calispel:? (channel source))))))
+                           (list)))))
 
 (define-command select-frame-new-buffer (&key (buffer (current-buffer)))
   "Select a frame and open the links in new buffers."
   (prompt
-   :extra-modes '(frame-select-mode)
    :prompt "Open selected links in new buffers:"
    :sources (list (make-instance 'frame-source
                                  :buffer buffer
                                  :multi-selection-p t
-                                 :channel (make-instance 'calispel:channel)
                                  :actions (list (make-command open-new-buffers (urls)
-                                                  (mapcar (lambda (i) (make-buffer :url (quri:uri i))) urls)))))
+                                                              (mapcar (lambda (i) (make-buffer :url (quri:uri i))) urls)))))
    :after-destructor
    (lambda ()
      (with-current-buffer buffer
        (frame-element-clear)))))
 
-(define-mode frame-select-mode ()
-  "Mode for helping in frame selections."
-  ((keymap-scheme
-    (define-scheme "frame"
-      scheme:cua
-      (list
-       "C-s" 'frame-source-confirm-selection)))))
-
-(defun frame-source-confirm-selection ()
+(defun frame-source-selection ()
   (alex:when-let* ((frame-source 
                     (find-if 
                      (lambda (s)
                        (closer-mop:subclassp (class-of s)
                                              (find-class 'frame-source)))
-                     (prompter:sources (current-prompt-buffer))))
-                   (selection (remove-duplicates (mapcar #'url (frame-element-get-selection))
-                                                 :test #'equal)))
-    (calispel:! (channel frame-source) selection)))
+                     (prompter:sources (current-prompt-buffer)))))
+    (remove-duplicates (mapcar #'url (frame-element-get-selection))
+                       :test #'equal)))
