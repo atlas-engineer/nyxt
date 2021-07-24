@@ -1309,3 +1309,13 @@ As a second value, return the current buffer index starting from 0."
 
 (define-ffi-method ffi-focused-p ((buffer gtk-buffer))
   (gtk:gtk-widget-is-focus (gtk-object buffer)))
+
+;; Working with clipboard
+(define-ffi-method (setf clipboard-text) (text (gtk-browser gtk-browser))
+  (gtk:gtk-clipboard-set-text
+   (gtk:gtk-clipboard-get "CLIPBOARD")
+   text))
+
+(define-ffi-method clipboard-text ((gtk-browser gtk-browser))
+  (gtk:gtk-clipboard-wait-for-text
+   (gtk:gtk-clipboard-get "CLIPBOARD")))
