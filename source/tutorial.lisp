@@ -207,7 +207,7 @@ with the webpage's italic command instead of " (:code "autofill") ". Finally, th
 user can return to their configuration just by executing " (:code "application-mode") " again.")
    (:h3 "Enable and Disable modes")
    (:p "The command " (:code "enable-mode") " allows the user to apply a
-mode (such as " (:code "nosound-mode") " or " (:code "dark-mode") ") to multiple
+mode (such as " (:code "no-sound-mode") " or " (:code "dark-mode") ") to multiple
 buffers at once. Conversely, it is possible to revert this action
 executing "(:code "disable-mode") " while choosing exactly the same buffers and
 the same mode previously selected.")
