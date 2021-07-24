@@ -639,7 +639,7 @@ If possible!
 
   Help to implement additional backends is welcome!
 
-- New =nowebgl-mode=.
+- New =no-webgl-mode=.
 
 - New =nyxt-init-file= helper to derive a file name relative to the
   Nyxt configuration folder.
