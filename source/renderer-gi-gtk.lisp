@@ -13,6 +13,18 @@
 
 (in-package :nyxt)
 
+(defmacro with-namespaces (bindings &body body)
+  "Bind symbols to GIR namespaces. BINDINGS must be a list with
+elements in the form (SYMBOL NAMESPACE-NAME)."
+  (let ((binding-forms
+          (loop for binding in bindings
+                collect
+                (destructuring-bind (symbol namespace-name)
+                    binding
+                  `(,symbol (gir:require-namespace ,namespace-name))))))
+    `(let ,binding-forms
+       ,@body)))
+
 (setf +renderer+ "GI-GTK")
 (handler-bind ((warning #'muffle-warning))
   (let ((renderer-thread-name "Nyxt renderer thread"))
@@ -44,3 +56,16 @@ interface. On Darwin, we must run the GTK thread on the main thread."
     (define-ffi-method ffi-kill-browser ((browser gtk-browser))
       (unless *run-from-repl-p*
         (gir:invoke ((gir:ffi "Gtk" "3.0") 'main-quit))))))
+
+;; Working with clipboard
+(define-ffi-method (setf clipboard-text) (text (gtk-browser gtk-browser))
+  (with-namespaces ((gtk "Gtk") (gdk "Gdk"))
+    (let* ((atom (gir:invoke (gdk "atom_intern") "CLIPBOARD" nil))
+           (clipboard (gir:invoke (gtk "Clipboard" 'get) atom)))
+      (gir:invoke (clipboard 'set_text) text -1))))
+
+(define-ffi-method clipboard-text ((gtk-browser gtk-browser))
+  (with-namespaces ((gtk "Gtk") (gdk "Gdk"))
+    (let* ((atom (gir:invoke (gdk "atom_intern") "CLIPBOARD" nil))
+           (clipboard (gir:invoke (gtk "Clipboard" 'get) atom)))
+      (gir:invoke (clipboard 'wait_for_text)))))
