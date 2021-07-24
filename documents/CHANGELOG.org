@@ -723,7 +723,7 @@ If possible!
   Move =load-status=, =proxy=, =cookies= and =certificates= slots to =web-buffer=.
   Special buffers use the =internal-buffer= class.
 
-- Add nosound-mode.
+- Add no-sound-mode.
 
   Useful to mute a buffer.
 
