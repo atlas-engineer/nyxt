@@ -539,7 +539,7 @@ If possible!
 
   Help to implement additional backends is welcome!
 
-- New =no-webgl-mode=.
+- New =nowebgl-mode=.
 
 - New =nyxt-init-file= helper to derive a file name relative to the
   Nyxt configuration folder.
@@ -723,7 +723,7 @@ If possible!
   Move =load-status=, =proxy=, =cookies= and =certificates= slots to =web-buffer=.
   Special buffers use the =internal-buffer= class.
 
-- Add no-sound-mode.
+- Add nosound-mode.
 
   Useful to mute a buffer.
 
@@ -1271,7 +1271,7 @@ It now displays search hints properly and search within iframes too.
 *** DONE Support multiple modes per buffer
 *** DONE Add proxy-mode
 This makes it possible to use Next over Tor among others.
-*** DONE Add no-script-mode to disable JavaScript
+*** DONE Add noscript-mode to disable JavaScript
 *** DONE Use D-Bus for inter-process communication
 This increases security and should also improve performance, notably on *BSD systems.
 *** DONE Remove ~define-parenstatic~ macro

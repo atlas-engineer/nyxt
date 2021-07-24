@@ -65,7 +65,7 @@
   img-element input-element ins-element kbd-element label-element legend-element
   (li-element list-element) link-element (main-element semantic-element) map-element
   (mark-element semantic-element) meta-element meter-element (nav-element semantic-element)
-  no-script-element object-element (ol-element list-element) optgroup-element
+  noscript-element object-element (ol-element list-element) optgroup-element
   (option-element text-element) output-element (p-element text-element) param-element
   (pre-element text-element) progress-element q-element rp-element rt-element rtc-element
   ruby-element samp-element script-element (section-element semantic-element) select-element
