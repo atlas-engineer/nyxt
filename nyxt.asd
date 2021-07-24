@@ -132,7 +132,7 @@
                (:file "blocker-mode")
                (:file "proxy-mode")
                (:file "noimage-mode")
-               (:file "nosound-mode")
+               (:file "no-sound-mode")
                (:file "noscript-mode")
                (:file "nowebgl-mode")
                (:file "download-mode")
