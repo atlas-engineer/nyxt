@@ -131,7 +131,7 @@
                (:file "vi-mode")
                (:file "blocker-mode")
                (:file "proxy-mode")
-               (:file "noimage-mode")
+               (:file "no-image-mode")
                (:file "no-sound-mode")
                (:file "noscript-mode")
                (:file "nowebgl-mode")
