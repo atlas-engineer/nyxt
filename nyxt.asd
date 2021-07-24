@@ -133,7 +133,7 @@
                (:file "proxy-mode")
                (:file "no-image-mode")
                (:file "no-sound-mode")
-               (:file "noscript-mode")
+               (:file "no-script-mode")
                (:file "nowebgl-mode")
                (:file "download-mode")
                (:file "force-https-mode")
