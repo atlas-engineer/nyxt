@@ -64,8 +64,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
   ((gtk-object)
    (gtk-proxy-url (quri:uri ""))
    (proxy-ignored-hosts '())
-   (data-manager-path (make-instance 'data-manager-data-path
-                                     :dirname (uiop:xdg-cache-home +data-root+))
+   (data-manager-path (make-instance 'data-manager-data-path)
                       :documentation "Directory in which the WebKitGTK
 data-manager will store the data separately for each buffer.")
    (gtk-extensions-path (make-instance 'gtk-extensions-data-path
@@ -180,7 +179,8 @@ not return."
     (gtk:leave-gtk-main)))
 
 (define-class data-manager-data-path (data-path)
-  ((ref :initform "data-manager"))
+  ((dirname (uiop:xdg-cache-home +data-root+ "data-manager"))
+   (ref :initform "data-manager"))
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
@@ -609,13 +609,6 @@ See `gtk-browser's `modifier-translator' slot."
       context)))
 
 (defmethod initialize-instance :after ((buffer gtk-buffer) &key)
-  (let ((path (data-manager-path buffer)))
-    (when (id buffer)
-      (setf (data-manager-path buffer)
-            (make-instance 'data-manager-data-path
-                           :dirname (pathname (str:concat (namestring (dirname path))
-                                                          "/nyxt-data-manager-"
-                                                          (id buffer)))))))
   (ffi-buffer-make buffer))
 
 (define-ffi-method ffi-buffer-url ((buffer gtk-buffer))
