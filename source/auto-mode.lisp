@@ -290,9 +290,9 @@ on the last URL not covered by `auto-mode'.
 This is useful when alternative between rule-less and ruled pages.
 Example browse sequence:
 
-- https://example.org (noscript-mode noimage-mode) ; No rule.
+- https://example.org (noscript-mode no-image-mode) ; No rule.
 - https://nyxt.atlas.engineer (dark-mode) ; Rule
-- https://en.wikipedia.org (noscript-mode noimage-mode) ; No rule.
+- https://en.wikipedia.org (noscript-mode no-image-mode) ; No rule.
 
 In the above, when browsing from nyxt.atlas.engineer to en.wikipedia.org, the
 modes that were in place before the nyxt.atlas.engineer rule was applied are
