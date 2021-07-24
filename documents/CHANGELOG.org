@@ -1271,7 +1271,7 @@ It now displays search hints properly and search within iframes too.
 *** DONE Support multiple modes per buffer
 *** DONE Add proxy-mode
 This makes it possible to use Next over Tor among others.
-*** DONE Add noscript-mode to disable JavaScript
+*** DONE Add no-script-mode to disable JavaScript
 *** DONE Use D-Bus for inter-process communication
 This increases security and should also improve performance, notably on *BSD systems.
 *** DONE Remove ~define-parenstatic~ macro
