@@ -134,7 +134,7 @@
                (:file "no-image-mode")
                (:file "no-sound-mode")
                (:file "no-script-mode")
-               (:file "nowebgl-mode")
+               (:file "no-webgl-mode")
                (:file "download-mode")
                (:file "force-https-mode")
                (:file "reduce-tracking-mode")
