@@ -276,7 +276,9 @@
                cl-cffi-gtk
                cl-webkit2)
   :pathname "source/"
-  :components ((:file "renderer-gtk")))
+  :serial t
+  :components ((:file "clipboard-gtk")
+               (:file "renderer-gtk")))
 
 (defsystem "nyxt/gi-gtk"
   :depends-on (nyxt/gtk
