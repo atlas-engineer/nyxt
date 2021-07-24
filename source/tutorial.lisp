@@ -45,7 +45,7 @@ are fully separated, each buffer having its own behavior and settings.")
    (:p "Each buffer has its own list of modes, ordered by priority.  A mode is a
 set of functions, hooks, keybindings and other facilities that may modify the
 behavior of a buffer.  For example, 'blocker-mode' can be used for domain-based
-adblocking while 'noscript-mode' disables JavaScript.")
+adblocking while 'no-script-mode' disables JavaScript.")
    (:p "Each buffer has separate instances of modes, which means that altering
 the settings of a mode in a buffer does not impact other buffers.  Mode specific
 functions/commands are only available when a mode is enabled for the current
