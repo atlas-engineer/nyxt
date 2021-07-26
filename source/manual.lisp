@@ -73,17 +73,19 @@ add the following to your configuration:")
     (:p "You can create new scheme names with " (:code "keymap:make-scheme-name")
         ".  Also see the " (:code "scheme-name") " class and the "
         (:code "define-scheme") " macro.")
-    (:p "The " (:code "override-map") " is a keymap which has priority over
+    (:p "The " (:code "override-map") " is a keymap that has priority over
 all other keymaps.  By default, it has few bindings like the one
 for " (:code "execute-command") ".  You can use it to set keys globally:")
     (:pre (:code "
 \(define-configuration buffer
   ((override-map (let ((map (make-keymap \"override-map\")))
                    (define-key map
-                     \"M-x\" 'execute-command)))))"))
-    (:p "A more flexible way is to create your own mode with your custom
-keybindings.  When this mode is added first to the buffer mode list, its
-keybindings have priorities over the other modes.")
+                     \"M-x\" 'execute-command
+                     \"C-space\" 'nothing)))))"))
+    (:p "The " (:code "nothing") " command is useful to override bindings to do
+nothing. In addition, a more flexible approach is to create your own mode with
+your custom keybindings.  When this mode is added first to the buffer mode list,
+its keybindings have priorities over the other modes.")
     (:pre (:code "
 \(defvar *my-keymap* (make-keymap \"my-map\"))
 \(define-key *my-keymap*
