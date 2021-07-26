@@ -44,7 +44,7 @@
     ;; Returning fragment makes WebKit choke.
     nil))
 
-(declaim (ftype (function (t fixnum string) (values string &optional)) select-from-alphabet))
+(-> select-from-alphabet (t fixnum string) (values string &optional))
 (defun select-from-alphabet (code char-length alphabet)
   (let* ((exponents (nreverse (loop for pow below char-length
                                     collect (expt (length alphabet) pow)))))
@@ -54,7 +54,7 @@
                   do (decf code (* quotinent exp)))
             'string)))
 
-(declaim (ftype (function (integer) list-of-strings) generate-hints))
+(-> generate-hints (integer) list-of-strings)
 (defun generate-hints (length)
   (let* ((alphabet (hints-alphabet (current-mode 'web)))
          (char-length (ceiling (log length (length alphabet)))))

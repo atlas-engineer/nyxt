@@ -4,6 +4,7 @@
 (uiop:define-package :nyxt/application-mode
   (:use :common-lisp :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
+  (:import-from #:serapeum #:->)
   (:documentation "Forward all keybindings to the web view except those in the `override-map'."))
 (in-package :nyxt/application-mode)
 
@@ -33,8 +34,7 @@ See the mode `keymap-scheme' for special bindings."
                       (make-handler-keymaps-buffer #'keep-override-map))
       (echo "Application-mode enabled.")))))
 
-(declaim (ftype (function (list-of-keymaps buffer) (values list-of-keymaps buffer))
-                keep-override-map))
+(-> keep-override-map (list-of-keymaps buffer) (values list-of-keymaps buffer))
 (defun keep-override-map (keymaps buffer)
   (if (nyxt::active-prompt-buffers (current-window))
       (values keymaps buffer)

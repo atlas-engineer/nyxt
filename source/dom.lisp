@@ -4,7 +4,9 @@
 (uiop:define-package :nyxt/dom
   (:use :common-lisp :nyxt)
   (:import-from #:class-star #:define-class)
-  (:import-from #:serapeum #:export-always)
+  (:import-from #:serapeum
+                #:export-always
+                #:->)
   (:documentation "Nyxt-specific DOM classes and functions operating on them."))
 (in-package :nyxt/dom)
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -97,7 +99,7 @@
   node)
 
 (export-always 'named-html-parse)
-(declaim (ftype (function (string) (values (or plump-dom:root null) &optional)) named-parse))
+(-> named-parse (string) (values (or plump-dom:root null) &optional))
 (defun named-html-parse (input)
   "Assign tag classes (e.g., `input-element') to the nodes in the `plump:parse'-d input."
   (name-dom-elements (plump:parse input)))
@@ -125,7 +127,7 @@
   (ps:chain -j-s-o-n (stringify (process-element (nyxt/ps:qs document "html")))))
 
 (export-always 'named-json-parse)
-(declaim (ftype (function (string) (values (or plump-dom:root null) &optional)) named-json-parse))
+(-> named-json-parse (string) (values (or plump-dom:root null) &optional))
 (defun named-json-parse (json)
   "Return a `plump:root' of a DOM-tree produced from the JSON.
 

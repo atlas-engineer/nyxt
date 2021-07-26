@@ -41,9 +41,9 @@ If a URL string cannot be converted to a `quri:uri', it is discarded from the re
   `(satisfies has-url-method-p))
 
 (export-always 'render-url)
-(declaim (ftype (function ((or quri:uri string)) string) render-url))
+(-> render-url ((or quri:uri string)) string)
 (defun render-url (url)
-    "Return decoded URL.
+  "Return decoded URL.
 If the URL contains hexadecimal-encoded characters, return their unicode counterpart."
   (let ((url (if (stringp url)
                  url
@@ -112,7 +112,7 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
                 (or (quri:ip-addr-p (quri:uri-host url))
                     (hostname-found-p (quri:uri-host url)))))))))
 
-(declaim (ftype (function (t) quri:uri) ensure-url))
+(-> ensure-url (t) quri:uri)
 (defun ensure-url (thing)
   "Return `quri:uri' derived from THING.
 If it cannot be derived, return an empty `quri:uri'."
@@ -122,20 +122,20 @@ If it cannot be derived, return an empty `quri:uri'."
            (or (ignore-errors (quri:uri thing))
                (quri:uri "")))))
 
-(declaim (ftype (function ((or quri:uri string null)) boolean) url-empty-p))
+(-> url-empty-p ((or quri:uri string null)) boolean)
 (export-always 'url-empty-p)
 (defun url-empty-p (url)
   "Small convenience function to check whether the given URL is empty."
   (the (values boolean &optional)
        (uiop:emptyp (if (quri:uri-p url) (quri:render-uri url) url))))
 
-(declaim (ftype (function (quri:uri) boolean)
-                empty-path-url-p host-only-url-p))
+(-> empty-path-url-p (quri:uri) boolean)
 (export-always 'empty-path-url-p)
 (defun empty-path-url-p (url)
   (or (string= (quri:uri-path url) "/")
       (null (quri:uri-path url))))
 
+(-> host-only-url-p (quri:uri) boolean)
 (export-always 'host-only-url-p)
 (defun host-only-url-p (url)
   (every #'null
@@ -143,7 +143,7 @@ If it cannot be derived, return an empty `quri:uri'."
                (quri:uri-fragment url)
                (quri:uri-userinfo url))))
 
-(declaim (ftype (function (quri:uri) string) schemeless-url))
+(-> schemeless-url (quri:uri) string)
 (defun schemeless-url (url)             ; Inspired by `quri:render-uri'.
   "Return URL without its scheme (e.g. it removes 'https://')."
   ;; Warning: We can't just set `quri:uri-scheme' to nil because that would
@@ -155,14 +155,14 @@ If it cannot be derived, return an empty `quri:uri'."
           (quri:uri-query url)
           (quri:uri-fragment url)))
 
-(declaim (ftype (function (quri:uri quri:uri) (or null fixnum)) url<))
+(-> url< (quri:uri quri:uri) (or null fixnum))
 (defun url< (url1 url2)
   "Like `string<' but ignore the URL scheme.
 This way, HTTPS and HTTP is ignored when comparing URIs."
   (string< (schemeless-url url1)
            (schemeless-url url2)))
 
-(declaim (ftype (function (quri:uri quri:uri) boolean) url-equal))
+(-> url-equal (quri:uri quri:uri) boolean)
 (defun url-equal (url1 url2)
   "Like `quri:uri=' but ignoring the scheme.
 URLs are equal up to `scheme='.
@@ -181,7 +181,7 @@ Authority is compared case-insensitively (RFC 3986)."
                                                   (quri:uri-authority url2)))))))
 
 (export-always 'lisp-url)
-(declaim (ftype (function (t &rest t) string) lisp-url))
+(-> lisp-url (t &rest t) string)
 (defun lisp-url (lisp-form &rest more-lisp-forms)
   "Generate a lisp:// URL from the given Lisp forms. This is useful for encoding
 functionality into internal-buffers."
@@ -190,32 +190,32 @@ functionality into internal-buffers."
               (mapcar (alex:compose #'quri:url-encode #'write-to-string)
                       (cons lisp-form more-lisp-forms)))))
 
-(declaim (ftype (function (quri:uri quri:uri) boolean) path=))
+(-> path= (quri:uri quri:uri) boolean)
 (defun path= (url1 url2)
   "Return non-nil when URL1 and URL2 have the same path."
   ;; See https://github.com/fukamachi/quri/issues/48.
   (equalp (string-right-trim "/" (or (quri:uri-path url1) ""))
           (string-right-trim "/" (or (quri:uri-path url2) ""))))
 
-(declaim (ftype (function (quri:uri quri:uri) boolean) scheme=))
+(-> scheme= (quri:uri quri:uri) boolean)
 (defun scheme= (url1 url2)
   "Return non-nil when URL1 and URL2 have the same scheme.
 HTTP and HTTPS belong to the same equivalence class."
   (or (equalp (quri:uri-scheme url1) (quri:uri-scheme url2))
       (and (quri:uri-http-p url1) (quri:uri-http-p url2))))
 
-(declaim (ftype (function (quri:uri quri:uri) boolean) domain=))
+(-> domain= (quri:uri quri:uri) boolean)
 (defun domain= (url1 url2)
   "Return non-nil when URL1 and URL2 have the same domain."
   (equalp (quri:uri-domain url1) (quri:uri-domain url2)))
 
-(declaim (ftype (function (quri:uri quri:uri) boolean) host=))
+(-> host= (quri:uri quri:uri) boolean)
 (defun host= (url1 url2)
   "Return non-nil when URL1 and URL2 have the same host.
 This is a more restrictive requirement than `domain='."
   (equalp (quri:uri-host url1) (quri:uri-host url2)))
 
-(declaim (ftype (function (quri:uri quri:uri list) boolean) url-eqs))
+(-> url-eqs (quri:uri quri:uri list) boolean)
 (defun url-eqs (url1 url2 eq-fn-list)
   "Return non-nil when URL1 and URL2 are \"equal\" as dictated by EQ-FN-LIST.
 
@@ -226,8 +226,7 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
   ;; nil, unlike the solution below.
   (every #'identity (mapcar (lambda (fn) (funcall fn url1 url2)) eq-fn-list)))
 
-(declaim (ftype (function (string &rest string) (function (quri:uri) boolean))
-                match-scheme))
+(-> match-scheme (string &rest string) (function (quri:uri) boolean))
 (export-always 'match-scheme)
 (defun match-scheme (scheme &rest other-schemes)
   "Return a predicate for URL designators matching one of SCHEME or OTHER-SCHEMES."
@@ -236,8 +235,7 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
         (some (alex:curry #'string= (quri:uri-scheme (url url-designator)))
               (cons scheme other-schemes)))))
 
-(declaim (ftype (function (string &rest string) (function (quri:uri) boolean))
-                match-host))
+(-> match-host (string &rest string) (function (quri:uri) boolean))
 (export-always 'match-host)
 (defun match-host (host &rest other-hosts)
   "Return a predicate for URL designators matching one of HOST or OTHER-HOSTS."
@@ -246,8 +244,7 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
         (some (alex:curry #'string= (quri:uri-host (url url-designator)))
               (cons host other-hosts)))))
 
-(declaim (ftype (function (string &rest string) (function (quri:uri) boolean))
-                match-domain))
+(-> match-domain (string &rest string) (function (quri:uri) boolean))
 (export-always 'match-domain)
 (defun match-domain (domain &rest other-domains)
   "Return a predicate for URL designators matching one of DOMAIN or OTHER-DOMAINS."
@@ -256,8 +253,7 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
         (some (alex:curry #'string= (quri:uri-domain (url url-designator)))
               (cons domain other-domains)))))
 
-(declaim (ftype (function (string &rest string) (function (quri:uri) boolean))
-                match-file-extension))
+(-> match-file-extension (string &rest string) (function (quri:uri) boolean))
 (export-always 'match-file-extension)
 (defun match-file-extension (extension &rest other-extensions)
   "Return a predicate for URL designators matching one of EXTENSION or OTHER-EXTENSIONS."
@@ -266,8 +262,7 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
         (some (alex:curry #'string= (pathname-type (or (quri:uri-path (url url-designator)) "")))
               (cons extension other-extensions)))))
 
-(declaim (ftype (function (string &rest string) (function (quri:uri) boolean))
-                match-regex))
+(-> match-regex (string &rest string) (function (quri:uri) boolean))
 (export-always 'match-regex)
 (defun match-regex (regex &rest other-regex)
   "Return a predicate for URL designators matching one of REGEX or OTHER-REGEX."
@@ -276,8 +271,7 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
         (some (alex:rcurry #'cl-ppcre:scan (render-url (url url-designator)))
               (cons regex other-regex)))))
 
-(declaim (ftype (function (string &rest string) (function (quri:uri) boolean))
-                match-url))
+(-> match-url (string &rest string) (function (quri:uri) boolean))
 (export-always 'match-url)
 (defun match-url (one-url &rest other-urls)
   "Return a predicate for URLs exactly matching ONE-URL or OTHER-URLS."

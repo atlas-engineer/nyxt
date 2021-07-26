@@ -16,7 +16,9 @@
   (:use #:common-lisp #:trivia)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:import-from #:class-star #:define-class)
-  (:import-from #:serapeum #:export-always))
+  (:import-from #:serapeum
+                #:export-always
+                #:->))
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria :nyxt)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum :nyxt)
@@ -63,5 +65,7 @@ and `serapeum:':
   (:use #:common-lisp #:trivia #:nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:import-from #:class-star #:define-class)
-  (:import-from #:serapeum #:export-always)
+  (:import-from #:serapeum
+                #:export-always
+                #:->)
   (:documentation "Mode for prompter buffer."))

@@ -28,9 +28,7 @@
 (deftype nyxt-keymap-value ()
   '(or keymap:keymap function-symbol command))
 
-(declaim (ftype (function (string &rest keymap:keymap)
-                          keymap:keymap)
-                make-keymap))
+(-> make-keymap (string &rest keymap:keymap) keymap:keymap)
 (export-always 'make-keymap)
 (defun make-keymap (name &rest parents)
   "Like `keymap:make-keymap' but only allow binding function symbols, commands
@@ -70,7 +68,7 @@ prompt-buffer keymaps."
                 (delete nil (mapcar #'keymap (modes buffer-or-prompt-buffer))))
               (delete nil (list buffer (current-prompt-buffer))))))))
 
-(declaim (ftype (function (keymap:key) boolean) pointer-event-p))
+(-> pointer-event-p (keymap:key) boolean)
 (defun pointer-event-p (key)
   "Return non-nil if key-chord is a pointer event, e.g. a mouton button click."
   (coerce (str:starts-with? "button" (keymap:key-value key))
