@@ -21,12 +21,15 @@
     (spinneret:with-html-string
       (:style (style buffer))
       (:h1 "Messages")
-      (:a :class "button"
-          :href (lisp-url '(nyxt/message-mode::list-messages)) "Update")
-      (:a :class "button"
-          :href (lisp-url '(nyxt/message-mode:clear-messages)
-                          '(nyxt/message-mode::list-messages))
-          "Clear")
+      (:p (:a :class "button" :href (lisp-url `(nyxt::manual)) "Manual")
+          "See the troubleshooting section of the manual if you need help diagnose some warnings and errors.")
+      (:p
+       (:a :class "button"
+           :href (lisp-url '(nyxt/message-mode::list-messages)) "Update")
+       (:a :class "button"
+           :href (lisp-url '(nyxt/message-mode:clear-messages)
+                           '(nyxt/message-mode::list-messages))
+           "Clear"))
       (:ul
        (loop for message in (reverse (nyxt:messages-content *browser*))
              collect (:li message))))))
