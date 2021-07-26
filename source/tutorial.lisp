@@ -123,7 +123,7 @@ full URL including the 'http://' prefix.")
 to quickly find whatever buffer you are looking for.")
     (:li (command-markup 'switch-buffer-next) ": Go to next buffer.")
     (:li (command-markup 'switch-buffer-previous) ": Go to previous buffer."))
-   (:h3 "Copying and pasting")
+   (:h3 "Copy and paste")
    (:p "Unlike other web browsers, Nyxt provides powerful ways of copying
    and pasting content via different commands. Starting from:")
    (:ul
