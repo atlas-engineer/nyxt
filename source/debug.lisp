@@ -57,8 +57,9 @@ be done automatically, but then how would we access the weak pointers?
   "Return the list of all Nyxt object pointers of type CLASS-SYM.
 Example:
 
-  (sb-ext:search-roots (find-nyxt-object 'user-web-buffer) :print :verbose)
+  (sb-ext:search-roots (find-nyxt-objects 'user-web-buffer) :print nil)
 
+Use `:print :verbose' is you want a human-readable overview.
 See also `find-object-by-address' (SBCL only)."
   (sera:filter (lambda (object-pointer)
                  (eq class-sym
@@ -73,14 +74,7 @@ Prefix the ADDRESS number with the #x reader macro to provide an hexadecimal
 address.
 This is useful to inspect the objects reported by `sb-ext:search-roots'."
   (values
-   (block object
-     (sb-vm:map-allocated-objects
-      (lambda (obj type size)
-        (declare (ignore type size))
-        (when (= (sb-kernel:get-lisp-obj-address obj)
-                 address )
-          (return-from object obj)))
-      :all))
+   (sb-kernel:make-lisp-obj address)
    (block sym
      (do-all-symbols (s)
        (when (and (boundp s)
