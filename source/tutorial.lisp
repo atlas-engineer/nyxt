@@ -5,8 +5,8 @@
 
 (defun tutorial-content ()
   (spinneret:with-html-string
-   (:h2 "Core Concepts")
-   (:h3 "Keybindings and Commands")
+   (:h2 "Core concepts")
+   (:h3 "Keybindings and commands")
    (:p "Commands are invoked by pressing specific keys or from
 the " (:code "execute-command") " menu (" (:code (binding-keys 'execute-command))
 ").")
@@ -90,12 +90,12 @@ upon return.  The suggestion under the cursor is not processed if not marked.")
                           :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
           ": Change which attributes are displayed in the suggestions list."))
 
-   (:h3 "Message Area")
+   (:h3 "Message area")
    (:p "The message area represents a space (typically at the bottom of a
 window) where Nyxt outputs messages back to you. To view the history of all
 messages, invoke the command " (:code "list-messages") ".")
 
-   (:h3 "Status Area")
+   (:h3 "Status area")
    (:p "The status area is where information about the state of that buffer is
 printed (typically at the bottom of a window). By default, this includes the
 active modes, the URL, and the title of the current buffer.")
@@ -123,7 +123,7 @@ full URL including the 'http://' prefix.")
 to quickly find whatever buffer you are looking for.")
     (:li (command-markup 'switch-buffer-next) ": Go to next buffer.")
     (:li (command-markup 'switch-buffer-previous) ": Go to previous buffer."))
-   (:h3 "Copying and Pasting")
+   (:h3 "Copying and pasting")
    (:p "Unlike other web browsers, Nyxt provides powerful ways of copying
    and pasting content via different commands. Starting from:")
    (:ul
@@ -311,7 +311,7 @@ section) of the current page and jump to it.")
          ": Edit selected HTML input tag with an external editor.")
     (:li (command-markup 'quit) ": Close all Nyxt windows and quit."))
 
-   (:h2 "The Nyxt Help System")
+   (:h2 "The Nyxt help system")
    (:p "Nyxt provides introspective and help capabilities.  All commands,
 classes, slots, variables, functions and bindings can be inspected for
 definition and documentation.")
