@@ -209,7 +209,7 @@ not return."
    (handler-ids
     :documentation "See `gtk-buffer' slot of the same name."))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
-(define-user-class download (gtk-download0))
+(define-user-class download (gtk-download))
 
 (defun make-web-view (&key context-buffer)
   "Return a web view instance.
