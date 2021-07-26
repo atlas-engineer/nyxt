@@ -205,12 +205,14 @@ a user is using their email client which also uses " (:code "C-i") " for the ita
 executing " (:code "application-mode") " the " (:code "C-i") " binding is associated
 with the webpage's italic command instead of " (:code "autofill") ". Finally, the
 user can return to their configuration just by executing " (:code "application-mode") " again.")
-   (:h3 "Enable and Disable modes")
-   (:p "The command " (:code "enable-mode") " allows the user to apply a
-mode (such as " (:code "nosound-mode") " or " (:code "dark-mode") ") to multiple
-buffers at once. Conversely, it is possible to revert this action
+   (:h3 "Enable, disable, and toggle multiple modes")
+   (:p "The command " (:code "enable-mode") " allows the user to apply multiple
+modes (such as " (:code "nosound-mode") " and " (:code "dark-mode") ") to
+multiple buffers at once. Conversely, it is possible to revert this action by
 executing "(:code "disable-mode") " while choosing exactly the same buffers and
-the same mode previously selected.")
+modes previously selected. Finally, " (:code "toggle-mode") " also allows
+activation and deactivation of multiple modes, but only for the current
+buffer.")
    (:h3 "Visual mode")
    (:p "Select text without a mouse. Nyxt's "
        (:code "visual-mode") " imitates Vim's visual mode (and comes with the
