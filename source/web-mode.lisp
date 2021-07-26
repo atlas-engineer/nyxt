@@ -132,8 +132,8 @@ and to index the top of the page.")
        "M-b" 'history-backwards-query
        "C-f" 'history-forwards
        "C-b" 'history-backwards
-       "C-g" 'noop                      ; Emacs users may hit C-g out of habit.
-       "M-g M-g" 'follow-hint           ; Corresponds to Emacs' `goto-line'.
+       "C-g" 'nothing              ; Emacs users may hit C-g out of habit.
+       "M-g M-g" 'follow-hint              ; Corresponds to Emacs' `goto-line'.
        "M-g g" 'follow-hint-new-buffer-focus
        "C-u M-g M-g" 'follow-hint-new-buffer
        "C-u M-g g" 'follow-hint-new-buffer
