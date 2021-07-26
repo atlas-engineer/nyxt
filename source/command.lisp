@@ -362,7 +362,7 @@ result."
             (log:debug "Prompt buffer interrupted")
             nil))))))
 
-(define-command noop ()                 ; TODO: Replace with ESCAPE special command that allows dispatched to cancel current key stack.
+(define-command nothing ()                 ; TODO: Replace with ESCAPE special command that allows dispatched to cancel current key stack.
   "A command that does nothing.
 This is useful to override bindings to do nothing."
   (values))
