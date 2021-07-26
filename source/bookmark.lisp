@@ -50,7 +50,9 @@
 In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   (url-equal (url e1) (url e2)))
 
-(declaim (ftype (function (quri:uri &key (:title string) (:date (or local-time:timestamp null)) (:tags t)) t) bookmark-add))
+(-> bookmark-add
+    (quri:uri &key (:title string) (:date (or local-time:timestamp null)) (:tags t))
+    t)
 (export-always 'bookmark-add)
 (defun bookmark-add (url &key date title tags)
   (with-data-access (bookmarks (bookmarks-path (current-buffer)))

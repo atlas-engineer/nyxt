@@ -5,6 +5,7 @@
   (:use :common-lisp :nyxt)
   (:import-from #:class-star #:define-class)
   (:import-from #:keymap #:define-key #:define-scheme)
+  (:import-from #:serapeum #:->)
   (:documentation "Mode for automatic URL-based mode toggling."))
 (in-package :nyxt/auto-mode)
 
@@ -56,9 +57,9 @@ If the mode specifier is not known, it's omitted from the results."
   (rememberable-p (apply #'make-instance (name mode-invocation)
                          (arguments mode-invocation))))
 
-(declaim (ftype (function ((or (cons (or mode-invocation root-mode) *) null))
-                          (values (or (cons mode-invocation *) null) &optional))
-                rememberable-of))
+(-> rememberable-of
+    ((or (cons (or mode-invocation root-mode) *) null))
+    (values (or (cons mode-invocation *) null) &optional))
 (defun rememberable-of (modes)
   "Filter MODES based on `rememberable-p'."
   (mode-invocations (remove-if (complement #'rememberable-p) modes)))
@@ -79,8 +80,7 @@ If the mode specifier is not known, it's omitted from the results."
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(declaim (ftype (function (quri:uri buffer) (or auto-mode-rule null))
-                matching-auto-mode-rule))
+(-> matching-auto-mode-rule (quri:uri buffer) (or auto-mode-rule null))
 (defun matching-auto-mode-rule (url buffer)
   (with-data-unsafe (rules (auto-mode-rules-path buffer))
     (flet ((priority (test1 test2)
@@ -95,7 +95,7 @@ If the mode specifier is not known, it's omitted from the results."
                     rules)
                    #'priority :key #'test)))))
 
-(declaim (ftype (function (quri:uri buffer)) enable-matching-modes))
+(-> enable-matching-modes (quri:uri buffer) *)
 (defun enable-matching-modes (url buffer)
   (let ((rule (matching-auto-mode-rule url buffer)))
     (dolist (mode-invocation (set-difference
@@ -159,8 +159,9 @@ non-new-page requests, buffer URL is not altered."
     (setf (previous-url auto-mode) (url request-data)))
   request-data)
 
-(declaim (ftype (function (root-mode auto-mode boolean) (values (or list boolean) &optional))
-                mode-covered-by-auto-mode-p))
+(-> mode-covered-by-auto-mode-p
+    (root-mode auto-mode boolean)
+    (values (or list boolean) &optional))
 (defun mode-covered-by-auto-mode-p (mode auto-mode enable-p)
   "Says whether AUTO-MODE already knows what to do with MODE.
 ENABLE-P is whether mode is being enabled (non-nil) or disabled (nil).
@@ -190,7 +191,7 @@ Mode is covered if:
                                                                          (buffer auto-mode))))
                   (included matching-rule))))))))
 
-(declaim (ftype (function (string) list) url-infer-match))
+(-> url-infer-match (string) list)
 (defun url-infer-match (url)
   "Infer the best `test' for `auto-mode-rule', based on the form of URL.
 The rules are:
@@ -207,8 +208,7 @@ The rules are:
             `(match-host ,(quri:uri-host url)))
         `(match-url ,(render-url url)))))
 
-(declaim (ftype (function (boolean t) (function (root-mode)))
-                make-mode-toggle-prompting-handler))
+(-> make-mode-toggle-prompting-handler (boolean t) (function (root-mode)))
 (defun make-mode-toggle-prompting-handler (enable-p auto-mode)
   #'(lambda (mode)
       (let ((invocation (mode-invocation mode)))
@@ -372,10 +372,13 @@ Auto-mode is re-enabled once the page is reloaded."
     (enable-modes (uiop:ensure-list modes-to-enable) buffer)
     (nyxt::reload-buffers (list buffer))))
 
-(declaim (ftype (function (list &key (:append-p boolean) (:exclude (or (cons mode-invocation *) null))
-                                (:include (or (cons mode-invocation *) null)) (:exact-p boolean))
-                          (values list &optional))
-                add-modes-to-auto-mode-rules))
+(-> add-modes-to-auto-mode-rules
+    (list &key
+          (:append-p boolean)
+          (:exclude (or (cons mode-invocation *) null))
+          (:include (or (cons mode-invocation *) null))
+          (:exact-p boolean))
+    (values list &optional))
 (sera:export-always 'add-modes-to-auto-mode-rules)
 (defun add-modes-to-auto-mode-rules (test &key (append-p nil) exclude include (exact-p nil))
   (with-data-access (rules (auto-mode-rules-path (current-buffer)))

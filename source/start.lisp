@@ -232,9 +232,9 @@ Don't run this from a REPL, prefer `start' instead."
       (isys:sigaction isys:sigterm interrupt-sigaction (cffi:null-pointer)))
     (apply #'start (append options (list :urls free-args)))))
 
-(declaim (ftype (function ((or null trivial-types:pathname-designator)
-                           &key (:package (or null package))))
-                load-lisp))
+(-> load-lisp
+    ((or null trivial-types:pathname-designator) &key (:package (or null package)))
+    *)
 (defun load-lisp (file &key package)
   "Load the Lisp FILE (or stream).
 We accept a null FILE value so that `load-lisp' may be called over the expansion
@@ -310,7 +310,7 @@ EXPR is expected to be as per the expression sent in `listen-or-query-socket'."
           nil))))
 
 (export-always 'open-external-urls)
-(declaim (ftype (function (&rest string)) open-external-urls))
+(-> open-external-urls (&rest string) *)
 (defun open-external-urls (&rest url-strings)
   "Open URL-STRINGS on the renderer thread and return URLs.
 This is a convenience wrapper to make remote code execution to open URLs as
@@ -378,7 +378,7 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
                              (sb-posix:stat-mode (sb-posix:stat path)))))))
          (socket-p path))))
 
-(declaim (ftype (function ((or null (cons quri:uri *)))) listen-or-query-socket))
+(-> listen-or-query-socket ((or null (cons quri:uri *))) *)
 (defun listen-or-query-socket (urls)
   "If another Nyxt is listening on the socket, tell it to open URLS.
 Otherwise bind socket and return the listening thread."

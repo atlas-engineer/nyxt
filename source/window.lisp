@@ -118,7 +118,7 @@ The handlers take the window as argument."))
 
 (hooks:define-hook-type window (function (window)))
 
-(declaim (ftype (function (browser)) window-make))
+(-> window-make (browser) *)
 (export-always 'window-make)
 (defun window-make (browser)
   (let* ((window (ffi-window-make browser)))
@@ -128,7 +128,7 @@ The handlers take the window as argument."))
     (hooks:run-hook (window-make-hook browser) window)
     window))
 
-(declaim (ftype (function (window)) window-delete))
+(-> window-delete (window) *)
 (defun window-delete (window)
   "This function must be called by the renderer when a window is deleted."
   (ffi-window-delete window)

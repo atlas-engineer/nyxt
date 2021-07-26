@@ -581,7 +581,7 @@ Delete it with `ffi-buffer-delete'."
                             (quri:uri "")
                             nil)))
 
-(declaim (ftype (function (buffer &key (:downloads-only boolean))) proxy-adress))
+(-> proxy-adress (buffer &key (:downloads-only boolean)) *)
 (defun proxy-url (buffer &key (downloads-only nil))
   "Return the proxy address, nil if not set.
 If DOWNLOADS-ONLY is non-nil, then it only returns the proxy address (if any)
@@ -663,14 +663,15 @@ BUFFER's modes."
   `(("URL" ,(render-url (url buffer)))
     ("Title" ,(title buffer))))
 
-(declaim (ftype (function (&key (:title string)
-                                (:modes (or null (cons symbol *)))
-                                (:url quri:uri)
-                                (:parent-buffer (or null buffer))
-                                (:no-history-p boolean)
-                                (:load-url-p boolean)
-                                (:buffer-class (or null symbol))))
-                make-buffer))
+(-> make-buffer
+    (&key (:title string)
+          (:modes (or null (cons symbol *)))
+          (:url quri:uri)
+          (:parent-buffer (or null buffer))
+          (:no-history-p boolean)
+          (:load-url-p boolean)
+          (:buffer-class (or null symbol)))
+    *)
 (define-command make-buffer (&key (title "") modes (url (quri:uri "")) parent-buffer
                              no-history-p (load-url-p t) buffer-class)
   "Create a new buffer.
@@ -694,11 +695,12 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
         (setf (url buffer) (quri:uri url)))
     buffer))
 
-(declaim (ftype (function (&key (:title string)
-                                (:modes (or null (cons symbol *)))
-                                (:url quri:uri)
-                                (:load-url-p boolean)))
-                make-nosave-buffer))
+(-> make-nosave-buffer
+    (&key (:title string)
+          (:modes (or null (cons symbol *)))
+          (:url quri:uri)
+          (:load-url-p boolean))
+    *)
 (define-command make-nosave-buffer (&rest args
                                     &key title modes url load-url-p)
   "Create a new buffer that won't save anything to the filesystem.
@@ -706,10 +708,11 @@ See `make-buffer' for a description of the arguments."
   (declare (ignorable title modes url load-url-p))
   (apply #'make-buffer (append (list :buffer-class 'user-nosave-buffer) args)))
 
-(declaim (ftype (function (&key (:url quri:uri)
-                                (:parent-buffer (or null buffer))
-                                (:nosave-buffer-p boolean)))
-                make-buffer-focus))
+(-> make-buffer-focus
+    (&key (:url quri:uri)
+          (:parent-buffer (or null buffer))
+          (:nosave-buffer-p boolean))
+    *)
 (define-command make-buffer-focus (&key (url (quri:uri "")) parent-buffer nosave-buffer-p)
   "Switch to a new buffer.
 See `make-buffer'."
@@ -734,15 +737,17 @@ If URL is `:default', use `default-new-buffer-url'."
                          :extra-modes modes
                          :buffer-class 'user-editor-buffer))
 
-(declaim (ftype (function (browser &key (:title string)
-                                   (:data-profile data-profile)
-                                   (:extra-modes list)
-                                   (:dead-buffer buffer)
-                                   (:nosave-buffer-p boolean)
-                                   (:buffer-class symbol)
-                                   (:parent-buffer buffer)
-                                   (:no-history-p boolean)))
-                buffer-make))
+(-> buffer-make
+    (browser &key
+             (:title string)
+             (:data-profile data-profile)
+             (:extra-modes list)
+             (:dead-buffer buffer)
+             (:nosave-buffer-p boolean)
+             (:buffer-class symbol)
+             (:parent-buffer buffer)
+             (:no-history-p boolean))
+    *)
 (defun buffer-make (browser &key data-profile title extra-modes
                                  dead-buffer (buffer-class 'user-web-buffer)
                                  parent-buffer no-history-p
@@ -788,7 +793,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (hooks:run-hook (buffer-make-hook browser) buffer)
     buffer))
 
-(declaim (ftype (function (buffer)) add-to-recent-buffers))
+(-> add-to-recent-buffers (buffer) *)
 (defun add-to-recent-buffers (buffer)
   "Create a recent-buffer from given buffer and add it to `recent-buffers'."
   ;; Make sure it's a dead buffer:
@@ -796,7 +801,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   (containers:delete-item-if (recent-buffers *browser*) (buffer-match-predicate buffer))
   (containers:insert-item (recent-buffers *browser*) buffer))
 
-(declaim (ftype (function (buffer)) buffer-delete))
+(-> buffer-delete (buffer) *)
 (defun buffer-delete (buffer)
   "For dummy buffers, use `ffi-buffer-delete' instead."
   (hooks:run-hook (buffer-delete-hook buffer) buffer)
@@ -935,7 +940,7 @@ proceeding."
   (:export-class-name-p t))
 (define-user-class buffer-source)
 
-(declaim (ftype (function (&key (:id string))) switch-buffer))
+(-> switch-buffer (&key (:id string)) *)
 (define-command switch-buffer (&key id)
   "Switch the active buffer in the current window."
   (if id

@@ -503,7 +503,7 @@ The version number is stored in the clipboard."
   (trivial-clipboard:text +version+)
   (echo "Version ~a" +version+))
 
-(declaim (ftype (function (function-symbol &key (:modes list))) binding-keys))
+(-> binding-keys (function-symbol &key (:modes list)) *)
 (defun binding-keys (fn &key (modes (if (current-buffer)
                                         (modes (current-buffer))
                                         (mapcar #'make-instance (default-mode-symbols)))))

@@ -198,7 +198,7 @@ Return `*global-data-profile*' otherwise."
 Return NIL on no match."
   (first (find name (package-data-profiles) :test #'string= :key #'second)))
 
-(declaim (ftype (function (string) (or string null)) find-ref-path))
+(-> find-ref-path (string) (or string null))
 (defun find-ref-path (ref)
   "Return the value of the REF found in `*options*'s `:with-path'.
 Example: when passed command line option --with-path foo=bar,
@@ -211,7 +211,7 @@ Example: when passed command line option --with-path foo=bar,
           :test #'string=)))
 
 (export-always 'expand-default-path)
-(declaim (ftype (function (data-path &key (:root string)) (or string null)) expand-default-path))
+(-> expand-default-path (data-path &key (:root string)) (or string null))
 (defun expand-default-path (path &key (root (namestring (if (str:emptyp (namestring (dirname path)))
                                                             (uiop:xdg-data-home +data-root+)
                                                             (dirname path)))))
@@ -256,8 +256,7 @@ function result as a boolean in conditions."
   nil)
 
 (export-always 'ensure-parent-exists)
-(declaim (ftype (function (trivial-types:pathname-designator) trivial-types:pathname-designator)
-                ensure-parent-exists))
+(-> ensure-parent-exists (trivial-types:pathname-designator) trivial-types:pathname-designator)
 (defun ensure-parent-exists (path)
   "Create parent directories of PATH if they don't exist and return coerced PATH."
   (let ((path (uiop:ensure-pathname path)))
@@ -309,7 +308,7 @@ Define a method for your `data-path' type to make it restorable."))
       (calispel:! (channel user-data) path))))
 
 (export-always 'expand-path)
-(declaim (ftype (function ((or null data-path)) (or string null)) expand-path))
+(-> expand-path ((or null data-path)) (or string null))
 (defun expand-path (data-path)
   "Return the expanded path of DATA-PATH or nil if there is none.
 `expand-data-path' is dispatched against `data-path' and `current-data-profile'

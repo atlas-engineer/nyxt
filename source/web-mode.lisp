@@ -6,7 +6,9 @@
   (:shadow #:focus-first-input-field)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:import-from #:class-star #:define-class)
-  (:import-from #:serapeum #:export-always)
+  (:import-from #:serapeum
+                #:export-always
+                #:->)
   (:documentation "Mode for web pages"))
 (in-package :nyxt/web-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -248,7 +250,7 @@ and to index the top of the page.")
                                               tag-name))))
 
 (sera:export-always 'input-tag-p)
-(declaim (ftype (function ((or string null)) boolean) input-tag-p))
+(-> input-tag-p ((or string null)) boolean)
 (defun input-tag-p (tag)
   (or (string= tag "INPUT")
       (string= tag "TEXTAREA")))

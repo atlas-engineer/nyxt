@@ -6,7 +6,7 @@
 ;; Convenience function for time manipulation.
 ;; This can be useful for user configs.
 
-(declaim (ftype (function (string) local-time:timestamp) asctime->timestamp))
+(-> asctime->timestamp (string) local-time:timestamp)
 (export-always 'asctime->timestamp)
 (defun asctime->timestamp (asc-timestring)
   "Convert ASC-TIMESTRING to a timestamp.

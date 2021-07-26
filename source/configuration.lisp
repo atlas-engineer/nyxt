@@ -158,7 +158,7 @@ CLASS-SYM to NEW-SUPERCLASSES.  The class is restored when exiting BODY."
               ,@body)
          (set-user-class ',class-sym ',old-superclasses)))))
 
-(declaim (ftype (function ((or symbol function))) method-combination-name))
+(-> method-combination-name ((or symbol function)) *)
 (defun method-combination-name (fun)
   (let ((fun (if (functionp fun)
                  fun
@@ -172,7 +172,7 @@ CLASS-SYM to NEW-SUPERCLASSES.  The class is restored when exiting BODY."
      (error "Not implemented")
      (closer-mop:generic-function-method-combination fun))))
 
-(declaim (ftype (function ((or symbol function)) boolean) standard-method-combination-p))
+(-> standard-method-combination-p ((or symbol function)) boolean)
 (defun standard-method-combination-p (fun)
   (eq 'standard
       (method-combination-name fun)))

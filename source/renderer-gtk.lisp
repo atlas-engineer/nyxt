@@ -412,7 +412,7 @@ Return nil when key must be discarded, e.g. for modifiers."
                (member :meta-mask modifier-state))
       (alex:deletef (modifiers browser) :super-mask))))
 
-(declaim (ftype (function (list &optional gdk:gdk-event) list) translate-modifiers))
+(-> translate-modifiers (list &optional gdk:gdk-event) list)
 (defun translate-modifiers (modifier-state &optional event)
   "Return list of modifiers fit for `keymap:make-key'.
 See `gtk-browser's `modifier-translator' slot."
@@ -1213,7 +1213,7 @@ custom (the specified proxy) and none."
 (define-ffi-method ffi-display-url (text)
   (webkit:webkit-uri-for-display text))
 
-(declaim (ftype (function (webkit:webkit-cookie-manager cookie-policy)) set-cookie-policy))
+(-> set-cookie-policy (webkit:webkit-cookie-manager cookie-policy) *)
 (defun set-cookie-policy (cookie-manager cookie-policy)
   (webkit:webkit-cookie-manager-set-accept-policy
    cookie-manager
