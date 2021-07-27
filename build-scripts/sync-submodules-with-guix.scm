@@ -33,10 +33,9 @@
      (string-replace-substring (basename url) ".git" "") "/" ""))
 
   (define (sbcl-deps pkg)
-    "Return a list of (URL REF COMMIT?).
+    "Return a list of (URL REF).
 REF is a commit or a branch name or a tag.
-In this context, Git conflates 'branch name' and 'tag' as the same thing.
-COMMIT? is either #:commit or #:branch."
+In this context, Git conflates 'branch name' and 'tag' as the same thing."
     (filter (lambda (pkg)
               (and
                (and-let* ((source (package-source pkg))
@@ -56,15 +55,11 @@ COMMIT? is either #:commit or #:branch."
 
   (define (add-submodule ref)
     (pk ref)
-    (let ((path (string-append "_build/submodules/"
+    (let ((path (string-append "_build/"
                                (git-url->name (first ref)))))
-      (invoke (append '("git" "submodule" "add")
-                      (if (eq? (list-ref ref 2) #:branch)
-                          '("--depth" "1" "-b" (second ref))
-                          '())
-                      (list (first ref) path)))
-      (when (eq? (list-ref ref 2) #:commit)
-        (invoke "git" "-C" path "checkout" (second ref)))))
+      (apply invoke (append '("git" "submodule" "add")
+                            (list (first ref) path)))
+      (invoke "git" "-C" path "checkout" (second ref))))
 
   ;; (pk (map package-repo-ref (sbcl-deps nyxt)))
   (map add-submodule (map package-repo-ref (sbcl-deps nyxt))))
