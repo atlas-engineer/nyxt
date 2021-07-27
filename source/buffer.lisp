@@ -942,7 +942,7 @@ proceeding."
 (define-user-class buffer-source)
 
 (-> switch-buffer (&key (:id string) (:current-is-last-p boolean)) *)
-(define-command switch-buffer (&key id (current-is-last-p t))
+(define-command switch-buffer (&key id (current-is-last-p nil))
   "Switch the active buffer in the current window.
 Buffers are ordered by last access.
 With CURRENT-IS-LAST-P, the current buffer is listed last so as to list the
