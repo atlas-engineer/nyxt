@@ -13,3 +13,7 @@
 [submodule "quicklisp-libraries/quri"]
 	path = _build/submodules/quri
 	url = https://github.com/fukamachi/quri
+[submodule "_build/submodules/serapeum"]
+	path = _build/submodules/serapeum
+	url = https://github.com/ruricolist/serapeum
+	shallow = true
