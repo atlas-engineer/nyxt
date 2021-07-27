@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/reduce-tracking-mode
-  (:use :common-lisp :trivia :nyxt)
+  (:use :common-lisp :nyxt)
   (:documentation "Mode to mitigate fingerprinting."))
 (in-package :nyxt/reduce-tracking-mode)
 
@@ -11,10 +11,11 @@
 (how third-party trackers attempt to indentify you.
 
 Fingerprinting can be tested with https://panopticlick.eff.org/."
-  ((preferred-languages '("en_US")
-                        :type list-of-strings
-                        :documentation "The list of languages that will be sent as
-part of the Accept-Language HTTP header.")
+  ((preferred-languages
+    '("en_US")
+    :type list-of-strings
+    :documentation "The list of languages that will be sent as part of the
+Accept-Language HTTP header.")
    (destructor
     (lambda (mode)
       (ffi-set-preferred-languages (buffer mode)
