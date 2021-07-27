@@ -42,6 +42,8 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 
 (define-class gtk-window ()
   ((gtk-object)
+   (handler-ids
+    :documentation "See `gtk-buffer' slot of the same name.")
    (root-box-layout)
    (horizontal-box-layout)
    (panel-buffer-container-left)
@@ -50,7 +52,8 @@ want to change the behaviour of modifiers, for instance swap 'control' and
    (panel-buffers-right)
    (main-buffer-container)
    (prompt-buffer-container)
-   (prompt-buffer-view)
+   (prompt-buffer-view
+    :documentation "Shared web view between all prompt buffers of this window.")
    (status-container)
    (message-container)
    (message-view)
@@ -62,14 +65,15 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 
 (define-class gtk-buffer ()
   ((gtk-object)
+   (handler-ids
+    :documentation "Store all GObject signal handler IDs so that we can disconnect the signal handler when the object is finalised.
+See https://developer.gnome.org/gobject/stable/gobject-Signals.html#signal-memory-management.")
    (gtk-proxy-url (quri:uri ""))
    (proxy-ignored-hosts '())
-   (data-manager-path (make-instance 'data-manager-data-path
-                                     :dirname (uiop:xdg-cache-home +data-root+))
+   (data-manager-path (make-instance 'data-manager-data-path)
                       :documentation "Directory in which the WebKitGTK
 data-manager will store the data separately for each buffer.")
-   (gtk-extensions-path (make-instance 'gtk-extensions-data-path
-                                       :dirname (uiop:xdg-config-home +data-root+ "extensions"))
+   (gtk-extensions-path (make-instance 'gtk-extensions-data-path)
                         :documentation "Directory to store the WebKit-specific extensions in."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -180,7 +184,8 @@ not return."
     (gtk:leave-gtk-main)))
 
 (define-class data-manager-data-path (data-path)
-  ((ref :initform "data-manager"))
+  ((dirname (uiop:xdg-cache-home +data-root+ "data-manager"))
+   (ref :initform "data-manager"))
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
@@ -189,7 +194,8 @@ not return."
   nil)
 
 (define-class gtk-extensions-data-path (data-path)
-  ((ref :initform "gtk-extensions"))
+  ((dirname (uiop:xdg-config-home +data-root+ "extensions"))
+   (ref :initform "gtk-extensions"))
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
@@ -197,6 +203,13 @@ not return."
   ;; REVIEW: Should we?
   "We shouldn't enable (possibly) user-identifying extensions for `nosave-data-profile'."
   nil)
+
+(define-class gtk-download (download)
+  ((gtk-object)
+   (handler-ids
+    :documentation "See `gtk-buffer' slot of the same name."))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+(define-user-class download (gtk-download))
 
 (defun make-web-view (&key context-buffer)
   "Return a web view instance.
@@ -219,26 +232,36 @@ Such contexts are not needed for internal buffers."
         (echo-warning "decide policy error: ~a" c)
         (webkit:webkit-policy-decision-ignore response-policy-decision)))))
 
+(defmacro connect-signal-function (object signal fn)
+  "Connect SIGNAL to OBJECT with a function FN.
+OBJECT must have the `gtk-object' and `handler-ids' slots.
+See also `connect-signal'."
+  `(let ((handler-id (gobject:g-signal-connect
+                      (gtk-object ,object) ,signal ,fn)))
+     (push handler-id (handler-ids ,object))))
+
 (defmacro connect-signal (object signal (&rest args) &body body)
-  "Connect SIGNAL to GTK OBJECT with a lambda that takes ARGS.
+  "Connect SIGNAL to OBJECT with a lambda that takes ARGS.
+OBJECT must have the `gtk-object' and `handler-ids' slots.
 The BODY is wrapped with `with-protect'."
   (multiple-value-bind (forms declares documentation)
       (alex:parse-body body :documentation t)
-    `(gobject:g-signal-connect
-     ,object ,signal
-     (lambda (,@args)
-       ,@(sera:unsplice documentation)
-       ,@declares
-       (with-protect ("Error in signal thread: ~a" :condition)
-         ,@forms)))))
+    `(let ((handler-id (gobject:g-signal-connect
+                        (gtk-object ,object) ,signal
+                        (lambda (,@args)
+                          ,@(sera:unsplice documentation)
+                          ,@declares
+                          (with-protect ("Error in signal thread: ~a" :condition)
+                            ,@forms)))))
+       (push handler-id (handler-ids ,object)))))
 
 (defmethod initialize-instance :after ((buffer status-buffer) &key)
   (%within-renderer-thread-async
    (lambda ()
      (with-slots (gtk-object) buffer
        (setf gtk-object (make-web-view))
-       (gobject:g-signal-connect
-        gtk-object "decide-policy"
+       (connect-signal-function
+        buffer "decide-policy"
         (make-decide-policy-handler buffer))))))
 
 (defmethod initialize-instance :after ((window gtk-window) &key)
@@ -313,20 +336,20 @@ The BODY is wrapped with `with-protect'."
        (gtk:gtk-container-add gtk-object root-box-layout)
        (setf (slot-value *browser* 'last-active-window) window)
        (gtk:gtk-widget-show-all gtk-object)
-       (connect-signal gtk-object "key_press_event" (widget event)
+       (connect-signal window "key_press_event" (widget event)
          (declare (ignore widget))
          #+darwin
          (push-modifier *browser* event)
          (on-signal-key-press-event window event))
-       (connect-signal gtk-object "key_release_event" (widget event)
+       (connect-signal window "key_release_event" (widget event)
          (declare (ignore widget))
          #+darwin
          (pop-modifier *browser* event)
          (on-signal-key-release-event window event))
-       (connect-signal gtk-object "destroy" (widget)
+       (connect-signal window "destroy" (widget)
          (declare (ignore widget))
          (on-signal-destroy window))
-       (connect-signal gtk-object "window-state-event" (widget event)
+       (connect-signal window "window-state-event" (widget event)
          (declare (ignore widget))
          (setf (fullscreen-p window)
                (find :fullscreen
@@ -412,7 +435,7 @@ Return nil when key must be discarded, e.g. for modifiers."
                (member :meta-mask modifier-state))
       (alex:deletef (modifiers browser) :super-mask))))
 
-(declaim (ftype (function (list &optional gdk:gdk-event) list) translate-modifiers))
+(-> translate-modifiers (list &optional gdk:gdk-event) list)
 (defun translate-modifiers (modifier-state &optional event)
   "Return list of modifiers fit for `keymap:make-key'.
 See `gtk-browser's `modifier-translator' slot."
@@ -496,8 +519,11 @@ See `gtk-browser's `modifier-translator' slot."
         (log:debug key-string keycode character keyval-name modifiers)
         (log:debug key-string keycode character keyval-name))
     (when (prompt-buffer-p buffer)
-      (run-thread
-        (update-prompt-input buffer)))
+      (run-thread "Prompt updater"
+        ;; Rebind prompt-buffer to ensure the watcher does not mix up the
+        ;; different prompt-buffers.
+        (let ((prompt-buffer buffer))
+          (update-prompt-input prompt-buffer))))
     (if key-string
         (progn
           (alex:appendf (key-stack sender)
@@ -595,9 +621,13 @@ See `gtk-browser's `modifier-translator' slot."
            (cookie-manager (webkit:webkit-web-context-get-cookie-manager context))
            (extensions-path (expand-path (gtk-extensions-path buffer))))
       (when extensions-path
-        (connect-signal context "initialize-web-extensions" (context)
-          (webkit:webkit-web-context-set-web-extensions-directory
-           context extensions-path)))
+        ;; TODO: Should we also use `connect-signal' here?  Does this yield a memory leak?
+        (gobject:g-signal-connect
+         context "initialize-web-extensions"
+         (lambda (context)
+           (with-protect ("Error in signal thread: ~a" :condition)
+             (webkit:webkit-web-context-set-web-extensions-directory
+              context extensions-path)))))
       (when (and buffer
                  (web-buffer-p buffer)
                  (expand-path (cookies-path buffer)))
@@ -609,13 +639,6 @@ See `gtk-browser's `modifier-translator' slot."
       context)))
 
 (defmethod initialize-instance :after ((buffer gtk-buffer) &key)
-  (let ((path (data-manager-path buffer)))
-    (when (id buffer)
-      (setf (data-manager-path buffer)
-            (make-instance 'data-manager-data-path
-                           :dirname (pathname (str:concat (namestring (dirname path))
-                                                          "/nyxt-data-manager-"
-                                                          (id buffer)))))))
   (ffi-buffer-make buffer))
 
 (define-ffi-method ffi-buffer-url ((buffer gtk-buffer))
@@ -801,7 +824,7 @@ See `gtk-browser's `modifier-translator' slot."
            (push buffer (panel-buffers-left window)))
     (:right (gtk:gtk-box-pack-end (panel-buffer-container-right window) (gtk-object buffer))
             (push buffer (panel-buffers-right window))))
-  (setf (gtk:gtk-widget-size-request (gtk-object buffer)) 
+  (setf (gtk:gtk-widget-size-request (gtk-object buffer))
         (list (width buffer) -1))
   (gtk:gtk-widget-show (gtk-object buffer)))
 
@@ -848,19 +871,22 @@ See `gtk-browser's `modifier-translator' slot."
       (run-thread
         (let ((files (mapcar
                       #'namestring
-                      (prompt :prompt (format
-                                       nil "File~@[s~*~] to input"
-                                       (webkit:webkit-file-chooser-request-select-multiple
-                                        file-chooser-request))
-                              :input (or
-                                      (and
-                                       (webkit:webkit-file-chooser-request-selected-files
-                                        file-chooser-request)
-                                       (first
-                                        (webkit:webkit-file-chooser-request-selected-files
-                                         file-chooser-request)))
-                                      (namestring (uiop:getcwd)))
-                              :sources (list (make-instance 'file-source))))))
+                      (handler-case
+                          (prompt :prompt (format
+                                           nil "File~@[s~*~] to input"
+                                           (webkit:webkit-file-chooser-request-select-multiple
+                                            file-chooser-request))
+                                  :input (or
+                                          (and
+                                           (webkit:webkit-file-chooser-request-selected-files
+                                            file-chooser-request)
+                                           (first
+                                            (webkit:webkit-file-chooser-request-selected-files
+                                             file-chooser-request)))
+                                          (namestring (uiop:getcwd)))
+                                  :sources (list (make-instance 'file-source)))
+                        (nyxt-prompt-buffer-canceled ()
+                          nil)))))
           (if files
               (webkit:webkit-file-chooser-request-select-files
                file-chooser-request
@@ -909,49 +935,44 @@ See `gtk-browser's `modifier-translator' slot."
 
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
-  (setf (gtk-object buffer) (make-web-view
-                             :context-buffer (unless (internal-buffer-p buffer)
-                                               buffer)))
+  (unless (gtk-object buffer) ; Buffer may already have a view, e.g. the prompt-buffer.
+    (setf (gtk-object buffer) (make-web-view
+                               :context-buffer (unless (internal-buffer-p buffer)
+                                                 buffer))))
   (if (smooth-scrolling buffer)
       (ffi-buffer-enable-smooth-scrolling buffer t)
       (ffi-buffer-enable-smooth-scrolling buffer nil))
-  (gobject:g-signal-connect
-   (gtk-object buffer) "decide-policy"
-   (make-decide-policy-handler buffer))
-  (connect-signal (gtk-object buffer) "load-changed" (web-view load-event)
+  (connect-signal-function buffer "decide-policy" (make-decide-policy-handler buffer))
+  (connect-signal buffer "load-changed" (web-view load-event)
     (declare (ignore web-view))
     (on-signal-load-changed buffer load-event))
-  (connect-signal (gtk-object buffer) "mouse-target-changed" (web-view hit-test-result modifiers)
+  (connect-signal buffer "mouse-target-changed" (web-view hit-test-result modifiers)
     (declare (ignore web-view))
     (on-signal-mouse-target-changed buffer hit-test-result modifiers))
   ;; Mouse events are captured by the web view first, so we must intercept them here.
-  (connect-signal (gtk-object buffer) "button-press-event" (web-view event)
+  (connect-signal buffer "button-press-event" (web-view event)
     (declare (ignore web-view))
     (on-signal-button-press-event buffer event))
-  (connect-signal (gtk-object buffer) "scroll-event" (web-view event)
+  (connect-signal buffer "scroll-event" (web-view event)
     (declare (ignore web-view))
     (on-signal-scroll-event buffer event))
-  (gobject:g-signal-connect
-   (gtk-object buffer) "script-dialog"
-   #'process-script-dialog)
-  (gobject:g-signal-connect
-   (gtk-object buffer) "run-file-chooser"
-   #'process-file-chooser-request)
+  (connect-signal-function buffer "script-dialog" #'process-script-dialog)
+  (connect-signal-function buffer "run-file-chooser" #'process-file-chooser-request)
   ;; TLS certificate handling
-  (connect-signal (gtk-object buffer) "load-failed-with-tls-errors" (web-view failing-url certificate errors)
+  (connect-signal buffer "load-failed-with-tls-errors" (web-view failing-url certificate errors)
     (declare (ignore web-view errors))
     (on-signal-load-failed-with-tls-errors buffer certificate (quri:uri failing-url)))
-  (connect-signal (gtk-object buffer) "notify::uri" (web-view param-spec)
+  (connect-signal buffer "notify::uri" (web-view param-spec)
     (declare (ignore web-view param-spec))
     (on-signal-notify-uri buffer nil))
-  (connect-signal (gtk-object buffer) "notify::title" (web-view param-spec)
+  (connect-signal buffer "notify::title" (web-view param-spec)
     (declare (ignore web-view param-spec))
     (on-signal-notify-title buffer nil))
-  (connect-signal (gtk-object buffer) "web-process-crashed" (web-view)
+  (connect-signal buffer "web-process-crashed" (web-view)
     (echo-warning "Web process crashed for buffer ~a" (id buffer))
     (log:debug "Web process crashed for web view ~a" web-view)
     (delete-buffer :id (id buffer)))
-  (connect-signal (gtk-object buffer) "load-failed" (web-view load-event failing-url error)
+  (connect-signal buffer "load-failed" (web-view load-event failing-url error)
     (declare (ignore load-event web-view error))
     (unless (member (slot-value buffer 'load-status) '(:finished :failed))
       (echo "Failed to load URL ~a in buffer ~a." failing-url (id buffer))
@@ -968,7 +989,7 @@ See `gtk-browser's `modifier-translator' slot."
                 "If this site has does not support HTTPS, try with HTTP (insecure)."))))
        buffer))
     t)
-  (connect-signal (gtk-object buffer) "create" (web-view navigation-action)
+  (connect-signal buffer "create" (web-view navigation-action)
     (declare (ignore web-view))
     (let ((new-buffer (buffer-make *browser*))
           (url (webkit:webkit-uri-request-uri
@@ -979,7 +1000,7 @@ See `gtk-browser's `modifier-translator' slot."
       (gtk-object new-buffer)))
   ;; Remove "download to disk" from the right click context menu because it
   ;; bypasses request resource signal
-  (connect-signal (gtk-object buffer) "context-menu" (web-view context-menu event hit-test-result)
+  (connect-signal buffer "context-menu" (web-view context-menu event hit-test-result)
     (declare (ignore web-view event hit-test-result))
     (let ((length (webkit:webkit-context-menu-get-n-items context-menu)))
       (dolist (i (alex:iota length))
@@ -991,7 +1012,12 @@ See `gtk-browser's `modifier-translator' slot."
   buffer)
 
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
-  (gtk:gtk-widget-destroy (gtk-object buffer)))
+  (mapc (lambda (handler-id)
+          (gobject:g-signal-handler-disconnect (gtk-object buffer)
+                                               handler-id))
+        (handler-ids buffer))
+  (when (slot-value buffer 'gtk-object) ; Not all buffers have their own web view, e.g. prompt buffers.
+    (gtk:gtk-widget-destroy (gtk-object buffer))))
 
 (define-ffi-method ffi-buffer-load ((buffer gtk-buffer) url)
   "Load URL in BUFFER.
@@ -1072,19 +1098,21 @@ requested a reload."
 
 (defmethod ffi-buffer-download ((buffer gtk-buffer) url)
   (let* ((webkit-download (webkit:webkit-web-view-download-uri (gtk-object buffer) url))
-         (download (make-instance 'download :url url)))
+         (download (make-instance 'user-download
+                                  :url url
+                                  :gtk-object webkit-download)))
     (setf (cancel-function download)
           #'(lambda ()
               (setf (status download) :canceled)
               (webkit:webkit-download-cancel webkit-download)))
     (push download (downloads *browser*))
-    (connect-signal webkit-download "received-data" (webkit-download data-length)
+    (connect-signal download "received-data" (webkit-download data-length)
       (declare (ignore data-length))
       (setf (bytes-downloaded download)
             (webkit:webkit-download-get-received-data-length webkit-download))
       (setf (completion-percentage download)
             (* 100 (webkit:webkit-download-estimated-progress webkit-download))))
-    (connect-signal webkit-download "decide-destination" (webkit-download suggested-file-name)
+    (connect-signal download "decide-destination" (webkit-download suggested-file-name)
       (alex:when-let* ((download-dir (download-path buffer))
                        (download-directory (expand-path download-dir))
                        (path (str:concat download-directory suggested-file-name))
@@ -1094,18 +1122,18 @@ requested a reload."
             (echo "Destination ~s exists, saving as ~s." path unique-path)
             (log:debug "Downloading file to ~s." unique-path))
         (webkit:webkit-download-set-destination webkit-download file-path)))
-    (connect-signal webkit-download "created-destination" (webkit-download destination)
+    (connect-signal download "created-destination" (webkit-download destination)
       (declare (ignore destination))
       (setf (destination-path download)
             (webkit:webkit-download-destination webkit-download)))
-    (connect-signal webkit-download "failed" (webkit-download error)
+    (connect-signal download "failed" (webkit-download error)
       (declare (ignore error))
       (unless (eq (status download) :canceled)
         (setf (status download) :failed))
       (echo "Download failed for ~s."
             (webkit:webkit-uri-request-uri
              (webkit:webkit-download-get-request webkit-download))))
-    (connect-signal webkit-download "finished" (webkit-download)
+    (connect-signal download "finished" (webkit-download)
       (declare (ignore webkit-download))
       (unless (member (status download) '(:canceled :failed))
         (setf (status download) :finished)
@@ -1210,7 +1238,7 @@ custom (the specified proxy) and none."
 (define-ffi-method ffi-display-url (text)
   (webkit:webkit-uri-for-display text))
 
-(declaim (ftype (function (webkit:webkit-cookie-manager cookie-policy)) set-cookie-policy))
+(-> set-cookie-policy (webkit:webkit-cookie-manager cookie-policy) *)
 (defun set-cookie-policy (cookie-manager cookie-policy)
   (webkit:webkit-cookie-manager-set-accept-policy
    cookie-manager

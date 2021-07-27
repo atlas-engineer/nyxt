@@ -3,7 +3,7 @@
 
 (uiop:define-package :nyxt/certificate-exception-mode
   (:use :common-lisp :trivia :nyxt)
-  (:documentation "Certificate excetption mode"))
+  (:documentation "Certificate exception mode"))
 (in-package :nyxt/certificate-exception-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)

@@ -375,7 +375,7 @@ current buffer."
                                              :proxy proxy-url))
              (push download downloads)
              ;; Add a watcher / renderer for monitoring download
-             (let ((download-render (make-instance 'download :url (render-url url))))
+             (let ((download-render (make-instance 'user-download :url (render-url url))))
                (setf (destination-path download-render)
                      (download-manager:filename download))
                (push download-render (downloads *browser*))
@@ -392,14 +392,14 @@ current buffer."
 (defmethod get-unique-buffer-identifier ((browser browser))
   (format nil "~s" (incf (slot-value browser 'total-buffer-count))))
 
-(declaim (ftype (function (&optional window buffer)) set-window-title))
+(-> set-window-title (&optional window buffer) *)
 (export-always 'set-window-title)
 (defun set-window-title (&optional (window (current-window)) (buffer (current-buffer)))
   "Set current window title to the return value of (titler window). "
   (declare (ignore buffer)) ; TODO: BUFFER is kept for backward compatibility.  Remove with 3.0.
   (ffi-window-set-title window (funcall (titler window) window)))
 
-(declaim (ftype (function (window) string) window-default-title))
+(-> window-default-title (window) string)
 (export-always 'window-default-title)
 (defun window-default-title (window)
   "Return a window title in the form 'Nyxt - URL'.
@@ -416,7 +416,7 @@ This is useful to tell REPL instances from binary ones."
                      url))))
 
 ;; REVIEW: Do we need :NO-FOCUS? It's not used anywhere.
-(declaim (ftype (function ((cons quri:uri *) &key (:no-focus boolean)))))
+(-> open-urls ((cons quri:uri *) &key (:no-focus boolean)) *)
 (defun open-urls (urls &key no-focus)
   "Create new buffers from URLs.
 First URL is focused if NO-FOCUS is nil."
@@ -512,10 +512,11 @@ view.")
          request-data)))))
 
 (export-always 'url-dispatching-handler)
-(declaim (ftype (function (symbol
-                           (function (quri:uri) boolean)
-                           (or string (function (quri:uri) (or quri:uri null)))))
-                url-dispatching-handler))
+(-> url-dispatching-handler
+    (symbol
+     (function (quri:uri) boolean)
+     (or string (function (quri:uri) (or quri:uri null))))
+    *)
 (defun url-dispatching-handler (name test action)
   "Return a `resource' handler that, if `add-hook'ed to the `request-resource-hook',
 will automatically apply its ACTION on the URLs that conform to TEST.

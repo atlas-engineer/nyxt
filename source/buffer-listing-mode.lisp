@@ -35,20 +35,23 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                (analysis::clusters collection)))
            (buffer-markup (buffer)
              "Present a buffer in HTML."
-             (spinneret:with-html
-              (:p (:a :class "button"
-                      :href (lisp-url `(nyxt::delete-buffer :id ,(id buffer))) "✕")
-                  (:a :class "button"
-                      :href (lisp-url `(nyxt::switch-buffer :id ,(id buffer))) "→")
-                  (:span (title buffer) "  "
-                         (:u (render-url (url buffer)))))))
+             ;; To avoid spurious spaces.
+             ;; See https://github.com/ruricolist/spinneret/issues/37.
+             (let ((*print-pretty* nil))
+               (spinneret:with-html
+                 (:p (:a :class "button"
+                         :href (lisp-url `(nyxt::delete-buffer :id ,(id buffer))) "✕")
+                     (:a :class "button"
+                         :href (lisp-url `(nyxt::switch-buffer :id ,(id buffer))) "→")
+                     (:span (title buffer) "  "
+                            (:u (render-url (url buffer))))))))
            (buffer-tree->html (root-buffer)
              "Present a single buffer tree in HTML."
-             (spinneret:with-html-string
+             (spinneret:with-html
               (:div (buffer-markup root-buffer))
               (:ul
                (dolist (child-buffer (nyxt::buffer-children root-buffer))
-                 (:li (:raw (buffer-tree->html child-buffer)))))))
+                 (:li (buffer-tree->html child-buffer))))))
            (cluster-markup (cluster-id cluster)
              "Present a cluster in HTML."
              (spinneret:with-html
@@ -83,7 +86,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                (if linear-view-p
                    (buffer-markup buffer)
                    (unless (nyxt::buffer-parent buffer)
-                     (:raw (buffer-tree->html buffer)))))))))))
+                     (buffer-tree->html buffer))))))))))
 
 (define-command-global show-buffers-panel (&key (side :left))
   "Show the bookmarks in a panel."

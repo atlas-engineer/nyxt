@@ -204,8 +204,7 @@ To use, say, KeepassXC, set this slot to
 
 Password interfaces may have user classes (that is, prefixed with 'user-' as in
 the above example), in which case you can use `define-configuration' on them.")
-   (download-path (make-instance 'download-data-path
-                                 :dirname (xdg-download-dir))
+   (download-path (make-instance 'download-data-path)
                   :type data-path
                   :documentation "Path of directory where downloads will be
 stored.  Nil means use system default.
@@ -214,26 +213,24 @@ Downloads are kept in browser's `user-data', keyed by the expanded `download-pat
                     :type symbol
                     :documentation "Select a download engine to use,
 such as :lisp or :renderer.")
-   (history-path (make-instance 'history-data-path :basename "default"
-                                                   :dirname (uiop:xdg-data-home +data-root+ "history"))
+   (history-path (make-instance 'history-data-path)
                  :type data-path
                  :documentation "
 The path where the system will create/save the global history.
 History data is kept in browser's `user-data', keyed by the expanded `history-path'.")
-   (bookmarks-path (make-instance 'bookmarks-data-path :basename "bookmarks")
+   (bookmarks-path (make-instance 'bookmarks-data-path)
                    :type data-path
                    :documentation "
 The path where the system will create/save the bookmarks.
 Bookmarks' data is kept in browser's `user-data', keyed by the expanded `bookmarks-path'.")
-   (auto-mode-rules-path (make-instance 'auto-mode-rules-data-path
-                                        :basename "auto-mode-rules")
+   (auto-mode-rules-path (make-instance 'auto-mode-rules-data-path)
                          :type data-path
                          :documentation "The path where the auto-mode rules are saved.
 Rules are kept in browser's `user-data', keyed by the expanded `auto-mode-rules-path'.")
-   (standard-output-path (make-instance 'standard-output-data-path :basename "standard-out.txt")
+   (standard-output-path (make-instance 'standard-output-data-path)
                          :type data-path
                          :documentation "Path where `*standard-output*' can be written to.")
-   (error-output-path (make-instance 'error-output-data-path :basename "standard-error.txt")
+   (error-output-path (make-instance 'error-output-data-path)
                       :type data-path
                       :documentation "Path where `*error-output*' can be written to."))
   (:export-class-name-p t)
@@ -291,7 +288,7 @@ inherited from the superclasses."))
    (certificate-exceptions '()
                            :type list-of-strings
                            :documentation "A list of hostnames for which certificate errors shall be ignored.")
-   (cookies-path (make-instance 'cookies-data-path :basename "cookies.txt")
+   (cookies-path (make-instance 'cookies-data-path)
                  :type data-path
                  :documentation "The path where cookies are stored.  Not all
 renderers might support this.")
@@ -525,6 +522,7 @@ Delete it with `ffi-buffer-delete'."
                ("#tabs"
                 :background-color "darkgray"
                 :min-width "100px"
+                :white-space "nowrap"
                 :overflow-x "scroll"
                 :text-align "left"
                 :padding-left "15px"
@@ -580,7 +578,7 @@ Delete it with `ffi-buffer-delete'."
                             (quri:uri "")
                             nil)))
 
-(declaim (ftype (function (buffer &key (:downloads-only boolean))) proxy-adress))
+(-> proxy-adress (buffer &key (:downloads-only boolean)) *)
 (defun proxy-url (buffer &key (downloads-only nil))
   "Return the proxy address, nil if not set.
 If DOWNLOADS-ONLY is non-nil, then it only returns the proxy address (if any)
@@ -662,14 +660,15 @@ BUFFER's modes."
   `(("URL" ,(render-url (url buffer)))
     ("Title" ,(title buffer))))
 
-(declaim (ftype (function (&key (:title string)
-                                (:modes (or null (cons symbol *)))
-                                (:url quri:uri)
-                                (:parent-buffer (or null buffer))
-                                (:no-history-p boolean)
-                                (:load-url-p boolean)
-                                (:buffer-class (or null symbol))))
-                make-buffer))
+(-> make-buffer
+    (&key (:title string)
+          (:modes (or null (cons symbol *)))
+          (:url quri:uri)
+          (:parent-buffer (or null buffer))
+          (:no-history-p boolean)
+          (:load-url-p boolean)
+          (:buffer-class (or null symbol)))
+    *)
 (define-command make-buffer (&key (title "") modes (url (quri:uri "")) parent-buffer
                              no-history-p (load-url-p t) buffer-class)
   "Create a new buffer.
@@ -693,11 +692,12 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
         (setf (url buffer) (quri:uri url)))
     buffer))
 
-(declaim (ftype (function (&key (:title string)
-                                (:modes (or null (cons symbol *)))
-                                (:url quri:uri)
-                                (:load-url-p boolean)))
-                make-nosave-buffer))
+(-> make-nosave-buffer
+    (&key (:title string)
+          (:modes (or null (cons symbol *)))
+          (:url quri:uri)
+          (:load-url-p boolean))
+    *)
 (define-command make-nosave-buffer (&rest args
                                     &key title modes url load-url-p)
   "Create a new buffer that won't save anything to the filesystem.
@@ -705,10 +705,11 @@ See `make-buffer' for a description of the arguments."
   (declare (ignorable title modes url load-url-p))
   (apply #'make-buffer (append (list :buffer-class 'user-nosave-buffer) args)))
 
-(declaim (ftype (function (&key (:url quri:uri)
-                                (:parent-buffer (or null buffer))
-                                (:nosave-buffer-p boolean)))
-                make-buffer-focus))
+(-> make-buffer-focus
+    (&key (:url quri:uri)
+          (:parent-buffer (or null buffer))
+          (:nosave-buffer-p boolean))
+    *)
 (define-command make-buffer-focus (&key (url (quri:uri "")) parent-buffer nosave-buffer-p)
   "Switch to a new buffer.
 See `make-buffer'."
@@ -733,15 +734,17 @@ If URL is `:default', use `default-new-buffer-url'."
                          :extra-modes modes
                          :buffer-class 'user-editor-buffer))
 
-(declaim (ftype (function (browser &key (:title string)
-                                   (:data-profile data-profile)
-                                   (:extra-modes list)
-                                   (:dead-buffer buffer)
-                                   (:nosave-buffer-p boolean)
-                                   (:buffer-class symbol)
-                                   (:parent-buffer buffer)
-                                   (:no-history-p boolean)))
-                buffer-make))
+(-> buffer-make
+    (browser &key
+             (:title string)
+             (:data-profile data-profile)
+             (:extra-modes list)
+             (:dead-buffer buffer)
+             (:nosave-buffer-p boolean)
+             (:buffer-class symbol)
+             (:parent-buffer buffer)
+             (:no-history-p boolean))
+    *)
 (defun buffer-make (browser &key data-profile title extra-modes
                                  dead-buffer (buffer-class 'user-web-buffer)
                                  parent-buffer no-history-p
@@ -787,7 +790,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (hooks:run-hook (buffer-make-hook browser) buffer)
     buffer))
 
-(declaim (ftype (function (buffer)) add-to-recent-buffers))
+(-> add-to-recent-buffers (buffer) *)
 (defun add-to-recent-buffers (buffer)
   "Create a recent-buffer from given buffer and add it to `recent-buffers'."
   ;; Make sure it's a dead buffer:
@@ -795,7 +798,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   (containers:delete-item-if (recent-buffers *browser*) (buffer-match-predicate buffer))
   (containers:insert-item (recent-buffers *browser*) buffer))
 
-(declaim (ftype (function (buffer)) buffer-delete))
+(-> buffer-delete (buffer) *)
 (defun buffer-delete (buffer)
   "For dummy buffers, use `ffi-buffer-delete' instead."
   (hooks:run-hook (buffer-delete-hook buffer) buffer)
@@ -845,11 +848,14 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 Run WINDOW's `window-set-buffer-hook' over WINDOW and BUFFER before
 proceeding."
   (hooks:run-hook (window-set-buffer-hook window) window buffer)
-  ;; The current buffer last-access time is set to now to ensure it becomes the
-  ;; second newest buffer.  If we didn't update the access time, the buffer
-  ;; last-access time could be older than, say, buffers opened in the
-  ;; background.
-  (setf (last-access (active-buffer window)) (local-time:now))
+  ;; When not focusing, that is, when previewing we don't update the
+  ;; `last-access' so as to not disturb the ordering.
+  (when focus
+    ;; The current buffer last-access time is set to now to ensure it becomes the
+    ;; second newest buffer.  If we didn't update the access time, the buffer
+    ;; last-access time could be older than, say, buffers opened in the
+    ;; background.
+    (setf (last-access (active-buffer window)) (local-time:now)))
   (let ((window-with-same-buffer (find buffer (delete window (window-list))
                                        :key #'active-buffer)))
     ;; When switching buffers, `current-buffer' is still the old one,
@@ -875,7 +881,8 @@ proceeding."
         (progn
           (ffi-window-set-buffer window buffer :focus focus)
           (setf (active-buffer window) buffer)))
-    (setf (last-access buffer) (local-time:now))
+    (when focus
+      (setf (last-access buffer) (local-time:now)))
     ;; So that `current-buffer' returns the new value if buffer was
     ;; switched inside a `with-current-buffer':
     (setf %buffer nil)
@@ -934,15 +941,19 @@ proceeding."
   (:export-class-name-p t))
 (define-user-class buffer-source)
 
-(declaim (ftype (function (&key (:id string))) switch-buffer))
-(define-command switch-buffer (&key id)
-  "Switch the active buffer in the current window."
+(-> switch-buffer (&key (:id string) (:current-is-last-p boolean)) *)
+(define-command switch-buffer (&key id (current-is-last-p nil))
+  "Switch the active buffer in the current window.
+Buffers are ordered by last access.
+With CURRENT-IS-LAST-P, the current buffer is listed last so as to list the
+second latest buffer first."
   (if id
       (set-current-buffer (buffers-get id))
       (prompt
        :prompt "Switch to buffer"
        :sources (list (make-instance 'user-buffer-source
-                                     :constructor (buffer-initial-suggestions :current-is-last-p nil))))))
+                                     :constructor (buffer-initial-suggestions
+                                                   :current-is-last-p current-is-last-p))))))
 
 (define-command switch-buffer-domain (&key domain (buffer (current-buffer)))
   "Switch the active buffer in the current window from the current domain."
@@ -1282,23 +1293,30 @@ generate a new URL query from user input.
                              (buffer-list)
                              :key (alex:compose #'get-data #'history-path))))
     (with-data-unsafe (history (history-path buffer))
-      (let* ((owner (htree:owner history (id buffer)))
-             (current-parent-id (when owner (htree:creator-id owner)))
-             (common-parent-buffers
-               (sera:filter
-                (sera:equals current-parent-id)
-                buffers
-                :key (lambda (b) (alex:when-let ((owner (htree:owner history (id b))))
-                                   (htree:creator-id owner)))))
-             (common-parent-buffers
-               (sort common-parent-buffers #'string< :key #'id)))
-        (sera:split-sequence-if (sera:equals (id buffer))
-         common-parent-buffers
-         :key #'id)))))
+      (flet ((existing-creator-id (owner)
+               "If owner's creator does not exist anymore
+(i.e. parent has been deleted), return NIL so has mimick top-level owners."
+               (if (htree:owner history (htree:creator-id owner))
+                   (htree:creator-id owner)
+                   nil)))
+        (let* ((owner (htree:owner history (id buffer)))
+               (current-parent-id (when owner (existing-creator-id owner)))
+               (common-parent-buffers
+                 (sera:filter
+                  (sera:equals current-parent-id)
+                  buffers
+                  :key (lambda (b)
+                         (alex:when-let ((owner (htree:owner history (id b))))
+                           (existing-creator-id owner)))))
+               (common-parent-buffers
+                 (sort common-parent-buffers #'string< :key #'id)))
+          (sera:split-sequence-if (sera:equals (id buffer))
+                                  common-parent-buffers
+                                  :key #'id))))))
 
 (define-command switch-buffer-previous (&optional (buffer (current-buffer)))
   "Switch to the previous buffer in the buffer tree.
-The tree is browse in a depth-first fashion.
+The tree is browsed in a depth-first fashion.
 When there is no previous buffer, go to the last one so as to cycle."
   (labels ((buffer-last-child (&optional (buffer (current-buffer)))
              (alex:if-let ((next-siblings (second (buffer-siblings buffer))))
@@ -1319,15 +1337,15 @@ When there is no previous buffer, go to the last one so as to cycle."
 
 (define-command switch-buffer-next (&optional (buffer (current-buffer)))
   "Switch to the next buffer in the buffer tree.
-The tree is browse in a depth-first fashion.
+The tree is browsed in a depth-first fashion.
 When there is no next buffer, go to the first one so as to cycle."
-  (labels ((buffer-first-root (&optional (buffer (current-buffer)))
+  (labels ((buffer-first-root (buffer)
              (alex:if-let ((parent (buffer-parent buffer)))
                (buffer-first-root parent)
                (first (first (buffer-siblings buffer)))))
-           (buffer-next-parent-sibling (&optional (buffer (current-buffer)))
+           (buffer-next-parent-sibling (buffer)
              (alex:when-let ((parent (buffer-parent buffer)))
-               (alex:if-let ((next-siblings (second (buffer-siblings buffer))))
+               (alex:if-let ((next-siblings (second (buffer-siblings parent))))
                  (first next-siblings)
                  (buffer-next-parent-sibling parent))))
            (buffer-sibling-next (&optional (buffer (current-buffer)))

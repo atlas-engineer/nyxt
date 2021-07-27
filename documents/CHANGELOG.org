@@ -21,6 +21,106 @@ If possible!
 *** Add online suggestions from search engines
 ** 2 series
 
+*** TASK 2.2.0 (Upcoming)
+
+- New "panel" buffers to display arbitrary content beside the web view.
+
+  - =show-bookmarks-panel=
+  - =show-buffers-panel=
+  - =delete-panel-buffers=
+
+- New =go-next= and =go-previous= commands.  (Thanks to @pdelfino!)
+
+- New =show-qrcode-of-current-url= command.  (Thanks to @ag91!)
+
+- New VI state indicators.  (Thanks to @edgar-vincent!)
+
+  Both the status area and the prompt buffer now display a colored
+  indicator for =vi-normal-mode= and =vi-insert-mode=.
+
+- Input keys are no longer forwarded in =vi-normal-mode=.
+
+  Concretely, pressing an unbound letter won't insert it in an HTML input.
+
+- Support buffer tree relationships.
+
+  - =switch-buffer-previous= and =switch-buffer-next= browse the buffer
+    tree in a depth-first fashion.
+
+  - New =switch-buffer-last= command to easily switch back and forth
+    between the 2 most recent buffers.
+
+  - =list-buffers= can now display the the buffers as a tree.
+
+- Macro editor: interactively record command macros with =edit-macro=.
+  Macros can be saved to the =auto-config.lisp= file.
+
+- =execute-extended-command= prefills default values when provided and
+  performs type checking.
+
+- New =edit-user-file-with-external-editor= command.
+
+- New =window= =titler= slot to customize the window title.
+
+- New DOM parser.
+
+  Much of the former Parenscript has been replaced by pure Lisp code.
+
+- Improved hint detection and handling such as with drop-down buttons.
+
+- Password commands now default input to current host.
+
+- =describe-variable= can now describe compound values recursively, such
+  as list of variables.
+
+- Allow local commands in key bindings.
+
+  You can create a local command with =make-command=.
+
+- Various manual and tutorial improvements and fixes.  (Thanks to @pdelfino!)
+
+- Deprecate =paste-or-set-url=.
+
+- Deprecated commands no longer show in =execute-command=.
+
+- Replaced =copy-system-information= with =show-system-information=.
+
+- Status area:
+
+  - Clicking on modes now describes them.
+
+  - New "+" button to toggles modes.
+
+  - Arbitrary HTML is now allowed for mode glyphs.
+
+- Prompt buffer:
+
+  - Input area no longer stutters when updating the display.
+
+  - Key press responsiveness has been dramatically improved.
+
+  - The prompt is properly refreshed when pasting to it.
+
+  - Bind =M-space= to =resume-prompt= to make it more useful.
+
+    It's particularly useful to resume a search.
+
+- Platform support:
+
+  - Fix slow buffer and prompt-buffer creation on FreeBSD.  (Thanks to @shamazmazum!)
+
+- Bug fixes:
+
+  - Don't crash when an error occurs in a GTK signal.
+
+  - Start up errors due to flawed user init files now lead to a restart
+    of Nyxt without init file.
+
+  - Fix endless compilation of =tutorial.lisp= when SBCL dynamic space
+    size to low.
+
+    =cl-markup= was replaced by =spinneret=.
+
 *** 2.1.1
 
 - =reopen-buffer= restores the scroll position.

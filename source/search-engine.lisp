@@ -37,12 +37,12 @@ Can be built via `make-search-completion-function'"))
                  :fallback-url fallback-url))
 
 (export-always 'make-search-completion-function)
-(declaim (ftype (function (&key (:base-url string)
-                                (:request-function (function (string &rest *) *))
-                                (:request-args list)
-                                (:processing-function (function (*) list-of-strings)))
-                          (function (string) list-of-strings))
-                make-search-completion-function))
+(-> make-search-completion-function
+    (&key (:base-url string)
+          (:request-function (function (string &rest *) *))
+          (:request-args list)
+          (:processing-function (function (*) list-of-strings)))
+    (function (string) list-of-strings))
 (defun make-search-completion-function (&key base-url
                                           (request-function #'dex:get)
                                           request-args

@@ -11,11 +11,8 @@
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
 
 (define-mode style-mode ()
-  "Mode for styling documents."
-  ((css-cache-path (make-instance 'css-cache-data-path
-                                  :dirname (uiop:xdg-data-home
-                                            nyxt::+data-root+
-                                            "style-mode-css-cache")))
+  "A mode for styling documents."
+  ((css-cache-path (make-instance 'css-cache-data-path))
    (style-url nil
               :type (or null string quri:uri)
               :documentation "Remote CSS file.  If supplied, set `style' to the
@@ -79,7 +76,8 @@ If nil, look for CSS in `style-file' or `style-url'.")
   (apply-style mode))
 
 (define-mode dark-mode (style-mode)
-  "Mode for styling documents."
+  "A mode for styling documents with a dark background. Unlike other modes, to
+effectively disable `dark-mode' you must also reload the buffer."
   ((css-cache-path (make-instance 'css-cache-data-path
                                   :dirname (uiop:xdg-data-home
                                             nyxt::+data-root+

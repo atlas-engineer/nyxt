@@ -325,7 +325,7 @@ With MODE-SYMBOLS and GLOBAL-P, include global commands."
        *command-list*)
       *command-list*))
 
-(declaim (ftype (function (function) (or null command)) function-command))
+(-> function-command (function) (or null command))
 (defun function-command (function)
   "Return the command associated to FUNCTION, if any."
   (find-if (sera:eqs function) (list-commands) :key #'fn))

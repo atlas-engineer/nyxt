@@ -51,6 +51,7 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "C-O" 'load-file
                      "C-j" 'list-downloads
                      "C-space" 'execute-command
+                     "M-space" 'resume-prompt
                      "C-n" 'make-window
                      "C-shift-W" 'delete-current-window
                      "C-W" 'delete-current-window

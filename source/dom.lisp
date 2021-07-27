@@ -4,7 +4,9 @@
 (uiop:define-package :nyxt/dom
   (:use :common-lisp :nyxt)
   (:import-from #:class-star #:define-class)
-  (:import-from #:serapeum #:export-always)
+  (:import-from #:serapeum
+                #:export-always
+                #:->)
   (:documentation "Nyxt-specific DOM classes and functions operating on them."))
 (in-package :nyxt/dom)
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -97,7 +99,7 @@
   node)
 
 (export-always 'named-html-parse)
-(declaim (ftype (function (string) (values (or plump-dom:root null) &optional)) named-parse))
+(-> named-parse (string) (values (or plump-dom:root null) &optional))
 (defun named-html-parse (input)
   "Assign tag classes (e.g., `input-element') to the nodes in the `plump:parse'-d input."
   (name-dom-elements (plump:parse input)))
@@ -125,7 +127,7 @@
   (ps:chain -j-s-o-n (stringify (process-element (nyxt/ps:qs document "html")))))
 
 (export-always 'named-json-parse)
-(declaim (ftype (function (string) (values (or plump-dom:root null) &optional)) named-json-parse))
+(-> named-json-parse (string) (values (or plump-dom:root null) &optional))
 (defun named-json-parse (json)
   "Return a `plump:root' of a DOM-tree produced from the JSON.
 
@@ -166,6 +168,22 @@ JSON should have the format like what `get-document-body-json' produces:
           (root (plump:make-root)))
       (json-to-plump json root)
       (name-dom-elements root))))
+
+(defmethod url :around ((element plump:element))
+  (flet ((merge-url* (url default-url)
+           (apply #'quri:copy-uri default-url
+                  (append (when (quri:uri-scheme url) `(:scheme ,(quri:uri-scheme url)))
+                          (when (quri:uri-userinfo url) `(:userinfo ,(quri:uri-userinfo url)))
+                          (when (quri:uri-host url) `(:host ,(quri:uri-host url)))
+                          (when (quri:uri-port url) `(:port ,(quri:uri-port url)))
+                          (when (quri:uri-path url) `(:path ,(quri:uri-path url)))
+                          (when (quri:uri-fragment url) `(:fragment ,(quri:uri-fragment url)))))))
+    (alex:when-let* ((result (call-next-method))
+                     (url (nyxt::ensure-url result)))
+      (render-url
+       (if (valid-url-p result)
+           url
+           (merge-url* url (url (current-buffer))))))))
 
 (defmethod url ((element plump:element))
   (when (plump:has-attribute element "href")

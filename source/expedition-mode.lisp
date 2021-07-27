@@ -24,10 +24,7 @@
        "M-p" 'expedition-previous)))
    (rememberable-p nil)))
 
-(defun current-expedition ()
-  (find-submode (current-buffer) 'expedition-mode))
-
-(define-command expedition-next (&key (expedition (current-expedition)))
+(define-command expedition-next (&key (expedition (current-mode 'expedition)))
   "Go to the next URL in the expedition."
   (if (> (length (urls expedition)) (+ 1 (index expedition)))
       (progn
@@ -35,7 +32,7 @@
         (buffer-load (nth (index expedition) (urls expedition))))
       (echo "End of expedition.")))
 
-(define-command expedition-previous (&key (expedition (current-expedition)))
+(define-command expedition-previous (&key (expedition (current-mode 'expedition)))
   "Go to the previous URL in the expedition."
   (if (> (index expedition) 0)
       (progn
@@ -47,12 +44,10 @@
   "Run an expedition through a set of URLs selected with a rectangle."
   (let* ((urls (reverse
                 (prompt
-                 :extra-modes '(nyxt/web-mode::frame-select-mode)
                  :prompt "Start expedition with the following links:"
                  :sources (list (make-instance 'nyxt/web-mode::frame-source
                                                :buffer buffer
-                                               :multi-selection-p t
-                                               :channel (make-instance 'calispel:channel)))
+                                               :multi-selection-p t))
                  :after-destructor
                  (lambda ()
                    (with-current-buffer buffer

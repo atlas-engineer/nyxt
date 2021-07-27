@@ -2,7 +2,9 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 #+sbcl
-(sb-ext:assert-version->= 2 0 0)
+(progn
+  (sb-ext:assert-version->= 2 0 0)
+  (require 'sb-bsd-sockets))
 
 (defvar *prefix* (format nil "~a/~a"
                          (or (uiop:getenv "DESTDIR") "")
@@ -26,17 +28,20 @@
   :depends-on (alexandria
                bordeaux-threads
                calispel
+               cl-base64
                cl-css
                cl-html-diff
                cl-json
                cl-ppcre
                cl-ppcre-unicode
                cl-prevalence
+               cl-qrencode
                closer-mop
                cl-containers
                moptilities
                dexador
                enchant
+               flexi-streams
                iolib
                iolib/os
                local-time

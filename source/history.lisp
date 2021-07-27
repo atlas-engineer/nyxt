@@ -105,7 +105,7 @@ bookmark those that are frequently visited. See also the
                                                 :buffer buffer)))))
     (bookmark-frequent-visit entries)))
 
-(declaim (ftype (function (quri:uri &key (:title string) (:buffer buffer)) t) history-add))
+(-> history-add (quri:uri &key (:title string) (:buffer buffer)) *)
 (defun history-add (url &key (title "") (buffer (current-buffer)))
   "Add URL to the global/buffer-local history.
 The `implicit-visits' count is incremented."

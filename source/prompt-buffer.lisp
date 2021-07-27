@@ -175,8 +175,9 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
   (when prompt-buffer
     (push prompt-buffer (active-prompt-buffers (window prompt-buffer)))
     (prompt-render prompt-buffer)
-    (run-thread
-      (update-prompt-input prompt-buffer))
+    (run-thread "Show prompt watcher"
+      (let ((prompt-buffer prompt-buffer))
+        (update-prompt-input prompt-buffer)))
     (ffi-window-set-prompt-buffer-height
      (window prompt-buffer)
      (or height
@@ -185,26 +186,31 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
 (export-always 'hide-prompt-buffer)
 (defun hide-prompt-buffer (prompt-buffer)
   "Hide PROMPT-BUFFER, display next active one."
-  ;; Note that PROMPT-BUFFER is not necessarily first in the list, e.g. a new
-  ;; prompt-buffer was invoked before the old one reaches here.
-  (alex:deletef (active-prompt-buffers (window prompt-buffer)) prompt-buffer)
-  (when (resumable-p prompt-buffer)
-    (flet ((prompter= (prompter1 prompter2)
-             (and (string= (prompter:prompt prompter1)
-                           (prompter:prompt prompter2))
-                  (string= (prompter:input prompter1)
-                           (prompter:input prompter2)))))
-      ;; Delete a previous, similar prompt, if any.
-      (alex:deletef (old-prompt-buffers *browser*)
-                    prompt-buffer
-                    :test #'prompter=)
-      (push prompt-buffer (old-prompt-buffers *browser*))))
-  (if (active-prompt-buffers (window prompt-buffer))
-      (let ((next-prompt-buffer (first (active-prompt-buffers (window prompt-buffer)))))
-        (show-prompt-buffer next-prompt-buffer))
-      (progn
-        (ffi-window-set-prompt-buffer-height (window prompt-buffer) 0)))
-  (prompter:destroy prompt-buffer))
+  (let ((window (window prompt-buffer)))
+    ;; Note that PROMPT-BUFFER is not necessarily first in the list, e.g. a new
+    ;; prompt-buffer was invoked before the old one reaches here.
+    (alex:deletef (active-prompt-buffers window) prompt-buffer)
+    (if (resumable-p prompt-buffer)
+        (flet ((prompter= (prompter1 prompter2)
+                 (and (string= (prompter:prompt prompter1)
+                               (prompter:prompt prompter2))
+                      (string= (prompter:input prompter1)
+                               (prompter:input prompter2)))))
+          ;; Delete previous, similar prompts, if any.
+          (mapc (lambda (old-prompt)
+                  (when (and (prompter= old-prompt prompt-buffer)
+                             (not (eq old-prompt prompt-buffer)))
+                    (ffi-buffer-delete old-prompt)))
+                (old-prompt-buffers *browser*))
+          (alex:deletef (old-prompt-buffers *browser*)
+                        prompt-buffer
+                        :test #'prompter=)
+          (push prompt-buffer (old-prompt-buffers *browser*)))
+        (ffi-buffer-delete prompt-buffer))
+    (if (active-prompt-buffers window)
+        (let ((next-prompt-buffer (first (active-prompt-buffers window))))
+          (show-prompt-buffer next-prompt-buffer))
+        (ffi-window-set-prompt-buffer-height window 0))))
 
 (defun suggestion-and-mark-count (prompt-buffer suggestions marks
                                   &key multi-selection-p pad-p)
@@ -280,8 +286,8 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                      (:div :class "source-name"
                            :style (if (and (hide-single-source-header-p prompt-buffer)
                                            (sera:single sources))
-                                      "visibility:hidden;"
-                                      "visibility:visible")
+                                      "dislay:none;"
+                                      "display:revert")
                            (:span :class "source-glyph" "⛯")
                            (prompter:name source)
                            (if (prompter:hide-suggestion-count-p source)
@@ -295,11 +301,12 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                (:tr :style (if (or (eq (prompter:hide-attribute-header-p source) :always)
                                                    (and (eq (prompter:hide-attribute-header-p source) :single)
                                                         (sera:single (prompter:active-attributes-keys source))))
-                                               "visibility:hidden;"
-                                               "visibility:visible;")
+                                               "display:none;"
+                                               "display:revert;")
                                     (loop for attribute-key in (prompter:active-attributes-keys source)
                                           collect (:th attribute-key)))
-                               (loop ;; TODO: Only print as many lines as fit the height.
+                               (loop ;; TODO: Only print as many lines as fit the height.  But how can we know in advance?
+                                     ;; Maybe first make the table, then add the element one by one _if_ there are into view.
                                      with max-suggestion-count = 10
                                      repeat max-suggestion-count
                                      with cursor-index = (prompter:selected-suggestion-position prompt-buffer)
@@ -312,7 +319,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                            "marked")
                                                   (loop for (nil attribute) in (prompter:active-attributes suggestion :source source)
                                                         collect (:td attribute))))))))))
-      (ffi-buffer-evaluate-javascript-async
+      (ffi-buffer-evaluate-javascript
        prompt-buffer
        (ps:ps
          (setf (ps:chain document (get-element-by-id "suggestions") |innerHTML|)
@@ -375,7 +382,8 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                      value))))))
     (setf (prompter:input prompt-buffer) input)
     ;; TODO: Stop loop when prompt-buffer is no longer current.
-    (sera:nlet maybe-update-view ((next-source (prompter:next-ready-p prompt-buffer)))
+    (sera:nlet maybe-update-view ((next-source (when (find prompt-buffer (active-prompt-buffers (window prompt-buffer)))
+                                                 (prompter:next-ready-p prompt-buffer))))
       (cond
         ;; Nothing to do:
         ((eq t next-source)
@@ -392,8 +400,9 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
          t)
         ((null next-source) nil)
         (t ;; At least one source got updated.
-         (prompt-render-suggestions prompt-buffer)
-         (maybe-update-view (prompter:next-ready-p prompt-buffer)))))))
+           (prompt-render-suggestions prompt-buffer)
+           (maybe-update-view (when (find prompt-buffer (active-prompt-buffers (window prompt-buffer)))
+                                (prompter:next-ready-p prompt-buffer))))))))
 
 (defun set-prompt-buffer-input (input &optional (prompt-buffer (current-prompt-buffer)))
   "Set HTML INPUT in PROMPT-BUFFER."
@@ -425,8 +434,8 @@ Example use:
   :sources (list (make-instance 'prompter:source :filter #'my-suggestion-filter)))
 
 See the documentation of `prompt-buffer' to know more about the options."
-    (let ((result-channel (make-channel 1))
-          (interrupt-channel (make-channel 1))
+    (let ((result-channel (make-channel))
+          (interrupt-channel (make-channel))
           (parent-thread-prompt-buffer nil))
       (ffi-within-renderer-thread
        *browser*

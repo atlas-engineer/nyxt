@@ -150,6 +150,7 @@
     (inputs
      `(("alexandria" ,cl-alexandria)
        ("bordeaux-threads" ,cl-bordeaux-threads)
+       ("cl-base64" ,cl-base64)
        ("cl-calispel" ,cl-calispel)
        ("cl-containers" ,cl-containers)
        ("cl-css" ,cl-css)
@@ -159,10 +160,12 @@
        ("cl-markup" ,cl-markup)
        ("cl-ppcre" ,cl-ppcre)
        ("cl-prevalence" ,cl-prevalence)
+       ("cl-qrencode" ,cl-qrencode)
        ("closer-mop" ,cl-closer-mop)
        ("cluffer" ,cl-cluffer)
        ("dexador" ,cl-dexador)
        ("enchant" ,cl-enchant)
+       ("flexi-streams" ,cl-flexi-streams)
        ("fset" ,cl-fset)
        ("hu.dwim.defclass-star" ,cl-hu.dwim.defclass-star)
        ("iolib" ,cl-iolib)
@@ -174,6 +177,7 @@
        ;; ("osicat" ,cl-osicat) ; Not needed for SBCL.
        ("parenscript" ,cl-parenscript)
        ("plump" ,cl-plump)
+       ("qrencode" ,cl-qrencode)
        ("clss" ,cl-clss)
        ("quri" ,cl-quri)
        ("serapeum" ,cl-serapeum)

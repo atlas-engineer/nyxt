@@ -6,7 +6,9 @@
   (:shadow #:focus-first-input-field)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:import-from #:class-star #:define-class)
-  (:import-from #:serapeum #:export-always)
+  (:import-from #:serapeum
+                #:export-always
+                #:->)
   (:documentation "Mode for web pages"))
 (in-package :nyxt/web-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -67,6 +69,7 @@ and to index the top of the page.")
     (define-scheme "web"
       scheme:cua
       (list
+       "C-z" 'nyxt/application-mode:application-mode
        "C-M-right" 'history-forwards-all-query
        "C-M-left" 'history-all-query
        "C-shift-h" 'history-all-query
@@ -247,7 +250,7 @@ and to index the top of the page.")
                                               tag-name))))
 
 (sera:export-always 'input-tag-p)
-(declaim (ftype (function ((or string null)) boolean) input-tag-p))
+(-> input-tag-p ((or string null)) boolean)
 (defun input-tag-p (tag)
   (or (string= tag "INPUT")
       (string= tag "TEXTAREA")))
@@ -693,3 +696,20 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
   ;; Need to force document-model re-parsing.
   (setf (document-model mode) nil)
   url)
+
+(define-command show-qrcode-of-current-url (&optional (buffer (current-buffer)))
+  "In a new buffer, show the QR code containing the URL for the current buffer."
+  (with-current-buffer buffer
+    (let* ((stream (flexi-streams:make-in-memory-output-stream))
+           (url (quri:render-uri (url (current-buffer))))
+           (title (format nil "Buffer ~a URL QRcode " (id buffer))))
+      (cl-qrencode:encode-png-stream url stream)
+      (with-current-html-buffer (buffer (format nil "*~a*" title) 'base-mode)
+        (spinneret:with-html-string
+          (:style (style buffer))
+          (:h1 title)
+          (:p (:u url))
+          (:p (:img :src (str:concat "data:image/png;base64,"
+                                     (cl-base64:usb8-array-to-base64-string
+                                      (flexi-streams:get-output-stream-sequence stream)))
+                    :alt url)))))))
