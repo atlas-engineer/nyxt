@@ -38,17 +38,14 @@
           (nyxt/web-mode::scroll-down
            :scroll-distance (velocity mode))))))))
 
-(defun current-cruise-control (&key (buffer (current-buffer)))
-  (find-submode buffer 'cruise-control-mode))
-
-(define-command velocity-incf (&key (cruise-control (current-cruise-control)))
+(define-command velocity-incf (&key (cruise-control (current-mode 'cruise-control)))
   "Increase the velocity."
   (incf (velocity cruise-control)))
 
-(define-command velocity-decf (&key (cruise-control (current-cruise-control)))
+(define-command velocity-decf (&key (cruise-control (current-mode 'cruise-control)))
   "Decrease the velocity."
   (decf (velocity cruise-control)))
 
-(define-command velocity-zero (&key (cruise-control (current-cruise-control)))
+(define-command velocity-zero (&key (cruise-control (current-mode 'cruise-control)))
   "Zero the velocity. Scrolling will stop."
   (setf (velocity cruise-control) 0))
