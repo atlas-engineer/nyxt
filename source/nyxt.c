@@ -1,4 +1,6 @@
 #include <webkit2/webkit-web-extension.h>
+#include "globals.h"
+#include <json-glib/json-glib.h>
 
 static WebKitScriptWorld *hello_world = NULL;
 
@@ -39,10 +41,34 @@ document_loaded_callback (WebKitWebPage *web_page)
                 hello_fn = jsc_context_evaluate(hello_context, "foo", -1);
         }
         int hello = jsc_value_to_int32(jsc_value_function_call(hello_fn, G_TYPE_NONE));
-        g_print ("Page %lu created for \"%s\", hello is \"%d\"\n",
+        g_print ("Page %lu loaded for \"%s\", hello is \"%d\"\n",
                  webkit_web_page_get_id (web_page),
                  webkit_web_page_get_uri (web_page),
                  hello);
+}
+
+static void add_extensions_reply_callback (GObject *web_page,
+                                           GAsyncResult *res,
+                                           gpointer user_data)
+{
+        WebKitUserMessage *message =
+                webkit_web_page_send_message_to_view_finish((WebKitWebPage *)web_page, res, NULL);
+        GVariant *params = webkit_user_message_get_parameters(message);
+        JsonParser *parser = json_parser_new();
+        JsonNode *root;
+        const char *extensions = g_variant_get_string(params, NULL);
+        json_parser_load_from_data(parser, extensions, -1, NULL);
+        root = json_parser_get_root(parser);
+        extensions_data_add_from_json_root(root, (WebKitWebPage *) web_page);
+}
+
+static void
+add_extensions (WebKitWebPage *web_page)
+{
+        WebKitUserMessage *message =
+                webkit_user_message_new("listExtensions", NULL);
+        webkit_web_page_send_message_to_view(web_page, message, NULL,
+                                             add_extensions_reply_callback, NULL);
 }
 
 static void
@@ -50,20 +76,24 @@ web_page_created_callback (WebKitWebExtension *extension,
                            WebKitWebPage      *web_page,
                            gpointer            user_data)
 {
-        g_print ("Page %lu created for \"%s\"\n",
-                 webkit_web_page_get_id (web_page),
-                 webkit_web_page_get_uri (web_page));
         g_signal_connect (web_page, "document-loaded",
                           G_CALLBACK (document_loaded_callback),
                           NULL);
         g_signal_connect (web_page, "user-message-received",
                           G_CALLBACK (user_message_received),
                           NULL);
+        PAGE = web_page;
+        add_extensions(web_page);
 }
 
 G_MODULE_EXPORT void
 webkit_web_extension_initialize (WebKitWebExtension *extension)
 {
+        TABS = malloc(sizeof(Tabs));
+        g_rec_mutex_init(&TABS->lock);
+
+        EXTENSIONS_DATA = g_hash_table_new(g_str_hash, g_str_equal);
+
         g_signal_connect (extension, "page-created",
                           G_CALLBACK (web_page_created_callback),
                           NULL);
