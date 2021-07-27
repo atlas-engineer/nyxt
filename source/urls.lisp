@@ -66,7 +66,10 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
                             ,args))))))))
 
 (defmemo lookup-hostname (name)
-  "Memoized verison of `iolib/sockets:lookup-hostname'."
+  "Resolve hostname NAME and memoize the result"
+  #+sbcl
+  (sb-bsd-sockets:get-host-by-name name)
+  #-sbcl
   (iolib/sockets:lookup-hostname name))
 
 (export-always 'valid-url-p)
