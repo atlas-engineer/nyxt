@@ -1106,6 +1106,23 @@ See `gtk-browser's `modifier-translator' slot."
             (:webkit-context-menu-action-download-link-to-disk
              (webkit:webkit-context-menu-remove context-menu item))))))
     nil)
+  (connect-signal (gtk-object buffer) "user-message-received" (web-view message)
+    (let* ((message-name (webkit:webkit-user-message-get-name message))
+           (reply-contents
+             (or
+              (str:string-case message-name
+                ("listExtensions"
+                 (json:encode-json-to-string
+                  (mapcar #'(lambda (extension)
+                              (cons (nyxt/web-extensions::name extension)
+                                    (str:join ", " (nyxt/web-extensions:permissions extension))))
+                          (sera:filter #'nyxt/web-extensions::extension-p
+                                       (modes (find web-view (buffer-list)
+                                                    :key #'gtk-object)))))))
+              ""))
+           (reply-message (webkit:webkit-user-message-new
+                           "listExtensions" (glib:g-variant-new-string reply-contents))))
+      (webkit:webkit-user-message-send-reply message reply-message)))
   buffer)
 
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
