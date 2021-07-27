@@ -1,16 +1,16 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/no-webgl-mode
+(uiop:define-package :nyxt/nowebgl-mode
   (:use :common-lisp  :nyxt)
   (:documentation "Disable WebGL."))
-(in-package :nyxt/no-webgl-mode)
+(in-package :nyxt/nowebgl-mode)
 
-(define-mode no-webgl-mode ()
+(define-mode nowebgl-mode ()
   "Disable WebGL in current buffer."
   ((previous-webgl-setting nil
                            :documentation "The state of WebGL
- before no-webgl-mode was enabled.")
+ before nowebgl-mode was enabled.")
    (destructor
     (lambda (mode)
       (ffi-buffer-enable-webgl (buffer mode) (previous-webgl-setting mode))))

@@ -37,8 +37,8 @@ necessary).")
     (:p "Example:")
     (:pre (:code "
 \(define-configuration buffer
-  ((default-modes (append '(no-script-mode) %slot-default%))))"))
-    (:p "The above turns on the 'no-script-mode' (disables JavaScript) by default for
+  ((default-modes (append '(noscript-mode) %slot-default%))))"))
+    (:p "The above turns on the 'noscript-mode' (disables JavaScript) by default for
 every buffer.")
     (:p "The " (:code "define-configuration") " macro can be used to customize
 the slots of classes like the browser, buffers, windows, etc.  Refer to the
