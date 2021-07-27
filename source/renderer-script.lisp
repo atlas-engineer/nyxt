@@ -11,10 +11,9 @@ Any Lisp expression must be wrapped in (PS:LISP ...).
 
 The returned function sends the compiled Javascript to the current buffer webview.
 The function can be passed ARGS."
-  `(progn
-     (defun ,script-name ,args
-       (ffi-buffer-evaluate-javascript (current-buffer)
-                                       (ps:ps ,@script-body)))))
+  `(defun ,script-name ,args
+     (ffi-buffer-evaluate-javascript (current-buffer)
+                                     (ps:ps ,@script-body))))
 
 (export-always 'pflet)
 (defmacro pflet (functions &body body)
