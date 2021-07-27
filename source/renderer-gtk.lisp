@@ -73,8 +73,7 @@ See https://developer.gnome.org/gobject/stable/gobject-Signals.html#signal-memor
    (data-manager-path (make-instance 'data-manager-data-path)
                       :documentation "Directory in which the WebKitGTK
 data-manager will store the data separately for each buffer.")
-   (gtk-extensions-path (make-instance 'gtk-extensions-data-path
-                                       :dirname (uiop:xdg-config-home +data-root+ "extensions"))
+   (gtk-extensions-path (make-instance 'gtk-extensions-data-path)
                         :documentation "Directory to store the WebKit-specific extensions in."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -195,7 +194,8 @@ not return."
   nil)
 
 (define-class gtk-extensions-data-path (data-path)
-  ((ref :initform "gtk-extensions"))
+  ((dirname (uiop:xdg-config-home +data-root+ "extensions"))
+   (ref :initform "gtk-extensions"))
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 

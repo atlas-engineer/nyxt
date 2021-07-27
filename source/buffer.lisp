@@ -204,8 +204,7 @@ To use, say, KeepassXC, set this slot to
 
 Password interfaces may have user classes (that is, prefixed with 'user-' as in
 the above example), in which case you can use `define-configuration' on them.")
-   (download-path (make-instance 'download-data-path
-                                 :dirname (xdg-download-dir))
+   (download-path (make-instance 'download-data-path)
                   :type data-path
                   :documentation "Path of directory where downloads will be
 stored.  Nil means use system default.
@@ -214,26 +213,24 @@ Downloads are kept in browser's `user-data', keyed by the expanded `download-pat
                     :type symbol
                     :documentation "Select a download engine to use,
 such as :lisp or :renderer.")
-   (history-path (make-instance 'history-data-path :basename "default"
-                                                   :dirname (uiop:xdg-data-home +data-root+ "history"))
+   (history-path (make-instance 'history-data-path)
                  :type data-path
                  :documentation "
 The path where the system will create/save the global history.
 History data is kept in browser's `user-data', keyed by the expanded `history-path'.")
-   (bookmarks-path (make-instance 'bookmarks-data-path :basename "bookmarks")
+   (bookmarks-path (make-instance 'bookmarks-data-path)
                    :type data-path
                    :documentation "
 The path where the system will create/save the bookmarks.
 Bookmarks' data is kept in browser's `user-data', keyed by the expanded `bookmarks-path'.")
-   (auto-mode-rules-path (make-instance 'auto-mode-rules-data-path
-                                        :basename "auto-mode-rules")
+   (auto-mode-rules-path (make-instance 'auto-mode-rules-data-path)
                          :type data-path
                          :documentation "The path where the auto-mode rules are saved.
 Rules are kept in browser's `user-data', keyed by the expanded `auto-mode-rules-path'.")
-   (standard-output-path (make-instance 'standard-output-data-path :basename "standard-out.txt")
+   (standard-output-path (make-instance 'standard-output-data-path)
                          :type data-path
                          :documentation "Path where `*standard-output*' can be written to.")
-   (error-output-path (make-instance 'error-output-data-path :basename "standard-error.txt")
+   (error-output-path (make-instance 'error-output-data-path)
                       :type data-path
                       :documentation "Path where `*error-output*' can be written to."))
   (:export-class-name-p t)
@@ -291,7 +288,7 @@ inherited from the superclasses."))
    (certificate-exceptions '()
                            :type list-of-strings
                            :documentation "A list of hostnames for which certificate errors shall be ignored.")
-   (cookies-path (make-instance 'cookies-data-path :basename "cookies.txt")
+   (cookies-path (make-instance 'cookies-data-path)
                  :type data-path
                  :documentation "The path where cookies are stored.  Not all
 renderers might support this.")

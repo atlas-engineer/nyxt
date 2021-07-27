@@ -4,7 +4,8 @@
 (in-package :nyxt)
 
 (define-class socket-data-path (data-path)
-  ((editable nil))
+  ((basename "nyxt.socket")
+   (editable nil))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
@@ -22,7 +23,7 @@
         path))))
 
 (export-always '*socket-path*)
-(defvar *socket-path* (make-instance 'socket-data-path :basename "nyxt.socket")
+(defvar *socket-path* (make-instance 'socket-data-path)
   "Path of the Unix socket used to communicate between different instances of
 Nyxt.
 

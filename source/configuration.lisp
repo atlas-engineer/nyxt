@@ -4,12 +4,12 @@
 (in-package :nyxt)
 
 (define-class init-data-path (data-path)
-  ()
+  ((basename "init"))
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-class auto-init-data-path (init-data-path)
-  ()
+  ((basename "auto-config"))
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
@@ -34,11 +34,11 @@
   (expand-init-path path :auto-config :no-auto-config))
 
 (export-always '*auto-config-file-path*)
-(defvar *auto-config-file-path* (make-instance 'auto-init-data-path :basename "auto-config")
+(defvar *auto-config-file-path* (make-instance 'auto-init-data-path)
   "The path of the generated configuration file.")
 
 (export-always '*init-file-path*)
-(defvar *init-file-path* (make-instance 'init-data-path :basename "init")
+(defvar *init-file-path* (make-instance 'init-data-path)
   "The path of the initialization file.")
 
 (define-class extensions-data-path (data-path)

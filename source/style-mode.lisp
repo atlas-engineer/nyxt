@@ -12,10 +12,7 @@
 
 (define-mode style-mode ()
   "A mode for styling documents."
-  ((css-cache-path (make-instance 'css-cache-data-path
-                                  :dirname (uiop:xdg-data-home
-                                            nyxt::+data-root+
-                                            "style-mode-css-cache")))
+  ((css-cache-path (make-instance 'css-cache-data-path))
    (style-url nil
               :type (or null string quri:uri)
               :documentation "Remote CSS file.  If supplied, set `style' to the
