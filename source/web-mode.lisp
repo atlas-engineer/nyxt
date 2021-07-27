@@ -166,6 +166,7 @@ and to index the top of the page.")
       (list
        "H" 'history-backwards
        "L" 'history-forwards
+       "y" 'copy
        "M-h" 'history-backwards-query
        "M-l" 'history-forwards-query
        "M-H" 'history-all-query
