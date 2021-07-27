@@ -419,10 +419,10 @@ TIMEOUT is deprecated."
              (length (sources prompter)))
           t
           (progn
-            (log:info "LISTEN" prompter (ready-channel sync-queue))
+            (log:debug "LISTEN" prompter (ready-channel sync-queue))
             (calispel:fair-alt
               ((calispel:? (ready-channel sync-queue) next-source)
-               (log:info "LISTENED" next-source)
+               (log:debug "LISTENED" next-source)
                (cond
                  ((null next-source)
                   nil)
@@ -432,7 +432,7 @@ TIMEOUT is deprecated."
                   (select-first prompter)
                   next-source)))
               ((calispel:? (sync-interrupt-channel sync-queue))
-               (log:info "LISTENING INTERRUPTED")
+               (log:debug "LISTENING INTERRUPTED")
                nil))))
       ;; No sync-queue if no input was ever set.
       t)))
