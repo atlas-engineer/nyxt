@@ -247,6 +247,13 @@ This was useful before Nyxt 2.0 as a workaround for hangs that would occur on pa
                                  (query-selector-all "[rel=prev]") 0 (click))))
     (go-previous)))
 
+(define-command go-to-homepage ()
+  "Navigate to the homepage."
+  (let* ((url-address (url (current-buffer)))
+         (host (quri:uri-authority url-address))
+         (scheme (quri:uri-scheme url-address)))
+    (buffer-load (uiop:strcat scheme "://" host))))
+
 (defun load-history-url (url-or-node
                          &key (buffer (current-buffer))
                               (message "History entry is already the current URL."))
