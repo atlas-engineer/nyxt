@@ -88,6 +88,7 @@ and to index the top of the page.")
        "C-u C-M-j" 'follow-hint-nosave-buffer
        "C-x C-w" 'copy-hint-url
        "C-c" 'copy
+       "C-v" 'paste
        "button9" 'history-forwards
        "button8" 'history-backwards
        "C-+" 'zoom-page
