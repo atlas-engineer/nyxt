@@ -1,8 +1,7 @@
 #include "globals.h"
+#include "tabs.h"
 
 WebKitWebPage *PAGE;
-
-Tabs *TABS;
 
 GHashTable *EXTENSIONS_DATA;
 
@@ -25,15 +24,18 @@ extensions_data_add_from_json_root(JsonNode *root, WebKitWebPage *web_page)
                 extension = malloc(sizeof(ExtensionData));
                 g_print("Extension allocated\n");
                 extension->name = (char*) name;
-                g_print("Extension name set\n");
+                g_print("Extension name set: \"%s\"\n", name);
                 extension->permissions = (char*) permissions;
-                g_print("Extension permissions set\n");
+                g_print("Extension permissions set: \"%s\"\n", permissions);
                 extension->world = webkit_script_world_new_with_name(name);
-                g_print("Extension world created\n");
-                extension->context = webkit_frame_get_js_context_for_script_world(
-                        frame, extension->world);
-                g_print("Extension contexts created\n");
+                g_print("Extension world created: %p\n", extension->world);
                 g_hash_table_insert(EXTENSIONS_DATA, (void*) name, extension);
                 g_print("Extension created\n");
         }
+}
+
+void *
+empty_constructor_callback (void)
+{
+        return NULL;
 }
