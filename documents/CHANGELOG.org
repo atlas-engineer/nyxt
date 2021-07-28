@@ -109,6 +109,12 @@ If possible!
 
   - Fix slow buffer and prompt-buffer creation on FreeBSD.  (Thanks to @shamazmazum!)
 
+- Backward incompatible changes:
+
+  - Updated =cl-webkit= to veresion 3.0.0.
+
+    =webkit2:webkit-web-view-evaluate-javascript= lambda list changed.
+
 - Bug fixes:
 
   - Don't crash when an error occurs in a GTK signal.
