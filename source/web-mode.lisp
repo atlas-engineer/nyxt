@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/web-mode
-  (:use :common-lisp :trivia :nyxt)
+  (:use :common-lisp :nyxt)
   (:shadow #:focus-first-input-field)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:import-from #:class-star #:define-class)

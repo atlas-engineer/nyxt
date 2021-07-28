@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/history-tree-mode
-  (:use :common-lisp :trivia :nyxt)
+  (:use :common-lisp :nyxt)
   (:documentation "Mode for history-trees."))
 (in-package :nyxt/history-tree-mode)
 

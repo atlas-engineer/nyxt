@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/message-mode
-  (:use :common-lisp :trivia :nyxt)
+  (:use :common-lisp :nyxt)
   (:documentation "Mode for messages and logs"))
 (in-package :nyxt/message-mode)
 

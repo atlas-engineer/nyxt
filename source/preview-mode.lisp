@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/preview-mode
-    (:use :common-lisp :trivia :nyxt)
+  (:use :common-lisp :nyxt)
   (:import-from #:class-star #:define-class)
   (:documentation "Refresh file when changed on disk."))
 (in-package :nyxt/preview-mode)

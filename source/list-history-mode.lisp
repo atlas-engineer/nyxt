@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/list-history-mode
-  (:use :common-lisp :trivia :nyxt)
+  (:use :common-lisp :nyxt)
   (:documentation "Mode for listing history."))
 (in-package :nyxt/list-history-mode)
 

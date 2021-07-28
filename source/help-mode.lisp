@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/help-mode
-  (:use :common-lisp :trivia :nyxt)
+  (:use :common-lisp :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:documentation "Mode for help pages"))
 (in-package :nyxt/help-mode)

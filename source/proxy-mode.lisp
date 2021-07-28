@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/proxy-mode
-  (:use :common-lisp :trivia :nyxt)
+  (:use :common-lisp :nyxt)
   (:shadow #:proxy) ; Because of exported slot of the same below.
   (:documentation "Proxy mode can be used to do all the networking (optionally
 including downloads) via a proxy server.

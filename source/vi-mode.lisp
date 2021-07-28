@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/vi-mode
-  (:use :common-lisp :trivia :nyxt)
+  (:use :common-lisp :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:documentation "VI-style bindings."))
 (in-package :nyxt/vi-mode)

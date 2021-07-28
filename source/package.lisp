@@ -13,7 +13,8 @@
 ;; Some compilers (e.g. SBCL) fail to reload the system with `defpackage' when
 ;; exports are spread around.  `uiop:define-package' does not have this problem.
 (uiop:define-package nyxt
-  (:use #:common-lisp #:trivia)
+  (:use #:common-lisp)
+  (:import-from #:trivia #:match #:multiple-value-match #:lambda-match #:guard)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:import-from #:class-star #:define-class)
   (:import-from #:serapeum
@@ -62,7 +63,8 @@ and `serapeum:':
 ;; (for compilation).
 ;; TODO: See if prompt-buffer-mode can be declared in prompt-buffer-mode.lisp.
 (uiop:define-package nyxt/prompt-buffer-mode
-  (:use #:common-lisp #:trivia #:nyxt)
+  (:use #:common-lisp #:nyxt)
+  (:import-from #:trivia #:match #:multiple-value-match #:lambda-match #:guard)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:import-from #:class-star #:define-class)
   (:import-from #:serapeum

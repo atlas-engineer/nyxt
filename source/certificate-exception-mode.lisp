@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/certificate-exception-mode
-  (:use :common-lisp :trivia :nyxt)
+  (:use :common-lisp :nyxt)
   (:documentation "Certificate exception mode"))
 (in-package :nyxt/certificate-exception-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)

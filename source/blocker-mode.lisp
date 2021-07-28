@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/blocker-mode
-  (:use :common-lisp :trivia :nyxt)
+  (:use :common-lisp :nyxt)
   (:import-from #:class-star #:define-class)
   (:documentation "Block resource queries for listed hosts."))
 (in-package :nyxt/blocker-mode)
