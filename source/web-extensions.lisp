@@ -121,6 +121,9 @@ height=~a/>"
    (extension-directory nil
               :type (or null pathname)
               :documentation "The directory that the extension resides in.")
+   (permissions nil
+                :type list-of-strings
+                :documentation "List of API permissions extension requires.")
    (content-scripts nil
                     :type list
                     :documentation "A list of `content-script's used by this extension.")
@@ -138,6 +141,10 @@ height=~a/>"
                     (hooks:add-hook (buffer-loaded-hook (buffer mode))
                                     (make-activate-content-scripts-handler mode content-script-name))
                     (push content-script-name (handler-names mode)))))))
+
+(export-always 'has-permission-p)
+(defmethod has-permission-p ((extension extension) (permission string))
+  (str:s-member permission (permissions extension)))
 
 (export-always 'load-web-extension)
 (defmacro load-web-extension (lispy-name directory)
