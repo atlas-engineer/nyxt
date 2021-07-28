@@ -1000,6 +1000,61 @@ See `gtk-browser's `modifier-translator' slot."
                 (webkit:webkit-permission-request-allow request)
                 (webkit:webkit-permission-request-deny request))))
 
+(defun tabs-query (query-object)
+  (labels ((buffer->tab-description (buffer)
+             `(("active" . ,(if (member buffer (mapcar #'active-buffer (alex:hash-table-values (windows *browser*))))
+                                t nil))
+               ("audible" . ,(not (webkit:webkit-web-view-is-muted (gtk-object buffer))))
+               ;; TODO: Make those meaningful:
+               ("attention" . nil)
+               ("autoDiscardable" . nil)
+               ("cookieStoreId" . 0)
+               ("currentWindow" . t)
+               ("discarded" . nil)
+               ("hidden" . nil)
+               ("favIconUrl" . "")
+               ("index" . 0)
+               ("isArticle" . nil)
+               ("isInReaderMode" . nil)
+               ("mutedInfo" . nil)
+               ("openerTabId" . 0)
+               ("pinned" . nil)
+               ("sessionId" . 0)
+               ("successorTabId" . 0)
+               ("windowId" . 0)
+
+               ("height" . ,(gdk:gdk-rectangle-height
+                             (gtk:gtk-widget-get-allocation (gtk-object buffer))))
+               ("width" . ,(gdk:gdk-rectangle-width
+                            (gtk:gtk-widget-get-allocation (gtk-object buffer))))
+               ("highlighted" . ,(eq buffer (active-buffer (current-window))))
+               ("id" . ,(parse-integer (id buffer)))
+               ("incognito" . ,(nosave-buffer-p buffer))
+               ("lastAccessed" . ,(* 1000 (local-time:timestamp-to-unix (last-access buffer))))
+               ("selected" . ,(eq buffer (active-buffer (current-window))))
+               ("status" . ,(if (web-buffer-p buffer)
+                                (case (slot-value buffer 'nyxt::load-status)
+                                  ((:finished :failed) "complete")
+                                  ((:unloaded :loading) "loading"))
+                                "complete"))
+               ;; TODO: Check "tabs" permission for those two
+               ("title" . ,(title buffer))
+               ("url" . ,(render-url (url buffer)))))
+           (%tabs-query (query-object)
+             (let ((buffer-descriptions (mapcar #'buffer->tab-description (buffer-list))))
+               (if query-object
+                   (or (sera:filter (lambda (bd)
+                                      (every (lambda (pair)
+                                               (equal (rest pair)
+                                                      (str:s-assoc-value (first pair) bd)))
+                                             query-object))
+                                    buffer-descriptions)
+                       ;; nil translates to null, we need to pass empty vector instead.
+                       (vector))
+                   buffer-descriptions))))
+    (json:encode-json-to-string
+     (%tabs-query (json:decode-json-from-string (or query-object "{}"))))))
+
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
   (unless (gtk-object buffer) ; Buffer may already have a view, e.g. the prompt-buffer.
@@ -1108,6 +1163,8 @@ See `gtk-browser's `modifier-translator' slot."
     nil)
   (connect-signal (gtk-object buffer) "user-message-received" (web-view message)
     (let* ((message-name (webkit:webkit-user-message-get-name message))
+           (message-params (glib:g-variant-get-string
+                            (webkit:webkit-user-message-get-parameters message)))
            (reply-contents
              (or
               (str:string-case message-name
@@ -1118,10 +1175,12 @@ See `gtk-browser's `modifier-translator' slot."
                                     (str:join ", " (nyxt/web-extensions:permissions extension))))
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes (find web-view (buffer-list)
-                                                    :key #'gtk-object)))))))
+                                                    :key #'gtk-object))))))
+                ("tabs.queryObject"
+                 (tabs-query message-params)))
               ""))
            (reply-message (webkit:webkit-user-message-new
-                           "listExtensions" (glib:g-variant-new-string reply-contents))))
+                           message-name (glib:g-variant-new-string reply-contents))))
       (webkit:webkit-user-message-send-reply message reply-message)))
   buffer)
 

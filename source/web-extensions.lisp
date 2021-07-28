@@ -16,11 +16,12 @@
 (defun load-js-file (file buffer mode)
   "Load JavaScript code from a file into the BUFFER."
   (ffi-buffer-evaluate-javascript
-   buffer (uiop:read-file-string (uiop:merge-pathnames* file (extension-directory mode)))))
+   buffer (uiop:read-file-string (uiop:merge-pathnames* file (extension-directory mode))) (name mode)))
 
 (defun load-css-file (file buffer mode)
   "Load CSS from the FILE and inject it into the BUFFER document."
-  (nyxt::html-set-style (uiop:read-file-string (uiop:merge-pathnames* file (extension-directory mode))) buffer))
+  (nyxt::html-set-style
+   (uiop:read-file-string (uiop:merge-pathnames* file (extension-directory mode))) buffer))
 
 (defun make-activate-content-scripts-handler (mode name)
   (nyxt::make-handler-buffer
