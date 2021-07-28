@@ -341,7 +341,7 @@ With MODE-SYMBOLS and GLOBAL-P, include global commands."
   "Run COMMAND over ARGS and return its result.
 This is blocking, see `run-async' for an asynchronous way to run commands."
   (let ((channel (make-channel 1)))
-    (run-thread
+    (run-thread "run command"
       (calispel:! channel
                ;; Bind current buffer for the duration of the command.  This
                ;; way, if the user switches buffer after running a command
@@ -358,7 +358,7 @@ This is blocking, see `run-async' for an asynchronous way to run commands."
   "Run COMMAND over ARGS asynchronously.
 See `run' for a way to run commands in a synchronous fashion and return the
 result."
-  (run-thread
+  (run-thread "run-async command"
     ;; It's important to rebind `args' since it may otherwise be shared with the
     ;; caller.
     (let ((command command)
