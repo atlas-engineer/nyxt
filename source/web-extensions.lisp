@@ -36,7 +36,7 @@
    :name name))
 
 (define-class content-script ()
-  ((matching-filter (error "Matching filter is required")
+  ((matching-filter (error "Matching filter is required.")
                     :type function
                     :documentation "When to activate the content script.
 A function that takes a URL designator and returns t if it needs to be activated
@@ -51,7 +51,7 @@ for a given URL, and nil otherwise")
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(defun make-content-script (&key (matches (error "Matches key is mandatory")) js css)
+(defun make-content-script (&key (matches (error "Matches key is mandatory.")) js css)
   ;; TODO: Replace "/*" with ".*"? Requires regexps and some smartness, though.
   (let ((sanitize-mozilla-regex (alex:curry #'str:replace-using '("*." "*"
                                                                   "*" ".*"
