@@ -43,6 +43,7 @@
              ((guix licenses) #:prefix license:)
              (guix licenses)
              (guix git-download)
+             (guix build-system asdf)   ; TODO: Remove sbcl-cl-webkit once Guix has 3.0.0.
              (guix build-system gnu)
              (guix build-system glib-or-gtk)
              (gnu packages)
@@ -57,6 +58,64 @@
              (gnu packages pkg-config)
              (gnu packages version-control)
              (gnu packages webkit))
+
+;; TODO: Remove sbcl-cl-webkit once Guix has 3.0.0.
+(define-public sbcl-cl-webkit
+  (package
+    (name "sbcl-cl-webkit")
+    (version "3.0.0")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/joachifm/cl-webkit")
+             (commit version)))
+       (file-name (git-file-name "cl-webkit" version))
+       (sha256
+        (base32
+         "015xry1cvbgspfzz35ifz2qscz946ljhj2z8rzjscy9v8fgnjsdk"))))
+    (build-system asdf-build-system/sbcl)
+    (inputs
+     `(("cffi" ,sbcl-cffi)
+       ("cl-cffi-gtk" ,sbcl-cl-cffi-gtk)
+       ("webkitgtk" ,webkitgtk)))
+    (native-inputs
+     `(("calispel" ,sbcl-calispel)
+       ("fiveam" ,sbcl-fiveam)
+       ("float-features" ,sbcl-float-features)
+       ;; Tests seem to need Xorg.
+       ;; ("xorg-server" ,xorg-server-for-tests)
+       ))
+    (arguments
+     `(#:asd-systems '("cl-webkit2")
+       #:tests? #f                      ; TODO: Tests hang, why?
+       #:phases
+       (modify-phases %standard-phases
+         (add-after 'unpack 'fix-paths
+           (lambda* (#:key inputs #:allow-other-keys)
+             (substitute* "webkit2/webkit2.init.lisp"
+               (("libwebkit2gtk" all)
+                (string-append
+                 (assoc-ref inputs "webkitgtk") "/lib/" all)))))
+         ;; (add-before 'check 'start-xorg-server
+         ;;   (lambda* (#:key inputs #:allow-other-keys)
+         ;;     ;; The test suite requires a running X server.
+         ;;     (system (string-append (assoc-ref inputs "xorg-server")
+         ;;                            "/bin/Xvfb :1 &"))
+         ;;     (setenv "DISPLAY" ":1")
+         ;;     #t))
+         )))
+    (home-page "https://github.com/joachifm/cl-webkit")
+    (synopsis "Binding to WebKitGTK+ for Common Lisp")
+    (description
+     "@command{cl-webkit} is a binding to WebKitGTK+ for Common Lisp,
+currently targeting WebKit version 2.  The WebKitGTK+ library adds web
+browsing capabilities to an application, leveraging the full power of the
+WebKit browsing engine.")
+    (license license:expat)))
+
+(define-public cl-webkit
+  (sbcl-package->cl-source-package sbcl-cl-webkit))
 
 (define %source-dir (dirname (dirname (current-filename))))
 
