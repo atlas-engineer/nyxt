@@ -300,10 +300,23 @@ This was useful before Nyxt 2.0 as a workaround for hangs that would occur on pa
 
 (define-command go-to-homepage ()
   "Navigate to the homepage."
-  (let* ((url-address (url (current-buffer)))
-         (host (quri:uri-authority url-address))
-         (scheme (quri:uri-scheme url-address)))
-    (buffer-load (uiop:strcat scheme "://" host))))
+  (let* ((url (url (current-buffer)))
+         (authority (quri:uri-authority url))
+         (scheme (quri:uri-scheme url)))
+    (buffer-load (str:concat scheme "://" authority))))
+
+(define-command go-up ()
+  "Navigate to the upper level in URL path hierarchy."
+  (let* ((url (url (current-buffer)))
+         (path (quri:uri-path url))
+         (path-splited (str:split "/" path :omit-nulls t))
+         (new-path-splited (butlast path-splited))
+         (scheme (quri:uri-scheme url))  
+         (authority (quri:uri-authority url))  
+         (new-path (reduce #'(lambda (x e) (str:concat x e "/"))
+                           new-path-splited
+                           :initial-value "/")))
+    (buffer-load (str:concat scheme "://" authority new-path))))
 
 (defun load-history-url (url-or-node
                          &key (buffer (current-buffer))
