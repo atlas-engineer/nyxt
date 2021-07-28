@@ -277,22 +277,22 @@
                cl-webkit2)
   :pathname "source/"
   :serial t
-  :components ((:file "renderers/clipboard-gtk")
-               (:file "renderers/renderer-gtk")))
+  :components ((:file "renderers/gtk-clipboard")
+               (:file "renderers/gtk")))
 
 (defsystem "nyxt/gi-gtk"
   :depends-on (nyxt/gtk
                cl-gobject-introspection
                bordeaux-threads)
   :pathname "source/"
-  :components ((:file "renderers/renderer-gi-gtk")))
+  :components ((:file "renderers/gi-gtk")))
 
 (defsystem "nyxt/qt"
   :depends-on (nyxt
                cl-webengine
                trivial-main-thread)
   :pathname "source/"
-  :components ((:file "renderers/renderer-qt")))
+  :components ((:file "renderers/qt")))
 
 ;; We should not set the build-pathname in systems that have a component.
 ;; Indeed, when an external program (like Guix) builds components, it needs to
