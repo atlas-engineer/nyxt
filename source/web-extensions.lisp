@@ -63,6 +63,51 @@ for a given URL, and nil otherwise")
      :js-files (uiop:ensure-list js)
      :css-files (uiop:ensure-list css))))
 
+(defun read-file-as-base64 (file)
+  (let ((arr (make-array 0 :element-type '(unsigned-byte 8) :adjustable t :fill-pointer t)))
+    (with-open-file (s file :element-type '(unsigned-byte 8))
+      (loop for byte = (read-byte s nil nil)
+            while byte
+            do (vector-push-extend byte arr)
+            finally (return (base64:usb8-array-to-base64-string arr))))))
+
+(defun encode-browser-action-icon (json extension-directory)
+  (let* ((status-buffer-height (nyxt:height (status-buffer (current-window))))
+         (padded-height (- status-buffer-height 10))
+         (browser-action (alex:assoc-value json :browser--action))
+         (best-icon
+           (rest (first (sort (append (alex:assoc-value browser-action :default--icons)
+                                      (alex:assoc-value json :icons))
+                              (lambda (a b)
+                                (< (abs (- padded-height a))
+                                   (abs (- padded-height b))))
+                              :key (alex:compose #'parse-integer #'symbol-name #'first))))))
+    (format nil "<img src=\"data:image/png;base64,~a\" alt=\"~a\"
+height=~a/>"
+            (read-file-as-base64 (uiop:merge-pathnames* best-icon extension-directory))
+            (alex:assoc-value json :name)
+            padded-height)))
+
+(defun make-browser-action (json)
+  (let ((browser-action (alex:assoc-value json :browser--action)))
+    (make-instance 'browser-action
+                   :default-popup (alex:assoc-value browser-action :default--popup)
+                   :default-title (alex:assoc-value browser-action :default--title))))
+
+(define-class browser-action ()
+  ((default-popup nil
+                  :type (or null string pathname)
+                  :documentation "An HTML file for the popup to open when its icon is clicked.")
+   (default-title nil
+                  :type (or null string)
+                  :documentation "The title to call the popup with.")
+   (default-icon nil
+                 :type (or null string)
+                 :documentation "The extension icon to use in mode line."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+
 (define-mode extension ()
   "The base mode for any extension to inherit from."
   ((name (error "Extension should have a name")
@@ -79,6 +124,9 @@ for a given URL, and nil otherwise")
    (content-scripts nil
                     :type list
                     :documentation "A list of `content-script's used by this extension.")
+   (browser-action nil
+                   :type (or null browser-action)
+                   :documentation "Configuration for popup opening on extension icon click.")
    (handler-names nil
                   :type list)
    (destructor (lambda (mode)
@@ -90,22 +138,6 @@ for a given URL, and nil otherwise")
                     (hooks:add-hook (buffer-loaded-hook (buffer mode))
                                     (make-activate-content-scripts-handler mode content-script-name))
                     (push content-script-name (handler-names mode)))))))
-
-(defun read-png-as-base64 (png-file)
-  (let ((arr (make-array 0 :element-type '(unsigned-byte 8) :adjustable t :fill-pointer t)))
-    (with-open-file (png png-file :element-type '(unsigned-byte 8))
-      (loop for byte = (read-byte png nil nil)
-            while byte
-            do (vector-push-extend byte arr)
-            finally (return (base64:usb8-array-to-base64-string arr))))))
-
-(defun make-extension-icon (icons-json extension-directory extension-name)
-  (format nil "<img src=\"data:image/png;base64,~a\" alt=\"~a\"
-height=~a/>"
-          (read-png-as-base64
-           (uiop:merge-pathnames* (rest (first icons-json)) extension-directory))
-          extension-name
-          (- (nyxt:height (status-buffer (current-window))) 10)))
 
 (export-always 'load-web-extension)
 (defmacro load-web-extension (lispy-name directory)
@@ -122,9 +154,13 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
           (version ,(alex:assoc-value json :version))
           (description ,(alex:assoc-value json :description))
           (extension-directory ,directory)
-          (nyxt:glyph ,(make-extension-icon (alex:assoc-value json :icons) directory (alex:assoc-value json :name)))
           (homepage-url ,(alex:assoc-value json :homepage--url))
+          (browser-action ,(make-browser-action json))
           (content-scripts (list ,@(mapcar (lambda (content-script-alist)
                                              (apply #'make-content-script
                                                     (alex:alist-plist content-script-alist)))
-                                           (alex:assoc-value json :content--scripts)))))))))
+                                           (alex:assoc-value json :content--scripts))))))
+       (defmethod initialize-instance :after ((extension ,lispy-name) &key)
+         (setf (nyxt:glyph extension)
+               (setf (default-icon (browser-action extension))
+                     (encode-browser-action-icon (quote ,json) ,directory)))))))
