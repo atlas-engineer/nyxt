@@ -367,7 +367,8 @@ result."
 This is useful to override bindings to do nothing."
   (values))
 
-(define-deprecated-command noop ()                 ; TODO: Replace with ESCAPE special command that allows dispatched to cancel current key stack.
+(define-deprecated-command noop ()
   "A command that does nothing.
-This is useful to override bindings to do nothing."
+This is useful to override bindings to do nothing.
+Superseded by `nothing'."
   (values))
