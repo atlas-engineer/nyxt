@@ -270,7 +270,7 @@ prevents otherwise."))
   (ffi-within-renderer-thread
    browser
    (lambda ()
-     (run-thread
+     (run-thread "finalization"
        ;; Restart on init error, in case `*init-file-path*' broke the state.
        ;; We only `handler-case' when there is an init file, this way we avoid
        ;; looping indefinitely.
