@@ -87,7 +87,14 @@ Without BODY, NAME must be a function symbol and the command wraps over it
 against ARGLIST, if specified."
   (check-type name symbol)
   (let ((documentation (or (nth-value 2 (alex:parse-body body :documentation t))
-                           "")))
+                           ""))
+        (args (multiple-value-match (alex:parse-ordinary-lambda-list arglist)
+                ((required-arguments optional-arguments rest keyword-arguments)
+                 (append required-arguments
+                         optional-arguments
+                         (alex:mappend #'first keyword-arguments)
+                         (when rest
+                           (list rest)))))))
     (alex:with-gensyms (fn sexp)
       `(let ((,fn nil)
              (,sexp nil))
@@ -96,8 +103,8 @@ against ARGLIST, if specified."
             (setf ,fn (lambda (,@arglist) ,@body)
                   ,sexp '(lambda (,@arglist) ,@body)))
            ((and ',arglist (typep ',name 'function-symbol))
-            (setf ,fn (lambda (,@arglist) (funcall ',name ,@arglist))
-                  ,sexp '(lambda (,@arglist) (funcall ,name ,@arglist))))
+            (setf ,fn (lambda (,@arglist) (funcall ',name ,@args))
+                  ,sexp '(lambda (,@arglist) (funcall ,name ,@args))))
            ((and (null ',arglist) (typep ',name 'function-symbol))
             (setf ,fn (symbol-function ',name)))
            (t (error "Either NAME must be a function symbol, or ARGLIST and BODY must be set properly.")))
