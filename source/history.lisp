@@ -315,51 +315,52 @@ This modifies the history owners as follows.
 For each owner, make a buffer, swap old owner identifier for the new buffer ID
 and maintain a table of (old-id -> new-id).  Finally go through all the owners
 and update their creator."
-  (with-data-access (history history-path)
-    (log:info "Restoring ~a buffers from history."
-              (hash-table-count (htree:owners history)))
-    (let ((old-id->new-id (make-hash-table :test #'equalp))
-          (new-owners (make-hash-table :test #'equalp)))
-      ;; We can't `maphash' over (htree:owners history) because
-      ;; `make-buffer' modifies the owners hash table.
-      (mapc (lambda-match
-              ((cons owner-id owner)
-               ;; `htree:+default-owner+' may be present if the
-               ;; history is created (e.g. restored) while no web
-               ;; buffer exists.  In all cases, this owner is
-               ;; uninteresting.
-               (unless (equal owner-id htree:+default-owner+)
-                 (let ((current-node (htree:current
-                                      (htree:owner history owner-id))))
-                   ;; Node-less owners can safely be ignored.
-                   (when current-node
-                     (let ((new-buffer (make-buffer :title (title (htree:data current-node))
+  (let (latest-id)
+    (with-data-access (history history-path)
+      (log:info "Restoring ~a buffers from history."
+                (hash-table-count (htree:owners history)))
+      (let ((old-id->new-id (make-hash-table :test #'equalp))
+            (new-owners (make-hash-table :test #'equalp)))
+        ;; We can't `maphash' over (htree:owners history) because
+        ;; `make-buffer' modifies the owners hash table.
+        (mapc (lambda-match
+                ((cons owner-id owner)
+                 ;; `htree:+default-owner+' may be present if the
+                 ;; history is created (e.g. restored) while no web
+                 ;; buffer exists.  In all cases, this owner is
+                 ;; uninteresting.
+                 (unless (equal owner-id htree:+default-owner+)
+                   (let ((current-node (htree:current
+                                        (htree:owner history owner-id))))
+                     ;; Node-less owners can safely be ignored.
+                     (when current-node
+                       (let ((new-buffer (make-buffer :title (title (htree:data current-node))
 
-                                                    :url (url (htree:data current-node))
-                                                    :no-history-p t
-                                                    :load-url-p nil)))
-                       (setf (gethash owner-id old-id->new-id) (id new-buffer))
-                       (setf (gethash (id new-buffer) new-owners) owner)))))))
-            (alex:hash-table-alist (htree:owners history)))
-      (maphash (lambda (_ owner)
-                 (declare (ignore _))
-                 (setf (htree:creator-id owner)
-                       (gethash (htree:creator-id owner) old-id->new-id)))
-               (htree:owners history))
-      ;; Current owner can be outdated.
-      (alex:when-let ((new-id (gethash (htree:current-owner-id history) old-id->new-id)))
-        (when (htree:owner history new-id)
-          (htree:set-current-owner history new-id)))
-      (setf (htree:owners history) new-owners)
-      ;; Ensure that current owner is set to one of the new owners:
-      (unless (htree:owner history (htree:current-owner-id history))
-        (htree:set-current-owner history (htree::fallback-owner history))))
-    (alex:when-let ((latest-id (first
-                                (first
-                                 (sort-by-time (alex:hash-table-alist (htree:owners history))
-                                               :key (alex:compose #'htree:last-access #'rest))))))
-      (unless (equal latest-id htree:+default-owner+)
-        (switch-buffer :id latest-id)))))
+                                                      :url (url (htree:data current-node))
+                                                      :no-history-p t
+                                                      :load-url-p nil)))
+                         (setf (gethash owner-id old-id->new-id) (id new-buffer))
+                         (setf (gethash (id new-buffer) new-owners) owner)))))))
+              (alex:hash-table-alist (htree:owners history)))
+        (maphash (lambda (_ owner)
+                   (declare (ignore _))
+                   (setf (htree:creator-id owner)
+                         (gethash (htree:creator-id owner) old-id->new-id)))
+                 (htree:owners history))
+        ;; Current owner can be outdated.
+        (alex:when-let ((new-id (gethash (htree:current-owner-id history) old-id->new-id)))
+          (when (htree:owner history new-id)
+            (htree:set-current-owner history new-id)))
+        (setf (htree:owners history) new-owners)
+        ;; Ensure that current owner is set to one of the new owners:
+        (unless (htree:owner history (htree:current-owner-id history))
+          (htree:set-current-owner history (htree::fallback-owner history))))
+      (setf latest-id (first
+                       (first
+                        (sort-by-time (alex:hash-table-alist (htree:owners history))
+                                      :key (alex:compose #'htree:last-access #'rest))))))
+    (unless (equal latest-id htree:+default-owner+)
+      (switch-buffer :id latest-id))))
 
 (defmethod restore ((profile data-profile) (path history-data-path)
                     &key &allow-other-keys)
@@ -458,7 +459,10 @@ If you want to save the current history file beforehand, call
     (let ((old-buffers (buffer-list)))
       (sera:and-let* ((new-history (get-data path)))
         ;; TODO: Maybe modify `history-path' of all the buffers instead of polluting history?
+        (log:info "BEFORE set-data" new-history )
         (%set-data (history-path (current-buffer)) new-history)
+        (log:info "AFTER set-data" new-history)
         (restore-history-buffers (history-path (current-buffer)))
+        (log:info "AFTER restore")
         (dolist (buffer old-buffers)
           (buffer-delete buffer))))))
