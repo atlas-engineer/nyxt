@@ -167,6 +167,7 @@ and to index the top of the page.")
        "H" 'history-backwards
        "L" 'history-forwards
        "y" 'copy
+       "p" 'paste
        "M-h" 'history-backwards-query
        "M-l" 'history-forwards-query
        "M-H" 'history-all-query
