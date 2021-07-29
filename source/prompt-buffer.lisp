@@ -134,7 +134,8 @@ chosen suggestions inside brackets.")
             :documentation "The CSS applied to a prompt-buffer when it is set-up.")
      (override-map (make-keymap "override-map")
                    :type keymap:keymap
-                   :documentation "Keymap that takes precedence over all modes' keymaps."))
+                   :documentation "Keymap that takes precedence over all modes' keymaps.
+See `buffer's `override-map' for more details."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
     (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))

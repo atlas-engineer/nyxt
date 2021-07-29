@@ -84,6 +84,10 @@ query is not a valid URL, or the first keyword is not recognized.")
                    (define-key map
                      "C-space" 'execute-command))
                  :documentation "Keymap that overrides all other bindings.
+
+`override-map` takes priority over everything, including text insertion, and is
+therefore better used with modifier-prefixed bindings.
+
 No libraries should ever touch the override-map, this is left for the user to
 customize to their needs.
 
