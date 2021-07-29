@@ -527,7 +527,7 @@ Return (values HISTORY OWNER)."
   "Go to current node's direct owned child matching DATA.
 A child is owned if it has a binding with OWNER.
 Return (values OWNER (current OWNER))."
-  (go-to-child data (owner history owner-spec) :child-finder #'find-owned-child))
+  (go-to-child data history owner-spec :child-finder #'find-owned-child))
 
 
 (defun make-origin-node (history owner-spec data)
@@ -580,15 +580,21 @@ the new node is added to the children of the current node of the creator."
 
 (export 'add-children)
 (defmethod add-children (children-data (history history-tree) owner-spec)
-  "Add CHILDREN-DATA to the HISTORY OWNER-SPEC.
-Each child is added with `add-child'.
+  "Add CHILDREN-DATA to the HISTORY OWNER-SPEC current node.
+Each child is added with `add-child' to the current node.
+
+If the owner does not have any node yet, then first element of CHILDREN-DATA
+forms the new root, while the rest of the elements form the `children' of this
+root.
+
 Return the (maybe new) current node, which holds the last piece of data in
 `children-data'."
   (let ((owner (owner history owner-spec)))
     (when owner
-      (add-child (first children-data) owner)
+      (add-child (first children-data) history owner)
       (if (rest children-data)
-          (add-children (rest children-data) (backward owner))
+          (progn (backward history owner)
+                 (add-children (rest children-data) history owner))
           (current owner)))))
 
 (export-always 'map-tree)
@@ -860,9 +866,9 @@ If nodes are still associated to entry, do nothing."
   "Return the total number of nodes owned by OWNER."
   (length (nodes owner)))
 
-(defmethod contiguous-size ((owner owner))
+(defmethod contiguous-size ((history history-tree) (owner owner))
   "Return the total number of owned nodes contiguous to the current OWNER node."
-  (length (all-contiguous-owned-nodes owner)))
+  (length (all-contiguous-owned-nodes history owner)))
 
 (defmethod size ((history history-tree) &key (owner "Owner required.") &allow-other-keys)
   "Return the total number of nodes for the branch OWNER's current node sits on."
