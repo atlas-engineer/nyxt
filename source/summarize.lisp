@@ -1,6 +1,6 @@
 (in-package :nyxt/web-mode)
 
-(define-command summarize (&key (summary-length 5) (buffer (current-buffer)))
+(define-command summarize-buffer (&key (summary-length 5) (buffer (current-buffer)))
   "Summarize the current buffer by creating a new summary buffer."
   (with-current-html-buffer (output (format nil "*Summary ~a*" (title buffer)) 'base-mode)
     (let ((contents
