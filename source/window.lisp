@@ -76,6 +76,10 @@ The handlers take the window as argument."))
 
 (define-user-class window)
 
+(defmethod print-object ((window window) stream)
+  (print-unreadable-object (window stream :type t :identity t)
+    (format stream "~a" (id window))))
+
 (defmethod window-add-panel-buffer ((window window) (buffer panel-buffer) side)
   "Add a panel buffer to a window. Side can either be :right or :left."
   (pushnew buffer (panel-buffers window))
