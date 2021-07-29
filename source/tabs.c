@@ -101,6 +101,40 @@ tabs_get_current_callback ()
 }
 
 static void
+tabs_get_reply_callback (GObject *web_page,
+                         GAsyncResult *res,
+                         gpointer user_data)
+{
+        WebKitUserMessage *message =
+                webkit_web_page_send_message_to_view_finish((WebKitWebPage *) PAGE, res, NULL);
+        GVariant *params = webkit_user_message_get_parameters(message);
+        char *json = (char*) g_variant_get_string(params, NULL);
+        if (!json)
+                json = "null";
+        TABS->tab = (char *) json;
+}
+
+static JSCValue *
+tabs_get_result_callback (char *extension_name)
+{
+        ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
+        WebKitFrame *frame = webkit_web_page_get_main_frame(PAGE);
+        JSCContext *context = webkit_frame_get_js_context_for_script_world(frame, data->world);
+        return jsc_value_new_string(context, TABS->tab);
+}
+
+static void
+tabs_get_callback (int id)
+{
+        char *num = malloc(sizeof(char) * 1000);
+        sprintf(num, "%d", id);
+        GVariant *variant = g_variant_new("s", num);
+        WebKitUserMessage *message = webkit_user_message_new("tabs.get", variant);
+        webkit_web_page_send_message_to_view(
+                PAGE, message, NULL, tabs_get_reply_callback, NULL);
+}
+
+static void
 tabs_print_callback ()
 {
         WebKitUserMessage *message = webkit_user_message_new("tabs.print", NULL);
@@ -137,6 +171,14 @@ inject_tabs_api (WebKitWebPage *web_page, char* extension_name)
                 context, "tabsGetCurrentResult",
                 G_CALLBACK(tabs_get_current_result_callback), NULL, NULL,
                 JSC_TYPE_VALUE, 1, G_TYPE_STRING);
+        JSCValue *tabsGet = jsc_value_new_function(
+                context, "tabsGet",
+                G_CALLBACK(tabs_get_callback), NULL, NULL,
+                G_TYPE_NONE, 1, G_TYPE_INT);
+        JSCValue *tabsGetResult = jsc_value_new_function(
+                context, "tabsGetResult",
+                G_CALLBACK(tabs_get_result_callback), NULL, NULL,
+                JSC_TYPE_VALUE, 1, G_TYPE_STRING);
         JSCValue *print = jsc_value_new_function(
                 context, NULL, G_CALLBACK(tabs_print_callback), NULL, NULL,
                 G_TYPE_NONE, 0, G_TYPE_NONE);
@@ -146,7 +188,8 @@ inject_tabs_api (WebKitWebPage *web_page, char* extension_name)
                 NULL, NULL, G_TYPE_NONE, 0, G_TYPE_NONE);
         char *tabs_query_js = malloc(sizeof(char) * 900),
                 *tabs_create_js = malloc(sizeof(char) * 900),
-                *tabs_get_current_js = malloc(sizeof(char) * 900);
+                *tabs_get_current_js = malloc(sizeof(char) * 900),
+                *tabs_get_js = malloc(sizeof(char) * 1300);
         jsc_context_set_value(context, "Tabs", Tabs_constructor);
         jsc_context_set_value(context, "tabsQuery", tabsQuery);
         jsc_context_set_value(context, "tabsQueryResult", tabsQueryResult);
@@ -154,6 +197,8 @@ inject_tabs_api (WebKitWebPage *web_page, char* extension_name)
         jsc_context_set_value(context, "tabsCreateResult", tabsCreateResult);
         jsc_context_set_value(context, "tabsGetCurrent", tabsGetCurrent);
         jsc_context_set_value(context, "tabsGetCurrentResult", tabsGetCurrentResult);
+        jsc_context_set_value(context, "tabsGet", tabsGet);
+        jsc_context_set_value(context, "tabsGetResult", tabsGetResult);
         jsc_context_set_value(context, "tabs", jsc_value_new_object(context, NULL, Tabs));
         sprintf(tabs_query_js, "tabs.query = function (queryObject) { \
     return new Promise(function (success, failure) {                    \
@@ -191,6 +236,24 @@ tabs.create", extension_name);
 };                                                                      \
                                                                         \
 tabs.getCurrent", extension_name);
+        sprintf(tabs_get_js, "tabs.get = function (getProperties) {\
+    return new Promise(function (success, failure) {                    \
+        try {                                                           \
+            tabsGet(getProperties);                                     \
+            setTimeout(() => {                                          \
+                var result = tabsGetResult(\"%s\");                     \
+                if (result)                                             \
+                    success(result)                                     \
+                else                                                    \
+                    throw new Error(\"No tab found!\");},               \
+                       20);                                             \
+        } catch (error) {                                               \
+            return failure(error);                                      \
+        };                                                              \
+    });                                                                 \
+};                                                                      \
+                                                                        \
+tabs.get", extension_name);
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "tabs", -1),
                 "query",
@@ -203,9 +266,14 @@ tabs.getCurrent", extension_name);
                 jsc_context_evaluate(context, "tabs", -1),
                 "getCurrent",
                 jsc_context_evaluate(context, tabs_get_current_js, -1));
+        jsc_value_object_set_property(
+                jsc_context_evaluate(context, "tabs", -1),
+                "get",
+                jsc_context_evaluate(context, tabs_get_js, -1));
         jsc_value_object_set_property(jsc_context_evaluate(context, "tabs", -1),
                                       "print", print);
         free(tabs_query_js);
         free(tabs_create_js);
         free(tabs_get_current_js);
+        free(tabs_get_js);
 }

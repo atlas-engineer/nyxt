@@ -1207,7 +1207,10 @@ See `gtk-browser's `modifier-translator' slot."
                   (buffer->tab-description (find web-view (buffer-list) :key #'gtk-object))))
                 ("tabs.print"
                  (print-buffer)
-                 ""))
+                 "")
+                ("tabs.get"
+                 (json:encode-json-to-string
+                  (buffer->tab-description (buffers-get message-params)))))
               ""))
            (reply-message (webkit:webkit-user-message-new
                            message-name (glib:g-variant-new-string reply-contents))))
