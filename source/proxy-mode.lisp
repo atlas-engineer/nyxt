@@ -32,11 +32,15 @@ Example to use Tor as a proxy both for browsing and downloading:
           :type nyxt:proxy)
    (destructor
     (lambda (mode)
-      (setf (nyxt:proxy (buffer mode)) nil)))
+      (when (web-buffer-p (buffer mode))
+        (setf (nyxt:proxy (buffer mode)) nil))))
    (constructor
     (lambda (mode)
-      (setf (nyxt:proxy (buffer mode)) (proxy mode))
-      (echo "Buffer ~a proxy set to ~a, allowlisting ~a."
-            (id (buffer mode))
-            (render-url (url (proxy mode)))
-            (allowlist (proxy mode)))))))
+      (if (web-buffer-p (buffer mode))
+          (progn
+            (setf (nyxt:proxy (buffer mode)) (proxy mode))
+            (echo "Buffer ~a proxy set to ~a, allowlisting ~a."
+                  (id (buffer mode))
+                  (render-url (url (proxy mode)))
+                  (allowlist (proxy mode))))
+          (echo-warning "You cannot set the proxy for internal buffers."))))))
