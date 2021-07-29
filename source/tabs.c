@@ -64,18 +64,16 @@ inject_tabs_api (WebKitWebPage *web_page, char* extension_name)
         JSCValue *Tabs_constructor = jsc_class_add_constructor(
                 Tabs, NULL, G_CALLBACK(empty_constructor_callback),
                 NULL, NULL, G_TYPE_NONE, 0, G_TYPE_NONE);
-        JSCValue *tabs = jsc_value_new_object(context, NULL, Tabs);
         char *tabs_js = malloc(sizeof(char) * 900);
         jsc_context_set_value(context, "Tabs", Tabs_constructor);
         jsc_context_set_value(context, "tabsQuery", tabsQuery);
         jsc_context_set_value(context, "tabsQueryResult", tabsQueryResult);
+        jsc_context_set_value(context, "tabs", jsc_value_new_object(context, NULL, Tabs));
         sprintf(tabs_js, "tabs.query = function (queryObject) { \
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             tabsQuery(queryObject);                                     \
-            return function () {                                        \
-                return success(tabsQueryResult(\"%s\"));                \
-            }();                                                        \
+            setTimeout(() => success(tabsQueryResult(\"%s\")), 20);     \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
@@ -84,8 +82,10 @@ inject_tabs_api (WebKitWebPage *web_page, char* extension_name)
                                                                         \
 tabs.query", extension_name);
         jsc_value_object_set_property(
-                tabs, "query", jsc_context_evaluate(context, tabs_js, -1));
-        jsc_value_object_set_property(tabs, "print", print);
+                jsc_context_evaluate(context, "tabs", -1),
+                "query",
+                jsc_context_evaluate(context, tabs_js, -1));
+        jsc_value_object_set_property(jsc_context_evaluate(context, "tabs", -1),
+                                      "print", print);
         free(tabs_js);
-        jsc_context_set_value(context, "tabs", tabs);
 }
