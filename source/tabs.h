@@ -3,8 +3,7 @@
 
 typedef struct {
         char *tabs;
-        char *created_tab;
-        char *current_tab;
+        char *tab;
 } Tabs;
 
 extern Tabs *TABS;

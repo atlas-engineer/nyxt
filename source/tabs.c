@@ -47,7 +47,7 @@ tabs_create_reply_callback (GObject *web_page,
         char *json = (char*) g_variant_get_string(params, NULL);
         if (!json)
                 json = "{}";
-        TABS->created_tab = (char *) json;
+        TABS->tab = (char *) json;
 }
 
 static JSCValue *
@@ -56,7 +56,7 @@ tabs_create_result_callback (char *extension_name)
         ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
         WebKitFrame *frame = webkit_web_page_get_main_frame(PAGE);
         JSCContext *context = webkit_frame_get_js_context_for_script_world(frame, data->world);
-        return jsc_value_new_string(context, TABS->created_tab);
+        return jsc_value_new_string(context, TABS->tab);
 }
 
 static void
@@ -80,7 +80,7 @@ tabs_get_current_reply_callback (GObject *web_page,
         char *json = (char*) g_variant_get_string(params, NULL);
         if (!json)
                 json = "{}";
-        TABS->current_tab = (char *) json;
+        TABS->tab = (char *) json;
 }
 
 static JSCValue *
@@ -89,7 +89,7 @@ tabs_get_current_result_callback (char *extension_name)
         ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
         WebKitFrame *frame = webkit_web_page_get_main_frame(PAGE);
         JSCContext *context = webkit_frame_get_js_context_for_script_world(frame, data->world);
-        return jsc_value_new_string(context, TABS->current_tab);
+        return jsc_value_new_string(context, TABS->tab);
 }
 
 static void
