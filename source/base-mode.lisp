@@ -51,6 +51,7 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "C-O" 'load-file
                      "C-j" 'list-downloads
                      "C-space" 'execute-command
+                     "C-M-space" 'execute-extended-command
                      "M-space" 'resume-prompt
                      "C-n" 'make-window
                      "C-shift-W" 'delete-current-window
@@ -86,6 +87,7 @@ This mode is a good candidate to be passed to `make-buffer'."
                      "C-h b" 'describe-bindings
                      "C-d" 'list-downloads
                      "M-x" 'execute-command
+                     "C-M-x" 'execute-extended-command
                      "C-x r j" 'set-url-from-bookmark
                      "C-x r M" 'bookmark-current-url
                      "C-x r m" 'bookmark-buffer-url
