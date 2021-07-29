@@ -46,14 +46,25 @@ existing name `cua`."
   `(and hash-table
         (satisfies scheme-p)))
 
-(declaim (ftype (function (string scheme-name list &rest (or scheme-name list)) scheme) define-scheme*))
-(defun define-scheme* (name-prefix name bindings &rest more-name+bindings-pairs)
+(defun copy-scheme (scheme)
+  (let ((new-scheme (make-hash-table :test #'equal)))
+    (maphash (lambda (scheme-name keymap)
+               (setf (gethash scheme-name new-scheme)
+                     (copy-keymap keymap)))
+             scheme)
+    new-scheme))
+
+(declaim (ftype (function (string (or null scheme) scheme-name list &rest (or scheme-name list)) scheme) define-scheme*))
+(defun define-scheme* (name-prefix imported-scheme name bindings &rest more-name+bindings-pairs)
   "Define scheme.
 See `define-scheme' for the user-facing function."
   (let ((name+bindings-pairs (append (list name bindings) more-name+bindings-pairs))
-        (scheme (make-hash-table :test #'equal)))
-    (loop :for (name nil . nil) :on name+bindings-pairs :by #'cddr
-          :do (setf (gethash name scheme) (make-keymap (format nil "~a-~a-map" name-prefix (name name)))))
+        (scheme (if imported-scheme
+                    (copy-scheme imported-scheme)
+                    (make-hash-table :test #'equal))))
+    (unless imported-scheme
+      (loop :for (name nil . nil) :on name+bindings-pairs :by #'cddr
+            :do (setf (gethash name scheme) (make-keymap (format nil "~a-~a-map" name-prefix (name name))))))
     ;; Set parents now that all keymaps exist.
     (maphash (lambda (name keymap)
                (setf (parents keymap)
@@ -68,9 +79,26 @@ See `define-scheme' for the user-facing function."
                     :do (define-key* keymap keyspecs bound-value))) ; TODO: Can we use define-key?
     scheme))
 
-(defmacro define-scheme (name-prefix name bindings &rest more-name+bindings-pairs)
+(defun check-plist (plist &rest keys)
+  "Raise error if PLIST has keys not in KEYS."
+  (let ((extra-keys)
+        (all-keys))
+    (alexandria:doplist (k v plist)
+      (push k all-keys)
+      (unless (member k keys)
+        (push k extra-keys)))
+    (if extra-keys
+        (error "Allowed keys are ~a, got ~a." keys all-keys)
+        t)))
+
+(defmacro define-scheme (scheme-specifier name bindings &rest more-name+bindings-pairs)
   "Return a scheme, a hash table with scheme NAMEs as key and their BINDINGS as value.
-The keymap names are prefixed with NAME-PREFIX and suffixed with \"-map\".
+SCHEME-SPECIFIER is either a string or a plist in the form
+
+  (:name-prefix NAME-PREFIX :import IMPORTED-SCHEME)
+
+The keymap names are prefixed with NAME-PREFIX or SCHEME-SPECIFIER (if a string)
+and suffixed with \"-map\".
 
 This is a macro like `define-key' so that it can type-check the BINDINGS
 keyspecs at compile-time.
@@ -91,14 +119,21 @@ scheme name, see `make-scheme-name'.
 `scheme:cua' is a parent of `scheme:emacs'; thus, in the above example, the Emacs keymap
 will have the CUA keymap as parent.
 The scheme keymaps are named \"my-mode-cua-map\" and \"my-mode-emacs-map\"."
-  (let ((name+bindings-pairs (append (list name bindings) more-name+bindings-pairs)))
+  (let ((name+bindings-pairs (append (list name bindings) more-name+bindings-pairs))
+        (name-prefix (if (stringp scheme-specifier)
+                         scheme-specifier
+                         (getf scheme-specifier :name-prefix)))
+        (imported-scheme (unless (stringp scheme-specifier)
+                           (getf scheme-specifier :import))))
+    (unless (stringp scheme-specifier)
+      (check-plist scheme-specifier :name-prefix :import))
     (loop :for (nil quoted-bindings . nil) :on name+bindings-pairs :by #'cddr
           :for bindings = (rest quoted-bindings)
           :do (check-type bindings list)
           :do (loop :for (keyspecs nil . nil) :on bindings :by #'cddr
-                   :do (check-type keyspecs (or keyspecs-type list))))
+                    :do (check-type keyspecs (or keyspecs-type list))))
     `(progn
-       (define-scheme* ,name-prefix ,name ,bindings ,@more-name+bindings-pairs))))
+       (define-scheme* ,name-prefix ,imported-scheme ,name ,bindings ,@more-name+bindings-pairs))))
 
 (declaim (ftype (function (scheme-name scheme) (or keymap null)) get-keymap))
 (defun get-keymap (name scheme)
