@@ -8,4 +8,5 @@
   (:export
    #:document
    #:keywords
+   #:extract-keywords
    #:summarize-text))

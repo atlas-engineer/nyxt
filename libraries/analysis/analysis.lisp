@@ -92,3 +92,8 @@ operations available, some examples:
                                       document document-collection word))) #'> :key #'cdr)
       (sort (loop for word in (dictionary document)
                   collect (cons word (term-frequency document word))) #'> :key #'cdr)))
+
+(defun extract-keywords (text &key (limit 5))
+  "Extract keywords from a string of text."
+  (serapeum:take limit (keywords (make-instance 'analysis:document 
+                                                :string-contents text))))
