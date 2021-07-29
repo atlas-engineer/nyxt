@@ -4,6 +4,7 @@
 typedef struct {
         char *tabs;
         char *created_tab;
+        char *current_tab;
 } Tabs;
 
 extern Tabs *TABS;
