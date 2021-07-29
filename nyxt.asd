@@ -426,7 +426,7 @@ See `asdf::*immutable-systems*'."
   :in-order-to ((test-op (test-op "nyxt/history-tree/tests"))))
 
 (defsystem "nyxt/history-tree/tests"
-  :depends-on (nyxt/history-tree prove)
+  :depends-on (nyxt/history-tree prove str)
   :perform (test-op (op c)
                     (nyxt-run-test c "libraries/history-tree/tests/")))
 
