@@ -104,11 +104,15 @@ Example (Tor-proxied completion function for Wikipedia):
    (prompter:constructor (delete nil (mapcar #'fallback-url (all-search-engines))))
    (prompter:multi-selection-p t)))
 
-(define-command query-selection-in-search-engine ()
+(define-command query-selection-in-search-engine (&key (query-in-new-buffer-p t))
   "Search selected text using the queried search engine."
   (let* ((selection (%copy))
          (engine (first (prompt
                          :prompt "Search engine:"
-                         :sources (make-instance 'search-engine-source)))))
+                         :sources (make-instance 'search-engine-source))))
+         (target-buffer (if query-in-new-buffer-p
+                            (make-buffer-focus)
+                            (current-buffer))))
     (when engine
-      (buffer-load (make-instance 'new-url-query :query selection :engine engine)))))
+      (buffer-load (make-instance 'new-url-query :query selection :engine engine)
+                   :buffer target-buffer))))
