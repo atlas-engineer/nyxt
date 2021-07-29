@@ -861,14 +861,6 @@ proceeding."
     (setf (last-access (active-buffer window)) (local-time:now)))
   (let ((window-with-same-buffer (find buffer (delete window (window-list))
                                        :key #'active-buffer)))
-    ;; When switching buffers, `current-buffer' is still the old one,
-    ;; so path is expanded/queried by the rules of the old
-    ;; buffer. That's not desirable, especially for nosave-buffers.
-    (with-current-buffer buffer
-      (unless (internal-buffer-p buffer)
-        (with-data-access (history (history-path buffer)
-                           :default (make-history-tree buffer))
-          (htree:set-current-owner history (id buffer)))))
     (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
         (let ((temp-buffer (make-dummy-buffer))
               (old-buffer (active-buffer window)))
