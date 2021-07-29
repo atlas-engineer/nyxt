@@ -815,11 +815,11 @@ As a second value, return the list of all NODE's children, including NODE."
 (export-always 'delete-owner)
 (declaim (ftype (function (history-tree t) (or null owner)) delete-owner))
 (defun delete-owner (history owner-id)
-  "Delete `owner' corresponding to OWNER-IDENTIFIER from HISTORY.
+  "Delete `owner' corresponding to OWNER-ID from HISTORY.
 For every branch `owner' has nodes on, remove all its nodes if the branch is
 without any owner.
-Return owner, or nil if there is no owner corresponding to OWNER-IDENTIFIER."
-  (let ((owner (owner history owner-id)))
+Return owner, or nil if there is no owner corresponding to OWNER-ID."
+  (alex:when-let ((owner (owner history owner-id)))
     (remhash owner-id (owners history))
     (disown-all history owner)
     owner))
@@ -828,8 +828,8 @@ Return owner, or nil if there is no owner corresponding to OWNER-IDENTIFIER."
 (defun reset-owner (history owner-id)
   "Disown all OWNER's nodes and create a new root node with the previous current
 node entry."
-  (let* ((owner (owner history owner-id))
-         (old-current-entry (entry (current owner))))
+  (alex:when-let* ((owner (owner history owner-id))
+                   (old-current-entry (entry (current owner))))
     (disown-all history owner)
     (make-origin-node history owner-id (data old-current-entry))
     owner))
