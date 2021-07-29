@@ -1177,7 +1177,10 @@ See `gtk-browser's `modifier-translator' slot."
                                        (modes (find web-view (buffer-list)
                                                     :key #'gtk-object))))))
                 ("tabs.queryObject"
-                 (tabs-query message-params)))
+                 (tabs-query message-params))
+                ("print"
+                 (print-buffer)
+                 ""))
               ""))
            (reply-message (webkit:webkit-user-message-new
                            message-name (glib:g-variant-new-string reply-contents))))

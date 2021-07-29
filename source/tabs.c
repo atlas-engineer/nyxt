@@ -36,6 +36,13 @@ tabs_query_callback (JSCValue *object)
                 PAGE, message, NULL, tabs_query_reply_callback, NULL);
 }
 
+static void
+tabs_print_callback ()
+{
+        WebKitUserMessage *message = webkit_user_message_new("print", NULL);
+        webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
+}
+
 void
 inject_tabs_api (WebKitWebPage *web_page, char* extension_name)
 {
@@ -50,6 +57,9 @@ inject_tabs_api (WebKitWebPage *web_page, char* extension_name)
                 context, "tabsQuery",
                 G_CALLBACK(tabs_query_result_callback), NULL, NULL,
                 JSC_TYPE_VALUE, 1, G_TYPE_STRING);
+        JSCValue *print = jsc_value_new_function(
+                context, NULL, G_CALLBACK(tabs_print_callback), NULL, NULL,
+                G_TYPE_NONE, 0, G_TYPE_NONE);
         JSCClass *Tabs = jsc_context_register_class(context, "Tabs", NULL, NULL, NULL);
         JSCValue *Tabs_constructor = jsc_class_add_constructor(
                 Tabs, NULL, G_CALLBACK(empty_constructor_callback),
@@ -75,6 +85,7 @@ inject_tabs_api (WebKitWebPage *web_page, char* extension_name)
 tabs.query", extension_name);
         jsc_value_object_set_property(
                 tabs, "query", jsc_context_evaluate(context, tabs_js, -1));
+        jsc_value_object_set_property(tabs, "print", print);
         free(tabs_js);
         jsc_context_set_value(context, "tabs", tabs);
 }
