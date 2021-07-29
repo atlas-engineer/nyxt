@@ -156,6 +156,7 @@
                (:file "element-hint-mode")
                (:file "element-frame")
                (:file "jump-heading")
+               (:file "summarize")
                (:file "scroll")
                (:file "search-buffer")
                (:file "spell-check")
