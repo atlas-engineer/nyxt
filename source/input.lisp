@@ -18,12 +18,14 @@
 
 (defmacro command-docstring-first-sentence (fn)
   "Print FN first docstring sentence in HTML."
-  `(spinneret:with-html
-     (:span
-      (sera:ensure-suffix
-       (or (first (ppcre:split "\\.\\s" (documentation ,fn 'function)))
-           (error "Undocumented function ~a." ,fn))
-       "."))))
+  `(if (fboundp ,fn)
+       (spinneret:with-html
+         (:span
+          (sera:ensure-suffix
+           (or (first (ppcre:split "\\.\\s" (documentation ,fn 'function)))
+               (error "Undocumented function ~a." ,fn))
+           ".")))
+       (error "~a is not a function." ,fn)))
 
 (deftype nyxt-keymap-value ()
   '(or keymap:keymap function-symbol command))
