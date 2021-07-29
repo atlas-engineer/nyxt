@@ -295,6 +295,49 @@ An example:")
                    (define-key map
                      \"M-x\" 'execute-command)))))"))
 
+   (:h3 "Automation")
+   (:p "Nyxt has many facilities of automation. For instance, it is possible to
+automate the reading experience:")
+   (:ul
+    (:li (command-markup 'nyxt/cruise-control-mode:cruise-control-mode) ": "
+    (command-docstring-first-sentence
+    'nyxt/cruise-control-mode:cruise-control-mode)))
+   (:p "Symmetrically, it is possible to automate the filling of forms: ")
+   (:ul
+    (:li (command-markup 'autofill) ": " (command-docstring-first-sentence
+    'autofill))
+    (:li (command-markup 'nyxt/web-mode::toggle-checkboxes) ": "
+    (command-docstring-first-sentence 'nyxt/web-mode::toggle-checkboxes)))
+   (:p "In addition, it is possible to automate actions over time: "
+   (:ul
+    (:li (command-markup 'nyxt/watch-mode:watch-mode) ": "
+         (command-docstring-first-sentence 'nyxt/watch-mode:watch-mode))
+    (:li (command-markup 'nyxt/repeat-mode:repeat-every) ": "
+         (command-docstring-first-sentence 'nyxt/repeat-mode:repeat-every))))
+   (:p "Or even automate actions based on conditions: "
+   (:ul
+    (:li (command-markup 'nyxt/repeat-mode:repeat-mode) ": "
+         (command-docstring-first-sentence 'nyxt/repeat-mode:repeat-mode))
+    (:li (command-markup 'nyxt/preview-mode:preview-mode) ": "
+         (command-docstring-first-sentence 'nyxt/preview-mode:preview-mode))))
+   (:p "Nyxt also offers a no-code interface to build automation via Common Lisp
+macros: ")
+   (:ul
+    (:li (command-markup 'nyxt/macro-edit-mode:macro-edit-mode) ": "
+         (command-docstring-first-sentence
+         'nyxt/macro-edit-mode:macro-edit-mode)))
+   (:p "Lastly, the command " (:code 'nyxt/process-mode:process-mode) " must be
+highlighted: ")
+   (:ul
+    (:li (command-markup 'nyxt/process-mode:process-mode) ": "
+         (command-docstring-first-sentence 'nyxt/process-mode:process-mode)))
+   (:p (:code 'nyxt/process-mode:process-mode) " is actually a building block
+for other modes previously mentioned, such as " (:code
+'nyxt/repeat-mode:repeat-mode) ". The extension relationship goes further, since
+" (:code 'nyxt/cruise-control-mode:cruise-control-mode) " is in its turn an
+extension and a composition of " (:code 'nyxt/repeat-mode:repeat-mode) " and "
+(:code 'nyxt/web-mode:scroll-down) ". Further extensions and compositions can be
+creatively tailor-made by users to automate their own use of Nyxt.")
    (:h3 "Miscellaneous")
    (:ul
     (:li (command-markup 'nyxt/web-mode:zoom-page)
