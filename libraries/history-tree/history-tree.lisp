@@ -299,15 +299,10 @@ history data, e.g. a list of visited URLs that's not bound to any owner."
               new-entry))))))
 
 (define-class history-tree ()           ; TODO: Rename `history'?
-  ((owners (error "Owners need be initialized")
+  ((owners (make-hash-table :test #'equalp)
            :type hash-table
            :documentation "The key is an owner identifier (an artitrary value),
 the value is an `owner'.")
-   (current-owner-id (error "Owner identifier required")
-                     :reader current-owner-id
-                     :type t
-                     :export t
-                     :documentation "Must be one of the `owners' keys.")
    (entries (make-entry-hash-table)
             :type hash-table
             :documentation "Both the key and the value are an `entry', so that
@@ -341,33 +336,28 @@ if if were a function."))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "Starting point of the global history tree data structure."))
 
-(export-always '+default-owner+)
-(defparameter +default-owner+ "default-owner")
-
 (export 'make)
 (defun make (&rest args
              &key key
                test
                hash-function
-               (current-owner-id +default-owner+ explicit-p))
+               initial-owners)
   "Return a new `history-tree'."
   (declare (ignore key test hash-function))
-  (let ((owners (make-hash-table :test #'equalp))
-        (initial-owner (make-instance 'owner)))
-    (setf (gethash current-owner-id owners) initial-owner)
-    (unless explicit-p
-      (setf args (append
-                  (list :current-owner-id current-owner-id)
-                  args)))
-    (apply #'make-instance 'history-tree
-           :owners owners
-           args)))
+  (alex:remove-from-plistf args :initial-owners)
+  (let ((history (apply #'make-instance 'history-tree args)))
+    (dolist (owner initial-owners)
+      (setf (gethash owner (htree:owners history))
+            (make-instance 'htree:owner)))
+    history))
 
 (export-always 'owner)
-(declaim (ftype (function (history-tree t) (or null owner)) owner))
-(defun owner (history owner-id)
-  "Return the `owner' object identified by OWNER-IDENTIFIER in HISTORY."
-  (gethash owner-id (owners history)))
+(defun owner (history owner-spec)
+  "Return the `owner' object identified by OWNER-SPEC in HISTORY.
+OWNER may be an owner ID or owner object."
+  (if (owner-p owner-spec)
+      owner-spec
+      (gethash owner-spec (owners history))))
 
 (export-always 'add-owner)
 (declaim (ftype (function (history-tree t &key (:creator-id t))
@@ -397,122 +387,95 @@ exists, return it and raise a warning."
                   owner)
             owner)))))
 
-(export-always 'set-current-owner)
-(defun set-current-owner (history owner-id)
-  "Persistently switch owner for HISTORY.
-OWNER-IDENTIFIER is arbitrary data representing an `owner'.
-Raise an error when no matching owner exists.
-See `add-owner' to create an owner.
-See `with-current-owner' to set the owner locally.
-See `delete-owner' to remove it from HISTORY."
-  (if (owner history owner-id)
-      (setf (slot-value history 'current-owner-id) owner-id)
-      (error "Owner with identifier ~s does not exist" owner-id)))
+(export-always 'owner-node)
+(defun owner-node (history owner-spec)
+  (current (owner history owner-spec)))
 
-(export-always 'current-owner)
-(defun current-owner (history)
-  (owner history (current-owner-id history)))
-
-(export-always 'current-owner-node)
-(defun current-owner-node (history)
-  (current (current-owner history)))
-
-(export-always 'with-current-owner)
-(defmacro with-current-owner ((history owner-id) &body body)
-  "Locally switch owner for HISTORY.
-See `set-current-owner' to set the owner persistently.
-OWNER-IDENTIFIER can be any value, even NIL."
-  (let ((old-owner-id (gensym)))
-    `(let ((,old-owner-id (current-owner-id ,history)))
-       (unwind-protect (progn (set-current-owner ,history ,owner-id)
-                              ,@body)
-         (set-current-owner ,history ,old-owner-id)))))
-
-(defmethod visit ((history history-tree) node)
-  "Visit NODE with HISTORY's current owner.
-Return (values HISTORY NODE) so that calls to `visit' can be chained."
-  (let ((owner (current-owner history)))
-    (pushnew node (nodes owner))        ; TODO: See TODO note on "fast sets".
-    (setf (current owner) node)
-    (let ((binding (gethash owner (bindings node))))
-      (if binding
-          (setf (last-access binding) (local-time:now))
-          (setf (gethash owner (bindings node))
-                (make-instance 'binding))))
-    (values history node)))
+(defmethod visit ((history history-tree) owner-spec node)
+  "Visit NODE with HISTORY's OWNER-SPEC.
+Return (values HISTORY OWNER)."
+  (let ((owner (owner history owner-spec)))
+    (when owner
+      (pushnew node (nodes owner))      ; TODO: See TODO note on "fast sets".
+      (setf (current owner) node)
+      (let ((binding (gethash owner (bindings node))))
+        (if binding
+            (setf (last-access binding) (local-time:now))
+            (setf (gethash owner (bindings node))
+                  (make-instance 'binding)))))
+    (values history owner)))
 
 (export-always 'visit-all)
-(defmethod visit-all ((history history-tree) node)
+(defmethod visit-all ((history history-tree) owner-spec node)
   "Like `visit' but on all nodes between the current node and NODE.
 This is only possible if the current node and NODE are on the same branch.
 If they are not, an error is raised.
-Return (values HISTORY NODE) so that calls to `visit' can be chained."
-  (if (eq node (current-owner-node history))
-      (values history node)
+Return (values HISTORY OWNER)."
+  (let ((owner (owner history owner-spec)))
+    (when (and owner (not (eq node (owner-node history owner-spec))))
       (labels ((nodes-with-common-parent (node current-node-parents)
                  (unless node
-                   (error "Node ~s and current owner node must be on the same branch" node))
+                   (error "Node ~s and owner ~s node must be on the same branch" node owner-spec))
                  (if (find node current-node-parents)
                      (list node)
                      (cons node (nodes-with-common-parent (parent node) current-node-parents)))))
-        (let* ((current-node (current-owner-node history))
+        (let* ((current-node (owner-node history owner-spec))
                (current-node-with-parents (cons current-node (all-parents current-node)))
                (node-parents-until-common-parent (nreverse (nodes-with-common-parent
                                                             node
                                                             current-node-with-parents)))
                (common-parent (first node-parents-until-common-parent)))
-          (loop :until (eq common-parent (current-owner-node history))
-                :do (backward history))
-          (loop :until (eq node (current-owner-node history))
+          (loop :until (eq common-parent (owner-node history owner))
+                :do (backward history owner))
+          (loop :until (eq node (owner-node history owner))
                 ;; Skip the first node since it's the common-parent and it's already visited.
                 :do (setf node-parents-until-common-parent (rest node-parents-until-common-parent))
-                :do (go-to-child (data (first node-parents-until-common-parent)) history))
-          (values history node)))))
+                :do (go-to-child (data (first node-parents-until-common-parent)) history owner)))))
+    (values history owner)))
 
 (deftype positive-integer ()
   `(integer 1 ,most-positive-fixnum))
 
 (export-always 'backward)
-(defmethod backward ((history history-tree) &optional (count 1))
-  "Go COUNT parent up from the current owner node, if possible.
-Return (VALUES HISTORY CURRENT-NODE) so that `backward' and `forward' calls can
-be chained."
-  (let ((owner (current-owner history)))
-    (check-type count positive-integer)
-    (when (parent (current owner))
+(defmethod backward ((history history-tree) owner-spec &optional (count 1))
+  "Go COUNT parent up from the OWNER-SPEC current node, if possible.
+Return (VALUES HISTORY OWNER)."
+  (check-type count positive-integer)
+  (let ((owner (owner history owner-spec)))
+    (when (and owner (parent (current owner)))
       (let ((former-current (current owner)))
-        (visit history (parent (current owner)))
+        (visit history owner (parent (current owner)))
         ;; Put former current node back as forward-child if it is not already
         ;; the case, e.g. if current node was set manually.
         (setf (forward-child (current-binding owner))
               former-current))
       (when (< 1 count)
-        (backward history (1- count))))
-    (values history (current owner))))
+        (backward history owner (1- count))))
+    (values history owner)))
 
 (export-always 'backward-owned-parents)
-(defmethod backward-owned-parents ((history history-tree) &optional (count 1))
-  "Go COUNT parent up from the current owner node, if possible.
+(defmethod backward-owned-parents ((history history-tree) owner-spec &optional (count 1))
+  "Go COUNT parent up from the OWNER-SPEC current node, if possible.
 Only contiguous owned parents are considered.
-Return (VALUES HISTORY CURRENT-NODE) so that `backward' and `forward' calls can
-be chained."
-  (let ((owner (current-owner history)))
-    (when (owned-parent owner (current owner))
+Return (VALUES HISTORY OWNER)."
+  (let ((owner (owner history owner-spec)))
+    (when (and owner (owned-parent owner (current owner)))
       (backward history count))
-    (values history (current owner))))
+    (values history owner)))
 
 (export-always 'forward)
-(defmethod forward ((history history-tree) &optional (count 1))
-  "Go COUNT forward-children down from the current owner node, if possible.
+(defmethod forward ((history history-tree) owner-spec &optional (count 1))
+  "Go COUNT forward-children down from OWNER-SPEC current node, if possible.
 Return (values HISTORY CURRENT-NODE)) so that `backward' and `forward' calls can be
 chained."
   (check-type count positive-integer)
-  (let ((owner (current-owner history)))
-    (when (and (current-binding owner)
+  (let ((owner (owner history owner-spec)))
+    (when (and owner
+               (current-binding owner)
                (forward-child (current-binding owner)))
-      (visit history (forward-child (current-binding owner)))
+      (visit history owner (forward-child (current-binding owner)))
       (when (< 1 count)
-        (forward history (1- count))))
+        (forward history owner (1- count))))
     (values history (current owner))))
 
 (defun find-entry (history data)
@@ -548,88 +511,92 @@ Test is done with the TEST argument."
         :test #'data-equal-entry-p))
 
 (export-always 'go-to-child)
-(defmethod go-to-child (data (history history-tree) &key (child-finder #'find-child)) ; TODO: Should take a node instead?
+(defmethod go-to-child (data (history history-tree) owner-spec &key (child-finder #'find-child)) ; TODO: Should take a node instead?
   "Go to direct current node's child matching DATA.
-Return (values HISTORY (current-owner-node HISTORY))."
-  (let* ((owner (current-owner history))
-         (match (funcall child-finder data owner)))
-    (when match
-      (visit history match))))
+Return (values HISTORY OWNER)."
+  (let* ((owner (owner history owner-spec))
+         (match (when owner (funcall child-finder data owner))))
+    (if match
+        (visit history owner match)
+        (values history owner))))
 
 (export-always 'go-to-owned-child)
-(defmethod go-to-owned-child (data (history history-tree))
+(defmethod go-to-owned-child (data (history history-tree) owner-spec)
   "Go to current node's direct owned child matching DATA.
-A child is owned if it has a binding with current owner.
+A child is owned if it has a binding with OWNER.
 Return (values OWNER (current OWNER))."
-  (go-to-child data (current-owner history) :child-finder #'find-owned-child))
+  (go-to-child data (owner history owner-spec) :child-finder #'find-owned-child))
 
 
-(defun make-origin-node (history owner-id data)
-  (let* ((owner (owner history owner-id))
+(defun make-origin-node (history owner-spec data)
+  (let* ((owner (owner history owner-spec))
          (new-node (make-node :entry (add-entry history data)
                               :parent (creator-node owner))))
     (when (creator-node owner)
       (push new-node (children (creator-node owner))))
     (setf (origin owner) new-node)
-    (with-current-owner (history owner-id)
-      (visit history new-node))))
+    (visit history owner-spec new-node)))
 
 (export-always 'add-child)
-(defmethod add-child (data (history history-tree))
+(defmethod add-child (data (history history-tree) owner-spec)
   "Create or find a node holding DATA and set current node to it.
 Return the (possibly new) current node.
+Return NIL is OWNER-SPEC does not refer to an existing owner.
 
 If current node matches DATA (which may be non-identical since the
 `history-tree''s `key' and `test' functions may identify two non-identical datum
 as equal), do nothing.
 
-If DATA is found among the children, the current owner node `forward-child' is
+If DATA is found among the children, OWNER-SPEC current node `forward-child' is
 set to the matching child, the owner current node is set to this child.
 
-If there is no current node, this creates the `origin' node of the current owner
+If there is no current node, this creates the `origin' node of OWNER-SPEC
 and also sets `current' to it.  If the owner has a `creator-id' set,
 the new node is added to the children of the current node of the creator."
-  (let* ((owner (current-owner history)))
-    (cond
-      ((null (current owner))
-       (make-origin-node history (current-owner-id history) data))
+  (let* ((owner (owner history owner-spec)))
+    (when owner
+      (cond
+        ((null (current owner))
+         (make-origin-node history (owner history owner-spec) data))
 
-      ((not (data-equal-entry-p data (entry (current owner))))
-       (let ((node (find-child data owner)))
-         (unless node
-           (let ((maybe-new-entry (add-entry history data)))
-             (push (setf node (make-node :entry maybe-new-entry
-                                         :parent (current owner)))
-                   (children (current owner)))))
-         (let ((binding (gethash owner (bindings (current owner)))))
-           (setf (forward-child binding) node))
-         (forward history)))
+        ((not (data-equal-entry-p data (entry (current owner))))
+         (let ((node (find-child data owner)))
+           (unless node
+             (let ((maybe-new-entry (add-entry history data)))
+               (push (setf node (make-node :entry maybe-new-entry
+                                           :parent (current owner)))
+                     (children (current owner)))))
+           (let ((binding (gethash owner (bindings (current owner)))))
+             (setf (forward-child binding) node))
+           (forward history owner)))
 
-      (t
-       ;; Current node matches data, do nothing.
-       nil))
+        (t
+         ;; Current node matches data, do nothing.
+         nil))
 
-    (current owner)))
+      (current owner))))
 
 (export 'add-children)
-(defmethod add-children (children-data (history history-tree))
-  "Add CHILDREN-DATA to the HISTORY `current-owner''s.
+(defmethod add-children (children-data (history history-tree) owner-spec)
+  "Add CHILDREN-DATA to the HISTORY OWNER-SPEC.
 Each child is added with `add-child'.
 Return the (maybe new) current node, which holds the last piece of data in
 `children-data'."
-  (let ((owner (current-owner history)))
-    (add-child (first children-data) owner)
-    (if (rest children-data)
-        (add-children (rest children-data) (backward owner))
-        (current owner))))
+  (let ((owner (owner history owner-spec)))
+    (when owner
+      (add-child (first children-data) owner)
+      (if (rest children-data)
+          (add-children (rest children-data) (backward owner))
+          (current owner)))))
 
 (export-always 'map-tree)
-(defun map-tree (function tree &key flatten include-root
+(defun map-tree (function tree &key owner flatten include-root
                                  (collect-function #'cons)
                                  (children-function #'children))
   "Map the FUNCTION over the TREE.
-If TREE is a `htree:history-tree', start from its current branch root.
+If TREE is a `htree:history-tree', start from its OWNER root.
 If TREE is a `htree:node', start from it.
+OWNER can be an ID or an `owner' object.
 Include results of applying FUNCTION over ROOT if INCLUDE-ROOT is
 non-nil.
 Return results as cons cells tree if FLATTEN is nil and as a flat
@@ -646,7 +613,7 @@ current node result to the result of further traversal."
                         (mapcar #'traverse (funcall children-function node)))))))
     (let ((root (typecase tree
                   (node tree)
-                  (history-tree (root (current-owner-node tree))))))
+                  (history-tree (root (owner-node tree owner))))))
       (when root
         (if include-root
             (traverse root)
@@ -655,9 +622,7 @@ current node result to the result of further traversal."
 (export-always 'map-owned-tree)
 (defun map-owned-tree (function tree &key flatten include-root
                                        (collect-function #'cons)
-                                       (owner (if (history-tree-p tree)
-                                                  (current-owner tree)
-                                                  (current-owner (history (entry tree))))))
+                                       owner)
   "Like `map-tree' but restrict traversal to OWNER's nodes."
   (map-tree function (if (history-tree-p tree)
                          (owned-root owner)
@@ -683,37 +648,39 @@ Always return nil, as it is an explicitly imperative macro."
 
 
 (export-always 'all-children)
-(defmethod all-children ((node node))
+(defmethod all-children ((node node) &key &allow-other-keys)
   "Return a list of all the children of NODE, recursively."
   (map-tree #'identity node :flatten t))
 
-(defmethod all-children ((history history-tree))
-  "Return a list of all the children of HISTORY's current owner node.
-Children may not all be owned by the current owner."
-  (all-children (current-owner-node history)))
+(defmethod all-children ((history history-tree) &key (owner (error "Owner required.")))
+  "Return a list of all the children of HISTORY's OWNER-SPEC current node.
+Children may not all be owned by OWNER-SPEC."
+  (alex:when-let ((node (owner-node history owner)))
+    (all-children node)))
 
 (export-always 'all-contiguous-owned-children)
-(defmethod all-contiguous-owned-children ((history history-tree) &optional node)
-  "Return a list of all the children of HISTORY's current owner node,
+(defmethod all-contiguous-owned-children ((history history-tree) owner-spec &optional node)
+  "Return a list of all the children of HISTORY's OWNER-SPEC current node,
 recursively."
-  (let ((owner (current-owner history)))
+  (let ((owner (owner history owner-spec)))
     (map-tree #'identity (or node (current owner))
               :flatten t
               :children-function (owned-children-lister owner))))
 
 (export-always 'all-parents)
-(defmethod all-parents ((node node))
+(defmethod all-parents ((node node) &key &allow-other-keys)
   "Return a list of parents of NODE, recursively.
 First parent comes first in the resulting list."
   (when (parent node)
     (cons (parent node)
           (all-parents (parent node)))))
 
-(defmethod all-parents ((history history-tree))
+(defmethod all-parents ((history history-tree) &key (owner (error "Owner required.")) &allow-other-keys)
   "Return a list of all parents of the current node.
 Parents may not be owned by the current owner.
 First parent comes first in the resulting list."
-  (all-parents (current-owner-node history)))
+  (alex:when-let ((node (owner-node history owner)))
+    (all-parents node)))
 
 (defun node-contiguous-owned-parents (owner node)
   "Return a list of parents of owned by NODE, recursively.
@@ -725,38 +692,41 @@ First parent comes first in the resulting list."
     (contiguous-owned-parents node)))
 
 (export-always 'all-contiguous-owned-parents)
-(defmethod all-contiguous-owned-parents ((history history-tree))
-  "Return a list of parents of owned by HISTORY current owner node, recursively.
+(defmethod all-contiguous-owned-parents ((history history-tree) owner-spec)
+  "Return a list of parents of owned by HISTORY OWNER-SPEC current node, recursively.
 First parent comes first in the resulting list."
-  (node-contiguous-owned-parents (current-owner history)
-                                 (current-owner-node history)))
+  (alex:when-let ((owner (owner history owner-spec)))
+    (node-contiguous-owned-parents owner
+                                   (current owner))))
 
 (export-always 'all-forward-children)
 (defmethod all-forward-children ((history history-tree)
-                                 &optional (node (current-owner-node history)))
+                                 owner-spec
+                                 &optional (node (owner-node history owner-spec)))
   "Return a list of the forward children of NODE, recursively.
 First child comes first in the resulting list."
-  (let* ((owner (current-owner history))
-         (binding (current-binding owner node)))
-    (when (and binding (forward-child binding))
-      (cons (forward-child binding)
-            (all-forward-children history
-                                  (forward-child binding))))))
+  (alex:when-let ((owner (owner history owner-spec)))
+    (let ((binding (current-binding owner node)))
+      (when (and binding (forward-child binding))
+        (cons (forward-child binding)
+              (all-forward-children history
+                                    owner-spec
+                                    (forward-child binding)))))))
 
-(export 'all-current-owner-nodes)
-(defmethod all-current-owner-nodes ((history history-tree))
-  "Return a list of all current owner nodes, in unspecified order."
-  (nodes (current-owner history)))
+(export 'all-owner-nodes)
+(defmethod all-owner-nodes ((history history-tree) owner-spec)
+  "Return a list of all OWNER nodes, in unspecified order."
+  (alex:when-let ((owner (owner history owner-spec)))
+    (nodes owner)))
 
-(export 'all-current-branch-nodes)
-(defmethod all-current-branch-nodes ((history history-tree))
-  "Return a list of all nodes that belong to the branch the current owner node is on.
-These nodes do not necessarily belong to the current owner.
+(export 'all-branch-nodes)
+(defmethod all-branch-nodes ((history history-tree) owner-spec)
+  "Return a list of all nodes that belong to the branch OWNER-SPEC node is on.
+These nodes do not necessarily belong to OWNER-SPEC.
 See `all-contiguous-owned-nodes'."
-  (let ((current-node (current-owner-node history)))
-    (when current-node
-      (let ((root (root (current-owner-node history))))
-        (cons root (all-children root))))))
+  (alex:when-let ((node (owner-node history owner-spec)))
+    (let ((root (root node)))
+      (cons root (all-children root)))))
 
 (export 'owned-root)
 (defun owned-root (owner)
@@ -766,12 +736,11 @@ See `all-contiguous-owned-nodes'."
    (current owner)))
 
 (export 'all-contiguous-owned-nodes)
-(defmethod all-contiguous-owned-nodes ((history history-tree))
-  "Return a list of all nodes contiguous to the current owner node, starting
+(defmethod all-contiguous-owned-nodes ((history history-tree) owner-spec)
+  "Return a list of all nodes contiguous to OWNER-SPEC node, starting
 from the top-most parent, in depth-first order."
-  (let ((owned-root (owned-root (current-owner history))))
-    (when owned-root
-      (cons owned-root (all-contiguous-owned-children history owned-root)))))
+  (alex:when-let ((owned-root (owned-root (owner history owner-spec))))
+    (cons owned-root (all-contiguous-owned-children history owner-spec owned-root))))
 
 (export-always 'all-data)
 (defmethod all-data ((history history-tree))
@@ -843,14 +812,6 @@ As a second value, return the list of all NODE's children, including NODE."
       (delete-disowned-branch-nodes history nodes))
     (setf (creator-node owner) nil)))
 
-(defun fallback-owner (history)
-  "Return an (unspecified) owner ID from HISTORY, or, if there is none,
-add `+default-owner+' to it then return its ID."
-  (or (first-hash-table-key (owners history))
-      (progn
-        (add-owner history +default-owner+)
-        +default-owner+)))
-
 (export-always 'delete-owner)
 (declaim (ftype (function (history-tree t) (or null owner)) delete-owner))
 (defun delete-owner (history owner-id)
@@ -860,9 +821,6 @@ without any owner.
 Return owner, or nil if there is no owner corresponding to OWNER-IDENTIFIER."
   (let ((owner (owner history owner-id)))
     (remhash owner-id (owners history))
-    (when (equal owner-id (current-owner-id history))
-      (setf (slot-value history 'current-owner-id)
-            (fallback-owner history)))
     (disown-all history owner)
     owner))
 
@@ -891,12 +849,12 @@ If nodes are still associated to entry, do nothing."
 (deftype non-negative-integer ()
   `(integer 0 ,most-positive-fixnum))
 
-(declaim (ftype (function (history-tree) non-negative-integer) depth))
-(defun depth (history)
-  "Return the number of (possibly unowned) parents of the current owner node."
-  (length (all-parents history)))
+(declaim (ftype (function (history-tree (or string owner)) non-negative-integer) depth))
+(defun depth (history owner-spec)
+  "Return the number of (possibly unowned) parents of OWNER-SPEC cutrent node."
+  (length (all-parents history :owner owner-spec)))
 
-(defmethod size ((owner owner))
+(defmethod size ((owner owner) &key &allow-other-keys)
   "Return the total number of nodes owned by OWNER."
   (length (nodes owner)))
 
@@ -904,7 +862,7 @@ If nodes are still associated to entry, do nothing."
   "Return the total number of owned nodes contiguous to the current OWNER node."
   (length (all-contiguous-owned-nodes owner)))
 
-(defmethod size ((history history-tree))
-  "Return the total number of nodes for the current branch."
+(defmethod size ((history history-tree) &key (owner "Owner required.") &allow-other-keys)
+  "Return the total number of nodes for the branch OWNER's current node sits on."
   ;; TODO: This could be optimized with a SIZE slot, but is it worth it?
-  (length (all-current-branch-nodes history)))
+  (length (all-branch-nodes history owner)))
