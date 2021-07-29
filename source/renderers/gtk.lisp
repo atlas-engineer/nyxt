@@ -805,8 +805,8 @@ See `gtk-browser's `modifier-translator' slot."
   "Return the window object for the current window."
   (setf (slot-value browser 'last-active-window)
         (or (find-if #'gtk:gtk-window-is-active (window-list) :key #'gtk-object)
-            (first (window-list))
-            (slot-value browser 'last-active-window))))
+            (slot-value browser 'last-active-window)
+            (first (window-list)))))
 
 (define-ffi-method ffi-window-set-buffer ((window gtk-window) (buffer gtk-buffer) &key (focus t))
   "Set BROWSER's WINDOW buffer to BUFFER."
