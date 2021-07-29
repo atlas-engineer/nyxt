@@ -311,6 +311,13 @@ This was useful before Nyxt 2.0 as a workaround for hangs that would occur on pa
       (echo message)
       (buffer-load url-or-node)))
 
+(defmacro with-history ((history-sym buffer) &body body)
+  "Run body if BUFFER has history entries, that is, if it owns some nodes."
+  `(with-data-access (,history-sym (history-path ,buffer))
+     (if (htree:owner history (id (current-buffer)))
+         (progn ,@body)
+         (echo "Buffer ~a has no history." (id ,buffer)))))
+
 (define-command history-backwards (&optional (buffer (current-buffer)))
   "Go to parent URL in history."
   (let ((new-node
@@ -336,7 +343,7 @@ This was useful before Nyxt 2.0 as a workaround for hangs that would occur on pa
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
     (lambda (source)
-      (with-data-unsafe (history (history-path (buffer source)))
+      (with-history (history (buffer source))
         (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
                      #'htree:all-contiguous-owned-parents
                      #'htree:all-parents)
@@ -366,7 +373,7 @@ This was useful before Nyxt 2.0 as a workaround for hangs that would occur on pa
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
     (lambda (source)
-      (with-data-unsafe (history (history-path (buffer source)))
+      (with-history (history (buffer source))
         (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
                      (alex:compose #'htree:owned-children #'htree:current-owner)
                      (alex:compose #'htree:children #'htree:current-owner-node))
@@ -389,7 +396,7 @@ This was useful before Nyxt 2.0 as a workaround for hangs that would occur on pa
 (define-command history-forwards-maybe-query (&optional (buffer (current-buffer)))
   "If current node has multiple children, query which one to navigate to.
 Otherwise go forward to the only child."
-  (with-data-unsafe (history (history-path buffer))
+  (with-history (history buffer)
     (if (<= 2 (length
                (if (conservative-history-movement-p (find-mode buffer 'web-mode))
                    (htree:owned-children (htree:current-owner history))
@@ -402,7 +409,7 @@ Otherwise go forward to the only child."
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
     (lambda (source)
-      (with-data-unsafe (history (history-path (buffer source)))
+      (with-history (history (buffer source))
         (htree:all-forward-children history)))))
   (:export-class-name-p t))
 (define-user-class history-forwards-source)
@@ -427,7 +434,7 @@ Otherwise go forward to the only child."
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
     (lambda (source)
-      (with-data-unsafe (history (history-path (buffer source)))
+      (with-history (history (buffer source))
         (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
                      (alex:compose #'htree:all-contiguous-owned-children #'htree:current-owner)
                      #'htree:all-children)
@@ -451,7 +458,7 @@ Otherwise go forward to the only child."
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
     (lambda (source)
-      (with-data-unsafe (history (history-path (buffer source)))
+      (with-history (history (buffer source))
         (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
                      #'htree:all-current-owner-nodes
                      #'htree:all-current-branch-nodes)
@@ -481,7 +488,7 @@ Otherwise go forward to the only child."
   "Open a new buffer displaying the whole history tree of a buffer."
   (with-current-html-buffer (output-buffer (format nil "*History-~a*" (id buffer))
                                            'nyxt/history-tree-mode:history-tree-mode)
-    (with-data-unsafe (history (history-path buffer))
+    (with-history (history buffer)
       (let ((mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
             (tree (spinneret:with-html-string
                     (:ul (:raw (htree:map-owned-tree
@@ -508,7 +515,7 @@ Otherwise go forward to the only child."
   "Open a new buffer displaying the whole history branch the current buffer is on."
   (nyxt::with-current-html-buffer (output-buffer "*History*"
                                                  'nyxt/history-tree-mode:history-tree-mode)
-    (with-data-unsafe (history (history-path (current-buffer)))
+    (with-history (history)
       (let ((mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
             (tree (spinneret:with-html-string
                     (:ul (:raw (htree:map-tree
@@ -690,7 +697,7 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
   (add-url-to-history url (buffer mode) mode)
   (reset-page-zoom :buffer (buffer mode)
                    :ratio (current-zoom-ratio (buffer mode)))
-  (with-data-unsafe (history (history-path (buffer mode)))
+  (with-history (history (buffer mode))
     (sera:and-let* ((owner (htree:owner history (id (buffer mode))))
                     (node (htree:current owner))
                     (data (htree:data node))
