@@ -24,16 +24,6 @@
 (define-mode web-mode ()
   "Base mode for interacting with documents."
   ((rememberable-p nil)
-   (document-model-delta-threshold
-    10
-    :documentation "Update the document model when the amount of elements on the
-    page change greater than this amount."
-    :export nil)
-   (document-model
-    nil
-    :type (or null plump:node)
-    :documentation "A parsed representation of the page currently opened.
-Created from the page code with the help of `plump:parse'. See `update-document-model'.")
    (history-blocklist '("https://duckduckgo.com/l/")
                       ;; TODO: Find a more automated way to do it.  WebKitGTK
                       ;; automatically removes such redirections from its
@@ -202,46 +192,6 @@ and to index the top of the page.")
        "s-space" 'scroll-page-up
        "pageup" 'scroll-page-up
        "pagedown" 'scroll-page-down)))))
-
-(define-command update-document-model (&optional (mode (current-mode 'web-mode)))
-  "Update the WEB-MODE's `dom' with the page source augmented with Nyxt identifiers."
-  (ffi-buffer-evaluate-javascript
-   (buffer mode)
-   (ps:ps
-     (defvar nyxt-identifier-counter 0)
-     (defun add-nyxt-identifiers (node)
-       (unless (ps:chain node (has-attribute "nyxt-identifier"))
-         (ps:chain node (set-attribute "nyxt-identifier" (ps:stringify nyxt-identifier-counter))))
-       (incf nyxt-identifier-counter)
-       (dolist (child (ps:chain node children))
-         (add-nyxt-identifiers child))
-       nyxt-identifier-counter)
-     (setf nyxt-identifier-counter (add-nyxt-identifiers (ps:chain document body)))))
-  (setf (document-model mode)
-        (nyxt/dom::named-json-parse (nyxt/dom::get-document-body-json))))
-
-(defmethod document-model :around ((mode web-mode))
-  (pflet ((%count-dom-elements
-           ()
-           (defvar dom-counter 0)
-           (defun count-dom-elements (node)
-             (incf dom-counter)
-             (dolist (child (ps:chain node children))
-               (count-dom-elements child))
-             dom-counter)
-           (setf dom-counter 0)
-           (count-dom-elements (nyxt/ps:qs document "html"))))
-    (let ((value (call-next-method))
-          (element-count (truncate (%count-dom-elements))))
-      (if (and value
-               ;; Check whether the difference in element count is significant.
-               (< (abs (- (length (clss:select "*" value)) element-count))
-                  (document-model-delta-threshold mode)))
-          value
-          (update-document-model mode)))))
-
-(defmethod get-nyxt-id ((element plump:element))
-  (plump:get-attribute element "nyxt-identifier"))
 
 (sera:export-always '%clicked-in-input?)
 (defun %clicked-in-input? (&optional (buffer (current-buffer)))
@@ -696,8 +646,6 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
                     (data (htree:data node))
                     (scroll-position (nyxt::scroll-position data)))
       (setf (nyxt:document-scroll-position (buffer mode)) scroll-position)))
-  ;; Need to force document-model re-parsing.
-  (setf (document-model mode) nil)
   url)
 
 (define-command show-qrcode-of-current-url (&optional (buffer (current-buffer)))

@@ -61,7 +61,7 @@
     (loop for i below length collect (select-from-alphabet i char-length alphabet))))
 
 (defun add-element-hints (&key selector)
-  (let* ((dom (document-model (current-mode 'web)))
+  (let* ((dom (document-model (current-buffer)))
          (hintable-elements (clss:select selector dom))
          (hints (generate-hints (length hintable-elements))))
     (run-thread "stylesheet adder"

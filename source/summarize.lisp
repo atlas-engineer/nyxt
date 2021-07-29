@@ -6,7 +6,7 @@
     (let ((contents
             (serapeum:string-join
              (map 'list (lambda (e) (plump:text e))
-                  (clss:select "p" (document-model (current-mode 'web))))
+                  (clss:select "p" (document-model buffer)))
              " ")))
       (spinneret:with-html-string
         (:style (style output))

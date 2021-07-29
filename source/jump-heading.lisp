@@ -28,7 +28,7 @@
                                    :buffer buffer
                                    :keywords (analysis:extract-keywords
                                               (plump:text (plump:next-element e)))))
-         (clss:select "h1, h2, h3, h4, h5, h6" (document-model (current-mode 'web))))))
+         (clss:select "h1, h2, h3, h4, h5, h6" (document-model buffer)))))
 
 (define-parenscript scroll-to-element (&key nyxt-identifier)
   (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier)))

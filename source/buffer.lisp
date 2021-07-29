@@ -285,6 +285,16 @@ inherited from the superclasses."))
 - `:unloaded' for buffers that have not been loaded yet, like
   session-restored buffers, dead buffers or new buffers that haven't started the
   loading process yet.")
+   (document-model-delta-threshold
+    10
+    :documentation "Update the document model when the amount of elements on the
+    page change greater than this amount."
+    :export nil)
+   (document-model
+    nil
+    :type (or null plump:node)
+    :documentation "A parsed representation of the page currently opened.
+Created from the page code with the help of `plump:parse'. See `update-document-model'.")
    (proxy nil
           :accessor nil
           :type (or proxy null)
@@ -568,6 +578,47 @@ Delete it with `ffi-buffer-delete'."
 
 (define-user-class status-buffer)
 
+(define-command update-document-model (&key (buffer (current-buffer)))
+  "Update the WEB-MODE's `dom' with the page source augmented with Nyxt identifiers."
+  (ffi-buffer-evaluate-javascript
+   buffer
+   (ps:ps
+     (defvar nyxt-identifier-counter 0)
+     (defun add-nyxt-identifiers (node)
+       (unless (ps:chain node (has-attribute "nyxt-identifier"))
+         (ps:chain node (set-attribute "nyxt-identifier" (ps:stringify nyxt-identifier-counter))))
+       (incf nyxt-identifier-counter)
+       (dolist (child (ps:chain node children))
+         (add-nyxt-identifiers child))
+       nyxt-identifier-counter)
+     (setf nyxt-identifier-counter (add-nyxt-identifiers (ps:chain document body)))))
+  (setf (document-model buffer)
+        (nyxt/dom::named-json-parse (nyxt/dom::get-document-body-json))))
+
+(defmethod document-model :around ((buffer web-buffer))
+  (pflet ((%count-dom-elements
+           ()
+           (defvar dom-counter 0)
+           (defun count-dom-elements (node)
+             (incf dom-counter)
+             (dolist (child (ps:chain node children))
+               (count-dom-elements child))
+             dom-counter)
+           (setf dom-counter 0)
+           (count-dom-elements (nyxt/ps:qs document "html"))))
+    (let ((value (call-next-method))
+          (element-count (truncate (%count-dom-elements))))
+      (if (and value
+               ;; Check whether the difference in element count is significant.
+               (< (abs (- (length (clss:select "*" value)) element-count))
+                  (document-model-delta-threshold buffer)))
+          value
+          (update-document-model :buffer buffer)))))
+
+(export-always 'get-nyxt-id)
+(defmethod get-nyxt-id ((element plump:element))
+  (plump:get-attribute element "nyxt-identifier"))
+
 (defmethod proxy ((buffer buffer))
   (slot-value buffer 'proxy))
 
@@ -646,6 +697,13 @@ BUFFER's modes."
 
 (export-always 'on-signal-load-finished)
 (defmethod on-signal-load-finished ((buffer buffer) url)
+  (dolist (mode (modes buffer))
+    (on-signal-load-finished mode url))
+  (run-thread (hooks:run-hook (buffer-loaded-hook buffer) buffer)))
+
+(defmethod on-signal-load-finished ((buffer web-buffer) url)
+  ;; Need to force document-model re-parsing.
+  (setf (document-model buffer) nil)
   (dolist (mode (modes buffer))
     (on-signal-load-finished mode url))
   (run-thread (hooks:run-hook (buffer-loaded-hook buffer) buffer)))

@@ -92,11 +92,12 @@
                (:file "command")
                (:file "parenscript-macro")
                (:file "renderer-script")
+               (:file "urls")
+               (:file "dom")
                (:file "buffer")
                (:file "window")
                (:file "mode")
                (:file "search-engine")
-               (:file "urls")
                (:file "browser")
                (:file "clipboard")
                (:file "input")
@@ -111,7 +112,6 @@
                (:file "auto-mode")
                (:file "external-editor")
                (:file "file-manager")
-               (:file "dom")
                #+quicklisp
                (:file "lisp-system")
                ;; Core Modes
