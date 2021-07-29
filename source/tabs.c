@@ -37,13 +37,6 @@ tabs_query_callback (JSCValue *object)
 }
 
 static void
-tabs_print_callback ()
-{
-        WebKitUserMessage *message = webkit_user_message_new("print", NULL);
-        webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
-}
-
-static void
 tabs_create_reply_callback (GObject *web_page,
                            GAsyncResult *res,
                            gpointer user_data)
@@ -105,6 +98,13 @@ tabs_get_current_callback ()
         WebKitUserMessage *message = webkit_user_message_new("tabs.getCurrent", NULL);
         webkit_web_page_send_message_to_view(
                 PAGE, message, NULL, tabs_get_current_reply_callback, NULL);
+}
+
+static void
+tabs_print_callback ()
+{
+        WebKitUserMessage *message = webkit_user_message_new("tabs.print", NULL);
+        webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
 }
 
 void
