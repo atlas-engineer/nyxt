@@ -16,6 +16,10 @@
 keymap parents are automatically set to the keymaps corresponding to the given
 schemes.  See `define-scheme'.")))
 
+(defmethod print-object ((scheme-name scheme-name) stream)
+  (print-unreadable-object (scheme-name stream :type t :identity t)
+    (format stream "~a" (name scheme-name))))
+
 (declaim (ftype (function (string &rest scheme-name) (values scheme-name &optional))
                 make-scheme-name))
 (defun make-scheme-name (name &rest parents)
