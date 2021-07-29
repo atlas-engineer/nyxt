@@ -1056,6 +1056,26 @@ See `gtk-browser's `modifier-translator' slot."
     (json:encode-json-to-string
      (%tabs-query (json:decode-json-from-string (or query-object "{}"))))))
 
+(defun tabs-create (create-properties)
+  (let* ((properties (json:decode-json-from-string (or create-properties "{}")))
+         (parent-buffer (when (alex:assoc-value properties :opener-tab-id)
+                          (buffers-get
+                           (format nil "~d" (alex:assoc-value properties :opener-tab-id)))))
+         (url (quri:uri (or (alex:assoc-value properties :url)
+                            "about:blank")))
+         ;; See https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/create
+         (url (if (str:s-member '("chrome" "javascript" "data" "file") (quri:uri-scheme url))
+                  (quri:uri "about:blank")
+                  url))
+         (buffer (make-buffer :url url
+                              :title (or (alex:assoc-value properties :title) "")
+                              :load-url-p (alex:assoc-value properties :discarded)
+                              :parent-buffer parent-buffer)))
+    (when (or (alex:assoc-value properties :active)
+              (alex:assoc-value properties :selected))
+      (set-current-buffer buffer))
+    (json:encode-json-to-string (buffer->tab-description buffer))))
+
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
   (unless (gtk-object buffer) ; Buffer may already have a view, e.g. the prompt-buffer.
@@ -1179,6 +1199,8 @@ See `gtk-browser's `modifier-translator' slot."
                                                     :key #'gtk-object))))))
                 ("tabs.queryObject"
                  (tabs-query message-params))
+                ("tabs.createProperties"
+                 (tabs-create message-params))
                 ("print"
                  (print-buffer)
                  ""))

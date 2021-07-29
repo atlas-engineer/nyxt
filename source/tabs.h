@@ -2,8 +2,8 @@
 #define __TABS_H__
 
 typedef struct {
-        GThread *return_thread;
         char *tabs;
+        char *created_tab;
 } Tabs;
 
 extern Tabs *TABS;
