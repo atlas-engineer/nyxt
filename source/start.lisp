@@ -277,7 +277,6 @@ Return the short error message and the full error message as second value."
                         (uiop:pathname-directory-pathname (pathname init-path))
                         (uiop:getcwd)))
    :sources
-   ;; TODO: Load several files at once? `file-source' allows that.
    (make-instance 'user-file-source
                   :actions (list (make-command load-file* (files)
                                    (dolist (file files)
