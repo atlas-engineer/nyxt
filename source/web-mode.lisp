@@ -277,30 +277,39 @@ This was useful before Nyxt 2.0 as a workaround for hangs that would occur on pa
       (echo message)
       (buffer-load url-or-node)))
 
-(defmacro with-history ((history-sym buffer) &body body)
+(defmacro with-history-unsafe ((history-sym &optional buffer) &body body)
   "Run body if BUFFER has history entries, that is, if it owns some nodes."
-  `(with-data-access (,history-sym (history-path ,buffer))
-     (if (htree:owner history (id (current-buffer)))
+  `(with-data-unsafe (,history-sym (history-path (or ,buffer (current-buffer))))
+     (if (or (not ,buffer)
+             (htree:owner history (id ,buffer)))
+         (progn ,@body)
+         (echo "Buffer ~a has no history." (id ,buffer)))))
+
+(defmacro with-history-access ((history-sym buffer) &body body)
+  "Run body if BUFFER has history entries, that is, if it owns some nodes."
+  `(with-data-access (,history-sym (history-path (or ,buffer (current-buffer))))
+     (if (or (not ,buffer)
+             (htree:owner history (id ,buffer)))
          (progn ,@body)
          (echo "Buffer ~a has no history." (id ,buffer)))))
 
 (define-command history-backwards (&optional (buffer (current-buffer)))
   "Go to parent URL in history."
   (let ((new-node
-          (with-data-access (history (history-path buffer))
+          (with-history-access (history buffer)
             (if (conservative-history-movement-p (find-mode buffer 'web-mode))
-                (htree:backward-owned-parents history)
-                (htree:backward history))
-            (htree:current-owner-node history))))
+                (htree:backward-owned-parents history (id buffer))
+                (htree:backward history (id buffer)))
+            (htree:owner-node history (id buffer)))))
     (load-history-url new-node
                       :message "No backward history.")))
 
 (define-command history-forwards (&optional (buffer (current-buffer)))
   "Go to forward URL in history."
   (let ((new-node
-          (with-data-access (history (history-path buffer))
-            (htree:forward history)
-            (htree:current-owner-node history))))
+          (with-history-access (history buffer)
+            (htree:forward history (id buffer))
+            (htree:owner-node history (id buffer)))))
     (load-history-url new-node
                       :message "No forward history.")))
 
@@ -309,7 +318,7 @@ This was useful before Nyxt 2.0 as a workaround for hangs that would occur on pa
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
     (lambda (source)
-      (with-history (history (buffer source))
+      (with-history-unsafe (history (buffer source))
         (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
                      #'htree:all-contiguous-owned-parents
                      #'htree:all-parents)
@@ -329,9 +338,9 @@ This was useful before Nyxt 2.0 as a workaround for hangs that would occur on pa
                        :sources (make-instance 'user-history-backwards-source
                                                :buffer buffer)))))
     (when input
-      (with-data-access (history (history-path buffer))
-        (loop until (eq input (htree:current-owner-node history))
-              do (htree:backward history)))
+      (with-history-access (history buffer)
+        (loop until (eq input (htree:owner-node history (id buffer)))
+              do (htree:backward history (id buffer))))
       (load-history-url input))))
 
 (define-class direct-history-forwards-source (prompter:source)
@@ -339,11 +348,10 @@ This was useful before Nyxt 2.0 as a workaround for hangs that would occur on pa
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
     (lambda (source)
-      (with-history (history (buffer source))
-        (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
-                     (alex:compose #'htree:owned-children #'htree:current-owner)
-                     (alex:compose #'htree:children #'htree:current-owner-node))
-                 history)))))
+      (with-history-unsafe (history (buffer source))
+        (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
+            (htree:owned-children (htree:owner history (id (buffer source))))
+            (htree:children (htree:owner-node history (id (buffer source)))))))))
   (:documentation "Direct children of the current history node.")
   (:export-class-name-p t))
 (define-user-class direct-history-forwards-source)
@@ -355,18 +363,18 @@ This was useful before Nyxt 2.0 as a workaround for hangs that would occur on pa
                        :sources (make-instance 'user-direct-history-forwards-source
                                                :buffer buffer)))))
     (when input
-      (with-data-access (history (history-path buffer))
-        (htree:go-to-child (htree:data input) history))
+      (with-history-access (history buffer)
+        (htree:go-to-child (htree:data input) history (id buffer)))
       (load-history-url input))))
 
 (define-command history-forwards-maybe-query (&optional (buffer (current-buffer)))
   "If current node has multiple children, query which one to navigate to.
 Otherwise go forward to the only child."
-  (with-history (history buffer)
+  (with-history-unsafe (history buffer)
     (if (<= 2 (length
                (if (conservative-history-movement-p (find-mode buffer 'web-mode))
-                   (htree:owned-children (htree:current-owner history))
-                   (htree:children (htree:current-owner-node history)))))
+                   (htree:owned-children (htree:owner history (id buffer)))
+                   (htree:children (htree:owner-node history (id buffer))))))
         (history-forwards-direct-children)
         (history-forwards))))
 
@@ -375,8 +383,8 @@ Otherwise go forward to the only child."
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
     (lambda (source)
-      (with-history (history (buffer source))
-        (htree:all-forward-children history)))))
+      (with-history-unsafe (history (buffer source))
+        (htree:all-forward-children history (id (buffer source)))))))
   (:export-class-name-p t))
 (define-user-class history-forwards-source)
 
@@ -387,12 +395,12 @@ Otherwise go forward to the only child."
                        :sources (list (make-instance 'user-history-forwards-source
                                                      :buffer buffer))))))
     (when input
-      (with-data-access (history (history-path buffer))
+      (with-history-access (history buffer)
         ;; REVIEW: Alternatively, we could use the COUNT argument with
-        ;; (1+ (position input (htree:all-forward-children history)))
+        ;; (1+ (position input (htree:all-forward-children history (id buffer))))
         ;; Same with `history-backwards-query'.
-        (loop until (eq input (htree:current-owner-node history))
-              do (htree:forward history)))
+        (loop until (eq input (htree:owner-node history (id buffer)))
+              do (htree:forward history (id buffer))))
       (load-history-url input))))
 
 (define-class all-history-forwards-source (prompter:source)
@@ -400,11 +408,11 @@ Otherwise go forward to the only child."
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
     (lambda (source)
-      (with-history (history (buffer source))
-        (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
-                     (alex:compose #'htree:all-contiguous-owned-children #'htree:current-owner)
-                     #'htree:all-children)
-                 history)))))
+      (with-history-unsafe (history (buffer source))
+        (let ((owner (htree:owner history (id (buffer source)))))
+          (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
+              (htree:all-contiguous-owned-children history owner)
+              (htree:all-children history :owner owner)))))))
   (:export-class-name-p t))
 (define-user-class all-history-forwards-source)
 
@@ -415,8 +423,8 @@ Otherwise go forward to the only child."
                        :sources (list (make-instance 'user-all-history-forwards-source
                                                      :buffer buffer))))))
     (when input
-      (with-data-access (history (history-path buffer))
-        (htree:forward history))
+      (with-history-access (history buffer)
+        (htree:forward history (id buffer)))
       (load-history-url input))))
 
 (define-class history-all-source (prompter:source)
@@ -424,11 +432,12 @@ Otherwise go forward to the only child."
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
     (lambda (source)
-      (with-history (history (buffer source))
+      (with-history-unsafe (history (buffer source))
         (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
-                     #'htree:all-current-owner-nodes
-                     #'htree:all-current-branch-nodes)
-                 history)))))
+                     #'htree:all-owner-nodes
+                     #'htree:all-branch-nodes)
+                 history
+                 (htree:owner history (id (buffer source))))))))
   (:export-class-name-p t))
 (define-user-class history-all-source)
 
@@ -439,8 +448,8 @@ Otherwise go forward to the only child."
                        :sources (list (make-instance 'user-history-all-source
                                                      :buffer buffer))))))
     (when input
-      (with-data-access (history (history-path buffer))
-        (htree:visit-all history input))
+      (with-history-access (history buffer)
+        (htree:visit-all history (id buffer) input))
       (load-history-url input))))
 
 (defun title-or-fallback (history-entry)
@@ -454,7 +463,7 @@ Otherwise go forward to the only child."
   "Open a new buffer displaying the whole history tree of a buffer."
   (with-current-html-buffer (output-buffer (format nil "*History-~a*" (id buffer))
                                            'nyxt/history-tree-mode:history-tree-mode)
-    (with-history (history buffer)
+    (with-history-unsafe (history buffer)
       (let ((mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
             (tree (spinneret:with-html-string
                     (:ul (:raw (htree:map-owned-tree
@@ -463,7 +472,7 @@ Otherwise go forward to the only child."
                                       (:li
                                        (:a :href (render-url (url (htree:data node)))
                                            (let ((title (title-or-fallback (htree:data node))))
-                                             (if (eq node (htree:current-owner-node history))
+                                             (if (eq node (htree:owner-node history (id buffer)))
                                                  (:b title)
                                                  title))))))
                                 history
@@ -479,32 +488,33 @@ Otherwise go forward to the only child."
 
 (define-command history-tree ()         ; TODO: Factor this with `buffer-history-tree'.
   "Open a new buffer displaying the whole history branch the current buffer is on."
-  (nyxt::with-current-html-buffer (output-buffer "*History*"
-                                                 'nyxt/history-tree-mode:history-tree-mode)
-    (with-history (history)
-      (let ((mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
-            (tree (spinneret:with-html-string
-                    (:ul (:raw (htree:map-tree
-                                #'(lambda (node)
-                                    (spinneret:with-html-string
-                                      (:li (:a :href (render-url (url (htree:data node)))
-                                               (let ((title (title-or-fallback (htree:data node))))
-                                                 (cond
-                                                   ((eq node (htree:current-owner-node history))
-                                                    (:i (:b title)))
-                                                   ((htree:owned-p (htree:current-owner history) node)
-                                                    (:b title))
-                                                   (t title))))))) ; Color?  Smaller?
-                                history
-                                :include-root t
-                                :collect-function #'(lambda (a b) (str:concat a (when b
-                                                                                  (spinneret:with-html-string
-                                                                                    (:ul (:raw (str:join "" b)))))))))))))
-        (spinneret:with-html-string
-          (:body (:h1 "History")
-                 (:style (style output-buffer))
-                 (:style (style mode))
-                 (:div (:raw tree))))))))
+  (let ((current-buffer-id (id (current-buffer))))
+    (nyxt::with-current-html-buffer (output-buffer "*History*"
+                                     'nyxt/history-tree-mode:history-tree-mode)
+      (with-history-unsafe (history)
+        (let ((mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
+              (tree (spinneret:with-html-string
+                      (:ul (:raw (htree:map-tree
+                                  #'(lambda (node)
+                                      (spinneret:with-html-string
+                                        (:li (:a :href (render-url (url (htree:data node)))
+                                                 (let ((title (title-or-fallback (htree:data node))))
+                                                   (cond
+                                                     ((eq node (htree:owner-node history current-buffer-id))
+                                                      (:i (:b title)))
+                                                     ((htree:owned-p (htree:owner history current-buffer-id) node)
+                                                      (:b title))
+                                                     (t title))))))) ; Color?  Smaller?
+                                  history
+                                  :include-root t
+                                  :collect-function #'(lambda (a b) (str:concat a (when b
+                                                                                    (spinneret:with-html-string
+                                                                                      (:ul (:raw (str:join "" b)))))))))))))
+          (spinneret:with-html-string
+            (:body (:h1 "History")
+                   (:style (style output-buffer))
+                   (:style (style mode))
+                   (:div (:raw tree)))))))))
 
 (define-command list-history (&key (limit 100))
   "Print the user history as a list."
@@ -663,7 +673,7 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
   (add-url-to-history url (buffer mode) mode)
   (reset-page-zoom :buffer (buffer mode)
                    :ratio (current-zoom-ratio (buffer mode)))
-  (with-history (history (buffer mode))
+  (with-history-unsafe (history (buffer mode))
     (sera:and-let* ((owner (htree:owner history (id (buffer mode))))
                     (node (htree:current owner))
                     (data (htree:data node))

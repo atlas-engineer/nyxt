@@ -76,7 +76,7 @@ class."
 
 (defun make-history-tree (&optional (buffer (current-buffer)))
   "Return a new global history tree for `history-entry' data."
-  (htree:make :key 'history-tree-key :current-owner-id (id buffer)))
+  (htree:make :key 'history-tree-key :initial-owners (list (id buffer))))
 
 (-> history-add (quri:uri &key (:title string) (:buffer buffer)) *)
 (defun history-add (url &key (title "") (buffer (current-buffer)))
@@ -88,11 +88,11 @@ The `implicit-visits' count is incremented."
                 ;; If buffer was not registered in the global history, don't
                 ;; proceed.  See `buffer-make'.
                 (not (htree:owner history (id buffer))))
-      (htree:with-current-owner (history (id buffer))
-        (htree:add-child (make-instance 'history-entry
-                                        :url url
-                                        :title title)
-                         history))
+      (htree:add-child (make-instance 'history-entry
+                                      :url url
+                                      :title title)
+                       history
+                       (id buffer))
       (let* ((entry (htree:data (htree:current (htree:owner history (id buffer))))))
         (setf (title entry) title)
         (incf (implicit-visits entry))))))
@@ -126,7 +126,7 @@ then become available for deletion with `delete-history-entry'."
   "Return history ENTRY score.
 The score gets higher for more recent entries and if they've been visited a
 lot."
-  ;; TODO: Or use current owner last access?  Or both?
+  ;; TODO: Or use current buffer last access?  Or both?
   ;; WARNING: `htree:data-last-access' is slow, which is why we take a
   ;; htree-entry instead which has much faster access to the last access.
   (let* ((entry (htree:data htree-entry))
@@ -325,42 +325,29 @@ and update their creator."
         ;; `make-buffer' modifies the owners hash table.
         (mapc (lambda-match
                 ((cons owner-id owner)
-                 ;; `htree:+default-owner+' may be present if the
-                 ;; history is created (e.g. restored) while no web
-                 ;; buffer exists.  In all cases, this owner is
-                 ;; uninteresting.
-                 (unless (equal owner-id htree:+default-owner+)
-                   (let ((current-node (htree:current
-                                        (htree:owner history owner-id))))
-                     ;; Node-less owners can safely be ignored.
-                     (when current-node
-                       (let ((new-buffer (make-buffer :title (title (htree:data current-node))
+                 (let ((current-node (htree:current
+                                      (htree:owner history owner-id))))
+                   ;; Node-less owners can safely be ignored.
+                   (when current-node
+                     (let ((new-buffer (make-buffer :title (title (htree:data current-node))
 
-                                                      :url (url (htree:data current-node))
-                                                      :no-history-p t
-                                                      :load-url-p nil)))
-                         (setf (gethash owner-id old-id->new-id) (id new-buffer))
-                         (setf (gethash (id new-buffer) new-owners) owner)))))))
+                                                    :url (url (htree:data current-node))
+                                                    :no-history-p t
+                                                    :load-url-p nil)))
+                       (setf (gethash owner-id old-id->new-id) (id new-buffer))
+                       (setf (gethash (id new-buffer) new-owners) owner))))))
               (alex:hash-table-alist (htree:owners history)))
         (maphash (lambda (_ owner)
                    (declare (ignore _))
                    (setf (htree:creator-id owner)
                          (gethash (htree:creator-id owner) old-id->new-id)))
                  (htree:owners history))
-        ;; Current owner can be outdated.
-        (alex:when-let ((new-id (gethash (htree:current-owner-id history) old-id->new-id)))
-          (when (htree:owner history new-id)
-            (htree:set-current-owner history new-id)))
-        (setf (htree:owners history) new-owners)
-        ;; Ensure that current owner is set to one of the new owners:
-        (unless (htree:owner history (htree:current-owner-id history))
-          (htree:set-current-owner history (htree::fallback-owner history))))
+        (setf (htree:owners history) new-owners))
       (setf latest-id (first
                        (first
                         (sort-by-time (alex:hash-table-alist (htree:owners history))
                                       :key (alex:compose #'htree:last-access #'rest))))))
-    (unless (equal latest-id htree:+default-owner+)
-      (switch-buffer :id latest-id))))
+    (switch-buffer :id latest-id)))
 
 (defmethod restore ((profile data-profile) (path history-data-path)
                     &key &allow-other-keys)
