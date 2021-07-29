@@ -17,7 +17,7 @@
 
 (defmethod prompter:object-attributes ((heading heading))
   `(("Title" ,(title heading))
-    ("Keywords" ,(format nil "~{~a~^ ~}" (mapcar #'car (keywords heading))))))
+    ("Keywords" ,(format nil "~:{~a~^ ~}" (keywords heading)))))
 
 (defun get-headings (&key (buffer (current-buffer)))
   (with-current-buffer buffer
