@@ -330,7 +330,6 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 (define-class internal-buffer (user-buffer)
   ((style #.(cl-css:css
              '((body
-                :line-height "24px"
                 :margin-left "20px"
                 :margin-top "20px")
                (h1
