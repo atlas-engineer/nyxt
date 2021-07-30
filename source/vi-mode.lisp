@@ -105,7 +105,7 @@ vi-normal-mode.")
         (vi-normal-mode :activate nil :buffer buffer)
         (setf (keymap-scheme-name buffer) scheme:vi-insert)
         (when (application-mode-p mode)
-          (nyxt/application-mode:application-mode :active t)))))))
+          (nyxt/application-mode:application-mode :activate t)))))))
 
 (define-command vi-button1 (&optional (buffer (or (current-prompt-buffer)
                                                   (current-buffer))))
