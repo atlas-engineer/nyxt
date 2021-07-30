@@ -726,6 +726,11 @@ BUFFER's modes."
   `(("URL" ,(render-url (url buffer)))
     ("Title" ,(title buffer))))
 
+(defmethod prompter:object-attributes ((buffer web-buffer))
+  `(("URL" ,(render-url (url buffer)))
+    ("Title" ,(title buffer))
+    ("Keywords" ,(format nil "~:{~a~^ ~}" (keywords buffer)))))
+
 (-> make-buffer
     (&key (:title string)
           (:modes (or null (cons symbol *)))
