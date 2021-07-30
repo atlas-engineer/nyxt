@@ -81,36 +81,6 @@
       (ps:chain element (remove))))
   (hints-remove-all))
 
-(define-parenscript click-element (&key nyxt-identifier)
-  (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier) (click)))
-
-(define-parenscript focus-select-element (&key nyxt-identifier)
-  (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier) (focus))
-  (when (functionp (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier) select))
-      (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier) (select))))
-
-(define-parenscript check-element (&key nyxt-identifier (value t))
-  (ps:chain (nyxt/ps:qs-nyxt-id document nyxt-identifier)
-            (set-attribute "checked" (ps:lisp value))))
-
-(define-parenscript toggle-details-element (&key nyxt-identifier)
-  (ps:let ((element (nyxt/ps:qs-nyxt-id document nyxt-identifier)))
-    (if (ps:chain element (get-attribute "open"))
-        (ps:chain element (remove-attribute "open"))
-        (ps:chain element (set-attribute "open" t)))))
-
-(define-parenscript select-option-element (&key nyxt-identifier parent-select-identifier)
-  (ps:let* ((element (nyxt/ps:qs-nyxt-id document nyxt-identifier))
-            (parent-select (nyxt/ps:qs-nyxt-id document parent-select-identifier)))
-    (if (ps:chain element (get-attribute "multiple"))
-        (ps:chain element (set-attribute "selected" t))
-        (setf (ps:@ parent-select value) (ps:@ element value)))))
-
-(define-parenscript hover-element (&key nyxt-identifier)
-  (ps:let ((element (nyxt/ps:qs-nyxt-id document nyxt-identifier))
-           (event (ps:new (*Event "mouseenter"))))
-    (ps:chain element (dispatch-event event))))
-
 (define-parenscript highlight-selected-hint (&key element scroll)
   (defun update-hints ()
     (ps:let* ((new-element (nyxt/ps:qs document
@@ -153,18 +123,18 @@
    (prompter:actions (list 'identity
                            (make-command click* (elements)
                              (dolist (element (rest elements))
-                               (click-element :nyxt-identifier (get-nyxt-id element)))
-                             (click-element :nyxt-identifier (get-nyxt-id (first elements)))
+                               (nyxt/dom:click-element :nyxt-identifier (get-nyxt-id element)))
+                             (nyxt/dom:click-element :nyxt-identifier (get-nyxt-id (first elements)))
                              nil)
                            (make-command focus* (elements)
                              (dolist (element (rest elements))
-                               (focus-select-element :nyxt-identifier (get-nyxt-id element)))
-                             (focus-select-element :nyxt-identifier (get-nyxt-id (first elements)))
+                               (nyxt/dom:focus-select-element :nyxt-identifier (get-nyxt-id element)))
+                             (nyxt/dom:focus-select-element :nyxt-identifier (get-nyxt-id (first elements)))
                              nil)
                            (make-command hover* (elements)
                              (dolist (element (rest elements))
-                               (hover-element :nyxt-identifier (get-nyxt-id element)))
-                             (hover-element :nyxt-identifier (get-nyxt-id (first elements)))
+                               (nyxt/dom:hover-element :nyxt-identifier (get-nyxt-id element)))
+                             (nyxt/dom:hover-element :nyxt-identifier (get-nyxt-id (first elements)))
                              nil)))))
 
 (serapeum:export-always 'query-hints)
@@ -245,20 +215,20 @@ FUNCTION is the action to perform on the selected elements."
     `(("Body" ,(str:shorten 80 (nyxt/dom:body img)))))))
 
 (defmethod %follow-hint ((element plump:element))
-  (click-element :nyxt-identifier (get-nyxt-id element)))
+  (nyxt/dom:click-element :nyxt-identifier (get-nyxt-id element)))
 
 (defmethod %follow-hint ((input nyxt/dom:input-element))
   (str:string-case (plump:get-attribute input "type")
-    ("button" (click-element :nyxt-identifier (get-nyxt-id input)))
-    ("radio" (check-element :nyxt-identifier (get-nyxt-id input)))
-    ("checkbox" (check-element :nyxt-identifier (get-nyxt-id input)))
-    (otherwise (focus-select-element :nyxt-identifier (get-nyxt-id input)))))
+    ("button" (nyxt/dom:click-element :nyxt-identifier (get-nyxt-id input)))
+    ("radio" (nyxt/dom:check-element :nyxt-identifier (get-nyxt-id input)))
+    ("checkbox" (nyxt/dom:check-element :nyxt-identifier (get-nyxt-id input)))
+    (otherwise (nyxt/dom:focus-select-element :nyxt-identifier (get-nyxt-id input)))))
 
 (defmethod %follow-hint ((textarea nyxt/dom:textarea-element))
-  (focus-select-element :nyxt-identifier (get-nyxt-id textarea)))
+  (nyxt/dom:focus-select-element :nyxt-identifier (get-nyxt-id textarea)))
 
 (defmethod %follow-hint ((details nyxt/dom:details-element))
-  (toggle-details-element :nyxt-identifier (get-nyxt-id details)))
+  (nyxt/dom:toggle-details-element :nyxt-identifier (get-nyxt-id details)))
 
 (define-class options-source (prompter:source)
   ((prompter:name "Options"))
@@ -274,8 +244,8 @@ FUNCTION is the action to perform on the selected elements."
                                                           :multi-selection-p
                                                           (plump:get-attribute select "multiple")))))
     (dolist (option (mapcar (alex:rcurry #'find options :test #'equalp) values))
-      (select-option-element :nyxt-identifier (get-nyxt-id option)
-                             :parent-select-identifier (get-nyxt-id select)))))
+      (nyxt/dom:select-option-element :nyxt-identifier (get-nyxt-id option)
+                                      :parent-select-identifier (get-nyxt-id select)))))
 
 (defmethod %follow-hint-new-buffer-focus ((a nyxt/dom:a-element) &optional parent-buffer)
   (make-buffer-focus :url (url a)
