@@ -1023,29 +1023,12 @@ See `gtk-browser's `modifier-translator' slot."
       ("updateUrl" . "")
       ("versionName" . ""))))
 
+(sera:-> buffer->tab-description ((or null buffer)) list)
 (defun buffer->tab-description (buffer)
   (when buffer
     `(("active" . ,(if (member buffer (mapcar #'active-buffer (alex:hash-table-values (windows *browser*))))
                        t nil))
       ("audible" . ,(not (webkit:webkit-web-view-is-muted (gtk-object buffer))))
-      ;; TODO: Make those meaningful:
-      ("attention" . nil)
-      ("autoDiscardable" . nil)
-      ("cookieStoreId" . 0)
-      ("currentWindow" . t)
-      ("discarded" . nil)
-      ("hidden" . nil)
-      ("favIconUrl" . "")
-      ("index" . 0)
-      ("isArticle" . nil)
-      ("isInReaderMode" . nil)
-      ("mutedInfo" . nil)
-      ("openerTabId" . 0)
-      ("pinned" . nil)
-      ("sessionId" . 0)
-      ("successorTabId" . 0)
-      ("windowId" . 0)
-
       ("height" . ,(gdk:gdk-rectangle-height
                     (gtk:gtk-widget-get-allocation (gtk-object buffer))))
       ("width" . ,(gdk:gdk-rectangle-width
@@ -1062,8 +1045,27 @@ See `gtk-browser's `modifier-translator' slot."
                        "complete"))
       ;; TODO: Check "tabs" permission for those two
       ("title" . ,(title buffer))
-      ("url" . ,(render-url (url buffer))))))
+      ("url" . ,(render-url (url buffer)))
 
+      ;; TODO: Make those meaningful:
+      ("attention" . nil)
+      ("autoDiscardable" . nil)
+      ("cookieStoreId" . 0)
+      ("currentWindow" . t)
+      ("discarded" . nil)
+      ("hidden" . nil)
+      ("favIconUrl" . "")
+      ("index" . 0)
+      ("isArticle" . nil)
+      ("isInReaderMode" . nil)
+      ("mutedInfo" . nil)
+      ("openerTabId" . 0)
+      ("pinned" . nil)
+      ("sessionId" . 0)
+      ("successorTabId" . 0)
+      ("windowId" . 0))))
+
+(sera:-> tabs-query ((or null string)) (values string &optional))
 (defun tabs-query (query-object)
   (flet ((%tabs-query (query-object)
            (let ((buffer-descriptions (mapcar #'buffer->tab-description (buffer-list))))
@@ -1080,6 +1082,7 @@ See `gtk-browser's `modifier-translator' slot."
     (json:encode-json-to-string
      (%tabs-query (json:decode-json-from-string (or query-object "{}"))))))
 
+(sera:-> tabs-create ((or null string)) string)
 (defun tabs-create (create-properties)
   (let* ((properties (json:decode-json-from-string (or create-properties "{}")))
          (parent-buffer (when (alex:assoc-value properties :opener-tab-id)
