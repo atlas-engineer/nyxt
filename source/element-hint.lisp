@@ -216,7 +216,7 @@ FUNCTION is the action to perform on the selected elements."
 (defmethod prompter:object-attributes ((a nyxt/dom:a-element))
   (append
    (when (url a)
-     `(("URL" ,(url a))))
+     `(("URL" ,(render-url (url a)))))
    (when (nyxt/dom:body a)
     `(("Body" ,(str:shorten 80 (nyxt/dom:body a)))))))
 
@@ -239,7 +239,7 @@ FUNCTION is the action to perform on the selected elements."
 (defmethod prompter:object-attributes ((img nyxt/dom:img-element))
   (append
    (when (url img)
-     `(("URL" ,(url img))))
+     `(("URL" ,(render-url (url img)))))
    (when (nyxt/dom:body img)
     `(("Body" ,(str:shorten 80 (nyxt/dom:body img)))))))
 
@@ -277,7 +277,7 @@ FUNCTION is the action to perform on the selected elements."
                              :parent-select-identifier (get-nyxt-id select)))))
 
 (defmethod %follow-hint-new-buffer-focus ((a nyxt/dom:a-element) &optional parent-buffer)
-  (make-buffer-focus :url (quri:uri (url a))
+  (make-buffer-focus :url (url a)
                      :parent-buffer parent-buffer
                      :nosave-buffer-p (nosave-buffer-p parent-buffer)))
 
@@ -286,14 +286,14 @@ FUNCTION is the action to perform on the selected elements."
   (echo "Unsupported operation for hint: can't open in new buffer."))
 
 (defmethod %follow-hint-new-buffer ((a nyxt/dom:a-element) &optional parent-buffer)
-  (make-buffer :url (quri:uri (url a)) :parent-buffer parent-buffer))
+  (make-buffer :url (url a) :parent-buffer parent-buffer))
 
 (defmethod %follow-hint-new-buffer ((element plump:element) &optional parent-buffer)
   (declare (ignore parent-buffer))
   (echo "Unsupported operation for hint: can't open in new buffer."))
 
 (defmethod %follow-hint-nosave-buffer-focus ((a nyxt/dom:a-element))
-  (make-buffer-focus :url (quri:uri (url a)) :nosave-buffer-p t))
+  (make-buffer-focus :url (url a) :nosave-buffer-p t))
 
 (defmethod %follow-hint-nosave-buffer-focus ((element plump:element))
   (echo "Unsupported operation for hint: can't open in new buffer."))
@@ -305,10 +305,10 @@ FUNCTION is the action to perform on the selected elements."
   (echo "Unsupported operation for hint: can't open in new buffer."))
 
 (defmethod %copy-hint-url ((a nyxt/dom:a-element))
-  (trivial-clipboard:text (url a)))
+  (trivial-clipboard:text (render-url (url a))))
 
 (defmethod %copy-hint-url ((img nyxt/dom:img-element))
-  (trivial-clipboard:text (url img)))
+  (trivial-clipboard:text (render-url (url img))))
 
 (defmethod %copy-hint-url ((element plump:element))
   (echo "Unsupported operation for hint: can't copy URL."))

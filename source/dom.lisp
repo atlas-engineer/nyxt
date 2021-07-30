@@ -180,18 +180,17 @@ JSON should have the format like what `get-document-body-json' produces:
                           (when (quri:uri-fragment url) `(:fragment ,(quri:uri-fragment url)))))))
     (alex:when-let* ((result (call-next-method))
                      (url (nyxt::ensure-url result)))
-      (render-url
-       (if (valid-url-p result)
-           url
-           (merge-url* url (url (current-buffer))))))))
+      (if (valid-url-p result)
+          url
+          (merge-url* url (url (current-buffer)))))))
 
 (defmethod url ((element plump:element))
   (when (plump:has-attribute element "href")
-    (plump:get-attribute element "href")))
+    (quri:uri (plump:get-attribute element "href"))))
 
 (defmethod url ((img img-element))
   (when (plump:has-attribute img "src")
-    (plump:get-attribute img "src")))
+    (quri:uri (plump:get-attribute img "src"))))
 
 ;; REVIEW: Export to :nyxt? We are forced to use it with nyxt/dom: prefix.
 (export-always 'body)
