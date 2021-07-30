@@ -1,5 +1,6 @@
 #include <webkit2/webkit-web-extension.h>
 #include "globals.h"
+#include "management.h"
 #include "tabs.h"
 #include <json-glib/json-glib.h>
 
@@ -27,6 +28,7 @@ static int foo(void)
 static void
 inject_apis (char* extension_name, ExtensionData *data, void *user_data)
 {
+        inject_management_api(extension_name);
         inject_tabs_api(extension_name);
 }
 
@@ -98,6 +100,7 @@ web_page_created_callback (WebKitWebExtension *extension,
 G_MODULE_EXPORT void
 webkit_web_extension_initialize (WebKitWebExtension *extension)
 {
+        MANAGEMENT = malloc(sizeof(Management));
         TABS = malloc(sizeof(Tabs));
 
         EXTENSIONS_DATA = g_hash_table_new(g_str_hash, g_str_equal);

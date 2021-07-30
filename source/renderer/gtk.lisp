@@ -1000,6 +1000,29 @@ See `gtk-browser's `modifier-translator' slot."
                 (webkit:webkit-permission-request-allow request)
                 (webkit:webkit-permission-request-deny request))))
 
+(sera:-> extension->extension-info ((or null nyxt/web-extensions:extension)) list)
+(defun extension->extension-info (extension)
+  (when extension
+    `(("description" . ,(or (nyxt/web-extensions:description extension) ""))
+      ("homepageUrl" . ,(or (nyxt/web-extensions:homepage-url extension) ""))
+      ("installType" . "development")
+      ("mayDisable" . t)
+      ("name" . ,(or (name extension) ""))
+      ("permissions" . ,(nyxt/web-extensions:permissions extension))
+      ("version" ,(or (nyxt/web-extensions:version extension) ""))
+      ;; TODO: Make those meaningful
+      ("disabledReason" . "unknown")
+      ("enabled" . t)
+      ("hostPermissions" . ,(vector))
+      ("icons" . ,(vector))
+      ("id" . 0)
+      ("offlineEnabled" . nil)
+      ("optionsUrl" . "")
+      ("shortName" . ,(or (name extension) ""))
+      ("type" . "extension")
+      ("updateUrl" . "")
+      ("versionName" . ""))))
+
 (defun buffer->tab-description (buffer)
   (when buffer
     `(("active" . ,(if (member buffer (mapcar #'active-buffer (alex:hash-table-values (windows *browser*))))
@@ -1187,6 +1210,8 @@ See `gtk-browser's `modifier-translator' slot."
     (let* ((message-name (webkit:webkit-user-message-get-name message))
            (message-params (glib:g-variant-get-string
                             (webkit:webkit-user-message-get-parameters message)))
+           (buffer (find web-view (buffer-list) :key #'gtk-object))
+           (extensions (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))
            (reply-contents
              (or
               (str:string-case message-name
@@ -1195,9 +1220,11 @@ See `gtk-browser's `modifier-translator' slot."
                   (mapcar #'(lambda (extension)
                               (cons (nyxt/web-extensions::name extension)
                                     (str:join ", " (nyxt/web-extensions:permissions extension))))
-                          (sera:filter #'nyxt/web-extensions::extension-p
-                                       (modes (find web-view (buffer-list)
-                                                    :key #'gtk-object))))))
+                          extensions)))
+                ("management.getSelf"
+                 (json:encode-json-to-string
+                  (extension->extension-info (find message-params extensions
+                                                   :key #'name :test #'string=))))
                 ("tabs.queryObject"
                  (tabs-query message-params))
                 ("tabs.createProperties"
