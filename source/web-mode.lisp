@@ -101,10 +101,6 @@ and to index the top of the page.")
        "C-e '" 'edit-with-external-editor
        ;; Leave SPACE and arrow keys unbound so that the renderer decides whether to
        ;; navigate textboxes (arrows), insert or scroll (space).
-       "pageup" 'scroll-page-up
-       "pagedown" 'scroll-page-down
-       "pageend" 'scroll-to-bottom
-       "pagehome" 'scroll-to-top
        ;; keypad, gtk:
        "keypadleft" 'scroll-left
        "keypaddown" 'scroll-down
