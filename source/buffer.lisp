@@ -295,6 +295,14 @@ inherited from the superclasses."))
     :type (or null plump:node)
     :documentation "A parsed representation of the page currently opened.
 Created from the page code with the help of `plump:parse'. See `update-document-model'.")
+   (keywords
+    nil
+    :accessor nil
+    :documentation "The keywords parsed from the current web buffer.")
+   (keywords-document-model
+    nil
+    :export nil
+    :documentation "The document model used to calculate the keywords.")
    (proxy nil
           :accessor nil
           :type (or proxy null)
@@ -635,13 +643,16 @@ Delete it with `ffi-buffer-delete'."
 
 (defmethod keywords ((buffer web-buffer))
   "Calculate the keywords for a given buffer."
-  (let ((contents
-          (serapeum:string-join
-           (map 'list (lambda (e) (plump:text e))
-                (clss:select "p" (document-model buffer)))
-           " ")))
-    (analysis:extract-keywords
-     contents)))
+  (if (not (eq (document-model buffer)
+               (keywords-document-model buffer)))
+      (let ((contents (serapeum:string-join
+                       (map 'list (lambda (e) (plump:text e))
+                            (clss:select "p" (document-model buffer))) " ")))
+        (setf (keywords-document-model buffer)
+              (document-model buffer)
+              (slot-value buffer 'keywords)
+              (analysis:extract-keywords contents)))
+      (slot-value buffer 'keywords)))
 
 (-> proxy-adress (buffer &key (:downloads-only boolean)) *)
 (defun proxy-url (buffer &key (downloads-only nil))
