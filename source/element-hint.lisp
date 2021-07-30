@@ -56,9 +56,10 @@
 
 (-> generate-hints (integer) list-of-strings)
 (defun generate-hints (length)
-  (let* ((alphabet (hints-alphabet (current-mode 'web)))
-         (char-length (ceiling (log length (length alphabet)))))
-    (loop for i below length collect (select-from-alphabet i char-length alphabet))))
+  (unless (zerop length)
+    (let* ((alphabet (hints-alphabet (current-mode 'web)))
+           (char-length (ceiling (log length (length alphabet)))))
+      (loop for i below length collect (select-from-alphabet i char-length alphabet)))))
 
 (defun add-element-hints (&key selector)
   (let* ((dom (document-model (current-buffer)))
