@@ -578,10 +578,8 @@ Keymaps are ordered by precedence, highest precedence comes first."
                        (reduce #'fset:map-union
                                (mapcar #'keymap->map* keymaps))))))
 
-(declaim (ftype (function (keymap) hash-table) keymap-with-parents->map))
-(defun keymap-with-parents->map (keymap)
-  "List bindings in KEYMAP and all its parents.
-See `keymap->map'."
+(defun keymap-with-parents (keymap)
+  "Return the list of keymap and all its parents."
   (labels ((list-keymaps (keymap visited)
              (cond
                ((null keymap)
@@ -593,7 +591,13 @@ See `keymap->map'."
                 (cons keymap
                       (alex:mappend (alex:rcurry #'list-keymaps (cons keymap visited))
                                     (parents keymap)))))))
-    (apply #'keymap->map (list-keymaps keymap '()))))
+    (list-keymaps keymap '())))
+
+(declaim (ftype (function (keymap) hash-table) keymap-with-parents->map))
+(defun keymap-with-parents->map (keymap)
+  "List bindings in KEYMAP and all its parents.
+See `keymap->map'."
+  (apply #'keymap->map (keymap-with-parents keymap)))
 
 (declaim (ftype (function (keymap &rest keymap) (or keymap null)) compose))
 (defun compose (keymap &rest more-keymaps)
@@ -661,7 +665,9 @@ For instance, to list all keymaps that have a binding, call
                                (let ((hit (binding-keys* bound-value keymap :test test)))
                                  (when hit
                                    (mapcar (alex:rcurry #'list keymap) hit))))
-                             (uiop:ensure-list keymap-or-keymaps))))
+                             (delete-duplicates
+                              (alex:mappend #'keymap-with-parents
+                                            (uiop:ensure-list keymap-or-keymaps))))))
     (values
      (sort (delete-duplicates (mapcar #'first alist) :test #'string=) #'string<)
      alist)))

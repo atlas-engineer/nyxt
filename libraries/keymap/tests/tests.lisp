@@ -351,7 +351,8 @@
 
 (prove:subtest "binding-keys"
   (let* ((keymap1 (empty-keymap))
-         (keymap2 (empty-keymap)))
+         (keymap2 (empty-keymap))
+         (keymap3 (empty-keymap keymap1)))
     (keymap:define-key keymap1 "a" 'foo-a)
     (keymap:define-key keymap1 "b" 'foo-b)
     (keymap:define-key keymap1 "C-c a" 'foo-a)
@@ -372,7 +373,12 @@
                 (("C-c a" ,keymap1)
                  ("a" ,keymap1)
                  ("a" ,keymap2)
-                 ("c" ,keymap2))))))
+                 ("c" ,keymap2))))
+
+    (prove:is (multiple-value-list (keymap:binding-keys 'foo-a keymap3))
+              `(("C-c a" "a")
+                (("C-c a" ,keymap1)
+                 ("a" ,keymap1))))))
 
 (prove:subtest "undefine"
   (let* ((keymap (empty-keymap)))
