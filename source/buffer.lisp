@@ -634,8 +634,13 @@ Delete it with `ffi-buffer-delete'."
                             nil)))
 
 (defmethod keywords ((buffer web-buffer))
-  (analysis:extract-keywords
-   (plump:text (document-model buffer))))
+  (let ((contents
+            (serapeum:string-join
+             (map 'list (lambda (e) (plump:text e))
+                  (clss:select "p" (document-model buffer)))
+             " ")))
+    (analysis:extract-keywords
+     contents)))
 
 (-> proxy-adress (buffer &key (:downloads-only boolean)) *)
 (defun proxy-url (buffer &key (downloads-only nil))
