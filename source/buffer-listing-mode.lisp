@@ -89,7 +89,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                      (buffer-tree->html buffer))))))))))
 
 (define-command-global show-buffers-panel (&key (side :left))
-  "Show the bookmarks in a panel."
+  "Show the buffers in a panel."
   (flet ((buffer-markup (buffer)
            "Create the presentation for a buffer."
            (spinneret:with-html
