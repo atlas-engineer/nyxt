@@ -634,11 +634,12 @@ Delete it with `ffi-buffer-delete'."
                             nil)))
 
 (defmethod keywords ((buffer web-buffer))
+  "Calculate the keywords for a given buffer."
   (let ((contents
-            (serapeum:string-join
-             (map 'list (lambda (e) (plump:text e))
-                  (clss:select "p" (document-model buffer)))
-             " ")))
+          (serapeum:string-join
+           (map 'list (lambda (e) (plump:text e))
+                (clss:select "p" (document-model buffer)))
+           " ")))
     (analysis:extract-keywords
      contents)))
 
