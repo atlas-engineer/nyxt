@@ -202,7 +202,7 @@ inject_tabs_api (char* extension_name)
             tabsQuery(queryObject);                                     \
             management.getSelf().then(function (info) {                 \
                 setTimeout(() =>                                        \
-                    success(tabsQueryResult(info.name)), 20);});        \
+                    success(tabsQueryResult(info.name)), 10);});        \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
@@ -216,7 +216,7 @@ tabs.query",
             tabsCreate(createProperties);                               \
             management.getSelf().then(function (info) {                 \
                 setTimeout(() =>                                        \
-                    success(tabsCreateResult(info.name)), 20);});       \
+                    success(tabsCreateResult(info.name)), 0);});       \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
@@ -230,7 +230,7 @@ tabs.create",
             tabsGetCurrent();                                           \
             management.getSelf().then(function (info) {                 \
                 setTimeout(() =>                                        \
-                    success(tabsGetCurrentResult(info.name)), 20);});   \
+                    success(tabsGetCurrentResult(info.name)), 0);});    \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
@@ -249,7 +249,7 @@ tabs.getCurrent",
                         success(result);                                \
                     else                                                \
                         throw new Error(\"No tab found!\");},           \
-                           20);}                                        \
+                           0);}                                        \
             );                                                          \
         } catch (error) {                                               \
             return failure(error);                                      \
