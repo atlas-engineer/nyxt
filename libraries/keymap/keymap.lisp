@@ -651,7 +651,8 @@ Comparison against BINDING is done with TEST."
                 binding-keys))
 (defun binding-keys (bound-value keymap-or-keymaps &key (test #'eql))
   "Return the list of `keyspec's bound to BINDING in KEYMAP.
-The list is sorted alphabetically to ensure reproducible results.
+The result is ordered by priority of keymaps, that is, keymaps hits from
+beginning to end of the keymap list.
 Duplicates are removed.
 
 A a second value, return an alist of (keyspec keymap) for all the `keyspec's
@@ -668,6 +669,7 @@ For instance, to list all keymaps that have a binding, call
                              (delete-duplicates
                               (alex:mappend #'keymap-with-parents
                                             (uiop:ensure-list keymap-or-keymaps))))))
+    (setf alist (delete-duplicates alist :key #'first :test #'string= :from-end t))
     (values
-     (sort (delete-duplicates (mapcar #'first alist) :test #'string=) #'string<)
+     (mapcar #'first alist)
      alist)))
