@@ -1082,7 +1082,7 @@ See `gtk-browser's `modifier-translator' slot."
     (json:encode-json-to-string
      (%tabs-query (json:decode-json-from-string (or query-object "{}"))))))
 
-(sera:-> tabs-create ((or null string)) string)
+(sera:-> tabs-create ((or null string)) (values string &optional))
 (defun tabs-create (create-properties)
   (let* ((properties (json:decode-json-from-string (or create-properties "{}")))
          (parent-buffer (when (alex:assoc-value properties :opener-tab-id)
