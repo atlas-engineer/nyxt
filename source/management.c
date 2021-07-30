@@ -74,7 +74,7 @@ inject_management_api (char* extension_name)
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             managementGetSelf(\"%s\");                                  \
-            setTimeout(() => success(managementGetSelfResult(\"%s\")), 20); \
+            setTimeout(() => success(managementGetSelfResult(\"%s\")), 0); \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
