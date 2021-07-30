@@ -6,7 +6,7 @@ LDLIBS += ${shell pkg-config ${PKG_MODULES} --libs}
 .PHONY: all install clean
 all: libnyxt.so
 
-libnyxt.so: nyxt.o globals.o tabs.o
+libnyxt.so: nyxt.o globals.o tabs.o management.o
 	${LD} ${LDFLAGS} -fPIC -shared -o $@ $^ ${LDLIBS}
 
 nyxt.o: nyxt.c
@@ -18,8 +18,11 @@ globals.o: globals.c
 tabs.o: tabs.c
 	${CC} -fPIC -o $@ -c ${CFLAGS} $^
 
+management.o: management.c
+	${CC} -fPIC -o $@ -c ${CFLAGS} $^
+
 install: libnyxt.so
 	${INSTALL} $^
 
 clean:
-	${RM} libnyxt.so nyxt.o globals.o tabs.o
+	${RM} libnyxt.so nyxt.o globals.o tabs.o management.o
