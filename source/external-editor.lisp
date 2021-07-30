@@ -81,3 +81,31 @@ If the user file is GPG-encrypted, the editor must be capable of decrypting it."
         (uiop:launch-program `(,@(external-editor-program *browser*)
                                ,path)))
       (echo-warning "Please set `external-editor-program' browser slot.")))
+
+(defun %view-source-with-external-editor ()
+  "View page source using `external-editor-program'.
+Create a temporary file. The editor runs synchronously so invoke on a
+separate thread when possible."
+  (let ((page-source (if (web-buffer-p (current-buffer))
+                         (plump:serialize (document-model (current-buffer)) nil)
+                         (ffi-buffer-get-document (current-buffer)))))
+    (uiop:with-temporary-file (:directory (uiop:xdg-data-home nyxt::+data-root+)
+                               :pathname p)
+      (if (> (length page-source) 0)
+          (progn
+            (alexandria:write-string-into-file page-source p :if-exists :supersede)
+            (log:debug "External editor ~s opens ~s"
+                       (external-editor-program *browser*) p)
+            (with-protect ("Failed editing: ~a" :condition)
+              (uiop:run-program (append (external-editor-program *browser*)
+                                        (list (uiop:native-namestring p)))
+                                :ignore-error-status t)))
+          (echo-warning "Nothing to edit.")))))
+
+(define-command-global view-source-with-external-editor ()
+  "Edit the current page source using `external-editor-program'.
+Has no effect on the page, use only to look at sources!"
+  (if (external-editor-program *browser*)
+      (run-thread
+        (%view-source-with-external-editor))
+      (echo-warning "Please set `external-editor-program' browser slot.")))
