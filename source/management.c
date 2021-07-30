@@ -23,7 +23,7 @@ management_get_self_result_callback (char *extension_name)
         ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
         WebKitFrame *frame = webkit_web_page_get_main_frame(PAGE);
         JSCContext *context = webkit_frame_get_js_context_for_script_world(frame, data->world);
-        return jsc_value_new_string(context, MANAGEMENT->info);
+        return jsc_value_new_from_json(context, MANAGEMENT->info);
 }
 
 static void
