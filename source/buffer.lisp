@@ -633,6 +633,10 @@ Delete it with `ffi-buffer-delete'."
                             (quri:uri "")
                             nil)))
 
+(defmethod keywords ((buffer web-buffer))
+  (analysis:extract-keywords
+   (plump:text (document-model buffer))))
+
 (-> proxy-adress (buffer &key (:downloads-only boolean)) *)
 (defun proxy-url (buffer &key (downloads-only nil))
   "Return the proxy address, nil if not set.
