@@ -27,7 +27,7 @@ static int foo(void)
 static void
 inject_apis (char* extension_name, ExtensionData *data, void *user_data)
 {
-        inject_tabs_api(PAGE, extension_name);
+        inject_tabs_api(extension_name);
 }
 
 static void
