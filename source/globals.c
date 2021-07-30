@@ -1,5 +1,4 @@
 #include "globals.h"
-#include "tabs.h"
 
 WebKitWebPage *PAGE;
 
