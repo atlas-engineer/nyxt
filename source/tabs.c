@@ -142,10 +142,10 @@ tabs_print_callback ()
 }
 
 void
-inject_tabs_api (WebKitWebPage *web_page, char* extension_name)
+inject_tabs_api (char* extension_name)
 {
         ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
-        WebKitFrame *frame = webkit_web_page_get_main_frame(web_page);
+        WebKitFrame *frame = webkit_web_page_get_main_frame(PAGE);
         JSCContext *context = webkit_frame_get_js_context_for_script_world(frame, data->world);
         JSCValue *tabsQuery = jsc_value_new_function(
                 context, "tabsQuery",

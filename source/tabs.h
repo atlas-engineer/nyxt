@@ -8,6 +8,6 @@ typedef struct {
 
 extern Tabs *TABS;
 
-void inject_tabs_api (WebKitWebPage *web_page, char* extension_name);
+void inject_tabs_api (char* extension_name);
 
 #endif /* __TABS_H__ */
