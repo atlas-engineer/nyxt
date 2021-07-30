@@ -1233,8 +1233,7 @@ See `gtk-browser's `modifier-translator' slot."
                 ("tabs.createProperties"
                  (tabs-create message-params))
                 ("tabs.getCurrent"
-                 (json:encode-json-to-string
-                  (buffer->tab-description (find web-view (buffer-list) :key #'gtk-object))))
+                 (json:encode-json-to-string (buffer->tab-description buffer)))
                 ("tabs.print"
                  (print-buffer)
                  "")
