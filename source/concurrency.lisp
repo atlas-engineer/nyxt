@@ -38,7 +38,7 @@ If SIZE is NIL, capicity is infinite."
                     :buffer (make-instance 'jpl-queues:unbounded-fifo-queue)))
     ((= 0 size)
      (make-instance 'calispel:channel))
-    ((< 0 size)
+    ((plusp size)
      (make-instance 'calispel:channel
                     :buffer (make-instance 'jpl-queues:bounded-fifo-queue :capacity size)))))
 
