@@ -664,3 +664,11 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
                                      (cl-base64:usb8-array-to-base64-string
                                       (flexi-streams:get-output-stream-sequence stream)))
                     :alt url)))))))
+
+(define-command view-source (&optional (buffer (current-buffer)))
+  "View source of the current page in a separate buffer."
+  (with-current-html-buffer (source-buffer (format nil "*Source of ~a" (render-url (url buffer))) 'base-mode)
+    (spinneret:with-html-string
+      (:pre (if (web-buffer-p buffer)
+                (plump:serialize (document-model buffer) nil)
+                (ffi-buffer-get-document buffer))))))
