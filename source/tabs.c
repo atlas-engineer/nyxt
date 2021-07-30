@@ -186,10 +186,6 @@ inject_tabs_api (char* extension_name)
         JSCValue *Tabs_constructor = jsc_class_add_constructor(
                 Tabs, NULL, G_CALLBACK(empty_constructor_callback),
                 NULL, NULL, G_TYPE_NONE, 0, G_TYPE_NONE);
-        char *tabs_query_js = malloc(sizeof(char) * 900),
-                *tabs_create_js = malloc(sizeof(char) * 900),
-                *tabs_get_current_js = malloc(sizeof(char) * 900),
-                *tabs_get_js = malloc(sizeof(char) * 1300);
         jsc_context_set_value(context, "Tabs", Tabs_constructor);
         jsc_context_set_value(context, "tabsQuery", tabsQuery);
         jsc_context_set_value(context, "tabsQueryResult", tabsQueryResult);
@@ -200,60 +196,68 @@ inject_tabs_api (char* extension_name)
         jsc_context_set_value(context, "tabsGet", tabsGet);
         jsc_context_set_value(context, "tabsGetResult", tabsGetResult);
         jsc_context_set_value(context, "tabs", jsc_value_new_object(context, NULL, Tabs));
-        sprintf(tabs_query_js, "tabs.query = function (queryObject) { \
+        char *tabs_query_js = "tabs.query = function (queryObject) { \
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             tabsQuery(queryObject);                                     \
-            setTimeout(() => success(tabsQueryResult(\"%s\")), 20);     \
+            management.getSelf().then(function (info) {                 \
+                setTimeout(() =>                                        \
+                    success(tabsQueryResult(info.name)), 20);});        \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
     });                                                                 \
 };                                                                      \
                                                                         \
-tabs.query", extension_name);
-        sprintf(tabs_create_js, "tabs.create = function (createProperties) { \
+tabs.query",
+                *tabs_create_js = "tabs.create = function (createProperties) { \
     return new Promise(function (success, failure) {                    \
         try {                                                           \
-            tabsCreate(createProperties);                                     \
-            setTimeout(() => success(tabsCreateResult(\"%s\")), 20);     \
+            tabsCreate(createProperties);                               \
+            management.getSelf().then(function (info) {                 \
+                setTimeout(() =>                                        \
+                    success(tabsCreateResult(info.name)), 20);});       \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
     });                                                                 \
 };                                                                      \
                                                                         \
-tabs.create", extension_name);
-        sprintf(tabs_get_current_js, "tabs.getCurrent = function () { \
+tabs.create",
+                *tabs_get_current_js = "tabs.getCurrent = function () {\
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             tabsGetCurrent();                                           \
-            setTimeout(() => success(tabsGetCurrentResult(\"%s\")), 20);     \
+            management.getSelf().then(function (info) {                 \
+                setTimeout(() =>                                        \
+                    success(tabsGetCurrentResult(info.name)), 20);});   \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
     });                                                                 \
 };                                                                      \
                                                                         \
-tabs.getCurrent", extension_name);
-        sprintf(tabs_get_js, "tabs.get = function (getProperties) {\
+tabs.getCurrent",
+                *tabs_get_js = "tabs.get = function (getProperties) {\
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             tabsGet(getProperties);                                     \
-            setTimeout(() => {                                          \
-                var result = tabsGetResult(\"%s\");                     \
-                if (result)                                             \
-                    success(result)                                     \
-                else                                                    \
-                    throw new Error(\"No tab found!\");},               \
-                       20);                                             \
+            management.getSelf().then(function (info) {\
+                setTimeout(() => {                                      \
+                    var result = tabsGetResult(info.name);              \
+                    if (result)                                         \
+                        success(result);                                \
+                    else                                                \
+                        throw new Error(\"No tab found!\");},           \
+                           20);}                                        \
+            );                                                          \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
     });                                                                 \
 };                                                                      \
                                                                         \
-tabs.get", extension_name);
+tabs.get";
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "tabs", -1),
                 "query",
@@ -272,8 +276,4 @@ tabs.get", extension_name);
                 jsc_context_evaluate(context, tabs_get_js, -1));
         jsc_value_object_set_property(jsc_context_evaluate(context, "tabs", -1),
                                       "print", print);
-        free(tabs_query_js);
-        free(tabs_create_js);
-        free(tabs_get_current_js);
-        free(tabs_get_js);
 }
