@@ -1,6 +1,6 @@
 PKG_MODULES := gobject-2.0 webkit2gtk-web-extension-4.0 json-glib-1.0
 
-CFLAGS += ${shell pkg-config ${PKG_MODULES} --cflags}
+CFLAGS += ${shell pkg-config ${PKG_MODULES} --cflags} -fPIC
 LDLIBS += ${shell pkg-config ${PKG_MODULES} --libs}
 
 .PHONY: all install clean
@@ -8,18 +8,6 @@ all: libnyxt.so
 
 libnyxt.so: nyxt.o globals.o tabs.o management.o
 	${LD} ${LDFLAGS} -fPIC -shared -o $@ $^ ${LDLIBS}
-
-nyxt.o: nyxt.c
-	${CC} -fPIC -o $@ -c ${CFLAGS} $^
-
-globals.o: globals.c
-	${CC} -fPIC -o $@ -c ${CFLAGS} $^
-
-tabs.o: tabs.c
-	${CC} -fPIC -o $@ -c ${CFLAGS} $^
-
-management.o: management.c
-	${CC} -fPIC -o $@ -c ${CFLAGS} $^
 
 install: libnyxt.so
 	${INSTALL} $^
