@@ -587,7 +587,7 @@ Delete it with `ffi-buffer-delete'."
 (define-user-class status-buffer)
 
 (define-command update-document-model (&key (buffer (current-buffer)))
-  "Update the WEB-MODE's `dom' with the page source augmented with Nyxt identifiers."
+  "Update the buffer's `dom' with the page source augmented with Nyxt identifiers."
   (ffi-buffer-evaluate-javascript
    buffer
    (ps:ps
