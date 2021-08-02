@@ -20,6 +20,10 @@ extern WebKitWebExtension *EXTENSION;
 
 void extensions_data_add_from_json_root(JsonNode *root, WebKitWebPage *web_page);
 
+WebKitScriptWorld *get_extension_world (char* extension_name);
+
+JSCContext *get_extension_context (char* extension_name);
+
 void *empty_constructor_callback (void);
 
 #endif /* __GLOBALS_H__ */

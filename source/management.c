@@ -20,9 +20,7 @@ management_get_self_reply_callback (GObject *web_page,
 static JSCValue *
 management_get_self_result_callback (char *extension_name)
 {
-        ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
-        WebKitFrame *frame = webkit_web_page_get_main_frame(PAGE);
-        JSCContext *context = webkit_frame_get_js_context_for_script_world(frame, data->world);
+        JSCContext *context = get_extension_context(extension_name);
         return jsc_value_new_from_json(context, MANAGEMENT->info);
 }
 
@@ -38,9 +36,7 @@ management_get_self_callback (char *extension_name)
 void
 inject_management_api (char* extension_name)
 {
-        ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
-        WebKitFrame *frame = webkit_web_page_get_main_frame(PAGE);
-        JSCContext *context = webkit_frame_get_js_context_for_script_world(frame, data->world);
+        JSCContext *context = get_extension_context(extension_name);
         JSCValue *managementGetSelf = jsc_value_new_function(
                 context, "managementGetSelf",
                 G_CALLBACK(management_get_self_callback), NULL, NULL,
