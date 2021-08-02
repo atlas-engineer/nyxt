@@ -266,4 +266,7 @@ tabs.get";
                 jsc_context_evaluate(context, tabs_get_js, -1));
         jsc_value_object_set_property(jsc_context_evaluate(context, "tabs", -1),
                                       "print", print);
+        jsc_value_object_set_property(
+                jsc_context_evaluate(context, "browser", -1), "tabs",
+                jsc_context_evaluate(context, "tabs", -1));
 }
