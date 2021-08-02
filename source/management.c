@@ -71,5 +71,8 @@ management.getSelf", extension_name, extension_name);
                 jsc_context_evaluate(context, "management", -1),
                 "getSelf",
                 jsc_context_evaluate(context, management_get_self_js, -1));
+        jsc_value_object_set_property(
+                jsc_context_evaluate(context, "browser", -1), "management",
+                jsc_context_evaluate(context, "management", -1));
         free(management_get_self_js);
 }
