@@ -23,6 +23,7 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria :nyxt)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum :nyxt)
+  (trivial-package-local-nicknames:add-package-local-nickname :lpara :lparallel :nyxt)
   (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks :nyxt))
 
 (uiop:define-package nyxt/repl-mode
