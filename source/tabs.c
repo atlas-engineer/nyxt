@@ -192,7 +192,7 @@ inject_tabs_api (char* extension_name)
             tabsQuery(queryObject);                                     \
             management.getSelf().then(function (info) {                 \
                 setTimeout(() =>                                        \
-                    success(tabsQueryResult(info.name)), 10);});        \
+                    success(tabsQueryResult(info.name)), 0);});        \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
