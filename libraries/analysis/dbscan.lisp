@@ -72,13 +72,12 @@ of neighbors. These slots are useful for clustering algorithms."))
             with cluster-count = 0
             do (loop named cluster-set
                      for i from 0 to cluster-count
-                     ;; point found cluster match, label it
+                     ;; point found cluster match, setf and break
                      when (cluster-match-p point (get-cluster i core-points))
                      do (setf (cluster point) i)
                         (return-from cluster-set)
-                        ;; point found no cluster-match, create new cluster
-                     finally (incf cluster-count)
-                             (setf (cluster point) cluster-count)))
+                     ;; point found no cluster-match, create new cluster
+                     finally (setf (cluster point) (incf cluster-count))))
       ;;; assign labels to non-core points
       (loop for point in non-core-points
             for intersection = (intersection core-points (range-query point))
