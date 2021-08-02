@@ -37,16 +37,19 @@ Package prefix is optional.")
   (:method ((mode mode-invocation))
     mode)
   (:method ((mode nyxt:root-mode))
-    (make-instance 'mode-invocation :name (mode-name mode)))
+    (when (rememberable-p mode)
+      (make-instance 'mode-invocation :name (mode-name mode))))
   (:method ((mode symbol))
-    (alex:if-let ((command (nyxt::mode-command mode)))
-      (make-instance 'mode-invocation :name (nyxt:name command))
-      (echo-warning "Auto-mode rule: unknown mode symbol ~s" mode)))
+    (or (sera:and-let* ((command (nyxt::mode-command mode))
+                        (rememberable-p (rememberable-p (make-instance (nyxt:name command)))))
+          (make-instance 'mode-invocation :name (nyxt:name command)))
+        (echo-warning "Auto-mode rule: unknown mode symbol ~s" mode)))
   (:method ((mode list))
     (check-type mode (cons symbol *))
-    (make-instance 'mode-invocation
-                   :name (first mode)
-                   :arguments (rest mode))))
+    (when (rememberable-p (make-instance (first mode)))
+      (make-instance 'mode-invocation
+                     :name (first mode)
+                     :arguments (rest mode)))))
 
 (defun mode-invocations (mode-list)
   "Return the mode invocations corresponding to mode specifiers in MODE-LIST.
@@ -62,7 +65,7 @@ If the mode specifier is not known, it's omitted from the results."
     (values (or (cons mode-invocation *) null) &optional))
 (defun rememberable-of (modes)
   "Filter MODES based on `rememberable-p'."
-  (mode-invocations (remove-if (complement #'rememberable-p) modes)))
+  (mode-invocations (sera:filter #'rememberable-p modes)))
 
 (define-class auto-mode-rule ()
   ((test (error "Slot `test' should be set.")
@@ -135,6 +138,7 @@ If the mode specifier is not known, it's omitted from the results."
                            :test #'equals))
    (buffer auto-mode)))
 
+(-> new-page-request-p (request-data) (values boolean &optional))
 (defun new-page-request-p (request-data)
   "Whether the REQUEST-DATA is a request for a new page load.
 Resource/font/ads/anchor loads are safely ignored.
@@ -144,6 +148,7 @@ URL in the buffer slot when we need to load a new page, while, for
 non-new-page requests, buffer URL is not altered."
   (quri:uri= (url request-data) (url (buffer request-data))))
 
+(-> auto-mode-handler (request-data) request-data)
 (defun auto-mode-handler (request-data)
   (let* ((auto-mode (find-submode (buffer request-data) 'auto-mode))
          (rule (matching-auto-mode-rule (url request-data) (buffer request-data)))
@@ -306,6 +311,9 @@ and modes that are present in mode list but not in `default-modes' as :included,
 to one of auto-mode rules. Apply the resulting rule for all the future visits to this URL,
 inferring the matching condition with `url-infer-match'.
 
+This command does not save non-rememberable modes. If you want to auto-mode to
+save a particular mode, configure it to be `rememberable-p' in your initfile.
+
 For the storage format see the comment in the head of your `auto-mode-rules-data-path' file."
   (let ((url (first (prompt
                      :prompt "URL:"
@@ -330,6 +338,9 @@ For the storage format see the comment in the head of your `auto-mode-rules-data
   "Store the exact list of enabled modes to auto-mode rules for all the future visits of this
 domain/host/URL/group of websites inferring the suitable matching condition by user input.
 Uses `url-infer-match', see its documentation for matching rules.
+
+This command does not save non-rememberable modes. If you want to auto-mode to
+save a particular mode, configure it to be `rememberable-p' in your initfile.
 
 For the storage format see the comment in the head of your `auto-mode-rules-data-path' file."
   ;; TODO: Should it prompt for modes to save?
