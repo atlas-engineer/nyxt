@@ -1,7 +1,7 @@
 #include "globals.h"
 #include "browser.h"
 
-static void
+void
 inject_browser (char* extension_name)
 {
         JSCContext *context = get_extension_context(extension_name);
