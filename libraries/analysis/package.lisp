@@ -9,4 +9,5 @@
    #:document
    #:keywords
    #:extract-keywords
+   #:extract-sections
    #:summarize-text))

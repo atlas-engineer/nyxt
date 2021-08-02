@@ -400,7 +400,8 @@ See `asdf::*immutable-systems*'."
                (:file "analysis")
                (:file "document-vector")
                (:file "text-rank")
-               (:file "dbscan")))
+               (:file "dbscan")
+               (:file "section")))
 
 (defsystem "nyxt/user-interface"
   :depends-on (spinneret)
