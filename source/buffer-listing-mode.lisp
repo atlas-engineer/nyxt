@@ -31,7 +31,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                                           :string-contents (document-get-paragraph-contents)))))
                (analysis::tf-vectorize-documents collection)
                (analysis::generate-document-distance-vectors collection)
-               (analysis::dbscan collection :minimum-points 3 :epsilon 0.065)
+               (analysis::dbscan collection :minimum-points 1 :epsilon 0.075)
                (analysis::clusters collection)))
            (buffer-markup (buffer)
              "Present a buffer in HTML."
