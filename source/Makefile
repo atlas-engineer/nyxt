@@ -13,4 +13,4 @@ install: libnyxt.so
 	${INSTALL} $^
 
 clean:
-	${RM} libnyxt.so nyxt.o globals.o tabs.o management.o
+	${RM} libnyxt.so nyxt.o globals.o browser.o tabs.o management.o
