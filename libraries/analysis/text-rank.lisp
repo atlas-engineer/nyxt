@@ -41,9 +41,9 @@ edge weights."))
                             (cosine-similarity document-a document-b))))))
 
 (defmethod text-rank ((collection document-collection) &key (epsilon 0.001)
-                                                         (damping 0.85)
-                                                         (initial-rank)
-                                                         (iteration-limit 100))
+                                                            (damping 0.85)
+                                                            (initial-rank)
+                                                            (iteration-limit 100))
   "This method is used to calculate the text rankings for a document
    collection. The `epsilon' is the maximum delta for a given node
    rank change during an iteration to be considered convergent. The
@@ -86,7 +86,7 @@ edge weights."))
                        for new-rank = (calculate-rank document)
                        do (setf (rank document) new-rank)
                        unless (convergedp old-rank new-rank)
-                         do (setf converged nil)))))))
+                       do (setf converged nil)))))))
 
 (defun summarize-text (text &key (summary-length 3) (show-rank-p nil))
   (let ((collection (make-instance 'document-collection)))
