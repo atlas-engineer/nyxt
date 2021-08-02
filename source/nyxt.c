@@ -1,5 +1,6 @@
 #include <webkit2/webkit-web-extension.h>
 #include "globals.h"
+#include "browser.h"
 #include "management.h"
 #include "tabs.h"
 #include <json-glib/json-glib.h>
@@ -17,6 +18,7 @@ user_message_received (WebKitWebPage     *web_page,
 static void
 inject_apis (char* extension_name, ExtensionData *data, void *user_data)
 {
+        inject_browser(extension_name);
         inject_management_api(extension_name);
         inject_tabs_api(extension_name);
 }
