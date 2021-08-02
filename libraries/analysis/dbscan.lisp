@@ -7,7 +7,7 @@
 ;;; of applications with noise (DBSCAN) algorithm
 
 (defclass document-cluster (document-vertex)
-  ((cluster :accessor cluster)
+  ((cluster :accessor cluster :initform :noise)
    (neighbors :accessor neighbors))
   (:documentation "The document cluster class represents a document
 that is part of a graph which will be clustered. It extends the
@@ -48,61 +48,39 @@ of neighbors. These slots are useful for clustering algorithms."))
   "Minimum points refers to the minimum amount of points that must
    exist in the neighborhood of a point for it to be considered a
    core-point in a cluster. Epsilon refers to the distance between
-   two points for them to be considered neighbors. A pseudocode
-   implementation follows below:
-
-   DBSCAN(DB, distFunc, eps, minPts) {
-       C := 0                                                  /* Cluster counter */
-       for each point P in database DB {
-           if label(P) ≠ undefined then continue               /* Previously processed in inner loop */
-           Neighbors N := RangeQuery(DB, distFunc, P, eps)     /* Find neighbors */
-           if |N| < minPts then {                              /* Density check */
-               label(P) := Noise                               /* Label as Noise */
-               continue
-           }
-           C := C + 1                                          /* next cluster label */
-           label(P) := C                                       /* Label initial point */
-           SeedSet S := N \ {P}                                /* Neighbors to expand */
-           for each point Q in S {                             /* Process every seed point Q */
-               if label(Q) = Noise then label(Q) := C          /* Change Noise to border point */
-               if label(Q) ≠ undefined then continue           /* Previously processed (e.g., border point) */
-               label(Q) := C                                   /* Label neighbor */
-               Neighbors N := RangeQuery(DB, distFunc, Q, eps) /* Find neighbors */
-               if |N| ≥ minPts then {                          /* Density check (if Q is a core point) */
-                   S := S ∪ N                                  /* Add new neighbors to seed set */
-               }
-           }
-       }
-   }
-Source: https://en.wikipedia.org/w/index.php?title=DBSCAN&oldid=991672776
-"
+   two points for them to be considered neighbors."
   (labels ((range-query (document)
              "Return all points that have a distance less than epsilon."
              (loop for vertex being the hash-keys of (edges document)
                    when (and (<= (gethash vertex (edges document)) epsilon)
                              (not (eq vertex document)))
                    collect vertex))
-           (noise-p (document)
-             "A document must have a minimum number of neighbors to
-              not qualify as noise."
-             (unless (slot-boundp document 'neighbors)
-               (setf (neighbors document) (range-query document)))
-             (if (< (+ 1 (length (neighbors document))) minimum-points)
-                 (progn (setf (cluster document) :noise) t)
-                 nil)))
-    (loop for document in (documents collection)
-          with cluster-index = 0
-          with stack = (list)
-          unless (or (slot-boundp document 'cluster)
-                     (noise-p document))
-          do (incf cluster-index)
-             (setf (cluster document) cluster-index)
-             (setf stack (neighbors document))
-             (loop while stack for item = (pop stack)
-                   when (and (slot-boundp item 'cluster)
-                             (eq (cluster item) :noise))
-                   do (setf (cluster item) cluster-index)
-                   unless (slot-boundp item 'cluster)
-                   do (setf (cluster item) cluster-index)
-                      (unless (noise-p item)
-                        (alexandria:appendf stack (neighbors item)))))))
+           (core-point-p (point)
+             "Is a point a core-point?"
+             (<= minimum-points (length (range-query point))))
+           (cluster-match-p (point cluster)
+             "Check if a core point belongs to a cluster."
+             (intersection cluster (range-query point)))
+           (get-cluster (cluster-label points)
+             "Return all matching points for a given cluster label."
+             (remove-if-not (lambda (i) (eq (cluster i) cluster-label)) points)))
+    ;;; identify core points
+    (let* ((core-points (remove-if-not #'core-point-p (documents collection)))
+           (non-core-points (set-difference (documents collection) core-points)))
+      ;;; assign labels to core points
+      (loop for point in core-points
+            with cluster-count = 0
+            do (loop named cluster-set
+                     for i from 0 to cluster-count
+                     ;; point found cluster match, label it
+                     when (cluster-match-p point (get-cluster i core-points))
+                     do (setf (cluster point) i)
+                        (return-from cluster-set)
+                        ;; point found no cluster-match, create new cluster
+                     finally (incf cluster-count)
+                             (setf (cluster point) cluster-count)))
+      ;;; assign labels to non-core points
+      (loop for point in non-core-points
+            for intersection = (intersection core-points (range-query point))
+            when intersection
+            do (setf (cluster point) (cluster (first intersection)))))))
