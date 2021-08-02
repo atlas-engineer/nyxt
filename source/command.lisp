@@ -319,7 +319,7 @@ Otherwise list all commands.
 With MODE-SYMBOLS and GLOBAL-P, include global commands."
   ;; TODO: Make sure we list commands of inherited modes.
   (if mode-symbols
-      (remove-if
+      (lpara:premove-if
        (lambda (command)
          (and (or (not global-p)
                   (not (global-p command)))
