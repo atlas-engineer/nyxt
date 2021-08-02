@@ -3,6 +3,9 @@
 
 (in-package :nyxt)
 
+;; Initialize the lparallel kernel
+(setf lparallel:*kernel* (lparallel:make-kernel kernel-worker-count))
+
 (export-always 'with-protect)
 (defmacro with-protect ((format-string &rest args) &body body)
   "Run body with muffled condition when `*run-from-repl-p*' is nil, run normally otherwise.
