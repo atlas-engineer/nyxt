@@ -20,9 +20,7 @@ tabs_query_reply_callback (GObject *web_page,
 static JSCValue *
 tabs_query_result_callback (char *extension_name)
 {
-        ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
-        WebKitFrame *frame = webkit_web_page_get_main_frame(PAGE);
-        JSCContext *context = webkit_frame_get_js_context_for_script_world(frame, data->world);
+        JSCContext *context = get_extension_context(extension_name);
         return jsc_value_new_from_json(context, TABS->tabs);
 }
 
@@ -53,9 +51,7 @@ tabs_create_reply_callback (GObject *web_page,
 static JSCValue *
 tabs_create_result_callback (char *extension_name)
 {
-        ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
-        WebKitFrame *frame = webkit_web_page_get_main_frame(PAGE);
-        JSCContext *context = webkit_frame_get_js_context_for_script_world(frame, data->world);
+        JSCContext *context = get_extension_context(extension_name);
         return jsc_value_new_from_json(context, TABS->tab);
 }
 
@@ -86,9 +82,7 @@ tabs_get_current_reply_callback (GObject *web_page,
 static JSCValue *
 tabs_get_current_result_callback (char *extension_name)
 {
-        ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
-        WebKitFrame *frame = webkit_web_page_get_main_frame(PAGE);
-        JSCContext *context = webkit_frame_get_js_context_for_script_world(frame, data->world);
+        JSCContext *context = get_extension_context(extension_name);
         return jsc_value_new_from_json(context, TABS->tab);
 }
 
@@ -117,9 +111,7 @@ tabs_get_reply_callback (GObject *web_page,
 static JSCValue *
 tabs_get_result_callback (char *extension_name)
 {
-        ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
-        WebKitFrame *frame = webkit_web_page_get_main_frame(PAGE);
-        JSCContext *context = webkit_frame_get_js_context_for_script_world(frame, data->world);
+        JSCContext *context = get_extension_context(extension_name);
         return jsc_value_new_from_json(context, TABS->tab);
 }
 
@@ -144,9 +136,7 @@ tabs_print_callback ()
 void
 inject_tabs_api (char* extension_name)
 {
-        ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
-        WebKitFrame *frame = webkit_web_page_get_main_frame(PAGE);
-        JSCContext *context = webkit_frame_get_js_context_for_script_world(frame, data->world);
+        JSCContext *context = get_extension_context(extension_name);
         JSCValue *tabsQuery = jsc_value_new_function(
                 context, "tabsQuery",
                 G_CALLBACK(tabs_query_callback), NULL, NULL,
