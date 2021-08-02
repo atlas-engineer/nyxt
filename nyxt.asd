@@ -45,6 +45,7 @@
                iolib
                iolib/os
                local-time
+               lparallel
                log4cl
                mk-string-metrics
                #-sbcl
