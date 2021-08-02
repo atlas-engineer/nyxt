@@ -26,6 +26,10 @@ of neighbors. These slots are useful for clustering algorithms."))
           do (push document (gethash (cluster document) result (list))))
     result))
 
+(defun get-cluster (cluster-label points)
+  "Return all matching points for a given cluster label."
+  (remove-if-not (lambda (i) (eq (cluster i) cluster-label)) points))
+
 (defmethod distance ((vector-1 t) (vector-2 t))
   "Return the Euclidean distance between two vectors."
   (sqrt (loop for i across vector-1
@@ -60,10 +64,7 @@ of neighbors. These slots are useful for clustering algorithms."))
              (<= minimum-points (length (range-query point))))
            (cluster-match-p (point cluster)
              "Check if a core point belongs to a cluster."
-             (intersection cluster (range-query point)))
-           (get-cluster (cluster-label points)
-             "Return all matching points for a given cluster label."
-             (remove-if-not (lambda (i) (eq (cluster i) cluster-label)) points)))
+             (intersection cluster (range-query point))))
     ;;; identify core points
     (let* ((core-points (remove-if-not #'core-point-p (documents collection)))
            (non-core-points (set-difference (documents collection) core-points)))
