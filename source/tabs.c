@@ -137,6 +137,7 @@ void
 inject_tabs_api (char* extension_name)
 {
         JSCContext *context = get_extension_context(extension_name);
+        MAKE_CLASS(context, Tabs, "tabs");
         JSCValue *tabsQuery = jsc_value_new_function(
                 context, "tabsQuery",
                 G_CALLBACK(tabs_query_callback), NULL, NULL,
@@ -172,11 +173,6 @@ inject_tabs_api (char* extension_name)
         JSCValue *print = jsc_value_new_function(
                 context, NULL, G_CALLBACK(tabs_print_callback), NULL, NULL,
                 G_TYPE_NONE, 0, G_TYPE_NONE);
-        JSCClass *Tabs = jsc_context_register_class(context, "Tabs", NULL, NULL, NULL);
-        JSCValue *Tabs_constructor = jsc_class_add_constructor(
-                Tabs, NULL, G_CALLBACK(empty_constructor_callback),
-                NULL, NULL, G_TYPE_NONE, 0, G_TYPE_NONE);
-        jsc_context_set_value(context, "Tabs", Tabs_constructor);
         jsc_context_set_value(context, "tabsQuery", tabsQuery);
         jsc_context_set_value(context, "tabsQueryResult", tabsQueryResult);
         jsc_context_set_value(context, "tabsCreate", tabsCreate);
@@ -185,7 +181,6 @@ inject_tabs_api (char* extension_name)
         jsc_context_set_value(context, "tabsGetCurrentResult", tabsGetCurrentResult);
         jsc_context_set_value(context, "tabsGet", tabsGet);
         jsc_context_set_value(context, "tabsGetResult", tabsGetResult);
-        jsc_context_set_value(context, "tabs", jsc_value_new_object(context, NULL, Tabs));
         char *tabs_query_js = "tabs.query = function (queryObject) { \
     return new Promise(function (success, failure) {                    \
         try {                                                           \
