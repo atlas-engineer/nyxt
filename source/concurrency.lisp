@@ -3,8 +3,10 @@
 
 (in-package :nyxt)
 
-;; Initialize the lparallel kernel
-(setf lparallel:*kernel* (lparallel:make-kernel kernel-worker-count))
+(defun initialize-lparallel-kernel (&key (worker-count (sera:count-cpus)))
+  "Initialize the lparallel kernel with WORKER-COUNT, if not supplied set it to
+the amount of CPU cores.."
+  (setf lparallel:*kernel* (lparallel:make-kernel worker-count)))
 
 (export-always 'with-protect)
 (defmacro with-protect ((format-string &rest args) &body body)

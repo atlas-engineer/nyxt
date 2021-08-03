@@ -456,6 +456,9 @@ Examples:
   (pushnew 'nyxt-source-registry asdf:*default-source-registries*)
   (asdf:clear-configuration)
 
+  ;; Initialize the lparallel kernel
+  (initialize-lparallel-kernel)
+
   ;; Options should be accessible anytime, even when run from the REPL.
   (setf *options* options)
 
