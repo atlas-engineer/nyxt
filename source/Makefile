@@ -6,11 +6,11 @@ LDLIBS += ${shell pkg-config ${PKG_MODULES} --libs}
 .PHONY: all install clean
 all: libnyxt.so
 
-libnyxt.so: nyxt.o globals.o browser.o tabs.o management.o
+libnyxt.so: nyxt.o globals.o browser.o tabs.o management.o runtime.o
 	${LD} ${LDFLAGS} -fPIC -shared -o $@ $^ ${LDLIBS}
 
 install: libnyxt.so
 	${INSTALL} $^
 
 clean:
-	${RM} libnyxt.so nyxt.o globals.o browser.o tabs.o management.o
+	${RM} libnyxt.so nyxt.o globals.o browser.o tabs.o management.o runtime.o

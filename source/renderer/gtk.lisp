@@ -1103,6 +1103,49 @@ See `gtk-browser's `modifier-translator' slot."
       (set-current-buffer buffer))
     (json:encode-json-to-string (buffer->tab-description buffer))))
 
+(defun process-user-message (buffer message)
+  (let* ((message-name (webkit:webkit-user-message-get-name message))
+         (message-params (glib:g-variant-get-string
+                          (webkit:webkit-user-message-get-parameters message)))
+         (extensions (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))
+         (reply-contents
+           (or
+            (str:string-case message-name
+              ("listExtensions"
+               (json:encode-json-to-string
+                (mapcar #'(lambda (extension)
+                            (cons (nyxt/web-extensions::name extension)
+                                  (str:join ", " (nyxt/web-extensions:permissions extension))))
+                        extensions)))
+              ("management.getSelf"
+               (json:encode-json-to-string
+                (extension->extension-info (find message-params extensions
+                                                 :key #'name :test #'string=))))
+              ("runtime.sendMessage"
+               (let* ((json (json:decode-json-from-string message-params))
+                      (extensions (sera:filter (alex:curry #'string=
+                                                           (alex:assoc-value json :extension-id))
+                                               extensions
+                                               :key #'id)))
+                 (echo "Message is ~a" message-params)
+                 ""))
+              ("tabs.queryObject"
+               (tabs-query message-params))
+              ("tabs.createProperties"
+               (tabs-create message-params))
+              ("tabs.getCurrent"
+               (json:encode-json-to-string (buffer->tab-description buffer)))
+              ("tabs.print"
+               (print-buffer)
+               "")
+              ("tabs.get"
+               (json:encode-json-to-string
+                (buffer->tab-description (buffers-get message-params)))))
+            ""))
+         (reply-message (webkit:webkit-user-message-new
+                         message-name (glib:g-variant-new-string reply-contents))))
+    (webkit:webkit-user-message-send-reply message reply-message)))
+
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
   (unless (gtk-object buffer) ; Buffer may already have a view, e.g. the prompt-buffer.
@@ -1210,40 +1253,8 @@ See `gtk-browser's `modifier-translator' slot."
              (webkit:webkit-context-menu-remove context-menu item))))))
     nil)
   (connect-signal (gtk-object buffer) "user-message-received" (web-view message)
-    (let* ((message-name (webkit:webkit-user-message-get-name message))
-           (message-params (glib:g-variant-get-string
-                            (webkit:webkit-user-message-get-parameters message)))
-           (buffer (find web-view (buffer-list) :key #'gtk-object))
-           (extensions (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))
-           (reply-contents
-             (or
-              (str:string-case message-name
-                ("listExtensions"
-                 (json:encode-json-to-string
-                  (mapcar #'(lambda (extension)
-                              (cons (nyxt/web-extensions::name extension)
-                                    (str:join ", " (nyxt/web-extensions:permissions extension))))
-                          extensions)))
-                ("management.getSelf"
-                 (json:encode-json-to-string
-                  (extension->extension-info (find message-params extensions
-                                                   :key #'name :test #'string=))))
-                ("tabs.queryObject"
-                 (tabs-query message-params))
-                ("tabs.createProperties"
-                 (tabs-create message-params))
-                ("tabs.getCurrent"
-                 (json:encode-json-to-string (buffer->tab-description buffer)))
-                ("tabs.print"
-                 (print-buffer)
-                 "")
-                ("tabs.get"
-                 (json:encode-json-to-string
-                  (buffer->tab-description (buffers-get message-params)))))
-              ""))
-           (reply-message (webkit:webkit-user-message-new
-                           message-name (glib:g-variant-new-string reply-contents))))
-      (webkit:webkit-user-message-send-reply message reply-message)))
+    (declare (ignore web-view))
+    (process-user-message buffer message))
   buffer)
 
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
