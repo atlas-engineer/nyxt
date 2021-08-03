@@ -3,6 +3,7 @@
 #include "browser.h"
 #include "management.h"
 #include "tabs.h"
+#include "runtime.h"
 #include <json-glib/json-glib.h>
 
 static WebKitScriptWorld *hello_world = NULL;
@@ -21,6 +22,7 @@ inject_apis (char* extension_name, ExtensionData *data, void *user_data)
         inject_browser(extension_name);
         inject_management_api(extension_name);
         inject_tabs_api(extension_name);
+        inject_runtime_api(extension_name);
 }
 
 static void
@@ -74,6 +76,7 @@ webkit_web_extension_initialize (WebKitWebExtension *extension)
 {
         MANAGEMENT = malloc(sizeof(Management));
         TABS = malloc(sizeof(Tabs));
+        RUNTIME = malloc(sizeof(Runtime));
 
         EXTENSIONS_DATA = g_hash_table_new(g_str_hash, g_str_equal);
 
