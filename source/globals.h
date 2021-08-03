@@ -14,8 +14,6 @@
         jsc_context_set_value(context, Object_name,                     \
                       jsc_value_new_object(context, NULL, Class));
 
-/** PAGES stores all the existing WebKitWebPages, indexed by their IDs.
- */
 extern WebKitWebPage *PAGE;
 
 typedef struct {
