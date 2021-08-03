@@ -42,7 +42,7 @@ Function taking a `repeat-mode' instance.")
   (nyxt/process-mode::initialize mode))
 
 (define-command-global repeat-every (&optional seconds function)
-  "Repeat a FUNCTION every SECONDS (prompts if SECONDS and/or FUNCTION are not provided)."
+  "Repeat a function every seconds (prompts if seconds and/or function are not provided)."
   (let ((seconds (or seconds
                      (ignore-errors
                       (parse-integer
