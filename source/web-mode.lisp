@@ -319,10 +319,10 @@ This was useful before Nyxt 2.0 as a workaround for hangs that would occur on pa
    (prompter:constructor
     (lambda (source)
       (with-history-unsafe (history (buffer source))
-        (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
-                     #'htree:all-contiguous-owned-parents
-                     #'htree:all-parents)
-                 history)))))
+        (let ((owner (htree:owner history (id (buffer source)))))
+          (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
+              (htree:all-contiguous-owned-parents history owner)
+              (htree:all-parents history :owner owner)))))))
   (:export-class-name-p t))
 (define-user-class history-backwards-source)
 
