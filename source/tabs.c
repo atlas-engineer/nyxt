@@ -18,9 +18,9 @@ tabs_query_reply_callback (GObject *web_page,
 }
 
 static JSCValue *
-tabs_query_result_callback (char *extension_name)
+tabs_query_result_callback ()
 {
-        JSCContext *context = get_extension_context(extension_name);
+        JSCContext *context = jsc_context_get_current();
         return jsc_value_new_from_json(context, TABS->tabs);
 }
 
@@ -49,9 +49,9 @@ tabs_create_reply_callback (GObject *web_page,
 }
 
 static JSCValue *
-tabs_create_result_callback (char *extension_name)
+tabs_create_result_callback ()
 {
-        JSCContext *context = get_extension_context(extension_name);
+        JSCContext *context = jsc_context_get_current();
         return jsc_value_new_from_json(context, TABS->tab);
 }
 
@@ -80,9 +80,9 @@ tabs_get_current_reply_callback (GObject *web_page,
 }
 
 static JSCValue *
-tabs_get_current_result_callback (char *extension_name)
+tabs_get_current_result_callback ()
 {
-        JSCContext *context = get_extension_context(extension_name);
+        JSCContext *context = jsc_context_get_current();
         return jsc_value_new_from_json(context, TABS->tab);
 }
 
@@ -109,9 +109,9 @@ tabs_get_reply_callback (GObject *web_page,
 }
 
 static JSCValue *
-tabs_get_result_callback (char *extension_name)
+tabs_get_result_callback ()
 {
-        JSCContext *context = get_extension_context(extension_name);
+        JSCContext *context = jsc_context_get_current();
         return jsc_value_new_from_json(context, TABS->tab);
 }
 
@@ -145,7 +145,7 @@ inject_tabs_api (char* extension_name)
         JSCValue *tabsQueryResult = jsc_value_new_function(
                 context, "tabsQueryResult",
                 G_CALLBACK(tabs_query_result_callback), NULL, NULL,
-                JSC_TYPE_VALUE, 1, G_TYPE_STRING);
+                JSC_TYPE_VALUE, 0, G_TYPE_NONE);
         JSCValue *tabsCreate = jsc_value_new_function(
                 context, "tabsCreate",
                 G_CALLBACK(tabs_create_callback), NULL, NULL,
@@ -153,7 +153,7 @@ inject_tabs_api (char* extension_name)
         JSCValue *tabsCreateResult = jsc_value_new_function(
                 context, "tabsCreateResult",
                 G_CALLBACK(tabs_create_result_callback), NULL, NULL,
-                JSC_TYPE_VALUE, 1, G_TYPE_STRING);
+                JSC_TYPE_VALUE, 0, G_TYPE_NONE);
         JSCValue *tabsGetCurrent = jsc_value_new_function(
                 context, "tabsGetCurrent",
                 G_CALLBACK(tabs_get_current_callback), NULL, NULL,
@@ -161,7 +161,7 @@ inject_tabs_api (char* extension_name)
         JSCValue *tabsGetCurrentResult = jsc_value_new_function(
                 context, "tabsGetCurrentResult",
                 G_CALLBACK(tabs_get_current_result_callback), NULL, NULL,
-                JSC_TYPE_VALUE, 1, G_TYPE_STRING);
+                JSC_TYPE_VALUE, 0, G_TYPE_NONE);
         JSCValue *tabsGet = jsc_value_new_function(
                 context, "tabsGet",
                 G_CALLBACK(tabs_get_callback), NULL, NULL,
@@ -169,7 +169,7 @@ inject_tabs_api (char* extension_name)
         JSCValue *tabsGetResult = jsc_value_new_function(
                 context, "tabsGetResult",
                 G_CALLBACK(tabs_get_result_callback), NULL, NULL,
-                JSC_TYPE_VALUE, 1, G_TYPE_STRING);
+                JSC_TYPE_VALUE, 0, G_TYPE_NONE);
         JSCValue *print = jsc_value_new_function(
                 context, NULL, G_CALLBACK(tabs_print_callback), NULL, NULL,
                 G_TYPE_NONE, 0, G_TYPE_NONE);
@@ -185,9 +185,8 @@ inject_tabs_api (char* extension_name)
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             tabsQuery(queryObject);                                     \
-            management.getSelf().then(function (info) {                 \
-                setTimeout(() =>                                        \
-                    success(tabsQueryResult(info.name)), 0);});        \
+            setTimeout(() =>                                            \
+                success(tabsQueryResult()), 0);                         \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
@@ -199,9 +198,8 @@ tabs.query",
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             tabsCreate(createProperties);                               \
-            management.getSelf().then(function (info) {                 \
-                setTimeout(() =>                                        \
-                    success(tabsCreateResult(info.name)), 0);});       \
+            setTimeout(() =>                                            \
+                success(tabsCreateResult()), 0);                        \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
@@ -213,9 +211,8 @@ tabs.create",
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             tabsGetCurrent();                                           \
-            management.getSelf().then(function (info) {                 \
-                setTimeout(() =>                                        \
-                    success(tabsGetCurrentResult(info.name)), 0);});    \
+            setTimeout(() =>                                            \
+                success(tabsGetCurrentResult()), 0);                    \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
@@ -224,24 +221,23 @@ tabs.create",
                                                                         \
 tabs.getCurrent",
                 *tabs_get_js = "tabs.get = function (getProperties) {\
-    return new Promise(function (success, failure) {                    \
-        try {                                                           \
-            tabsGet(getProperties);                                     \
-            management.getSelf().then(function (info) {\
-                setTimeout(() => {                                      \
-                    var result = tabsGetResult(info.name);              \
-                    if (result)                                         \
-                        success(result);                                \
-                    else                                                \
-                        throw new Error(\"No tab found!\");},           \
-                           0);}                                        \
-            );                                                          \
-        } catch (error) {                                               \
-            return failure(error);                                      \
-        };                                                              \
-    });                                                                 \
-};                                                                      \
-                                                                        \
+    return new Promise(function (success, failure) {                 \
+        try {                                                        \
+            tabsGet(getProperties);                                  \
+            setTimeout(() => {                                       \
+                var result = tabsGetResult();                        \
+                if (result)                                          \
+                    success(result);                                 \
+                else                                                 \
+                    throw new Error(\"No tab found!\");},            \
+                       0);                                           \
+            );                                                       \
+        } catch (error) {                                            \
+            return failure(error);                                   \
+        };                                                           \
+    });                                                              \
+};                                                                   \
+                                                                     \
 tabs.get";
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "tabs", -1),
