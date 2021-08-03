@@ -114,6 +114,10 @@ height=~a/>"
          :type string)
    (version (error "Extension should have a version")
             :type string)
+   (id nil
+       :type (or null string)
+       :documentation "A unique ID of the extension.
+Is shared between all the instances of the same extension class.")
    (description nil
                 :type (or null string))
    (homepage-url nil
@@ -159,6 +163,8 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
          ,(alex:assoc-value json :description)
          ((name ,(alex:assoc-value json :name))
           (version ,(alex:assoc-value json :version))
+          (id (or (symbol-name (gensym ,(alex:assoc-value json :name))))
+              :allocation :class)
           (description ,(alex:assoc-value json :description))
           (extension-directory ,directory)
           (homepage-url ,(alex:assoc-value json :homepage--url))

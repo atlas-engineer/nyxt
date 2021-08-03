@@ -1005,6 +1005,7 @@ See `gtk-browser's `modifier-translator' slot."
   (when extension
     `(("description" . ,(or (nyxt/web-extensions:description extension) ""))
       ("homepageUrl" . ,(or (nyxt/web-extensions:homepage-url extension) ""))
+      ("id" . ,(id extension))
       ("installType" . "development")
       ("mayDisable" . t)
       ("name" . ,(or (name extension) ""))
@@ -1015,7 +1016,6 @@ See `gtk-browser's `modifier-translator' slot."
       ("enabled" . t)
       ("hostPermissions" . ,(vector))
       ("icons" . ,(vector))
-      ("id" . 0)
       ("offlineEnabled" . nil)
       ("optionsUrl" . "")
       ("shortName" . ,(or (name extension) ""))
