@@ -18,9 +18,9 @@ management_get_self_reply_callback (GObject *web_page,
 }
 
 static JSCValue *
-management_get_self_result_callback (char *extension_name)
+management_get_self_result_callback ()
 {
-        JSCContext *context = get_extension_context(extension_name);
+        JSCContext *context = jsc_context_get_current();
         return jsc_value_new_from_json(context, MANAGEMENT->info);
 }
 
@@ -45,7 +45,7 @@ inject_management_api (char* extension_name)
         JSCValue *managementGetSelfResult = jsc_value_new_function(
                 context, "getSelfResult",
                 G_CALLBACK(management_get_self_result_callback), NULL, NULL,
-                JSC_TYPE_VALUE, 1, G_TYPE_STRING);
+                JSC_TYPE_VALUE, 0, G_TYPE_NONE);
         char *management_get_self_js = malloc(sizeof(char) * 800);
         jsc_context_set_value(context, "Management", Management_constructor);
         jsc_context_set_value(context, "managementGetSelf", managementGetSelf);
@@ -54,14 +54,14 @@ inject_management_api (char* extension_name)
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             managementGetSelf(\"%s\");                                  \
-            setTimeout(() => success(managementGetSelfResult(\"%s\")), 0); \
+            setTimeout(() => success(managementGetSelfResult()), 0); \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
     });                                                                 \
 };                                                                      \
                                                                         \
-management.getSelf", extension_name, extension_name);
+management.getSelf", extension_name);
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "management", -1),
                 "getSelf",
