@@ -296,7 +296,7 @@ An example:")
                      \"M-x\" 'execute-command)))))"))
 
    (:h3 "Automation")
-   (:p "Nyxt has many facilities of automation. For instance, it is possible to
+   (:p "Nyxt has many facilities for automation. For instance, it is possible to
 automate the reading experience:")
    (:ul
     (:li (command-markup 'nyxt/cruise-control-mode:cruise-control-mode) ": "
@@ -323,9 +323,9 @@ automate the reading experience:")
    (:p "Nyxt also offers a no-code interface to build automation via Common Lisp
 macros: ")
    (:ul
-    (:li (command-markup 'nyxt/macro-edit-mode:macro-edit-mode) ": "
+    (:li (command-markup 'nyxt/macro-edit-mode:edit-macro) ": "
          (command-docstring-first-sentence
-         'nyxt/macro-edit-mode:macro-edit-mode)))
+         'nyxt/macro-edit-mode:edit-macro)))
    (:p "Lastly, the command " (:code 'nyxt/process-mode:process-mode) " must be
 highlighted: ")
    (:ul
