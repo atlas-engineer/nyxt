@@ -47,9 +47,6 @@ be set to a string by the renderer itself. This variable exists to allow for
 reporting by users, it does not create any functional differences in the
 execution of Nyxt.")
 
-(export-always 'kernel-worker-count)
-(defparameter kernel-worker-count 32 "The amount of worker threads used by lparallel.")
-
 (export-always '+newline+)
 (alex:define-constant +newline+ (string #\newline) :test #'equal)
 
