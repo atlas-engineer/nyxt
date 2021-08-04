@@ -40,6 +40,14 @@ runtime_send_message_callback (char *extension_id, JSCValue *object)
                 PAGE, message, NULL, runtime_send_message_reply_callback, NULL);
 }
 
+static JSCValue *
+runtime_get_manifest_callback (char *extension_name)
+{
+        ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
+        JSCContext *context = jsc_context_get_current();
+        return jsc_value_new_from_json(context, jsc_value_to_json(data->manifest, 0));
+}
+
 void inject_runtime_api (char* extension_name)
 {
         JSCContext *context = get_extension_context(extension_name);
@@ -52,8 +60,13 @@ void inject_runtime_api (char* extension_name)
                 context, "runtimeSendMessageResult",
                 G_CALLBACK(runtime_send_message_result_callback), NULL, NULL,
                 G_TYPE_NONE, 0, G_TYPE_NONE);
+        JSCValue *runtimeGetManifest = jsc_value_new_function(
+                context, "runtimeGetManifest",
+                G_CALLBACK(runtime_get_manifest_callback), NULL, NULL,
+                JSC_TYPE_VALUE, 1, G_TYPE_STRING);
         jsc_context_set_value(context, "runtimeSendMessage", runtimeSendMessage);
         jsc_context_set_value(context, "runtimeSendMessageResult", runtimeSendMessageResult);
+        jsc_context_set_value(context, "runtimeGetManifest", runtimeGetManifest);
         char *runtime_send_message_js = "runtime.sendMessage = function (one, two, three) {\
     var no_two = (two === undefined || two === null ||                  \
                   (two.hasOwnProperty(\"includeTlsChannelId\") &&       \
@@ -75,11 +88,22 @@ void inject_runtime_api (char* extension_name)
 };                                                                      \
                                                                         \
 runtime.sendMessage";
+        char *runtime_get_manifest_js = malloc(sizeof(char) * 300);
+        sprintf(runtime_get_manifest_js, "runtime.getManifest = function () { \
+    return runtimeGetManifest(\"%s\");                                  \
+};                                                                      \
+                                                                        \
+runtime.getManifest", extension_name);
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "runtime", -1),
                 "sendMessage",
                 jsc_context_evaluate(context, runtime_send_message_js, -1));
         jsc_value_object_set_property(
+                jsc_context_evaluate(context, "runtime", -1),
+                "getManifest",
+                jsc_context_evaluate(context, runtime_get_manifest_js, -1));
+        jsc_value_object_set_property(
                 jsc_context_evaluate(context, "browser", -1), "runtime",
                 jsc_context_evaluate(context, "runtime", -1));
+        free(runtime_get_manifest_js);
 }
