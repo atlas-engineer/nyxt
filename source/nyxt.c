@@ -32,9 +32,9 @@ document_loaded_callback (WebKitWebPage *web_page)
 }
 
 static void
-add_extensions_reply_callback (GObject *web_page,
-                                           GAsyncResult *res,
-                                           gpointer user_data)
+add_extensions_reply_callback (GObject      *web_page,
+                               GAsyncResult *res,
+                               gpointer     user_data)
 {
         WebKitUserMessage *message =
                 webkit_web_page_send_message_to_view_finish((WebKitWebPage *) web_page, res, NULL);
