@@ -17,12 +17,12 @@ user_message_received (WebKitWebPage     *web_page,
 }
 
 static void
-inject_apis (char* extension_name, ExtensionData *data, void *user_data)
+inject_apis (void* extension_name, void *data, void *user_data)
 {
-        inject_browser(extension_name);
-        inject_management_api(extension_name);
-        inject_tabs_api(extension_name);
-        inject_runtime_api(extension_name);
+        inject_browser((char*) extension_name);
+        inject_management_api((char*) extension_name);
+        inject_tabs_api((char*) extension_name);
+        inject_runtime_api((char*) extension_name);
 }
 
 static void
