@@ -1103,11 +1103,15 @@ See `gtk-browser's `modifier-translator' slot."
       (set-current-buffer buffer))
     (json:encode-json-to-string (buffer->tab-description buffer))))
 
-(defun process-user-message (buffer message)
-  (let* ((message-name (webkit:webkit-user-message-get-name message))
+(defun process-user-message (view message)
+  (let* ((buffer (find view (buffer-list) :key #'gtk-object))
+         (message-name (webkit:webkit-user-message-get-name message))
          (message-params (glib:g-variant-get-string
                           (webkit:webkit-user-message-get-parameters message)))
          (extensions (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))
+         (background-view-p
+           (member view (mapcar #'nyxt/web-extensions::background-view
+                                extensions)))
          (reply-contents
            (or
             (str:string-case message-name
@@ -1122,12 +1126,38 @@ See `gtk-browser's `modifier-translator' slot."
                 (extension->extension-info (find message-params extensions
                                                  :key #'name :test #'string=))))
               ("runtime.sendMessage"
-               (let* ((json (json:decode-json-from-string message-params))
-                      (extensions (sera:filter (alex:curry #'string=
-                                                           (alex:assoc-value json :extension-id))
-                                               extensions
-                                               :key #'id)))
+               (sera:and-let* ((json (json:decode-json-from-string message-params))
+                               (extension-instances
+                                (sera:filter (alex:curry #'string=
+                                                         (alex:assoc-value json :extension-id))
+                                             extensions
+                                             :key #'id)))
                  (echo "Message is ~a" message-params)
+                 (flet ((trigger-message (view extension)
+                          ;; Copied from `ffi-buffer-evaluate-javascript'. Extract?
+                          (%within-renderer-thread
+                           (lambda (&optional channel)
+                             (webkit2:webkit-web-view-evaluate-javascript
+                              view (format nil "browser.runtime.onMessage.run(JSON.parse(~s).message)"
+                                           message-params)
+                              (if channel
+                                  (lambda (result jsc-result)
+                                    (declare (ignore jsc-result))
+                                    (calispel:! channel result))
+                                  (lambda (result jsc-result)
+                                    (declare (ignore jsc-result))
+                                    result))
+                              (lambda (condition)
+                                (javascript-error-handler condition)
+                                ;; Notify the listener that we are done.
+                                (when channel
+                                  (calispel:! channel nil)))
+                              (name extension))))))
+                   (if background-view-p
+                       (dolist (instance extension-instances)
+                         (trigger-message view instance))
+                       (trigger-message
+                        (nyxt/web-extensions:background-view (first extensions)) (first extensions))))
                  ""))
               ("tabs.queryObject"
                (tabs-query message-params))
@@ -1252,9 +1282,9 @@ See `gtk-browser's `modifier-translator' slot."
             (:webkit-context-menu-action-download-link-to-disk
              (webkit:webkit-context-menu-remove context-menu item))))))
     nil)
-  (connect-signal (gtk-object buffer) "user-message-received" (web-view message)
-    (declare (ignore web-view))
-    (process-user-message buffer message))
+  (gobject:g-signal-connect
+   (gtk-object buffer) "user-message-received"
+   #'process-user-message)
   buffer)
 
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
@@ -1636,3 +1666,16 @@ As a second value, return the current buffer index starting from 0."
        (webkit:webkit-web-view-execute-editing-command
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-redo+)))
    (lambda (e) (echo-warning "Cannot redo: ~a" e))))
+
+(define-ffi-method ffi-extension-make-background-view ((extension nyxt/web-extensions:extension) &optional url)
+  (unless (nyxt/web-extensions::background-view extension)
+    (let ((view (make-web-view :context-buffer (current-buffer))))
+      (webkit:webkit-web-view-load-uri view (if url
+                                                (render-url (url url))
+                                                "about:blank"))
+      (setf (nyxt/web-extensions::background-view extension) view)
+      (connect-signal view "user-message-received" (web-view message)
+        (process-user-message web-view message)))))
+
+(define-ffi-method ffi-extension-delete-background-view ((extension nyxt/web-extensions:extension))
+    (gtk:gtk-widget-destroy (nyxt/web-extensions:background-view extension)))

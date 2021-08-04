@@ -800,3 +800,5 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-buffer-redo (buffer)
   (:method ((buffer buffer))
     (echo-warning "Redoing the edits is not yet implemented for this renderer.")))
+(define-ffi-generic ffi-extension-make-background-view (extension &optional url))
+(define-ffi-generic ffi-extension-delete-background-view (extension))
