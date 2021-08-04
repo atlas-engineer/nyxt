@@ -28,22 +28,16 @@ static void
 runtime_send_message_callback (char *extension_id, JSCValue *object)
 {
         JSCContext *context = jsc_context_get_current();
-        g_print("runtime.sendMessage entered\n");
         JSCValue *wrapper = jsc_value_new_object(context, NULL, NULL);
-        g_print("Wrapper object created\n");
         jsc_value_object_set_property(
                 wrapper, "extensionId",
                 jsc_value_new_string(context, extension_id));
-        g_print("Extension ID set\n");
         jsc_value_object_set_property(wrapper, "message", object);
-        g_print("Message set\n");
         char *json = jsc_value_to_json(wrapper, 0);
         GVariant *variant = g_variant_new("s", json);
-        g_print("GVariant created\n");
         WebKitUserMessage *message = webkit_user_message_new("runtime.sendMessage", variant);
         webkit_web_page_send_message_to_view(
                 PAGE, message, NULL, runtime_send_message_reply_callback, NULL);
-        g_print("Message sent\n");
 }
 
 void inject_runtime_api (char* extension_name)
