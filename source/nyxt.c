@@ -39,12 +39,8 @@ add_extensions_reply_callback (GObject      *web_page,
         WebKitUserMessage *message =
                 webkit_web_page_send_message_to_view_finish((WebKitWebPage *) web_page, res, NULL);
         GVariant *params = webkit_user_message_get_parameters(message);
-        JsonParser *parser = json_parser_new();
-        JsonNode *root;
         const char *extensions = g_variant_get_string(params, NULL);
-        json_parser_load_from_data(parser, extensions, -1, NULL);
-        root = json_parser_get_root(parser);
-        extensions_data_add_from_json_root(root, (WebKitWebPage *) web_page);
+        extensions_data_add_from_json(extensions);
 }
 
 static void

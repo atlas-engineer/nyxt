@@ -114,6 +114,9 @@ height=~a/>"
          :type string)
    (version (error "Extension should have a version")
             :type string)
+   (manifest nil
+             :type (or null string)
+             :documentation "Original contents of the manifest.json file.")
    (id nil
        :type (or null string)
        :documentation "A unique ID of the extension.
@@ -155,14 +158,14 @@ Is shared between all the instances of the same extension class.")
   "Make an extension from DIRECTORY accessible as Nyxt mode (under LISPY-NAME).
 DIRECTORY should be the one containing manifest.json file for the extension in question."
   (let* ((directory (uiop:parse-native-namestring directory))
-         (json (with-open-file
-                   (manifest.json (uiop:merge-pathnames* "manifest.json" directory))
-                 (json:decode-json-from-source manifest.json))))
+         (manifest-text (uiop:read-file-string (uiop:merge-pathnames* "manifest.json" directory)))
+         (json (json:decode-json-from-string manifest-text)))
     `(progn
        (define-mode ,lispy-name (extension)
          ,(alex:assoc-value json :description)
          ((name ,(alex:assoc-value json :name))
           (version ,(alex:assoc-value json :version))
+          (manifest ,manifest-text)
           (id (or (symbol-name (gensym ,(alex:assoc-value json :name))))
               :allocation :class)
           (description ,(alex:assoc-value json :description))

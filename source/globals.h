@@ -18,7 +18,7 @@ extern WebKitWebPage *PAGE;
 
 typedef struct {
         char *name;
-        char *permissions;
+        JSCValue *manifest;
         WebKitScriptWorld *world;
 } ExtensionData;
 
@@ -26,7 +26,7 @@ extern GHashTable *EXTENSIONS_DATA;
 
 extern WebKitWebExtension *EXTENSION;
 
-void extensions_data_add_from_json_root(JsonNode *root, WebKitWebPage *web_page);
+void extensions_data_add_from_json(const char *json);
 
 WebKitScriptWorld *get_extension_world (char* extension_name);
 
