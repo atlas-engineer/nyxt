@@ -4,7 +4,6 @@
 #include "management.h"
 #include "tabs.h"
 #include "runtime.h"
-#include <json-glib/json-glib.h>
 
 static WebKitScriptWorld *hello_world = NULL;
 

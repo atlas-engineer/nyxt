@@ -2,7 +2,6 @@
 #define __GLOBALS_H__
 
 #include <webkit2/webkit-web-extension.h>
-#include <json-glib/json-glib.h>
 
 #define MAKE_CLASS(Context, Class, Object_name)                         \
         JSCClass *Class = jsc_context_register_class(                   \

@@ -1,4 +1,4 @@
-PKG_MODULES := gobject-2.0 webkit2gtk-web-extension-4.0 json-glib-1.0
+PKG_MODULES := gobject-2.0 webkit2gtk-web-extension-4.0
 
 CFLAGS += ${shell pkg-config ${PKG_MODULES} --cflags} -fPIC
 LDLIBS += ${shell pkg-config ${PKG_MODULES} --libs}
