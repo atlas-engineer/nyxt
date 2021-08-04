@@ -120,7 +120,10 @@ height=~a/>"
    (id nil
        :type (or null string)
        :documentation "A unique ID of the extension.
-Is shared between all the instances of the same extension class.")
+Is shared between all the instances of the same extension.")
+   (background-view nil
+                    :documentation "Web view to host background page of the extension in.
+Is shared between all the instances of the same extension.")
    (description nil
                 :type (or null string))
    (homepage-url nil
@@ -142,12 +145,17 @@ Is shared between all the instances of the same extension class.")
    (destructor (lambda (mode)
                  (loop for name in (handler-names mode)
                        for hook in (list (buffer-loaded-hook (buffer mode)))
-                       do (hooks:remove-hook hook name))))
+                       do (hooks:remove-hook hook name))
+                 ;; Destroy the view then there are no more instances of this extension.
+                 (when (null (sera:filter (alex:rcurry #'typep (type-of mode))
+                                          (alex:mappend #'modes (buffer-list))))
+                   (ffi-extension-delete-background-view mode))))
    (constructor (lambda (mode)
                   (let ((content-script-name (gensym)))
                     (hooks:add-hook (buffer-loaded-hook (buffer mode))
                                     (make-activate-content-scripts-handler mode content-script-name))
-                    (push content-script-name (handler-names mode)))))))
+                    (push content-script-name (handler-names mode))
+                    (ffi-extension-make-background-view mode))))))
 
 (export-always 'has-permission-p)
 (defmethod has-permission-p ((extension extension) (permission string))
@@ -168,6 +176,8 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
           (manifest ,manifest-text)
           (id (or (symbol-name (gensym ,(alex:assoc-value json :name))))
               :allocation :class)
+          (background-view nil
+                           :allocation :class)
           (description ,(alex:assoc-value json :description))
           (extension-directory ,directory)
           (homepage-url ,(alex:assoc-value json :homepage--url))
