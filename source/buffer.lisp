@@ -13,12 +13,22 @@
        :documentation "Unique identifier for a buffer.
 Dead buffers or placeholder buffers (i.e. those not associated with a web view)
 have an empty ID.")
+   ;; TODO: Or maybe a dead-buffer should just be a buffer history?
    (data-profile (make-instance (or (find-data-profile (getf *options* :data-profile))
                                     'default-data-profile))
                  :type data-profile
                  :documentation "Profile to use for all persisted files.
 See the `data-path' class and the `expand-path' function.")
-   ;; TODO: Or maybe a dead-buffer should just be a buffer history?
+   (document-model-delta-threshold
+    10
+    :documentation "Update the document model when the amount of elements on the
+    page change greater than this amount."
+    :export nil)
+   (document-model
+    nil
+    :type (or null plump:node)
+    :documentation "A parsed representation of the page currently opened.
+Created from the page code with the help of `plump:parse'. See `update-document-model'.")
    (url (quri:uri ""))
    (url-at-point (quri:uri ""))
    (title "")
@@ -285,16 +295,6 @@ inherited from the superclasses."))
 - `:unloaded' for buffers that have not been loaded yet, like
   session-restored buffers, dead buffers or new buffers that haven't started the
   loading process yet.")
-   (document-model-delta-threshold
-    10
-    :documentation "Update the document model when the amount of elements on the
-    page change greater than this amount."
-    :export nil)
-   (document-model
-    nil
-    :type (or null plump:node)
-    :documentation "A parsed representation of the page currently opened.
-Created from the page code with the help of `plump:parse'. See `update-document-model'.")
    (keywords
     nil
     :accessor nil
@@ -603,7 +603,7 @@ Delete it with `ffi-buffer-delete'."
   (setf (document-model buffer)
         (nyxt/dom::named-json-parse (nyxt/dom::get-document-body-json))))
 
-(defmethod document-model :around ((buffer web-buffer))
+(defmethod document-model :around ((buffer buffer))
   (pflet ((%count-dom-elements
            ()
            (defvar dom-counter 0)
@@ -719,11 +719,6 @@ BUFFER's modes."
 
 (export-always 'on-signal-load-finished)
 (defmethod on-signal-load-finished ((buffer buffer) url)
-  (dolist (mode (modes buffer))
-    (on-signal-load-finished mode url))
-  (run-thread (hooks:run-hook (buffer-loaded-hook buffer) buffer)))
-
-(defmethod on-signal-load-finished ((buffer web-buffer) url)
   ;; Need to force document-model re-parsing.
   (setf (document-model buffer) nil)
   (dolist (mode (modes buffer))
