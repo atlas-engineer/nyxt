@@ -849,6 +849,9 @@ See `gtk-browser's `modifier-translator' slot."
       (gtk:gtk-widget-grab-focus (gtk-object (active-buffer window)))
       (gtk:gtk-widget-grab-focus (prompt-buffer-view window))))
 
+(define-ffi-method ffi-window-get-prompt-buffer-height ((window gtk-window))
+  (nth-value 1 (gtk:gtk-widget-size-request (prompt-buffer-container window))))
+
 (define-ffi-method ffi-window-get-status-buffer-height ((window gtk-window))
   (nth-value 1 (gtk:gtk-widget-size-request (status-container window))))
 
