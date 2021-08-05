@@ -26,8 +26,9 @@
            (make-instance 'heading :inner-text (plump:text e)
                                    :element e
                                    :buffer buffer
-                                   :keywords (analysis:extract-keywords
-                                              (plump:text (plump:next-element e)))))
+                                   :keywords (ignore-errors
+                                              (analysis:extract-keywords
+                                               (plump:text (plump:next-element e))))))
          (clss:select "h1, h2, h3, h4, h5, h6" (document-model buffer)))))
 
 (define-parenscript scroll-to-element (&key nyxt-identifier)
