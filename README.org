@@ -97,7 +97,8 @@ the developer's documentation at [[file:documents/README.org][documents/README.o
 
 ** History of changes
 
-Please see the [[file:documents/CHANGELOG.org][CHANGELOG.org]].
+If you are running a recent version of Nyxt please run the =changelog=
+command. For older versions, please see the [[file:documents/CHANGELOG.org][CHANGELOG]].
 
 # Local Variables:
 # fill-column: 72
