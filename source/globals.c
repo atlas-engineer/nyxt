@@ -32,17 +32,20 @@ extensions_data_add_from_json(const char *json)
 WebKitScriptWorld *
 get_extension_world (char* extension_name)
 {
-        ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
-        WebKitFrame *frame = webkit_web_page_get_main_frame(PAGE);
-        return data->world;
+        if (extension_name) {
+                ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
+                return data->world;
+        } else {
+                return webkit_script_world_get_default();
+        }
 }
 
 JSCContext *
 get_extension_context (char* extension_name)
 {
-        ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
+        WebKitScriptWorld *world = get_extension_world(extension_name);
         WebKitFrame *frame = webkit_web_page_get_main_frame(PAGE);
-        return webkit_frame_get_js_context_for_script_world(frame, data->world);
+        return webkit_frame_get_js_context_for_script_world(frame, world);
 }
 
 void *
