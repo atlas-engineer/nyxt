@@ -101,6 +101,10 @@ runtime.getManifest", extension_name);
                 jsc_context_evaluate(context, runtime_send_message_js, -1));
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "runtime", -1),
+                "onMessage",
+                jsc_context_evaluate(context, "var e = new ExtEvent(); e", -1));
+        jsc_value_object_set_property(
+                jsc_context_evaluate(context, "runtime", -1),
                 "getManifest",
                 jsc_context_evaluate(context, runtime_get_manifest_js, -1));
         jsc_value_object_set_property(
