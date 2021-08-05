@@ -169,6 +169,7 @@
                (:file "about")
                (:file "start")
                (:file "tutorial")
+               (:file "changelog")
                (:file "manual"))
   :in-order-to ((test-op (test-op "nyxt/tests")
                          (test-op "nyxt/download-manager/tests")
