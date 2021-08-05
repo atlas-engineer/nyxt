@@ -1,4 +1,5 @@
 #include "globals.h"
+#include "extevent.h"
 #include "runtime.h"
 
 Runtime *RUNTIME;
