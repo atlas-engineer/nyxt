@@ -1,8 +1,6 @@
 #include "globals.h"
 #include "extevent.h"
 
-JSCClass *ExtEvent;
-
 static Extevent *
 extevent_constructor_callback ()
 {
@@ -21,6 +19,7 @@ extevent_free (Extevent *event)
 static void
 extevent_add_listener_callback (Extevent *instance, JSCValue *callback, void *user_data)
 {
+        g_object_ref(callback);
         g_ptr_array_add(instance->listeners, callback);
 }
 
@@ -37,7 +36,7 @@ extevent_has_listeners_callback (Extevent *instance, JSCValue *callback, void *u
 {
         return jsc_value_new_boolean(
                 jsc_context_get_current(),
-                *(instance->listeners->pdata) == NULL);
+                instance->listeners->len);
 }
 
 static void
@@ -46,22 +45,35 @@ extevent_remove_listener_callback (Extevent *instance, JSCValue *callback, void 
         g_ptr_array_remove(instance->listeners, callback);
 }
 
-static void
+static JSCValue *
 extevent_run_callback (Extevent *instance, GPtrArray *args, void *user_data)
 {
-        JSCValue **fn;
-        JSCValue *tmp;
-        if (*(instance->listeners->pdata))
-                for (fn = (JSCValue **)(instance->listeners->pdata);
-                     *fn != NULL; fn++)
-                        tmp = jsc_value_function_callv(
-                                *fn, args->len, (JSCValue **)args->pdata);
+        JSCContext *context = jsc_context_get_current();
+        JSCValue *jsargs = jsc_value_new_array_from_garray(context, args);
+        JSCValue *result = jsc_value_new_undefined(context);
+        int i;
+        if (instance->listeners->len) {
+                for (i = 0; i < instance->listeners->len; i++) {
+                        JSCValue *fn = instance->listeners->pdata[i];
+                        JSCValue *tmp = jsc_value_function_call(
+                                jsc_context_evaluate(
+                                        context, "var apply = (fn, args) => fn(...args); apply", -1),
+                                JSC_TYPE_VALUE, fn, JSC_TYPE_VALUE, jsargs,
+                                G_TYPE_NONE);
+                        if (!(jsc_value_is_boolean(tmp) && !jsc_value_to_boolean(tmp))
+                            && !(jsc_value_is_undefined(tmp))) {
+                                result = tmp;
+                                break;
+                        }
+                }
+        }
+        return result;
 }
 
 void inject_extevent_api (char* extension_name)
 {
         JSCContext *context = get_extension_context(extension_name);
-        ExtEvent = jsc_context_register_class(
+        JSCClass *ExtEvent = jsc_context_register_class(
                 context, "ExtEvent", NULL, NULL, (GDestroyNotify) extevent_free);
         JSCValue *ExtEvent_constructor = jsc_class_add_constructor(
                 ExtEvent, NULL, G_CALLBACK(extevent_constructor_callback),
@@ -80,6 +92,6 @@ void inject_extevent_api (char* extension_name)
                              NULL, NULL, G_TYPE_NONE, 1, JSC_TYPE_VALUE);
         jsc_class_add_method_variadic(ExtEvent, "run",
                                       G_CALLBACK(extevent_run_callback),
-                                      NULL, NULL, G_TYPE_NONE);
+                                      NULL, NULL, JSC_TYPE_VALUE);
         jsc_context_set_value(context, "ExtEvent", ExtEvent_constructor);
 }
