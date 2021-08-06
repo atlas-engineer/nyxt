@@ -476,6 +476,7 @@ Otherwise go forward to the only child."
                                                  (:b title)
                                                  title))))))
                                 history
+                                (htree:owner history (id buffer))
                                 :include-root t
                                 :collect-function #'(lambda (a b) (str:concat a (when b
                                                                                   (spinneret:with-html-string
@@ -506,6 +507,7 @@ Otherwise go forward to the only child."
                                                       (:b title))
                                                      (t title))))))) ; Color?  Smaller?
                                   history
+                                  :owner (htree:owner history current-buffer-id)
                                   :include-root t
                                   :collect-function #'(lambda (a b) (str:concat a (when b
                                                                                     (spinneret:with-html-string
