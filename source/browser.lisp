@@ -294,24 +294,32 @@ prevents otherwise."))
   (setf (slot-value *browser* 'ready-p) t))
 
 (defmethod startup ((browser browser) urls)
-  (flet ((restore-session ()
-           (let ((buffer (current-buffer)))
-             (when (histories-list buffer)
-               (match (session-restore-prompt *browser*)
-                 (:always-ask (handler-case (restore-history-by-name)
-                                ;; We handle prompt cancelation, otherwise the rest of
-                                ;; the function would not be run.
-                                (nyxt-prompt-buffer-canceled ()
-                                  (log:debug "Prompt buffer interrupted")
-                                  nil)))
-                 (:always-restore
-                  (get-data (history-path buffer))
-                  (restore-history-buffers (history-path (current-buffer))))
-                 (:never-restore
-                  (log:info "Not restoring session.")
-                  (get-data (history-path buffer)))))))
-         (load-start-urls (urls)
-           (when urls (open-urls urls))))
+  (labels ((clear-history-owners (buffer)
+             "Warning: We clear the previous owners here.
+After this, buffers from a previous session are permanently lost, they cannot be
+restored."
+             (with-data-access (history (history-path buffer))
+               (clrhash (htree:owners history))))
+           (restore-session ()
+             (let ((buffer (current-buffer)))
+               (when (histories-list buffer)
+                 (match (session-restore-prompt *browser*)
+                   (:always-ask (handler-case (restore-history-by-name)
+                                  ;; We handle prompt cancelation, otherwise the rest of
+                                  ;; the function would not be run.
+                                  (nyxt-prompt-buffer-canceled ()
+                                    (clear-history-owners buffer)
+                                    (log:debug "Prompt buffer interrupted")
+                                    nil)))
+                   (:always-restore
+                    (get-data (history-path buffer))
+                    (restore-history-buffers (history-path (current-buffer))))
+                   (:never-restore
+                    (log:info "Not restoring session.")
+                    (get-data (history-path buffer))
+                    (clear-history-owners buffer))))))
+           (load-start-urls (urls)
+             (when urls (open-urls urls))))
     (window-make browser)
     (let ((window (current-window)))
       (window-set-buffer window (help :no-history-p t))
