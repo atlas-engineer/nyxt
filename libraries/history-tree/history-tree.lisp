@@ -628,13 +628,11 @@ current node result to the result of further traversal."
             (apply #'append (mapcar #'traverse (children root))))))))
 
 (export-always 'map-owned-tree)
-(defun map-owned-tree (function tree &key flatten include-root
-                                       (collect-function #'cons)
-                                       owner)
+(defun map-owned-tree (function tree owner &key flatten include-root
+                                             (collect-function #'cons))
   "Like `map-tree' but restrict traversal to OWNER's nodes."
-  (map-tree function (if (history-tree-p tree)
-                         (owned-root owner)
-                         tree)
+  (map-tree function tree
+            :owner owner
             :flatten flatten
             :include-root include-root
             :collect-function collect-function
