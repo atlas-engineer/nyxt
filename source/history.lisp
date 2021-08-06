@@ -446,10 +446,7 @@ If you want to save the current history file beforehand, call
     (let ((old-buffers (buffer-list)))
       (sera:and-let* ((new-history (get-data path)))
         ;; TODO: Maybe modify `history-path' of all the buffers instead of polluting history?
-        (log:info "BEFORE set-data" new-history )
         (%set-data (history-path (current-buffer)) new-history)
-        (log:info "AFTER set-data" new-history)
         (restore-history-buffers (history-path (current-buffer)))
-        (log:info "AFTER restore")
         (dolist (buffer old-buffers)
           (buffer-delete buffer))))))
