@@ -158,13 +158,11 @@ FUNCTION is the action to perform on the selected elements."
                     :multi-selection-p multi-selection-p
                     :constructor (lambda (source)
                                    (declare (ignore source))
-                                   (add-element-hints :selector selector)))
-                   :after-destructor
-                   (lambda ()
-                     (with-current-buffer buffer
-                       (remove-element-hints))))))
+                                   (add-element-hints :selector selector))))))
       (when result
-        (funcall function result)))))
+        (funcall function result))
+      (with-current-buffer buffer
+        (remove-element-hints)))))
 
 (defmethod prompter:object-attributes :around ((element plump:element))
   `(,@(when (plump:get-attribute element "nyxt-hint")
