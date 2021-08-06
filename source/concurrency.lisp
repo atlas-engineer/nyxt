@@ -6,7 +6,8 @@
 (defun initialize-lparallel-kernel (&key (worker-count (sera:count-cpus)))
   "Initialize the lparallel kernel with WORKER-COUNT, if not supplied set it to
 the amount of CPU cores.."
-  (setf lparallel:*kernel* (lparallel:make-kernel worker-count)))
+  (unless lpara:*kernel*
+    (setf lpara:*kernel* (lpara:make-kernel worker-count))))
 
 (export-always 'with-protect)
 (defmacro with-protect ((format-string &rest args) &body body)
