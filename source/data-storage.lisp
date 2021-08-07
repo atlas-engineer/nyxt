@@ -245,6 +245,13 @@ place of PATH `basename'.
            (setf fullname (str:concat fullname ".lisp")))
          fullname)))))
 
+(export-always 'always-save-p)
+(defgeneric always-save-p (path)
+  (:documentation "Should we always save data to this path (even if we
+are in nosave-buffer)?")
+  (:method ((path data-path)) nil)
+  (:method ((path bookmarks-data-path)) t))
+
 (export-always 'expand-data-path)
 (defmethod expand-data-path ((profile data-profile) (path data-path))
   "Return finalized path.
@@ -288,7 +295,8 @@ Define a method for your `data-path' type to make it restorable."))
 
 (defmethod store ((profile nosave-data-profile) (path data-path) &key &allow-other-keys)
   "This method guarantees PATH will not be persisted to disk in NOSAVE-DATA-PROFILE."
-  nil)
+  (when (always-save-p path)
+    (call-next-method)))
 
 (defmethod store :around ((profile data-profile) (path async-data-path) &key &allow-other-keys)
   (labels ((worker ()
@@ -382,11 +390,15 @@ means the store operations are systematically delayed."))
 
 (defmethod get-user-data ((profile nosave-data-profile) (path data-path))
   "Look up the buffer-local data in case of `nosave-data-profile'."
-  (%get-user-data profile path (user-data-cache profile)))
+  (if (always-save-p path)
+      (call-next-method)
+      (%get-user-data profile path (user-data-cache profile))))
 
 (defmethod set-user-data ((profile nosave-data-profile) (path data-path) value)
-  (setf (data (%get-user-data profile path (user-data-cache profile)))
-        value))
+  (if (always-save-p path)
+      (call-next-method)
+      (setf (data (%get-user-data profile path (user-data-cache profile)))
+            value)))
 
 (export-always 'get-data)               ; TODO: Unexport?
 ;; TODO: Better name? Isn't it too wide?
