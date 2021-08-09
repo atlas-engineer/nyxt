@@ -9,7 +9,7 @@
    (value nil
           :type t
           :documentation "The hook value."))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod prompter:object-attributes ((hook-description hook-description))
   `(("Name" ,(name hook-description))
@@ -52,7 +52,7 @@
                              :global-p (global-p source)
                              :mode-symbols (mapcar #'mode-name (modes (buffer source))))))))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompter source to execute commands."))
 (define-user-class command-source)
 

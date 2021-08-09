@@ -8,7 +8,7 @@
    (editable nil))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Socket files are typically stored in a dedicated directory."))
 
 (defmethod expand-data-path ((profile data-profile) (data-path socket-data-path))

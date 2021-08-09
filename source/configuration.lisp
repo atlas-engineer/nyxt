@@ -6,12 +6,12 @@
 (define-class init-data-path (data-path)
   ((basename "init"))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class auto-init-data-path (init-data-path)
   ((basename "auto-config"))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defun expand-init-path (data-path option no-option)
   "Helper for `init-data-path''s `expand-data-path'."
@@ -44,7 +44,7 @@
 (define-class extensions-data-path (data-path)
   ((ref "extensions"))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod expand-data-path ((profile data-profile) (path extensions-data-path))
   "Return finalized path for extension directory."
@@ -201,7 +201,7 @@ CLASS-SYM to NEW-SUPERCLASSES.  The class is restored when exiting BODY."
                                                       ,initform))
                   else do
                     (log:warn "Undefined slot ~a in ~a" (first slot) final-name)))
-         (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+         (:accessor-name-transformer (class*:make-name-transformer name)))
        ;; TODO: Register the user methods and add function to remove them, like
        ;; `reset-user-class'.
        ;; Non-standard accessors, e.g. `default-modes':

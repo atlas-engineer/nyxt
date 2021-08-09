@@ -71,7 +71,7 @@ Cannot be null.")
 The handlers take the window as argument."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "A window is a view where buffers are displayed."))
 
 (define-user-class window)

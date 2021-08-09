@@ -35,7 +35,7 @@
                :documentation "Deprecated, use `search-engine' instead."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod prompter:object-attributes ((entry bookmark-entry))
   ;; TODO: Add annocation slots?
@@ -108,7 +108,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                       (prompter:fuzzy-match suggestion source (last-word input))))
    (prompter:multi-selection-p t)
    (prompter:constructor (tag-suggestions)))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-command list-bookmarks ()
   "List all bookmarks in a new buffer."

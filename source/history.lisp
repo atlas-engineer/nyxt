@@ -30,7 +30,7 @@ not include explicit visits.")
                     :type list-of-numbers
                     :documentation "The scroll position user was at when last visiting the page.
 It's a list of a form (Y &OPTIONAL X)."))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "
 Entry for the global history.
 The total number of visit for a given URL is (+ explicit-visits implicit-visits)."))

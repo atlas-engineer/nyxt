@@ -8,7 +8,7 @@
    (element nil :documentation "The header-representing element of `document-model'.")
    (buffer :documentation "The buffer to which this heading belongs.")
    (keywords :documentation "Keywords associated with this heading."))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "A heading. The inner-text must not be modified, so that we
   can jump to the anchor of the same name."))
 

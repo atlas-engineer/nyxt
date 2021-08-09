@@ -103,7 +103,7 @@
    (prompter:constructor
     (lambda (source)
       (ospm:list-packages (profile source)))))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class os-profile-source (prompter:source)
   ((prompter:name "Profiles")
@@ -111,7 +111,7 @@
    (prompter:constructor
     (lambda (source) (ospm:list-profiles
                       :include-manager-p (include-manager-p source)))))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class os-generation-source (prompter:source)
   ((prompter:name "Packages")
@@ -119,7 +119,7 @@
    (prompter:constructor
     (lambda (source) 
       (ospm:list-generations (profile source)))))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defun %describe-os-package (packages)
   (let* ((buffer (or (find-buffer 'os-package-manager-mode)

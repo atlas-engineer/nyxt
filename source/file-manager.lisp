@@ -60,7 +60,7 @@ Accepts the name of the file as the first argument and has two keyword arguments
   most probably will be equal to `open-file-in-new-buffer-p'."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompt source for file(s) on the disk."))
 (define-user-class file-source)
 

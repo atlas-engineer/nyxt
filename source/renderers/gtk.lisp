@@ -37,7 +37,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
                 :documentation "Single instantiation of our custom web context."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-user-class browser (gtk-browser))
 
 (define-class gtk-window ()
@@ -60,7 +60,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
    (key-string-buffer))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-user-class window (gtk-window))
 
 (define-class gtk-buffer ()
@@ -77,7 +77,7 @@ data-manager will store the data separately for each buffer.")
                         :documentation "Directory to store the WebKit-specific extensions in."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-user-class buffer (gtk-buffer))
 
 (defmethod web-context ((browser gtk-browser))
@@ -187,7 +187,7 @@ not return."
   ((dirname (uiop:xdg-cache-home +data-root+ "data-manager"))
    (ref :initform "data-manager"))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod expand-data-path ((profile nosave-data-profile) (path data-manager-data-path))
   "We shouldn't store any `data-manager' data for `nosave-data-profile'."
@@ -197,7 +197,7 @@ not return."
   ((dirname (uiop:xdg-config-home +data-root+ "extensions"))
    (ref :initform "gtk-extensions"))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod expand-data-path ((profile nosave-data-profile) (path gtk-extensions-data-path))
   ;; REVIEW: Should we?
@@ -208,7 +208,7 @@ not return."
   ((gtk-object)
    (handler-ids
     :documentation "See `gtk-buffer' slot of the same name."))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-user-class download (gtk-download))
 
 (defun make-web-view (&key context-buffer)
