@@ -25,6 +25,7 @@
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria :nyxt)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum :nyxt)
   (trivial-package-local-nicknames:add-package-local-nickname :lpara :lparallel :nyxt)
+  (trivial-package-local-nicknames:add-package-local-nickname :class* :hu.dwim.defclass-star :nyxt)
   (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks :nyxt))
 
 (defun nyxt::use-nyxt-package-nicknames ()
