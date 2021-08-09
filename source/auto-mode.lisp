@@ -8,11 +8,8 @@
   (:import-from #:serapeum #:->)
   (:documentation "Mode for automatic URL-based mode toggling."))
 (in-package :nyxt/auto-mode)
-
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
-  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum)
-  (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks))
+  (use-nyxt-package-nicknames))
 
 (define-class mode-invocation ()
   ((name (error "Mode invocation should have a name to call mode through.")

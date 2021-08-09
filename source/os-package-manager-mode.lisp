@@ -8,8 +8,7 @@
   (:documentation "Universal interface to various operating system package managers."))
 (in-package :nyxt/os-package-manager-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
-  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
+  (use-nyxt-package-nicknames))
 
 ;; TODO: Prompt for password?  Use this:
 ;; (with-input-from-string (i "password")

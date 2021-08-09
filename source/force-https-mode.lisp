@@ -7,7 +7,7 @@
 (in-package :nyxt/force-https-mode)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks))
+  (use-nyxt-package-nicknames))
 
 ;; TODO: Add style to loop help page?
 (defun https->http-loop-help (buffer url) ; TODO: Factor with tls-help?

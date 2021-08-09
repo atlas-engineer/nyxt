@@ -10,8 +10,7 @@
   (:documentation "Nyxt-specific DOM classes and functions operating on them."))
 (in-package :nyxt/dom)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
-  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
+  (use-nyxt-package-nicknames))
 
 ;; TODO: Factor out into a library?
 

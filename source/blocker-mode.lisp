@@ -7,9 +7,7 @@
   (:documentation "Block resource queries for listed hosts."))
 (in-package :nyxt/blocker-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
-  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum)
-  (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks))
+  (use-nyxt-package-nicknames))
 
 ;; TODO: Add convenient interface to block hosts depending on the current URL.
 

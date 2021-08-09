@@ -8,8 +8,7 @@
   (:documentation "Development helpers"))
 (in-package :nyxt/debug)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
-  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
+  (use-nyxt-package-nicknames))
 
 (defvar *all-nyxt-objects* '()
   "Weak list of all Nyxt objects.

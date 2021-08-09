@@ -6,8 +6,7 @@
   (:documentation "Certificate exception mode"))
 (in-package :nyxt/certificate-exception-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
-  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
+  (use-nyxt-package-nicknames))
 
 (sera:export-always '*default-certificate-exceptions*)
 (defparameter *default-certificate-exceptions* '()

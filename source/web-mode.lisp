@@ -12,8 +12,7 @@
   (:documentation "Mode for web pages"))
 (in-package :nyxt/web-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
-  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
+  (use-nyxt-package-nicknames))
 
 ;; TODO: Remove web-mode from special buffers (e.g. help).
 ;; This is required because special buffers cannot be part of a history (and it breaks it).
