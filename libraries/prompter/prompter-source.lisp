@@ -465,13 +465,14 @@ If you are looking for a source that just returns its plain suggestions, use `so
 
 (export-always 'ensure-suggestions-list)
 (defmethod ensure-suggestions-list ((source source) elements)
-  (mapcar (lambda (suggestion-value)
-            (if (suggestion-p suggestion-value)
-                suggestion-value
-                (funcall (suggestion-maker source)
-                         suggestion-value
-                         source)))
-          (uiop:ensure-list elements)))
+  (lparallel:pmapcar
+   (lambda (suggestion-value)
+     (if (suggestion-p suggestion-value)
+         suggestion-value
+         (funcall (suggestion-maker source)
+                  suggestion-value
+                  source)))
+   (uiop:ensure-list elements)))
 
 (defmethod initialize-instance :after ((source source) &key)
   "See the `constructor' documentation of `source'."

@@ -510,6 +510,7 @@ See `asdf::*immutable-systems*'."
                calispel
                cl-containers
                closer-mop
+               lparallel
                mk-string-metrics
                moptilities
                serapeum
