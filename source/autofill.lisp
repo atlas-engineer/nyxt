@@ -4,12 +4,7 @@
 (in-package :nyxt)
 
 (define-class autofill ()
-  ((key
-    ""
-    :accessor autofill-key
-    :documentation "Unique and short key to identify the autofill by. This will
-    be removed in 3.0.0.")
-   (name
+  ((name
     ""
     :type string
     :accessor autofill-name
