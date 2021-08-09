@@ -8,5 +8,4 @@
         #:prove)
   (:import-from #:prompter))
 
-(unless lparallel:*kernel*
-  (setf lparallel:*kernel* (lparallel:make-kernel worker-count)))
+(setf lparallel:*kernel* (lparallel:make-kernel (or (serapeum:count-cpus) 1)))
