@@ -29,7 +29,7 @@ inject_apis (void* extension_name, void *data, void *user_data)
 static void
 document_loaded_callback (WebKitWebPage *web_page)
 {
-        g_hash_table_foreach (EXTENSIONS_DATA, inject_apis, NULL);
+        g_hash_table_foreach(EXTENSIONS_DATA, inject_apis, NULL);
 }
 
 static void
@@ -66,6 +66,7 @@ web_page_created_callback (WebKitWebExtension *extension,
                           NULL);
         PAGE = web_page;
         add_extensions(web_page);
+        g_hash_table_foreach(EXTENSIONS_DATA, inject_apis, NULL);
 }
 
 G_MODULE_EXPORT void
