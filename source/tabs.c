@@ -133,6 +133,46 @@ tabs_print_callback ()
         webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
 }
 
+static void
+tabs_send_message_reply_callback (GObject *web_page,
+                                  GAsyncResult *res,
+                                  gpointer user_data)
+{
+        WebKitUserMessage *message =
+                webkit_web_page_send_message_to_view_finish((WebKitWebPage *) PAGE, res, NULL);
+        GVariant *params = webkit_user_message_get_parameters(message);
+        char *json = (char*) g_variant_get_string(params, NULL);
+        if (!json)
+                json = "undefined";
+        TABS->reply = (char *) json;
+}
+
+static JSCValue *
+tabs_send_message_result_callback ()
+{
+        JSCContext *context = jsc_context_get_current();
+        return jsc_value_new_from_json(context, TABS->reply);
+}
+
+static void
+tabs_send_message_callback (char *extension_id, double tab_id, JSCValue *object)
+{
+        JSCContext *context = jsc_context_get_current();
+        JSCValue *wrapper = jsc_value_new_object(context, NULL, NULL);
+        jsc_value_object_set_property(
+                wrapper, "extensionId",
+                jsc_value_new_string(context, extension_id));
+        jsc_value_object_set_property(
+                wrapper, "tabId",
+                jsc_value_new_number(context, tab_id));
+        jsc_value_object_set_property(wrapper, "message", object);
+        char *json = jsc_value_to_json(wrapper, 0);
+        GVariant *variant = g_variant_new("s", json);
+        WebKitUserMessage *message = webkit_user_message_new("tabs.sendMessage", variant);
+        webkit_web_page_send_message_to_view(
+                PAGE, message, NULL, tabs_send_message_reply_callback, NULL);
+}
+
 void
 inject_tabs_api (char* extension_name)
 {
@@ -170,6 +210,14 @@ inject_tabs_api (char* extension_name)
                 context, "tabsGetResult",
                 G_CALLBACK(tabs_get_result_callback), NULL, NULL,
                 JSC_TYPE_VALUE, 0, G_TYPE_NONE);
+        JSCValue *tabsSendMessage = jsc_value_new_function(
+                context, "tabsSendMessage",
+                G_CALLBACK(tabs_send_message_callback), NULL, NULL,
+                G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_DOUBLE, JSC_TYPE_VALUE);
+        JSCValue *tabsSendMessageResult = jsc_value_new_function(
+                context, "tabsSendMessageResult",
+                G_CALLBACK(tabs_send_message_result_callback), NULL, NULL,
+                JSC_TYPE_VALUE, 0, G_TYPE_NONE);
         JSCValue *print = jsc_value_new_function(
                 context, NULL, G_CALLBACK(tabs_print_callback), NULL, NULL,
                 G_TYPE_NONE, 0, G_TYPE_NONE);
@@ -181,6 +229,8 @@ inject_tabs_api (char* extension_name)
         jsc_context_set_value(context, "tabsGetCurrentResult", tabsGetCurrentResult);
         jsc_context_set_value(context, "tabsGet", tabsGet);
         jsc_context_set_value(context, "tabsGetResult", tabsGetResult);
+        jsc_context_set_value(context, "tabsSendMessage", tabsSendMessage);
+        jsc_context_set_value(context, "tabsSendMessageResult", tabsSendMessageResult);
         char *tabs_query_js = "tabs.query = function (queryObject) { \
     return new Promise(function (success, failure) {                    \
         try {                                                           \
@@ -238,7 +288,22 @@ tabs.getCurrent",
     });                                                              \
 };                                                                   \
                                                                      \
-tabs.get";
+tabs.get",
+                *tabs_send_message_js = "tabs.sendMessage = function (tabId, message, options) {\
+    return new Promise(function (success, failure) {                    \
+        try {                                                           \
+            management.getSelf().then(function (info) {                 \
+            tabsSendMessage(info.id, tabId, message);                            \
+            setTimeout(() => {                                          \
+                success(runtimeSendMessageResult());},                  \
+                        10);});                                         \
+        } catch (error) {                                               \
+            return failure(error);                                      \
+        };                                                              \
+    });                                                                 \
+};                                                                      \
+                                                                        \
+tabs.sendMessage";
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "tabs", -1),
                 "query",
@@ -255,6 +320,10 @@ tabs.get";
                 jsc_context_evaluate(context, "tabs", -1),
                 "get",
                 jsc_context_evaluate(context, tabs_get_js, -1));
+        jsc_value_object_set_property(
+                jsc_context_evaluate(context, "tabs", -1),
+                "sendMessage",
+                jsc_context_evaluate(context, tabs_send_message_js, -1));
         jsc_value_object_set_property(jsc_context_evaluate(context, "tabs", -1),
                                       "print", print);
         jsc_value_object_set_property(
