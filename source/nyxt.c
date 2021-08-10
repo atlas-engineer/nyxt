@@ -6,8 +6,6 @@
 #include "tabs.h"
 #include "runtime.h"
 
-static WebKitScriptWorld *hello_world = NULL;
-
 static gboolean
 user_message_received (WebKitWebPage     *web_page,
                        WebKitUserMessage *message,
