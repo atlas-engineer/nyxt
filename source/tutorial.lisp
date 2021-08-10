@@ -213,6 +213,15 @@ executing "(:code "disable-mode") " while choosing exactly the same buffers and
 modes previously selected. Finally, " (:code "toggle-mode") " also allows
 activation and deactivation of multiple modes, but only for the current
 buffer.")
+   (:h3 "Light navigation")
+   (:p "Reduce internet bandwidth using: ")
+   (:ul
+    (:li (command-markup 'nyxt/noimage-mode:noimage-mode) ": "
+         (command-docstring-first-sentence 'nyxt/noimage-mode:noimage-mode))
+    (:li (command-markup 'nyxt/noscript-mode:noscript-mode) ": "
+         (command-docstring-first-sentence 'nyxt/noscript-mode:noscript-mode))
+    (:li (command-markup 'nyxt/nowebgl-mode:nowebgl-mode) ": "
+         (command-docstring-first-sentence 'nyxt/nowebgl-mode:nowebgl-mode)))
    (:h3 "Visual mode")
    (:p "Select text without a mouse. Nyxt's "
        (:code "visual-mode") " imitates Vim's visual mode (and comes with the
