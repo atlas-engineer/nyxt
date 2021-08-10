@@ -216,12 +216,12 @@ buffer.")
    (:h3 "Light navigation")
    (:p "Reduce bandwidth usage via: ")
    (:ul
-    (:li (command-markup 'nyxt/noimage-mode:noimage-mode) ": "
-         (command-docstring-first-sentence 'nyxt/noimage-mode:noimage-mode))
-    (:li (command-markup 'nyxt/noscript-mode:noscript-mode) ": "
-         (command-docstring-first-sentence 'nyxt/noscript-mode:noscript-mode))
-    (:li (command-markup 'nyxt/nowebgl-mode:nowebgl-mode) ": "
-         (command-docstring-first-sentence 'nyxt/nowebgl-mode:nowebgl-mode)))
+    (:li (command-markup 'nyxt/no-image-mode:no-image-mode) ": "
+         (command-docstring-first-sentence 'nyxt/no-image-mode:no-image-mode))
+    (:li (command-markup 'nyxt/no-script-mode:no-script-mode) ": "
+         (command-docstring-first-sentence 'nyxt/no-script-mode:no-script-mode))
+    (:li (command-markup 'nyxt/no-webgl-mode:no-webgl-mode) ": "
+         (command-docstring-first-sentence 'nyxt/no-webgl-mode:no-webgl-mode)))
    (:h3 "Visual mode")
    (:p "Select text without a mouse. Nyxt's "
        (:code "visual-mode") " imitates Vim's visual mode (and comes with the
