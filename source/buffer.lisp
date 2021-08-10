@@ -413,6 +413,23 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 (defmethod default-modes append ((buffer nosave-buffer))
   '(certificate-exception-mode))
 
+(define-class background-buffer (user-web-buffer)
+  ()
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:export-predicate-name-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:documentation "A non-user-facing buffer to run background processes in.
+Examples of the processes to run in background buffer are:
+- WebExtensions background pages.
+- Page scraping processes.
+- Anything else requiring a renderer running and user unaware.
+
+These buffers are not indexed by browser, so the only way to control these is to
+store them somewhere and kill them once done."))
+
+(define-user-class background-buffer)
+
 (define-class internal-buffer (user-buffer)
   ((style
     (theme:themed-css
@@ -867,6 +884,17 @@ See `make-buffer'."
     (set-current-buffer buffer)
     buffer))
 
+(declaim (ftype (function (&key (:title string)
+                                (:modes (or null (cons symbol *)))
+                                (:url quri:uri)))
+                make-background-buffer))
+(export-always 'make-background-buffer)
+(defun make-background-buffer (&rest args &key title modes url)
+  "Create a new web-aware buffer that won't be registered by the `browser'.
+See `make-buffer' for a description of the arguments."
+  (declare (ignorable title modes url))
+  (apply #'make-buffer (append (list :buffer-class 'user-background-buffer :no-history-p t) args)))
+
 (define-command make-internal-buffer (&key (title "") modes no-history-p)
   "Create a new buffer.
 MODES is a list of mode symbols.
@@ -906,8 +934,11 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
                       (setf (id dead-buffer) (get-unique-identifier *browser*))
                       (ffi-buffer-make dead-buffer))
                     (apply #'make-instance buffer-class
-                           :id (get-unique-identifier *browser*)
                            (append (when title `(:title ,title))
+                                   (if (eq buffer-class 'user-background-buffer)
+                                       ;; Empty ID causes web views to not initialize properly.
+                                       `(:id "b")
+                                       `(:id ,(get-unique-buffer-identifier *browser*)))
                                    (when data-profile `(:data-profile ,data-profile)))))))
     (hooks:run-hook (buffer-before-make-hook *browser*) buffer)
     ;; Modes might require that buffer exists, so we need to initialize them
@@ -916,7 +947,9 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (mapc (alex:rcurry #'make-mode buffer) extra-modes)
     (when dead-buffer                   ; TODO: URL should be already set.  Useless?
       (setf (url buffer) (url dead-buffer)))
-    (buffers-set (id buffer) buffer)
+    ;; Background buffers are invisible to the browser.
+    (unless (eq buffer-class 'user-background-buffer)
+      (buffers-set (id buffer) buffer))
     (unless no-history-p
       ;; When we create buffer, current one can override the
       ;; data-profile of the created buffer. This is dangerous,
