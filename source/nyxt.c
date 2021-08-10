@@ -13,12 +13,53 @@ user_message_received (WebKitWebPage     *web_page,
                        WebKitUserMessage *message,
                        gpointer           user_data)
 {
-        return FALSE;
+        const char *name = webkit_user_message_get_name(message);
+        const char *contents = g_variant_get_string(webkit_user_message_get_parameters(message), NULL);
+        g_print("Got message. Name is %s, contents is %s\n", name, contents);
+        if (!strcmp("message", name)){
+                g_print("Message has \"message\" type\n");
+                JSCValue *meta = jsc_value_new_from_json(jsc_context_new(), contents);
+                g_print("Got metadata\n");
+                char *extension_name = jsc_value_to_string(jsc_value_object_get_property(meta, "extensionName"));
+                g_print("Got extension name\n");
+                JSCContext *context = get_extension_context(extension_name);
+                g_print("Got context\n");
+                meta = jsc_value_new_from_json(context, contents);
+                g_print("Re-initialized metadata\n");
+                JSCValue *sender = jsc_value_object_get_property(meta, "sender");
+                g_print("Got sender\n");
+                JSCValue *object = jsc_value_object_get_property(meta, "message");
+                g_print("Got message object\n");
+                char *code = malloc(sizeof(char*) * 10000);
+                sprintf(code, "var res = await browser.runtime.onMessage.run(JSON.parse('%s'), JSON.parse('%s')); res",
+                        jsc_value_to_json(object, 0),
+                        jsc_value_to_json(sender, 0));
+                g_print("Printed the code: %s\n", code);
+                JSCValue *result = jsc_context_evaluate(context, code, -1);
+                g_print("Evaluated the code, result is %s\n", jsc_value_to_json(result, 0));
+                GVariant *reply_contents = g_variant_new_string(
+                        jsc_value_to_json(result, 0));
+                g_print("Made the payload\n");
+                WebKitUserMessage *reply = webkit_user_message_new(name, reply_contents);
+                g_print("Made the reply\n");
+                webkit_user_message_send_reply(message, reply);
+                g_print("Sent the reply\n");
+                return TRUE;
+        } else {
+                g_print("Message has a type other than \"message\"\n");
+                WebKitUserMessage *reply = webkit_user_message_new(name, NULL);
+                g_print("Made the reply\n");
+                webkit_user_message_send_reply(message, reply);
+                g_print("Sent the reply\n");
+                return TRUE;
+        }
 }
 
 static void
 inject_apis (void* extension_name, void *data, void *user_data)
 {
+        g_print("Injecting APIs for page %lu, URL %s",
+                webkit_web_page_get_id(PAGE), webkit_web_page_get_uri(PAGE));
         inject_browser((char*) extension_name);
         inject_extevent_api((char*) extension_name);
         inject_management_api((char*) extension_name);
