@@ -98,8 +98,7 @@ The handlers take the window as argument."))
    (prompter:constructor (lambda (source)
                            (panel-buffers (window source))))))
 
-(define-command-global delete-panel-buffer (&key (window (current-window))
-                                            panels)
+(define-command-global delete-panel-buffer (&key (window (current-window)) panels)
   "Prompt the user to delete a panel buffer."
   (let ((panels (or panels
                     (prompt
