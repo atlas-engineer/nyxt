@@ -200,10 +200,8 @@ not return."
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod expand-data-path ((profile nosave-data-profile) (path gtk-extensions-data-path))
-  ;; REVIEW: Should we?
   "We shouldn't enable (possibly) user-identifying extensions for `nosave-data-profile'."
   nil)
-
 
 (define-class gtk-download (download)
   ((gtk-object)
