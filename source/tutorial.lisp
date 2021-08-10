@@ -253,8 +253,8 @@ of Vim's (and comes with the CUA and Emacs-like keybindings out of the box, too)
     (:li (command-markup 'nyxt/visual-mode:backward-sentence
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
          ": Move the caret (or a selection of text) one sentence backward."))
-   (:p "Commands designed for ease of (default) (:code "cua-mode") use,
-but available to all: ")
+   (:p "Avilable commands for ease of (default) CUA-mode use,
+(but available to all): ")
    (:ul
     (:li (command-markup 'nyxt/visual-mode:forward-char-with-selection
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
