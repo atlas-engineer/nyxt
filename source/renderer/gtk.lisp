@@ -1034,7 +1034,7 @@ See `gtk-browser's `modifier-translator' slot."
       ("width" . ,(gdk:gdk-rectangle-width
                    (gtk:gtk-widget-get-allocation (gtk-object buffer))))
       ("highlighted" . ,(eq buffer (active-buffer (current-window))))
-      ("id" . ,(parse-integer (id buffer)))
+      ("id" . ,(or (parse-integer (id buffer) :junk-allowed t) 0))
       ("incognito" . ,(nosave-buffer-p buffer))
       ("lastAccessed" . ,(* 1000 (local-time:timestamp-to-unix (last-access buffer))))
       ("selected" . ,(eq buffer (active-buffer (current-window))))
