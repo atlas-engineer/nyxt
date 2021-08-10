@@ -6,59 +6,59 @@
 (defun tutorial-content ()
   (spinneret:with-html-string
    (:h2 "Core concepts")
-   (:h3 "Keybindings and commands")
+   (:h3 "Key-bindings and commands")
    (:p "Commands are invoked by pressing specific keys or from
 the " (:code "execute-command") " menu (" (:code (binding-keys 'execute-command))
 ").")
-   (:p "Keybindings are represented like this: 'C-x'. In this example, 'C' is a
-shortcut for the modifier 'control', and 'x' represents the character 'x'. To
-input the 'C-x' keybinding you would keep 'control' pressed and then hit 'x'.
-Multiple key presses can be chained: in 'C-x C-s', you would have to press
-'C-x', and then press 'C-s'.")
-   (:p "Modifier keys legend:")
+   (:p "Key-sequences used for key-bindings are represented like this: 'C-x'.~%
+Here, 'C' is a
+shortcut for the modifier 'control', and 'x' is the character 'x'.~%To
+input 'C-x', keep 'control' pressed and then hit 'x'.~%
+Chain distinct key-sequences, you madlad. With 'C-x C-s', 'C-x', is pressed first,
+and then 'C-s'.")
+   (:p "Modifier-keys legend:")
    (:ul
     (:li (:code "control") " (" (:code "C") "): Control key")
-    (:li (:code "super") " (" (:code "S") "): Windows key, Command key")
+    (:li (:code "super") " (" (:code "S") "): Super key, Command key")
     (:li (:code "meta") " (" (:code "M") "): Alt key, Option key")
     (:li (:code "shift") " (" (:code "s") "): Shift key"))
-   (:p "Modifiers can be remapped, see the " (:code "modifier-translator")
+   (:p "Modifiers can be remapped. Read the " (:code "modifier-translator")
        " slot of the " (:code "gtk-browser") " class.")
 
    (:h3 "Quickstart keys")
    (:ul
-    (:li (:code (binding-keys 'set-url)) ": Load URL")
-    (:li (:code (binding-keys 'reload-current-buffer)) ": Reload buffer")
-    (:li (:code (binding-keys 'set-url-new-buffer)) ": Load URL in new buffer")
+    (:li (:code (binding-keys 'set-url)) ": Load a URL")
+    (:li (:code (binding-keys 'reload-current-buffer)) ": Reload a buffer")
+    (:li (:code (binding-keys 'set-url-new-buffer)) ": Load a URL in a new buffer")
     (:li (:code (binding-keys 'switch-buffer-previous)) ", " (:code (binding-keys 'switch-buffer-next)) ": Switch buffer")
     (:li (:code (binding-keys 'nyxt/web-mode:history-backwards)) ": Backwards history")
     (:li (:code (binding-keys 'nyxt/web-mode:history-forwards)) ": Forwards history")
-    (:li (:code (binding-keys 'nyxt/web-mode:follow-hint)) ": Follow link in current buffer")
-    (:li (:code (binding-keys 'nyxt/web-mode:follow-hint-new-buffer)) ": Follow link in new buffer")
+    (:li (:code (binding-keys 'nyxt/web-mode:follow-hint)) ": Follow a link in the current buffer")
+    (:li (:code (binding-keys 'nyxt/web-mode:follow-hint-new-buffer)) ": Follow a link in a new buffer")
     (:li (:code (binding-keys 'quit)) ": Quit")
     (:li (:code (binding-keys 'execute-command)) ": Run a command by name")
     (:li (:code (binding-keys 'describe-bindings)) ": List all bindings for the current buffer"))
 
    (:h3 "Buffers")
-   (:p "Nyxt uses the concept of buffers instead of tabs. Unlike tabs, buffers
-are fully separated, each buffer having its own behavior and settings.")
+   (:p "Buffers are instead of tabs. Unlike tabs, buffers
+are fully separated, each having its own behavior and settings.")
    (:h3 "Modes")
-   (:p "Each buffer has its own list of modes, ordered by priority.  A mode is a
+   (:p "Each buffer has its own list of modes, ordered by priority.~%A mode is a
 set of functions, hooks, keybindings and other facilities that may modify the
-behavior of a buffer.  For example, 'blocker-mode' can be used for domain-based
-adblocking while 'noscript-mode' disables JavaScript.")
-   (:p "Each buffer has separate instances of modes, which means that altering
-the settings of a mode in a buffer does not impact other buffers.  Mode specific
+behaviour of a buffer.~%For example, 'blocker-mode' can be used for domain-based
+ad-blocking while 'noscript-mode' disables JavaScript.")
+   (:p "Each buffer has separate instances of modes, which means altering
+the settings of a mode in a buffer does not impact other buffers.~%Mode specific
 functions/commands are only available when a mode is enabled for the current
 buffer.")
    (:p "Each mode has an associated " (:i "mode toggler") " which is a command
 of the same name that toggles the mode for the current buffer.")
 
    (:h3 "Prompt buffer")
-   (:p "The prompt buffer is a menu that will appear when a command requests user
-input. For example, when invoking the " (:code "set-url") " command, you must
-supply the URL you would like to navigate to.  The prompt buffer can provide
-suggestions.  The list of suggestions will automatically narrow down to those
-matching your input as you type.")
+   (:p "The prompt buffer is a menu appearing when a command requests user
+input.~%Supply a desired URL when using the " (:code "set-url") " command.~%
+The prompt buffer can provide suggestions.~%The list of suggestions are narrowed down
+to those matching your input (as you type).")
    (:ul
     (:li  (command-markup 'nyxt/prompt-buffer-mode:return-selection
                           :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
@@ -67,12 +67,11 @@ no suggestion.")
     (:li  (command-markup 'nyxt/prompt-buffer-mode:return-selection-over-action
                           :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
           ": Query the user for an action to run over the selected suggestion(s)."))
-   (:p " Some commands support multiple selections, for
-instance " (:code "delete-buffer") " can delete all selected buffers at once.
-When the input is changed and the suggestions are re-filtered, the selection is
-not altered even if the marked elements don't show.")
+   (:p " Some commands support multiple selections; " (:code "delete-buffer") " can delete all
+selected buffers at once.~%When the input is changed and the suggestions are re-filtered, the
+selection is not altered, even if the marked elements don't show.")
    (:p "When at least one suggestion is marked, only the marked suggestions are processed
-upon return.  The suggestion under the cursor is not processed if not marked.")
+upon return.~%Unless marked, the suggestion under the cursor is not processed.")
    (:ul
     (:li  (command-markup 'nyxt/prompt-buffer-mode:toggle-mark
                           :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
@@ -88,54 +87,52 @@ upon return.  The suggestion under the cursor is not processed if not marked.")
           ": Toggle the mark of all currently-displayed suggestions.")
     (:li  (command-markup 'nyxt/prompt-buffer-mode:toggle-attributes-display
                           :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
-          ": Change which attributes are displayed in the suggestions list."))
+          ": Change which attributes are displayed in the suggestion list."))
 
    (:h3 "Message area")
-   (:p "The message area represents a space (typically at the bottom of a
-window) where Nyxt outputs messages back to you. To view the history of all
-messages, invoke the command " (:code "list-messages") ".")
+   (:p "Messages are displayed in a area (typically at the bottom of a
+window).~%Get the history of all messages with the " (:code "list-messages") ".
+command.")
 
    (:h3 "Status area")
-   (:p "The status area is where information about the state of that buffer is
-printed (typically at the bottom of a window). By default, this includes the
-active modes, the URL, and the title of the current buffer.")
+   (:p "The status area (typically at the bottom of a window) displays buffer state.~%
+By default this includes the active modes, URL, and title of the current buffer.")
 
    (:h2 "Basic controls")
    (:h3 "Moving within a buffer")
-   (:p "To move within a buffer, several commands are provided:")
+   (:p "Commands to navigate buffers:")
    (:ul
     (:li (command-markup 'nyxt/web-mode:scroll-down) ": Move down.")
     (:li (command-markup 'nyxt/web-mode:scroll-up) ": Move up.")
-    (:li (command-markup 'nyxt/web-mode:scroll-to-bottom) ": Jump to bottom of page.")
-    (:li (command-markup 'nyxt/web-mode:scroll-to-top) ": Jump to top of page."))
+    (:li (command-markup 'nyxt/web-mode:scroll-to-bottom) ": Jump to the bottom of a page.")
+    (:li (command-markup 'nyxt/web-mode:scroll-to-top) ": Jump to the top of a page."))
    (:h3 "Setting the URL")
-   (:p "When ambiguous URLs are inputted, Nyxt will attempt the best guess it
-can. If you do not supply a protocol in a URL, HTTPS will be assumed. To
+   (:p "Ambiguous URL input is taken at best-guess basis.~%Without a protocol in a URL,
+HTTPS is assumed.~%To
 visit a site supporting only the less secure HTTP, you must explicitly type the
 full URL including the 'http://' prefix.")
    (:ul
-    (:li (command-markup 'set-url) ": Set URL of current buffer.")
-    (:li (command-markup 'set-url-new-buffer) ": Open a new buffer and set its URL.")
-    (:li (command-markup 'make-buffer-focus) ": Make a new empty buffer."))
+    (:li (command-markup 'set-url) ": Sets the URL of the current buffer.")
+    (:li (command-markup 'set-url-new-buffer) ": Opens a new buffer and set its URL.")
+    (:li (command-markup 'make-buffer-focus) ": Makes a new empty buffer."))
    (:h3 "Switching buffers")
    (:ul
     (:li (command-markup 'switch-buffer) ": Switch buffer using fuzzy completion
-to quickly find whatever buffer you are looking for.")
-    (:li (command-markup 'switch-buffer-next) ": Go to next buffer.")
-    (:li (command-markup 'switch-buffer-previous) ": Go to previous buffer."))
+to quickly find your desired buffer.")
+    (:li (command-markup 'switch-buffer-next) ": Go to the next buffer.")
+    (:li (command-markup 'switch-buffer-previous) ": Go to the previous buffer."))
    (:h3 "Copy and paste")
-   (:p "Unlike other web browsers, Nyxt provides powerful ways of copying
-   and pasting content via different commands. Starting from:")
+   (:p "Harness powerful ways of copying and pasting content via different commands. Starting from:")
    (:ul
     (:li (command-markup 'nyxt/web-mode:copy) ": " (command-docstring-first-sentence 'nyxt/web-mode:copy))
     (:li (command-markup 'nyxt/web-mode:paste) ": " (command-docstring-first-sentence 'nyxt/web-mode:paste)))
-   (:p "Passing through webpage's data:")
+   (:p "Passing through a webpage's data:")
    (:ul
     (:li (command-markup 'copy-url) ": " (command-docstring-first-sentence 'copy-url))
     (:li (command-markup 'copy-title) ": " (command-docstring-first-sentence 'copy-title))
     (:li (command-markup 'nyxt/web-mode:copy-placeholder) ": " (command-docstring-first-sentence 'nyxt/web-mode:copy-placeholder))
     (:li (command-markup 'nyxt/web-mode:copy-hint-url) ": " (command-docstring-first-sentence 'nyxt/web-mode:copy-hint-url)))
-   (:p "Leveraging password managers: ")
+   (:p "Leveraging password-managers: ")
    (:ul 
     (:li (command-markup 'copy-username) ": " (command-docstring-first-sentence 'copy-username))
     (:li (command-markup 'copy-password) ": " (command-docstring-first-sentence 'copy-password))
@@ -145,18 +142,18 @@ to quickly find whatever buffer you are looking for.")
     (:li (command-markup 'nyxt/web-mode:paste-from-clipboard-ring) ": " (command-docstring-first-sentence 'nyxt/web-mode:paste-from-clipboard-ring))
     (:li (command-markup 'copy-system-information) ": " (command-docstring-first-sentence 'copy-system-information)))
    (:h3 "Link navigation")
-   (:p "Link-hinting allows you to visit URLs on a page without using the mouse.
-Invoke one of the commands below: several hints will appear on screen and all
-links on the page will be listed in the prompt buffer.  You can select the hints
-by matching against the hint, the URL or the title.")
+   (:p "Link-hinting allows visiting URLs on a page without mousing.~%
+Invoke one of the commands below: Several hints will appear on screen and all
+links on the page will be listed in the prompt buffer.~%Select the hints
+by matching against the hint, URL, or title.")
    (:ul
     (:li (command-markup 'nyxt/web-mode:follow-hint) ": Go to link in current buffer.")
     (:li (command-markup 'nyxt/web-mode:follow-hint-new-buffer-focus) ": Create new buffer with link; focus on new buffer.")
     (:li (command-markup 'nyxt/web-mode:follow-hint-new-buffer) ": Create new buffer with link; keep focus on current buffer."))
    (:h3 "Using the buffer history")
-   (:p "History is represented as a tree that you can traverse: when you go back
+   (:p "History is represented as a traversable tree: When you go back
 in history, then follow a new URL, it effectively creates a new branch without
-deleting the old path. The tree makes sure you never lose track of where you've
+deleting the old path.~%The tree ensures you never lose track of where you've
 been.")
    (:ul
     (:li (command-markup 'nyxt/web-mode:history-forwards) ": History forwards.")
@@ -165,12 +162,11 @@ been.")
     (:li (command-markup 'nyxt/web-mode:history-backwards-query) ": History backwards query to any previous location.")
     (:li (command-markup 'nyxt/web-mode:history-forwards-all-query) ": History forwards query to any following location on all branches.")
     (:li (command-markup 'nyxt/web-mode:history-all-query) ": History all query, jump to any history entry."))
-   (:p "You can also view a full tree of the history for a given buffer by
-invoking the command 'buffer-history-tree'.")
+   (:p "Get a full tree of the history for a given buffer with the 'buffer-history-tree' command.")
    (:h3 "Searching")
-   (:p "Nyxt can search a single buffer or multiple buffers at the same time.")
-   (:p "You can view suggestions for search results in the prompt buffer in one
-place rather than having to jump around in a buffer (or multiple buffers).")
+   (:p "Search a single buffer or multiple buffers at the same time.")
+   (:p "Get suggestions for search results in the prompt buffer in one
+place rather than having to jump around in one or more buffers.")
    (:ul
     (:li (command-markup 'nyxt/web-mode:search-buffer) ": Search buffer.")
     (:li (command-markup 'nyxt/web-mode:search-buffers) ": Search multiple buffers.")
@@ -179,115 +175,105 @@ place rather than having to jump around in a buffer (or multiple buffers).")
    (:p "The bookmark file "
        (:code (let ((buffer (make-instance 'buffer)))
                 (expand-path (bookmarks-path buffer))))
-       " is made to be human readable and editable.
-Bookmarks can have the following settings:")
+       " is made to be human-readable and editable.~%
+Available bookmark settings:")
    (:ul
     (:li (:code ":url") ": The URL of the bookmark.")
     (:li (:code ":title") ": The title of the bookmark.")
-    (:li (:code ":tags") ": A list of strings.  Useful to categorize and filter bookmarks."))
+    (:li (:code ":tags") ": A list of strings. Useful to categorize and filter bookmarks."))
    (:p "Bookmark-related commands")
    (:ul
-    (:li (command-markup 'bookmark-current-url) ": Bookmark current page.
-Prompt for tags.  The input defaults to the existing tags: if some tags are
-removed from the input, they are also removed from the existing bookmark.")
+    (:li (command-markup 'bookmark-current-url) ": Bookmark the current page.
+Prompt for tags.~%The input defaults to the existing tags: Removing tags 
+from the input also removes them from the existing bookmark.")
     (:li (command-markup 'bookmark-buffer-url) ": Same as above but prompt for a buffer first.")
     (:li (command-markup 'bookmark-url) ": Same as above but prompt for a URL first.")
     (:li (command-markup 'nyxt/web-mode:bookmark-hint) ": Same as above but prompt for a hinted URL first.")
-    (:li (command-markup 'set-url-from-bookmark) ": Open bookmark in current buffer.")
+    (:li (command-markup 'set-url-from-bookmark) ": Opens a bookmark in current buffer.")
     (:li (command-markup 'delete-bookmark) ": Delete queried bookmarks.")
     (:li (command-markup 'list-bookmarks) ": Display a new buffer containing the
 list of all bookmarks."))
    (:h3 "Application mode")
    (:p "The command " (:code "application-mode") " forwards all keys to the
-renderer. For instance, using the default binding of Nyxt (" (:code "web-cua-map") ") the
-key-binding " (:code "C-i") " executes " (:code "autofill") ". Suppose
-a user is using their email client which also uses " (:code "C-i") " for the italic command. Thus, after
+renderer.~%When using the default binding of Nyxt (" (:code "web-cua-map") "), the
+key-binding " (:code "C-i") " executes " (:code "autofill") ".~%If using an e-mail client
+which also uses " (:code "C-i") " for the italic command, after
 executing " (:code "application-mode") " the " (:code "C-i") " binding is associated
-with the webpage's italic command instead of " (:code "autofill") ". Finally, the
-user can return to their configuration just by executing " (:code "application-mode") " again.")
+with the webpage's italic command instead of " (:code "autofill") ".~%Return to the
+configuration by executing " (:code "application-mode") " again.")
    (:h3 "Enable, disable, and toggle multiple modes")
-   (:p "The command " (:code "enable-mode") " allows the user to apply multiple
+   (:p "The command " (:code "enable-mode") " allows applying multiple
 modes (such as " (:code "nosound-mode") " and " (:code "dark-mode") ") to
-multiple buffers at once. Conversely, it is possible to revert this action by
-executing "(:code "disable-mode") " while choosing exactly the same buffers and
-modes previously selected. Finally, " (:code "toggle-mode") " also allows
-activation and deactivation of multiple modes, but only for the current
-buffer.")
+multiple buffers at once.~%Revertable by executing "(:code "disable-mode") "
+while choosing exactly the same buffers and modes previously selected.~%
+" (:code "toggle-mode") " also allows activation and deactivation of multiple modes,
+but only for the current buffer.")
    (:h3 "Visual mode")
-   (:p "Select text without a mouse. Nyxt's "
-       (:code "visual-mode") " imitates Vim's visual mode (and comes with the
-CUA and Emacs-like keybindings out of the box, too). Activate it with the "
-       (command-markup 'nyxt/visual-mode:visual-mode) " command.")
-   (:p "Visual mode provides the following commands: ")
+   (:p "Select text without a mouse. Turning on Nyxt's " (:code "visual-mode") "
+(with the " (command-markup 'nyxt/visual-mode:visual-mode) " command) imitates that
+of Vim's (and comes with the CUA and Emacs-like keybindings out of the box, too).")
+   (:p "Available visual-mode commands: ")
    (:ul
     (:li (command-markup 'nyxt/visual-mode:visual-mode
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
          ": Quit visual mode.")
     (:li (command-markup 'nyxt/visual-mode:select-paragraph
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Open up a prompt buffer for selecting a paragraph you want to
-set the caret on.")
+         ": Opens a prompt buffer to select a paragraph to set the caret on.")
     (:li (command-markup 'nyxt/visual-mode:toggle-mark
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
          ": Toggle text selection.")
     (:li (command-markup 'nyxt/visual-mode:forward-char
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Move caret forward by a character (if any text selected, moves the
-selection forward by a character).")
+         ": Move the caret (or a selection of text) one character forward.")
     (:li (command-markup 'nyxt/visual-mode:backward-char
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Move caret backward by a character (if any text selected, moves the
-selection backward by a character).")
+         ": Move the caret (or a selection of text) one character backward.")
     (:li (command-markup 'nyxt/visual-mode:forward-word
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Move caret forward by a word (if any text selected, moves the
-selection forward by a word).")
+         ": Move the caret (or a selection of text) one word forward.")
     (:li (command-markup 'nyxt/visual-mode:backward-word
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Move caret backward by a word (if any text selected, moves the
-selection backward by a word).")
+         ": Move the caret (or a selection of text) one line backward.")
     (:li (command-markup 'nyxt/visual-mode:forward-line
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Move caret forward by a line (if any text selected, moves the
-selection forward by a line).")
+         ": Move the caret (or a selection of text) one line forward.")
     (:li (command-markup 'nyxt/visual-mode:backward-line
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Move caret backward by a line (if any text selected, moves the
-selection backward by a line).")
+         ": Move the caret (or a selection of text) one line backward.")
     (:li (command-markup 'nyxt/visual-mode:beginning-line
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Move caret to the beginning of the line.")
+         ": Move the caret to the beginning of the line.")
     (:li (command-markup 'nyxt/visual-mode:end-line
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Move caret to the end of the line.")
+         ": Move the caret to the end of the line.")
     (:li (command-markup 'nyxt/visual-mode:forward-sentence
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Move caret forward by a sentence (if any text selected, moves the
- selection forward by a sentence).")
+         ": Move the caret (or a selection of text) one sentence forward.")
     (:li (command-markup 'nyxt/visual-mode:backward-sentence
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Move caret backward by a sentence (if any text selected, moves the
- selection backward by a sentence)."))
-   (:p "Commands designed to ease the use for CUA users (but available to all users): ")
+         ": Move the caret (or a selection of text) one sentence backward."))
+   (:p "Commands designed for ease of (default) (:code "cua-mode") use,
+but available to all: ")
    (:ul
     (:li (command-markup 'nyxt/visual-mode:forward-char-with-selection
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Turn on the text selection and move caret forward by a character.")
+         ": Turn on the text selection and move caret one character forward.")
     (:li (command-markup 'nyxt/visual-mode:backward-char-with-selection
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Turn on the text selection and move caret backward by a character.")
+         ": Turn on the text selection and move caret one character backward.")
     (:li (command-markup 'nyxt/visual-mode:forward-line-with-selection
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Turn on the text selection and move caret forward by a line.")
+         ": Turn on the text selection and move caret one line forward.")
     (:li (command-markup 'nyxt/visual-mode:backward-line-with-selection
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Turn on the text selection and move caret backward by a line."))
-   (:p "A note for " (:code "emacs-mode") " users: unlike in Emacs, in Nyxt the command "
+         ": Turn on the text selection and move the caret one line backward."))
+   (:p "If using " (:code "emacs-mode") ", the command "
        (command-markup 'nyxt/visual-mode:toggle-mark
                        :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-       " is bound to Shift-space, as C-space is bound to 'execute-command,
-overriding any mode keybinding. If you want to toggle mark with C-space,
-you'll need to set your own override-map such that C-space is not bound.
+       " is bound to Shift-space (unlike in Emacs), as C-space is bound to
+'execute-command, overriding any mode keybinding.~%If you want to toggle mark with
+C-space, set your own override-map such that C-space is unbound.
 An example:")
    (:pre (:code "
 \(define-configuration buffer
@@ -296,19 +282,18 @@ An example:")
                      \"M-x\" 'execute-command)))))"))
 
    (:h3 "Automation")
-   (:p "Nyxt has many facilities for automation. For instance, it is possible to
-automate the reading experience:")
+   (:p "Nyxt can do automation, like simplifying the reading experience:")
    (:ul
     (:li (command-markup 'nyxt/cruise-control-mode:cruise-control-mode) ": "
     (command-docstring-first-sentence
     'nyxt/cruise-control-mode:cruise-control-mode)))
-   (:p "Symmetrically, it is possible to automate the filling of forms: ")
+   (:p "Symmetrically, forms can be auto-filled: ")
    (:ul
     (:li (command-markup 'autofill) ": " (command-docstring-first-sentence
     'autofill))
     (:li (command-markup 'nyxt/web-mode::toggle-checkboxes) ": "
     (command-docstring-first-sentence 'nyxt/web-mode::toggle-checkboxes)))
-   (:p "In addition, it is possible to automate actions over time: "
+   (:p "In addition, actions can be automated over time: "
    (:ul
     (:li (command-markup 'nyxt/watch-mode:watch-mode) ": "
          (command-docstring-first-sentence 'nyxt/watch-mode:watch-mode))
@@ -336,8 +321,8 @@ for other modes previously mentioned, such as " (:code
 'nyxt/repeat-mode:repeat-mode) ". The extension relationship goes further, since
 " (:code 'nyxt/cruise-control-mode:cruise-control-mode) " is in its turn an
 extension and a composition of " (:code 'nyxt/repeat-mode:repeat-mode) " and "
-(:code 'nyxt/web-mode:scroll-down) ". Further extensions and compositions can be
-creatively tailor-made by users to automate their own use of Nyxt.")
+(:code 'nyxt/web-mode:scroll-down) ". Make your own extensions and compositions
+to automate your use of Nyxt.")
    (:h3 "Miscellaneous")
    (:ul
     (:li (command-markup 'nyxt/web-mode:zoom-page)
@@ -346,34 +331,34 @@ creatively tailor-made by users to automate their own use of Nyxt.")
          ": Control the page zoom.")
     (:li (command-markup 'nyxt/web-mode:jump-to-heading) ": Query a heading (a
 section) of the current page and jump to it.")
-    (:li (command-markup 'nyxt/web-mode::autofill) ": See the "
+    (:li (command-markup 'nyxt/web-mode::autofill) ": Read the "
          (:code "autofills") " browser slot.")
     (:li (command-markup 'download-open-file)
-         ": Open file in Nyxt or externally.  See " (:code "open-file-function") ".")
+         ": Opens a file in Nyxt or via other means.  Read " (:code "open-file-function") ".")
     (:li (command-markup 'edit-with-external-editor)
-         ": Edit selected HTML input tag with an external editor.")
+         ": Edit selected HTML input tag in an external editor.")
     (:li (command-markup 'quit) ": Close all Nyxt windows and quit."))
 
    (:h2 "The Nyxt help system")
-   (:p "Nyxt provides introspective and help capabilities.  All commands,
+   (:p "Nyxt provides introspection, clarity, and help.~%All commands,
 classes, slots, variables, functions and bindings can be inspected for
 definition and documentation.")
    (:ul
-    (:li (command-markup 'help) ": Open up a small help buffer.")
-    (:li (command-markup 'tutorial) ": Open up this tutorial.")
-    (:li (command-markup 'describe-key) ": Lets you to input a key binding and
-see what command it is bound to.")
-    (:li (command-markup 'describe-bindings) ": View all of your currently set
+    (:li (command-markup 'help) ": Opens a small help buffer.")
+    (:li (command-markup 'tutorial) ": Opens this tutorial.")
+    (:li (command-markup 'describe-key) ": Shows what command an inserted key sequence
+is bound to.")
+    (:li (command-markup 'describe-bindings) ": Displays all currently set
 bindings in the current buffer.")
-    (:li (command-markup 'describe-command) ": Find out about a particular
+    (:li (command-markup 'describe-command) ": Details a particular
 command (including showing its source).")
-    (:li (command-markup 'describe-function) ": Find out about a particular
+    (:li (command-markup 'describe-function) ": Details a particular
 function.")
-    (:li (command-markup 'describe-variable) ": View the value and documentation
-of a variable.")
-    (:li (command-markup 'describe-class) ": Lookup a class documentation and all its slots.")
-    (:li (command-markup 'describe-slot) ": Lookup a class slot value and documentation.")
+    (:li (command-markup 'describe-variable) ": Displays the value of and documentation
+for a variable.")
+    (:li (command-markup 'describe-class) ": Displays documentation for a class and all its slots.")
+    (:li (command-markup 'describe-slot) ": Displays the slot value for a class and its documentation.")
     (:li (command-markup 'describe-any) ": The conflation of all the 'describe' functions."))
-   (:p "A good starting point is to study the documentation of the classes "
+   (:p "A good starting point is to study the documentation of the "
        (:code "browser") ", " (:code "window") ", " (:code "buffer") " and "
-       (:code "prompt-buffer") ".")))
+       (:code "prompt-buffer") " classes.")))
