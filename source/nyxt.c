@@ -31,19 +31,17 @@ user_message_received (WebKitWebPage     *web_page,
                 JSCValue *object = jsc_value_object_get_property(meta, "message");
                 g_print("Got message object\n");
                 char *code = malloc(sizeof(char*) * 10000);
-                sprintf(code, "var res = await browser.runtime.onMessage.run(JSON.parse('%s'), JSON.parse('%s')); res",
+                sprintf(code, "var p = browser.runtime.onMessage.run(JSON.parse('%s'), JSON.parse('%s'));\
+if (p) p.then((result) => browser.replyMessage('%s', result));\
+p",
                         jsc_value_to_json(object, 0),
-                        jsc_value_to_json(sender, 0));
+                        jsc_value_to_json(sender, 0),
+                        name);
                 g_print("Printed the code: %s\n", code);
                 JSCValue *result = jsc_context_evaluate(context, code, -1);
-                g_print("Evaluated the code, result is %s\n", jsc_value_to_json(result, 0));
-                GVariant *reply_contents = g_variant_new_string(
-                        jsc_value_to_json(result, 0));
-                g_print("Made the payload\n");
-                WebKitUserMessage *reply = webkit_user_message_new(name, reply_contents);
-                g_print("Made the reply\n");
-                webkit_user_message_send_reply(message, reply);
-                g_print("Sent the reply\n");
+                g_print("Evaluated the code, result is %s\n", jsc_value_to_string(result));
+                g_object_ref(message);
+                g_hash_table_insert(MESSAGES, (void*) name, message);
                 return TRUE;
         } else {
                 g_print("Message has a type other than \"message\"\n");
@@ -118,6 +116,7 @@ webkit_web_extension_initialize (WebKitWebExtension *extension)
         RUNTIME = malloc(sizeof(Runtime));
 
         EXTENSIONS_DATA = g_hash_table_new(g_str_hash, g_str_equal);
+        MESSAGES = g_hash_table_new(g_str_hash, g_str_equal);
 
         g_signal_connect (extension, "page-created",
                           G_CALLBACK (web_page_created_callback),

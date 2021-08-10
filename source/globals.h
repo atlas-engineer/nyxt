@@ -23,6 +23,8 @@ typedef struct {
 
 extern GHashTable *EXTENSIONS_DATA;
 
+extern GHashTable *MESSAGES;
+
 extern WebKitWebExtension *EXTENSION;
 
 void extensions_data_add_from_json(const char *json);
