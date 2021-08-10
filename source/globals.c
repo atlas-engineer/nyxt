@@ -4,6 +4,8 @@ WebKitWebPage *PAGE;
 
 GHashTable *EXTENSIONS_DATA;
 
+GHashTable *MESSAGES;
+
 WebKitWebExtension *EXTENSION;
 
 void
