@@ -214,7 +214,7 @@ modes previously selected. Finally, " (:code "toggle-mode") " also allows
 activation and deactivation of multiple modes, but only for the current
 buffer.")
    (:h3 "Light navigation")
-   (:p "Reduce internet bandwidth using: ")
+   (:p "Reduce bandwidth usage via: ")
    (:ul
     (:li (command-markup 'nyxt/noimage-mode:noimage-mode) ": "
          (command-docstring-first-sentence 'nyxt/noimage-mode:noimage-mode))
