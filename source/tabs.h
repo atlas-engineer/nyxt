@@ -4,6 +4,7 @@
 typedef struct {
         char *tabs;
         char *tab;
+        char *reply;
 } Tabs;
 
 extern Tabs *TABS;
