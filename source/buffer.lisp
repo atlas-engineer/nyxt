@@ -509,12 +509,12 @@ Delete it with `ffi-buffer-delete'."
                ("#container"
                 :display "grid"
                 ;; Columns: controls, url, tabs, modes
-                :grid-template-columns "90px 2fr 3fr 240px"
+                :grid-template-columns "90px minmax(auto, 30ch) 1fr 220px"
                 :overflow-y "hidden")
                ("#container-vi"
                 :display "grid"
                 ;; Columns: controls, vi-status, url, tabs, modes
-                :grid-template-columns "90px 30px 2fr 3fr 240px"
+                :grid-template-columns "90px 30px minmax(auto, 30ch) 1fr 220px"
                 :overflow-y "hidden")
                ("#controls"
                 :background-color "rgb(80,80,80)"
