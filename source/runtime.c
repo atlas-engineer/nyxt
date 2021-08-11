@@ -78,6 +78,35 @@ runtime_get_platform_info_callback ()
                 PAGE, message, NULL, runtime_get_platform_info_reply_callback, NULL);
 }
 
+static void
+runtime_get_browser_info_reply_callback (GObject *web_page,
+                           GAsyncResult *res,
+                           gpointer user_data)
+{
+        WebKitUserMessage *message =
+                webkit_web_page_send_message_to_view_finish((WebKitWebPage *) PAGE, res, NULL);
+        GVariant *params = webkit_user_message_get_parameters(message);
+        char *json = (char*) g_variant_get_string(params, NULL);
+        if (!json)
+                json = "{}";
+        RUNTIME->browser_info = (char *) json;
+}
+
+static JSCValue *
+runtime_get_browser_info_result_callback ()
+{
+        JSCContext *context = jsc_context_get_current();
+        return jsc_value_new_from_json(context, RUNTIME->browser_info);
+}
+
+static void
+runtime_get_browser_info_callback ()
+{
+        WebKitUserMessage *message = webkit_user_message_new("runtime.getBrowserInfo", NULL);
+        webkit_web_page_send_message_to_view(
+                PAGE, message, NULL, runtime_get_browser_info_reply_callback, NULL);
+}
+
 void inject_runtime_api (char* extension_name)
 {
         JSCContext *context = get_extension_context(extension_name);
@@ -101,6 +130,14 @@ void inject_runtime_api (char* extension_name)
         JSCValue *runtimeGetPlatformInfoResult = jsc_value_new_function(
                 context, "runtimeGetPlatformInfoResult",
                 G_CALLBACK(runtime_get_platform_info_result_callback), NULL, NULL,
+                JSC_TYPE_VALUE, 0, G_TYPE_NONE);
+        JSCValue *runtimeGetBrowserInfo = jsc_value_new_function(
+                context, "runtimeGetBrowserInfo",
+                G_CALLBACK(runtime_get_browser_info_callback), NULL, NULL,
+                G_TYPE_NONE, 0, G_TYPE_NONE);
+        JSCValue *runtimeGetBrowserInfoResult = jsc_value_new_function(
+                context, "runtimeGetBrowserInfoResult",
+                G_CALLBACK(runtime_get_browser_info_result_callback), NULL, NULL,
                 JSC_TYPE_VALUE, 0, G_TYPE_NONE);
         jsc_context_set_value(context, "runtimeSendMessage", runtimeSendMessage);
         jsc_context_set_value(context, "runtimeSendMessageResult", runtimeSendMessageResult);
@@ -146,6 +183,20 @@ runtime.getManifest", extension_name);
 };                                                                      \
                                                                         \
 runtime.getPlatformInfo";
+        char *runtime_get_browser_info_js = "runtime.getBrowserInfo = function() {\
+    return new Promise ((success, failure) => {                         \
+        try {                                                           \
+            runtimeGetBrowserInfo();                                   \
+            setTimeout(() => {                                          \
+                success(runtimeGetBrowserInfoResult());},              \
+                        0);                                             \
+        } catch (error) {                                               \
+            return failure(error);                                      \
+        };                                                              \
+    });                                                                 \
+};                                                                      \
+                                                                        \
+runtime.getBrowserInfo";
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "runtime", -1),
                 "sendMessage",
@@ -162,6 +213,10 @@ runtime.getPlatformInfo";
                 jsc_context_evaluate(context, "runtime", -1),
                 "getPlatformInfo",
                 jsc_context_evaluate(context, runtime_get_platform_info_js, -1));
+        jsc_value_object_set_property(
+                jsc_context_evaluate(context, "runtime", -1),
+                "getBrowserInfo",
+                jsc_context_evaluate(context, runtime_get_browser_info_js, -1));
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "browser", -1), "runtime",
                 jsc_context_evaluate(context, "runtime", -1));

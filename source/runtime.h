@@ -4,6 +4,7 @@
 typedef struct {
         char *reply;
         char *platform_info;
+        char *browser_info;
 } Runtime;
 
 extern Runtime *RUNTIME;

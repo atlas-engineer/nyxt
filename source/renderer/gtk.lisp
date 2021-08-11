@@ -1175,6 +1175,13 @@ See `gtk-browser's `modifier-translator' slot."
                        "x86-32"
                        #-(or X86 X86-32 X86-64)
                        "arm"))))
+              ("runtime.getBrowserInfo"
+               (json:encode-json-to-string
+                (let ((nyxt-version (str:split "-" nyxt:+version+)))
+                  `(("name" . "Nyxt")
+                    ("vendor" . "Atlas Engineer LLC")
+                    ("version" ,(first nyxt-version))
+                    ("build" ,(third nyxt-version))))))
               ("tabs.queryObject"
                (tabs-query message-params))
               ("tabs.createProperties"
