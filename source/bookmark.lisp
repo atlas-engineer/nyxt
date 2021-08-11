@@ -20,25 +20,14 @@
    (title "")
    (annotation "")
    (date (local-time:now))
-   (tags '()
-         :type list-of-strings)
-
-   ;; TODO: Remove slots for 2.0.
-   (shortcut ""
-             :export nil
-             :accessor nil
-             :documentation "Deprecated, use `search-engine' instead.")
-
-   (search-url ""
-               :export nil
-               :accessor nil
-               :documentation "Deprecated, use `search-engine' instead."))
+   (tags
+    '()
+    :type list-of-strings))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod prompter:object-attributes ((entry bookmark-entry))
-  ;; TODO: Add annocation slots?
   `(("URL" ,(render-url (url entry)))
     ("Title" ,(title entry))
     ("Tags" ,(format nil "~{~a ~}" (tags entry)))
