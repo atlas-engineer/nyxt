@@ -48,7 +48,7 @@ set of functions, hooks, keybindings and other facilities that may modify the
 behaviour of a buffer. For example, 'blocker-mode' can be used for domain-based
 ad-blocking while 'noscript-mode' disables JavaScript.")
    (:p "Each buffer has separate instances of modes, which means altering
-the settings of a mode in a buffer does not impact other buffers. Mode specific
+the settings of a mode in a buffer does not impact other buffers. Mode-specific
 functions/commands are only available when a mode is enabled for the current
 buffer.")
    (:p "Each mode has an associated " (:i "mode toggler") " which is a command
@@ -204,10 +204,20 @@ configuration by executing " (:code "application-mode") " again.")
    (:h3 "Enable, disable, and toggle multiple modes")
    (:p "The command " (:code "enable-mode") " allows applying multiple
 modes (such as " (:code "nosound-mode") " and " (:code "dark-mode") ") to
-multiple buffers at once. Revertable by executing "(:code "disable-mode") "
-while choosing exactly the same buffers and modes previously selected.
-" (:code "toggle-mode") " also allows activation and deactivation of multiple modes,
-but only for the current buffer.")
+multiple buffers at once. Conversely, it is possible to revert this action by
+executing "(:code "disable-mode") " while choosing exactly the same buffers and
+modes previously selected. Finally, " (:code "toggle-mode") " also allows
+activation and deactivation of multiple modes, but only for the current
+buffer.")
+   (:h3 "Light navigation")
+   (:p "Reduce bandwidth usage via: ")
+   (:ul
+    (:li (command-markup 'nyxt/no-image-mode:no-image-mode) ": "
+         (command-docstring-first-sentence 'nyxt/no-image-mode:no-image-mode))
+    (:li (command-markup 'nyxt/no-script-mode:no-script-mode) ": "
+         (command-docstring-first-sentence 'nyxt/no-script-mode:no-script-mode))
+    (:li (command-markup 'nyxt/no-webgl-mode:no-webgl-mode) ": "
+         (command-docstring-first-sentence 'nyxt/no-webgl-mode:no-webgl-mode)))
    (:h3 "Visual mode")
    (:p "Select text without a mouse. Turning on Nyxt's " (:code "visual-mode") "
 (with the " (command-markup 'nyxt/visual-mode:visual-mode) " command) imitates that
