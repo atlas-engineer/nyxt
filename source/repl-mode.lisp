@@ -1,6 +1,11 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
+(uiop:define-package nyxt/repl-mode
+  (:use #:common-lisp #:nyxt)
+  (:import-from #:keymap #:define-scheme)
+  (:export :repl-mode))
+
 (in-package :nyxt/repl-mode)
 
 (define-mode repl-mode ()

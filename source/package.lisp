@@ -32,12 +32,6 @@
   (loop for package in (trivial-package-local-nicknames:package-local-nicknames :nyxt)
         do (trivial-package-local-nicknames:add-package-local-nickname (car package) (package-name (cdr package)))))
 
-(uiop:define-package nyxt/repl-mode
-  (:use #:common-lisp #:nyxt)
-  (:import-from #:keymap #:define-scheme)
-  (:import-from #:nyxt #:pflet)
-  (:export :repl-mode))
-
 (uiop:define-package nyxt-user
   (:use #:common-lisp #:nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
