@@ -26,8 +26,7 @@
     (:a :class "button" :title "Backwards" :href (lisp-url '(nyxt/web-mode:history-backwards)) "←")
     (:a :class "button" :title "Forwards" :href (lisp-url '(nyxt/web-mode:history-forwards)) "→")
     (:a :class "button" :title "Reload" :href (lisp-url '(nyxt:reload-current-buffer)) "↺")
-    (:a :class "button" :title "Execute" :href (lisp-url '(nyxt:execute-command)) "⚙")
-    (:a :class "button" :title "Buffers" :href (lisp-url '(nyxt/buffer-listing-mode:list-buffers)) "≡")))
+    (:a :class "button" :title "Execute" :href (lisp-url '(nyxt:execute-command)) "≡")))
 
 (defun format-status-vi-mode (&optional (buffer (current-buffer)))
   (spinneret:with-html-string
