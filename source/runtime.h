@@ -3,6 +3,7 @@
 
 typedef struct {
         char *reply;
+        char *platform_info;
 } Runtime;
 
 extern Runtime *RUNTIME;

@@ -1155,6 +1155,26 @@ See `gtk-browser's `modifier-translator' slot."
                                        (background-buffer (first extensions))
                                        (first extensions))))
                 ""))
+              ("runtime.getPlatformInfo"
+               (json:encode-json-to-string
+                (list
+                 ;; TODO: This begs for trivial-features.
+                 (cons "os"
+                       #+(or darwin macos macosx)
+                       "mac"
+                       #+bsd
+                       "openbsd"
+                       #+linux
+                       "linux"
+                       #-(or darwin macos macosx linux bst)
+                       "")
+                 (cons "arch"
+                       #+X86-64
+                       "x86-64"
+                       #+(or X86 X86-32)
+                       "x86-32"
+                       #-(or X86 X86-32 X86-64)
+                       "arm"))))
               ("tabs.queryObject"
                (tabs-query message-params))
               ("tabs.createProperties"
