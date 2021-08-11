@@ -316,7 +316,8 @@ automate the reading experience:")
     (:li (command-markup 'nyxt/watch-mode:watch-mode) ": "
          (command-docstring-first-sentence 'nyxt/watch-mode:watch-mode))
     (:li (command-markup 'nyxt/repeat-mode:repeat-every) ": "
-         (command-docstring-first-sentence 'nyxt/repeat-mode:repeat-every))))
+         (command-docstring-first-sentence 'nyxt/repeat-mode:repeat-every
+                                           :sentence-case-p t))))
    (:p "Or even automate actions based on conditions: "
    (:ul
     (:li (command-markup 'nyxt/repeat-mode:repeat-mode) ": "
