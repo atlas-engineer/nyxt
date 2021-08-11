@@ -10,10 +10,10 @@
    (:p "Commands are invoked by pressing specific keys or from
 the " (:code "execute-command") " menu (" (:code (binding-keys 'execute-command))
 ").")
-   (:p "Key-sequences used for key-bindings are represented like this: 'C-x'.~%
+   (:p "Key-sequences used for key-bindings are represented like this: 'C-x'.
 Here, 'C' is a
-shortcut for the modifier 'control', and 'x' is the character 'x'.~%To
-input 'C-x', keep 'control' pressed and then hit 'x'.~%
+shortcut for the modifier 'control', and 'x' is the character 'x'. To
+input 'C-x', keep 'control' pressed and then hit 'x'.
 Chain distinct key-sequences, you madlad. With 'C-x C-s', 'C-x', is pressed first,
 and then 'C-s'.")
    (:p "Modifier-keys legend:")
@@ -43,12 +43,12 @@ and then 'C-s'.")
    (:p "Buffers are instead of tabs. Unlike tabs, buffers
 are fully separated, each having its own behavior and settings.")
    (:h3 "Modes")
-   (:p "Each buffer has its own list of modes, ordered by priority.~%A mode is a
+   (:p "Each buffer has its own list of modes, ordered by priority. A mode is a
 set of functions, hooks, keybindings and other facilities that may modify the
-behaviour of a buffer.~%For example, 'blocker-mode' can be used for domain-based
+behaviour of a buffer. For example, 'blocker-mode' can be used for domain-based
 ad-blocking while 'noscript-mode' disables JavaScript.")
    (:p "Each buffer has separate instances of modes, which means altering
-the settings of a mode in a buffer does not impact other buffers.~%Mode specific
+the settings of a mode in a buffer does not impact other buffers. Mode specific
 functions/commands are only available when a mode is enabled for the current
 buffer.")
    (:p "Each mode has an associated " (:i "mode toggler") " which is a command
@@ -56,8 +56,8 @@ of the same name that toggles the mode for the current buffer.")
 
    (:h3 "Prompt buffer")
    (:p "The prompt buffer is a menu appearing when a command requests user
-input.~%Supply a desired URL when using the " (:code "set-url") " command.~%
-The prompt buffer can provide suggestions.~%The list of suggestions are narrowed down
+input. Supply a desired URL when using the " (:code "set-url") " command.
+The prompt buffer can provide suggestions. The list of suggestions are narrowed down
 to those matching your input (as you type).")
    (:ul
     (:li  (command-markup 'nyxt/prompt-buffer-mode:return-selection
@@ -68,10 +68,10 @@ no suggestion.")
                           :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
           ": Query the user for an action to run over the selected suggestion(s)."))
    (:p " Some commands support multiple selections; " (:code "delete-buffer") " can delete all
-selected buffers at once.~%When the input is changed and the suggestions are re-filtered, the
+selected buffers at once. When the input is changed and the suggestions are re-filtered, the
 selection is not altered, even if the marked elements don't show.")
    (:p "When at least one suggestion is marked, only the marked suggestions are processed
-upon return.~%Unless marked, the suggestion under the cursor is not processed.")
+upon return. Unless marked, the suggestion under the cursor is not processed.")
    (:ul
     (:li  (command-markup 'nyxt/prompt-buffer-mode:toggle-mark
                           :modes (list (make-instance 'nyxt/prompt-buffer-mode:prompt-buffer-mode)))
@@ -91,11 +91,11 @@ upon return.~%Unless marked, the suggestion under the cursor is not processed.")
 
    (:h3 "Message area")
    (:p "Messages are displayed in a area (typically at the bottom of a
-window).~%Get the history of all messages with the " (:code "list-messages") ".
+window). Get the history of all messages with the " (:code "list-messages") ".
 command.")
 
    (:h3 "Status area")
-   (:p "The status area (typically at the bottom of a window) displays buffer state.~%
+   (:p "The status area (typically at the bottom of a window) displays buffer state.
 By default this includes the active modes, URL, and title of the current buffer.")
 
    (:h2 "Basic controls")
@@ -107,8 +107,8 @@ By default this includes the active modes, URL, and title of the current buffer.
     (:li (command-markup 'nyxt/web-mode:scroll-to-bottom) ": Jump to the bottom of a page.")
     (:li (command-markup 'nyxt/web-mode:scroll-to-top) ": Jump to the top of a page."))
    (:h3 "Setting the URL")
-   (:p "Ambiguous URL input is taken at best-guess basis.~%Without a protocol in a URL,
-HTTPS is assumed.~%To
+   (:p "Ambiguous URL input is taken at best-guess basis. Without a protocol in a URL,
+HTTPS is assumed. To
 visit a site supporting only the less secure HTTP, you must explicitly type the
 full URL including the 'http://' prefix.")
    (:ul
@@ -142,9 +142,9 @@ to quickly find your desired buffer.")
     (:li (command-markup 'nyxt/web-mode:paste-from-clipboard-ring) ": " (command-docstring-first-sentence 'nyxt/web-mode:paste-from-clipboard-ring))
     (:li (command-markup 'copy-system-information) ": " (command-docstring-first-sentence 'copy-system-information)))
    (:h3 "Link navigation")
-   (:p "Link-hinting allows visiting URLs on a page without mousing.~%
+   (:p "Link-hinting allows visiting URLs on a page without mousing.
 Invoke one of the commands below: Several hints will appear on screen and all
-links on the page will be listed in the prompt buffer.~%Select the hints
+links on the page will be listed in the prompt buffer. Select the hints
 by matching against the hint, URL, or title.")
    (:ul
     (:li (command-markup 'nyxt/web-mode:follow-hint) ": Go to link in current buffer.")
@@ -153,7 +153,7 @@ by matching against the hint, URL, or title.")
    (:h3 "Using the buffer history")
    (:p "History is represented as a traversable tree: When you go back
 in history, then follow a new URL, it effectively creates a new branch without
-deleting the old path.~%The tree ensures you never lose track of where you've
+deleting the old path. The tree ensures you never lose track of where you've
 been.")
    (:ul
     (:li (command-markup 'nyxt/web-mode:history-forwards) ": History forwards.")
@@ -175,7 +175,7 @@ place rather than having to jump around in one or more buffers.")
    (:p "The bookmark file "
        (:code (let ((buffer (make-instance 'buffer)))
                 (expand-path (bookmarks-path buffer))))
-       " is made to be human-readable and editable.~%
+       " is made to be human-readable and editable.
 Available bookmark settings:")
    (:ul
     (:li (:code ":url") ": The URL of the bookmark.")
@@ -184,7 +184,7 @@ Available bookmark settings:")
    (:p "Bookmark-related commands")
    (:ul
     (:li (command-markup 'bookmark-current-url) ": Bookmark the current page.
-Prompt for tags.~%The input defaults to the existing tags: Removing tags 
+Prompt for tags. The input defaults to the existing tags: Removing tags 
 from the input also removes them from the existing bookmark.")
     (:li (command-markup 'bookmark-buffer-url) ": Same as above but prompt for a buffer first.")
     (:li (command-markup 'bookmark-url) ": Same as above but prompt for a URL first.")
@@ -195,17 +195,17 @@ from the input also removes them from the existing bookmark.")
 list of all bookmarks."))
    (:h3 "Application mode")
    (:p "The command " (:code "application-mode") " forwards all keys to the
-renderer.~%When using the default binding of Nyxt (" (:code "web-cua-map") "), the
-key-binding " (:code "C-i") " executes " (:code "autofill") ".~%If using an e-mail client
+renderer. When using the default binding of Nyxt (" (:code "web-cua-map") "), the
+key-binding " (:code "C-i") " executes " (:code "autofill") ". If using an e-mail client
 which also uses " (:code "C-i") " for the italic command, after
 executing " (:code "application-mode") " the " (:code "C-i") " binding is associated
-with the webpage's italic command instead of " (:code "autofill") ".~%Return to the
+with the webpage's italic command instead of " (:code "autofill") ". Return to the
 configuration by executing " (:code "application-mode") " again.")
    (:h3 "Enable, disable, and toggle multiple modes")
    (:p "The command " (:code "enable-mode") " allows applying multiple
 modes (such as " (:code "nosound-mode") " and " (:code "dark-mode") ") to
-multiple buffers at once.~%Revertable by executing "(:code "disable-mode") "
-while choosing exactly the same buffers and modes previously selected.~%
+multiple buffers at once. Revertable by executing "(:code "disable-mode") "
+while choosing exactly the same buffers and modes previously selected.
 " (:code "toggle-mode") " also allows activation and deactivation of multiple modes,
 but only for the current buffer.")
    (:h3 "Visual mode")
@@ -272,7 +272,7 @@ of Vim's (and comes with the CUA and Emacs-like keybindings out of the box, too)
        (command-markup 'nyxt/visual-mode:toggle-mark
                        :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
        " is bound to Shift-space (unlike in Emacs), as C-space is bound to
-'execute-command, overriding any mode keybinding.~%If you want to toggle mark with
+'execute-command, overriding any mode keybinding. If you want to toggle mark with
 C-space, set your own override-map such that C-space is unbound.
 An example:")
    (:pre (:code "
@@ -340,7 +340,7 @@ section) of the current page and jump to it.")
     (:li (command-markup 'quit) ": Close all Nyxt windows and quit."))
 
    (:h2 "The Nyxt help system")
-   (:p "Nyxt provides introspection, clarity, and help.~%All commands,
+   (:p "Nyxt provides introspection, clarity, and help. All commands,
 classes, slots, variables, functions and bindings can be inspected for
 definition and documentation.")
    (:ul
