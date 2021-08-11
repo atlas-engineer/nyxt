@@ -138,6 +138,7 @@
                (:file "no-sound-mode")
                (:file "no-script-mode")
                (:file "no-webgl-mode")
+               (:file "reduce-bandwidth-mode")
                (:file "download-mode")
                (:file "force-https-mode")
                (:file "reduce-tracking-mode")
