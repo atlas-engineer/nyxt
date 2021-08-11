@@ -20,6 +20,6 @@
   (ffi-buffer-set-zoom-level buffer (current-zoom-ratio (current-buffer))))
 
 (define-command reset-page-zoom (&key (buffer (current-buffer))
-                             (ratio (zoom-ratio-default (current-buffer))))
+                                      (ratio (zoom-ratio-default (current-buffer))))
   "Reset the page zoom to the zoom-ratio-default."
   (ffi-buffer-set-zoom-level buffer (setf (current-zoom-ratio (current-buffer)) ratio)))
