@@ -222,6 +222,8 @@ buffer.")
          (command-docstring-first-sentence 'nyxt/no-script-mode:no-script-mode))
     (:li (command-markup 'nyxt/no-webgl-mode:no-webgl-mode) ": "
          (command-docstring-first-sentence 'nyxt/no-webgl-mode:no-webgl-mode)))
+   (:p "It is possible to enable these three modes at once
+   with: " (:code "reduce-bandwidth-mode") " .")
    (:h3 "Visual mode")
    (:p "Select text without a mouse. Nyxt's "
        (:code "visual-mode") " imitates Vim's visual mode (and comes with the
