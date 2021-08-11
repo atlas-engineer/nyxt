@@ -88,13 +88,15 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 
 (define-class tag-source (prompter:source)
   ((prompter:name "Tags")
-   (prompter:filter-preprocessor (lambda (initial-suggestions-copy source input)
-                                   (prompter:delete-inexact-matches
-                                    initial-suggestions-copy
-                                    source
-                                    (last-word input))))
-   (prompter:filter (lambda (suggestion source input)
-                      (prompter:fuzzy-match suggestion source (last-word input))))
+   (prompter:filter-preprocessor
+    (lambda (initial-suggestions-copy source input)
+      (prompter:delete-inexact-matches
+       initial-suggestions-copy
+       source
+       (last-word input))))
+   (prompter:filter
+    (lambda (suggestion source input)
+      (prompter:fuzzy-match suggestion source (last-word input))))
    (prompter:multi-selection-p t)
    (prompter:constructor (tag-suggestions)))
   (:accessor-name-transformer (class*:make-name-transformer name)))
@@ -260,7 +262,6 @@ With multiple selections, open the first bookmark in the current buffer, the
 rest in background buffers."
   (prompt
    :prompt "Open bookmark(s)"
-   ;; :default-modes '(minibuffer-tag-mode minibuffer-mode) ; TODO: Replace this behaviour.
    :sources (make-instance 'bookmark-source
                            :actions actions)))
 
@@ -316,8 +317,6 @@ rest in background buffers."
 (defmethod store ((profile data-profile) (path bookmarks-data-path) &key &allow-other-keys)
   "Store the bookmarks to the buffer `bookmarks-path'."
   (with-data-file (file path :direction :output)
-    ;; TODO: Make sorting customizable?  Note that `store-sexp-bookmarks' is
-    ;; already a customizable function.
     (%set-data path
               (sort (get-data path)
                     #'url< :key #'url))
