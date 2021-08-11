@@ -1103,15 +1103,28 @@ See `gtk-browser's `modifier-translator' slot."
       (set-current-buffer buffer))
     (json:encode-json-to-string (buffer->tab-description buffer))))
 
-(defun process-user-message (view message)
-  (let* ((buffer (find view (buffer-list) :key #'gtk-object))
-         (message-name (webkit:webkit-user-message-get-name message))
+(defun trigger-message (message buffer extension)
+  (nyxt:ffi-buffer-send-message
+   buffer
+   :name "message"
+   :contents (format
+              nil "{\"message\": ~s, \"sender\": ~s, \"extensionName\": ~s}"
+              (json:encode-json-to-string message)
+              (json:encode-json-to-string
+               `(("tab" . ,(buffer->tab-description buffer))
+                 ("url" . ,(render-url (url buffer)))
+                 ("tlsChannelId" . "")
+                 ("frameId" . 0)
+                 ("id" . "")))
+              (name extension))
+   :when-loaded-p t))
+
+(defun process-user-message (buffer message)
+  (let* ((message-name (webkit:webkit-user-message-get-name message))
          (message-params (glib:g-variant-get-string
                           (webkit:webkit-user-message-get-parameters message)))
-         (extensions (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))
-         (background-view-p
-           (member view (mapcar #'nyxt/web-extensions::background-view
-                                extensions)))
+         (extensions (when buffer
+                       (sera:filter #'nyxt/web-extensions::extension-p (modes buffer))))
          (reply-contents
            (or
             (str:string-case message-name
@@ -1126,39 +1139,22 @@ See `gtk-browser's `modifier-translator' slot."
                 (extension->extension-info (find message-params extensions
                                                  :key #'name :test #'string=))))
               ("runtime.sendMessage"
-               (sera:and-let* ((json (json:decode-json-from-string message-params))
-                               (extension-instances
-                                (sera:filter (alex:curry #'string=
-                                                         (alex:assoc-value json :extension-id))
-                                             extensions
-                                             :key #'id)))
-                 (echo "Message is ~a" message-params)
-                 (flet ((trigger-message (view extension)
-                          ;; Copied from `ffi-buffer-evaluate-javascript'. Extract?
-                          (%within-renderer-thread
-                           (lambda (&optional channel)
-                             (webkit2:webkit-web-view-evaluate-javascript
-                              view (format nil "browser.runtime.onMessage.run(JSON.parse(~s).message)"
-                                           message-params)
-                              (if channel
-                                  (lambda (result jsc-result)
-                                    (declare (ignore jsc-result))
-                                    (calispel:! channel result))
-                                  (lambda (result jsc-result)
-                                    (declare (ignore jsc-result))
-                                    result))
-                              (lambda (condition)
-                                (javascript-error-handler condition)
-                                ;; Notify the listener that we are done.
-                                (when channel
-                                  (calispel:! channel nil)))
-                              (name extension))))))
-                   (if background-view-p
-                       (dolist (instance extension-instances)
-                         (trigger-message view instance))
-                       (trigger-message
-                        (nyxt/web-extensions:background-view (first extensions)) (first extensions))))
-                 ""))
+               (or
+                (sera:and-let* ((json (json:decode-json-from-string message-params))
+                                (extension-instances
+                                 (sera:filter (alex:curry #'string=
+                                                          (alex:assoc-value json :extension-id))
+                                              extensions
+                                              :key #'id))
+                                (context (webkit:jsc-context-new)))
+                  (if (background-buffer-p buffer)
+                      (dolist (instance extension-instances)
+                        (trigger-message (alex:assoc-value json :message)
+                                         (buffer instance) instance))
+                      (trigger-message (alex:assoc-value json :message)
+                                       (background-buffer (first extensions))
+                                       (first extensions))))
+                ""))
               ("tabs.queryObject"
                (tabs-query message-params))
               ("tabs.createProperties"
@@ -1170,11 +1166,23 @@ See `gtk-browser's `modifier-translator' slot."
                "")
               ("tabs.get"
                (json:encode-json-to-string
-                (buffer->tab-description (buffers-get message-params)))))
+                (buffer->tab-description (buffers-get message-params))))
+              ("tabs.sendMessage"
+               (let* ((json (json:decode-json-from-string message-params))
+                      (id (alex:assoc-value json :tab-id))
+                      (buffer (if (zerop id)
+                                  (current-buffer)
+                                  (buffers-get (format nil "~d" id))))
+                      (extension (find (alex:assoc-value json :extension-id)
+                                       (sera:filter #'nyxt/web-extensions::extension-p
+                                                    (modes buffer))
+                                       :key #'id)))
+                 (trigger-message (alex:assoc-value json :message) buffer extension))))
             ""))
          (reply-message (webkit:webkit-user-message-new
                          message-name (glib:g-variant-new-string reply-contents))))
-    (webkit:webkit-user-message-send-reply message reply-message)))
+    (webkit:webkit-user-message-send-reply message reply-message)
+    (values reply-contents reply-message message)))
 
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
@@ -1282,9 +1290,9 @@ See `gtk-browser's `modifier-translator' slot."
             (:webkit-context-menu-action-download-link-to-disk
              (webkit:webkit-context-menu-remove context-menu item))))))
     nil)
-  (gobject:g-signal-connect
-   (gtk-object buffer) "user-message-received"
-   #'process-user-message)
+  (connect-signal (gtk-object buffer) "user-message-received" (view message)
+    (declare (ignorable view))
+   (process-user-message buffer message))
   buffer)
 
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
@@ -1699,30 +1707,31 @@ As a second value, return the current buffer index starting from 0."
       (calispel:! (gethash (cffi:pointer-address user-data) %message-channels%)
                   value))))
 
-(define-ffi-method ffi-buffer-send-message ((buffer gtk-buffer) &key (name "") (contents "") when-loaded-p wait-p)
-  (flet ((send-message ()
-           (let ((new-id (when wait-p (incf %current-message-identifier%))))
-             (when new-id
-               (setf (gethash new-id %message-channels%)
-                     (make-channel 1)))
-             (webkit:webkit-web-view-send-message-to-page
-              (gtk-object buffer)
-              (webkit:webkit-user-message-new
-               name (glib:g-variant-new-string contents))
-              (cffi:null-pointer) (cffi:callback message-sent)
-              (if new-id
-                  (cffi:make-pointer new-id)
-                  (cffi:null-pointer)))
-             (when wait-p
-               (calispel:? (gethash new-id %message-channels%) 10)))))
-    (if (and when-loaded-p
-             (not (eq (slot-value buffer 'load-status) :finished)))
-        (let ((channel (make-channel 1)))
-          (hooks:add-hook (buffer-loaded-hook buffer)
-                          (make-handler-buffer
-                           (lambda (buffer)
-                             (calispel:! channel (send-message))
-                             (hooks:remove-hook (buffer-loaded-hook buffer) 'send-message-when-loaded))
-                           :name 'send-message-when-loaded))
-          (calispel:? channel))
-        (send-message))))
+(define-ffi-method ffi-buffer-send-message ((buffer gtk-buffer) &key (name "") (contents "") when-loaded-p)
+  (let ((result-channel (make-channel 1)))
+    (run-thread
+      "Send the message"
+      (flet ((send-message (channel)
+               (webkit:webkit-web-view-send-message-to-page*
+                (gtk-object buffer)
+                (webkit:webkit-user-message-new
+                 name (glib:g-variant-new-string contents))
+                (lambda (reply)
+                  (calispel:! channel (glib:g-variant-get-string
+                                       (webkit:webkit-user-message-get-parameters reply))))
+                (lambda (condition)
+                  (echo-warning "Message error: ~a" condition)
+                  ;; Notify the listener that we are done.
+                  (calispel:! channel nil)))))
+        (if (and when-loaded-p
+                 (not (eq (slot-value buffer 'load-status) :finished)))
+            (let ((channel (make-channel 1)))
+              (hooks:add-hook (buffer-loaded-hook buffer)
+                              (make-handler-buffer
+                               (lambda (buffer)
+                                 (calispel:! channel (send-message result-channel))
+                                 (hooks:remove-hook (buffer-loaded-hook buffer) 'send-message-when-loaded))
+                               :name 'send-message-when-loaded))
+              (calispel:? channel))
+            (send-message result-channel))))
+    (calispel:? result-channel 3)))
