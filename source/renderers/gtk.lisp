@@ -508,6 +508,13 @@ See `gtk-browser's `modifier-translator' slot."
           (character character))
       (setf (gtk:gtk-entry-text (key-string-buffer window)) ""))))
 
+(defun update-prompt (buffer)
+  (run-thread "Prompt updater"
+    ;; Rebind prompt-buffer to ensure the watcher does not mix up the
+    ;; different prompt-buffers.
+    (let ((prompt-buffer buffer))
+      (update-prompt-input prompt-buffer))))
+
 (define-ffi-method on-signal-key-press-event ((sender gtk-window) event)
   (let* ((keycode (gdk:gdk-event-key-hardware-keycode event))
          (keyval (gdk:gdk-event-key-keyval event))
@@ -525,11 +532,7 @@ See `gtk-browser's `modifier-translator' slot."
         (log:debug key-string keycode character keyval-name modifiers)
         (log:debug key-string keycode character keyval-name))
     (when (prompt-buffer-p buffer)
-      (run-thread "Prompt updater"
-        ;; Rebind prompt-buffer to ensure the watcher does not mix up the
-        ;; different prompt-buffers.
-        (let ((prompt-buffer buffer))
-          (update-prompt-input prompt-buffer))))
+      (update-prompt buffer))
     (if key-string
         (progn
           (alex:appendf (key-stack sender)
@@ -565,7 +568,11 @@ See `gtk-browser's `modifier-translator' slot."
          (key-string (format nil "button~s" button))
          (modifiers (funcall (modifier-translator *browser*)
                              (button-event-modifiers event)
-                             event)))
+                             event))
+         (buffer (or (current-prompt-buffer)
+                     (active-buffer sender))))
+    (when (prompt-buffer-p buffer)
+      (update-prompt buffer))
     (when key-string
       (alex:appendf (key-stack window)
                     (list (keymap:make-key
