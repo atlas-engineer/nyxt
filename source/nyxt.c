@@ -30,16 +30,24 @@ user_message_received (WebKitWebPage     *web_page,
                 g_print("Got message object\n");
                 char *code = malloc(sizeof(char*) * 10000);
                 sprintf(code, "var p = browser.runtime.onMessage.run(JSON.parse('%s'), JSON.parse('%s'));\
-if (p) p.then((result) => browser.replyMessage('%s', result));\
+if (p && p !== undefined) p.then((result) => browser.replyMessage('%s', result));\
 p",
                         jsc_value_to_json(object, 0),
                         jsc_value_to_json(sender, 0),
                         name);
                 g_print("Printed the code: %s\n", code);
-                JSCValue *result = jsc_context_evaluate(context, code, -1);
-                g_print("Evaluated the code, result is %s\n", jsc_value_to_string(result));
-                g_object_ref(message);
-                g_hash_table_insert(MESSAGES, (void*) name, message);
+                JSCValue *tmp = jsc_context_evaluate(context, code, -1);
+                g_print("Evaluated the code, result is %s\n", jsc_value_to_string(tmp));
+                if (!(jsc_value_is_boolean(tmp) && !jsc_value_to_boolean(tmp))
+                    && !(jsc_value_is_undefined(tmp))) {
+                        g_object_ref(message);
+                        g_hash_table_insert(MESSAGES, (void*) name, message);
+                }
+                else {
+                        webkit_user_message_send_reply(
+                                message, webkit_user_message_new(name, NULL));
+                }
+
                 return TRUE;
         } else {
                 g_print("Message has a type other than \"message\"\n");
