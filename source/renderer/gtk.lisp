@@ -1285,12 +1285,12 @@ See `gtk-browser's `modifier-translator' slot."
                        %message-channels%)
         finally (let* ((reply (calispel:? (gethash (cffi:pointer-address (g:pointer message))
                                                    %message-channels%)))
-                       (reply-message (when reply
-                                        (webkit:webkit-user-message-new
-                                         (webkit:webkit-user-message-get-name message)
-                                         (glib:g-variant-new-string reply)))))
-                  (when reply-message
-                    (webkit:webkit-user-message-send-reply message reply-message)))))
+                       (reply-message (webkit:webkit-user-message-new
+                                       (webkit:webkit-user-message-get-name message)
+                                       (if reply
+                                           (glib:g-variant-new-string reply)
+                                           (cffi:null-pointer)))))
+                  (webkit:webkit-user-message-send-reply message reply-message))))
 
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
