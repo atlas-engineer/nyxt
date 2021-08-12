@@ -1144,6 +1144,40 @@ See `gtk-browser's `modifier-translator' slot."
     (setf (gethash (cffi:pointer-address (g:pointer original-message)) %message-channels%)
           result-channel)))
 
+(defun tabs-insert-css (buffer message-params)
+  (let* ((json (json:decode-json-from-string message-params))
+         (css-data (alex:assoc-value json :css))
+         (code (alex:assoc-value css-data :code))
+         (file (alex:assoc-value css-data :file))
+         (level (alex:assoc-value css-data :css-origin))
+         (tab-id (alex:assoc-value json :tab-id))
+         (extension (find (alex:assoc-value json :extension-id)
+                          (sera:filter #'nyxt/web-extensions::extension-p
+                                       (modes buffer))
+                          :key #'id))
+         (buffer-to-insert (if (zerop tab-id)
+                               buffer
+                               (or (find (format nil "~d" tab-id) (buffer-list) :key #'id)
+                                   buffer)))
+         (content-manager
+           (webkit:webkit-web-view-get-user-content-manager
+            (gtk-object buffer-to-insert)))
+         (style-sheet (webkit:webkit-user-style-sheet-new
+                       (if file
+                           (uiop:read-file-string (uiop:merge-pathnames*
+                                                   file (nyxt/web-extensions:extension-directory
+                                                         extension)))
+                           code)
+                       (if (alex:assoc-value css-data :all-frames)
+                           :webkit-user-content-inject-all-frames
+                           :webkit-user-content-inject-top-frame)
+                       (if (and level (stringp level) (string= level "user"))
+                           :webkit-user-style-level-user
+                           :webkit-user-style-level-author)
+                       (cffi:null-pointer)
+                       (cffi:null-pointer))))
+    (webkit:webkit-user-content-manager-add-style-sheet content-manager style-sheet)))
+
 (defun process-user-message (buffer message)
   (let* ((message-name (webkit:webkit-user-message-get-name message))
          (message-params (glib:g-variant-get-string
@@ -1225,9 +1259,7 @@ See `gtk-browser's `modifier-translator' slot."
          (wrap-in-channel
           (json:encode-json-to-string (buffer->tab-description buffer))))
         ("tabs.print"
-         (wrap-in-channel
-          (print-buffer))
-         "")
+         (wrap-in-channel (print-buffer)))
         ("tabs.get"
          (wrap-in-channel
           (json:encode-json-to-string
@@ -1242,7 +1274,10 @@ See `gtk-browser's `modifier-translator' slot."
                                  (sera:filter #'nyxt/web-extensions::extension-p
                                               (modes buffer))
                                  :key #'id)))
-           (trigger-message (alex:assoc-value json :message) buffer extension message)))))))
+           (trigger-message (alex:assoc-value json :message) buffer extension message)))
+        ("tabs.insertCSS"
+         (wrap-in-channel
+          (tabs-insert-css buffer message-params)))))))
 
 (defun reply-user-message (buffer message)
   (declare (ignore buffer))

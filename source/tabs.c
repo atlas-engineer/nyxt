@@ -173,6 +173,24 @@ tabs_send_message_callback (char *extension_id, double tab_id, JSCValue *object)
                 PAGE, message, NULL, tabs_send_message_reply_callback, NULL);
 }
 
+static void
+tabs_insert_css_callback (char *extension_id, int tab_id, JSCValue *object)
+{
+        JSCContext *context = jsc_context_get_current();
+        JSCValue *wrapper = jsc_value_new_object(context, NULL, NULL);
+                jsc_value_object_set_property(
+                wrapper, "extensionId",
+                jsc_value_new_string(context, extension_id));
+        jsc_value_object_set_property(
+                wrapper, "tabId",
+                jsc_value_new_number(context, tab_id));
+        jsc_value_object_set_property(wrapper, "css", object);
+        char *json = jsc_value_to_json(wrapper, 0);
+        GVariant *variant = g_variant_new("s", json);
+        WebKitUserMessage *message = webkit_user_message_new("tabs.insertCSS", variant);
+        webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
+}
+
 void
 inject_tabs_api (char* extension_name)
 {
@@ -221,6 +239,9 @@ inject_tabs_api (char* extension_name)
         JSCValue *print = jsc_value_new_function(
                 context, NULL, G_CALLBACK(tabs_print_callback), NULL, NULL,
                 G_TYPE_NONE, 0, G_TYPE_NONE);
+        JSCValue *tabsInsertCSS = jsc_value_new_function(
+                context, NULL, G_CALLBACK(tabs_insert_css_callback), NULL, NULL,
+                G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_INT, JSC_TYPE_VALUE);
         jsc_context_set_value(context, "tabsQuery", tabsQuery);
         jsc_context_set_value(context, "tabsQueryResult", tabsQueryResult);
         jsc_context_set_value(context, "tabsCreate", tabsCreate);
@@ -231,6 +252,7 @@ inject_tabs_api (char* extension_name)
         jsc_context_set_value(context, "tabsGetResult", tabsGetResult);
         jsc_context_set_value(context, "tabsSendMessage", tabsSendMessage);
         jsc_context_set_value(context, "tabsSendMessageResult", tabsSendMessageResult);
+        jsc_context_set_value(context, "tabsInsertCSS", tabsInsertCSS);
         char *tabs_query_js = "tabs.query = function (queryObject) { \
     return new Promise(function (success, failure) {                    \
         try {                                                           \
@@ -293,7 +315,7 @@ tabs.get",
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             management.getSelf().then(function (info) {                 \
-            tabsSendMessage(info.id, tabId, message);                            \
+            tabsSendMessage(info.id, tabId, message);                   \
             setTimeout(() => {                                          \
                 success(runtimeSendMessageResult());},                  \
                         10);});                                         \
@@ -303,7 +325,23 @@ tabs.get",
     });                                                                 \
 };                                                                      \
                                                                         \
-tabs.sendMessage";
+tabs.sendMessage",
+                *tabs_insert_css_js = "tabs.insertCSS = function (one, two) {\
+    var tabId = (two === undefined) ? 0 : one;                          \
+    var css = (two === undefined) ? one : two;                          \
+    return new Promise(function (success, failure) {                    \
+        try {                                                           \
+            management.getSelf().then(function (info) {                 \
+                tabsInsertCSS(info.id, tabId, css);                     \
+                setTimeout(() => success(),                             \
+                           10);});                                      \
+        } catch (error) {                                               \
+            return failure(error);                                      \
+        };                                                              \
+    });                                                                 \
+};                                                                      \
+                                                                        \
+tabs.insertCSS";
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "tabs", -1),
                 "query",
@@ -325,7 +363,10 @@ tabs.sendMessage";
                 "sendMessage",
                 jsc_context_evaluate(context, tabs_send_message_js, -1));
         jsc_value_object_set_property(jsc_context_evaluate(context, "tabs", -1),
-                                      "print", print);
+                "print", print);
+        jsc_value_object_set_property(jsc_context_evaluate(context, "tabs", -1),
+                "insertCSS",
+                jsc_context_evaluate(context, tabs_insert_css_js, -1));
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "browser", -1), "tabs",
                 jsc_context_evaluate(context, "tabs", -1));
