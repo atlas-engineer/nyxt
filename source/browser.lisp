@@ -5,20 +5,22 @@
 
 (hooks:define-hook-type prompt-buffer (function (prompt-buffer)))
 (hooks:define-hook-type download (function (download-manager:download)))
-
 (hooks:define-hook-type resource (function (request-data) (or request-data null)))
 (export-always '(make-hook-resource make-handler-resource))
 
 (define-class proxy ()
-  ((url (quri:uri "socks5://127.0.0.1:9050")
-        :documentation "The address of the proxy server.
+  ((url
+    (quri:uri "socks5://127.0.0.1:9050")
+    :documentation "The address of the proxy server.
 It's made of three components: protocol, host and port.
 Example: \"http://192.168.1.254:8080\".")
-   (allowlist '("localhost" "localhost:8080")
-              :type list-of-strings
-              :documentation "A list of URIs not to forward to the proxy.")
-   (proxied-downloads-p t
-                        :documentation "Non-nil if downloads should also use the proxy."))
+   (allowlist
+    '("localhost" "localhost:8080")
+    :type list-of-strings
+    :documentation "A list of URIs not to forward to the proxy.")
+   (proxied-downloads-p
+    t
+    :documentation "Non-nil if downloads should also use the proxy."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
@@ -41,147 +43,166 @@ Without handler, return ARG.  This is an acceptable `combination' for
     (compose-handlers (mapcar #'hooks:fn (hooks:handlers hook)) arg)))
 
 (define-class browser ()
-  ((remote-execution-p nil
-                       :type boolean
-                       :documentation "Whether code sent to the socket gets
-executed.  You must understand the risks before enabling this: a privileged user
-with access to your system can then take control of the browser and execute
-arbitrary code under your user profile.")
-;; TODO: is it always user's data? Better name maybe?
-   (user-data-cache (make-instance 'cache)
-                    :type cache
-                    :documentation "Table that maps the expanded `data-path's to the `user-data' (possibly) stored there.")
-   (socket-thread nil                   ; TODO: Unexport?
-                  :type t
-                  :documentation "Thread that listens on socket.
+  ((remote-execution-p
+    nil
+    :type boolean
+    :documentation "Whether code sent to the socket gets executed.  You must
+understand the risks before enabling this: a privileged user with access to your
+system can then take control of the browser and execute arbitrary code under
+your user profile.")
+   (user-data-cache
+    (make-instance 'cache)
+    :type cache
+    :documentation "Table that maps the expanded `data-path's to the `user-data' (possibly) stored there.")
+   (socket-thread
+    nil
+    :type t
+    :documentation "Thread that listens on socket.
 See `*socket-path*'.
 This slot is mostly meant to clean up the thread if necessary.")
-   (non-terminating-threads '()
-                            :type (or list (cons bt:thread *))
-                            :documentation "List of threads that don't terminate
+   (non-terminating-threads
+    '()
+    :type (or list (cons bt:thread *))
+    :documentation "List of threads that don't terminate
 and that ought to be killed when quitting.")
-   (messages-content '()
-                     :export t
-                     :reader messages-content
-                     :documentation "A list of all echoed messages.
+   (messages-content
+    '()
+    :export t
+    :reader messages-content
+    :documentation "A list of all echoed messages.
 Most recent messages are first.")
-   (clipboard-ring (make-ring)
-                   :export nil)
-   (prompt-buffer-generic-history (make-ring)
-                    :documentation "The default history of all prompt buffer entries.
+   (clipboard-ring
+    (make-ring)
+    :export nil)
+   (prompt-buffer-generic-history
+    (make-ring)
+    :documentation "The default history of all prompt buffer entries.
 This history is used if no history is specified for a given prompt buffer.")
-   (set-url-history (make-ring)
-                    :documentation "The history of all URLs set via set-url")
-   (old-prompt-buffers '()
-                       :export nil
-                       :documentation "The list of old prompt buffers.
+   (set-url-history
+    (make-ring)
+    :documentation "The history of all URLs set via set-url")
+   (old-prompt-buffers
+    '()
+    :export nil
+    :documentation "The list of old prompt buffers.
 This can be used to resume former buffers.")
-   (recent-buffers (make-ring :size 50)
-                   :export nil
-                   :documentation "A ring that keeps track of deleted buffers.")
-   (windows (make-hash-table :test #'equal)
-            :export nil)
-   (total-window-count 0
-                       :export nil
-                       :documentation "This is used to generate unique window
-identifiers in `get-unique-window-identifier'.  We can't rely on the windows
-count since deleting windows may result in duplicate identifiers.")
-   (last-active-window nil
-                       :type (or window null)
-                       :export nil
-                       :documentation "Records the last active window.  This is
+   (recent-buffers
+    (make-ring :size 50)
+    :export nil
+    :documentation "A ring that keeps track of deleted buffers.")
+   (windows
+    (make-hash-table :test #'equal)
+    :export nil)
+   (last-active-window
+    nil
+    :type (or window null)
+    :export nil
+    :documentation "Records the last active window.  This is
 useful when no Nyxt window is focused and we still want `ffi-window-active' to
 return something.
 See `current-window' for the user-facing function.")
-   (buffers :initform (make-hash-table :test #'equal)
-            :documentation "To manipulate the list of buffers,
+   (buffers
+    :initform (make-hash-table :test #'equal)
+    :documentation "To manipulate the list of buffers,
 see `buffer-list', `buffers-get', `buffers-set' and `buffers-delete'.")
-   (total-buffer-count 0
-                       :export nil
-                       :documentation "This is used to generate unique buffer
-identifiers in `get-unique-buffer-identifier'.  We can't rely on the windows
-count since deleting windows may result in duplicate identifiers.")
-   (startup-error-reporter-function nil
-                                    :type (or function null)
-                                    :export nil
-                                    :documentation "When supplied, upon startup,
-if there are errors, they will be reported by this function.")
-   (open-external-link-in-new-window-p nil
-                                       :documentation "Whether to open links
-issued by an external program or issued by Control+<button1> in a new window.")
+   (startup-error-reporter-function
+    nil
+    :type (or function null)
+    :export nil
+    :documentation "When supplied, upon startup, if there are errors, they will
+be reported by this function.")
+   (open-external-link-in-new-window-p
+    nil
+    :documentation "Whether to open links issued by an external program or
+issued by Control+<button1> in a new window.")
    (downloads
     :documentation "List of downloads. Used for rendering by the download manager.")
-   (startup-timestamp (local-time:now)
-                      :export nil
-                      :documentation "`local-time:timestamp' of when Nyxt was started.")
-   (init-time 0.0
-              :export nil
-              :documentation "Initialization time in seconds.")
-   (ready-p nil
-            :reader ready-p
-            :documentation "If non-nil, the browser is ready for operation (make
+   (startup-timestamp
+    (local-time:now)
+    :export nil
+    :documentation "`local-time:timestamp' of when Nyxt was started.")
+   (init-time
+    0.0
+    :export nil
+    :documentation "Initialization time in seconds.")
+   (ready-p
+    nil
+    :reader ready-p
+    :documentation "If non-nil, the browser is ready for operation (make
 buffers, load data files, open prompt buffer, etc).")
-   (native-dialogs t
-                   :type boolean
-                   :documentation "Whether to use prompt-buffer-reliant script dialogs and file-chooser.
+   (native-dialogs
+    t
+    :type boolean
+    :documentation "Whether to use prompt-buffer-reliant script dialogs and file-chooser.
 If nil, renderer-provided dialogs are used.")
-   (session-restore-prompt :always-ask
-                           :documentation "Ask whether to restore the session.
+   (session-restore-prompt
+    :always-ask
+    :documentation "Ask whether to restore the session.
 The possible values are `:always-ask', `:always-restore' and `:never-restore'.")
    ;; Hooks follow:
-   (before-exit-hook (hooks:make-hook-void)
-                     :type hooks:hook-void
-                     :documentation "Hook run before both `*browser*' and the
+   (before-exit-hook
+    (hooks:make-hook-void)
+    :type hooks:hook-void
+    :documentation "Hook run before both `*browser*' and the
 renderer get terminated.  The handlers take no argument.")
-   (window-make-hook (make-hook-window)
-                     :type hook-window
-                     :documentation "Hook run after `window-make'.
+   (window-make-hook
+    (make-hook-window)
+    :type hook-window
+    :documentation "Hook run after `window-make'.
 The handlers take the window as argument.")
-   (buffer-make-hook (make-hook-buffer)
-                     :type hook-buffer
-                     :documentation "Hook run after `buffer-make' and before `ffi-buffer-load'.
+   (buffer-make-hook
+    (make-hook-buffer)
+    :type hook-buffer
+    :documentation "Hook run after `buffer-make' and before `ffi-buffer-load'.
 It is run before `initialize-modes' so that the default mode list can still be
 altered from the hooks.
 The handlers take the buffer as argument.")
-   (buffer-before-make-hook (make-hook-buffer)
-                            :type hook-buffer
-                            :documentation "Hook run before `buffer-make'.
+   (buffer-before-make-hook
+    (make-hook-buffer)
+    :type hook-buffer
+    :documentation "Hook run before `buffer-make'.
 This hook is mostly useful to set the `cookies-path'.
 The buffer web view is not allocated, so it's not possible to run any
 parenscript from this hook.  See `buffer-make-hook' for a hook.
 The handlers take the buffer as argument.")
-   (prompt-buffer-make-hook (make-hook-prompt-buffer)
-                            :type hook-prompt-buffer
-                            :documentation "Hook run after the `prompt-buffer'
+   (prompt-buffer-make-hook
+    (make-hook-prompt-buffer)
+    :type hook-prompt-buffer
+    :documentation "Hook run after the `prompt-buffer'
 class is instantiated and before initializing the prompt-buffer modes.
 The handlers take the prompt-buffer as argument.")
-   (before-download-hook (make-hook-download)
-                         :type hook-download
-                         :documentation "Hook run before downloading a URL.
+   (before-download-hook
+    (make-hook-download)
+    :type hook-download
+    :documentation "Hook run before downloading a URL.
 The handlers take the URL as argument.")
-   (after-download-hook (make-hook-download)
-                        :type hook-download
-                        :documentation "Hook run after a download has completed.
+   (after-download-hook
+    (make-hook-download)
+    :type hook-download
+    :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")
-   (autofills (list (make-autofill :name "Name" :fill "My Name")
-                    (make-autofill :name "Hello Printer"
-                                   :fill (lambda () (format nil "hello!"))))
-              :documentation "To autofill run the command `autofill'.
+   (autofills
+    (list (make-autofill :name "Name" :fill "My Name")
+          (make-autofill :name "Hello Printer"
+                         :fill (lambda () (format nil "hello!"))))
+    :documentation "To autofill run the command `autofill'.
 Use this slot to customize the autofill values available.
 
 The fill can be a string value or a function.  The latter allows you to provide
 content dynamic to the context.")
 
-   (spell-check-language "en_US"
-                         :documentation "Spell check language used by Nyxt. For
+   (spell-check-language
+    "en_US"
+    :documentation "Spell check language used by Nyxt. For
 a list of more languages available, please view the documentation for
 cl-enchant (broker-list-dicts).")
-   (external-editor-program (or (uiop:getenv "VISUAL")
-                                (uiop:getenv "EDITOR"))
-                            :type (or (cons string *) string null)
-                            :writer t
-                            :export t
-                            :documentation "The external editor to use for
+   (external-editor-program
+    (or (uiop:getenv "VISUAL")
+        (uiop:getenv "EDITOR"))
+    :type (or (cons string *) string null)
+    :writer t
+    :export t
+    :documentation "The external editor to use for
 editing files.  You can specify the full command line arguments with a list of
 strings."))
   (:export-class-name-p t)
@@ -219,8 +240,7 @@ prevents otherwise."))
   (setf (data (%get-user-data profile path (user-data-cache *browser*)))
         value))
 
-(defmethod get-containing-window-for-buffer ((buffer buffer)
-                                             (browser browser))
+(defmethod get-containing-window-for-buffer ((buffer buffer) (browser browser))
   "Get the window containing a buffer."
   (find buffer (alex:hash-table-values (windows browser)) :key #'active-buffer))
 
@@ -271,22 +291,22 @@ prevents otherwise."))
    browser
    (lambda ()
      (run-thread "finalization"
-       ;; Restart on init error, in case `*init-file-path*' broke the state.
-       ;; We only `handler-case' when there is an init file, this way we avoid
-       ;; looping indefinitely.
-       (if (or (getf *options* :no-init)
-               (not (uiop:file-exists-p (expand-path *init-file-path*))))
-           (startup browser urls)
-           (handler-case (startup browser urls)
-             (error (c)
-               (log:error "Startup failed (probably due to a mistake in ~s):~&~a"
-                          (expand-path *init-file-path*) c)
-               (if *run-from-repl-p*
-                   (progn
-                     (quit)
-                     (reset-all-user-classes)
-                     (apply #'start (append *options* (list :urls urls :no-init t))))
-                   (restart-with-message c))))))))
+                 ;; Restart on init error, in case `*init-file-path*' broke the state.
+                 ;; We only `handler-case' when there is an init file, this way we avoid
+                 ;; looping indefinitely.
+                 (if (or (getf *options* :no-init)
+                         (not (uiop:file-exists-p (expand-path *init-file-path*))))
+                     (startup browser urls)
+                     (handler-case (startup browser urls)
+                       (error (c)
+                         (log:error "Startup failed (probably due to a mistake in ~s):~&~a"
+                                    (expand-path *init-file-path*) c)
+                         (if *run-from-repl-p*
+                             (progn
+                               (quit)
+                               (reset-all-user-classes)
+                               (apply #'start (append *options* (list :urls urls :no-init t))))
+                             (restart-with-message c))))))))
   ;; Set `init-time' at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)
@@ -346,7 +366,7 @@ reached (during which no new progress has been made)."
     (loop for d = (calispel:? download-manager:*notifications*)
           while d
           when (download-manager:finished-p d)
-            do (hooks:run-hook (after-download-hook *browser*))
+          do (hooks:run-hook (after-download-hook *browser*))
           do (sleep 0.1) ; avoid excessive polling
              (setf (bytes-downloaded download-render)
                    (download-manager:bytes-fetched download-object))
@@ -390,11 +410,8 @@ current buffer."
      (ffi-buffer-download buffer (render-url url))))
   (list-downloads))
 
-(defmethod get-unique-window-identifier ((browser browser))
-  (format nil "~s" (incf (slot-value browser 'total-window-count))))
-
-(defmethod get-unique-buffer-identifier ((browser browser))
-  (format nil "~s" (incf (slot-value browser 'total-buffer-count))))
+(defmethod get-unique-identifier ((browser browser))
+  (symbol-name (gensym "")))
 
 (-> set-window-title (&optional window buffer) *)
 (export-always 'set-window-title)
@@ -449,24 +466,30 @@ If none is found, fall back to `scheme:cua'."
   (make-buffer-focus :url url :parent-buffer buffer))
 
 (define-class request-data ()
-  ((buffer (current-buffer)
-           :type buffer
-           :documentation "Buffer targeted by the request.")
-   (url (quri:uri "")
-        :documentation "URL of the request")
-   (event-type :other
-               :accessor nil ; TODO: No public accessor for now, we first need a use case.
-               :export nil
-               :documentation "The type of request, e.g. `:link-click'.")
-   (new-window-p nil
-                 :documentation "Whether the request takes place in a
+  ((buffer
+    (current-buffer)
+    :type buffer
+    :documentation "Buffer targeted by the request.")
+   (url
+    (quri:uri "")
+    :documentation "URL of the request")
+   (event-type
+    :other
+    :accessor nil ; TODO: No public accessor for now, we first need a use case.
+    :export nil
+    :documentation "The type of request, e.g. `:link-click'.")
+   (new-window-p
+    nil
+    :documentation "Whether the request takes place in a
 new window.")
-   (known-type-p nil
-                 :documentation "Whether the request is for content with
+   (known-type-p
+    nil
+    :documentation "Whether the request is for content with
 supported MIME-type, such as a picture that can be displayed in the web
 view.")
-   (keys '()
-         :documentation "The key sequence that generated the request."))
+   (keys
+    '()
+    :documentation "The key sequence that generated the request."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
@@ -580,8 +603,8 @@ The following example does a few things:
                                          nil)))
                          (funcall action url)
                          (log:info "Applied ~s shell-command URL-dispatcher on ~s"
-                            (symbol-name name)
-                            (render-url url)))))
+                                   (symbol-name name)
+                                   (render-url url)))))
              request-data)))
    :name name))
 

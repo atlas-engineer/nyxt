@@ -509,12 +509,12 @@ Delete it with `ffi-buffer-delete'."
                ("#container"
                 :display "grid"
                 ;; Columns: controls, url, tabs, modes
-                :grid-template-columns "120px 2fr 3fr 240px"
+                :grid-template-columns "90px minmax(auto, 30ch) 1fr 220px"
                 :overflow-y "hidden")
                ("#container-vi"
                 :display "grid"
                 ;; Columns: controls, vi-status, url, tabs, modes
-                :grid-template-columns "120px 30px 2fr 3fr 240px"
+                :grid-template-columns "90px 30px minmax(auto, 30ch) 1fr 220px"
                 :overflow-y "hidden")
                ("#controls"
                 :background-color "rgb(80,80,80)"
@@ -838,10 +838,10 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   (let ((buffer (if dead-buffer
                     (progn
                       ;; Dead buffer ID must be renewed before calling `ffi-buffer-make'.
-                      (setf (id dead-buffer) (get-unique-buffer-identifier *browser*))
+                      (setf (id dead-buffer) (get-unique-identifier *browser*))
                       (ffi-buffer-make dead-buffer))
                     (apply #'make-instance buffer-class
-                           :id (get-unique-buffer-identifier *browser*)
+                           :id (get-unique-identifier *browser*)
                            (append (when title `(:title ,title))
                                    (when data-profile `(:data-profile ,data-profile)))))))
     (hooks:run-hook (buffer-before-make-hook *browser*) buffer)
