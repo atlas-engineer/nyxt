@@ -1115,15 +1115,15 @@ See `gtk-browser's `modifier-translator' slot."
                 (gtk-object buffer)
                 (webkit:webkit-user-message-new
                  (webkit:webkit-user-message-get-name original-message)
-                  (glib:g-variant-new-string
-                       (json:encode-json-to-string
-                        `(("message" . ,message)
-                          ("sender" . (("tab" . ,(buffer->tab-description buffer))
-                                       ("url" . ,(render-url (url buffer)))
-                                       ("tlsChannelId" . "")
-                                       ("frameId" . 0)
-                                       ("id" . "")))
-                          ("extensionName" . ,(name extension))))))
+                 (glib:g-variant-new-string
+                  (json:encode-json-to-string
+                   `(("message" . ,message)
+                     ("sender" . (("tab" . ,(buffer->tab-description buffer))
+                                  ("url" . ,(render-url (url buffer)))
+                                  ("tlsChannelId" . "")
+                                  ("frameId" . 0)
+                                  ("id" . "")))
+                     ("extensionName" . ,(name extension))))))
                 (lambda (reply)
                   (calispel:! channel (glib:g-variant-get-string
                                        (webkit:webkit-user-message-get-parameters reply))))
@@ -1142,7 +1142,11 @@ See `gtk-browser's `modifier-translator' slot."
               (calispel:? channel))
             (send-message result-channel))))
     (setf (gethash (cffi:pointer-address (g:pointer original-message)) %message-channels%)
-          result-channel)))
+          result-channel))
+  "")
+
+(defvar %style-sheets% (make-hash-table :test #'equal)
+  "WebKitUserStyleSheet-s indexed by the JSON describing them.")
 
 (defun tabs-insert-css (buffer message-params)
   (let* ((json (json:decode-json-from-string message-params))
@@ -1176,7 +1180,25 @@ See `gtk-browser's `modifier-translator' slot."
                            :webkit-user-style-level-author)
                        (cffi:null-pointer)
                        (cffi:null-pointer))))
-    (webkit:webkit-user-content-manager-add-style-sheet content-manager style-sheet)))
+    (setf (gethash message-params %style-sheets%)
+          style-sheet)
+    (webkit:webkit-user-content-manager-add-style-sheet content-manager style-sheet)
+    ""))
+
+(defun tabs-remove-css (message-params)
+  (let* ((json (json:decode-json-from-string message-params))
+         (tab-id (alex:assoc-value json :tab-id))
+         (buffer-to-insert (if (zerop tab-id)
+                               (current-buffer)
+                               (or (find (format nil "~d" tab-id) (buffer-list) :key #'id)
+                                   (current-buffer))))
+         (content-manager
+           (webkit:webkit-web-view-get-user-content-manager
+            (gtk-object buffer-to-insert))))
+    (webkit:webkit-user-content-manager-remove-style-sheet
+     content-manager (gethash message-params %style-sheets%))
+    (remhash message-params %style-sheets%)
+    ""))
 
 (defun process-user-message (buffer message)
   (let* ((message-name (webkit:webkit-user-message-get-name message))
@@ -1277,7 +1299,10 @@ See `gtk-browser's `modifier-translator' slot."
            (trigger-message (alex:assoc-value json :message) buffer extension message)))
         ("tabs.insertCSS"
          (wrap-in-channel
-          (tabs-insert-css buffer message-params)))))))
+          (tabs-insert-css buffer message-params)))
+        ("tabs.removeCSS"
+         (wrap-in-channel
+          (tabs-remove-css message-params)))))))
 
 (defun reply-user-message (buffer message)
   (declare (ignore buffer))
