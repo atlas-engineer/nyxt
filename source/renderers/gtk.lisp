@@ -282,7 +282,7 @@ The BODY is wrapped with `with-protect'."
                   status-buffer status-container
                   message-container message-view
                   id key-string-buffer) window
-       (setf id (get-unique-window-identifier *browser*))
+       (setf id (get-unique-identifier *browser*))
        (setf gtk-object (make-instance 'gtk:gtk-window
                                        :type :toplevel
                                        :default-width 1024

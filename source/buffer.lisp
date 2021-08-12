@@ -838,10 +838,10 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   (let ((buffer (if dead-buffer
                     (progn
                       ;; Dead buffer ID must be renewed before calling `ffi-buffer-make'.
-                      (setf (id dead-buffer) (get-unique-buffer-identifier *browser*))
+                      (setf (id dead-buffer) (get-unique-identifier *browser*))
                       (ffi-buffer-make dead-buffer))
                     (apply #'make-instance buffer-class
-                           :id (get-unique-buffer-identifier *browser*)
+                           :id (get-unique-identifier *browser*)
                            (append (when title `(:title ,title))
                                    (when data-profile `(:data-profile ,data-profile)))))))
     (hooks:run-hook (buffer-before-make-hook *browser*) buffer)

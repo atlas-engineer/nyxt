@@ -81,11 +81,6 @@ This can be used to resume former buffers.")
                    :documentation "A ring that keeps track of deleted buffers.")
    (windows (make-hash-table :test #'equal)
             :export nil)
-   (total-window-count 0
-                       :export nil
-                       :documentation "This is used to generate unique window
-identifiers in `get-unique-window-identifier'.  We can't rely on the windows
-count since deleting windows may result in duplicate identifiers.")
    (last-active-window nil
                        :type (or window null)
                        :export nil
@@ -96,11 +91,6 @@ See `current-window' for the user-facing function.")
    (buffers :initform (make-hash-table :test #'equal)
             :documentation "To manipulate the list of buffers,
 see `buffer-list', `buffers-get', `buffers-set' and `buffers-delete'.")
-   (total-buffer-count 0
-                       :export nil
-                       :documentation "This is used to generate unique buffer
-identifiers in `get-unique-buffer-identifier'.  We can't rely on the windows
-count since deleting windows may result in duplicate identifiers.")
    (startup-error-reporter-function nil
                                     :type (or function null)
                                     :export nil
@@ -390,11 +380,8 @@ current buffer."
      (ffi-buffer-download buffer (render-url url))))
   (list-downloads))
 
-(defmethod get-unique-window-identifier ((browser browser))
-  (format nil "~s" (incf (slot-value browser 'total-window-count))))
-
-(defmethod get-unique-buffer-identifier ((browser browser))
-  (format nil "~s" (incf (slot-value browser 'total-buffer-count))))
+(defmethod get-unique-identifier ((browser browser))
+  (symbol-name (gensym "")))
 
 (-> set-window-title (&optional window buffer) *)
 (export-always 'set-window-title)
