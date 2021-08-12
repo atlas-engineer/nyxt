@@ -110,6 +110,14 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
    (prompter:constructor (tag-suggestions)))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
+(define-class keyword-source (prompter:source)
+  ((prompter:name "Keywords")
+   (buffer :accessor buffer :initarg :buffer)
+   (prompter:multi-selection-p t)
+   (prompter:constructor (lambda (source)
+                           (mapcar #'car (keywords (buffer source))))))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
 (define-command list-bookmarks ()
   "List all bookmarks in a new buffer."
   (with-current-html-buffer (bookmarks-buffer "*Bookmarks*" 'base-mode)
@@ -168,37 +176,25 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 
 (define-command bookmark-current-url (&optional (buffer (current-buffer)))
   "Bookmark the URL of BUFFER."
-  ;; TODO: Re-use extract-keywords to implement tag suggestion source.
-  ;; (flet ((extract-keywords (html limit)
-  ;;          (sera:take limit (delete "" (mapcar #'first
-  ;;                                              (analysis:keywords
-  ;;                                               (make-instance
-  ;;                                                'analysis:document
-  ;;                                                :string-contents (plump:text (plump:parse html)))))
-  ;;                                   :test #'string=)))))
   (if (url-empty-p (url buffer))
       (echo "Buffer has no URL.")
-      (let* (;; (body (with-current-buffer buffer
-             ;;         (ffi-buffer-get-document buffer)))
-             (tags (prompt
-                    :prompt "Tag(s)"
-                    :sources (list
-                              (make-instance 'prompter:word-source
-                                             :name "New tags"
-                                             ;; On no input, suggest the empty tag which effectively acts as "no tag".
-                                             ;; Without it, we would be force to
-                                             ;; specify a tag.
-                                             :filter-postprocessor
-                                             (lambda (suggestions source input)
-                                               (declare (ignore source input))
-                                               (or suggestions
-                                                   (list "")))
-                                             :multi-selection-p t)
-                              (make-instance 'tag-source
-                                             :marks (url-bookmark-tags (url buffer))
-                                             ;; TODO: Move extra-tags to a separate source.
-                                             ;; :extra-tags (extract-keywords body 5)
-                                             )))))
+      (let ((tags (prompt
+                   :prompt "Tag(s)"
+                   :sources (list
+                             (make-instance 'prompter:word-source
+                                            :name "New tags"
+                                            ;; On no input, suggest the empty tag which effectively acts as "no tag".
+                                            ;; Without it, we would be force to specify a tag.
+                                            :filter-postprocessor
+                                            (lambda (suggestions source input)
+                                              (declare (ignore source input))
+                                              (or suggestions
+                                                  (list "")))
+                                            :multi-selection-p t)
+                             (make-instance 'keyword-source
+                                            :buffer buffer)
+                             (make-instance 'tag-source
+                                            :marks (url-bookmark-tags (url buffer)))))))
         (bookmark-add (url buffer)
                       :title (title buffer)
                       :tags tags)
