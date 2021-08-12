@@ -1103,113 +1103,159 @@ See `gtk-browser's `modifier-translator' slot."
       (set-current-buffer buffer))
     (json:encode-json-to-string (buffer->tab-description buffer))))
 
-(defun trigger-message (message buffer extension)
-  (nyxt:ffi-buffer-send-message
-   buffer
-   :name "message"
-   :contents (format
-              nil "{\"message\": ~s, \"sender\": ~s, \"extensionName\": ~s}"
-              (json:encode-json-to-string message)
-              (json:encode-json-to-string
-               `(("tab" . ,(buffer->tab-description buffer))
-                 ("url" . ,(render-url (url buffer)))
-                 ("tlsChannelId" . "")
-                 ("frameId" . 0)
-                 ("id" . "")))
-              (name extension))
-   :when-loaded-p t))
+(defvar %message-channels% (make-hash-table)
+  "A hash-table mapping message pointer addresses to the channels they return values from.")
+
+(defun trigger-message (message buffer extension original-message)
+  (let ((result-channel (make-channel 1)))
+    (run-thread
+      "Send the message"
+      (flet ((send-message (channel)
+               (webkit:webkit-web-view-send-message-to-page*
+                (gtk-object buffer)
+                (webkit:webkit-user-message-new
+                 (webkit:webkit-user-message-get-name original-message)
+                  (glib:g-variant-new-string
+                       (json:encode-json-to-string
+                        `(("message" . ,message)
+                          ("sender" . (("tab" . ,(buffer->tab-description buffer))
+                                       ("url" . ,(render-url (url buffer)))
+                                       ("tlsChannelId" . "")
+                                       ("frameId" . 0)
+                                       ("id" . "")))
+                          ("extensionName" . ,(name extension))))))
+                (lambda (reply)
+                  (calispel:! channel (glib:g-variant-get-string
+                                       (webkit:webkit-user-message-get-parameters reply))))
+                (lambda (condition)
+                  (echo-warning "Message error: ~a" condition)
+                  ;; Notify the listener that we are done.
+                  (calispel:! channel nil)))))
+        (if (not (member (slot-value buffer 'load-status) '(:finished :failed)))
+            (let ((channel (make-channel 1)))
+              (hooks:add-hook (buffer-loaded-hook buffer)
+                              (make-handler-buffer
+                               (lambda (buffer)
+                                 (calispel:! channel (send-message result-channel))
+                                 (hooks:remove-hook (buffer-loaded-hook buffer) 'send-message-when-loaded))
+                               :name 'send-message-when-loaded))
+              (calispel:? channel))
+            (send-message result-channel))))
+    (setf (gethash (cffi:pointer-address (g:pointer original-message)) %message-channels%)
+          result-channel)))
 
 (defun process-user-message (buffer message)
   (let* ((message-name (webkit:webkit-user-message-get-name message))
          (message-params (glib:g-variant-get-string
                           (webkit:webkit-user-message-get-parameters message)))
          (extensions (when buffer
-                       (sera:filter #'nyxt/web-extensions::extension-p (modes buffer))))
-         (reply-contents
-           (or
-            (str:string-case message-name
-              ("listExtensions"
-               (json:encode-json-to-string
-                (mapcar #'(lambda (extension)
-                            (cons (nyxt/web-extensions::name extension)
-                                  (nyxt/web-extensions::manifest extension)))
-                        extensions)))
-              ("management.getSelf"
-               (json:encode-json-to-string
-                (extension->extension-info (find message-params extensions
-                                                 :key #'name :test #'string=))))
-              ("runtime.sendMessage"
-               (or
-                (sera:and-let* ((json (json:decode-json-from-string message-params))
-                                (extension-instances
-                                 (sera:filter (alex:curry #'string=
-                                                          (alex:assoc-value json :extension-id))
-                                              extensions
-                                              :key #'id))
-                                (context (webkit:jsc-context-new)))
-                  (if (background-buffer-p buffer)
-                      (dolist (instance extension-instances)
-                        (trigger-message (alex:assoc-value json :message)
-                                         (buffer instance) instance))
-                      (trigger-message (alex:assoc-value json :message)
-                                       (background-buffer (first extensions))
-                                       (first extensions))))
-                ""))
-              ("runtime.getPlatformInfo"
-               (json:encode-json-to-string
-                (list
-                 ;; TODO: This begs for trivial-features.
-                 (cons "os"
-                       #+(or darwin macos macosx)
-                       "mac"
-                       #+bsd
-                       "openbsd"
-                       #+linux
-                       "linux"
-                       #-(or darwin macos macosx linux bst)
-                       "")
-                 (cons "arch"
-                       #+X86-64
-                       "x86-64"
-                       #+(or X86 X86-32)
-                       "x86-32"
-                       #-(or X86 X86-32 X86-64)
-                       "arm"))))
-              ("runtime.getBrowserInfo"
-               (json:encode-json-to-string
-                (let ((nyxt-version (str:split "-" nyxt:+version+)))
-                  `(("name" . "Nyxt")
-                    ("vendor" . "Atlas Engineer LLC")
-                    ("version" ,(first nyxt-version))
-                    ("build" ,(third nyxt-version))))))
-              ("tabs.queryObject"
-               (tabs-query message-params))
-              ("tabs.createProperties"
-               (tabs-create message-params))
-              ("tabs.getCurrent"
-               (json:encode-json-to-string (buffer->tab-description buffer)))
-              ("tabs.print"
-               (print-buffer)
-               "")
-              ("tabs.get"
-               (json:encode-json-to-string
-                (buffer->tab-description (buffers-get message-params))))
-              ("tabs.sendMessage"
-               (let* ((json (json:decode-json-from-string message-params))
-                      (id (alex:assoc-value json :tab-id))
-                      (buffer (if (zerop id)
-                                  (current-buffer)
-                                  (buffers-get (format nil "~d" id))))
-                      (extension (find (alex:assoc-value json :extension-id)
-                                       (sera:filter #'nyxt/web-extensions::extension-p
-                                                    (modes buffer))
-                                       :key #'id)))
-                 (trigger-message (alex:assoc-value json :message) buffer extension))))
-            ""))
-         (reply-message (webkit:webkit-user-message-new
-                         message-name (glib:g-variant-new-string reply-contents))))
-    (webkit:webkit-user-message-send-reply message reply-message)
-    (values reply-contents reply-message message)))
+                       (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))))
+    (flet ((wrap-in-channel (value)
+             (let ((channel (make-channel 1)))
+               (setf (gethash (cffi:pointer-address (g:pointer message))
+                              %message-channels%)
+                     channel)
+               (calispel:! channel value))))
+      (str:string-case message-name
+        ("listExtensions"
+         (wrap-in-channel
+          (json:encode-json-to-string
+           (mapcar #'(lambda (extension)
+                       (cons (nyxt/web-extensions::name extension)
+                             (nyxt/web-extensions::manifest extension)))
+                   extensions))))
+        ("management.getSelf"
+         (wrap-in-channel
+          (json:encode-json-to-string
+           (extension->extension-info (find message-params extensions
+                                            :key #'name :test #'string=)))))
+        ("runtime.sendMessage"
+         (sera:and-let* ((json (json:decode-json-from-string message-params))
+                         (extension-instances
+                          (sera:filter (alex:curry #'string=
+                                                   (alex:assoc-value json :extension-id))
+                                       extensions
+                                       :key #'id))
+                         (context (webkit:jsc-context-new)))
+           ;; Store a pointer to the message and reply to it later!
+           (if (background-buffer-p buffer)
+               (dolist (instance extension-instances)
+                 (trigger-message (alex:assoc-value json :message)
+                                  (buffer instance) instance message))
+               (trigger-message (alex:assoc-value json :message)
+                                (background-buffer (first extensions))
+                                (first extensions)
+                                message))))
+        ("runtime.getPlatformInfo"
+         (wrap-in-channel
+          (json:encode-json-to-string
+           (list
+            ;; TODO: This begs for trivial-features.
+            (cons "os"
+                  #+(or darwin macos macosx)
+                  "mac"
+                  #+bsd
+                  "openbsd"
+                  #+linux
+                  "linux"
+                  #-(or darwin macos macosx linux bsd)
+                  "")
+            (cons "arch"
+                  #+X86-64
+                  "x86-64"
+                  #+(or X86 X86-32)
+                  "x86-32"
+                  #-(or X86 X86-32 X86-64)
+                  "arm")))))
+        ("runtime.getBrowserInfo"
+         (wrap-in-channel
+          (json:encode-json-to-string
+           (let ((nyxt-version (str:split "-" nyxt:+version+)))
+             `(("name" . "Nyxt")
+               ("vendor" . "Atlas Engineer LLC")
+               ("version" ,(first nyxt-version))
+               ("build" ,(third nyxt-version)))))))
+        ("tabs.queryObject"
+         (wrap-in-channel
+          (tabs-query message-params)))
+        ("tabs.createProperties"
+         (wrap-in-channel
+          (tabs-create message-params)))
+        ("tabs.getCurrent"
+         (wrap-in-channel
+          (json:encode-json-to-string (buffer->tab-description buffer))))
+        ("tabs.print"
+         (wrap-in-channel
+          (print-buffer))
+         "")
+        ("tabs.get"
+         (wrap-in-channel
+          (json:encode-json-to-string
+           (buffer->tab-description (buffers-get message-params)))))
+        ("tabs.sendMessage"
+         (let* ((json (json:decode-json-from-string message-params))
+                (id (alex:assoc-value json :tab-id))
+                (buffer (if (zerop id)
+                            (current-buffer)
+                            (buffers-get (format nil "~d" id))))
+                (extension (find (alex:assoc-value json :extension-id)
+                                 (sera:filter #'nyxt/web-extensions::extension-p
+                                              (modes buffer))
+                                 :key #'id)))
+           (trigger-message (alex:assoc-value json :message) buffer extension message)))))))
+
+(defun reply-user-message (buffer message)
+  (declare (ignore buffer))
+  (loop until (gethash (cffi:pointer-address (g:pointer message))
+                       %message-channels%)
+        finally (let* ((reply (calispel:? (gethash (cffi:pointer-address (g:pointer message))
+                                                   %message-channels%)))
+                       (reply-message (when reply
+                                        (webkit:webkit-user-message-new
+                                         (webkit:webkit-user-message-get-name message)
+                                         (glib:g-variant-new-string reply)))))
+                  (when reply-message
+                    (webkit:webkit-user-message-send-reply message reply-message)))))
 
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
@@ -1319,7 +1365,14 @@ See `gtk-browser's `modifier-translator' slot."
     nil)
   (connect-signal (gtk-object buffer) "user-message-received" (view message)
     (declare (ignorable view))
-   (process-user-message buffer message))
+    (g:g-object-ref (g:pointer message))
+    (run-thread
+      "Process user messsage"
+      (process-user-message buffer message))
+    (run-thread
+      "Reply user message"
+      (reply-user-message buffer message))
+    t)
   buffer)
 
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
@@ -1714,51 +1767,3 @@ As a second value, return the current buffer index starting from 0."
 
 (define-ffi-method ffi-extension-delete-background-view ((extension nyxt/web-extensions:extension))
     (gtk:gtk-widget-destroy (nyxt/web-extensions:background-view extension)))
-
-(defvar %message-channels% (make-hash-table))
-(defvar %current-message-identifier% 1)
-
-(cffi:defcallback message-sent :void ((source-object :pointer) (result :pointer) (user-data :pointer))
-  (let* ((message (webkit:webkit-web-view-send-message-to-page-finish source-object result))
-         (background-buffers (delete-duplicates
-                              (mapcar #'background-buffer
-                                      (sera:filter #'nyxt/web-extensions::extension-p
-                                                   (alex:mappend #'modes (buffer-list))))))
-         (value (process-user-message (find source-object
-                                            (append (buffer-list)
-                                                    background-buffers)
-                                            :key (alex:compose #'g:pointer #'gtk-object))
-                                      message
-                                      :send-reply-p nil)))
-    (unless (cffi:null-pointer-p user-data)
-      (calispel:! (gethash (cffi:pointer-address user-data) %message-channels%)
-                  value))))
-
-(define-ffi-method ffi-buffer-send-message ((buffer gtk-buffer) &key (name "") (contents "") when-loaded-p)
-  (let ((result-channel (make-channel 1)))
-    (run-thread
-      "Send the message"
-      (flet ((send-message (channel)
-               (webkit:webkit-web-view-send-message-to-page*
-                (gtk-object buffer)
-                (webkit:webkit-user-message-new
-                 name (glib:g-variant-new-string contents))
-                (lambda (reply)
-                  (calispel:! channel (glib:g-variant-get-string
-                                       (webkit:webkit-user-message-get-parameters reply))))
-                (lambda (condition)
-                  (echo-warning "Message error: ~a" condition)
-                  ;; Notify the listener that we are done.
-                  (calispel:! channel nil)))))
-        (if (and when-loaded-p
-                 (not (eq (slot-value buffer 'load-status) :finished)))
-            (let ((channel (make-channel 1)))
-              (hooks:add-hook (buffer-loaded-hook buffer)
-                              (make-handler-buffer
-                               (lambda (buffer)
-                                 (calispel:! channel (send-message result-channel))
-                                 (hooks:remove-hook (buffer-loaded-hook buffer) 'send-message-when-loaded))
-                               :name 'send-message-when-loaded))
-              (calispel:? channel))
-            (send-message result-channel))))
-    (calispel:? result-channel 3)))
