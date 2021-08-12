@@ -1156,9 +1156,9 @@ See `gtk-browser's `modifier-translator' slot."
                                        (modes buffer))
                           :key #'id))
          (buffer-to-insert (if (zerop tab-id)
-                               buffer
+                               (current-buffer)
                                (or (find (format nil "~d" tab-id) (buffer-list) :key #'id)
-                                   buffer)))
+                                   (current-buffer))))
          (content-manager
            (webkit:webkit-web-view-get-user-content-manager
             (gtk-object buffer-to-insert)))
