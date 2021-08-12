@@ -804,3 +804,4 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-extension-delete-background-view (extension))
 (define-ffi-generic ffi-buffer-send-message (buffer &key name contents when-loaded-p wait-p))
 (define-ffi-generic ffi-buffer-send-message (buffer &key name contents when-loaded-p))
+(define-ffi-generic ffi-buffer-send-message (buffer &key name contents))
