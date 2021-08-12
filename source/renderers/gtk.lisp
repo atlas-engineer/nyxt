@@ -80,11 +80,10 @@ data-manager will store the data separately for each buffer.")
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 (define-user-class buffer (gtk-buffer))
 
-(defmethod web-context ((browser gtk-browser))
-  (or (slot-value *browser* 'web-context)
-      (let ((context (make-instance 'webkit:webkit-web-context)))
-        (webkit:webkit-web-context-set-sandbox-enabled context t)
-        (setf (slot-value *browser* 'web-context) context))))
+(defmethod make-web-context ((manager webkit:webkit-website-data-manager))
+  (let ((context (make-instance 'webkit:webkit-web-context :website-data-manager manager)))
+    (webkit:webkit-web-context-set-sandbox-enabled context t)
+    context))
 
 (defvar gtk-running-p nil
   "Non-nil if the GTK main loop is running.
@@ -615,14 +614,8 @@ See `gtk-browser's `modifier-translator' slot."
   ;; This is to ensure that paths are not expanded when we make
   ;; contexts for `nosave-buffer's.
   (with-current-buffer buffer
-    (let* ((context (if (and buffer
-                             ;; Initial window buffer or replacement/temp buffers
-                             ;; may have no ID.
-                             (not (str:emptyp (id buffer))))
-                        (let ((manager (make-data-manager buffer)))
-                          (make-instance 'webkit:webkit-web-context
-                                         :website-data-manager manager))
-                        (web-context *browser*)))
+    (let* ((manager (make-data-manager buffer))
+           (context (make-web-context manager))
            (cookie-manager (webkit:webkit-web-context-get-cookie-manager context))
            (extensions-path (expand-path (gtk-extensions-path buffer))))
       (when extensions-path
