@@ -108,6 +108,7 @@
                (:file "recent-buffers")
                (:file "password")
                (:file "bookmark")
+               (:file "annotate")
                (:file "history")
                (:file "autofill")
                (:file "auto-mode")
