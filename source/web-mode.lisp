@@ -212,18 +212,6 @@ and to index the top of the page.")
          (nyxt::last-event buffer))
         (funcall command))))
 
-(nyxt::define-deprecated-command paste-or-set-url (&optional (buffer (current-buffer)))
-  "Paste text if active element is an input tag, forward event otherwise.
-
-This was useful before Nyxt 2.0 as a workaround for hangs that would occur on pasting."
-  (let ((response (%clicked-in-input?)))
-    (let ((url-empty (url-empty-p (url-at-point buffer))))
-      (if (and (input-tag-p response) url-empty)
-          (funcall #'paste)
-          (unless url-empty
-            (make-buffer-focus :url (url-at-point buffer)
-                               :nosave-buffer-p (nosave-buffer-p buffer)))))))
-
 (define-command maybe-scroll-to-bottom (&optional (buffer (current-buffer)))
   "Scroll to bottom if no input element is active, forward event otherwise."
   (call-non-input-command-or-forward #'scroll-to-bottom :buffer buffer))
