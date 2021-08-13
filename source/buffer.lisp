@@ -237,6 +237,11 @@ History data is kept in browser's `user-data', keyed by the expanded `history-pa
                    :documentation "
 The path where the system will create/save the bookmarks.
 Bookmarks' data is kept in browser's `user-data', keyed by the expanded `bookmarks-path'.")
+   (annotations-path (make-instance 'annotations-data-path)
+                     :type data-path
+                     :documentation "
+The path where the system will create/save annotations.
+Annotation' data is kept in browser's `user-data', keyed by the expanded `annotations-path'.")
    (auto-mode-rules-path (make-instance 'auto-mode-rules-data-path)
                          :type data-path
                          :documentation "The path where the auto-mode rules are saved.
