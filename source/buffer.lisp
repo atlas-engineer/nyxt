@@ -643,16 +643,17 @@ Delete it with `ffi-buffer-delete'."
 
 (defmethod keywords ((buffer web-buffer))
   "Calculate the keywords for a given buffer."
-  (if (not (eq (document-model buffer)
-               (keywords-document-model buffer)))
-      (let ((contents (serapeum:string-join
-                       (map 'list (lambda (e) (plump:text e))
-                            (clss:select "p" (document-model buffer))) " ")))
-        (setf (keywords-document-model buffer)
-              (document-model buffer)
-              (slot-value buffer 'keywords)
-              (analysis:extract-keywords contents)))
-      (slot-value buffer 'keywords)))
+  (ignore-errors
+   (if (not (eq (document-model buffer)
+                (keywords-document-model buffer)))
+       (let ((contents (serapeum:string-join
+                        (map 'list (lambda (e) (plump:text e))
+                             (clss:select "p" (document-model buffer))) " ")))
+         (setf (keywords-document-model buffer)
+               (document-model buffer)
+               (slot-value buffer 'keywords)
+               (analysis:extract-keywords contents)))
+       (slot-value buffer 'keywords))))
 
 (-> proxy-adress (buffer &key (:downloads-only boolean)) *)
 (defun proxy-url (buffer &key (downloads-only nil))
