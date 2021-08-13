@@ -373,9 +373,3 @@ result."
   "A command that does nothing.
 This is useful to override bindings to do nothing."
   (values))
-
-(define-deprecated-command noop ()
-  "A command that does nothing.
-This is useful to override bindings to do nothing.
-Superseded by `nothing'."
-  (values))
