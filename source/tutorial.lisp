@@ -143,7 +143,7 @@ to quickly find whatever buffer you are looking for.")
    (:p "And more: ")
    (:ul
     (:li (command-markup 'nyxt/web-mode:paste-from-clipboard-ring) ": " (command-docstring-first-sentence 'nyxt/web-mode:paste-from-clipboard-ring))
-    (:li (command-markup 'copy-system-information) ": " (command-docstring-first-sentence 'copy-system-information)))
+    (:li (command-markup 'show-system-information) ": " (command-docstring-first-sentence 'show-system-information)))
    (:h3 "Link navigation")
    (:p "Link-hinting allows you to visit URLs on a page without using the mouse.
 Invoke one of the commands below: several hints will appear on screen and all
