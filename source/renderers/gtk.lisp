@@ -29,12 +29,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
     (delete nil (mapcar (lambda (mod) (getf plist mod)) modifier-state))))
 
 \(define-configuration browser
-  ((modifier-translator #'my-translate-modifiers)))")
-   (web-context nil
-                :type t
-                :accessor nil
-                :export nil
-                :documentation "Single instantiation of our custom web context."))
+  ((modifier-translator #'my-translate-modifiers)))"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
