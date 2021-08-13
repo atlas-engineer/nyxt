@@ -362,8 +362,7 @@ section) of the current page and jump to it.")
     (:li (command-markup 'download-open-file)
          ": Open file in Nyxt or externally.  See " (:code "open-file-function") ".")
     (:li (command-markup 'edit-with-external-editor)
-         ": Edit selected HTML input tag with an external editor.")
-    (:li (command-markup 'quit) ": Close all Nyxt windows and quit."))
+         ": Edit selected HTML input tag with an external editor."))
 
    (:h2 "The Nyxt help system")
    (:p "Nyxt provides introspective and help capabilities.  All commands,
