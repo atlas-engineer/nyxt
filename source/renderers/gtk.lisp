@@ -75,10 +75,13 @@ data-manager will store the data separately for each buffer.")
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 (define-user-class buffer (gtk-buffer))
 
-(defmethod make-web-context ((manager webkit:webkit-website-data-manager))
-  (let ((context (make-instance 'webkit:webkit-web-context :website-data-manager manager)))
-    (webkit:webkit-web-context-set-sandbox-enabled context t)
-    context))
+(defclass webkit-web-context (webkit:webkit-web-context) ()
+  (:metaclass gobject:gobject-class))
+
+(defmethod initialize-instance :after ((web-context webkit-web-context) &key)
+  #+webkit2-sandboxing
+  (webkit:webkit-web-context-set-sandbox-enabled web-context t)
+  web-context)
 
 (defvar gtk-running-p nil
   "Non-nil if the GTK main loop is running.
@@ -610,7 +613,7 @@ See `gtk-browser's `modifier-translator' slot."
   ;; contexts for `nosave-buffer's.
   (with-current-buffer buffer
     (let* ((manager (make-data-manager buffer))
-           (context (make-web-context manager))
+           (context (make-instance 'webkit-web-context :website-data-manager manager))
            (cookie-manager (webkit:webkit-web-context-get-cookie-manager context))
            (extensions-path (expand-path (gtk-extensions-path buffer))))
       (when extensions-path
