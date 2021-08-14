@@ -230,7 +230,25 @@ buffer.")
     (:li (command-markup 'nyxt/no-webgl-mode:no-webgl-mode) ": "
          (command-docstring-first-sentence 'nyxt/no-webgl-mode:no-webgl-mode)))
    (:p "It is possible to enable these three modes at once
-   with: " (:code "reduce-bandwidth-mode") " .")
+   with: " (:code "reduce-bandwidth-mode") ".")
+   (:h3 "Structural navigation")
+   (:p "It is possible to navigate using the structure in between the file: ")
+   (:ul
+    (:li (command-markup 'nyxt/web-mode:jump-to-heading) ": "
+         (command-docstring-first-sentence 'nyxt/web-mode:jump-to-heading))
+    (:li (command-markup 'nyxt/web-mode:jump-to-heading-buffers) ": "
+         (command-docstring-first-sentence
+          'nyxt/web-mode:jump-to-heading-buffers)))
+   (:p "And navigate to interconnected files: ")
+   (:ul
+    (:li (command-markup 'nyxt/web-mode:go-next) ": "
+         (command-docstring-first-sentence 'nyxt/web-mode:go-next))
+    (:li (command-markup 'nyxt/web-mode:go-previous) ": "
+         (command-docstring-first-sentence 'nyxt/web-mode:go-previous))
+    (:li (command-markup 'nyxt/web-mode:go-up) ": "
+         (command-docstring-first-sentence 'nyxt/web-mode:go-up))
+    (:li (command-markup 'nyxt/web-mode:go-to-homepage) ": "
+         (command-docstring-first-sentence 'nyxt/web-mode:go-to-homepage)))
    (:h3 "Visual mode")
    (:p "Select text without a mouse. Nyxt's "
        (:code "visual-mode") " imitates Vim's visual mode (and comes with the
