@@ -242,7 +242,7 @@ and to index the top of the page.")
     (buffer-load (str:concat scheme "://" authority))))
 
 (define-command go-up ()
-  "Navigate to the upper level in URL path hierarchy."
+  "Navigate to the upper level in the URL path hierarchy."
   (let* ((url (url (current-buffer)))
          (path (quri:uri-path url))
          (path-splited (str:split "/" path :omit-nulls t))
