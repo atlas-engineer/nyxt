@@ -151,6 +151,7 @@
                (:file "preview-mode")
                (:file "diff-mode")
                (:file "expedition-mode")
+               (:file "tts-mode")
                ;; Web-mode commands
                (:file "bookmarklets")
                (:file "input-edit")
