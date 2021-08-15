@@ -24,18 +24,19 @@ Example:
    ((nyxt/tts-mode:executable \"espeak\")
     (nyxt/tts-mode:selector \"h1, h2, h3, h4, p\")))
 "
-  ((executable nil)
+  ((executable nil
+               :type (or string null)
+               :documentation "The executable command to run.")
    ;; TODO: If you specify multiple tags, like h1, h2, h3, p, they are selected in that
    ;; order, not in the order they appear on the page. This is different than how it's
    ;; done with e.g. JS document.querySelectorAll which returns them in the order they
    ;; appear, which is IMO the correct way ... can you configure clss to do this?
-   (selector "p")
+   (selector "p"
+             :type string
+             :documentation "css selector that describes what elements text to speak.")
    (destructor
     (lambda (mode)
-      (if-process-then-terminate mode))))
-  :documentation
-  "For the mode to work, you need to set the executable slot
-to an executable thats available in the environment path.")
+      (if-process-then-terminate mode)))))
 
 (defmethod on-signal-load-finished ((mode tts-mode) url)
   (declare (ignore url)))
