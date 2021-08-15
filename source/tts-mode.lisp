@@ -10,7 +10,20 @@
 (defvar executable-process-info nil)
 
 (define-mode tts-mode ()
-  "A mode for text-to-speak a documents content."
+  "A mode for text-to-speak a documents content.
+By default, no executable is configured, so for the mode to work,
+you need to configure an executable than can take a string of text.
+Something like `espeak` should work out of the box.
+Also by default, the content that will be send to the executable
+is the text-content of p-tags on the page. This can be configured
+by changing the `selector`-slot.
+
+Example:
+
+\(define-configuration nyxt/tts-mode:tts-mode
+   ((nyxt/tts-mode:executable \"espeak\")
+    (nyxt/tts-mode:selector \"h1, h2, h3, h4, p\")))
+"
   ((executable nil)
    ;; TODO: If you specify multiple tags, like h1, h2, h3, p, they are selected in that
    ;; order, not in the order they appear on the page. This is different than how it's
