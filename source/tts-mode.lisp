@@ -32,10 +32,7 @@ Example:
    (selector "p")
    (destructor
     (lambda (mode)
-      (if-process-then-terminate mode)))
-   (constructor
-    (lambda (mode)
-      (initialize mode))))
+      (if-process-then-terminate mode))))
   :documentation
   "For the mode to work, you need to set the executable slot
 to an executable thats available in the environment path.")
