@@ -40,8 +40,6 @@ Example:
   "For the mode to work, you need to set the executable slot
 to an executable thats available in the environment path.")
 
-(defmethod initialize ((mode tts-mode)))
-
 (defmethod on-signal-load-finished ((mode tts-mode) url)
   (declare (ignore url)))
   ;; TODO: document-mode not ready here???
