@@ -7,8 +7,6 @@
 
 (in-package :nyxt/tts-mode)
 
-(defvar executable-process-info nil)
-
 (define-mode tts-mode ()
   "A mode for text-to-speak a documents content.
 By default, no executable is configured, so for the mode to work,
@@ -34,6 +32,9 @@ Example:
    (selector "p"
              :type string
              :documentation "css selector that describes what elements text to speak.")
+   (executable-process-info nil
+                            :type (or uiop/launch-program::process-info null)
+                            :documentation "Holds the process-info object of the running process")
    (destructor
     (lambda (mode)
       (if-process-then-terminate mode)))))
@@ -69,22 +70,22 @@ passed as the argument."
       (log:info "tts-mode: starting speak.")
       ;; make sure that a running process is stopped before starting a new
       (if-process-then-terminate mode)
-      (setf executable-process-info
+      (setf (executable-process-info mode)
             (uiop:launch-program program-string
                                  :output *standard-output*
                                  :error-output *standard-output*))
-      (if (not (zerop (uiop:wait-process executable-process-info)))
+      (if (not (zerop (uiop:wait-process (executable-process-info mode))))
           (log:warn "tts-mode executable terminated.")
         (log:info "tts-mode: speak done."))
       (if-process-then-terminate mode))))
 
 (defmethod if-process-then-terminate ((mode tts-mode))
   "If there is a running process, terminate it."
-  (when (and executable-process-info
-             (uiop:process-alive-p executable-process-info))
+  (when (and (executable-process-info mode)
+             (uiop:process-alive-p (executable-process-info mode)))
     (log:info "tts-mode: stopping speak.")
-    (uiop:terminate-process executable-process-info :urgent t)
-    (setf executable-process-info nil)))
+    (uiop:terminate-process (executable-process-info mode) :urgent t)
+    (setf (executable-process-info mode) nil)))
 
 (defmethod sanitize-text ((mode tts-mode) text)
   "Remove anything non- alpha, numeric, and space."
