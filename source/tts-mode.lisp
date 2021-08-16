@@ -22,7 +22,7 @@ Example:
 
 \(define-configuration nyxt/tts-mode:tts-mode
    ((nyxt/tts-mode:executable \"espeak\")
-    (nyxt/tts-mode:selector \"h1, h2, h3, h4, p\")))
+    (nyxt/tts-mode:selector \"p\")))
 "
   ((executable nil
                :type (or string null)
