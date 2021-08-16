@@ -89,10 +89,8 @@ passed as the argument."
 (define-command start-speak ()
   "Start text-to-speak the content of the current buffer
 matching the selector."
-  (let ((mode (find-submode (current-buffer) 'tts-mode)))
-    (process-document mode)))
+  (process-document (current-mode 'tts-mode)))
 
 (define-command stop-speak ()
   "Stop running text-to-speak process if there is one."
-  (let ((mode (find-submode (current-buffer) 'tts-mode)))
-    (if-process-then-terminate mode)))
+    (if-process-then-terminate (current-mode 'tts-mode)))
