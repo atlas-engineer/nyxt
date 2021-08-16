@@ -38,11 +38,6 @@ Example:
     (lambda (mode)
       (if-process-then-terminate mode)))))
 
-(defmethod on-signal-load-finished ((mode tts-mode) url)
-  (declare (ignore url)))
-  ;; TODO: document-mode not ready here???
-  ;; (process-document mode))
-
 (defmethod process-document ((mode tts-mode))
   "Fetch the text in buffer that matches `selector` and send it off
 to get *spoken*."
