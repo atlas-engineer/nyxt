@@ -51,8 +51,7 @@ to get *spoken*."
                 (error ()
                        (log:warn "tts-mode: no document-model available.")
                        nil)))
-             (text (sanitize-text
-                    mode
+             (text (str:remove-punctuation
                     (with-output-to-string
                       (s)
                       (dolist (tag tags)
@@ -87,17 +86,6 @@ passed as the argument."
     (uiop:terminate-process (executable-process-info mode) :urgent t)
     (setf (executable-process-info mode) nil)))
 
-(defmethod sanitize-text ((mode tts-mode) text)
-  "Remove anything non- alpha, numeric, and space."
-  (remove-if
-   (complement
-    (lambda (s)
-      (or
-       (string= #\Space s)
-       (alpha-char-p s)
-       (not (null (digit-char-p s))))))
-   text))
-           
 (define-command start-speak ()
   "Start text-to-speak the content of the current buffer
 matching the selector."
