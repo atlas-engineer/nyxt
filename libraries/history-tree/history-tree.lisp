@@ -19,8 +19,6 @@
 ;; TODO: Is "Shared history tree" a better name than "Global history tree"?
 ;; TODO: Turn unique defmethod to defuns.
 
-(export 'current-owner-id) ; TODO: Deprecated, kept for backward compatibility, remove with Nyxt 3.0.0.
-
 (defmacro export-always (symbols &optional (package nil package-supplied?)) ; From serapeum.
   "Like `export', but also evaluated at compile time."
   `(eval-when (:compile-toplevel :load-toplevel :execute)
