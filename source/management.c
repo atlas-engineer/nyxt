@@ -25,17 +25,9 @@ inject_management_api (char* extension_name)
 {
         JSCContext *context = get_extension_context(extension_name);
         MAKE_CLASS(context, Management, "management");
-        JSCValue *managementGetSelf = jsc_value_new_function(
-                context, "managementGetSelf",
-                G_CALLBACK(management_get_self_callback), NULL, NULL,
-                G_TYPE_NONE, 1, G_TYPE_STRING);
-        JSCValue *managementGetSelfResult = jsc_value_new_function(
-                context, "getSelfResult",
-                G_CALLBACK(management_get_self_result_callback), NULL, NULL,
-                JSC_TYPE_VALUE, 0, G_TYPE_NONE);
+        MAKE_FN(context, managementGetSelf, management_get_self_callback, G_TYPE_NONE, 1, G_TYPE_STRING);
+        MAKE_FN(context, managementGetSelfResult, management_get_self_result_callback, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
         char *management_get_self_js = malloc(sizeof(char) * 800);
-        jsc_context_set_value(context, "managementGetSelf", managementGetSelf);
-        jsc_context_set_value(context, "managementGetSelfResult", managementGetSelfResult);
         sprintf(management_get_self_js, "management.getSelf = function () {\
     return new Promise(function (success, failure) {                    \
         try {                                                           \

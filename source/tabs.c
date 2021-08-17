@@ -167,72 +167,23 @@ inject_tabs_api (char* extension_name)
 {
         JSCContext *context = get_extension_context(extension_name);
         MAKE_CLASS(context, Tabs, "tabs");
-        JSCValue *tabsQuery = jsc_value_new_function(
-                context, "tabsQuery",
-                G_CALLBACK(tabs_query_callback), NULL, NULL,
-                G_TYPE_NONE, 1, JSC_TYPE_VALUE);
-        JSCValue *tabsQueryResult = jsc_value_new_function(
-                context, "tabsQueryResult",
-                G_CALLBACK(tabs_query_result_callback), NULL, NULL,
-                JSC_TYPE_VALUE, 0, G_TYPE_NONE);
-        JSCValue *tabsCreate = jsc_value_new_function(
-                context, "tabsCreate",
-                G_CALLBACK(tabs_create_callback), NULL, NULL,
-                G_TYPE_NONE, 1, JSC_TYPE_VALUE);
-        JSCValue *tabsCreateResult = jsc_value_new_function(
-                context, "tabsCreateResult",
-                G_CALLBACK(tabs_create_result_callback), NULL, NULL,
-                JSC_TYPE_VALUE, 0, G_TYPE_NONE);
-        JSCValue *tabsGetCurrent = jsc_value_new_function(
-                context, "tabsGetCurrent",
-                G_CALLBACK(tabs_get_current_callback), NULL, NULL,
-                G_TYPE_NONE, 0, G_TYPE_NONE);
-        JSCValue *tabsGetCurrentResult = jsc_value_new_function(
-                context, "tabsGetCurrentResult",
-                G_CALLBACK(tabs_get_current_result_callback), NULL, NULL,
-                JSC_TYPE_VALUE, 0, G_TYPE_NONE);
-        JSCValue *tabsGet = jsc_value_new_function(
-                context, "tabsGet",
-                G_CALLBACK(tabs_get_callback), NULL, NULL,
-                G_TYPE_NONE, 1, G_TYPE_INT);
-        JSCValue *tabsGetResult = jsc_value_new_function(
-                context, "tabsGetResult",
-                G_CALLBACK(tabs_get_result_callback), NULL, NULL,
-                JSC_TYPE_VALUE, 0, G_TYPE_NONE);
-        JSCValue *tabsSendMessage = jsc_value_new_function(
-                context, "tabsSendMessage",
-                G_CALLBACK(tabs_send_message_callback), NULL, NULL,
-                G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_DOUBLE, JSC_TYPE_VALUE);
-        JSCValue *tabsSendMessageResult = jsc_value_new_function(
-                context, "tabsSendMessageResult",
-                G_CALLBACK(tabs_send_message_result_callback), NULL, NULL,
-                JSC_TYPE_VALUE, 0, G_TYPE_NONE);
-        JSCValue *print = jsc_value_new_function(
-                context, NULL, G_CALLBACK(tabs_print_callback), NULL, NULL,
-                G_TYPE_NONE, 0, G_TYPE_NONE);
-        JSCValue *tabsInsertCSS = jsc_value_new_function(
-                context, NULL, G_CALLBACK(tabs_insert_css_callback), NULL, NULL,
-                G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_INT, JSC_TYPE_VALUE);
-        JSCValue *tabsRemoveCSS = jsc_value_new_function(
-                context, NULL, G_CALLBACK(tabs_remove_css_callback), NULL, NULL,
-                G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_INT, JSC_TYPE_VALUE);
-        JSCValue *tabsExecuteScript = jsc_value_new_function(
-                context, NULL, G_CALLBACK(tabs_execute_script_callback), NULL, NULL,
-                G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_INT, JSC_TYPE_VALUE);
-        jsc_context_set_value(context, "tabsQuery", tabsQuery);
-        jsc_context_set_value(context, "tabsQueryResult", tabsQueryResult);
-        jsc_context_set_value(context, "tabsCreate", tabsCreate);
-        jsc_context_set_value(context, "tabsCreateResult", tabsCreateResult);
-        jsc_context_set_value(context, "tabsGetCurrent", tabsGetCurrent);
-        jsc_context_set_value(context, "tabsGetCurrentResult", tabsGetCurrentResult);
-        jsc_context_set_value(context, "tabsGet", tabsGet);
-        jsc_context_set_value(context, "tabsGetResult", tabsGetResult);
-        jsc_context_set_value(context, "tabsSendMessage", tabsSendMessage);
-        jsc_context_set_value(context, "tabsSendMessageResult", tabsSendMessageResult);
-        jsc_context_set_value(context, "tabsInsertCSS", tabsInsertCSS);
-        jsc_context_set_value(context, "tabsRemoveCSS", tabsRemoveCSS);
-        jsc_context_set_value(context, "tabsExecuteScript", tabsExecuteScript);
-        char *tabs_query_js = "tabs.query = function (queryObject) { \
+
+        MAKE_FN(context, tabsQuery, tabs_query_callback, G_TYPE_NONE, 1, JSC_TYPE_VALUE);
+        MAKE_FN(context, tabsQueryResult, tabs_query_result_callback, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
+        MAKE_FN(context, tabsCreate, tabs_create_callback, G_TYPE_NONE, 1, JSC_TYPE_VALUE);
+        MAKE_FN(context, tabsCreateResult, tabs_create_result_callback, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
+        MAKE_FN(context, tabsGetCurrent, tabs_get_current_callback, G_TYPE_NONE, 0, G_TYPE_NONE);
+        MAKE_FN(context, tabsGetCurrentResult, tabs_get_current_result_callback, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
+        MAKE_FN(context, tabsGet, tabs_get_callback, G_TYPE_NONE, 1, G_TYPE_INT);
+        MAKE_FN(context, tabsGetResult, tabs_get_result_callback, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
+        MAKE_FN(context, tabsSendMessage, tabs_send_message_callback, G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_DOUBLE, JSC_TYPE_VALUE);
+        MAKE_FN(context, tabsSendMessageResult, tabs_send_message_result_callback, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
+        MAKE_FN(context, print, tabs_print_callback, G_TYPE_NONE, 0, G_TYPE_NONE);
+        MAKE_FN(context, tabsInsertCSS, tabs_insert_css_callback, G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_INT, JSC_TYPE_VALUE);
+        MAKE_FN(context, tabsRemoveCSS, tabs_remove_css_callback, G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_INT, JSC_TYPE_VALUE);
+        MAKE_FN(context, tabsExecuteScript, tabs_execute_script_callback, G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_INT, JSC_TYPE_VALUE);
+
+        BIND_FN(context, "tabs", "query", "tabs.query = function (queryObject) { \
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             tabsQuery(queryObject);                                     \
@@ -244,8 +195,8 @@ inject_tabs_api (char* extension_name)
     });                                                                 \
 };                                                                      \
                                                                         \
-tabs.query",
-                *tabs_create_js = "tabs.create = function (createProperties) { \
+tabs.query");
+        BIND_FN(context, "tabs", "create", "tabs.create = function (createProperties) { \
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             tabsCreate(createProperties);                               \
@@ -257,8 +208,8 @@ tabs.query",
     });                                                                 \
 };                                                                      \
                                                                         \
-tabs.create",
-                *tabs_get_current_js = "tabs.getCurrent = function () {\
+tabs.create");
+        BIND_FN(context, "tabs", "getCurrent", "tabs.getCurrent = function () {\
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             tabsGetCurrent();                                           \
@@ -270,8 +221,8 @@ tabs.create",
     });                                                                 \
 };                                                                      \
                                                                         \
-tabs.getCurrent",
-                *tabs_get_js = "tabs.get = function (getProperties) {\
+tabs.getCurrent");
+        BIND_FN(context, "tabs", "get", "tabs.get = function (getProperties) {\
     return new Promise(function (success, failure) {                 \
         try {                                                        \
             tabsGet(getProperties);                                  \
@@ -289,8 +240,8 @@ tabs.getCurrent",
     });                                                              \
 };                                                                   \
                                                                      \
-tabs.get",
-                *tabs_send_message_js = "tabs.sendMessage = function (tabId, message, options) {\
+tabs.get");
+        BIND_FN(context, "tabs", "sendMessage", "tabs.sendMessage = function (tabId, message, options) {\
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             management.getSelf().then(function (info) {                 \
@@ -304,8 +255,8 @@ tabs.get",
     });                                                                 \
 };                                                                      \
                                                                         \
-tabs.sendMessage",
-                *tabs_insert_css_js = "tabs.insertCSS = function (one, two) {\
+tabs.sendMessage");
+        BIND_FN(context, "tabs", "insertCSS", "tabs.insertCSS = function (one, two) {\
     var tabId = (two === undefined) ? 0 : one;                          \
     var css = (two === undefined) ? one : two;                          \
     return new Promise(function (success, failure) {                    \
@@ -320,8 +271,8 @@ tabs.sendMessage",
     });                                                                 \
 };                                                                      \
                                                                         \
-tabs.insertCSS",
-                *tabs_remove_css_js = "tabs.removeCSS = function (one, two) {\
+tabs.insertCSS");
+        BIND_FN(context, "tabs", "removeCSS", "tabs.removeCSS = function (one, two) {\
     var tabId = (two === undefined) ? 0 : one;                          \
     var css = (two === undefined) ? one : two;                          \
     return new Promise(function (success, failure) {                    \
@@ -336,8 +287,8 @@ tabs.insertCSS",
     });                                                                 \
 };                                                                      \
                                                                         \
-tabs.removeCSS",
-                *tabs_execute_script_js = "tabs.executeScript = function (one, two) {\
+tabs.removeCSS");
+        BIND_FN(context, "tabs", "executeScript", "tabs.executeScript = function (one, two) {\
     var tabId = (two === undefined) ? 0 : one;                          \
     var script = (two === undefined) ? one : two;                       \
     return new Promise(function (success, failure) {                    \
@@ -354,38 +305,9 @@ tabs.removeCSS",
     });                                                                 \
 };                                                                      \
                                                                         \
-tabs.executeScript";
-        jsc_value_object_set_property(
-                jsc_context_evaluate(context, "tabs", -1),
-                "query",
-                jsc_context_evaluate(context, tabs_query_js, -1));
-        jsc_value_object_set_property(
-                jsc_context_evaluate(context, "tabs", -1),
-                "create",
-                jsc_context_evaluate(context, tabs_create_js, -1));
-        jsc_value_object_set_property(
-                jsc_context_evaluate(context, "tabs", -1),
-                "getCurrent",
-                jsc_context_evaluate(context, tabs_get_current_js, -1));
-        jsc_value_object_set_property(
-                jsc_context_evaluate(context, "tabs", -1),
-                "get",
-                jsc_context_evaluate(context, tabs_get_js, -1));
-        jsc_value_object_set_property(
-                jsc_context_evaluate(context, "tabs", -1),
-                "sendMessage",
-                jsc_context_evaluate(context, tabs_send_message_js, -1));
+tabs.executeScript")
         jsc_value_object_set_property(jsc_context_evaluate(context, "tabs", -1),
                 "print", print);
-        jsc_value_object_set_property(jsc_context_evaluate(context, "tabs", -1),
-                "insertCSS",
-                jsc_context_evaluate(context, tabs_insert_css_js, -1));
-        jsc_value_object_set_property(jsc_context_evaluate(context, "tabs", -1),
-                "removeCSS",
-                jsc_context_evaluate(context, tabs_remove_css_js, -1));
-        jsc_value_object_set_property(jsc_context_evaluate(context, "tabs", -1),
-                "executeScript",
-                jsc_context_evaluate(context, tabs_execute_script_js, -1));
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "browser", -1), "tabs",
                 jsc_context_evaluate(context, "tabs", -1));
