@@ -1194,9 +1194,11 @@ See `gtk-browser's `modifier-translator' slot."
                                    (current-buffer))))
          (content-manager
            (webkit:webkit-web-view-get-user-content-manager
-            (gtk-object buffer-to-insert))))
-    (webkit:webkit-user-content-manager-remove-style-sheet
-     content-manager (gethash message-params %style-sheets%))
+            (gtk-object buffer-to-insert)))
+         (style-sheet (gethash message-params %style-sheets%)))
+    (when style-sheet
+      (webkit:webkit-user-content-manager-remove-style-sheet
+       content-manager style-sheet))
     (remhash message-params %style-sheets%)
     ""))
 
