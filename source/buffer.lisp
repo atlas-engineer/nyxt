@@ -48,36 +48,44 @@ after the mode-specific hook.")
                       :type hook-mode
                       :documentation "Hook run on every mode deactivation,
 after the mode-specific hook.")
-   (keymap-scheme-name scheme:cua
-                       :documentation "The keymap scheme that will be used for all modes in the current buffer.")
-   (search-auto-complete-p t
-                           :type boolean
-                           :documentation "Whether search suggestions are requested and displayed.")
-   (search-engines (list (make-instance 'search-engine
-                                        :shortcut "wiki"
-                                        :search-url "https://en.wikipedia.org/w/index.php?search=~a"
-                                        :fallback-url (quri:uri "https://en.wikipedia.org/")
-                                        :completion-function
-                                        (make-search-completion-function
-                                         :base-url "https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=~a"
-                                         :processing-function
-                                         #'(lambda (results)
-                                             (when results
-                                               (second (json:decode-json-from-string results))))))
-                         (make-instance 'search-engine
-                                        :shortcut "ddg"
-                                        :search-url "https://duckduckgo.com/?q=~a"
-                                        :fallback-url (quri:uri "https://duckduckgo.com/")
-                                        :completion-function
-                                        (make-search-completion-function
-                                         :base-url "https://duckduckgo.com/ac/?q=~a"
-                                         :processing-function
-                                         #'(lambda (results)
-                                             (when results
-                                               (mapcar #'cdar
-                                                       (json:decode-json-from-string results)))))))
-                   :type (cons search-engine *)
-                   :documentation "A list of the `search-engine' objects.
+   (keymap-scheme-name
+    scheme:cua
+    :documentation "The keymap scheme that will be used for all modes in the current buffer.")
+   (search-auto-complete-p
+    t
+    :type boolean
+    :documentation "Whether search suggestions are requested and displayed.")
+   (search-always-auto-complete-p
+    nil
+    :type boolean
+    :documentation "Whether auto-completion works even for non-prefixed search.
+Auto-completions come from the default search engine.")
+   (search-engines
+    (list (make-instance 'search-engine
+                         :shortcut "wiki"
+                         :search-url "https://en.wikipedia.org/w/index.php?search=~a"
+                         :fallback-url (quri:uri "https://en.wikipedia.org/")
+                         :completion-function
+                         (make-search-completion-function
+                          :base-url "https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=~a"
+                          :processing-function
+                          #'(lambda (results)
+                              (when results
+                                (second (json:decode-json-from-string results))))))
+          (make-instance 'search-engine
+                         :shortcut "ddg"
+                         :search-url "https://duckduckgo.com/?q=~a"
+                         :fallback-url (quri:uri "https://duckduckgo.com/")
+                         :completion-function
+                         (make-search-completion-function
+                          :base-url "https://duckduckgo.com/ac/?q=~a"
+                          :processing-function
+                          #'(lambda (results)
+                              (when results
+                                (mapcar #'cdar
+                                        (json:decode-json-from-string results)))))))
+    :type (cons search-engine *)
+    :documentation "A list of the `search-engine' objects.
 You can invoke them from the prompt-buffer by prefixing your query with SHORTCUT.
 If the query is empty, FALLBACK-URL is loaded instead.  If
 FALLBACK-URL is empty, SEARCH-URL is used on an empty search.
@@ -1264,6 +1272,14 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
               (list (make-instance 'new-url-query
                                    :query       input
                                    :check-dns-p check-dns-p)))
+            (sera:and-let* ((buffer (current-buffer))
+                            (always (search-always-auto-complete-p buffer))
+                            (engine (default-search-engine))
+                            (completion (completion-function engine))
+                            (all-terms (str:join " " terms)))
+              (mapcar (alex:curry #'make-instance 'new-url-query
+                                  :engine engine :query)
+                      (funcall (completion-function engine) all-terms)))
             (alex:mappend (lambda (engine)
                             (append
                              (list (make-instance 'new-url-query
