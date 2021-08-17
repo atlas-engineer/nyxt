@@ -1200,6 +1200,43 @@ See `gtk-browser's `modifier-translator' slot."
     (remhash message-params %style-sheets%)
     ""))
 
+(defun tabs-execute-script (buffer message-params)
+  (let* ((json (json:decode-json-from-string message-params))
+         (script-data (alex:assoc-value json :script))
+         (code (alex:assoc-value script-data :code))
+         (file (alex:assoc-value script-data :file))
+         (tab-id (alex:assoc-value json :tab-id))
+         (buffer-to-insert (if (zerop tab-id)
+                               (current-buffer)
+                               (or (find (format nil "~d" tab-id) (buffer-list) :key #'id)
+                                   (current-buffer))))
+         (extension (find (alex:assoc-value json :extension-id)
+                          (sera:filter #'nyxt/web-extensions::extension-p
+                                       (modes buffer))
+                          :key #'id))
+         (content-manager
+           (webkit:webkit-web-view-get-user-content-manager
+            (gtk-object buffer-to-insert)))
+         (script (webkit:webkit-user-script-new-for-world
+                  (if file
+                      (uiop:read-file-string (uiop:merge-pathnames*
+                                              file (nyxt/web-extensions:extension-directory
+                                                    extension)))
+                      code)
+                  (if (alex:assoc-value script-data :all-frames)
+                      :webkit-user-content-inject-all-frames
+                      :webkit-user-content-inject-top-frame)
+                  (if (and (alex:assoc-value script-data :run-at)
+                           (string= (alex:assoc-value script-data :run-at) "document_start"))
+                      :webkit-user-script-inject-at-document-start
+                      :webkit-user-script-inject-at-document-end)
+                  (name extension)
+                  (cffi:null-pointer)
+                  (cffi:null-pointer))))
+    (webkit:webkit-user-content-manager-add-script
+     content-manager script)
+    ""))
+
 (defun process-user-message (buffer message)
   (let* ((message-name (webkit:webkit-user-message-get-name message))
          (message-params (glib:g-variant-get-string
@@ -1302,7 +1339,10 @@ See `gtk-browser's `modifier-translator' slot."
           (tabs-insert-css buffer message-params)))
         ("tabs.removeCSS"
          (wrap-in-channel
-          (tabs-remove-css message-params)))))))
+          (tabs-remove-css message-params)))
+        ("tabs.executeScript"
+         (wrap-in-channel
+          (tabs-execute-script buffer message-params)))))))
 
 (defun reply-user-message (buffer message)
   (declare (ignore buffer))

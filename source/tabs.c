@@ -144,6 +144,24 @@ tabs_remove_css_callback (char *extension_id, int tab_id, JSCValue *object)
         webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
 }
 
+static void
+tabs_execute_script_callback (char *extension_id, int tab_id, JSCValue *object)
+{
+        JSCContext *context = jsc_context_get_current();
+        JSCValue *wrapper = jsc_value_new_object(context, NULL, NULL);
+                jsc_value_object_set_property(
+                wrapper, "extensionId",
+                jsc_value_new_string(context, extension_id));
+        jsc_value_object_set_property(
+                wrapper, "tabId",
+                jsc_value_new_number(context, tab_id));
+        jsc_value_object_set_property(wrapper, "script", object);
+                char *json = jsc_value_to_json(wrapper, 0);
+        GVariant *variant = g_variant_new("s", json);
+        WebKitUserMessage *message = webkit_user_message_new("tabs.executeScript", variant);
+        webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
+}
+
 void
 inject_tabs_api (char* extension_name)
 {
@@ -198,6 +216,9 @@ inject_tabs_api (char* extension_name)
         JSCValue *tabsRemoveCSS = jsc_value_new_function(
                 context, NULL, G_CALLBACK(tabs_remove_css_callback), NULL, NULL,
                 G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_INT, JSC_TYPE_VALUE);
+        JSCValue *tabsExecuteScript = jsc_value_new_function(
+                context, NULL, G_CALLBACK(tabs_execute_script_callback), NULL, NULL,
+                G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_INT, JSC_TYPE_VALUE);
         jsc_context_set_value(context, "tabsQuery", tabsQuery);
         jsc_context_set_value(context, "tabsQueryResult", tabsQueryResult);
         jsc_context_set_value(context, "tabsCreate", tabsCreate);
@@ -210,6 +231,7 @@ inject_tabs_api (char* extension_name)
         jsc_context_set_value(context, "tabsSendMessageResult", tabsSendMessageResult);
         jsc_context_set_value(context, "tabsInsertCSS", tabsInsertCSS);
         jsc_context_set_value(context, "tabsRemoveCSS", tabsRemoveCSS);
+        jsc_context_set_value(context, "tabsExecuteScript", tabsExecuteScript);
         char *tabs_query_js = "tabs.query = function (queryObject) { \
     return new Promise(function (success, failure) {                    \
         try {                                                           \
@@ -314,7 +336,25 @@ tabs.insertCSS",
     });                                                                 \
 };                                                                      \
                                                                         \
-tabs.removeCSS";
+tabs.removeCSS",
+                *tabs_execute_script_js = "tabs.executeScript = function (one, two) {\
+    var tabId = (two === undefined) ? 0 : one;                          \
+    var script = (two === undefined) ? one : two;                       \
+    return new Promise(function (success, failure) {                    \
+        try {                                                           \
+            if (script.allFrames && script.frameId)                     \
+                throw new Error(\"frameId and allFrames are mutually exclusive.\"); \
+            management.getSelf().then(function (info) {                 \
+                tabsRemoveCSS(info.id, tabId, script);                  \
+                setTimeout(() => success([]),                           \
+                           0);});                                       \
+        } catch (error) {                                               \
+            return failure(error);                                      \
+        };                                                              \
+    });                                                                 \
+};                                                                      \
+                                                                        \
+tabs.executeScript";
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "tabs", -1),
                 "query",
@@ -343,6 +383,9 @@ tabs.removeCSS";
         jsc_value_object_set_property(jsc_context_evaluate(context, "tabs", -1),
                 "removeCSS",
                 jsc_context_evaluate(context, tabs_remove_css_js, -1));
+        jsc_value_object_set_property(jsc_context_evaluate(context, "tabs", -1),
+                "executeScript",
+                jsc_context_evaluate(context, tabs_execute_script_js, -1));
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "browser", -1), "tabs",
                 jsc_context_evaluate(context, "tabs", -1));
