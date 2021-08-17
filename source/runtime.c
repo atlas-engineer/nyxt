@@ -72,38 +72,18 @@ void inject_runtime_api (char* extension_name)
 {
         JSCContext *context = get_extension_context(extension_name);
         MAKE_CLASS(context, Runtime, "runtime");
-        JSCValue *runtimeSendMessage = jsc_value_new_function(
-                context, "runtimeSendMessage",
-                G_CALLBACK(runtime_send_message_callback), NULL, NULL,
-                G_TYPE_NONE, 2, G_TYPE_STRING, JSC_TYPE_VALUE);
-        JSCValue *runtimeSendMessageResult = jsc_value_new_function(
-                context, "runtimeSendMessageResult",
-                G_CALLBACK(runtime_send_message_result_callback), NULL, NULL,
-                G_TYPE_NONE, 0, G_TYPE_NONE);
-        JSCValue *runtimeGetManifest = jsc_value_new_function(
-                context, "runtimeGetManifest",
-                G_CALLBACK(runtime_get_manifest_callback), NULL, NULL,
-                JSC_TYPE_VALUE, 1, G_TYPE_STRING);
-        JSCValue *runtimeGetPlatformInfo = jsc_value_new_function(
-                context, "runtimeGetPlatformInfo",
-                G_CALLBACK(runtime_get_platform_info_callback), NULL, NULL,
-                G_TYPE_NONE, 0, G_TYPE_NONE);
-        JSCValue *runtimeGetPlatformInfoResult = jsc_value_new_function(
-                context, "runtimeGetPlatformInfoResult",
-                G_CALLBACK(runtime_get_platform_info_result_callback), NULL, NULL,
-                JSC_TYPE_VALUE, 0, G_TYPE_NONE);
-        JSCValue *runtimeGetBrowserInfo = jsc_value_new_function(
-                context, "runtimeGetBrowserInfo",
-                G_CALLBACK(runtime_get_browser_info_callback), NULL, NULL,
-                G_TYPE_NONE, 0, G_TYPE_NONE);
-        JSCValue *runtimeGetBrowserInfoResult = jsc_value_new_function(
-                context, "runtimeGetBrowserInfoResult",
-                G_CALLBACK(runtime_get_browser_info_result_callback), NULL, NULL,
-                JSC_TYPE_VALUE, 0, G_TYPE_NONE);
-        jsc_context_set_value(context, "runtimeSendMessage", runtimeSendMessage);
-        jsc_context_set_value(context, "runtimeSendMessageResult", runtimeSendMessageResult);
-        jsc_context_set_value(context, "runtimeGetManifest", runtimeGetManifest);
-        char *runtime_send_message_js = "runtime.sendMessage = function (one, two, three) {\
+
+        MAKE_FN(context, runtimeSendMessage, runtime_send_message_callback, G_TYPE_NONE, 2, G_TYPE_STRING, JSC_TYPE_VALUE);
+        MAKE_FN(context, runtimeSendMessageResult, runtime_send_message_result_callback, G_TYPE_NONE, 1, JSC_TYPE_VALUE);
+        MAKE_FN(context, runtimeGetManifest, runtime_get_manifest_callback, JSC_TYPE_VALUE, 1, G_TYPE_STRING);
+        MAKE_FN(context, runtimeGetPlatformInfo, runtime_get_platform_info_callback, G_TYPE_NONE, 0, G_TYPE_NONE);
+        MAKE_FN(context, runtimeGetPlatformInfoResult, runtime_get_platform_info_result_callback, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
+        MAKE_FN(context, runtimeGetBrowserInfo, runtime_get_browser_info_callback, G_TYPE_NONE, 0, G_TYPE_NONE);
+        MAKE_FN(context, runtimeGetBrowserInfoResult, runtime_get_browser_info_result_callback, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
+
+        MAKE_EVENT(context, "runtime", "onMessage");
+
+        BIND_FN(context, "runtime", "sendMessage", "runtime.sendMessage = function (one, two, three) {\
     var no_two = (two === undefined || two === null ||                  \
                   (two.hasOwnProperty(\"includeTlsChannelId\") &&       \
                    two.keys.length <= 1));                              \
@@ -123,14 +103,8 @@ void inject_runtime_api (char* extension_name)
     });                                                                 \
 };                                                                      \
                                                                         \
-runtime.sendMessage";
-        char *runtime_get_manifest_js = malloc(sizeof(char) * 300);
-        sprintf(runtime_get_manifest_js, "runtime.getManifest = function () { \
-    return runtimeGetManifest(\"%s\");                                  \
-};                                                                      \
-                                                                        \
-runtime.getManifest", extension_name);
-        char *runtime_get_platform_info_js = "runtime.getPlatformInfo = function() {\
+runtime.sendMessage");
+        BIND_FN(context, "runtime", "getPlatformInfo", "runtime.getPlatformInfo = function() {\
     return new Promise ((success, failure) => {                         \
         try {                                                           \
             runtimeGetPlatformInfo();                                   \
@@ -143,8 +117,8 @@ runtime.getManifest", extension_name);
     });                                                                 \
 };                                                                      \
                                                                         \
-runtime.getPlatformInfo";
-        char *runtime_get_browser_info_js = "runtime.getBrowserInfo = function() {\
+runtime.getPlatformInfo");
+        BIND_FN(context, "runtime", "getBrowserInfo", "runtime.getBrowserInfo = function() {\
     return new Promise ((success, failure) => {                         \
         try {                                                           \
             runtimeGetBrowserInfo();                                   \
@@ -157,27 +131,18 @@ runtime.getPlatformInfo";
     });                                                                 \
 };                                                                      \
                                                                         \
-runtime.getBrowserInfo";
-        jsc_value_object_set_property(
-                jsc_context_evaluate(context, "runtime", -1),
-                "sendMessage",
-                jsc_context_evaluate(context, runtime_send_message_js, -1));
-        jsc_value_object_set_property(
-                jsc_context_evaluate(context, "runtime", -1),
-                "onMessage",
-                jsc_context_evaluate(context, "new ExtEvent()", -1));
+runtime.getBrowserInfo");
+
+        char *runtime_get_manifest_js = malloc(sizeof(char) * 300);
+        sprintf(runtime_get_manifest_js, "runtime.getManifest = function () { \
+    return runtimeGetManifest(\"%s\");                                  \
+};                                                                      \
+                                                                        \
+runtime.getManifest", extension_name);
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "runtime", -1),
                 "getManifest",
                 jsc_context_evaluate(context, runtime_get_manifest_js, -1));
-        jsc_value_object_set_property(
-                jsc_context_evaluate(context, "runtime", -1),
-                "getPlatformInfo",
-                jsc_context_evaluate(context, runtime_get_platform_info_js, -1));
-        jsc_value_object_set_property(
-                jsc_context_evaluate(context, "runtime", -1),
-                "getBrowserInfo",
-                jsc_context_evaluate(context, runtime_get_browser_info_js, -1));
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "browser", -1), "runtime",
                 jsc_context_evaluate(context, "runtime", -1));
