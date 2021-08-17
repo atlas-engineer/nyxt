@@ -4,20 +4,6 @@
 
 Runtime *RUNTIME;
 
-static void
-runtime_send_message_reply_callback (GObject *web_page,
-                                     GAsyncResult *res,
-                                     gpointer user_data)
-{
-        WebKitUserMessage *message =
-                webkit_web_page_send_message_to_view_finish((WebKitWebPage *) PAGE, res, NULL);
-        GVariant *params = webkit_user_message_get_parameters(message);
-        char *json = (char*) g_variant_get_string(params, NULL);
-        if (!json)
-                json = "null";
-        RUNTIME->reply = (char *) json;
-}
-
 static JSCValue *
 runtime_send_message_result_callback ()
 {
@@ -37,8 +23,9 @@ runtime_send_message_callback (char *extension_id, JSCValue *object)
         char *json = jsc_value_to_json(wrapper, 0);
         GVariant *variant = g_variant_new("s", json);
         WebKitUserMessage *message = webkit_user_message_new("runtime.sendMessage", variant);
+        RUNTIME->reply = "null";
         webkit_web_page_send_message_to_view(
-                PAGE, message, NULL, runtime_send_message_reply_callback, NULL);
+                PAGE, message, NULL, message_reply_and_save_callback, &RUNTIME->reply);
 }
 
 static JSCValue *
@@ -47,20 +34,6 @@ runtime_get_manifest_callback (char *extension_name)
         ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
         JSCContext *context = jsc_context_get_current();
         return jsc_value_new_from_json(context, jsc_value_to_json(data->manifest, 0));
-}
-
-static void
-runtime_get_platform_info_reply_callback (GObject *web_page,
-                           GAsyncResult *res,
-                           gpointer user_data)
-{
-        WebKitUserMessage *message =
-                webkit_web_page_send_message_to_view_finish((WebKitWebPage *) PAGE, res, NULL);
-        GVariant *params = webkit_user_message_get_parameters(message);
-        char *json = (char*) g_variant_get_string(params, NULL);
-        if (!json)
-                json = "{}";
-        RUNTIME->platform_info = (char *) json;
 }
 
 static JSCValue *
@@ -74,22 +47,9 @@ static void
 runtime_get_platform_info_callback ()
 {
         WebKitUserMessage *message = webkit_user_message_new("runtime.getPlatformInfo", NULL);
+        RUNTIME->platform_info = "{}";
         webkit_web_page_send_message_to_view(
-                PAGE, message, NULL, runtime_get_platform_info_reply_callback, NULL);
-}
-
-static void
-runtime_get_browser_info_reply_callback (GObject *web_page,
-                           GAsyncResult *res,
-                           gpointer user_data)
-{
-        WebKitUserMessage *message =
-                webkit_web_page_send_message_to_view_finish((WebKitWebPage *) PAGE, res, NULL);
-        GVariant *params = webkit_user_message_get_parameters(message);
-        char *json = (char*) g_variant_get_string(params, NULL);
-        if (!json)
-                json = "{}";
-        RUNTIME->browser_info = (char *) json;
+                PAGE, message, NULL, message_reply_and_save_callback, &RUNTIME->platform_info);
 }
 
 static JSCValue *
@@ -103,8 +63,9 @@ static void
 runtime_get_browser_info_callback ()
 {
         WebKitUserMessage *message = webkit_user_message_new("runtime.getBrowserInfo", NULL);
+        RUNTIME->browser_info = "{}";
         webkit_web_page_send_message_to_view(
-                PAGE, message, NULL, runtime_get_browser_info_reply_callback, NULL);
+                PAGE, message, NULL, message_reply_and_save_callback, &RUNTIME->browser_info);
 }
 
 void inject_runtime_api (char* extension_name)

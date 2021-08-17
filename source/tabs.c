@@ -3,20 +3,6 @@
 
 Tabs *TABS;
 
-static void
-tabs_query_reply_callback (GObject *web_page,
-                           GAsyncResult *res,
-                           gpointer user_data)
-{
-        WebKitUserMessage *message =
-                webkit_web_page_send_message_to_view_finish((WebKitWebPage *) PAGE, res, NULL);
-        GVariant *params = webkit_user_message_get_parameters(message);
-        char *json = (char*) g_variant_get_string(params, NULL);
-        if (!json)
-                json = "[]";
-        TABS->tabs = (char *) json;
-}
-
 static JSCValue *
 tabs_query_result_callback ()
 {
@@ -30,22 +16,9 @@ tabs_query_callback (JSCValue *object)
         char *json = jsc_value_to_json(object, 0);
         GVariant *variant = g_variant_new("s", json);
         WebKitUserMessage *message = webkit_user_message_new("tabs.queryObject", variant);
+        TABS->tabs = "[]";
         webkit_web_page_send_message_to_view(
-                PAGE, message, NULL, tabs_query_reply_callback, NULL);
-}
-
-static void
-tabs_create_reply_callback (GObject *web_page,
-                           GAsyncResult *res,
-                           gpointer user_data)
-{
-        WebKitUserMessage *message =
-                webkit_web_page_send_message_to_view_finish((WebKitWebPage *) PAGE, res, NULL);
-        GVariant *params = webkit_user_message_get_parameters(message);
-        char *json = (char*) g_variant_get_string(params, NULL);
-        if (!json)
-                json = "{}";
-        TABS->tab = (char *) json;
+                PAGE, message, NULL, message_reply_and_save_callback, &TABS->tabs);
 }
 
 static JSCValue *
@@ -61,22 +34,9 @@ tabs_create_callback (JSCValue *object)
         char *json = jsc_value_to_json(object, 0);
         GVariant *variant = g_variant_new("s", json);
         WebKitUserMessage *message = webkit_user_message_new("tabs.createProperties", variant);
+        TABS->tab = "{}";
         webkit_web_page_send_message_to_view(
-                PAGE, message, NULL, tabs_create_reply_callback, NULL);
-}
-
-static void
-tabs_get_current_reply_callback (GObject *web_page,
-                                 GAsyncResult *res,
-                                 gpointer user_data)
-{
-        WebKitUserMessage *message =
-                webkit_web_page_send_message_to_view_finish((WebKitWebPage *) PAGE, res, NULL);
-        GVariant *params = webkit_user_message_get_parameters(message);
-        char *json = (char*) g_variant_get_string(params, NULL);
-        if (!json)
-                json = "{}";
-        TABS->tab = (char *) json;
+                PAGE, message, NULL, message_reply_and_save_callback, &TABS->tab);
 }
 
 static JSCValue *
@@ -90,22 +50,9 @@ static void
 tabs_get_current_callback ()
 {
         WebKitUserMessage *message = webkit_user_message_new("tabs.getCurrent", NULL);
+        TABS->tab = "{}";
         webkit_web_page_send_message_to_view(
-                PAGE, message, NULL, tabs_get_current_reply_callback, NULL);
-}
-
-static void
-tabs_get_reply_callback (GObject *web_page,
-                         GAsyncResult *res,
-                         gpointer user_data)
-{
-        WebKitUserMessage *message =
-                webkit_web_page_send_message_to_view_finish((WebKitWebPage *) PAGE, res, NULL);
-        GVariant *params = webkit_user_message_get_parameters(message);
-        char *json = (char*) g_variant_get_string(params, NULL);
-        if (!json)
-                json = "null";
-        TABS->tab = (char *) json;
+                PAGE, message, NULL, message_reply_and_save_callback, &TABS->tab);
 }
 
 static JSCValue *
@@ -122,8 +69,9 @@ tabs_get_callback (int id)
         sprintf(num, "%d", id);
         GVariant *variant = g_variant_new("s", num);
         WebKitUserMessage *message = webkit_user_message_new("tabs.get", variant);
+        TABS->tab = "null";
         webkit_web_page_send_message_to_view(
-                PAGE, message, NULL, tabs_get_reply_callback, NULL);
+                PAGE, message, NULL, message_reply_and_save_callback, &TABS->tab);
 }
 
 static void
@@ -131,20 +79,6 @@ tabs_print_callback ()
 {
         WebKitUserMessage *message = webkit_user_message_new("tabs.print", NULL);
         webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
-}
-
-static void
-tabs_send_message_reply_callback (GObject *web_page,
-                                  GAsyncResult *res,
-                                  gpointer user_data)
-{
-        WebKitUserMessage *message =
-                webkit_web_page_send_message_to_view_finish((WebKitWebPage *) PAGE, res, NULL);
-        GVariant *params = webkit_user_message_get_parameters(message);
-        char *json = (char*) g_variant_get_string(params, NULL);
-        if (!json)
-                json = "undefined";
-        TABS->reply = (char *) json;
 }
 
 static JSCValue *
@@ -169,8 +103,9 @@ tabs_send_message_callback (char *extension_id, double tab_id, JSCValue *object)
         char *json = jsc_value_to_json(wrapper, 0);
         GVariant *variant = g_variant_new("s", json);
         WebKitUserMessage *message = webkit_user_message_new("tabs.sendMessage", variant);
+        TABS->reply = "undefined";
         webkit_web_page_send_message_to_view(
-                PAGE, message, NULL, tabs_send_message_reply_callback, NULL);
+                PAGE, message, NULL, message_reply_and_save_callback, &TABS->reply);
 }
 
 static void
@@ -280,7 +215,7 @@ inject_tabs_api (char* extension_name)
         try {                                                           \
             tabsQuery(queryObject);                                     \
             setTimeout(() =>                                            \
-                success(tabsQueryResult()), 0);                         \
+                success(tabsQueryResult()), 10);                         \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \

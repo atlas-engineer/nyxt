@@ -3,20 +3,6 @@
 
 Management *MANAGEMENT;
 
-static void
-management_get_self_reply_callback (GObject *web_page,
-                                    GAsyncResult *res,
-                                    gpointer user_data)
-{
-        WebKitUserMessage *message =
-                webkit_web_page_send_message_to_view_finish((WebKitWebPage *) PAGE, res, NULL);
-        GVariant *params = webkit_user_message_get_parameters(message);
-        char *json = (char*) g_variant_get_string(params, NULL);
-        if (!json)
-                json = "{}";
-        MANAGEMENT->info = (char *) json;
-}
-
 static JSCValue *
 management_get_self_result_callback ()
 {
@@ -29,8 +15,9 @@ management_get_self_callback (char *extension_name)
 {
         GVariant *variant = g_variant_new("s", extension_name);
         WebKitUserMessage *message = webkit_user_message_new("management.getSelf", variant);
+        MANAGEMENT->info = "{}";
         webkit_web_page_send_message_to_view(
-                PAGE, message, NULL, management_get_self_reply_callback, NULL);
+                PAGE, message, NULL, message_reply_and_save_callback, &MANAGEMENT->info);
 }
 
 void

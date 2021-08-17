@@ -56,4 +56,6 @@ JSCContext *get_extension_context (char* extension_name);
 
 void *empty_constructor_callback (void);
 
+void message_reply_and_save_callback (GObject *web_page, GAsyncResult *res, void *user_data);
+
 #endif /* __GLOBALS_H__ */

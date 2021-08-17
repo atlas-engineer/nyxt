@@ -55,3 +55,17 @@ empty_constructor_callback (void)
 {
         return NULL;
 }
+
+void
+message_reply_and_save_callback (GObject *web_page,
+                                 GAsyncResult *res,
+                                 void *user_data)
+{
+        WebKitUserMessage *message =
+                webkit_web_page_send_message_to_view_finish((WebKitWebPage *) PAGE, res, NULL);
+        GVariant *params = webkit_user_message_get_parameters(message);
+        char *contents = (char*) g_variant_get_string(params, NULL);
+        char **place = (char **) user_data;
+        if (contents)
+                *(place) = contents;
+}
