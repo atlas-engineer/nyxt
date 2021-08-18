@@ -16,7 +16,7 @@ tabs_query_callback (JSCValue *object)
         char *json = jsc_value_to_json(object, 0);
         GVariant *variant = g_variant_new("s", json);
         WebKitUserMessage *message = webkit_user_message_new("tabs.queryObject", variant);
-        TABS->tabs = "[]";
+        TABS->tabs = NULL;
         webkit_web_page_send_message_to_view(
                 PAGE, message, NULL, message_reply_and_save_callback, &TABS->tabs);
 }
@@ -34,7 +34,7 @@ tabs_create_callback (JSCValue *object)
         char *json = jsc_value_to_json(object, 0);
         GVariant *variant = g_variant_new("s", json);
         WebKitUserMessage *message = webkit_user_message_new("tabs.createProperties", variant);
-        TABS->tab = "{}";
+        TABS->tab = NULL;
         webkit_web_page_send_message_to_view(
                 PAGE, message, NULL, message_reply_and_save_callback, &TABS->tab);
 }
@@ -50,7 +50,7 @@ static void
 tabs_get_current_callback ()
 {
         WebKitUserMessage *message = webkit_user_message_new("tabs.getCurrent", NULL);
-        TABS->tab = "{}";
+        TABS->tab = NULL;
         webkit_web_page_send_message_to_view(
                 PAGE, message, NULL, message_reply_and_save_callback, &TABS->tab);
 }
@@ -69,7 +69,7 @@ tabs_get_callback (int id)
         sprintf(num, "%d", id);
         GVariant *variant = g_variant_new("s", num);
         WebKitUserMessage *message = webkit_user_message_new("tabs.get", variant);
-        TABS->tab = "null";
+        TABS->tab = NULL;
         webkit_web_page_send_message_to_view(
                 PAGE, message, NULL, message_reply_and_save_callback, &TABS->tab);
 }
@@ -103,7 +103,7 @@ tabs_send_message_callback (char *extension_id, double tab_id, JSCValue *object)
         char *json = jsc_value_to_json(wrapper, 0);
         GVariant *variant = g_variant_new("s", json);
         WebKitUserMessage *message = webkit_user_message_new("tabs.sendMessage", variant);
-        TABS->reply = "undefined";
+        TABS->reply = NULL;
         webkit_web_page_send_message_to_view(
                 PAGE, message, NULL, message_reply_and_save_callback, &TABS->reply);
 }
@@ -187,8 +187,7 @@ inject_tabs_api (char* extension_name)
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             tabsQuery(queryObject);                                     \
-            setTimeout(() =>                                            \
-                success(tabsQueryResult()), 10);                         \
+            browser.drain(tabsQueryResult, success, [], 10);            \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
@@ -200,8 +199,7 @@ tabs.query");
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             tabsCreate(createProperties);                               \
-            setTimeout(() =>                                            \
-                success(tabsCreateResult()), 0);                        \
+            browser.drain(tabsCreateResult, success, {}, 10);           \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
@@ -213,8 +211,7 @@ tabs.create");
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             tabsGetCurrent();                                           \
-            setTimeout(() =>                                            \
-                success(tabsGetCurrentResult()), 0);                    \
+            browser.drain(tabsGetCurrentResult, success, {}, 10);       \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
@@ -226,13 +223,7 @@ tabs.getCurrent");
     return new Promise(function (success, failure) {                 \
         try {                                                        \
             tabsGet(getProperties);                                  \
-            setTimeout(() => {                                       \
-                var result = tabsGetResult();                        \
-                if (result)                                          \
-                    success(result);                                 \
-                else                                                 \
-                    throw new Error(\"No tab found!\");},            \
-                       0);                                           \
+            browser.drain(tabsGetResult, success, {}, 10);           \
             );                                                       \
         } catch (error) {                                            \
             return failure(error);                                   \
@@ -245,10 +236,9 @@ tabs.get");
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             management.getSelf().then(function (info) {                 \
-            tabsSendMessage(info.id, tabId, message);                   \
-            setTimeout(() => {                                          \
-                success(runtimeSendMessageResult());},                  \
-                        10);});                                         \
+                tabsSendMessage(info.id, tabId, message);               \
+                browser.drain(runtimeSendMessageResult, success, {}, 10); \
+            });                                                         \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
