@@ -74,7 +74,7 @@ void inject_runtime_api (char* extension_name)
         MAKE_CLASS(context, Runtime, "runtime");
 
         MAKE_FN(context, runtimeSendMessage, runtime_send_message_callback, G_TYPE_NONE, 2, G_TYPE_STRING, JSC_TYPE_VALUE);
-        MAKE_FN(context, runtimeSendMessageResult, runtime_send_message_result_callback, G_TYPE_NONE, 1, JSC_TYPE_VALUE);
+        MAKE_FN(context, runtimeSendMessageResult, runtime_send_message_result_callback, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
         MAKE_FN(context, runtimeGetManifest, runtime_get_manifest_callback, JSC_TYPE_VALUE, 1, G_TYPE_STRING);
         MAKE_FN(context, runtimeGetPlatformInfo, runtime_get_platform_info_callback, G_TYPE_NONE, 0, G_TYPE_NONE);
         MAKE_FN(context, runtimeGetPlatformInfoResult, runtime_get_platform_info_result_callback, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
