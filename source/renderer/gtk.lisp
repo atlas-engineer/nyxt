@@ -1114,7 +1114,7 @@ See `gtk-browser's `modifier-translator' slot."
                (webkit:webkit-web-view-send-message-to-page*
                 (gtk-object buffer)
                 (webkit:webkit-user-message-new
-                 (webkit:webkit-user-message-get-name original-message)
+                 "message"
                  (glib:g-variant-new-string
                   (json:encode-json-to-string
                    `(("message" . ,message)
