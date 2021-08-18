@@ -934,11 +934,8 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
                       (setf (id dead-buffer) (get-unique-identifier *browser*))
                       (ffi-buffer-make dead-buffer))
                     (apply #'make-instance buffer-class
+                           :id (get-unique-identifier *browser*)
                            (append (when title `(:title ,title))
-                                   (if (eq buffer-class 'user-background-buffer)
-                                       ;; Empty ID causes web views to not initialize properly.
-                                       `(:id "b")
-                                       `(:id ,(get-unique-identifier *browser*)))
                                    (when data-profile `(:data-profile ,data-profile)))))))
     (hooks:run-hook (buffer-before-make-hook *browser*) buffer)
     ;; Modes might require that buffer exists, so we need to initialize them
