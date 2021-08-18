@@ -153,6 +153,7 @@ not return."
    the main thread, which the GTK main loop is not guaranteed to be
    on."
   (log:debug "Initializing GTK Interface")
+  (setf (uiop:getenv "WEBKIT_FORCE_SANDBOX") "0")
   (if gtk-running-p
       (within-gtk-thread
         (finalize browser urls startup-timestamp))
