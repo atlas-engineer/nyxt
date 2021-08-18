@@ -15,7 +15,7 @@ management_get_self_callback (char *extension_name)
 {
         GVariant *variant = g_variant_new("s", extension_name);
         WebKitUserMessage *message = webkit_user_message_new("management.getSelf", variant);
-        MANAGEMENT->info = "{}";
+        MANAGEMENT->info = NULL;
         webkit_web_page_send_message_to_view(
                 PAGE, message, NULL, message_reply_and_save_callback, &MANAGEMENT->info);
 }
@@ -32,7 +32,7 @@ inject_management_api (char* extension_name)
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             managementGetSelf(\"%s\");                                  \
-            setTimeout(() => success(managementGetSelfResult()), 0); \
+            browser.drain(managementGetSelfResult, success, {}, 10);\
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
