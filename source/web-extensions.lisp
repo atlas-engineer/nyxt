@@ -16,12 +16,12 @@
 (defun load-js-file (file buffer mode)
   "Load JavaScript code from a file into the BUFFER."
   (ffi-buffer-evaluate-javascript
-   buffer (uiop:read-file-string (uiop:merge-pathnames* file (extension-directory mode))) (name mode)))
+   buffer (uiop:read-file-string (merge-extension-path mode file)) (name mode)))
 
 (defun load-css-file (file buffer mode)
   "Load CSS from the FILE and inject it into the BUFFER document."
   (nyxt::html-set-style
-   (uiop:read-file-string (uiop:merge-pathnames* file (extension-directory mode))) buffer))
+   (uiop:read-file-string (merge-extension-path mode file)) buffer))
 
 (defun make-activate-content-scripts-handler (mode name)
   (nyxt::make-handler-buffer
@@ -163,6 +163,10 @@ Is shared between all the instances of the same extension.")
 (export-always 'has-permission-p)
 (defmethod has-permission-p ((extension extension) (permission string))
   (str:s-member permission (permissions extension)))
+
+(export-always 'merge-extension-path)
+(defmethod merge-extension-path ((extension extension) path)
+  (uiop:merge-pathnames* path (extension-directory extension)))
 
 (export-always 'load-web-extension)
 (defmacro load-web-extension (lispy-name directory)
