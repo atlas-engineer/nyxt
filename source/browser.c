@@ -22,4 +22,19 @@ inject_browser (char* extension_name)
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "browser", -1), "replyMessage",
                 browserReplyMessage);
+        BIND_FN(context, "browser", "drain", "function drain (result_fn, success_fn, default_val, count, ...args) {\
+    var res = result_fn(...args);                                       \
+    if (res) {                                                          \
+        success_fn(res);                                                \
+    } else {                                                            \
+        if (count === 0)                                                \
+            success_fn(default_val);                                    \
+        else                                                            \
+            setTimeout(() =>                                            \
+                drain(result_fn, success_fn, default_val, count - 1, ...args), \
+                1000);                                                  \
+    }                                                                   \
+}                                                                       \
+                                                                        \
+drain");
 }
