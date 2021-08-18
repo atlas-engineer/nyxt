@@ -23,7 +23,7 @@ runtime_send_message_callback (char *extension_id, JSCValue *object)
         char *json = jsc_value_to_json(wrapper, 0);
         GVariant *variant = g_variant_new("s", json);
         WebKitUserMessage *message = webkit_user_message_new("runtime.sendMessage", variant);
-        RUNTIME->reply = "null";
+        RUNTIME->reply = NULL;
         webkit_web_page_send_message_to_view(
                 PAGE, message, NULL, message_reply_and_save_callback, &RUNTIME->reply);
 }
@@ -47,7 +47,7 @@ static void
 runtime_get_platform_info_callback ()
 {
         WebKitUserMessage *message = webkit_user_message_new("runtime.getPlatformInfo", NULL);
-        RUNTIME->platform_info = "{}";
+        RUNTIME->platform_info = NULL;
         webkit_web_page_send_message_to_view(
                 PAGE, message, NULL, message_reply_and_save_callback, &RUNTIME->platform_info);
 }
@@ -63,7 +63,7 @@ static void
 runtime_get_browser_info_callback ()
 {
         WebKitUserMessage *message = webkit_user_message_new("runtime.getBrowserInfo", NULL);
-        RUNTIME->browser_info = "{}";
+        RUNTIME->browser_info = NULL;
         webkit_web_page_send_message_to_view(
                 PAGE, message, NULL, message_reply_and_save_callback, &RUNTIME->browser_info);
 }
@@ -93,10 +93,9 @@ void inject_runtime_api (char* extension_name)
             management.getSelf().then(function (info) {                 \
                 var message = (no_two && no_three) ? one : two;         \
                 var extensionId = (no_two && no_three) ? info.id : one; \
-                runtimeSendMessage(extensionId, message);    \
-                setTimeout(() => {                                      \
-                    success(runtimeSendMessageResult());},     \
-                           0);});                                       \
+                runtimeSendMessage(extensionId, message);               \
+                browser.drain(runtimeSendMessageResult, success, undefined, 10); \
+            });                                                         \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
@@ -108,9 +107,7 @@ runtime.sendMessage");
     return new Promise ((success, failure) => {                         \
         try {                                                           \
             runtimeGetPlatformInfo();                                   \
-            setTimeout(() => {                                          \
-                success(runtimeGetPlatformInfoResult());},              \
-                        0);                                             \
+            browser.drain(runtimeGetPlatformInfoResult, success, {}, 10); \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
@@ -122,9 +119,7 @@ runtime.getPlatformInfo");
     return new Promise ((success, failure) => {                         \
         try {                                                           \
             runtimeGetBrowserInfo();                                   \
-            setTimeout(() => {                                          \
-                success(runtimeGetBrowserInfoResult());},              \
-                        0);                                             \
+            browser.drain(runtimeGetBrowserInfoResult, success, {}, 10);\
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
