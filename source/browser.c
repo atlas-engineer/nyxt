@@ -18,10 +18,7 @@ inject_browser (char* extension_name)
 {
         JSCContext *context = get_extension_context(extension_name);
         MAKE_CLASS(context, Browser, "browser");
-        JSCValue *browserReplyMessage = jsc_value_new_function(
-                context, NULL,
-                G_CALLBACK(browser_reply_message_callback), NULL, NULL,
-                G_TYPE_NONE, 2, G_TYPE_STRING, JSC_TYPE_VALUE);
+        MAKE_FN(context, browserReplyMessage, browser_reply_message_callback, G_TYPE_NONE, 2, G_TYPE_STRING, JSC_TYPE_VALUE);
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "browser", -1), "replyMessage",
                 browserReplyMessage);
