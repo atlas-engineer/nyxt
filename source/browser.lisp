@@ -802,6 +802,3 @@ sometimes yields the wrong result."
     (echo-warning "Redoing the edits is not yet implemented for this renderer.")))
 (define-ffi-generic ffi-extension-make-background-view (extension &optional url))
 (define-ffi-generic ffi-extension-delete-background-view (extension))
-(define-ffi-generic ffi-buffer-send-message (buffer &key name contents when-loaded-p wait-p))
-(define-ffi-generic ffi-buffer-send-message (buffer &key name contents when-loaded-p))
-(define-ffi-generic ffi-buffer-send-message (buffer &key name contents))
