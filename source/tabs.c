@@ -159,7 +159,7 @@ inject_tabs_api (char* extension_name)
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             tabsQuery(queryObject);                                     \
-            browser.drain(tabsQueryResult, success, [], 10);            \
+            browser.drain(tabsQueryResult, success, [], 5000);            \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
@@ -171,7 +171,7 @@ tabs.query");
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             tabsCreate(createProperties);                               \
-            browser.drain(tabsCreateResult, success, {}, 10);           \
+            browser.drain(tabsCreateResult, success, {}, 5000);           \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
@@ -183,7 +183,7 @@ tabs.create");
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             tabsGetCurrent();                                           \
-            browser.drain(tabsGetCurrentResult, success, {}, 10);       \
+            browser.drain(tabsGetCurrentResult, success, {}, 5000);       \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
@@ -195,7 +195,7 @@ tabs.getCurrent");
     return new Promise(function (success, failure) {                 \
         try {                                                        \
             tabsGet(getProperties);                                  \
-            browser.drain(tabsGetResult, success, {}, 10);           \
+            browser.drain(tabsGetResult, success, {}, 5000);           \
             );                                                       \
         } catch (error) {                                            \
             return failure(error);                                   \
@@ -209,7 +209,7 @@ tabs.get");
         try {                                                           \
             management.getSelf().then(function (info) {                 \
                 tabsSendMessage(info.id, tabId, message);               \
-                browser.drain(runtimeSendMessageResult, success, {}, 10); \
+                browser.drain(runtimeSendMessageResult, success, {}, 5000); \
             });                                                         \
         } catch (error) {                                               \
             return failure(error);                                      \

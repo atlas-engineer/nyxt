@@ -73,7 +73,7 @@ void inject_runtime_api (char* extension_name)
                 var message = (no_two && no_three) ? one : two;         \
                 var extensionId = (no_two && no_three) ? info.id : one; \
                 runtimeSendMessage(extensionId, message);               \
-                browser.drain(runtimeSendMessageResult, success, undefined, 10); \
+                browser.drain(runtimeSendMessageResult, success, undefined, 5000); \
             });                                                         \
         } catch (error) {                                               \
             return failure(error);                                      \
@@ -86,7 +86,7 @@ runtime.sendMessage");
     return new Promise ((success, failure) => {                         \
         try {                                                           \
             runtimeGetPlatformInfo();                                   \
-            browser.drain(runtimeGetPlatformInfoResult, success, {}, 10); \
+            browser.drain(runtimeGetPlatformInfoResult, success, {}, 5000); \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
@@ -98,7 +98,7 @@ runtime.getPlatformInfo");
     return new Promise ((success, failure) => {                         \
         try {                                                           \
             runtimeGetBrowserInfo();                                   \
-            browser.drain(runtimeGetBrowserInfoResult, success, {}, 10);\
+            browser.drain(runtimeGetBrowserInfoResult, success, {}, 5000);\
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \

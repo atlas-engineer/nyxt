@@ -24,12 +24,12 @@ inject_browser (char* extension_name)
     if (res) {                                                          \
         success_fn(res);                                                \
     } else {                                                            \
-        if (count === 0)                                                \
+        if (count <= 0)                                                 \
             success_fn(default_val);                                    \
         else                                                            \
             setTimeout(() =>                                            \
-                drain(result_fn, success_fn, default_val, count - 1, ...args), \
-                1000);                                                  \
+                drain(result_fn, success_fn, default_val, count - 10, ...args), \
+                10);                                                    \
     }                                                                   \
 }                                                                       \
                                                                         \
