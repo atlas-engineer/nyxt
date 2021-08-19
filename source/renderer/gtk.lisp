@@ -1471,6 +1471,7 @@ See `gtk-browser's `modifier-translator' slot."
     (run-thread
       "Process user messsage"
       (process-user-message buffer message))
+    (sleep 0.01)
     (run-thread
       "Reply user message"
       (reply-user-message buffer message))

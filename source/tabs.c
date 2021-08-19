@@ -3,13 +3,6 @@
 
 Tabs *TABS;
 
-static JSCValue *
-tabs_query_result_callback ()
-{
-        JSCContext *context = jsc_context_get_current();
-        return jsc_value_new_from_json(context, TABS->tabs);
-}
-
 static void
 tabs_query_callback (JSCValue *object)
 {
@@ -19,13 +12,6 @@ tabs_query_callback (JSCValue *object)
         TABS->tabs = NULL;
         webkit_web_page_send_message_to_view(
                 PAGE, message, NULL, message_reply_and_save_callback, &TABS->tabs);
-}
-
-static JSCValue *
-tabs_create_result_callback ()
-{
-        JSCContext *context = jsc_context_get_current();
-        return jsc_value_new_from_json(context, TABS->tab);
 }
 
 static void
@@ -39,13 +25,6 @@ tabs_create_callback (JSCValue *object)
                 PAGE, message, NULL, message_reply_and_save_callback, &TABS->tab);
 }
 
-static JSCValue *
-tabs_get_current_result_callback ()
-{
-        JSCContext *context = jsc_context_get_current();
-        return jsc_value_new_from_json(context, TABS->tab);
-}
-
 static void
 tabs_get_current_callback ()
 {
@@ -53,13 +32,6 @@ tabs_get_current_callback ()
         TABS->tab = NULL;
         webkit_web_page_send_message_to_view(
                 PAGE, message, NULL, message_reply_and_save_callback, &TABS->tab);
-}
-
-static JSCValue *
-tabs_get_result_callback ()
-{
-        JSCContext *context = jsc_context_get_current();
-        return jsc_value_new_from_json(context, TABS->tab);
 }
 
 static void
@@ -169,15 +141,15 @@ inject_tabs_api (char* extension_name)
         MAKE_CLASS(context, Tabs, "tabs");
 
         MAKE_FN(context, tabsQuery, tabs_query_callback, G_TYPE_NONE, 1, JSC_TYPE_VALUE);
-        MAKE_FN(context, tabsQueryResult, tabs_query_result_callback, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
+        MAKE_RESULT_FN(context, tabsQueryResult, &TABS->tabs);
         MAKE_FN(context, tabsCreate, tabs_create_callback, G_TYPE_NONE, 1, JSC_TYPE_VALUE);
-        MAKE_FN(context, tabsCreateResult, tabs_create_result_callback, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
+        MAKE_RESULT_FN(context, tabsCreateResult, &TABS->tab);
         MAKE_FN(context, tabsGetCurrent, tabs_get_current_callback, G_TYPE_NONE, 0, G_TYPE_NONE);
-        MAKE_FN(context, tabsGetCurrentResult, tabs_get_current_result_callback, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
+        MAKE_RESULT_FN(context, tabsGetCurrentResult, &TABS->tab);
         MAKE_FN(context, tabsGet, tabs_get_callback, G_TYPE_NONE, 1, G_TYPE_INT);
-        MAKE_FN(context, tabsGetResult, tabs_get_result_callback, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
+        MAKE_RESULT_FN(context, tabsGetResult, &TABS->tab);
         MAKE_FN(context, tabsSendMessage, tabs_send_message_callback, G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_DOUBLE, JSC_TYPE_VALUE);
-        MAKE_FN(context, tabsSendMessageResult, tabs_send_message_result_callback, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
+        MAKE_RESULT_FN(context, tabsSendMessageResult, &TABS->reply);
         MAKE_FN(context, print, tabs_print_callback, G_TYPE_NONE, 0, G_TYPE_NONE);
         MAKE_FN(context, tabsInsertCSS, tabs_insert_css_callback, G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_INT, JSC_TYPE_VALUE);
         MAKE_FN(context, tabsRemoveCSS, tabs_remove_css_callback, G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_INT, JSC_TYPE_VALUE);

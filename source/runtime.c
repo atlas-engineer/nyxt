@@ -4,13 +4,6 @@
 
 Runtime *RUNTIME;
 
-static JSCValue *
-runtime_send_message_result_callback ()
-{
-        JSCContext *context = jsc_context_get_current();
-        return jsc_value_new_from_json(context, RUNTIME->reply);
-}
-
 static void
 runtime_send_message_callback (char *extension_id, JSCValue *object)
 {
@@ -36,13 +29,6 @@ runtime_get_manifest_callback (char *extension_name)
         return jsc_value_new_from_json(context, jsc_value_to_json(data->manifest, 0));
 }
 
-static JSCValue *
-runtime_get_platform_info_result_callback ()
-{
-        JSCContext *context = jsc_context_get_current();
-        return jsc_value_new_from_json(context, RUNTIME->platform_info);
-}
-
 static void
 runtime_get_platform_info_callback ()
 {
@@ -50,13 +36,6 @@ runtime_get_platform_info_callback ()
         RUNTIME->platform_info = NULL;
         webkit_web_page_send_message_to_view(
                 PAGE, message, NULL, message_reply_and_save_callback, &RUNTIME->platform_info);
-}
-
-static JSCValue *
-runtime_get_browser_info_result_callback ()
-{
-        JSCContext *context = jsc_context_get_current();
-        return jsc_value_new_from_json(context, RUNTIME->browser_info);
 }
 
 static void
@@ -74,12 +53,12 @@ void inject_runtime_api (char* extension_name)
         MAKE_CLASS(context, Runtime, "runtime");
 
         MAKE_FN(context, runtimeSendMessage, runtime_send_message_callback, G_TYPE_NONE, 2, G_TYPE_STRING, JSC_TYPE_VALUE);
-        MAKE_FN(context, runtimeSendMessageResult, runtime_send_message_result_callback, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
+        MAKE_RESULT_FN(context, runtimeSendMessageResult, &RUNTIME->reply);
         MAKE_FN(context, runtimeGetManifest, runtime_get_manifest_callback, JSC_TYPE_VALUE, 1, G_TYPE_STRING);
         MAKE_FN(context, runtimeGetPlatformInfo, runtime_get_platform_info_callback, G_TYPE_NONE, 0, G_TYPE_NONE);
-        MAKE_FN(context, runtimeGetPlatformInfoResult, runtime_get_platform_info_result_callback, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
+        MAKE_RESULT_FN(context, runtimeGetPlatformInfoResult, &RUNTIME->platform_info);
         MAKE_FN(context, runtimeGetBrowserInfo, runtime_get_browser_info_callback, G_TYPE_NONE, 0, G_TYPE_NONE);
-        MAKE_FN(context, runtimeGetBrowserInfoResult, runtime_get_browser_info_result_callback, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
+        MAKE_RESULT_FN(context, runtimeGetBrowserInfoResult, &RUNTIME->browser_info);
 
         MAKE_EVENT(context, "runtime", "onMessage");
 

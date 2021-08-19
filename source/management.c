@@ -3,13 +3,6 @@
 
 Management *MANAGEMENT;
 
-static JSCValue *
-management_get_self_result_callback ()
-{
-        JSCContext *context = jsc_context_get_current();
-        return jsc_value_new_from_json(context, MANAGEMENT->info);
-}
-
 static void
 management_get_self_callback (char *extension_name)
 {
@@ -26,7 +19,7 @@ inject_management_api (char* extension_name)
         JSCContext *context = get_extension_context(extension_name);
         MAKE_CLASS(context, Management, "management");
         MAKE_FN(context, managementGetSelf, management_get_self_callback, G_TYPE_NONE, 1, G_TYPE_STRING);
-        MAKE_FN(context, managementGetSelfResult, management_get_self_result_callback, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
+        MAKE_RESULT_FN(context, managementGetSelfResult, MANAGEMENT->info);
         char *management_get_self_js = malloc(sizeof(char) * 800);
         sprintf(management_get_self_js, "management.getSelf = function () {\
     return new Promise(function (success, failure) {                    \

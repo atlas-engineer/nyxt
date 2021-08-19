@@ -69,3 +69,11 @@ message_reply_and_save_callback (GObject *web_page,
         if (contents)
                 *(place) = contents;
 }
+
+JSCValue *
+get_result_callback (void *user_data)
+{
+        JSCContext *context = jsc_context_get_current();
+        char **data = (char**) user_data;
+        return jsc_value_new_from_json(context, *data);
+}

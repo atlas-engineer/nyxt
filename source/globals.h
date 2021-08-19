@@ -23,6 +23,13 @@
                 __VA_ARGS__);                                           \
         jsc_context_set_value(Context, #Fn, Fn);                        \
 
+#define MAKE_RESULT_FN(Context, Fn, User_data)                          \
+        JSCValue *Fn = jsc_value_new_function(                          \
+                Context, #Fn, G_CALLBACK(get_result_callback),          \
+                User_data, NULL,                                        \
+                JSC_TYPE_VALUE, 0, G_TYPE_NONE);                        \
+        jsc_context_set_value(Context, #Fn, Fn);                        \
+
 #define MAKE_EVENT(Context, Object_name, Prop_name)         \
         jsc_value_object_set_property(                      \
                 JSCEVAL(Context, Object_name), Prop_name,   \
@@ -58,5 +65,7 @@ JSCContext *get_extension_context (char* extension_name);
 void *empty_constructor_callback (void);
 
 void message_reply_and_save_callback (GObject *web_page, GAsyncResult *res, void *user_data);
+
+JSCValue *get_result_callback (void *user_data);
 
 #endif /* __GLOBALS_H__ */
