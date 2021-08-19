@@ -46,6 +46,7 @@ extern WebKitWebPage *PAGE;
 
 typedef struct {
         char *name;
+        char *extension_id;
         JSCValue *manifest;
         WebKitScriptWorld *world;
 } ExtensionData;
@@ -61,6 +62,8 @@ void extensions_data_add_from_json(const char *json);
 WebKitScriptWorld *get_extension_world (char* extension_name);
 
 JSCContext *get_extension_context (char* extension_name);
+
+char *get_extension_id (char* extension_name);
 
 void *empty_constructor_callback (void);
 

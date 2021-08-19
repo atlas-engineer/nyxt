@@ -118,6 +118,10 @@ runtime.getManifest", extension_name);
                 "getManifest",
                 jsc_context_evaluate(context, runtime_get_manifest_js, -1));
         jsc_value_object_set_property(
+                jsc_context_evaluate(context, "runtime", -1),
+                "id",
+                jsc_value_new_string(context, get_extension_id(extension_name)));
+        jsc_value_object_set_property(
                 jsc_context_evaluate(context, "browser", -1), "runtime",
                 jsc_context_evaluate(context, "runtime", -1));
         free(runtime_get_manifest_js);

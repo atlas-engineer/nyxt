@@ -19,13 +19,14 @@ extensions_data_add_from_json(const char *json)
         for (property = properties; *property != NULL; property++){
                 ExtensionData *extension;
                 const char *name = *property;
-                char *ext_json = jsc_value_to_string(
-                        jsc_value_object_get_property(
-                                object, *property));
-                JSCValue* manifest = jsc_value_new_from_json(dummy_context, ext_json);
+                JSCValue *data = jsc_value_object_get_property(object, *property);
+                JSCValue *manifest = jsc_value_object_get_property_at_index(data, 1);
+                char *id = jsc_value_to_string(
+                        jsc_value_object_get_property_at_index(data, 0));
                 extension = malloc(sizeof(ExtensionData));
                 extension->name = (char*) name;
                 extension->manifest = manifest;
+                extension->extension_id = id;
                 extension->world = webkit_script_world_new_with_name(name);
                 g_hash_table_insert(EXTENSIONS_DATA, (void*) name, extension);
         }
@@ -48,6 +49,13 @@ get_extension_context (char* extension_name)
         WebKitScriptWorld *world = get_extension_world(extension_name);
         WebKitFrame *frame = webkit_web_page_get_main_frame(PAGE);
         return webkit_frame_get_js_context_for_script_world(frame, world);
+}
+
+char *
+get_extension_id (char* extension_name)
+{
+        ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
+        return data->extension_id;
 }
 
 void *
