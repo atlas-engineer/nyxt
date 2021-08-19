@@ -177,12 +177,13 @@ Is shared between all the instances of the same extension.")
     (sera:and-let* ((extension (nyxt:find-submode (nyxt:current-buffer) extension-class))
                     (browser-action (browser-action extension))
                     (default-popup (default-popup browser-action))
-                    (popup (nyxt::window-add-panel-buffer
-                            (current-window) (make-instance 'panel-buffer
-                                                            :title (default-title (browser-action extension)))
-                            :right)))
-      (buffer-load (quri.uri.file:make-uri-file
-                    :path (merge-extension-path extension (default-popup (browser-action extension))))
+                    (popup (make-instance 'user-panel-buffer
+                                          :title (default-title (browser-action extension)))))
+      (nyxt::window-add-panel-buffer
+       (current-window) popup
+       :right)
+      (buffer-load (quri:uri (format nil "web-extension:~a/~a"
+                                     (id extension) (default-popup (browser-action extension))))
                    :buffer popup))))
 
 (export-always 'load-web-extension)
