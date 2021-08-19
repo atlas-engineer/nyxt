@@ -168,6 +168,23 @@ Is shared between all the instances of the same extension.")
 (defmethod merge-extension-path ((extension extension) path)
   (uiop:merge-pathnames* path (extension-directory extension)))
 
+(defmethod nyxt::format-mode ((extension extension))
+  (name extension))
+
+(defun open-popup (extension-class &optional (buffer (current-buffer)))
+  (with-current-buffer buffer
+    ;;TODO: Send click message to background script if there's no popup.
+    (sera:and-let* ((extension (nyxt:find-submode (nyxt:current-buffer) extension-class))
+                    (browser-action (browser-action extension))
+                    (default-popup (default-popup browser-action))
+                    (popup (nyxt::window-add-panel-buffer
+                            (current-window) (make-instance 'panel-buffer
+                                                            :title (default-title (browser-action extension)))
+                            :right)))
+      (buffer-load (quri.uri.file:make-uri-file
+                    :path (merge-extension-path extension (default-popup (browser-action extension))))
+                   :buffer popup))))
+
 (export-always 'load-web-extension)
 (defmacro load-web-extension (lispy-name directory)
   "Make an extension from DIRECTORY accessible as Nyxt mode (under LISPY-NAME).
@@ -195,5 +212,8 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
                                            (alex:assoc-value json :content--scripts))))))
        (defmethod initialize-instance :after ((extension ,lispy-name) &key)
          (setf (nyxt:glyph extension)
-               (setf (default-icon (browser-action extension))
-                     (encode-browser-action-icon (quote ,json) ,directory)))))))
+               (spinneret:with-html-string
+                 (:a :class "button" :href (lisp-url `(open-popup ',(mode-name extension)))
+                     :title (format nil "Open the browser action of ~a" (mode-name extension))
+                     (:raw (setf (default-icon (browser-action extension))
+                                 (encode-browser-action-icon (quote ,json) ,directory))))))))))
