@@ -25,7 +25,7 @@ inject_management_api (char* extension_name)
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             managementGetSelf(\"%s\");                                  \
-            browser.drain(managementGetSelfResult, success, {}, 10);\
+            browser.drain(managementGetSelfResult, success, {}, 5000);\
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
