@@ -113,6 +113,11 @@ runtime.getBrowserInfo");
 };                                                                      \
                                                                         \
 runtime.getManifest", extension_name);
+        BIND_FN(context, "runtime", "getURL", "runtime.getURL = function (string) {\
+    return 'web-extension:' + runtime.id + '/' + string;\
+};\
+\
+runtime.getURL")
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "runtime", -1),
                 "getManifest",
