@@ -182,8 +182,7 @@ Is shared between all the instances of the same extension.")
       (nyxt::window-add-panel-buffer
        (current-window) popup
        :right)
-      (buffer-load (quri:uri (format nil "web-extension:~a/~a"
-                                     (id extension) (default-popup (browser-action extension))))
+      (buffer-load (quri.uri.file:make-uri-file :path (merge-extension-path extension default-popup))
                    :buffer popup))))
 
 (export-always 'load-web-extension)
