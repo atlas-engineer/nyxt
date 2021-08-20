@@ -71,17 +71,23 @@ for a given URL, and nil otherwise")
             do (vector-push-extend byte arr)
             finally (return (base64:usb8-array-to-base64-string arr))))))
 
+(defun default-browser-action-icon (json optimal-height)
+  (let* ((browser-action (alex:assoc-value json :browser--action))
+         (default-icon (alex:assoc-value browser-action :default--icon)))
+    (if (stringp default-icon)
+        default-icon
+        (rest (first (sort (append (alex:assoc-value browser-action :default--icon)
+                                   (alex:assoc-value json :icons))
+                           (lambda (a b)
+                             (< (abs (- optimal-height a))
+                                (abs (- optimal-height b))))
+                           :key (alex:compose #'parse-integer #'symbol-name #'first)))))))
+
 (defun encode-browser-action-icon (json extension-directory)
   (let* ((status-buffer-height (nyxt:height (status-buffer (current-window))))
          (padded-height (- status-buffer-height 10))
-         (browser-action (alex:assoc-value json :browser--action))
          (best-icon
-           (rest (first (sort (append (alex:assoc-value browser-action :default--icons)
-                                      (alex:assoc-value json :icons))
-                              (lambda (a b)
-                                (< (abs (- padded-height a))
-                                   (abs (- padded-height b))))
-                              :key (alex:compose #'parse-integer #'symbol-name #'first))))))
+           (default-browser-action-icon json padded-height)))
     (format nil "<img src=\"data:image/png;base64,~a\" alt=\"~a\"
 height=~a/>"
             (read-file-as-base64 (uiop:merge-pathnames* best-icon extension-directory))
@@ -89,10 +95,19 @@ height=~a/>"
             padded-height)))
 
 (defun make-browser-action (json)
-  (let ((browser-action (alex:assoc-value json :browser--action)))
+  (let* ((browser-action (alex:assoc-value json :browser--action))
+         (sorted-icons (sort (alex:assoc-value browser-action :theme--icons)
+                             #'> :key (alex:rcurry #'alex:assoc-value :size)))
+         (max-icon (first sorted-icons))
+         (default-icon (default-browser-action-icon json 1000)))
     (make-instance 'browser-action
                    :default-popup (alex:assoc-value browser-action :default--popup)
-                   :default-title (alex:assoc-value browser-action :default--title))))
+                   :default-title (alex:assoc-value browser-action :default--title)
+                   :default-icon default-icon
+                   :default-dark-icon (or (alex:assoc-value max-icon :dark)
+                                          (alex:assoc-value max-icon :light))
+                   :default-light-icon (or (alex:assoc-value max-icon :light)
+                                           (alex:assoc-value max-icon :dark)))))
 
 (define-class browser-action ()
   ((default-popup nil
@@ -103,7 +118,13 @@ height=~a/>"
                   :documentation "The title to call the popup with.")
    (default-icon nil
                  :type (or null string)
-                 :documentation "The extension icon to use in mode line."))
+                 :documentation "The extension icon to use in mode line.")
+   (default-light-icon nil
+                       :type (or null string)
+                       :documentation "The extension icon for use in mode line in the light theme.")
+   (default-dark-icon nil
+                       :type (or null string)
+                       :documentation "The extension icon for use in mode line in the dark theme."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
