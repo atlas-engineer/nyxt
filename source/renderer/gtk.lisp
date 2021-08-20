@@ -664,7 +664,7 @@ See `gtk-browser's `modifier-translator' slot."
                                              :key #'id
                                              :test #'string-equal))
                             (full-path (nyxt/web-extensions:merge-extension-path extension inner-path)))
-              (values (uiop:read-file-string full-path)
+              (values (alex:read-file-into-byte-vector full-path)
                       (mimes:mime full-path))))
              "<h1>Resource not found</h1>"))
        (lambda (condition)
