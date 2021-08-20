@@ -108,6 +108,7 @@ webkit_web_extension_initialize (WebKitWebExtension *extension)
 
         EXTENSIONS_DATA = g_hash_table_new(g_str_hash, g_str_equal);
         MESSAGES = g_hash_table_new(g_str_hash, g_str_equal);
+        IS_PRIVILEGED = 0;
 
         g_signal_connect (extension, "page-created",
                           G_CALLBACK (web_page_created_callback),

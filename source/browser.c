@@ -13,7 +13,7 @@ browser_reply_message_callback (char *message_name, JSCValue *result)
 void
 inject_browser (char* extension_name)
 {
-        JSCContext *context = get_extension_context(extension_name);
+        JSCContext *context = get_extension_context(IS_PRIVILEGED ? NULL : extension_name);
         MAKE_CLASS(context, Browser, "browser");
         MAKE_FN(context, browserReplyMessage, browser_reply_message_callback, G_TYPE_NONE, 2, G_TYPE_STRING, JSC_TYPE_VALUE);
         jsc_value_object_set_property(
