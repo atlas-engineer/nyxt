@@ -477,7 +477,7 @@ store them somewhere and kill them once done."))
 
 (define-user-class internal-buffer)
 
-(define-class panel-buffer (web-buffer)
+(define-class panel-buffer (user-web-buffer)
   ((width 250 :documentation "The width in pixels.")
    (style (theme:themed-css (theme *browser*)
             (body
