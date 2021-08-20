@@ -271,7 +271,7 @@ tabs.executeScript")
         jsc_value_object_set_property(jsc_context_evaluate(context, "tabs", -1),
                 "print", print);
         jsc_value_object_set_property(jsc_context_evaluate(context, "tabs", -1),
-                                      "TAB_ID_NONE", jsc_value_new_number(0));
+                                      "TAB_ID_NONE", jsc_value_new_number(context, 0));
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "browser", -1), "tabs",
                 jsc_context_evaluate(context, "tabs", -1));
