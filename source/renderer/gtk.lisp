@@ -1272,13 +1272,20 @@ See `gtk-browser's `modifier-translator' slot."
                (calispel:! channel value))))
       (str:string-case message-name
         ("listExtensions"
-         (wrap-in-channel
-          (json:encode-json-to-string
-           (mapcar #'(lambda (extension)
-                       (cons (nyxt/web-extensions::name extension)
-                             (vector (id extension)
-                                     (nyxt/web-extensions::manifest extension))))
-                   extensions))))
+         (flet ((describe-extension (extension &key privileged-p)
+                  (cons (nyxt/web-extensions::name extension)
+                        (vector (id extension)
+                                (nyxt/web-extensions::manifest extension)
+                                (if privileged-p 1 0)))))
+           (wrap-in-channel
+            (json:encode-json-to-string
+             (if (or (background-buffer-p buffer)
+                     (panel-buffer-p buffer))
+                 (alex:when-let ((extension
+                                  (or (find buffer extensions :key #'background-buffer)
+                                      (find buffer extensions :key #'nyxt/web-extensions:popup-buffer))))
+                   (list (describe-extension extension :privileged-p t)))
+                 (mapcar #'describe-extension extensions))))))
         ("management.getSelf"
          (wrap-in-channel
           (json:encode-json-to-string
