@@ -18,19 +18,24 @@ extensions_data_add_from_json(const char *json)
         char **properties = jsc_value_object_enumerate_properties(object);
         char **property;
         WebKitFrame *frame = webkit_web_page_get_main_frame(PAGE);
-        for (property = properties; *property != NULL; property++){
-                ExtensionData *extension;
-                const char *name = *property;
-                JSCValue *data = jsc_value_object_get_property(object, *property);
-                JSCValue *manifest = jsc_value_object_get_property_at_index(data, 1);
-                char *id = jsc_value_to_string(
-                        jsc_value_object_get_property_at_index(data, 0));
-                extension = malloc(sizeof(ExtensionData));
-                extension->name = (char*) name;
-                extension->manifest = manifest;
-                extension->extension_id = id;
-                extension->world = webkit_script_world_new_with_name(name);
-                g_hash_table_insert(EXTENSIONS_DATA, (void*) name, extension);
+        if (properties) {
+                for (property = properties; *property != NULL; property++){
+                        ExtensionData *extension;
+                        const char *name = *property;
+                        JSCValue *data = jsc_value_object_get_property(object, *property);
+                        JSCValue *manifest = jsc_value_object_get_property_at_index(data, 1);
+                        char *id = jsc_value_to_string(
+                                jsc_value_object_get_property_at_index(data, 0));
+                        int is_privileged = jsc_value_to_int32(jsc_value_object_get_property_at_index(data, 2));
+                        if (is_privileged)
+                                IS_PRIVILEGED = is_privileged;
+                        extension = malloc(sizeof(ExtensionData));
+                        extension->name = (char*) name;
+                        extension->manifest = manifest;
+                        extension->extension_id = id;
+                        extension->world = webkit_script_world_new_with_name(name);
+                        g_hash_table_insert(EXTENSIONS_DATA, (void*) name, extension);
+                }
         }
 }
 
