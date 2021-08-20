@@ -145,6 +145,10 @@ Is shared between all the instances of the same extension.")
    (background-buffer nil
                       :documentation "The buffer to host background page of the extension in.
 Is shared between all the instances of the same extension.")
+   (popup-buffer nil
+                 :type (or null panel-buffer)
+                 :documentation "The panel-buffer to host extension popup in.
+Is only set when popup is active.")
    (description nil
                 :type (or null string))
    (homepage-url nil
@@ -199,10 +203,14 @@ Is shared between all the instances of the same extension.")
                     (browser-action (browser-action extension))
                     (default-popup (default-popup browser-action))
                     (popup (make-instance 'user-panel-buffer
-                                          :title (default-title (browser-action extension)))))
+                                          :title (default-title (browser-action extension))
+                                          :id (nyxt::get-unique-identifier *browser*))))
+      (setf (popup-buffer extension) popup)
+      (enable-modes (list extension-class) popup)
       (nyxt::window-add-panel-buffer
        (current-window) popup
        :right)
+      (setf (popup-buffer extension) popup)
       (buffer-load (quri.uri.file:make-uri-file :path (merge-extension-path extension default-popup))
                    :buffer popup))))
 
@@ -223,6 +231,8 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
               :allocation :class)
           (background-buffer nil
                              :allocation :class)
+          (popup-buffer nil
+                        :allocation :class)
           (description ,(alex:assoc-value json :description))
           (extension-directory ,directory)
           (homepage-url ,(alex:assoc-value json :homepage--url))
