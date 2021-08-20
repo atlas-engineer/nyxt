@@ -6,6 +6,16 @@
 #include "tabs.h"
 #include "runtime.h"
 
+static void
+inject_apis (void* extension_name, void *data, void *user_data)
+{
+        inject_browser((char*) extension_name);
+        inject_extevent_api((char*) extension_name);
+        inject_management_api((char*) extension_name);
+        inject_tabs_api((char*) extension_name);
+        inject_runtime_api((char*) extension_name);
+}
+
 static gboolean
 user_message_received (WebKitWebPage     *web_page,
                        WebKitUserMessage *message,
@@ -39,21 +49,14 @@ p",
                 }
 
                 return TRUE;
+        } else if (!strcmp("injectAPIs", name)){
+                inject_apis(contents, NULL, NULL);
+                return TRUE;
         } else {
                 WebKitUserMessage *reply = webkit_user_message_new(name, NULL);
                 webkit_user_message_send_reply(message, reply);
                 return TRUE;
         }
-}
-
-static void
-inject_apis (void* extension_name, void *data, void *user_data)
-{
-        inject_browser((char*) extension_name);
-        inject_extevent_api((char*) extension_name);
-        inject_management_api((char*) extension_name);
-        inject_tabs_api((char*) extension_name);
-        inject_runtime_api((char*) extension_name);
 }
 
 static void
