@@ -1293,7 +1293,8 @@ See `gtk-browser's `modifier-translator' slot."
                                        :key #'id))
                          (context (webkit:jsc-context-new)))
            ;; Store a pointer to the message and reply to it later!
-           (if (background-buffer-p buffer)
+           (if (or (background-buffer-p buffer)
+                   (panel-buffer-p buffer))
                (dolist (instance extension-instances)
                  (trigger-message (alex:assoc-value json :message)
                                   (buffer instance) instance message))
