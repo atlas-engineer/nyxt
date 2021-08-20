@@ -137,7 +137,7 @@ tabs_execute_script_callback (char *extension_id, int tab_id, JSCValue *object)
 void
 inject_tabs_api (char* extension_name)
 {
-        JSCContext *context = get_extension_context(extension_name);
+        JSCContext *context = get_extension_context(IS_PRIVILEGED ? NULL : extension_name);
         MAKE_CLASS(context, Tabs, "tabs");
 
         MAKE_FN(context, tabsQuery, tabs_query_callback, G_TYPE_NONE, 1, JSC_TYPE_VALUE);

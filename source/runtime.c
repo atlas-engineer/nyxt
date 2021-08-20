@@ -49,7 +49,7 @@ runtime_get_browser_info_callback ()
 
 void inject_runtime_api (char* extension_name)
 {
-        JSCContext *context = get_extension_context(extension_name);
+        JSCContext *context = get_extension_context(IS_PRIVILEGED ? NULL : extension_name);
         MAKE_CLASS(context, Runtime, "runtime");
 
         MAKE_FN(context, runtimeSendMessage, runtime_send_message_callback, G_TYPE_NONE, 2, G_TYPE_STRING, JSC_TYPE_VALUE);

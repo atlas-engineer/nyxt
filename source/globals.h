@@ -57,6 +57,8 @@ extern GHashTable *MESSAGES;
 
 extern WebKitWebExtension *EXTENSION;
 
+extern int IS_PRIVILEGED;
+
 void extensions_data_add_from_json(const char *json);
 
 WebKitScriptWorld *get_extension_world (char* extension_name);

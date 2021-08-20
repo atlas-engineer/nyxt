@@ -8,6 +8,8 @@ GHashTable *MESSAGES;
 
 WebKitWebExtension *EXTENSION;
 
+int IS_PRIVILEGED;
+
 void
 extensions_data_add_from_json(const char *json)
 {

@@ -72,7 +72,7 @@ extevent_run_callback (Extevent *instance, GPtrArray *args, void *user_data)
 
 void inject_extevent_api (char* extension_name)
 {
-        JSCContext *context = get_extension_context(extension_name);
+        JSCContext *context = get_extension_context(IS_PRIVILEGED ? NULL : extension_name);
         JSCClass *ExtEvent = jsc_context_register_class(
                 context, "ExtEvent", NULL, NULL, (GDestroyNotify) extevent_free);
         JSCValue *ExtEvent_constructor = jsc_class_add_constructor(
