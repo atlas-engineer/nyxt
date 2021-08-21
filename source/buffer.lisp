@@ -1027,7 +1027,7 @@ proceeding."
 
 (-> switch-buffer (&key (:id string) (:current-is-last-p boolean)) *)
 (define-command switch-buffer (&key id (current-is-last-p nil))
-  "Switch the active buffer in the current window.
+  "Switch buffer using fuzzy completion to quickly find whatever buffer you are looking for.
 Buffers are ordered by last access.
 With CURRENT-IS-LAST-P, the current buffer is listed last so as to list the
 second latest buffer first."
