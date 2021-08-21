@@ -121,9 +121,9 @@ can. If you do not supply a protocol in a URL, HTTPS will be assumed. To
 visit a site supporting only the less secure HTTP, you must explicitly type the
 full URL including the 'http://' prefix.")
    (:ul
-    (:li (command-markup 'set-url) ": Set URL of current buffer.")
-    (:li (command-markup 'set-url-new-buffer) ": Open a new buffer and set its URL.")
-    (:li (command-markup 'make-buffer-focus) ": Make a new empty buffer."))
+    (:li (command-markup 'set-url) ": " (command-docstring-first-sentence 'set-url))
+    (:li (command-markup 'set-url-new-buffer) ": " (command-docstring-first-sentence 'set-url-new-buffer))
+    (:li (command-markup 'make-buffer-focus) ": " (command-docstring-first-sentence 'make-buffer-focus)))
    (:h3 "Switching buffers")
    (:ul
     (:li (command-markup 'switch-buffer) ": Switch buffer using fuzzy completion
