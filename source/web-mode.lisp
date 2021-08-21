@@ -223,15 +223,13 @@ and to index the top of the page.")
 (define-command go-next ()
   "Navigate to the next element according to the HTML 'rel' attribute."
   (pflet ((go-next ()
-                   (ps:chain document
-                             (query-selector-all "[rel=next]") 0 (click))))
+            (ps:chain document (query-selector-all "[rel=next]") 0 (click))))
     (go-next)))
 
 (define-command go-previous ()
   "Navigate to the previous element according to the HTML 'rel' attribute."
   (pflet ((go-previous ()
-                       (ps:chain document
-                                 (query-selector-all "[rel=prev]") 0 (click))))
+            (ps:chain document (query-selector-all "[rel=prev]") 0 (click))))
     (go-previous)))
 
 (define-command go-to-homepage ()
