@@ -124,12 +124,12 @@
 strong, sub, sup, listing, xmp, plaintext, basefont, big, blink, center, font,
 marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"))
 
-(define-parenscript is-collapsed ()
-  ;; returns "true" if mark's start and end are the same value
-  (defun is-collapsed ()
+(define-parenscript collapsed-p ()
+  "Return T if mark's start and end are the same value, nil otherwise."
+  (defun collapsed-p ()
     (let ((sel (ps:chain window (get-selection))))
       (ps:@ sel is-collapsed)))
-  (is-collapsed))
+  (collapsed-p))
 
 (define-parenscript collapse-to-focus ()
   "Collapse the selection"
@@ -141,7 +141,7 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"))
 (define-command toggle-mark ()
   "Toggle the mark."
   (let ((mode (find-submode (current-buffer) 'visual-mode)))
-    (if (string= (is-collapsed) "true")
+    (if (collapsed-p)
         (progn
           (setf (mark-set mode) (not (mark-set mode)))
           (if (mark-set mode)
@@ -154,7 +154,7 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"))
 (define-command clear-selection ()
   "Clear the selection and unset the mark."
   (let ((mode (find-submode (current-buffer) 'visual-mode)))
-    (unless (is-collapsed) (collapse-to-focus))
+    (unless (collapsed-p) (collapse-to-focus))
     (setf (mark-set mode) nil)
     (echo "Mark deactivated")))
 
