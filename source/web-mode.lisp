@@ -97,7 +97,7 @@ and to index the top of the page.")
        "C-down" 'scroll-to-bottom
        "C-up" 'scroll-to-top
        "C-i" 'autofill
-       "C-e '" 'edit-with-external-editor
+       "C-u C-x C-f" 'edit-with-external-editor
        ;; Leave SPACE and arrow keys unbound so that the renderer decides whether to
        ;; navigate textboxes (arrows), insert or scroll (space).
        ;; keypad, gtk:
