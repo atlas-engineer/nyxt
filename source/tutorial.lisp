@@ -156,9 +156,9 @@ Invoke one of the commands below: several hints will appear on screen and all
 links on the page will be listed in the prompt buffer.  You can select the hints
 by matching against the hint, the URL or the title.")
    (:ul
-    (:li (command-markup 'nyxt/web-mode:follow-hint) ": Go to link in current buffer.")
-    (:li (command-markup 'nyxt/web-mode:follow-hint-new-buffer-focus) ": Create new buffer with link; focus on new buffer.")
-    (:li (command-markup 'nyxt/web-mode:follow-hint-new-buffer) ": Create new buffer with link; keep focus on current buffer."))
+    (:li (command-markup 'nyxt/web-mode:follow-hint) ": " (command-docstring-first-sentence 'nyxt/web-mode:follow-hint))
+    (:li (command-markup 'nyxt/web-mode:follow-hint-new-buffer-focus) ": " (command-docstring-first-sentence 'nyxt/web-mode:follow-hint-new-buffer-focus))
+    (:li (command-markup 'nyxt/web-mode:follow-hint-new-buffer) ": " (command-docstring-first-sentence 'nyxt/web-mode:follow-hint-new-buffer)))
    (:h3 "Using the buffer history")
    (:p "History is represented as a tree that you can traverse: when you go back
 in history, then follow a new URL, it effectively creates a new branch without
