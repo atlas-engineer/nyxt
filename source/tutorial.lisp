@@ -126,10 +126,9 @@ full URL including the 'http://' prefix.")
     (:li (command-markup 'make-buffer-focus) ": " (command-docstring-first-sentence 'make-buffer-focus)))
    (:h3 "Switching buffers")
    (:ul
-    (:li (command-markup 'switch-buffer) ": Switch buffer using fuzzy completion
-to quickly find whatever buffer you are looking for.")
-    (:li (command-markup 'switch-buffer-next) ": Go to next buffer.")
-    (:li (command-markup 'switch-buffer-previous) ": Go to previous buffer."))
+    (:li (command-markup 'switch-buffer) ": " (command-docstring-first-sentence 'switch-buffer))
+    (:li (command-markup 'switch-buffer-next) ": " (command-docstring-first-sentence 'switch-buffer-next))
+    (:li (command-markup 'switch-buffer-previous) ": " (command-docstring-first-sentence 'switch-buffer-previous)))
    (:h3 "Copy and paste")
    (:p "Unlike other web browsers, Nyxt provides powerful ways of copying
    and pasting content via different commands. Starting from:")
