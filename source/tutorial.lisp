@@ -237,49 +237,40 @@ CUA and Emacs-like keybindings out of the box, too). Activate it with the "
          ": Quit visual mode.")
     (:li (command-markup 'nyxt/visual-mode:select-paragraph
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Open up a prompt buffer for selecting a paragraph you want to
-set the caret on.")
+         ": " (command-docstring-first-sentence 'nyxt/visual-mode:select-paragraph))
     (:li (command-markup 'nyxt/visual-mode:toggle-mark
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Toggle text selection.")
+         ": " (command-docstring-first-sentence 'nyxt/visual-mode:toggle-mark))
     (:li (command-markup 'nyxt/visual-mode:forward-char
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Move caret forward by a character (if any text selected, moves the
-selection forward by a character).")
+         ": " (command-docstring-first-sentence 'nyxt/visual-mode:forward-char))
     (:li (command-markup 'nyxt/visual-mode:backward-char
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Move caret backward by a character (if any text selected, moves the
-selection backward by a character).")
+         ": " (command-docstring-first-sentence 'nyxt/visual-mode:backward-char))
     (:li (command-markup 'nyxt/visual-mode:forward-word
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Move caret forward by a word (if any text selected, moves the
-selection forward by a word).")
+         ": " (command-docstring-first-sentence 'nyxt/visual-mode:forward-word))
     (:li (command-markup 'nyxt/visual-mode:backward-word
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Move caret backward by a word (if any text selected, moves the
-selection backward by a word).")
+         ": " (command-docstring-first-sentence 'nyxt/visual-mode:backward-word))
     (:li (command-markup 'nyxt/visual-mode:forward-line
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Move caret forward by a line (if any text selected, moves the
-selection forward by a line).")
+         ": " (command-docstring-first-sentence 'nyxt/visual-mode:forward-line))
     (:li (command-markup 'nyxt/visual-mode:backward-line
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Move caret backward by a line (if any text selected, moves the
-selection backward by a line).")
+         ": " (command-docstring-first-sentence 'nyxt/visual-mode:backward-line))
     (:li (command-markup 'nyxt/visual-mode:beginning-line
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Move caret to the beginning of the line.")
+         ": " (command-docstring-first-sentence 'nyxt/visual-mode:beginning-line))
     (:li (command-markup 'nyxt/visual-mode:end-line
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Move caret to the end of the line.")
+         ": " (command-docstring-first-sentence 'nyxt/visual-mode:end-line))
     (:li (command-markup 'nyxt/visual-mode:forward-sentence
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Move caret forward by a sentence (if any text selected, moves the
- selection forward by a sentence).")
+         ": " (command-docstring-first-sentence 'nyxt/visual-mode:forward-sentence))
     (:li (command-markup 'nyxt/visual-mode:backward-sentence
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Move caret backward by a sentence (if any text selected, moves the
- selection backward by a sentence)."))
+         ": " (command-docstring-first-sentence 'nyxt/visual-mode:backward-sentence)))
    (:p "Commands designed to ease the use for CUA users (but available to all users): ")
    (:ul
     (:li (command-markup 'nyxt/visual-mode:forward-char-with-selection
