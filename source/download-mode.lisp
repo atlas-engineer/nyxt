@@ -169,5 +169,5 @@ download."
   (download (current-buffer) (url (current-buffer))))
 
 (define-command download-open-file ()
-  "Open a downloaded file."
+  "Open file in Nyxt or externally."
   (open-file :default-directory (expand-path (download-path (current-buffer)))))
