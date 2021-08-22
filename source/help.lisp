@@ -517,7 +517,7 @@ The version number is stored in the clipboard."
         "UNBOUND")))
 
 (define-command help (&key no-history-p)
-  "Print help information."
+  "Open up a small help buffer."
   (with-current-html-buffer (buffer "*Help*" 'nyxt/help-mode:help-mode
                                     :no-history-p no-history-p)
     (spinneret:with-html-string
