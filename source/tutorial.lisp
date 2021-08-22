@@ -295,16 +295,16 @@ CUA and Emacs-like keybindings out of the box, too). Activate it with the "
    (:ul
     (:li (command-markup 'nyxt/visual-mode:forward-char-with-selection
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Turn on the text selection and move caret forward by a character.")
+         ": " (command-docstring-first-sentence 'nyxt/visual-mode:forward-char-with-selection))
     (:li (command-markup 'nyxt/visual-mode:backward-char-with-selection
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Turn on the text selection and move caret backward by a character.")
+         ": " (command-docstring-first-sentence 'nyxt/visual-mode:backward-char-with-selection))
     (:li (command-markup 'nyxt/visual-mode:forward-line-with-selection
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Turn on the text selection and move caret forward by a line.")
+         ": " (command-docstring-first-sentence 'nyxt/visual-mode:forward-line-with-selection))
     (:li (command-markup 'nyxt/visual-mode:backward-line-with-selection
                          :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
-         ": Turn on the text selection and move caret backward by a line."))
+         ": " (command-docstring-first-sentence 'nyxt/visual-mode:backward-line-with-selection)))
    (:p "A note for " (:code "emacs-mode") " users: unlike in Emacs, in Nyxt the command "
        (command-markup 'nyxt/visual-mode:toggle-mark
                        :modes (list (make-instance 'nyxt/visual-mode:visual-mode)))
