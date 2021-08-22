@@ -193,16 +193,13 @@ Bookmarks can have the following settings:")
     (:li (:code ":tags") ": A list of strings.  Useful to categorize and filter bookmarks."))
    (:p "Bookmark-related commands")
    (:ul
-    (:li (command-markup 'bookmark-current-url) ": Bookmark current page.
-Prompt for tags.  The input defaults to the existing tags: if some tags are
-removed from the input, they are also removed from the existing bookmark.")
-    (:li (command-markup 'bookmark-buffer-url) ": Same as above but prompt for a buffer first.")
-    (:li (command-markup 'bookmark-url) ": Same as above but prompt for a URL first.")
-    (:li (command-markup 'nyxt/web-mode:bookmark-hint) ": Same as above but prompt for a hinted URL first.")
-    (:li (command-markup 'set-url-from-bookmark) ": Open bookmark in current buffer.")
-    (:li (command-markup 'delete-bookmark) ": Delete queried bookmarks.")
-    (:li (command-markup 'list-bookmarks) ": Display a new buffer containing the
-list of all bookmarks."))
+    (:li (command-markup 'bookmark-current-url) ": " (command-docstring-first-sentence 'bookmark-current-url))
+    (:li (command-markup 'bookmark-buffer-url) ": " (command-docstring-first-sentence 'bookmark-buffer-url))
+    (:li (command-markup 'bookmark-url) ": " (command-docstring-first-sentence 'bookmark-url))
+    (:li (command-markup 'nyxt/web-mode:bookmark-hint) ": " (command-docstring-first-sentence 'nyxt/web-mode:bookmark-hint))
+    (:li (command-markup 'set-url-from-bookmark) ": " (command-docstring-first-sentence 'set-url-from-bookmark))
+    (:li (command-markup 'delete-bookmark) ": " (command-docstring-first-sentence 'delete-bookmark))
+    (:li (command-markup 'list-bookmarks) ": " (command-docstring-first-sentence 'list-bookmarks)))
    (:h3 "Application mode")
    (:p "The command " (:code "application-mode") " forwards all keys to the
 renderer. For instance, using the default binding of Nyxt (" (:code "web-cua-map") ") the
