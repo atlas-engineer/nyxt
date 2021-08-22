@@ -365,7 +365,7 @@ visible nosave active buffer."
                :selector "a, img"))
 
 (define-command bookmark-hint ()
-  "Show link hints on screen, and allow the user to bookmark one"
+  "Show link hints on screen, and allow the user to bookmark one."
   (query-hints "Bookmark hint"
                (lambda (result)
                  (dolist (url (mapcar #'url result))
