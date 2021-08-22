@@ -360,21 +360,17 @@ creatively tailor-made by users to automate their own use of Nyxt.")
 classes, slots, variables, functions and bindings can be inspected for
 definition and documentation.")
    (:ul
-    (:li (command-markup 'help) ": Open up a small help buffer.")
-    (:li (command-markup 'tutorial) ": Open up this tutorial.")
-    (:li (command-markup 'describe-key) ": Lets you to input a key binding and
-see what command it is bound to.")
-    (:li (command-markup 'describe-bindings) ": View all of your currently set
-bindings in the current buffer.")
-    (:li (command-markup 'describe-command) ": Find out about a particular
-command (including showing its source).")
-    (:li (command-markup 'describe-function) ": Find out about a particular
-function.")
-    (:li (command-markup 'describe-variable) ": View the value and documentation
-of a variable.")
-    (:li (command-markup 'describe-class) ": Lookup a class documentation and all its slots.")
-    (:li (command-markup 'describe-slot) ": Lookup a class slot value and documentation.")
-    (:li (command-markup 'describe-any) ": The conflation of all the 'describe' functions."))
+    (:li (command-markup 'help) ": " (command-docstring-first-sentence 'help))
+    (:li (command-markup 'tutorial) ": " (command-docstring-first-sentence
+   'tutorial) " This is the tutorial.")
+    (:li (command-markup 'describe-key) ": " (command-docstring-first-sentence 'describe-key))
+    (:li (command-markup 'describe-bindings) ": " (command-docstring-first-sentence 'describe-bindings))
+    (:li (command-markup 'describe-command) ": " (command-docstring-first-sentence 'describe-command))
+    (:li (command-markup 'describe-function) ": " (command-docstring-first-sentence 'describe-function))
+    (:li (command-markup 'describe-variable) ": " (command-docstring-first-sentence 'describe-variable))
+    (:li (command-markup 'describe-class) ": " (command-docstring-first-sentence 'describe-class))
+    (:li (command-markup 'describe-slot) ": " (command-docstring-first-sentence 'describe-slot))
+    (:li (command-markup 'describe-any) ": " (command-docstring-first-sentence 'describe-any)))
    (:p "A good starting point is to study the documentation of the classes "
        (:code "browser") ", " (:code "window") ", " (:code "buffer") " and "
        (:code "prompt-buffer") ".")))
