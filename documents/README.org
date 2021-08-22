@@ -151,8 +151,9 @@ Otherwise clone each repository mentioned in =.gitmodules= into
 
 - Arch Linux:
   #+begin_src sh
-    sudo pacman -S git sbcl cl-asdf webkit2gtk glib-networking gsettings-desktop-schemas libfixposix enchant
+    sudo pacman -S git sbcl cl-asdf webkit2gtk glib-networking gsettings-desktop-schemas enchant
   #+end_src
+  The package libfixposix can be installed from the [[https://aur.archlinux.org/packages/libfixposix][AUR]]
 
 - Fedora:
   #+begin_src sh
