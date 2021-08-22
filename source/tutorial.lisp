@@ -347,8 +347,6 @@ creatively tailor-made by users to automate their own use of Nyxt.")
          ", " (command-markup 'nyxt/web-mode:unzoom-page)
          ", " (command-markup 'nyxt/web-mode:reset-page-zoom)
          ": Control the page zoom.")
-    (:li (command-markup 'nyxt/web-mode:jump-to-heading) ": Query a heading (a
-section) of the current page and jump to it.")
     (:li (command-markup 'nyxt/web-mode::autofill) ": See the "
          (:code "autofills") " browser slot.")
     (:li (command-markup 'download-open-file)
