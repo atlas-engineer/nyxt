@@ -177,7 +177,7 @@
                 (minimum-search-length source))))
 
 (define-command search-buffer (&key case-sensitive-p)
-  "Start a search on the current buffer."
+  "Search on the current buffer."
   (prompt
    :prompt "Search text"
    :sources (list
@@ -185,7 +185,7 @@
                             :case-sensitive-p case-sensitive-p))))
 
 (define-command search-buffers (&key case-sensitive-p)
-  "Start a search on the current buffer."
+  "Search multiple buffers."
   (let ((buffers (prompt
                   :prompt "Search buffer(s)"
                   :sources (list (make-instance 'user-buffer-source ; TODO: Define class?
