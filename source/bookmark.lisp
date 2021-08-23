@@ -111,27 +111,38 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 
 (define-command list-bookmarks ()
   "List all bookmarks in a new buffer."
-  (with-current-html-buffer (bookmarks-buffer "*Bookmarks*" 'base-mode)
-    (spinneret:with-html-string
-      (:style (style bookmarks-buffer))
-      (:h1 "Bookmarks")
-      (:body
-       (or (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
-             (loop for bookmark in bookmarks
-                   collect
-                      (let ((url-display (render-url (url bookmark)))
-                            (url-href (render-url (url bookmark))))
-                        (:div
-                         (:p (:b "Title: ") (title bookmark))
-                         (:p (:b "URL: ") (:a :href url-href
-                                              url-display))
-                         (:p (:b "Tags: ")
-                             (when (tags bookmark)
-                               (format nil " (~{~a~^, ~})" (tags bookmark))))
-                         (:p (:a :class "button"
-                                 :href (lisp-url `(nyxt::delete-bookmark ,url-href)) "Delete"))
-                         (:hr "")))))
-           (format nil "No bookmarks in ~s." (expand-path (bookmarks-path (current-buffer)))))))))
+  (flet ((html-bookmark-id (id)
+           (format nil "bookmark-~d" id)))
+    (with-current-html-buffer (bookmarks-buffer "*Bookmarks*" 'base-mode)
+      (spinneret:with-html-string
+        (:style (style bookmarks-buffer))
+        (:h1 "Bookmarks")
+        (:body
+         (or (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
+               (loop for bookmark in bookmarks
+                     for id from 0 by 1
+                     collect
+                     (let ((url-display (render-url (url bookmark)))
+                           (url-href (render-url (url bookmark))))
+                       (:div
+                        :id (html-bookmark-id id)
+                        (:p (:b "Title: ") (title bookmark))
+                        (:p (:b "URL: ") (:a :href url-href
+                                             url-display))
+                        (:p (:b "Tags: ")
+                            (when (tags bookmark)
+                              (format nil " (~{~a~^, ~})" (tags bookmark))))
+                        (:p (:a :class "button"
+                                :onclick
+                                (ps:ps
+                                  (let ((element
+                                          (ps:chain
+                                           document
+                                           (get-element-by-id (ps:lisp (html-bookmark-id id))))))
+                                    (ps:chain element parent-node (remove-child element))))
+                                :href (lisp-url `(nyxt::delete-bookmark ,url-href)) "Delete"))
+                        (:hr "")))))
+             (format nil "No bookmarks in ~s." (expand-path (bookmarks-path (current-buffer))))))))))
 
 (define-command-global show-bookmarks-panel (&key (side :left))
   "Show the bookmarks in a panel."
