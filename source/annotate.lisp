@@ -13,7 +13,9 @@
   ((reference
     nil
     :documentation "The object the annotation is pointing to.")
-   (text "" :export nil)
+   (data
+    ""
+    :documentation "The annotation data.")
    (tags
     '()
     :type list-of-strings)
@@ -43,3 +45,7 @@
 (defun annotation-add (annotation)
   (with-data-access (annotations (annotations-path (current-buffer)))
     (push annotation annotations)))
+
+(defun annotations ()
+  (with-data-access (annotations (annotations-path (current-buffer)))
+    annotations))
