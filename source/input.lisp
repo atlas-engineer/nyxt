@@ -27,6 +27,11 @@
               (error "Undocumented function ~a." ,fn))))
        (error "~a is not a function." ,fn)))
 
+(defmacro command-information (fn)
+  "Print FN binding and first sentence."
+  `(spinneret:with-html
+     (:span (command-markup ,fn) ": "  (command-docstring-first-sentence ,fn))))
+
 (deftype nyxt-keymap-value ()
   '(or keymap:keymap function-symbol command))
 

@@ -105,6 +105,7 @@ active modes, the URL, and the title of the current buffer.")
    (:p "To move within a buffer, several commands are provided:")
    (:ul
     (:li (command-markup 'nyxt/web-mode:scroll-down) ": " (command-docstring-first-sentence 'nyxt/web-mode:scroll-down))
+    (command-information 'nyxt/web-mode:scroll-down)
     (:li (command-markup 'nyxt/web-mode:scroll-up) ": "
          (command-docstring-first-sentence 'nyxt/web-mode:scroll-up))
     (:li (command-markup 'nyxt/web-mode:scroll-page-down) ": "
