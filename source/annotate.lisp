@@ -3,7 +3,7 @@
 
 (in-package :nyxt)
 
-(define-class internet-reference ()
+(define-class url-reference ()
   ((url nil))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -13,7 +13,7 @@
   ((reference
     nil
     :documentation "The object the annotation is pointing to.")
-   (text "")
+   (text "" :export nil)
    (tags
     '()
     :type list-of-strings)
@@ -25,9 +25,21 @@
 (defmethod store ((profile data-profile) (path annotations-data-path) &key &allow-other-keys)
   "Store the annotations to the buffer `annotations-path'."
   (with-data-file (file path :direction :output)
-    (format file "Hello world!"))
+    (%set-data path (get-data path))
+    (s-serialization:serialize-sexp (get-data path) file))
   t)
 
-(defun annotation-add (url &key date title tags)
-  (with-data-access (bookmarks (annotations-path (current-buffer)))
-    (print "noop")))
+(defmethod restore ((profile data-profile) (path annotations-data-path) &key &allow-other-keys)
+  "Restore the bookmarks from the buffer `annotations-path'."
+  (handler-case
+      (let ((data (with-data-file (file path)
+                    (when file
+                      (s-serialization:deserialize-sexp file)))))
+        (when data
+          (%set-data path data)))
+    (error (c)
+      (echo-warning "Failed to load annotations from ~s: ~a" (expand-path path) c))))
+
+(defun annotation-add (annotation)
+  (with-data-access (annotations (annotations-path (current-buffer)))
+    (push annotation annotations)))
