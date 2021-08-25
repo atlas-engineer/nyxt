@@ -111,7 +111,7 @@ remove");
 clear");
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "storage", -1), "local",
-                jsc_value_new_object(context, NULL, NULL));
+                jsc_context_evaluate(context, "local", -1));
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "browser", -1), "storage",
                 jsc_context_evaluate(context, "storage", -1));
