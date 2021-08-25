@@ -7,7 +7,8 @@ void
 storage_set_callback (char *storage_area, JSCValue *object)
 {
         if (!strcmp("local", storage_area)){
-                GVariant *variant = g_variant_new("s", jsc_value_to_json(object, 0));
+                char *json = jsc_value_to_json(object, 0);
+                GVariant *variant = g_variant_new("s", json);
                 WebKitUserMessage *message = webkit_user_message_new("storage.local.set", variant);
                 webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
         }
@@ -17,7 +18,8 @@ void
 storage_remove_callback (char *storage_area, JSCValue *object)
 {
         if (!strcmp("local", storage_area)){
-                GVariant *variant = g_variant_new("s", jsc_value_to_json(object, 0));
+                char *json = jsc_value_to_json(object, 0);
+                GVariant *variant = g_variant_new("s", json);
                 WebKitUserMessage *message = webkit_user_message_new("storage.local.remove", variant);
                 webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
         }
@@ -36,7 +38,8 @@ void
 storage_get_callback (char *storage_area, JSCValue *object)
 {
         if (!strcmp("local", storage_area)){
-                GVariant *variant = g_variant_new("s", jsc_value_to_json(object, 0));
+                char *json = jsc_value_to_json(object, 0);
+                GVariant *variant = g_variant_new("s", json);
                 WebKitUserMessage *message = webkit_user_message_new("storage.local.get", variant);
                 webkit_web_page_send_message_to_view(
                         PAGE, message, NULL,
