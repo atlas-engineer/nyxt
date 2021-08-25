@@ -1409,10 +1409,10 @@ See `gtk-browser's `modifier-translator' slot."
          (wrap-in-channel (storage-local-remove buffer message-params)))
         ("storage.local.clear"
          (wrap-in-channel (storage-local-clear buffer message-params)))
-        ("tabs.queryObject"
+        ("tabs.query"
          (wrap-in-channel
           (tabs-query message-params)))
-        ("tabs.createProperties"
+        ("tabs.create"
          (wrap-in-channel
           (tabs-create message-params)))
         ("tabs.getCurrent"

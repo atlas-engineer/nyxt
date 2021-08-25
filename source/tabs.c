@@ -8,7 +8,7 @@ tabs_query_callback (JSCValue *object)
 {
         char *json = jsc_value_to_json(object, 0);
         GVariant *variant = g_variant_new("s", json);
-        WebKitUserMessage *message = webkit_user_message_new("tabs.queryObject", variant);
+        WebKitUserMessage *message = webkit_user_message_new("tabs.query", variant);
         TABS->tabs = NULL;
         webkit_web_page_send_message_to_view(
                 PAGE, message, NULL, message_reply_and_save_callback, &TABS->tabs);
@@ -19,7 +19,7 @@ tabs_create_callback (JSCValue *object)
 {
         char *json = jsc_value_to_json(object, 0);
         GVariant *variant = g_variant_new("s", json);
-        WebKitUserMessage *message = webkit_user_message_new("tabs.createProperties", variant);
+        WebKitUserMessage *message = webkit_user_message_new("tabs.create", variant);
         TABS->tab = NULL;
         webkit_web_page_send_message_to_view(
                 PAGE, message, NULL, message_reply_and_save_callback, &TABS->tab);
