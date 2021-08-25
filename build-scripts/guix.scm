@@ -209,6 +209,7 @@ WebKit browsing engine.")
     (inputs
      `(("alexandria" ,cl-alexandria)
        ("bordeaux-threads" ,cl-bordeaux-threads)
+       ("cl-lparallel" ,cl-lparallel)
        ("cl-base64" ,cl-base64)
        ("cl-calispel" ,cl-calispel)
        ("cl-containers" ,cl-containers)
