@@ -1505,7 +1505,7 @@ See `gtk-browser's `modifier-translator' slot."
       (reply-user-message buffer message))
     t)
   (connect-signal buffer "resource-load-started" (view resource request)
-    (declare (ignore request))
+    (declare (ignore request resource))
     (let ((extensions (sera:filter #'nyxt/web-extensions::extension-p
                                    (modes buffer))))
       (alex:when-let ((extension (or (and (background-buffer-p buffer)
