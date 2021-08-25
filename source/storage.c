@@ -64,7 +64,7 @@ inject_storage_api (char* extension_name)
         } catch (error) {                                               \
             return failure(error);                                      \
         }                                                               \
-    }                                                                   \
+    });                                                                 \
 };                                                                      \
                                                                         \
 get")
@@ -77,7 +77,7 @@ get")
         } catch (error) {                                               \
             return failure(error);                                      \
         }                                                               \
-    }                                                                   \
+    });                                                                 \
 };                                                                      \
                                                                         \
 set");
@@ -90,7 +90,7 @@ set");
         } catch (error) {                                               \
             return failure(error);                                      \
         }                                                               \
-    }                                                                   \
+    });                                                                 \
 };                                                                      \
                                                                         \
 remove");
@@ -103,7 +103,7 @@ remove");
         } catch (error) {                                               \
             return failure(error);                                      \
         }                                                               \
-    }                                                                   \
+    });                                                                 \
 };                                                                      \
                                                                         \
 clear");
