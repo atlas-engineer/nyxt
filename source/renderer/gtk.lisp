@@ -1400,7 +1400,9 @@ See `gtk-browser's `modifier-translator' slot."
              `(("name" . "Nyxt")
                ("vendor" . "Atlas Engineer LLC")
                ("version" ,(first nyxt-version))
-               ("build" ,(third nyxt-version)))))))
+               ("build" ,(if (rest nyxt-version)
+                             (third nyxt-version)
+                             "")))))))
         ("storage.local.get"
          (wrap-in-channel (storage-local-get buffer message-params)))
         ("storage.local.set"
