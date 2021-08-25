@@ -1258,6 +1258,69 @@ See `gtk-browser's `modifier-translator' slot."
      content-manager script)
     ""))
 
+(defun storage-local-get (buffer message-params)
+  (let* ((json (json:decode-json-from-string message-params))
+         (extension (find (alex:assoc-value json :extension-id)
+                          (sera:filter #'nyxt/web-extensions::extension-p
+                                       (modes buffer))
+                          :key #'id))
+         (keys (alex:assoc-value json :keys)))
+    (with-data-unsafe (data (nyxt/web-extensions:storage-path extension)
+                       :default (make-hash-table))
+      (if (uiop:emptyp keys)
+          "{}"
+          (json:encode-json-to-string
+           (typecase keys
+             (null data)
+             (list (mapcar (lambda (key-value)
+                             (let ((key-value (uiop:ensure-list key-value))
+                                   (value (or (gethash (first key-value) data)
+                                              (rest key-value))))
+                               (when value
+                                 (cons (first key-value) value))))
+                           keys))
+             (string (or (gethash keys data)
+                         (vector)))))))))
+
+(defun storage-local-set (buffer message-params)
+  (let* ((json (json:decode-json-from-string message-params))
+         (extension (find (alex:assoc-value json :extension-id)
+                          (sera:filter #'nyxt/web-extensions::extension-p
+                                       (modes buffer))
+                          :key #'id))
+         (keys (alex:assoc-value json :keys)))
+    (with-data-access (data (nyxt/web-extensions:storage-path extension)
+                       :default (make-hash-table))
+      (unless (uiop:emptyp keys)
+        (dolist (key-value keys)
+          (setf (gethash (first key-value) data)
+                (rest key-value))))
+      "")))
+
+(defun storage-local-remove (buffer message-params)
+  (let* ((json (json:decode-json-from-string message-params))
+         (extension (find (alex:assoc-value json :extension-id)
+                          (sera:filter #'nyxt/web-extensions::extension-p
+                                       (modes buffer))
+                          :key #'id))
+         (keys (uiop:ensure-list (alex:assoc-value json :keys))))
+    (with-data-access (data (nyxt/web-extensions:storage-path extension)
+                       :default (make-hash-table))
+      (unless (uiop:emptyp keys)
+        (dolist (key keys)
+          (remhash key data)))
+      "")))
+
+(defun storage-local-clear (buffer message-params)
+  (let* ((extension (find message-params
+                          (sera:filter #'nyxt/web-extensions::extension-p
+                                       (modes buffer))
+                          :key #'id)))
+    (with-data-access (data (nyxt/web-extensions:storage-path extension)
+                       :default (make-hash-table))
+      (clrhash data)
+      "")))
+
 (defun process-user-message (buffer message)
   (let* ((message-name (webkit:webkit-user-message-get-name message))
          (message-params (glib:g-variant-get-string
@@ -1338,6 +1401,14 @@ See `gtk-browser's `modifier-translator' slot."
                ("vendor" . "Atlas Engineer LLC")
                ("version" ,(first nyxt-version))
                ("build" ,(third nyxt-version)))))))
+        ("storage.local.get"
+         (wrap-in-channel (storage-local-get buffer message-params)))
+        ("storage.local.set"
+         (wrap-in-channel (storage-local-set buffer message-params)))
+        ("storage.local.remove"
+         (wrap-in-channel (storage-local-remove buffer message-params)))
+        ("storage.local.clear"
+         (wrap-in-channel (storage-local-clear buffer message-params)))
         ("tabs.queryObject"
          (wrap-in-channel
           (tabs-query message-params)))
