@@ -217,7 +217,8 @@ Is only set when popup is active.")
 
 (export-always 'merge-extension-path)
 (defmethod merge-extension-path ((extension extension) path)
-  (uiop:merge-pathnames* path (extension-directory extension)))
+  (uiop:merge-pathnames* (string-left-trim "/" (namestring path))
+                         (extension-directory extension)))
 
 (defmethod nyxt::format-mode ((extension extension))
   (name extension))

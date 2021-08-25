@@ -69,12 +69,10 @@ void inject_runtime_api (char* extension_name)
     var no_three = (three === undefined);                               \
     return new Promise(function (success, failure) {                    \
         try {                                                           \
-            management.getSelf().then(function (info) {                 \
-                var message = (no_two && no_three) ? one : two;         \
-                var extensionId = (no_two && no_three) ? info.id : one; \
-                runtimeSendMessage(extensionId, message);               \
-                browser.drain(runtimeSendMessageResult, success, undefined, 5000); \
-            });                                                         \
+            var message = (no_two && no_three) ? one : two;             \
+            var extensionId = (no_two && no_three) ? runtime.id : one;  \
+            runtimeSendMessage(extensionId, message);                   \
+            browser.drain(runtimeSendMessageResult, success, undefined, 5000); \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \

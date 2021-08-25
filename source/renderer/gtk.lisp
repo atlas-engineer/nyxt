@@ -1092,7 +1092,7 @@ See `gtk-browser's `modifier-translator' slot."
                  (or (sera:filter (lambda (bd)
                                     (every (lambda (pair)
                                              (equal (rest pair)
-                                                    (str:s-assoc-value (first pair) bd)))
+                                                    (str:s-assoc-value bd (first pair))))
                                            query-object))
                                   buffer-descriptions)
                      ;; nil translates to null, we need to pass empty vector instead.
@@ -1177,7 +1177,8 @@ See `gtk-browser's `modifier-translator' slot."
          (extension (find (alex:assoc-value json :extension-id)
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
-                          :key #'id))
+                          :key #'id
+                          :test #'string-equal))
          (buffer-to-insert (if (zerop tab-id)
                                (current-buffer)
                                (or (find (format nil "~d" tab-id) (buffer-list) :key #'id)
@@ -1234,15 +1235,15 @@ See `gtk-browser's `modifier-translator' slot."
          (extension (find (alex:assoc-value json :extension-id)
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
-                          :key #'id))
+                          :key #'id
+                          :test #'string-equal))
          (content-manager
            (webkit:webkit-web-view-get-user-content-manager
             (gtk-object buffer-to-insert)))
          (script (webkit:webkit-user-script-new-for-world
                   (if file
-                      (uiop:read-file-string (uiop:merge-pathnames*
-                                              file (nyxt/web-extensions:extension-directory
-                                                    extension)))
+                      (uiop:read-file-string
+                       (nyxt/web-extensions:merge-extension-path extension file))
                       code)
                   (if (alex:assoc-value script-data :all-frames)
                       :webkit-user-content-inject-all-frames
@@ -1263,7 +1264,8 @@ See `gtk-browser's `modifier-translator' slot."
          (extension (find (alex:assoc-value json :extension-id)
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
-                          :key #'id))
+                          :key #'id
+                          :test #'string-equal))
          (keys (alex:assoc-value json :keys)))
     (with-data-unsafe (data (nyxt/web-extensions:storage-path extension)
                        :default (make-hash-table))
@@ -1287,7 +1289,8 @@ See `gtk-browser's `modifier-translator' slot."
          (extension (find (alex:assoc-value json :extension-id)
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
-                          :key #'id))
+                          :key #'id
+                          :test #'string-equal))
          (keys (alex:assoc-value json :keys)))
     (with-data-access (data (nyxt/web-extensions:storage-path extension)
                        :default (make-hash-table))
@@ -1302,7 +1305,8 @@ See `gtk-browser's `modifier-translator' slot."
          (extension (find (alex:assoc-value json :extension-id)
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
-                          :key #'id))
+                          :key #'id
+                          :test #'string-equal))
          (keys (uiop:ensure-list (alex:assoc-value json :keys))))
     (with-data-access (data (nyxt/web-extensions:storage-path extension)
                        :default (make-hash-table))
@@ -1435,7 +1439,8 @@ See `gtk-browser's `modifier-translator' slot."
                 (extension (find (alex:assoc-value json :extension-id)
                                  (sera:filter #'nyxt/web-extensions::extension-p
                                               (modes buffer))
-                                 :key #'id)))
+                                 :key #'id
+                                 :test #'string-equal)))
            (trigger-message (alex:assoc-value json :message) buffer extension message)))
         ("tabs.insertCSS"
          (wrap-in-channel

@@ -19,7 +19,7 @@ inject_management_api (char* extension_name)
         JSCContext *context = get_extension_context(IS_PRIVILEGED ? NULL : extension_name);
         MAKE_CLASS(context, Management, "management");
         MAKE_FN(context, managementGetSelf, management_get_self_callback, G_TYPE_NONE, 1, G_TYPE_STRING);
-        MAKE_RESULT_FN(context, managementGetSelfResult, MANAGEMENT->info);
+        MAKE_RESULT_FN(context, managementGetSelfResult, &MANAGEMENT->info);
         char *management_get_self_js = malloc(sizeof(char) * 800);
         sprintf(management_get_self_js, "management.getSelf = function () {\
     return new Promise(function (success, failure) {                    \
