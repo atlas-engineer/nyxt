@@ -110,6 +110,7 @@ webkit_web_extension_initialize (WebKitWebExtension *extension)
         MANAGEMENT = malloc(sizeof(Management));
         TABS = malloc(sizeof(Tabs));
         RUNTIME = malloc(sizeof(Runtime));
+        STORAGE = malloc(sizeof(Storage));
 
         EXTENSIONS_DATA = g_hash_table_new(g_str_hash, g_str_equal);
         MESSAGES = g_hash_table_new(g_str_hash, g_str_equal);
