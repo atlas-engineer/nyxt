@@ -58,7 +58,7 @@ inject_storage_api (char* extension_name)
 
         jsc_context_set_value(context, "local", jsc_value_new_object(context, NULL, NULL));
 
-        BIND_FN(context, "local", "get", "get = function (keys) {\
+        BIND_FN(context, "local", "get", "function get (keys) {\
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             storageGet(\"local\", keys);                                \
@@ -70,7 +70,7 @@ inject_storage_api (char* extension_name)
 };                                                                      \
                                                                         \
 get")
-        BIND_FN(context, "local", "set", "set = function (keys) {\
+        BIND_FN(context, "local", "set", "function set (keys) {\
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             storageSet(\"local\", keys);                                \
@@ -83,7 +83,7 @@ get")
 };                                                                      \
                                                                         \
 set");
-        BIND_FN(context, "local", "remove", "remove = function (keys) {\
+        BIND_FN(context, "local", "remove", "function remove (keys) {\
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             storageRemove(\"local\", keys);                             \
@@ -96,7 +96,7 @@ set");
 };                                                                      \
                                                                         \
 remove");
-        BIND_FN(context, "local", "clear", "clear = function () {\
+        BIND_FN(context, "local", "clear", "function clear () {\
     return new Promise(function (success, failure) {                    \
         try {                                                           \
             storageClear(\"local\");                                    \
