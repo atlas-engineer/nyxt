@@ -258,7 +258,7 @@ tabs.removeCSS");
             if (script.allFrames && script.frameId)                     \
                 throw new Error(\"frameId and allFrames are mutually exclusive.\"); \
             management.getSelf().then(function (info) {                 \
-                tabsRemoveCSS(info.id, tabId, script);                  \
+                tabsExecuteScript(info.id, tabId, script);              \
                 setTimeout(() => success([]),                           \
                            0);});                                       \
         } catch (error) {                                               \
