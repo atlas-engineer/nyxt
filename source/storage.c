@@ -41,6 +41,7 @@ storage_get_callback (char *storage_area, JSCValue *object)
                 char *json = jsc_value_to_json(object, 0);
                 GVariant *variant = g_variant_new("s", json);
                 WebKitUserMessage *message = webkit_user_message_new("storage.local.get", variant);
+                STORAGE->data = NULL;
                 webkit_web_page_send_message_to_view(
                         PAGE, message, NULL,
                         message_reply_and_save_callback, &STORAGE->data);
