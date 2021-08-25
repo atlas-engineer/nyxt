@@ -38,7 +38,9 @@ storage_get_callback (char *storage_area, JSCValue *object)
         if (!strcmp("local", storage_area)){
                 GVariant *variant = g_variant_new("s", jsc_value_to_json(object, 0));
                 WebKitUserMessage *message = webkit_user_message_new("storage.local.get", variant);
-                webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
+                webkit_web_page_send_message_to_view(
+                        PAGE, message, NULL,
+                        message_reply_and_save_callback, &STORAGE->data);
         }
 }
 
