@@ -4,10 +4,16 @@
 Storage *STORAGE;
 
 void
-storage_set_callback (char *storage_area, JSCValue *object)
+storage_set_callback (char *storage_area, char *extension_id, JSCValue *object)
 {
         if (!strcmp("local", storage_area)){
-                char *json = jsc_value_to_json(object, 0);
+                JSCContext *context = jsc_context_get_current();
+                JSCValue *wrapper = jsc_value_new_object(context, NULL, NULL);
+                jsc_value_object_set_property(
+                        wrapper, "extensionId",
+                        jsc_value_new_string(context, extension_id));
+                jsc_value_object_set_property(wrapper, "keys", object);
+                char *json = jsc_value_to_json(wrapper, 0);
                 GVariant *variant = g_variant_new("s", json);
                 WebKitUserMessage *message = webkit_user_message_new("storage.local.set", variant);
                 webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
@@ -15,10 +21,16 @@ storage_set_callback (char *storage_area, JSCValue *object)
 }
 
 void
-storage_remove_callback (char *storage_area, JSCValue *object)
+storage_remove_callback (char *storage_area, char *extension_id, JSCValue *object)
 {
         if (!strcmp("local", storage_area)){
-                char *json = jsc_value_to_json(object, 0);
+                JSCContext *context = jsc_context_get_current();
+                JSCValue *wrapper = jsc_value_new_object(context, NULL, NULL);
+                jsc_value_object_set_property(
+                        wrapper, "extensionId",
+                        jsc_value_new_string(context, extension_id));
+                jsc_value_object_set_property(wrapper, "keys", object);
+                char *json = jsc_value_to_json(wrapper, 0);
                 GVariant *variant = g_variant_new("s", json);
                 WebKitUserMessage *message = webkit_user_message_new("storage.local.remove", variant);
                 webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
@@ -26,19 +38,26 @@ storage_remove_callback (char *storage_area, JSCValue *object)
 }
 
 void
-storage_clear_callback (char *storage_area)
+storage_clear_callback (char *storage_area, char *extension_id)
 {
         if (!strcmp("local", storage_area)){
-                WebKitUserMessage *message = webkit_user_message_new("storage.local.clear", NULL);
+                GVariant *variant = g_variant_new("s", extension_id);
+                WebKitUserMessage *message = webkit_user_message_new("storage.local.clear", variant);
                 webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
         }
 }
 
 void
-storage_get_callback (char *storage_area, JSCValue *object)
+storage_get_callback (char *storage_area, char *extension_id, JSCValue *object)
 {
         if (!strcmp("local", storage_area)){
-                char *json = jsc_value_to_json(object, 0);
+                JSCContext *context = jsc_context_get_current();
+                JSCValue *wrapper = jsc_value_new_object(context, NULL, NULL);
+                jsc_value_object_set_property(
+                        wrapper, "extensionId",
+                        jsc_value_new_string(context, extension_id));
+                jsc_value_object_set_property(wrapper, "keys", object);
+                char *json = jsc_value_to_json(wrapper, 0);
                 GVariant *variant = g_variant_new("s", json);
                 WebKitUserMessage *message = webkit_user_message_new("storage.local.get", variant);
                 STORAGE->data = NULL;
@@ -54,18 +73,18 @@ inject_storage_api (char* extension_name)
         JSCContext *context = get_extension_context(IS_PRIVILEGED ? NULL : extension_name);
         MAKE_CLASS(context, Storage, "storage");
 
-        MAKE_FN(context, storageGet, storage_get_callback, G_TYPE_NONE, 2, G_TYPE_STRING, JSC_TYPE_VALUE);
+        MAKE_FN(context, storageGet, storage_get_callback, G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, JSC_TYPE_VALUE);
         MAKE_RESULT_FN(context, storageGetResult, &STORAGE->data);
-        MAKE_FN(context, storageSet, storage_set_callback, G_TYPE_NONE, 2, G_TYPE_STRING, JSC_TYPE_VALUE);
-        MAKE_FN(context, storageRemove, storage_remove_callback, G_TYPE_NONE, 2, G_TYPE_STRING, JSC_TYPE_VALUE);
-        MAKE_FN(context, storageClear, storage_clear_callback, G_TYPE_NONE, 1, G_TYPE_STRING);
+        MAKE_FN(context, storageSet, storage_set_callback, G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, JSC_TYPE_VALUE);
+        MAKE_FN(context, storageRemove, storage_remove_callback, G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, JSC_TYPE_VALUE);
+        MAKE_FN(context, storageClear, storage_clear_callback, G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
 
         jsc_context_set_value(context, "local", jsc_value_new_object(context, NULL, NULL));
 
         BIND_FN(context, "local", "get", "function get (keys) {\
     return new Promise(function (success, failure) {                    \
         try {                                                           \
-            storageGet(\"local\", keys);                                \
+            storageGet(\"local\", runtime.id, keys);                    \
             browser.drain(storageGetResult, success, undefined, 5000);  \
         } catch (error) {                                               \
             return failure(error);                                      \
@@ -77,7 +96,7 @@ get")
         BIND_FN(context, "local", "set", "function set (keys) {\
     return new Promise(function (success, failure) {                    \
         try {                                                           \
-            storageSet(\"local\", keys);                                \
+            storageSet(\"local\", runtime.id, keys);                    \
             setTimeout(() => success(),                                 \
                            10);                                         \
         } catch (error) {                                               \
@@ -90,7 +109,7 @@ set");
         BIND_FN(context, "local", "remove", "function remove (keys) {\
     return new Promise(function (success, failure) {                    \
         try {                                                           \
-            storageRemove(\"local\", keys);                             \
+            storageRemove(\"local\", runtime.id, keys);                 \
             setTimeout(() => success(),                                 \
                            10);                                         \
         } catch (error) {                                               \
@@ -103,7 +122,7 @@ remove");
         BIND_FN(context, "local", "clear", "function clear () {\
     return new Promise(function (success, failure) {                    \
         try {                                                           \
-            storageClear(\"local\");                                    \
+            storageClear(\"local\", runtime.id);                        \
             setTimeout(() => success(),                                 \
                            10);                                         \
         } catch (error) {                                               \

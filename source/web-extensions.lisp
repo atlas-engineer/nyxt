@@ -129,6 +129,29 @@ height=~a/>"
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
+(define-class extension-storage-data-path (nyxt:data-path)
+  ((ref "extension-storage"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(defmethod store ((profile data-profile) (path extension-storage-data-path) &key &allow-other-keys)
+  "Store the data to the extension's `extension-storage-data-path'."
+  (with-data-file (file path :direction :output)
+    (format file "~s" (get-data path)))
+  t)
+
+(defmethod restore ((profile data-profile) (path extension-storage-data-path) &key &allow-other-keys)
+  "Restore the bookmarks from the buffer `bookmarks-path'."
+  (handler-case
+      (let ((data (with-data-file (file path)
+                    (when file
+                      (read file)))))
+        (when data
+          (nyxt::%set-data path data)))
+    (error (c)
+      (echo-warning "Failed to load extension data from ~s: ~a"
+                    (expand-path path) c))))
+
 (define-mode extension ()
   "The base mode for any extension to inherit from."
   ((name (error "Extension should have a name")
@@ -167,6 +190,9 @@ Is only set when popup is active.")
                    :documentation "Configuration for popup opening on extension icon click.")
    (handler-names nil
                   :type list)
+   (storage-path nil
+                 :type (or null extension-storage-data-path)
+                 :documentation "The path that the storage API stores data in.")
    (destructor (lambda (mode)
                  (loop for name in (handler-names mode)
                        for hook in (list (buffer-loaded-hook (buffer mode)))
@@ -220,18 +246,24 @@ Is only set when popup is active.")
 DIRECTORY should be the one containing manifest.json file for the extension in question."
   (let* ((directory (uiop:parse-native-namestring directory))
          (manifest-text (uiop:read-file-string (uiop:merge-pathnames* "manifest.json" directory)))
-         (json (json:decode-json-from-string manifest-text)))
+         (json (json:decode-json-from-string manifest-text))
+         (name (alex:assoc-value json :name)))
     `(progn
        (define-mode ,lispy-name (extension)
          ,(alex:assoc-value json :description)
-         ((name ,(alex:assoc-value json :name))
+         ((name ,name)
           (version ,(alex:assoc-value json :version))
           (manifest ,manifest-text)
-          (id (or (symbol-name (gensym ,(alex:assoc-value json :name))))
+          (id (or (symbol-name (gensym ,name)))
               :allocation :class)
           (background-buffer nil
                              :allocation :class)
           (popup-buffer nil
+                        :allocation :class)
+          (storage-path (make-instance
+                         'extension-storage-data-path
+                         :dirname (uiop:xdg-data-home nyxt::+data-root+ "extension-storage")
+                         :basename (format nil "~a.txt" ,name))
                         :allocation :class)
           (description ,(alex:assoc-value json :description))
           (extension-directory ,directory)
