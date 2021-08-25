@@ -27,7 +27,7 @@ void
 storage_clear_callback (char *storage_area)
 {
         if (!strcmp("local", storage_area)){
-                WebKitUserMessage *message = webkit_user_message_new("storage.local.set", NULL);
+                WebKitUserMessage *message = webkit_user_message_new("storage.local.clear", NULL);
                 webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
         }
 }
