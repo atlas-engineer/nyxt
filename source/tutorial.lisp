@@ -121,23 +121,16 @@ full URL including the 'http://' prefix.")
    (:p "Unlike other web browsers, Nyxt provides powerful ways of copying
    and pasting content via different commands. Starting from:")
    (:ul
-    (:li (command-markup 'nyxt/web-mode:copy) ": " (command-docstring-first-sentence 'nyxt/web-mode:copy))
-    (:li (command-markup 'nyxt/web-mode:paste) ": " (command-docstring-first-sentence 'nyxt/web-mode:paste)))
+    (list-command-information '(nyxt/web-mode:copy nyxt/web-mode:paste)))
    (:p "Passing through webpage's data:")
    (:ul
-    (:li (command-markup 'copy-url) ": " (command-docstring-first-sentence 'copy-url))
-    (:li (command-markup 'copy-title) ": " (command-docstring-first-sentence 'copy-title))
-    (:li (command-markup 'nyxt/web-mode:copy-placeholder) ": " (command-docstring-first-sentence 'nyxt/web-mode:copy-placeholder))
-    (:li (command-markup 'nyxt/web-mode:copy-hint-url) ": " (command-docstring-first-sentence 'nyxt/web-mode:copy-hint-url)))
+    (list-command-information '(copy-url copy-title nyxt/web-mode:copy-placeholder nyxt/web-mode:copy-hint-url)))
    (:p "Leveraging password managers: ")
    (:ul 
-    (:li (command-markup 'copy-username) ": " (command-docstring-first-sentence 'copy-username))
-    (:li (command-markup 'copy-password) ": " (command-docstring-first-sentence 'copy-password))
-    (:li (command-markup 'copy-password-prompt-details) ": " (command-docstring-first-sentence 'copy-password-prompt-details)))
+    (list-command-information '(copy-username copy-password copy-password-prompt-details)))
    (:p "And more: ")
    (:ul
-    (:li (command-markup 'nyxt/web-mode:paste-from-clipboard-ring) ": " (command-docstring-first-sentence 'nyxt/web-mode:paste-from-clipboard-ring))
-    (:li (command-markup 'show-system-information) ": " (command-docstring-first-sentence 'show-system-information)))
+    (list-command-information '(nyxt/web-mode:paste-from-clipboard-ring show-system-information)))
    (:h3 "Link navigation")
    (:p "Link-hinting allows you to visit URLs on a page without using the mouse.
 Invoke one of the commands below: several hints will appear on screen and all
