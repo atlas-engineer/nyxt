@@ -197,12 +197,9 @@ buffer.")
    (:h3 "Light navigation")
    (:p "Reduce bandwidth usage via: ")
    (:ul
-    (:li (command-markup 'nyxt/no-image-mode:no-image-mode) ": "
-         (command-docstring-first-sentence 'nyxt/no-image-mode:no-image-mode))
-    (:li (command-markup 'nyxt/no-script-mode:no-script-mode) ": "
-         (command-docstring-first-sentence 'nyxt/no-script-mode:no-script-mode))
-    (:li (command-markup 'nyxt/no-webgl-mode:no-webgl-mode) ": "
-         (command-docstring-first-sentence 'nyxt/no-webgl-mode:no-webgl-mode)))
+    (list-command-information '(nyxt/no-image-mode:no-image-mode
+                                nyxt/no-script-mode:no-script-mode
+                                nyxt/no-webgl-mode:no-webgl-mode)))
    (:p "It is possible to enable these three modes at once
    with: " (:code "reduce-bandwidth-mode") ".")
    (:h3 "Structural navigation")
