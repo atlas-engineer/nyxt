@@ -1146,7 +1146,7 @@ See `gtk-browser's `modifier-translator' slot."
                                   ("id" . "")))
                      ("extensionName" . ,(name extension))))))
                 (lambda (reply)
-                  (calispel:! channel (glib:g-variant-get-string
+                  (calispel:! channel (g-variant-get-maybe-string
                                        (webkit:webkit-user-message-get-parameters reply))))
                 (lambda (condition)
                   (echo-warning "Message error: ~a" condition)
@@ -1330,9 +1330,20 @@ See `gtk-browser's `modifier-translator' slot."
       (clrhash data)
       "")))
 
+(defun g-variant-get-maybe-string (variant)
+  (cond
+    ((null variant) nil)
+    ((cffi:null-pointer-p variant) nil)
+    ((glib:g-variant-type-is-maybe (glib:g-variant-get-type variant))
+     (let ((maybe (cffi:foreign-funcall "g_variant_get_maybe" (:pointer (:struct glib:g-variant))
+                                        variant (:pointer (:struct glib:g-variant)))))
+       (unless (or (null maybe) (cffi:null-pointer-p maybe))
+         (glib:g-variant-get-string maybe))))
+    (t (glib:g-variant-get-string variant))))
+
 (defun process-user-message (buffer message)
   (let* ((message-name (webkit:webkit-user-message-get-name message))
-         (message-params (glib:g-variant-get-string
+         (message-params (g-variant-get-maybe-string
                           (webkit:webkit-user-message-get-parameters message)))
          (extensions (when buffer
                        (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))))
