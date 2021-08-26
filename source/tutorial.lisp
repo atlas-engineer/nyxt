@@ -146,12 +146,12 @@ in history, then follow a new URL, it effectively creates a new branch without
 deleting the old path. The tree makes sure you never lose track of where you've
 been.")
    (:ul
-    (:li (command-markup 'nyxt/web-mode:history-forwards) ": " (command-docstring-first-sentence 'nyxt/web-mode:history-forwards))
-    (:li (command-markup 'nyxt/web-mode:history-backwards) ": " (command-docstring-first-sentence 'nyxt/web-mode:history-backwards))
-    (:li (command-markup 'nyxt/web-mode:history-forwards-query) ": " (command-docstring-first-sentence 'nyxt/web-mode:history-forwards-query))
-    (:li (command-markup 'nyxt/web-mode:history-backwards-query) ": " (command-docstring-first-sentence 'nyxt/web-mode:history-backwards-query))
-    (:li (command-markup 'nyxt/web-mode:history-forwards-all-query) ": " (command-docstring-first-sentence 'nyxt/web-mode:history-forwards-all-query))
-    (:li (command-markup 'nyxt/web-mode:history-all-query) ": " (command-docstring-first-sentence 'nyxt/web-mode:history-all-query)))
+    (list-command-information '(nyxt/web-mode:history-forwards
+                                nyxt/web-mode:history-backwards
+                                nyxt/web-mode:history-forwards-query
+                                nyxt/web-mode:history-backwards-query
+                                nyxt/web-mode:history-forwards-all-query
+                                nyxt/web-mode:history-all-query)))
    (:p "You can also view a full tree of the history for a given buffer by
 invoking the command 'buffer-history-tree'.")
    (:h3 "Searching")
