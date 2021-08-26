@@ -49,16 +49,13 @@ p",
                         webkit_user_message_send_reply(
                                 message, webkit_user_message_new(name, NULL));
                 }
-
-                return TRUE;
         } else if (!strcmp("injectAPIs", name)){
                 inject_apis((void *) contents, NULL, NULL);
-                return TRUE;
         } else {
                 WebKitUserMessage *reply = webkit_user_message_new(name, NULL);
                 webkit_user_message_send_reply(message, reply);
-                return TRUE;
         }
+        return TRUE;
 }
 
 static void
