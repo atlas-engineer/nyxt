@@ -137,9 +137,9 @@ Invoke one of the commands below: several hints will appear on screen and all
 links on the page will be listed in the prompt buffer.  You can select the hints
 by matching against the hint, the URL or the title.")
    (:ul
-    (list-command-information nyxt/web-mode:follow-hint
-                              nyxt/web-mode:follow-hint-new-buffer-focus
-                              nyxt/web-mode:follow-hint-new-buffer))
+    (list-command-information '(nyxt/web-mode:follow-hint
+                                nyxt/web-mode:follow-hint-new-buffer-focus
+                                nyxt/web-mode:follow-hint-new-buffer)))
    (:h3 "Using the buffer history")
    (:p "History is represented as a tree that you can traverse: when you go back
 in history, then follow a new URL, it effectively creates a new branch without
@@ -205,21 +205,14 @@ buffer.")
    (:h3 "Structural navigation")
    (:p "It is possible to navigate using the structure in between the file: ")
    (:ul
-    (:li (command-markup 'nyxt/web-mode:jump-to-heading) ": "
-         (command-docstring-first-sentence 'nyxt/web-mode:jump-to-heading))
-    (:li (command-markup 'nyxt/web-mode:jump-to-heading-buffers) ": "
-         (command-docstring-first-sentence
-          'nyxt/web-mode:jump-to-heading-buffers)))
+    (list-command-information '(nyxt/web-mode:jump-to-heading
+                                nyxt/web-mode:jump-to-heading-buffers)))
    (:p "And navigate to interconnected files: ")
    (:ul
-    (:li (command-markup 'nyxt/web-mode:go-next) ": "
-         (command-docstring-first-sentence 'nyxt/web-mode:go-next))
-    (:li (command-markup 'nyxt/web-mode:go-previous) ": "
-         (command-docstring-first-sentence 'nyxt/web-mode:go-previous))
-    (:li (command-markup 'nyxt/web-mode:go-up) ": "
-         (command-docstring-first-sentence 'nyxt/web-mode:go-up))
-    (:li (command-markup 'nyxt/web-mode:go-to-homepage) ": "
-         (command-docstring-first-sentence 'nyxt/web-mode:go-to-homepage)))
+    (list-command-information '(nyxt/web-mode:go-next
+                                nyxt/web-mode:go-previous
+                                nyxt/web-mode:go-up
+                                nyxt/web-mode:go-to-homepage)))
    (:h3 "Visual mode")
    (:p "Select text without a mouse. Nyxt's "
        (:code "visual-mode") " imitates Vim's visual mode (and comes with the
