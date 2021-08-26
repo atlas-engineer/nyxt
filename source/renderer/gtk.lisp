@@ -653,20 +653,21 @@ See `gtk-browser's `modifier-translator' slot."
       (webkit:webkit-web-context-register-uri-scheme-callback
        context "web-extension"
        (lambda (request)
-         (or
-          (with-protect ("Error while processing the web-extension scheme: ~a" :condition)
-            (sera:and-let* ((path (webkit:webkit-uri-scheme-request-get-path request))
-                            (parts (str:split "/" path :limit 2))
-                            (extension-id (first parts))
-                            (inner-path (second parts))
-                            (extension (find extension-id (sera:filter #'nyxt/web-extensions::extension-p
-                                                                       (modes buffer))
-                                             :key #'id
-                                             :test #'string-equal))
-                            (full-path (nyxt/web-extensions:merge-extension-path extension inner-path)))
-              (values (alex:read-file-into-byte-vector full-path)
-                      (mimes:mime full-path))))
-             "<h1>Resource not found</h1>"))
+         (let ((data "<h1>Resource not found</h1>")
+               (type "text/html"))
+           (with-protect ("Error while processing the web-extension scheme: ~a" :condition)
+             (sera:and-let* ((path (webkit:webkit-uri-scheme-request-get-path request))
+                             (parts (str:split "/" path :limit 2))
+                             (extension-id (first parts))
+                             (inner-path (second parts))
+                             (extension (find extension-id (sera:filter #'nyxt/web-extensions::extension-p
+                                                                        (modes buffer))
+                                              :key #'id
+                                              :test #'string-equal))
+                             (full-path (nyxt/web-extensions:merge-extension-path extension inner-path)))
+               (setf data (alex:read-file-into-byte-vector full-path)
+                     type (mimes:mime full-path))))
+           (values data type)))
        (lambda (condition)
          (echo-warning "Error while re-routing web accessible resource: ~a" condition)))
       (when (and buffer
@@ -1092,7 +1093,8 @@ See `gtk-browser's `modifier-translator' slot."
                  (or (sera:filter (lambda (bd)
                                     (every (lambda (pair)
                                              (equal (rest pair)
-                                                    (str:s-assoc-value bd (first pair))))
+                                                    (str:s-assoc-value
+                                                     bd (cffi:translate-camelcase-name (first pair)))))
                                            query-object))
                                   buffer-descriptions)
                      ;; nil translates to null, we need to pass empty vector instead.
