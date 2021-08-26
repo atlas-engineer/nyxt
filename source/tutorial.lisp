@@ -26,17 +26,14 @@ Multiple key presses can be chained: in 'C-x C-s', you would have to press
 
    (:h3 "Quickstart keys")
    (:ul
-    (:li (:code (binding-keys 'set-url)) ": Load URL")
-    (:li (:code (binding-keys 'reload-current-buffer)) ": Reload buffer")
-    (:li (:code (binding-keys 'set-url-new-buffer)) ": Load URL in new buffer")
-    (:li (:code (binding-keys 'switch-buffer-previous)) ", " (:code (binding-keys 'switch-buffer-next)) ": Switch buffer")
-    (:li (:code (binding-keys 'nyxt/web-mode:history-backwards)) ": Backwards history")
-    (:li (:code (binding-keys 'nyxt/web-mode:history-forwards)) ": Forwards history")
-    (:li (:code (binding-keys 'nyxt/web-mode:follow-hint)) ": Follow link in current buffer")
-    (:li (:code (binding-keys 'nyxt/web-mode:follow-hint-new-buffer)) ": Follow link in new buffer")
-    (:li (:code (binding-keys 'quit)) ": Quit")
-    (:li (:code (binding-keys 'execute-command)) ": Run a command by name")
-    (:li (:code (binding-keys 'describe-bindings)) ": List all bindings for the current buffer"))
+    (list-command-information '(set-url reload-current-buffer
+                                set-url-new-buffer
+                                switch-buffer-previous
+                                nyxt/web-mode:history-backwards
+                                nyxt/web-mode:history-forwards
+                                nyxt/web-mode:follow-hint
+                                nyxt/web-mode:follow-hint-new-buffer
+                                quit execute-command describe-bindings)))
 
    (:h3 "Buffers")
    (:p "Nyxt uses the concept of buffers instead of tabs. Unlike tabs, buffers
