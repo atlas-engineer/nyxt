@@ -322,17 +322,12 @@ extension and a composition of " (:code 'nyxt/repeat-mode:repeat-mode) " and "
 creatively tailor-made by users to automate their own use of Nyxt.")
    (:h3 "Miscellaneous")
    (:ul
-    (:li (command-markup 'nyxt/web-mode:zoom-page)
-         ", " (command-markup 'nyxt/web-mode:unzoom-page)
-         ", " (command-markup 'nyxt/web-mode:reset-page-zoom)
-         ": Control the page zoom.")
-    (:li (command-markup 'nyxt/web-mode::autofill) ": See the "
-         (:code "autofills") " browser slot.")
-    (:li (command-markup 'download-open-file)
-         ": " (command-docstring-first-sentence 'download-open-file)
-" See " (:code "open-file-function") ".")
-    (:li (command-markup 'edit-with-external-editor)
-         ": " (command-docstring-first-sentence 'edit-with-external-editor)))
+    (list-command-information '(nyxt/web-mode:zoom-page
+                                nyxt/web-mode:unzoom-page
+                                nyxt/web-mode:reset-page-zoom
+                                nyxt/web-mode::autofill
+                                download-open-file
+                                edit-with-external-editor)))
 
    (:h2 "The Nyxt help system")
    (:p "Nyxt provides introspective and help capabilities.  All commands,
