@@ -104,12 +104,13 @@ active modes, the URL, and the title of the current buffer.")
    (:h3 "Moving within a buffer")
    (:p "To move within a buffer, several commands are provided:")
    (:ul
-    (:li (command-markup 'nyxt/web-mode:scroll-down) ": " (command-docstring-first-sentence 'nyxt/web-mode:scroll-down))
-    (command-information 'nyxt/web-mode:scroll-down)
-    (:li (command-markup 'nyxt/web-mode:scroll-up) ": "
-         (command-docstring-first-sentence 'nyxt/web-mode:scroll-up))
-    (:li (command-markup 'nyxt/web-mode:scroll-page-down) ": "
-         (command-docstring-first-sentence 'nyxt/web-mode:scroll-page-down))
+    ;(:li (command-markup 'nyxt/web-mode:scroll-down) ": " (command-docstring-first-sentence 'nyxt/web-mode:scroll-down))
+    ;; (command-information-tweak 'nyxt/web-mode:scroll-down)
+    ;; (:li (command-markup 'nyxt/web-mode:scroll-up) ": "
+    ;;      (command-docstring-first-sentence 'nyxt/web-mode:scroll-up))
+    (list-command-information '(nyxt/web-mode:scroll-down nyxt/web-mode:scroll-up))
+    ;; (:li (command-markup 'nyxt/web-mode:scroll-page-down) ": "
+    ;;      (command-docstring-first-sentence 'nyxt/web-mode:scroll-page-down))
     (:li (command-markup 'nyxt/web-mode:scroll-page-up) ": "
          (command-docstring-first-sentence 'nyxt/web-mode:scroll-page-up))
     (:li (command-markup 'nyxt/web-mode:scroll-to-bottom) ": "
