@@ -174,13 +174,10 @@ Bookmarks can have the following settings:")
     (:li (:code ":tags") ": A list of strings.  Useful to categorize and filter bookmarks."))
    (:p "Bookmark-related commands")
    (:ul
-    (:li (command-markup 'bookmark-current-url) ": " (command-docstring-first-sentence 'bookmark-current-url))
-    (:li (command-markup 'bookmark-buffer-url) ": " (command-docstring-first-sentence 'bookmark-buffer-url))
-    (:li (command-markup 'bookmark-url) ": " (command-docstring-first-sentence 'bookmark-url))
-    (:li (command-markup 'nyxt/web-mode:bookmark-hint) ": " (command-docstring-first-sentence 'nyxt/web-mode:bookmark-hint))
-    (:li (command-markup 'set-url-from-bookmark) ": " (command-docstring-first-sentence 'set-url-from-bookmark))
-    (:li (command-markup 'delete-bookmark) ": " (command-docstring-first-sentence 'delete-bookmark))
-    (:li (command-markup 'list-bookmarks) ": " (command-docstring-first-sentence 'list-bookmarks)))
+    (list-command-information '(bookmark-current-url bookmark-buffer-url
+                                bookmark-url nyxt/web-mode:bookmark-hint
+                                set-url-from-bookmark delete-bookmark
+                                list-bookmarks)))
    (:h3 "Application mode")
    (:p "The command " (:code "application-mode") " forwards all keys to the
 renderer. For instance, using the default binding of Nyxt (" (:code "web-cua-map") ") the
