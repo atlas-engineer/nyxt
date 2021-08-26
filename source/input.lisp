@@ -28,9 +28,13 @@
        (error "~a is not a function." ,fn)))
 
 (defmacro command-information (fn)
-  "Print FN binding and first sentence."
-  `(spinneret:with-html
-     (:span (command-markup ,fn) ": "  (command-docstring-first-sentence ,fn))))
+  "Print FN binding and first docstring's sentence in HTML."
+  `(spinneret:with-html (:li (command-markup ,fn) ": " (command-docstring-first-sentence ,fn))))
+
+(defun list-command-information (fns)
+  "Print information over a list of commands in HTML."
+  (dolist (i fns)
+    (command-information i)))
 
 (deftype nyxt-keymap-value ()
   '(or keymap:keymap function-symbol command))
