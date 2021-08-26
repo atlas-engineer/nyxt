@@ -116,9 +116,7 @@ full URL including the 'http://' prefix.")
     (list-command-information '(set-url set-url-new-buffer make-buffer-focus)))
    (:h3 "Switching buffers")
    (:ul
-    (:li (command-markup 'switch-buffer) ": " (command-docstring-first-sentence 'switch-buffer))
-    (:li (command-markup 'switch-buffer-next) ": " (command-docstring-first-sentence 'switch-buffer-next))
-    (:li (command-markup 'switch-buffer-previous) ": " (command-docstring-first-sentence 'switch-buffer-previous)))
+    (list-command-information '(switch-buffer switch-buffer-next switch-buffer-previous)))
    (:h3 "Copy and paste")
    (:p "Unlike other web browsers, Nyxt provides powerful ways of copying
    and pasting content via different commands. Starting from:")
