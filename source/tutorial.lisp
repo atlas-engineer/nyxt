@@ -159,9 +159,9 @@ invoking the command 'buffer-history-tree'.")
    (:p "You can view suggestions for search results in the prompt buffer in one
 place rather than having to jump around in a buffer (or multiple buffers).")
    (:ul
-    (:li (command-markup 'nyxt/web-mode:search-buffer) ": " (command-docstring-first-sentence 'nyxt/web-mode:search-buffer))
-    (:li (command-markup 'nyxt/web-mode:search-buffers) ": " (command-docstring-first-sentence 'nyxt/web-mode:search-buffers))
-    (:li (command-markup 'nyxt/web-mode:remove-search-hints) ": " (command-docstring-first-sentence 'nyxt/web-mode:remove-search-hints)))
+    (list-command-information '(nyxt/web-mode:search-buffer
+                                nyxt/web-mode:search-buffers
+                                nyxt/web-mode:remove-search-hints)))
    (:h3 "Bookmarks")
    (:p "The bookmark file "
        (:code (let ((buffer (make-instance 'buffer)))
