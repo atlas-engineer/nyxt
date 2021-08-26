@@ -104,19 +104,12 @@ active modes, the URL, and the title of the current buffer.")
    (:h3 "Moving within a buffer")
    (:p "To move within a buffer, several commands are provided:")
    (:ul
-    ;(:li (command-markup 'nyxt/web-mode:scroll-down) ": " (command-docstring-first-sentence 'nyxt/web-mode:scroll-down))
-    ;; (command-information-tweak 'nyxt/web-mode:scroll-down)
-    ;; (:li (command-markup 'nyxt/web-mode:scroll-up) ": "
-    ;;      (command-docstring-first-sentence 'nyxt/web-mode:scroll-up))
-    (list-command-information '(nyxt/web-mode:scroll-down nyxt/web-mode:scroll-up))
-    ;; (:li (command-markup 'nyxt/web-mode:scroll-page-down) ": "
-    ;;      (command-docstring-first-sentence 'nyxt/web-mode:scroll-page-down))
-    (:li (command-markup 'nyxt/web-mode:scroll-page-up) ": "
-         (command-docstring-first-sentence 'nyxt/web-mode:scroll-page-up))
-    (:li (command-markup 'nyxt/web-mode:scroll-to-bottom) ": "
-         (command-docstring-first-sentence 'nyxt/web-mode:scroll-to-bottom))
-    (:li (command-markup 'nyxt/web-mode:scroll-to-top) ": "
-         (command-docstring-first-sentence 'nyxt/web-mode:scroll-to-top)))
+    (list-command-information '(nyxt/web-mode:scroll-down
+                                nyxt/web-mode:scroll-up
+                                nyxt/web-mode:scroll-page-down
+                                nyxt/web-mode:scroll-page-up
+                                nyxt/web-mode:scroll-to-bottom
+                                nyxt/web-mode:scroll-to-top)))
    (:h3 "Setting the URL")
    (:p "When ambiguous URLs are inputted, Nyxt will attempt the best guess it
 can. If you do not supply a protocol in a URL, HTTPS will be assumed. To
