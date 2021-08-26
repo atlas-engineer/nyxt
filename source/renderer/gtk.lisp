@@ -1259,6 +1259,9 @@ See `gtk-browser's `modifier-translator' slot."
                   (cffi:null-pointer))))
     (webkit:webkit-user-content-manager-add-script
      content-manager script)
+    (when (member (slot-value buffer-to-insert 'load-status)
+                  '(:finished :failed))
+      (reload-buffers (list buffer-to-insert)))
     ""))
 
 (defun storage-local-get (buffer message-params)
