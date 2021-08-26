@@ -7,7 +7,7 @@ static void
 tabs_query_callback (JSCValue *object)
 {
         char *json = jsc_value_to_json(object, 0);
-        GVariant *variant = g_variant_new("s", json);
+        GVariant *variant = g_variant_new("ms", json);
         WebKitUserMessage *message = webkit_user_message_new("tabs.query", variant);
         TABS->tabs = NULL;
         webkit_web_page_send_message_to_view(
@@ -18,7 +18,7 @@ static void
 tabs_create_callback (JSCValue *object)
 {
         char *json = jsc_value_to_json(object, 0);
-        GVariant *variant = g_variant_new("s", json);
+        GVariant *variant = g_variant_new("ms", json);
         WebKitUserMessage *message = webkit_user_message_new("tabs.create", variant);
         TABS->tab = NULL;
         webkit_web_page_send_message_to_view(
@@ -39,7 +39,7 @@ tabs_get_callback (int id)
 {
         char *num = malloc(sizeof(char) * 1000);
         sprintf(num, "%d", id);
-        GVariant *variant = g_variant_new("s", num);
+        GVariant *variant = g_variant_new("ms", num);
         WebKitUserMessage *message = webkit_user_message_new("tabs.get", variant);
         TABS->tab = NULL;
         webkit_web_page_send_message_to_view(
@@ -73,7 +73,7 @@ tabs_send_message_callback (char *extension_id, double tab_id, JSCValue *object)
                 jsc_value_new_number(context, tab_id));
         jsc_value_object_set_property(wrapper, "message", object);
         char *json = jsc_value_to_json(wrapper, 0);
-        GVariant *variant = g_variant_new("s", json);
+        GVariant *variant = g_variant_new("ms", json);
         WebKitUserMessage *message = webkit_user_message_new("tabs.sendMessage", variant);
         TABS->reply = NULL;
         webkit_web_page_send_message_to_view(
@@ -93,7 +93,7 @@ tabs_insert_css_callback (char *extension_id, int tab_id, JSCValue *object)
                 jsc_value_new_number(context, tab_id));
         jsc_value_object_set_property(wrapper, "css", object);
         char *json = jsc_value_to_json(wrapper, 0);
-        GVariant *variant = g_variant_new("s", json);
+        GVariant *variant = g_variant_new("ms", json);
         WebKitUserMessage *message = webkit_user_message_new("tabs.insertCSS", variant);
         webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
 }
@@ -111,7 +111,7 @@ tabs_remove_css_callback (char *extension_id, int tab_id, JSCValue *object)
                 jsc_value_new_number(context, tab_id));
         jsc_value_object_set_property(wrapper, "css", object);
         char *json = jsc_value_to_json(wrapper, 0);
-        GVariant *variant = g_variant_new("s", json);
+        GVariant *variant = g_variant_new("ms", json);
         WebKitUserMessage *message = webkit_user_message_new("tabs.removeCSS", variant);
         webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
 }
@@ -129,7 +129,7 @@ tabs_execute_script_callback (char *extension_id, int tab_id, JSCValue *object)
                 jsc_value_new_number(context, tab_id));
         jsc_value_object_set_property(wrapper, "script", object);
                 char *json = jsc_value_to_json(wrapper, 0);
-        GVariant *variant = g_variant_new("s", json);
+        GVariant *variant = g_variant_new("ms", json);
         WebKitUserMessage *message = webkit_user_message_new("tabs.executeScript", variant);
         webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
 }
