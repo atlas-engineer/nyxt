@@ -14,7 +14,7 @@ storage_set_callback (char *storage_area, char *extension_id, JSCValue *object)
                         jsc_value_new_string(context, extension_id));
                 jsc_value_object_set_property(wrapper, "keys", object);
                 char *json = jsc_value_to_json(wrapper, 0);
-                GVariant *variant = g_variant_new("s", json);
+                GVariant *variant = g_variant_new("ms", json);
                 WebKitUserMessage *message = webkit_user_message_new("storage.local.set", variant);
                 webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
         }
@@ -31,7 +31,7 @@ storage_remove_callback (char *storage_area, char *extension_id, JSCValue *objec
                         jsc_value_new_string(context, extension_id));
                 jsc_value_object_set_property(wrapper, "keys", object);
                 char *json = jsc_value_to_json(wrapper, 0);
-                GVariant *variant = g_variant_new("s", json);
+                GVariant *variant = g_variant_new("ms", json);
                 WebKitUserMessage *message = webkit_user_message_new("storage.local.remove", variant);
                 webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
         }
@@ -41,7 +41,7 @@ void
 storage_clear_callback (char *storage_area, char *extension_id)
 {
         if (!strcmp("local", storage_area)){
-                GVariant *variant = g_variant_new("s", extension_id);
+                GVariant *variant = g_variant_new("ms", extension_id);
                 WebKitUserMessage *message = webkit_user_message_new("storage.local.clear", variant);
                 webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
         }
@@ -58,7 +58,7 @@ storage_get_callback (char *storage_area, char *extension_id, JSCValue *object)
                         jsc_value_new_string(context, extension_id));
                 jsc_value_object_set_property(wrapper, "keys", object);
                 char *json = jsc_value_to_json(wrapper, 0);
-                GVariant *variant = g_variant_new("s", json);
+                GVariant *variant = g_variant_new("ms", json);
                 WebKitUserMessage *message = webkit_user_message_new("storage.local.get", variant);
                 STORAGE->data = NULL;
                 webkit_web_page_send_message_to_view(

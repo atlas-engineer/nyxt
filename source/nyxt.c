@@ -24,8 +24,11 @@ user_message_received (WebKitWebPage     *web_page,
                        gpointer           user_data)
 {
         const char *name = webkit_user_message_get_name(message);
-        const char *contents = g_variant_get_string(webkit_user_message_get_parameters(message), NULL);
-        if (!strcmp("message", name)){
+        GVariant *params = webkit_user_message_get_parameters(message);
+        char *contents = params ?
+                (char *) g_variant_get_string(params, NULL) :
+                NULL;
+        if (!strcmp("message", name) && contents){
                 JSCValue *meta = jsc_value_new_from_json(jsc_context_new(), contents);
                 char *extension_name = jsc_value_to_string(jsc_value_object_get_property(meta, "extensionName"));
                 JSCContext *context = get_extension_context(extension_name);
@@ -40,8 +43,10 @@ p",
                         jsc_value_to_json(sender, 0),
                         name);
                 JSCValue *tmp = jsc_context_evaluate(context, code, -1);
-                if (!(jsc_value_is_boolean(tmp) && !jsc_value_to_boolean(tmp))
-                    && !(jsc_value_is_undefined(tmp))) {
+                if (tmp &&
+                    JSC_IS_VALUE(tmp) &&
+                    !(jsc_value_is_boolean(tmp) && !jsc_value_to_boolean(tmp)) &&
+                    !(jsc_value_is_undefined(tmp))) {
                         g_object_ref(message);
                         g_hash_table_insert(MESSAGES, (void*) name, message);
                 }
@@ -49,7 +54,7 @@ p",
                         webkit_user_message_send_reply(
                                 message, webkit_user_message_new(name, NULL));
                 }
-        } else if (!strcmp("injectAPIs", name)){
+        } else if (!strcmp("injectAPIs", name) && contents){
                 inject_apis((void *) contents, NULL, NULL);
         } else {
                 WebKitUserMessage *reply = webkit_user_message_new(name, NULL);

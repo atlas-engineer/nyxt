@@ -14,7 +14,7 @@ runtime_send_message_callback (char *extension_id, JSCValue *object)
                 jsc_value_new_string(context, extension_id));
         jsc_value_object_set_property(wrapper, "message", object);
         char *json = jsc_value_to_json(wrapper, 0);
-        GVariant *variant = g_variant_new("s", json);
+        GVariant *variant = g_variant_new("ms", json);
         WebKitUserMessage *message = webkit_user_message_new("runtime.sendMessage", variant);
         RUNTIME->reply = NULL;
         webkit_web_page_send_message_to_view(

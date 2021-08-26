@@ -6,7 +6,7 @@ Management *MANAGEMENT;
 static void
 management_get_self_callback (char *extension_name)
 {
-        GVariant *variant = g_variant_new("s", extension_name);
+        GVariant *variant = g_variant_new("ms", extension_name);
         WebKitUserMessage *message = webkit_user_message_new("management.getSelf", variant);
         MANAGEMENT->info = NULL;
         webkit_web_page_send_message_to_view(
