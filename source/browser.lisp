@@ -713,6 +713,9 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-buffer-load (buffer url))
 (define-ffi-generic ffi-buffer-evaluate-javascript (buffer javascript &optional world-name))
 (define-ffi-generic ffi-buffer-evaluate-javascript-async (buffer javascript &optional world-name))
+(define-ffi-generic ffi-buffer-add-user-script (buffer javascript &key
+                                                       world-name all-frames-p at-document-start-p
+                                                       run-now-p allow-list block-list))
 (define-ffi-generic ffi-buffer-enable-javascript (buffer value))
 (define-ffi-generic ffi-buffer-enable-javascript-markup (buffer value))
 (define-ffi-generic ffi-buffer-enable-smooth-scrolling (buffer value))
