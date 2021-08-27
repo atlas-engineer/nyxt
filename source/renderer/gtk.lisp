@@ -649,7 +649,25 @@ See `gtk-browser's `modifier-translator' slot."
          (lambda (context)
            (with-protect ("Error in signal thread: ~a" :condition)
              (webkit:webkit-web-context-set-web-extensions-directory
-              context extensions-path)))))
+              context extensions-path)
+             (webkit:webkit-web-context-set-web-extensions-initialization-user-data
+              context (glib:g-variant-new-string
+                       (flet ((describe-extension (extension &key privileged-p)
+                                (cons (nyxt/web-extensions::name extension)
+                                      (vector (id extension)
+                                              (nyxt/web-extensions::manifest extension)
+                                              (if privileged-p 1 0)))))
+                         (let ((extensions
+                                 (when buffer
+                                   (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))))
+                           (json:encode-json-to-string
+                            (if (or (background-buffer-p buffer)
+                                    (panel-buffer-p buffer))
+                                (alex:when-let* ((extension
+                                                  (or (find buffer extensions :key #'background-buffer)
+                                                      (find buffer extensions :key #'nyxt/web-extensions:popup-buffer))))
+                                  (list (describe-extension extension :privileged-p t)))
+                                (mapcar #'describe-extension extensions)))))))))))
       (webkit:webkit-web-context-register-uri-scheme-callback
        context "web-extension"
        (lambda (request)
