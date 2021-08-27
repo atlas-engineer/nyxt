@@ -546,6 +546,8 @@ The version number is stored in the clipboard."
   "Show the manual."
   (with-current-html-buffer (buffer "*Manual*" 'nyxt/help-mode:help-mode)
     (spinneret:with-html-string (:style (style buffer))
+                                (:style (cl-css:css '(("body"
+                                                       :max-width "80ch"))))
                                 (:raw (manual-content)))))
 
 (define-command tutorial ()
@@ -553,6 +555,8 @@ The version number is stored in the clipboard."
   (with-current-html-buffer (buffer "*Tutorial*" 'nyxt/help-mode:help-mode)
     (spinneret:with-html-string
       (:style (style buffer))
+      (:style (cl-css:css '(("body"
+                             :max-width "80ch"))))
       (:h1 "Nyxt tutorial")
       (:p "The following tutorial introduces core concepts and
 basic usage.  For more details, especially regarding configuration, see
