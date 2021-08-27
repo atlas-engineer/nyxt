@@ -1,5 +1,44 @@
 #include <webkit2/webkit-web-extension.h>
 #include "globals.h"
+#include "extevent.h"
+#include "browser.h"
+#include "management.h"
+#include "tabs.h"
+#include "runtime.h"
+#include "storage.h"
+
+static void
+inject_apis (void* extension_name, void *data, void *user_data)
+{
+        inject_browser((char*) extension_name);
+        inject_extevent_api((char*) extension_name);
+        inject_management_api((char*) extension_name);
+        inject_tabs_api((char*) extension_name);
+        inject_runtime_api((char*) extension_name);
+        inject_storage_api((char *) extension_name);
+}
+
+static void
+window_object_cleared_callback (WebKitScriptWorld *world,
+                                WebKitWebPage     *web_page,
+                                WebKitFrame       *frame,
+                                gpointer           user_data)
+{
+        inject_apis(user_data, NULL, NULL);
+}
+
+static void
+set_window_object_cleared (void *key, void *value, void *user_data)
+{
+        ExtensionData *data = (ExtensionData *) value;
+        /* We only inject APIs for the privileged extension
+         * (owning a default world), if there's one. */
+        if (IS_PRIVILEGED && webkit_script_world_get_default() == data->world ||
+            !IS_PRIVILEGED)
+                g_signal_connect (data->world, "window-object-cleared",
+                                  G_CALLBACK(window_object_cleared_callback),
+                                  key);
+}
 
 static gboolean
 user_message_received (WebKitWebPage     *web_page,
@@ -55,16 +94,25 @@ web_page_created_callback (WebKitWebExtension *extension,
                           G_CALLBACK (user_message_received),
                           NULL);
         PAGE = web_page;
+        extensions_data_add_from_json(user_data);
+        g_hash_table_foreach(EXTENSIONS_DATA, set_window_object_cleared, NULL);
 }
 
 G_MODULE_EXPORT void
 webkit_web_extension_initialize_with_user_data
 (WebKitWebExtension *extension, GVariant *user_data)
 {
-        init_global_objects();
+        MANAGEMENT = malloc(sizeof(Management));
+        TABS = malloc(sizeof(Tabs));
+        RUNTIME = malloc(sizeof(Runtime));
+        STORAGE = malloc(sizeof(Storage));
+
+        EXTENSIONS_DATA = g_hash_table_new(g_str_hash, g_str_equal);
+        MESSAGES = g_hash_table_new(g_str_hash, g_str_equal);
+        IS_PRIVILEGED = 0;
+
         const char *json = g_variant_get_string(user_data, NULL);
-        extensions_data_add_from_json(json);
         g_signal_connect (extension, "page-created",
                           G_CALLBACK (web_page_created_callback),
-                          NULL);
+                          (void *) json);
 }
