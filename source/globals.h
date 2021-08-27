@@ -59,11 +59,7 @@ extern WebKitWebExtension *EXTENSION;
 
 extern int IS_PRIVILEGED;
 
-void inject_apis (void* extension_name, void *data, void *user_data);
-
 void extensions_data_add_from_json (const char *json);
-
-void init_global_objects ();
 
 WebKitScriptWorld *get_extension_world (char* extension_name);
 
