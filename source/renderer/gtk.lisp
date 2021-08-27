@@ -1256,30 +1256,17 @@ See `gtk-browser's `modifier-translator' slot."
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
                           :key #'id
-                          :test #'string-equal))
-         (content-manager
-           (webkit:webkit-web-view-get-user-content-manager
-            (gtk-object buffer-to-insert)))
-         (script (webkit:webkit-user-script-new-for-world
-                  (if file
-                      (uiop:read-file-string
-                       (nyxt/web-extensions:merge-extension-path extension file))
-                      code)
-                  (if (alex:assoc-value script-data :all-frames)
-                      :webkit-user-content-inject-all-frames
-                      :webkit-user-content-inject-top-frame)
-                  (if (and (alex:assoc-value script-data :run-at)
-                           (string= (alex:assoc-value script-data :run-at) "document_start"))
-                      :webkit-user-script-inject-at-document-start
-                      :webkit-user-script-inject-at-document-end)
-                  (name extension)
-                  (cffi:null-pointer)
-                  (cffi:null-pointer))))
-    (webkit:webkit-user-content-manager-add-script
-     content-manager script)
-    (when (member (slot-value buffer-to-insert 'load-status)
-                  '(:finished :failed))
-      (reload-buffers (list buffer-to-insert)))
+                          :test #'string-equal)))
+    (ffi-buffer-add-user-script
+     buffer-to-insert (if file
+                          (uiop:read-file-string
+                           (nyxt/web-extensions:merge-extension-path extension file))
+                          code)
+     :run-now-p t
+     :at-document-start-p (and (alex:assoc-value script-data :run-at)
+                               (string= (alex:assoc-value script-data :run-at) "document_start"))
+     :all-frames-p (alex:assoc-value script-data :all-frames)
+     :world-name (name extension))
     ""))
 
 (defun storage-local-get (buffer message-params)
@@ -1687,6 +1674,35 @@ requested a reload."
         nil
         #'javascript-error-handler
         world-name)))))
+
+(define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) javascript &key
+                                               world-name all-frames-p
+                                               at-document-start-p run-now-p
+                                               allow-list block-list)
+  (declare (ignorable allow-list block-list))
+  (let* ((content-manager
+           (webkit:webkit-web-view-get-user-content-manager
+            (gtk-object buffer)))
+         (frames (if all-frames-p
+                     :webkit-user-content-inject-all-frames
+                     :webkit-user-content-inject-top-frame))
+         (inject-time (if at-document-start-p
+                          :webkit-user-script-inject-at-document-start
+                          :webkit-user-script-inject-at-document-end))
+         (script (if world-name
+                     (webkit:webkit-user-script-new-for-world
+                      javascript frames inject-time world-name
+                      (cffi:null-pointer) (cffi:null-pointer))
+                     (webkit:webkit-user-script-new
+                      javascript frames inject-time
+                      (cffi:null-pointer) (cffi:null-pointer)))))
+    (webkit:webkit-user-content-manager-add-script
+     content-manager script)
+    (when (and run-now-p
+               (member (slot-value buffer 'load-status)
+                       '(:finished :failed)))
+      (reload-buffers (list buffer)))
+    script))
 
 (define-ffi-method ffi-buffer-enable-javascript ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-enable-javascript

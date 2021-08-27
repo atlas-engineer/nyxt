@@ -15,8 +15,11 @@
 
 (defun load-js-file (file buffer mode)
   "Load JavaScript code from a file into the BUFFER."
-  (ffi-buffer-evaluate-javascript
-   buffer (uiop:read-file-string (merge-extension-path mode file)) (name mode)))
+  (ffi-buffer-add-user-script buffer (uiop:read-file-string (merge-extension-path mode file))
+                              :world-name (name mode)
+                              :all-frames-p t
+                              :run-now-p t
+                              :at-document-start-p t))
 
 (defun load-css-file (file buffer mode)
   "Load CSS from the FILE and inject it into the BUFFER document."
