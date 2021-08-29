@@ -29,11 +29,25 @@ want to change the behaviour of modifiers, for instance swap 'control' and
     (delete nil (mapcar (lambda (mod) (getf plist mod)) modifier-state))))
 
 \(define-configuration browser
-  ((modifier-translator #'my-translate-modifiers)))"))
+  ((modifier-translator #'my-translate-modifiers)))")
+   (web-contexts (make-hash-table :test 'equal)
+                 :documentation "Persistent `nyxt:webkit-web-contexts'
+Keyed by strings as they must be backed to unique folders")
+   (ephemeral-web-contexts (make-hash-table :test 'equal)
+                           :documentation "Ephemeral `nyxt:webkit-web-contexts'"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-user-class browser (gtk-browser))
+
+(defmethod get-context ((browser gtk-browser) name &key ephemeral-p)
+  (if ephemeral-p
+      (or (gethash name (ephemeral-web-contexts browser))
+          (setf (gethash name (ephemeral-web-contexts browser))
+                (make-context name :ephemeral-p t)))
+      (or (gethash name (web-contexts browser))
+          (setf (gethash name (web-contexts browser))
+                (make-context name)))))
 
 (define-class gtk-window ()
   ((gtk-object)
@@ -64,12 +78,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
     :documentation "Store all GObject signal handler IDs so that we can disconnect the signal handler when the object is finalised.
 See https://developer.gnome.org/gobject/stable/gobject-Signals.html#signal-memory-management.")
    (gtk-proxy-url (quri:uri ""))
-   (proxy-ignored-hosts '())
-   (data-manager-path (make-instance 'data-manager-data-path)
-                      :documentation "Directory in which the WebKitGTK
-data-manager will store the data separately for each buffer.")
-   (gtk-extensions-path (make-instance 'gtk-extensions-data-path)
-                        :documentation "Directory to store the WebKit-specific extensions in."))
+   (proxy-ignored-hosts '()))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
@@ -82,6 +91,24 @@ data-manager will store the data separately for each buffer.")
   #+webkit2-sandboxing
   (webkit:webkit-web-context-set-sandbox-enabled web-context t)
   web-context)
+
+(defmethod data-directory ((web-context webkit-web-context))
+  "Directly returns the CFFI object's `base-data-directory'"
+  (slot-value (slot-value web-context 'webkit::website-data-manager) 'webkit::base-data-directory))
+
+(defmethod cache-directory ((web-context webkit-web-context))
+  "Directly returns the CFFI object's `base-cache-directory'"
+  (slot-value (slot-value web-context 'webkit::website-data-manager) 'webkit::base-cache-directory))
+
+(defclass webkit-website-data-manager (webkit:webkit-website-data-manager) ()
+  (:metaclass gobject:gobject-class))
+
+;; create-gobject-from-class in gobject.base.lisp directly reads the initargs to make-instance, so this cannot
+;; be used to enforce ephermerality (or anything else that needs to happen in the cffi constructor)
+(defmethod initialize-instance :after ((data-manager webkit-website-data-manager) &key)
+  #+webkit2-tracking
+  (webkit:webkit-website-data-manager-set-itp-enabled data-manager t)
+  data-manager)
 
 (defvar gtk-running-p nil
   "Non-nil if the GTK main loop is running.
@@ -182,14 +209,36 @@ not return."
     (gtk:leave-gtk-main)))
 
 (define-class data-manager-data-path (data-path)
-  ((dirname (uiop:xdg-cache-home +data-root+ "data-manager"))
-   (ref :initform "data-manager"))
+  ((dirname (uiop:xdg-data-home +data-root+ "web-context"))
+   (ref :initform "web-context"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod expand-data-path ((profile nosave-data-profile) (path data-manager-data-path))
   "We shouldn't store any `data-manager' data for `nosave-data-profile'."
   nil)
+
+(defun data-manager-data-path-for-context (name)
+  (let ((ref (format nil "~a-web-context" name)))
+    (make-instance 'data-manager-data-path
+                   :ref ref
+                   :dirname (uiop:xdg-data-home +data-root+ ref))))
+
+(define-class data-manager-cache-path (data-path)
+  ((dirname (uiop:xdg-cache-home +data-root+ "web-context"))
+   (ref :initform "web-context"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(defmethod expand-data-path ((profile nosave-data-profile) (path data-manager-cache-path))
+  "We shouldn't store any `data-manager-cache' data for `nosave-data-profile'."
+  nil)
+
+(defun data-manager-cache-path-for-context (name)
+  (let ((ref (format nil "~a-web-context" name)))
+    (make-instance 'data-manager-cache-path
+                   :ref ref
+                   :dirname (uiop:xdg-cache-home +data-root+ ref))))
 
 (define-class gtk-extensions-data-path (data-path)
   ((dirname (uiop:xdg-config-home +data-root+ "extensions"))
@@ -200,6 +249,12 @@ not return."
 (defmethod expand-data-path ((profile nosave-data-profile) (path gtk-extensions-data-path))
   "We shouldn't enable (possibly) user-identifying extensions for `nosave-data-profile'."
   nil)
+
+(defun gtk-extensions-data-path-for-context (name)
+  (let ((ref (format nil "~a-gtk-extensions" name)))
+    (make-instance 'data-manager-cache-path
+                   :ref ref
+                   :dirname (uiop:xdg-config-home +data-root+ ref))))
 
 (define-class gtk-download (download)
   ((gtk-object)
@@ -214,15 +269,33 @@ not return."
                                                   (uiop:xdg-data-home +data-root+ "gtk-extensions")
                                                   (dirname path)))))
 
+(defun cookies-data-path-for-context (name)
+  (make-instance 'cookies-data-path
+                   :ref (format nil "~a-web-context-cookies" name)
+                   :dirname (uiop:xdg-data-home +data-root+
+                                                 (format nil "~a-web-context" name))))
 
-(defun make-web-view (&key context-buffer)
+(defun make-web-view (&key buffer context-name ephemeral-p)
   "Return a web view instance.
-When passed a web buffer, create a buffer-local web context.
-Such contexts are not needed for internal buffers."
-  (if context-buffer
-      (make-instance 'webkit:webkit-web-view
-                     :web-context (make-context context-buffer))
-      (make-instance 'webkit:webkit-web-view)))
+
+If passed a context-name, a `nyxt:webkit-web-context' with that name is used for
+the `webkit:webkit-web-view'.  Otherwise, if :buffer is an internal-buffer or is
+not set, the browser's \"internal\" `nyxt:webkit-web-context' is
+used. Otherwise (such as an external web buffer), the \"default\"
+webkit-web-context is used,
+
+If ephemeral-p is set, the buffer is a nosave-buffer, or the current
+data-protife is a nosave-data-profile, then an ephemeral context is used, with
+the same naming rules as above."
+  (let ((internal-p (or (not buffer)
+                        (internal-buffer-p buffer)))
+        (ephemeral-p (or ephemeral-p
+                         (typep (current-data-profile) 'nosave-data-profile)
+                         (typep buffer 'nosave-buffer))))
+    (make-instance 'webkit:webkit-web-view
+                   :web-context (get-context *browser* (or context-name
+                                                           (if internal-p "internal" "default"))
+                                             :ephemeral-p ephemeral-p))))
 
 (defun make-decide-policy-handler (buffer)
   (lambda (web-view response-policy-decision policy-decision-type-response)
@@ -263,7 +336,7 @@ The BODY is wrapped with `with-protect'."
   (%within-renderer-thread-async
    (lambda ()
      (with-slots (gtk-object) buffer
-       (setf gtk-object (make-web-view))
+       (setf gtk-object (make-web-view :buffer buffer))
        (connect-signal-function
         buffer "decide-policy"
         (make-decide-policy-handler buffer))))))
@@ -601,40 +674,43 @@ See `gtk-browser's `modifier-translator' slot."
                            :status :pressed)))
       (funcall (input-dispatcher window) event sender window nil))))
 
-(defun make-data-manager (buffer)
-  (let* ((path (expand-path (data-manager-path buffer)))
-         (manager (apply #'make-instance `(webkit:webkit-website-data-manager
-                                           ,@(when path `(:base-data-directory ,path))
-                                           :is-ephemeral ,(not path)))))
-    #+webkit2-tracking
-    (webkit:webkit-website-data-manager-set-itp-enabled manager t)
-    manager))
+(defun construct-web-context (name &key ephemeral-p)
+  "Initializes the CFFI object `nyxt:webkit-website-web-context' and its
+`nyxt:webkit-website-data-manager'"
+  (let ((data-manager-data-path (expand-path (data-manager-data-path-for-context name)))
+        (data-manager-cache-path (expand-path (data-manager-cache-path-for-context name))))
+    ;; An ephemeral data-manager cannot be given any directories, even if they are set to nil
+    (let ((data-manager (if ephemeral-p
+                            (make-instance 'webkit-website-data-manager :is-ephemeral t)
+                            (make-instance 'webkit-website-data-manager
+                                           :base-data-directory data-manager-data-path
+                                           :base-cache-directory data-manager-cache-path))))
+      (make-instance 'webkit-web-context :website-data-manager data-manager))))
 
-(defun make-context (&optional buffer)
-  ;; This is to ensure that paths are not expanded when we make
-  ;; contexts for `nosave-buffer's.
-  (with-current-buffer buffer
-    (let* ((manager (make-data-manager buffer))
-           (context (make-instance 'webkit-web-context :website-data-manager manager))
-           (cookie-manager (webkit:webkit-web-context-get-cookie-manager context))
-           (extensions-path (expand-path (gtk-extensions-path buffer))))
-      (when extensions-path
+(defun make-context (name &key ephemeral-p)
+  (let* ((context (construct-web-context name :ephemeral-p ephemeral-p))
+         (gtk-extensions-path (expand-path (gtk-extensions-data-path-for-context name)))
+         (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
+    (unless (or ephemeral-p
+                (internal-context-p name))
+      (when gtk-extensions-path
         ;; TODO: Should we also use `connect-signal' here?  Does this yield a memory leak?
         (gobject:g-signal-connect
          context "initialize-web-extensions"
          (lambda (context)
            (with-protect ("Error in signal thread: ~a" :condition)
              (webkit:webkit-web-context-set-web-extensions-directory
-              context extensions-path)))))
-      (when (and buffer
-                 (web-buffer-p buffer)
-                 (expand-path (cookies-path buffer)))
+              context gtk-extensions-path)))))
+      (let ((cookies-data-path (expand-path (cookies-data-path-for-context name))))
         (webkit:webkit-cookie-manager-set-persistent-storage
          cookie-manager
-         (expand-path (cookies-path buffer))
-         :webkit-cookie-persistent-storage-text)
-        (set-cookie-policy cookie-manager (default-cookie-policy buffer)))
-      context)))
+         cookies-data-path
+         :webkit-cookie-persistent-storage-text))
+      (set-cookie-policy cookie-manager (default-cookie-policy *browser*)))
+    context))
+
+(defun internal-context-p (name)
+  (equal name "internal"))
 
 (defmethod initialize-instance :after ((buffer gtk-buffer) &key)
   (ffi-buffer-make buffer))
@@ -937,9 +1013,7 @@ See `gtk-browser's `modifier-translator' slot."
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
   (unless (gtk-object buffer) ; Buffer may already have a view, e.g. the prompt-buffer.
-    (setf (gtk-object buffer) (make-web-view
-                               :context-buffer (unless (internal-buffer-p buffer)
-                                                 buffer))))
+    (setf (gtk-object buffer) (make-web-view :buffer buffer)))
   (if (smooth-scrolling buffer)
       (ffi-buffer-enable-smooth-scrolling buffer t)
       (ffi-buffer-enable-smooth-scrolling buffer nil))
