@@ -128,6 +128,11 @@ If nil, renderer-provided dialogs are used.")
    (session-restore-prompt :always-ask
                            :documentation "Ask whether to restore the session.
 The possible values are `:always-ask', `:always-restore' and `:never-restore'.")
+   (default-cookie-policy :no-third-party
+                          :type cookie-policy
+                          :documentation "Cookie policy of new buffers.
+Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
+`:no-third-party' (accept cookies for current website only).")
    ;; Hooks follow:
    (before-exit-hook (hooks:make-hook-void)
                      :type hooks:hook-void
@@ -143,10 +148,10 @@ The handlers take the window as argument.")
 It is run before `initialize-modes' so that the default mode list can still be
 altered from the hooks.
 The handlers take the buffer as argument.")
-   (buffer-before-make-hook (make-hook-buffer)
-                            :type hook-buffer
-                            :documentation "Hook run before `buffer-make'.
-This hook is mostly useful to set the `cookies-path'.
+   (buffer-before-make-hook
+    (make-hook-buffer)
+    :type hook-buffer
+    :documentation "Hook run before `buffer-make'.
 The buffer web view is not allocated, so it's not possible to run any
 parenscript from this hook.  See `buffer-make-hook' for a hook.
 The handlers take the buffer as argument.")
