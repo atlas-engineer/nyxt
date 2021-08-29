@@ -425,18 +425,7 @@ inherited from the superclasses."))
    (certificate-exceptions
     '()
     :type list-of-strings
-    :documentation "A list of hostnames for which certificate errors shall be ignored.")
-   (cookies-path
-    (make-instance 'cookies-data-path)
-    :type data-path
-    :documentation "The path where cookies are stored.  Not all
-renderers might support this.")
-   (default-cookie-policy
-    :no-third-party
-    :type cookie-policy
-    :documentation "Cookie policy of new buffers.
-Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
-`:no-third-party' (accept cookies for current website only)."))
+    :documentation "A list of hostnames for which certificate errors shall be ignored."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -446,10 +435,6 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 
 (defmethod default-modes append ((buffer web-buffer))
   '(certificate-exception-mode))
-
-(defmethod initialize-instance :after ((buffer web-buffer) &key)
-  (when (expand-path (cookies-path buffer))
-    (ensure-parent-exists (expand-path (cookies-path buffer)))))
 
 (define-class nosave-buffer (user-web-buffer)
   ((data-profile (make-instance 'nosave-data-profile)))
