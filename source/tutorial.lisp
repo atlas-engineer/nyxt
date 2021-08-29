@@ -213,6 +213,14 @@ buffer.")
                                 nyxt/web-mode:go-previous
                                 nyxt/web-mode:go-up
                                 nyxt/web-mode:go-to-homepage)))
+   (:h3 "Spelling check")
+   (:p "Several commands are provided to spell check words. The default is
+English but it is possible to change the slot for other languages:")
+   (:ul
+    (list-command-information '(nyxt/web-mode:spell-check-word
+                                nyxt/web-mode:spell-check-word-at-cursor
+                                nyxt/web-mode:spell-check-suggest-word
+                                nyxt/web-mode:spell-check-highlighted-word)))
    (:h3 "Visual mode")
    (:p "Select text without a mouse. Nyxt's "
        (:code "visual-mode") " imitates Vim's visual mode (and comes with the
