@@ -32,11 +32,25 @@ want to change the behaviour of modifiers, for instance swap 'control' and
     (delete nil (mapcar (lambda (mod) (getf plist mod)) modifier-state))))
 
 \(define-configuration browser
-  ((modifier-translator #'my-translate-modifiers)))"))
+  ((modifier-translator #'my-translate-modifiers)))")
+   (web-contexts (make-hash-table :test 'equal)
+                 :documentation "Persistent `nyxt:webkit-web-contexts'
+Keyed by strings as they must be backed to unique folders")
+   (ephemeral-web-contexts (make-hash-table :test 'equal)
+                           :documentation "Ephemeral `nyxt:webkit-web-contexts'"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-user-class browser (gtk-browser))
+
+(defmethod get-context ((browser gtk-browser) name &key ephemeral-p)
+  (if ephemeral-p
+      (or (gethash name (ephemeral-web-contexts browser))
+          (setf (gethash name (ephemeral-web-contexts browser))
+                (make-context name :ephemeral-p t)))
+      (or (gethash name (web-contexts browser))
+          (setf (gethash name (web-contexts browser))
+                (make-context name)))))
 
 (define-class gtk-window ()
   ((gtk-object)
@@ -68,11 +82,6 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 See https://developer.gnome.org/gobject/stable/gobject-Signals.html#signal-memory-management.")
    (gtk-proxy-url (quri:uri ""))
    (proxy-ignored-hosts '())
-   (data-manager-path (make-instance 'data-manager-data-path)
-                      :documentation "Directory in which the WebKitGTK
-data-manager will store the data separately for each buffer.")
-   (gtk-extensions-path (make-instance 'gtk-extensions-data-path)
-                        :documentation "Directory to store the WebKit-specific extensions in.")
    (loading-webkit-history-p nil
                              :type boolean
                              :export nil
@@ -92,6 +101,24 @@ failures."))
   #+webkit2-sandboxing
   (webkit:webkit-web-context-set-sandbox-enabled web-context t)
   web-context)
+
+(defmethod data-directory ((web-context webkit-web-context))
+  "Directly returns the CFFI object's `base-data-directory'"
+  (slot-value (slot-value web-context 'webkit::website-data-manager) 'webkit::base-data-directory))
+
+(defmethod cache-directory ((web-context webkit-web-context))
+  "Directly returns the CFFI object's `base-cache-directory'"
+  (slot-value (slot-value web-context 'webkit::website-data-manager) 'webkit::base-cache-directory))
+
+(defclass webkit-website-data-manager (webkit:webkit-website-data-manager) ()
+  (:metaclass gobject:gobject-class))
+
+;; create-gobject-from-class in gobject.base.lisp directly reads the initargs to make-instance, so this cannot
+;; be used to enforce ephermerality (or anything else that needs to happen in the cffi constructor)
+(defmethod initialize-instance :after ((data-manager webkit-website-data-manager) &key)
+  #+webkit2-tracking
+  (webkit:webkit-website-data-manager-set-itp-enabled data-manager t)
+  data-manager)
 
 (defvar gtk-running-p nil
   "Non-nil if the GTK main loop is running.
@@ -198,14 +225,36 @@ the renderer thread, use `defmethod' instead."
     (gtk:leave-gtk-main)))
 
 (define-class data-manager-data-path (data-path)
-  ((dirname (uiop:xdg-cache-home +data-root+ "data-manager"))
-   (ref :initform "data-manager"))
+  ((dirname (uiop:xdg-data-home +data-root+ "web-context"))
+   (ref :initform "web-context"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod expand-data-path ((profile nosave-data-profile) (path data-manager-data-path))
   "We shouldn't store any `data-manager' data for `nosave-data-profile'."
   nil)
+
+(defun data-manager-data-path-for-context (name)
+  (let ((ref (format nil "~a-web-context" name)))
+    (make-instance 'data-manager-data-path
+                   :ref ref
+                   :dirname (uiop:xdg-data-home +data-root+ ref))))
+
+(define-class data-manager-cache-path (data-path)
+  ((dirname (uiop:xdg-cache-home +data-root+ "web-context"))
+   (ref :initform "web-context"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(defmethod expand-data-path ((profile nosave-data-profile) (path data-manager-cache-path))
+  "We shouldn't store any `data-manager-cache' data for `nosave-data-profile'."
+  nil)
+
+(defun data-manager-cache-path-for-context (name)
+  (let ((ref (format nil "~a-web-context" name)))
+    (make-instance 'data-manager-cache-path
+                   :ref ref
+                   :dirname (uiop:xdg-cache-home +data-root+ ref))))
 
 (define-class gtk-extensions-data-path (data-path)
   ((dirname (uiop:xdg-config-home +data-root+ "extensions"))
@@ -217,6 +266,12 @@ the renderer thread, use `defmethod' instead."
   "We shouldn't enable (possibly) user-identifying extensions for `nosave-data-profile'."
   nil)
 
+(defun gtk-extensions-data-path-for-context (name)
+  (let ((ref (format nil "~a-gtk-extensions" name)))
+    (make-instance 'data-manager-cache-path
+                   :ref ref
+                   :dirname (uiop:xdg-config-home +data-root+ ref))))
+
 (define-class gtk-download (download)
   ((gtk-object)
    (handler-ids
@@ -226,20 +281,37 @@ the renderer thread, use `defmethod' instead."
 
 (defmethod expand-data-path ((profile data-profile) (path gtk-extensions-data-path))
   "Return finalized path for gtk-extension directory."
-  (expand-default-path path :root (uiop:native-namestring
-                                   (if (str:emptyp (namestring (dirname path)))
-                                       (uiop:xdg-data-home +data-root+ "gtk-extensions")
-                                       (dirname path)))))
+  (expand-default-path path :root (uiop:native-namestring (if (str:emptyp (namestring (dirname path)))
+                                                              (uiop:xdg-data-home +data-root+ "gtk-extensions")
+                                                              (dirname path)))))
 
+(defun cookies-data-path-for-context (name)
+  (make-instance 'cookies-data-path
+                   :ref (format nil "~a-web-context-cookies" name)
+                   :dirname (uiop:xdg-data-home +data-root+
+                                                 (format nil "~a-web-context" name))))
 
-(defun make-web-view (&key context-buffer)
+(defun make-web-view (&key buffer context-name ephemeral-p)
   "Return a web view instance.
-When passed a web buffer, create a buffer-local web context.
-Such contexts are not needed for internal buffers."
-  (if context-buffer
-      (make-instance 'webkit:webkit-web-view
-                     :web-context (make-context context-buffer))
-      (make-instance 'webkit:webkit-web-view)))
+
+If passed a context-name, a `nyxt:webkit-web-context' with that name is used for
+the `webkit:webkit-web-view'.  Otherwise, if :buffer is an internal-buffer or is
+not set, the browser's \"internal\" `nyxt:webkit-web-context' is
+used. Otherwise (such as an external web buffer), the \"default\"
+webkit-web-context is used,
+
+If ephemeral-p is set, the buffer is a nosave-buffer, or the current
+data-protife is a nosave-data-profile, then an ephemeral context is used, with
+the same naming rules as above."
+  (let ((internal-p (or (not buffer)
+                        (internal-buffer-p buffer)))
+        (ephemeral-p (or ephemeral-p
+                         (typep (current-data-profile) 'nosave-data-profile)
+                         (typep buffer 'nosave-buffer))))
+    (make-instance 'webkit:webkit-web-view
+                   :web-context (get-context *browser* (or context-name
+                                                           (if internal-p "internal" "default"))
+                                             :ephemeral-p ephemeral-p))))
 
 (defun make-decide-policy-handler (buffer)
   (lambda (web-view response-policy-decision policy-decision-type-response)
@@ -292,7 +364,7 @@ response.  The BODY is wrapped with `with-protect'."
   (%within-renderer-thread-async
    (lambda ()
      (with-slots (gtk-object) buffer
-       (setf gtk-object (make-web-view :context-buffer buffer))
+       (setf gtk-object (make-web-view :buffer buffer))
        (connect-signal-function
         buffer "decide-policy"
         (make-decide-policy-handler buffer))))))
@@ -640,13 +712,6 @@ See `gtk-browser's `modifier-translator' slot."
                            :status :pressed)))
       (funcall (input-dispatcher window) event sender window nil))))
 
-(defun make-data-manager (buffer)
-  (let* ((path (expand-path (data-manager-path buffer)))
-         (manager (apply #'make-instance `(webkit:webkit-website-data-manager
-                                           ,@(when path `(:base-data-directory ,path))
-                                           :is-ephemeral ,(not path)))))
-    manager))
-
 (defun process-gopher-scheme (request)
   (let* ((url (webkit:webkit-uri-scheme-request-get-uri request))
          (line (cl-gopher:parse-gopher-uri url))
@@ -744,133 +809,155 @@ See `gtk-browser's `modifier-translator' slot."
             (alex:rcurry 'typep '(and number (not complex))))
            object))
 
-(defun make-context (&optional buffer)
+(defun construct-web-context (name &key ephemeral-p) ; TODO: Rename to a less ambiguous name.
+  "Initializes the CFFI object `nyxt:webkit-website-web-context' and its
+`nyxt:webkit-website-data-manager'"
+  (let ((data-manager-data-path (expand-path (data-manager-data-path-for-context name)))
+        (data-manager-cache-path (expand-path (data-manager-cache-path-for-context name))))
+    ;; An ephemeral data-manager cannot be given any directories, even if they are set to nil
+    (let ((data-manager (if ephemeral-p
+                            (make-instance 'webkit-website-data-manager :is-ephemeral t)
+                            (make-instance 'webkit-website-data-manager
+                                           :base-data-directory data-manager-data-path
+                                           :base-cache-directory data-manager-cache-path))))
+      (make-instance 'webkit-web-context :website-data-manager data-manager))))
+
+(defun make-context (name &key ephemeral-p buffer)
   ;; This is to ensure that paths are not expanded when we make
   ;; contexts for `nosave-buffer's.
   (with-current-buffer buffer
-    (let* ((manager (make-data-manager buffer))
-           (context (make-instance 'webkit-web-context :website-data-manager manager))
-           (cookie-manager (webkit:webkit-web-context-get-cookie-manager context))
-           (extensions-path (expand-path (gtk-extensions-path buffer))))
+    (let* ((context (construct-web-context name :ephemeral-p ephemeral-p))
+           (gtk-extensions-path (expand-path (gtk-extensions-data-path-for-context name)))
+           (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
       (webkit:webkit-web-context-add-path-to-sandbox
        context (namestring (asdf:system-relative-pathname :nyxt "libraries/web-extensions/")) t)
-      (when extensions-path
-        ;; TODO: Should we also use `connect-signal' here?  Does this yield a memory leak?
-        (gobject:g-signal-connect
-         context "initialize-web-extensions"
-         (lambda (context)
-           (with-protect ("Error in signal thread: ~a" :condition)
-             (webkit:webkit-web-context-set-web-extensions-directory
-              context extensions-path)
-             (webkit:webkit-web-context-set-web-extensions-initialization-user-data
-              context (glib:g-variant-new-string
-                       (flet ((describe-extension (extension &key privileged-p)
-                                (cons (nyxt/web-extensions::name extension)
-                                      (vector (id extension)
-                                              (nyxt/web-extensions::manifest extension)
-                                              (if privileged-p 1 0)
-                                              (nyxt/web-extensions::extension-files extension)
-                                              (id buffer)))))
-                         (let ((extensions
-                                 (when buffer
-                                   (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))))
-                           (encode-json
-                            (if (or (background-buffer-p buffer)
-                                    (panel-buffer-p buffer))
-                                (alex:when-let* ((extension
-                                                  (or (find buffer extensions :key #'background-buffer)
-                                                      (find buffer extensions :key #'nyxt/web-extensions:popup-buffer))))
-                                  (list (describe-extension extension :privileged-p t)))
-                                (mapcar #'describe-extension extensions)))))))))))
-      ;; Is not used anywhere at the moment.
-      (webkit:webkit-web-context-register-uri-scheme-callback
-       context "web-extension"
-       (lambda (request)
-         (let ((data "<h1>Resource not found</h1>")
-               (type "text/html"))
-           (with-protect ("Error while processing the web-extension scheme: ~a" :condition)
-             (sera:and-let* ((path (webkit:webkit-uri-scheme-request-get-path request))
-                             (parts (str:split "/" path :limit 2))
-                             (extension-id (first parts))
-                             (inner-path (second parts))
-                             (extension (find extension-id (sera:filter #'nyxt/web-extensions::extension-p
-                                                                        (modes buffer))
-                                              :key #'id
-                                              :test #'string-equal))
-                             (full-path (nyxt/web-extensions:merge-extension-path extension inner-path)))
-               (setf data (alex:read-file-into-byte-vector full-path)
-                     type (mimes:mime full-path))))
-           (values data type)))
-       (lambda (condition)
-         (echo-warning "Error while re-routing web accessible resource: ~a" condition)))
-      (webkit:webkit-web-context-register-uri-scheme-callback
-       context "nyxt"
-       (lambda (request)
-         (with-protect ("Error while processing the \"nyxt:\" URL: ~a" :condition)
-           (sera:and-let* ((url (quri:uri (webkit:webkit-uri-scheme-request-get-uri request)))
-                           (function-name (parse-nyxt-url url))
-                           (page-generating-function (gethash function-name *nyxt-url-commands*)))
-                          (let ((result (multiple-value-list (apply page-generating-function
-                                                                    (nth-value 1 (parse-nyxt-url url))))))
-               (cond
-                 ((and (alex:length= result 2)
-                       (arrayp (first result))
-                       (stringp (second result)))
-                  (values (first result) (second result)))
-                 ((arrayp (first result))
-                  (first result))
-                 (t (error "Cannot display evaluation result")))))))
-       (lambda (condition)
-         (echo-warning "Error while routing \"nyxt:\" URL: ~a" condition)))
-      (webkit:webkit-web-context-register-uri-scheme-callback
-       context "lisp"
-       (lambda (request)
-         (let ((url (quri:uri (webkit:webkit-uri-scheme-request-get-uri request))))
-           (if (or (status-buffer-p buffer)
-                   (panel-buffer-p buffer)
-                   (internal-url-p (url buffer)))
-               (let* ((schemeless-url (schemeless-url url))
-                      (code-raw (quri:url-decode schemeless-url :lenient t))
-                      ;; All URLs WebKitGTK gives us end with an unnecessary forward slash.
-                      (code (sera:slice code-raw 0 -1)))
-                 (log:debug "Evaluate Lisp code from internal page: ~a" code)
-                 (values (let ((result (first (evaluate code))))
-                           ;; Objects and other complex structures make cl-json choke.
-                           ;; TODO: Maybe encode it to the format that `cl-json'
-                           ;; supports, then we can override the encoding and
-                           ;; decoding methods and allow arbitrary objects (like
-                           ;; buffers) in the nyxt:// URL arguments..
-                           (when (or (scalar-p result)
-                                     (and (sequence-p result)
-                                          (every #'scalar-p result)))
-                             (cl-json:encode-json-to-string result)))
-                         "application/json"))
-               (values "undefined" "application/json"))))
-       (lambda (condition)
-         (echo-warning "Error while routing \"lisp:\" URL: ~a" condition)))
-      (webkit:webkit-web-context-register-uri-scheme-callback
-       context "gopher"
-       #'process-gopher-scheme
-       (lambda (condition)
-         (echo-warning "Error while routing \"gopher:\" URL: ~a" condition)))
-      (webkit:webkit-web-context-register-uri-scheme-callback
-       context "gemini"
-       #'process-gemini-scheme
-       (lambda (condition)
-         (echo-warning "Error while routing \"gemini:\" URL: ~a" condition)))
-      (webkit:webkit-security-manager-register-uri-scheme-as-local
-       (webkit:webkit-web-context-get-security-manager context) "nyxt")
-      (webkit:webkit-security-manager-register-uri-scheme-as-cors-enabled
-       (webkit:webkit-web-context-get-security-manager context) "lisp")
-      (when (and buffer
-                 (web-buffer-p buffer)
-                 (expand-path (cookies-path buffer)))
+      (unless (or ephemeral-p
+                  (internal-context-p name))
+        (when gtk-extensions-path
+          ;; TODO: Should we also use `connect-signal' here?  Does this yield a memory leak?
+          (gobject:g-signal-connect
+           context "initialize-web-extensions"
+           (lambda (context)
+             (with-protect ("Error in signal thread: ~a" :condition)
+               (webkit:webkit-web-context-set-web-extensions-directory
+                context gtk-extensions-path)
+               (webkit:webkit-web-context-set-web-extensions-initialization-user-data
+                context (glib:g-variant-new-string
+                         (flet ((describe-extension (extension &key privileged-p)
+                                  (cons (nyxt/web-extensions::name extension)
+                                        (vector (id extension)
+                                                (nyxt/web-extensions::manifest extension)
+                                                (if privileged-p 1 0)
+                                                (nyxt/web-extensions::extension-files extension)
+                                                (id buffer)))))
+                           (let ((extensions
+                                   (when buffer
+                                     (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))))
+                             (encode-json
+                              (if (or (background-buffer-p buffer)
+                                      (panel-buffer-p buffer))
+                                  (alex:when-let* ((extension
+                                                    (or (find buffer extensions :key #'background-buffer)
+                                                        (find buffer extensions :key #'nyxt/web-extensions:popup-buffer))))
+                                    (list (describe-extension extension :privileged-p t)))
+                                  (mapcar #'describe-extension extensions)))))))))))
+        ;; Is not used anywhere at the moment.
+        (webkit:webkit-web-context-register-uri-scheme-callback
+         context "web-extension"
+         (lambda (request)
+           (let ((data "<h1>Resource not found</h1>")
+                 (type "text/html"))
+             (with-protect ("Error while processing the web-extension scheme: ~a" :condition)
+               (sera:and-let* ((path (webkit:webkit-uri-scheme-request-get-path request))
+                               (parts (str:split "/" path :limit 2))
+                               (extension-id (first parts))
+                               (inner-path (second parts))
+                               (extension (find extension-id (sera:filter #'nyxt/web-extensions::extension-p
+                                                                          (modes buffer))
+                                                :key #'id
+                                                :test #'string-equal))
+                               (full-path (nyxt/web-extensions:merge-extension-path extension inner-path)))
+                 (setf data (alex:read-file-into-byte-vector full-path)
+                       type (mimes:mime full-path))))
+             (values data type)))
+         (lambda (condition)
+           (echo-warning "Error while re-routing web accessible resource: ~a" condition)))
+        (webkit:webkit-web-context-register-uri-scheme-callback
+         context "nyxt"
+         (lambda (request)
+           (with-protect ("Error while processing the \"nyxt:\" URL: ~a" :condition)
+             (sera:and-let* ((url (quri:uri (webkit:webkit-uri-scheme-request-get-uri request)))
+                             (function-name (parse-nyxt-url url))
+                             (page-generating-function (gethash function-name *nyxt-url-commands*)))
+               (let ((result (multiple-value-list (apply page-generating-function
+                                                         (nth-value 1 (parse-nyxt-url url))))))
+                 (cond
+                   ((and (alex:length= result 2)
+                         (arrayp (first result))
+                         (stringp (second result)))
+                    (values (first result) (second result)))
+                   ((arrayp (first result))
+                    (first result))
+                   (t (error "Cannot display evaluation result")))))))
+         (lambda (condition)
+           (echo-warning "Error while routing \"nyxt:\" URL: ~a" condition)))
+        (webkit:webkit-web-context-register-uri-scheme-callback
+         context "lisp"
+         (lambda (request)
+           (let ((url (quri:uri (webkit:webkit-uri-scheme-request-get-uri request))))
+             (if (or (status-buffer-p buffer)
+                     (panel-buffer-p buffer)
+                     (internal-url-p (url buffer)))
+                 (let* ((schemeless-url (schemeless-url url))
+                        (code-raw (quri:url-decode schemeless-url :lenient t))
+                        ;; All URLs WebKitGTK gives us end with an unnecessary forward slash.
+                        (code (sera:slice code-raw 0 -1)))
+                   (log:debug "Evaluate Lisp code from internal page: ~a" code)
+                   (values (let ((result (first (evaluate code))))
+                             ;; Objects and other complex structures make cl-json choke.
+                             ;; TODO: Maybe encode it to the format that `cl-json'
+                             ;; supports, then we can override the encoding and
+                             ;; decoding methods and allow arbitrary objects (like
+                             ;; buffers) in the nyxt:// URL arguments..
+                             (when (or (scalar-p result)
+                                       (and (sequence-p result)
+                                            (every #'scalar-p result)))
+                               (cl-json:encode-json-to-string result)))
+                           "application/json"))
+                 (values "undefined" "application/json"))))
+         (lambda (condition)
+           (echo-warning "Error while routing \"lisp:\" URL: ~a" condition)))
+        (webkit:webkit-web-context-register-uri-scheme-callback
+         context "gopher"
+         #'process-gopher-scheme
+         (lambda (condition)
+           (echo-warning "Error while routing \"gopher:\" URL: ~a" condition)))
+        (webkit:webkit-web-context-register-uri-scheme-callback
+         context "gemini"
+         #'process-gemini-scheme
+         (lambda (condition)
+           (echo-warning "Error while routing \"gemini:\" URL: ~a" condition)))
+        (webkit:webkit-security-manager-register-uri-scheme-as-local
+         (webkit:webkit-web-context-get-security-manager context) "nyxt")
+        (webkit:webkit-security-manager-register-uri-scheme-as-cors-enabled
+         (webkit:webkit-web-context-get-security-manager context) "lisp")
+        (when (and buffer
+                   (web-buffer-p buffer)
+                   (expand-path (cookies-path buffer)))
+          (webkit:webkit-cookie-manager-set-persistent-storage
+           cookie-manager
+           cookies-data-path
+           :webkit-cookie-persistent-storage-text)))
+      (let ((cookies-data-path (expand-path (cookies-data-path-for-context name))))
         (webkit:webkit-cookie-manager-set-persistent-storage
          cookie-manager
-         (expand-path (cookies-path buffer))
-         :webkit-cookie-persistent-storage-text)
-        (set-cookie-policy cookie-manager (default-cookie-policy buffer)))
-      context)))
+         cookies-data-path
+         :webkit-cookie-persistent-storage-text))
+      (set-cookie-policy cookie-manager (default-cookie-policy *browser*)))
+    context))
+
+(defun internal-context-p (name)
+  (equal name "internal"))
 
 (defmethod initialize-instance :after ((buffer gtk-buffer) &key)
   (ffi-buffer-make buffer))
@@ -1239,7 +1326,7 @@ See `gtk-browser's `modifier-translator' slot."
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
   (unless (gtk-object buffer) ; Buffer may already have a view, e.g. the prompt-buffer.
-    (setf (gtk-object buffer) (make-web-view :context-buffer buffer)))
+    (setf (gtk-object buffer) (make-web-view :buffer buffer)))
   (if (smooth-scrolling buffer)
       (ffi-buffer-enable-smooth-scrolling buffer t)
       (ffi-buffer-enable-smooth-scrolling buffer nil))
