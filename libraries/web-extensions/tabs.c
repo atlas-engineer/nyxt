@@ -53,13 +53,6 @@ tabs_print_callback ()
         webkit_web_page_send_message_to_view(PAGE, message, NULL, NULL, NULL);
 }
 
-static JSCValue *
-tabs_send_message_result_callback ()
-{
-        JSCContext *context = jsc_context_get_current();
-        return jsc_value_new_from_json(context, TABS->reply);
-}
-
 static void
 tabs_send_message_callback (char *extension_id, double tab_id, JSCValue *object)
 {
