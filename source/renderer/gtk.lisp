@@ -1589,17 +1589,6 @@ See `gtk-browser's `modifier-translator' slot."
       "Reply user message"
       (reply-user-message buffer message))
     t)
-  (connect-signal buffer "resource-load-started" (view resource request)
-    (declare (ignore request resource))
-    (let ((extensions (sera:filter #'nyxt/web-extensions::extension-p
-                                   (modes buffer))))
-      (alex:when-let ((extension (or (and (background-buffer-p buffer)
-                                          (find buffer extensions :key #'background-buffer))
-                                     (and (panel-buffer-p buffer)
-                                          (find buffer extensions :key #'nyxt/web-extensions:popup-buffer)))))
-        (webkit:webkit-web-view-send-message-to-page*
-         view (webkit:webkit-user-message-new
-               "injectAPIs" (glib:g-variant-new-string (name extension)))))))
   buffer)
 
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
