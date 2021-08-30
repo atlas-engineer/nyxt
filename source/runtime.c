@@ -47,19 +47,23 @@ runtime_get_browser_info_callback ()
                 PAGE, message, NULL, message_reply_and_save_callback, &RUNTIME->browser_info);
 }
 
-static JSCValue *
+static char *
 runtime_get_url_callback (char *extension_name, char *path)
 {
         JSCContext *context = jsc_context_get_current();
+        char *result = malloc(sizeof(char) * 4000000000); /* 4GB */
+        result = "data:text/html,<h1>Resource not found</h1>";
         ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
+        if (!data)
+                return result;
         JSCValue *files = data->files;
         char **properties = jsc_value_object_enumerate_properties(files);
         char **property;
         if (properties)
                 for (property = properties; *property != NULL; property++)
                         if (!strcmp(*property, path))
-                                return jsc_value_object_get_property(files, *property);
-        return jsc_value_new_string(context, "data:text/html,<h1>Resource not found</h1>");
+                                result = jsc_value_to_string(jsc_value_object_get_property(files, *property));
+        return result;
 }
 
 void inject_runtime_api (char* extension_name)
@@ -74,6 +78,7 @@ void inject_runtime_api (char* extension_name)
         MAKE_RESULT_FN(context, runtimeGetPlatformInfoResult, &RUNTIME->platform_info);
         MAKE_FN(context, runtimeGetBrowserInfo, runtime_get_browser_info_callback, G_TYPE_NONE, 0, G_TYPE_NONE);
         MAKE_RESULT_FN(context, runtimeGetBrowserInfoResult, &RUNTIME->browser_info);
+        MAKE_FN(context, runtimeGetURL, runtime_get_url_callback, G_TYPE_STRING, 2, G_TYPE_STRING, G_TYPE_STRING);
 
         MAKE_EVENT(context, "runtime", "onMessage");
 

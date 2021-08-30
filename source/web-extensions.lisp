@@ -229,8 +229,7 @@ Value is the loadable URL of that file.")
                                             "/" (namestring file))))
                                      (cons relative-path
                                            (if (equal (mimes:mime file) "text/html")
-                                               (format nil "web-extension:~a~a"
-                                                       (id mode) relative-path)
+                                               (format nil "file://~a" file)
                                                (make-data-url file)))))
                                  (recursive-directory-elements (extension-directory mode)))))))))
 

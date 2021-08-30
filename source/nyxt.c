@@ -33,7 +33,7 @@ set_window_object_cleared (void *key, void *value, void *user_data)
         ExtensionData *data = (ExtensionData *) value;
         /* We only inject APIs for the privileged extension
          * (owning a default world), if there's one. */
-        if (IS_PRIVILEGED && webkit_script_world_get_default() == data->world ||
+        if ((IS_PRIVILEGED && webkit_script_world_get_default() == data->world) ||
             !IS_PRIVILEGED)
                 g_signal_connect (data->world, "window-object-cleared",
                                   G_CALLBACK(window_object_cleared_callback),
@@ -57,14 +57,18 @@ user_message_received (WebKitWebPage     *web_page,
                 meta = jsc_value_new_from_json(context, contents);
                 JSCValue *sender = jsc_value_object_get_property(meta, "sender");
                 JSCValue *object = jsc_value_object_get_property(meta, "message");
-                char *code = malloc(sizeof(char*) * 10000);
-                sprintf(code, "var p = browser.runtime.onMessage.run(JSON.parse('%s'), JSON.parse('%s'));\
-if (p && p !== undefined) p.then((result) => browser.replyMessage('%s', result));\
-p",
-                        jsc_value_to_json(object, 0),
-                        jsc_value_to_json(sender, 0),
-                        name);
-                JSCValue *tmp = jsc_context_evaluate(context, code, -1);
+                JSCValue *tmp = jsc_value_function_call(
+                        jsc_context_evaluate(
+                                context, "var run  = (object, sender) => {\
+var p = browser.runtime.onMessage.run(object, sender);                  \
+if (p && p !== undefined)                                               \
+        p.then((result) => browser.replyMessage('message', result));    \
+return p;                                                               \
+};                                                                      \
+                                                                        \
+run", -1),
+                        JSC_TYPE_VALUE, object, JSC_TYPE_VALUE, sender,
+                        G_TYPE_NONE);
                 if (tmp &&
                     JSC_IS_VALUE(tmp) &&
                     !(jsc_value_is_boolean(tmp) && !jsc_value_to_boolean(tmp)) &&
