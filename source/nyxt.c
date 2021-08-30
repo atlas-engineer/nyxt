@@ -5,6 +5,7 @@
 #include "management.h"
 #include "tabs.h"
 #include "runtime.h"
+#include "extension.h"
 #include "storage.h"
 
 static void
@@ -15,6 +16,7 @@ inject_apis (void* extension_name, void *data, void *user_data)
         inject_management_api((char*) extension_name);
         inject_tabs_api((char*) extension_name);
         inject_runtime_api((char*) extension_name);
+        inject_extension_api((char*) extension_name);
         inject_storage_api((char *) extension_name);
 }
 
