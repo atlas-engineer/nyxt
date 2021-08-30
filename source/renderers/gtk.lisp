@@ -764,7 +764,6 @@ See `gtk-browser's `modifier-translator' slot."
            (print-status nil (get-containing-window-for-buffer buffer *browser*))
            (echo "Loading ~s." (render-url url)))
           ((eq load-event :webkit-load-redirected) nil)
-          ;; WARNING: load-committed may be deprecated (reference?).  Prefer load-status and load-finished.
           ((eq load-event :webkit-load-committed)
            (on-signal-load-committed buffer url))
           ((eq load-event :webkit-load-finished)
