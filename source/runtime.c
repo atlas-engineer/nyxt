@@ -59,7 +59,7 @@ runtime_get_url_callback (char *extension_name, char *path)
                 for (property = properties; *property != NULL; property++)
                         if (!strcmp(*property, path))
                                 return jsc_value_object_get_property(files, *property);
-        return jsc_value_string_new(context, "data:text/html,<h1>Resource not found</h1>");
+        return jsc_value_new_string(context, "data:text/html,<h1>Resource not found</h1>");
 }
 
 void inject_runtime_api (char* extension_name)
