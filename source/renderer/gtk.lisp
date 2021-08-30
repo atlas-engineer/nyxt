@@ -642,6 +642,8 @@ See `gtk-browser's `modifier-translator' slot."
            (context (make-instance 'webkit-web-context :website-data-manager manager))
            (cookie-manager (webkit:webkit-web-context-get-cookie-manager context))
            (extensions-path (expand-path (gtk-extensions-path buffer))))
+      (webkit:webkit-web-context-add-path-to-sandbox
+       context (namestring (asdf:system-relative-pathname :nyxt "libraries/web-extensions/")) t)
       (when extensions-path
         ;; TODO: Should we also use `connect-signal' here?  Does this yield a memory leak?
         (gobject:g-signal-connect
