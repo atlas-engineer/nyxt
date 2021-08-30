@@ -3,11 +3,28 @@
 
 (in-package :nyxt)
 
+(export-always 'directory-elements)
 (defun directory-elements (directory)
   "Return list of all the files and subdirectories inside DIRECTORY."
   (let ((directory (pathname directory)))
     (append (uiop:subdirectories directory)
             (uiop:directory-files directory))))
+
+(export-always 'recursive-directory-elements)
+(defun recursive-directory-elements (directory &key include-directories-p)
+  (loop with included-directories = '()
+        with files = (directory-elements directory)
+        for directories = (sera:filter #'uiop:directory-pathname-p files)
+          then (sera:filter #'uiop:directory-pathname-p files)
+        while directories
+        do (dolist (dir directories)
+             (when include-directories-p
+               (push dir included-directories))
+             (setf files (delete dir (append files (directory-elements dir))
+                                 :test #'uiop:pathname-equal)))
+        finally (return (if include-directories-p
+                            (append files included-directories)
+                            files))))
 
 (defmethod prompter:object-attributes ((path pathname))
   ;; TODO: Add dirname, basename, extension.
