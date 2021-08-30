@@ -7,11 +7,8 @@
   (:import-from #:serapeum #:export-always)
   (:documentation "WebExtensions API conformance code."))
 (in-package :nyxt/web-extensions)
-
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
-  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum)
-  (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks))
+  (use-nyxt-package-nicknames))
 
 (defun load-js-file (file buffer mode)
   "Load JavaScript code from a file into the BUFFER."
