@@ -383,6 +383,17 @@ CLASS is a class symbol."
                                       (:td keyspec)
                                       (:td (string-downcase bound-value)))))))))))
 
+(define-command print-bindings-cheatsheet ()
+  "Print the buffer with the list of all known bindings for the current buffer
+optimizing the use of space."
+  (nyxt::html-set-style 
+   (cl-css:css '((h3 :font-size "10px" :font-family Helvetica Neue Helvetica
+                     :font-weight 500)
+                 (tr :font-size "7px")
+                 (div :display inline-block)))
+   (nyxt:describe-bindings))
+  (print-buffer))
+
 (defun tls-help (buffer url)
   "This function is invoked upon TLS certificate errors to give users
 help on how to proceed."
