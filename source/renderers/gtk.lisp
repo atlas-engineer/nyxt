@@ -1004,7 +1004,7 @@ See `gtk-browser's `modifier-translator' slot."
   (connect-signal buffer "context-menu" (web-view context-menu event hit-test-result)
     (declare (ignore web-view event hit-test-result))
     (let ((length (webkit:webkit-context-menu-get-n-items context-menu)))
-      (dolist (i (alex:iota length))
+      (dotimes (i length)
         (let ((item (webkit:webkit-context-menu-get-item-at-position context-menu i)))
           (match (webkit:webkit-context-menu-item-get-stock-action item)
             (:webkit-context-menu-action-download-link-to-disk
