@@ -48,6 +48,7 @@ typedef struct {
         char *name;
         char *extension_id;
         JSCValue *manifest;
+        JSCValue *files;
         WebKitScriptWorld *world;
 } ExtensionData;
 

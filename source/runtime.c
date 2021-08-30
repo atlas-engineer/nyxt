@@ -47,6 +47,21 @@ runtime_get_browser_info_callback ()
                 PAGE, message, NULL, message_reply_and_save_callback, &RUNTIME->browser_info);
 }
 
+static JSCValue *
+runtime_get_url_callback (char *extension_name, char *path)
+{
+        JSCContext *context = jsc_context_get_current();
+        ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
+        JSCValue *files = data->files;
+        char **properties = jsc_value_object_enumerate_properties(files);
+        char **property;
+        if (properties)
+                for (property = properties; *property != NULL; property++)
+                        if (!strcmp(*property, path))
+                                return jsc_value_object_get_property(files, *property);
+        return jsc_value_string_new(context, "data:text/html,<h1>Resource not found</h1>");
+}
+
 void inject_runtime_api (char* extension_name)
 {
         JSCContext *context = get_extension_context(IS_PRIVILEGED ? NULL : extension_name);
@@ -112,10 +127,10 @@ runtime.getBrowserInfo");
                                                                         \
 runtime.getManifest", extension_name);
         BIND_FN(context, "runtime", "getURL", "runtime.getURL = function (string) {\
-    return 'web-extension:' + runtime.id + '/' + string;\
-};\
-\
-runtime.getURL")
+    return runtimeGetURL(runtime.name, (string[0] === '/' ? string : '/' + string)); \
+};                                                                      \
+                                                                        \
+runtime.getURL");
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "runtime", -1),
                 "getManifest",
@@ -124,6 +139,10 @@ runtime.getURL")
                 jsc_context_evaluate(context, "runtime", -1),
                 "id",
                 jsc_value_new_string(context, get_extension_id(extension_name)));
+        jsc_value_object_set_property(
+                jsc_context_evaluate(context, "runtime", -1),
+                "name",
+                jsc_value_new_string(context, extension_name));
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "browser", -1), "runtime",
                 jsc_context_evaluate(context, "runtime", -1));
