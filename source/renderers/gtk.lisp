@@ -109,7 +109,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
   (within-gtk-thread
     (funcall thunk)))
 
-(defun %within-renderer-thread (thunk)
+(defun within-renderer-thread (thunk)
   "If the current thread is the renderer thread, execute THUNK with `funcall'.
 Otherwise run the THUNK on the renderer thread by passing it a channel and wait on the channel's result."
   (if (renderer-thread-p)
@@ -119,8 +119,12 @@ Otherwise run the THUNK on the renderer thread by passing it a channel and wait 
           (funcall thunk channel))
         (calispel:? channel))))
 
-(defun %within-renderer-thread-async (thunk)
-  "Same as `%within-renderer-thread' but THUNK is not blocking and does
+(defun outside-renderer-thread (thunk)
+  "Execute a thunk within a thread that is not going to be the renderer thread."
+  (bt:make-thread (lambda () (funcall thunk))))
+
+(defun within-renderer-thread-async (thunk)
+  "Same as `within-renderer-thread' but THUNK is not blocking and does
 not return."
   (if (renderer-thread-p)
       (funcall thunk)
@@ -260,7 +264,7 @@ The BODY is wrapped with `with-protect'."
        (push handler-id (handler-ids ,object)))))
 
 (defmethod initialize-instance :after ((buffer status-buffer) &key)
-  (%within-renderer-thread-async
+  (within-renderer-thread-async
    (lambda ()
      (with-slots (gtk-object) buffer
        (setf gtk-object (make-web-view))
@@ -269,7 +273,7 @@ The BODY is wrapped with `with-protect'."
         (make-decide-policy-handler buffer))))))
 
 (defmethod initialize-instance :after ((window gtk-window) &key)
-  (%within-renderer-thread-async
+  (within-renderer-thread-async
    (lambda ()
      (with-slots (gtk-object root-box-layout horizontal-box-layout
                   panel-buffer-container-left
@@ -769,7 +773,11 @@ See `gtk-browser's `modifier-translator' slot."
           ((eq load-event :webkit-load-finished)
            (unless (eq (slot-value buffer 'load-status) :failed)
              (setf (slot-value buffer 'load-status) :finished))
-           (on-signal-load-finished buffer url)
+           ;; ffi-buffer-evaluate-javascript cannot return values if run from
+           ;; the renderer-thread
+           (outside-renderer-thread
+            (lambda ()
+              (on-signal-load-finished buffer url)))
            (print-status nil (get-containing-window-for-buffer buffer *browser*))
            (echo "Finished loading ~s." (render-url url))))))
 
@@ -1042,7 +1050,7 @@ requested a reload."
         (webkit:webkit-web-view-load-uri (gtk-object buffer) (quri:render-uri url)))))
 
 (defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript &optional world-name)
-  (%within-renderer-thread
+  (within-renderer-thread
    (lambda (&optional channel)
      (webkit2:webkit-web-view-evaluate-javascript
       (gtk-object buffer)
@@ -1062,7 +1070,7 @@ requested a reload."
       world-name))))
 
 (defmethod ffi-buffer-evaluate-javascript-async ((buffer gtk-buffer) javascript &optional world-name)
-  (%within-renderer-thread-async
+  (within-renderer-thread-async
    (lambda ()
      (webkit2:webkit-web-view-evaluate-javascript
       (gtk-object buffer)
