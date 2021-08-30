@@ -985,7 +985,7 @@ See `gtk-browser's `modifier-translator' slot."
          (:li "If the problem persists for every site, check your Internet connection.")
          (:li "Make sure the URL is valid."
               (when (quri:uri-https-p (quri:uri failing-url))
-                "If this site has does not support HTTPS, try with HTTP (insecure)."))))
+                "If this site does not support HTTPS, try with HTTP (insecure)."))))
        buffer))
     t)
   (connect-signal buffer "create" (web-view navigation-action)
