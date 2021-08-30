@@ -24,6 +24,7 @@ extensions_data_add_from_json(const char *json)
                         const char *name = *property;
                         JSCValue *data = jsc_value_object_get_property(object, *property);
                         JSCValue *manifest = jsc_value_object_get_property_at_index(data, 1);
+                        JSCValue *files = jsc_value_object_get_property_at_index(data, 3);
                         char *id = jsc_value_to_string(
                                 jsc_value_object_get_property_at_index(data, 0));
                         int is_privileged = jsc_value_to_int32(jsc_value_object_get_property_at_index(data, 2));
@@ -35,6 +36,7 @@ extensions_data_add_from_json(const char *json)
                         extension = malloc(sizeof(ExtensionData));
                         extension->name = (char*) name;
                         extension->manifest = manifest;
+                        extension->files = files;
                         extension->extension_id = id;
                         extension->world = world;
                         g_hash_table_insert(EXTENSIONS_DATA, (void*) name, extension);

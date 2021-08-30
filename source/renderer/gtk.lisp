@@ -656,7 +656,8 @@ See `gtk-browser's `modifier-translator' slot."
                                 (cons (nyxt/web-extensions::name extension)
                                       (vector (id extension)
                                               (nyxt/web-extensions::manifest extension)
-                                              (if privileged-p 1 0)))))
+                                              (if privileged-p 1 0)
+                                              (nyxt/web-extensions::extension-files extension)))))
                          (let ((extensions
                                  (when buffer
                                    (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))))

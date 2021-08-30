@@ -66,13 +66,15 @@ for a given URL, and nil otherwise")
      :js-files (uiop:ensure-list js)
      :css-files (uiop:ensure-list css))))
 
-(defun read-file-as-base64 (file)
-  (let ((arr (make-array 0 :element-type '(unsigned-byte 8) :adjustable t :fill-pointer t)))
-    (with-open-file (s file :element-type '(unsigned-byte 8))
-      (loop for byte = (read-byte s nil nil)
-            while byte
-            do (vector-push-extend byte arr)
-            finally (return (base64:usb8-array-to-base64-string arr))))))
+
+(defun make-data-url (file &optional mime-type)
+  (let* ((type (or mime-type (mimes:mime file)))
+         (binary-p (not (str:starts-with-p "text" type))))
+    (format nil "data:~a~@[;base64~*~],~a"
+            type binary-p (if binary-p
+                              (base64:usb8-array-to-base64-string
+                               (alex:read-file-into-byte-vector file))
+                              (quri:url-encode (uiop:read-file-string file))))))
 
 (defun default-browser-action-icon (json optimal-height)
   (let* ((browser-action (alex:assoc-value json :browser--action))
@@ -91,9 +93,9 @@ for a given URL, and nil otherwise")
          (padded-height (- status-buffer-height 10))
          (best-icon
            (default-browser-action-icon json padded-height)))
-    (format nil "<img src=\"data:image/png;base64,~a\" alt=\"~a\"
+    (format nil "<img src=\"~a\" alt=\"~a\"
 height=~a/>"
-            (read-file-as-base64 (uiop:merge-pathnames* best-icon extension-directory))
+            (make-data-url (uiop:merge-pathnames* best-icon extension-directory))
             (alex:assoc-value json :name)
             padded-height)))
 
@@ -182,6 +184,11 @@ Is only set when popup is active.")
    (extension-directory nil
               :type (or null pathname)
               :documentation "The directory that the extension resides in.")
+   (extension-files (make-hash-table)
+                    :type hash-table
+                    :documentation "All the files extension packages.
+Key is the relative path to the file.
+Value is the loadable URL of that file.")
    (permissions nil
                 :type list-of-strings
                 :documentation "List of API permissions extension requires.")
@@ -212,7 +219,20 @@ Is only set when popup is active.")
                     (unless (background-buffer mode)
                       ;; Need to set it to something to not trigger this in other instances.
                       (setf (background-buffer mode) t)
-                      (setf (background-buffer mode) (make-background-buffer))))))))
+                      (setf (background-buffer mode) (make-background-buffer))))
+                  (setf (extension-files mode)
+                        (alex:alist-hash-table
+                         (mapcar (lambda (file)
+                                   (let ((relative-path
+                                           (str:replace-all
+                                            (namestring (extension-directory mode))
+                                            "/" (namestring file))))
+                                     (cons relative-path
+                                           (if (equal (mimes:mime file) "text/html")
+                                               (format nil "web-extension:~a~a"
+                                                       (id mode) relative-path)
+                                               (make-data-url file)))))
+                                 (recursive-directory-elements (extension-directory mode)))))))))
 
 (export-always 'has-permission-p)
 (defmethod has-permission-p ((extension extension) (permission string))
