@@ -104,11 +104,19 @@ failures."))
 
 (defmethod data-directory ((web-context webkit-web-context))
   "Directly returns the CFFI object's `base-data-directory'"
-  (slot-value (slot-value web-context 'webkit::website-data-manager) 'webkit::base-data-directory))
+  (webkit:webkit-website-data-manager-base-data-directory (webkit:webkit-web-context-website-data-manager web-context)))
 
 (defmethod cache-directory ((web-context webkit-web-context))
   "Directly returns the CFFI object's `base-cache-directory'"
-  (slot-value (slot-value web-context 'webkit::website-data-manager) 'webkit::base-cache-directory))
+  (webkit:webkit-website-data-manager-base-cache-directory (webkit:webkit-web-context-website-data-manager web-context)))
+
+(defclass webkit-web-context-ephemeral (webkit-web-context) ()
+  (:metaclass gobject:gobject-class))
+
+(defmethod initialize-instance :after ((web-context webkit-web-context-ephemeral) &key)
+  (unless (webkit:webkit-web-context-is-ephemeral web-context)
+    (error 'nyxt-web-context-condition :context web-context
+                                       :message "Web Contexts of class webkit-web-context-ephemeral must be ephemeral")))
 
 (defclass webkit-website-data-manager (webkit:webkit-website-data-manager) ()
   (:metaclass gobject:gobject-class))
@@ -119,6 +127,14 @@ failures."))
   #+webkit2-tracking
   (webkit:webkit-website-data-manager-set-itp-enabled data-manager t)
   data-manager)
+
+(defclass webkit-website-data-manager-ephemeral (webkit-website-data-manager) ()
+  (:metaclass gobject:gobject-class))
+
+(defmethod initialize-instance :after ((data-manager webkit-website-data-manager-ephemeral) &key)
+  (unless (webkit:webkit-website-data-manager-is-ephemeral data-manager)
+    (error 'nyxt-web-context-condition :context data-manager
+                                       :message "Data Managers of class webkit-website-data-manager-ephemeral must be ephemeral")))
 
 (defvar gtk-running-p nil
   "Non-nil if the GTK main loop is running.
@@ -291,6 +307,14 @@ the renderer thread, use `defmethod' instead."
                    :dirname (uiop:xdg-data-home +data-root+
                                                  (format nil "~a-web-context" name))))
 
+(defclass webkit-web-view-ephemeral (webkit:webkit-web-view) ()
+  (:metaclass gobject:gobject-class))
+
+(defmethod initialize-instance :after ((web-view webkit-web-view-ephemeral) &key web-context)
+  (unless (webkit:webkit-web-view-is-ephemeral web-view)
+    (error 'nyxt-web-context-condition :context web-context
+                                       :message "Tried to make an ephemeral web-view in a non-ephemeral context")))
+
 (defun make-web-view (&key buffer context-name ephemeral-p)
   "Return a web view instance.
 
@@ -308,7 +332,9 @@ the same naming rules as above."
         (ephemeral-p (or ephemeral-p
                          (typep (current-data-profile) 'nosave-data-profile)
                          (typep buffer 'nosave-buffer))))
-    (make-instance 'webkit:webkit-web-view
+    (make-instance (if ephemeral-p
+                       'webkit-web-view-ephemeral
+                       'webkit:webkit-web-view)
                    :web-context (get-context *browser* (or context-name
                                                            (if internal-p "internal" "default"))
                                              :ephemeral-p ephemeral-p))))
@@ -812,15 +838,17 @@ See `gtk-browser's `modifier-translator' slot."
 (defun construct-web-context (name &key ephemeral-p) ; TODO: Rename to a less ambiguous name.
   "Initializes the CFFI object `nyxt:webkit-website-web-context' and its
 `nyxt:webkit-website-data-manager'"
-  (let ((data-manager-data-path (expand-path (data-manager-data-path-for-context name)))
-        (data-manager-cache-path (expand-path (data-manager-cache-path-for-context name))))
-    ;; An ephemeral data-manager cannot be given any directories, even if they are set to nil
-    (let ((data-manager (if ephemeral-p
-                            (make-instance 'webkit-website-data-manager :is-ephemeral t)
-                            (make-instance 'webkit-website-data-manager
-                                           :base-data-directory data-manager-data-path
-                                           :base-cache-directory data-manager-cache-path))))
-      (make-instance 'webkit-web-context :website-data-manager data-manager))))
+  (if ephemeral-p
+      ;; An ephemeral data-manager cannot be given any directories, even if they are set to nil
+      (make-instance 'webkit-web-context-ephemeral
+                     :website-data-manager (make-instance 'webkit-website-data-manager-ephemeral
+                                                          :is-ephemeral t))
+      (let ((data-manager-data-path (expand-path (data-manager-data-path-for-context name)))
+            (data-manager-cache-path (expand-path (data-manager-cache-path-for-context name))))
+        (make-instance 'webkit-web-context
+                       :website-data-manager (make-instance 'webkit-website-data-manager
+                                                            :base-data-directory data-manager-data-path
+                                                            :base-cache-directory data-manager-cache-path)))))
 
 (defun make-context (name &key ephemeral-p buffer)
   ;; This is to ensure that paths are not expanded when we make
