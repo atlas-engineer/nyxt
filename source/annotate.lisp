@@ -3,12 +3,6 @@
 
 (in-package :nyxt)
 
-(define-class url-reference ()
-  ((url nil))
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-
 (define-class annotation ()
   ((reference
     nil
@@ -20,6 +14,12 @@
     '()
     :type list-of-strings)
    (date (local-time:now)))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(define-class url-annotation (annotation)
+  ((url nil))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
@@ -49,3 +49,13 @@
 (defun annotations ()
   (with-data-access (annotations (annotations-path (current-buffer)))
     annotations))
+
+(define-command annotate-current-url (&optional (buffer (current-buffer)))
+  "Create/set the annotation of the URL of BUFFER."
+  (let* ((data (prompt
+                :prompt "Annotation"
+                :sources (list (make-instance 'prompter:raw-source))))
+         (annotation (make-instance 'url-annotation
+                                    :url (url buffer)
+                                    :data data)))
+    (annotation-add annotation)))
