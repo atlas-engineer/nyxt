@@ -233,23 +233,39 @@ Value is the loadable URL of that file.")
 (defmethod nyxt::format-mode ((extension extension))
   (name extension))
 
-(defun open-popup (extension-class &optional (buffer (current-buffer)))
-  (with-current-buffer buffer
-    ;;TODO: Send click message to background script if there's no popup.
-    (sera:and-let* ((extension (nyxt:find-submode (nyxt:current-buffer) extension-class))
-                    (browser-action (browser-action extension))
-                    (default-popup (default-popup browser-action))
-                    (popup (make-instance 'user-panel-buffer
-                                          :title (default-title (browser-action extension))
-                                          :id (nyxt::get-unique-identifier *browser*))))
-      (setf (popup-buffer extension) popup)
-      (enable-modes (list extension-class) popup)
-      (nyxt::window-add-panel-buffer
-       (current-window) popup
-       :right)
-      (setf (popup-buffer extension) popup)
-      (buffer-load (quri.uri.file:make-uri-file :path (merge-extension-path extension default-popup))
-                   :buffer popup))))
+(define-command toggle-extension-popup (&optional extension-class (buffer (current-buffer)))
+  "Open the popup of the extension of EXTENSION-CLASS.
+If this popup does already exist, close it."
+  (let ((extension-class (or extension-class
+                             (mode-name
+                              (prompt
+                               :prompt "Extension to toggle the popup of"
+                               :sources (make-instance 'user-active-mode-source
+                                                       :constructor (sera:filter
+                                                                     #'nyxt/web-extensions::extension-p
+                                                                     (modes buffer))))))))
+    (with-current-buffer buffer
+      ;;TODO: Send click message to background script if there's no popup.
+      (sera:and-let* ((extension (nyxt:find-submode (nyxt:current-buffer) extension-class))
+                      (browser-action (browser-action extension))
+                      (default-popup (default-popup browser-action)))
+        (alex:if-let ((existing-popup
+                       (find (default-title (browser-action extension))
+                             (nyxt::panel-buffers (current-window))
+                             :key #'title
+                             :test #'equal)))
+          (nyxt::window-delete-panel-buffer (current-window) existing-popup)
+          (let ((popup (make-instance 'user-panel-buffer
+                                      :title (default-title (browser-action extension))
+                                      :id (nyxt::get-unique-identifier *browser*))))
+            (setf (popup-buffer extension) popup)
+            (enable-modes (list extension-class) popup)
+            (nyxt::window-add-panel-buffer
+             (current-window) popup
+             :right)
+            (setf (popup-buffer extension) popup)
+            (buffer-load (quri.uri.file:make-uri-file :path (merge-extension-path extension default-popup))
+                         :buffer popup)))))))
 
 (export-always 'load-web-extension)
 (defmacro load-web-extension (lispy-name directory)
@@ -287,7 +303,7 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
        (defmethod initialize-instance :after ((extension ,lispy-name) &key)
          (setf (nyxt:glyph extension)
                (spinneret:with-html-string
-                 (:a :class "button" :href (lisp-url `(open-popup ',(mode-name extension)))
+                 (:a :class "button" :href (lisp-url `(toggle-extension-popup ',(mode-name extension)))
                      :title (format nil "Open the browser action of ~a" (mode-name extension))
                      (:raw (setf (default-icon (browser-action extension))
                                  (encode-browser-action-icon (quote ,json) ,directory))))))))))
