@@ -10,58 +10,54 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (use-nyxt-package-nicknames))
 
-(defun load-js-file (file buffer mode)
-  "Load JavaScript code from a file into the BUFFER."
-  (ffi-buffer-add-user-script buffer (uiop:read-file-string (merge-extension-path mode file))
-                              :world-name (name mode)
-                              :all-frames-p t
-                              :run-now-p t
-                              :at-document-start-p t))
-
-(defun load-css-file (file buffer mode)
-  "Load CSS from the FILE and inject it into the BUFFER document."
-  (nyxt::html-set-style
-   (uiop:read-file-string (merge-extension-path mode file)) buffer))
-
-(defun make-activate-content-scripts-handler (mode name)
-  (nyxt::make-handler-buffer
-   (lambda (buffer)
-     (dolist (script (content-scripts mode))
-       (when (funcall (matching-filter script) (render-url (url buffer)))
-         (dolist (js-file (js-files script))
-           (load-js-file js-file buffer mode))
-         (dolist (css-file (css-files script))
-           (load-css-file css-file buffer mode)))
-       url))
-   :name name))
-
 (define-class content-script ()
-  ((matching-filter (error "Matching filter is required.")
-                    :type function
-                    :documentation "When to activate the content script.
-A function that takes a URL designator and returns t if it needs to be activated
-for a given URL, and nil otherwise")
-   (js-files nil
-             :type list
-             :documentation "JavaScript files to load.")
-   (css-files nil
-              :type list
-              :documentation "Stylesheets to load."))
+  ((match-patterns (error "Match pattern is required.")
+                   :type list)
+   (files nil
+          :type list)
+   (user-styles nil
+                :type list)
+   (user-scripts nil
+                 :type list))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
+(defmethod remove-content-script (buffer extension (script content-script))
+  (dolist (s (user-scripts script))
+    (ffi-buffer-remove-user-script buffer s))
+  (dolist (s (user-styles script))
+    (ffi-buffer-remove-user-style buffer s)))
+
+(defmethod inject-content-script (buffer extension (script content-script))
+  (remove-content-script buffer extension script)
+  (dolist (file (files script))
+    (if (equal (pathname-type file) "css")
+        (push (ffi-buffer-add-user-style buffer (uiop:read-file-string
+                                                  (merge-extension-path extension file))
+                                          :inject-as-author-p t
+                                          :all-frames-p t
+                                          :world-name (name extension)
+                                          :allow-list (match-patterns script))
+              (user-styles script))
+        (push
+         (ffi-buffer-add-user-script buffer (uiop:read-file-string
+                                             (merge-extension-path extension file))
+                                     :world-name (name extension)
+                                     :all-frames-p t
+                                     :run-now-p t
+                                     :at-document-start-p t
+                                     :allow-list (match-patterns script))
+         (user-scripts script)))))
+
 (defun make-content-script (&key (matches (error "Matches key is mandatory.")) js css)
-  ;; TODO: Replace "/*" with ".*"? Requires regexps and some smartness, though.
   (let ((sanitize-mozilla-regex (alex:curry #'str:replace-using '("*." "*"
-                                                                  "*" ".*"
-                                                                  "?" ".?"))))
+                                                                  "?" "*"
+                                                                  "<all_urls>" "*://*/*"))))
     (make-instance
      'content-script
-     :matching-filter (apply #'match-regex
-                             (mapcar sanitize-mozilla-regex (uiop:ensure-list matches)))
-     :js-files (uiop:ensure-list js)
-     :css-files (uiop:ensure-list css))))
+     :match-pattern (mapcar sanitize-mozilla-regex (uiop:ensure-list matches))
+     :files (append (uiop:ensure-list js) (uiop:ensure-list css)))))
 
 
 (defun make-data-url (file &optional mime-type)
@@ -195,28 +191,23 @@ Value is the loadable URL of that file.")
    (browser-action nil
                    :type (or null browser-action)
                    :documentation "Configuration for popup opening on extension icon click.")
-   (handler-names nil
-                  :type list)
    (storage-path nil
                  :type (or null extension-storage-data-path)
                  :documentation "The path that the storage API stores data in.")
    (destructor (lambda (mode)
-                 (loop for name in (handler-names mode)
-                       for hook in (list (buffer-loaded-hook (buffer mode)))
-                       do (hooks:remove-hook hook name))
+                 (dolist (script (content-scripts mode))
+                    (remove-content-script (buffer mode) mode script))
                  ;; Destroy the view when there are no more instances of this extension.
                  (when (null (sera:filter (alex:rcurry #'typep (type-of mode))
                                           (alex:mappend #'modes (buffer-list))))
                    (nyxt::buffer-delete (background-buffer mode)))))
    (constructor (lambda (mode)
-                  (let ((content-script-name (gensym)))
-                    (hooks:add-hook (buffer-loaded-hook (buffer mode))
-                                    (make-activate-content-scripts-handler mode content-script-name))
-                    (push content-script-name (handler-names mode))
-                    (unless (background-buffer mode)
-                      ;; Need to set it to something to not trigger this in other instances.
-                      (setf (background-buffer mode) t)
-                      (setf (background-buffer mode) (make-background-buffer))))
+                  (dolist (script (content-scripts mode))
+                    (inject-content-script (buffer mode) mode script))
+                  (unless (background-buffer mode)
+                    ;; Need to set it to something to not trigger this in other instances.
+                    (setf (background-buffer mode) t)
+                    (setf (background-buffer mode) (make-background-buffer)))
                   (setf (extension-files mode)
                         (alex:alist-hash-table
                          (mapcar (lambda (file)
