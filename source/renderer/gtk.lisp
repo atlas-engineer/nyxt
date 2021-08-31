@@ -1206,42 +1206,29 @@ See `gtk-browser's `modifier-translator' slot."
                                (current-buffer)
                                (or (find (format nil "~d" tab-id) (buffer-list) :key #'id)
                                    (current-buffer))))
-         (content-manager
-           (webkit:webkit-web-view-get-user-content-manager
-            (gtk-object buffer-to-insert)))
-         (style-sheet (webkit:webkit-user-style-sheet-new
+         (style-sheet (ffi-buffer-add-user-style
+                       buffer-to-insert
                        (if file
                            (uiop:read-file-string (uiop:merge-pathnames*
                                                    file (nyxt/web-extensions:extension-directory
                                                          extension)))
                            code)
-                       (if (alex:assoc-value css-data :all-frames)
-                           :webkit-user-content-inject-all-frames
-                           :webkit-user-content-inject-top-frame)
-                       (if (and level (stringp level) (string= level "user"))
-                           :webkit-user-style-level-user
-                           :webkit-user-style-level-author)
-                       (cffi:null-pointer)
-                       (cffi:null-pointer))))
+                       :inject-as-author-p (not (and level (stringp level) (string= level "user")))
+                       :all-frames-p (alex:assoc-value css-data :all-frames)
+                       :world-name (name extension))))
     (setf (gethash message-params %style-sheets%)
           style-sheet)
-    (webkit:webkit-user-content-manager-add-style-sheet content-manager style-sheet)
     ""))
 
 (defun tabs-remove-css (message-params)
   (let* ((json (json:decode-json-from-string message-params))
          (tab-id (alex:assoc-value json :tab-id))
-         (buffer-to-insert (if (zerop tab-id)
+         (buffer-to-remove (if (zerop tab-id)
                                (current-buffer)
                                (or (find (format nil "~d" tab-id) (buffer-list) :key #'id)
                                    (current-buffer))))
-         (content-manager
-           (webkit:webkit-web-view-get-user-content-manager
-            (gtk-object buffer-to-insert)))
          (style-sheet (gethash message-params %style-sheets%)))
-    (when style-sheet
-      (webkit:webkit-user-content-manager-remove-style-sheet
-       content-manager style-sheet))
+    (ffi-buffer-remove-user-style buffer-to-remove style-sheet)
     (remhash message-params %style-sheets%)
     ""))
 
@@ -1652,11 +1639,52 @@ requested a reload."
         #'javascript-error-handler
         world-name)))))
 
+(defun list-of-string-to-foreign (list)
+  (if list
+      (cffi:foreign-alloc :string
+                          :count (length list)
+                          :initial-contents list
+                          :null-terminated-p t)
+      (cffi:null-pointer)))
+
+(define-ffi-method ffi-buffer-add-user-style ((buffer gtk-buffer) css &key
+                                              world-name all-frames-p inject-as-author-p
+                                              allow-list block-list)
+  (let* ((content-manager
+           (webkit:webkit-web-view-get-user-content-manager
+            (gtk-object buffer)))
+         (frames (if all-frames-p
+                     :webkit-user-content-inject-all-frames
+                     :webkit-user-content-inject-top-frame))
+         (style-level (if inject-as-author-p
+                          :webkit-user-style-level-author
+                          :webkit-user-style-level-user))
+         (style-sheet
+           (if world-name
+               (webkit:webkit-user-style-sheet-new-for-world
+                css frames style-level world-name
+                (list-of-string-to-foreign allow-list)
+                (list-of-string-to-foreign block-list))
+               (webkit:webkit-user-style-sheet-new
+                css frames style-level
+                (list-of-string-to-foreign allow-list)
+                (list-of-string-to-foreign block-list)))))
+    (webkit:webkit-user-content-manager-add-style-sheet
+     content-manager style-sheet)
+    style-sheet))
+
+(define-ffi-method ffi-buffer-remove-user-style ((buffer gtk-buffer) style-sheet)
+  (let ((content-manager
+          (webkit:webkit-web-view-get-user-content-manager
+           (gtk-object buffer))))
+    (when style-sheet
+      (webkit:webkit-user-content-manager-remove-style-sheet
+       content-manager style-sheet))))
+
 (define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) javascript &key
                                                world-name all-frames-p
                                                at-document-start-p run-now-p
                                                allow-list block-list)
-  (declare (ignorable allow-list block-list))
   (let* ((content-manager
            (webkit:webkit-web-view-get-user-content-manager
             (gtk-object buffer)))
@@ -1669,10 +1697,12 @@ requested a reload."
          (script (if world-name
                      (webkit:webkit-user-script-new-for-world
                       javascript frames inject-time world-name
-                      (cffi:null-pointer) (cffi:null-pointer))
+                      (list-of-string-to-foreign allow-list)
+                      (list-of-string-to-foreign block-list))
                      (webkit:webkit-user-script-new
                       javascript frames inject-time
-                      (cffi:null-pointer) (cffi:null-pointer)))))
+                      (list-of-string-to-foreign allow-list)
+                      (list-of-string-to-foreign block-list)))))
     (webkit:webkit-user-content-manager-add-script
      content-manager script)
     (when (and run-now-p
@@ -1680,6 +1710,14 @@ requested a reload."
                        '(:finished :failed)))
       (reload-buffers (list buffer)))
     script))
+
+(define-ffi-method ffi-buffer-remove-user-script ((buffer gtk-buffer) script)
+  (let ((content-manager
+          (webkit:webkit-web-view-get-user-content-manager
+           (gtk-object buffer))))
+    (when script
+      (webkit:webkit-user-content-manager-remove-script
+       content-manager script))))
 
 (define-ffi-method ffi-buffer-enable-javascript ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-enable-javascript
