@@ -91,7 +91,7 @@
 (define-command show-annotations-for-current-buffer (&optional (source-buffer (current-buffer)))
   "Create a new buffer with the annotations of the current URL of BUFFER."
   (with-data-access (annotations (annotations-path (current-buffer)))
-    (let ((filtered-annotations (remove-if-not (lambda (i) (url-equal (url i) (url source-buffer))) annotations)))
+    (let ((filtered-annotations (remove-if-not (lambda (i) (url-equal (quri:uri (url i)) (url source-buffer))) annotations)))
       (print filtered-annotations)
       (with-current-html-buffer (buffer (format nil "*Annotations - ~a*" (url source-buffer)) 'base-mode)
         (spinneret:with-html-string
