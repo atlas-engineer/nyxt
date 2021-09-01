@@ -21,6 +21,12 @@
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
+(define-class snippet-annotation (url-annotation)
+  ((snippet nil :documentation "The snippet of text being annotated."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
 (defmethod store ((profile data-profile) (path annotations-data-path) &key &allow-other-keys)
   "Store the annotations to the buffer `annotations-path'."
   (with-data-file (file path :direction :output)
@@ -48,7 +54,7 @@
     annotations))
 
 (define-command annotate-current-url (&optional (buffer (current-buffer)))
-  "Create/set the annotation of the URL of BUFFER."
+  "Create a annotation of the URL of BUFFER."
   (let* ((data (first (prompt
                        :prompt "Annotation"
                        :sources (list (make-instance 'prompter:raw-source)))))
@@ -56,6 +62,20 @@
                                     :url (url buffer)
                                     :data data)))
     (annotation-add annotation)))
+
+(define-command annotate-highlighted-text (&optional (buffer (current-buffer)))
+  "Create a annotation for the highlighted text of BUFFER."
+  (with-current-buffer buffer
+    (print (url buffer))
+    (let* ((snippet (%copy))
+           (data (first (prompt
+                         :prompt "Annotation"
+                         :sources (list (make-instance 'prompter:raw-source)))))
+           (annotation (make-instance 'snippet-annotation
+                                      :snippet snippet
+                                      :url (url buffer)
+                                      :data data)))
+      (annotation-add annotation))))
 
 (define-command show-annotations-for-current-buffer (&optional (source-buffer (current-buffer)))
   "Create a new buffer with the annotations of the current URL of BUFFER."
