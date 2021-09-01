@@ -15,7 +15,7 @@ bugs, instabilities or feature wishes.
 
 -----
 
-#+html: <div align="center"> <a href="http://nyxt.atlas.engineer/">Homepage</a> | <a href="https://nyxt.atlas.engineer/download">Downloads</a> | <a href="https://nyxt.atlas.engineer/articles">Articles</a> | <a href="https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org">Developer Manual</a> | <a href="https://discourse.atlas.engineer/">Forum</a> | <a href="https://kiwiirc.com/nextclient/irc.libera.chat/nyxt">Chat</a> </div>
+#+html: <div align="center"> <a href="http://nyxt.atlas.engineer/">Homepage</a> | <a href="https://nyxt.atlas.engineer/download">Downloads</a> | <a href="https://nyxt.atlas.engineer/articles">Articles</a> | <a href="https://store.nyxt.atlas.engineer/">Store</a> | <a href="https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org">Developer Manual</a> | <a href="https://discourse.atlas.engineer/">Forum</a> | <a href="https://kiwiirc.com/nextclient/irc.libera.chat/nyxt">Chat</a> </div>
 
 -----
 
