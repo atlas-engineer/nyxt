@@ -4,10 +4,7 @@
 (in-package :nyxt)
 
 (define-class annotation ()
-  ((reference
-    nil
-    :documentation "The object the annotation is pointing to.")
-   (data
+  ((data
     ""
     :documentation "The annotation data.")
    (tags
@@ -52,10 +49,22 @@
 
 (define-command annotate-current-url (&optional (buffer (current-buffer)))
   "Create/set the annotation of the URL of BUFFER."
-  (let* ((data (prompt
-                :prompt "Annotation"
-                :sources (list (make-instance 'prompter:raw-source))))
+  (let* ((data (first (prompt
+                       :prompt "Annotation"
+                       :sources (list (make-instance 'prompter:raw-source)))))
          (annotation (make-instance 'url-annotation
                                     :url (url buffer)
                                     :data data)))
     (annotation-add annotation)))
+
+(define-command show-annotations-for-current-buffer (&optional (source-buffer (current-buffer)))
+  "Create a new buffer with the annotations of the current URL of BUFFER."
+  (with-data-access (annotations (annotations-path (current-buffer)))
+    (let ((filtered-annotations (remove-if-not (lambda (i) (url-equal (url i) (url source-buffer))) annotations)))
+      (print filtered-annotations)
+      (with-current-html-buffer (buffer (format nil "*Annotations - ~a*" (url source-buffer)) 'base-mode)
+        (spinneret:with-html-string
+          (:style (style buffer))
+          (:h1 "Annotations")
+          (loop for annotation in filtered-annotations
+                collect (:p (data annotation))))))))
