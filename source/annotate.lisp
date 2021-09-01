@@ -27,6 +27,17 @@
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
+(defmethod render ((annotation url-annotation))
+  (spinneret:with-html-string
+    (:p (:b "URL: ") (render-url (url annotation)))
+    (:p (:b "Annotation: ") (data annotation))))
+
+(defmethod render ((annotation snippet-annotation))
+  (spinneret:with-html-string
+    (:p (:b "Snippet: ") (snippet annotation))
+    (:p (:b "URL: ") (render-url (url annotation)))
+    (:p (:b "Annotation: ") (data annotation))))
+
 (defmethod store ((profile data-profile) (path annotations-data-path) &key &allow-other-keys)
   "Store the annotations to the buffer `annotations-path'."
   (with-data-file (file path :direction :output)
@@ -87,4 +98,5 @@
           (:style (style buffer))
           (:h1 "Annotations")
           (loop for annotation in filtered-annotations
-                collect (:p (data annotation))))))))
+                collect (:div (:raw (render annotation))
+                              (:hr))))))))
