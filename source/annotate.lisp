@@ -87,7 +87,6 @@
 (define-command annotate-highlighted-text (&optional (buffer (current-buffer)))
   "Create a annotation for the highlighted text of BUFFER."
   (with-current-buffer buffer
-    (print (url buffer))
     (let* ((snippet (%copy))
            (data (first (prompt
                          :prompt "Annotation"
