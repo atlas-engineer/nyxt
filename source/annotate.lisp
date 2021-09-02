@@ -108,11 +108,16 @@
    (prompter:constructor (get-data (annotations-path (current-buffer))))
    (prompter:multi-selection-p t)))
 
-(define-command open-annotation ()
-  "Open an annotation."
+(define-command show-annotation ()
+  "Show an annotation(s)."
   (let ((selected-annotations
           (prompt
            :prompt "Show annotation(s)"
            :sources (make-instance 'annotation-source
                                    :actions nil))))
     (render-annotations selected-annotations)))
+
+(define-command show-annotations ()
+  "Show all annotations"
+  (with-data-access (annotations (annotations-path (current-buffer)))
+    (render-annotations annotations)))
