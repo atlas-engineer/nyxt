@@ -107,12 +107,12 @@
 
 (defun render-annotations (annotations)
   (with-current-html-buffer (buffer "*Annotations*" 'base-mode)
-        (spinneret:with-html-string
-          (:style (style buffer))
-          (:h1 "Annotations")
-          (loop for annotation in annotations
-                collect (:div (:raw (render annotation))
-                              (:hr))))))
+    (spinneret:with-html-string
+      (:style (style buffer))
+      (:h1 "Annotations")
+      (loop for annotation in annotations
+            collect (:div (:raw (render annotation))
+                          (:hr))))))
 
 (define-command show-annotations-for-current-buffer (&optional (source-buffer (current-buffer)))
   "Create a new buffer with the annotations of the current URL of BUFFER."
