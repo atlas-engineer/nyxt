@@ -30,13 +30,15 @@
 (defmethod render ((annotation url-annotation))
   (spinneret:with-html-string
     (:p (:b "URL: ") (render-url (url annotation)))
-    (:p (:b "Annotation: ") (data annotation))))
+    (:p (:b "Annotation: ") (data annotation))
+    (:p (:b "Tags: ") (format nil "~{~a ~}" (tags annotation)))))
 
 (defmethod render ((annotation snippet-annotation))
   (spinneret:with-html-string
     (:p (:b "Snippet: ") (snippet annotation))
     (:p (:b "URL: ") (render-url (url annotation)))
-    (:p (:b "Annotation: ") (data annotation))))
+    (:p (:b "Annotation: ") (data annotation))
+    (:p (:b "Tags: ") (format nil "~{~a ~}" (tags annotation)))))
 
 (defmethod store ((profile data-profile) (path annotations-data-path) &key &allow-other-keys)
   "Store the annotations to the buffer `annotations-path'."
@@ -69,9 +71,22 @@
   (let* ((data (first (prompt
                        :prompt "Annotation"
                        :sources (list (make-instance 'prompter:raw-source)))))
+         (tags (prompt
+                :prompt "Tag(s)"
+                :sources (list (make-instance 'prompter:word-source
+                                              :name "New tags"
+                                              :filter-postprocessor
+                                              (lambda (suggestions source input)
+                                                (declare (ignore source input))
+                                                (or suggestions
+                                                    (list "")))
+                                              :multi-selection-p t)
+                               (make-instance 'annotation-tag-source))))
          (annotation (make-instance 'url-annotation
                                     :url (url buffer)
-                                    :data data)))
+                                    :data data
+                                    :tags tags)))
+    (print tags)
     (annotation-add annotation)))
 
 (define-command annotate-highlighted-text (&optional (buffer (current-buffer)))
@@ -107,6 +122,26 @@
   ((prompter:name "Annotations")
    (prompter:constructor (get-data (annotations-path (current-buffer))))
    (prompter:multi-selection-p t)))
+
+(define-class annotation-tag-source (prompter:source)
+  ((prompter:name "Tags")
+   (prompter:filter-preprocessor
+    (lambda (initial-suggestions-copy source input)
+      (prompter:delete-inexact-matches
+       initial-suggestions-copy
+       source
+       (last-word input))))
+   (prompter:filter
+    (lambda (suggestion source input)
+      (prompter:fuzzy-match suggestion source (last-word input))))
+   (prompter:multi-selection-p t)
+   (prompter:constructor
+    (with-data-unsafe (annotations (annotations-path (current-buffer)))
+      (sort (remove-duplicates
+             (apply #'append (mapcar #'tags annotations))
+             :test #'string-equal)
+            #'string-lessp))))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-command show-annotation ()
   "Show an annotation(s)."
