@@ -75,18 +75,13 @@
                 :prompt "Tag(s)"
                 :sources (list (make-instance 'prompter:word-source
                                               :name "New tags"
-                                              :filter-postprocessor
-                                              (lambda (suggestions source input)
-                                                (declare (ignore source input))
-                                                (or suggestions
-                                                    (list "")))
                                               :multi-selection-p t)
+                               (make-instance 'keyword-source :buffer buffer)
                                (make-instance 'annotation-tag-source))))
          (annotation (make-instance 'url-annotation
                                     :url (url buffer)
                                     :data data
                                     :tags tags)))
-    (print tags)
     (annotation-add annotation)))
 
 (define-command annotate-highlighted-text (&optional (buffer (current-buffer)))
@@ -97,10 +92,18 @@
            (data (first (prompt
                          :prompt "Annotation"
                          :sources (list (make-instance 'prompter:raw-source)))))
+           (tags (prompt
+                  :prompt "Tag(s)"
+                  :sources (list (make-instance 'prompter:word-source
+                                                :name "New tags"
+                                                :multi-selection-p t)
+                                 (make-instance 'keyword-source :buffer buffer)
+                                 (make-instance 'annotation-tag-source))))
            (annotation (make-instance 'snippet-annotation
                                       :snippet snippet
                                       :url (url buffer)
-                                      :data data)))
+                                      :data data
+                                      :tags tags)))
       (annotation-add annotation))))
 
 (defun render-annotations (annotations)
