@@ -88,15 +88,31 @@
                                       :data data)))
       (annotation-add annotation))))
 
+(defun render-annotations (annotations)
+  (with-current-html-buffer (buffer "*Annotations*" 'base-mode)
+        (spinneret:with-html-string
+          (:style (style buffer))
+          (:h1 "Annotations")
+          (loop for annotation in annotations
+                collect (:div (:raw (render annotation))
+                              (:hr))))))
+
 (define-command show-annotations-for-current-buffer (&optional (source-buffer (current-buffer)))
   "Create a new buffer with the annotations of the current URL of BUFFER."
   (with-data-access (annotations (annotations-path (current-buffer)))
     (let ((filtered-annotations (remove-if-not (lambda (i) (url-equal (quri:uri (url i)) (url source-buffer))) annotations)))
-      (print filtered-annotations)
-      (with-current-html-buffer (buffer (format nil "*Annotations - ~a*" (url source-buffer)) 'base-mode)
-        (spinneret:with-html-string
-          (:style (style buffer))
-          (:h1 "Annotations")
-          (loop for annotation in filtered-annotations
-                collect (:div (:raw (render annotation))
-                              (:hr))))))))
+      (render-annotations filtered-annotations))))
+
+(define-class annotation-source (prompter:source)
+  ((prompter:name "Annotations")
+   (prompter:constructor (get-data (annotations-path (current-buffer))))
+   (prompter:multi-selection-p t)))
+
+(define-command open-annotation ()
+  "Open an annotation."
+  (let ((selected-annotations
+          (prompt
+           :prompt "Show annotation(s)"
+           :sources (make-instance 'annotation-source
+                                   :actions nil))))
+    (render-annotations selected-annotations)))
