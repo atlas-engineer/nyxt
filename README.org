@@ -2,10 +2,9 @@
 
 * Nyxt browser
 
-Nyxt is a keyboard-oriented, infinitely extensible web browser designed
-for power users.  Conceptually inspired by Emacs and Vim, it has
-familiar key-bindings ([[https://en.wikipedia.org/wiki/Emacs][Emacs]], [[https://en.wikipedia.org/wiki/Vim_(text_editor)][vi]], [[https://en.wikipedia.org/wiki/IBM_Common_User_Access][CUA]]), and is fully configurable in
-Lisp.
+Nyxt is a keyboard-driven web browser designed for power users.
+Inspired by Emacs and Vim, it has familiar key-bindings ([[https://en.wikipedia.org/wiki/Emacs][Emacs]], [[https://en.wikipedia.org/wiki/Vim_(text_editor)][vi]],
+[[https://en.wikipedia.org/wiki/IBM_Common_User_Access][CUA]]), and is infinitely extensible in Lisp.
 
 If you like Nyxt and you would like to help future development, please
 give us a star, spread the word, and support us on [[https://www.patreon.com/nyxt][Patreon]], thank you!
