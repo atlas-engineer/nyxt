@@ -20,25 +20,14 @@
    (title "")
    (annotation "")
    (date (local-time:now))
-   (tags '()
-         :type list-of-strings)
-
-   ;; TODO: Remove slots for 2.0.
-   (shortcut ""
-             :export nil
-             :accessor nil
-             :documentation "Deprecated, use `search-engine' instead.")
-
-   (search-url ""
-               :export nil
-               :accessor nil
-               :documentation "Deprecated, use `search-engine' instead."))
+   (tags
+    '()
+    :type list-of-strings))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod prompter:object-attributes ((entry bookmark-entry))
-  ;; TODO: Add annocation slots?
   `(("URL" ,(render-url (url entry)))
     ("Title" ,(title entry))
     ("Tags" ,(format nil "~{~a ~}" (tags entry)))
@@ -99,40 +88,61 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 
 (define-class tag-source (prompter:source)
   ((prompter:name "Tags")
-   (prompter:filter-preprocessor (lambda (initial-suggestions-copy source input)
-                                   (prompter:delete-inexact-matches
-                                    initial-suggestions-copy
-                                    source
-                                    (last-word input))))
-   (prompter:filter (lambda (suggestion source input)
-                      (prompter:fuzzy-match suggestion source (last-word input))))
+   (prompter:filter-preprocessor
+    (lambda (initial-suggestions-copy source input)
+      (prompter:delete-inexact-matches
+       initial-suggestions-copy
+       source
+       (last-word input))))
+   (prompter:filter
+    (lambda (suggestion source input)
+      (prompter:fuzzy-match suggestion source (last-word input))))
    (prompter:multi-selection-p t)
    (prompter:constructor (tag-suggestions)))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(define-class keyword-source (prompter:source)
+  ((prompter:name "Keywords")
+   (buffer :accessor buffer :initarg :buffer)
+   (prompter:multi-selection-p t)
+   (prompter:constructor (lambda (source)
+                           (mapcar #'car (keywords (buffer source))))))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-command list-bookmarks ()
   "List all bookmarks in a new buffer."
-  (with-current-html-buffer (bookmarks-buffer "*Bookmarks*" 'base-mode)
-    (spinneret:with-html-string
-      (:style (style bookmarks-buffer))
-      (:h1 "Bookmarks")
-      (:body
-       (or (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
-             (loop for bookmark in bookmarks
-                   collect
-                      (let ((url-display (render-url (url bookmark)))
-                            (url-href (render-url (url bookmark))))
-                        (:div
-                         (:p (:b "Title: ") (title bookmark))
-                         (:p (:b "URL: ") (:a :href url-href
-                                              url-display))
-                         (:p (:b "Tags: ")
-                             (when (tags bookmark)
-                               (format nil " (~{~a~^, ~})" (tags bookmark))))
-                         (:p (:a :class "button"
-                                 :href (lisp-url `(nyxt::delete-bookmark ,url-href)) "Delete"))
-                         (:hr "")))))
-           (format nil "No bookmarks in ~s." (expand-path (bookmarks-path (current-buffer)))))))))
+  (flet ((html-bookmark-id (id)
+           (format nil "bookmark-~d" id)))
+    (with-current-html-buffer (bookmarks-buffer "*Bookmarks*" 'base-mode)
+      (spinneret:with-html-string
+        (:style (style bookmarks-buffer))
+        (:h1 "Bookmarks")
+        (:body
+         (or (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
+               (loop for bookmark in bookmarks
+                     for id from 0 by 1
+                     collect
+                     (let ((url-display (render-url (url bookmark)))
+                           (url-href (render-url (url bookmark))))
+                       (:div
+                        :id (html-bookmark-id id)
+                        (:p (:b "Title: ") (title bookmark))
+                        (:p (:b "URL: ") (:a :href url-href
+                                             url-display))
+                        (:p (:b "Tags: ")
+                            (when (tags bookmark)
+                              (format nil " (~{~a~^, ~})" (tags bookmark))))
+                        (:p (:a :class "button"
+                                :onclick
+                                (ps:ps
+                                  (let ((element
+                                          (ps:chain
+                                           document
+                                           (get-element-by-id (ps:lisp (html-bookmark-id id))))))
+                                    (ps:chain element parent-node (remove-child element))))
+                                :href (lisp-url `(nyxt::delete-bookmark ,url-href)) "Delete"))
+                        (:hr "")))))
+             (format nil "No bookmarks in ~s." (expand-path (bookmarks-path (current-buffer))))))))))
 
 (define-command-global show-bookmarks-panel (&key (side :left))
   "Show the bookmarks in a panel."
@@ -168,37 +178,25 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 
 (define-command bookmark-current-url (&optional (buffer (current-buffer)))
   "Bookmark the URL of BUFFER."
-  ;; TODO: Re-use extract-keywords to implement tag suggestion source.
-  ;; (flet ((extract-keywords (html limit)
-  ;;          (sera:take limit (delete "" (mapcar #'first
-  ;;                                              (analysis:keywords
-  ;;                                               (make-instance
-  ;;                                                'analysis:document
-  ;;                                                :string-contents (plump:text (plump:parse html)))))
-  ;;                                   :test #'string=)))))
   (if (url-empty-p (url buffer))
       (echo "Buffer has no URL.")
-      (let* (;; (body (with-current-buffer buffer
-             ;;         (ffi-buffer-get-document buffer)))
-             (tags (prompt
-                    :prompt "Tag(s)"
-                    :sources (list
-                              (make-instance 'prompter:word-source
-                                             :name "New tags"
-                                             ;; On no input, suggest the empty tag which effectively acts as "no tag".
-                                             ;; Without it, we would be force to
-                                             ;; specify a tag.
-                                             :filter-postprocessor
-                                             (lambda (suggestions source input)
-                                               (declare (ignore source input))
-                                               (or suggestions
-                                                   (list "")))
-                                             :multi-selection-p t)
-                              (make-instance 'tag-source
-                                             :marks (url-bookmark-tags (url buffer))
-                                             ;; TODO: Move extra-tags to a separate source.
-                                             ;; :extra-tags (extract-keywords body 5)
-                                             )))))
+      (let ((tags (prompt
+                   :prompt "Tag(s)"
+                   :sources (list
+                             (make-instance 'prompter:word-source
+                                            :name "New tags"
+                                            ;; On no input, suggest the empty tag which effectively acts as "no tag".
+                                            ;; Without it, we would be force to specify a tag.
+                                            :filter-postprocessor
+                                            (lambda (suggestions source input)
+                                              (declare (ignore source input))
+                                              (or suggestions
+                                                  (list "")))
+                                            :multi-selection-p t)
+                             (make-instance 'keyword-source
+                                            :buffer buffer)
+                             (make-instance 'tag-source
+                                            :marks (url-bookmark-tags (url buffer)))))))
         (bookmark-add (url buffer)
                       :title (title buffer)
                       :tags tags)
@@ -271,7 +269,6 @@ With multiple selections, open the first bookmark in the current buffer, the
 rest in background buffers."
   (prompt
    :prompt "Open bookmark(s)"
-   ;; :default-modes '(minibuffer-tag-mode minibuffer-mode) ; TODO: Replace this behaviour.
    :sources (make-instance 'bookmark-source
                            :actions actions)))
 
@@ -327,8 +324,6 @@ rest in background buffers."
 (defmethod store ((profile data-profile) (path bookmarks-data-path) &key &allow-other-keys)
   "Store the bookmarks to the buffer `bookmarks-path'."
   (with-data-file (file path :direction :output)
-    ;; TODO: Make sorting customizable?  Note that `store-sexp-bookmarks' is
-    ;; already a customizable function.
     (%set-data path
               (sort (get-data path)
                     #'url< :key #'url))

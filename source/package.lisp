@@ -19,17 +19,18 @@
   (:import-from #:class-star #:define-class)
   (:import-from #:serapeum
                 #:export-always
-                #:->))
+                #:->)
+  (:export #:use-nyxt-package-nicknames))
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria :nyxt)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum :nyxt)
+  (trivial-package-local-nicknames:add-package-local-nickname :lpara :lparallel :nyxt)
+  (trivial-package-local-nicknames:add-package-local-nickname :class* :hu.dwim.defclass-star :nyxt)
   (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks :nyxt))
 
-(uiop:define-package nyxt/repl-mode
-  (:use #:common-lisp #:nyxt)
-  (:import-from #:keymap #:define-scheme)
-  (:import-from #:nyxt #:pflet)
-  (:export :repl-mode))
+(defun nyxt::use-nyxt-package-nicknames ()
+  (loop for package in (trivial-package-local-nicknames:package-local-nicknames :nyxt)
+        do (trivial-package-local-nicknames:add-package-local-nickname (car package) (package-name (cdr package)))))
 
 (uiop:define-package nyxt-user
   (:use #:common-lisp #:nyxt)

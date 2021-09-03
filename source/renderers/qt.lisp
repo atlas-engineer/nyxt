@@ -6,7 +6,7 @@
 (define-class qt-browser ()
   ((application :accessor application))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod ffi-initialize ((browser qt-browser) urls startup-timestamp)
   (log:debug "Initializing Qt Interface")
@@ -33,17 +33,17 @@
    (minibuffer-view))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class qt-buffer ()
   ((qt-object))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod initialize-instance :after ((window qt-window) &key)
   (with-slots (id qt-object box-layout active-buffer minibuffer-view) window
-    (setf id (get-unique-window-identifier *browser*))
+    (setf id (get-unique-identifier *browser*))
     (setf qt-object (qt:new-q-widget))
     (setf box-layout (qt:new-qv-box-layout))
     (setf active-buffer (make-instance 'user-buffer))
@@ -94,7 +94,7 @@
 
 (defmethod initialize-instance :after ((buffer qt-buffer) &key)
   (hooks:run-hook (buffer-before-make-hook *browser*) buffer)
-  (setf (id buffer) (get-unique-buffer-identifier *browser*))
+  (setf (id buffer) (get-unique-identifier *browser*))
   (setf (qt-object buffer) (qt:new-q-web-engine-view))
   (qt:load-started-listener-connect
    (qt-object buffer)

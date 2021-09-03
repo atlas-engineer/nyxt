@@ -13,12 +13,22 @@
        :documentation "Unique identifier for a buffer.
 Dead buffers or placeholder buffers (i.e. those not associated with a web view)
 have an empty ID.")
+   ;; TODO: Or maybe a dead-buffer should just be a buffer history?
    (data-profile (make-instance (or (find-data-profile (getf *options* :data-profile))
                                     'default-data-profile))
                  :type data-profile
                  :documentation "Profile to use for all persisted files.
 See the `data-path' class and the `expand-path' function.")
-   ;; TODO: Or maybe a dead-buffer should just be a buffer history?
+   (document-model-delta-threshold
+    10
+    :documentation "Update the document model when the amount of elements on the
+    page change greater than this amount."
+    :export nil)
+   (document-model
+    nil
+    :type (or null plump:node)
+    :documentation "A parsed representation of the page currently opened.
+Created from the page code with the help of `plump:parse'. See `update-document-model'.")
    (url (quri:uri ""))
    (url-at-point (quri:uri ""))
    (title "")
@@ -225,8 +235,14 @@ History data is kept in browser's `user-data', keyed by the expanded `history-pa
    (bookmarks-path (make-instance 'bookmarks-data-path)
                    :type data-path
                    :documentation "
-The path where the system will create/save the bookmarks.  Bookmarks' data is
-kept in browser's `user-data', keyed by the expanded `bookmarks-path'.")
+
+The path where the system will create/save the bookmarks.
+Bookmarks' data is kept in browser's `user-data', keyed by the expanded `bookmarks-path'.")
+   (annotations-path (make-instance 'annotations-data-path)
+                     :type data-path
+                     :documentation "
+The path where the system will create/save annotations.
+Annotation' data is kept in browser's `user-data', keyed by the expanded `annotations-path'.")
    (inputs-path (make-instance 'inputs-data-path)
                 :type data-path
                 :documentation "
@@ -245,7 +261,7 @@ Rules are kept in browser's `user-data', keyed by the expanded `auto-mode-rules-
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "A buffer is the fundamental unit of displayed content.
 Buffers result from the computations of a web renderer, which generates a visual
 representation of HTML documents.
@@ -290,16 +306,6 @@ inherited from the superclasses."))
 - `:unloaded' for buffers that have not been loaded yet, like
   session-restored buffers, dead buffers or new buffers that haven't started the
   loading process yet.")
-   (document-model-delta-threshold
-    10
-    :documentation "Update the document model when the amount of elements on the
-    page change greater than this amount."
-    :export nil)
-   (document-model
-    nil
-    :type (or null plump:node)
-    :documentation "A parsed representation of the page currently opened.
-Created from the page code with the help of `plump:parse'. See `update-document-model'.")
    (keywords
     nil
     :accessor nil
@@ -327,7 +333,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-user-class web-buffer)
 
@@ -343,7 +349,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-user-class nosave-buffer)
 
@@ -399,7 +405,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-user-class internal-buffer)
 
@@ -449,7 +455,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
               :color "white")))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-user-class panel-buffer)
 
@@ -460,7 +466,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Each editor buffer matches a file. Each editor buffer
   contains an editor mode instance."))
 
@@ -514,12 +520,12 @@ Delete it with `ffi-buffer-delete'."
                ("#container"
                 :display "grid"
                 ;; Columns: controls, url, tabs, modes
-                :grid-template-columns "120px 2fr 3fr 240px"
+                :grid-template-columns "90px minmax(auto, 30ch) 1fr 220px"
                 :overflow-y "hidden")
                ("#container-vi"
                 :display "grid"
                 ;; Columns: controls, vi-status, url, tabs, modes
-                :grid-template-columns "120px 30px 2fr 3fr 240px"
+                :grid-template-columns "90px 30px minmax(auto, 30ch) 1fr 220px"
                 :overflow-y "hidden")
                ("#controls"
                 :background-color "rgb(80,80,80)"
@@ -587,7 +593,7 @@ Delete it with `ffi-buffer-delete'."
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-user-class status-buffer)
 
@@ -608,7 +614,7 @@ Delete it with `ffi-buffer-delete'."
   (setf (document-model buffer)
         (nyxt/dom::named-json-parse (nyxt/dom::get-document-body-json))))
 
-(defmethod document-model :around ((buffer web-buffer))
+(defmethod document-model :around ((buffer buffer))
   (pflet ((%count-dom-elements
            ()
            (defvar dom-counter 0)
@@ -648,16 +654,17 @@ Delete it with `ffi-buffer-delete'."
 
 (defmethod keywords ((buffer web-buffer))
   "Calculate the keywords for a given buffer."
-  (if (not (eq (document-model buffer)
-               (keywords-document-model buffer)))
-      (let ((contents (serapeum:string-join
-                       (map 'list (lambda (e) (plump:text e))
-                            (clss:select "p" (document-model buffer))) " ")))
-        (setf (keywords-document-model buffer)
-              (document-model buffer)
-              (slot-value buffer 'keywords)
-              (analysis:extract-keywords contents)))
-      (slot-value buffer 'keywords)))
+  (ignore-errors
+   (if (not (eq (document-model buffer)
+                (keywords-document-model buffer)))
+       (let ((contents (serapeum:string-join
+                        (map 'list (lambda (e) (plump:text e))
+                             (clss:select "p" (document-model buffer))) " ")))
+         (setf (keywords-document-model buffer)
+               (document-model buffer)
+               (slot-value buffer 'keywords)
+               (analysis:extract-keywords contents)))
+       (slot-value buffer 'keywords))))
 
 (-> proxy-adress (buffer &key (:downloads-only boolean)) *)
 (defun proxy-url (buffer &key (downloads-only nil))
@@ -724,11 +731,6 @@ BUFFER's modes."
 
 (export-always 'on-signal-load-finished)
 (defmethod on-signal-load-finished ((buffer buffer) url)
-  (dolist (mode (modes buffer))
-    (on-signal-load-finished mode url))
-  (run-thread (hooks:run-hook (buffer-loaded-hook buffer) buffer)))
-
-(defmethod on-signal-load-finished ((buffer web-buffer) url)
   ;; Need to force document-model re-parsing.
   (setf (document-model buffer) nil)
   (dolist (mode (modes buffer))
@@ -848,10 +850,10 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   (let ((buffer (if dead-buffer
                     (progn
                       ;; Dead buffer ID must be renewed before calling `ffi-buffer-make'.
-                      (setf (id dead-buffer) (get-unique-buffer-identifier *browser*))
+                      (setf (id dead-buffer) (get-unique-identifier *browser*))
                       (ffi-buffer-make dead-buffer))
                     (apply #'make-instance buffer-class
-                           :id (get-unique-buffer-identifier *browser*)
+                           :id (get-unique-identifier *browser*)
                            (append (when title `(:title ,title))
                                    (when data-profile `(:data-profile ,data-profile)))))))
     (hooks:run-hook (buffer-before-make-hook *browser*) buffer)
@@ -1030,7 +1032,7 @@ proceeding."
 
 (-> switch-buffer (&key (:id string) (:current-is-last-p boolean)) *)
 (define-command switch-buffer (&key id (current-is-last-p nil))
-  "Switch the active buffer in the current window.
+  "Switch buffer using fuzzy completion to quickly find whatever buffer you are looking for.
 Buffers are ordered by last access.
 With CURRENT-IS-LAST-P, the current buffer is listed last so as to list the
 second latest buffer first."
@@ -1171,7 +1173,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
            :type (or null search-engine)))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Structure holding the new URL query generated from a user
  string input.
 If `engine' is set, `query' is passed to it.  See the `url' method.

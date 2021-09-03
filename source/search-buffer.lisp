@@ -111,7 +111,7 @@
   ((identifier)
    (body)
    (buffer))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod prompter:object-attributes ((match search-match))
   `(("Default" ,(body match))
@@ -167,7 +167,7 @@
                           (remove-focus))))
   (:export-accessor-names-p t)
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-user-class search-buffer-source)
 
 (defmethod initialize-instance :after ((source search-buffer-source) &key)
@@ -177,7 +177,7 @@
                 (minimum-search-length source))))
 
 (define-command search-buffer (&key case-sensitive-p)
-  "Start a search on the current buffer."
+  "Search on the current buffer."
   (prompt
    :prompt "Search text"
    :sources (list
@@ -185,7 +185,7 @@
                             :case-sensitive-p case-sensitive-p))))
 
 (define-command search-buffers (&key case-sensitive-p)
-  "Start a search on the current buffer."
+  "Search multiple buffers."
   (let ((buffers (prompt
                   :prompt "Search buffer(s)"
                   :sources (list (make-instance 'user-buffer-source ; TODO: Define class?

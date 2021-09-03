@@ -8,7 +8,7 @@
    (element nil :documentation "The header-representing element of `document-model'.")
    (buffer :documentation "The buffer to which this heading belongs.")
    (keywords :documentation "Keywords associated with this heading."))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "A heading. The inner-text must not be modified, so that we
   can jump to the anchor of the same name."))
 
@@ -26,8 +26,9 @@
            (make-instance 'heading :inner-text (plump:text e)
                                    :element e
                                    :buffer buffer
-                                   :keywords (analysis:extract-keywords
-                                              (plump:text (plump:next-element e)))))
+                                   :keywords (ignore-errors
+                                              (analysis:extract-keywords
+                                               (plump:text (plump:next-element e))))))
          (clss:select "h1, h2, h3, h4, h5, h6" (document-model buffer)))))
 
 (define-parenscript scroll-to-element (&key nyxt-identifier)

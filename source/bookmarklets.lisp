@@ -89,12 +89,12 @@ evaluate, or a file:// URL with a file path to a JavaScript source file."
   "Remove images from web pages."
   "(function(){function toArray (c){var a, k;a=new Array;for (k=0; k < c.length; ++k)a[k]=c[k];return a;}var images, img, altText;images=toArray(document.images);for (var i=0; i < images.length; ++i){img=images[i];altText=document.createTextNode(img.alt);img.parentNode.replaceChild(altText, img)}})();")
 
-;; This bookmarklet was sourced from 'https://github.com/frontdevops/darkthemeswitcher-inline' with permission under free license.
 (define-bookmarklet-command invert-color
   "Invert the color of the web page."
+  ;; This bookmarklet was sourced from 'https://github.com/frontdevops/darkthemeswitcher-inline' with permission under free license.
   "(d=>{var css=`:root{background-color:#fefefe;filter:invert(100%)}*{background-color:inherit}img:not([src*=\".svg\"]),video{filter: invert(100%)}`,style,id=\"dark-theme-snippet\",ee=d.getElementById(id);if(null!=ee)ee.parentNode.removeChild(ee);else {style = d.createElement('style');style.type=\"text/css\";style.id=id;if(style.styleSheet)style.styleSheet.cssText=css;else style.appendChild(d.createTextNode(css));(d.head||d.querySelector('head')).appendChild(style)}})(document)")
 
-;; This bookmarklet was sourced form 'https://github.com/x08d/222' with permission under the GPL v3.0
 (define-bookmarklet-command darken
   "Darken the page."
+  ;; This bookmarklet was sourced form 'https://github.com/x08d/222' with permission under the GPL v3.0
   "javascript:document.querySelectorAll('*').forEach(e=>e.setAttribute('style','background-color:#222 !important;background-image:none !important;color:#'+(/^A|BU/.test(e.tagName)?'36c;text-decoration:underline;':'eee;')+e.getAttribute('style')))")

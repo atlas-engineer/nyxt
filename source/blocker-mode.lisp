@@ -7,33 +7,35 @@
   (:documentation "Block resource queries for listed hosts."))
 (in-package :nyxt/blocker-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
-  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum)
-  (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks))
+  (use-nyxt-package-nicknames))
 
 ;; TODO: Add convenient interface to block hosts depending on the current URL.
 
 (defclass hostlist-data-path (data-path) ())
 
 (define-class hostlist ()
-  ((url (quri:uri "")
-        :type quri:uri
-        :documentation "URL where to download the list from.  If empty, no attempt
+  ((url
+    (quri:uri "")
+    :type quri:uri
+    :documentation "URL where to download the list from.  If empty, no attempt
 will be made at updating it.")
-   (path (make-instance 'hostlist-data-path)
-         :type hostlist-data-path
-         :documentation "Where to find the list locally.
+   (path
+    (make-instance 'hostlist-data-path)
+    :type hostlist-data-path
+    :documentation "Where to find the list locally.
 If nil, the list won't be persisted.
 If path is relative, it will be set to (xdg-data-home path).")
-   (hosts '()
-          :documentation "The list of domain name.")
-   (update-interval (* 60 60 24)
-                    :type integer
-                    :documentation "If URL is provided, update the list after
-this amount of seconds."))
+   (hosts
+    '()
+    :documentation "The list of domain names.")
+   (update-interval
+    (* 60 60 24)
+    :type integer
+    :documentation "If URL is provided, update the list after this amount of
+seconds."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "A hostlist `blocker-mode' can use for its `hostlists' slot.
 See `*default-hostlist*' for an example."))
 

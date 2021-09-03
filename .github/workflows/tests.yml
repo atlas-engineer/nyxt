@@ -11,8 +11,7 @@ jobs:
     name: ${{ matrix.lisp }} on ${{ matrix.os }}
     strategy:
       matrix:
-        lisp: [sbcl-bin, ccl] # Warning, CCL tests may not pass:
-        # https://github.com/atlas-engineer/nyxt/pull/1079/checks?check_run_id=1596727844
+        lisp: [sbcl-bin] # CCL disabled, to renable add to list.
         os: [ ubuntu-latest ]
 
     # run the job on every combination of "lisp" and "os" above

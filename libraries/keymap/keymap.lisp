@@ -327,6 +327,15 @@ Parents are ordered by priority, the first parent has highest priority.")))
 (defun keymap-p (object)
   (typep object 'keymap))
 
+(defun copy-keymap (keymap)
+  (let ((new-keymap (apply #'make-keymap (name keymap)
+                           (parents keymap))))
+    (setf (bound-type new-keymap)
+          (bound-type keymap))
+    (setf (entries new-keymap)
+          (entries keymap))
+    new-keymap))
+
 ;; "keyspec" is better then "keydesc" since the strings are well specified,
 ;; while a "description" could be anything.
 (deftype keyspecs-type ()

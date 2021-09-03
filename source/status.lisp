@@ -11,11 +11,17 @@
         :href (lisp-url '(nyxt:toggle-modes))
         :title (str:concat "Enabled modes: " (list-modes buffer)) "⊕")
     (loop for mode in (sera:filter #'visible-in-status-p (modes buffer))
-          collect (:a :class "button" :href (lisp-url `(describe-class ',(mode-name mode)))
-                      :title (format nil "Describe ~a" (mode-name mode))
-                      (if (glyph-mode-presentation-p (status-buffer window))
-                          (glyph mode)
-                          (format-mode mode))))))
+          collect (let* ((formatted-mode (if (glyph-mode-presentation-p (status-buffer window))
+                                             (glyph mode)
+                                             (format-mode mode)))
+                         ;; Parsing HTML is a valid way to know if HTML it is.
+                         (parsed-mode (ignore-errors (plump:parse formatted-mode))))
+                    (if (and (sera:single (plump:children parsed-mode))
+                             (plump:text-node-p (elt (plump:children parsed-mode) 0)))
+                        (:a :class "button" :href (lisp-url `(describe-class ',(mode-name mode)))
+                            :title (format nil "Describe ~a" (mode-name mode))
+                            formatted-mode)
+                        (:raw formatted-mode))))))
 
 (defun list-modes (buffer)
   (format nil "~{~a~^ ~}" (mapcar #'format-mode (modes buffer))))
@@ -26,8 +32,7 @@
     (:a :class "button" :title "Backwards" :href (lisp-url '(nyxt/web-mode:history-backwards)) "←")
     (:a :class "button" :title "Forwards" :href (lisp-url '(nyxt/web-mode:history-forwards)) "→")
     (:a :class "button" :title "Reload" :href (lisp-url '(nyxt:reload-current-buffer)) "↺")
-    (:a :class "button" :title "Execute" :href (lisp-url '(nyxt:execute-command)) "⚙")
-    (:a :class "button" :title "Buffers" :href (lisp-url '(nyxt/buffer-listing-mode:list-buffers)) "≡")))
+    (:a :class "button" :title "Execute" :href (lisp-url '(nyxt:execute-command)) "≡")))
 
 (defun format-status-vi-mode (&optional (buffer (current-buffer)))
   (spinneret:with-html-string

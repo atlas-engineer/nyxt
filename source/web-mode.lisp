@@ -12,8 +12,7 @@
   (:documentation "Mode for web pages"))
 (in-package :nyxt/web-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
-  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
+  (use-nyxt-package-nicknames))
 
 ;; TODO: Remove web-mode from special buffers (e.g. help).
 ;; This is required because special buffers cannot be part of a history (and it breaks it).
@@ -98,7 +97,7 @@ and to index the top of the page.")
        "C-down" 'scroll-to-bottom
        "C-up" 'scroll-to-top
        "C-i" 'autofill
-       "C-e '" 'edit-with-external-editor
+       "C-u C-x C-f" 'edit-with-external-editor
        ;; Leave SPACE and arrow keys unbound so that the renderer decides whether to
        ;; navigate textboxes (arrows), insert or scroll (space).
        ;; keypad, gtk:
@@ -213,18 +212,6 @@ and to index the top of the page.")
          (nyxt::last-event buffer))
         (funcall command))))
 
-(nyxt::define-deprecated-command paste-or-set-url (&optional (buffer (current-buffer)))
-  "Paste text if active element is an input tag, forward event otherwise.
-
-This was useful before Nyxt 2.0 as a workaround for hangs that would occur on pasting."
-  (let ((response (%clicked-in-input?)))
-    (let ((url-empty (url-empty-p (url-at-point buffer))))
-      (if (and (input-tag-p response) url-empty)
-          (funcall #'paste)
-          (unless url-empty
-            (make-buffer-focus :url (url-at-point buffer)
-                               :nosave-buffer-p (nosave-buffer-p buffer)))))))
-
 (define-command maybe-scroll-to-bottom (&optional (buffer (current-buffer)))
   "Scroll to bottom if no input element is active, forward event otherwise."
   (call-non-input-command-or-forward #'scroll-to-bottom :buffer buffer))
@@ -236,15 +223,13 @@ This was useful before Nyxt 2.0 as a workaround for hangs that would occur on pa
 (define-command go-next ()
   "Navigate to the next element according to the HTML 'rel' attribute."
   (pflet ((go-next ()
-                   (ps:chain document
-                             (query-selector-all "[rel=next]") 0 (click))))
+            (ps:chain document (query-selector-all "[rel=next]") 0 (click))))
     (go-next)))
 
 (define-command go-previous ()
   "Navigate to the previous element according to the HTML 'rel' attribute."
   (pflet ((go-previous ()
-                       (ps:chain document
-                                 (query-selector-all "[rel=prev]") 0 (click))))
+            (ps:chain document (query-selector-all "[rel=prev]") 0 (click))))
     (go-previous)))
 
 (define-command go-to-homepage ()
@@ -255,7 +240,7 @@ This was useful before Nyxt 2.0 as a workaround for hangs that would occur on pa
     (buffer-load (str:concat scheme "://" authority))))
 
 (define-command go-up ()
-  "Navigate to the upper level in URL path hierarchy."
+  "Navigate to the upper level in the URL path hierarchy."
   (let* ((url (url (current-buffer)))
          (path (quri:uri-path url))
          (path-splited (str:split "/" path :omit-nulls t))
@@ -476,6 +461,7 @@ Otherwise go forward to the only child."
                                                  (:b title)
                                                  title))))))
                                 history
+                                (htree:owner history (id buffer))
                                 :include-root t
                                 :collect-function #'(lambda (a b) (str:concat a (when b
                                                                                   (spinneret:with-html-string
@@ -506,6 +492,7 @@ Otherwise go forward to the only child."
                                                       (:b title))
                                                      (t title))))))) ; Color?  Smaller?
                                   history
+                                  :owner (htree:owner history current-buffer-id)
                                   :include-root t
                                   :collect-function #'(lambda (a b) (str:concat a (when b
                                                                                     (spinneret:with-html-string
@@ -563,16 +550,15 @@ Otherwise go forward to the only child."
     (copy-to-clipboard input)
     (echo "Text copied.")))
 
-(define-parenscript %copy-placeholder ()
-  (ps:chain document active-element placeholder))
-
 (define-command copy-placeholder ()
   "Copy placeholder text to clipboard."
-  (let ((current-value (%copy-placeholder)))
-    (if (eq current-value :undefined)
-        (echo "No active selected placeholder.")
-        (progn (copy-to-clipboard current-value)
-               (echo "Placeholder copied.")))))
+  (pflet ((copy-placeholder ()
+            (ps:chain document active-element placeholder)))
+    (let ((current-value (copy-placeholder)))
+      (if (eq current-value :undefined)
+          (echo "No active selected placeholder.")
+          (progn (copy-to-clipboard current-value)
+                 (echo "Placeholder copied."))))))
 
 (define-class autofill-source (prompter:source)
   ((prompter:name "Autofills")

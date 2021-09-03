@@ -65,13 +65,14 @@ The handlers take the window and the buffer as argument.")
     :documentation "Function of a window argument that returns
 a string to be printed in the status view.
 Cannot be null.")
-   (window-delete-hook (make-hook-window)
-                       :type hook-window
-                       :documentation "Hook run after `ffi-window-delete' takes effect.
+   (window-delete-hook
+    (make-hook-window)
+    :type hook-window
+    :documentation "Hook run after `ffi-window-delete' takes effect.
 The handlers take the window as argument."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "A window is a view where buffers are displayed."))
 
 (define-user-class window)
@@ -98,8 +99,7 @@ The handlers take the window as argument."))
    (prompter:constructor (lambda (source)
                            (panel-buffers (window source))))))
 
-(define-command-global delete-panel-buffer (&key (window (current-window))
-                                            panels)
+(define-command-global delete-panel-buffer (&key (window (current-window)) panels)
   "Prompt the user to delete a panel buffer."
   (let ((panels (or panels
                     (prompt

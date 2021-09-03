@@ -8,8 +8,7 @@
   (:documentation "Universal interface to various operating system package managers."))
 (in-package :nyxt/os-package-manager-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
-  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
+  (use-nyxt-package-nicknames))
 
 ;; TODO: Prompt for password?  Use this:
 ;; (with-input-from-string (i "password")
@@ -104,7 +103,7 @@
    (prompter:constructor
     (lambda (source)
       (ospm:list-packages (profile source)))))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class os-profile-source (prompter:source)
   ((prompter:name "Profiles")
@@ -112,7 +111,7 @@
    (prompter:constructor
     (lambda (source) (ospm:list-profiles
                       :include-manager-p (include-manager-p source)))))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class os-generation-source (prompter:source)
   ((prompter:name "Packages")
@@ -120,7 +119,7 @@
    (prompter:constructor
     (lambda (source) 
       (ospm:list-generations (profile source)))))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defun %describe-os-package (packages)
   (let* ((buffer (or (find-buffer 'os-package-manager-mode)

@@ -3,8 +3,7 @@
 
 (in-package :nyxt/prompt-buffer-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
-  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
+  (use-nyxt-package-nicknames))
 
 (define-mode prompt-buffer-mode ()
   "The prompt buffer is the where all the interactions between Nyxt and the user happen.
@@ -250,7 +249,7 @@ current unmarked selection."
    (global-p nil)
    (buffer (current-prompt-buffer))
    (prompter:suggestion-maker 'make-prompt-buffer-command-suggestion))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defun make-prompt-buffer-command-suggestion (command source)
   "Return a `suggestion' wrapping around COMMAND."

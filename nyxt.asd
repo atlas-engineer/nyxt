@@ -45,6 +45,7 @@
                iolib
                iolib/os
                local-time
+               lparallel
                log4cl
                mk-string-metrics
                #-sbcl
@@ -107,6 +108,7 @@
                (:file "recent-buffers")
                (:file "password")
                (:file "bookmark")
+               (:file "annotate")
                (:file "history")
                (:file "autofill")
                (:file "auto-mode")
@@ -133,10 +135,11 @@
                (:file "vi-mode")
                (:file "blocker-mode")
                (:file "proxy-mode")
-               (:file "noimage-mode")
-               (:file "nosound-mode")
-               (:file "noscript-mode")
-               (:file "nowebgl-mode")
+               (:file "no-image-mode")
+               (:file "no-sound-mode")
+               (:file "no-script-mode")
+               (:file "no-webgl-mode")
+               (:file "reduce-bandwidth-mode")
                (:file "download-mode")
                (:file "force-https-mode")
                (:file "reduce-tracking-mode")
@@ -149,6 +152,7 @@
                (:file "preview-mode")
                (:file "diff-mode")
                (:file "expedition-mode")
+               (:file "tts-mode")
                ;; Web-mode commands
                (:file "bookmarklets")
                (:file "input-edit")
@@ -170,6 +174,7 @@
                (:file "about")
                (:file "start")
                (:file "tutorial")
+               (:file "changelog")
                (:file "manual"))
   :in-order-to ((test-op (test-op "nyxt/tests")
                          (test-op "nyxt/download-manager/tests")
@@ -509,6 +514,7 @@ See `asdf::*immutable-systems*'."
                calispel
                cl-containers
                closer-mop
+               lparallel
                mk-string-metrics
                moptilities
                serapeum

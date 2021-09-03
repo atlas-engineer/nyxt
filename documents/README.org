@@ -12,7 +12,6 @@
 - [[#developer-installation-with-guix][Developer installation with Guix]]
 - [[#developer-installation-with-nix][Developer installation with Nix]]
   - [[#building-for-local-development][Building for local development]]
-  - [[#compiling][Compiling]]
 - [[#standard-developer-installation][Standard developer installation]]
   - [[#installing-sbcl][Installing SBCL]]
   - [[#installing-quicklisp-optional][Installing Quicklisp (optional)]]
@@ -60,17 +59,6 @@ As an example, to run with SBCL, you could do the following:
 
 Then you could use Quicklisp to quickload Nyxt, =(ql:quickload
 :nyxt/gtk-application) (nyxt:start)=.
-
-** Compiling
-To compile the latest Nyxt, from the project root, run the the
-following:
-
-=nix-build -I nixpkgs=channel:nixpkgs-unstable=
-
-To compile and install the latest Nyxt, from the project root, run the
-following:
-
-=nix-env -i -f default.nix -I nixpkgs=channel:nixpkgs-unstable=
 
 * Standard developer installation
 
@@ -148,8 +136,9 @@ Otherwise clone each repository mentioned in =.gitmodules= into
 
 - Arch Linux:
   #+begin_src sh
-    sudo pacman -S git sbcl cl-asdf webkit2gtk glib-networking gsettings-desktop-schemas libfixposix enchant
+    sudo pacman -S git sbcl cl-asdf webkit2gtk glib-networking gsettings-desktop-schemas enchant
   #+end_src
+  The package libfixposix can be installed from the [[https://aur.archlinux.org/packages/libfixposix][AUR]]
 
 - Fedora:
   #+begin_src sh

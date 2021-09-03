@@ -19,8 +19,6 @@
 ;; TODO: Is "Shared history tree" a better name than "Global history tree"?
 ;; TODO: Turn unique defmethod to defuns.
 
-(export 'current-owner-id) ; TODO: Deprecated, kept for backward compatibility, remove with Nyxt 3.0.0.
-
 (defmacro export-always (symbols &optional (package nil package-supplied?)) ; From serapeum.
   "Like `export', but also evaluated at compile time."
   `(eval-when (:compile-toplevel :load-toplevel :execute)
@@ -628,13 +626,11 @@ current node result to the result of further traversal."
             (apply #'append (mapcar #'traverse (children root))))))))
 
 (export-always 'map-owned-tree)
-(defun map-owned-tree (function tree &key flatten include-root
-                                       (collect-function #'cons)
-                                       owner)
+(defun map-owned-tree (function tree owner &key flatten include-root
+                                             (collect-function #'cons))
   "Like `map-tree' but restrict traversal to OWNER's nodes."
-  (map-tree function (if (history-tree-p tree)
-                         (owned-root owner)
-                         tree)
+  (map-tree function tree
+            :owner owner
             :flatten flatten
             :include-root include-root
             :collect-function collect-function

@@ -7,3 +7,5 @@
   (:use #:common-lisp
         #:prove)
   (:import-from #:prompter))
+
+(setf lparallel:*kernel* (lparallel:make-kernel (or (serapeum:count-cpus) 1)))

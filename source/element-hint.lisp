@@ -139,8 +139,8 @@
 
 (serapeum:export-always 'query-hints)
 (defun query-hints (prompt function &key multi-selection-p
-                                      annotate-visible-only-p
-                                      (selector "a, button, input, textarea, details, select, img:not([alt=\"\"])"))
+                                         annotate-visible-only-p
+                                         (selector "a, button, input, textarea, details, select, img:not([alt=\"\"])"))
   "Prompt to choose several elements out of those matching SELECTOR, hinting them visually.
 MULTI-SELECTION-P is whether several elements can be chosen.
 ANNOTATE-VISIBLE-ONLY-P is deprecated and has no influence on the function.
@@ -164,7 +164,9 @@ FUNCTION is the action to perform on the selected elements."
                      (with-current-buffer buffer
                        (remove-element-hints))))))
       (when result
-        (funcall function result)))))
+        (funcall function result))
+      (with-current-buffer buffer
+        (remove-element-hints)))))
 
 (defmethod prompter:object-attributes :around ((element plump:element))
   `(,@(when (plump:get-attribute element "nyxt-hint")
@@ -233,7 +235,7 @@ FUNCTION is the action to perform on the selected elements."
 (define-class options-source (prompter:source)
   ((prompter:name "Options"))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompt source for select tag options."))
 
 (defmethod %follow-hint ((select nyxt/dom:select-element))
@@ -356,7 +358,7 @@ visible nosave active buffer."
                :selector "a, img"))
 
 (define-command bookmark-hint ()
-  "Show link hints on screen, and allow the user to bookmark one"
+  "Show link hints on screen, and allow the user to bookmark one."
   (query-hints "Bookmark hint"
                (lambda (result)
                  (dolist (url (mapcar #'url result))

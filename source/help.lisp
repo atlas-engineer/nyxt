@@ -383,6 +383,17 @@ CLASS is a class symbol."
                                       (:td keyspec)
                                       (:td (string-downcase bound-value)))))))))))
 
+(define-command print-bindings-cheatsheet ()
+  "Print the buffer with the list of all known bindings for the current buffer
+optimizing the use of space."
+  (nyxt::html-set-style 
+   (cl-css:css '((h3 :font-size "10px" :font-family Helvetica Neue Helvetica
+                     :font-weight 500)
+                 (tr :font-size "7px")
+                 (div :display inline-block)))
+   (nyxt:describe-bindings))
+  (print-buffer))
+
 (defun tls-help (buffer url)
   "This function is invoked upon TLS certificate errors to give users
 help on how to proceed."
@@ -517,33 +528,37 @@ The version number is stored in the clipboard."
         "UNBOUND")))
 
 (define-command help (&key no-history-p)
-  "Print help information."
+  "Open up a small help buffer."
   (with-current-html-buffer (buffer "*Help*" 'nyxt/help-mode:help-mode
-                             :no-history-p no-history-p)
+                                    :no-history-p no-history-p)
     (spinneret:with-html-string
-     (:style (style buffer))
-     (:style (cl-css:css '(("#documentation .button"
-                            :min-width "100px"))))
-     (:h1 "Welcome to Nyxt :-)")
-     (:p (:a :href "https://nyxt.atlas.engineer" "https://nyxt.atlas.engineer"))
-     (:h2 "Quick configuration")
-     (:p (:a :class "button" :href (lisp-url `(nyxt::common-settings)) "Common settings")
-         " Switch between Emacs/vi/CUA key bindings, set home page URL, and zoom level.")
-     (:h2 "Documentation")
-     (:table :id "documentation"
-      (:tr (:td (:a :class "button" :href (lisp-url `(nyxt::describe-bindings)) "List bindings"))
-           (:td "List all bindings for the current buffer."))
-      (:tr (:td (:a :class "button" :href (lisp-url `(nyxt::edit-user-file-with-external-editor)) "Edit user files"))
-           (:td "Edit user configuration and other files in external text editor."))
-      (:tr (:td (:a :class "button" :href (lisp-url `(nyxt::tutorial)) "Tutorial"))
-           (:td "An introduction to Nyxt core concepts."))
-      (:tr (:td (:a :class "button" :href (lisp-url `(nyxt::manual)) "Manual"))
-           (:td "Full documentation about Nyxt, how it works and how to configure it."))))))
+      (:style (style buffer))
+      (:style (cl-css:css '(("#documentation .button"
+                             :min-width "100px"))))
+      (:h1 "Welcome to Nyxt :-)")
+      (:p (:a :href "https://nyxt.atlas.engineer" "https://nyxt.atlas.engineer"))
+      (:h2 "Quick configuration")
+      (:p (:a :class "button" :href (lisp-url `(nyxt::common-settings)) "Common settings")
+          " Switch between Emacs/vi/CUA key bindings, set home page URL, and zoom level.")
+      (:h2 "Documentation")
+      (:table :id "documentation"
+              (:tr (:td (:a :class "button" :href (lisp-url `(nyxt::describe-bindings)) "List bindings"))
+                   (:td "List all bindings for the current buffer."))
+              (:tr (:td (:a :class "button" :href (lisp-url `(nyxt::edit-user-file-with-external-editor)) "Edit user files"))
+                   (:td "Edit user configuration and other files in external text editor."))
+              (:tr (:td (:a :class "button" :href (lisp-url `(nyxt::tutorial)) "Tutorial"))
+                   (:td "An introduction to Nyxt core concepts."))
+              (:tr (:td (:a :class "button" :href (lisp-url `(nyxt::manual)) "Manual"))
+                   (:td "Full documentation about Nyxt, how it works and how to configure it."))
+              (:tr (:td (:a :class "button" :href (lisp-url `(nyxt::changelog)) "Change Log"))
+                   (:td "Information about changes between Nyxt versions."))))))
 
 (define-command manual ()
   "Show the manual."
   (with-current-html-buffer (buffer "*Manual*" 'nyxt/help-mode:help-mode)
     (spinneret:with-html-string (:style (style buffer))
+                                (:style (cl-css:css '(("body"
+                                                       :max-width "80ch"))))
                                 (:raw (manual-content)))))
 
 (define-command tutorial ()
@@ -551,6 +566,8 @@ The version number is stored in the clipboard."
   (with-current-html-buffer (buffer "*Tutorial*" 'nyxt/help-mode:help-mode)
     (spinneret:with-html-string
       (:style (style buffer))
+      (:style (cl-css:css '(("body"
+                             :max-width "80ch"))))
       (:h1 "Nyxt tutorial")
       (:p "The following tutorial introduces core concepts and
 basic usage.  For more details, especially regarding configuration, see
@@ -594,15 +611,6 @@ the "
 
      (when (sera:resolve-executable "guix")
        (str:concat "Guix version: " (guix-information) +newline+)))))
-
-(define-deprecated-command copy-system-information ()
-  "Save system information into the clipboard.
-Deprecated in favour of `show-system-information'."
-  (let* ((*print-length* nil)
-         (nyxt-information (system-information)))
-    (copy-to-clipboard nyxt-information)
-    (log:info nyxt-information)
-    (echo "System information copied to clipboard.")))
 
 (define-command show-system-information ()
   "Show buffer with Lisp version, Lisp features, OS kernel, etc.

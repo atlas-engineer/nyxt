@@ -6,12 +6,12 @@
 (define-class init-data-path (data-path)
   ((basename "init"))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class auto-init-data-path (init-data-path)
   ((basename "auto-config"))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defun expand-init-path (data-path option no-option)
   "Helper for `init-data-path''s `expand-data-path'."
@@ -44,7 +44,7 @@
 (define-class extensions-data-path (data-path)
   ((ref "extensions"))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod expand-data-path ((profile data-profile) (path extensions-data-path))
   "Return finalized path for extension directory."
@@ -201,7 +201,7 @@ CLASS-SYM to NEW-SUPERCLASSES.  The class is restored when exiting BODY."
                                                       ,initform))
                   else do
                     (log:warn "Undefined slot ~a in ~a" (first slot) final-name)))
-         (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+         (:accessor-name-transformer (class*:make-name-transformer name)))
        ;; TODO: Register the user methods and add function to remove them, like
        ;; `reset-user-class'.
        ;; Non-standard accessors, e.g. `default-modes':
@@ -263,17 +263,13 @@ To discover the default value of a slot or all slots of a class, use the
 (defmacro if-confirm (prompt yes-form &optional no-form)
   "Ask the user for confirmation before executing either YES-FORM or NO-FORM.
 YES-FORM is executed on  \"yes\" answer, NO-FORM -- on \"no\".
-PROMPT is a list fed to `format nil'.
-
-Example usage defaulting to \"no\":
-
-\(let ((*yes-no-choices* '(:no \"no\" :yes \"yes\")))
-  (if-confirm (\"Are you sure to kill ~a buffers?\" count)
-     (delete-buffers)))"
-  `(let ((answer (first (prompt
-                         :prompt (format nil ,@prompt)
-                         :sources '(prompter:yes-no-source)
-                         :hide-suggestion-count-p t))))
+PROMPT is a list fed to `format nil'."
+  `(let ((answer (first (handler-case
+                            (prompt
+                             :prompt (format nil ,@prompt)
+                             :sources '(prompter:yes-no-source)
+                             :hide-suggestion-count-p t)
+                          (nyxt-prompt-buffer-canceled (c) (declare (ignore c)) '("no"))))))
      (if (string= "yes" answer)
          ,yes-form
          ,no-form)))

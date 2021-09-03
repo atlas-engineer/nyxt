@@ -8,23 +8,22 @@
   (:import-from #:serapeum #:->)
   (:documentation "Mode for automatic URL-based mode toggling."))
 (in-package :nyxt/auto-mode)
-
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
-  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum)
-  (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks))
+  (use-nyxt-package-nicknames))
 
 (define-class mode-invocation ()
-  ((name (error "Mode invocation should have a name to call mode through.")
-         :type symbol
-         :documentation "Mode symbol to call the mode with.
+  ((name
+    (error "Mode invocation should have a name to call mode through.")
+    :type symbol
+    :documentation "Mode symbol to call the mode with.
 Package prefix is optional.")
-   (arguments nil
-              :type list
-              :documentation "Arguments to activate the mode with."))
+   (arguments
+    nil
+    :type list
+    :documentation "Arguments to activate the mode with."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (sera:export-always 'equals)
 (defmethod equals ((object1 t) (object2 t))
@@ -68,20 +67,24 @@ If the mode specifier is not known, it's omitted from the results."
   (mode-invocations (sera:filter #'rememberable-p modes)))
 
 (define-class auto-mode-rule ()
-  ((test (error "Slot `test' should be set.")
-         :type list)
-   (included '()
-             :type (or (cons mode-invocation *) null)
-             :documentation "The list of `mode-invocation's to enable on rule activation.")
-   (excluded '()
-             :type (or (cons mode-invocation *) null)
-             :documentation "The list of `mode-invocation's to disable on rule activation.")
-   (exact-p nil
-            :type boolean
-            :documentation "Whether to exclusively enable the `included' modes."))
+  ((test
+    (error "Slot `test' should be set.")
+    :type list)
+   (included
+    '()
+    :type (or (cons mode-invocation *) null)
+    :documentation "The list of `mode-invocation's to enable on rule activation.")
+   (excluded
+    '()
+    :type (or (cons mode-invocation *) null)
+    :documentation "The list of `mode-invocation's to disable on rule activation.")
+   (exact-p
+    nil
+    :type boolean
+    :documentation "Whether to exclusively enable the `included' modes."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (-> matching-auto-mode-rule (quri:uri buffer) (or auto-mode-rule null))
 (defun matching-auto-mode-rule (url buffer)
@@ -268,36 +271,38 @@ These modes will then be activated on every visit to this domain/host/URL."
       scheme:cua
       (list
        "C-R" 'reload-with-modes)))
-   (prompt-on-mode-toggle nil
-                          :type boolean
-                          :documentation "Whether the user is asked to confirm
-adding the rule corresponding to a mode toggle.")
-   (previous-url nil
-                 :type (or quri:uri null)
-                 :documentation "The last URL for which `auto-mode-handler' was fired.
-We need to know if the auto mode rule has been applied before to avoid
-re-applying a rule for a sequence of pages that match the same rule.
+   (prompt-on-mode-toggle
+    nil
+    :type boolean
+    :documentation "Whether the user is asked to confirm adding the rule
+corresponding to a mode toggle.")
+   (previous-url 
+    nil
+    :type (or quri:uri null)
+    :documentation "The last URL for which `auto-mode-handler' was fired.  We
+need to know if the auto mode rule has been applied before to avoid re-applying
+a rule for a sequence of pages that match the same rule.
 
-We can'rely on the previous history entry because
-dead buffers and session-restored buffers may have a history with a previous URL
-matching the same rule while obviously the rule has never been applied for the
-new-born buffer.")
+We can'rely on the previous history entry because dead buffers and
+session-restored buffers may have a history with a previous URL matching the
+same rule while obviously the rule has never been applied for the new-born
+buffer.")
+   (last-active-modes-url
+    nil
+    :type (or quri:uri null)
+    :documentation "The last URL that the active modes were saved for.  We need
+to store this to not overwrite the `last-active-modes' for a given URL, if
+`auto-mode-handler' is fired more than once.")
+   (last-active-modes
+    '()
+    :type (or (cons mode-invocation *) null)
+    :documentation "The list of `mode-invocation's that were enabled on the last
+URL not covered by `auto-mode'.  This is useful when alternative between
+rule-less and ruled pages.  Example browse sequence:
 
-   (last-active-modes-url nil
-                          :type (or quri:uri null)
-                          :documentation "The last URL that the active modes were saved for.
-We need to store this to not overwrite the `last-active-modes' for a given URL,
-if `auto-mode-handler' is fired more than once.")
-   (last-active-modes '()
-                      :type (or (cons mode-invocation *) null)
-                      :documentation "The list of `mode-invocation's that were enabled
-on the last URL not covered by `auto-mode'.
-This is useful when alternative between rule-less and ruled pages.
-Example browse sequence:
-
-- https://example.org (noscript-mode noimage-mode) ; No rule.
+- https://example.org (no-script-mode no-image-mode) ; No rule.
 - https://nyxt.atlas.engineer (dark-mode) ; Rule
-- https://en.wikipedia.org (noscript-mode noimage-mode) ; No rule.
+- https://en.wikipedia.org (no-script-mode no-image-mode) ; No rule.
 
 In the above, when browsing from nyxt.atlas.engineer to en.wikipedia.org, the
 modes that were in place before the nyxt.atlas.engineer rule was applied are

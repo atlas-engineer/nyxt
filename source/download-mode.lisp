@@ -48,7 +48,7 @@ cancel-download with an argument of the URL to cancel.")
 within the button's URL when the destinaton path is set.")
    (progress-text (make-instance 'user-interface:paragraph))
    (progress (make-instance 'user-interface:progress-bar)))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "This class is used to represent a download within
 the *Downloads* buffer. The browser class contains a list of these
 download objects: `downloads'."))
@@ -169,5 +169,5 @@ download."
   (download (current-buffer) (url (current-buffer))))
 
 (define-command download-open-file ()
-  "Open a downloaded file."
+  "Open file in Nyxt or externally."
   (open-file :default-directory (expand-path (download-path (current-buffer)))))

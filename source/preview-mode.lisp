@@ -7,7 +7,7 @@
   (:documentation "Refresh file when changed on disk."))
 (in-package :nyxt/preview-mode)
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria))
+  (use-nyxt-package-nicknames))
 
 (defun updated-file-p (path-url mode)
   (when (quri:uri-file-p path-url)

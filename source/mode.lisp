@@ -44,7 +44,7 @@ Example:
                        ,direct-slots
                        (:export-class-name-p t)
                        (:export-accessor-names-p t)
-                       (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))))
+                       (:accessor-name-transformer (class*:make-name-transformer name))))
          (configurable-class-name (user-class-name name)))
     (when docstring
       (setf class-args (append class-args

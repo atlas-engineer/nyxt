@@ -29,15 +29,10 @@ want to change the behaviour of modifiers, for instance swap 'control' and
     (delete nil (mapcar (lambda (mod) (getf plist mod)) modifier-state))))
 
 \(define-configuration browser
-  ((modifier-translator #'my-translate-modifiers)))")
-   (web-context nil
-                :type t
-                :accessor nil
-                :export nil
-                :documentation "Single instantiation of our custom web context."))
+  ((modifier-translator #'my-translate-modifiers)))"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-user-class browser (gtk-browser))
 
 (define-class gtk-window ()
@@ -60,7 +55,7 @@ want to change the behaviour of modifiers, for instance swap 'control' and
    (key-string-buffer))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-user-class window (gtk-window))
 
 (define-class gtk-buffer ()
@@ -77,14 +72,16 @@ data-manager will store the data separately for each buffer.")
                         :documentation "Directory to store the WebKit-specific extensions in."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-user-class buffer (gtk-buffer))
 
-(defmethod web-context ((browser gtk-browser))
-  (or (slot-value *browser* 'web-context)
-      (let ((context (make-instance 'webkit:webkit-web-context)))
-        (webkit:webkit-web-context-set-sandbox-enabled context t)
-        (setf (slot-value *browser* 'web-context) context))))
+(defclass webkit-web-context (webkit:webkit-web-context) ()
+  (:metaclass gobject:gobject-class))
+
+(defmethod initialize-instance :after ((web-context webkit-web-context) &key)
+  #+webkit2-sandboxing
+  (webkit:webkit-web-context-set-sandbox-enabled web-context t)
+  web-context)
 
 (defvar gtk-running-p nil
   "Non-nil if the GTK main loop is running.
@@ -156,6 +153,7 @@ not return."
    the main thread, which the GTK main loop is not guaranteed to be
    on."
   (log:debug "Initializing GTK Interface")
+  (setf (uiop:getenv "WEBKIT_FORCE_SANDBOX") "0")
   (if gtk-running-p
       (within-gtk-thread
         (finalize browser urls startup-timestamp))
@@ -187,7 +185,7 @@ not return."
   ((dirname (uiop:xdg-cache-home +data-root+ "data-manager"))
    (ref :initform "data-manager"))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod expand-data-path ((profile nosave-data-profile) (path data-manager-data-path))
   "We shouldn't store any `data-manager' data for `nosave-data-profile'."
@@ -197,10 +195,9 @@ not return."
   ((dirname (uiop:xdg-config-home +data-root+ "extensions"))
    (ref :initform "gtk-extensions"))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod expand-data-path ((profile nosave-data-profile) (path gtk-extensions-data-path))
-  ;; REVIEW: Should we?
   "We shouldn't enable (possibly) user-identifying extensions for `nosave-data-profile'."
   nil)
 
@@ -208,8 +205,15 @@ not return."
   ((gtk-object)
    (handler-ids
     :documentation "See `gtk-buffer' slot of the same name."))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-user-class download (gtk-download))
+
+(defmethod expand-data-path ((profile data-profile) (path gtk-extensions-data-path))
+  "Return finalized path for gtk-extension directory."
+  (expand-default-path path :root (namestring (if (str:emptyp (namestring (dirname path)))
+                                                  (uiop:xdg-data-home +data-root+ "gtk-extensions")
+                                                  (dirname path)))))
+
 
 (defun make-web-view (&key context-buffer)
   "Return a web view instance.
@@ -276,7 +280,7 @@ The BODY is wrapped with `with-protect'."
                   status-buffer status-container
                   message-container message-view
                   id key-string-buffer) window
-       (setf id (get-unique-window-identifier *browser*))
+       (setf id (get-unique-identifier *browser*))
        (setf gtk-object (make-instance 'gtk:gtk-window
                                        :type :toplevel
                                        :default-width 1024
@@ -610,14 +614,8 @@ See `gtk-browser's `modifier-translator' slot."
   ;; This is to ensure that paths are not expanded when we make
   ;; contexts for `nosave-buffer's.
   (with-current-buffer buffer
-    (let* ((context (if (and buffer
-                             ;; Initial window buffer or replacement/temp buffers
-                             ;; may have no ID.
-                             (not (str:emptyp (id buffer))))
-                        (let ((manager (make-data-manager buffer)))
-                          (make-instance 'webkit:webkit-web-context
-                                         :website-data-manager manager))
-                        (web-context *browser*)))
+    (let* ((manager (make-data-manager buffer))
+           (context (make-instance 'webkit-web-context :website-data-manager manager))
            (cookie-manager (webkit:webkit-web-context-get-cookie-manager context))
            (extensions-path (expand-path (gtk-extensions-path buffer))))
       (when extensions-path
@@ -766,7 +764,6 @@ See `gtk-browser's `modifier-translator' slot."
            (print-status nil (get-containing-window-for-buffer buffer *browser*))
            (echo "Loading ~s." (render-url url)))
           ((eq load-event :webkit-load-redirected) nil)
-          ;; WARNING: load-committed may be deprecated (reference?).  Prefer load-status and load-finished.
           ((eq load-event :webkit-load-committed)
            (on-signal-load-committed buffer url))
           ((eq load-event :webkit-load-finished)
@@ -989,7 +986,7 @@ See `gtk-browser's `modifier-translator' slot."
          (:li "If the problem persists for every site, check your Internet connection.")
          (:li "Make sure the URL is valid."
               (when (quri:uri-https-p (quri:uri failing-url))
-                "If this site has does not support HTTPS, try with HTTP (insecure)."))))
+                "If this site does not support HTTPS, try with HTTP (insecure)."))))
        buffer))
     t)
   (connect-signal buffer "create" (web-view navigation-action)
@@ -1006,7 +1003,7 @@ See `gtk-browser's `modifier-translator' slot."
   (connect-signal buffer "context-menu" (web-view context-menu event hit-test-result)
     (declare (ignore web-view event hit-test-result))
     (let ((length (webkit:webkit-context-menu-get-n-items context-menu)))
-      (dolist (i (alex:iota length))
+      (dotimes (i length)
         (let ((item (webkit:webkit-context-menu-get-item-at-position context-menu i)))
           (match (webkit:webkit-context-menu-item-get-stock-action item)
             (:webkit-context-menu-action-download-link-to-disk
