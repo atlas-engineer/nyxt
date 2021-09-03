@@ -23,7 +23,8 @@ Is not necessarily the same as current buffer URL.")
    (firing-condition t
                      :type (or boolean (function (quri:uri process-mode)))
                      :documentation "The condition for the action firing.
-Can be boolean (T to always fire, NIL to never fire), or function over URL and mode instance.")
+Can be boolean (T to always fire, NIL to never fire), or function over URL and mode instance.
+If it is/returns :RETURN, the process is stopped.")
    (action nil
            :type (or (function (quri:uri process-mode)) null)
            :documentation "The action (function) to do with file URL and `process-mode' instance.")
@@ -42,20 +43,27 @@ Accepts the path to the acted-on document and `process-mode' instance.")
 
 (defmethod initialize ((mode process-mode))
   (setf (path-url mode) (or (path-url mode) (url (current-buffer)))
-        (thread mode) (run-thread
-                        (loop with cond = (firing-condition mode)
-                              with cond-func = (typecase cond
-                                                 (function cond)
-                                                 (boolean (constantly cond)))
-                              when (thread-terminated-p mode)
-                              do (return)
-                              when (funcall cond-func (path-url mode) mode)
-                              do (with-current-buffer (buffer mode)
-                                   (when (action mode)
-                                     (funcall (action mode) (path-url mode) mode)))))))
+        (thread mode) (unless (thread-terminated-p mode)
+                        (run-thread
+                          (loop with cond = (firing-condition mode)
+                                with cond-func = (typecase cond
+                                                   (function cond)
+                                                   (boolean (constantly cond)))
+                                for condition-value = (funcall cond-func (path-url mode) mode)
+                                when (eq condition-value :return)
+                                  do (progn
+                                       (setf (thread-terminated-p mode) t)
+                                       (disable-modes (list (mode-name mode)) (buffer mode))
+                                       (return))
+                                else
+                                  when condition-value
+                                    do (with-current-buffer (buffer mode)
+                                         (when (action mode)
+                                           (funcall (action mode) (path-url mode) mode))))))))
 
 (defmethod destroy ((mode process-mode))
   (and (cleanup mode)
        (funcall (cleanup mode) (path-url mode) mode))
-  (bt:destroy-thread (thread mode))
+  (unless (thread-terminated-p mode)
+    (bt:destroy-thread (thread mode)))
   (setf (thread-terminated-p mode) t))
