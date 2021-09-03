@@ -165,6 +165,7 @@
                (:file "search-buffer")
                (:file "spell-check")
                (:file "zoom")
+               (:file "record-input-field")
                ;; Needs web-mode
                (:file "help")
                (:file "macro-edit-mode")
