@@ -283,11 +283,16 @@ Initialization file use case:
 
 (load-after-system :xyz \"configure-xyz.lisp\")"
   (flet ((load-system (system)
-           (ignore-errors
-            #+quicklisp
-            (ql:quickload system :silent t)
-            #-quicklisp
-            (asdf:load-system system))))
+           (handler-case
+               (progn
+                 #+quicklisp
+                 (ql:quickload system :silent t)
+                 #-quicklisp
+                 (asdf:load-system system))
+             (error (c)
+               (declare (ignore c))
+               (echo-warning "Could not load system ~a" system)
+               nil))))
     (when (and (load-system system) file)
       (load file))))
 
