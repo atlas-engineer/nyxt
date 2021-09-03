@@ -12,13 +12,20 @@
    (nyxt/process-mode:firing-condition
     #'(lambda (path-url mode)
         (declare (ignore path-url))
-        (sleep (repeat-interval mode))
-        t))
+        (cond
+          ((repeat-count mode)
+           (if (zerop (repeat-count mode))
+               :return
+               (decf (repeat-count mode))))
+          (t (sleep (repeat-interval mode)) t))))
    (nyxt/process-mode:action
     #'(lambda (path-url mode)
         (declare (ignore path-url))
         (when (repeat-action mode)
           (funcall (repeat-action mode) mode))))
+   (repeat-count nil
+                 :type (or integer null)
+                 :documentation "The number of times to repeat the commands for.")
    (repeat-interval 1
                     :type number
                     :documentation "The interval (in seconds) to repeat `repeat-action' at.
@@ -52,3 +59,15 @@ Function taking a `repeat-mode' instance.")
     (when seconds
       (enable-modes 'repeat-mode (current-buffer)
                     (list :repeat-interval seconds :repeat-action function)))))
+
+(define-command-global repeat-times (&optional times function)
+  "Repeat a FUNCTION TIMES times (prompts if FUNCTION and/or TIMES is not provided)."
+  (let ((times (or times
+                   (ignore-errors
+                    (parse-integer
+                     (first (prompt :prompt "Repeat for X times"
+                                    :input "4"
+                                    :sources (list (make-instance 'prompter:raw-source)))))))))
+    (when times
+      (enable-modes 'repeat-mode (current-buffer)
+                    (list :repeat-count times :repeat-action function)))))
