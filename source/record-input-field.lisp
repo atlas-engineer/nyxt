@@ -85,8 +85,8 @@
 (define-parenscript ps-write-input-data (fields)
   (let* ((inputs (ps:chain document (query-selector-all "input")))
          (len-inputs (ps:chain inputs length))
-         (saved-input-values (ps:lisp (cons 'ps:array (first
-                                                       (list-values fields)))))
+         (saved-input-values (ps:lisp
+                               (cons 'ps:array(first (list-values fields)))))
          (text-areas (ps:chain document (query-selector-all
                                          "textArea")))
          (len-text-areas (ps:chain text-areas length))
