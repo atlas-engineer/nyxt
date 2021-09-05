@@ -46,6 +46,23 @@ class and slot documentation for the individual details.")
     (:p "To find out about all modes known to Nyxt,
 run " (:code "describe-command") " and type 'mode'.")
 
+    (:h3 "Slot configuration")
+    (:p "Slots store values that can be either accessed (get) or changed
+(set). Setting new values for slots allows many possibilities of customization.
+For instance, keyboard layouts vary across the world. The slot " (:code
+"hints-alphabet") " has the default value of " (:code
+"ABCDEFGHIJKLMNOPQRSTUVWXYZ" ) ". If the user has an American keyboard, they can
+do:")
+    (:ol
+     (:li "Execute command " (command-markup 'describe-slot) ";")
+     (:li "Type " (:code 'hints-alphabet)";")
+     (:li "Select " (:code "hints-alphabet") " (" (:code "user-web-mode") " class option);")
+     (:li "Press the button " (:code "Configure") ", and;")
+     (:li "Insert the string \"asfdghjkl\"") ".")
+    (:p "This will make link-hinting more comfortable for this user. In
+addition, other similar approaches of customization can be applied to slots
+such as " (:code "spell-check-language") ", which can be expanded to do the
+spelling-check of other languages besides English.")
     (:h3 "Web buffers and internal buffers")
     (:p "A `internal-buffer' is used for Nyxt-specific, internal pages such as the
 tutorial and the description pages.  A `web-buffer' is used for web pages.  Both
