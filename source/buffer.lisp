@@ -485,111 +485,113 @@ Delete it with `ffi-buffer-delete'."
   (make-instance 'user-internal-buffer))
 
 (define-class status-buffer (user-internal-buffer)
-  ((height 20
-           :type integer
-           :documentation "The height of the status buffer in pixels.")
+  ((height
+    20
+    :type integer
+    :documentation "The height of the status buffer in pixels.")
    (glyph-mode-presentation-p
     nil
     :documentation "Display the modes as a list of glyphs.")
-   (style #.(cl-css:css
-             '((body
-                :background "lightgray"
-                :font-size "14px"
-                :color "black"
-                :padding 0
-                :margin 0
-                :line-height "20px")
-               (.loader
-                :border "2px solid rgba(0,0,0,0)"
-                :border-top-color "#37a8e4"
-                :border-left-color "#37a8e4"
-                :border-radius "50%"
-                :display "inline-block"
-                :width "7px"
-                :height "7px"
-                :animation "spin 1s linear infinite")
-               ("@keyframes spin"
-                ("0%" :transform "rotate(0deg)")
-                ("100%" :transform "rotate(360deg)"))
-               (".arrow-right"
-                :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)"
-                :margin-right "-10px")
-               (".arrow-left"
-                :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0% 50%)"
-                :margin-left "-10px")
-               ("#container"
-                :display "grid"
-                ;; Columns: controls, url, tabs, modes
-                :grid-template-columns "90px minmax(auto, 30ch) 1fr 220px"
-                :overflow-y "hidden")
-               ("#container-vi"
-                :display "grid"
-                ;; Columns: controls, vi-status, url, tabs, modes
-                :grid-template-columns "90px 30px minmax(auto, 30ch) 1fr 220px"
-                :overflow-y "hidden")
-               ("#controls"
-                :background-color "rgb(80,80,80)"
-                :padding-left "5px"
-                :overflow "hidden"
-                :white-space "nowrap"
-                :z-index "4")
-               ("#vi-mode"
-                :padding-right "10px"
-                :padding-left "10px"
-                :text-align "center"
-                :z-index "3")
-               (".vi-normal-mode"
-                :background-color "rgb(100,100,100)")
-               (".vi-insert-mode"
-                :background-color "#37a8e4")
-               ("#url"
-                :background-color "gray"
-                :min-width "100px"
-                :text-overflow "ellipsis"
-                :overflow-x "hidden"
-                :white-space "nowrap"
-                :padding-right "10px"
-                :padding-left "15px"
-                :z-index "2")
-               ("#tabs"
-                :background-color "darkgray"
-                :min-width "100px"
-                :white-space "nowrap"
-                :overflow-x "scroll"
-                :text-align "left"
-                :padding-left "15px"
-                :padding-right "10px"
-                :z-index "1")
-               ("#tabs::-webkit-scrollbar"
-                :display "none")
-               (.tab
-                :color "white"
-                :white-space "nowrap"
-                :text-decoration "none"
-                :padding-left "5px"
-                :padding-right "5px")
-               (".tab:hover"
-                :color "black")
-               ("#modes"
-                :background-color "gray"
-                :color "white"
-                :text-align "right"
-                :padding-left "10px"
-                :padding-right "5px"
-                :overflow-x "scroll"
-                :white-space "nowrap"
-                :z-index "2")
-               ("#modes::-webkit-scrollbar"
-                :display "none")
-               (.button
-                :color "white"
-                :text-decoration "none"
-                :padding-left "2px"
-                :padding-right "2px"
-                :margin-left "2px"
-                :margin-right "2px")
-               (|.button:hover|
-                :color "black")))))
+   (style 
+    #.(cl-css:css
+       '((body
+          :background "lightgray"
+          :font-size "14px"
+          :color "black"
+          :padding 0
+          :margin 0
+          :line-height "20px")
+         (.loader
+          :border "2px solid rgba(0,0,0,0)"
+          :border-top-color "#37a8e4"
+          :border-left-color "#37a8e4"
+          :border-radius "50%"
+          :display "inline-block"
+          :width "7px"
+          :height "7px"
+          :animation "spin 1s linear infinite")
+         ("@keyframes spin"
+          ("0%" :transform "rotate(0deg)")
+          ("100%" :transform "rotate(360deg)"))
+         (".arrow-right"
+          :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)"
+          :margin-right "-10px")
+         (".arrow-left"
+          :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0% 50%)"
+          :margin-left "-10px")
+         ("#container"
+          :display "grid"
+          ;; Columns: controls, url, tabs, modes
+          :grid-template-columns "90px minmax(auto, 30ch) 1fr 220px"
+          :overflow-y "hidden")
+         ("#container-vi"
+          :display "grid"
+          ;; Columns: controls, vi-status, url, tabs, modes
+          :grid-template-columns "90px 30px minmax(auto, 30ch) 1fr 220px"
+          :overflow-y "hidden")
+         ("#controls"
+          :background-color "rgb(80,80,80)"
+          :padding-left "5px"
+          :overflow "hidden"
+          :white-space "nowrap"
+          :z-index "4")
+         ("#vi-mode"
+          :padding-right "10px"
+          :padding-left "10px"
+          :text-align "center"
+          :z-index "3")
+         (".vi-normal-mode"
+          :background-color "rgb(100,100,100)")
+         (".vi-insert-mode"
+          :background-color "#37a8e4")
+         ("#url"
+          :background-color "gray"
+          :min-width "100px"
+          :text-overflow "ellipsis"
+          :overflow-x "hidden"
+          :white-space "nowrap"
+          :padding-right "10px"
+          :padding-left "15px"
+          :z-index "2")
+         ("#tabs"
+          :background-color "darkgray"
+          :min-width "100px"
+          :white-space "nowrap"
+          :overflow-x "scroll"
+          :text-align "left"
+          :padding-left "15px"
+          :padding-right "10px"
+          :z-index "1")
+         ("#tabs::-webkit-scrollbar"
+          :display "none")
+         (.tab
+          :color "white"
+          :white-space "nowrap"
+          :text-decoration "none"
+          :padding-left "5px"
+          :padding-right "5px")
+         (".tab:hover"
+          :color "black")
+         ("#modes"
+          :background-color "gray"
+          :color "white"
+          :text-align "right"
+          :padding-left "10px"
+          :padding-right "5px"
+          :overflow-x "scroll"
+          :white-space "nowrap"
+          :z-index "2")
+         ("#modes::-webkit-scrollbar"
+          :display "none")
+         (.button
+          :color "white"
+          :text-decoration "none"
+          :padding-left "2px"
+          :padding-right "2px"
+          :margin-left "2px"
+          :margin-right "2px")
+         (|.button:hover|
+          :color "black")))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
