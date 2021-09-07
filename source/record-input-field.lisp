@@ -38,8 +38,7 @@
    (input-data '()))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer
-                               name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-command save-input-data ()
   "Save HTML input data in a local file."
