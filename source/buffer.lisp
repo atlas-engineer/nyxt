@@ -486,7 +486,7 @@ Delete it with `ffi-buffer-delete'."
 
 (define-class status-buffer (user-internal-buffer)
   ((height
-    20
+    24
     :type integer
     :documentation "The height of the status buffer in pixels.")
    (glyph-mode-presentation-p
@@ -500,7 +500,7 @@ Delete it with `ffi-buffer-delete'."
           :color "black"
           :padding 0
           :margin 0
-          :line-height "20px")
+          :line-height "24px")
          (.loader
           :border "2px solid rgba(0,0,0,0)"
           :border-top-color "#37a8e4"
@@ -530,6 +530,8 @@ Delete it with `ffi-buffer-delete'."
           :grid-template-columns "90px 30px minmax(auto, 30ch) 1fr 220px"
           :overflow-y "hidden")
          ("#controls"
+          :font-size "16px"
+          :font-weight "700"
           :background-color "rgb(80,80,80)"
           :padding-left "5px"
           :overflow "hidden"
