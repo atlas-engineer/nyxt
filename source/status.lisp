@@ -9,7 +9,7 @@
     (when (nosave-buffer-p buffer) (:span "⚠ nosave"))
     (:a :class "button"
         :href (lisp-url '(nyxt:toggle-modes))
-        :title (str:concat "Enabled modes: " (list-modes buffer)) "⊕")
+        :title (str:concat "Enabled modes: " (list-modes buffer)) "✚")
     (loop for mode in (sera:filter #'visible-in-status-p (modes buffer))
           collect (let* ((formatted-mode (if (glyph-mode-presentation-p (status-buffer window))
                                              (glyph mode)
