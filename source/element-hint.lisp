@@ -119,7 +119,8 @@
            :key #'prompter:value)
         (append matching-hints other-hints))))
    (prompter:follow-mode-functions (lambda (suggestion)
-                                     (highlight-selected-hint :element suggestion)))
+                                     (highlight-selected-hint :element suggestion
+							      :scroll t)))
    (prompter:actions (list 'identity
                            (make-command click* (elements)
                              (dolist (element (rest elements))
