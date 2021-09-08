@@ -16,7 +16,8 @@
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class url-annotation (annotation)
-  ((url nil))
+  ((url nil)
+   (page-title ""))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
@@ -30,6 +31,7 @@
 (defmethod render ((annotation url-annotation))
   (spinneret:with-html-string
     (:p (:b "URL: ") (render-url (url annotation)))
+    (:p (:b "Title: ") (page-title annotation))
     (:p (:b "Annotation: ") (data annotation))
     (:p (:b "Tags: ") (format nil "~{~a ~}" (tags annotation)))))
 
@@ -37,6 +39,7 @@
   (spinneret:with-html-string
     (:p (:b "Snippet: ") (snippet annotation))
     (:p (:b "URL: ") (render-url (url annotation)))
+    (:p (:b "Title: ") (page-title annotation))
     (:p (:b "Annotation: ") (data annotation))
     (:p (:b "Tags: ") (format nil "~{~a ~}" (tags annotation)))))
 
@@ -81,6 +84,7 @@
          (annotation (make-instance 'url-annotation
                                     :url (url buffer)
                                     :data data
+                                    :page-title (title buffer)
                                     :tags tags)))
     (annotation-add annotation)))
 
@@ -101,6 +105,7 @@
            (annotation (make-instance 'snippet-annotation
                                       :snippet snippet
                                       :url (url buffer)
+                                      :page-title (title buffer)
                                       :data data
                                       :tags tags)))
       (annotation-add annotation))))
