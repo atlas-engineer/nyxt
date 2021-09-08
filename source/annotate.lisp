@@ -73,7 +73,8 @@
   "Create a annotation of the URL of BUFFER."
   (let* ((data (first (prompt
                        :prompt "Annotation"
-                       :sources (list (make-instance 'prompter:raw-source)))))
+                       :sources (list (make-instance 'prompter:raw-source
+                                                     :name "Note")))))
          (tags (prompt
                 :prompt "Tag(s)"
                 :sources (list (make-instance 'prompter:word-source
@@ -94,7 +95,8 @@
     (let* ((snippet (%copy))
            (data (first (prompt
                          :prompt "Annotation"
-                         :sources (list (make-instance 'prompter:raw-source)))))
+                         :sources (list (make-instance 'prompter:raw-source
+                                                       :name "Note")))))
            (tags (prompt
                   :prompt "Tag(s)"
                   :sources (list (make-instance 'prompter:word-source
