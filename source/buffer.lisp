@@ -616,10 +616,10 @@ Delete it with `ffi-buffer-delete'."
            (count-dom-elements (nyxt/ps:qs document "html"))))
     (with-current-buffer buffer
       (let ((value (call-next-method))
-            (element-count (truncate (%count-dom-elements))))
-        (if (and value
+            (element-count (%count-dom-elements)))
+        (if (and value element-count
                  ;; Check whether the difference in element count is significant.
-                 (< (abs (- (length (clss:select "*" value)) element-count))
+                 (< (abs (- (length (clss:select "*" value)) (truncate element-count)))
                     (document-model-delta-threshold buffer)))
             value
             (update-document-model :buffer buffer))))))
