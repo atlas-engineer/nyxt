@@ -600,8 +600,12 @@ Delete it with `ffi-buffer-delete'."
          (add-nyxt-identifiers child))
        nyxt-identifier-counter)
      (setf nyxt-identifier-counter (add-nyxt-identifiers (ps:chain document body)))))
-  (setf (document-model buffer)
-        (nyxt/dom::named-json-parse (nyxt/dom::get-document-body-json))))
+  (alex:when-let ((body-json (nyxt/dom::get-document-body-json)))
+    (setf (document-model buffer)
+          (nyxt/dom::named-json-parse body-json))))
+
+(defun dead-buffer-p (buffer) ; TODO: Use this wherever needed.
+  (str:empty? (id buffer)))
 
 (defmethod document-model :around ((buffer buffer))
   (pflet ((%count-dom-elements
@@ -614,15 +618,17 @@ Delete it with `ffi-buffer-delete'."
              dom-counter)
            (setf dom-counter 0)
            (count-dom-elements (nyxt/ps:qs document "html"))))
-    (with-current-buffer buffer
-      (let ((value (call-next-method))
-            (element-count (%count-dom-elements)))
-        (if (and value element-count
-                 ;; Check whether the difference in element count is significant.
-                 (< (abs (- (length (clss:select "*" value)) (truncate element-count)))
-                    (document-model-delta-threshold buffer)))
-            value
-            (update-document-model :buffer buffer))))))
+    (if (dead-buffer-p buffer)
+        (call-next-method)
+        (with-current-buffer buffer
+          (let ((value (call-next-method))
+                (element-count (%count-dom-elements)))
+            (if (and value element-count
+                     ;; Check whether the difference in element count is significant.
+                     (< (abs (- (length (clss:select "*" value)) (truncate element-count)))
+                        (document-model-delta-threshold buffer)))
+                value
+                (update-document-model :buffer buffer)))))))
 
 (export-always 'get-nyxt-id)
 (defmethod get-nyxt-id ((element plump:element))
