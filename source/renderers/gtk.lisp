@@ -1020,7 +1020,8 @@ See `gtk-browser's `modifier-translator' slot."
                                                handler-id))
         (handler-ids buffer))
   (when (slot-value buffer 'gtk-object) ; Not all buffers have their own web view, e.g. prompt buffers.
-    (gtk:gtk-widget-destroy (gtk-object buffer))))
+    (gtk:gtk-widget-destroy (gtk-object buffer))
+    (setf (gtk-object buffer) nil)))
 
 (define-ffi-method ffi-buffer-load ((buffer gtk-buffer) url)
   "Load URL in BUFFER.
