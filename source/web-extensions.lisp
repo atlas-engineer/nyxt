@@ -70,12 +70,14 @@
                               (quri:url-encode (uiop:read-file-string file))))))
 
 (defun default-browser-action-icon (json optimal-height)
-  (let* ((browser-action (alex:assoc-value json :browser--action))
-         (default-icon (alex:assoc-value browser-action :default--icon)))
+  (sera:and-let* ((browser-action (gethash "browser_action" json))
+                  (default-icon (gethash "default_icon" browser-action)))
     (if (stringp default-icon)
         default-icon
-        (rest (first (sort (append (alex:assoc-value browser-action :default--icon)
-                                   (alex:assoc-value json :icons))
+        (rest (first (sort (append (and (gethash "default_icon" browser-action)
+                                        (alex:hash-table-alist (gethash "default_icon" browser-action)))
+                                   (and (gethash "icons" json)
+                                        (alex:hash-table-alist (gethash "icons" json))))
                            (lambda (a b)
                              (< (abs (- optimal-height a))
                                 (abs (- optimal-height b))))
@@ -89,23 +91,28 @@
     (format nil "<img src=\"~a\" alt=\"~a\"
 height=~a/>"
             (make-data-url (uiop:merge-pathnames* best-icon extension-directory))
-            (alex:assoc-value json :name)
+            (gethash "name" json)
             padded-height)))
 
 (defun make-browser-action (json)
-  (let* ((browser-action (alex:assoc-value json :browser--action))
-         (sorted-icons (sort (alex:assoc-value browser-action :theme--icons)
-                             #'> :key (alex:rcurry #'alex:assoc-value :size)))
+  (let* ((browser-action (gethash "browser_action" json))
+         (icons (when browser-action
+                     (gethash "theme_icons" browser-action)))
+         (sorted-icons (when icons
+                         (sort icons
+                               #'> :key (alex:curry #'gethash "size"))))
          (max-icon (first sorted-icons))
          (default-icon (default-browser-action-icon json 1000)))
     (make-instance 'browser-action
-                   :default-popup (alex:assoc-value browser-action :default--popup)
-                   :default-title (alex:assoc-value browser-action :default--title)
+                   :default-popup (when browser-action
+                                    (gethash "default_popup" browser-action))
+                   :default-title (when browser-action
+                                    (gethash "default_title" browser-action))
                    :default-icon default-icon
-                   :default-dark-icon (or (alex:assoc-value max-icon :dark)
-                                          (alex:assoc-value max-icon :light))
-                   :default-light-icon (or (alex:assoc-value max-icon :light)
-                                           (alex:assoc-value max-icon :dark)))))
+                   :default-dark-icon (or (gethash "dark" max-icon)
+                                          (gethash "light" max-icon))
+                   :default-light-icon (or (gethash "light" max-icon)
+                                           (gethash "dark" max-icon)))))
 
 (define-class browser-action ()
   ((default-popup nil
@@ -274,12 +281,12 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
   (let* ((directory (uiop:parse-native-namestring directory))
          (manifest-text (uiop:read-file-string (uiop:merge-pathnames* "manifest.json" directory)))
          (json (json:decode-json-from-string manifest-text))
-         (name (alex:assoc-value json :name)))
+         (name (gethash "name" json)))
     `(progn
        (define-mode ,lispy-name (extension)
-         ,(alex:assoc-value json :description)
+         ,(gethash "description" json)
          ((name ,name)
-          (version ,(alex:assoc-value json :version))
+          (version ,(gethash "version" json))
           (manifest ,manifest-text)
           (id (or (symbol-name (gensym ,name)))
               :allocation :class)
@@ -292,14 +299,14 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
                          :dirname (uiop:xdg-data-home nyxt::+data-root+ "extension-storage")
                          :basename (format nil "~a.txt" ,name))
                         :allocation :class)
-          (description ,(alex:assoc-value json :description))
+          (description ,(gethash "description" json))
           (extension-directory ,directory)
-          (homepage-url ,(alex:assoc-value json :homepage--url))
+          (homepage-url ,(gethash "homepage_url" json))
           (browser-action ,(make-browser-action json))
-          (content-scripts (list ,@(mapcar (lambda (content-script-alist)
+          (content-scripts (list ,@(mapcar (lambda (content-script-hash)
                                              (apply #'make-content-script
-                                                    (alex:alist-plist content-script-alist)))
-                                           (alex:assoc-value json :content--scripts))))))
+                                                    (alex:hash-table-plist content-script-hash)))
+                                           (gethash "content_scripts" json))))))
        (defmethod initialize-instance :after ((extension ,lispy-name) &key)
          (setf (nyxt:glyph extension)
                (spinneret:with-html-string

@@ -1112,11 +1112,11 @@ See `gtk-browser's `modifier-translator' slot."
            (let ((buffer-descriptions (mapcar #'buffer->tab-description (buffer-list))))
              (if query-object
                  (or (sera:filter (lambda (bd)
-                                    (every (lambda (pair)
-                                             (equal (rest pair)
-                                                    (str:s-assoc-value
-                                                     bd (cffi:translate-camelcase-name (first pair)))))
-                                           query-object))
+                                    (every #'identity
+                                           (sera:maphash-return
+                                            (lambda (key value)
+                                              (equal value (str:s-assoc-value bd key)))
+                                            query-object)))
                                   buffer-descriptions)
                      ;; nil translates to null, we need to pass empty vector instead.
                      (vector))
@@ -1127,21 +1127,21 @@ See `gtk-browser's `modifier-translator' slot."
 (sera:-> tabs-create ((or null string)) (values string &optional))
 (defun tabs-create (create-properties)
   (let* ((properties (json:decode-json-from-string (or create-properties "{}")))
-         (parent-buffer (when (alex:assoc-value properties :opener-tab-id)
+         (parent-buffer (when (gethash "openerTabId" properties)
                           (buffers-get
-                           (format nil "~d" (alex:assoc-value properties :opener-tab-id)))))
-         (url (quri:uri (or (alex:assoc-value properties :url)
+                           (format nil "~d" (gethash "openerTabId" properties)))))
+         (url (quri:uri (or (gethash "url" properties)
                             "about:blank")))
          ;; See https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/create
          (url (if (str:s-member '("chrome" "javascript" "data" "file") (quri:uri-scheme url))
                   (quri:uri "about:blank")
                   url))
          (buffer (make-buffer :url url
-                              :title (or (alex:assoc-value properties :title) "")
-                              :load-url-p (alex:assoc-value properties :discarded)
+                              :title (or (gethash "title" properties) "")
+                              :load-url-p (gethash "discarded" properties)
                               :parent-buffer parent-buffer)))
-    (when (or (alex:assoc-value properties :active)
-              (alex:assoc-value properties :selected))
+    (when (or (gethash "active" properties)
+              (gethash "selected" properties))
       (set-current-buffer buffer))
     (json:encode-json-to-string (buffer->tab-description buffer))))
 
@@ -1192,12 +1192,12 @@ See `gtk-browser's `modifier-translator' slot."
 
 (defun tabs-insert-css (buffer message-params)
   (let* ((json (json:decode-json-from-string message-params))
-         (css-data (alex:assoc-value json :css))
-         (code (alex:assoc-value css-data :code))
-         (file (alex:assoc-value css-data :file))
-         (level (alex:assoc-value css-data :css-origin))
-         (tab-id (alex:assoc-value json :tab-id))
-         (extension (find (alex:assoc-value json :extension-id)
+         (css-data (gethash "css" json))
+         (code (gethash "code" css-data))
+         (file (gethash "file" css-data))
+         (level (gethash "cssOrigin" css-data))
+         (tab-id (gethash "tabId" json))
+         (extension (find (gethash "extensionId" json)
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
                           :key #'id
@@ -1214,7 +1214,7 @@ See `gtk-browser's `modifier-translator' slot."
                                                          extension)))
                            code)
                        :inject-as-author-p (not (and level (stringp level) (string= level "user")))
-                       :all-frames-p (alex:assoc-value css-data :all-frames)
+                       :all-frames-p (gethash "allFrames" css-data)
                        :world-name (name extension))))
     (setf (gethash message-params %style-sheets%)
           style-sheet)
@@ -1222,7 +1222,7 @@ See `gtk-browser's `modifier-translator' slot."
 
 (defun tabs-remove-css (message-params)
   (let* ((json (json:decode-json-from-string message-params))
-         (tab-id (alex:assoc-value json :tab-id))
+         (tab-id (gethash "tabId" json))
          (buffer-to-remove (if (zerop tab-id)
                                (current-buffer)
                                (or (find (format nil "~d" tab-id) (buffer-list) :key #'id)
@@ -1234,15 +1234,15 @@ See `gtk-browser's `modifier-translator' slot."
 
 (defun tabs-execute-script (buffer message-params)
   (let* ((json (json:decode-json-from-string message-params))
-         (script-data (alex:assoc-value json :script))
-         (code (alex:assoc-value script-data :code))
-         (file (alex:assoc-value script-data :file))
-         (tab-id (alex:assoc-value json :tab-id))
+         (script-data (gethash "script" json))
+         (code (gethash "code" script-data))
+         (file (gethash "file" script-data))
+         (tab-id (gethash "tabId" json))
          (buffer-to-insert (if (zerop tab-id)
                                (current-buffer)
                                (or (find (format nil "~d" tab-id) (buffer-list) :key #'id)
                                    (current-buffer))))
-         (extension (find (alex:assoc-value json :extension-id)
+         (extension (find (gethash "extensionId" json)
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
                           :key #'id
@@ -1253,20 +1253,20 @@ See `gtk-browser's `modifier-translator' slot."
                            (nyxt/web-extensions:merge-extension-path extension file))
                           code)
      :run-now-p t
-     :at-document-start-p (and (alex:assoc-value script-data :run-at)
-                               (string= (alex:assoc-value script-data :run-at) "document_start"))
-     :all-frames-p (alex:assoc-value script-data :all-frames)
+     :at-document-start-p (and (gethash "runAt" script-data)
+                               (string= (gethash "runAt" script-data) "document_start"))
+     :all-frames-p (gethash "allFrames" script-data)
      :world-name (name extension))
     ""))
 
 (defun storage-local-get (buffer message-params)
   (let* ((json (json:decode-json-from-string message-params))
-         (extension (find (alex:assoc-value json :extension-id)
+         (extension (find (gethash "extensionId" json)
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
                           :key #'id
                           :test #'string-equal))
-         (keys (alex:assoc-value json :keys)))
+         (keys (gethash "keys" json)))
     (with-data-unsafe (data (nyxt/web-extensions:storage-path extension)
                        :default (make-hash-table))
       (if (uiop:emptyp keys)
@@ -1286,12 +1286,12 @@ See `gtk-browser's `modifier-translator' slot."
 
 (defun storage-local-set (buffer message-params)
   (let* ((json (json:decode-json-from-string message-params))
-         (extension (find (alex:assoc-value json :extension-id)
+         (extension (find (gethash "extensionId" json)
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
                           :key #'id
                           :test #'string-equal))
-         (keys (alex:assoc-value json :keys)))
+         (keys (gethash "keys" json)))
     (with-data-access (data (nyxt/web-extensions:storage-path extension)
                        :default (make-hash-table))
       (unless (uiop:emptyp keys)
@@ -1302,12 +1302,12 @@ See `gtk-browser's `modifier-translator' slot."
 
 (defun storage-local-remove (buffer message-params)
   (let* ((json (json:decode-json-from-string message-params))
-         (extension (find (alex:assoc-value json :extension-id)
+         (extension (find (gethash "extensionId" json)
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
                           :key #'id
                           :test #'string-equal))
-         (keys (uiop:ensure-list (alex:assoc-value json :keys))))
+         (keys (uiop:ensure-list (gethash "keys" json))))
     (with-data-access (data (nyxt/web-extensions:storage-path extension)
                        :default (make-hash-table))
       (unless (uiop:emptyp keys)
@@ -1358,7 +1358,7 @@ See `gtk-browser's `modifier-translator' slot."
          (sera:and-let* ((json (json:decode-json-from-string message-params))
                          (extension-instances
                           (sera:filter (alex:curry #'string=
-                                                   (alex:assoc-value json :extension-id))
+                                                   (gethash "extensionId" json))
                                        extensions
                                        :key #'id))
                          (context (webkit:jsc-context-new)))
@@ -1366,9 +1366,9 @@ See `gtk-browser's `modifier-translator' slot."
            (if (or (background-buffer-p buffer)
                    (panel-buffer-p buffer))
                (dolist (instance extension-instances)
-                 (trigger-message (alex:assoc-value json :message)
+                 (trigger-message (gethash "message" json)
                                   (buffer instance) instance message))
-               (trigger-message (alex:assoc-value json :message)
+               (trigger-message (gethash "message" json)
                                 (background-buffer (first extensions))
                                 (first extensions)
                                 message))))
@@ -1428,16 +1428,16 @@ See `gtk-browser's `modifier-translator' slot."
            (buffer->tab-description (buffers-get message-params)))))
         ("tabs.sendMessage"
          (let* ((json (json:decode-json-from-string message-params))
-                (id (alex:assoc-value json :tab-id))
+                (id (gethash "tabId" json))
                 (buffer (if (zerop id)
                             (current-buffer)
                             (buffers-get (format nil "~d" id))))
-                (extension (find (alex:assoc-value json :extension-id)
+                (extension (find (gethash "extensionId" json)
                                  (sera:filter #'nyxt/web-extensions::extension-p
                                               (modes buffer))
                                  :key #'id
                                  :test #'string-equal)))
-           (trigger-message (alex:assoc-value json :message) buffer extension message)))
+           (trigger-message (gethash "message" json) buffer extension message)))
         ("tabs.insertCSS"
          (wrap-in-channel
           (tabs-insert-css buffer message-params)))

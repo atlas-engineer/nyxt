@@ -149,3 +149,35 @@ BODY must return the HTML markup as a string."
           ,@body)
         ,buffer-var)
        ,buffer-var)))
+
+(setf json::+json-lisp-symbol-tokens+
+      '(("true" . t)
+        ("false" . nil)
+        ("null" . :null)
+        ("undefined" . :undefined)))
+
+(defvar *json-object-accumulator* (make-hash-table :test 'equal)
+  "Our own object accumulator to override the default `cl-json:decode-json' object->alist behavior.
+Objects are transformed to the hash-tables instead.")
+
+(defvar *json-last-object-key* nil
+  "The last key used in `*json-object-accumulator*'.")
+
+(defun json-object-init ()
+  (setf *json-object-accumulator* (make-hash-table :test 'equal)))
+
+(defun json-object-add-key (key)
+  (setf (gethash key *json-object-accumulator*) nil
+        *json-last-object-key* key))
+
+(defun json-object-add-value (value)
+  (setf (gethash *json-last-object-key* *json-object-accumulator*) value))
+
+(defun json-object-get ()
+  *json-object-accumulator*)
+
+(setf json:*object-scope-variables* '(json:*internal-decoder* *json-object-accumulator* *json-last-object-key*)
+      json:*beginning-of-object-handler* #'json-object-init
+      json:*object-key-handler* #'json-object-add-key
+      json:*object-value-handler* #'json-object-add-value
+      json:*end-of-object-handler* #'json-object-get)
