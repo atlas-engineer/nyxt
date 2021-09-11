@@ -290,8 +290,7 @@ Initialization file use case:
                  #-quicklisp
                  (asdf:load-system system))
              (error (c)
-               (declare (ignore c))
-               (echo-warning "Could not load system ~a" system)
+               (echo-warning "Could not load system ~a: ~a" system c)
                nil))))
     (when (and (load-system system) file)
       (load file))))
