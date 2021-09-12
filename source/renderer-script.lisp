@@ -150,12 +150,6 @@ BODY must return the HTML markup as a string."
         ,buffer-var)
        ,buffer-var)))
 
-(setf json::+json-lisp-symbol-tokens+
-      '(("true" . t)
-        ("false" . nil)
-        ("null" . :null)
-        ("undefined" . :undefined)))
-
 (defvar *json-object-accumulator* (make-hash-table :test 'equal)
   "Our own object accumulator to override the default `cl-json:decode-json' object->alist behavior.
 Objects are transformed to the hash-tables instead.")
@@ -176,8 +170,46 @@ Objects are transformed to the hash-tables instead.")
 (defun json-object-get ()
   *json-object-accumulator*)
 
-(setf json:*object-scope-variables* '(json:*internal-decoder* *json-object-accumulator* *json-last-object-key*)
-      json:*beginning-of-object-handler* #'json-object-init
-      json:*object-key-handler* #'json-object-add-key
-      json:*object-value-handler* #'json-object-add-value
-      json:*end-of-object-handler* #'json-object-get)
+;; TODO: Decode arrays as vectors?
+(sera:-> decode-json (string) t)
+(export-always 'decode-json)
+(defun decode-json (string)
+  "An overridden version of `cl-json:decode-json-from-string'.
+Distinguishes between null/false and arrays/objects.
+Decodes:
+- null as :NULL,
+- undefined as :UNDEFINED,
+- false as nil,
+- true as t,
+- objects as hash-tables.
+
+Otherwise behaves like plain `cl-json:decode-json-from-string'."
+  (let ((json::+json-lisp-symbol-tokens+
+          '(("true" . t)
+            ("false" . nil)
+            ("null" . :null)
+            ("undefined" . :undefined)))
+        (json:*object-scope-variables* '(json:*internal-decoder* *json-object-accumulator* *json-last-object-key*))
+        (json:*beginning-of-object-handler* #'json-object-init)
+        (json:*object-key-handler* #'json-object-add-key)
+        (json:*object-value-handler* #'json-object-add-value)
+        (json:*end-of-object-handler* #'json-object-get))
+    (json:decode-json-from-string string)))
+
+(sera:-> encode-json (t) (values string &optional))
+(export-always 'encode-json)
+(defun encode-json (data)
+  "Overridden version of `cl-json:encode-json-to-string'.
+Distinguishes between null and false.
+Encodes:
+- :NULL as null,
+- :UNDEFINED as undefined,
+- nil as false.
+
+Otherwise behaves the same as `cl-json:encode-json-to-string'."
+  (let ((json::+json-lisp-symbol-tokens+
+          '(("true" . t)
+            ("false" . nil)
+            ("null" . :null)
+            ("undefined" . :undefined))))
+    (json:encode-json-to-string data)))

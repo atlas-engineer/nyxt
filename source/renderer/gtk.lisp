@@ -663,7 +663,7 @@ See `gtk-browser's `modifier-translator' slot."
                          (let ((extensions
                                  (when buffer
                                    (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))))
-                           (json:encode-json-to-string
+                           (encode-json
                             (if (or (background-buffer-p buffer)
                                     (panel-buffer-p buffer))
                                 (alex:when-let* ((extension
@@ -1121,12 +1121,12 @@ See `gtk-browser's `modifier-translator' slot."
                      ;; nil translates to null, we need to pass empty vector instead.
                      (vector))
                  buffer-descriptions))))
-    (json:encode-json-to-string
-     (%tabs-query (json:decode-json-from-string (or query-object "{}"))))))
+    (encode-json
+     (%tabs-query (decode-json (or query-object "{}"))))))
 
 (sera:-> tabs-create ((or null string)) (values string &optional))
 (defun tabs-create (create-properties)
-  (let* ((properties (json:decode-json-from-string (or create-properties "{}")))
+  (let* ((properties (decode-json (or create-properties "{}")))
          (parent-buffer (when (gethash "openerTabId" properties)
                           (buffers-get
                            (format nil "~d" (gethash "openerTabId" properties)))))
@@ -1143,7 +1143,7 @@ See `gtk-browser's `modifier-translator' slot."
     (when (or (gethash "active" properties)
               (gethash "selected" properties))
       (set-current-buffer buffer))
-    (json:encode-json-to-string (buffer->tab-description buffer))))
+    (encode-json (buffer->tab-description buffer))))
 
 (defvar %message-channels% (make-hash-table)
   "A hash-table mapping message pointer addresses to the channels they return values from.")
@@ -1158,14 +1158,13 @@ See `gtk-browser's `modifier-translator' slot."
                 (webkit:webkit-user-message-new
                  "message"
                  (glib:g-variant-new-string
-                  (json:encode-json-to-string
-                   `(("message" . ,message)
-                     ("sender" . (("tab" . ,(buffer->tab-description buffer))
-                                  ("url" . ,(render-url (url buffer)))
-                                  ("tlsChannelId" . "")
-                                  ("frameId" . 0)
-                                  ("id" . "")))
-                     ("extensionName" . ,(name extension))))))
+                  (encode-json `(("message" . ,message)
+                                 ("sender" . (("tab" . ,(buffer->tab-description buffer))
+                                              ("url" . ,(render-url (url buffer)))
+                                              ("tlsChannelId" . "")
+                                              ("frameId" . 0)
+                                              ("id" . "")))
+                                 ("extensionName" . ,(name extension))))))
                 (lambda (reply)
                   (calispel:! channel (g-variant-get-maybe-string
                                        (webkit:webkit-user-message-get-parameters reply))))
@@ -1191,7 +1190,7 @@ See `gtk-browser's `modifier-translator' slot."
   "WebKitUserStyleSheet-s indexed by the JSON describing them.")
 
 (defun tabs-insert-css (buffer message-params)
-  (let* ((json (json:decode-json-from-string message-params))
+  (let* ((json (decode-json message-params))
          (css-data (gethash "css" json))
          (code (gethash "code" css-data))
          (file (gethash "file" css-data))
@@ -1221,7 +1220,7 @@ See `gtk-browser's `modifier-translator' slot."
     ""))
 
 (defun tabs-remove-css (message-params)
-  (let* ((json (json:decode-json-from-string message-params))
+  (let* ((json (decode-json message-params))
          (tab-id (gethash "tabId" json))
          (buffer-to-remove (if (zerop tab-id)
                                (current-buffer)
@@ -1233,7 +1232,7 @@ See `gtk-browser's `modifier-translator' slot."
     ""))
 
 (defun tabs-execute-script (buffer message-params)
-  (let* ((json (json:decode-json-from-string message-params))
+  (let* ((json (decode-json message-params))
          (script-data (gethash "script" json))
          (code (gethash "code" script-data))
          (file (gethash "file" script-data))
@@ -1260,7 +1259,7 @@ See `gtk-browser's `modifier-translator' slot."
     ""))
 
 (defun storage-local-get (buffer message-params)
-  (let* ((json (json:decode-json-from-string message-params))
+  (let* ((json (decode-json message-params))
          (extension (find (gethash "extensionId" json)
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
@@ -1271,7 +1270,7 @@ See `gtk-browser's `modifier-translator' slot."
                        :default (make-hash-table))
       (if (uiop:emptyp keys)
           "{}"
-          (json:encode-json-to-string
+          (encode-json
            (typecase keys
              (null data)
              (list (mapcar (lambda (key-value)
@@ -1285,7 +1284,7 @@ See `gtk-browser's `modifier-translator' slot."
                          (vector)))))))))
 
 (defun storage-local-set (buffer message-params)
-  (let* ((json (json:decode-json-from-string message-params))
+  (let* ((json (decode-json message-params))
          (extension (find (gethash "extensionId" json)
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
@@ -1301,7 +1300,7 @@ See `gtk-browser's `modifier-translator' slot."
       "")))
 
 (defun storage-local-remove (buffer message-params)
-  (let* ((json (json:decode-json-from-string message-params))
+  (let* ((json (decode-json message-params))
          (extension (find (gethash "extensionId" json)
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
@@ -1351,11 +1350,10 @@ See `gtk-browser's `modifier-translator' slot."
       (str:string-case message-name
         ("management.getSelf"
          (wrap-in-channel
-          (json:encode-json-to-string
-           (extension->extension-info (find message-params extensions
-                                            :key #'name :test #'string=)))))
+          (encode-json (extension->extension-info (find message-params extensions
+                                                        :key #'name :test #'string=)))))
         ("runtime.sendMessage"
-         (sera:and-let* ((json (json:decode-json-from-string message-params))
+         (sera:and-let* ((json (decode-json message-params))
                          (extension-instances
                           (sera:filter (alex:curry #'string=
                                                    (gethash "extensionId" json))
@@ -1374,7 +1372,7 @@ See `gtk-browser's `modifier-translator' slot."
                                 message))))
         ("runtime.getPlatformInfo"
          (wrap-in-channel
-          (json:encode-json-to-string
+          (encode-json
            (list
             ;; TODO: This begs for trivial-features.
             (cons "os"
@@ -1395,7 +1393,7 @@ See `gtk-browser's `modifier-translator' slot."
                   "arm")))))
         ("runtime.getBrowserInfo"
          (wrap-in-channel
-          (json:encode-json-to-string
+          (encode-json
            (let ((nyxt-version (str:split "-" nyxt:+version+)))
              `(("name" . "Nyxt")
                ("vendor" . "Atlas Engineer LLC")
@@ -1419,15 +1417,14 @@ See `gtk-browser's `modifier-translator' slot."
           (tabs-create message-params)))
         ("tabs.getCurrent"
          (wrap-in-channel
-          (json:encode-json-to-string (buffer->tab-description buffer))))
+          (encode-json (buffer->tab-description buffer))))
         ("tabs.print"
          (wrap-in-channel (print-buffer)))
         ("tabs.get"
          (wrap-in-channel
-          (json:encode-json-to-string
-           (buffer->tab-description (buffers-get message-params)))))
+          (encode-json (buffer->tab-description (buffers-get message-params)))))
         ("tabs.sendMessage"
-         (let* ((json (json:decode-json-from-string message-params))
+         (let* ((json (decode-json message-params))
                 (id (gethash "tabId" json))
                 (buffer (if (zerop id)
                             (current-buffer)
