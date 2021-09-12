@@ -280,7 +280,7 @@ If this popup does already exist, close it."
 DIRECTORY should be the one containing manifest.json file for the extension in question."
   (let* ((directory (uiop:parse-native-namestring directory))
          (manifest-text (uiop:read-file-string (uiop:merge-pathnames* "manifest.json" directory)))
-         (json (json:decode-json-from-string manifest-text))
+         (json (decode-json manifest-text))
          (name (gethash "name" json)))
     `(progn
        (define-mode ,lispy-name (extension)

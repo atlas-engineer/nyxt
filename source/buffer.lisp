@@ -77,7 +77,7 @@ Auto-completions come from the default search engine.")
                           :processing-function
                           #'(lambda (results)
                               (alex:when-let* ((results results)
-                                               (results (json:decode-json-from-string results)))
+                                               (results (decode-json results)))
                                 (mapcar #'list (second results) (fourth results))))))
           (make-instance 'search-engine
                          :shortcut "ddg"
@@ -91,7 +91,7 @@ Auto-completions come from the default search engine.")
                               (when results
                                 (mapcar (lambda (hash-table)
                                           (first (alex:hash-table-values hash-table)))
-                                        (json:decode-json-from-string results)))))))
+                                        (decode-json results)))))))
     :type (cons search-engine *)
     :documentation "A list of the `search-engine' objects.
 You can invoke them from the prompt-buffer by prefixing your query with SHORTCUT.
