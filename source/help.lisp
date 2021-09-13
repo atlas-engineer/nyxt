@@ -240,7 +240,12 @@ A command is a special kind of function that can be called with
                 (:ul (loop for class-name in (mapcar #'class-name (mopu:direct-subclasses input))
                            collect (:li (:a :href (lisp-url `(nyxt::describe-class ',class-name)) class-name)))))
               (:h2 "Slots:")
-              (:raw slot-descs)))))
+              (:raw slot-descs)
+              (:h2 "Methods:")
+              (:ul (loop for method in (remove-if
+                                        #'listp (mapcar #'mopu:generic-function-name
+                                                        (mopu:generic-functions input)))
+                         collect (:li (:a :href (lisp-url `(nyxt::describe-function ',method)) method))))))))
       (prompt
        :prompt "Describe class"
        :sources (make-instance 'class-source))))
