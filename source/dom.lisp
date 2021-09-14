@@ -180,9 +180,7 @@ JSON should have the format like what `get-document-body-json' produces:
                           (when (quri:uri-fragment url) `(:fragment ,(quri:uri-fragment url)))))))
     (alex:when-let* ((result (call-next-method))
                      (url (nyxt::ensure-url result)))
-      (if (valid-url-p result)
-          url
-          (merge-url* url (url (current-buffer)))))))
+      (merge-url* url (url (current-buffer))))))
 
 (defmethod url ((element plump:element))
   (when (plump:has-attribute element "href")
