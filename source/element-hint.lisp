@@ -172,7 +172,12 @@ FUNCTION is the action to perform on the selected elements."
 (defmethod prompter:object-attributes :around ((element plump:element))
   `(,@(when (plump:get-attribute element "nyxt-hint")
         `(("Hint" ,(plump:get-attribute element "nyxt-hint"))))
-    ,@(call-next-method)
+    ;; Ensure that all of Body, URL and Value are there, even if empty.
+    ,@(let ((attributes (call-next-method)))
+       (dolist (attr '("Body" "URL" "Value"))
+         (unless (assoc attr attributes :test 'string=)
+           (alex:nconcf attributes `((,attr "")))))
+        attributes)
     ("Type" ,(str:capitalize (str:string-case
                                  (plump:tag-name element)
                                ("a" "link")
