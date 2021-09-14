@@ -73,7 +73,10 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
   (iolib/sockets:lookup-hostname name))
 
 (export-always 'valid-url-p)
-(defun valid-url-p (url)
+(defun valid-url-p (url &key skip-domain-validation)
+  "Return non-nil when URL is a valid URL.
+With SKIP-DOMAIN-VALIDATION, the domain name existence is not verified.
+Domain name validation may take significant time since it looks up the DNS."
   ;; List of URI schemes: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
   ;; Last updated 2020-08-26.
   (let* ((nyxt-schemes '("lisp" "javascript"))
@@ -107,13 +110,15 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
                 ;; "http://" does not have a host.
                 ;; A valid URL may have an empty domain, e.g. http://192.168.1.1.
                 (quri:uri-host url)
-                ;; "http://algo" has the "algo" hostname but it's probably invalid
-                ;; unless it's found on the local network.  We also need to
-                ;; support "localhost" and the current system hostname.
-                ;; get-host-by-name may signal a ns-try-again-condition which is
-                ;; not an error, so we can't use `ignore-errors' here.
-                (or (quri:ip-addr-p (quri:uri-host url))
-                    (hostname-found-p (quri:uri-host url)))))))))
+                (or
+                 skip-domain-validation
+                 ;; "http://algo" has the "algo" hostname but it's probably invalid
+                 ;; unless it's found on the local network.  We also need to
+                 ;; support "localhost" and the current system hostname.
+                 ;; get-host-by-name may signal a ns-try-again-condition which is
+                 ;; not an error, so we can't use `ignore-errors' here.
+                 (or (quri:ip-addr-p (quri:uri-host url))
+                     (hostname-found-p (quri:uri-host url))))))))))
 
 (-> ensure-url (t) quri:uri)
 (defun ensure-url (thing)
