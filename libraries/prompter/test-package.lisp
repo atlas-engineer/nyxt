@@ -8,5 +8,10 @@
         #:prove)
   (:import-from #:prompter))
 
-(unless lparallel:*kernel*
-  (setf lparallel:*kernel* (lparallel:make-kernel worker-count)))
+(defun initialize-lparallel-kernel (&key (worker-count (serapeum:count-cpus)))
+  "Initialize the lparallel kernel with WORKER-COUNT, if not supplied set it to
+the amount of CPU cores.."
+  (unless lparallel:*kernel*
+    (setf lparallel:*kernel* (lparallel:make-kernel worker-count))))
+
+(initialize-lparallel-kernel)
