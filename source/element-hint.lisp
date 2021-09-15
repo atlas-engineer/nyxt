@@ -193,8 +193,8 @@ FUNCTION is the action to perform on the selected elements."
 
 (defmethod prompter:object-attributes ((a nyxt/dom:a-element))
   (append
-   (alex:when-let ((url-string (when (plump:has-attribute a "href")
-                                 (plump:get-attribute a "href"))))
+   (sera:and-let* ((has-href? (plump:has-attribute a "href"))
+                   (url-string (plump:get-attribute a "href")))
      `(("URL" ,url-string)))
    (when (nyxt/dom:body a)
     `(("Body" ,(str:shorten 80 (nyxt/dom:body a)))))))
@@ -217,8 +217,8 @@ FUNCTION is the action to perform on the selected elements."
 
 (defmethod prompter:object-attributes ((img nyxt/dom:img-element))
   (append
-   (alex:when-let ((url-string (when (plump:has-attribute img "href")
-                                 (plump:get-attribute img "href"))))
+   (sera:and-let* ((has-href? (plump:has-attribute img "href"))
+                   (url-string (plump:get-attribute img "href")))
      `(("URL" ,url-string)))
    (when (nyxt/dom:body img)
     `(("Body" ,(str:shorten 80 (nyxt/dom:body img)))))))
