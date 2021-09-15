@@ -568,7 +568,7 @@ See `gtk-browser's `modifier-translator' slot."
                              (button-event-modifiers event)
                              event))
          (buffer (or (current-prompt-buffer)
-                      sender)))
+                     sender)))
     (when (prompt-buffer-p buffer)
       (update-prompt buffer))
     (when key-string
