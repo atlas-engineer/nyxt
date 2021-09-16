@@ -628,8 +628,10 @@ current node result to the result of further traversal."
 (export-always 'map-owned-tree)
 (defun map-owned-tree (function tree owner &key flatten include-root
                                              (collect-function #'cons))
-  "Like `map-tree' but restrict traversal to OWNER's nodes."
-  (map-tree function tree
+  "Like `map-tree' but restrict traversal to OWNER's nodes.
+TREE is unused."
+  (declare (ignore tree))
+  (map-tree function (owned-root owner)
             :owner owner
             :flatten flatten
             :include-root include-root
