@@ -462,7 +462,8 @@ Otherwise go forward to the only child."
 (define-command buffer-history-tree (&optional (buffer (current-buffer)))
   "Open a new buffer displaying the whole history tree of a buffer."
   (with-current-html-buffer (output-buffer (format nil "*History-~a*" (id buffer))
-                                           'nyxt/history-tree-mode:history-tree-mode)
+                             'nyxt/history-tree-mode:history-tree-mode
+                             :no-history-p t)
     (with-history-unsafe (history buffer)
       (let ((mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
             (tree (spinneret:with-html-string
@@ -491,7 +492,8 @@ Otherwise go forward to the only child."
   "Open a new buffer displaying the whole history branch the current buffer is on."
   (let ((current-buffer-id (id (current-buffer))))
     (nyxt::with-current-html-buffer (output-buffer "*History*"
-                                     'nyxt/history-tree-mode:history-tree-mode)
+                                     'nyxt/history-tree-mode:history-tree-mode
+                                     :no-history-p t)
       (with-history-unsafe (history)
         (let ((mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
               (tree (spinneret:with-html-string
