@@ -1050,7 +1050,7 @@ requested a reload."
          (entry (or (find url history :test #'quri:uri= :key #'webkit-history-entry-url)
                     (find url history :test #'quri:uri= :key #'webkit-history-entry-original-url))))
     ;; Mark buffer as :loading right away so functions like `window-set-buffer'
-    ;; don't try to reload if they are called before the "load-change" signal
+    ;; don't try to reload if they are called before the "load-changed" signal
     ;; is emitted.
     (setf (slot-value buffer 'load-status) :loading)
     (if (and entry (not (quri:uri= url (url buffer))))
@@ -1308,7 +1308,7 @@ As a second value, return the current buffer index starting from 0."
          (current (webkit:webkit-back-forward-list-get-current-item bf-list))
          (history-list nil)
          (current-index 0))
-    ;; The back-forward list is both negatively and positibely indexed.  Seems
+    ;; The back-forward list is both negatively and positively indexed.  Seems
     ;; that we can't easily know the first index nor the last one.  So let's
     ;; iterate over the length backwards and forwards to make sure we get all
     ;; elements in order.
