@@ -1160,6 +1160,16 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
   (:export-class-name-p t))
 (define-user-class global-history-source)
 
+(defmethod initialize-instance :after ((source global-history-source) &key)
+  (setf (prompter:name source)
+        (cond
+          ((typep (data-profile (current-buffer)) 'default-data-profile)
+           "Global history")
+          ((typep (current-buffer) 'nosave-buffer)
+           "Nosave buffers history")
+          (t
+           "~a profile history" (name (data-profile (current-buffer)))))))
+
 (define-class new-url-query ()
   ((query ""
           :documentation "Either a URL or a string query passed to `engine'.")
