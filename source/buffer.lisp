@@ -892,12 +892,14 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
   "For dummy buffers, use `ffi-buffer-delete' instead."
   (hooks:run-hook (buffer-delete-hook buffer) buffer)
   (let ((parent-window (find buffer (window-list) :key 'active-buffer)))
-    (with-data-access (history (history-path buffer))
-      (sera:and-let* ((owner (htree:owner history (id buffer)))
-                      (current (htree:current owner))
-                      (data (htree:data current)))
-        (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer)))
-      (htree:delete-owner history (id buffer)))
+    (with-data-unsafe (history (history-path buffer))
+      (when (htree:owner history (id buffer))
+        (with-data-access (history (history-path buffer))
+          (sera:and-let* ((owner (htree:owner history (id buffer)))
+                          (current (htree:current owner))
+                          (data (htree:data current)))
+            (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer)))
+          (htree:delete-owner history (id buffer)))))
     (when parent-window
       (let ((replacement-buffer (or (first (get-inactive-buffers))
                                     (make-buffer :load-url-p nil
