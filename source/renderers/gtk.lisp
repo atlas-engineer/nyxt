@@ -756,6 +756,9 @@ See `gtk-browser's `modifier-translator' slot."
             (webkit:webkit-policy-decision-ignore response-policy-decision)
             nil)))))
 
+(defvar *loading-webkit-history-p* nil
+  "Internal hack, do not use!")
+
 (define-ffi-method on-signal-load-changed ((buffer gtk-buffer) load-event)
   ;; `url' can be nil if buffer didn't have any URL associated
   ;; to the web view, e.g. the start page, or if the load failed.
@@ -773,6 +776,7 @@ See `gtk-browser's `modifier-translator' slot."
           ((eq load-event :webkit-load-committed)
            (on-signal-load-committed buffer url))
           ((eq load-event :webkit-load-finished)
+           (setf *loading-webkit-history-p* nil)
            (unless (eq (slot-value buffer 'load-status) :failed)
              (setf (slot-value buffer 'load-status) :finished))
            (on-signal-load-finished buffer url)
@@ -980,20 +984,25 @@ See `gtk-browser's `modifier-translator' slot."
     (delete-buffer :id (id buffer)))
   (connect-signal buffer "load-failed" (web-view load-event failing-url error)
     (declare (ignore load-event web-view error))
-    (unless (member (slot-value buffer 'load-status) '(:finished :failed))
-      (echo "Failed to load URL ~a in buffer ~a." failing-url (id buffer))
-      (setf (slot-value buffer 'load-status) :failed)
-      (html-set
-       (spinneret:with-html-string
-        (:h1 "Page could not be loaded.")
-        (:h2 "URL: " failing-url)
-        (:ul
-         (:li "Try again in a moment, maybe the site will be available again.")
-         (:li "If the problem persists for every site, check your Internet connection.")
-         (:li "Make sure the URL is valid."
-              (when (quri:uri-https-p (quri:uri failing-url))
-                "If this site does not support HTTPS, try with HTTP (insecure)."))))
-       buffer))
+    ;; TODO: WebKitGTK sometimes (when?) triggers "load-failed" when loading a
+    ;; page from the webkit-history cache.  Upstream bug?  Anyways, we should
+    ;; ignore these.
+    (if *loading-webkit-history-p*
+        (setf *loading-webkit-history-p* nil)
+        (unless (member (slot-value buffer 'load-status) '(:finished :failed))
+          (echo "Failed to load URL ~a in buffer ~a." failing-url (id buffer))
+          (setf (slot-value buffer 'load-status) :failed)
+          (html-set
+           (spinneret:with-html-string
+             (:h1 "Page could not be loaded.")
+             (:h2 "URL: " failing-url)
+             (:ul
+              (:li "Try again in a moment, maybe the site will be available again.")
+              (:li "If the problem persists for every site, check your Internet connection.")
+              (:li "Make sure the URL is valid."
+                   (when (quri:uri-https-p (quri:uri failing-url))
+                     "If this site does not support HTTPS, try with HTTP (insecure)."))))
+           buffer)))
     t)
   (connect-signal buffer "create" (web-view navigation-action)
     (declare (ignore web-view))
@@ -1315,6 +1324,7 @@ As a second value, return the current buffer index starting from 0."
     (values history-list current-index)))
 
 (defmethod load-webkit-history-entry ((buffer gtk-buffer) history-entry)
+  (setf *loading-webkit-history-p* t)
   (webkit:webkit-web-view-go-to-back-forward-list-item
    (gtk-object buffer)
    (webkit-history-entry-gtk-object history-entry)))
