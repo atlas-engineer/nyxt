@@ -108,6 +108,27 @@ The handlers take the window as argument."))
                                              :window window)))))
     (mapc (lambda (i) (window-delete-panel-buffer window i)) panels)))
 
+(defmacro define-panel (name (buffer-variable) &body body)
+  (let ((panel-name (format nil "*~a Panel*" name))
+        (docstring-show (format nil "Show ~a panel." name))
+        (docstring-toggle (format nil "Toggle ~a panel." name))
+        (name-show (intern (format nil "~(show-~a-panel~)" name)))
+        (name-toggle (intern (format nil "~(toggle-~a-panel~)" name))))
+    `(progn
+       (define-command-global ,name-show (&key (side :left))
+         ,docstring-show
+         (with-current-panel (,buffer-variable ,panel-name :side side)
+           ,@body))
+       (define-command-global ,name-toggle (&key (side :left))
+         ,docstring-toggle
+         (let* ((window (current-window))
+                (panel (find ,panel-name (panel-buffers window)
+                             :key #'title
+                             :test #'equal)))
+           (if panel
+               (window-delete-panel-buffer window panel)
+               (,name-show :side side)))))))
+
 (defmethod (setf active-buffer) (buffer (window window))
   (setf (slot-value window 'active-buffer) buffer)
   (print-status))
