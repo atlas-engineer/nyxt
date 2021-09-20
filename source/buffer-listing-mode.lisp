@@ -104,6 +104,6 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                                             :text-overflow "ellipsis"))))
                                 (:body
                                  (:h1 "Buffers")
-                                 (:a :class "button" :href (lisp-url '(nyxt/buffer-listing-mode::|show-buffers-panel|)) "Update ↺")
+                                 (:a :class "button" :href (lisp-url '(nyxt/buffer-listing-mode::|SHOW-BUFFERS-PANEL|)) "Update ↺")
                                  (loop for buffer in (buffer-list)
                                        collect (buffer-markup buffer))))))

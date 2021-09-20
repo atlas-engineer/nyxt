@@ -112,8 +112,8 @@ The handlers take the window as argument."))
   (let ((panel-name (format nil "*~a Panel*" name))
         (docstring-show (format nil "Show ~a panel." name))
         (docstring-toggle (format nil "Toggle ~a panel." name))
-        (name-show (intern (format nil "~(show-~a-panel~)" name)))
-        (name-toggle (intern (format nil "~(toggle-~a-panel~)" name))))
+        (name-show (intern (format nil "~:@(show-~a-panel~)" name)))
+        (name-toggle (intern (format nil "~:@(toggle-~a-panel~)" name))))
     `(progn
        (define-command-global ,name-show (&key (side :left))
          ,docstring-show
