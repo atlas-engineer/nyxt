@@ -9,12 +9,107 @@
     (spinneret:with-html-string
       (:style (style buffer))
       (:h1 "Change Log")
-      (:p "Nyxt uses semantic versionining.")
+      (:p "Nyxt tries to follow semantic versioning.")
       (:p "Given a version number MAJOR.MINOR.PATCH, we increment:")
       (:ul
        (:li "MAJOR when we make incompatible API changes.")
        (:li "MINOR when we add functionality in a backwards-compatible manner.")
        (:li "PATCH when we make backwards-compatible bug fixes."))
+
+      (:div
+       (:h2 "2.2.0")
+       (:ul
+        (:li "New " (:code "changelog") " command.")
+        (:li "New " (:code "show-qrcode-of-current-url") " command.  (Thanks to @ag91!)")
+        (:li "New " (:code "view-source") " command.")
+        (:li "New " (:code "edit-user-file-with-external-editor") " command.")
+        (:li "New " (:code "summarize-buffer") " command.")
+        (:li "Macro editor: interactively record command macros with " (:code "edit-macro") "."
+             " Macros can be saved to the " (:code "auto-config.lisp") " file.")
+        (:li "New action for the " (:code "switch-buffer") " command to delete selected buffers.")
+        (:li "Support for GTK clipboard.  (Thanks to @shamazmazum!)")
+        (:li "Deprecated commands no longer show in the "
+             (:code "execute-command") " list.")
+        (:li "New " (:code "titler") " window slot to allow customizing the window title.") (:li (:code "jump-to-heading") " now also lists content keywords.")
+        (:li "Various manual and tutorial improvements and fixes.  (Thanks to @pdelfino!)")
+        (:li "Deprecate " (:code "paste-or-set-url") ".")
+        (:li "Replace " (:code "copy-system-information") " with " (:code "show-system-information") ".")
+        (:li (:p "Don't forward printable characters in vi-normal-mode.")
+             (:p "Concretely, pressing an unbound letter won't insert it in an HTML input."))
+        (:li (:p "New VI status and prompt buffer indicator.  (Thanks to @edgar-vincent!)")
+             (:p "Both the status area and the prompt buffer now display a colored  indicator for "
+                 (:code "vi-normal-mode") " and " (:code "vi-insert-mode") "."))
+        (:li "New navigation commands: "
+             (:code "go-previous") ", "
+             (:code "go-next") ", "
+             (:code "go-up") ", "
+             (:code "go-to-homepage") ".")
+        (:li "Password commands set the default input to the current host.")
+        (:li "Anonymous commands are now allowed in keybindings (e.g. with "
+             (:code "make-command") ").")
+        (:li (:code "describe-variable")
+             " can now describe compound values recursively, such as lists of variables.")
+        (:li (:code "execute-extended-command") " performs type checking and
+        prefills default values."))
+
+       (:h3 "Backward-incompatible changes")
+       (:ul
+        (:li (:p "Updated " (:code "cl-webkit") " to version 3.0.0.")
+             (:p (:code "webkit2:webkit-web-view-evaluate-javascript")
+                 " lambda list changed."))
+        (:li (:p "We've introduced an API-breaking change to the " (:code "nyxt/history-tree")
+                 " library: now all its call points take an owner as parameter."
+                 "This has allowed us to fix the constant history corruptions.")))
+       (:h3 "Element hinting overhaul")
+       (:p "It should be now faster, better integrated and more exhaustive (such as drop-down buttons).")
+       (:p
+        "A new DOM parser has been developed.  As a result, much of the
+       former Parenscript code has been replace by pure Lisp code.")
+       (:h3 "New 'panel' buffers.")
+       (:p "Panel buffers can be used to display arbitrary information on the
+       side of a window.  A few new commands are thus introduced:")
+       (:ul
+        (:li (:code "show-bookmarks-panel"))
+        (:li (:code "show-buffers-panel"))
+        (:li (:code "delete-panel-buffer")))
+       (:h3 "Prompt buffer")
+       (:ul
+        (:li "Input area no longer stutters when updating the display.")
+        (:li "Key press responsiveness has been dramatically improved.")
+        (:li "The prompt is properly refreshed when pasting to it.")
+        (:li (:p "Bind " (:code "M-space") " to " (:code "resume-prompt") " to make it more useful.")
+             (:p "It's particularly useful to resume a search."))
+        (:li (:p "Bind " (:code "C-M-space") " to " (:code "execute-extended-command") ".")
+             (:p "It makes it easier for users to execute commands and supply parameters.")))
+
+       (:h3 "Status area")
+       (:ul
+        (:li "Clicking on modes now describes them.")
+        (:li "New '+' button to toggles modes.")
+        (:li "Arbitrary HTML is now allowed for mode glyphs."))
+       (:h3 "Support for buffer tree relationships")
+       (:ul
+        (:li (:code "switch-buffer-previous") " and " (:code "switch-buffer-next")
+             " browse the buffer tree in a depth-first fashion.")
+        (:li "New " (:code "switch-buffer-last")
+             " command to easily switch back and forth between the 2 most recent buffers.")
+        (:li (:code "list-buffers") " can now display the the buffers as a tree."))
+       (:h3 "Platform support")
+       (:ul
+        (:li "Fix slow buffer and prompt-buffer creation on FreeBSD.  (Thanks to
+        @shamazmazum!)"))
+       (:h3 "Bug fixes")
+       (:ul
+        (:li "Various fixes with the password manager commands.")
+        (:li "Don't crash when an error occurs in a GTK signal.")
+        (:li "Start up errors due to flawed user init files now lead to a restart
+    of Nyxt without init file.")
+        (:li (:p "Fix endless compilation of =tutorial.lisp= when SBCL dynamic space
+    size to low.")
+             (:p (:code "cl-markup") " was replaced by " (:code "spinneret") "."))
+        (:li "Fix potential dead-lock in " (:code "restore-history-buffers") ".")
+        (:li "Fix " (:code "buffer-history-tree") " that showed a truncated tree.")))
+
       (:div
        (:h2 "2.1.1")
        (:ul
