@@ -665,12 +665,12 @@ System information is also saved into the clipboard."
          (:style (style buffer))
          (:style dashboard-style)
          (:div :id "container"
-               (:div :style "height: 210px"
+               (:div
                      (:h1 :id "title" "Nyxt " (:span :style "color: lightgray" "browser ☺"))
                      (:h3 (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+))
                      (:a :class "button" :href (lisp-url `(nyxt::restore-history-by-name)) "🗁 Restore Session")
-                     (:a :class "button" :href (lisp-url `(nyxt::execute-command)) "⚙ Execute Command")
                      (:a :class "button" :href (lisp-url `(nyxt::manual)) "🕮 Manual")
+                     (:a :class "button" :href (lisp-url `(nyxt::execute-command)) "≡ Execute Command")
                      (:a :class "button" :href "https://nyxt.atlas.engineer/download" "⇡ Update"))
                (:div :class "section" :style "flex: 3"
                      (:h3 "🏷 " (:b "Bookmarks"))
