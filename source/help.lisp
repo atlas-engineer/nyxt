@@ -673,10 +673,10 @@ System information is also saved into the clipboard."
                      (:a :class "button" :href (lisp-url `(nyxt::execute-command)) "≡ Execute Command")
                      (:a :class "button" :href "https://nyxt.atlas.engineer/download" "⇡ Update"))
                (:div :class "section" :style "flex: 3"
-                     (:h3 "🏷 " (:b "Bookmarks"))
+                     (:h3 (:b "Bookmarks"))
                      (:ul (:raw (list-bookmarks))))
                (:div :class "section" :style "flex: 5"
-                     (:h3 "🗐 " (:b "Recent URLs"))
+                     (:h3 (:b "Recent URLs"))
                      (:ul (:raw (history-html-list))))))))))
 
 (defun dump-command-descriptions (file)
