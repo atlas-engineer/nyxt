@@ -19,7 +19,7 @@
                             "gi-gtk"))
 
 (defsystem "nyxt"
-  :version "2.1.1"
+  :version "2.2.0"
   :author "Atlas Engineer LLC"
   :homepage "https://nyxt.atlas.engineer"
   :description "Extensible web-browser in Common Lisp"
