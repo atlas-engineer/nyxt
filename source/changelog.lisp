@@ -64,7 +64,7 @@
        (:p "It should be now faster, better integrated and more exhaustive (such as drop-down buttons).")
        (:p
         "A new DOM parser has been developed.  As a result, much of the
-       former Parenscript code has been replace by pure Lisp code.")
+       former Parenscript code has been replaced by pure Lisp code.")
        (:h3 "New 'panel' buffers.")
        (:p "Panel buffers can be used to display arbitrary information on the
        side of a window.  A few new commands are thus introduced:")
