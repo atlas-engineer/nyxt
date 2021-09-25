@@ -876,7 +876,7 @@ See `gtk-browser's `modifier-translator' slot."
       (gobject:g-object-ref (gobject:pointer file-chooser-request))
       (run-thread
         (let ((files (mapcar
-                      #'namestring
+                      #'uiop:native-namestring
                       (handler-case
                           (prompt :prompt (format
                                            nil "File~@[s~*~] to input"
