@@ -17,7 +17,7 @@ particular revision.")
     (spinneret:with-html-string
       (:style (style buffer))
       (:h1 "Change Log")
-      (:p "Nyxt uses semantic versioning.")
+      (:p "Nyxt tries to use semantic versioning.")
       (:p "Given a version number MAJOR.MINOR.PATCH, we increment:")
       (:ul
        (:li "MAJOR when we make incompatible API changes.")
