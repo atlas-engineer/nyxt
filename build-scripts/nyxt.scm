@@ -6,22 +6,22 @@
 ;; GNU Guix development package.  To build and install, clone this repository,
 ;; switch directory to here and run:
 ;;
-;;   guix package --install-from-file=build-scripts/guix.scm
+;;   guix package --install-from-file=build-scripts/nyxt.scm
 ;;
 ;; To use as the basis for a development environment, run:
 ;;
-;;   guix environment --container --load=build-scripts/guix.scm --ad-hoc glib glib-networking gsettings-desktop-schemas
+;;   guix environment --container --load=build-scripts/nyxt.scm --ad-hoc glib glib-networking gsettings-desktop-schemas
 ;;
 ;; Replace --container by --pure if you still want ASDF to see external
 ;; libraries in ~/common-lisp, etc.
 ;; To build a local executable and then run it:
 ;;
-;;   guix environment --container --load=build-scripts/guix.scm -- make all NYXT_INTERNAL_QUICKLISP=false
-;;   guix environment --pure --load=build-scripts/guix.scm -- ./nyxt
+;;   guix environment --container --load=build-scripts/nyxt.scm -- make all NYXT_INTERNAL_QUICKLISP=false
+;;   guix environment --pure --load=build-scripts/nyxt.scm -- ./nyxt
 ;;
 ;; To start in a container, run:
 ;;
-;;   guix environment --load=build-scripts/guix.scm --container --network --share=/PATH/TO/YOUR/NYXT/CHECKOUT=/nyxt --preserve='^DISPLAY$' --expose=/etc/ssl/certs --ad-hoc nss-certs glib glib-networking gsettings-desktop-schemas
+;;   guix environment --load=build-scripts/nyxt.scm --container --network --share=/PATH/TO/YOUR/NYXT/CHECKOUT=/nyxt --preserve='^DISPLAY$' --expose=/etc/ssl/certs --ad-hoc nss-certs glib glib-networking gsettings-desktop-schemas
 ;;
 ;; Replace '/PATH/TO/YOUR/NYXT/CHECKOUT' as appropriate.
 ;; Then in the container environment:
@@ -32,32 +32,33 @@
 ;;
 ;;; Code:
 
-(use-modules (ice-9 match)
-             (ice-9 popen)
-             (ice-9 rdelim)
-             (srfi srfi-1)
-             (srfi srfi-26)
-             ((guix build utils) #:select (with-directory-excursion))
-             (guix gexp)
-             (guix packages)
-             ((guix licenses) #:prefix license:)
-             (guix licenses)
-             (guix git-download)
-             (guix build-system asdf)   ; TODO: Remove sbcl-cl-webkit once Guix has 3.0.0.
-             (guix build-system gnu)
-             (guix build-system glib-or-gtk)
-             (gnu packages)
-             (gnu packages base)
-             (gnu packages commencement)
-             (gnu packages glib)
-             (gnu packages lisp)
-             (gnu packages lisp-xyz)
-             (gnu packages gnome)
-             (gnu packages gstreamer)
-             (gnu packages gtk)
-             (gnu packages pkg-config)
-             (gnu packages version-control)
-             (gnu packages webkit))
+(define-module (nyxt)
+  #:use-module (ice-9 match)
+  #:use-module (ice-9 popen)
+  #:use-module (ice-9 rdelim)
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
+  #:use-module ((guix build utils) #:select (with-directory-excursion))
+  #:use-module (guix gexp)
+  #:use-module (guix packages)
+  #:use-module ((guix licenses) #:prefix license:)
+  #:use-module (guix licenses)
+  #:use-module (guix git-download)
+  #:use-module (guix build-system asdf) ; TODO: Remove sbcl-cl-webkit once Guix has 3.0.0.
+  #:use-module (guix build-system gnu)
+  #:use-module (guix build-system glib-or-gtk)
+  #:use-module (gnu packages)
+  #:use-module (gnu packages base)
+  #:use-module (gnu packages commencement)
+  #:use-module (gnu packages glib)
+  #:use-module (gnu packages lisp)
+  #:use-module (gnu packages lisp-xyz)
+  #:use-module (gnu packages gnome)
+  #:use-module (gnu packages gstreamer)
+  #:use-module (gnu packages gtk)
+  #:use-module (gnu packages pkg-config)
+  #:use-module (gnu packages version-control)
+  #:use-module (gnu packages webkit))
 
 ;; TODO: Remove sbcl-cl-webkit once Guix has 3.0.0.
 (define-public sbcl-cl-webkit
