@@ -1,0 +1,88 @@
+# Inspired by
+# https://github.com/guix-science/guix-science/blob/master/.github/workflows/build.yml
+# and
+# https://github.com/PromyLOPh/guix-install-action
+
+name: Releases
+
+on:
+  push:
+    tags: '*'
+    ## To test, uncomment the line below with branch name used for review.
+    # branches: [ MY-WORK-BRANCH ]
+
+jobs:
+  build-binaries:
+    name: ${{ matrix.lisp }} on ${{ matrix.os }}
+    strategy:
+      matrix:
+        lisp: [sbcl]
+        # See https://github.com/actions/virtual-environments
+        # for the list of official distributions.
+        os: [ubuntu-20.04]
+      # fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+
+    # Check out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Install SBCL and dependencies
+      shell: bash
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y ruby ruby-dev rubygems dpkg-dev sbcl curl git-core zlib1g-dev
+        sudo apt-get install -y libfixposix3 libfixposix-dev libwebkit2gtk-4.0-dev glib-networking gsettings-desktop-schemas xclip enchant-2
+        sudo apt-get install -y gobject-introspection
+
+    - name: Build special SBCL and make package
+      shell: bash
+      # Don't run scripts with `sudo` since it would use /root as home instead
+      # of the runner's /home/runner.
+      run: ./build-scripts/build-ubuntu-package.sh
+
+    - name: Guix cache
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/guix
+        # use a key that (almost) never matches
+        key: guix-cache-${{ github.sha }}
+        restore-keys: |
+          guix-cache-
+    # Cannot use a cache for /gnu/store, since restore fails
+    - name: Install Guix
+      uses: PromyLOPh/guix-install-action@v1
+    - name: Ensure no locale warning
+      run: test -z "$(guix --version 2>&1 >/dev/null)"
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Build package
+      run: |
+          guix environment --container --user=dummy-user --load=build-scripts/nyxt.scm --ad-hoc guix -- make all NYXT_INTERNAL_QUICKLISP=false
+
+    - name: generate version file
+      shell: bash
+      run: echo $(./nyxt --version | cut -d' ' -f3) > version
+    # Balance out '.
+    - name: Pack (Relocatable Binary)
+      shell: bash
+      run: guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt --root=nyxt-$(cat version).tar.xz -L build-scripts/ nyxt > store-path.txt
+    - name: Generate release notes
+      shell: bash
+      run: |
+        echo "Release notes: https://nyxt.atlas.engineer/article/release-$(cat version).org" > release.txt
+    - name: Generate Guix pack reproduction recipe
+      shell: bash
+      run: |
+        sha256sum nyxt-*.tar.xz > nyxt-$(cat version).tar.xz.sha256sum
+        echo "Store path: $(cat store-path.txt)" >> guix-recipe.txt
+        echo "Guix describe: $(guix describe)" >> guix-recipe.txt
+
+    - name: Release
+      uses: ncipollo/release-action@v1
+      with:
+        bodyFile: release.txt
+        artifacts: "nyxt-*.tar.xz*,guix-recipe.txt,*.deb"
