@@ -70,7 +70,7 @@
     (source (local-file %source-dir #:recursive? #t #:select? git-file?))
     (build-system gnu-build-system)     ; TODO: Use glib-or-gtk-build-system instead?
     (arguments
-     `(#:make-flags (list "nyxt" "NYXT_INTERNAL_QUICKLISP=false"
+     `(#:make-flags (list "nyxt" "NYXT_SUBMODULES=false"
                           (string-append "DESTDIR=" (assoc-ref %outputs "out"))
                           "PREFIX=")
        #:strip-binaries? #f             ; Stripping breaks SBCL binaries.

@@ -42,17 +42,17 @@ sbcl \
   --eval '(format t "- ASDF user source registry directory: ~a~%" (asdf/source-registry:user-source-registry-directory))' \
   --quit
 
+## TODO: Warning, linux-packaging deps submodule might be missing!
 echo
 echo "==> Build package"
 sbcl \
     --disable-debugger \
     --eval '(require "asdf")' \
-		--eval '(asdf:load-system :nyxt-quicklisp)' \
-    --eval "(format t \"==> Quickloading linux-packaging...~%\")" \
-    --eval "(ql:quickload :linux-packaging :silent t)" \
-    --eval "(format t \"==> Quickloading :nyxt...~%\")" \
-    --eval "(ql:quickload :nyxt :silent t)" \
-    --eval "(format t \"==> Quickloading :nyxt-ubuntu-package...~%\")" \
-    --eval "(ql:quickload :nyxt-ubuntu-package :silent t)" \
+		--eval '(asdf:load-system :nyxt/submodules)' \
+    --eval "(format t \"==> Loading linux-packaging...~%\")" \
+    --eval "(asdf:load-system :linux-packaging)" \
+    --eval "(asdf:load-system :nyxt)" \
+    --eval "(format t \"==> Loading :nyxt-ubuntu-package...~%\")" \
+    --eval "(asdf:load-system :nyxt-ubuntu-package)" \
     --eval "(asdf:make :nyxt-ubuntu-package)" \
     --quit

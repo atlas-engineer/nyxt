@@ -18,6 +18,12 @@
 (defvar *nyxt-renderer* (or (uiop:getenv "NYXT_RENDERER")
                             "gi-gtk"))
 
+(defvar *submodules-dir* (or (uiop:getenv "NYXT_SUBMODULES_DIR")
+                             "_build"))
+
+(defvar *submodules-jobs* (or (uiop:getenv "NYXT_SUBMODULES_JOBS")
+                              4))
+
 (defsystem "nyxt"
   :version "2.2.0"
   :author "Atlas Engineer LLC"
@@ -180,6 +186,15 @@
                          (test-op "nyxt/ospm/tests")
                          (test-op "nyxt/prompter/tests"))))
 
+(defsystem "nyxt/submodules"
+  :perform (compile-op (o c)
+                       (uiop:run-program `("git"
+                                           "-C" ,(namestring (system-relative-pathname c ""))
+                                           "submodule" "update" "--init" "--force"
+                                           "--jobs" ,(write-to-string *submodules-jobs*))
+                                         :ignore-error-status t
+                                         :output t)))
+
 (defun nyxt-run-test (c path &key network-needed-p)
   (and (or (not network-needed-p)
            (not (uiop:getenv "NYXT_TESTS_NO_NETWORK")))
@@ -247,7 +262,7 @@
 ;; We use a temporary "version" file to generate the final nyxt.desktop with the
 ;; right version number.  Since "version" is a file target, third-party
 ;; packaging systems can choose to generate "version" in advance before calling
-;; "make install-assets", so that they won't need to rely on Quicklisp.
+;; "make install-assets", so that they won't need to rely on submodules.
 (defsystem "nyxt/version"
   :depends-on (nyxt)
   :output-files (compile-op (o c)
