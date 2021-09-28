@@ -16,7 +16,7 @@
 ;; libraries in ~/common-lisp, etc.
 ;; To build a local executable and then run it:
 ;;
-;;   guix environment --container --load=build-scripts/nyxt.scm -- make all NYXT_INTERNAL_QUICKLISP=false
+;;   guix environment --container --load=build-scripts/nyxt.scm -- make all NYXT_SUBMODULES=false
 ;;   guix environment --pure --load=build-scripts/nyxt.scm -- ./nyxt
 ;;
 ;; To start in a container, run:
@@ -27,7 +27,7 @@
 ;; Then in the container environment:
 ;;
 ;;   cd /nyxt
-;;   make all NYXT_INTERNAL_QUICKLISP=false
+;;   make all NYXT_SUBMODULES=false
 ;;   ./nyxt
 ;;
 ;;; Code:
@@ -153,7 +153,7 @@ WebKit browsing engine.")
     (source (local-file %source-dir #:recursive? #t #:select? git-file?))
     (build-system gnu-build-system)     ; TODO: Use glib-or-gtk-build-system instead?
     (arguments
-     `(#:make-flags (list "nyxt" "NYXT_INTERNAL_QUICKLISP=false"
+     `(#:make-flags (list "nyxt" "NYXT_SUBMODULES=false"
                           (string-append "DESTDIR=" (assoc-ref %outputs "out"))
                           "PREFIX=")
        #:strip-binaries? #f             ; Stripping breaks SBCL binaries.

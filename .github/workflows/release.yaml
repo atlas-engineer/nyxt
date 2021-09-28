@@ -59,7 +59,7 @@ jobs:
       run: test -z "$(guix --version 2>&1 >/dev/null)"
     - name: Build Guix package
       run: |
-          guix environment --container --user=dummy-user --load=build-scripts/nyxt.scm --ad-hoc guix -- make all NYXT_INTERNAL_QUICKLISP=false
+          guix environment --container --user=dummy-user --load=build-scripts/nyxt.scm --ad-hoc guix -- make all NYXT_SUBMODULES=false
 
     - name: Generate version file
       shell: bash
