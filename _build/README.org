@@ -1,10 +1,6 @@
-This directory contains projects that we need to reference from their
-repository directly.
-
-Potential reasons:
-
-- Version on Quicklisp out of date
-- Not available on Quicklisp
+This directory contains all Common Lisp dependencies.  They are fetched via Git
+submodules.  This gives us good reproducibility and control, unlike with
+Quicklisp which might not have the right versions.
 
 We store these in a directory that's excluded from recursion by ASDF.
 as per =asdf/source-registry:*source-registry-exclusions*=.
