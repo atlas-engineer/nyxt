@@ -25,12 +25,12 @@ Set NYXT_TESTS_ERROR_ON_FAIL to error out when a test fails.  This is useful for
 continuous integration and build systems.
 
 If NYXT_SUBMODULES is "true" (the default), all Lisp
-dependencies will be fetched with Quicklisp into the
-NYXT_QUICKLISP_DIR directory.
+dependencies will be fetched with =git submodules= into the
+NYXT_SUBMODULES_DIR directory.
 
 Otherwise, the dependencies will have to be locally installed
 on your system.  You may have to accomodate the LISP_FLAGS
-to, use your local install of Quicklisp.  For example:
+to use your local install of Quicklisp.  For example:
 
     make all NYXT_SUBMODULES=false LISP_FLAGS=
 
