@@ -99,7 +99,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Build package
         run: |
-            guix environment --container --user=dummy-user --load=build-scripts/nyxt.scm --ad-hoc guix -- make all NYXT_INTERNAL_QUICKLISP=false
+            guix environment --container --user=dummy-user --load=build-scripts/nyxt.scm --ad-hoc guix -- make all NYXT_SUBMODULES=false
       - name: Run package
         # TODO: Test if nyxt --version and nyxt --help outputs are correct.
         run: ./nyxt --version

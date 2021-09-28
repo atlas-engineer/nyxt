@@ -86,11 +86,11 @@ you wish to install it manually- system-wide- the official Quicklisp
 website can provide updated links to downloads, and instructions:
 https://www.quicklisp.org.
 
-Then pass the ~NYXT_INTERNAL_QUICKLISP=false~ option to all build
+Then pass the ~NYXT_SUBMODULES=false~ option to all build
 commands, like this:
 
 #+begin_src sh
-  make NYXT_INTERNAL_QUICKLISP=false ...
+  make NYXT_SUBMODULES=false ...
 #+end_src
 
 Each time you build Nyxt, you'll have to make sure the Quicklisp

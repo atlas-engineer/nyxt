@@ -24,7 +24,7 @@ Set NYXT_TESTS_NO_NETWORK to disable tests that require networking.
 Set NYXT_TESTS_ERROR_ON_FAIL to error out when a test fails.  This is useful for
 continuous integration and build systems.
 
-If NYXT_INTERNAL_QUICKLISP is "true" (the default), all Lisp
+If NYXT_SUBMODULES is "true" (the default), all Lisp
 dependencies will be fetched with Quicklisp into the
 NYXT_QUICKLISP_DIR directory.
 
@@ -32,7 +32,7 @@ Otherwise, the dependencies will have to be locally installed
 on your system.  You may have to accomodate the LISP_FLAGS
 to, use your local install of Quicklisp.  For example:
 
-    make all NYXT_INTERNAL_QUICKLISP=false LISP_FLAGS=
+    make all NYXT_SUBMODULES=false LISP_FLAGS=
 
 But in this case, you don't have to use `make' at all.  Instead, you could build
 Nyxt with an invocation along those lines:
@@ -45,7 +45,7 @@ or, even shorter if Nyxt is checked out in a directory traversed by ASDF (like
     sbcl --eval '(ql:quickload :nyxt/gi-gtk-application)' --quit
 
 WARNING: Make sure your Quicklisp distribution is up-to-date when using
-NYXT_INTERNAL_QUICKLISP=false.  Also check the .gitmodules file for Common Lisp
+NYXT_SUBMODULES=false.  Also check the .gitmodules file for Common Lisp
 libraries pinned to a version that may not be the same as the one in the latest
 Quickdist.
 
