@@ -7,12 +7,12 @@ which external dependencies we are directly relying on.
 - SBCL http://www.sbcl.org
 - WebkitGTK+ https://webkitgtk.org
 
-* Lisp Dependencies (available via Quicklisp)
+* Lisp Dependencies
 - alexandria
 - bordeaux-threads
 - calispel
-- cl-css
 - cl-containers
+- cl-css
 - cl-custom-hash-table
 - cl-html-diff
 - cl-json
@@ -21,6 +21,7 @@ which external dependencies we are directly relying on.
 - cl-prevalence
 - cl-qrencode
 - closer-mop
+- cluffer
 - dexador
 - enchant
 - fset
@@ -45,9 +46,6 @@ which external dependencies we are directly relying on.
 - trivial-package-local-nicknames
 - trivial-types
 - unix-opts
-
-* Lisp Dependencies (vendored)
-- cluffer
 
 Renderer-specific dependencies:
 - cl-cffi-gtk
