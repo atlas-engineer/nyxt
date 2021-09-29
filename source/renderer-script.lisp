@@ -94,13 +94,14 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
 
 (export-always 'with-current-html-buffer)
 (defmacro with-current-html-buffer ((buffer-var title mode
-                                     &key no-history-p)
+                                     &key url)
                                     &body body)
   "Switch to a buffer in MODE displaying BODY.
 If a buffer in MODE with TITLE exists, reuse it, otherwise create a new buffer.
 BUFFER-VAR is bound to the new buffer in BODY.
 MODE is a mode symbol.
-BODY must return the HTML markup as a string."
+BODY must return the HTML markup as a string.
+URL is the URL to load instead of setting HTML."
   (alex:once-only (title mode)
     `(let* ((,buffer-var (or (find-if (lambda (b)
                                         (and (string= (title b) ,title)
@@ -110,13 +111,57 @@ BODY must return the HTML markup as a string."
                                       :activate t
                                       :buffer (make-internal-buffer
                                                :title ,title
-                                               :no-history-p ,no-history-p)))))
-       (html-set
-        (progn
-          ,@body)
-        ,buffer-var)
+                                               ,@(when url
+                                                   `(:url (quri:uri ,url))))))))
+       ,@(if url
+             `((progn
+                 ,@body))
+             `((html-set
+                (progn
+                  ,@body)
+                ,buffer-var)))
        (set-current-buffer ,buffer-var)
        ,buffer-var)))
+
+(defmacro define-internal-page-command (name (&rest arglist)
+                                        (buffer-var title mode &rest other-buffer-args)
+                                        &body body)
+  "Defines a command called NAME creating an internal interface page.
+Creates a buffer in case there's no buffer with TITLE and MODE.
+Beware: the ARGLIST should have no mandatory arguments."
+  (let ((internal-name (intern (str:concat "%" (symbol-name name))))
+        (args (multiple-value-bind (required-arguments optional-arguments rest keyword-arguments)
+                  (alex:parse-ordinary-lambda-list arglist)
+                (append required-arguments
+                        (mapcar #'first optional-arguments)
+                        (alex:mappend #'first keyword-arguments)
+                        (when rest
+                          (list rest))))))
+    (multiple-value-bind (body declarations documentation)
+        (alex:parse-body body :documentation t)
+      `(progn
+         (defun ,internal-name (,@arglist)
+           ,documentation
+           ,@declarations
+           ;; We need to ignore those to avoid warnings, as the same arglist
+           ;; is used in both internal function and a command.
+           ;; TODO: Better way to handle those?
+           (declare (ignorable ,@(when (find 'url args)
+                                   `(url))))
+           (let ((,buffer-var (current-buffer)))
+             ;; We need to ignore those to avoid warnings, as the same arglist
+             ;; is used in both internal function and a command.
+             (declare (ignorable ,buffer-var))
+             ,@body))
+         (define-command ,name (,@arglist)
+           ,documentation
+           (with-current-html-buffer (,buffer-var ,title ,mode
+                                      :url (lisp-url (cons (quote ,internal-name)
+                                                           (mapcar (lambda (x)
+                                                                     (read-from-string
+                                                                      (format nil "'~s" x)))
+                                                                   (list ,@args))))
+                                      ,@other-buffer-args)))))))
 
 (defmacro with-current-panel ((buffer-var title &key (side :left))
                               &body body)

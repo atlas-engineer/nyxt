@@ -28,6 +28,7 @@
   :depends-on (alexandria
                bordeaux-threads
                calispel
+               ironclad
                cl-base64
                cl-css
                cl-html-diff

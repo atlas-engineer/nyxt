@@ -188,15 +188,38 @@ Authority is compared case-insensitively (RFC 3986)."
                       (lambda (url1 url2) (equalp (quri:uri-authority url1)
                                                   (quri:uri-authority url2)))))))
 
+(defvar *lisp-urls* (make-hash-table :test 'equalp)
+  "A map from the encrypted URL string to the actual Lisp form it represents.")
+
+(defvar %aes (ironclad:make-cipher
+              :aes
+              :mode :ecb
+              :key (ironclad:integer-to-octets (ironclad:generate-safe-prime 256))))
+
+(defun encrypt (plaintext)
+  (let ((msg (ironclad:ascii-string-to-byte-array (quri:url-encode plaintext))))
+    (ironclad:encrypt-in-place %aes msg)
+    (format nil "~x" (ironclad:octets-to-integer msg))))
+
+(defun decrypt (ciphertext)
+  (let ((msg (ironclad:integer-to-octets (parse-integer ciphertext :radix 16))))
+    (ironclad:decrypt-in-place %aes msg)
+    (quri:url-decode (coerce (mapcar #'code-char (coerce msg 'list)) 'string))))
+
 (export-always 'lisp-url)
 (-> lisp-url (t &rest t) string)
-(defun lisp-url (lisp-form &rest more-lisp-forms)
-  "Generate a lisp:// URL from the given Lisp forms. This is useful for encoding
-functionality into internal-buffers."
+;; REVIEW: We mainly use only one form. Maybe get rid of the &rest here?
+;; This would also allow defining allowed keywords to transform to params.
+(defun lisp-url (form &rest other-forms)
+  "Generate a lisp:// URL from the given Lisp FORM.
+Mainly used to encode functionality into internal-buffers."
   (the (values string &optional)
-       (apply #'str:concat "lisp://"
-              (mapcar (alex:compose #'quri:url-encode #'write-to-string)
-                      (cons lisp-form more-lisp-forms)))))
+       (let* ((forms (if other-forms
+                         `(progn ,form ,other-forms)
+                         form))
+              (encrypted-forms (encrypt (quri:url-encode (write-to-string forms)))))
+         (setf (gethash encrypted-forms *lisp-urls*) t)
+         (str:concat "lisp:" encrypted-forms))))
 
 (-> path= (quri:uri quri:uri) boolean)
 (defun path= (url1 url2)

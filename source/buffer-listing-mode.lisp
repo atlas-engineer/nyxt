@@ -22,7 +22,6 @@ With LINEAR-VIEW-P, list buffers linearly instead."
              "Return buffers as hash table, where each value is a cluster (list of documents)."
              (let ((collection (make-instance 'analysis::document-collection)))
                (loop for buffer in (buffer-list)
-                     unless (internal-buffer-p buffer)
                      do (with-current-buffer buffer
                           (analysis::add-document
                            collection
@@ -57,14 +56,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
              (spinneret:with-html
                (:div (:h2 (format nil "Cluster ~a" cluster-id))
                      (loop for document in cluster
-                           collect (buffer-markup (analysis::source document))))))
-           (internal-buffers-markup ()
-             "Present the internal buffers in HTML."
-             (spinneret:with-html
-               (:div (:h2 "Internal Buffers")
-                     (loop for buffer in (buffer-list)
-                           when (internal-buffer-p buffer)
-                           collect (buffer-markup buffer))))))
+                           collect (buffer-markup (analysis::source document)))))))
     (with-current-html-buffer (buffer "*Buffers*" 'nyxt/buffer-listing-mode:buffer-listing-mode)
       (spinneret:with-html-string
         (:style (style buffer))
@@ -78,10 +70,9 @@ With LINEAR-VIEW-P, list buffers linearly instead."
         (:br "")
         (:div
          (if cluster
-             (append (list (internal-buffers-markup))
-                     (loop for cluster-key being the hash-key
-                             using (hash-value cluster) of (cluster-buffers)
-                           collect (cluster-markup cluster-key cluster)))
+             (loop for cluster-key being the hash-key
+                     using (hash-value cluster) of (cluster-buffers)
+                   collect (cluster-markup cluster-key cluster))
              (dolist (buffer (buffer-list))
                (if linear-view-p
                    (buffer-markup buffer)

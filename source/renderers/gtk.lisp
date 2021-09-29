@@ -633,6 +633,25 @@ See `gtk-browser's `modifier-translator' slot."
            (with-protect ("Error in signal thread: ~a" :condition)
              (webkit:webkit-web-context-set-web-extensions-directory
               context extensions-path)))))
+      (webkit:webkit-web-context-register-uri-scheme-callback
+       context "lisp"
+       (lambda (request)
+         (with-protect ("Error while processing the lisp URL: ~a" :condition)
+           (sera:and-let* ((path (webkit:webkit-uri-scheme-request-get-path request))
+                           (code (quri:url-decode (decrypt path) :lenient t))
+                           (valid-lisp-url (gethash path *lisp-urls*)))
+             (log:debug "Evaluate Lisp code: ~a" code)
+             (let ((result (evaluate code)))
+               (cond
+                 ((and (alex:length= result 2)
+                       (arrayp (first result))
+                       (stringp (second result)))
+                  (values (first result) (second result)))
+                 ((arrayp (first result))
+                  (first result))
+                 (t (error "Cannot display evaluation result")))))))
+       (lambda (condition)
+         (echo-warning "Error while re-routing lisp URL: ~a" condition)))
       (when (and buffer
                  (web-buffer-p buffer)
                  (expand-path (cookies-path buffer)))

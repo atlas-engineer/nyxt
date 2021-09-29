@@ -29,6 +29,52 @@ See the `data-path' class and the `expand-path' function.")
     :type (or null plump:node)
     :documentation "A parsed representation of the page currently opened.
 Created from the page code with the help of `plump:parse'. See `update-document-model'.")
+   (style #.(cl-css:css
+             '((body
+                :margin-left "20px"
+                :margin-top "20px")
+               (h1
+                :font-family "Helvetica Neue, Helvetica"
+                :font-weight 500)
+               (h2
+                :font-family "Helvetica Neue, Helvetica"
+                :font-weight 500)
+               (h3
+                :font-family "Helvetica Neue, Helvetica"
+                :font-weight 500)
+               (h4
+                :font-family "Helvetica Neue, Helvetica"
+                :font-weight 500)
+               (h5
+                :font-family "Helvetica Neue, Helvetica"
+                :font-weight 500)
+               (h6
+                :font-family "Helvetica Neue, Helvetica"
+                :font-weight 500)
+               (hr
+                :height "3px"
+                :border-radius "2px"
+                :border-width "0"
+                :color "lightgray"
+                :background-color "lightgray")
+               (.button
+                :display "inline-block"
+                :background-color "darkgray"
+                :color "white"
+                :text-decoration "none"
+                :border-radius "2px"
+                :padding "6px"
+                :margin-left "2px"
+                :margin-right "2px")
+               (|.button:hover|
+                :color "black")
+               (|.button:visited|
+                :color "white")
+               (|.button:active|
+                :color "white")
+               (a
+                :color "gray")))
+          :documentation "The style to apply to internal (help, describe-*, history) pages.")
    (url (quri:uri ""))
    (url-at-point (quri:uri ""))
    (title "")
@@ -160,9 +206,6 @@ Example:
     (reduce #'hooks:add-hook
             (mapcar #'make-handler-resource (list #'old-reddit-handler #'auto-proxy-handler))
             :initial-value %slot-default%))))")
-   (default-new-buffer-url (quri:uri "https://nyxt.atlas.engineer/start")
-                           :type url-designator
-                           :documentation "The URL set to a new blank buffer opened by Nyxt.")
    (scroll-distance 50
                     :type integer
                     :documentation "The distance scroll-down or scroll-up will scroll.")
@@ -459,7 +502,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 
 (define-user-class panel-buffer)
 
-(define-class editor-buffer (internal-buffer)
+(define-class editor-buffer (user-buffer)
   ((file :documentation "The file being edited.")
    (url (quri:uri "editor-buffer"))
    (title "editor-buffer"))
@@ -492,7 +535,7 @@ Delete it with `ffi-buffer-delete'."
    (glyph-mode-presentation-p
     nil
     :documentation "Display the modes as a list of glyphs.")
-   (style 
+   (style
     #.(cl-css:css
        '((body
           :background "rgb(150, 150, 150)"
@@ -779,7 +822,7 @@ BUFFER's modes."
                              no-history-p (load-url-p t) buffer-class)
   "Create a new buffer.
 MODES is a list of mode symbols.
-If URL is empty, the `default-new-buffer-url' buffer slot is used instead.
+If URL is empty, the `default-new-buffer-url' browser slot is used instead.
 To load nothing, set it to 'about:blank'.
 PARENT-BUFFER is useful when we want to record buffer- and history relationships.
 LOAD-URL-P controls whether to load URL right at buffer creation."
@@ -791,7 +834,7 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
                         (when buffer-class
                           (list :buffer-class buffer-class))))
          (url (if (url-empty-p url)
-                  (default-new-buffer-url buffer)
+                  (default-new-buffer-url *browser*)
                   url)))
     (if load-url-p
         (buffer-load url :buffer buffer)
@@ -1152,16 +1195,9 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
       ;; TODO: This condition can be a source of inefficiency.  Besides, it
       ;; partly duplicates the code in `preprocess-request'.  Can we factor this
       ;; out?
-      (cond
-        ((and (internal-buffer-p buffer) (equal "lisp" (quri:uri-scheme url)))
-         (let ((code (quri:url-decode (schemeless-url url) :lenient t)))
-           (log:debug "Evaluate Lisp code from internal buffer: ~a" code)
-           (evaluate-async code)))
-        ((internal-buffer-p buffer)
-         (make-buffer-focus :url url))
-        ((equal "javascript" (quri:uri-scheme url))
-         (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url))))
-        (t (ffi-buffer-load buffer url))))))
+      (if (equal "javascript" (quri:uri-scheme url))
+          (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url)))
+          (ffi-buffer-load buffer url)))))
 
 (define-class global-history-source (prompter:source)
   ((prompter:name "Global history")
