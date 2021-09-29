@@ -649,7 +649,7 @@ See `gtk-browser's `modifier-translator' slot."
                (maphash
                 (lambda (path parent)
                   ;; t is for parentless URLs to be evaluated nonetheless.
-                  (when (or (eq parent-url t)
+                  (when (or (quri:uri-p parent-url)
                             (quri:uri= parent parent-url))
                     (remhash path *lisp-urls*)))
                 *lisp-urls*))
