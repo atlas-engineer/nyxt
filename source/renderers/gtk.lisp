@@ -639,7 +639,20 @@ See `gtk-browser's `modifier-translator' slot."
          (with-protect ("Error while processing the lisp URL: ~a" :condition)
            (sera:and-let* ((path (webkit:webkit-uri-scheme-request-get-path request))
                            (code (quri:url-decode (decrypt path) :lenient t))
-                           (valid-lisp-url (gethash path *lisp-urls*)))
+                           (parent-url (gethash path *lisp-urls*)))
+             ;; FIXME: This asks for a weak hash table.
+             ;; Is that worth it, though?
+             (unless (and (quri:uri-p parent-url)
+                          (member parent-url
+                                  (mapcar #'url (buffer-list))
+                                  :test #'quri:uri=))
+               (maphash
+                (lambda (path parent)
+                  ;; t is for parentless URLs to be evaluated nonetheless.
+                  (when (or (eq parent-url t)
+                            (quri:uri= parent parent-url))
+                    (remhash path *lisp-urls*)))
+                *lisp-urls*))
              (log:debug "Evaluate Lisp code: ~a" code)
              (let ((result (evaluate code)))
                (cond

@@ -188,8 +188,10 @@ Authority is compared case-insensitively (RFC 3986)."
                       (lambda (url1 url2) (equalp (quri:uri-authority url1)
                                                   (quri:uri-authority url2)))))))
 
-(defvar *lisp-urls* (make-hash-table :test 'equalp)
-  "A map from the encrypted URL string to the actual Lisp form it represents.")
+;; TODO: Make a weak hash table to not clean it up ourselves?
+(defvar *lisp-urls* (make-hash-table :test 'equal)
+  "A map from the encrypted Lisp forms (string) to the URL it was created on.
+Once the parent URLs is closed/navigated away from, we clear all the related lisp URLs.")
 
 (defvar %aes (ironclad:make-cipher
               :aes
@@ -218,7 +220,10 @@ Mainly used to encode functionality into internal-buffers."
                          `(progn ,form ,other-forms)
                          form))
               (encrypted-forms (encrypt (quri:url-encode (write-to-string forms)))))
-         (setf (gethash encrypted-forms *lisp-urls*) t)
+         (setf (gethash encrypted-forms *lisp-urls*)
+               (if (current-buffer)
+                   (url (current-buffer))
+                   t))
          (str:concat "lisp:" encrypted-forms))))
 
 (-> path= (quri:uri quri:uri) boolean)
