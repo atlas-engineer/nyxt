@@ -38,7 +38,7 @@ jobs:
         sudo apt-get install -y libfixposix3 libfixposix-dev libwebkit2gtk-4.0-dev glib-networking gsettings-desktop-schemas xclip enchant-2
         sudo apt-get install -y gobject-introspection
 
-    - name: Build special SBCL and make package
+    - name: Build special SBCL and make Ubuntu package
       shell: bash
       # Don't run scripts with `sudo` since it would use /root as home instead
       # of the runner's /home/runner.
@@ -63,7 +63,7 @@ jobs:
       run: |
           guix environment --container --user=dummy-user --load=build-scripts/nyxt.scm --ad-hoc guix -- make all NYXT_INTERNAL_QUICKLISP=false
 
-    - name: generate version file
+    - name: Generate version file
       shell: bash
       run: echo $(./nyxt --version | cut -d' ' -f3) > version
     # Balance out '.
