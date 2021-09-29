@@ -57,9 +57,7 @@ jobs:
       uses: PromyLOPh/guix-install-action@v1
     - name: Ensure no locale warning
       run: test -z "$(guix --version 2>&1 >/dev/null)"
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Build package
+    - name: Build Guix package
       run: |
           guix environment --container --user=dummy-user --load=build-scripts/nyxt.scm --ad-hoc guix -- make all NYXT_INTERNAL_QUICKLISP=false
 
