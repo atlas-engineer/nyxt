@@ -489,7 +489,3 @@
 	path = _build/cl-gobject-introspection
 	url = https://github.com/andy128k/cl-gobject-introspection
 	shallow = true
-[submodule "_build/submodules/lparallel"]
-	path = _build/submodules/lparallel
-	url = https://github.com/lmj/lparallel/
-	shallow = true
