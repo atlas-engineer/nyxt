@@ -26,6 +26,9 @@ export SBCL_HOME=/usr/local/lib/sbcl
 
 mkdir -p ~/common-lisp
 git clone --depth=1 https://gitlab.com/ralt/linux-packaging.git ~/common-lisp/linux-packaging/ &> /dev/null
+git clone --depth=1 https://github.com/privet-kitty/wild-package-inferred-system.git ~/common-lisp/wild-package-inferred-system/ &> /dev/null
+git clone --depth=1 https://github.com/cffi/cffi.git ~/common-lisp/cffi/ &> /dev/null
+git clone --depth=1 https://github.com/edicl/cl-ppcre/ ~/common-lisp/cl-ppcre/ &> /dev/null
 ## Modern ASDF needed.
 git clone --depth=1 --branch=3.3.4 https://gitlab.common-lisp.net/asdf/asdf.git ~/common-lisp/asdf/ &> /dev/null
 
