@@ -505,3 +505,15 @@
 	path = _build/cl-utilities
 	url = https://gitlab.common-lisp.net/cl-utilities/cl-utilities
 	shallow = true
+[submodule "_build/cl-qrencode"]
+	path = _build/cl-qrencode
+	url = https://github.com/jnjcc/cl-qrencode
+	shallow = true
+[submodule "_build/clss"]
+	path = _build/clss
+	url = https://github.com/Shinmera/clss
+	shallow = true
+[submodule "_build/spinneret"]
+	path = _build/spinneret
+	url = https://github.com/ruricolist/spinneret/
+	shallow = true
