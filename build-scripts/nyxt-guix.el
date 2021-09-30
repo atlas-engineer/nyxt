@@ -123,7 +123,7 @@ already exists and CONTAINER is nil, after sourcing \"etc/profile\"."
   "Run an SBCL executable image with all Nyxt dependencies pre-loaded.
 
 The image is generated as needed and cached as IMAGE-PATH.
-It's generated if it does not exist, if FORCE is non-nil, or if the \"guix.scm\"
+It's generated if it does not exist, if FORCE is non-nil, or if the \"nyxt.scm\"
 file in NYXT-CHECKOUT is more recent.
 
 When CONTAINER is non-nil, generate the image in a Guix container.
@@ -147,7 +147,7 @@ implementation.  Example:
   (let ((cl-source-registry (format "%s:%s"
                                     nyxt-checkout
                                     (or (getenv "CL_SOURCE_REGISTRY") "")))
-        (guix-def (concat nyxt-checkout "/build-scripts/guix.scm")))
+        (guix-def (concat nyxt-checkout "/build-scripts/nyxt.scm")))
     (setenv "CL_SOURCE_REGISTRY" cl-source-registry)
     (cl-flet ((guix-environment (&rest command-args)
                                 (nyxt-guix-lazy-environment-command
