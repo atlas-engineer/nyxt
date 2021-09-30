@@ -2,9 +2,7 @@
 #include "extevent.h"
 #include "runtime.h"
 
-Runtime *RUNTIME;
-
-static void
+static unsigned long int
 runtime_send_message_callback (char *extension_id, JSCValue *object)
 {
         JSCContext *context = jsc_context_get_current();
@@ -16,9 +14,7 @@ runtime_send_message_callback (char *extension_id, JSCValue *object)
         char *json = jsc_value_to_json(wrapper, 0);
         GVariant *variant = g_variant_new("ms", json);
         WebKitUserMessage *message = webkit_user_message_new("runtime.sendMessage", variant);
-        RUNTIME->reply = NULL;
-        webkit_web_page_send_message_to_view(
-                PAGE, message, NULL, message_reply_and_save_callback, &RUNTIME->reply);
+        SEND_MESSAGE_RETURN_ID(message, i);
 }
 
 static JSCValue *
@@ -29,22 +25,18 @@ runtime_get_manifest_callback (char *extension_name)
         return jsc_value_new_from_json(context, jsc_value_to_json(data->manifest, 0));
 }
 
-static void
+static unsigned long int
 runtime_get_platform_info_callback ()
 {
         WebKitUserMessage *message = webkit_user_message_new("runtime.getPlatformInfo", NULL);
-        RUNTIME->platform_info = NULL;
-        webkit_web_page_send_message_to_view(
-                PAGE, message, NULL, message_reply_and_save_callback, &RUNTIME->platform_info);
+        SEND_MESSAGE_RETURN_ID(message, i);
 }
 
-static void
+static unsigned long int
 runtime_get_browser_info_callback ()
 {
         WebKitUserMessage *message = webkit_user_message_new("runtime.getBrowserInfo", NULL);
-        RUNTIME->browser_info = NULL;
-        webkit_web_page_send_message_to_view(
-                PAGE, message, NULL, message_reply_and_save_callback, &RUNTIME->browser_info);
+        SEND_MESSAGE_RETURN_ID(message, i);
 }
 
 static char *
@@ -71,13 +63,10 @@ void inject_runtime_api (char* extension_name)
         JSCContext *context = get_extension_context(IS_PRIVILEGED ? NULL : extension_name);
         MAKE_CLASS(context, Runtime, "runtime");
 
-        MAKE_FN(context, runtimeSendMessage, runtime_send_message_callback, G_TYPE_NONE, 2, G_TYPE_STRING, JSC_TYPE_VALUE);
-        MAKE_RESULT_FN(context, runtimeSendMessageResult, &RUNTIME->reply);
+        MAKE_FN(context, runtimeSendMessage, runtime_send_message_callback, G_TYPE_ULONG, 2, G_TYPE_STRING, JSC_TYPE_VALUE);
         MAKE_FN(context, runtimeGetManifest, runtime_get_manifest_callback, JSC_TYPE_VALUE, 1, G_TYPE_STRING);
-        MAKE_FN(context, runtimeGetPlatformInfo, runtime_get_platform_info_callback, G_TYPE_NONE, 0, G_TYPE_NONE);
-        MAKE_RESULT_FN(context, runtimeGetPlatformInfoResult, &RUNTIME->platform_info);
-        MAKE_FN(context, runtimeGetBrowserInfo, runtime_get_browser_info_callback, G_TYPE_NONE, 0, G_TYPE_NONE);
-        MAKE_RESULT_FN(context, runtimeGetBrowserInfoResult, &RUNTIME->browser_info);
+        MAKE_FN(context, runtimeGetPlatformInfo, runtime_get_platform_info_callback, G_TYPE_ULONG, 0, G_TYPE_NONE);
+        MAKE_FN(context, runtimeGetBrowserInfo, runtime_get_browser_info_callback, G_TYPE_ULONG, 0, G_TYPE_NONE);
         MAKE_FN(context, runtimeGetURL, runtime_get_url_callback, G_TYPE_STRING, 2, G_TYPE_STRING, G_TYPE_STRING);
 
         MAKE_EVENT(context, "runtime", "onMessage");
@@ -91,8 +80,7 @@ void inject_runtime_api (char* extension_name)
         try {                                                           \
             var message = (no_two && no_three) ? one : two;             \
             var extensionId = (no_two && no_three) ? runtime.id : one;  \
-            runtimeSendMessage(extensionId, message);                   \
-            browser.drain(runtimeSendMessageResult, success, undefined, 5000); \
+            browser.drain(runtimeSendMessage(extensionId, message), success, undefined, 5000); \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
@@ -103,8 +91,7 @@ runtime.sendMessage");
         BIND_FN(context, "runtime", "getPlatformInfo", "runtime.getPlatformInfo = function() {\
     return new Promise ((success, failure) => {                         \
         try {                                                           \
-            runtimeGetPlatformInfo();                                   \
-            browser.drain(runtimeGetPlatformInfoResult, success, {}, 5000); \
+            browser.drain(runtimeGetPlatformInfo(), success, {}, 5000); \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
@@ -115,8 +102,7 @@ runtime.getPlatformInfo");
         BIND_FN(context, "runtime", "getBrowserInfo", "runtime.getBrowserInfo = function() {\
     return new Promise ((success, failure) => {                         \
         try {                                                           \
-            runtimeGetBrowserInfo();                                   \
-            browser.drain(runtimeGetBrowserInfoResult, success, {}, 5000);\
+            browser.drain(runtimeGetBrowserInfo(), success, {}, 5000);\
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \

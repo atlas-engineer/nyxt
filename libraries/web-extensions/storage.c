@@ -1,8 +1,6 @@
 #include "globals.h"
 #include "storage.h"
 
-Storage *STORAGE;
-
 void
 storage_set_callback (char *storage_area, char *extension_id, JSCValue *object)
 {
@@ -47,7 +45,7 @@ storage_clear_callback (char *storage_area, char *extension_id)
         }
 }
 
-void
+unsigned long int
 storage_get_callback (char *storage_area, char *extension_id, JSCValue *object)
 {
         if (!strcmp("local", storage_area)){
@@ -60,11 +58,9 @@ storage_get_callback (char *storage_area, char *extension_id, JSCValue *object)
                 char *json = jsc_value_to_json(wrapper, 0);
                 GVariant *variant = g_variant_new("ms", json);
                 WebKitUserMessage *message = webkit_user_message_new("storage.local.get", variant);
-                STORAGE->data = NULL;
-                webkit_web_page_send_message_to_view(
-                        PAGE, message, NULL,
-                        message_reply_and_save_callback, &STORAGE->data);
+                SEND_MESSAGE_RETURN_ID(message, i);
         }
+        return 0;
 }
 
 void
@@ -73,8 +69,7 @@ inject_storage_api (char* extension_name)
         JSCContext *context = get_extension_context(IS_PRIVILEGED ? NULL : extension_name);
         MAKE_CLASS(context, Storage, "storage");
 
-        MAKE_FN(context, storageGet, storage_get_callback, G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, JSC_TYPE_VALUE);
-        MAKE_RESULT_FN(context, storageGetResult, &STORAGE->data);
+        MAKE_FN(context, storageGet, storage_get_callback, G_TYPE_ULONG, 3, G_TYPE_STRING, G_TYPE_STRING, JSC_TYPE_VALUE);
         MAKE_FN(context, storageSet, storage_set_callback, G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, JSC_TYPE_VALUE);
         MAKE_FN(context, storageRemove, storage_remove_callback, G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, JSC_TYPE_VALUE);
         MAKE_FN(context, storageClear, storage_clear_callback, G_TYPE_NONE, 2, G_TYPE_STRING, G_TYPE_STRING);
@@ -84,8 +79,7 @@ inject_storage_api (char* extension_name)
         BIND_FN(context, "local", "get", "function get (keys) {\
     return new Promise(function (success, failure) {                    \
         try {                                                           \
-            storageGet(\"local\", runtime.id, keys);                    \
-            browser.drain(storageGetResult, success, undefined, 5000);  \
+            browser.drain(storageGet(\"local\", runtime.id, keys), success, undefined, 5000);  \
         } catch (error) {                                               \
             return failure(error);                                      \
         }                                                               \

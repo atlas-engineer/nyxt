@@ -59,24 +59,28 @@ user_message_received (WebKitWebPage     *web_page,
                 meta = jsc_value_new_from_json(context, contents);
                 JSCValue *sender = jsc_value_object_get_property(meta, "sender");
                 JSCValue *object = jsc_value_object_get_property(meta, "message");
+                unsigned long int id = get_next_data_counter();
                 JSCValue *tmp = jsc_value_function_call(
                         jsc_context_evaluate(
-                                context, "var run  = (object, sender) => {\
+                                context, "var run  = (object, sender, id) => {\
 var p = browser.runtime.onMessage.run(object, sender);                  \
 if (p && p !== undefined)                                               \
-        p.then((result) => browser.replyMessage('message', result));    \
+        p.then((result) => browser.replyMessage(id, result));    \
 return p;                                                               \
 };                                                                      \
                                                                         \
 run", -1),
                         JSC_TYPE_VALUE, object, JSC_TYPE_VALUE, sender,
+                        G_TYPE_ULONG, id,
                         G_TYPE_NONE);
                 if (tmp &&
                     JSC_IS_VALUE(tmp) &&
                     !(jsc_value_is_boolean(tmp) && !jsc_value_to_boolean(tmp)) &&
                     !(jsc_value_is_undefined(tmp))) {
                         g_object_ref(message);
-                        g_hash_table_insert(MESSAGES, (void*) name, message);
+                        unsigned long int *key = malloc(sizeof(unsigned long int));
+                        *key = id;
+                        g_hash_table_insert(DATA, (void *) key, message);
                 }
                 else {
                         webkit_user_message_send_reply(
@@ -108,14 +112,12 @@ G_MODULE_EXPORT void
 webkit_web_extension_initialize_with_user_data
 (WebKitWebExtension *extension, GVariant *user_data)
 {
-        MANAGEMENT = malloc(sizeof(Management));
-        TABS = malloc(sizeof(Tabs));
-        RUNTIME = malloc(sizeof(Runtime));
-        STORAGE = malloc(sizeof(Storage));
-
         EXTENSIONS_DATA = g_hash_table_new(g_str_hash, g_str_equal);
         MESSAGES = g_hash_table_new(g_str_hash, g_str_equal);
         IS_PRIVILEGED = 0;
+        DATA_COUNTER = 0;
+        DATA = g_hash_table_new_full(g_int64_hash, g_int64_equal,
+                                        (GDestroyNotify) free, NULL);
 
         const char *json = g_variant_get_string(user_data, NULL);
         g_signal_connect (extension, "page-created",
