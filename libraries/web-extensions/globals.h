@@ -23,13 +23,6 @@
                 __VA_ARGS__);                                           \
         jsc_context_set_value(Context, #Fn, Fn);                        \
 
-#define MAKE_RESULT_FN(Context, Fn, User_data)                          \
-        JSCValue *Fn = jsc_value_new_function(                          \
-                Context, #Fn, G_CALLBACK(get_result_callback),          \
-                User_data, NULL,                                        \
-                JSC_TYPE_VALUE, 0, G_TYPE_NONE);                        \
-        jsc_context_set_value(Context, #Fn, Fn);                        \
-
 #define MAKE_EVENT(Context, Object_name, Prop_name)         \
         jsc_value_object_set_property(                      \
                 JSCEVAL(Context, Object_name), Prop_name,   \
@@ -41,6 +34,13 @@
                         JSCEVAL(Context, Object_name), Prop_name,   \
                         JSCEVAL(Context, __VA_ARGS__));             \
         } while (0);
+
+#define SEND_MESSAGE_RETURN_ID(Message, Index_name)                     \
+        unsigned long int Index_name = get_next_data_counter();      \
+        webkit_web_page_send_message_to_view(                           \
+                PAGE, Message, NULL, message_reply_and_save_callback,   \
+                (void*) Index_name);                                    \
+        return Index_name;                                              \
 
 extern WebKitWebPage *PAGE;
 
@@ -60,6 +60,12 @@ extern WebKitWebExtension *EXTENSION;
 
 extern int IS_PRIVILEGED;
 
+extern unsigned long int DATA_COUNTER;
+
+extern GHashTable *DATA;
+
+unsigned long int get_next_data_counter ();
+
 void extensions_data_add_from_json (const char *json);
 
 WebKitScriptWorld *get_extension_world (char* extension_name);
@@ -72,6 +78,6 @@ void *empty_constructor_callback (void);
 
 void message_reply_and_save_callback (GObject *web_page, GAsyncResult *res, void *user_data);
 
-JSCValue *get_result_callback (void *user_data);
+JSCValue *get_result (unsigned long int data_index);
 
 #endif /* __GLOBALS_H__ */

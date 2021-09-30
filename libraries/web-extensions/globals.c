@@ -2,13 +2,23 @@
 
 WebKitWebPage *PAGE;
 
+WebKitWebExtension *EXTENSION;
+
 GHashTable *EXTENSIONS_DATA;
 
 GHashTable *MESSAGES;
 
-WebKitWebExtension *EXTENSION;
-
 int IS_PRIVILEGED;
+
+unsigned long int DATA_COUNTER;
+
+GHashTable *DATA;
+
+unsigned long int
+get_next_data_counter ()
+{
+        return ++DATA_COUNTER;
+}
 
 void
 extensions_data_add_from_json(const char *json)
@@ -85,17 +95,23 @@ message_reply_and_save_callback (GObject *web_page,
                 webkit_web_page_send_message_to_view_finish((WebKitWebPage *) PAGE, res, NULL);
         GVariant *params = webkit_user_message_get_parameters(message);
         char *contents = NULL;
+        int* index = malloc(sizeof(unsigned long int));
+        *index = (unsigned long int) user_data;
         if (params)
                 contents = (char*) g_variant_get_string(params, NULL);
-        char **place = (char **) user_data;
         if (contents)
-                *(place) = contents;
+                g_hash_table_insert(DATA, index, contents);
 }
 
 JSCValue *
-get_result_callback (void *user_data)
+get_result (unsigned long int data_index)
 {
         JSCContext *context = jsc_context_get_current();
-        char **data = (char**) user_data;
-        return jsc_value_new_from_json(context, *data);
+        char *data;
+        if (data_index) {
+                data = g_hash_table_lookup(DATA, (void *) &data_index);
+                g_hash_table_remove(DATA, (void *) &data_index);
+                return jsc_value_new_from_json(context, data);
+        }
+        return jsc_value_new_null(context);
 }
