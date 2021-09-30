@@ -493,3 +493,11 @@
 	path = _build/lparallel
 	url = https://github.com/lmj/lparallel/
 	shallow = true
+[submodule "_build/jpl-queues"]
+	path = _build/jpl-queues
+	url = https://gitlab.common-lisp.net/nyxt/jpl-queues.git
+	shallow = true
+[submodule "_build/mt19937"]
+	path = _build/mt19937
+	url = https://gitlab.common-lisp.net/nyxt/mt19937
+	shallow = true
