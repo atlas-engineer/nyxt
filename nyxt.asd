@@ -186,6 +186,34 @@
                          (test-op "nyxt/ospm/tests")
                          (test-op "nyxt/prompter/tests"))))
 
+(defun register-submodules (component)
+  ;; Ideally we should avoid writing global, stateful files to the user file
+  ;; system.  So instead of writing to the ASDF config file, we register the
+  ;; sudmodule directory with CL_SOURCE_REGISTRY.  This locally overrides
+  ;; CL_SOURCE_REGISTRY, but it's fine since submodules are only meant for
+  ;; non-developers (who probably don't set CL_SOURCE_REGISTRY).
+  ;;
+  ;; We must set this globally because the information would be lost within a
+  ;; Lisp compiler subprocess (e.g. as used by linux-packaging).
+  (setf (uiop:getenv "CL_SOURCE_REGISTRY")
+        (uiop:strcat
+         (namestring
+          (uiop:truenamize
+           (uiop:ensure-directory-pathname
+            (ensure-absolute-path *submodules-dir* component))))
+         ;; Double-slash tells ASDF to traverse the tree recursively.
+         "/"
+         ;; Register this directory so that nyxt.asd is included, just in case.
+         (uiop:inter-directory-separator)
+         (namestring (uiop:truenamize (uiop:pathname-directory-pathname
+                                       (asdf:system-source-file component))))
+         (if (uiop:getenv "CL_SOURCE_REGISTRY")
+             (uiop:strcat (uiop:inter-directory-separator) (uiop:getenv "CL_SOURCE_REGISTRY"))
+             ;; End with an empty string to tell ASDF to inherit configuration.
+             (uiop:inter-directory-separator))))
+  (asdf:clear-configuration)
+  (format t "; CL_SOURCE_REGISTRY: ~s~%" (uiop:getenv "CL_SOURCE_REGISTRY")))
+
 (defsystem "nyxt/submodules"
   :perform (compile-op (o c)
                        (uiop:run-program `("git"
@@ -193,7 +221,8 @@
                                            "submodule" "update" "--init" "--force"
                                            "--jobs" ,(write-to-string *submodules-jobs*))
                                          :ignore-error-status t
-                                         :output t)))
+                                         :output t)
+                       (register-submodules c)))
 
 (defun nyxt-run-test (c path &key network-needed-p)
   (and (or (not network-needed-p)
