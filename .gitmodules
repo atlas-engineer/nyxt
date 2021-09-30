@@ -69,10 +69,6 @@
 	path = _build/cl-json
 	url = https://github.com/hankhero/cl-json
 	shallow = true
-[submodule "_build/cl-markup"]
-	path = _build/cl-markup
-	url = https://github.com/arielnetworks/cl-markup/
-	shallow = true
 [submodule "_build/cl-ppcre"]
 	path = _build/cl-ppcre
 	url = https://github.com/edicl/cl-ppcre
