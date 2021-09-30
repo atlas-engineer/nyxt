@@ -25,10 +25,16 @@ git clone --depth=1 --branch=sbcl-2.1.0 https://github.com/sbcl/sbcl.git ~/sbcl 
 export SBCL_HOME=/usr/local/lib/sbcl
 
 mkdir -p ~/common-lisp
-git clone --depth=1 https://gitlab.com/ralt/linux-packaging.git ~/common-lisp/linux-packaging/ &> /dev/null
-git clone --depth=1 https://github.com/privet-kitty/wild-package-inferred-system.git ~/common-lisp/wild-package-inferred-system/ &> /dev/null
-git clone --depth=1 https://github.com/cffi/cffi.git ~/common-lisp/cffi/ &> /dev/null
-git clone --depth=1 https://github.com/edicl/cl-ppcre/ ~/common-lisp/cl-ppcre/ &> /dev/null
+for repo in https://gitlab.com/ralt/linux-packaging.git \
+					 https://github.com/privet-kitty/wild-package-inferred-system \
+					 https://github.com/cffi/cffi \
+					 https://github.com/edicl/cl-ppcre \
+					 https://github.com/cl-babel/babel \
+					 https://gitlab.common-lisp.net/alexandria/alexandria.git \
+					 https://github.com/trivial-features/trivial-features
+					 do
+						git clone --depth=1 "$repo" ~/common-lisp/$(basename "$repo")/ &> /dev/null
+				 done
 ## Modern ASDF needed.
 git clone --depth=1 --branch=3.3.4 https://gitlab.common-lisp.net/asdf/asdf.git ~/common-lisp/asdf/ &> /dev/null
 
