@@ -1450,7 +1450,8 @@ See `gtk-browser's `modifier-translator' slot."
   (loop until (gethash (cffi:pointer-address (g:pointer message))
                        %message-channels%)
         finally (let* ((reply (calispel:? (gethash (cffi:pointer-address (g:pointer message))
-                                                   %message-channels%)))
+                                                   %message-channels%)
+                                          5))
                        (reply-message (webkit:webkit-user-message-new
                                        (webkit:webkit-user-message-get-name message)
                                        (if reply
