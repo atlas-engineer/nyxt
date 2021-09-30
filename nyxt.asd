@@ -199,22 +199,26 @@
   ;;
   ;; We must set this globally because the information would be lost within a
   ;; Lisp compiler subprocess (e.g. as used by linux-packaging).
-  (setf (uiop:getenv "CL_SOURCE_REGISTRY")
-        (uiop:strcat
-         (namestring
-          (uiop:truenamize
-           (uiop:ensure-directory-pathname
-            (ensure-absolute-path *submodules-dir* component))))
-         ;; Double-slash tells ASDF to traverse the tree recursively.
-         "/"
-         ;; Register this directory so that nyxt.asd is included, just in case.
-         (uiop:inter-directory-separator)
-         (namestring (uiop:truenamize (uiop:pathname-directory-pathname
-                                       (asdf:system-source-file component))))
-         (if (uiop:getenv "CL_SOURCE_REGISTRY")
-             (uiop:strcat (uiop:inter-directory-separator) (uiop:getenv "CL_SOURCE_REGISTRY"))
-             ;; End with an empty string to tell ASDF to inherit configuration.
-             (uiop:inter-directory-separator))))
+  (flet ((ensure-absolute-path (path component)
+           (if (uiop:absolute-pathname-p path)
+               path
+               (system-relative-pathname component path))))
+    (setf (uiop:getenv "CL_SOURCE_REGISTRY")
+          (uiop:strcat
+           (namestring
+            (uiop:truenamize
+             (uiop:ensure-directory-pathname
+              (ensure-absolute-path *submodules-dir* component))))
+           ;; Double-slash tells ASDF to traverse the tree recursively.
+           "/"
+           ;; Register this directory so that nyxt.asd is included, just in case.
+           (uiop:inter-directory-separator)
+           (namestring (uiop:truenamize (uiop:pathname-directory-pathname
+                                         (asdf:system-source-file component))))
+           (if (uiop:getenv "CL_SOURCE_REGISTRY")
+               (uiop:strcat (uiop:inter-directory-separator) (uiop:getenv "CL_SOURCE_REGISTRY"))
+               ;; End with an empty string to tell ASDF to inherit configuration.
+               (uiop:inter-directory-separator)))))
   (asdf:clear-configuration)
   (format t "; CL_SOURCE_REGISTRY: ~s~%" (uiop:getenv "CL_SOURCE_REGISTRY")))
 
