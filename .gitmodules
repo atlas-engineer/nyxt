@@ -517,3 +517,11 @@
 	path = _build/spinneret
 	url = https://github.com/ruricolist/spinneret/
 	shallow = true
+[submodule "_build/salza2"]
+	path = _build/salza2
+	url = https://github.com/xach/salza2
+	shallow = true
+[submodule "_build/zpng"]
+	path = _build/zpng
+	url = https://github.com/xach/zpng
+	shallow = true
