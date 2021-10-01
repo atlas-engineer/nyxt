@@ -53,7 +53,11 @@
                              :mode-symbols (mapcar #'mode-name (modes (buffer source))))))))
   (:export-class-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
-  (:documentation "Prompter source to execute commands."))
+  (:documentation "Prompter source to execute commands.
+Global commands are listed if `global-p' is non-nil.
+Mode commands of enabled modes are also listed.
+While disabled-mode commands are not listed, it's still possible to call them
+from a key binding."))
 (define-user-class command-source)
 
 (define-command execute-command ()
