@@ -110,7 +110,9 @@ for " (:code "execute-command") ".  You can use it to set keys globally:")
                      \"M-x\" 'execute-command
                      \"C-space\" 'nothing)))))"))
     (:p "The " (:code "nothing") " command is useful to override bindings to do
-nothing. In addition, a more flexible approach is to create your own mode with
+nothing. Note that it's possible to bind any command, including those of
+disabled modes that are not listed in " (:code "execute-command") ".")
+    (:p "In addition, a more flexible approach is to create your own mode with
 your custom keybindings.  When this mode is added first to the buffer mode list,
 its keybindings have priorities over the other modes.
 Note that this kind of global keymaps also have priority over regular character
