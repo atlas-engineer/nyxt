@@ -525,3 +525,7 @@
 	path = _build/zpng
 	url = https://github.com/xach/zpng
 	shallow = true
+[submodule "_build/iterate"]
+	path = _build/iterate
+	url = https://gitlab.common-lisp.net/iterate/iterate.git
+	shallow = true
