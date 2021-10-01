@@ -22,7 +22,14 @@
                              "_build"))
 
 (defvar *submodules-jobs* (or (uiop:getenv "NYXT_SUBMODULES_JOBS")
-                              4))
+                              4)
+  "Number of parallel 'git clone' jobs to fetch the Git submodules.
+A naive benchmark on a 16 Mpbs bandwidth gives us
+
+    1 job:  5m17s
+    2 jobs: 3m38s
+    4 jobs: 2m51s
+    8 jobs: 2m21s")
 
 (defsystem "nyxt"
   :version "2.2.0"
