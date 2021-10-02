@@ -11,7 +11,7 @@
                                 Context, NULL,                          \
                                 G_CALLBACK(not_yet_implemented),        \
                                 #Object "." #Method,                    \
-                                NULL, JSC_VALUE_TYPE));                 \
+                                NULL, JSC_TYPE_VALUE));                 \
         } while (0);
 
 #define JSCEVAL(Context, ...)                           \
