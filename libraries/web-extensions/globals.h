@@ -3,6 +3,17 @@
 
 #include <webkit2/webkit-web-extension.h>
 
+#define NOT_YET_IMPLEMENTED(Context, Object, Method)                    \
+        do {                                                            \
+                jsc_value_object_set_property(                          \
+                        JSCEVAL(Context, #Object), #Method,             \
+                        jsc_value_new_function_variadic(                \
+                                Context, NULL,                          \
+                                G_CALLBACK(not_yet_implemented),        \
+                                #Object "." #Method,                    \
+                                NULL, JSC_VALUE_TYPE));                 \
+        } while (0);
+
 #define JSCEVAL(Context, ...)                           \
         jsc_context_evaluate(Context, __VA_ARGS__, -1)
 
@@ -79,5 +90,7 @@ void *empty_constructor_callback (void);
 void message_reply_and_save_callback (GObject *web_page, GAsyncResult *res, void *user_data);
 
 JSCValue *get_result (unsigned long int data_index);
+
+JSCValue *not_yet_implemented(GPtrArray *args, void *user_data);
 
 #endif /* __GLOBALS_H__ */
