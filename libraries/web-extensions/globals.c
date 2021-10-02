@@ -115,3 +115,11 @@ get_result (unsigned long int data_index)
         }
         return jsc_value_new_null(context);
 }
+
+
+JSCValue *
+not_yet_implemented(GPtrArray *args, void *user_data)
+{
+        g_print("JS API for %s is not yet implemented.", (char *) user_data);
+        return jsc_value_new_undefined(jsc_context_get_current());
+}
