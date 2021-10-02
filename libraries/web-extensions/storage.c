@@ -129,6 +129,9 @@ clear");
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "storage", -1), "local",
                 jsc_context_evaluate(context, "local", -1));
+        /* This require a property accessor rather than the function callback. */
+        /* NOT_YET_IMPLEMENTED(context, storage, sync); */
+        /* NOT_YET_IMPLEMENTED(context, storage, managed); */
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "browser", -1), "storage",
                 jsc_context_evaluate(context, "storage", -1));

@@ -243,6 +243,47 @@ tabs.executeScript")
                 "print", print);
         jsc_value_object_set_property(jsc_context_evaluate(context, "tabs", -1),
                                       "TAB_ID_NONE", jsc_value_new_number(context, 0));
+        NOT_YET_IMPLEMENTED(context, tabs, captureTab);
+        NOT_YET_IMPLEMENTED(context, tabs, captureVisibleTab);
+        NOT_YET_IMPLEMENTED(context, tabs, connect);
+        NOT_YET_IMPLEMENTED(context, tabs, detectLanguage);
+        NOT_YET_IMPLEMENTED(context, tabs, discard);
+        NOT_YET_IMPLEMENTED(context, tabs, duplicate);
+        NOT_YET_IMPLEMENTED(context, tabs, getAllInWindow); /* DEPRECATED */
+        NOT_YET_IMPLEMENTED(context, tabs, getSelected); /* DEPRECATED */
+        NOT_YET_IMPLEMENTED(context, tabs, getZoom);
+        NOT_YET_IMPLEMENTED(context, tabs, getZoomSettings);
+        NOT_YET_IMPLEMENTED(context, tabs, goForward);
+        NOT_YET_IMPLEMENTED(context, tabs, goBack);
+        NOT_YET_IMPLEMENTED(context, tabs, hide); /* EXPERIMENTAL */
+        NOT_YET_IMPLEMENTED(context, tabs, highlight);
+        NOT_YET_IMPLEMENTED(context, tabs, move);
+        NOT_YET_IMPLEMENTED(context, tabs, moveInSuccession);
+        NOT_YET_IMPLEMENTED(context, tabs, printPreview);
+        NOT_YET_IMPLEMENTED(context, tabs, reload);
+        NOT_YET_IMPLEMENTED(context, tabs, remove);
+        NOT_YET_IMPLEMENTED(context, tabs, saveAsPDF);
+        NOT_YET_IMPLEMENTED(context, tabs, sendRequest); /* DEPRECATED */
+        NOT_YET_IMPLEMENTED(context, tabs, setZoom);
+        NOT_YET_IMPLEMENTED(context, tabs, setZoomSettings);
+        NOT_YET_IMPLEMENTED(context, tabs, show);
+        NOT_YET_IMPLEMENTED(context, tabs, toggleReaderMode);
+        NOT_YET_IMPLEMENTED(context, tabs, update);
+        NOT_YET_IMPLEMENTED(context, tabs, warmup);
+        /* This require a property accessor rather than the function callback. */
+        /* NOT_YET_IMPLEMENTED(context, tabs, onActivated); */
+        /* NOT_YET_IMPLEMENTED(context, tabs, onActiveChanged); */
+        /* NOT_YET_IMPLEMENTED(context, tabs, onAttached); */
+        /* NOT_YET_IMPLEMENTED(context, tabs, onCreated); */
+        /* NOT_YET_IMPLEMENTED(context, tabs, onDetached); */
+        /* NOT_YET_IMPLEMENTED(context, tabs, onHighlightChanged); */
+        /* NOT_YET_IMPLEMENTED(context, tabs, onHighlighted); */
+        /* NOT_YET_IMPLEMENTED(context, tabs, onMoved); */
+        /* NOT_YET_IMPLEMENTED(context, tabs, onRemoved); */
+        /* NOT_YET_IMPLEMENTED(context, tabs, onReplaced); */
+        /* NOT_YET_IMPLEMENTED(context, tabs, onSelectionChanged); */
+        /* NOT_YET_IMPLEMENTED(context, tabs, onUpdated); */
+        /* NOT_YET_IMPLEMENTED(context, tabs, onZoomChange); */
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "browser", -1), "tabs",
                 jsc_context_evaluate(context, "tabs", -1));
