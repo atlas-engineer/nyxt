@@ -3,30 +3,38 @@
 
 #include <webkit2/webkit-web-extension.h>
 
-#define NOT_YET_IMPLEMENTED(Context, Object, Method)                    \
+#define TODO_METHOD(Context, Object, Method)                            \
         do {                                                            \
                 jsc_value_object_set_property(                          \
                         JSCEVAL(Context, #Object), #Method,             \
                         jsc_value_new_function_variadic(                \
                                 Context, NULL,                          \
-                                G_CALLBACK(not_yet_implemented),        \
+                                G_CALLBACK(todo_method_callback),       \
                                 #Object "." #Method,                    \
                                 NULL, JSC_TYPE_VALUE));                 \
         } while (0);
 
+#define TODO_PROP(Class, Property)                                      \
+        do {                                                            \
+                jsc_class_add_property(                                 \
+                        Class, #Property,                               \
+                        JSC_TYPE_VALUE,                                 \
+                        G_CALLBACK(todo_property_callback),             \
+                        NULL, #Class "." #Property, NULL);              \
+        } while (0);                                                    \
+
 #define JSCEVAL(Context, ...)                           \
         jsc_context_evaluate(Context, __VA_ARGS__, -1)
 
-#define MAKE_CLASS(Context, Class, Object_name)                         \
+#define MAKE_CLASS(Context, Class, Object_name)                              \
         JSCClass *Class = jsc_context_register_class(                   \
                 Context, #Class, NULL, NULL, NULL);                     \
         JSCValue *Class##_constructor = jsc_class_add_constructor(      \
                 Class, NULL, G_CALLBACK(empty_constructor_callback),    \
                 NULL, NULL, G_TYPE_NONE, 0, G_TYPE_NONE);               \
         jsc_context_set_value(Context, #Class, Class##_constructor);    \
-        jsc_context_set_value(                                          \
-                Context, Object_name,                                   \
-                jsc_value_new_object(context, NULL, Class));            \
+        jsc_context_set_value(Context, Object_name,                     \
+                jsc_value_new_object(Context, NULL, Class));
 
 #define MAKE_FN(Context, Fn, Callback, ...)                             \
         JSCValue *Fn = jsc_value_new_function(                          \
@@ -91,6 +99,8 @@ void message_reply_and_save_callback (GObject *web_page, GAsyncResult *res, void
 
 JSCValue *get_result (unsigned long int data_index);
 
-JSCValue *not_yet_implemented(GPtrArray *args, void *user_data);
+JSCValue *todo_method_callback(GPtrArray *args, void *user_data);
+
+JSCValue *todo_property_callback(void *instance, void *user_data);
 
 #endif /* __GLOBALS_H__ */

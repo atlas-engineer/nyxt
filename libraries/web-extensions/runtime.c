@@ -62,6 +62,17 @@ void inject_runtime_api (char* extension_name)
 {
         JSCContext *context = get_extension_context(IS_PRIVILEGED ? NULL : extension_name);
         MAKE_CLASS(context, Runtime, "runtime");
+        /* TODO_PROP(Runtime, lastError); */
+        /* TODO_PROP(Runtime, onStartup); */
+        /* TODO_PROP(Runtime, onInstalled); */
+        /* TODO_PROP(Runtime, onSuspend); */
+        /* TODO_PROP(Runtime, onSuspendCanceled); */
+        /* TODO_PROP(Runtime, onUpdateAvailable); */
+        /* TODO_PROP(Runtime, onBrowserUpdateAvailable); */
+        /* TODO_PROP(Runtime, onConnect); */
+        /* TODO_PROP(Runtime, onConnectExternal); */
+        /* TODO_PROP(Runtime, onMessageExternal); */
+        /* TODO_PROP(Runtime, onRestartRequired); */
 
         MAKE_FN(context, runtimeSendMessage, runtime_send_message_callback, G_TYPE_ULONG, 2, G_TYPE_STRING, JSC_TYPE_VALUE);
         MAKE_FN(context, runtimeGetManifest, runtime_get_manifest_callback, JSC_TYPE_VALUE, 1, G_TYPE_STRING);
@@ -134,6 +145,16 @@ runtime.getURL");
                 jsc_context_evaluate(context, "runtime", -1),
                 "name",
                 jsc_value_new_string(context, extension_name));
+        TODO_METHOD(context, runtime, getBackGroundPage);
+        TODO_METHOD(context, runtime, openOptionsPage);
+        TODO_METHOD(context, runtime, setUninstallURL);
+        TODO_METHOD(context, runtime, reload);
+        TODO_METHOD(context, runtime, requestUpdateCheck);
+        TODO_METHOD(context, runtime, connect);
+        TODO_METHOD(context, runtime, connectNative);
+        TODO_METHOD(context, runtime, sendNativeMessage);
+        TODO_METHOD(context, runtime, getPlatformInfo);
+        TODO_METHOD(context, runtime, getPackageDirectoryEntry);
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "browser", -1), "runtime",
                 jsc_context_evaluate(context, "runtime", -1));

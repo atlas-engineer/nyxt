@@ -121,6 +121,20 @@ inject_tabs_api (char* extension_name)
         JSCContext *context = get_extension_context(IS_PRIVILEGED ? NULL : extension_name);
         MAKE_CLASS(context, Tabs, "tabs");
 
+        /* TODO_PROP(Tabs, onActivated); */
+        /* TODO_PROP(Tabs, onActiveChanged); */
+        /* TODO_PROP(Tabs, onAttached); */
+        /* TODO_PROP(Tabs, onCreated); */
+        /* TODO_PROP(Tabs, onDetached); */
+        /* TODO_PROP(Tabs, onHighlightChanged); */
+        /* TODO_PROP(Tabs, onHighlighted); */
+        /* TODO_PROP(Tabs, onMoved); */
+        /* TODO_PROP(Tabs, onRemoved); */
+        /* TODO_PROP(Tabs, onReplaced); */
+        /* TODO_PROP(Tabs, onSelectionChanged); */
+        /* TODO_PROP(Tabs, onUpdated); */
+        /* TODO_PROP(Tabs, onZoomChange); */
+
         MAKE_FN(context, tabsQuery, tabs_query_callback, G_TYPE_ULONG, 1, JSC_TYPE_VALUE);
         MAKE_FN(context, tabsCreate, tabs_create_callback, G_TYPE_ULONG, 1, JSC_TYPE_VALUE);
         MAKE_FN(context, tabsGetCurrent, tabs_get_current_callback, G_TYPE_ULONG, 0, G_TYPE_NONE);
@@ -243,47 +257,33 @@ tabs.executeScript")
                 "print", print);
         jsc_value_object_set_property(jsc_context_evaluate(context, "tabs", -1),
                                       "TAB_ID_NONE", jsc_value_new_number(context, 0));
-        NOT_YET_IMPLEMENTED(context, tabs, captureTab);
-        NOT_YET_IMPLEMENTED(context, tabs, captureVisibleTab);
-        NOT_YET_IMPLEMENTED(context, tabs, connect);
-        NOT_YET_IMPLEMENTED(context, tabs, detectLanguage);
-        NOT_YET_IMPLEMENTED(context, tabs, discard);
-        NOT_YET_IMPLEMENTED(context, tabs, duplicate);
-        NOT_YET_IMPLEMENTED(context, tabs, getAllInWindow); /* DEPRECATED */
-        NOT_YET_IMPLEMENTED(context, tabs, getSelected); /* DEPRECATED */
-        NOT_YET_IMPLEMENTED(context, tabs, getZoom);
-        NOT_YET_IMPLEMENTED(context, tabs, getZoomSettings);
-        NOT_YET_IMPLEMENTED(context, tabs, goForward);
-        NOT_YET_IMPLEMENTED(context, tabs, goBack);
-        NOT_YET_IMPLEMENTED(context, tabs, hide); /* EXPERIMENTAL */
-        NOT_YET_IMPLEMENTED(context, tabs, highlight);
-        NOT_YET_IMPLEMENTED(context, tabs, move);
-        NOT_YET_IMPLEMENTED(context, tabs, moveInSuccession);
-        NOT_YET_IMPLEMENTED(context, tabs, printPreview);
-        NOT_YET_IMPLEMENTED(context, tabs, reload);
-        NOT_YET_IMPLEMENTED(context, tabs, remove);
-        NOT_YET_IMPLEMENTED(context, tabs, saveAsPDF);
-        NOT_YET_IMPLEMENTED(context, tabs, sendRequest); /* DEPRECATED */
-        NOT_YET_IMPLEMENTED(context, tabs, setZoom);
-        NOT_YET_IMPLEMENTED(context, tabs, setZoomSettings);
-        NOT_YET_IMPLEMENTED(context, tabs, show);
-        NOT_YET_IMPLEMENTED(context, tabs, toggleReaderMode);
-        NOT_YET_IMPLEMENTED(context, tabs, update);
-        NOT_YET_IMPLEMENTED(context, tabs, warmup);
-        /* This require a property accessor rather than the function callback. */
-        /* NOT_YET_IMPLEMENTED(context, tabs, onActivated); */
-        /* NOT_YET_IMPLEMENTED(context, tabs, onActiveChanged); */
-        /* NOT_YET_IMPLEMENTED(context, tabs, onAttached); */
-        /* NOT_YET_IMPLEMENTED(context, tabs, onCreated); */
-        /* NOT_YET_IMPLEMENTED(context, tabs, onDetached); */
-        /* NOT_YET_IMPLEMENTED(context, tabs, onHighlightChanged); */
-        /* NOT_YET_IMPLEMENTED(context, tabs, onHighlighted); */
-        /* NOT_YET_IMPLEMENTED(context, tabs, onMoved); */
-        /* NOT_YET_IMPLEMENTED(context, tabs, onRemoved); */
-        /* NOT_YET_IMPLEMENTED(context, tabs, onReplaced); */
-        /* NOT_YET_IMPLEMENTED(context, tabs, onSelectionChanged); */
-        /* NOT_YET_IMPLEMENTED(context, tabs, onUpdated); */
-        /* NOT_YET_IMPLEMENTED(context, tabs, onZoomChange); */
+        TODO_METHOD(context, tabs, captureTab);
+        TODO_METHOD(context, tabs, captureVisibleTab);
+        TODO_METHOD(context, tabs, connect);
+        TODO_METHOD(context, tabs, detectLanguage);
+        TODO_METHOD(context, tabs, discard);
+        TODO_METHOD(context, tabs, duplicate);
+        TODO_METHOD(context, tabs, getAllInWindow); /* DEPRECATED */
+        TODO_METHOD(context, tabs, getSelected); /* DEPRECATED */
+        TODO_METHOD(context, tabs, getZoom);
+        TODO_METHOD(context, tabs, getZoomSettings);
+        TODO_METHOD(context, tabs, goForward);
+        TODO_METHOD(context, tabs, goBack);
+        TODO_METHOD(context, tabs, hide); /* EXPERIMENTAL */
+        TODO_METHOD(context, tabs, highlight);
+        TODO_METHOD(context, tabs, move);
+        TODO_METHOD(context, tabs, moveInSuccession);
+        TODO_METHOD(context, tabs, printPreview);
+        TODO_METHOD(context, tabs, reload);
+        TODO_METHOD(context, tabs, remove);
+        TODO_METHOD(context, tabs, saveAsPDF);
+        TODO_METHOD(context, tabs, sendRequest); /* DEPRECATED */
+        TODO_METHOD(context, tabs, setZoom);
+        TODO_METHOD(context, tabs, setZoomSettings);
+        TODO_METHOD(context, tabs, show);
+        TODO_METHOD(context, tabs, toggleReaderMode);
+        TODO_METHOD(context, tabs, update);
+        TODO_METHOD(context, tabs, warmup);
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "browser", -1), "tabs",
                 jsc_context_evaluate(context, "tabs", -1));
