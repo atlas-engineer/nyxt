@@ -7,6 +7,15 @@
 #include "runtime.h"
 #include "extension.h"
 #include "storage.h"
+#include "alarms.h"
+#include "bookmarks.h"
+#include "browser_action.h"
+#include "commands.h"
+#include "history.h"
+#include "notifications.h"
+#include "permissions.h"
+#include "web_navigation.h"
+#include "web_request.h"
 
 static void
 inject_apis (void* extension_name, void *data, void *user_data)
@@ -18,6 +27,15 @@ inject_apis (void* extension_name, void *data, void *user_data)
         inject_runtime_api((char*) extension_name);
         inject_extension_api((char*) extension_name);
         inject_storage_api((char *) extension_name);
+        inject_alarms_api((char *) extension_name);
+        inject_bookmarks_api((char *) extension_name);
+        inject_browser_action_api((char *) extension_name);
+        inject_commands_api((char *) extension_name);
+        inject_history_api((char *) extension_name);
+        inject_notifications_api((char *) extension_name);
+        inject_permissions_api((char *) extension_name);
+        inject_web_navigation_api((char *) extension_name);
+        inject_web_request_api((char *) extension_name);
 }
 
 static void
