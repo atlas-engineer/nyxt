@@ -69,6 +69,9 @@ inject_storage_api (char* extension_name)
         JSCContext *context = get_extension_context(IS_PRIVILEGED ? NULL : extension_name);
         MAKE_CLASS(context, Storage, "storage");
 
+        /* TODO_PROP(Storage, sync); */
+        /* TODO_PROP(Storage, managed); */
+
         MAKE_FN(context, storageGet, storage_get_callback, G_TYPE_ULONG, 3, G_TYPE_STRING, G_TYPE_STRING, JSC_TYPE_VALUE);
         MAKE_FN(context, storageSet, storage_set_callback, G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, JSC_TYPE_VALUE);
         MAKE_FN(context, storageRemove, storage_remove_callback, G_TYPE_NONE, 3, G_TYPE_STRING, G_TYPE_STRING, JSC_TYPE_VALUE);
@@ -129,9 +132,6 @@ clear");
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "storage", -1), "local",
                 jsc_context_evaluate(context, "local", -1));
-        /* This require a property accessor rather than the function callback. */
-        /* NOT_YET_IMPLEMENTED(context, storage, sync); */
-        /* NOT_YET_IMPLEMENTED(context, storage, managed); */
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "browser", -1), "storage",
                 jsc_context_evaluate(context, "storage", -1));
