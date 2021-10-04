@@ -97,7 +97,7 @@ void *empty_constructor_callback (void);
 
 void message_reply_and_save_callback (GObject *web_page, GAsyncResult *res, void *user_data);
 
-JSCValue *get_result (unsigned long int data_index);
+JSCValue *get_result (unsigned long int data_index, int check_only);
 
 JSCValue *todo_method_callback(GPtrArray *args, void *user_data);
 
