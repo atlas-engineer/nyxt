@@ -640,8 +640,6 @@ See `gtk-browser's `modifier-translator' slot."
            (sera:and-let* ((path (webkit:webkit-uri-scheme-request-get-path request))
                            (code (quri:url-decode (decrypt path) :lenient t))
                            (parent-url (gethash path *lisp-urls*)))
-             ;; FIXME: This asks for a weak hash table.
-             ;; Is that worth it, though?
              (unless (and (quri:uri-p parent-url)
                           (member parent-url
                                   (mapcar #'url (buffer-list))

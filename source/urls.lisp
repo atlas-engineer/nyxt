@@ -210,8 +210,6 @@ Once the parent URLs is closed/navigated away from, we clear all the related lis
 
 (export-always 'lisp-url)
 (-> lisp-url (t &rest t) string)
-;; REVIEW: We mainly use only one form. Maybe get rid of the &rest here?
-;; This would also allow defining allowed keywords to transform to params.
 (defun lisp-url (form &rest other-forms)
   "Generate a lisp:// URL from the given Lisp FORM.
 Mainly used to encode functionality into internal-buffers."
