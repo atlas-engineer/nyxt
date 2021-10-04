@@ -13,7 +13,13 @@ browser_reply_message_callback (unsigned long int message_id, JSCValue *result)
 static JSCValue *
 browser_get_result_callback (int index)
 {
-        return get_result(index);
+        return get_result(index, 0);
+}
+
+static JSCValue *
+browser_check_result_callback (int index)
+{
+        return get_result(index, 1);
 }
 
 void
@@ -24,16 +30,20 @@ inject_browser (char* extension_name)
 
         MAKE_FN(context, browserReplyMessage, browser_reply_message_callback, G_TYPE_NONE, 2, G_TYPE_ULONG, JSC_TYPE_VALUE);
         MAKE_FN(context, browserGetResult, browser_get_result_callback, JSC_TYPE_VALUE, 1, G_TYPE_ULONG);
+        MAKE_FN(context, browserCheckResult, browser_check_result_callback, JSC_TYPE_VALUE, 1, G_TYPE_ULONG);
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "browser", -1), "replyMessage",
                 browserReplyMessage);
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "browser", -1), "getResult",
                 browserGetResult);
+        jsc_value_object_set_property(
+                jsc_context_evaluate(context, "browser", -1), "checkResult",
+                browserCheckResult);
         BIND_FN(context, "browser", "drain", "function drain (index, success_fn, default_val, count, ...args) {\
-    var res = browser.getResult(index);                                \
-    if (res) {                                                          \
-        success_fn(res);                                                \
+    var is_result = browser.checkResult(index);                         \
+    if (is_result) {                                                    \
+        success_fn(browser.getResult(index));                           \
     } else {                                                            \
         if (count <= 0)                                                 \
             success_fn(default_val);                                    \
