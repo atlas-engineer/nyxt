@@ -868,14 +868,19 @@ See `make-buffer'."
     (set-current-buffer buffer)
     buffer))
 
-(define-command make-internal-buffer (&key (title "") modes no-history-p)
+(define-command make-internal-buffer (&key (url :default)  (title "") modes no-history-p)
   "Create a new buffer.
 MODES is a list of mode symbols.
 If URL is `:default', use `default-new-buffer-url'."
-  (buffer-make *browser* :title title
-                         :extra-modes modes
-                         :buffer-class 'user-internal-buffer
-                         :no-history-p no-history-p))
+  (let ((buffer (buffer-make *browser* :title title
+                                       :extra-modes modes
+                                       :buffer-class 'user-internal-buffer
+                                       :no-history-p no-history-p))
+        ;; REVIEW: Duplicates `make-buffer'. Any way to abstract it?
+        (url (if (url-empty-p url)
+                 (default-new-buffer-url *browser*)
+                 url)))
+    (buffer-load url :buffer buffer)))
 
 (define-command make-editor-buffer (&key (title "") modes)
   "Create a new editor buffer."
