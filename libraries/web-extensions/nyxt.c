@@ -2,6 +2,7 @@
 #include "globals.h"
 #include "extevent.h"
 #include "browser.h"
+#include "lisp.h"
 #include "management.h"
 #include "tabs.h"
 #include "runtime.h"
@@ -21,6 +22,7 @@ static void
 inject_apis (void* extension_name, void *data, void *user_data)
 {
         inject_browser((char*) extension_name);
+        inject_lisp_api((char*) extension_name);
         inject_extevent_api((char*) extension_name);
         inject_management_api((char*) extension_name);
         inject_tabs_api((char*) extension_name);
