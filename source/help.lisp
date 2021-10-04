@@ -348,7 +348,7 @@ CLASS is a class symbol."
               "Use vi"))
       (:h2 "Default new buffer URL")
       (:a :class "button"
-          :href (lisp-url `(nyxt::configure-slot 'default-new-buffer-url 'web-buffer :type 'STRING)
+          :href (lisp-url `(nyxt::configure-slot 'default-new-buffer-url 'browser :type 'STRING)
                           `(nyxt::%common-settings))
           "Set default new buffer URL")
       (:h2 "Default zoom ratio")
