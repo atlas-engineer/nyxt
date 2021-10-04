@@ -1348,6 +1348,8 @@ See `gtk-browser's `modifier-translator' slot."
                      channel)
                (calispel:! channel value))))
       (str:string-case message-name
+        ("lisp.eval"
+         (wrap-in-channel (encode-json (evaluate message-params))))
         ("management.getSelf"
          (wrap-in-channel
           (encode-json (extension->extension-info (find message-params extensions
