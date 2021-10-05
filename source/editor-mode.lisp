@@ -80,8 +80,13 @@ get/set-content (which is necessary for operation)."
 
 (define-command editor-write-file (&key (buffer (current-buffer)) (if-exists :error))
   "Write the FILE of the BUFFER to storage."
-  (write-file-with-editor buffer :if-exists if-exists)
-  (echo "File ~a written to storage." (file buffer)))
+  (if (uiop:file-exists-p (file buffer))
+      (if-confirm ("Overwrite ~s?" (file buffer))
+        (progn (write-file-with-editor buffer :if-exists :overwrite)
+               (echo "File ~s saved." (file buffer)))
+        (echo "File ~s not saved." (file buffer)))
+      (progn  (write-file-with-editor buffer :if-exists if-exists)
+              (echo "File ~s saved." (file buffer)))))
 
 (define-command-global open-new-editor-with-file ()
   "Open a new editor and query a file."
