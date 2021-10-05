@@ -172,9 +172,9 @@ A command is a special kind of function that can be called with
                      (write-to-string (sexp command))))))))
 
 (define-internal-page-command describe-slot
-    (&optional (slot (first(prompt
-                            :prompt "Describe slot"
-                            :sources (make-instance 'slot-source)))))
+    (&optional (slot (first (prompt
+                             :prompt "Describe slot"
+                             :sources (make-instance 'slot-source)))))
   (buffer (str:concat "*Help-" (symbol-name (name slot)) "*")
           'nyxt/help-mode:help-mode)
   "Inspect a slot and show it in a help buffer."

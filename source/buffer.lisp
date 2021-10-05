@@ -400,7 +400,21 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
   '(certificate-exception-mode))
 
 (define-class internal-buffer (user-buffer)
-  ((style #.(cl-css:css
+  ;; We need it now that we load WebKit-enabled URLs into internal-buffers.
+  ((load-status :unloaded
+                :type (member :loading
+                              :finished
+                              :unloaded
+                              :failed)
+                :accessor nil
+                :export nil ; TODO: Need to decide if we want progress / errors before exposing to the user.
+                :documentation "The status of the buffer.
+- `:loading' when loading a web resource.
+- `:finished' when done loading a web resource.
+- `:unloaded' for buffers that have not been loaded yet, like
+  session-restored buffers, dead buffers or new buffers that haven't started the
+  loading process yet.")
+   (style #.(cl-css:css
              '((body
                 :margin-left "20px"
                 :margin-top "20px")

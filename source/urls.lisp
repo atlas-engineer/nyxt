@@ -193,19 +193,21 @@ Authority is compared case-insensitively (RFC 3986)."
   "A map from the encrypted Lisp forms (string) to the URL it was created on.
 Once the parent URLs is closed/navigated away from, we clear all the related lisp URLs.")
 
+(defvar %aes-key (ironclad:generate-safe-prime 256))
+
 (defvar %aes (ironclad:make-cipher
               :aes
               :mode :ecb
-              :key (ironclad:integer-to-octets (ironclad:generate-safe-prime 256))))
+              :key (ironclad:integer-to-octets %aes-key)))
 
-(defun encrypt (plaintext)
+(defun encrypt (plaintext &optional (cypher %aes))
   (let ((msg (ironclad:ascii-string-to-byte-array (quri:url-encode plaintext))))
-    (ironclad:encrypt-in-place %aes msg)
+    (ironclad:encrypt-in-place cypher msg)
     (format nil "~x" (ironclad:octets-to-integer msg))))
 
-(defun decrypt (ciphertext)
+(defun decrypt (ciphertext &optional (cypher %aes))
   (let ((msg (ironclad:integer-to-octets (parse-integer ciphertext :radix 16))))
-    (ironclad:decrypt-in-place %aes msg)
+    (ironclad:decrypt-in-place cypher msg)
     (quri:url-decode (coerce (mapcar #'code-char (coerce msg 'list)) 'string))))
 
 (export-always 'lisp-url)

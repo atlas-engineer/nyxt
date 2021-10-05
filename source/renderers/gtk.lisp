@@ -640,6 +640,7 @@ See `gtk-browser's `modifier-translator' slot."
            (sera:and-let* ((path (webkit:webkit-uri-scheme-request-get-path request))
                            (code (quri:url-decode (decrypt path) :lenient t))
                            (parent-url (gethash path *lisp-urls*)))
+             ;; IF the URL is still open somewhere, do nothing
              (unless (and (quri:uri-p parent-url)
                           (member parent-url
                                   (mapcar #'url (buffer-list))
@@ -647,8 +648,8 @@ See `gtk-browser's `modifier-translator' slot."
                (maphash
                 (lambda (path parent)
                   ;; t is for parentless URLs to be evaluated nonetheless.
-                  (when (or (quri:uri-p parent-url)
-                            (quri:uri= parent parent-url))
+                  (when (and (quri:uri-p parent-url)
+                             (quri:uri= parent parent-url))
                     (remhash path *lisp-urls*)))
                 *lisp-urls*))
              (log:debug "Evaluate Lisp code: ~a" code)

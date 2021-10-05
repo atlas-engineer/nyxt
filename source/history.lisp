@@ -193,7 +193,7 @@ lot."
   "Return the history data that needs to be serialized.
 This data can be used to restore the session later, e.g. when starting a new
 instance of Nyxt."
-  (list +version+ (get-data path)))
+  (list +version+ (get-data path) %aes-key))
 
 (defmethod store ((profile data-profile) (path history-data-path) &key &allow-other-keys)
   "Store the global/buffer-local history to the PATH."
@@ -383,21 +383,37 @@ and update their creator."
                          (history-deserialize-sexp file))))))
         (match data
           (nil nil)
-          ((guard (list version history) t)
+          ((guard (list* version history encryption-key) t)
            (unless (string= version +version+)
              (log:warn "History version ~s differs from current version ~s"
                        version +version+))
-           (ctypecase history
-             (htree:history-tree
-              (echo "Loading history of ~a URLs from ~s."
-                    (hash-table-count (htree:entries history))
-                    (expand-path path))
-              history)
+           (let ((new-history (ctypecase history
+                                (htree:history-tree
+                                 (echo "Loading history of ~a URLs from ~s."
+                                       (hash-table-count (htree:entries history))
+                                       (expand-path path))
+                                 history)
 
-             (hash-table
-              (restore-flat-history history path))))
+                                (hash-table
+                                 (restore-flat-history history path))))
+                 (encryption-key (first encryption-key)))
+             (when encryption-key
+               (run-thread "re-encryption of the lisp: URLs"
+                 (let ((encryption (ironclad:make-cipher
+                                    :aes
+                                    :mode :ecb
+                                    :key (ironclad:integer-to-octets encryption-key))))
+                   (maphash (lambda (key value)
+                              (declare (ignore value))
+                              (when (string= "lisp" (quri:uri-scheme (url (htree:data key))))
+                                (let* ((data (htree:data key))
+                                       (initial-form (read-from-string
+                                                      (decrypt (quri:uri-path (url data)) encryption))))
+                                  (setf (url data) (quri:uri (lisp-url initial-form))))))
+                            (htree:entries history)))))
+             new-history))
           (_ (progn
-               (error "Expected (list version history) structure.")
+               (error "Expected (list version history encryption) structure.")
                nil)))))))
 
 (defun histories-list (&optional (buffer (current-buffer)))
