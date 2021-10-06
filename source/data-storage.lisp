@@ -66,8 +66,8 @@ removed, for instance on buffer deletion.")
                     "no"))
     ("Type" ,(string (sera:class-name-of path)))
     ("Reference" ,(ref path))
-    ("Dirname" ,(namestring (dirname path)))
-    ("Basename" ,(namestring (basename path)))))
+    ("Dirname" ,(uiop:native-namestring (dirname path)))
+    ("Basename" ,(uiop:native-namestring (basename path)))))
 
 (define-class data-path-source (prompter:source)
   ((prompter:name "User files")
@@ -221,9 +221,10 @@ Example: when passed command line option --with-path foo=bar,
 
 (export-always 'expand-default-path)
 (-> expand-default-path (data-path &key (:root string)) (or string null))
-(defun expand-default-path (path &key (root (namestring (if (str:emptyp (namestring (dirname path)))
-                                                            (uiop:xdg-data-home +data-root+)
-                                                            (dirname path)))))
+(defun expand-default-path (path &key (root (uiop:native-namestring
+                                             (if (str:emptyp (namestring (dirname path)))
+                                                 (uiop:xdg-data-home +data-root+)
+                                                 (dirname path)))))
   "Derive file from command line option or PATH.
 If PATH `ref' is specified in the `:with-path' command line option, use it in
 place of PATH `basename'.
@@ -233,10 +234,11 @@ place of PATH `basename'.
 - Otherwise expand to 'ROOT/basename.lisp' or 'ROOT/basename' if the basename
   already contains a period."
   (let ((name (or (find-ref-path (ref path))
-                  (namestring (basename path)))))
+                  (uiop:native-namestring (basename path)))))
     (cond
       ((uiop:emptyp name)
-       (namestring (uiop:ensure-directory-pathname root)))
+       (the (values string &optional)
+            (uiop:native-namestring (uiop:ensure-directory-pathname root))))
       ((search "/" name)
        name)
       (t

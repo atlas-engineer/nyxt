@@ -19,7 +19,7 @@
     (let ((path (or (getf *options* option)
                     (expand-default-path
                      data-path
-                     :root (namestring (uiop:xdg-config-home +data-root+))))))
+                     :root (uiop:native-namestring (uiop:xdg-config-home +data-root+))))))
       (unless (uiop:emptyp path)
         (when (and (getf *options* option) (not (uiop:file-exists-p path)))
           (log:warn "File ~s does not exist." path))
@@ -48,9 +48,10 @@
 
 (defmethod expand-data-path ((profile data-profile) (path extensions-data-path))
   "Return finalized path for extension directory."
-  (expand-default-path path :root (namestring (if (str:emptyp (namestring (dirname path)))
-                                                  (uiop:xdg-data-home +data-root+ "extensions")
-                                                  (dirname path)))))
+  (expand-default-path path :root (uiop:native-namestring
+                                   (if (str:emptyp (namestring (dirname path)))
+                                       (uiop:xdg-data-home +data-root+ "extensions")
+                                       (dirname path)))))
 
 (export-always '*extensions-path*)
 (defvar *extensions-path* (make-instance 'extensions-data-path)

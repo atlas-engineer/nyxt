@@ -367,7 +367,7 @@ rest in background buffers."
   (let ((html-file (or html-file
                        (first (prompt
                                ;; TODO: Is there a more intuitive directory for bookmarks?
-                               :input (namestring (uiop:getcwd))
+                               :input (uiop:native-namestring (uiop:getcwd))
                                :sources (make-instance
                                          'user-file-source
                                          :filter-preprocessor

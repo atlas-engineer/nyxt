@@ -889,7 +889,7 @@ See `gtk-browser's `modifier-translator' slot."
                                            (first
                                             (webkit:webkit-file-chooser-request-selected-files
                                              file-chooser-request)))
-                                          (namestring (uiop:getcwd)))
+                                          (uiop:native-namestring (uiop:getcwd)))
                                   :sources (list (make-instance 'file-source)))
                         (nyxt-prompt-buffer-canceled ()
                           nil)))))

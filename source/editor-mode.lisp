@@ -65,7 +65,7 @@ get/set-content (which is necessary for operation)."
   "Open a file in the internal editor."
   (let ((file (first (prompt
                       :prompt "Open file"
-                      :input (namestring (uiop:getcwd))
+                      :input (uiop:native-namestring (uiop:getcwd))
                       :sources
                       (list (make-instance 'user-file-source
                                            :name "Absolute file path"
@@ -74,9 +74,9 @@ get/set-content (which is necessary for operation)."
                                            :name "New file"))))))
     (open-file-with-editor buffer file)
     ;; TODO: Maybe make `editor-mode' and `editor-buffer' pathname-friendly?
-    (setf (file buffer) (namestring file))
-    (setf (title buffer) (namestring file))
-    (setf (url buffer) (quri::make-uri-file :path (namestring file)))))
+    (setf (file buffer) (uiop:native-namestring file))
+    (setf (title buffer) (uiop:native-namestring file))
+    (setf (url buffer) (quri::make-uri-file :path (uiop:native-namestring file)))))
 
 (define-command editor-write-file (&key (buffer (current-buffer)) (if-exists :error))
   "Write the FILE of the BUFFER to storage."
