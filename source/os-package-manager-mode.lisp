@@ -90,7 +90,7 @@
 
 (define-class os-manifest-source (prompter:source)
   ((prompter:name "Manifests")
-   (prompter:constructor (mapcar #'namestring (ospm:list-manifests)))))
+   (prompter:constructor (mapcar #'uiop:native-namestring (ospm:list-manifests)))))
 
 (define-class os-package-output-source (prompter:source)
   ((prompter:name "Package Outputs")
@@ -201,7 +201,7 @@
     (%describe-os-package packages)))
 
 (defun viewable-file-type-p (path)
-  (let ((path-suffix (string-downcase (namestring path))))
+  (let ((path-suffix (string-downcase (uiop:native-namestring path))))
     (some (lambda (suffix)
             (str:ends-with? path-suffix suffix) )
           '(".html" ".htm") )))
@@ -230,7 +230,7 @@
         (dolist (package-or-output packages-or-outputs)
           (:li (prompter:attributes-default package-or-output)
                (:ul
-                (let ((files (mapcar #'namestring (ospm:list-files (list package-or-output)))))
+                (let ((files (mapcar #'uiop:native-namestring (ospm:list-files (list package-or-output)))))
                   (if files
                       (dolist (file files)
                         (:li (if (viewable-file-type-p file)

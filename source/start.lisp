@@ -18,7 +18,7 @@
                     (uiop:getenv "NYXT_SOCKET")
                     (expand-default-path
                      data-path
-                     :root (namestring (uiop:xdg-runtime-dir +data-root+))))))
+                     :root (uiop:native-namestring (uiop:xdg-runtime-dir +data-root+))))))
       (unless (uiop:emptyp path)
         path))))
 
@@ -273,14 +273,15 @@ Return the short error message and the full error message as second value."
   "Load the prompted Lisp file."
   (prompt
    :prompt "Load file"
-   :input (namestring (alex:if-let ((init-path (expand-path *init-file-path*)))
-                        (uiop:pathname-directory-pathname (pathname init-path))
-                        (uiop:getcwd)))
+   :input (uiop:native-namestring
+           (alex:if-let ((init-path (expand-path *init-file-path*)))
+             (uiop:pathname-directory-pathname (pathname init-path))
+             (uiop:getcwd)))
    :sources
    (make-instance 'user-file-source
                   :actions (list (make-command load-file* (files)
-                                   (dolist (file files)
-                                     (load-lisp file)))))))
+                                               (dolist (file files)
+                                                 (load-lisp file)))))))
 
 (define-command load-init-file (&key (init-file (expand-path *init-file-path*)))
   "Load or reload the init file."

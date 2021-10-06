@@ -12,7 +12,7 @@
 (defmethod prompter:object-attributes ((path pathname))
   ;; TODO: Add dirname, basename, extension.
   ;; It will be useful when we have per-attribute filtering.
-  `(("Path" ,(namestring path))))
+  `(("Path" ,(uiop:native-namestring path))))
 
 (defun match-extension (ext)
   (lambda (pathname)
@@ -120,7 +120,7 @@ Can be used as a `open-file-function'."
              #+linux
              (list *xdg-open-program* (quri:render-uri file-url))
              #+darwin
-             (list "open" (namestring filename))))
+             (list "open" (uiop:native-namestring filename))))
       ;; We can probably signal something and display a notification.
       (error (c) (log:error "Opening ~a: ~a~&" filename c)))))
 
@@ -137,6 +137,6 @@ By default, it uses the `xdg-open' command. The user can override the
 `open-file-function' of `file-mode' which takes the filename (or
 directory name) as parameter."
   (prompt
-   :input (namestring default-directory)
+   :input (uiop:native-namestring default-directory)
    :prompt "Open file"
    :sources (list (make-instance 'user-open-file-source))))

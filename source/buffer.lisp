@@ -1210,7 +1210,7 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
      (setf (query query)
            (str:concat
             "file://"
-            (namestring
+            (uiop:native-namestring
              (uiop:ensure-absolute-pathname
               (query query) *default-pathname-defaults*)))))
     ((valid-url-p (str:concat "https://" (query query)))

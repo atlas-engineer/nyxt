@@ -210,9 +210,10 @@ not return."
 
 (defmethod expand-data-path ((profile data-profile) (path gtk-extensions-data-path))
   "Return finalized path for gtk-extension directory."
-  (expand-default-path path :root (namestring (if (str:emptyp (namestring (dirname path)))
-                                                  (uiop:xdg-data-home +data-root+ "gtk-extensions")
-                                                  (dirname path)))))
+  (expand-default-path path :root (uiop:native-namestring
+                                   (if (str:emptyp (namestring (dirname path)))
+                                       (uiop:xdg-data-home +data-root+ "gtk-extensions")
+                                       (dirname path)))))
 
 
 (defun make-web-view (&key context-buffer)
@@ -890,7 +891,7 @@ See `gtk-browser's `modifier-translator' slot."
                                            (first
                                             (webkit:webkit-file-chooser-request-selected-files
                                              file-chooser-request)))
-                                          (namestring (uiop:getcwd)))
+                                          (uiop:native-namestring (uiop:getcwd)))
                                   :sources (list (make-instance 'file-source)))
                         (nyxt-prompt-buffer-canceled ()
                           nil)))))

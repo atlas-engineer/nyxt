@@ -84,7 +84,7 @@ for which the `executable' slot is non-nil."
                                   (pathname-type (pathname (password::password-file
                                                             password-interface)))))
         :do (setf (password::password-file password-interface)
-                  (namestring
+                  (uiop:native-namestring
                    (first (prompt
                            :prompt "Password file"
                            :sources (list (make-instance
