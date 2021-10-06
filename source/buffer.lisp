@@ -1115,7 +1115,7 @@ set of useful URLs or preparing a list to send to a someone else."
   "Delete all buffers, with confirmation."
   (let ((count (length (buffer-list))))
     (if confirmation-p
-        (if-confirm ("Are you sure to delete ~a buffer~p?" count count)
+        (if-confirm ("Delete ~a buffer~p?" count count)
                     (mapcar #'buffer-delete (buffer-list)))
         (mapcar #'buffer-delete (buffer-list)))))
 
@@ -1130,7 +1130,7 @@ When BUFFER is omitted, it defaults to the current one."
   (let* ((all-buffers (buffer-list))
          (buffers-to-delete (remove buffer all-buffers))
          (count (list-length buffers-to-delete)))
-    (if-confirm ("Are you sure to delete ~a buffer~p?" count count)
+    (if-confirm ("Delete ~a buffer~p?" count count)
       (mapcar #'buffer-delete buffers-to-delete))))
 
 (export-always 'buffer-load)
