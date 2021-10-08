@@ -78,6 +78,9 @@ Most recent messages are first.")
     (make-ring)
     :documentation "The default history of all prompt buffer entries.
 This history is used if no history is specified for a given prompt buffer.")
+   (default-new-buffer-url (quri:uri (about-url 'help))
+                           :type url-designator
+                           :documentation "The URL set to a new blank buffer opened by Nyxt.")
    (set-url-history
     (make-ring)
     :documentation "The history of all URLs set via set-url")
@@ -350,14 +353,15 @@ restored."
                     (get-data (history-path buffer))
                     (clear-history-owners buffer))))))
            (load-start-urls (urls)
-             (when urls (open-urls urls))))
+             (open-urls (or urls (list (default-new-buffer-url browser))))))
     (window-make browser)
-    (let ((window (current-window)))
-      (window-set-buffer window (help :no-history-p t))
+    (let ((dummy (make-dummy-buffer)))
+      (window-set-buffer (current-window) dummy)
       ;; Restore session before opening command line URLs, otherwise it will
       ;; reset the session with the new URLs.
       (restore-session)
-      (load-start-urls urls))
+      (load-start-urls urls)
+      (ffi-buffer-delete dummy))
     (funcall* (startup-error-reporter-function *browser*))))
 
 ;; Catch a common case for a better error message.
@@ -520,11 +524,6 @@ view.")
                                 (keymap:lookup-key keys keymap))))
       (declare (type quri:uri url))
       (cond
-        ((and (internal-buffer-p buffer) (equal "lisp" (quri:uri-scheme url)))
-         (let ((code (quri:url-decode (schemeless-url url) :lenient t)))
-           (log:debug "Evaluate Lisp code from internal buffer: ~a" code)
-           (evaluate-async code))
-         nil)
         ((internal-buffer-p buffer)
          (log:debug "Load URL from internal buffer in new buffer: ~a" (render-url url))
          (make-buffer-focus :url url)

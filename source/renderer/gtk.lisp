@@ -705,6 +705,24 @@ See `gtk-browser's `modifier-translator' slot."
            (values data type)))
        (lambda (condition)
          (echo-warning "Error while re-routing web accessible resource: ~a" condition)))
+      (webkit:webkit-web-context-register-uri-scheme-callback
+       context "nyxt"
+       (lambda (request)
+         (with-protect ("Error while processing the about URL: ~a" :condition)
+           (sera:and-let* ((url (quri:uri (webkit:webkit-uri-scheme-request-get-uri request)))
+                           (function-name (parse-about-url url))
+                           (page-generating-function (gethash function-name *about-url-commands*)))
+             (let ((result (multiple-value-list (apply page-generating-function (nth-value 1 (parse-about-url url))))))
+               (cond
+                 ((and (alex:length= result 2)
+                       (arrayp (first result))
+                       (stringp (second result)))
+                  (values (first result) (second result)))
+                 ((arrayp (first result))
+                  (first result))
+                 (t (error "Cannot display evaluation result")))))))
+       (lambda (condition)
+         (echo-warning "Error while routing about URL: ~a" condition)))
       (when (and buffer
                  (web-buffer-p buffer)
                  (expand-path (cookies-path buffer)))
@@ -1058,9 +1076,7 @@ See `gtk-browser's `modifier-translator' slot."
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
   (unless (gtk-object buffer) ; Buffer may already have a view, e.g. the prompt-buffer.
-    (setf (gtk-object buffer) (make-web-view
-                               :context-buffer (unless (internal-buffer-p buffer)
-                                                 buffer))))
+    (setf (gtk-object buffer) (make-web-view :context-buffer buffer)))
   (if (smooth-scrolling buffer)
       (ffi-buffer-enable-smooth-scrolling buffer t)
       (ffi-buffer-enable-smooth-scrolling buffer nil))

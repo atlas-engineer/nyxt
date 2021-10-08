@@ -189,15 +189,73 @@ Authority is compared case-insensitively (RFC 3986)."
                       (lambda (url1 url2) (equalp (quri:uri-authority url1)
                                                   (quri:uri-authority url2)))))))
 
+(export-always 'about-url)
+(-> about-url (t &rest t &key &allow-other-keys) string)
+(defun about-url (function-name &rest args &key &allow-other-keys)
+  "Generate an about: URL from the given FUNCTION-NAME applied to ARGS This is
+useful for encoding functionality into internal-buffers.
+
+ARGS is an arbitrary keyword arguments (!) list that will be translated to
+underscored URL parameters.
+
+The resulting URL should be perfectly parseable back to the initial form with
+`parse-about-url'.
+
+Example:
+\(about-url 'nyxt:describe-command :value 'nyxt:describe-value)
+=> \"about:describe-command?value=NYXT%3ADESCRIBE-VALUE\"
+
+\(parse-about-url (about-url 'nyxt:describe-value :value ''nyxt:*browser*))
+=> NYXT:DESCRIBE-VALUE
+=> (:VALUE 'NYXT:*BROWSER*)"
+  (flet ((param-name (symbol)
+           (if (member (package-name (symbol-package symbol)) '("nyxt" "keyword")
+                       :test #'string-equal)
+               (str:downcase (symbol-name symbol))
+               (str:downcase
+                (format nil "~a/~a"
+                        (package-name (symbol-package symbol))
+                        (symbol-name symbol))))))
+    (let ((params (quri:url-encode-params
+                   (mapcar (lambda (pair)
+                             (cons (str:downcase (symbol-name (first pair)))
+                                   ;; This is to safely parse the args afterwards
+                                   (prin1-to-string (rest pair))))
+                           (alexandria:plist-alist args)))))
+      (the (values string &optional)
+           (format nil "nyxt:~a~@[~*?~a~]"
+                   (param-name function-name)
+                   (not (uiop:emptyp params))
+                   params)))))
+
 (export-always 'lisp-url)
-(-> lisp-url (t &rest t) string)
-(defun lisp-url (lisp-form &rest more-lisp-forms)
-  "Generate a lisp:// URL from the given Lisp forms. This is useful for encoding
-functionality into internal-buffers."
-  (the (values string &optional)
-       (apply #'str:concat "lisp://"
-              (mapcar (alex:compose #'quri:url-encode #'write-to-string)
-                      (cons lisp-form more-lisp-forms)))))
+(defun lisp-url (&rest args)
+  (declare (ignore args))
+  "")
+
+(export-always 'parse-about-url)
+(-> parse-about-url ((or string quri:uri)) (values &optional symbol list))
+(defun parse-about-url (url)
+  "Return (1) the name of the function and (2) the arguments to it, parsed from about: URL.
+
+Errors if some of the params are not constants. Because of this,
+`parse-about-url' can be repeatedly called on the same about: URL, with the
+guarantee of the same result."
+  (let* ((url (url url))
+         (path (str:split "/" (quri:uri-path url)))
+         (package (if (sera:single path)
+                      "nyxt"
+                      (first path)))
+         (symbol (or (second path) (first path)))
+         (params (quri:uri-query-params url)))
+    (values (intern (str:upcase symbol) (intern (str:upcase package) :keyword))
+            (alex:mappend (lambda (pair)
+                            (let ((key (intern (str:upcase (first pair)) :keyword))
+                                  (value (read-from-string (rest pair))))
+                              (if (constantp value)
+                                  (list key value)
+                                  (error "A non-constant value passed in URL params: ~a" value))))
+                          params))))
 
 (-> path= (quri:uri quri:uri) boolean)
 (defun path= (url1 url2)

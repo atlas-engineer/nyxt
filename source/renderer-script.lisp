@@ -103,31 +103,56 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
                       (|insertAdjacentHTML| "afterbegin"
                                             (ps:lisp style)))))))
 
-(export-always 'with-current-html-buffer)
-(defmacro with-current-html-buffer ((buffer-var title mode
-                                     &key no-history-p)
-                                    &body body)
-  "Switch to a buffer in MODE displaying BODY.
-If a buffer in MODE with TITLE exists, reuse it, otherwise create a new buffer.
-BUFFER-VAR is bound to the new buffer in BODY.
-MODE is a mode symbol.
-BODY must return the HTML markup as a string."
-  (alex:once-only (title mode)
-    `(let* ((,buffer-var (or (find-if (lambda (b)
-                                        (and (string= (title b) ,title)
-                                             (find-mode b ,mode)))
-                                      (buffer-list))
-                             (funcall (symbol-function ,mode)
-                                      :activate t
-                                      :buffer (make-internal-buffer
-                                               :title ,title
-                                               :no-history-p ,no-history-p)))))
-       (html-set
-        (progn
-          ,@body)
-        ,buffer-var)
-       (set-current-buffer ,buffer-var)
-       ,buffer-var)))
+(defvar *about-url-commands* (make-hash-table)
+  "A map from allowed about: URLs/commands as symbols to the functions that
+  generate code of these commands.")
+
+(defmacro define-internal-page-command (name (&rest arglist)
+                                        (buffer-var title mode)
+                                        &body body)
+  "Defines a command called NAME creating an internal interface page.
+Creates a buffer in case there's no buffer with TITLE and MODE.
+
+Beware: the ARGLIST should have keyword arguments only."
+  (let* ((internal-name (gensym (symbol-name name)))
+         (args (alex:mappend #'first (nth-value 3 (alex:parse-ordinary-lambda-list arglist))))
+         (url (apply #'about-url name args)))
+    (multiple-value-bind (body declarations documentation)
+        (alex:parse-body body :documentation t)
+      `(progn
+         (defun ,internal-name (,@arglist)
+           ,@(when documentation (list documentation))
+           ,@declarations
+           ;; We need to ignore those to avoid warnings, as the same arglist
+           ;; is used in both internal function and a command.
+           (declare (ignorable ,@(loop for arg in (rest args) by #'cddr
+                                       collect arg)))
+           ;; TODO: Maybe create buffer here too?
+           ;; This way it won't fail when called from a URL.
+           (let ((,buffer-var (find ,url (buffer-list) :key (alex:compose #'render-url #'url)
+                                                       :test #'string=)))
+             ;; We need to ignore those to avoid warnings, as the same arglist
+             ;; is used in both internal function and a command.
+             (declare (ignorable ,buffer-var))
+             ,@body))
+         (setf (gethash (quote ,name) *about-url-commands*)
+               (function ,internal-name))
+         (define-command-global ,name (,@arglist)
+           ,@(when documentation (list documentation))
+           (let* ((,buffer-var (or (find-if (lambda (b)
+                                              (and (string= (title b) ,title)
+                                                   (find-mode b ,mode)))
+                                            (buffer-list))
+                                   (funcall (symbol-function ,mode)
+                                            :activate t
+                                            :buffer (make-internal-buffer
+                                                     :title ,title
+                                                     :url (quri:uri
+                                                           (about-url
+                                                            (quote ,name)
+                                                            ,@args)))))))
+             (set-current-buffer ,buffer-var)
+             ,buffer-var))))))
 
 (defmacro with-current-panel ((buffer-var title &key (side :left))
                               &body body)

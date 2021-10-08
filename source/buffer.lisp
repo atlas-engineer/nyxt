@@ -186,10 +186,6 @@ Example:
     (reduce #'hooks:add-hook
             (mapcar #'make-handler-resource (list #'old-reddit-handler #'auto-proxy-handler))
             :initial-value %slot-default%))))")
-   (default-new-buffer-url
-    (quri:uri "https://nyxt.atlas.engineer/start")
-    :type url-designator
-    :documentation "The URL set to a new blank buffer opened by Nyxt.")
    (scroll-distance
     50
     :type integer
@@ -896,14 +892,18 @@ See `make-buffer' for a description of the arguments."
   (declare (ignorable title modes url))
   (apply #'make-buffer (append (list :buffer-class 'user-background-buffer :no-history-p t) args)))
 
-(define-command make-internal-buffer (&key (title "") modes no-history-p)
+(define-command make-internal-buffer (&key (url (quri:uri "")) (title "") modes no-history-p)
   "Create a new buffer.
 MODES is a list of mode symbols.
-If URL is `:default', use `default-new-buffer-url'."
-  (buffer-make *browser* :title title
-                         :extra-modes modes
-                         :buffer-class 'user-internal-buffer
-                         :no-history-p no-history-p))
+URL is a URL to load into the buffer."
+  (let ((buffer (buffer-make *browser* :title title
+                                       :extra-modes modes
+                                       :buffer-class 'user-internal-buffer
+                                       :no-history-p no-history-p))
+        (url (if (url-empty-p url)
+                 (default-new-buffer-url *browser*)
+                 url)))
+    (buffer-load url :buffer buffer)))
 
 (define-command make-editor-buffer (&key (title "") modes)
   "Create a new editor buffer."
@@ -1160,7 +1160,8 @@ second latest buffer first."
                                :multi-selection-p t
                                :actions (list (make-mapped-command buffer-delete))))))
 
-(define-command reduce-to-buffer (&key (delete t))
+(define-internal-page-command reduce-to-buffer (&key (delete t))
+    (reduced-buffer "*Reduced Buffers*" 'base-mode)
   "Query the buffer(s) to \"reduce \" by copying their titles/URLs to a
 single buffer, optionally delete them. This function is useful for archiving a
 set of useful URLs or preparing a list to send to a someone else."
@@ -1169,24 +1170,23 @@ set of useful URLs or preparing a list to send to a someone else."
                   :sources (make-instance 'user-buffer-source
                                           :actions '()
                                           :multi-selection-p t))))
-    (with-current-html-buffer (reduced-buffer "*Reduced Buffers*" 'base-mode)
-      (spinneret:with-html-string
-          (:style (style reduced-buffer))
-        (:h1 "Reduced Buffers:")
-        (:div
-         (loop for buffer in buffers
-               collect
-                  (with-current-buffer buffer
-                    (:div
-                     (:p (:b "Title: ") (title buffer))
-                     (:p (:b "URL: ") (:a :href (render-url (url buffer))
-                                          (render-url (url buffer))))
-                     (:p (:b "Automatically generated summary: ")
-                         (:ul
-                          (loop for summary-bullet in (analysis:summarize-text
-                                                       (document-get-paragraph-contents :limit 10000))
-                                collect (:li (str:collapse-whitespaces summary-bullet)))))
-                     (:hr "")))))))
+    (spinneret:with-html-string
+      (:style (style reduced-buffer))
+      (:h1 "Reduced Buffers:")
+      (:div
+       (loop for buffer in buffers
+             collect
+             (with-current-buffer buffer
+               (:div
+                (:p (:b "Title: ") (title buffer))
+                (:p (:b "URL: ") (:a :href (render-url (url buffer))
+                                     (render-url (url buffer))))
+                (:p (:b "Automatically generated summary: ")
+                    (:ul
+                     (loop for summary-bullet in (analysis:summarize-text
+                                                  (document-get-paragraph-contents :limit 10000))
+                           collect (:li (str:collapse-whitespaces summary-bullet)))))
+                (:hr ""))))))
     (when delete (mapcar #'buffer-delete buffers))))
 
 (define-command delete-all-buffers (&key (confirmation-p t))

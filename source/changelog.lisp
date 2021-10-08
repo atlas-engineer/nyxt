@@ -11,20 +11,20 @@ particular revision.")
   `(setf (gethash ,version-string +changelog+)
          (spinneret:with-html-string (:div (:h2 ,version-string) ,@body))))
 
-(define-command-global changelog ()
+(define-internal-page-command changelog ()
+    (buffer "*Changelog*" 'base-mode)
   "Show the changelog."
-  (with-current-html-buffer (buffer "*Changelog*" 'base-mode)
-    (spinneret:with-html-string
-      (:style (style buffer))
-      (:h1 "Change Log")
-      (:p "Nyxt tries to use semantic versioning.")
-      (:p "Given a version number MAJOR.MINOR.PATCH, we increment:")
-      (:ul
-       (:li "MAJOR when we make incompatible API changes.")
-       (:li "MINOR when we add functionality in a backwards-compatible manner.")
-       (:li "PATCH when we make backwards-compatible bug fixes."))
-      (loop for version in (alex:hash-table-values +changelog+)
-            collect (:raw version)))))
+  (spinneret:with-html-string
+    (:style (style buffer))
+    (:h1 "Change Log")
+    (:p "Nyxt tries to use semantic versioning.")
+    (:p "Given a version number MAJOR.MINOR.PATCH, we increment:")
+    (:ul
+     (:li "MAJOR when we make incompatible API changes.")
+     (:li "MINOR when we add functionality in a backwards-compatible manner.")
+     (:li "PATCH when we make backwards-compatible bug fixes."))
+    (loop for version in (alex:hash-table-values +changelog+)
+          collect (:raw version))))
 
 (define-version "2.0.0"
   (:ul
