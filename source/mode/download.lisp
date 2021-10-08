@@ -132,39 +132,39 @@ appearance in the buffer when they are setf'd."
        :background-color theme:tertiary)))))
 
 
-(define-command list-downloads ()
+(define-internal-page-command list-downloads ()
+    (buffer "*Downloads*" 'download-mode)
   "Display a buffer listing all downloads.
 We iterate through the browser's downloads to draw every single
 download."
-  (with-current-html-buffer (buffer "*Downloads*" 'download-mode)
-    (spinneret:with-html-string
-      (:style (style buffer))
-      (:style (style (make-instance 'download-mode)))
-      (:h1 "Downloads")
-      (:hr)
-      (:div
-       (loop for download in (downloads *browser*)
-             for url = (url download)
-             for status-text = (status-text download)
-             for progress-text = (progress-text download)
-             for bytes-text = (bytes-text download)
-             for progress = (progress download)
-             for open-button = (open-button download)
-             for cancel-button = (cancel-button download)
-             do (connect download buffer)
-             collect
-                (:div :class "download"
-                      (:p :class "download-buttons"
-                          ;; TODO: Disable the buttons when download status is failed / canceled.
-                          (:raw (user-interface:object-string cancel-button))
-                          (:raw (user-interface:object-string open-button)))
-                      (:p :class "download-url" (:a :href url url))
-                      (:div :class "progress-bar-container"
-                            (:raw (user-interface:object-string progress)))
-                      (:div :class "status"
-                            (:raw (user-interface:object-string progress-text))
-                            (:raw (user-interface:object-string bytes-text))
-                            (:raw (user-interface:object-string status-text)))))))))
+  (spinneret:with-html-string
+    (:style (style buffer))
+    (:style (style (make-instance 'download-mode)))
+    (:h1 "Downloads")
+    (:hr)
+    (:div
+     (loop for download in (downloads *browser*)
+           for url = (url download)
+           for status-text = (status-text download)
+           for progress-text = (progress-text download)
+           for bytes-text = (bytes-text download)
+           for progress = (progress download)
+           for open-button = (open-button download)
+           for cancel-button = (cancel-button download)
+           do (connect download buffer)
+           collect
+           (:div :class "download"
+                 (:p :class "download-buttons"
+                     ;; TODO: Disable the buttons when download status is failed / canceled.
+                     (:raw (user-interface:object-string cancel-button))
+                     (:raw (user-interface:object-string open-button)))
+                 (:p :class "download-url" (:a :href url url))
+                 (:div :class "progress-bar-container"
+                       (:raw (user-interface:object-string progress)))
+                 (:div :class "status"
+                       (:raw (user-interface:object-string progress-text))
+                       (:raw (user-interface:object-string bytes-text))
+                       (:raw (user-interface:object-string status-text))))))))
 
 (define-command download-url ()
   "Download the page or file of the current buffer."
