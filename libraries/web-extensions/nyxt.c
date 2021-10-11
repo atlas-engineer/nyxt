@@ -24,8 +24,10 @@ inject_apis (void* extension_name, void *data, void *user_data)
         inject_browser((char*) extension_name);
         inject_lisp_api((char*) extension_name);
         inject_extevent_api((char*) extension_name);
-        if (has_permission(extension_name, "management"))
-                inject_management_api((char*) extension_name);
+        /* TODO: Other extensions depend on management API and break
+         * if it's not provided. Is there another way to provide
+         * management.getSelf to them? */
+        inject_management_api((char*) extension_name);
         inject_tabs_api((char*) extension_name);
         inject_runtime_api((char*) extension_name);
         inject_extension_api((char*) extension_name);
