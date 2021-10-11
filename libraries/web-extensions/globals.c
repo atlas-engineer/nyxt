@@ -147,26 +147,24 @@ has_permission (char* extension_name, char* permission)
 {
         if (extension_name) {
                 ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
-                JSCValue *manifest = data->manifest;
+                JSCValue *manifest = jsc_value_new_from_json(
+                        jsc_context_new(), data->manifest);
                 JSCValue *permissions = jsc_value_object_get_property(manifest, "permissions");
-                JSCValue *prop;
                 int i;
-                char *prop_name;
                 char **props = jsc_value_object_enumerate_properties(permissions);
-                for (i = 0, prop_name = *(props+i);
-                     prop_name != NULL;
-                     ++i, prop_name = *(props+i)) {
-                        if (jsc_value_is_undefined(prop = jsc_value_object_get_property_at_index(
-                                                           permissions, i)))
-                                return 0;
-                        if (!strcmp(jsc_value_to_string(prop), permission))
-                                return 1;
-                        /*TODO: Match host permissions?
-                         * Leave it to the browser side?
-                         */
-                }
+                if (props)
+                        for (i = 0; *(props+i) != NULL; ++i)
+                                if (!strcmp(jsc_value_to_string(
+                                                    jsc_value_object_get_property_at_index(
+                                                            permissions, i)),
+                                            permission))
+                                        return 1;
+                /*TODO: Match host permissions?
+                 * Leave it to the browser side?
+                 */
+                return 0;
         }
-        return 0;
+        return 1;
 }
 
 void *
