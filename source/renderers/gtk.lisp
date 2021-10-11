@@ -226,11 +226,16 @@ Such contexts are not needed for internal buffers."
     ;; Even if errors are caught with `with-protect', we must ignore the policy
     ;; decision on error, lest we load a web page in an internal buffer for
     ;; instance.
-    (handler-case
-        (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)
-      (error (c)
-        (echo-warning "decide policy error: ~a" c)
-        (webkit:webkit-policy-decision-ignore response-policy-decision)))))
+    (handler-bind ((error (lambda (c)
+                            (echo-warning "decide policy error: ~a" c)
+                            ;; TODO: Don't automatically call the restart when from the REPL?
+                            ;; (unless *run-from-repl-p*
+                            ;;   (invoke-restart 'ignore-policy-decision))
+                            (invoke-restart 'ignore-policy-decision))))
+      (restart-case (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)
+        (ignore-policy-decision ()
+          (webkit:webkit-policy-decision-ignore response-policy-decision))))))
+
 
 (defmacro connect-signal-function (object signal fn)
   "Connect SIGNAL to OBJECT with a function FN.
