@@ -129,8 +129,9 @@ Beware: the ARGLIST should have keyword arguments only."
                                        collect arg)))
            ;; TODO: Maybe create buffer here too?
            ;; This way it won't fail when called from a URL.
-           (let ((,buffer-var (find ,url (buffer-list) :key (alex:compose #'render-url #'url)
-                                                       :test #'string=)))
+           (let ((,buffer-var (or (find ,url (buffer-list) :key (alex:compose #'render-url #'url)
+                                                           :test #'string=)
+                                  (current-buffer))))
              ;; We need to ignore those to avoid warnings, as the same arglist
              ;; is used in both internal function and a command.
              (declare (ignorable ,buffer-var))

@@ -524,7 +524,7 @@ view.")
                                 (keymap:lookup-key keys keymap))))
       (declare (type quri:uri url))
       (cond
-        ((internal-buffer-p buffer)
+        ((and (internal-buffer-p buffer) (string/= "nyxt" (quri:uri-scheme url)))
          (log:debug "Load URL from internal buffer in new buffer: ~a" (render-url url))
          (make-buffer-focus :url url)
          nil)
