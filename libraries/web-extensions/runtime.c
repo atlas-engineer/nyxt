@@ -22,7 +22,7 @@ runtime_get_manifest_callback (char *extension_name)
 {
         ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
         JSCContext *context = jsc_context_get_current();
-        return jsc_value_new_from_json(context, jsc_value_to_json(data->manifest, 0));
+        return jsc_value_new_from_json(context, data->manifest);
 }
 
 static unsigned long int
