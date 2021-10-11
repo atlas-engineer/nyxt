@@ -4,8 +4,8 @@
 static unsigned long int
 lisp_eval_callback (JSCValue *object)
 {
-        /* If the URI starts with the lisp: scheme, evaluate*/
-        if (!strncmp("lisp:", webkit_web_page_get_uri(PAGE), 5)) {
+        /* If the URI starts with the nyxt: scheme, evaluate*/
+        if (!strncmp("nyxt:", webkit_web_page_get_uri(PAGE), 5)) {
                 char *json = jsc_value_to_json(object, 0);
                 GVariant *variant = g_variant_new("ms", json);
                 WebKitUserMessage *message = webkit_user_message_new("lisp.eval", variant);
