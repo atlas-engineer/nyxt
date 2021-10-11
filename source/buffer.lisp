@@ -1141,11 +1141,9 @@ When BUFFER is omitted, it defaults to the current one."
 URL is then transformed by BUFFER's `buffer-load-hook'."
   (let* ((url (url url-designator))
          (new-url
-           (handler-case
-               (hooks:run-hook (slot-value buffer 'buffer-load-hook) url)
-             (error (c)
-               (log:error "In `buffer-load-hook': ~a" c)
-               nil))))
+          (ignore-errors
+           (handler-bind ((error (lambda (c) (log:error "In `buffer-load-hook': ~a" c))))
+             (hooks:run-hook (slot-value buffer 'buffer-load-hook) url)))))
     (when new-url
       (check-type new-url quri:uri)
       (setf url new-url)
