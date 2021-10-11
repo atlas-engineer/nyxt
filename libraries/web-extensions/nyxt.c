@@ -24,20 +24,28 @@ inject_apis (void* extension_name, void *data, void *user_data)
         inject_browser((char*) extension_name);
         inject_lisp_api((char*) extension_name);
         inject_extevent_api((char*) extension_name);
-        inject_management_api((char*) extension_name);
+        if (has_permission(extension_name, "management"))
+                inject_management_api((char*) extension_name);
         inject_tabs_api((char*) extension_name);
         inject_runtime_api((char*) extension_name);
         inject_extension_api((char*) extension_name);
-        inject_storage_api((char *) extension_name);
-        inject_alarms_api((char *) extension_name);
-        inject_bookmarks_api((char *) extension_name);
+        if (has_permission(extension_name, "storage"))
+                inject_storage_api((char *) extension_name);
+        if (has_permission(extension_name, "alarms"))
+                inject_alarms_api((char *) extension_name);
+        if (has_permission(extension_name, "bookmarks"))
+                inject_bookmarks_api((char *) extension_name);
         inject_browser_action_api((char *) extension_name);
         inject_commands_api((char *) extension_name);
-        inject_history_api((char *) extension_name);
-        inject_notifications_api((char *) extension_name);
+        if (has_permission(extension_name, "history"))
+                inject_history_api((char *) extension_name);
+        if (has_permission(extension_name, "notifications"))
+                inject_notifications_api((char *) extension_name);
         inject_permissions_api((char *) extension_name);
-        inject_web_navigation_api((char *) extension_name);
-        inject_web_request_api((char *) extension_name);
+        if (has_permission(extension_name, "webNavigation"))
+                inject_web_navigation_api((char *) extension_name);
+        if (has_permission(extension_name, "webRequest"))
+                inject_web_request_api((char *) extension_name);
 }
 
 static void

@@ -93,6 +93,8 @@ JSCContext *get_extension_context (char* extension_name);
 
 char *get_extension_id (char* extension_name);
 
+int has_permission (char* extension_name, char* permission);
+
 void *empty_constructor_callback (void);
 
 void message_reply_and_save_callback (GObject *web_page, GAsyncResult *res, void *user_data);
