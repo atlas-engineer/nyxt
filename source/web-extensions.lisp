@@ -303,6 +303,7 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
           (extension-directory ,directory)
           (homepage-url ,(gethash "homepage_url" json))
           (browser-action ,(make-browser-action json))
+          (permissions ,(gethash "permissions" json))
           (content-scripts (list ,@(mapcar (lambda (content-script-hash)
                                              (apply #'make-content-script
                                                     (alex:hash-table-plist content-script-hash)))
