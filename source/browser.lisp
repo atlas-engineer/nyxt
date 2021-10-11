@@ -257,10 +257,9 @@ prevents otherwise."))
   (unless (find-if (sera:eqs 'messages-appender) (log4cl:all-appenders)
                    :key #'sera:class-name-of)
     (log4cl:add-appender log4cl:*root-logger* (make-instance 'messages-appender)))
-  (handler-case
-      (hooks:run-hook *after-init-hook*) ; TODO: Run outside the main loop?
-    (error (c)
-      (log:error "In *after-init-hook*: ~a" c)))
+  (ignore-errors
+   (handler-bind ((error (lambda (c) (log:error "In *after-init-hook*: ~a" c))))
+     (hooks:run-hook *after-init-hook*))) ; TODO: Run outside the main loop?
   ;; `startup' must be run _after_ this function returns;
   ;; `ffi-within-renderer-thread' runs its body on the renderer thread when it's
   ;; idle, so it should do the job.  It's not enough since the
