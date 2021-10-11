@@ -6,6 +6,10 @@
 (defclass messages-appender (log4cl-impl:appender) ())
 
 (defmethod log4cl-impl:appender-do-append ((appender messages-appender) logger level log-func)
+  (when (<= level (if (getf *options* :verbose)
+                      log4cl:+log-level-warn+
+                      log4cl:+log-level-error+))
+    (uiop:print-backtrace))
   (when *browser*
     (push
      ;; TODO: Include time in *Messages* entries.
