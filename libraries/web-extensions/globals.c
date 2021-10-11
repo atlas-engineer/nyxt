@@ -33,7 +33,8 @@ extensions_data_add_from_json(const char *json)
                         ExtensionData *extension;
                         const char *name = *property;
                         JSCValue *data = jsc_value_object_get_property(object, *property);
-                        JSCValue *manifest = jsc_value_object_get_property_at_index(data, 1);
+                        char *manifest = jsc_value_to_string(
+                                jsc_value_object_get_property_at_index(data, 1));
                         JSCValue *files = jsc_value_object_get_property_at_index(data, 3);
                         char *id = jsc_value_to_string(
                                 jsc_value_object_get_property_at_index(data, 0));
