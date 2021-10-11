@@ -21,19 +21,23 @@ condition."
          (handler-case (progn ,@body)
            (nyxt-prompt-buffer-canceled ()
              (log:debug "Prompt buffer interrupted")))
-         (handler-case (progn ,@body)
-           (error (,c)
-             (declare (ignorable ,c))
-             ,(let* ((condition-index (position :condition args))
-                     (new-args (if condition-index
-                                   (append (subseq args 0 condition-index)
-                                           `(,c)
-                                           (subseq args (1+ condition-index)))
-                                   args)))
-                `(handler-case
-                     (echo-warning ,format-string ,@new-args)
-                   (t ()
-                     (log:error ,format-string ,@new-args)))))))))
+         (ignore-errors
+          (handler-bind
+              ((error
+                 (lambda (,c)
+                   (declare (ignorable ,c))
+                   ,(let* ((condition-index (position :condition args))
+                           (new-args (if condition-index
+                                         (append (subseq args 0 condition-index)
+                                                 `(,c)
+                                                 (subseq args (1+ condition-index)))
+                                         args)))
+                      `(handler-bind ((t (lambda (c)
+                                           (declare (ignore c))
+                                           (log:error ,format-string ,@new-args)
+                                           (invoke-restart 'continue))))
+                         (echo-warning ,format-string ,@new-args))))))
+            ,@body)))))
 
 (defun make-channel (&optional size)
   "Return a channel of capacity SIZE.
