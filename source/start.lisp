@@ -255,19 +255,22 @@ Return the short error message and the full error message as second value."
              nil))
       (if *run-from-repl-p*
           (unsafe-load)
-          (handler-case
-              (unsafe-load)
-            (error (c)
-              (let* ((error-message "Could not load the init file")
-                     (type-error-message (str:concat error-message
-                                                     " because of a type error"))
-                     (message (if (subtypep (type-of c) 'type-error)
-                                  type-error-message
-                                  error-message))
-                     (full-message (format nil "~a: ~a" message c)))
-                (if *browser*
-                    (error-in-new-window "*Init file errors*" full-message)
-                    (values message full-message)))))))))
+          (catch 'lisp-file-error
+           (handler-bind ((error (lambda (c)
+                                   (let* ((error-message "Could not load the init file")
+                                          (type-error-message (str:concat error-message
+                                                                          " because of a type error"))
+                                          (message (if (subtypep (type-of c) 'type-error)
+                                                       type-error-message
+                                                       error-message))
+                                          (backtrace (with-output-to-string (stream)
+                                                       (uiop:print-backtrace :stream stream :condition c)))
+                                          (full-message (format nil "~a: ~a~%~%~%~a" message c backtrace)))
+                                     (throw 'lisp-file-error
+                                       (if *browser*
+                                           (error-in-new-window "*Init file errors*" full-message)
+                                           (values message full-message)))))))
+             (unsafe-load)))))))
 
 (define-command load-file ()
   "Load the prompted Lisp file."
