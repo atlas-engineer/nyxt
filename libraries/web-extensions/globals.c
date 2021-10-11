@@ -80,6 +80,94 @@ get_extension_id (char* extension_name)
         return data->extension_id;
 }
 
+/*** Host permission checking.
+ *
+ * Half done, abandoned in favor of browser-side host permission
+ * checking. May be useful some time later, though.
+ */
+
+/* int */
+/* host_permission_p (char *string) */
+/* { */
+/*         /\* This regexp is sufficient because the domain of host */
+/*          * permission checking is extremely restricted by the domain */
+/*          * of permissions checking. All the other match pattern */
+/*          * related things are managed by WebKit for us (are they?). */
+/*          *\/ */
+/*         return g_regex_match_simple(".*://.*", string, 0, 0); */
+/* } */
+
+/* int */
+/* match_host (char *hostname, char *uri_hostname) */
+/* { */
+/*         if (!strcmp(hostname, "*")) */
+/*                 return 1; */
+/*         if (*hostname == '*' && *(hostname+1) == '.') */
+/*                 for */
+/*         for (i = 0, cu = *uri_hostname, cmp = mp_hostname;; i++, cu++, cmp++) */
+/*                 if (cmp == '*') */
+/*                         for() */
+/* } */
+
+/* int */
+/* match_pattern_match (char *match_pattern, char *uri) */
+/* { */
+/*         char *uri_scheme = g_uri_parse_scheme(uri); */
+/*         char **uri_hostname = malloc(sizeof(char) * 1000); */
+/*         char *uri_path = g_filename_from_uri(uri, hostname, NULL); */
+/*         char **mp_parts = g_strsplit(host_permission, "://", 2); */
+/*         /\* Testing scheme. It can be either a full scheme or a star. */
+/*          * */
+/*          * If both strcmp-s return non-zero, then it's neither the */
+/*          * same scheme as the uri, nor the star. */
+/*          *\/ */
+/*         if(strcmp(*mp_parts, "*") && */
+/*            strcmp(*mp_parts, uri_scheme)) */
+/*                 return 0; */
+
+/*         /\* Testing hostname. */
+/*          * */
+/*          * Hostname is anything before '?' or '/'. If the string */
+/*          * starts with '/', then there's no hostname. */
+/*          *\/ */
+
+/*         char **mp_remains = g_strsplit(*(mp_parts+1), "/", 2); */
+/*         int has_hostname = !(**(mp_parts+1) == '/'); */
+/*         char *mp_hostname = has_hostname ? *mp_remains : ""; */
+/*         char *mp_path = *(mp_remains+(has_hostname?1:0)); */
+/*         char *cu, *cmp; */
+/*         int i; */
+/*         if(!match_host(mp_hostname, uri_hostname)) */
+/*                 return 0; */
+/* } */
+
+int
+has_permission (char* extension_name, char* permission)
+{
+        if (extension_name) {
+                ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, extension_name);
+                JSCValue *manifest = data->manifest;
+                JSCValue *permissions = jsc_value_object_get_property(manifest, "permissions");
+                JSCValue *prop;
+                int i;
+                char *prop_name;
+                char **props = jsc_value_object_enumerate_properties(permissions);
+                for (i = 0, prop_name = *(props+i);
+                     prop_name != NULL;
+                     ++i, prop_name = *(props+i)) {
+                        if (jsc_value_is_undefined(prop = jsc_value_object_get_property_at_index(
+                                                           permissions, i)))
+                                return 0;
+                        if (!strcmp(jsc_value_to_string(prop), permission))
+                                return 1;
+                        /*TODO: Match host permissions?
+                         * Leave it to the browser side?
+                         */
+                }
+        }
+        return 0;
+}
+
 void *
 empty_constructor_callback (void)
 {
