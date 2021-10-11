@@ -40,16 +40,16 @@ inject_browser (char* extension_name)
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "browser", -1), "checkResult",
                 browserCheckResult);
-        BIND_FN(context, "browser", "drain", "function drain (index, success_fn, default, count) {\
+        BIND_FN(context, "browser", "drain", "function drain (index, success_fn, default_val, count, ...args) {\
     var is_result = browser.checkResult(index);                         \
     if (is_result) {                                                    \
         success_fn(browser.getResult(index));                           \
     } else {                                                            \
         if (count <= 0)                                                 \
-            success_fn(default);                                    \
+            success_fn(default_val);                                    \
         else                                                            \
             setTimeout(() =>                                            \
-                drain(index, success_fn, default_val, count - 10),      \
+                drain(index, success_fn, default_val, count - 10, ...args), \
                 10);                                                    \
     }                                                                   \
 }                                                                       \
