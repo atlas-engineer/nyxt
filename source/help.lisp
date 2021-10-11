@@ -506,7 +506,7 @@ evaluate in order."
     (spinneret:with-html-string
      (:style (style buffer))
      (:h1 "Error occured:")
-     (:p text))))
+     (:pre text))))
 
 (defun error-in-new-window (title text)
   (let* ((window (window-make *browser*))
