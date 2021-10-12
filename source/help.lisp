@@ -250,18 +250,18 @@ A command is a special kind of function that can be called with
       (when (mopu:direct-superclasses class)
         (:h2 "Direct superclasses:")
         (:ul (loop for class-name in (mapcar #'class-name (mopu:direct-superclasses class))
-                   collect (:li (:a :href (about-url 'describe-class :class class-name) class-name)))))
+                   collect (:li (:a :href (nyxt-url 'describe-class :class class-name) class-name)))))
       (when (mopu:direct-subclasses class)
         (:h2 "Direct subclasses:")
         (:ul (loop for class-name in (mapcar #'class-name (mopu:direct-subclasses class))
-                   collect (:li (:a :href (about-url 'describe-class :class class-name) class-name)))))
+                   collect (:li (:a :href (nyxt-url 'describe-class :class class-name) class-name)))))
       (:h2 "Slots:")
       (:raw slot-descs)
       (:h2 "Methods:")
       (:ul (loop for method in (remove-if
                                 #'listp (mapcar #'mopu:generic-function-name
                                                 (mopu:generic-functions class)))
-                 collect (:li (:a :href (about-url 'describe-function :function method) method)))))))
+                 collect (:li (:a :href (nyxt-url 'describe-function :function method) method)))))))
 
 (define-internal-page-command nyxt/prompt-buffer-mode::describe-prompt-buffer
     (&key (prompt-buffer (current-prompt-buffer)))
@@ -278,7 +278,7 @@ A command is a special kind of function that can be called with
       (:ul
        (loop for mode in modes
              collect (:li (:a :href
-                              (about-url
+                              (nyxt-url
                                'describe-class
                                :class (sera:class-name-of mode))
                               (string (sera:class-name-of mode))))))
@@ -286,7 +286,7 @@ A command is a special kind of function that can be called with
       (:ul
        (loop for source in sources
              collect (:li (:a :href
-                              (about-url
+                              (nyxt-url
                                'describe-class
                                :class (sera:class-name-of source))
                               (string (sera:class-name-of source)))))))))
@@ -565,19 +565,19 @@ The version number is stored in the clipboard."
     (:h1 "Welcome to Nyxt :-)")
     (:p (:a :href "https://nyxt.atlas.engineer" "https://nyxt.atlas.engineer"))
     (:h2 "Quick configuration")
-    (:p (:a :class "button" :href (about-url 'common-settings) "Common settings")
+    (:p (:a :class "button" :href (nyxt-url 'common-settings) "Common settings")
         " Switch between Emacs/vi/CUA key bindings, set home page URL, and zoom level.")
     (:h2 "Documentation")
     (:table :id "documentation"
-            (:tr (:td (:a :class "button" :href (about-url 'describe-bindings) "List bindings"))
+            (:tr (:td (:a :class "button" :href (nyxt-url 'describe-bindings) "List bindings"))
                  (:td "List all bindings for the current buffer."))
-            (:tr (:td (:a :class "button" :href (about-url 'nyxt::edit-user-file-with-external-editor) "Edit user files"))
+            (:tr (:td (:a :class "button" :href (nyxt-url 'nyxt::edit-user-file-with-external-editor) "Edit user files"))
                  (:td "Edit user configuration and other files in external text editor."))
-            (:tr (:td (:a :class "button" :href (about-url 'tutorial) "Tutorial"))
+            (:tr (:td (:a :class "button" :href (nyxt-url 'tutorial) "Tutorial"))
                  (:td "An introduction to Nyxt core concepts."))
-            (:tr (:td (:a :class "button" :href (about-url 'manual) "Manual"))
+            (:tr (:td (:a :class "button" :href (nyxt-url 'manual) "Manual"))
                  (:td "Full documentation about Nyxt, how it works and how to configure it."))
-            (:tr (:td (:a :class "button" :href (about-url 'changelog) "Change Log"))
+            (:tr (:td (:a :class "button" :href (nyxt-url 'changelog) "Change Log"))
                  (:td "Information about changes between Nyxt versions.")))))
 
 (define-internal-page-command manual ()

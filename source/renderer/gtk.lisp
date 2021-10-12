@@ -710,9 +710,10 @@ See `gtk-browser's `modifier-translator' slot."
        (lambda (request)
          (with-protect ("Error while processing the about URL: ~a" :condition)
            (sera:and-let* ((url (quri:uri (webkit:webkit-uri-scheme-request-get-uri request)))
-                           (function-name (parse-about-url url))
-                           (page-generating-function (gethash function-name *about-url-commands*)))
-             (let ((result (multiple-value-list (apply page-generating-function (nth-value 1 (parse-about-url url))))))
+                           (function-name (parse-nyxt-url url))
+                           (page-generating-function (gethash function-name *nyxt-url-commands*)))
+                          (let ((result (multiple-value-list (apply page-generating-function
+                                                                    (nth-value 1 (parse-nyxt-url url))))))
                (cond
                  ((and (alex:length= result 2)
                        (arrayp (first result))
