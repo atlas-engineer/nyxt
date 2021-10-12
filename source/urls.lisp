@@ -231,6 +231,7 @@ Example:
 (export-always 'lisp-url)
 (defun lisp-url (&rest args)
   (declare (ignore args))
+  (echo-warning "Lisp URLs are no longer doing anything")
   "")
 
 (export-always 'parse-about-url)
