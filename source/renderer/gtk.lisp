@@ -1148,6 +1148,7 @@ See `gtk-browser's `modifier-translator' slot."
 (defvar %message-channels% (make-hash-table)
   "A hash-table mapping message pointer addresses to the channels they return values from.")
 
+(-> trigger-message (t buffer nyxt/web-extensions:extension webkit:webkit-user-message) string)
 (defun trigger-message (message buffer extension original-message)
   (let ((result-channel (make-channel 1)))
     (run-thread
@@ -1189,6 +1190,7 @@ See `gtk-browser's `modifier-translator' slot."
 (defvar %style-sheets% (make-hash-table :test #'equal)
   "WebKitUserStyleSheet-s indexed by the JSON describing them.")
 
+(-> tabs-insert-css (buffer string) string)
 (defun tabs-insert-css (buffer message-params)
   (let* ((json (decode-json message-params))
          (css-data (gethash "css" json))
@@ -1205,20 +1207,23 @@ See `gtk-browser's `modifier-translator' slot."
                                (current-buffer)
                                (or (find (format nil "~d" tab-id) (buffer-list) :key #'id)
                                    (current-buffer))))
-         (style-sheet (ffi-buffer-add-user-style
-                       buffer-to-insert
-                       (if file
-                           (uiop:read-file-string (uiop:merge-pathnames*
-                                                   file (nyxt/web-extensions:extension-directory
-                                                         extension)))
-                           code)
-                       :inject-as-author-p (not (and level (stringp level) (string= level "user")))
-                       :all-frames-p (gethash "allFrames" css-data)
-                       :world-name (name extension))))
-    (setf (gethash message-params %style-sheets%)
-          style-sheet)
+         (style-sheet (when (nyxt/web-extensions:tab-apis-enabled-p extension buffer-to-insert)
+                        (ffi-buffer-add-user-style
+                         buffer-to-insert
+                         (if file
+                             (uiop:read-file-string (uiop:merge-pathnames*
+                                                     file (nyxt/web-extensions:extension-directory
+                                                           extension)))
+                             code)
+                         :inject-as-author-p (not (and level (stringp level) (string= level "user")))
+                         :all-frames-p (gethash "allFrames" css-data)
+                         :world-name (name extension)))))
+    (when style-sheet
+      (setf (gethash message-params %style-sheets%)
+            style-sheet))
     ""))
 
+(-> tabs-remove-css (string) string)
 (defun tabs-remove-css (message-params)
   (let* ((json (decode-json message-params))
          (tab-id (gethash "tabId" json))
@@ -1231,6 +1236,7 @@ See `gtk-browser's `modifier-translator' slot."
     (remhash message-params %style-sheets%)
     ""))
 
+(-> tabs-execute-script (buffer string) string)
 (defun tabs-execute-script (buffer message-params)
   (let* ((json (decode-json message-params))
          (script-data (gethash "script" json))
@@ -1246,18 +1252,20 @@ See `gtk-browser's `modifier-translator' slot."
                                        (modes buffer))
                           :key #'id
                           :test #'string-equal)))
-    (ffi-buffer-add-user-script
-     buffer-to-insert (if file
-                          (uiop:read-file-string
-                           (nyxt/web-extensions:merge-extension-path extension file))
-                          code)
-     :run-now-p t
-     :at-document-start-p (and (gethash "runAt" script-data)
-                               (string= (gethash "runAt" script-data) "document_start"))
-     :all-frames-p (gethash "allFrames" script-data)
-     :world-name (name extension))
+    (when (nyxt/web-extensions:tab-apis-enabled-p extension buffer-to-insert)
+      (ffi-buffer-add-user-script
+       buffer-to-insert (if file
+                            (uiop:read-file-string
+                             (nyxt/web-extensions:merge-extension-path extension file))
+                            code)
+       :run-now-p t
+       :at-document-start-p (and (gethash "runAt" script-data)
+                                 (string= (gethash "runAt" script-data) "document_start"))
+       :all-frames-p (gethash "allFrames" script-data)
+       :world-name (name extension)))
     ""))
 
+(-> storage-local-get (buffer string) string)
 (defun storage-local-get (buffer message-params)
   (let* ((json (decode-json message-params))
          (extension (find (gethash "extensionId" json)
@@ -1283,6 +1291,7 @@ See `gtk-browser's `modifier-translator' slot."
              (string (or (gethash keys data)
                          (vector)))))))))
 
+(-> storage-local-set (buffer string) string)
 (defun storage-local-set (buffer message-params)
   (let* ((json (decode-json message-params))
          (extension (find (gethash "extensionId" json)
@@ -1296,9 +1305,10 @@ See `gtk-browser's `modifier-translator' slot."
       (unless (uiop:emptyp keys)
         (dolist (key-value keys)
           (setf (gethash (first key-value) data)
-                (rest key-value))))
-      "")))
+                (rest key-value))))))
+  "")
 
+(-> storage-local-remove (buffer string) string)
 (defun storage-local-remove (buffer message-params)
   (let* ((json (decode-json message-params))
          (extension (find (gethash "extensionId" json)
@@ -1311,9 +1321,10 @@ See `gtk-browser's `modifier-translator' slot."
                        :default (make-hash-table))
       (unless (uiop:emptyp keys)
         (dolist (key keys)
-          (remhash key data)))
-      "")))
+          (remhash key data)))))
+  "")
 
+(-> storage-local-clear (buffer string) string)
 (defun storage-local-clear (buffer message-params)
   (let* ((extension (find message-params
                           (sera:filter #'nyxt/web-extensions::extension-p
@@ -1321,8 +1332,8 @@ See `gtk-browser's `modifier-translator' slot."
                           :key #'id)))
     (with-data-access (data (nyxt/web-extensions:storage-path extension)
                        :default (make-hash-table))
-      (clrhash data)
-      "")))
+      (clrhash data)))
+  "")
 
 (defun g-variant-get-maybe-string (variant)
   (cond
@@ -1335,6 +1346,7 @@ See `gtk-browser's `modifier-translator' slot."
          (glib:g-variant-get-string maybe))))
     (t (glib:g-variant-get-string variant))))
 
+(-> process-user-message (buffer webkit:webkit-user-message) t)
 (defun process-user-message (buffer message)
   (let* ((message-name (webkit:webkit-user-message-get-name message))
          (message-params (g-variant-get-maybe-string
@@ -1447,6 +1459,7 @@ See `gtk-browser's `modifier-translator' slot."
          (wrap-in-channel
           (tabs-execute-script buffer message-params)))))))
 
+(-> reply-user-message (buffer webkit:webkit-user-message) t)
 (defun reply-user-message (buffer message)
   (declare (ignore buffer))
   (loop until (gethash (cffi:pointer-address (g:pointer message))
