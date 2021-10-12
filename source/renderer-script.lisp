@@ -103,20 +103,28 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
                       (|insertAdjacentHTML| "afterbegin"
                                             (ps:lisp style)))))))
 
-(defvar *about-url-commands* (make-hash-table)
-  "A map from allowed about: URLs/commands as symbols to the functions that
-  generate code of these commands.")
+(defvar *nyxt-url-commands* (make-hash-table)
+  "A map from allowed nyxt: URLs symbols to the functions that generate code of
+  the pages related to these commands.")
 
 (defmacro define-internal-page-command (name (&rest arglist)
                                         (buffer-var title mode)
                                         &body body)
-  "Defines a command called NAME creating an internal interface page.
-Creates a buffer in case there's no buffer with TITLE and MODE.
+  "Define a command called NAME creating an internal interface page.
 
-Beware: the ARGLIST should have keyword arguments only."
+Should end with a form returning page HTML as a string.
+
+Create a buffer (and bind it to BUFFER-VAR) in case there's no buffer with TITLE
+and MODE. If there is one, bind BUFFER-VAR to it. In any way, BUFFER-VAR is a
+always a buffer that the generated code is loaded into.
+
+ARGLIST is arguments for the command and underlying page-generating
+function. Any argument from it is safe to use in the body of this macro.
+Beware: the ARGLIST should have keyword arguments only because it's mapped to
+query parameters."
   (let* ((internal-name (gensym (symbol-name name)))
          (args (alex:mappend #'first (nth-value 3 (alex:parse-ordinary-lambda-list arglist))))
-         (url (apply #'about-url name args)))
+         (url (apply #'nyxt-url name args)))
     (multiple-value-bind (body declarations documentation)
         (alex:parse-body body :documentation t)
       `(progn
@@ -136,7 +144,7 @@ Beware: the ARGLIST should have keyword arguments only."
              ;; is used in both internal function and a command.
              (declare (ignorable ,buffer-var))
              ,@body))
-         (setf (gethash (quote ,name) *about-url-commands*)
+         (setf (gethash (quote ,name) *nyxt-url-commands*)
                (function ,internal-name))
          (define-command-global ,name (,@arglist)
            ,@(when documentation (list documentation))
@@ -149,7 +157,7 @@ Beware: the ARGLIST should have keyword arguments only."
                                             :buffer (make-internal-buffer
                                                      :title ,title
                                                      :url (quri:uri
-                                                           (about-url
+                                                           (nyxt-url
                                                             (quote ,name)
                                                             ,@args)))))))
              (set-current-buffer ,buffer-var)

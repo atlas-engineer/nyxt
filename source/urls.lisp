@@ -189,23 +189,23 @@ Authority is compared case-insensitively (RFC 3986)."
                       (lambda (url1 url2) (equalp (quri:uri-authority url1)
                                                   (quri:uri-authority url2)))))))
 
-(export-always 'about-url)
-(-> about-url (t &rest t &key &allow-other-keys) string)
-(defun about-url (function-name &rest args &key &allow-other-keys)
-  "Generate an about: URL from the given FUNCTION-NAME applied to ARGS This is
+(export-always 'nyxt-url)
+(-> nyxt-url (t &rest t &key &allow-other-keys) string)
+(defun nyxt-url (function-name &rest args &key &allow-other-keys)
+  "Generate an nyxt: URL from the given FUNCTION-NAME applied to ARGS This is
 useful for encoding functionality into internal-buffers.
 
-ARGS is an arbitrary keyword arguments (!) list that will be translated to
-underscored URL parameters.
+ARGS is an arbitrary keyword (!) arguments list that will be translated to
+URL parameters.
 
 The resulting URL should be perfectly parseable back to the initial form with
-`parse-about-url'.
+`parse-nyxt-url'.
 
 Example:
-\(about-url 'nyxt:describe-command :value 'nyxt:describe-value)
+\(nyxt-url 'nyxt:describe-command :value 'nyxt:describe-value)
 => \"about:describe-command?value=NYXT%3ADESCRIBE-VALUE\"
 
-\(parse-about-url (about-url 'nyxt:describe-value :value ''nyxt:*browser*))
+\(parse-nyxt-url (nyxt-url 'nyxt:describe-value :value ''nyxt:*browser*))
 => NYXT:DESCRIBE-VALUE
 => (:VALUE 'NYXT:*BROWSER*)"
   (flet ((param-name (symbol)
@@ -218,7 +218,7 @@ Example:
                         (symbol-name symbol))))))
     (let ((params (quri:url-encode-params
                    (mapcar (lambda (pair)
-                             (cons (str:downcase (symbol-name (first pair)))
+                             (cons (param-name (first pair))
                                    ;; This is to safely parse the args afterwards
                                    (prin1-to-string (rest pair))))
                            (alexandria:plist-alist args)))))
@@ -234,13 +234,13 @@ Example:
   (echo-warning "Lisp URLs are no longer doing anything")
   "")
 
-(export-always 'parse-about-url)
-(-> parse-about-url ((or string quri:uri)) (values &optional symbol list))
-(defun parse-about-url (url)
+(export-always 'parse-nyxt-url)
+(-> parse-nyxt-url ((or string quri:uri)) (values symbol list &optional))
+(defun parse-nyxt-url (url)
   "Return (1) the name of the function and (2) the arguments to it, parsed from about: URL.
 
-Errors if some of the params are not constants. Because of this,
-`parse-about-url' can be repeatedly called on the same about: URL, with the
+Errors if some of the params are not constants. Thanks to this,
+`parse-nyxt-url' can be repeatedly called on the same about: URL, with the
 guarantee of the same result."
   (let* ((url (url url))
          (path (str:split "/" (quri:uri-path url)))
@@ -248,15 +248,18 @@ guarantee of the same result."
                       "nyxt"
                       (first path)))
          (symbol (or (second path) (first path)))
-         (params (quri:uri-query-params url)))
-    (values (intern (str:upcase symbol) (intern (str:upcase package) :keyword))
-            (alex:mappend (lambda (pair)
-                            (let ((key (intern (str:upcase (first pair)) :keyword))
-                                  (value (read-from-string (rest pair))))
-                              (if (constantp value)
-                                  (list key value)
-                                  (error "A non-constant value passed in URL params: ~a" value))))
-                          params))))
+         (params (quri:uri-query-params url))
+         (function (intern (str:upcase symbol) (intern (str:upcase package) :keyword))))
+    (if (gethash function *nyxt-url-commands*)
+        (values function
+                (alex:mappend (lambda (pair)
+                                (let ((key (intern (str:upcase (first pair)) :keyword))
+                                      (value (read-from-string (rest pair))))
+                                  (if (constantp value)
+                                      (list key value)
+                                      (error "A non-constant value passed in URL params: ~a" value))))
+                              params))
+        (error "There's no nyxt:~a page defined" symbol))))
 
 (-> path= (quri:uri quri:uri) boolean)
 (defun path= (url1 url2)

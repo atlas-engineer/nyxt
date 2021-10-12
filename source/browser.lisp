@@ -78,7 +78,7 @@ Most recent messages are first.")
     (make-ring)
     :documentation "The default history of all prompt buffer entries.
 This history is used if no history is specified for a given prompt buffer.")
-   (default-new-buffer-url (quri:uri (about-url 'help))
+   (default-new-buffer-url (quri:uri (nyxt-url 'help))
                            :type url-designator
                            :documentation "The URL set to a new blank buffer opened by Nyxt.")
    (set-url-history
