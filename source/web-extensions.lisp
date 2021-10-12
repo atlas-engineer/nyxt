@@ -30,13 +30,13 @@ A list of objects. Does not necessarily have the same order as `files' of the sc
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(defmethod remove-content-script ((buffer buffer) (extension extension) (script content-script))
+(defmethod remove-content-script ((buffer buffer) extension (script content-script))
   (dolist (s (user-scripts script))
     (ffi-buffer-remove-user-script buffer s))
   (dolist (s (user-styles script))
     (ffi-buffer-remove-user-style buffer s)))
 
-(defmethod inject-content-script ((buffer buffer) (extension extension) (script content-script))
+(defmethod inject-content-script ((buffer buffer) extension (script content-script))
   "Inject scripts/style-sheets of a SCRIPT into where they belong."
   (remove-content-script buffer extension script)
   (dolist (file (files script))
