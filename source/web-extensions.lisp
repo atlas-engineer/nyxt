@@ -230,7 +230,30 @@ Value is the loadable URL of that file.")
 
 (export-always 'has-permission-p)
 (defmethod has-permission-p ((extension extension) (permission string))
-  (str:s-member permission (permissions extension)))
+  (str:s-member (permissions extension) permission))
+
+(export-always 'host-permission-holds-p)
+(defmethod host-permission-holds-p ((extension extension) (buffer buffer))
+  (flet ((match-pattern->regexp (match-pattern)
+           (str:replace-using '("*." "*"
+                                "*" ".*"
+                                "?" ".?")
+                              match-pattern)))
+    (dolist (permission (permissions extension))
+      (alex:when-let* ((match-pattern-p (or (search "*" permission)
+                                            (search "?" permission)
+                                            (valid-url-p permission)))
+                       (matches-p (ppcre:all-matches (match-pattern->regexp permission)
+                                                     (render-url (url buffer)))))
+                      (return-from host-permission-holds-p t)))))
+
+(export-always 'tab-apis-enabled-p)
+(defmethod tab-apis-enabled-p ((extension extension) (buffer buffer))
+  (or (has-permission-p extension "<all_urls>")
+      (has-permission-p extension "tabs")
+      (and (has-permission-p extension "activeTab")
+           (eq (current-buffer) buffer))
+      (host-permission-holds-p extension buffer)))
 
 (export-always 'merge-extension-path)
 (defmethod merge-extension-path ((extension extension) path)
