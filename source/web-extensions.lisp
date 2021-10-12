@@ -12,24 +12,32 @@
 
 (define-class content-script ()
   ((match-patterns (error "Match pattern is required.")
-                   :type list)
+                   :type list
+                   :documentation "The match-pattern for URLs the script should run on.
+Not a WebExtensions match pattern, but a renderer-friendly one.")
    (files nil
-          :type list)
+          :type list
+          :documentation "The .js or .css files of the script as a list.")
    (user-styles nil
-                :type list)
+                :type list
+                :documentation "The renderer-friendly representation of the CSS style sheets.
+A list of objects. Does not necessarily have the same order as `files' of the script.")
    (user-scripts nil
-                 :type list))
+                 :type list
+                 :documentation "The renderer-friendly representation of the JS scripts.
+A list of objects. Does not necessarily have the same order as `files' of the script."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(defmethod remove-content-script (buffer extension (script content-script))
+(defmethod remove-content-script ((buffer buffer) (extension extension) (script content-script))
   (dolist (s (user-scripts script))
     (ffi-buffer-remove-user-script buffer s))
   (dolist (s (user-styles script))
     (ffi-buffer-remove-user-style buffer s)))
 
-(defmethod inject-content-script (buffer extension (script content-script))
+(defmethod inject-content-script ((buffer buffer) (extension extension) (script content-script))
+  "Inject scripts/style-sheets of a SCRIPT into where they belong."
   (remove-content-script buffer extension script)
   (dolist (file (files script))
     (if (equal (pathname-type file) "css")
@@ -51,6 +59,10 @@
          (user-scripts script)))))
 
 (defun make-content-script (&key (matches (error "Matches key is mandatory.")) js css)
+  "Create a Lisp-friendly content script representation our of WebExt keys.
+
+MATCHES, JS, and CSS are all keys of the \"content_scripts\" manifest.json keys:
+https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts"
   (let ((sanitize-mozilla-regex (alex:curry #'str:replace-using '("*." "*"
                                                                   "?" "*"
                                                                   "<all_urls>" "*://*/*"))))
@@ -61,6 +73,10 @@
 
 
 (defun make-data-url (file &optional mime-type)
+  "Create a data: URL with contents taken from FILE.
+Can have:
+- plain text contents (for text/* MIME-TYPE).
+- base64 encoded contents (for everything else)."
   (let* ((type (or mime-type (mimes:mime file)))
          (binary-p (not (str:starts-with-p "text" type))))
     (format nil "data:~a~@[;base64~*~],~a"
@@ -70,6 +86,9 @@
                               (quri:url-encode (uiop:read-file-string file))))))
 
 (defun default-browser-action-icon (json optimal-height)
+  "Find the best browser action icon using OPTIMAL-HEIGHT of `status-buffer'.
+
+JSON is the parsed extension manifest."
   (sera:and-let* ((browser-action (gethash "browser_action" json))
                   (default-icon (gethash "default_icon" browser-action)))
     (if (stringp default-icon)
@@ -84,6 +103,10 @@
                            :key (alex:compose #'parse-integer #'symbol-name #'first)))))))
 
 (defun encode-browser-action-icon (json extension-directory)
+  "Return the proper <img> HTML with the embedded browser action icon.
+
+There's no way to pass local resources into web view, that's why we're
+hacking into it with data: URLs and encode icons into base64 there."
   (let* ((status-buffer-height (nyxt:height (status-buffer (current-window))))
          (padded-height (- status-buffer-height 10))
          (best-icon
@@ -95,6 +118,10 @@ height=~a/>"
             padded-height)))
 
 (defun make-browser-action (json)
+  "A helper function to construct `browser-action' from the manifest JSON.
+
+For info on its structure, see
+https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/browser_action"
   (let* ((browser-action (gethash "browser_action" json))
          (icons (when browser-action
                      (gethash "theme_icons" browser-action)))
@@ -120,10 +147,11 @@ height=~a/>"
                   :documentation "An HTML file for the popup to open when its icon is clicked.")
    (default-title nil
                   :type (or null string)
-                  :documentation "The title to call the popup with.")
+                  :documentation "The title to label the popup with.")
    (default-icon nil
                  :type (or null string)
                  :documentation "The extension icon to use in mode line.")
+   ;; TODO: Use those.
    (default-light-icon nil
                        :type (or null string)
                        :documentation "The extension icon for use in mode line in the light theme.")
@@ -137,7 +165,10 @@ height=~a/>"
 (define-class extension-storage-data-path (nyxt:data-path)
   ((ref "extension-storage"))
   (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:documentation "The `data-path' for the browser.storage API data storage (see
+  https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage
+  for API description)."))
 
 (defmethod store ((profile data-profile) (path extension-storage-data-path) &key &allow-other-keys)
   "Store the data to the extension's `extension-storage-data-path'."
@@ -146,7 +177,7 @@ height=~a/>"
   t)
 
 (defmethod restore ((profile data-profile) (path extension-storage-data-path) &key &allow-other-keys)
-  "Restore the bookmarks from the buffer `bookmarks-path'."
+  "Restore the data from the extension's `extension-storage-data-path'."
   (handler-case
       (let ((data (with-data-file (file path)
                     (when file
@@ -215,6 +246,7 @@ Value is the loadable URL of that file.")
                     ;; Need to set it to something to not trigger this in other instances.
                     (setf (background-buffer mode) t)
                     (setf (background-buffer mode) (make-background-buffer)))
+                  ;; This is to outsmart WebKit resource loading policy by creating data: URLs.
                   (setf (extension-files mode)
                         (alex:alist-hash-table
                          (mapcar (lambda (file)
@@ -234,6 +266,10 @@ Value is the loadable URL of that file.")
 
 (export-always 'host-permission-holds-p)
 (defmethod host-permission-holds-p ((extension extension) (buffer buffer))
+  "Test whether any of the host permissions EXTENSION has hold for a given BUFFER.
+
+For more info on host permissions see
+https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/permissions#host_permissions"
   (flet ((match-pattern->regexp (match-pattern)
            (str:replace-using '("*." "*"
                                 "*" ".*"
@@ -249,6 +285,7 @@ Value is the loadable URL of that file.")
 
 (export-always 'tab-apis-enabled-p)
 (defmethod tab-apis-enabled-p ((extension extension) (buffer buffer))
+  "Test whether the privileged browser.tabs API pieces can be used."
   (or (has-permission-p extension "<all_urls>")
       (has-permission-p extension "tabs")
       (and (has-permission-p extension "activeTab")
@@ -257,6 +294,10 @@ Value is the loadable URL of that file.")
 
 (export-always 'merge-extension-path)
 (defmethod merge-extension-path ((extension extension) path)
+  "Create the absolute path to one of EXTENSION sub-files.
+
+PATH should be a relative path, possibly with the leading forward
+slash. WebExtensions require this :/"
   (uiop:merge-pathnames* (string-left-trim "/" (namestring path))
                          (extension-directory extension)))
 
@@ -311,6 +352,9 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
          ((name ,name)
           (version ,(gethash "version" json))
           (manifest ,manifest-text)
+          ;; This :allocation :class is to ensure that the instances of the same
+          ;; extension class have the same ID, background-buffer, popup-buffer,
+          ;; and storage-path and can communicate properly.
           (id (or (symbol-name (gensym ,name)))
               :allocation :class)
           (background-buffer nil
@@ -332,6 +376,7 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
                                                     (alex:hash-table-plist content-script-hash)))
                                            (gethash "content_scripts" json))))))
        (defmethod initialize-instance :after ((extension ,lispy-name) &key)
+         ;; This is to simulate the browser action on-click-popup behavior.
          (setf (nyxt:glyph extension)
                (spinneret:with-html-string
                  (:a :class "button" :href (lisp-url `(toggle-extension-popup ',(mode-name extension)))

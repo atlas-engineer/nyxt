@@ -671,6 +671,7 @@ See `gtk-browser's `modifier-translator' slot."
                                                       (find buffer extensions :key #'nyxt/web-extensions:popup-buffer))))
                                   (list (describe-extension extension :privileged-p t)))
                                 (mapcar #'describe-extension extensions)))))))))))
+      ;; Is not used anywhere at the moment.
       (webkit:webkit-web-context-register-uri-scheme-callback
        context "web-extension"
        (lambda (request)
@@ -1146,10 +1147,20 @@ See `gtk-browser's `modifier-translator' slot."
     (encode-json (buffer->tab-description buffer))))
 
 (defvar %message-channels% (make-hash-table)
-  "A hash-table mapping message pointer addresses to the channels they return values from.")
+  "A hash-table mapping message pointer addresses to the channels they return values from.
+
+Introduced to communicate `process-user-message' and `reply-user-message'
+running on separate threads. These run on separate threads because we need to
+free GTK main thread to allow JS callbacks to run freely.")
 
 (-> trigger-message (t buffer nyxt/web-extensions:extension webkit:webkit-user-message) string)
 (defun trigger-message (message buffer extension original-message)
+  "Send a MESSAGE to the WebKitWebPage associated with BUFFER and wait for the result.
+
+Respond to ORIGINAL-MESSAGE once there's a result.
+
+See `%message-channels%',`process-user-message', and `reply-user-message' for
+the description of the mechanism that sends the results back."
   (let ((result-channel (make-channel 1)))
     (run-thread
       "Send the message"
@@ -1348,6 +1359,12 @@ See `gtk-browser's `modifier-translator' slot."
 
 (-> process-user-message (buffer webkit:webkit-user-message) t)
 (defun process-user-message (buffer message)
+  "A dispatcher for all the possible WebKitUserMessage types there can be.
+Uses name of the MESSAGE as the type to dispatch on.
+
+Creates a result channel for almost every message type (with the exception of
+those using `trigger-message') and sends the response of the helper function
+there. `reply-user-mesage' takes care of sending the response back."
   (let* ((message-name (webkit:webkit-user-message-get-name message))
          (message-params (g-variant-get-maybe-string
                           (webkit:webkit-user-message-get-parameters message)))
@@ -1461,6 +1478,9 @@ See `gtk-browser's `modifier-translator' slot."
 
 (-> reply-user-message (buffer webkit:webkit-user-message) t)
 (defun reply-user-message (buffer message)
+  "Send the response to the MESSAGE received from the BUFFER-associated WebPage.
+Wait on the channel associated to the MESSAGE until there's a result.
+Time out and send an empty reply after 5 seconds of waiting."
   (declare (ignore buffer))
   (loop until (gethash (cffi:pointer-address (g:pointer message))
                        %message-channels%)
