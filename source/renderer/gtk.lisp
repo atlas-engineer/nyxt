@@ -724,6 +724,8 @@ See `gtk-browser's `modifier-translator' slot."
                  (t (error "Cannot display evaluation result")))))))
        (lambda (condition)
          (echo-warning "Error while routing about URL: ~a" condition)))
+      (webkit:webkit-security-manager-register-uri-scheme-as-local
+       (webkit:webkit-web-context-get-security-manager context) "nyxt")
       (when (and buffer
                  (web-buffer-p buffer)
                  (expand-path (cookies-path buffer)))
