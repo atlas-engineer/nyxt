@@ -216,17 +216,19 @@ Example:
                 (format nil "~a/~a"
                         (package-name (symbol-package symbol))
                         (symbol-name symbol))))))
-    (let ((params (quri:url-encode-params
-                   (mapcar (lambda (pair)
-                             (cons (param-name (first pair))
-                                   ;; This is to safely parse the args afterwards
-                                   (prin1-to-string (rest pair))))
-                           (alexandria:plist-alist args)))))
-      (the (values string &optional)
-           (format nil "nyxt:~a~@[~*?~a~]"
-                   (param-name function-name)
-                   (not (uiop:emptyp params))
-                   params)))))
+    (if (gethash function-name *nyxt-url-commands*)
+        (let ((params (quri:url-encode-params
+                       (mapcar (lambda (pair)
+                                 (cons (param-name (first pair))
+                                       ;; This is to safely parse the args afterwards
+                                       (prin1-to-string (rest pair))))
+                               (alexandria:plist-alist args)))))
+          (the (values string &optional)
+               (format nil "nyxt:~a~@[~*?~a~]"
+                       (param-name function-name)
+                       (not (uiop:emptyp params))
+                       params)))
+        (error "There's no nyxt:~a page defined" (param-name function-name)))))
 
 (export-always 'lisp-url)
 (defun lisp-url (&rest args)
