@@ -39,10 +39,12 @@ extensions_data_add_from_json(const char *json)
                         char *id = jsc_value_to_string(
                                 jsc_value_object_get_property_at_index(data, 0));
                         int is_privileged = jsc_value_to_int32(jsc_value_object_get_property_at_index(data, 2));
-                        WebKitScriptWorld *world = webkit_script_world_new_with_name(name);
+                        WebKitScriptWorld *world;
                         if (is_privileged && !IS_PRIVILEGED) {
                                 IS_PRIVILEGED = is_privileged;
                                 world = webkit_script_world_get_default();
+                        } else {
+                                world = webkit_script_world_new_with_name(name);
                         }
                         extension = malloc(sizeof(ExtensionData));
                         extension->name = (char*) name;
