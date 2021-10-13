@@ -112,13 +112,13 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
                                         &body body)
   "Define a command called NAME creating an internal interface page.
 
-Should end with a form returning page HTML as a string.
+Should end with a form returning HTML as a string.
 
 Create a buffer (and bind it to BUFFER-VAR) in case there's no buffer with TITLE
-and MODE. If there is one, bind BUFFER-VAR to it. In any way, BUFFER-VAR is a
+and MODE. If there is one, bind BUFFER-VAR to it. Either way, BUFFER-VAR is
 always a buffer that the generated code is loaded into.
 
-ARGLIST is arguments for the command and underlying page-generating
+ARGLIST is arguments for the command and for the underlying page-generating
 function. Any argument from it is safe to use in the body of this macro.
 Beware: the ARGLIST should have keyword arguments only because it's mapped to
 query parameters."
