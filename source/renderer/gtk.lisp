@@ -708,7 +708,7 @@ See `gtk-browser's `modifier-translator' slot."
       (webkit:webkit-web-context-register-uri-scheme-callback
        context "nyxt"
        (lambda (request)
-         (with-protect ("Error while processing the about URL: ~a" :condition)
+         (with-protect ("Error while processing the \"nyxt:\" URL: ~a" :condition)
            (sera:and-let* ((url (quri:uri (webkit:webkit-uri-scheme-request-get-uri request)))
                            (function-name (parse-nyxt-url url))
                            (page-generating-function (gethash function-name *nyxt-url-commands*)))
@@ -723,7 +723,7 @@ See `gtk-browser's `modifier-translator' slot."
                   (first result))
                  (t (error "Cannot display evaluation result")))))))
        (lambda (condition)
-         (echo-warning "Error while routing about URL: ~a" condition)))
+         (echo-warning "Error while routing \"nyxt:\" URL: ~a" condition)))
       (webkit:webkit-security-manager-register-uri-scheme-as-local
        (webkit:webkit-web-context-get-security-manager context) "nyxt")
       (when (and buffer
