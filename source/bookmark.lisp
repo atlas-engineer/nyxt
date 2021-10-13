@@ -116,7 +116,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
    (prompter:multi-selection-p t)
    (prompter:constructor (lambda (source)
                            (mapcar #'car (keywords (buffer source))))))
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-command list-bookmarks ()
   "List all bookmarks in a new buffer."
