@@ -153,4 +153,5 @@ webkit_web_extension_initialize_with_user_data
         g_signal_connect (extension, "page-created",
                           G_CALLBACK (web_page_created_callback),
                           (void *) json);
+        g_print("The WebExtensions support library is loaded\n");
 }
