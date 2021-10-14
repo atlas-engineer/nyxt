@@ -6,8 +6,7 @@
   (:import-from #:class-star #:define-class)
   (:documentation "Refresh file when changed on disk."))
 (in-package :nyxt/preview-mode)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (use-nyxt-package-nicknames))
+(use-nyxt-package-nicknames)
 
 (defun updated-file-p (path-url mode)
   (when (quri:uri-file-p path-url)

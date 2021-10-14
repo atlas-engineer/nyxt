@@ -5,9 +5,7 @@
   (:use :common-lisp :nyxt)
   (:documentation "Mode for enforcing HTTPS on any URL clicked/hinted/set by user."))
 (in-package :nyxt/force-https-mode)
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (use-nyxt-package-nicknames))
+(use-nyxt-package-nicknames)
 
 ;; TODO: Add style to loop help page?
 (defun https->http-loop-help (buffer url) ; TODO: Factor with tls-help?

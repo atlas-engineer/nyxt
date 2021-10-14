@@ -7,9 +7,7 @@
   (:import-from #:serapeum #:->)
   (:documentation "Forward all keybindings to the web view except those in the `override-map'."))
 (in-package :nyxt/application-mode)
-
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (use-nyxt-package-nicknames))
+(use-nyxt-package-nicknames)
 
 ;;; Moving modes out of the `modes' slot is a bad idea: too many parts rely on
 ;;; the presence of the `modes' slot. Instead, use a hook to temporarily override

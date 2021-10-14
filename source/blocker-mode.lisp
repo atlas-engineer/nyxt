@@ -6,8 +6,7 @@
   (:import-from #:class-star #:define-class)
   (:documentation "Block resource queries for listed hosts."))
 (in-package :nyxt/blocker-mode)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (use-nyxt-package-nicknames))
+(use-nyxt-package-nicknames)
 
 ;; TODO: Add convenient interface to block hosts depending on the current URL.
 

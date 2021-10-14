@@ -7,8 +7,7 @@
   (:import-from #:serapeum #:export-always #:->)
   (:documentation "Development helpers"))
 (in-package :nyxt/debug)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (use-nyxt-package-nicknames))
+(use-nyxt-package-nicknames)
 
 (defvar *all-nyxt-objects* '()
   "Weak list of all Nyxt objects.

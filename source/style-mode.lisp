@@ -6,8 +6,7 @@
   (:documentation "Mode for styling documents."))
 
 (in-package :nyxt/style-mode)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (use-nyxt-package-nicknames))
+(use-nyxt-package-nicknames)
 
 (define-mode style-mode ()
   "A mode for styling documents."
