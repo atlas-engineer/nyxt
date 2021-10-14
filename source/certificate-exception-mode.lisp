@@ -5,8 +5,7 @@
   (:use :common-lisp :nyxt)
   (:documentation "Certificate exception mode"))
 (in-package :nyxt/certificate-exception-mode)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (use-nyxt-package-nicknames))
+(use-nyxt-package-nicknames)
 
 (sera:export-always '*default-certificate-exceptions*)
 (defparameter *default-certificate-exceptions* '()

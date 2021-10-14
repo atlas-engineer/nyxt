@@ -7,8 +7,7 @@
   (:import-from #:keymap #:define-key #:define-scheme)
   (:documentation "Universal interface to various operating system package managers."))
 (in-package :nyxt/os-package-manager-mode)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (use-nyxt-package-nicknames))
+(use-nyxt-package-nicknames)
 
 ;; TODO: Prompt for password?  Use this:
 ;; (with-input-from-string (i "password")

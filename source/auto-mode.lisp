@@ -8,8 +8,7 @@
   (:import-from #:serapeum #:->)
   (:documentation "Mode for automatic URL-based mode toggling."))
 (in-package :nyxt/auto-mode)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (use-nyxt-package-nicknames))
+(use-nyxt-package-nicknames)
 
 (define-class mode-invocation ()
   ((name

@@ -9,8 +9,7 @@
                 #:->)
   (:documentation "Nyxt-specific DOM classes and functions operating on them."))
 (in-package :nyxt/dom)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (use-nyxt-package-nicknames))
+(use-nyxt-package-nicknames)
 
 ;; TODO: Factor out into a library?
 

@@ -2,8 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (in-package :nyxt/prompt-buffer-mode)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (use-nyxt-package-nicknames))
+(use-nyxt-package-nicknames)
 
 (define-mode prompt-buffer-mode ()
   "The prompt buffer is the where all the interactions between Nyxt and the user happen.

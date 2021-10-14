@@ -28,9 +28,10 @@
   (trivial-package-local-nicknames:add-package-local-nickname :class* :hu.dwim.defclass-star :nyxt)
   (trivial-package-local-nicknames:add-package-local-nickname :hooks :serapeum/contrib/hooks :nyxt))
 
-(defun nyxt::use-nyxt-package-nicknames ()
-  (loop for package in (trivial-package-local-nicknames:package-local-nicknames :nyxt)
-        do (trivial-package-local-nicknames:add-package-local-nickname (car package) (package-name (cdr package)))))
+(defmacro nyxt::use-nyxt-package-nicknames ()
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (dolist (package (trivial-package-local-nicknames:package-local-nicknames :nyxt))
+       (trivial-package-local-nicknames:add-package-local-nickname (first package) (package-name (rest package))))))
 
 (uiop:define-package nyxt-user
   (:use #:common-lisp #:nyxt)
