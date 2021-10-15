@@ -32,7 +32,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
     8 jobs: 2m21s")
 
 (defsystem "nyxt"
-  :version "2.2.0"
+  :version "2.2.1"
   :author "Atlas Engineer LLC"
   :homepage "https://nyxt.atlas.engineer"
   :description "Extensible web-browser in Common Lisp"
