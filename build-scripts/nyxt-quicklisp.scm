@@ -9,6 +9,7 @@
 ;; dragged into the environment when added as propagated-input.
 
 (define-module (nyxt-quicklisp)
+  #:use-module (ice-9 match)
   #:use-module (ice-9 popen)
   #:use-module (ice-9 rdelim)
   #:use-module (srfi srfi-1)
@@ -80,10 +81,6 @@
          (add-before 'build 'fix-common-lisp-cache-folder
            (lambda _
              (setenv "HOME" "/tmp")
-             #t))
-         (add-before 'build 'set-version
-           (lambda _
-             (setenv "NYXT_VERSION" ,version)
              #t))
          (add-before 'check 'configure-tests
            (lambda _
