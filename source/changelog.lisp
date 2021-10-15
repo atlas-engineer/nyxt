@@ -211,24 +211,23 @@ particular revision.")
    (:li (:code "define-scheme") "syntax has been extended to allow importing
    other schemes.  See the manual for an example.")
    (:li "Arbitrary HTML is now allowed in mode formatting.")
-
-   (:li "Update *Bookmarks* buffer when deleting entries.  (Thanks to @shamazmazum!)")
+   (:li "*Bookmarks* buffer is automatically updated when deleting entries.  (Thanks to @shamazmazum!)")
    (:li "Processes can now be stopped in process-mode.")
    (:li "New " (:code "repeat-times") " command.")
-   (:li "List methods in class description."))
-  (:h3 "Build / compilation changes")
+   (:li "List methods in class descriptions."))
+  (:h3 "Build and compilation changes")
   (:ul
    (:li "Quicklisp is no longer used to fetch dependencies.  Instead, all Lisp
    dependencies are pinned and fetched via Git submodules into the "
-        (:code "_build") " subdirectory.  This should improve reproducibility.   The " (:code "NYXT_QUICKLISP") "
-        environment variable has been replaced by " (:code "NYXT_SUBMODULES")
-        "."))
+   (:code "_build") " subdirectory.  This should improve reproducibility.
+   The " (:code "NYXT_QUICKLISP") " environment variable has been replaced by "
+   (:code "NYXT_SUBMODULES") "."))
   (:h3 "Platform support")
   (:ul
    (:li "Quicklisp can now be properly loaded when Nyxt was installed via the .deb file."))
   (:h3 "Bug fixes")
   (:ul
-   (:li "Handle cancelation in yes/no prompt-buffer.")
+   (:li "Properly handle cancelation in yes/no prompt-buffers.")
    (:li "Fix sandboxing.  (Thanks to @tiberious726!)")
    (:li "Fix toggle-mark in visual-mode.  (Thanks to @hendursaga!)")
    (:li "Report load-after-system warnings.  (Thanks to @hendursaga!)")
