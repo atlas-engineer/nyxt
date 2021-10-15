@@ -75,10 +75,11 @@ WebEngine/Blink.
 Please see the [[https://nyxt.atlas.engineer/download][downloads]] page for pre-built binaries.  Some operating
 systems provide packages for Nyxt:
 
-- Alpine
+- Alpine.
 - Debian and derivatives such as Ubuntu and Linux Mint.
-- [[https://source.atlas.engineer/view/repository/macports-port][MacPorts]]
-- [[https://aur.archlinux.org/packages/nyxt][Arch Linux AUR]] (and the [[https://aur.archlinux.org/packages/nyxt-browser-git/][-git PKGBUILD]])
+- [[https://source.atlas.engineer/view/repository/macports-port][MacPorts]].
+- [[https://aur.archlinux.org/packages/nyxt][Arch Linux AUR]] and the [[https://aur.archlinux.org/packages/nyxt-browser-git/][-git PKGBUILD]] which has an [[https://e-v.srht.site/nyxt-aur-builds.html][unofficial binary
+  package]], courtesy of of @edgar-vincent.
 - [[https://nixos.org/nix/][Nix]]: Install with =nix-env --install nyxt=.
 - [[https://guix.gnu.org][Guix]]: Install with =guix install nyxt=.
 - [[https://voidlinux.org/][Void]]: Install with =xbps-install nyxt=.
