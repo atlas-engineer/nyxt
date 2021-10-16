@@ -183,7 +183,7 @@ If STEPS is negative, go to previous pages instead."
                  (find-first-element-out-of-view (ps:chain document (get-element-by-id "selection")))
                  row-index)
                 (ps:chain (ps:chain document (get-element-by-id "selection")) row-index))))))
-      (sera:and-let* ((index-diff (parse-integer step-page-index :junk-allowed t)))
+      (sera:and-let* ((index-diff step-page-index))
         (prompter:select-next prompt-buffer
                               index-diff)))
     ;; TODO: Update display?  The library should probably decide when to update
