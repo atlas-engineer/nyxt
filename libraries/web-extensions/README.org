@@ -2,12 +2,12 @@
 
 This is a WebKitWebExtension library to support the necessary
 [[https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Browser_support_for_JavaScript_APIs][JavaScript APIs]]. Most of the communication with the browser happens
-via WebKitUserMessages. To hook into thi library in a WebKit-based
+via WebKitUserMessages. To hook into the library in a WebKit-based
 browser, connect to the [[https://webkitgtk.org/reference/webkit2gtk/stable/WebKitWebView.html#WebKitWebView-user-message-received]["user-message-received"]] signal and dispatch it
 based on message name -- it will be the same as the JS function name
 (e.g. "runtime.sendMessage").
 * Extension initialization and extension descriptions
-The extension should be initialized with used data. User data should
+The extension should be initialized with user data. User data should
 be a string GVariant containing JSON descriptions for extensions the
 library should handle. The schema is:
 #+begin_src js
@@ -16,6 +16,10 @@ library should handle. The schema is:
        [id, // ID as a string
         manifest, // full text of the extension manifest as a string
         is_privileged, // integer: 0 if non-privileged, 1 if privileged.
+
+        // "Privileged" means that this extension can run the code in
+        // the default JS world/environment/context
+
         [file_name : // string with a file name relative to the extension root
          url, // string URL to load this extension with. Right now should be a data: URL
          ... // same for all the files extension is allowed to access
@@ -119,9 +123,10 @@ convoluted. The sequence of actions that happens there is:
 - JS: Run =browser.drain= on the ID returned from C callback (see
   browser.c for the exact mechanism).
 - BROWSER: Respond to the message in the "user-message-received" signal.
+- C (=message_reply_and_save_callback=): Put the result into global data storage (=DATA=).
 - C (implicit call in =browser.drain=): Check the global data storage
   for the result being returned (see =get_result= in globals.c).
-- JS: If there's a result, fetch it from the C side and successfully
+- JS: If there's a result, fetch it from the C side (still inside the =browser.drain=) and successfully
   return.
 
 Now to the code. The C callback is something like
@@ -141,9 +146,12 @@ Now to the code. The C callback is something like
 #+end_src
 And the way to bind it in =inject_foo_api= would be
 #+begin_src C
-  /* Remember the G_TYPE_ULONG as a return type there -- you'll need in often. */
+  /* Remember the G_TYPE_ULONG as a return type there -- you'll need it
+   ,* often. It's the return type of all the functions we need to wait
+   ,* for the result of. */
   MAKE_FN(context, fooBar, foo_bar_callback, G_TYPE_ULONG, 0, G_TYPE_NONE);
-  /* Most WebExtension API endpoints return a Promise, so remember this pattern too.*/
+  /* Most WebExtension API endpoints return a Promise, so remember this
+   ,* pattern too. */
   BIND_FN(context, "foo", "bar", "foo.bar = function () {                 \
       return new Promise(function (success, failure) {                    \
           try {                                                           \
@@ -162,7 +170,7 @@ And the way to bind it in =inject_foo_api= would be
 With the possible expansions of the macros left as an exercise for you
 if you need to break the abstraction there.
 
-Almost any WebExtension JS function return Promise, thus this is the
+Almost any WebExtension JS function return a Promise, thus this is the
 template for most of them.
 *** Need a browser-mediated communication (insane)
 These cases are rare and most complex. Examples are
@@ -286,7 +294,7 @@ the list from the previous heading:
   message.
 - C (implicit call in =browser.drain=): Check the global data storage
   for the result of the initial message (see =get_result= in globals.c).
-- JS: If there's a result, fetch it from the C side and successfully
+- JS: If there's a result, fetch it from the C side (still inside the =browser.drain=) and successfully
   return.
 ** Add a property
 Usually it's as simple as
