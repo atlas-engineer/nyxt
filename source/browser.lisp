@@ -312,7 +312,7 @@ restored."
                                     nil)))
                    (:always-restore
                     (get-data (history-path buffer))
-                    (restore-history-buffers (history-path (current-buffer))))
+                    (restore-history-buffers (history-path buffer)))
                    (:never-restore
                     (log:info "Not restoring session.")
                     (get-data (history-path buffer))
