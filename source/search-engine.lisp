@@ -39,9 +39,9 @@ Can be built via `make-search-completion-function'"))
 (export-always 'make-search-completion-function)
 (-> make-search-completion-function
     (&key (:base-url string)
-          (:request-function (function (string &rest *) *))
+          (:request-function (function (string &rest list) t))
           (:request-args list)
-          (:processing-function (function (*) list-of-strings)))
+          (:processing-function (function (t) list-of-strings)))
     (function (string) list-of-strings))
 (defun make-search-completion-function (&key base-url
                                           (request-function #'dex:get)
