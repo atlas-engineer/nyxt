@@ -347,7 +347,8 @@ and update their creator."
                        (first
                         (sort-by-time (alex:hash-table-alist (htree:owners history))
                                       :key (alex:compose #'htree:last-access #'rest))))))
-    (switch-buffer :id latest-id)))
+    (when latest-id
+      (switch-buffer :id latest-id))))
 
 (defmethod restore ((profile data-profile) (path history-data-path)
                     &key &allow-other-keys)
