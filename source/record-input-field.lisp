@@ -101,6 +101,13 @@
   ((prompter:name "Inputs")
    (prompter:constructor (get-data (inputs-path (current-buffer))))))
 
+(define-class filtered-domain-input-data-source (prompter:source)
+  ((prompter:name "Inputs")
+   (prompter:constructor (remove-if-not #'(lambda (input-entry)
+                                            (equal (quri:uri-domain (quri:uri (url input-entry)))
+                                                   (quri:uri-domain (url (current-buffer)))))
+                                        (get-data (inputs-path (current-buffer)))))))
+
 (define-command set-input-data-from-saved 
     (&key (actions (list (make-command buffer-load* (suggestion-values)
                            "Load selected input-entry in current buffer's input fields."
@@ -109,6 +116,17 @@
   (prompt
    :prompt "Write input data from:"
    :sources (make-instance 'input-data-source
+                           :actions actions)))
+
+(define-command set-input-data-from-saved-domain
+    (&key (actions (list (make-command buffer-load* (suggestion-values)
+                           "Load selected input-entry in current buffer's input fields."
+                           (ps-write-input-data (input-data (first suggestion-values)))))))
+  "Set the input data from a list of saved data filtered by current domain into
+the current buffer."
+  (prompt
+   :prompt "Write input data from:"
+   :sources (make-instance 'filtered-domain-input-data-source
                            :actions actions)))
 
 (defmethod store ((profile data-profile) (path inputs-data-path) &key &allow-other-keys)
