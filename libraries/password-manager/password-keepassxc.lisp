@@ -18,7 +18,7 @@
   (let* ((st (make-string-input-stream (master-password password-interface)))
          (output (execute password-interface (list "ls" (password-file password-interface))
                           :input st :output '(:string :stripped t))))
-    (remove "Recycle Bin/" (rest (cl-ppcre:split "\\n" output)) :test #'equal)))
+    (remove "Recycle Bin/" (sera:lines output) :test #'equal)))
 
 (defmethod clip-password ((password-interface keepassxc-interface) &key password-name service)
   (declare (ignore service))
