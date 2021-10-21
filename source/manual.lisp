@@ -367,7 +367,7 @@ following packages:")
     (:p "For systems from the Fedora family:")
     (:ul
      (:li "gstreamer1-devel")
-     (:li "gstreamer1-plugins-base"))
+     (:li "gstreamer1-plugins-base-devel"))
     (:p "After the desired plugins have been installed, clear the GStreamer cache at "
         (:code "~/.cache/gstreamer-1.0") " and restart Nyxt.")
     (:h3 "Input method support (CJK, etc.)")
