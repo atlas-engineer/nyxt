@@ -724,6 +724,11 @@ BUFFER's modes."
   (dolist (mode (modes buffer))
     (on-signal-load-committed mode url)))
 
+(export-always 'on-signal-load-redirected)
+(defmethod on-signal-load-redirected ((buffer buffer) url)
+  (dolist (mode (modes buffer))
+    (on-signal-load-redirected mode url)))
+
 (export-always 'on-signal-load-finished)
 (defmethod on-signal-load-finished ((buffer buffer) url)
   ;; Need to force document-model re-parsing.
