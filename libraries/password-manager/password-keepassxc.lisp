@@ -7,7 +7,10 @@
   ((executable (pathname->string (sera:resolve-executable "keepassxc-cli")))
    (password-file)
    (master-password nil
-                    :type (or null string)))
+                    :type (or null string))
+   (entries-cache nil
+                  :type list
+                  :documentation "The cache to speed the entry listing up."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
@@ -15,10 +18,12 @@
 (push 'keepassxc-interface *interfaces*)
 
 (defmethod list-passwords ((password-interface keepassxc-interface))
-  (let* ((st (make-string-input-stream (master-password password-interface)))
-         (output (execute password-interface (list "ls" (password-file password-interface))
-                          :input st :output '(:string :stripped t))))
-    (remove "Recycle Bin/" (sera:lines output) :test #'equal)))
+  (or (entries-cache password-interface)
+      (let* ((st (make-string-input-stream (master-password password-interface)))
+             (output (execute password-interface (list "ls" (password-file password-interface))
+                       :input st :output '(:string :stripped t))))
+        (setf (entries-cache password-interface)
+              (remove "Recycle Bin/" (sera:lines output) :test #'equal)))))
 
 (defmethod clip-password ((password-interface keepassxc-interface) &key password-name service)
   (declare (ignore service))
@@ -40,6 +45,8 @@
 (defmethod save-password ((password-interface keepassxc-interface)
                           &key password-name username password service)
   (declare (ignore service))
+  ;; This is to force entries re-fetching the next time we need passwords.
+  (setf (entries-cache password-interface) nil)
   (with-input-from-string (st (format nil "~a~C~a"
                                       (master-password password-interface)
                                       #\newline password))
@@ -54,9 +61,6 @@
 (defmethod password-correct-p ((password-interface keepassxc-interface))
   (when (master-password password-interface)
     (handler-case
-        (let* ((st (make-string-input-stream (master-password password-interface)))
-               (output (execute password-interface (list "ls" (password-file password-interface))
-                                :input st :output '(:string :stripped t))))
-          (remove "Recycle Bin/" (rest (cl-ppcre:split "\\n" output)) :test #'equal))
+        (list-passwords password-interface)
       (uiop/run-program:subprocess-error ()
         nil))))
