@@ -25,10 +25,8 @@
   (with-input-from-string (st (master-password password-interface))
     (execute password-interface (list "clip"
                                       (password-file password-interface)
-                                      password-name
-                                      ;; Timeout for password
-                                      (format nil "~a" (sleep-timer password-interface)))
-      :input st :output '(:string :stripped t))))
+                                      password-name)
+      :input st)))
 
 (defmethod clip-username ((password-interface keepassxc-interface) &key password-name service)
   (declare (ignore service))
@@ -36,10 +34,8 @@
     (execute password-interface (list "clip"
                                       "--attribute" "username"
                                       (password-file password-interface)
-                                      password-name
-                                      ;; Timeout for password
-                                      (format nil "~a" (sleep-timer password-interface)))
-             :input st :output '(:string :stripped t))))
+                                      password-name)
+             :input st)))
 
 (defmethod save-password ((password-interface keepassxc-interface)
                           &key password-name username password service)
