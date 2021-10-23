@@ -654,6 +654,9 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
   (declare (ignore mode url))
   nil)
 
+(defmethod nyxt:on-signal-load-redirected ((mode web-mode) url)
+  (push (render-url url) (history-blocklist mode)))
+
 (defmethod nyxt:on-signal-load-finished ((mode web-mode) url)
   (add-url-to-history url (buffer mode) mode)
   (reset-page-zoom :buffer (buffer mode)
