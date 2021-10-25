@@ -3,8 +3,6 @@
 
 #include <webkit2/webkit-web-extension.h>
 
-#define PRIVILEGED_SCHEME "nyxt:"
-
 #define TODO_METHOD(Context, Object, Method)                            \
         do {                                                            \
                 jsc_value_object_set_property(                          \

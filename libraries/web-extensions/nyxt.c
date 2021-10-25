@@ -18,6 +18,14 @@
 #include "web_navigation.h"
 #include "web_request.h"
 
+/** PRIVILEGED_SCHEME
+ *
+ * The scheme to allow browser.eval() on.
+ */
+#ifndef PRIVILEGED_SCHEME
+#define PRIVILEGED_SCHEME "nyxt:"
+#endif
+
 static void
 inject_apis (void* extension_name, void *data, void *user_data)
 {
