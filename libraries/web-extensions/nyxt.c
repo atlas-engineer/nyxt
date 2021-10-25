@@ -73,9 +73,9 @@ set_window_object_cleared (void *key, void *value, void *user_data)
 }
 
 static gboolean
-user_message_received (WebKitWebPage     *web_page,
-                       WebKitUserMessage *message,
-                       gpointer           user_data)
+user_message_received_callback (WebKitWebPage     *web_page,
+                                WebKitUserMessage *message,
+                                gpointer           user_data)
 {
         const char *name = webkit_user_message_get_name(message);
         GVariant *params = webkit_user_message_get_parameters(message);
@@ -131,7 +131,7 @@ web_page_created_callback (WebKitWebExtension *extension,
                            gpointer            user_data)
 {
         g_signal_connect (web_page, "user-message-received",
-                          G_CALLBACK (user_message_received),
+                          G_CALLBACK (user_message_received_callback),
                           NULL);
         PAGE = web_page;
         extensions_data_add_from_json(user_data);
