@@ -19,22 +19,6 @@
 #include "web_navigation.h"
 #include "web_request.h"
 
-/** PRIVILEGED_SCHEME
- *
- * The scheme to allow browser.eval() on.
- */
-#ifndef PRIVILEGED_SCHEME
-#define PRIVILEGED_SCHEME "nyxt:"
-#endif
-
-/** BROWSER_REPLY_TIMEOUT
- *
- * For how much milliseconds to wait for the browser replying to the
- * API message. */
-#ifndef BROWSER_REPLY_TIMEOUT
-#define BROWSER_REPLY_TIMEOUT 5000
-#endif
-
 /** inject_apis
  *
  * Injects all the APIs extension (named by extension_name) has the
