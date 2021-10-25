@@ -52,6 +52,7 @@
   #:use-module (gnu packages commencement)
   #:use-module (gnu packages glib)
   #:use-module (gnu packages lisp)
+  #:use-module (gnu packages lisp-check)
   #:use-module (gnu packages lisp-xyz)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages gstreamer)
