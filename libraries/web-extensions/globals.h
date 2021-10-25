@@ -75,8 +75,6 @@ typedef struct {
 
 extern GHashTable *EXTENSIONS_DATA;
 
-extern GHashTable *MESSAGES;
-
 extern WebKitWebExtension *EXTENSION;
 
 extern int IS_PRIVILEGED;
