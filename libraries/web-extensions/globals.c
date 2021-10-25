@@ -195,11 +195,11 @@ get_result (unsigned long int data_index, int check_only)
 {
         JSCContext *context = jsc_context_get_current();
         char *data;
-        if (check_only)
-                return jsc_value_new_boolean(
-                        context, (int) g_hash_table_lookup (
-                                DATA, (void *) &data_index));
         if (data_index) {
+                if (check_only)
+                        return jsc_value_new_boolean(
+                                context, (int) g_hash_table_lookup (
+                                        DATA, (void *) &data_index));
                 data = g_hash_table_lookup(DATA, (void *) &data_index);
                 g_hash_table_remove(DATA, (void *) &data_index);
                 return jsc_value_new_from_json(context, data);
