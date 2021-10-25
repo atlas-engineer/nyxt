@@ -3,7 +3,7 @@
 #include "extevent.h"
 #include "browser.h"
 /* API headers with a sole inject_*_api function. */
-#include "lisp.h"
+#include "eval.h"
 #include "management.h"
 #include "tabs.h"
 #include "runtime.h"
@@ -49,7 +49,7 @@ static void
 inject_apis (void* extension_name, void *data, void *user_data)
 {
         inject_browser((char*) extension_name);
-        inject_lisp_api((char*) extension_name);
+        inject_eval_api((char*) extension_name);
         inject_extevent_api((char*) extension_name);
         /* TODO: Other extensions depend on management API and break
          * if it's not provided. Is there another way to provide
