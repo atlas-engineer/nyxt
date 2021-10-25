@@ -26,6 +26,14 @@
 #define PRIVILEGED_SCHEME "nyxt:"
 #endif
 
+/** BROWSER_REPLY_TIMEOUT
+ *
+ * For how much milliseconds to wait for the browser replying to the
+ * API message. */
+#ifndef BROWSER_REPLY_TIMEOUT
+#define BROWSER_REPLY_TIMEOUT 5000
+#endif
+
 static void
 inject_apis (void* extension_name, void *data, void *user_data)
 {
