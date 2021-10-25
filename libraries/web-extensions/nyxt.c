@@ -2,6 +2,7 @@
 #include "globals.h"
 #include "extevent.h"
 #include "browser.h"
+/* API headers with a sole inject_*_api function. */
 #include "lisp.h"
 #include "management.h"
 #include "tabs.h"
@@ -34,6 +35,16 @@
 #define BROWSER_REPLY_TIMEOUT 5000
 #endif
 
+/** inject_apis
+ *
+ * Injects all the APIs extension (named by extension_name) has the
+ * access to.
+ *
+ * If you implement a new API, add more inject_*_api functions there,
+ * including those from the respective headers.
+ *
+ * data and user_data are not used.
+ */
 static void
 inject_apis (void* extension_name, void *data, void *user_data)
 {
@@ -66,6 +77,15 @@ inject_apis (void* extension_name, void *data, void *user_data)
                 inject_web_request_api((char *) extension_name);
 }
 
+/** window_object_cleared_callback
+ *
+ * A callback for "window-object-cleared" signal.
+ *
+ * Is used to inject JS APIs as early as possible in the page loading
+ * process, as WebExtensions are quire demanding about time there.
+ *
+ * user_data should be a string with extension name.
+ */
 static void
 window_object_cleared_callback (WebKitScriptWorld *world,
                                 WebKitWebPage     *web_page,
@@ -75,6 +95,17 @@ window_object_cleared_callback (WebKitScriptWorld *world,
         inject_apis(user_data, NULL, NULL);
 }
 
+/** set_window_object_cleared
+ *
+ * A helper to set "window-object-cleared" callback for a particular
+ * extension.
+ *
+ * key and value suggest usage as a hash table (EXTENSIONS_DATA)
+ * iterator and are the name of the extension and ExtensionData
+ * describing the extension resrectively.
+ *
+ * user_data is not used.
+ */
 static void
 set_window_object_cleared (void *key, void *value, void *user_data)
 {
@@ -88,6 +119,16 @@ set_window_object_cleared (void *key, void *value, void *user_data)
                                   key);
 }
 
+/** user_message_received_callback
+ *
+ * A callback for "user-message-received" signal.
+ *
+ * Process the messages that the browser sends to the PAGE. Those are
+ * used for two things now:
+ * - messages (e.g., runtime.sendMessages).
+ * - API inhjection in the atypical scenarios -- send the
+ *   "injectAPIs"-named message to trigger API injection.
+ */
 static gboolean
 user_message_received_callback (WebKitWebPage     *web_page,
                                 WebKitUserMessage *message,
@@ -141,6 +182,19 @@ run", -1),
         return TRUE;
 }
 
+/** web_page_created_callback
+ *
+ * A callback for "page-created" signal.
+ *
+ * Set PAGE to the created page, as there's unlikely to even be more
+ * than one page per WebKitWebExtension.
+ *
+ * Add a "user-message-received" signal callback.
+ *
+ * Process the extensions data (passed from
+ * webkit_web_extension_initialize_with_user_data) and adds callbacks
+ * for the generation of necessary APIs for those.
+ */
 static void
 web_page_created_callback (WebKitWebExtension *extension,
                            WebKitWebPage      *web_page,
@@ -154,6 +208,16 @@ web_page_created_callback (WebKitWebExtension *extension,
         g_hash_table_foreach(EXTENSIONS_DATA, set_window_object_cleared, NULL);
 }
 
+/** webkit_web_extension_initialize_with_user_data
+ *
+ * A usual entry point for any WebKit extension with user data.
+ * See README for what the data format is.
+ *
+ * Initialize several global variables (from global.h) and adds a
+ * "page-created" signal callback.
+ *
+ * Print "The WebExtensions support library is loaded" when done.
+ */
 G_MODULE_EXPORT void
 webkit_web_extension_initialize_with_user_data
 (WebKitWebExtension *extension, GVariant *user_data)
