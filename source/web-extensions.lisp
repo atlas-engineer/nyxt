@@ -302,7 +302,10 @@ slash. WebExtensions require this :/"
                          (extension-directory extension)))
 
 (defmethod nyxt::format-mode ((extension extension))
-  (name extension))
+  (spinneret:with-html-string
+    (:a :class "button" :href (lisp-url `(toggle-extension-popup ',(mode-name extension)))
+        :title (format nil "Open the browser action of ~a" (mode-name extension))
+        (name extension))))
 
 (define-command toggle-extension-popup (&optional extension-class (buffer (current-buffer)))
   "Open the popup of the extension of EXTENSION-CLASS.
