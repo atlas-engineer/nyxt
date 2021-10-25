@@ -184,7 +184,6 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                (:file "help")
                (:file "status")
                ;; Depends on everything else:
-               (:file "web-extensions")
                (:file "about")
                (:file "start")
                (:file "tutorial")
@@ -340,7 +339,9 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                cl-webkit2)
   :pathname "source/"
   :serial t
-  :components ((:file "renderer/gtk-clipboard")
+  :components ((:file "web-extensions")
+               (:file "web-extensions-callbacks")
+               (:file "renderer/gtk-clipboard")
                (:file "renderer/gtk")))
 
 (defsystem "nyxt/gi-gtk"

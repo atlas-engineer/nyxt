@@ -4,7 +4,9 @@
 (uiop:define-package :nyxt/web-extensions
   (:use :common-lisp :nyxt)
   (:import-from #:class-star #:define-class)
-  (:import-from #:serapeum #:export-always)
+  (:import-from #:serapeum
+                #:export-always
+                #:->)
   (:documentation "WebExtensions API conformance code."))
 (in-package :nyxt/web-extensions)
 (eval-when (:compile-toplevel :load-toplevel :execute)
