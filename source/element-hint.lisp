@@ -148,7 +148,8 @@ ANNOTATE-VISIBLE-ONLY-P is deprecated and has no influence on the function.
 PROMPT is a text to show while prompting for hinted elements.
 FUNCTION is the action to perform on the selected elements."
   (declare (ignore annotate-visible-only-p))
-  (let* ((buffer (current-buffer)))
+  (let* ((buffer (current-buffer))
+	 (scroll-position (document-scroll-position)))
     (let ((result (prompt
                    :prompt prompt
                    :extra-modes '(element-hint-mode)
@@ -159,7 +160,8 @@ FUNCTION is the action to perform on the selected elements."
                     :multi-selection-p multi-selection-p
                     :constructor (lambda (source)
                                    (declare (ignore source))
-                                   (add-element-hints :selector selector)))
+                                   (add-element-hints :selector selector)
+				   (document-scroll-position scroll-position)))
                    :after-destructor
                    (lambda ()
                      (with-current-buffer buffer
