@@ -4,7 +4,7 @@
 static unsigned long int
 browser_eval_callback (JSCValue *object)
 {
-        /* If the URI starts with the nyxt: scheme, evaluate*/
+        /* If the URI starts with the privileged scheme, evaluate. */
         if (!strncmp(PRIVILEGED_SCHEME,
                      webkit_web_page_get_uri(PAGE),
                      strlen(PRIVILEGED_SCHEME))) {
