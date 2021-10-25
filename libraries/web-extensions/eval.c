@@ -1,8 +1,8 @@
 #include "globals.h"
-#include "lisp.h"
+#include "eval.h"
 
 static unsigned long int
-lisp_eval_callback (JSCValue *object)
+browser_eval_callback (JSCValue *object)
 {
         /* If the URI starts with the nyxt: scheme, evaluate*/
         if (!strncmp(PRIVILEGED_SCHEME,
@@ -10,32 +10,29 @@ lisp_eval_callback (JSCValue *object)
                      strlen(PRIVILEGED_SCHEME))) {
                 char *json = jsc_value_to_json(object, 0);
                 GVariant *variant = g_variant_new("ms", json);
-                WebKitUserMessage *message = webkit_user_message_new("lisp.eval", variant);
+                WebKitUserMessage *message = webkit_user_message_new("browser.eval", variant);
                 SEND_MESSAGE_RETURN_ID(message, i);
         }
         return 0;
 }
 
-void inject_lisp_api (char* extension_name)
+void inject_eval_api (char* extension_name)
 {
         JSCContext *context = get_extension_context(IS_PRIVILEGED ? NULL : extension_name);
-        MAKE_CLASS(context, Lisp, "lisp");
 
-        MAKE_FN(context, lispEval, lisp_eval_callback, G_TYPE_ULONG, 1, JSC_TYPE_VALUE);
+        MAKE_FN(context, browserEval, browser_eval_callback, G_TYPE_ULONG, 1, JSC_TYPE_VALUE);
 
-        BIND_FN(context, "lisp", "eval", "lisp.eval = function (form) { \
+        jsc_value_object_set_property(
+                jsc_context_evaluate(context, "browser", -1), "eval",
+                JSCEVAL(context, "browser.eval = function (form) { \
     return new Promise(function (success, failure) {                    \
         try {                                                           \
-            browser.drain(lispEval(form), success, [], 5000);   \
+            browser.drain(browserEval(form), success); \
         } catch (error) {                                               \
             return failure(error);                                      \
         };                                                              \
     });                                                                 \
 };                                                                      \
                                                                         \
-lisp.eval");
-
-        jsc_value_object_set_property(
-                jsc_context_evaluate(context, "browser", -1), "lisp",
-                jsc_context_evaluate(context, "lisp", -1));
+browser.eval"));
 }
