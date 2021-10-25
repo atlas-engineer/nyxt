@@ -6,8 +6,6 @@ WebKitWebExtension *EXTENSION;
 
 GHashTable *EXTENSIONS_DATA;
 
-GHashTable *MESSAGES;
-
 int IS_PRIVILEGED;
 
 unsigned long int DATA_COUNTER;
