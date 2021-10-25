@@ -3,6 +3,22 @@
 
 #include <webkit2/webkit-web-extension.h>
 
+/** PRIVILEGED_SCHEME
+ *
+ * The scheme to allow browser.eval() on.
+ */
+#ifndef PRIVILEGED_SCHEME
+#define PRIVILEGED_SCHEME "nyxt:"
+#endif
+
+/** BROWSER_REPLY_TIMEOUT
+ *
+ * For how much milliseconds to wait for the browser replying to the
+ * API message. */
+#ifndef BROWSER_REPLY_TIMEOUT
+#define BROWSER_REPLY_TIMEOUT 5000
+#endif
+
 #define TODO_METHOD(Context, Object, Method)                            \
         do {                                                            \
                 jsc_value_object_set_property(                          \
