@@ -1,15 +1,41 @@
 #include "globals.h"
 
+/** PAGE
+ *
+ * The WebKitWebPage currently open.
+ */
 WebKitWebPage *PAGE;
 
+/** EXTENSION
+ *
+ * The WebKitWebExtension this code runs in.
+ */
 WebKitWebExtension *EXTENSION;
 
+/** EXTENSIONS_DATA
+ *
+ * The data to manage all the extensions loaded into the view.
+ *
+ * Is a GHashTable with string keys (extension names) and
+ * ExtensionData objects values.
+ */
 GHashTable *EXTENSIONS_DATA;
 
 int IS_PRIVILEGED;
 
+/** DATA_COUNTER
+ *
+ * The last ID in DATA extension-to-browser message table (see
+ * get_next_data_counter and SEND_MESSAGE_RETURN_ID.)
+ */
 unsigned long int DATA_COUNTER;
 
+/** DATA
+ *
+ * A hash table of all the messages from extensions to browser and
+ * vice versa. Keys are ulong integer IDs (see DATA_COUNTER), values
+ * are strings with the data JSON (of course when there's a reply.)
+ */
 GHashTable *DATA;
 
 unsigned long int
@@ -18,6 +44,10 @@ get_next_data_counter ()
         return ++DATA_COUNTER;
 }
 
+/** extensions_data_add_from_json
+ *
+ * Fill the EXTENSIONS_DATA with the extensions' metadata from json.
+ */
 void
 extensions_data_add_from_json(const char *json)
 {
@@ -55,6 +85,13 @@ extensions_data_add_from_json(const char *json)
         }
 }
 
+/** get_extension_world
+ *
+ * A helper to get the world associated with the extensions_name-named
+ * extension.
+ *
+ * Returns default world if the extension_name is NULL.
+ */
 WebKitScriptWorld *
 get_extension_world (char* extension_name)
 {
@@ -66,6 +103,13 @@ get_extension_world (char* extension_name)
         }
 }
 
+/** get_extension_context
+ *
+ * A helper to get the JSCContext associated with the
+ * extensions_name-named extension.
+ *
+ * Returns default world-associated JCContext if the extension_name is NULL.
+ */
 JSCContext *
 get_extension_context (char* extension_name)
 {
@@ -74,6 +118,11 @@ get_extension_context (char* extension_name)
         return webkit_frame_get_js_context_for_script_world(frame, world);
 }
 
+/** get_extension_id
+ *
+ * A helper to get the unique ID of the extension by its
+ * extension_name.
+ */
 char *
 get_extension_id (char* extension_name)
 {
@@ -142,6 +191,11 @@ get_extension_id (char* extension_name)
 /*                 return 0; */
 /* } */
 
+/** has_permission
+ *
+ * Check whether the extension (named extension_name) has requested
+ * permission.
+ */
 int
 has_permission (char* extension_name, char* permission)
 {
@@ -167,12 +221,37 @@ has_permission (char* extension_name, char* permission)
         return 1;
 }
 
+/** empty_constructor_callback
+ *
+ * A utility constructor callback when you don't need any object to be created.
+ */
 void *
 empty_constructor_callback (void)
 {
         return NULL;
 }
 
+/** message_reply_and_save_callback
+ *
+ * The callback to use for the replies to all the WebKitUserMessages
+ * sent to the browser. Parses the reply parameters and puts them into
+ * the matching DATA cell.
+ *
+ * user_data should be a ulong ID cast to void pointer. The
+ * approximate usage is:
+
+ unsigned long int index = get_next_data_counter();
+ webkit_web_page_send_message_to_view(
+     PAGE, message, NULL, message_reply_and_save_callback,
+     (void*) index);
+ return index;
+
+ * In the callback of the message-sending JS function inside the
+ * Promise-returing API endpoint.
+ *
+ * This pattern is neatly encapsulated into the
+ * SEND_MESSAGE_RETURN_ID, sou you'll be better off just using it.
+ */
 void
 message_reply_and_save_callback (GObject *web_page,
                                  GAsyncResult *res,
@@ -190,6 +269,14 @@ message_reply_and_save_callback (GObject *web_page,
                 g_hash_table_insert(DATA, index, contents);
 }
 
+/** get_result
+ *
+ * Look the result up in DATA.
+ * If there's a result and
+ * - check_only is set, return the result.
+ * - check_only is not set, return the result and remove it from
+ *   DATA.
+ */
 JSCValue *
 get_result (unsigned long int data_index, int check_only)
 {
@@ -207,7 +294,12 @@ get_result (unsigned long int data_index, int check_only)
         return jsc_value_new_undefined(context);
 }
 
-
+/** todo_method_callback
+ *
+ * A small plug to set all the not-yet-implemented method callbacks to.
+ *
+ * In most cases, TODO_METHOD macro will do the thing you want.
+ */
 JSCValue *
 todo_method_callback (GPtrArray *args, void *user_data)
 {
@@ -215,6 +307,14 @@ todo_method_callback (GPtrArray *args, void *user_data)
         return jsc_value_new_undefined(jsc_context_get_current());
 }
 
+/** todo_property_callback
+ *
+ * A small plug to set all the not-yet-implemented property callbacks to.
+ *
+ * In most cases, TODO_PROP macro will do the thing you want.
+ *
+ * Does not work at the moment.
+ */
 JSCValue *
 todo_property_callback (void *instance, void *user_data)
 {

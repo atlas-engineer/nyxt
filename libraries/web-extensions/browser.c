@@ -22,6 +22,14 @@ browser_check_result_callback (int index)
         return get_result(index, 1);
 }
 
+/** inject_browser
+ *
+ * While similar to other inject_* functions, this one should be
+ * invoked before anything else. It sets up the browser variable and
+ * all the guts of our WebExtensions implementation -- browser.drain,
+ * browser.getResult, browser.checkResult, and browser.replyMessage
+ * (JS methods with C callbacks working with the fundamental
+ * extensions data).*/
 void
 inject_browser (char* extension_name)
 {
