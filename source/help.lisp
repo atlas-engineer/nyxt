@@ -523,7 +523,7 @@ The version number is stored in the clipboard."
 (-> binding-keys (function-symbol &key (:modes list)) *)
 (defun binding-keys (fn &key (modes (if (current-buffer)
                                         (modes (current-buffer))
-                                        (mapcar #'make-instance (default-mode-symbols)))))
+                                        (mapcar (alex:compose #'make-instance #'name #'mode-command) %default-modes))))
   ;; We can't use `(modes (make-instance 'buffer))' because modes are only
   ;; instantiated after the buffer web view, which is not possible if there is
   ;; no *browser*.
