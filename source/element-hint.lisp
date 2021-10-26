@@ -120,7 +120,7 @@
         (append matching-hints other-hints))))
    (prompter:follow-mode-functions (lambda (suggestion)
                                      (highlight-selected-hint :element suggestion
-                                                              :scroll t)))
+                                                              :scroll nil)))
    (prompter:actions (list 'identity
                            (make-command click* (elements)
                              (dolist (element (rest elements))
