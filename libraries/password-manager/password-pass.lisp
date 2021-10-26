@@ -21,15 +21,14 @@
   ;; points to `~/work/pass`, would we follow symlinks, we would not be able to
   ;; truncate `~/.password-store/` in `~/work/pass/some/password.gpg`.  Because
   ;; of this, we don't follow symlinks.
-  (let ((raw-list (uiop:directory*
-                   ;; We truncate the root directory so that the password list
-                   ;; resembles the output from `pass list`. To do so, we
-                   ;; truncate `~/.password-store/` in the pathname strings of
-                   ;; the passwords.
-                   (format nil "~a/**/*.gpg"
-                           (password-directory password-interface))))
-        (dir-length (length (namestring
-                             (truename (password-directory password-interface))))))
+  (let* ((directory (truename (password-directory password-interface)))
+         (raw-list (uiop:directory*
+                       ;; We truncate the root directory so that the password list
+                       ;; resembles the output from `pass list`. To do so, we
+                       ;; truncate `~/.password-store/` in the pathname strings of
+                       ;; the passwords.
+                       (format nil "~a/**/*.gpg" directory)))
+         (dir-length (length (namestring directory))))
     (mapcar #'(lambda (x)
                 (subseq (namestring x) dir-length (- (length (namestring x)) 4)))
             raw-list)))
