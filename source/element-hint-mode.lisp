@@ -18,10 +18,16 @@
     (with-current-buffer buffer
       (toggle-transparent))))
 
+(define-command scroll-to-hint (&key (buffer (current-buffer)))
+  "Show the selected hint on screen."
+  (with-current-buffer buffer
+    (nyxt/web-mode::highlight-selected-hint :element (current-suggestion-value) :scroll t)))
+
 (define-mode element-hint-mode (nyxt/prompt-buffer-mode:prompt-buffer-mode)
   "Prompt buffer mode for element hinting."
   ((keymap-scheme
     (define-scheme "element-hint"
       scheme:cua
       (list
-       "M-i" 'toggle-hints-transparency)))))
+       "M-i" 'toggle-hints-transparency
+       "C-l" 'scroll-to-hint)))))
