@@ -264,11 +264,15 @@ separated from one another, so that each has its own behaviour and settings."))
   (print-unreadable-object (buffer stream :type t :identity t)
     (format stream "~a" (id buffer))))
 
+(defvar %default-modes '(web-mode base-mode)
+  "The default modes for unspecialized buffers.
+This is useful when there is no current buffer.")
+
 (export-always 'default-modes)
 (defgeneric default-modes (buffer)
   (:method-combination append)
   (:method append ((buffer buffer))
-    '(web-mode base-mode))
+    %default-modes)
   (:documentation "The symbols of the modes to instantiate on buffer creation.
 The mode instances are stored in the `modes' BUFFER slot.
 
@@ -736,13 +740,6 @@ BUFFER's modes."
   (dolist (mode (modes buffer))
     (on-signal-load-finished mode url))
   (run-thread (hooks:run-hook (buffer-loaded-hook buffer) buffer)))
-
-(defun default-mode-symbols ()
-  "Return default mode symbols (with package prefix)."
-  (let ((default-modes
-          (second (getf (mopu:slot-properties (find-class 'buffer) 'default-modes)
-                        :initform))))
-    (mapcar (alex:compose #'name #'mode-command) default-modes)))
 
 (hooks:define-hook-type buffer (function (buffer)))
 
