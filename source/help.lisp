@@ -594,6 +594,7 @@ the "
            (asdf-information ()
              (str:concat
               "ASDF version: " (getf +asdf-build-information+ :version) +newline+
+              "ASDF registries: " (->string asdf:*default-source-registries*) +newline+
               "Critical dependencies: " (->string (getf +asdf-build-information+ :critical-dependencies)) +newline+))
            (guix-information ()       ; TODO: Test in Live Nyxt.
              (getf +guix-build-information+ :version)))
