@@ -7,8 +7,8 @@
   ((executable (pathname->string (sera:resolve-executable "pass")))
    (sleep-timer (or (uiop:getenv "PASSWORD_STORE_CLIP_TIME") 45))
    (password-directory (or (uiop:getenv "PASSWORD_STORE_DIR")
-                           (namestring (format nil "~a/.password-store"
-                                               (uiop:getenv "HOME"))))
+                           (format nil "~a/.password-store" (uiop:getenv "HOME")))
+                       :type string
                        :reader password-directory))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -17,21 +17,23 @@
 (push 'password-store-interface *interfaces*)
 
 (defmethod list-passwords ((password-interface password-store-interface))
-  ;; Special care must be taken for symlinks. Say `~/.password-store/work`
-  ;; points to `~/work/pass`, would we follow symlinks, we would not be able to
-  ;; truncate `~/.password-store/` in `~/work/pass/some/password.gpg`.  Because
-  ;; of this, we don't follow symlinks.
-  (let* ((directory (truename (password-directory password-interface)))
-         (raw-list (uiop:directory*
-                       ;; We truncate the root directory so that the password list
-                       ;; resembles the output from `pass list`. To do so, we
-                       ;; truncate `~/.password-store/` in the pathname strings of
-                       ;; the passwords.
-                       (format nil "~a/**/*.gpg" directory)))
-         (dir-length (length (namestring directory))))
-    (mapcar #'(lambda (x)
-                (subseq (namestring x) dir-length (- (length (namestring x)) 4)))
-            raw-list)))
+  (let ((directory (uiop:truename* (uiop:parse-native-namestring
+                                    (password-directory password-interface)))))
+    (when directory
+      ;; Special care must be taken for symlinks. Say `~/.password-store/work`
+      ;; points to `~/work/pass`, would we follow symlinks, we would not be able to
+      ;; truncate `~/.password-store/` in `~/work/pass/some/password.gpg`.  Because
+      ;; of this, we don't follow symlinks.
+      (let* ((raw-list (uiop:directory*
+                        ;; We truncate the root directory so that the password list
+                        ;; resembles the output from `pass list`. To do so, we
+                        ;; truncate `~/.password-store/` in the pathname strings of
+                        ;; the passwords.
+                        (format nil "~a/**/*.gpg" directory)))
+             (dir-length (length (namestring directory))))
+        (mapcar #'(lambda (x)
+                    (subseq (namestring x) dir-length (- (length (namestring x)) (length ".gpg"))))
+                raw-list)))))
 
 (defmethod clip-password ((password-interface password-store-interface) &key password-name service)
   (declare (ignore service))
