@@ -1449,7 +1449,17 @@ That is to say, the one with the most recent access time after the current buffe
 
 (export-always 'mode-name)
 (defun mode-name (mode)
-  (class-name (original-class mode)))
+  "Return the full MODE symbol (with package prefix).
+For user modes, return the parent mode.
+If MODE does not exist, return nil."
+  (cond
+    ((eq mode 'root-mode)
+     mode)
+    ((symbolp mode)
+     (alex:when-let ((command (mode-command mode)))
+       (name command)))
+    (t
+     (mode-name (sera:class-name-of mode)))))
 
 (export-always 'disable-modes)
 (defun disable-modes (modes &optional (buffer (current-buffer)))
