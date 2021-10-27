@@ -80,6 +80,9 @@ jobs:
         sha256sum nyxt-*.tar.xz > nyxt-$(cat version).tar.xz.sha256sum
         echo "Store path: $(cat store-path.txt)" >> guix-recipe.txt
         echo "Guix describe: $(guix describe)" >> guix-recipe.txt
+    - name: Generate source archive with submodules
+      shell: bash
+      run: git ls-files --recurse-submodules | tar caf nyxt-$(cat version)-source-with-submodules.tar.xz -T-
 
     - name: Release
       uses: ncipollo/release-action@v1
