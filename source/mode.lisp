@@ -168,28 +168,20 @@ It is run before the destructor.")
   "Return the mode corresponding to MODE-SYMBOL in active in BUFFER.
 Return nil if mode is not found.  MODE-SYMBOL does not have to be namespaced, it
 can be 'web-mode as well as 'nyxt/web-mode:web-mode."
-  (let ((mode-full-symbol (if (find-class mode-symbol nil)
-                              mode-symbol
-                              (alex:when-let ((c (mode-command mode-symbol)))
-                                (name c)))))
-    (when mode-full-symbol
-      (find mode-full-symbol
-            (modes buffer)
-            :key (alex:compose #'class-name #'original-class)))))
+  (alex:when-let ((mode-full-symbol (mode-name mode-symbol)))
+    (find mode-full-symbol
+          (modes buffer)
+          :key (alex:compose #'class-name #'original-class))))
 
 (export-always 'find-submode)
 (defmethod find-submode ((buffer buffer) mode-symbol)
   "Like `find-mode' but return the first mode in BUFFER that is a sub-mode of MODE-SYMBOL.
 It may be MODE-SYMBOL itself."
-  (let ((mode-full-symbol (if (find-class mode-symbol nil)
-                              mode-symbol
-                              (alex:when-let ((c (mode-command mode-symbol)))
-                                (name c)))))
-    (when mode-full-symbol
-      (find-if (lambda (m)
-                 (closer-mop:subclassp (class-of m)
-                                       (find-class mode-full-symbol)))
-               (modes buffer)))))
+  (alex:when-let ((mode-full-symbol (mode-name mode-symbol)))
+    (find-if (lambda (m)
+               (closer-mop:subclassp (class-of m)
+                                     (find-class mode-full-symbol)))
+             (modes buffer))))
 
 (export-always 'current-mode)
 (defun current-mode (mode-sym)
@@ -233,7 +225,7 @@ We loop over `*command-list*' to find the mode command since a mode may be
 defined in any package and is unique.
 
 If MODE-SYMBOL is a mode that inherits from another without defining its own
-toggle command, return the toggle command of the parent."
+toggle command (like a user class), return the toggle command of the parent."
   (unless (eq mode-symbol 'root-mode)   ; `root-mode' has not command.
     (or (find (string mode-symbol) *command-list*
               :key (lambda (command) (string (name command)))
