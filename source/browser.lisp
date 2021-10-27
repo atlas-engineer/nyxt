@@ -276,16 +276,18 @@ prevents otherwise."))
        (if (or (getf *options* :no-init)
                (not (uiop:file-exists-p (expand-path *init-file-path*))))
            (startup browser urls)
-           (handler-case (startup browser urls)
-             (error (c)
-               (log:error "Startup failed (probably due to a mistake in ~s):~&~a"
-                          (expand-path *init-file-path*) c)
-               (if *run-from-repl-p*
-                   (progn
-                     (quit)
-                     (reset-all-user-classes)
-                     (apply #'start (append *options* (list :urls urls :no-init t))))
-                   (restart-with-message c))))))))
+           (catch 'startup-error
+             (handler-bind ((error (lambda (c)
+                                     (log:error "Startup failed (probably due to a mistake in ~s):~&~a"
+                                                (expand-path *init-file-path*) c)
+                                     (throw 'startup-error
+                                       (if *run-from-repl-p*
+                                           (progn
+                                             (quit)
+                                             (reset-all-user-classes)
+                                             (apply #'start (append *options* (list :urls urls :no-init t))))
+                                           (restart-with-message c))))))
+               (startup browser urls)))))))
   ;; Set `init-time' at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)
