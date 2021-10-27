@@ -45,7 +45,9 @@
                  :margin "0")
              (li :padding "2px")))
           :documentation "The CSS applied to a REPL when it is set-up.")
-   (evaluation-history (list))
+   (evaluation-history (list)
+                       :documentation "A list of pairs of (INPUT RESULTS).
+INPUT is a string and RESULTS is a list of Lisp values.")
    (constructor
     (lambda (mode)
       (initialize-display mode)
@@ -56,9 +58,9 @@
   (pflet ((input-text ()
            (ps:chain document (get-element-by-id "input-buffer") value)))
     (let ((input (input-text)))
-      (add-object-to-evaluation-history repl (format nil "> ~a" input))
-      (dolist (result (nyxt::evaluate input))
-        (add-object-to-evaluation-history repl result))
+      (add-object-to-evaluation-history repl
+                                        (list (format nil "> ~a" input)
+                                              (nyxt::evaluate input)))
       (reset-input repl)
       (update-evaluation-history-display repl))))
 
@@ -88,8 +90,10 @@
 (defmethod update-evaluation-history-display ((repl repl-mode))
   (flet ((generate-evaluation-history-html (repl)
            (spinneret:with-html-string
-            (:ul (loop for item in (reverse (evaluation-history repl))
-                       collect (:li item))))))
+             (:ul (loop for (input results) in (reverse (evaluation-history repl))
+                        collect (:li input
+                                     (loop for result in results
+                                           collect (:li (prin1-to-string result)))))))))
     (ffi-buffer-evaluate-javascript-async
      (buffer repl)
      (ps:ps (setf (ps:chain document (get-element-by-id "evaluation-history") |innerHTML|)
