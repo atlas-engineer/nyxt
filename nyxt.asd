@@ -336,7 +336,8 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
 (defsystem "nyxt/gtk"
   :depends-on (nyxt
                cl-cffi-gtk
-               cl-webkit2)
+               cl-webkit2
+               nyxt/web-extensions)
   :pathname "source/"
   :serial t
   :components ((:file "web-extensions")
@@ -607,3 +608,34 @@ See `asdf::*immutable-systems*'."
   :components ((:file "libraries/theme/test-package"))
   :perform (test-op (op c)
                     (nyxt-run-test c "libraries/theme/tests/")))
+
+(asdf:defsystem "nyxt/web-extensions"
+  :defsystem-depends-on (serapeum)
+  :pathname "libraries/web-extensions/"
+  :perform (compile-op
+            (o c)
+            (let ((c-flags (serapeum:tokens
+                            (uiop:run-program
+                             '("pkg-config" "gobject-2.0" "webkit2gtk-web-extension-4.0" "--cflags")
+                             :output '(:string :stripped t))))
+                  (ld-flags (serapeum:tokens
+                             (uiop:run-program
+                              '("pkg-config" "gobject-2.0" "webkit2gtk-web-extension-4.0" "--libs")
+                              :output '(:string :stripped t))))
+                  (files '("nyxt" "globals" "extevent" "browser" "tabs" "management"
+                           "runtime" "extension" "storage" "alarms" "bookmarks"
+                           "browser_action" "commands" "histpry" "nptifications"
+                           "permissions" "web_navigation" "web_request" "eval")))
+              (mapcar (lambda (c-file)
+                        ;; TODO: Allow compiler customization?
+                        (uiop:run-program `("gcc" "-c" ,(asdf:system-relative-pathname
+                                                         c c-file :type "c")
+                                                  ,@c-flags "-fPIC")))
+                      files)
+              ;; TODO: Allow linker customization.
+              (uiop:run-program `("ld" "-fPIC" "-shared" "-o" "libnyxt.so"
+                                       ,@(mapcar (lambda (o-file)
+                                                   (asdf:system-relative-pathname
+                                                    c o-file :type "o"))
+                                                 o-files)
+                                       ,@ld-flags)))))
