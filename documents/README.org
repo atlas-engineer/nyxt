@@ -47,7 +47,7 @@ Nyxt repository into =~/common-lisp= (or [[https://www.common-lisp.net/project/a
 will find it]]).
 
 Second, install [[https://guix.gnu.org][Guix]] and follow the instructions in the
-[[../build-scripts/guix.scm]] file of the Nyxt repository.
+[[../build-scripts/nyxt.scm]] file of the Nyxt repository.
 
 * Developer installation with Nix
 ** Building for local development
