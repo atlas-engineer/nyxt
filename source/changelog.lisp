@@ -233,3 +233,22 @@ particular revision.")
    (:li "Report load-after-system warnings.  (Thanks to @hendursaga!)")
    (:li "Properly scroll into view when in visual-mode.  (Thanks to @aaron-tan!)")
    (:li "Fix upload of files with wildcard characters in their name.  (Thanks to @shamazmazum!)")))
+
+(define-version "2.2.2"
+  (:ul
+   (:li "HTTP redirects are no longer stored to history.")
+   (:li "Selecting hints in prompt-buffer no longer scrolls the page automatically, press "
+        (:code "C-l") " instead."))
+  (:h3 "Build and compilation changes")
+  (:ul
+   (:li "The source tarball now embeds the Git submodules and thus fixes build errors about missing dependencies."))
+  (:h3 "Platform support")
+  (:ul
+   (:li "Fix type errors when building with some unusual compiler. (Thanks to @lpaviets!)"))
+  (:h3 "Bug fixes")
+  (:ul
+   (:li "Fix prompt buffer paging.")
+   (:li (:code "switch-buffer") " is no longer triggered when there is no buffer to restore.")
+   (:li "On various occasions, KeepassXC entries could be missing from the prompt, this is now fixed.")
+   (:li (:code "lisp-repl") " now prints all results properly.")
+   (:li "Onion URLs are now supported.  (Thanks to @hendursaga!)")))
