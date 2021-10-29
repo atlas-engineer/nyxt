@@ -112,6 +112,8 @@ Domain name validation may take significant time since it looks up the DNS."
                 (quri:uri-host url)
                 (or
                  skip-domain-validation
+                 ;; Onion links or not resolved via DNS, just accept them.
+                 (string= (quri:uri-tld url) "onion")
                  ;; "http://algo" has the "algo" hostname but it's probably invalid
                  ;; unless it's found on the local network.  We also need to
                  ;; support "localhost" and the current system hostname.
