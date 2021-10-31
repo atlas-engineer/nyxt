@@ -108,7 +108,13 @@ For generic functions, describe all the methods."
                    (:h1 (symbol-name input) " " (write-to-string (mopu:method-specializers method)))
                    (:pre (documentation method 't))
                    (:h2 "Argument list")
-                   (:p (write-to-string (closer-mop:method-lambda-list method))))))
+                   (:p (write-to-string (closer-mop:method-lambda-list method)))
+                   (alex:when-let* ((definition (swank:find-definition-for-thing method))
+                                    (not-error-p (null (getf definition :error)))
+                                    (file (rest (getf definition :location)))
+                                    (location (alex:assoc-value (rest definition) :snippet)))
+                     (:h2 (format nil "Source ~a" file))
+                     (:pre (first location))))))
           (with-current-html-buffer (buffer
                                      (str:concat "*Help-" (symbol-name input) "*")
                                      'nyxt/help-mode:help-mode)
@@ -123,12 +129,17 @@ For generic functions, describe all the methods."
                         (when (macro-function input) " (macro)"))
                    (:pre (documentation input 'function))
                    (:h2 "Argument list")
-                   (:p (write-to-string (mopu:function-arglist input))))
-                 #+sbcl
-                 (unless (macro-function input)
-                   (spinneret:with-html-string
+                   (:p (write-to-string (mopu:function-arglist input)))
+                   #+sbcl
+                   (unless (macro-function input)
                      (:h2 "Type")
-                     (:p (format nil "~s" (sb-introspect:function-type input))))))))))
+                     (:p (format nil "~s" (sb-introspect:function-type input))))
+                   (alex:when-let* ((definition (swank:find-definition-for-thing (symbol-function input)))
+                                    (not-error-p (null (getf definition :error)))
+                                    (file (rest (getf definition :location)))
+                                    (location (alex:assoc-value (rest definition) :snippet)))
+                     (:h2 (format nil "Source ~a" file))
+                     (:pre (first location)))))))))
       (prompt
        :prompt "Describe function"
        :sources (make-instance 'function-source))))
