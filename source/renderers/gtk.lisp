@@ -69,7 +69,11 @@ See https://developer.gnome.org/gobject/stable/gobject-Signals.html#signal-memor
                       :documentation "Directory in which the WebKitGTK
 data-manager will store the data separately for each buffer.")
    (gtk-extensions-path (make-instance 'gtk-extensions-data-path)
-                        :documentation "Directory to store the WebKit-specific extensions in."))
+                        :documentation "Directory to store the WebKit-specific extensions in.")
+   (loading-webkit-history-p nil
+                             :type boolean
+                             :export nil
+                             :documentation "Internal hack, do not use me!"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
@@ -767,9 +771,6 @@ See `gtk-browser's `modifier-translator' slot."
             (webkit:webkit-policy-decision-ignore response-policy-decision)
             nil)))))
 
-(defvar *loading-webkit-history-p* nil
-  "Internal hack, do not use!")
-
 (define-ffi-method on-signal-load-changed ((buffer gtk-buffer) load-event)
   ;; `url' can be nil if buffer didn't have any URL associated
   ;; to the web view, e.g. the start page, or if the load failed.
@@ -787,7 +788,7 @@ See `gtk-browser's `modifier-translator' slot."
           ((eq load-event :webkit-load-committed)
            (on-signal-load-committed buffer url))
           ((eq load-event :webkit-load-finished)
-           (setf *loading-webkit-history-p* nil)
+           (setf (loading-webkit-history-p buffer) nil)
            (unless (eq (slot-value buffer 'load-status) :failed)
              (setf (slot-value buffer 'load-status) :finished))
            (on-signal-load-finished buffer url)
@@ -998,8 +999,8 @@ See `gtk-browser's `modifier-translator' slot."
     ;; TODO: WebKitGTK sometimes (when?) triggers "load-failed" when loading a
     ;; page from the webkit-history cache.  Upstream bug?  Anyways, we should
     ;; ignore these.
-    (if *loading-webkit-history-p*
-        (setf *loading-webkit-history-p* nil)
+    (if (loading-webkit-history-p buffer)
+        (setf (loading-webkit-history-p buffer) nil)
         (unless (member (slot-value buffer 'load-status) '(:finished :failed))
           (echo "Failed to load URL ~a in buffer ~a." failing-url (id buffer))
           (setf (slot-value buffer 'load-status) :failed)
@@ -1335,7 +1336,7 @@ As a second value, return the current buffer index starting from 0."
     (values history-list current-index)))
 
 (defmethod load-webkit-history-entry ((buffer gtk-buffer) history-entry)
-  (setf *loading-webkit-history-p* t)
+  (setf (loading-webkit-history-p buffer) t)
   (webkit:webkit-web-view-go-to-back-forward-list-item
    (gtk-object buffer)
    (webkit-history-entry-gtk-object history-entry)))
