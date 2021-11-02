@@ -655,7 +655,18 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
   nil)
 
 (defmethod nyxt:on-signal-load-redirected ((mode web-mode) url)
-  (push (render-url url) (history-blocklist mode)))
+  (with-history-access (history (buffer mode))
+    (sera:and-let* ((owner (htree:owner history (id (buffer mode))))
+                    (node (htree:current owner))
+                    (data (htree:data node)))
+      ;; We need to rewrite the previous URL with the data of the URL we get
+      ;; after redirection, thus this entry rewriting.
+      ;;
+      ;; A good alternative would be to delete the previous node and add the new
+      ;; one to history instead, but `htree' is immutable in this regard.
+      (setf (slot-value data 'nyxt:url) url
+            (title data) (title (buffer mode))
+            (nyxt::last-access data) (local-time:now)))))
 
 (defmethod nyxt:on-signal-load-finished ((mode web-mode) url)
   (add-url-to-history url (buffer mode) mode)
