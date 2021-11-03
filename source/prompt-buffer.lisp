@@ -305,7 +305,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                "display:none;"
                                                "display:revert;")
                                     (loop for attribute-key in (prompter:active-attributes-keys source)
-                                          collect (:th attribute-key)))
+                                          collect (:th (:raw attribute-key))))
                                (loop ;; TODO: Only print as many lines as fit the height.  But how can we know in advance?
                                      ;; Maybe first make the table, then add the element one by one _if_ there are into view.
                                      with max-suggestion-count = 10
@@ -319,7 +319,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                   :class (when (prompter:marked-p source (prompter:value suggestion))
                                                            "marked")
                                                   (loop for (nil attribute) in (prompter:active-attributes suggestion :source source)
-                                                        collect (:td attribute))))))))))
+                                                        collect (:td (:raw attribute)))))))))))
       (ffi-buffer-evaluate-javascript
        prompt-buffer
        (ps:ps
