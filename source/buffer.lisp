@@ -751,8 +751,7 @@ BUFFER's modes."
 
 (export-always 'on-signal-load-finished)
 (defmethod on-signal-load-finished ((buffer buffer) url)
-  ;; Need to force document-model re-parsing.
-  (setf (document-model buffer) nil)
+  (update-document-model :buffer buffer)
   (dolist (mode (modes buffer))
     (on-signal-load-finished mode url))
   (run-thread (hooks:run-hook (buffer-loaded-hook buffer) buffer)))
