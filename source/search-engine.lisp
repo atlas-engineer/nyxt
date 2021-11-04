@@ -44,7 +44,13 @@ Can be built via `make-search-completion-function'"))
           (:processing-function (function (t) list-of-strings)))
     (function (string) list-of-strings))
 (defun make-search-completion-function (&key base-url
-                                          (request-function #'dex:get)
+                                          (request-function
+                                           #'(lambda (url &rest args)
+                                               (handler-case
+                                                   (apply #'dex:get url args)
+                                                 (usocket:ns-host-not-found-error ()
+                                                   (echo-warning "There's no Internet connection to make search completion")
+                                                   nil))))
                                           request-args
                                           (processing-function #'cl-json:decode-json-from-string))
   "Return a function suitable to be a `completion-function' of `search-engine'.

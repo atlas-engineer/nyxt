@@ -63,14 +63,7 @@ after the mode-specific hook.")
                                          :processing-function
                                          #'(lambda (results)
                                              (when results
-                                               (second (json:decode-json-from-string results))))
-                                         :request-function
-                                         #'(lambda (url &rest args)
-                                             (handler-case
-                                                 (apply #'dex:get url args)
-                                               (usocket:ns-host-not-found-error ()
-                                                 (echo-warning "There's no Internet connection to make Wikipedia completion")
-                                                 nil)))))
+                                               (second (json:decode-json-from-string results))))))
                          (make-instance 'search-engine
                                         :shortcut "ddg"
                                         :search-url "https://duckduckgo.com/?q=~a"
@@ -82,14 +75,7 @@ after the mode-specific hook.")
                                          #'(lambda (results)
                                              (when results
                                                (mapcar #'cdar
-                                                       (json:decode-json-from-string results))))
-                                         :request-function
-                                         (lambda (url &rest args)
-                                           (handler-case
-                                               (apply #'dex:get url args)
-                                             (usocket:ns-host-not-found-error ()
-                                               (echo-warning "There's no Internet connection to make DuckDuckGo completion")
-                                               nil))))))
+                                                       (json:decode-json-from-string results)))))))
                    :type (cons search-engine *)
                    :documentation "A list of the `search-engine' objects.
 You can invoke them from the prompt-buffer by prefixing your query with SHORTCUT.
