@@ -1253,8 +1253,9 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
                              (when (and (completion-function engine) (rest terms))
                                (mapcar (alex:curry #'make-instance 'new-url-query
                                                    :engine engine :query)
-                                       (funcall (completion-function engine)
-                                                (str:join " " (rest terms)))))))
+                                       (with-protect ("Error while completing search: ~a" :condition)
+                                         (funcall (completion-function engine)
+                                                  (str:join " " (rest terms))))))))
                           engines))))
 
 (define-class new-url-or-search-source (prompter:source)
