@@ -250,10 +250,10 @@ See also `connect-signal'."
                       (gtk-object ,object) ,signal ,fn)))
      (push handler-id (handler-ids ,object))))
 
-(defmacro connect-signal (object signal run-in-new-thread-p (&rest args) &body body)
+(defmacro connect-signal (object signal new-thread-p (&rest args) &body body)
   "Connect SIGNAL to OBJECT with a lambda that takes ARGS.
 OBJECT must have the `gtk-object' and `handler-ids' slots. If
-`run-in-new-thread-p' is set to t, then a new thread will be launched for the
+`new-thread-p' is non-nil, then a new thread will be launched for the
 response.  The BODY is wrapped with `with-protect'."
   (multiple-value-bind (forms declares documentation)
       (alex:parse-body body :documentation t)
@@ -262,9 +262,9 @@ response.  The BODY is wrapped with `with-protect'."
                         (lambda (,@args)
                           ,@(sera:unsplice documentation)
                           ,@declares
-                          ,(if run-in-new-thread-p
+                          ,(if new-thread-p
                                `(run-thread ,@forms)
-                               `(with-protect ("Error in signal thread: ~a" :condition)
+                               `(with-protect ("Error in signal on renderer thread: ~a" :condition)
                                   ,@forms))))))
        (push handler-id (handler-ids ,object)))))
 
