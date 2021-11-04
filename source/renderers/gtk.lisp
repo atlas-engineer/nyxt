@@ -960,7 +960,7 @@ See `gtk-browser's `modifier-translator' slot."
       (ffi-buffer-enable-smooth-scrolling buffer t)
       (ffi-buffer-enable-smooth-scrolling buffer nil))
   (connect-signal-function buffer "decide-policy" (make-decide-policy-handler buffer))
-  (connect-signal buffer "load-changed" nil (web-view load-event)
+  (connect-signal buffer "load-changed" t (web-view load-event)
     (declare (ignore web-view))
     (on-signal-load-changed buffer load-event))
   (connect-signal buffer "mouse-target-changed" nil (web-view hit-test-result modifiers)
