@@ -46,8 +46,7 @@ Can be built via `make-search-completion-function'"))
 (defun make-search-completion-function (&key base-url
                                           (request-function
                                            #'(lambda (url &rest args)
-                                               (handler-case
-                                                   (apply #'dex:get url args)
+                                               (handler-case (apply #'dex:get url args)
                                                  (usocket:ns-host-not-found-error ()
                                                    (echo-warning "There's no Internet connection to make search completion")
                                                    nil))))
