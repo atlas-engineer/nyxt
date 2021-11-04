@@ -117,19 +117,19 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                (:file "input")
                (:file "prompt-buffer")
                (:file "command-commands")
-               (:file "mode/prompt-buffer-mode")
                (:file "recent-buffers")
                (:file "password")
                (:file "bookmark")
                (:file "annotate")
                (:file "history")
                (:file "autofill")
-               (:file "mode/auto-mode")
                (:file "external-editor")
                (:file "file-manager")
                #+quicklisp
                (:file "lisp-system")
                ;; Core Modes
+               (:file "mode/auto-mode")
+               (:file "mode/prompt-buffer-mode")
                (:file "mode/editor-mode")
                (:file "mode/plaintext-editor-mode")
                (:file "mode/buffer-listing-mode")
@@ -166,7 +166,6 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                (:file "mode/diff-mode")
                (:file "mode/expedition-mode")
                (:file "mode/tts-mode")
-               ;; Web-mode commands
                (:file "mode/bookmarklets")
                (:file "mode/input-edit")
                (:file "mode/element-hint")
@@ -179,9 +178,9 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                (:file "mode/spell-check")
                (:file "mode/zoom")
                (:file "mode/record-input-field")
+               (:file "mode/macro-edit-mode")
                ;; Needs web-mode
                (:file "help")
-               (:file "mode/macro-edit-mode")
                (:file "status")
                ;; Depends on everything else:
                (:file "about")
