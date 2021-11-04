@@ -73,7 +73,10 @@ data-manager will store the data separately for each buffer.")
    (loading-webkit-history-p nil
                              :type boolean
                              :export nil
-                             :documentation "Internal hack, do not use me!"))
+                             :documentation "Internal hack, do not use me!
+WebKitGTK may trigger 'load-failed' when loading a page from the WebKit-history
+cache.  Upstream bug?  We use this slot to know when to ignore these load
+failures."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
