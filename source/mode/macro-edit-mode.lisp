@@ -62,7 +62,7 @@ represents a command.")))
               (render-functions)))))))
 
 (defmethod command-help ((macro-editor macro-edit-mode) command-id)
-  (nyxt:describe-command (gethash command-id (functions macro-editor))))
+  (nyxt::describe-command (gethash command-id (functions macro-editor))))
 
 (defmethod add-function ((macro-editor macro-edit-mode) command)
   (setf (gethash (parse-integer (symbol-name (gensym "")))
