@@ -60,7 +60,17 @@ after the mode-specific hook.")
                                         :completion-function
                                         (make-search-completion-function
                                          :base-url "https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=~a"
-                                         :processing-function (alex:compose #'second #'json:decode-json-from-string)))
+                                         :processing-function
+                                         #'(lambda (results)
+                                             (when results
+                                               (second (json:decode-json-from-string results))))
+                                         :request-function
+                                         #'(lambda (url)
+                                             (handler-case
+                                                 (dex:get url)
+                                               (usocket:ns-host-not-found-error ()
+                                                 (echo-warning "There's no Internet connection to make Wikipedia completion")
+                                                 nil)))))
                          (make-instance 'search-engine
                                         :shortcut "ddg"
                                         :search-url "https://duckduckgo.com/?q=~a"
@@ -70,8 +80,16 @@ after the mode-specific hook.")
                                          :base-url "https://duckduckgo.com/ac/?q=~a"
                                          :processing-function
                                          #'(lambda (results)
-                                             (mapcar #'cdar
-                                                     (json:decode-json-from-string results))))))
+                                             (when results
+                                               (mapcar #'cdar
+                                                       (json:decode-json-from-string results))))
+                                         :request-function
+                                         (lambda (url)
+                                           (handler-case
+                                               (dex:get url)
+                                             (usocket:ns-host-not-found-error ()
+                                               (echo-warning "There's no Internet connection to make DuckDuckGo completion")
+                                               nil))))))
                    :type (cons search-engine *)
                    :documentation "A list of the `search-engine' objects.
 You can invoke them from the prompt-buffer by prefixing your query with SHORTCUT.
