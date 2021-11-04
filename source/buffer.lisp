@@ -65,9 +65,9 @@ after the mode-specific hook.")
                                              (when results
                                                (second (json:decode-json-from-string results))))
                                          :request-function
-                                         #'(lambda (url)
+                                         #'(lambda (url &rest args)
                                              (handler-case
-                                                 (dex:get url)
+                                                 (apply #'dex:get url args)
                                                (usocket:ns-host-not-found-error ()
                                                  (echo-warning "There's no Internet connection to make Wikipedia completion")
                                                  nil)))))
@@ -84,9 +84,9 @@ after the mode-specific hook.")
                                                (mapcar #'cdar
                                                        (json:decode-json-from-string results))))
                                          :request-function
-                                         (lambda (url)
+                                         (lambda (url &rest args)
                                            (handler-case
-                                               (dex:get url)
+                                               (apply #'dex:get url args)
                                              (usocket:ns-host-not-found-error ()
                                                (echo-warning "There's no Internet connection to make DuckDuckGo completion")
                                                nil))))))
