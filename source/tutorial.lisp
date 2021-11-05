@@ -179,13 +179,13 @@ Bookmarks can have the following settings:")
                                 set-url-from-bookmark delete-bookmark
                                 list-bookmarks)))
    (:h3 "Application mode")
-   (:p "The command " (:code "application-mode") " forwards all keys to the
+   (:p "The command " (:code "passthrough-mode") " forwards all keys to the
 renderer. For instance, using the default binding of Nyxt (" (:code "web-cua-map") ") the
 key-binding " (:code "C-i") " executes " (:code "autofill") ". Suppose
 a user is using their email client which also uses " (:code "C-i") " for the italic command. Thus, after
-executing " (:code "application-mode") " the " (:code "C-i") " binding is associated
+executing " (:code "passthrough-mode") " the " (:code "C-i") " binding is associated
 with the webpage's italic command instead of " (:code "autofill") ". Finally, the
-user can return to their configuration just by executing " (:code "application-mode") " again.")
+user can return to their configuration just by executing " (:code "passthrough-mode") " again.")
    (:h3 "Enable, disable, and toggle multiple modes")
    (:p "The command " (:code "enable-mode") " allows the user to apply multiple
 modes (such as " (:code "nosound-mode") " and " (:code "dark-mode") ") to
