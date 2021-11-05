@@ -32,4 +32,6 @@
            "Clear"))
       (:ul
        (loop for message in (reverse (nyxt:messages-content *browser*))
-             collect (:li message))))))
+             collect (if (html-string-p message)
+                         (:li (:raw message))
+                         (:li (:pre message))))))))
