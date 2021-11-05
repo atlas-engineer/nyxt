@@ -576,9 +576,9 @@ nothing is done if file is missing."
                            (and *browser*
                                 (ignore-errors
                                  (gpg-key-key-id
-                                  (prompt1
-                                    :prompt "Recipient:"
-                                    :sources '(gpg-key-source))))))))
+                                  (first (prompt
+                                          :prompt "Recipient:"
+                                          :sources '(gpg-key-source)))))))))
         (with-input-from-string (in (with-output-to-string (stream)
                                       (setf result (funcall fun stream))))
           (gpg-write in gpg-file recipient))
