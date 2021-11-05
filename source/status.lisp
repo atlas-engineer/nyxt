@@ -13,7 +13,7 @@
     (loop for mode in (sera:filter #'visible-in-status-p (modes buffer))
           collect (let* ((formatted-mode (if (glyph-mode-presentation-p (status-buffer window))
                                              (glyph mode)
-                                           (format-mode mode))))
+                                             (format-mode mode))))
                     (if (html-string-p formatted-mode)
                         (:raw formatted-mode)
                         (:a :class "button" :href (lisp-url `(describe-class ',(mode-name mode)))
