@@ -35,14 +35,14 @@ To make this change permanent, you can customize
 \(setf nyxt/certificate-exception-mode:*default-certificate-exceptions*
       '(\"nyxt.atlas.engineer\" \"example.org\"))"
   (if (find-submode buffer 'certificate-exception-mode)
-      (let ((input (first (prompt
-                           :prompt "URL host to add to exception list:"
-                           :input (render-url (url buffer))
-                           :sources (list
-                                     (make-instance 'prompter:raw-source
-                                                    :name "URL")
-                                     (make-instance 'nyxt/web-mode::user-history-all-source
-                                                         :buffer buffer))))))
+      (let ((input (prompt1
+                     :prompt "URL host to add to exception list:"
+                     :input (render-url (url buffer))
+                     :sources (list
+                               (make-instance 'prompter:raw-source
+                                              :name "URL")
+                               (make-instance 'nyxt/web-mode::user-history-all-source
+                                              :buffer buffer)))))
         (sera:and-let* ((url (if (stringp input)
                                  (quri:uri input)
                                  (url (htree:data input))))

@@ -19,9 +19,9 @@
                                                      :multi-selection-p t)))
          (times (mapcar (lambda (unit)
                           (parse-integer
-                           (first (prompt
-                                   :prompt (format nil "Time interval (~a)" unit)
-                                   :sources (make-instance 'prompter:raw-source)))
+                           (prompt1
+                             :prompt (format nil "Time interval (~a)" unit)
+                             :sources (make-instance 'prompter:raw-source))
                            :junk-allowed t))
                         active-time-units))
          (to-seconds-multipliers

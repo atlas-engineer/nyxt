@@ -8,9 +8,9 @@
   (if word-supplied-p
       (enchant:with-dict (lang (spell-check-language *browser*))
         (enchant:dict-check lang word))
-      (let ((word (first (prompt
-                          :prompt "Spell check word"
-                          :sources (make-instance 'prompter:raw-source)))))
+      (let ((word (prompt1
+                    :prompt "Spell check word"
+                    :sources (make-instance 'prompter:raw-source))))
         (if (enchant:with-dict (lang (spell-check-language *browser*))
               (enchant:dict-check lang word))
             (echo "~s spelled correctly." word)
@@ -44,10 +44,10 @@ suggestions."
 
 (define-command spell-check-suggest-word (&key word)
   "Suggest a spelling for a given word."
-  (let ((selected-word (first (prompt
-                               :input word
-                               :prompt "Suggest spelling (3+ characters)"
-                               :sources (make-instance 'enchant-source)))))
+  (let ((selected-word (prompt1
+                         :input word
+                         :prompt "Suggest spelling (3+ characters)"
+                         :sources (make-instance 'enchant-source))))
     (trivial-clipboard:text selected-word)
     (echo "Word copied to clipboard.")))
 

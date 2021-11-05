@@ -351,15 +351,15 @@ rest in background buffers."
 (define-command import-bookmarks-from-html (&key (html-file nil))
   "Import bookmarks from an HTML file."
   (let ((html-file (or html-file
-                       (first (prompt
-                               ;; TODO: Is there a more intuitive directory for bookmarks?
-                               :input (uiop:native-namestring (uiop:getcwd))
-                               :sources (make-instance
-                                         'user-file-source
-                                         :filter-preprocessor
-                                         (make-file-source-preprocessor
-                                          (alex:disjoin (match-extension "html")
-                                                        #'uiop:directory-pathname-p))))))))
+                       (prompt1
+                         ;; TODO: Is there a more intuitive directory for bookmarks?
+                         :input (uiop:native-namestring (uiop:getcwd))
+                         :sources (make-instance
+                                   'user-file-source
+                                   :filter-preprocessor
+                                   (make-file-source-preprocessor
+                                    (alex:disjoin (match-extension "html")
+                                                  #'uiop:directory-pathname-p)))))))
     (if (and (uiop:file-exists-p html-file)
              (equal (pathname-type html-file) "html"))
         (with-open-file (in-html html-file :external-format :utf-8)

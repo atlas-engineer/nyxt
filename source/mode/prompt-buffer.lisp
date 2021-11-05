@@ -259,10 +259,10 @@ current unmarked selection."
 
 (define-command-prompt run-prompt-buffer-command (prompt-buffer)
   "Prompt for a command to call in PROMPT-BUFFER."
-  (let ((command (first (prompt
-                         :prompt "Command to run in current prompt buffer"
-                         :sources (list (make-instance 'prompt-buffer-command-source
-                                                       :parent-prompt-buffer prompt-buffer))))))
+  (let ((command (prompt1
+                   :prompt "Command to run in current prompt buffer"
+                   :sources (list (make-instance 'prompt-buffer-command-source
+                                                 :parent-prompt-buffer prompt-buffer)))))
     (funcall* command)))
 
 (defun prompt-buffer-actions (&optional (window (current-window)))
@@ -293,9 +293,9 @@ current unmarked selection."
 
 (define-command-prompt return-selection-over-action (prompt-buffer)
   "Prompt for an action to run over PROMPT-BUFFER selection."
-  (let ((action (first (prompt
-                        :prompt "Action to run on selection"
-                        :sources (list (make-instance 'action-source))))))
+  (let ((action (prompt1
+                 :prompt "Action to run on selection"
+                 :sources (list (make-instance 'action-source)))))
     (when action
       (prompter:return-selection prompt-buffer action))))
 
@@ -378,9 +378,9 @@ Only available if `multi-selection-p' is non-nil."
   "Choose a prompt-buffer input history entry to insert as input."
   (let ((history (prompter:history prompt-buffer)))
     (if (and history (not (containers:empty-p history)))
-        (let ((input (first (prompt
-                             :prompt "Input history"
-                             :sources (list (make-instance 'prompt-buffer-history-source))))))
+        (let ((input (prompt1
+                      :prompt "Input history"
+                      :sources (list (make-instance 'prompt-buffer-history-source)))))
           (unless (str:empty? input)
             (nyxt::set-prompt-buffer-input input)))
         (echo "Prompt buffer has no history."))))

@@ -57,17 +57,17 @@ for which the `executable' slot is non-nil."
     ((and (password-interface buffer)
           (has-method-p (password-interface buffer)
                         #'password:save-password))
-     (let* ((password-name (first (prompt
-                                   :prompt "Name for new password"
-                                   :input (or (quri:uri-domain (url (current-buffer))) "")
-                                   :sources (make-instance 'prompter:raw-source))))
-            (new-password (first (prompt
-                                  :invisible-input-p t
-                                  :prompt "New password (leave empty to generate)"
-                                  :sources (make-instance 'prompter:raw-source))))
-            (username (first (prompt
-                              :prompt "Username (can be empty)"
-                              :sources (make-instance 'prompter:raw-source)))))
+     (let* ((password-name (prompt1
+                             :prompt "Name for new password"
+                             :input (or (quri:uri-domain (url (current-buffer))) "")
+                             :sources (make-instance 'prompter:raw-source)))
+            (new-password (prompt1
+                            :invisible-input-p t
+                            :prompt "New password (leave empty to generate)"
+                            :sources (make-instance 'prompter:raw-source)))
+            (username (prompt1
+                        :prompt "Username (can be empty)"
+                        :sources (make-instance 'prompter:raw-source))))
        (password:save-password (password-interface buffer)
                                :username username
                                :password-name password-name
@@ -85,20 +85,20 @@ for which the `executable' slot is non-nil."
                                                             password-interface)))))
         :do (setf (password::password-file password-interface)
                   (uiop:native-namestring
-                   (first (prompt
-                           :prompt "Password file"
-                           :sources (list (make-instance
-                                           'user-file-source
-                                           :filter-preprocessor
-                                           (make-file-source-preprocessor
-                                            (alex:disjoin (match-extension "kdbx")
-                                                          #'uiop:directory-pathname-p)))))))))
+                   (prompt1
+                     :prompt "Password file"
+                     :sources (list (make-instance
+                                     'user-file-source
+                                     :filter-preprocessor
+                                     (make-file-source-preprocessor
+                                      (alex:disjoin (match-extension "kdbx")
+                                                    #'uiop:directory-pathname-p))))))))
   (loop :until (password:password-correct-p password-interface)
         :do (setf (password::master-password password-interface)
-                  (first (prompt
-                          :prompt "File password"
-                          :sources (list (make-instance 'prompter:raw-source))
-                          :invisible-input-p t)))))
+                  (prompt1
+                    :prompt "File password"
+                    :sources (list (make-instance 'prompter:raw-source))
+                    :invisible-input-p t))))
 
 (defmacro with-password (password-interface &body body)
   `(if (password:password-correct-p ,password-interface)
@@ -111,12 +111,12 @@ for which the `executable' slot is non-nil."
   "Copy password prompting for all the details without suggestions."
   (password-debug-info)
   (if (password-interface buffer)
-      (let* ((password-name (first (prompt
-                                    :prompt "Name of password"
-                                    :sources (make-instance 'prompter:raw-source))))
-             (service (first (prompt
-                              :prompt "Service"
-                              :sources (make-instance 'prompter:raw-source)))))
+      (let* ((password-name (prompt1
+                              :prompt "Name of password"
+                              :sources (make-instance 'prompter:raw-source)))
+             (service (prompt1
+                        :prompt "Service"
+                        :sources (make-instance 'prompter:raw-source))))
         (handler-case
             (password:clip-password (password-interface buffer)
                                     :password-name password-name
@@ -130,13 +130,13 @@ for which the `executable' slot is non-nil."
   (password-debug-info)
   (if (password-interface buffer)
       (with-password (password-interface buffer)
-        (first (prompt
-                :prompt "Password"
-                :input (quri:uri-domain (url buffer))
-                :sources (list (make-instance
-                                'password-source
-                                :buffer buffer
-                                :password-instance (password-interface buffer))))))
+        (prompt1
+          :prompt "Password"
+          :input (quri:uri-domain (url buffer))
+          :sources (list (make-instance
+                          'password-source
+                          :buffer buffer
+                          :password-instance (password-interface buffer)))))
       (echo-warning "No password manager found.")))
 
 (define-command copy-username (&optional (buffer (current-buffer)))

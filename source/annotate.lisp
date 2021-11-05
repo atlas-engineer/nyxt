@@ -71,10 +71,10 @@
 
 (define-command annotate-current-url (&optional (buffer (current-buffer)))
   "Create a annotation of the URL of BUFFER."
-  (let* ((data (first (prompt
-                       :prompt "Annotation"
-                       :sources (list (make-instance 'prompter:raw-source
-                                                     :name "Note")))))
+  (let* ((data (prompt1
+                 :prompt "Annotation"
+                 :sources (list (make-instance 'prompter:raw-source
+                                               :name "Note"))))
          (tags (prompt
                 :prompt "Tag(s)"
                 :sources (list (make-instance 'prompter:word-source
@@ -93,10 +93,10 @@
   "Create a annotation for the highlighted text of BUFFER."
   (with-current-buffer buffer
     (let* ((snippet (%copy))
-           (data (first (prompt
-                         :prompt "Annotation"
-                         :sources (list (make-instance 'prompter:raw-source
-                                                       :name "Note")))))
+           (data (prompt1
+                   :prompt "Annotation"
+                   :sources (list (make-instance 'prompter:raw-source
+                                                 :name "Note"))))
            (tags (prompt
                   :prompt "Tag(s)"
                   :sources (list (make-instance 'prompter:word-source

@@ -53,9 +53,9 @@ Function taking a `repeat-mode' instance.")
   (let ((seconds (or seconds
                      (ignore-errors
                       (parse-integer
-                       (first (prompt :prompt "Repeat every X seconds"
-                                      :input "5"
-                                      :sources (list (make-instance 'prompter:raw-source)))))))))
+                       (prompt1 :prompt "Repeat every X seconds"
+                                :input "5"
+                                :sources (list (make-instance 'prompter:raw-source))))))))
     (when seconds
       (enable-modes 'repeat-mode (current-buffer)
                     (list :repeat-interval seconds :repeat-action function)))))
@@ -65,9 +65,9 @@ Function taking a `repeat-mode' instance.")
   (let ((times (or times
                    (ignore-errors
                     (parse-integer
-                     (first (prompt :prompt "Repeat for X times"
-                                    :input "4"
-                                    :sources (list (make-instance 'prompter:raw-source)))))))))
+                     (prompt1 :prompt "Repeat for X times"
+                              :input "4"
+                              :sources (list (make-instance 'prompter:raw-source))))))))
     (when times
       (enable-modes 'repeat-mode (current-buffer)
                     (list :repeat-count times :repeat-action function)))))

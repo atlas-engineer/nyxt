@@ -317,10 +317,10 @@ and to index the top of the page.")
 
 (define-command history-backwards-query (&optional (buffer (current-buffer)))
   "Query parent URL to navigate back to."
-  (let ((input (first (prompt
-                       :prompt "Navigate backwards to"
-                       :sources (make-instance 'user-history-backwards-source
-                                               :buffer buffer)))))
+  (let ((input (prompt1
+                 :prompt "Navigate backwards to"
+                 :sources (make-instance 'user-history-backwards-source
+                                         :buffer buffer))))
     (when input
       (with-history-access (history buffer)
         (loop until (eq input (htree:owner-node history (id buffer)))
@@ -342,10 +342,10 @@ and to index the top of the page.")
 
 (define-command history-forwards-direct-children (&optional (buffer (current-buffer)))
   "Query child URL to navigate to."
-  (let ((input (first (prompt
-                       :prompt "Navigate forwards to"
-                       :sources (make-instance 'user-direct-history-forwards-source
-                                               :buffer buffer)))))
+  (let ((input (prompt1
+                 :prompt "Navigate forwards to"
+                 :sources (make-instance 'user-direct-history-forwards-source
+                                         :buffer buffer))))
     (when input
       (with-history-access (history buffer)
         (htree:go-to-child (htree:data input) history (id buffer)))
@@ -374,10 +374,10 @@ Otherwise go forward to the only child."
 
 (define-command history-forwards-query (&optional (buffer (current-buffer)))
   "Query forward-URL to navigate to."
-  (let ((input (first (prompt
-                       :prompt "Navigate forwards to"
-                       :sources (list (make-instance 'user-history-forwards-source
-                                                     :buffer buffer))))))
+  (let ((input (prompt1
+                 :prompt "Navigate forwards to"
+                 :sources (list (make-instance 'user-history-forwards-source
+                                               :buffer buffer)))))
     (when input
       (with-history-access (history buffer)
         ;; REVIEW: Alternatively, we could use the COUNT argument with
@@ -402,10 +402,10 @@ Otherwise go forward to the only child."
 
 (define-command history-forwards-all-query (&optional (buffer (current-buffer)))
   "Query URL to forward to, from all child branches."
-  (let ((input (first (prompt
-                       :prompt "Navigate forwards to (all branches)"
-                       :sources (list (make-instance 'user-all-history-forwards-source
-                                                     :buffer buffer))))))
+  (let ((input (prompt1
+                 :prompt "Navigate forwards to (all branches)"
+                 :sources (list (make-instance 'user-all-history-forwards-source
+                                               :buffer buffer)))))
     (when input
       (with-history-access (history buffer)
         (htree:forward history (id buffer)))
@@ -427,10 +427,10 @@ Otherwise go forward to the only child."
 
 (define-command history-all-query (&optional (buffer (current-buffer)))
   "Query URL to go to, from the whole history."
-  (let ((input (first (prompt
-                       :prompt "Navigate to"
-                       :sources (list (make-instance 'user-history-all-source
-                                                     :buffer buffer))))))
+  (let ((input (prompt1
+                 :prompt "Navigate to"
+                 :sources (list (make-instance 'user-history-all-source
+                                               :buffer buffer)))))
     (when input
       (with-history-access (history buffer)
         (htree:visit-all history (id buffer) input))

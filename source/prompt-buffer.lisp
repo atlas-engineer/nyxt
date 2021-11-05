@@ -457,8 +457,9 @@ See the documentation of `prompt-buffer' to know more about the options."
          (hide-prompt-buffer parent-thread-prompt-buffer)
          (error 'nyxt-prompt-buffer-canceled))))))
 
+(export-always 'prompt1)
 (defmacro prompt1 (&body body)
-  "Return the first result of a prompt list."
+  "Return the first result of a prompt."
   `(first (prompt ,@body)))
 
 (defmethod prompter:object-attributes ((prompt-buffer prompt-buffer))
@@ -475,10 +476,10 @@ See the documentation of `prompt-buffer' to know more about the options."
 (define-command resume-prompt ()
   "Query an older prompt and resume it."
   (let ((old-prompt
-          (first (prompt
-                  :resumable-p nil
-                  :prompt "Resume prompt session"
-                  :sources (list (make-instance 'resume-prompt-source))))))
+          (prompt1
+            :resumable-p nil
+            :prompt "Resume prompt session"
+            :sources (list (make-instance 'resume-prompt-source)))))
     (when old-prompt
       (prompter:resume old-prompt)
       (show-prompt-buffer old-prompt))))

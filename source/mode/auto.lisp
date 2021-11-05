@@ -222,10 +222,10 @@ The rules are:
         (when (not (mode-covered-by-auto-mode-p mode auto-mode enable-p))
           (if-confirm ("Permanently ~:[disable~;enable~] ~a for this URL?"
                        enable-p (mode-name mode))
-                      (let ((url (first (prompt
-                                         :prompt "URL:"
-                                         :input (render-url (url (buffer mode)))
-                                         :sources (make-instance 'prompter:raw-source)))))
+                      (let ((url (prompt1
+                                   :prompt "URL:"
+                                   :input (render-url (url (buffer mode)))
+                                   :sources (make-instance 'prompter:raw-source))))
                         (add-modes-to-auto-mode-rules (url-infer-match url)
                                                       :append-p t
                                                       :include (when enable-p (list invocation))
@@ -319,14 +319,14 @@ This command does not save non-rememberable modes. If you want to auto-mode to
 save a particular mode, configure it to be `rememberable-p' in your initfile.
 
 For the storage format see the comment in the head of your `auto-mode-rules-data-path' file."
-  (let ((url (first (prompt
-                     :prompt "URL:"
-                     :input (render-url (url (current-buffer)))
-                     :sources (list
-                               (make-instance 'prompter:raw-source
-                                              :name "New URL")
-                               (make-instance 'user-global-history-source
-                                              :actions '()))))))
+  (let ((url (prompt1
+              :prompt "URL:"
+              :input (render-url (url (current-buffer)))
+              :sources (list
+                        (make-instance 'prompter:raw-source
+                                       :name "New URL")
+                        (make-instance 'user-global-history-source
+                                       :actions '())))))
     (when (typep url 'nyxt::history-entry)
       (setf url (url url)))
     (add-modes-to-auto-mode-rules
@@ -349,14 +349,14 @@ save a particular mode, configure it to be `rememberable-p' in your initfile.
 For the storage format see the comment in the head of your `auto-mode-rules-data-path' file."
   ;; TODO: Should it prompt for modes to save?
   ;; One may want to adjust the modes before persisting them as :exact-p rule.
-  (let ((url (first (prompt
-                     :prompt "URL:"
-                     :input (render-url (url (current-buffer)))
-                     :sources (list
-                               (make-instance 'prompter:raw-source
-                                              :name "New URL")
-                               (make-instance 'user-global-history-source
-                                              :actions '()))))))
+  (let ((url (prompt1
+              :prompt "URL:"
+              :input (render-url (url (current-buffer)))
+              :sources (list
+                        (make-instance 'prompter:raw-source
+                                       :name "New URL")
+                        (make-instance 'user-global-history-source
+                                       :actions '())))))
     (when (typep url 'nyxt::history-entry)
       (setf url (url url)))
     (add-modes-to-auto-mode-rules (url-infer-match url)

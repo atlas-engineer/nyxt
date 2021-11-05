@@ -419,10 +419,10 @@ and update their creator."
 (define-command store-history-by-name ()
   "Store the history data in the file named by user input.
 Useful for session snapshots, as `restore-history-by-name' will restore opened buffers."
-  (sera:and-let* ((name (first (prompt
-                                :prompt "The name to store history with"
-                                :sources (list (make-instance 'prompter:raw-source)
-                                               (make-instance 'history-name-source)))))
+  (sera:and-let* ((name (prompt1
+                          :prompt "The name to store history with"
+                          :sources (list (make-instance 'prompter:raw-source)
+                                         (make-instance 'history-name-source))))
                   (path (make-instance 'history-data-path
                                        :dirname (parent (history-path (current-buffer)))
                                        :basename name)))
@@ -438,9 +438,9 @@ The imported history file is untouched while the current one is overwritten.
 If you want to save the current history file beforehand, call
 `store-history-by-name' to save it under a new name."
   ;; TODO: backup current history?
-  (sera:and-let* ((name (first (prompt
-                                :prompt "The name of the history to restore"
-                                :sources (list (make-instance 'history-name-source)))))
+  (sera:and-let* ((name (prompt1
+                          :prompt "The name of the history to restore"
+                          :sources (list (make-instance 'history-name-source))))
                   (path (make-instance 'history-data-path
                                        :dirname (parent (history-path (current-buffer)))
                                        :basename name)))

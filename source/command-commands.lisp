@@ -24,9 +24,9 @@
     (loop for mode in (modes buffer)
           for scheme-keymap = (keymap:get-keymap scheme-name (keymap-scheme mode))
           when scheme-keymap
-            do (setf bindings (keymap:binding-keys (name command) scheme-keymap))
+          do (setf bindings (keymap:binding-keys (name command) scheme-keymap))
           when (not (null bindings))
-            return bindings)
+          return bindings)
     `(("Name" ,(string-downcase (name command)))
       ("Bindings" ,(format nil "~{~a~^, ~}" bindings))
       ("Docstring" ,(or (first (sera::lines (nyxt::docstring command)))
@@ -63,10 +63,10 @@ from a key binding."))
 (define-command execute-command ()
   "Execute a command by name."
   (unless (active-prompt-buffers (current-window))
-    (let ((command (first (prompt
-                           :prompt "Execute command"
-                           :sources (make-instance 'user-command-source)
-                           :hide-suggestion-count-p t))))
+    (let ((command (prompt1
+                     :prompt "Execute command"
+                     :sources (make-instance 'user-command-source)
+                     :hide-suggestion-count-p t)))
       (setf (last-access command) (local-time:now))
       (run-async command))))
 
@@ -93,30 +93,30 @@ from a key binding."))
   (let ((value
           (first
            (evaluate
-            (first (prompt
-                    :prompt (if type
-                                (format nil "~a (~a)" prompt type)
-                                prompt)
-                    :input (write-to-string input)
-                    :sources (make-instance 'prompter:raw-source
-                                            :name "Evaluated input")))))))
+            (prompt1
+              :prompt (if type
+                          (format nil "~a (~a)" prompt type)
+                          prompt)
+              :input (write-to-string input)
+              :sources (make-instance 'prompter:raw-source
+                                      :name "Evaluated input"))))))
     (if (or (not type)
             (typep value type))
         value
         (progn
           (echo "~s has type ~s, expected ~s."
                 value (type-of value) type)
-         (prompt-argument prompt type input)))))
+          (prompt-argument prompt type input)))))
 
 (define-command execute-extended-command (&optional command)
   "Query the user for the arguments to pass to a given COMMAND.
 User input is evaluated Lisp."
   ;; TODO: Add support for &rest arguments.
   (let* ((command (or command
-                      (first (prompt
-                              :prompt "Execute extended command"
-                              :sources (make-instance 'user-command-source)
-                              :hide-suggestion-count-p t))))
+                      (prompt1
+                        :prompt "Execute extended command"
+                        :sources (make-instance 'user-command-source)
+                        :hide-suggestion-count-p t)))
          (lambda-list (swank::arglist (fn command))))
     (multiple-value-match (alex:parse-ordinary-lambda-list lambda-list)
       ((required-arguments optional-arguments _ keyword-arguments)
@@ -178,22 +178,22 @@ User input is evaluated Lisp."
 
 (define-command disable-hook-handler ()
   "Remove handler(s) from a hook."
-  (let* ((hook-desc (first (prompt
-                            :prompt "Hook where to disable handler"
-                            :sources (make-instance 'hook-source))))
-         (handler (first (prompt
-                          :prompt (format nil "Disable handler from ~a" (name hook-desc))
-                          :sources (make-instance 'handler-source
-                                                  :hook (value hook-desc))))))
+  (let* ((hook-desc (prompt1
+                      :prompt "Hook where to disable handler"
+                      :sources (make-instance 'hook-source)))
+         (handler (prompt1
+                    :prompt (format nil "Disable handler from ~a" (name hook-desc))
+                    :sources (make-instance 'handler-source
+                                            :hook (value hook-desc)))))
     (hooks:disable-hook (value hook-desc) handler)))
 
 (define-command enable-hook-handler ()
   "Remove handler(s) from a hook."
-  (let* ((hook-desc (first (prompt
-                            :prompt "Hook where to enable handler"
-                            :sources (make-instance 'hook-source))))
-         (handler (first (prompt
-                          :prompt (format nil "Enable handler from ~a" (name hook-desc))
-                          :sources (make-instance 'disabled-handler-source
-                                                  :hook (value hook-desc))))))
+  (let* ((hook-desc (prompt1
+                      :prompt "Hook where to enable handler"
+                      :sources (make-instance 'hook-source)))
+         (handler (prompt1
+                    :prompt (format nil "Enable handler from ~a" (name hook-desc))
+                    :sources (make-instance 'disabled-handler-source
+                                            :hook (value hook-desc)))))
     (hooks:enable-hook (value hook-desc) handler)))

@@ -63,15 +63,15 @@ get/set-content (which is necessary for operation)."
 
 (define-command editor-open-file (&key (buffer (current-buffer)))
   "Open a file in the internal editor."
-  (let ((file (first (prompt
-                      :prompt "Open file"
-                      :input (uiop:native-namestring (uiop:getcwd))
-                      :sources
-                      (list (make-instance 'user-file-source
-                                           :name "Absolute file path"
-                                           :actions '(identity))
-                            (make-instance 'prompter:raw-source
-                                           :name "New file"))))))
+  (let ((file (prompt1
+                :prompt "Open file"
+                :input (uiop:native-namestring (uiop:getcwd))
+                :sources
+                (list (make-instance 'user-file-source
+                                     :name "Absolute file path"
+                                     :actions '(identity))
+                      (make-instance 'prompter:raw-source
+                                     :name "New file")))))
     (open-file-with-editor buffer file)
     ;; TODO: Maybe make `editor-mode' and `editor-buffer' pathname-friendly?
     (setf (file buffer) (uiop:native-namestring file))

@@ -289,12 +289,12 @@ A command is a special kind of function that can be called with
                                (string (sera:class-name-of source))))))))))
 
 (defun configure-slot (slot class &key
-                                    (value nil new-value-supplied-p)
-                                    ;; SLOT may also be a method, as with
-                                    ;; `default-modes', in which case there is no type.
-                                    (type (ignore-errors
-                                           (getf (mopu:slot-properties (find-class class) slot)
-                                                 :type))))
+                                  (value nil new-value-supplied-p)
+                                  ;; SLOT may also be a method, as with
+                                  ;; `default-modes', in which case there is no type.
+                                  (type (ignore-errors
+                                         (getf (mopu:slot-properties (find-class class) slot)
+                                               :type))))
   "Set the value of a slot in a users auto-config.lisp.
 CLASS is a class symbol."
   (flet ((set-slot (slot class input)
@@ -308,17 +308,17 @@ CLASS is a class symbol."
                    ((,slot ,value)))))
         (let ((accepted-input
                 (loop while t do
-                  (let ((input (read-from-string
-                                (first (prompt
-                                        :prompt (format nil "Configure slot value ~a" slot)
-                                        :sources (make-instance 'prompter:raw-source))))))
-                    (cond ((not type) (return input))
-                          ((typep input type) (return input))
-                          (t (progn
-                               (echo-warning
-                                "There's a type mismatch: ~a should be a ~a, while you provided ~a"
-                                slot type (type-of input))
-                               nil)))))))
+                         (let ((input (read-from-string
+                                       (prompt1
+                                         :prompt (format nil "Configure slot value ~a" slot)
+                                         :sources (make-instance 'prompter:raw-source)))))
+                           (cond ((not type) (return input))
+                                 ((typep input type) (return input))
+                                 (t (progn
+                                      (echo-warning
+                                       "There's a type mismatch: ~a should be a ~a, while you provided ~a"
+                                       slot type (type-of input))
+                                      nil)))))))
           (set-slot slot class accepted-input)
           (eval `(define-configuration ,class
                    ((,slot ,accepted-input))))))))
