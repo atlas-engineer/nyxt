@@ -457,6 +457,10 @@ See the documentation of `prompt-buffer' to know more about the options."
          (hide-prompt-buffer parent-thread-prompt-buffer)
          (error 'nyxt-prompt-buffer-canceled))))))
 
+(defmacro prompt1 (&body body)
+  "Return the first result of a prompt list."
+  `(first (prompt ,@body)))
+
 (defmethod prompter:object-attributes ((prompt-buffer prompt-buffer))
   `(("Prompt" ,(prompter:prompt prompt-buffer))
     ("Input" ,(prompter:input prompt-buffer))))
