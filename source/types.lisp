@@ -64,3 +64,9 @@ Example:
   `(or (eql :always)
        (eql :never)
        (eql :no-third-party)))
+
+(defun htmp-string-p (string)
+  (and (stringp string)
+       (let ((html (ignore-errors (plump:parse string))))
+         (not (and (sera:single (plump:children html))
+                   (plump:text-node-p (elt (plump:children html) 0)))))))
