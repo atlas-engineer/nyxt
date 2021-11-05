@@ -65,6 +65,7 @@ Example:
        (eql :never)
        (eql :no-third-party)))
 
+(export-always 'html-string-p)
 (defun htmp-string-p (string)
   (and (stringp string)
        (let ((html (ignore-errors (plump:parse string))))
