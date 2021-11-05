@@ -18,8 +18,8 @@ Example:
   ((default-modes (append '(vi-normal-mode) %slot-default%))))
 
 In `vi-insert-mode', CUA bindings are still available unless
-`application-mode-p' is non-nil in `vi-insert-mode'.
-You can also enable `application-mode' manually to forward all keybindings to
+`passthrough-mode-p' is non-nil in `vi-insert-mode'.
+You can also enable `passthrough-mode' manually to forward all keybindings to
 the web page.
 
 See also `vi-insert-mode'."
@@ -81,12 +81,12 @@ vi-normal-mode.")
     (define-scheme "vi"
       scheme:vi-insert
       (list
-       "C-z" 'nyxt/application-mode:application-mode
+       "C-z" 'nyxt/passthrough-mode:passthrough-mode
        "escape" 'switch-to-vi-normal-mode
        "button1" 'vi-button1)))
-   (application-mode-p nil
+   (passthrough-mode-p nil
                        :type boolean
-                       :documentation "Whether to default to `application-mode'
+                       :documentation "Whether to default to `passthrough-mode'
                        when entering `vi-insert-mode'.")
    (destructor
     (lambda (mode)
@@ -104,8 +104,8 @@ vi-normal-mode.")
                 vi-normal))
         (vi-normal-mode :activate nil :buffer buffer)
         (setf (keymap-scheme-name buffer) scheme:vi-insert)
-        (when (application-mode-p mode)
-          (nyxt/application-mode:application-mode :activate t)))))))
+        (when (passthrough-mode-p mode)
+          (nyxt/passthrough-mode:passthrough-mode :activate t)))))))
 
 (define-command vi-button1 (&optional (buffer (or (current-prompt-buffer)
                                                   (current-buffer))))
