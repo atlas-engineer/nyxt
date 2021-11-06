@@ -61,7 +61,7 @@ A list of objects. Does not necessarily have the same order as `files' of the sc
          (user-scripts script)))))
 
 (defun make-content-script (&key (matches (error "Matches key is mandatory.")) js css)
-  "Create a Lisp-friendly content script representation our of WebExt keys.
+  "Create a Lisp-friendly content script representation of our WebExtension keys.
 
 MATCHES, JS, and CSS are all keys of the \"content_scripts\" manifest.json keys:
 https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts"
@@ -100,7 +100,7 @@ JSON is the parsed extension manifest."
                                    (and (gethash "icons" json)
                                         (alex:hash-table-alist (gethash "icons" json))))
                            (lambda (a b)
-                             (< (abs (- optimal-height a))
+                             (> (abs (- optimal-height a))
                                 (abs (- optimal-height b))))
                            :key (alex:compose #'parse-integer #'symbol-name #'first)))))))
 
@@ -115,6 +115,7 @@ hacking into it with data: URLs and encode icons into base64 there."
            (default-browser-action-icon json padded-height)))
     (format nil "<img src=\"~a\" alt=\"~a\"
 height=~a/>"
+            ;; Extension does not exist yet, so we cannot use `merge-extension-path'.
             (make-data-url (uiop:merge-pathnames* best-icon extension-directory))
             (gethash "name" json)
             padded-height)))
