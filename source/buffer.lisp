@@ -421,13 +421,13 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
   (:export-predicate-name-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "A non-user-facing buffer to run background processes in.
-Examples of the processes to run in background buffer are:
+Examples of the processes to run in background buffers are:
 - WebExtensions background pages.
 - Page scraping processes.
-- Anything else requiring a renderer running and user unaware.
+- Anything else requiring a renderer running invisible to the user.
 
-These buffers are not indexed by browser, so the only way to control these is to
-store them somewhere and kill them once done."))
+These buffers are not referenced by `browser', so the only way to control these is to
+store them somewhere and `ffi-buffer-delete' them once done."))
 
 (define-user-class background-buffer)
 
