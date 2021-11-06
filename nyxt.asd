@@ -609,33 +609,51 @@ See `asdf::*immutable-systems*'."
   :perform (test-op (op c)
                     (nyxt-run-test c "libraries/theme/tests/")))
 
-(asdf:defsystem "nyxt/web-extensions"
-  :defsystem-depends-on (serapeum)
+(defsystem "nyxt/web-extensions"
   :pathname "libraries/web-extensions/"
+  :components ((:static-file "alarms.c")
+               (:static-file "bookmarks.c")
+               (:static-file "browser.c")
+               (:static-file "browser_action.c")
+               (:static-file "commands.c")
+               (:static-file "eval.c")
+               (:static-file "extension.c")
+               (:static-file "extevent.c")
+               (:static-file "globals.c")
+               (:static-file "history.c")
+               (:static-file "management.c")
+               (:static-file "notifications.c")
+               (:static-file "nyxt.c")
+               (:static-file "permissions.c")
+               (:static-file "runtime.c")
+               (:static-file "storage.c")
+               (:static-file "tabs.c")
+               (:static-file "web_navigation.c")
+               (:static-file "web_request.c"))
+  :output-files (compile-op (o c)
+                            (values (list (uiop:merge-pathnames* "libnyxt.so" (asdf:component-pathname c)))
+                                    t))
   :perform (compile-op
             (o c)
-            (let ((c-flags (serapeum:tokens
+            (let ((c-compiler (or (uiop:getenv "CC")
+                                  "gcc"))
+                  (c-flags (uiop:split-string
                             (uiop:run-program
                              '("pkg-config" "gobject-2.0" "webkit2gtk-web-extension-4.0" "--cflags")
                              :output '(:string :stripped t))))
-                  (ld-flags (serapeum:tokens
+                  (ld-flags (uiop:split-string
                              (uiop:run-program
                               '("pkg-config" "gobject-2.0" "webkit2gtk-web-extension-4.0" "--libs")
-                              :output '(:string :stripped t))))
-                  (files '("nyxt" "globals" "extevent" "browser" "tabs" "management"
-                           "runtime" "extension" "storage" "alarms" "bookmarks"
-                           "browser_action" "commands" "histpry" "nptifications"
-                           "permissions" "web_navigation" "web_request" "eval")))
-              (mapcar (lambda (c-file)
+                              :output '(:string :stripped t)))))
+              (uiop:with-current-directory ((component-pathname c))
+                (mapc (lambda (c-component)
                         ;; TODO: Allow compiler customization?
-                        (uiop:run-program `("gcc" "-c" ,(asdf:system-relative-pathname
-                                                         c c-file :type "c")
-                                                  ,@c-flags "-fPIC")))
-                      files)
-              ;; TODO: Allow linker customization.
-              (uiop:run-program `("ld" "-fPIC" "-shared" "-o" "libnyxt.so"
-                                       ,@(mapcar (lambda (o-file)
-                                                   (asdf:system-relative-pathname
-                                                    c o-file :type "o"))
-                                                 o-files)
-                                       ,@ld-flags)))))
+                        (uiop:run-program `(,c-compiler "-c" ,(uiop:native-namestring (component-pathname c-component))
+                                                        ,@c-flags "-fPIC")
+                                          :output t
+                                          :error-output :output))
+                      (module-components c))
+                ;; TODO: Allow linker customization.
+                (uiop:run-program `(,c-compiler ,@ld-flags "-fPIC" "-shared" "-o" "libnyxt.so"
+                                                ,@(mapcar #'uiop:native-namestring
+                                                          (uiop:directory-files (component-pathname c) "*.o"))))))))
