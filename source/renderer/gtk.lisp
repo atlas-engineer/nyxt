@@ -1148,7 +1148,7 @@ See `gtk-browser's `modifier-translator' slot."
             (:webkit-context-menu-action-download-link-to-disk
              (webkit:webkit-context-menu-remove context-menu item))))))
     nil)
-  (connect-signal buffer "user-message-received" (view message)
+  (connect-signal buffer "user-message-received" nil (view message)
     (declare (ignorable view))
     (g:g-object-ref (g:pointer message))
     (run-thread
