@@ -57,7 +57,7 @@ and to index the top of the page.")
     (define-scheme "web"
       scheme:cua
       (list
-       "C-z" 'nyxt/passthrough-mode:passthrough-mode
+       "C-M-Z" 'nyxt/passthrough-mode:passthrough-mode
        "C-M-right" 'history-forwards-all-query
        "C-M-left" 'history-all-query
        "C-shift-h" 'history-all-query
@@ -127,6 +127,8 @@ and to index the top of the page.")
        "C-x C-w" 'copy-hint-url
        "C-y" 'paste
        "M-w" 'copy
+       "C-/" 'undo
+       "C-w" 'cut
        "button9" 'history-forwards
        "button8" 'history-backwards
        "C-p" 'scroll-up
@@ -152,6 +154,8 @@ and to index the top of the page.")
        "L" 'history-forwards
        "y y" 'copy
        "p" 'paste
+       "d d" 'cut
+       "u" 'undo
        "M-h" 'history-backwards-query
        "M-l" 'history-forwards-query
        "M-H" 'history-all-query
@@ -511,7 +515,7 @@ Otherwise go forward to the only child."
       (:h1 "History")
       (:ul (:raw (nyxt::history-html-list :limit limit))))))
 
-(define-command paste ()
+(define-command paste (&optional (buffer (current-buffer)))
   "Paste from clipboard into active element."
   ;; On some systems like Xorg, clipboard pasting happens just-in-time.  So if we
   ;; copy something from the context menu 'Copy' action, upon pasting we will
@@ -522,7 +526,7 @@ Otherwise go forward to the only child."
   ;; is present the clipboard and need not be retrieved from the GTK thread.
   ;; TODO: Do we still need to flush now that we have multiple threads?
   ;; (trivial-clipboard:text (trivial-clipboard:text))
-  (%paste))
+  (ffi-buffer-paste buffer))
 
 (define-class ring-source (prompter:source)
   ((prompter:name "Clipboard ring")
@@ -543,11 +547,9 @@ Otherwise go forward to the only child."
    :sources (list (make-instance 'user-ring-source
                                  :ring (nyxt::clipboard-ring *browser*)))))
 
-(define-command copy ()
+(define-command copy (&optional (buffer (current-buffer)))
   "Copy selected text to clipboard."
-  (let ((input (%copy)))
-    (copy-to-clipboard input)
-    (echo "Text copied.")))
+  (ffi-buffer-copy buffer))
 
 (define-command copy-placeholder ()
   "Copy placeholder text to clipboard."
@@ -558,6 +560,14 @@ Otherwise go forward to the only child."
           (echo "No active selected placeholder.")
           (progn (copy-to-clipboard current-value)
                  (echo "Placeholder copied."))))))
+
+(define-command cut (&optional (buffer (current-buffer)))
+  "Cut the selection in BUFFER."
+  (ffi-buffer-cut buffer))
+
+(define-command undo (&optional (buffer (current-buffer)))
+  "Undo the last editing action."
+  (ffi-buffer-undo buffer))
 
 (define-class autofill-source (prompter:source)
   ((prompter:name "Autofills")
