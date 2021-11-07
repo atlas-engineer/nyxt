@@ -397,6 +397,22 @@ Follow the following steps:
 Then proceed as in the previous SLIME section by relacing
 ~slime-connect~ with ~sly-connect~.
 
+* FAQ
+
+This section aims to collect questions and answers that have helped users and
+developers in the past:
+
+1. If you install dependencies via MacPorts and your Lisp is SBCL, please try
+   putting the following into your =~/.sbclrc=:
+   #+begin_src lisp
+     (ql:quickload :cffi)
+     (pushnew "/opt/local/lib" cffi:*foreign-library-directories* :test #'equal)
+   #+end_src
+
+2. If you are on a Mac, you may want to install "webkit2-gtk(-devel)" instead
+   of "webkit-gtk3" via your package manager.
+
+
 * Help & Community
 
 There are several ways to ask for help from the community.
