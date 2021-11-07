@@ -1387,3 +1387,21 @@ As a second value, return the current buffer index starting from 0."
    (webkit:webkit-web-context-website-data-manager
     (webkit:webkit-web-view-web-context (gtk-object buffer)))
    t))
+
+(define-ffi-method ffi-buffer-copy ((gtk-buffer gtk-buffer))
+  (webkit:webkit-web-view-execute-editing-command (gtk-object gtk-buffer) webkit2:+webkit-editing-command-copy+))
+
+(define-ffi-method ffi-buffer-paste ((gtk-buffer gtk-buffer))
+  (webkit:webkit-web-view-execute-editing-command (gtk-object gtk-buffer) webkit2:+webkit-editing-command-paste+))
+
+(define-ffi-method ffi-buffer-cut ((gtk-buffer gtk-buffer))
+  (webkit:webkit-web-view-execute-editing-command (gtk-object gtk-buffer) webkit2:+webkit-editing-command-cut+))
+
+(define-ffi-method ffi-buffer-select-all ((gtk-buffer gtk-buffer))
+  (webkit:webkit-web-view-execute-editing-command (gtk-object gtk-buffer) webkit2:+webkit-editing-command-select-all+))
+
+(define-ffi-method ffi-buffer-undo ((gtk-buffer gtk-buffer))
+  (webkit:webkit-web-view-execute-editing-command (gtk-object gtk-buffer) webkit2:+webkit-editing-command-undo+))
+
+(define-ffi-method ffi-buffer-redo ((gtk-buffer gtk-buffer))
+  (webkit:webkit-web-view-execute-editing-command (gtk-object gtk-buffer) webkit2:+webkit-editing-command-redo+))
