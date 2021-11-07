@@ -34,6 +34,7 @@
   - [[#interacting-with-a-compiled-version-of-nyxt][Interacting with a compiled version of Nyxt]]
     - [[#slime][SLIME]]
     - [[#sly][SLY]]
+- [[#faq][FAQ]]
 - [[#help--community][Help & Community]]
   - [[#issue-tracker][Issue tracker]]
   - [[#learning-common-lisp][Learning Common Lisp]]
