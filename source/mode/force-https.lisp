@@ -39,30 +39,35 @@ help on how to proceed."
        (https->http-loop-help (buffer request-data) url)
        nil)
       (t
+       ;; In the case of HTTP
        ;; Warning: Copy URL, else next line would modify the scheme of
        ;; `previous-url' as well.
        (setf (previous-url mode) (quri:copy-uri url))
        (log:info "HTTPS enforced on '~a'" (render-url url))
-       ;; FIXME: http-only websites are displayed as "https://foo.bar"
-       ;; FIXME: some websites (e.g., go.com) simply time-out
-       (setf (quri:uri-scheme url) "https"
-             (quri:uri-port url) (quri.port:scheme-default-port "https")
-             (url request-data) url)
+       ;; Use cl-https-everywhere to update its scheme status
+       (multiple-value-bind (rewrited-uri is-https rewrite-p)
+           (https-everywhere:rewrite-uri url)
+         (let ((rewrited-scheme (if is-https "https" "http")))
+           (setf (quri:uri-scheme url) rewrited-scheme
+                 (quri:uri-port url) (quri.port:scheme-default-port rewrited-scheme)
+                 (url request-data) rewrited-uri)))
        request-data))))
 
 (define-mode force-https-mode ()
   "Impose HTTPS on every queried URL.
-Use at your own risk -- it can break websites whose certificates are not known
-and websites that still don't have HTTPS version (shame on them!).
 
-To permanently bypass the \"Unacceptable TLS Certificate\" error:
-\(setf nyxt/certificate-exception-mode:*default-certificate-exceptions*
-       '(\"your.unacceptable.cert.website\"))
+   Use at your own risk -- it can break websites whose certificates are not
+   known, and websites that still don't have HTTPS version (shame on them!).
 
-Example:
+   To permanently bypass the \"Unacceptable TLS Certificate\" error:
 
-\(define-configuration web-buffer
-  ((default-modes (append '(force-https-mode) %slot-default%))))"
+   \(setf nyxt/certificate-exception-mode:*default-certificate-exceptions*
+          '(\"your.unacceptable.cert.website\"))
+
+   Example:
+
+   \(define-configuration web-buffer
+      ((default-modes (append '(force-https-mode) %slot-default%))))"
   ((previous-url (quri:uri ""))
    (destructor
     (lambda (mode)
