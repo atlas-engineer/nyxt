@@ -50,7 +50,7 @@ help on how to proceed."
          (let ((rewrited-scheme (if is-https "https" "http")))
            (setf (quri:uri-scheme url) rewrited-scheme
                  (quri:uri-port url) (quri.port:scheme-default-port rewrited-scheme)
-                 (url request-data) rewrited-uri)))
+                 (url request-data) (url rewrited-uri))))
        request-data))))
 
 (define-mode force-https-mode ()
