@@ -647,8 +647,8 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
     (log:debug "Notify URL ~a for buffer ~a with load status ~a"
                url
                buffer
-               (slot-value buffer 'nyxt::load-status))
-    (when (eq (slot-value buffer 'nyxt::load-status) :finished)
+               (slot-value buffer 'nyxt::status))
+    (when (eq (slot-value buffer 'nyxt::status) :finished)
       ;; We also add history entries here when URL changes without initiating
       ;; any load, e.g. when clicking on an anchor.
       (with-current-buffer buffer
@@ -658,7 +658,7 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
 
 (defmethod nyxt:on-signal-notify-uri ((mode web-mode) url)
   (declare (type quri:uri url))
-  (when (eq :finished (slot-value (buffer mode) 'nyxt::load-status))
+  (when (eq :finished (slot-value (buffer mode) 'nyxt::status))
     (add-url-to-history url (buffer mode) mode))
   url)
 

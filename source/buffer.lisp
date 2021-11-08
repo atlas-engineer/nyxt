@@ -339,8 +339,8 @@ inherited from the superclasses."))
                      :from-end t))
 
 (define-class web-buffer (user-buffer)
-  ((load-status
-    :unloaded    ; TODO: Rename to `status' to be consistent with download-mode?
+  ((status
+    :unloaded
     :type (member :loading
                   :finished
                   :unloaded
@@ -751,7 +751,7 @@ See `buffer-make'."
 (defun load-failed-p (buffer)
   "Only web-buffer loads can fail."
   (and (web-buffer-p buffer)
-       (eq (slot-value buffer 'load-status) :failed)))
+       (eq (slot-value buffer 'status) :failed)))
 
 (export-always 'on-signal-notify-uri)
 (defmethod on-signal-notify-uri ((buffer buffer) no-url)
@@ -1043,7 +1043,7 @@ proceeding."
     (set-window-title window)
     (print-status nil window)
     (when (and (web-buffer-p buffer)
-               (eq (slot-value buffer 'load-status) :unloaded))
+               (eq (slot-value buffer 'status) :unloaded))
       (reload-buffers (list buffer)))))
 
 (defun last-active-buffer ()
