@@ -33,7 +33,6 @@
   - [[#interacting-with-a-compiled-version-of-nyxt][Interacting with a compiled version of Nyxt]]
     - [[#slime][SLIME]]
     - [[#sly][SLY]]
-- [[#faq][FAQ]]
 - [[#help--community][Help & Community]]
   - [[#issue-tracker][Issue tracker]]
   - [[#learning-common-lisp][Learning Common Lisp]]
@@ -187,6 +186,21 @@ these fixes.
 - WebKitGTK+
 - XQuartz
 - libfixposix
+
+Notes:
+
+1. If you install dependencies via MacPorts and your Lisp is SBCL, please try
+   putting the following into your =~/.sbclrc=:
+
+   #+begin_src lisp
+     (ql:quickload :cffi)
+     (pushnew "/opt/local/lib" cffi:*foreign-library-directories* :test #'equal)
+   #+end_src
+
+2. To install the WebKitGTK+ dependency, you may want to install
+   `webkit2-gtk(-devel)` instead of `webkit-gtk3` via your favorite
+   package manager.
+
 
 ** Qt dependencies
 
@@ -385,21 +399,6 @@ Follow the following steps:
 
 Then proceed as in the previous SLIME section by relacing
 ~slime-connect~ with ~sly-connect~.
-
-* FAQ
-
-This section aims to collect questions and answers that have helped users and
-developers in the past:
-
-1. If you install dependencies via MacPorts and your Lisp is SBCL, please try
-   putting the following into your =~/.sbclrc=:
-   #+begin_src lisp
-     (ql:quickload :cffi)
-     (pushnew "/opt/local/lib" cffi:*foreign-library-directories* :test #'equal)
-   #+end_src
-
-2. If you are on a Mac, you may want to install "webkit2-gtk(-devel)" instead
-   of "webkit-gtk3" via your package manager.
 
 
 * Help & Community
