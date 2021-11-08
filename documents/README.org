@@ -211,7 +211,8 @@ Notes:
 
 2. To install the WebKitGTK+ dependency, you may want to install
    `webkit2-gtk(-devel)` instead of `webkit-gtk3` via your favorite
-   package manager.
+   package manager. If you are on a legacy version of macOS which is not
+   supported by HomeBrew, you may want to try install these via MacPorts.
 
 
 ** Qt dependencies
