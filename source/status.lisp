@@ -45,7 +45,7 @@
 (defun format-status-load-status (buffer)
   (spinneret:with-html-string
     (:div :class (if (and (web-buffer-p buffer)
-                          (eq (slot-value buffer 'load-status) :loading))
+                          (eq (slot-value buffer 'status) :loading))
                      "loader" ""))))
 
 (export-always 'format-status-url)

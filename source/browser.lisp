@@ -537,9 +537,9 @@ view.")
                    :cookies "")
          ;; TODO: WebKitGTK emits "load-failed" if we call
          ;; webkit-policy-decision-ignore on a download requestion.
-         ;; To work around this, we set the `load-status' to a value other than
+         ;; To work around this, we set the `status' to a value other than
          ;; `:loading'.
-         (setf (slot-value buffer 'load-status) :finished)
+         (setf (slot-value buffer 'status) :finished)
          nil)
         (t
          (log:debug "Forwarding ~a for buffer ~s" (render-url url) buffer)
