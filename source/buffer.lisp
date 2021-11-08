@@ -1685,10 +1685,3 @@ mode permanently for this buffer."
   "Print the current buffer."
   (pflet ((print-buffer () (print)))
          (print-buffer)))
-
-(define-deprecated-command focus-first-input-field (&key (type-blacklist '("hidden"
-                                                                           "checkbox"
-                                                                           "button")))
-  "Superseded by `nyxt/web-mode:focus-first-input-field'."
-  (funcall (find-symbol "FOCUS-FIRST-INPUT-FIELD" (find-package :nyxt/web-mode))
-           :type-blacklist type-blacklist))
