@@ -659,18 +659,18 @@ Delete it with `ffi-buffer-delete'."
   (ffi-buffer-evaluate-javascript
    buffer
    (ps:ps
-    (defvar nyxt-identifier-counter 0)
-    (defun add-nyxt-identifiers (node)
-      (unless (ps:chain node (has-attribute "nyxt-identifier"))
-        (ps:chain node (set-attribute "nyxt-identifier" (ps:stringify nyxt-identifier-counter))))
-      (incf nyxt-identifier-counter)
-      (dolist (child (ps:chain node children))
-        (add-nyxt-identifiers child))
-      nyxt-identifier-counter)
-    (setf nyxt-identifier-counter (add-nyxt-identifiers (ps:chain document body)))))
+     (defvar nyxt-identifier-counter 0)
+     (defun add-nyxt-identifiers (node)
+       (unless (ps:chain node (has-attribute "nyxt-identifier"))
+         (ps:chain node (set-attribute "nyxt-identifier" (ps:stringify nyxt-identifier-counter))))
+       (incf nyxt-identifier-counter)
+       (dolist (child (ps:chain node children))
+         (add-nyxt-identifiers child))
+       nyxt-identifier-counter)
+     (setf nyxt-identifier-counter (add-nyxt-identifiers (ps:chain document body)))))
   (alex:when-let ((body-json (nyxt/dom::get-document-body-json)))
-                 (setf (document-model buffer)
-                       (nyxt/dom::named-json-parse body-json))))
+    (setf (document-model buffer)
+          (nyxt/dom::named-json-parse body-json))))
 
 (defun dead-buffer-p (buffer) ; TODO: Use this wherever needed.
   (str:empty? (id buffer)))
@@ -686,17 +686,17 @@ Delete it with `ffi-buffer-delete'."
              dom-counter)
            (setf dom-counter 0)
            (count-dom-elements (nyxt/ps:qs document "html"))))
-         (if (dead-buffer-p buffer)
-             (call-next-method)
-             (with-current-buffer buffer
-               (let ((value (call-next-method))
-                     (element-count (%count-dom-elements)))
-                 (if (and value element-count
-                          ;; Check whether the difference in element count is significant.
-                          (< (abs (- (length (clss:select "*" value)) (truncate element-count)))
-                             (document-model-delta-threshold buffer)))
-                     value
-                     (update-document-model :buffer buffer)))))))
+    (if (dead-buffer-p buffer)
+        (call-next-method)
+        (with-current-buffer buffer
+          (let ((value (call-next-method))
+                (element-count (%count-dom-elements)))
+            (if (and value element-count
+                     ;; Check whether the difference in element count is significant.
+                     (< (abs (- (length (clss:select "*" value)) (truncate element-count)))
+                        (document-model-delta-threshold buffer)))
+                value
+                (update-document-model :buffer buffer)))))))
 
 (export-always 'get-nyxt-id)
 (defmethod get-nyxt-id ((element plump:element))
@@ -973,7 +973,7 @@ associated to the buffer is already killed."
       (sera:and-let* ((owner (htree:owner history (id buffer)))
                       (current (htree:current owner))
                       (data (htree:data current)))
-                     (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer)))
+        (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer)))
       (htree:delete-owner history (id buffer)))
     (when parent-window
       (let ((replacement-buffer (or (first (get-inactive-buffers))
@@ -1059,8 +1059,8 @@ proceeding."
           (mapcar #'active-buffer (window-list)))
         (buffers (buffer-list)))
     (alex:when-let ((diff (set-difference buffers active-buffers)))
-                   ;; Display the most recent inactive buffer.
-                   (sort-by-time diff))))
+      ;; Display the most recent inactive buffer.
+      (sort-by-time diff))))
 
 (define-command copy-url ()
   "Save current URL to clipboard."
@@ -1152,7 +1152,7 @@ set of useful URLs or preparing a list to send to a someone else."
                                           :multi-selection-p t))))
     (with-current-html-buffer (reduced-buffer "*Reduced Buffers*" 'base-mode)
       (spinneret:with-html-string
-          (:style (style reduced-buffer))
+        (:style (style reduced-buffer))
         (:h1 "Reduced Buffers:")
         (:div
          (loop for buffer in buffers
@@ -1383,13 +1383,13 @@ any."))
   "Set the URL for the current buffer, completing with history."
   (let ((history (set-url-history *browser*))
         (actions (list (make-command buffer-load* (suggestion-values)
-                                     "Load first selected URL in current buffer and the rest in new buffer(s)."
-                                     (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
-                                     (buffer-load (url (first suggestion-values))))
+                         "Load first selected URL in current buffer and the rest in new buffer(s)."
+                         (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
+                         (buffer-load (url (first suggestion-values))))
                        (make-command new-buffer-load (suggestion-values)
-                                     "Load URL(s) in new buffer(s)."
-                                     (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
-                                     (make-buffer-focus :url (url (first suggestion-values)))))))
+                         "Load URL(s) in new buffer(s)."
+                         (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
+                         (make-buffer-focus :url (url (first suggestion-values)))))))
     (pushnew-url-history history (url (current-buffer)))
     (prompt
      :prompt "Open URL"
@@ -1405,10 +1405,10 @@ any."))
   "Prompt for a URL and set it in a new focused buffer."
   (let ((history (set-url-history *browser*))
         (actions (list (make-command new-buffer-load (suggestion-values)
-                                     "Load URL(s) in new buffer(s)"
-                                     (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
-                                           (rest suggestion-values))
-                                     (make-buffer-focus :url (url (first suggestion-values)))))))
+                         "Load URL(s) in new buffer(s)"
+                         (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
+                               (rest suggestion-values))
+                         (make-buffer-focus :url (url (first suggestion-values)))))))
     (pushnew-url-history history (url (current-buffer)))
     (prompt
      :prompt "Open URL in new buffer"
@@ -1424,11 +1424,11 @@ any."))
   "Prompt for a URL and set it in a new focused nosave buffer."
   (let ((actions
           (list (make-command new-nosave-buffer-load (suggestion-values)
-                              "Load URL(s) in new nosave buffer(s)"
-                              (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion)))
-                                    (rest suggestion-values))
-                              (make-buffer-focus :url (url (first suggestion-values))
-                                                 :nosave-buffer-p t)))))
+                  "Load URL(s) in new nosave buffer(s)"
+                  (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion)))
+                        (rest suggestion-values))
+                  (make-buffer-focus :url (url (first suggestion-values))
+                                     :nosave-buffer-p t)))))
     (prompt
      :prompt "Open URL in new nosave buffer"
      :input (if prefill-current-url-p
@@ -1456,7 +1456,7 @@ any."))
   (with-data-unsafe (history (history-path buffer))
     (sera:and-let* ((owner (htree:owner history (id buffer)))
                     (parent-id (htree:creator-id owner)))
-                   (gethash parent-id (buffers *browser*)))))
+      (gethash parent-id (buffers *browser*)))))
 
 (defun buffer-children (&optional (buffer (current-buffer)))
   (let* ((current-history (get-data (history-path buffer)))
@@ -1468,7 +1468,7 @@ any."))
              (sera:equals (id buffer))
              buffers
              :key (lambda (b) (alex:when-let ((owner (htree:owner history (id b))))
-                                             (htree:creator-id owner))))
+                                (htree:creator-id owner))))
             #'string< :key #'id))))
 
 (defun buffer-siblings (&optional (buffer (current-buffer)))
@@ -1491,7 +1491,7 @@ any."))
                   buffers
                   :key (lambda (b)
                          (alex:when-let ((owner (htree:owner history (id b))))
-                                        (existing-creator-id owner)))))
+                           (existing-creator-id owner)))))
                (common-parent-buffers
                  (sort common-parent-buffers #'string< :key #'id)))
           (sera:split-sequence-if (sera:equals (id buffer))
@@ -1504,20 +1504,20 @@ The tree is browsed in a depth-first fashion.
 When there is no previous buffer, go to the last one so as to cycle."
   (labels ((buffer-last-child (&optional (buffer (current-buffer)))
              (alex:if-let ((next-siblings (second (buffer-siblings buffer))))
-                          (buffer-last-child (alex:last-elt next-siblings))
-                          (alex:if-let ((children (buffer-children buffer)))
-                                       (buffer-last-child (alex:last-elt children))
-                                       buffer)))
+               (buffer-last-child (alex:last-elt next-siblings))
+               (alex:if-let ((children (buffer-children buffer)))
+                 (buffer-last-child (alex:last-elt children))
+                 buffer)))
            (buffer-sibling-previous (&optional (buffer (current-buffer)))
              (alex:when-let ((previous-siblings (first (buffer-siblings buffer))))
-                            (alex:last-elt previous-siblings))))
+               (alex:last-elt previous-siblings))))
     (alex:when-let ((previous (or (alex:when-let ((previous-sibling (buffer-sibling-previous buffer)))
-                                                 (alex:if-let ((children (buffer-children previous-sibling)))
-                                                              (buffer-last-child (first children))
-                                                              previous-sibling))
+                                    (alex:if-let ((children (buffer-children previous-sibling)))
+                                      (buffer-last-child (first children))
+                                      previous-sibling))
                                   (buffer-parent buffer)
                                   (buffer-last-child buffer))))
-                   (set-current-buffer previous))))
+      (set-current-buffer previous))))
 
 (define-command switch-buffer-next (&optional (buffer (current-buffer)))
   "Switch to the next buffer in the buffer tree.
@@ -1525,20 +1525,20 @@ The tree is browsed in a depth-first fashion.
 When there is no next buffer, go to the first one so as to cycle."
   (labels ((buffer-first-root (buffer)
              (alex:if-let ((parent (buffer-parent buffer)))
-                          (buffer-first-root parent)
-                          (first (first (buffer-siblings buffer)))))
+               (buffer-first-root parent)
+               (first (first (buffer-siblings buffer)))))
            (buffer-next-parent-sibling (buffer)
              (alex:when-let ((parent (buffer-parent buffer)))
-                            (alex:if-let ((next-siblings (second (buffer-siblings parent))))
-                                         (first next-siblings)
-                                         (buffer-next-parent-sibling parent))))
+               (alex:if-let ((next-siblings (second (buffer-siblings parent))))
+                 (first next-siblings)
+                 (buffer-next-parent-sibling parent))))
            (buffer-sibling-next (&optional (buffer (current-buffer)))
              (first (second (buffer-siblings buffer)))))
     (alex:when-let ((next (or (first (buffer-children buffer))
                               (buffer-sibling-next buffer)
                               (buffer-next-parent-sibling buffer)
                               (buffer-first-root buffer))))
-                   (set-current-buffer next))))
+      (set-current-buffer next))))
 
 (define-command switch-buffer-last ()
   "Switch to the last showing buffer in the list of buffers.
@@ -1557,7 +1557,7 @@ If MODE does not exist, return nil."
      mode)
     ((symbolp mode)
      (alex:when-let ((command (mode-command mode)))
-                    (name command)))
+       (name command)))
     (t
      (mode-name (sera:class-name-of mode)))))
 
@@ -1665,11 +1665,11 @@ ARGS are passed to the mode command."
                            :sources (make-instance 'user-mode-source
                                                    :actions (list 'identity
                                                                   (make-command force-disable-auto-mode (modes)
-                                                                                "Return selection but force disabling auto-mode.
+                                                                    "Return selection but force disabling auto-mode.
 This is convenient when you use auto-mode by default and you want to toggle a
 mode permanently for this buffer."
-                                                                                (delete (read-from-string "nyxt/auto-mode:auto-mode" )
-                                                                                        modes)))
+                                                                    (delete (read-from-string "nyxt/auto-mode:auto-mode" )
+                                                                            modes)))
                                                    :marks (mapcar #'mode-name (modes buffer)))))
          (modes-to-disable (set-difference (all-mode-names) modes-to-enable
                                            :test #'string=)))
@@ -1684,4 +1684,4 @@ mode permanently for this buffer."
 (define-command print-buffer ()
   "Print the current buffer."
   (pflet ((print-buffer () (print)))
-         (print-buffer)))
+    (print-buffer)))
