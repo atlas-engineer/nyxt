@@ -102,9 +102,7 @@ useful when no Nyxt window is focused and we still want `ffi-window-active' to
 return something.
 See `current-window' for the user-facing function.")
    (buffers
-    :initform (make-hash-table :test #'equal)
-    :documentation "To manipulate the list of buffers,
-see `buffer-list', `buffers-get', `buffers-set' and `buffers-delete'.")
+    :initform (make-instance 'buffer-map))
    (startup-error-reporter-function
     nil
     :type (or function null)
@@ -217,6 +215,20 @@ A typical Nyxt session encompasses a single instance of this class, but nothing
 prevents otherwise."))
 
 (define-user-class browser)
+
+(defmethod buffer-list ((browser browser))
+  (buffer-list (buffers browser)))
+
+(defmethod buffer-get ((browser browser) key)
+  (buffer-get (buffers browser) key))
+
+(defmethod buffer-set ((browser browser) key buffer)
+  (buffer-set (buffers browser) key buffer)
+  (print-status))
+
+(defmethod buffer-remove ((browser browser) key)
+  (buffer-remove (buffers browser) key)
+  (print-status))
 
 (defmethod external-editor-program ((browser browser))
   (alex:ensure-list (slot-value browser 'external-editor-program)))

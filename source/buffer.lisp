@@ -923,7 +923,7 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (mapc (alex:rcurry #'make-mode buffer) extra-modes)
     (when dead-buffer                   ; TODO: URL should be already set.  Useless?
       (setf (url buffer) (url dead-buffer)))
-    (buffers-set (id buffer) buffer)
+    (buffer-set *browser* (id buffer) buffer)
     (unless no-history-p
       ;; When we create buffer, current one can override the
       ;; data-profile of the created buffer. This is dangerous,
@@ -980,28 +980,27 @@ associated to the buffer is already killed."
                                     (make-buffer :load-url-p nil
                                                  :url (quri:uri "about:blank")))))
         (window-set-buffer parent-window replacement-buffer)))
-    (buffers-delete (id buffer))
-    ;; (setf (id buffer) "") ; TODO: Reset ID?
+    (ffi-buffer-delete buffer)
+    (buffer-remove *browser* (id buffer))
+    (slot-makunbound buffer 'id)
     (add-to-recent-buffers buffer)))
 
+(defclass buffer-map ()
+  ((data :initform (make-hash-table :test #'equal)))
+  (:documentation "This class is used to manage the list of buffers."))
+
 (export-always 'buffer-list)
-(defun buffer-list ()
-  (alex:hash-table-values (buffers *browser*)))
+(defmethod buffer-list ((buffer-map buffer-map))
+  (alex:hash-table-values (slot-value buffer-map 'data)))
 
-(defun sort-by-time (sequence &key (key #'last-access))
-  "Return a timely ordered SEQUENCE by KEY.  More recent elements come first."
-  (sort sequence #'local-time:timestamp> :key key))
+(defmethod buffer-get ((buffer-map buffer-map) key)
+  (gethash key (slot-value buffer-map 'data)))
 
-(defun buffers-get (id)
-  (gethash id (slot-value *browser* 'buffers)))
+(defmethod buffer-set ((buffer-map buffer-map) key buffer)
+  (setf (gethash key (slot-value buffer-map 'data)) buffer))
 
-(defun buffers-set (id buffer)
-  (setf (gethash id (slot-value *browser* 'buffers)) buffer)
-  (print-status))
-
-(defun buffers-delete (id)
-  (remhash id (slot-value *browser* 'buffers))
-  (print-status))
+(defmethod buffer-remove ((buffer-map buffer-map) key)
+  (remhash key (slot-value buffer-map 'data)))
 
 (export-always 'window-list)
 (defun window-list ()
@@ -1051,13 +1050,13 @@ proceeding."
 
 (defun last-active-buffer ()
   "Return buffer with most recent `last-access'."
-  (first (sort-by-time (buffer-list))))
+  (first (sort-by-time (buffer-list *browser*))))
 
 (defun get-inactive-buffers ()
   "Return inactive buffers sorted by last-access timestamp, or NIL if none."
   (let ((active-buffers
           (mapcar #'active-buffer (window-list)))
-        (buffers (buffer-list)))
+        (buffers (buffer-list *browser*)))
     (alex:when-let ((diff (set-difference buffers active-buffers)))
       ;; Display the most recent inactive buffer.
       (sort-by-time diff))))
@@ -1076,7 +1075,7 @@ proceeding."
   (let ((buffers (sera:filter (if domain
                                   (match-domain domain)
                                   #'identity)
-                              (sort-by-time (buffer-list)))))
+                              (sort-by-time (buffer-list *browser*)))))
     (when (and buffers current-is-last-p)
       (setf buffers (alex:rotate buffers -1)))
     buffers))
@@ -1107,7 +1106,7 @@ Buffers are ordered by last access.
 With CURRENT-IS-LAST-P, the current buffer is listed last so as to list the
 second latest buffer first."
   (if id
-      (set-current-buffer (buffers-get id))
+      (set-current-buffer (buffer-get *browser* id))
       (prompt
        :prompt "Switch to buffer"
        :sources (list (make-instance 'user-buffer-source
@@ -1121,12 +1120,12 @@ second latest buffer first."
      :prompt "Switch to buffer in current domain:"
      :sources (make-instance 'user-buffer-source
                              :constructor (sera:filter (match-domain domain)
-                                                       (sort-by-time (buffer-list)))))))
+                                                       (sort-by-time (buffer-list *browser*)))))))
 
 (defun switch-buffer-or-query-domain (domain)
   "Switch to a buffer if it exists for a given DOMAIN, otherwise query
   the user."
-  (let ((matching-buffers (sera:filter (match-domain domain) (buffer-list))))
+  (let ((matching-buffers (sera:filter (match-domain domain) (buffer-list *browser*))))
     (if (eql 1 (length matching-buffers))
         (set-current-buffer (first matching-buffers))
         (switch-buffer-domain :domain domain))))
@@ -1172,11 +1171,11 @@ set of useful URLs or preparing a list to send to a someone else."
 
 (define-command delete-all-buffers (&key (confirmation-p t))
   "Delete all buffers, with confirmation."
-  (let ((count (length (buffer-list))))
+  (let ((count (length (buffer-list *browser*))))
     (if confirmation-p
         (if-confirm ("Delete ~a buffer~p?" count count)
-                    (mapcar #'buffer-delete (buffer-list)))
-        (mapcar #'buffer-delete (buffer-list)))))
+                    (mapcar #'buffer-delete (buffer-list *browser*)))
+        (mapcar #'buffer-delete (buffer-list *browser*)))))
 
 (define-command delete-current-buffer (&optional (buffer (current-buffer)))
   "Delete the current buffer, and make the next buffer the current one. If no
@@ -1186,7 +1185,7 @@ other buffers exist, set the url of the current buffer to the start page."
 (define-command delete-other-buffers (&optional (buffer (current-buffer)))
   "Delete all buffers except BUFFER.
 When BUFFER is omitted, it defaults to the current one."
-  (let* ((all-buffers (buffer-list))
+  (let* ((all-buffers (buffer-list *browser*))
          (buffers-to-delete (remove buffer all-buffers))
          (count (list-length buffers-to-delete)))
     (if-confirm ("Delete ~a buffer~p?" count count)
@@ -1461,7 +1460,7 @@ any."))
 (defun buffer-children (&optional (buffer (current-buffer)))
   (let* ((current-history (get-data (history-path buffer)))
          (buffers (remove-if (complement (sera:eqs current-history))
-                             (buffer-list)
+                             (buffer-list *browser*)
                              :key (alex:compose #'get-data #'history-path))))
     (with-data-unsafe (history (history-path buffer))
       (sort (sera:filter
@@ -1474,7 +1473,7 @@ any."))
 (defun buffer-siblings (&optional (buffer (current-buffer)))
   (let* ((current-history (get-data (history-path buffer)))
          (buffers (remove-if (complement (sera:eqs current-history))
-                             (buffer-list)
+                             (buffer-list *browser*)
                              :key (alex:compose #'get-data #'history-path))))
     (with-data-unsafe (history (history-path buffer))
       (flet ((existing-creator-id (owner)
@@ -1543,7 +1542,7 @@ When there is no next buffer, go to the first one so as to cycle."
 (define-command switch-buffer-last ()
   "Switch to the last showing buffer in the list of buffers.
 That is to say, the one with the most recent access time after the current buffer."
-  (let* ((buffers (sort-by-time (buffer-list))))
+  (let* ((buffers (sort-by-time (buffer-list *browser*))))
     (when (second buffers)
       (set-current-buffer (second buffers)))))
 
