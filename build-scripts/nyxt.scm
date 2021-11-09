@@ -61,11 +61,11 @@
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages webkit))
 
-;; TODO: Remove sbcl-cl-webkit once Guix has 3.1.0.
+;; TODO: Remove sbcl-cl-webkit once Guix has 3.1.1.
 (define-public sbcl-cl-webkit
   (package
     (name "sbcl-cl-webkit")
-    (version "3.1.0")
+    (version "3.1.1")
     (source
      (origin
        (method git-fetch)
@@ -75,7 +75,7 @@
        (file-name (git-file-name "cl-webkit" version))
        (sha256
         (base32
-         "0x9nk2nbaq0ispl1zp3wcsig014vn7l28f9dcfahjr2pvghxl7qi"))))
+         "11iclqjcb9h9h3sdgrndxph9fk6fqc0jpra9iwiccq0p25715lg1"))))
     (build-system asdf-build-system/sbcl)
     (inputs
      `(("cffi" ,sbcl-cffi)
