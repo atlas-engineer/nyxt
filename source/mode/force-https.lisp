@@ -48,26 +48,22 @@ help on how to proceed."
        (multiple-value-bind (rewrited-uri is-https rewrite-p)
            (https-everywhere:rewrite-uri url)
          (let ((rewrited-scheme (if is-https "https" "http")))
-           (setf (quri:uri-scheme url) rewrited-scheme
-                 (quri:uri-port url) (quri.port:scheme-default-port rewrited-scheme)
-                 (url request-data) (url rewrited-uri))))
+           (setf (url request-data) (url rewrited-uri))))
        request-data))))
 
 (define-mode force-https-mode ()
   "Impose HTTPS on every queried URL.
+Use at your own risk -- it can break websites whose certificates are not
+known, and websites that still don't have HTTPS version (shame on them!).
 
-   Use at your own risk -- it can break websites whose certificates are not
-   known, and websites that still don't have HTTPS version (shame on them!).
+To permanently bypass the \"Unacceptable TLS Certificate\" error:
+\(setf nyxt/certificate-exception-mode:*default-certificate-exceptions*
+       '(\"your.unacceptable.cert.website\"))
 
-   To permanently bypass the \"Unacceptable TLS Certificate\" error:
+Example:
 
-   \(setf nyxt/certificate-exception-mode:*default-certificate-exceptions*
-          '(\"your.unacceptable.cert.website\"))
-
-   Example:
-
-   \(define-configuration web-buffer
-      ((default-modes (append '(force-https-mode) %slot-default%))))"
+\(define-configuration web-buffer
+  ((default-modes (append '(force-https-mode) %slot-default%))))"
   ((previous-url (quri:uri ""))
    (destructor
     (lambda (mode)
