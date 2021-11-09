@@ -44,7 +44,7 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix licenses)
   #:use-module (guix git-download)
-  #:use-module (guix build-system asdf) ; TODO: Remove sbcl-cl-webkit once Guix has 3.0.0.
+  #:use-module (guix build-system asdf) ; TODO: Remove sbcl-cl-webkit once Guix has 3.2.0.
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system glib-or-gtk)
   #:use-module (gnu packages)
@@ -61,11 +61,11 @@
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages webkit))
 
-;; TODO: Remove sbcl-cl-webkit once Guix has 3.1.1.
+;; TODO: Remove sbcl-cl-webkit once Guix has 3.2.
 (define-public sbcl-cl-webkit
   (package
     (name "sbcl-cl-webkit")
-    (version "3.1.1")
+    (version "3.2.0")
     (source
      (origin
        (method git-fetch)
@@ -75,7 +75,7 @@
        (file-name (git-file-name "cl-webkit" version))
        (sha256
         (base32
-         "11iclqjcb9h9h3sdgrndxph9fk6fqc0jpra9iwiccq0p25715lg1"))))
+         "1c0kas8k02167v5f1gjbhy3741b7ky91x7lkc5bh5429jmbpiapf"))))
     (build-system asdf-build-system/sbcl)
     (inputs
      `(("cffi" ,sbcl-cffi)
