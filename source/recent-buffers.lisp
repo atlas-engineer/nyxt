@@ -23,7 +23,7 @@
    (prompter:constructor
     (containers:container->list (recent-buffers *browser*)))
    (prompter:actions (list
-                      (make-command reopen-dead-buffer-focus (buffer-list)
+                      (make-command reopen-dead-buffer-focus (buffer-list *browser*)
                         "Reopen BUFFER and switch to it."
                         (mapc #'reopen-dead-buffer buffer-list)
                         (set-current-buffer (or (first (prompter:marks (current-source)))

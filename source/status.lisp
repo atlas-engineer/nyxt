@@ -62,7 +62,7 @@
   (spinneret:with-html-string
     (loop for domain in (remove-duplicates
                          (sera:filter-map #'quri:uri-domain
-                                          (mapcar #'url (sort-by-time (buffer-list))))
+                                          (mapcar #'url (sort-by-time (buffer-list *browser*))))
                          :test #'equal)
           collect (:a :class "tab"
                       :href (lisp-url `(nyxt::switch-buffer-or-query-domain ,domain)) domain))))

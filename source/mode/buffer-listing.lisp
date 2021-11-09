@@ -21,7 +21,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
   (labels ((cluster-buffers ()
              "Return buffers as hash table, where each value is a cluster (list of documents)."
              (let ((collection (make-instance 'analysis::document-collection)))
-               (loop for buffer in (buffer-list)
+               (loop for buffer in (buffer-list *browser*)
                      unless (internal-buffer-p buffer)
                      do (with-current-buffer buffer
                           (analysis::add-document
@@ -62,7 +62,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
              "Present the internal buffers in HTML."
              (spinneret:with-html
                (:div (:h2 "Internal Buffers")
-                     (loop for buffer in (buffer-list)
+                     (loop for buffer in (buffer-list *browser*)
                            when (internal-buffer-p buffer)
                            collect (buffer-markup buffer))))))
     (with-current-html-buffer (buffer "*Buffers*" 'nyxt/buffer-listing-mode:buffer-listing-mode)
@@ -82,7 +82,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                      (loop for cluster-key being the hash-key
                              using (hash-value cluster) of (cluster-buffers)
                            collect (cluster-markup cluster-key cluster)))
-             (dolist (buffer (buffer-list))
+             (dolist (buffer (buffer-list *browser*))
                (if linear-view-p
                    (buffer-markup buffer)
                    (unless (nyxt::buffer-parent buffer)
@@ -105,5 +105,5 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                                 (:body
                                  (:h1 "Buffers")
                                  (:a :class "button" :href (lisp-url '(nyxt/buffer-listing-mode::|SHOW-BUFFERS-PANEL|)) "Update ↺")
-                                 (loop for buffer in (buffer-list)
+                                 (loop for buffer in (buffer-list *browser*)
                                        collect (buffer-markup buffer))))))

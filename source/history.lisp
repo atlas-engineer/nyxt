@@ -444,7 +444,7 @@ If you want to save the current history file beforehand, call
                   (path (make-instance 'history-data-path
                                        :dirname (parent (history-path (current-buffer)))
                                        :basename name)))
-    (let ((old-buffers (buffer-list)))
+    (let ((old-buffers (buffer-list *browser*)))
       (sera:and-let* ((new-history (get-data path)))
         ;; TODO: Maybe modify `history-path' of all the buffers instead of polluting history?
         (%set-data (history-path (current-buffer)) new-history)

@@ -116,7 +116,7 @@ BODY must return the HTML markup as a string."
     `(let* ((,buffer-var (or (find-if (lambda (b)
                                         (and (string= (title b) ,title)
                                              (find-mode b ,mode)))
-                                      (buffer-list))
+                                      (buffer-list *browser*))
                              (funcall (symbol-function ,mode)
                                       :activate t
                                       :buffer (make-internal-buffer

@@ -246,7 +246,7 @@ toggle command (like a user class), return the toggle command of the parent."
   "Return first buffer matching MODE-SYMBOL."
   (find-if (lambda (b)
              (find-mode b mode-symbol))
-           (buffer-list)))
+           (buffer-list *browser*)))
 
 (export-always 'keymap)
 (defmethod keymap ((mode root-mode))
