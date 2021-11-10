@@ -477,6 +477,10 @@
 	path = _build/cl-cffi-gtk
 	url = https://github.com/Ferada/cl-cffi-gtk/
 	shallow = true
+[submodule "_build/cl-https-everywhere"]
+	path = _build/cl-https-everywhere
+	url = https://github.com/ruricolist/cl-https-everywhere
+	shallow = true
 [submodule "_build/cl-webkit"]
 	path = _build/cl-webkit
 	url = https://github.com/joachifm/cl-webkit

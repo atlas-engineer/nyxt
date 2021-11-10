@@ -50,6 +50,7 @@ which external dependencies we are directly relying on.
 Renderer-specific dependencies:
 - cl-cffi-gtk
 - cl-gobject-introspection
+- cl-https-everywhere
 - cl-webkit
 - cl-webengine
 - trivial-main-thread
