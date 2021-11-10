@@ -958,6 +958,39 @@ See `gtk-browser's `modifier-translator' slot."
           (webkit:webkit-script-dialog-unref dialog))
         t))))
 
+(defun process-permission-request (web-view request)
+  (declare (ignore web-view))
+  (g:g-object-ref (g:pointer request))
+  (run-thread
+    (if-confirm ((etypecase request
+                   (webkit:webkit-geolocation-permission-request
+                    "Grant this website geolocation access?")
+                   (webkit:webkit-notification-permission-request
+                    "Grant this website notifications access?")
+                   (webkit:webkit-pointer-lock-permission-request
+                    "Grant this website pointer access?")
+                   (webkit:webkit-device-info-permission-request
+                    "Grant this website device info access?")
+                   (webkit:webkit-install-missing-media-plugins-permission-request
+                    (format nil "Grant this website a media install permission for ~s?"
+                            (webkit:webkit-install-missing-media-plugins-permission-request-get-description
+                             request)))
+                   (webkit:webkit-media-key-system-permission-request
+                    (format nil "Grant this website an EME ~a key access?"
+                            (webkit:webkit-media-key-system-permission-get-name request)))
+                   (webkit:webkit-user-media-permission-request
+                    (format nil "Grant this website a~@[~*n audio~]~@[~* video~] access?"
+                            (webkit:webkit-user-media-permission-is-for-audio-device request)
+                            (webkit:webkit-user-media-permission-is-for-video-device request)))
+                   (webkit:webkit-website-data-access-permission-request
+                    (format nil "Grant ~a an access to ~a data?"
+                            (webkit:webkit-website-data-access-permission-request-get-requesting-domain
+                             request)
+                            (webkit:webkit-website-data-access-permission-request-get-current-domain
+                             request)))))
+                (webkit:webkit-permission-request-allow request)
+                (webkit:webkit-permission-request-deny request))))
+
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
   (unless (gtk-object buffer) ; Buffer may already have a view, e.g. the prompt-buffer.
@@ -983,6 +1016,7 @@ See `gtk-browser's `modifier-translator' slot."
     (on-signal-scroll-event buffer event))
   (connect-signal-function buffer "script-dialog" #'process-script-dialog)
   (connect-signal-function buffer "run-file-chooser" #'process-file-chooser-request)
+  (connect-signal-function buffer "permission-request" #'process-permission-request)
   ;; TLS certificate handling
   (connect-signal buffer "load-failed-with-tls-errors" nil (web-view failing-url certificate errors)
     (declare (ignore web-view errors))
