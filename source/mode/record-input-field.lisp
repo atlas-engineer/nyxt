@@ -65,7 +65,7 @@
                                  collect value)))
            (input-field-add (input-field) 
              (with-data-access (input-fields (inputs-path (current-buffer)))
-               (push (make-instance 'input-entry :url (render-url (url (current-buffer)))
+               (push (make-instance 'input-entry :url (url (current-buffer))
                                                  :title (title (current-buffer))
                                                  :date (local-time:now)
                                                  :input-data input-field)
