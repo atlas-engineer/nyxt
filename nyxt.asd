@@ -335,7 +335,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
   :depends-on (nyxt
                cl-cffi-gtk
                cl-webkit2
-               cl-https-everywhere)
+               https-everywhere)
   :pathname "source/"
   :serial t
   :components ((:file "renderer/gtk-clipboard")
