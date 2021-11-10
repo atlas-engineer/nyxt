@@ -569,6 +569,14 @@ Otherwise go forward to the only child."
   "Undo the last editing action."
   (ffi-buffer-undo buffer))
 
+(define-command redo (&optional (buffer (current-buffer)))
+  "Redo the last editing action."
+  (ffi-buffer-redo buffer))
+
+(define-command select-all (&optional (buffer (current-buffer)))
+  "Select all the text in the text field."
+  (ffi-buffer-select-all buffer))
+
 (define-class autofill-source (prompter:source)
   ((prompter:name "Autofills")
    (prompter:constructor (autofills *browser*))
