@@ -79,6 +79,10 @@ and to index the top of the page.")
        "C-x C-w" 'copy-hint-url
        "C-c" 'copy
        "C-v" 'paste
+       ;; FIXME: C-x is a command prefix, thus no cutting in CUA :/
+       "C-a" 'select-all
+       "C-z" 'undo
+       "C-Z" 'redo
        "button9" 'history-forwards
        "button8" 'history-backwards
        "C-+" 'zoom-page
@@ -130,7 +134,9 @@ and to index the top of the page.")
        "C-y" 'paste
        "M-w" 'copy
        "C-/" 'undo
+       "C-?" 'redo ; / shifted on QWERTY
        "C-w" 'cut
+       "C-x h" 'select-all
        "button9" 'history-forwards
        "button8" 'history-backwards
        "C-p" 'scroll-up
@@ -158,6 +164,7 @@ and to index the top of the page.")
        "p" 'paste
        "d d" 'cut
        "u" 'undo
+       "C-r" 'redo
        "M-h" 'history-backwards-query
        "M-l" 'history-forwards-query
        "M-H" 'history-all-query
