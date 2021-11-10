@@ -109,7 +109,7 @@
                                         (get-data (inputs-path (current-buffer)))))))
 
 (define-command set-input-data-from-saved 
-    (&key (actions (list (make-command buffer-load* (suggestion-values)
+    (&key (actions (list (make-command set-input-data* (suggestion-values)
                            "Load selected input-entry in current buffer's input fields."
                            (ps-write-input-data (input-data (first suggestion-values)))))))
   "Set the input data from a list of saved data into the current buffer."
