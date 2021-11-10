@@ -45,10 +45,10 @@ help on how to proceed."
        (setf (previous-url mode) (quri:copy-uri url))
        (log:info "HTTPS enforced on '~a'" (render-url url))
        ;; Use cl-https-everywhere to update its scheme status
-       (multiple-value-bind (rewrited-uri is-https rewrite-p)
+       (multiple-value-bind (rewritten-uri is-https rewrite-p)
            (https-everywhere:rewrite-uri url)
          (let ((rewrited-scheme (if is-https "https" "http")))
-           (setf (url request-data) (url rewrited-uri))))
+           (setf (url request-data) (url rewritten-uri))))
        request-data))))
 
 (define-mode force-https-mode ()
@@ -60,7 +60,7 @@ To permanently bypass the \"Unacceptable TLS Certificate\" error:
 \(setf nyxt/certificate-exception-mode:*default-certificate-exceptions*
        '(\"your.unacceptable.cert.website\"))
 
-Example:
+Example: To use `force-https-mode', add this to your config file:
 
 \(define-configuration web-buffer
   ((default-modes (append '(force-https-mode) %slot-default%))))"
