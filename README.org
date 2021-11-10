@@ -77,7 +77,7 @@ systems provide packages for Nyxt:
 
 - Alpine.
 - Debian and derivatives such as Ubuntu and Linux Mint.
-- [[https://source.atlas.engineer/view/repository/macports-port][MacPorts]].
+- [[https://github.com/atlas-engineer/ports][MacPorts]].
 - [[https://aur.archlinux.org/packages/nyxt][Arch Linux AUR]] and the [[https://aur.archlinux.org/packages/nyxt-browser-git/][-git PKGBUILD]].  See also the [[https://e-v.srht.site/nyxt-aur-builds.html][unofficial binary
   packages]], courtesy of @edgar-vincent.
 - [[https://nixos.org/nix/][Nix]]: Install with =nix-env --install nyxt=.
