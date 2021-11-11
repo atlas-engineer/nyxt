@@ -239,7 +239,7 @@ Such contexts are not needed for internal buffers."
     ;; decision on error, lest we load a web page in an internal buffer for
     ;; instance.
     (g:g-object-ref (g:pointer response-policy-decision))
-    (run-thread
+    (run-thread "asynchronous decide-policy processing"
       (handler-bind ((error (lambda (c)
                               (echo-warning "decide policy error: ~a" c)
                               ;; TODO: Don't automatically call the restart when from the REPL?
