@@ -230,15 +230,18 @@ Such contexts are not needed for internal buffers."
     ;; Even if errors are caught with `with-protect', we must ignore the policy
     ;; decision on error, lest we load a web page in an internal buffer for
     ;; instance.
-    (handler-bind ((error (lambda (c)
-                            (echo-warning "decide policy error: ~a" c)
-                            ;; TODO: Don't automatically call the restart when from the REPL?
-                            ;; (unless *run-from-repl-p*
-                            ;;   (invoke-restart 'ignore-policy-decision))
-                            (invoke-restart 'ignore-policy-decision))))
-      (restart-case (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)
-        (ignore-policy-decision ()
-          (webkit:webkit-policy-decision-ignore response-policy-decision))))))
+    (g:g-object-ref (g:pointer response-policy-decision))
+    (run-thread
+      (handler-bind ((error (lambda (c)
+                              (echo-warning "decide policy error: ~a" c)
+                              ;; TODO: Don't automatically call the restart when from the REPL?
+                              ;; (unless *run-from-repl-p*
+                              ;;   (invoke-restart 'ignore-policy-decision))
+                              (invoke-restart 'ignore-policy-decision))))
+        (restart-case (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)
+          (ignore-policy-decision ()
+            (webkit:webkit-policy-decision-ignore response-policy-decision)))))
+    t))
 
 
 (defmacro connect-signal-function (object signal fn)
@@ -724,8 +727,7 @@ See `gtk-browser's `modifier-translator' slot."
               (progn
                 (log:debug "Forward to ~s's renderer (no request-resource-hook handlers)."
                            buffer)
-                (webkit:webkit-policy-decision-use response-policy-decision)
-                nil)
+                (webkit:webkit-policy-decision-use response-policy-decision))
               (let ((request-data
                       (hooks:run-hook
                        (request-resource-hook buffer)
@@ -735,13 +737,11 @@ See `gtk-browser's `modifier-translator' slot."
                   ((not (typep request-data 'request-data))
                    (log:debug "Don't forward to ~s's renderer (non request data)."
                               buffer)
-                   (webkit:webkit-policy-decision-ignore response-policy-decision)
-                   nil)
+                   (webkit:webkit-policy-decision-ignore response-policy-decision))
                   ((quri:uri= url (url request-data))
                    (log:debug "Forward to ~s's renderer (unchanged URL)."
                               buffer)
-                   (webkit:webkit-policy-decision-use response-policy-decision)
-                   nil)
+                   (webkit:webkit-policy-decision-use response-policy-decision))
                   (t
                    ;; Low-level URL string, we must not render the puni codes so use
                    ;; `quri:render-uri'.
@@ -753,13 +753,11 @@ See `gtk-browser's `modifier-translator' slot."
                    ;; start the new load request, or else WebKit will be
                    ;; confused about which URL to load.
                    (webkit:webkit-policy-decision-ignore response-policy-decision)
-                   (webkit:webkit-web-view-load-request (gtk-object buffer) request)
-                   nil))))
+                   (webkit:webkit-web-view-load-request (gtk-object buffer) request)))))
           (progn
             (log:debug "Don't forward to ~s's renderer (non request data)."
                        buffer)
-            (webkit:webkit-policy-decision-ignore response-policy-decision)
-            nil)))))
+            (webkit:webkit-policy-decision-ignore response-policy-decision))))))
 
 (define-ffi-method on-signal-load-changed ((buffer gtk-buffer) load-event)
   ;; `url' can be nil if buffer didn't have any URL associated
