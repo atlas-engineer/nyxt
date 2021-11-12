@@ -946,10 +946,12 @@ See `gtk-browser's `modifier-translator' slot."
         t))))
 
 (defun process-permission-request (web-view request)
-  (declare (ignore web-view))
   (g:g-object-ref (g:pointer request))
   (run-thread
-    (if-confirm ((etypecase request
+   (if-confirm ((format
+                 nil "[~a] ~a"
+                 (webkit:webkit-web-view-uri web-view)
+                 (etypecase request
                    (webkit:webkit-geolocation-permission-request
                     "Grant this website geolocation access?")
                    (webkit:webkit-notification-permission-request
@@ -974,7 +976,7 @@ See `gtk-browser's `modifier-translator' slot."
                             (webkit:webkit-website-data-access-permission-request-get-requesting-domain
                              request)
                             (webkit:webkit-website-data-access-permission-request-get-current-domain
-                             request)))))
+                             request))))))
                 (webkit:webkit-permission-request-allow request)
                 (webkit:webkit-permission-request-deny request))))
 
