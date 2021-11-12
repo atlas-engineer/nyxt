@@ -22,8 +22,10 @@ Accept-Language HTTP header.")
                                    (list (first
                                           (str:split
                                            "."
-                                           (or (uiop:getenv "LANG") "")))))))
+                                           (or (uiop:getenv "LANG") "")))))
+      (ffi-set-tracking-prevention (buffer mode) nil)))
    (constructor
     (lambda (mode)
       (ffi-set-preferred-languages (buffer mode)
-                                   (preferred-languages mode))))))
+                                   (preferred-languages mode))
+      (ffi-set-tracking-prevention (buffer mode) t)))))
