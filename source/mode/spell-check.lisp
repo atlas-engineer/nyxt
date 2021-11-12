@@ -26,9 +26,9 @@ pull up a prompt of suggestions."
   "Spell check `word', if incorrectly spelled, prompt the user with
 suggestions."
   (if (spell-check-word :word word)
-        (echo "Highlighted word ~s spelled correctly." word)
-        (progn (echo "Highlighted word ~s spelled incorrectly." word)
-               (spell-check-suggest-word :word word))))
+      (echo "Highlighted word ~s spelled correctly." word)
+      (progn (echo "Highlighted word ~s spelled incorrectly." word)
+             (spell-check-suggest-word :word word))))
 
 (define-command spell-check-word-at-cursor ()
   "Spell check the word at the cursor."
@@ -50,6 +50,11 @@ suggestions."
                          :sources (make-instance 'enchant-source))))
     (trivial-clipboard:text selected-word)
     (echo "Word copied to clipboard.")))
+
+(define-command spell-check-list-languages ()
+  "List all languages supported by `enchant' package."
+  (echo "~s" (mapcar #'car (enchant:with-broker brk
+                             (enchant:broker-list-dicts brk)))))
 
 (define-class enchant-source (prompter:source)
   ((case-sensitive-p nil)
