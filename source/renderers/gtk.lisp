@@ -618,8 +618,6 @@ See `gtk-browser's `modifier-translator' slot."
          (manager (apply #'make-instance `(webkit:webkit-website-data-manager
                                            ,@(when path `(:base-data-directory ,path))
                                            :is-ephemeral ,(not path)))))
-    #+webkit2-tracking
-    (webkit:webkit-website-data-manager-set-itp-enabled manager t)
     manager))
 
 (defun make-context (&optional buffer)
@@ -1379,3 +1377,10 @@ As a second value, return the current buffer index starting from 0."
 (define-ffi-method clipboard-text ((gtk-browser gtk-browser))
   (gtk:gtk-clipboard-wait-for-text
    (gtk:gtk-clipboard-get "CLIPBOARD")))
+
+(define-ffi-method ffi-set-tracking-prevention ((buffer gtk-buffer) value)
+  #+webkit2-tracking
+  (webkit:webkit-website-data-manager-set-itp-enabled
+   (webkit:webkit-web-context-website-data-manager
+    (webkit:webkit-web-view-web-context (gtk-object buffer)))
+   t))
