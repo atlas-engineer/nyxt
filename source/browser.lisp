@@ -755,6 +755,7 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-set-tracking-prevention (buffer value))
 (define-ffi-generic ffi-buffer-copy (buffer)
   (:method ((buffer buffer))
+    ;; TODO: Abstract this to a sibling of `with-current-buffer'?
     (let ((switching-buffers-p
             (not (eq buffer (current-buffer)))))
       (when switching-buffers-p
@@ -787,7 +788,13 @@ sometimes yields the wrong result."
         (switch-buffer-last)))))
 (define-ffi-generic ffi-buffer-select-all (buffer)
   (:method ((buffer buffer))
-    (echo-warning "Selecting all the text is not yet implemented for this port.")))
+    (let ((switching-buffers-p
+            (not (eq buffer (current-buffer)))))
+      (when switching-buffers-p
+        (switch-buffer :id (id buffer)))
+      (%select-all)
+      (when switching-buffers-p
+        (switch-buffer-last)))))
 (define-ffi-generic ffi-buffer-undo (buffer)
   (:method ((buffer buffer))
     (echo-warning "Undoing the editingis not yet implemented for this port.")))
