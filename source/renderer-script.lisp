@@ -72,6 +72,21 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
   "Return selected text from javascript."
   (ps:chain window (get-selection) (to-string)))
 
+(define-parenscript %cut ()
+  (let ((active-element (ps:chain document active-element))
+        (tag (ps:chain document active-element tag-name)))
+    (when (or (string= tag "INPUT")
+              (string= tag "TEXTAREA"))
+      (let ((origin (ps:chain active-element selection-start))
+            (end (ps:chain active-element selection-end))
+            (selection-text (ps:chain window (get-selection) (to-string)))
+            (value (ps:chain active-element value)))
+        (setf (ps:chain active-element value)
+              (+ (ps:chain value (substring 0 origin))
+                 (ps:chain value
+                           (substring end (ps:@ value length)))))
+        selection-text))))
+
 (defun html-write (content &optional (buffer (current-buffer)))
   (ffi-buffer-evaluate-javascript-async
    buffer
