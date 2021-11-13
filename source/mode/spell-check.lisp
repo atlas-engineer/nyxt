@@ -66,14 +66,13 @@ suggestions."
   "List all languages supported on your machine."
   (echo "Supported languages: ~s"
         (mapcar #'car (enchant:with-broker bkr
-                        enchant:broker-list-dicts bkr))))
+                        (enchant:broker-list-dicts bkr)))))
 
 (defun spell-check-and-suggest (word)
   "Only suggest if `word' is incorrect."
   (enchant:with-dict (lang (spell-check-language *browser*))
     (let ((result (enchant:dict-check lang word)))
-      (if result
-          result
+      (or result
           (enchant:dict-suggest lang word)))))
 
 (define-command spell-check-text-input (&key text)
