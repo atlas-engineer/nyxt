@@ -66,3 +66,38 @@ suggestions."
       (when (> (length input) 2)
         (enchant:with-dict (lang (spell-check-language *browser*))
           (enchant:dict-suggest lang input)))))))
+
+(define-command spell-check-list-languages ()
+  "List all languages supported on your machine."
+  (echo "Supported languages: ~s"
+        (mapcar #'car (enchant:with-broker bkr
+                        enchant:broker-list-dicts bkr))))
+
+(defun spell-check-and-suggest (word)
+  "Only suggest if `word' is incorrect."
+  (enchant:with-dict (lang (spell-check-language *browser*))
+    (let ((result (enchant:dict-check lang word)))
+      (if result
+          result
+          (enchant:dict-suggest lang word)))))
+
+(define-command spell-check-text-input (&key text)
+  "Spell check full text input provided by the user."
+  (let ((selected-text (prompt
+                         :input text
+                         :prompt "Suggest spelling (3+ characters)"
+                         :sources (make-instance 'enchant-text-input))))
+    (trivial-clipboard:text selected-text)
+    (echo "Text copied to clipboard.")))
+
+(define-class enchant-text-input (prompter:text)
+  ((case-sensitive-p nil)
+   (prompter:name "Enchant for text")
+   (prompter:filter nil)
+   (prompter:filter-preprocessor
+    (lambda (preprocessed-suggestions text input)
+      (declare (ignore preprocessed-suggestions text))
+      (when (> (length input) 2)
+        (enchant:with-dict (lang (spell-check-language *browser*))
+          (mapcar #'spell-check-and-suggest
+                  (str:words input))))))))
