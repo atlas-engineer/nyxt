@@ -74,14 +74,8 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
 (define-parenscript %cut ()
   (let ((active-element (ps:chain document active-element)))
     (when (nyxt/ps:element-editable-p active-element)
-      (let ((origin (ps:chain active-element selection-start))
-            (end (ps:chain active-element selection-end))
-            (selection-text (ps:chain window (get-selection) (to-string)))
-            (value (ps:chain active-element value)))
-        (setf (ps:chain active-element value)
-              (+ (ps:chain value (substring 0 origin))
-                 (ps:chain value
-                           (substring end (ps:@ value length)))))
+      (let ((selection-text (ps:chain window (get-selection) (to-string))))
+        (nyxt/ps:insert-at active-element "")
         selection-text))))
 
 (define-parenscript %select-all ()
