@@ -87,6 +87,13 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
                            (substring end (ps:@ value length)))))
         selection-text))))
 
+(define-parenscript %select-all ()
+  (let ((active-element (ps:chain document active-element))
+        (tag (ps:chain document active-element tag-name)))
+    (when (or (string= tag "INPUT")
+              (string= tag "TEXTAREA"))
+      (ps:chain active-element (set-selection-range 0 (ps:@ active-element value length))))))
+
 (defun html-write (content &optional (buffer (current-buffer)))
   (ffi-buffer-evaluate-javascript-async
    buffer
