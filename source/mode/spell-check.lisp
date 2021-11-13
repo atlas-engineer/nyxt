@@ -89,7 +89,7 @@ suggestions."
     (trivial-clipboard:text selected-text)
     (echo "Text copied to clipboard.")))
 
-(define-class enchant-text-input (prompter:text)
+(define-class enchant-text-input (prompter:source)
   ((case-sensitive-p nil)
    (prompter:name "Enchant for text")
    (prompter:filter nil)
@@ -98,5 +98,5 @@ suggestions."
       (declare (ignore preprocessed-suggestions text))
       (when (> (length input) 2)
         (enchant:with-dict (lang (spell-check-language *browser*))
-          (mapcar #'spell-check-and-suggest
+          (mapcar #'(lambda (word) (list word (spell-check-and-suggest word)))
                   (str:words input))))))))
