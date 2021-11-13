@@ -755,20 +755,39 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-set-tracking-prevention (buffer value))
 (define-ffi-generic ffi-buffer-copy (buffer)
   (:method ((buffer buffer))
-    (let ((input (%copy)))
-      (copy-to-clipboard input)
-      (echo "Text copied."))))
+    (let ((switching-buffers-p
+            (not (eq buffer (current-buffer)))))
+      (when switching-buffers-p
+        (switch-buffer :id (id buffer)))
+      (let ((input (%copy)))
+        (copy-to-clipboard input)
+        (echo "Text copied: ~s" input))
+      (when switching-buffers-p
+        (switch-buffer-last)))))
 (define-ffi-generic ffi-buffer-paste (buffer)
   (:method ((buffer buffer))
-    (switch-buffer :id (id buffer))
-    (%paste)
-    (switch-buffer-last)))
+    (let ((switching-buffers-p
+            (not (eq buffer (current-buffer)))))
+      (when switching-buffers-p
+        (switch-buffer :id (id buffer)))
+      (%paste)
+      (when switching-buffers-p
+        (switch-buffer-last)))))
+(define-ffi-generic ffi-buffer-cut (buffer)
+  (:method ((buffer buffer))
+    (let ((switching-buffers-p
+            (not (eq buffer (current-buffer)))))
+      (when switching-buffers-p
+        (switch-buffer :id (id buffer)))
+      (let ((input (%cut)))
+        (when input
+          (copy-to-clipboard input)
+          (echo "Cut the text : ~s" input)))
+      (when switching-buffers-p
+        (switch-buffer-last)))))
 (define-ffi-generic ffi-buffer-select-all (buffer)
   (:method ((buffer buffer))
     (echo-warning "Selecting all the text is not yet implemented for this port.")))
-(define-ffi-generic ffi-buffer-cut (buffer)
-  (:method ((buffer buffer))
-    (echo-warning "Cutting text is not yet implemented for this port.")))
 (define-ffi-generic ffi-buffer-undo (buffer)
   (:method ((buffer buffer))
     (echo-warning "Undoing the editingis not yet implemented for this port.")))
