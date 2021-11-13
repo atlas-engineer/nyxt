@@ -9,8 +9,8 @@
       (enchant:with-dict (lang (spell-check-language *browser*))
         (enchant:dict-check lang word))
       (let ((word (prompt1
-                    :prompt "Spell check word"
-                    :sources (make-instance 'prompter:raw-source))))
+                   :prompt "Spell check word"
+                   :sources (make-instance 'prompter:raw-source))))
         (if (enchant:with-dict (lang (spell-check-language *browser*))
               (enchant:dict-check lang word))
             (echo "~s spelled correctly." word)
@@ -45,9 +45,9 @@ suggestions."
 (define-command spell-check-suggest-word (&key word)
   "Suggest a spelling for a given word."
   (let ((selected-word (prompt1
-                         :input word
-                         :prompt "Suggest spelling (3+ characters)"
-                         :sources (make-instance 'enchant-source))))
+                        :input word
+                        :prompt "Suggest spelling (3+ characters)"
+                        :sources (make-instance 'enchant-source))))
     (trivial-clipboard:text selected-word)
     (echo "Word copied to clipboard.")))
 
@@ -77,15 +77,15 @@ suggestions."
   "Only suggest if `word' is incorrect."
   (enchant:with-dict (lang (spell-check-language *browser*))
     (let ((result (enchant:dict-check lang word)))
-      (or result
+      (if result
+          result
           (enchant:dict-suggest lang word)))))
 
 (define-command spell-check-text-input (&key text)
   "Spell check full text input provided by the user."
-  (let ((selected-text (prompt
-                         :input text
-                         :prompt "Suggest spelling (3+ characters)"
-                         :sources (make-instance 'enchant-text-input))))
+  (let ((selected-text (prompt :input text
+                               :prompt "Suggest spelling (3+ characters)"
+                               :sources (make-instance 'enchant-text-input))))
     (trivial-clipboard:text selected-text)
     (echo "Text copied to clipboard.")))
 
@@ -98,5 +98,4 @@ suggestions."
       (declare (ignore preprocessed-suggestions text))
       (when (> (length input) 2)
         (enchant:with-dict (lang (spell-check-language *browser*))
-          (mapcar #'(lambda (word) (list word (spell-check-and-suggest word)))
-                  (str:words input))))))))
+          (mapcar #'spell-check-and-suggest (str:words input))))))))
