@@ -629,8 +629,6 @@ See `gtk-browser's `modifier-translator' slot."
          (manager (apply #'make-instance `(webkit:webkit-website-data-manager
                                            ,@(when path `(:base-data-directory ,path))
                                            :is-ephemeral ,(not path)))))
-    #+webkit2-tracking
-    (webkit:webkit-website-data-manager-set-itp-enabled manager t)
     manager))
 
 (defun make-context (&optional buffer)
@@ -959,10 +957,12 @@ See `gtk-browser's `modifier-translator' slot."
         t))))
 
 (defun process-permission-request (web-view request)
-  (declare (ignore web-view))
   (g:g-object-ref (g:pointer request))
   (run-thread
-    (if-confirm ((etypecase request
+   (if-confirm ((format
+                 nil "[~a] ~a"
+                 (webkit:webkit-web-view-uri web-view)
+                 (etypecase request
                    (webkit:webkit-geolocation-permission-request
                     "Grant this website geolocation access?")
                    (webkit:webkit-notification-permission-request
@@ -987,7 +987,7 @@ See `gtk-browser's `modifier-translator' slot."
                             (webkit:webkit-website-data-access-permission-request-get-requesting-domain
                              request)
                             (webkit:webkit-website-data-access-permission-request-get-current-domain
-                             request)))))
+                             request))))))
                 (webkit:webkit-permission-request-allow request)
                 (webkit:webkit-permission-request-deny request))))
 
@@ -1390,3 +1390,10 @@ As a second value, return the current buffer index starting from 0."
 (define-ffi-method clipboard-text ((gtk-browser gtk-browser))
   (gtk:gtk-clipboard-wait-for-text
    (gtk:gtk-clipboard-get "CLIPBOARD")))
+
+(define-ffi-method ffi-set-tracking-prevention ((buffer gtk-buffer) value)
+  #+webkit2-tracking
+  (webkit:webkit-website-data-manager-set-itp-enabled
+   (webkit:webkit-web-context-website-data-manager
+    (webkit:webkit-web-view-web-context (gtk-object buffer)))
+   t))
