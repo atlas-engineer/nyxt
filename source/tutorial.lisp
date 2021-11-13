@@ -220,7 +220,9 @@ English but it is possible to change the slot for other languages:")
     (list-command-information '(nyxt/web-mode:spell-check-word
                                 nyxt/web-mode:spell-check-word-at-cursor
                                 nyxt/web-mode:spell-check-suggest-word
-                                nyxt/web-mode:spell-check-highlighted-word)))
+                                nyxt/web-mode:spell-check-highlighted-word
+                                nyxt/web-mode:spell-check-list-languages
+                                nyxt/web-mode:spell-check-text-input)))
    (:h3 "Visual mode")
    (:p "Select text without a mouse. Nyxt's "
        (:code "visual-mode") " imitates Vim's visual mode (and comes with the
