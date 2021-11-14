@@ -688,7 +688,7 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-buffer-enable-webgl (buffer value))
 (define-ffi-generic ffi-buffer-auto-load-image (buffer value))
 (define-ffi-generic ffi-buffer-enable-sound (buffer value))
-(define-ffi-generic ffi-buffer-user-agent (buffer value))
+(define-ffi-generic ffi-buffer-user-agent (buffer &optional value))
 (define-ffi-generic ffi-buffer-set-proxy (buffer &optional proxy-url ignore-hosts))
 (define-ffi-generic ffi-buffer-get-proxy (buffer))
 (define-ffi-generic ffi-buffer-download (buffer url))
