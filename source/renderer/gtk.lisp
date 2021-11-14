@@ -1210,10 +1210,13 @@ requested a reload."
         ;; If download was too small, it may not have been updated.
         (setf (completion-percentage download) 100)))))
 
-(define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) value)
-  (setf (webkit:webkit-settings-user-agent
-         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
-        value))
+(define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) &optional value)
+  (if value
+      (setf (webkit:webkit-settings-user-agent
+             (webkit:webkit-web-view-get-settings (gtk-object buffer)))
+            value)
+      (webkit:webkit-settings-user-agent
+       (webkit:webkit-web-view-get-settings (gtk-object buffer)))))
 
 (define-ffi-method ffi-buffer-webgl-enabled-p ((buffer gtk-buffer))
   (webkit:webkit-settings-enable-webgl
