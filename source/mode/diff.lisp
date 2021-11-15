@@ -8,10 +8,10 @@
   ((rememberable-p nil)
    (buffer (error "Please supply a buffer.")
            :documentation "The buffer where the diff will be displayed.")
-   (old-html :documentation "String html representation.")
-   (new-html :documentation "String html representation.")
-   (diff-html :documentation "String html representation of the computed diff
-   between old-html and new-html slots.")
+   (old-html :documentation "String HTML representation.")
+   (new-html :documentation "String HTML representation.")
+   (diff-html :documentation "String HTML representation of the computed diff
+   between `old-html' and `new-html' slots.")
    (diff-style (cl-css:css
                 '((".nyxt-diff-insert"
                    :text-decoration "none"
