@@ -1314,7 +1314,9 @@ custom (the specified proxy) and none."
        (ps:ps (setf (ps:@ document body |innerHTML|)
                     (ps:lisp text)))))))
 
-(define-ffi-method ffi-display-url (text)
+;; This method does not need a renderer, so no need to use `define-ffi-method'
+;; which is prone to race conditions.
+(defmethod ffi-display-url (text)
   (webkit:webkit-uri-for-display text))
 
 (-> set-cookie-policy (webkit:webkit-cookie-manager cookie-policy) *)
