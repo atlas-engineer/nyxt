@@ -119,7 +119,6 @@ Otherwise clone each repository mentioned in =.gitmodules= into
 #+begin_src sh
   mkdir -p ~/common-lisp
   git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit
-  git clone https://github.com/ruricolist/cl-https-everywhere.git ~/common-lisp/cl-https-everywhere
 #+end_src
 
 *** GNU/Linux, FreeBSD GTK dependencies

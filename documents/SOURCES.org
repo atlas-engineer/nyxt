@@ -15,6 +15,7 @@ which external dependencies we are directly relying on.
 - cl-css
 - cl-custom-hash-table
 - cl-html-diff
+- cl-https-everywhere
 - cl-json
 - cl-ppcre
 - cl-ppcre-unicode
@@ -50,7 +51,6 @@ which external dependencies we are directly relying on.
 Renderer-specific dependencies:
 - cl-cffi-gtk
 - cl-gobject-introspection
-- cl-https-everywhere
 - cl-webkit
 - cl-webengine
 - trivial-main-thread

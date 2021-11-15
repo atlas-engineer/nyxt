@@ -60,7 +60,7 @@ To permanently bypass the \"Unacceptable TLS Certificate\" error:
 \(setf nyxt/certificate-exception-mode:*default-certificate-exceptions*
        '(\"your.unacceptable.cert.website\"))
 
-Example: To use `force-https-mode', add this to your config file:
+To use `force-https-mode', add this to your config file:
 
 \(define-configuration web-buffer
   ((default-modes (append '(force-https-mode) %slot-default%))))"

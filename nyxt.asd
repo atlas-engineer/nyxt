@@ -44,6 +44,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                cl-base64
                cl-css
                cl-html-diff
+               cl-https-everywhere
                cl-json
                cl-ppcre
                cl-ppcre-unicode
@@ -334,8 +335,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
 (defsystem "nyxt/gtk"
   :depends-on (nyxt
                cl-cffi-gtk
-               cl-webkit2
-               cl-https-everywhere)
+               cl-webkit2)
   :pathname "source/"
   :serial t
   :components ((:file "renderer/gtk-clipboard")
