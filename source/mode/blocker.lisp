@@ -65,13 +65,13 @@ If HOSTLIST has a `path', persist it locally."
         (t (c)
           (log:error "Could not download hostlist ~a: ~a" url-string c))))))
 
-(defvar update-lock (bt:make-lock))
+(defvar *update-lock* (bt:make-lock))
 
 (defmethod update-hostlist-with-lock ((hostlist hostlist))
   (run-thread "blocker-mode hostlist updater"
-    (when (bt:acquire-lock update-lock nil)
+    (when (bt:acquire-lock *update-lock* nil)
        (update hostlist)
-       (bt:release-lock update-lock))))
+       (bt:release-lock *update-lock*))))
 
 (defmethod read-hostlist ((hostlist hostlist))
   "Return hostlist file as a string.
