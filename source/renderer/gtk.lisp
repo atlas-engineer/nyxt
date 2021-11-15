@@ -1404,7 +1404,7 @@ As a second value, return the current buffer index starting from 0."
    (gtk-object gtk-buffer) webkit2:+webkit-editing-command-copy+
    (lambda (can-execute?)
      (when can-execute?
-       (webkit::webkit-web-view-execute-editing-command
+       (webkit:webkit-web-view-execute-editing-command
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-copy+)))
    (lambda (e) (echo-warning "Cannot copy: ~a" e))))
 
@@ -1413,7 +1413,7 @@ As a second value, return the current buffer index starting from 0."
    (gtk-object gtk-buffer) webkit2:+webkit-editing-command-paste+
    (lambda (can-execute?)
      (when can-execute?
-       (webkit::webkit-web-view-execute-editing-command
+       (webkit:webkit-web-view-execute-editing-command
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-paste+)))
    (lambda (e) (echo-warning "Cannot paste: ~a" e))))
 
@@ -1422,7 +1422,7 @@ As a second value, return the current buffer index starting from 0."
    (gtk-object gtk-buffer) webkit2:+webkit-editing-command-cut+
    (lambda (can-execute?)
      (when can-execute?
-       (webkit::webkit-web-view-execute-editing-command
+       (webkit:webkit-web-view-execute-editing-command
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-cut+)))
    (lambda (e) (echo-warning "Cannot cut: ~a" e))))
 
@@ -1431,7 +1431,7 @@ As a second value, return the current buffer index starting from 0."
    (gtk-object gtk-buffer) webkit2:+webkit-editing-command-select-all+
    (lambda (can-execute?)
      (when can-execute?
-       (webkit::webkit-web-view-execute-editing-command
+       (webkit:webkit-web-view-execute-editing-command
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-select-all+)))
    (lambda (e) (echo-warning "Cannot select all: ~a" e))))
 
@@ -1440,7 +1440,7 @@ As a second value, return the current buffer index starting from 0."
    (gtk-object gtk-buffer) webkit2:+webkit-editing-command-undo+
    (lambda (can-execute?)
      (when can-execute?
-       (webkit::webkit-web-view-execute-editing-command
+       (webkit:webkit-web-view-execute-editing-command
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-undo+)))
    (lambda (e) (echo-warning "Cannot undo: ~a" e))))
 
@@ -1449,6 +1449,6 @@ As a second value, return the current buffer index starting from 0."
    (gtk-object gtk-buffer) webkit2:+webkit-editing-command-redo+
    (lambda (can-execute?)
      (when can-execute?
-       (webkit::webkit-web-view-execute-editing-command
+       (webkit:webkit-web-view-execute-editing-command
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-redo+)))
    (lambda (e) (echo-warning "Cannot redo: ~a" e))))
