@@ -47,18 +47,22 @@ See the `hostlist' class documentation."
   "Fetch HOSTLIST and return it.
 If HOSTLIST has a `path', persist it locally."
   (unless (uiop:emptyp (url hostlist))
-    (let ((path (expand-path (path hostlist))))
+    (let ((path (expand-path (path hostlist)))
+          (url-string (render-url (url hostlist))))
       (log:info "Updating hostlist ~s from ~s." path
-                (render-url (url hostlist)))
-      (let ((hosts (dex:get (render-url (url hostlist)))))
-        (when path
-          (handler-case
-              (alex:write-string-into-file hosts (ensure-parent-exists path)
-                                           :if-exists :supersede
-                                           :if-does-not-exist :create)
-            (error (c)
-              (log:error "Could not persist hostlist ~s: ~a" path c))))
-        hosts))))
+                url-string)
+      (handler-case
+          (let ((hosts (dex:get url-string)))
+            (when path
+              (handler-case
+                  (alex:write-string-into-file hosts (ensure-parent-exists path)
+                                               :if-exists :supersede
+                                               :if-does-not-exist :create)
+                (error (c)
+                  (log:error "Could not persist hostlist ~s: ~a" path c))))
+            hosts)
+        (t (c)
+          (log:error "Could not download hostlist ~a: ~a" url-string c))))))
 
 (defvar update-lock (bt:make-lock))
 
