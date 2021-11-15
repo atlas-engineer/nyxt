@@ -43,7 +43,7 @@ See `*default-hostlist*' for an example."))
 See the `hostlist' class documentation."
   (apply #'make-instance 'hostlist args))
 
-(defmethod update ((hostlist hostlist))
+(defmethod update ((hostlist hostlist) mode)
   "Fetch HOSTLIST and return it.
 If HOSTLIST has a `path', persist it locally."
   (unless (uiop:emptyp (url hostlist))
@@ -53,7 +53,8 @@ If HOSTLIST has a `path', persist it locally."
                 url-string)
       (handler-case
           (let ((hosts (dex:get url-string)))
-            (when path
+            (when (and hosts path)
+              (load-hostlist hosts mode)
               (handler-case
                   (alex:write-string-into-file hosts (ensure-parent-exists path)
                                                :if-exists :supersede
@@ -66,13 +67,13 @@ If HOSTLIST has a `path', persist it locally."
 
 (defvar *update-lock* (bt:make-lock))
 
-(defmethod update-hostlist-with-lock ((hostlist hostlist))
+(defmethod update-hostlist-with-lock ((hostlist hostlist) mode)
   (run-thread "blocker-mode hostlist updater"
     (when (bt:acquire-lock *update-lock* nil)
-       (update hostlist)
+       (update hostlist mode)
        (bt:release-lock *update-lock*))))
 
-(defmethod read-hostlist ((hostlist hostlist))
+(defmethod read-hostlist ((hostlist hostlist) mode)
   "Return hostlist file as a string.
 Return nil if hostlist file is not ready yet.
 Auto-update file if older than UPDATE-INTERVAL seconds.
@@ -82,34 +83,35 @@ The new hostlist will be used as soon as it is available."
   (when (or (not (uiop:file-exists-p (expand-path (path hostlist))))
             (< (update-interval hostlist)
                (- (get-universal-time) (uiop:safe-file-write-date (expand-path (path hostlist))))))
-    (update-hostlist-with-lock hostlist))
+    (update-hostlist-with-lock hostlist mode))
   (handler-case
       (uiop:read-file-string (expand-path (path hostlist)))
     (error ()
       (log:warn "Hostlist not found: ~a" (expand-path (path hostlist)))
       nil)))
 
-(defmethod parse ((hostlist hostlist))
-  "Return the hostlist as a list of strings.
-Return nil if hostlist cannot be parsed."
-  ;; We could use a hash table instead, but a simple benchmark shows little difference.
-  (setf (hosts hostlist)
-        (or (hosts hostlist)
-            (let ((hostlist-string (read-hostlist hostlist)))
-              (unless (uiop:emptyp hostlist-string)
-                (with-input-from-string (stream hostlist-string)
-                  (flet ((empty-line? (line)
-                           (< (length line) 2))
-                         (comment? (line)
-                           (string= (subseq line 0 1) "#"))
-                         (custom-hosts? (line)
-                           (not (str:starts-with? "0.0.0.0" line))))
-                    (loop as line = (read-line stream nil)
-                          while line
-                          unless (or (empty-line? line)
-                                     (comment? line)
-                                     (custom-hosts? line))
-                            collect (second (str:split " " line))))))))))
+(defmethod load-hostlist ((hostlist-string string) mode)
+  "Load HOSTLIST-STRING into MODE's `blocked-hosts'."
+  (unless (uiop:emptyp hostlist-string)
+    (with-input-from-string (stream hostlist-string)
+      (flet ((empty-line? (line)
+               (< (length line) 2))
+             (comment? (line)
+               (string= (subseq line 0 1) "#"))
+             (custom-hosts? (line)
+               (not (str:starts-with? "0.0.0.0" line))))
+        (loop as line = (read-line stream nil)
+              while line
+              unless (or (empty-line? line)
+                         (comment? line)
+                         (custom-hosts? line))
+                do (let ((host (second (str:split " " line))))
+                     (setf (gethash host (blocked-hosts mode)) host)))))))
+
+(defmethod load-hostlist ((hostlist hostlist) mode)
+  "Load HOSTLIST into MODE's `blocked-hosts'."
+  (let ((hostlist-string (read-hostlist hostlist mode)))
+    (load-hostlist hostlist-string mode)))
 
 (serapeum:export-always '*default-hostlist*)
 (defparameter *default-hostlist*
@@ -138,6 +140,9 @@ Example:
 \(define-configuration buffer
   ((default-modes (append '(my-blocker-mode) %slot-default%))))"
   ((hostlists (list *default-hostlist*))
+   (blocked-hosts
+    (make-hash-table :test 'equal)
+    :documentation "The set of domain names to block.")
    (destructor
     (lambda (mode)
       (when (web-buffer-p (buffer mode))
@@ -145,6 +150,7 @@ Example:
                            'request-resource-block))))
    (constructor
     (lambda (mode)
+      (mapc (alex:curry #'load-hostlist mode) (hostlists mode))
       (when (web-buffer-p (buffer mode))
         (if (request-resource-hook (buffer mode))
             (hooks:add-hook (request-resource-hook (buffer mode))
@@ -156,9 +162,7 @@ Example:
 (defmethod blocklisted-host-p ((mode blocker-mode) host)
   "Return non-nil of HOST if found in the hostlists of MODE.
 Return nil if MODE's hostlist cannot be parsed."
-  (when host
-    (not (loop for hostlist in (hostlists mode)
-               never (member host (parse hostlist) :test #'string=)))))
+  (gethash host (blocked-hosts mode)))
 
 (defun request-resource-block (request-data)
   "Block resource queries from blocklisted hosts.
@@ -183,9 +187,7 @@ This is an acceptable handler for `request-resource-hook'."
           (mapcar #'closer-mop:slot-definition-name
                   (closer-mop:class-slots (class-of object)))))
 
-(define-command update-hostlists ()
+(define-command update-hostlists (&optional (blocker-mode (find-mode (current-buffer) 'blocker-mode)))
   "Forces update for all the hostlists of `blocker-mode'."
-  (let ((blocker-mode (find-mode (current-buffer) 'blocker-mode)))
-    (dolist (hostlist (hostlists blocker-mode))
-      (update-hostlist-with-lock hostlist))
-    (echo "Hostlists updated.")))
+  (mapc (alex:rcurry #'update-hostlist-with-lock blocker-mode) (hostlists blocker-mode))
+  (echo "Hostlists updated."))
