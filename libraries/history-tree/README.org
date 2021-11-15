@@ -202,7 +202,7 @@ whether the performance penalty would be too important.  We would need some
 benchmark here.
 
 One benefit of full immutability is that we can know precisely when the global
-history tree what modified (e.g. when =my-history= is reassigned to the
+history tree was modified (e.g. when =my-history= is reassigned to the
 new history value).  This allows us, for instance, to serialize only on
 modification and thus avoid useless serializations, which may be expensive when
 the history grows big.
