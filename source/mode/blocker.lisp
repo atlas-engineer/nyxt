@@ -71,8 +71,8 @@ If HOSTLIST has a `path', persist it locally."
 (defmethod update-hostlist-with-lock ((hostlist hostlist) mode)
   (run-thread "blocker-mode hostlist updater"
     (when (bt:acquire-lock *update-lock* nil)
-       (update hostlist mode)
-       (bt:release-lock *update-lock*))))
+      (unwind-protect (update hostlist mode)
+        (bt:release-lock *update-lock*)))))
 
 (defmethod read-hostlist ((hostlist hostlist) mode)
   "Return hostlist file as a string.
