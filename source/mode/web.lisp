@@ -74,10 +74,10 @@ and to index the top of the page.")
        "C-J" 'follow-hint-new-buffer
        "C-M-j" 'follow-hint-nosave-buffer-focus
        "C-u C-M-j" 'follow-hint-nosave-buffer
-       "C-x C-w" 'copy-hint-url
+       "M-c h" 'copy-hint-url
        "C-c" 'copy
        "C-v" 'paste
-       ;; FIXME: C-x is a command prefix, thus no cutting in CUA :/
+       "C-x" 'cut
        "C-a" 'select-all
        "C-z" 'undo
        "C-Z" 'redo
@@ -100,7 +100,7 @@ and to index the top of the page.")
        "C-down" 'scroll-to-bottom
        "C-up" 'scroll-to-top
        "C-i" 'autofill
-       "C-u C-x C-f" 'edit-with-external-editor
+       "C-u C-o" 'edit-with-external-editor
        ;; Leave SPACE and arrow keys unbound so that the renderer decides whether to
        ;; navigate textboxes (arrows), insert or scroll (space).
        ;; keypad, gtk:
@@ -152,7 +152,8 @@ and to index the top of the page.")
        "M->" 'scroll-to-bottom
        "M-<" 'scroll-to-top
        "C-v" 'scroll-page-down
-       "M-v" 'scroll-page-up)
+       "M-v" 'scroll-page-up
+       "C-u C-x C-f" 'edit-with-external-editor)
 
       scheme:vi-normal
       (list
