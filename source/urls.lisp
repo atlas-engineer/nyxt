@@ -66,11 +66,15 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
                             ,args))))))))
 
 (defmemo lookup-hostname (name)
-  "Resolve hostname NAME and memoize the result"
-  #+sbcl
-  (sb-bsd-sockets:get-host-by-name name)
-  #-sbcl
-  (iolib/sockets:lookup-hostname name))
+  "Resolve hostname NAME and memoize the result."
+  ;; `sb-bsd-sockets:get-host-by-name' may signal a `ns-try-again-condition' which is
+  ;; not an error, so we can't use `ignore-errors' here.
+  (handler-case
+      #+sbcl
+    (sb-bsd-sockets:get-host-by-name name)
+    #-sbcl
+    (iolib/sockets:lookup-hostname name)
+    (t () nil)))
 
 (export-always 'valid-url-p)
 (defun valid-url-p (url &key (check-dns-p t))
@@ -93,10 +97,7 @@ name validation may take significant time since it looks up the DNS."
              "xcon" "xcon-userid" "xmlrpc.beep" "xmlrpc.beeps" "xmpp" "z39.50r" "z39.50s"))
          (valid-schemes (append nyxt-schemes iana-schemes))
          (url (ignore-errors (quri:uri url))))
-    (flet ((hostname-found-p (name)
-             (handler-case (lookup-hostname name)
-               (t () nil)))
-           (valid-scheme-p (scheme)
+    (flet ((valid-scheme-p (scheme)
              (find scheme valid-schemes :test #'string=))
            (http-p (scheme)
              (find scheme '("http" "https") :test #'string=)))
@@ -112,15 +113,13 @@ name validation may take significant time since it looks up the DNS."
                 (quri:uri-host url)
                 (or
                  (not check-dns-p)
-                 ;; Onion links or not resolved via DNS, just accept them.
+                 ;; Onion links are not resolved via DNS, just accept them.
                  (string= (quri:uri-tld url) "onion")
                  ;; "http://algo" has the "algo" hostname but it's probably invalid
                  ;; unless it's found on the local network.  We also need to
                  ;; support "localhost" and the current system hostname.
-                 ;; get-host-by-name may signal a ns-try-again-condition which is
-                 ;; not an error, so we can't use `ignore-errors' here.
                  (or (quri:ip-addr-p (quri:uri-host url))
-                     (hostname-found-p (quri:uri-host url))))))))))
+                     (lookup-hostname (quri:uri-host url))))))))))
 
 (-> ensure-url (t) quri:uri)
 (defun ensure-url (thing)
