@@ -945,10 +945,15 @@ See `gtk-browser's `modifier-translator' slot."
                    (progn
                      (webkit:webkit-script-dialog-prompt-set-text dialog (cffi:null-pointer))
                      (webkit:webkit-script-dialog-close dialog)))))
-            ((:webkit-script-dialog-confirm :webkit-script-dialog-before-unload-confirm)
+            (:webkit-script-dialog-confirm
              (webkit:webkit-script-dialog-confirm-set-confirmed
               dialog (if-confirm
                       ((webkit:webkit-script-dialog-get-message dialog))
+                      t nil)))
+            (:webkit-script-dialog-before-unload-confirm
+             (webkit:webkit-script-dialog-confirm-set-confirmed
+              dialog (if-confirm
+                      ((format nil "Stay on the page? ~a" (webkit:webkit-script-dialog-get-message dialog)))
                       t nil))))
           (webkit:webkit-script-dialog-close dialog)
           (webkit:webkit-script-dialog-unref dialog))
@@ -1029,6 +1034,13 @@ See `gtk-browser's `modifier-translator' slot."
     (echo-warning "Web process crashed for buffer ~a" (id buffer))
     (log:debug "Web process crashed for web view ~a" web-view)
     (delete-buffer :id (id buffer)))
+  (connect-signal buffer "close" nil (web-view)
+    (mapc (lambda (handler-id)
+            (gobject:g-signal-handler-disconnect web-view handler-id))
+          (handler-ids buffer))
+    (gtk:gtk-widget-destroy web-view)
+    (setf (gtk-object buffer) nil)
+    (buffer-hide buffer))
   (connect-signal buffer "load-failed" nil (web-view load-event failing-url error)
     (declare (ignore load-event web-view error))
     ;; TODO: WebKitGTK sometimes (when?) triggers "load-failed" when loading a
@@ -1073,14 +1085,10 @@ See `gtk-browser's `modifier-translator' slot."
     nil)
   buffer)
 
-(define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
-  (mapc (lambda (handler-id)
-          (gobject:g-signal-handler-disconnect (gtk-object buffer)
-                                               handler-id))
-        (handler-ids buffer))
-  (when (slot-value buffer 'gtk-object) ; Not all buffers have their own web view, e.g. prompt buffers.
-    (gtk:gtk-widget-destroy (gtk-object buffer))
-    (setf (gtk-object buffer) nil)))
+(defmethod ffi-buffer-delete ((buffer gtk-buffer))
+  (if (slot-value buffer 'gtk-object) ; Not all buffers have their own web view, e.g. prompt buffers.
+      (webkit:webkit-web-view-try-close (gtk-object buffer))
+      (buffer-hide buffer)))
 
 (define-ffi-method ffi-buffer-load ((buffer gtk-buffer) url)
   "Load URL in BUFFER.
