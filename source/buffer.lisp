@@ -1183,14 +1183,16 @@ If prefixing with 'https://' results in a valid URL, set `query' to this result
 on instantiation.
 Finally, if nothing else, set the `engine' to the `default-search-engine'."))
 
-(defmethod initialize-instance :after ((query new-url-query) &key)
+(defmethod initialize-instance :after ((query new-url-query)
+                                       &key check-dns-p &allow-other-keys)
   ;; Trim whitespace, in particular to detect URL properly.
   (setf (query query) (str:trim (query query)))
   (cond
     ((engine query)
      ;; First check engine: if set, no need to change anything.
      nil)
-    ((valid-url-p (query query))
+    ((valid-url-p (query query)
+                  :check-dns-p check-dns-p)
      ;; Valid URLs should be passed forward.
      nil)
     ;; Rest is for invalid URLs:
@@ -1201,7 +1203,9 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
             (uiop:native-namestring
              (uiop:ensure-absolute-pathname
               (query query) *default-pathname-defaults*)))))
-    ((valid-url-p (str:concat "https://" (query query)))
+    ((and check-dns-p
+          (valid-url-p (str:concat "https://" (query query))
+                       :check-dns-p check-dns-p))
      (setf (query query)
            (str:concat "https://" (query query))))
     (t
@@ -1231,7 +1235,7 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
   `(("URL or new query" ,(query query))
     ("Search engine?" ,(if (engine query) (shortcut (engine query)) ""))))
 
-(defun input->queries (input)
+(defun input->queries (input &key (check-dns-p t))
   (let* ((terms (sera:tokens input))
          (engines (let ((all-prefixed-engines
                           (remove-if
@@ -1246,17 +1250,22 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
     (append (unless (and engines (member (first terms)
                                          (mapcar #'shortcut engines)
                                          :test #'string=))
-              (list (make-instance 'new-url-query :query input)))
+              (list (make-instance 'new-url-query
+                                   :query       input
+                                   :check-dns-p check-dns-p)))
             (alex:mappend (lambda (engine)
                             (append
                              (list (make-instance 'new-url-query
-                                                  :query (str:join " " (rest terms))
-                                                  :engine engine))
+                                                  :query       (str:join " " (rest terms))
+                                                  :engine      engine
+                                                  :check-dns-p check-dns-p))
                              ;; Some engines (I'm looking at you, Wikipedia!)
                              ;; return garbage in response to an empty request.
                              (when (and (completion-function engine) (rest terms))
                                (mapcar (alex:curry #'make-instance 'new-url-query
-                                                   :engine engine :query)
+                                                   :engine      engine
+                                                   :check-dns-p check-dns-p
+                                                   :query)
                                        (with-protect ("Error while completing search: ~a" :condition)
                                          (funcall (completion-function engine)
                                                   (str:join " " (rest terms))))))))
@@ -1266,9 +1275,13 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
   ((prompter:name "New URL or search query")
    (prompter:filter-preprocessor
     (lambda (suggestions source input)
-      (declare (ignorable suggestions source))
-      (input->queries input)))
+      (declare (ignore suggestions source))
+      (input->queries input :check-dns-p nil)))
    (prompter:filter nil)
+   (prompter:filter-postprocessor
+    (lambda (suggestions source input)
+      (declare (ignore suggestions source))
+      (input->queries input :check-dns-p t)))
    (prompter:actions '(buffer-load)))
   (:export-class-name-p t)
   (:documentation "This prompter source tries to \"do the right thing\" to
