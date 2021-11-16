@@ -73,10 +73,10 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
   (iolib/sockets:lookup-hostname name))
 
 (export-always 'valid-url-p)
-(defun valid-url-p (url &key skip-domain-validation)
+(defun valid-url-p (url &key (check-dns-p t))
   "Return non-nil when URL is a valid URL.
-With SKIP-DOMAIN-VALIDATION, the domain name existence is not verified.
-Domain name validation may take significant time since it looks up the DNS."
+The domain name existence is verified only if CHECK-DNS-P is T. Domain
+name validation may take significant time since it looks up the DNS."
   ;; List of URI schemes: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
   ;; Last updated 2020-08-26.
   (let* ((nyxt-schemes '("lisp" "javascript"))
@@ -111,7 +111,7 @@ Domain name validation may take significant time since it looks up the DNS."
                 ;; A valid URL may have an empty domain, e.g. http://192.168.1.1.
                 (quri:uri-host url)
                 (or
-                 skip-domain-validation
+                 (not check-dns-p)
                  ;; Onion links or not resolved via DNS, just accept them.
                  (string= (quri:uri-tld url) "onion")
                  ;; "http://algo" has the "algo" hostname but it's probably invalid
