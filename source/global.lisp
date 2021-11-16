@@ -53,7 +53,6 @@ execution of Nyxt.")
 (alex:define-constant +nyxt-critical-dependencies+
   '(:cl-cffi-gtk
     :cl-gobject-introspection
-    :cl-https-everywhere
     :cl-webkit2)
   :test #'equal)
 
