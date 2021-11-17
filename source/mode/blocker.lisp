@@ -184,9 +184,8 @@ Example:
     (lambda (mode)
       (setf (worker-channel mode) (nyxt::make-channel))
       (setf (thread mode)
-            (run-thread "async-data-path worker"
-              (worker mode)
-              :name "Blocker-mode hostlist update worker"))
+            (run-thread "blocker-mode hostlist update worker"
+              (worker mode)))
       (load-hostlists mode)
       (when (web-buffer-p (buffer mode))
         (if (request-resource-hook (buffer mode))
