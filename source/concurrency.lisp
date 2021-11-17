@@ -11,11 +11,11 @@ the amount of CPU cores.."
 
 (export-always 'with-protect)
 (defmacro with-protect ((format-string &rest args) &body body)
-  "Run body with muffled condition when `*run-from-repl-p*' is nil, run normally otherwise.
-Then the condition is muffled, a warning is reported to the user as per
+  "Run body with muffled conditions when `*run-from-repl-p*' is nil, run normally otherwise.
+When the condition is muffled, a warning is reported to the user as per
 FORMAT-STRING and ARGS.
 As a special case, the first `:condition' keyword in ARGS is replaced with the
-condition."
+raised condition."
   (alex:with-gensyms (c)
     `(if *run-from-repl-p*
          (handler-case (progn ,@body)
