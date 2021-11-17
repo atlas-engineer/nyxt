@@ -53,13 +53,20 @@ INPUT is a string and RESULTS is a list of Lisp values.")
       (initialize-display mode)
       (update-evaluation-history-display mode)))))
 
+(defun package-short-name (package)
+  (first (sort (append (package-nicknames package)
+                       (list (package-name package)))
+               #'string<)))
+
 (define-command return-input (&optional (repl (current-mode 'repl)))
   "Return inputted text."
   (pflet ((input-text ()
            (ps:chain document (get-element-by-id "input-buffer") value)))
     (let ((input (input-text)))
       (add-object-to-evaluation-history repl
-                                        (list (format nil "> ~a" input)
+                                        (list (format nil "~a> ~a"
+                                                      (package-short-name *package*)
+                                                      input)
                                               (nyxt::evaluate input)))
       (reset-input repl)
       (update-evaluation-history-display repl))))
@@ -78,7 +85,8 @@ INPUT is a string and RESULTS is a list of Lisp values.")
                      (:div :id "container"
                            (:div :id "evaluation-history" "")
                            (:div :id "input"
-                                 (:span :id "prompt" ">")
+                                 (:span :id "prompt"
+                                        (format nil "~a>" (package-short-name *package*)))
                                  (:input :type "text" :id "input-buffer"))))))
          (insert-content (ps:ps (ps:chain document
                                           (write (ps:lisp content))))))
@@ -96,8 +104,11 @@ INPUT is a string and RESULTS is a list of Lisp values.")
                                            collect (:li (prin1-to-string result)))))))))
     (ffi-buffer-evaluate-javascript-async
      (buffer repl)
-     (ps:ps (setf (ps:chain document (get-element-by-id "evaluation-history") |innerHTML|)
-                  (ps:lisp (generate-evaluation-history-html repl)))))))
+     (ps:ps
+       (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
+             (ps:lisp (format nil "~a>" (package-short-name *package*))))
+       (setf (ps:chain document (get-element-by-id "evaluation-history") |innerHTML|)
+             (ps:lisp (generate-evaluation-history-html repl)))))))
 
 (define-command-global lisp-repl ()
   "Show Lisp REPL."
