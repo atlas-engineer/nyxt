@@ -1250,7 +1250,8 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
   `(("URL or new query" ,(query query))
     ("Search engine?" ,(if (engine query) (shortcut (engine query)) ""))))
 
-(defun input->queries (input &key (check-dns-p t))
+(defun input->queries (input &key (check-dns-p t)
+                               (engine-completion-p))
   (let* ((terms (sera:tokens input))
          (engines (let ((all-prefixed-engines
                           (remove-if
@@ -1276,7 +1277,8 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
                                                   :check-dns-p check-dns-p))
                              ;; Some engines (I'm looking at you, Wikipedia!)
                              ;; return garbage in response to an empty request.
-                             (when (and (completion-function engine) (rest terms))
+                             (when (and engine-completion-p
+                                        (completion-function engine) (rest terms))
                                (mapcar (alex:curry #'make-instance 'new-url-query
                                                    :engine      engine
                                                    :check-dns-p check-dns-p
@@ -1291,12 +1293,16 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
    (prompter:filter-preprocessor
     (lambda (suggestions source input)
       (declare (ignore suggestions source))
-      (input->queries input :check-dns-p nil)))
+      (input->queries input
+                      :check-dns-p nil
+                      :engine-completion-p nil)))
    (prompter:filter nil)
    (prompter:filter-postprocessor
     (lambda (suggestions source input)
       (declare (ignore suggestions source))
-      (input->queries input :check-dns-p t)))
+      (input->queries input
+                      :check-dns-p t
+                      :engine-completion-p t)))
    (prompter:actions '(buffer-load)))
   (:export-class-name-p t)
   (:documentation "This prompter source tries to \"do the right thing\" to
@@ -1304,7 +1310,14 @@ generate a new URL query from user input.
 - If the query is a URL, open it directly.
 - If it's a file, prefix the query with 'file://'.
 - If it's a search engine shortcut, include it in the suggestions.
-- If it's none of the above, use the `default-search-engine'."))
+- If it's none of the above, use the `default-search-engine'.
+
+It runs in two passes.  The first pass does not check the DNS for domain
+validity, nor does it return any search engine suggestions.  This guarantees
+that a good-enough default suggestion is showed instantaneously.
+(We really want this prompter source to be fast!)  The second pass checks the
+DNS to precisely validate domains and returns the search engines suggestions, if
+any."))
 (define-user-class new-url-or-search-source)
 
 (defun pushnew-url-history (history url)
