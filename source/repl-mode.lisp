@@ -91,7 +91,7 @@ INPUT is a string and RESULTS is a list of Lisp values.")
   (flet ((generate-evaluation-history-html (repl)
            (spinneret:with-html-string
              (:ul (loop for (input results) in (reverse (evaluation-history repl))
-                        collect (:li input
+                        collect (:li (:b input)
                                      (loop for result in results
                                            collect (:li (prin1-to-string result)))))))))
     (ffi-buffer-evaluate-javascript-async
@@ -101,6 +101,8 @@ INPUT is a string and RESULTS is a list of Lisp values.")
 
 (define-command-global lisp-repl ()
   "Show Lisp REPL."
-  (let* ((repl-buffer (make-internal-buffer :title "*Lisp REPL*" :modes '(nyxt/repl-mode:repl-mode base-mode))))
+  (let* ((repl-buffer (make-internal-buffer
+                       :title "*Lisp REPL*"
+                       :modes '(nyxt/repl-mode:repl-mode base-mode))))
     (set-current-buffer repl-buffer)
     repl-buffer))
