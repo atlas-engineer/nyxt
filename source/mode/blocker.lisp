@@ -11,23 +11,21 @@
 
 ;; TODO: Add convenient interface to block hosts depending on the current URL.
 
-(define-class hostlist-data-path (data-path) ())
-
-(define-class hostlist ()
+(define-class hostlist (data-path)
   ((url
     (quri:uri "")
     :type quri:uri
     :documentation "URL where to download the list from.  If empty, no attempt
 will be made at updating it.")
-   (path
-    (make-instance 'hostlist-data-path)
-    :type hostlist-data-path
-    :documentation "Where to find the list locally.
-If nil, the list won't be persisted.
-If path is relative, it will be set to (xdg-data-home path).")
    (hosts
     '()
-    :documentation "Deprecated, see `load-hostlist' and `blocked-hosts' instead.")
+    :type (cons string *)
+    :documentation "List of hosts to ignore.
+This is useful to reference hosts manually instead of via `url'.")
+   (content
+    nil
+    :type (or null string)
+    :export nil)
    (update-interval
     (* 60 60 24)
     :type integer
@@ -50,58 +48,75 @@ See `*default-hostlist*' for an example."))
 See the `hostlist' class documentation."
   (apply #'make-instance 'hostlist args))
 
-(-> download (hostlist) string)
-(defun download (hostlist)
-  "Fetch HOSTLIST and return it.
-If HOSTLIST has a `path', persist it locally.
-Return nil if hostlist file is not found.
-Auto-update file if older than UPDATE-INTERVAL seconds and AUTO-UPDATE-P is non-nil.
+(defmethod store ((profile data-profile) (path hostlist) &key &allow-other-keys)
+  (with-data-file (file path :direction :output)
+    (write-string (get-data path) file)))
 
+(defmethod restore ((profile data-profile) (path hostlist) &key &allow-other-keys)
+  "Restore a hostlist."
+  (handler-case
+      (let ((data (with-data-file (file path)
+                    (when file
+                      (uiop:read-file-string file)))))
+        (when data
+          (nyxt::%set-data path data)))
+    (error (c)
+      (echo-warning "Failed to load hostlist from ~s: ~a"
+                    (expand-path path) c))))
+
+(-> fetch (hostlist) string)
+(defun fetch (hostlist)
+  "Fetch HOSTLIST and return its content.
+If HOSTLIST yields a path with `expand-path', persist it locally.
+Auto-update file if older than UPDATE-INTERVAL seconds and AUTO-UPDATE-P is non-nil.
 The hostlist is downloaded in the background."
-  (let ((path (expand-path (path hostlist))))
+  (let ((path (expand-path hostlist)))
     (if (and (or (force-update-p hostlist)
                  (not (uiop:file-exists-p path))
                  (< (update-interval hostlist)
                     (- (get-universal-time) (uiop:safe-file-write-date path))))
-             (not (uiop:emptyp (url hostlist))))
+             (not (url-empty-p (url hostlist))))
         (let ((url-string (render-url (url hostlist))))
-          (handler-case
-              (let ((hostlist-string (dex:get url-string)))
-                (if path
-                    (progn
-                      (log:info "Updating hostlist ~s from ~s." path url-string)
-                      (handler-case
-                          (alex:write-string-into-file hostlist-string
-                                                       (ensure-parent-exists path)
-                                                       :if-exists :supersede
-                                                       :if-does-not-exist :create)
-                        (t (c)
-                          (log:error "Could not persist hostlist ~a: ~a" url-string c))))
-                    (progn
-                      (log:info "Updating hostlist from ~s." url-string))))
-            (t ()
-              (log:error "Could not download hostlist ~a: ~a" url-string c))))
-        (uiop:read-file-string path))))
+          (log:debug "Downloading hostlist from ~a to ~a." url-string path)
+          (or (with-protect ("Could not download hostlist ~a: ~a" url-string :condition)
+                (let ((hostlist-string (dex:get url-string)))
+                  (with-data-access (h hostlist)
+                    (setf h hostlist-string))
+                  (echo "Hostlist ~a updated." (render-url (url hostlist)))
+                  hostlist-string))
+              ""))
+        (progn
+          (log:debug "Restoring hostlist from ~a" path)
+          (the (values string &optional)
+               (get-data hostlist))))))
 
-(-> load-hostlist (hostlist) t)
+(-> load-hostlist (hostlist blocker-mode) boolean)
 (defun load-hostlist (hostlist mode)
-  "Load HOSTLIST into MODE's `blocked-hosts'."
-  (let ((hostlist-string (download hostlist)))
-    (unless (uiop:emptyp hostlist-string)
-      (with-input-from-string (stream hostlist-string)
-        (flet ((empty-line? (line)
-                 (< (length line) 2))
-               (comment? (line)
-                 (string= (subseq line 0 1) "#"))
-               (custom-hosts? (line)
-                 (not (str:starts-with? "0.0.0.0" line))))
-          (loop as line = (read-line stream nil)
-                while line
-                unless (or (empty-line? line)
-                           (comment? line)
-                           (custom-hosts? line))
-                  do (let ((host (second (str:split " " line))))
-                       (setf (gethash host (blocked-hosts mode)) host))))))))
+  "Load HOSTLIST into MODE's `blocked-hosts'.
+Return NIL on failure, T on success."
+  (cond
+    ((hosts hostlist)
+     (dolist (host (hosts hostlist))
+       (setf (gethash host (blocked-hosts mode)) host)))
+    ((url hostlist)
+     (let ((hostlist-string (fetch hostlist)))
+       (unless (uiop:emptyp hostlist-string)
+         (with-input-from-string (stream hostlist-string)
+           (flet ((empty-line? (line)
+                    (< (length line) 2))
+                  (comment? (line)
+                    (string= (subseq line 0 1) "#"))
+                  (custom-hosts? (line)
+                    (not (str:starts-with? "0.0.0.0" line))))
+             (loop as line = (read-line stream nil)
+                   while line
+                   unless (or (empty-line? line)
+                              (comment? line)
+                              (custom-hosts? line))
+                     do (let ((host (second (str:split " " line))))
+                          (setf (gethash host (blocked-hosts mode)) host)))))
+         t)))
+    (t nil)))
 
 (-> load-hostlists (blocker-mode &key (:force-update-p boolean)) t)
 (defun load-hostlists (blocker-mode &key force-update-p)
@@ -116,14 +131,13 @@ The hostlist is downloaded in the background."
 (defun worker (mode)
   (do () (nil)
     (alex:when-let ((hostlist (calispel:? (worker-channel mode))))
-      (load-hostlist hostlist mode)
-      (echo "Hostlist ~a updated." (render-url (url hostlist))))))
+      (load-hostlist hostlist mode))))
 
 (serapeum:export-always '*default-hostlist*)
 (defparameter *default-hostlist*
   (make-instance 'hostlist
                  :url (quri:uri "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts")
-                 :path (make-instance 'hostlist-data-path :basename "hostlist-stevenblack.txt"))
+                 :basename "hostlist-stevenblack.txt")
   "Default hostlist for `blocker-mode'.")
 
 (define-mode blocker-mode ()
