@@ -19,7 +19,7 @@
 will be made at updating it.")
    (hosts
     '()
-    :type (cons string *)
+    :type (or (cons string *) null)
     :documentation "List of hosts to ignore.
 This is useful to reference hosts manually instead of via `url'.")
    (content
