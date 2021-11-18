@@ -252,3 +252,36 @@ particular revision.")
    (:li "On various occasions, KeepassXC entries could be missing from the prompt, this is now fixed.")
    (:li (:code "lisp-repl") " now prints all results properly.")
    (:li "Onion URLs are now supported.  (Thanks to @hendursaga!)")))
+
+(define-version "2.2.3"
+  (:ul
+   (:li "Speed up most network queries.  This may also prevent some hangs that
+used to happen when loading resource-intensive pages.")
+   (:li "Speed up " (:code "set-url") " and friends.  (Thanks to @shamazmazum!)"
+        (:br)
+        "The user input suggestion should now be instantaneously updated in the
+        suggestion list.  Search engine completions no longer hold back the
+        listing of other suggestions.")
+   (:li "Nyxt now prompts for confirmation before deleting a buffer that has
+   edited contents.")
+   (:li "New common text editing bindings (select-all, undo, redo, cut, etc.).")
+   (:li "Display source code in " (:code "describe-function") " whenever possible.")
+   (:li "Allow for arbitrary HTML in the prompt buffer (both attributes and the prompt).")
+   (:li "Permission requests are now handled (such geolocalization access).")
+   (:li "Intelligent Tracking Prevention is no longer systematically enabled. "
+        "This should fix some website incompatibilities. "
+        "ITP can be selectively enabled with " (:code "reduce-tracking-mode") ".")
+   (:li (:code "reduce-tracking-mode") " has a new options, "
+        (:code "preferred-user-agent") " which is set to a generic value by default.")
+   (:li "The Lisp REPL now highlights the input, displays the input package and
+       displays the current package at the prompt.")
+   (:li "New " (:code "m l") " VI binding to " (:code "list-bookmarks") "."))
+
+  (:h3 "Bug fixes")
+  (:ul
+   (:li "Fix crash and hangs with WebKitGTK 2.34."
+        (:br) (:b "Warning: ") "Sandboxing is no longer enforced.")
+   (:li "Fix hangs in some cases when " (:code "blocker-mode") " hostlists were
+out-of-date.")
+   (:li "Work around load failures when going backward or forward in history.")
+   (:li "Catch more errors in search completion.")))
