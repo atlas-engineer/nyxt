@@ -1019,10 +1019,17 @@ See `gtk-browser's `modifier-translator' slot."
   (connect-signal buffer "notify::title" (web-view param-spec)
     (declare (ignore web-view param-spec))
     (on-signal-notify-title buffer nil))
-  (connect-signal buffer "web-process-crashed" (web-view)
-    (echo-warning "Web process crashed for buffer ~a" (id buffer))
-    (log:debug "Web process crashed for web view ~a" web-view)
-    (delete-buffer :id (id buffer)))
+  (connect-signal buffer "web-process-terminated" (web-view reason)
+    ;; TODO: Bind WebKitWebProcessTerminationReason in cl-webkit.
+    (echo-warning
+     "Web process terminated for buffer ~a because ~:[it crashed~;of memory exhaustion~;we had to close it~]"
+     (id buffer)
+     reason)
+    (log:debug
+     "Web process terminated for web view ~a because of ~:[WEBKIT_WEB_PROCESS_CRASHED~;WEBKIT_WEB_PROCESS_EXCEEDED_MEMORY_LIMIT~;WEBKIT_WEB_PROCESS_TERMINATED_BY_API~]"
+     web-view
+     reason)
+    (buffer-delete buffer))
   (connect-signal buffer "close" (web-view)
     (mapc (lambda (handler-id)
             (gobject:g-signal-handler-disconnect web-view handler-id))
