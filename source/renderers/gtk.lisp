@@ -1034,9 +1034,9 @@ See `gtk-browser's `modifier-translator' slot."
     (mapc (lambda (handler-id)
             (gobject:g-signal-handler-disconnect web-view handler-id))
           (handler-ids buffer))
+    (buffer-hide buffer)
     (gtk:gtk-widget-destroy web-view)
-    (setf (gtk-object buffer) nil)
-    (buffer-hide buffer))
+    (setf (gtk-object buffer) nil))
   (connect-signal buffer "load-failed" (web-view load-event failing-url error)
     (declare (ignore load-event web-view))
     ;; TODO: WebKitGTK sometimes (when?) triggers "load-failed" when loading a
