@@ -12,7 +12,7 @@
                        :type (or string pathname)))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "To customize a manager, you can subclass it then push it to
 `*supporter-managers*'.
 
@@ -33,7 +33,7 @@ Example:
    (licenses '()))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class os-package-output ()
   ((name "")
@@ -44,7 +44,7 @@ Example:
    (size 0))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "OS package outputs are meaningful mostly for functional
 package managers like Nix or Guix."))
 
@@ -57,7 +57,7 @@ package managers like Nix or Guix."))
          :type (or string pathname)))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "OS generation"))
 
 (export-always '*manager*)

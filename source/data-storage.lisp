@@ -102,7 +102,7 @@ removed, for instance on buffer deletion.")
    (dirname (uiop:xdg-data-home +data-root+ "history"))
    (ref "history"))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-class download-data-path (data-path) ; TODO: Rename to downloads-data-path?
   ((dirname (xdg-download-dir))
    (ref "download"))

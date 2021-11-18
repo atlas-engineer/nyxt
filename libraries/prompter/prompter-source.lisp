@@ -95,7 +95,7 @@ the match-data is ready for its own use.")
 used by the `sort-predicate'."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Suggestions are processed and listed in `source'.
 It wraps arbitrary object stored in the `value' slot.
 The other slots are optional.
@@ -400,7 +400,7 @@ For convenience, it may be initialized with a single function, in which case it
 will be automatically turned into a list."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "A prompter source instance is meant to be used by a
 `prompter' object.  See its `sources' slot.  A source is a consistent collection
 of suggestions, filters, actions.
@@ -420,7 +420,7 @@ call."))
    (constructor '("yes" "no"))
    (hide-attribute-header-p :always))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompt source for yes-no questions."))
 
 (defun make-input-suggestion (suggestions source input)
@@ -436,7 +436,7 @@ call."))
    (hide-suggestion-count-p t)
    (multi-selection-p nil))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompt source for raw user input.
 Its only suggestion is the user input, thus it has no constructor.
 If you are looking for a source that just returns its plain suggestions, use `source'."))
@@ -460,7 +460,7 @@ If you are looking for a source that just returns its plain suggestions, use `so
    (hide-attribute-header-p :always)
    (multi-selection-p t))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompt source for user input words."))
 
 (export-always 'ensure-suggestions-list)
