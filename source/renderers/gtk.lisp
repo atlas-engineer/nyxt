@@ -1117,9 +1117,9 @@ requested a reload."
         (webkit:webkit-web-view-load-uri (gtk-object buffer) (quri:render-uri url)))))
 
 (defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript &optional world-name)
-  (when (gtk-object buffer)
-    (%within-renderer-thread
-     (lambda (&optional channel)
+  (%within-renderer-thread
+   (lambda (&optional channel)
+     (when (gtk-object buffer)
        (webkit2:webkit-web-view-evaluate-javascript
         (gtk-object buffer)
         javascript
@@ -1127,9 +1127,9 @@ requested a reload."
             (lambda (result jsc-result)
               (declare (ignore jsc-result))
               (calispel:! channel result))
-            (lambda (result jsc-result)
-              (declare (ignore jsc-result))
-              result))
+          (lambda (result jsc-result)
+            (declare (ignore jsc-result))
+            result))
         (lambda (condition)
           (javascript-error-handler condition)
           ;; Notify the listener that we are done.
@@ -1138,15 +1138,15 @@ requested a reload."
         world-name)))))
 
 (defmethod ffi-buffer-evaluate-javascript-async ((buffer gtk-buffer) javascript &optional world-name)
-  (when (gtk-object buffer)
-    (%within-renderer-thread-async
-    (lambda ()
-      (webkit2:webkit-web-view-evaluate-javascript
-       (gtk-object buffer)
-       javascript
-       nil
-       #'javascript-error-handler
-       world-name)))))
+  (%within-renderer-thread-async
+   (lambda ()
+     (when (gtk-object buffer)
+       (webkit2:webkit-web-view-evaluate-javascript
+        (gtk-object buffer)
+        javascript
+        nil
+        #'javascript-error-handler
+        world-name)))))
 
 (define-ffi-method ffi-buffer-enable-javascript ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-enable-javascript
