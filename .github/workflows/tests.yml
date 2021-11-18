@@ -53,18 +53,11 @@ jobs:
       run: |
         ros -e '(format t "~a:~a on ~a~%...~%~%" (lisp-implementation-type) (lisp-implementation-version) (machine-type))'
         ros -e '(format t " fixnum bits:~a~%" (integer-length most-positive-fixnum))'
-        ros -e "(ql:quickload 'trivial-features)" -e '(format t "features = ~s~%" *features*)'
-
-    - name: Update Quickdist if we have one cached
-      shell: bash
-      run: ros -e "(ql:update-all-dists :prompt nil)"
 
     - name: Fetch Common Lisp third-party dependencies
       shell: bash
       run: |
         ros -e '(asdf:load-system :nyxt/submodules)'
-        mkdir -p ~/.config/common-lisp/source-registry.conf.d/
-        echo "(:tree \"$PWD/_build/submodules\")" > ~/.config/common-lisp/source-registry.conf.d/asdf.conf
 
     - name: Load system and run tests
       shell: bash
