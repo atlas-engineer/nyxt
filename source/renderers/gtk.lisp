@@ -1022,11 +1022,11 @@ See `gtk-browser's `modifier-translator' slot."
   (connect-signal buffer "web-process-terminated" (web-view reason)
     ;; TODO: Bind WebKitWebProcessTerminationReason in cl-webkit.
     (echo-warning
-     "Web process terminated for buffer ~a because ~:[it crashed~;of memory exhaustion~;we had to close it~]"
+     "Web process terminated for buffer ~a because ~[it crashed~;of memory exhaustion~;we had to close it~]"
      (id buffer)
      reason)
     (log:debug
-     "Web process terminated for web view ~a because of ~:[WEBKIT_WEB_PROCESS_CRASHED~;WEBKIT_WEB_PROCESS_EXCEEDED_MEMORY_LIMIT~;WEBKIT_WEB_PROCESS_TERMINATED_BY_API~]"
+     "Web process terminated for web view ~a because of ~[WEBKIT_WEB_PROCESS_CRASHED~;WEBKIT_WEB_PROCESS_EXCEEDED_MEMORY_LIMIT~;WEBKIT_WEB_PROCESS_TERMINATED_BY_API~]"
      web-view
      reason)
     (buffer-delete buffer))
