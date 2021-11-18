@@ -62,28 +62,28 @@ jobs:
 
     - name: Set version environment variable
       shell: bash
-      run: echo "::set-env name=_NYXT_VERSION::$(./nyxt --version | awk '{print $3}')"
+      run: echo "_NYXT_VERSION=$(./nyxt --version | awk '{print $3}')" | tee $GITHUB_ENV
 
     # Balance out "'".
     - name: Pack (Relocatable Binary)
       shell: bash
       run: |
-        echo "Command: guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt --root=nyxt-$_NYXT_VERSION.tar.xz -L build-scripts/ nyxt" >> guix-recipe.txt
-        _NYXT_STORE_PATH="$(guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt --root=nyxt-$_NYXT_VERSION.tar.xz -L build-scripts/ nyxt)"
+        echo "Command: guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt --root=nyxt-${{ env.NYXT_VERSION }}.tar.xz -L build-scripts/ nyxt" >> guix-recipe.txt
+        _NYXT_STORE_PATH="$(guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt --root=nyxt-${{ env.NYXT_VERSION }}.tar.xz -L build-scripts/ nyxt)"
         echo "Store path: $_NYXT_STORE_PATH" >> guix-recipe.txt
         echo "Guix describe: $(guix describe)" >> guix-recipe.txt
-        sha256sum nyxt-*.tar.xz > nyxt-$_NYXT_VERSION.tar.xz.sha256sum
+        sha256sum nyxt-*.tar.xz > nyxt-${{ env.NYXT_VERSION }}.tar.xz.sha256sum
 
     - name: Generate release notes
       shell: bash
       run: |
-        echo "Release notes: https://nyxt.atlas.engineer/article/release-$_NYXT_VERSION.org" >> release.txt
+        echo "Release notes: https://nyxt.atlas.engineer/article/release-${{ env.NYXT_VERSION }}.org" >> release.txt
         echo "" >> release.txt
         echo "To compile from source, prefer the tarball including the submodules if you don't manage the Lisp dependencies yourself." >> release.txt
 
     - name: Generate source archive with submodules
       shell: bash
-      run: git ls-files --recurse-submodules | tar caf nyxt-$_NYXT_VERSION-source-with-submodules.tar.xz -T-
+      run: git ls-files --recurse-submodules | tar caf nyxt-${{ env.NYXT_VERSION }}-source-with-submodules.tar.xz -T-
 
     # See https://github.com/actions/create-release for a list of release actions.
     - name: Release
