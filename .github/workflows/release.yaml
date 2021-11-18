@@ -62,7 +62,7 @@ jobs:
 
     - name: Set version environment variable
       shell: bash
-      run: echo "_NYXT_VERSION=$(./nyxt --version | awk '{print $3}')" | tee $GITHUB_ENV
+      run: echo "NYXT_VERSION=$(./nyxt --version | awk '{print $3}')" | tee $GITHUB_ENV
 
     # Balance out "'".
     - name: Pack (Relocatable Binary)
