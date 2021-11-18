@@ -112,7 +112,7 @@ removed, for instance on buffer deletion.")
   ((basename "inputs")
    (ref "inputs"))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-class download-data-path (data-path) ; TODO: Rename to downloads-data-path?
   ((dirname (xdg-download-dir))
    (ref "download"))

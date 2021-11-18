@@ -81,7 +81,7 @@
 (class-star:define-class url ()
   ((url "")
    (title ""))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod prompter:object-attributes ((url url))
   `(("URL" ,(url url))

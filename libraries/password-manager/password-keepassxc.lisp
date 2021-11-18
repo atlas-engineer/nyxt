@@ -13,7 +13,7 @@
                   :documentation "The cache to speed the entry listing up."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (push 'keepassxc-interface *interfaces*)
 

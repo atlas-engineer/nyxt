@@ -11,7 +11,7 @@
                 :documentation "The amount of time to sleep, in seconds."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (export-always 'list-passwords)
 (defgeneric list-passwords (password-interface)
