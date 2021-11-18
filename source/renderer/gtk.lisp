@@ -1100,7 +1100,7 @@ See `gtk-browser's `modifier-translator' slot."
     nil)
   buffer)
 
-(defmethod ffi-buffer-delete ((buffer gtk-buffer))
+(define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
   (if (slot-value buffer 'gtk-object) ; Not all buffers have their own web view, e.g. prompt buffers.
       (webkit:webkit-web-view-try-close (gtk-object buffer))
       (buffer-hide buffer)))
