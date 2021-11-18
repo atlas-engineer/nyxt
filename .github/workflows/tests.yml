@@ -91,9 +91,12 @@ jobs:
         uses: PromyLOPh/guix-install-action@v1
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Build package
+      - name: Build package with Make
         run: |
             guix environment --container --user=dummy-user --load=build-scripts/nyxt.scm --ad-hoc guix -- make all NYXT_SUBMODULES=false
+      - name: Build package with Guix
+        run: |
+            guix package --install-from-file=build-scripts/nyxt.scm
       - name: Run package
         # TODO: Test if nyxt --version and nyxt --help outputs are correct.
         run: ./nyxt --version
