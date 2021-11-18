@@ -1038,7 +1038,7 @@ See `gtk-browser's `modifier-translator' slot."
     (setf (gtk-object buffer) nil)
     (buffer-hide buffer))
   (connect-signal buffer "load-failed" (web-view load-event failing-url error)
-    (declare (ignore load-event web-view error))
+    (declare (ignore load-event web-view))
     ;; TODO: WebKitGTK sometimes (when?) triggers "load-failed" when loading a
     ;; page from the webkit-history cache.  Upstream bug?  Anyways, we should
     ;; ignore these.
