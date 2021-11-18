@@ -1037,7 +1037,15 @@ See `gtk-browser's `modifier-translator' slot."
     ;; ignore these.
     (if (loading-webkit-history-p buffer)
         (setf (loading-webkit-history-p buffer) nil)
-        (unless (member (slot-value buffer 'load-status) '(:finished :failed))
+        (unless (or (member (slot-value buffer 'load-status) '(:finished :failed))
+                    ;; WebKitGTK emits the WEBKIT_PLUGIN_ERROR_WILL_HANDLE_LOAD
+                    ;; (204) if the plugin will handle loading content of the
+                    ;; URL. This often happens with videos. The only thing we
+                    ;; can do is ignore it.
+                    ;;
+                    ;; TODO: Add all the error types (including
+                    ;; WEBKIT_PLUGIN_ERROR_WILL_HANDLE_LOAD) to cl-webkit.
+                    (= 204 (webkit::g-error-code error)))
           (echo "Failed to load URL ~a in buffer ~a." failing-url (id buffer))
           (setf (slot-value buffer 'load-status) :failed)
           (html-set
