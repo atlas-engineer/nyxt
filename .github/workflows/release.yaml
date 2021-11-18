@@ -58,34 +58,34 @@ jobs:
     - name: Ensure no locale warning
       run: test -z "$(guix --version 2>&1 >/dev/null)"
     - name: Build Guix package
-      run: |
-          guix environment --container --user=dummy-user --load=build-scripts/nyxt.scm --ad-hoc guix -- make all NYXT_SUBMODULES=false
+      run: guix environment --container --user=dummy-user --load=build-scripts/nyxt.scm --ad-hoc guix -- make all NYXT_SUBMODULES=false
 
-    - name: Generate version file
+    - name: Set version environment variable
       shell: bash
-      run: echo $(./nyxt --version | cut -d' ' -f3) > version
-    # Balance out '.
+      run: echo "::set-env name=_NYXT_VERSION::$(./nyxt --version | awk '{print $3}')"
+
+    # Balance out "'".
     - name: Pack (Relocatable Binary)
       shell: bash
       run: |
-        echo "Command: guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt --root=nyxt-$(cat version).tar.xz -L build-scripts/ nyxt" >> guix-recipe.txt
-        guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt --root=nyxt-$(cat version).tar.xz -L build-scripts/ nyxt > store-path.txt
+        echo "Command: guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt --root=nyxt-$_NYXT_VERSION.tar.xz -L build-scripts/ nyxt" >> guix-recipe.txt
+        _NYXT_STORE_PATH="$(guix pack -RR --no-grafts --compression=xz --symlink=/usr/local/bin/nyxt=bin/nyxt --root=nyxt-$_NYXT_VERSION.tar.xz -L build-scripts/ nyxt)"
+        echo "Store path: $_NYXT_STORE_PATH" >> guix-recipe.txt
+        echo "Guix describe: $(guix describe)" >> guix-recipe.txt
+        sha256sum nyxt-*.tar.xz > nyxt-$_NYXT_VERSION.tar.xz.sha256sum
+
     - name: Generate release notes
       shell: bash
       run: |
-        echo "Release notes: https://nyxt.atlas.engineer/article/release-$(cat version).org" >> release.txt
+        echo "Release notes: https://nyxt.atlas.engineer/article/release-$_NYXT_VERSION.org" >> release.txt
         echo "" >> release.txt
         echo "To compile from source, prefer the tarball including the submodules if you don't manage the Lisp dependencies yourself." >> release.txt
-    - name: Generate Guix pack reproduction recipe
-      shell: bash
-      run: |
-        sha256sum nyxt-*.tar.xz > nyxt-$(cat version).tar.xz.sha256sum
-        echo "Store path: $(cat store-path.txt)" >> guix-recipe.txt
-        echo "Guix describe: $(guix describe)" >> guix-recipe.txt
+
     - name: Generate source archive with submodules
       shell: bash
-      run: git ls-files --recurse-submodules | tar caf nyxt-$(cat version)-source-with-submodules.tar.xz -T-
+      run: git ls-files --recurse-submodules | tar caf nyxt-$_NYXT_VERSION-source-with-submodules.tar.xz -T-
 
+    # See https://github.com/actions/create-release for a list of release actions.
     - name: Release
       uses: ncipollo/release-action@v1
       with:
