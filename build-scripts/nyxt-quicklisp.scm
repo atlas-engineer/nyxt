@@ -3,7 +3,7 @@
 
 ;; Test with
 ;;
-;;  guix environment -l build-scripts/nyxt-quicklisp.scm --pure --ad-hoc openssl -- bash -c 'make all && make install DESTDIR=/tmp/nyxt-output/'
+;;  guix shell --pure -D -f build-scripts/nyxt-quicklisp.scm openssl -- bash -c 'make all && make install DESTDIR=/tmp/nyxt-output/'
 
 ;; Notes: openssl is required for cl-cookie, etc.  For some reason, it's not
 ;; dragged into the environment when added as propagated-input.
