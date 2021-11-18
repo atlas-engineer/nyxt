@@ -19,7 +19,7 @@
                            :export nil
                            :documentation
                            "This channel can be used to stop the queue listening."))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "This object is used to memorize which sources are ready for a
 given input.
 A new object is created on every new input."))
@@ -109,7 +109,7 @@ See also `result-channel'.")
                  "Whether the prompter has been cancelled."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
-    (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+    (:accessor-name-transformer (class*:make-name-transformer name))
     (:documentation "The prompter is an interface for user interactions.
 A prompter object holds multiple sources (of type `source') which
 contain a list of `suggestion's.
