@@ -98,5 +98,8 @@ jobs:
         run: |
             guix package --install-from-file=build-scripts/nyxt.scm
       - name: Run package
-        # TODO: Test if nyxt --version and nyxt --help outputs are correct.
-        run: ./nyxt --version
+        # TODO: Test if nyxt --help output is correct.
+        shell: bash
+        run: |
+          [ "$(./nyxt --version)" = "Nyxt version $(git describe --always --tags)" ] || exit 19
+          [ "$(nyxt --version)" = "Nyxt version $(git describe --always --tags)" ] || exit 20
