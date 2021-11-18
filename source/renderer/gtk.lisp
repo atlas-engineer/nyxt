@@ -1061,8 +1061,8 @@ See `gtk-browser's `modifier-translator' slot."
                     ;; URL. This often happens with videos. The only thing we
                     ;; can do is ignore it.
                     ;;
-                    ;; TODO: Add all the error types (including
-                    ;; WEBKIT_PLUGIN_ERROR_WILL_HANDLE_LOAD) to cl-webkit.
+                    ;; TODO: Use cl-webkit provided error types. How
+                    ;; do we use it, actually?
                     (= 204 (webkit::g-error-code error)))
           (echo "Failed to load URL ~a in buffer ~a." failing-url (id buffer))
           (setf (slot-value buffer 'load-status) :failed)
