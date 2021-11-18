@@ -154,7 +154,7 @@ removed, for instance on buffer deletion.")
   ((name :initform "default"))
   (:export-class-name-p t)
   (:documentation "With the default profile all data is persisted to the standard locations.")
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-class nosave-data-profile (data-profile)
   ((name :initform "nosave")
