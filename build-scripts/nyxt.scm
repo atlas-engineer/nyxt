@@ -239,7 +239,6 @@ WebKit browsing engine.")
        ;; ("osicat" ,cl-osicat) ; Not needed for SBCL.
        ("parenscript" ,cl-parenscript)
        ("plump" ,cl-plump)
-       ("qrencode" ,cl-qrencode)
        ("clss" ,cl-clss)
        ("quri" ,cl-quri)
        ("serapeum" ,cl-serapeum)
