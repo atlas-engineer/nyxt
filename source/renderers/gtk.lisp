@@ -1024,11 +1024,11 @@ See `gtk-browser's `modifier-translator' slot."
     (echo-warning
      "Web process terminated for buffer ~a because ~[it crashed~;of memory exhaustion~;we had to close it~]"
      (id buffer)
-     reason)
+     (cffi:foreign-enum-value 'webkit:webkit-web-process-termination-reason reason))
     (log:debug
      "Web process terminated for web view ~a because of ~[WEBKIT_WEB_PROCESS_CRASHED~;WEBKIT_WEB_PROCESS_EXCEEDED_MEMORY_LIMIT~;WEBKIT_WEB_PROCESS_TERMINATED_BY_API~]"
      web-view
-     reason)
+     (cffi:foreign-enum-value 'webkit:webkit-web-process-termination-reason reason))
     (buffer-delete buffer))
   (connect-signal buffer "close" (web-view)
     (mapc (lambda (handler-id)
