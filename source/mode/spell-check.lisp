@@ -51,11 +51,6 @@ suggestions."
     (trivial-clipboard:text selected-word)
     (echo "Word copied to clipboard.")))
 
-(define-command spell-check-list-languages ()
-  "List all languages supported by `enchant' package."
-  (echo "~s" (mapcar #'car (enchant:with-broker brk
-                             (enchant:broker-list-dicts brk)))))
-
 (define-class enchant-source (prompter:source)
   ((case-sensitive-p nil)
    (prompter:name "Enchant")
