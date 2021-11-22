@@ -334,7 +334,6 @@ promise_callback (JSCValue *success, JSCValue *failure, void *user_data)
 {
         JSCContext *context = jsc_context_get_current();
         JSCValue *tmp = jsc_value_function_call(
-                /* TODO: Change browser.drain to accept failure arg. */
                 JSCEVAL(context, "browser.drain"),
                 G_TYPE_ULONG, (unsigned long long) user_data,
                 JSC_TYPE_VALUE, success,
