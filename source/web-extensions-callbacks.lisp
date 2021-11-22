@@ -23,7 +23,7 @@
       ("updateUrl" . "")
       ("versionName" . ""))))
 
-(-> buffer->tab-description ((or null buffer)) list)
+(-> buffer->tab-description ((or null buffer)) (values list &optional))
 (defun buffer->tab-description (buffer)
   (when buffer
     `(("active" . ,(if (member buffer (mapcar #'nyxt::active-buffer
