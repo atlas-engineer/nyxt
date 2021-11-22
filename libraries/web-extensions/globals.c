@@ -322,3 +322,33 @@ todo_property_callback (void *instance, void *user_data)
         g_print("%s is not yet implemented.", (char *) user_data);
         return jsc_value_new_undefined(jsc_context_get_current());
 }
+
+void
+promise_callback (JSCValue *success, JSCValue *failure, void *user_data)
+{
+        JSCContext *context = jsc_context_get_current();
+        JSCValue *tmp = jsc_value_function_call(
+                /* TODO: Change browser.drain to accept failure arg. */
+                JSCEVAL(context, "browser.drain"),
+                G_TYPE_ULONG, (unsigned long long) user_data,
+                JSC_TYPE_VALUE, success,
+                JSC_TYPE_VALUE, failure,
+                JSC_TYPE_VALUE, jsc_value_new_undefined(context),
+                G_TYPE_INT, BROWSER_REPLY_TIMEOUT);
+}
+
+/** make_promise
+ *
+ * Creates a promise wrapping around the provided ID.
+ */
+JSCValue *
+make_promise (JSCContext *context, unsigned long long int id)
+{
+        JSCValue *promise_initializer = jsc_value_new_function(
+                context, NULL, G_CALLBACK(promise_callback),
+                (void *) id, NULL,
+                G_TYPE_NONE, 2, JSC_TYPE_VALUE, JSC_TYPE_VALUE);
+        return jsc_value_constructor_call(
+                jsc_context_get_value(context, "Promise"),
+                JSC_TYPE_VALUE, promise_initializer, G_TYPE_NONE);
+}
