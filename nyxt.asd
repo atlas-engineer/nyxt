@@ -616,7 +616,6 @@ See `asdf::*immutable-systems*'."
                (:static-file "browser.c")
                (:static-file "browser_action.c")
                (:static-file "commands.c")
-               (:static-file "eval.c")
                (:static-file "extension.c")
                (:static-file "extevent.c")
                (:static-file "globals.c")
