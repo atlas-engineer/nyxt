@@ -124,7 +124,7 @@ the description of the mechanism that sends the results back."
     (run-thread
       "Send the message"
       (flet ((send-message (channel)
-               (webkit:webkit-web-view-send-message-to-page*
+               (webkit:webkit-web-view-send-message-to-page
                 (nyxt::gtk-object buffer)
                 (webkit:webkit-user-message-new
                  "message"
