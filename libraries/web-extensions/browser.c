@@ -52,18 +52,22 @@ inject_browser (char* extension_name)
                 jsc_context_evaluate(context, "browser", -1), "timeout",
                 jsc_value_new_number(context, BROWSER_REPLY_TIMEOUT));
         BIND_FN(context, "browser", "drain",
-                "function drain (index, success_fn, default_val, count, ...args) {\
+                "function drain (index, success_fn, failure_fn, default_val, count) {\
     if (typeof(default_val)==='undefined') default_val = [];            \
     if (typeof(count)==='undefined') count = browser.timeout;           \
     var is_result = browser.checkResult(index);                         \
     if (is_result) {                                                    \
-        success_fn(browser.getResult(index));                           \
+        var result = browser.getResult(index);                          \
+        if (result instanceof Error)                                    \
+            failure_fn(result);                                         \
+        else                                                            \
+            success_fn(result);                                         \
     } else {                                                            \
         if (count <= 0)                                                 \
             success_fn(default_val);                                    \
         else                                                            \
             setTimeout(() =>                                            \
-                drain(index, success_fn, default_val, count - 10, ...args), \
+                drain(index, success_fn, failure_fn, default_val, count - 10), \
                 10);                                                    \
     }                                                                   \
 }                                                                       \
