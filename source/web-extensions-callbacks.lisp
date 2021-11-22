@@ -326,8 +326,6 @@ there. `reply-user-mesage' takes care of sending the response back."
                      channel)
                (calispel:! channel value))))
       (str:string-case message-name
-        ("lisp.eval"
-         (wrap-in-channel (encode-json (nyxt::evaluate message-params))))
         ("management.getSelf"
          (wrap-in-channel
           (encode-json (extension->extension-info (find message-params extensions
