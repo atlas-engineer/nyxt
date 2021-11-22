@@ -290,6 +290,12 @@ get_result (unsigned long int data_index, int check_only)
                 }
                 data = g_hash_table_lookup(DATA, (void *) &data_index);
                 g_hash_table_remove(DATA, (void *) &data_index);
+                if (!strncmp(ERROR_MESSAGE_PREFIX, data,
+                             strlen(ERROR_MESSAGE_PREFIX)))
+                        return jsc_value_constructor_call(
+                                jsc_context_get_value(context, "Error"),
+                                G_TYPE_STRING, (data + strlen(ERROR_MESSAGE_PREFIX)),
+                                G_TYPE_NONE);
                 return jsc_value_new_from_json(context, data);
         }
         return jsc_value_new_undefined(context);
