@@ -19,6 +19,21 @@
 #define BROWSER_REPLY_TIMEOUT 5000
 #endif
 
+/** ERROR_MESSAGE_PREFIX
+ *
+ * What string to consider starting the error serialization. Use this
+ * string to start the broken result when returning the error from the
+ * browser in response to extension message.
+ *
+ * Example: If the extension has no "tabs" permission and tries to
+ * call tabs.query({url: "whatever"}), you can respond to this message
+ * with "error: Extension has to 'tabs' access" if your
+ * ERROR_MESSAGE_PREFIX is "error: ".
+ */
+#ifndef ERROR_MESSAGE_PREFIX
+#define ERROR_MESSAGE_PREFIX "error: "
+#endif
+
 #define TODO_METHOD(Context, Object, Method)                            \
         do {                                                            \
                 jsc_value_object_set_property(                          \
