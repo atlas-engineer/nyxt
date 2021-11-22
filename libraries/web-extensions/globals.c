@@ -290,7 +290,8 @@ get_result (unsigned long int data_index, int check_only)
                 }
                 data = g_hash_table_lookup(DATA, (void *) &data_index);
                 g_hash_table_remove(DATA, (void *) &data_index);
-                if (!strncmp(ERROR_MESSAGE_PREFIX, data,
+                if (data &&
+                    !strncmp(ERROR_MESSAGE_PREFIX, data,
                              strlen(ERROR_MESSAGE_PREFIX)))
                         return jsc_value_constructor_call(
                                 jsc_context_get_value(context, "Error"),
@@ -339,7 +340,8 @@ promise_callback (JSCValue *success, JSCValue *failure, void *user_data)
                 JSC_TYPE_VALUE, success,
                 JSC_TYPE_VALUE, failure,
                 JSC_TYPE_VALUE, jsc_value_new_undefined(context),
-                G_TYPE_INT, BROWSER_REPLY_TIMEOUT);
+                G_TYPE_INT, BROWSER_REPLY_TIMEOUT,
+                G_TYPE_NONE);
 }
 
 /** make_promise
