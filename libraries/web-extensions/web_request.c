@@ -4,7 +4,7 @@
 void inject_web_request_api (char* extension_name)
 {
         JSCContext *context = get_extension_context(IS_PRIVILEGED ? NULL : extension_name);
-        MAKE_CLASS(context, WebRequest, "web_request");
+        MAKE_CLASS(context, WebRequest, "webRequest");
 
         /* TODO_PROP(WebRequest, onBeforeRequest); */
         /* TODO_PROP(WebRequest, onBeforeSendHeaders); */

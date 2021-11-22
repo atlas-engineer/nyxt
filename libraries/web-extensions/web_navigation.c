@@ -4,7 +4,7 @@
 void inject_web_navigation_api (char* extension_name)
 {
         JSCContext *context = get_extension_context(IS_PRIVILEGED ? NULL : extension_name);
-        MAKE_CLASS(context, WebNavigation, "web_navigation");
+        MAKE_CLASS(context, WebNavigation, "webNavigation");
 
         /* TODO_PROP(WebNavigation, onBeforeNavigate); */
         /* TODO_PROP(WebNavigation, onCommited); */
