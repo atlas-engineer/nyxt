@@ -67,11 +67,19 @@
         jsc_context_set_value(Context, Object_name,                     \
                 jsc_value_new_object(Context, NULL, Class));
 
-#define MAKE_FN(Context, Fn, Callback, ...)                             \
-        JSCValue *Fn = jsc_value_new_function(                          \
-                Context, #Fn, G_CALLBACK(Callback), NULL, NULL,         \
-                __VA_ARGS__);                                           \
-        jsc_context_set_value(Context, #Fn, Fn);                        \
+#define MAKE_FN(Context, Object_name, Prop_name, Callback, User_data, ...) \
+        jsc_value_object_set_property(                                  \
+                JSCEVAL(Context, Object_name), Prop_name,               \
+                jsc_value_new_function(                                 \
+                        Context, NULL, G_CALLBACK(Callback),            \
+                        (void *)User_data, NULL, __VA_ARGS__));         \
+
+#define MAKE_FNV(Context, Object_name, Prop_name, Callback, User_data)  \
+        jsc_value_object_set_property(                                  \
+                JSCEVAL(Context, Object_name), Prop_name,               \
+                jsc_value_new_function_variadic(                        \
+                        Context, NULL, G_CALLBACK(Callback),            \
+                        (void *)User_data, NULL, JSC_TYPE_VALUE));      \
 
 #define MAKE_EVENT(Context, Object_name, Prop_name)         \
         jsc_value_object_set_property(                      \
@@ -85,12 +93,12 @@
                         JSCEVAL(Context, __VA_ARGS__));             \
         } while (0);
 
-#define SEND_MESSAGE_RETURN_ID(Message, Index_name)                     \
-        unsigned long int Index_name = get_next_data_counter();      \
+#define SEND_MESSAGE_RETURN_PROMISE(Message, Context, Index_name)       \
+        unsigned long int Index_name = get_next_data_counter();         \
         webkit_web_page_send_message_to_view(                           \
                 PAGE, Message, NULL, message_reply_and_save_callback,   \
                 (void*) Index_name);                                    \
-        return Index_name;                                              \
+        return make_promise(Context, Index_name);                       \
 
 extern WebKitWebPage *PAGE;
 

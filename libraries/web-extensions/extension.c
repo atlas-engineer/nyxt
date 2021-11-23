@@ -1,4 +1,5 @@
 #include "globals.h"
+#include "runtime.h"
 #include "extension.h"
 
 void inject_extension_api (char* extension_name)
@@ -11,11 +12,7 @@ void inject_extension_api (char* extension_name)
         /* TODO_PROP(Extension, onRequest); */
         /* TODO_PROP(Extension, onRequestExternal); */
 
-        BIND_FN(context, "extension", "getURL", "extension.getURL = function (string) {\
-    return runtime.getURL(string);                                      \
-};                                                                      \
-                                                                        \
-extension.getURL");
+        MAKE_FN(context, "extension", "getURL", runtime_get_url_callback, extension_name, G_TYPE_STRING, 1, G_TYPE_STRING);
 
         TODO_METHOD(context, extension, getBackgroundPage);
         TODO_METHOD(context, extension, getExtensionTabs); /* DEPRECATED */

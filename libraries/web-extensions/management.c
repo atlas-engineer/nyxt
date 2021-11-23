@@ -6,11 +6,7 @@ management_get_self_callback (void* extension_name)
 {
         GVariant *variant = g_variant_new("ms", (char*) extension_name);
         WebKitUserMessage *message = webkit_user_message_new("management.getSelf", variant);
-        unsigned long int id = get_next_data_counter();
-        webkit_web_page_send_message_to_view(
-                PAGE, message, NULL, message_reply_and_save_callback,
-                (void*) id);
-        return make_promise(jsc_context_get_current(), id);
+        SEND_MESSAGE_RETURN_PROMISE(message, jsc_context_get_current(), id);
 }
 
 void
@@ -24,12 +20,7 @@ inject_management_api (char* extension_name)
         /* TODO_PROP(Management, onEnabled); */
         /* TODO_PROP(Management, onDisabled); */
 
-        jsc_value_object_set_property(
-                jsc_context_evaluate(context, "management", -1),
-                "getSelf",
-                jsc_value_new_function(
-                        context, NULL, G_CALLBACK(management_get_self_callback),
-                        (void *) extension_name, NULL, JSC_TYPE_VALUE, 0));
+        MAKE_FN(context, "management", "getSelf", management_get_self_callback, extension_name, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
 
         TODO_METHOD(context, management, getAll);
         TODO_METHOD(context, management, get);
