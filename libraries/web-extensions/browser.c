@@ -36,21 +36,14 @@ inject_browser (char* extension_name)
         JSCContext *context = get_extension_context(IS_PRIVILEGED ? NULL : extension_name);
         MAKE_CLASS(context, Browser, "browser");
 
-        MAKE_FN(context, browserReplyMessage, browser_reply_message_callback, G_TYPE_NONE, 2, G_TYPE_ULONG, JSC_TYPE_VALUE);
-        MAKE_FN(context, browserGetResult, browser_get_result_callback, JSC_TYPE_VALUE, 1, G_TYPE_ULONG);
-        MAKE_FN(context, browserCheckResult, browser_check_result_callback, JSC_TYPE_VALUE, 1, G_TYPE_ULONG);
-        jsc_value_object_set_property(
-                jsc_context_evaluate(context, "browser", -1), "replyMessage",
-                browserReplyMessage);
-        jsc_value_object_set_property(
-                jsc_context_evaluate(context, "browser", -1), "getResult",
-                browserGetResult);
-        jsc_value_object_set_property(
-                jsc_context_evaluate(context, "browser", -1), "checkResult",
-                browserCheckResult);
+        MAKE_FN(context, "browser", "replyMessage", browser_reply_message_callback, NULL, G_TYPE_NONE, 2, G_TYPE_ULONG, JSC_TYPE_VALUE);
+        MAKE_FN(context, "browser", "getResult", browser_get_result_callback, NULL, JSC_TYPE_VALUE, 1, G_TYPE_ULONG);
+        MAKE_FN(context, "browser", "checkResult", browser_check_result_callback, NULL, JSC_TYPE_VALUE, 1, G_TYPE_ULONG);
+
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "browser", -1), "timeout",
                 jsc_value_new_number(context, BROWSER_REPLY_TIMEOUT));
+        /* TODO: Rewrite browser.drain in C with GTasks (is it even possible?) */
         BIND_FN(context, "browser", "drain",
                 "function drain (index, success_fn, failure_fn, default_val, count) {\
     if (typeof(default_val)==='undefined') default_val = [];            \
