@@ -252,7 +252,7 @@ Value is the loadable URL of that file.")
                                    (let ((relative-path
                                            (str:replace-all
                                             (namestring (extension-directory mode))
-                                            "/" (namestring file))))
+                                            "" (namestring file))))
                                      (cons relative-path
                                            (if (equal (mimes:mime file) "text/html")
                                                (format nil "file://~a" file)
