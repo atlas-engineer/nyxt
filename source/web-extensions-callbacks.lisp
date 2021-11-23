@@ -1,6 +1,6 @@
 (in-package :nyxt/web-extensions)
 
-(-> extension->extension-info ((or null nyxt/web-extensions:extension)) list)
+(-> extension->extension-info ((or null nyxt/web-extensions:extension)) (values list &optional))
 (defun extension->extension-info (extension)
   (when extension
     `(("description" . ,(or (nyxt/web-extensions:description extension) ""))
@@ -235,7 +235,7 @@ the description of the mechanism that sends the results back."
        :world-name (name extension)))
     ""))
 
-(-> storage-local-get (buffer string) string)
+(-> storage-local-get (buffer string) (values string &optional))
 (defun storage-local-get (buffer message-params)
   (let* ((json (decode-json message-params))
          (extension (find (gethash "extensionId" json)
