@@ -71,12 +71,12 @@ jobs:
       env:
        NYXT_TESTS_ERROR_ON_FAIL: yes
       run: |
-        ros -e '(handler-bind (#+asdf3.2 (asdf:bad-system-name (function MUFFLE-WARNING))) (handler-case (asdf:load-system :nyxt/tests) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17))))' -e '(asdf:test-system :nyxt)'
+        ros -e '(asdf:load-system :nyxt/submodules)' -e '(handler-bind (#+asdf3.2 (asdf:bad-system-name (function MUFFLE-WARNING))) (handler-case (asdf:load-system :nyxt/tests) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17))))' -e '(asdf:test-system :nyxt)'
 
     - name: Compilation warnings
       shell: bash
       run: |
-        ros -e '(load "build-scripts/report-warnings.lisp")' -e '(compilation-conditions "nyxt")' -e '(compilation-conditions "nyxt/gtk")'
+        ros -e '(asdf:load-system :nyxt/submodules)' -e '(load "build-scripts/report-warnings.lisp")' -e '(compilation-conditions "nyxt")' -e '(compilation-conditions "nyxt/gtk")'
 
   guix-test:
     name: Guix test
