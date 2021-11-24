@@ -1425,7 +1425,7 @@ As a second value, return the current buffer index starting from 0."
   (webkit:webkit-website-data-manager-set-itp-enabled
    (webkit:webkit-web-context-website-data-manager
     (webkit:webkit-web-view-web-context (gtk-object buffer)))
-   t))
+   value))
 
 (defmethod ffi-buffer-copy ((gtk-buffer gtk-buffer))
   (webkit:webkit-web-view-can-execute-editing-command
