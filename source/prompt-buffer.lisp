@@ -48,89 +48,97 @@ chosen suggestions inside brackets.")
      ;; You will want edit this to match the changes done to `style'.")
      (hide-single-source-header-p nil
                                   :documentation "Hide source header when there is only one.")
-     (style #.(cl-css:css
-               '((* :font-family "monospace,monospace"
-                    :font-size "14px"
-                    :line-height "18px")
-                 (body
-                  :overflow "hidden"
-                  :margin "0"
-                  :padding "0")
-                 ("#prompt-area"
-                  :background-color "dimgray"
-                  :display "grid"
-                  :grid-template-columns "auto auto 1fr auto"
-                  :width "100%"
-                  :color "white")
-                 ("#prompt-area-vi"
-                  :background-color "dimgray"
-                  :display "grid"
-                  :grid-template-columns "auto auto 1em 1fr auto"
-                  :width "100%"
-                  :color "white")
-                 ("#prompt"
-                  :padding-left "10px"
-                  :line-height "26px")
-                 ("#prompt-extra"
-                  :line-height "26px"
-                  :padding-right "7px")
-                 ("#prompt-modes"
-                  :line-height "26px"
-                  :padding-left "3px"
-                  :padding-right "3px")
-                 ("#vi-mode"
-                  :margin "2px"
-                  :padding "1px")
-                 (".vi-normal-mode"
-                  :background-color "rgb(80,80,80)")
-                 (".vi-insert-mode"
-                  :background-color "#37a8e4")
-                 ("#input"
-                  :border "none"
-                  :outline "none"
-                  :padding "3px"
-                  :background-color "gainsboro"
-                  :width "100%"
-                  :autofocus "true")
-                 (".source"
-                  :margin-left "10px"
-                  :margin-top "15px")
-                 (".source-glyph"
-                  :margin-right "3px")
-                 (".source-name"
-                  :color "white"
-                  :padding-left "5px"
-                  :line-height "24px"
-                  :background-color "gray")
-                 ("#suggestions"
-                  :overflow-y "hidden"
-                  :overflow-x "hidden"
-                  :height "100%"
-                  :width "100%")
-                 (".source-content"
-                  :margin-left "16px"
-                  :background-color "white"
-                  :width "100%"
-                  :table-layout "fixed")
-                 (".source-content td"
-                  :white-space "nowrap"
-                  :height "20px"
-                  :overflow "auto")
-                 (".source-content th"
-                  :font-weight "normal"
-                  :padding-left "3px"
-                  :text-align "left"
-                  :background-color "gainsboro")
-                 (".source-content td::-webkit-scrollbar"
-                  :display "none")
-                 ("#selection"
-                  :background-color "#37a8e4"
-                  :color "white")
-                 (.marked :background-color "darkgray"
-                          :font-weight "bold"
-                          :color "white")
-                 (.selected :background-color "gray"
-                            :color "white")))
+     (style (themed-css
+                (theme *browser*)
+              (* :font-family "monospace,monospace"
+                 :font-size "14px"
+                 :line-height "18px")
+              (body
+               :color %text%
+               :background %background%
+               :overflow "hidden"
+               :margin "0"
+               :padding "0")
+              ("#prompt-area"
+               :background-color %primary%
+               :display "grid"
+               :grid-template-columns "auto auto 1fr auto"
+               :width "100%"
+               :color %background%)
+              ("#prompt-area-vi"
+               :background-color %tertiary%
+               :display "grid"
+               :grid-template-columns "auto auto 1em 1fr auto"
+               :width "100%"
+               :color %background%)
+              ("#prompt"
+               :padding-left "10px"
+               :line-height "26px")
+              ("#prompt-extra"
+               :line-height "26px"
+               :padding-right "7px")
+              ("#prompt-modes"
+               :line-height "26px"
+               :padding-left "3px"
+               :padding-right "3px")
+              ("#vi-mode"
+               :margin "2px"
+               :padding "1px")
+              (".vi-normal-mode"
+               :background-color %primary%)
+              (".vi-insert-mode"
+               :background-color %accent%)
+              ("#input"
+               :border "none"
+               :outline "none"
+               :padding "3px"
+               :color %text%
+               :background-color %quaternary%
+               :width "100%"
+               :autofocus "true")
+              (".source"
+               :margin-left "10px"
+               :margin-top "15px")
+              (".source-glyph"
+               :margin-right "3px")
+              (".source-name"
+               :color %text%
+               :padding-left "5px"
+               :line-height "24px"
+               :background-color %primary%)
+              ("#suggestions"
+               :color %text%
+               :background-color %background%
+               :overflow-y "hidden"
+               :overflow-x "hidden"
+               :height "100%"
+               :width "100%")
+              (".source-content"
+               :margin-left "16px"
+               :background-color %background%
+               :color %text%
+               :width "100%"
+               :table-layout "fixed")
+              (".source-content td"
+               :white-space "nowrap"
+               :height "20px"
+               :overflow "auto")
+              (".source-content th"
+               :font-weight "normal"
+               :padding-left "3px"
+               :text-align "left"
+               :color %text%
+               :background-color %quaternary%)
+              (".source-content td::-webkit-scrollbar"
+               :display "none")
+              ("#selection"
+               :background-color %accent%
+               :color %background%)
+              (.marked :background-color %tertiary%
+                       :font-weight "bold"
+                       :color %background%)
+              (.selected :background-color %primary%
+                         :color %background%))
             :documentation "The CSS applied to a prompt-buffer when it is set-up.")
      (override-map (make-keymap "override-map")
                    :type keymap:keymap

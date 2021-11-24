@@ -135,6 +135,10 @@ buffers, load data files, open prompt buffer, etc).")
     :type boolean
     :documentation "Whether to use prompt-buffer-reliant script dialogs and file-chooser.
 If nil, renderer-provided dialogs are used.")
+   (theme
+    (make-instance 'theme)
+    :type theme
+    :documentation "The theme to use for all the browser interface elements.")
    (session-restore-prompt
     :always-ask
     :documentation "Ask whether to restore the session.

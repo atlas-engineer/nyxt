@@ -40,12 +40,14 @@ It's a function of the window argument that returns the title as a string.")
     16
     :documentation "The height of the message buffer in pixels.")
    (message-buffer-style
-    (cl-css:css
-     '((body
-        :font-size "12px"
-        :padding 0
-        :padding-left "4px"
-        :margin 0))))
+    (themed-css (theme *browser*)
+      (body
+       :color %text%
+       :background-color %background%
+       :font-size "12px"
+       :padding 0
+       :padding-left "4px"
+       :margin 0)))
    (prompt-buffer-open-height
     256
     :documentation "The height of the prompt buffer when open.")

@@ -104,30 +104,32 @@ appearance in the buffer when they are setf'd."
 (define-mode download-mode ()
   "Display list of downloads."
   ((style
-    (cl-css:css
-     '((".download"
-        :margin-top "10px"
-        :padding-left "5px"
-        :background-color "#F5F5F5"
-        :border-radius "3px")
-       (".download-url"
-        :overflow "auto"
-        :white-space "nowrap")
-       (".download-url a"
-        :font-size "small"
-        :color "black")
-       (".status p"
-        :display "inline-block"
-        :margin-right "10px")
-       (".progress-bar-container"
-        :height "20px"
-        :width "100%")
-       (".progress-bar-base"
-        :height "100%"
-        :background-color "lightgray")
-       (".progress-bar-fill"
-        :height "100%"
-        :background-color "dimgray"))))))
+    (themed-css (theme *browser*)
+      (".download"
+       :margin-top "10px"
+       :padding-left "5px"
+       :background-color %background%
+       :color %text%
+       :brightness "80%"
+       :border-radius "3px")
+      (".download-url"
+       :overflow "auto"
+       :white-space "nowrap")
+      (".download-url a"
+       :font-size "small"
+       :color %text%)
+      (".status p"
+       :display "inline-block"
+       :margin-right "10px")
+      (".progress-bar-container"
+       :height "20px"
+       :width "100%")
+      (".progress-bar-base"
+       :height "100%"
+       :background-color %secondary%)
+      (".progress-bar-fill"
+       :height "100%"
+       :background-color %tertiary%)))))
 
 
 (define-command list-downloads ()

@@ -97,6 +97,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                (:file "conditions")
                (:file "debug")
                (:file "user-interface")
+               (:file "theme")
                ;; Core functionality
                (:file "global")
                (:file "concurrency")

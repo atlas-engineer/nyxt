@@ -31,16 +31,16 @@ mode."
       (list
        "K" 'reading-line-cursor-up
        "J" 'reading-line-cursor-down)))
-   (style (cl-css:css
-           '(("#reading-line-cursor"
-              :position "absolute"
-              :top "10px"
-              :left "0"
-              :width "100%"
-              :background-color "gray"
-              :z-index #.(1- (expt 2 31)) ; 32 bit signed integer max
-              :opacity "15%"
-              :height "20px")))
+   (style (themed-css (theme *browser*)
+            ("#reading-line-cursor"
+             :position "absolute"
+             :top "10px"
+             :left "0"
+             :width "100%"
+             :background-color %primary%
+             :z-index #.(1- (expt 2 31)) ; 32 bit signed integer max
+             :opacity "15%"
+             :height "20px"))
           :documentation "The CSS applied to the reading line.")
    (constructor
     (lambda (mode)

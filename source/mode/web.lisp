@@ -35,18 +35,19 @@ search.")
     nil
     :type boolean
     :documentation "Whether history navigation is restricted by buffer-local history.")
-   (box-style (cl-css:css
-               '((".nyxt-hint"
-                  :background "rgba(120,120,120,0.80)"
-                  :color "white"
-                  :font-weight "bold"
-                  :padding "0px 3px 0px 3px"
-                  :border-radius "2px"
-                  :z-index #.(1- (expt 2 31)))))
+   (box-style (themed-css (theme *browser*)
+                  (".nyxt-hint"
+                   :background-color %primary%
+                   :opacity 0.8
+                   :color "white"
+                   :font-weight "bold"
+                   :padding "0px 3px 0px 3px"
+                   :border-radius "2px"
+                   :z-index #.(1- (expt 2 31))))
               :documentation "The style of the boxes, e.g. link hints.")
-   (highlighted-box-style (cl-css:css
-                           '((".nyxt-hint.nyxt-highlight-hint"
-                              :background "#37a8e4")))
+   (highlighted-box-style (themed-css (theme *browser*)
+                           (".nyxt-hint.nyxt-highlight-hint"
+                            :background %accent%))
                           :documentation "The style of highlighted boxes, e.g. link hints.")
    (hints-alphabet "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                    :type string

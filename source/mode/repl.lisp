@@ -18,37 +18,39 @@
        "return" 'return-input)
       scheme:emacs
       (list)))
-   (style (cl-css:css
-           '((* :font-family "monospace,monospace")
-             (body :margin-right "0")
-             ("#container" :display "flex"
-                           :flex-flow "column"
-                           :height "100%")
-             ("#input" :display "grid"
-                       :grid-template-columns "auto 1fr"
-                       :width "100%"
-                       :padding 0
-                       :margin 0
-                       :background-color "dimgray")
-             ("#input-buffer" :width "100%"
-                              :border "none"
-                              :outline "none"
-                              :padding "3px"
-                              :background-color "gainsboro"
-                              :autofocus "true")
-             ("#evaluation-history"
-              :font-size "12px"
-              :flex-grow "1"
-              :overflow-y "auto"
-              :overflow-x "auto")
-             ("#prompt" :padding-right "4px"
-                        :padding-left "4px"
-                        :line-height "30px"
-                        :color "white")
-             (ul :list-style "none"
-                 :padding "0"
-                 :margin "0")
-             (li :padding "2px")))
+   (style (themed-css (theme *browser*)
+            (* :font-family "monospace,monospace")
+            (body :margin-right "0")
+            ("#container" :display "flex"
+                          :flex-flow "column"
+                          :height "100%"
+                          :color %text%
+                          :background-color %background%)
+            ("#input" :display "grid"
+                      :grid-template-columns "auto 1fr"
+                      :width "100%"
+                      :padding 0
+                      :margin 0
+                      :background-color %tertiary%)
+            ("#input-buffer" :width "100%"
+                             :border "none"
+                             :outline "none"
+                             :padding "3px"
+                             :background-color %quaternary%
+                             :autofocus "true")
+            ("#evaluation-history"
+             :font-size "12px"
+             :flex-grow "1"
+             :overflow-y "auto"
+             :overflow-x "auto")
+            ("#prompt" :padding-right "4px"
+                       :padding-left "4px"
+                       :line-height "30px"
+                       :color %background%)
+            (ul :list-style "none"
+                :padding "0"
+                :margin "0")
+            (li :padding "2px"))
           :documentation "The CSS applied to a REPL when it is set-up.")
    (evaluation-history (list)
                        :documentation "A list of pairs of (INPUT RESULTS).
