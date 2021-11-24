@@ -5,16 +5,16 @@
 
 (define-class html-element ()
   ((body ""))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class link (html-element)
   ((url ""))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class image (html-element)
   ((alt "" :documentation "Alternative text for the image.")
    (url ""))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defun frame-element-select ()
   "Allow the user to draw a frame around elements to select them."

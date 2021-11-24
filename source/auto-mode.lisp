@@ -24,7 +24,7 @@ Package prefix is optional.")
               :documentation "Arguments to activate the mode with."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (sera:export-always 'equals)
 (defmethod equals ((object1 t) (object2 t))
@@ -81,7 +81,7 @@ If the mode specifier is not known, it's omitted from the results."
             :documentation "Whether to exclusively enable the `included' modes."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (-> matching-auto-mode-rule (quri:uri buffer) (or auto-mode-rule null))
 (defun matching-auto-mode-rule (url buffer)

@@ -32,7 +32,7 @@ Otherwise the command can only be run if its corresponding package mode is enabl
                 :documentation "Last time this command was called from prompt buffer.
 This can be used to order the commands."))
   (:metaclass closer-mop:funcallable-standard-class)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:export-class-name-p t)
   (:documentation "Commands are interactive functions.
 (As in Emacs.)
@@ -272,7 +272,7 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
          :type (or symbol null))
    (class-sym nil
               :type (or symbol null)))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod prompter:object-attributes ((slot slot))
   `(("Name" ,(string (name slot)))

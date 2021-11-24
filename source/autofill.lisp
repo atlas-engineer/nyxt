@@ -30,7 +30,7 @@ it will be in conflict with common-lisp:fill."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (export-always 'make-autofill)
 (defun make-autofill (&rest args)

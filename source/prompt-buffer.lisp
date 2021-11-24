@@ -138,7 +138,7 @@ chosen suggestions inside brackets.")
 See `buffer's `override-map' for more details."))
     (:export-class-name-p t)
     (:export-accessor-names-p t)
-    (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+    (:accessor-name-transformer (class*:make-name-transformer name))
     (:documentation "The prompt buffer is the interface for user interactions.
 Each prompt spawns a new object: this makes it possible to nest prompts, such as
 invoking `prompt-buffer:history'.

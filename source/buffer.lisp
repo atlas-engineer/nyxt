@@ -254,7 +254,7 @@ Rules are kept in browser's `user-data', keyed by the expanded `auto-mode-rules-
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "A buffer is the fundamental unit of displayed content.
 Buffers result from the computations of a web renderer, which generates a visual
 representation of HTML documents.
@@ -330,7 +330,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-user-class web-buffer)
 
@@ -346,7 +346,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-user-class nosave-buffer)
 
@@ -402,7 +402,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-user-class internal-buffer)
 
@@ -452,7 +452,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
               :color "white")))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-user-class panel-buffer)
 
@@ -463,7 +463,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Each editor buffer matches a file. Each editor buffer
   contains an editor mode instance."))
 
@@ -590,7 +590,7 @@ Delete it with `ffi-buffer-delete'."
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-user-class status-buffer)
 
@@ -1178,7 +1178,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
            :type (or null search-engine)))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Structure holding the new URL query generated from a user
  string input.
 If `engine' is set, `query' is passed to it.  See the `url' method.

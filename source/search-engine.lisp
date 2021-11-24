@@ -23,7 +23,7 @@ the empty string.")
 Can be built via `make-search-completion-function'"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod fallback-url ((engine search-engine))
   (or (slot-value engine 'fallback-url)
