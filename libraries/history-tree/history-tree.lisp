@@ -48,7 +48,7 @@ goes owner-less, we can still consult the last time it was accessed.")
    (nodes '()
           :type list
           :documentation "The list of nodes that access an entry."))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Wrapped data as stored in `history-tree''s `entries'.
 Each entry has a unique datum.  Each `node' points to one entry.  Multiple nodes
 may point to the same entry.  Entries may also be node-less; they are kept
@@ -92,7 +92,7 @@ Arbitrary data (wrapped in an `entry' object) carried
 by the node.  `history-tree''s `entries' holds `entry'-`node' associations."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Node structure of the history tree.
 Each node has one parent (unless it's a root node) and zero or multiple
 children.  Nodes may have zero or multiple owners."))
@@ -122,7 +122,7 @@ is the child to go forward to for the bound owner.")
                 :writer t
                 :documentation "Timestamp of the last access to this node by the
 owner."))
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "The relationship between an owner and one of its nodes.
 In particular, it encodes the forward child nad the date of last access to the
 node for a given owner."))
@@ -198,7 +198,7 @@ It's updated every time a node is visited.")
           :documentation "The list of all owned nodes."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "The high-level information about an owner.
 Each owner is identified by a unique identifier, which is arbitrary data (may
 even be NIL)."))
@@ -335,7 +335,7 @@ It is a `function-symbol' so that the history can be more easily serialized than
 if if were a function."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Starting point of the global history tree data structure."))
 
 (export 'make)
