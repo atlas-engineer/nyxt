@@ -44,7 +44,8 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix licenses)
   #:use-module (guix git-download)
-  #:use-module (guix build-system asdf) ; TODO: Remove sbcl-cl-webkit once Guix has 3.0.0.
+  #:use-module (guix build-system asdf) ; TODO: Remove sbcl-cl-webkit once Guix has 3.3.0.
+  #:use-module (guix build-system asdf) ; TODO: Remove sbcl-cl-webkit once Guix has 3.4.0.
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system glib-or-gtk)
   #:use-module (gnu packages)
@@ -61,11 +62,11 @@
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages webkit))
 
-;; TODO: Remove sbcl-cl-webkit once Guix has 3.1.0.
+;; TODO: Remove sbcl-cl-webkit once Guix has 3.4.0.
 (define-public sbcl-cl-webkit
   (package
     (name "sbcl-cl-webkit")
-    (version "3.1.0")
+    (version "3.4.0")
     (source
      (origin
        (method git-fetch)
@@ -75,7 +76,7 @@
        (file-name (git-file-name "cl-webkit" version))
        (sha256
         (base32
-         "0x9nk2nbaq0ispl1zp3wcsig014vn7l28f9dcfahjr2pvghxl7qi"))))
+         "0l6ml7g0r0kzbgf49bsgj2yxhgralh8fc0h9vpc79fvw20qgsd56"))))
     (build-system asdf-build-system/sbcl)
     (inputs
      `(("cffi" ,sbcl-cffi)
@@ -238,7 +239,6 @@ WebKit browsing engine.")
        ;; ("osicat" ,cl-osicat) ; Not needed for SBCL.
        ("parenscript" ,cl-parenscript)
        ("plump" ,cl-plump)
-       ("qrencode" ,cl-qrencode)
        ("clss" ,cl-clss)
        ("quri" ,cl-quri)
        ("serapeum" ,cl-serapeum)

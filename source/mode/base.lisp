@@ -118,6 +118,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "m o" 'set-url-from-bookmark
        "m m" 'bookmark-buffer-url
        "m M" 'bookmark-current-url
+       "m l" 'list-bookmarks
        "y u" 'copy-url
        "y t" 'copy-title
        "C-h C-h" 'help

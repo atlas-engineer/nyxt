@@ -913,19 +913,25 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 (defun buffer-delete (buffer)
   "For dummy buffers, use `ffi-buffer-delete' instead."
   (hooks:run-hook (buffer-delete-hook buffer) buffer)
+  (with-data-access (history (history-path buffer))
+    (sera:and-let* ((owner (htree:owner history (id buffer)))
+                    (current (htree:current owner))
+                    (data (htree:data current)))
+      (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer))))
+  (ffi-buffer-delete buffer))
+
+(defun buffer-hide (buffer)
+  "Stop showing the buffer in Nyxt.
+Should be called from/instead of `ffi-buffer-delete' when the renderer view
+associated to the buffer is already killed."
   (let ((parent-window (find buffer (window-list) :key 'active-buffer)))
     (with-data-access (history (history-path buffer))
-      (sera:and-let* ((owner (htree:owner history (id buffer)))
-                      (current (htree:current owner))
-                      (data (htree:data current)))
-        (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer)))
       (htree:delete-owner history (id buffer)))
     (when parent-window
       (let ((replacement-buffer (or (first (get-inactive-buffers))
                                     (make-buffer :load-url-p nil
                                                  :url (quri:uri "about:blank")))))
         (window-set-buffer parent-window replacement-buffer)))
-    (ffi-buffer-delete buffer)
     (buffers-delete (id buffer))
     ;; (setf (id buffer) "") ; TODO: Reset ID?
     (add-to-recent-buffers buffer)))
@@ -1198,14 +1204,16 @@ If prefixing with 'https://' results in a valid URL, set `query' to this result
 on instantiation.
 Finally, if nothing else, set the `engine' to the `default-search-engine'."))
 
-(defmethod initialize-instance :after ((query new-url-query) &key)
+(defmethod initialize-instance :after ((query new-url-query)
+                                       &key check-dns-p &allow-other-keys)
   ;; Trim whitespace, in particular to detect URL properly.
   (setf (query query) (str:trim (query query)))
   (cond
     ((engine query)
      ;; First check engine: if set, no need to change anything.
      nil)
-    ((valid-url-p (query query))
+    ((valid-url-p (query query)
+                  :check-dns-p check-dns-p)
      ;; Valid URLs should be passed forward.
      nil)
     ;; Rest is for invalid URLs:
@@ -1216,7 +1224,9 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
             (uiop:native-namestring
              (uiop:ensure-absolute-pathname
               (query query) *default-pathname-defaults*)))))
-    ((valid-url-p (str:concat "https://" (query query)))
+    ((and check-dns-p
+          (valid-url-p (str:concat "https://" (query query))
+                       :check-dns-p check-dns-p))
      (setf (query query)
            (str:concat "https://" (query query))))
     (t
@@ -1246,7 +1256,8 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
   `(("URL or new query" ,(query query))
     ("Search engine?" ,(if (engine query) (shortcut (engine query)) ""))))
 
-(defun input->queries (input)
+(defun input->queries (input &key (check-dns-p t)
+                               (engine-completion-p))
   (let* ((terms (sera:tokens input))
          (engines (let ((all-prefixed-engines
                           (remove-if
@@ -1261,17 +1272,23 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
     (append (unless (and engines (member (first terms)
                                          (mapcar #'shortcut engines)
                                          :test #'string=))
-              (list (make-instance 'new-url-query :query input)))
+              (list (make-instance 'new-url-query
+                                   :query       input
+                                   :check-dns-p check-dns-p)))
             (alex:mappend (lambda (engine)
                             (append
                              (list (make-instance 'new-url-query
-                                                  :query (str:join " " (rest terms))
-                                                  :engine engine))
+                                                  :query       (str:join " " (rest terms))
+                                                  :engine      engine
+                                                  :check-dns-p check-dns-p))
                              ;; Some engines (I'm looking at you, Wikipedia!)
                              ;; return garbage in response to an empty request.
-                             (when (and (completion-function engine) (rest terms))
+                             (when (and engine-completion-p
+                                        (completion-function engine) (rest terms))
                                (mapcar (alex:curry #'make-instance 'new-url-query
-                                                   :engine engine :query)
+                                                   :engine      engine
+                                                   :check-dns-p check-dns-p
+                                                   :query)
                                        (with-protect ("Error while completing search: ~a" :condition)
                                          (funcall (completion-function engine)
                                                   (str:join " " (rest terms))))))))
@@ -1281,9 +1298,17 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
   ((prompter:name "New URL or search query")
    (prompter:filter-preprocessor
     (lambda (suggestions source input)
-      (declare (ignorable suggestions source))
-      (input->queries input)))
+      (declare (ignore suggestions source))
+      (input->queries input
+                      :check-dns-p nil
+                      :engine-completion-p nil)))
    (prompter:filter nil)
+   (prompter:filter-postprocessor
+    (lambda (suggestions source input)
+      (declare (ignore suggestions source))
+      (input->queries input
+                      :check-dns-p t
+                      :engine-completion-p t)))
    (prompter:actions '(buffer-load)))
   (:export-class-name-p t)
   (:documentation "This prompter source tries to \"do the right thing\" to
@@ -1291,7 +1316,14 @@ generate a new URL query from user input.
 - If the query is a URL, open it directly.
 - If it's a file, prefix the query with 'file://'.
 - If it's a search engine shortcut, include it in the suggestions.
-- If it's none of the above, use the `default-search-engine'."))
+- If it's none of the above, use the `default-search-engine'.
+
+It runs in two passes.  The first pass does not check the DNS for domain
+validity, nor does it return any search engine suggestions.  This guarantees
+that a good-enough default suggestion is showed instantaneously.
+(We really want this prompter source to be fast!)  The second pass checks the
+DNS to precisely validate domains and returns the search engines suggestions, if
+any."))
 (define-user-class new-url-or-search-source)
 
 (defun pushnew-url-history (history url)

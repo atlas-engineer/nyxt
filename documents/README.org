@@ -107,14 +107,17 @@ REPL:
 ** GTK dependencies
 *** Lisp dependencies
 
-Nyxt requires some Lisp libraries that are not all available through
-Quicklisp, or not at the right version.
+Nyxt requires some Lisp libraries.  Some pinned at specific versions,
+some are forks, so you should not rely on Quicklisp.
 
-These are included as a submodule of this repository, so if you use the
-Makefile there is nothing more to be done.
+All Lisp dependencies are included as a submodule of this repository, so
+if you did not disable submodules (with ~NYXT_SUBMODULES=false~), there
+is nothing more to be done.
 
-Otherwise clone each repository mentioned in =.gitmodules= into
-=~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF will find it]]):
+Otherwise clone the required repositories listed in =.gitmodules= into
+=~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF will find it]]).  For
+instance, to get the latest version of =cl-webkit=, you would typically
+run the following:
 
 #+begin_src sh
   mkdir -p ~/common-lisp
