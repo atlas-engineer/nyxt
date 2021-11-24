@@ -18,23 +18,26 @@
 
 (defun frame-element-select ()
   "Allow the user to draw a frame around elements to select them."
-  (let ((overlay-style (cl-css:css
-                        '(("#nyxt-overlay"
-                           :position "fixed"
-                           :top "0"
-                           :left "0"
-                           :right "0"
-                           :bottom "0"
-                           :background "rgba(0,0,0,0)"
-                           :z-index #.(1- (expt 2 31))))))
-        (selection-rectangle-style (cl-css:css
-                                    '(("#nyxt-rectangle-selection"
-                                       :position "absolute"
-                                       :top "0"
-                                       :left "0"
-                                       :border "dotted 1px black"
-                                       :background "rgba(0,0,0,0.05)"
-                                       :z-index #.(1- (expt 2 30)))))))
+  (let ((overlay-style (themed-css (theme *browser*)
+                         ("#nyxt-overlay"
+                          :position "fixed"
+                          :top "0"
+                          :left "0"
+                          :right "0"
+                          :bottom "0"
+                          :background %text%
+                          :z-index #.(1- (expt 2 31)))))
+        (selection-rectangle-style (themed-css (theme *browser*)
+                                     ("#nyxt-rectangle-selection"
+                                      :position "absolute"
+                                      :top "0"
+                                      :left "0"
+                                      :border-style "dotted"
+                                      :bordeer-width "1px"
+                                      :border-color %text%
+                                      :background-color %text
+                                      :opacity 0.05
+                                      :z-index #.(1- (expt 2 30))))))
     (pflet ((add-overlay (overlay-style selection-rectangle-style)
               "Add a selectable overlay to the screen."
               (defparameter selection

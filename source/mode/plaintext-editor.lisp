@@ -6,20 +6,20 @@
 (define-mode plaintext-editor-mode (editor-mode)
   "Mode for basic plaintext editing."
   ((rememberable-p nil)
-   (style (cl-css:css
-           '(("body"
-              :margin 0)
-             ("#editor"
-              :margin 0
-              :position "absolute"
-              :top "0"
-              :right "0"
-              :bottom "0"
-              :left "0"
-              :border "none"
-              :outline "none"
-              :padding "5px"
-              :autofocus "true"))))
+   (style (themed-css (theme *browser*)
+            ("body"
+             :margin 0)
+            ("#editor"
+             :margin 0
+             :position "absolute"
+             :top "0"
+             :right "0"
+             :bottom "0"
+             :left "0"
+             :border "none"
+             :outline "none"
+             :padding "5px"
+             :autofocus "true")))
    (constructor
     (lambda (mode)
       (initialize-display mode)))))

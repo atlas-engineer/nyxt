@@ -409,51 +409,39 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 
 (define-class internal-buffer (user-buffer)
   ((style
-    #.(cl-css:css
-       '((body
-          :margin-left "20px"
-          :margin-top "20px")
-         (h1
-          :font-family "Helvetica Neue, Helvetica"
-          :font-weight 500)
-         (h2
-          :font-family "Helvetica Neue, Helvetica"
-          :font-weight 500)
-         (h3
-          :font-family "Helvetica Neue, Helvetica"
-          :font-weight 500)
-         (h4
-          :font-family "Helvetica Neue, Helvetica"
-          :font-weight 500)
-         (h5
-          :font-family "Helvetica Neue, Helvetica"
-          :font-weight 500)
-         (h6
-          :font-family "Helvetica Neue, Helvetica"
-          :font-weight 500)
-         (hr
-          :height "3px"
-          :border-radius "2px"
-          :border-width "0"
-          :color "lightgray"
-          :background-color "lightgray")
-         (.button
-          :display "inline-block"
-          :background-color "darkgray"
-          :color "white"
-          :text-decoration "none"
-          :border-radius "2px"
-          :padding "6px"
-          :margin-left "2px"
-          :margin-right "2px")
-         (|.button:hover|
-          :color "black")
-         (|.button:visited|
-          :color "white")
-         (|.button:active|
-          :color "white")
-         (a
-          :color "gray")))))
+    (themed-css
+        (theme *browser*)
+      (body
+       :color %text%
+       :background-color %background%
+       :margin-left "20px"
+       :margin-top "20px")
+      ("h1,h2,h3,h4,h5,h6"
+       :font-family %font%
+       :font-weight 500)
+      (hr
+       :height "3px"
+       :border-radius "2px"
+       :border-width "0"
+       :color %secondary%
+       :background-color %secondary%)
+      (.button
+       :display "inline-block"
+       :background-color %primary%
+       :color %background%
+       :text-decoration "none"
+       :border-radius "2px"
+       :padding "6px"
+       :margin-left "2px"
+       :margin-right "2px")
+      (|.button:hover|
+       :color %text%)
+      (|.button:visited|
+       :color %background%)
+      (|.button:active|
+       :color %background%)
+      (a
+       :color %primary%))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -463,49 +451,34 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 
 (define-class panel-buffer (internal-buffer)
   ((width 250 :documentation "The width in pixels.")
-   (style
-    (cl-css:css
-     '((body
-        :background-color "#F7F7F7"
-        :margin "0"
-        :padding "10px"
-        :border-right "1px solid darkgray"
-        :border-left "1px solid darkgray")
-       (h1
-        :font-family "Helvetica Neue, Helvetica"
-        :font-weight 500)
-       (h2
-        :font-family "Helvetica Neue, Helvetica"
-        :font-weight 500)
-       (h3
-        :font-family "Helvetica Neue, Helvetica"
-        :font-weight 500)
-       (h4
-        :font-family "Helvetica Neue, Helvetica"
-        :font-weight 500)
-       (h5
-        :font-family "Helvetica Neue, Helvetica"
-        :font-weight 500)
-       (h6
-        :font-family "Helvetica Neue, Helvetica"
-        :font-weight 500)
-       (a
-        :color "gray")
-       (.button
-        :display "inline-block"
-        :background-color "darkgray"
-        :color "white"
-        :text-decoration "none"
-        :border-radius "2px"
-        :padding "6px"
-        :margin-left "2px"
-        :margin-right "2px")
-       (|.button:hover|
-        :color "black")
-       (|.button:visited|
-        :color "white")
-       (|.button:active|
-        :color "white")))))
+   (style (themed-css (theme *browser*)
+            (body
+             :background-color %background%
+             :margin "0"
+             :padding "10px"
+             :border-style "solid"
+             :border-width "0px 1px"
+             :border-color %tertiary%)
+            ("h1,h2,h3,h4,h5,h6"
+             :font-family %font%
+             :font-weight 500)
+            (a
+             :color %primary%)
+            (.button
+             :display "inline-block"
+             :background-color "darkgray"
+             :color %background%
+             :text-decoration "none"
+             :border-radius "2px"
+             :padding "6px"
+             :margin-left "2px"
+             :margin-right "2px")
+            (|.button:hover|
+             :color %text%)
+            (|.button:visited|
+             :color %background%)
+            (|.button:active|
+             :color %background%))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
@@ -545,109 +518,116 @@ Delete it with `ffi-buffer-delete'."
    (glyph-mode-presentation-p
     nil
     :documentation "Display the modes as a list of glyphs.")
-   (style 
-    #.(cl-css:css
-       '((body
-          :background "rgb(150, 150, 150)"
-          :font-size "14px"
-          :color "black"
-          :padding 0
-          :margin 0
-          :line-height "24px")
-         (.loader
-          :border "2px solid rgba(0,0,0,0)"
-          :border-top-color "#37a8e4"
-          :border-left-color "#37a8e4"
-          :border-radius "50%"
-          :display "inline-block"
-          :width "7px"
-          :height "7px"
-          :animation "spin 1s linear infinite")
-         ("@keyframes spin"
-          ("0%" :transform "rotate(0deg)")
-          ("100%" :transform "rotate(360deg)"))
-         (".arrow-right"
-          :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)"
-          :margin-right "-10px")
-         (".arrow-left"
-          :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0% 50%)"
-          :margin-left "-10px")
-         ("#container"
-          :display "grid"
-          ;; Columns: controls, url, tabs, modes
-          :grid-template-columns "90px minmax(auto, 30ch) 1fr 220px"
-          :overflow-y "hidden")
-         ("#container-vi"
-          :display "grid"
-          ;; Columns: controls, vi-status, url, tabs, modes
-          :grid-template-columns "90px 30px minmax(auto, 30ch) 1fr 220px"
-          :overflow-y "hidden")
-         ("#controls"
-          :font-size "16px"
-          :font-weight "700"
-          :background-color "rgb(50,50,50)"
-          :padding-left "5px"
-          :overflow "hidden"
-          :white-space "nowrap"
-          :z-index "4")
-         ("#vi-mode"
-          :padding-right "10px"
-          :padding-left "10px"
-          :text-align "center"
-          :z-index "3")
-         (".vi-normal-mode"
-          :background-color "rgb(100,100,100)")
-         (".vi-insert-mode"
-          :background-color "#37a8e4")
-         ("#url"
-          :color "white"
-          :background-color "rgb(100,100,100)"
-          :min-width "100px"
-          :text-overflow "ellipsis"
-          :overflow-x "hidden"
-          :white-space "nowrap"
-          :padding-right "10px"
-          :padding-left "15px"
-          :z-index "2")
-         ("#tabs"
-          :background-color "rgb(140,140,140)"
-          :min-width "100px"
-          :white-space "nowrap"
-          :overflow-x "scroll"
-          :text-align "left"
-          :padding-left "15px"
-          :padding-right "10px"
-          :z-index "1")
-         ("#tabs::-webkit-scrollbar"
-          :display "none")
-         (.tab
-          :color "white"
-          :white-space "nowrap"
-          :text-decoration "none"
-          :padding-left "5px"
-          :padding-right "5px")
-         (".tab:hover"
-          :color "black")
-         ("#modes"
-          :background-color "rgb(110,110,110)"
-          :color "white"
-          :text-align "right"
-          :padding-left "10px"
-          :padding-right "5px"
-          :overflow-x "scroll"
-          :white-space "nowrap"
-          :z-index "2")
-         ("#modes::-webkit-scrollbar"
-          :display "none")
-         (.button
-          :color "white"
-          :text-decoration "none"
-          :padding-left "2px"
-          :padding-right "2px"
-          :margin-left "2px"
-          :margin-right "2px")
-         (|.button:hover|
-          :color "black")))))
+   (style
+    (themed-css (theme *browser*)
+      (body
+       :color %text%
+       :background %tertiary%
+       :font-size "14px"
+       :color %text%
+       :padding 0
+       :margin 0
+       :line-height "24px")
+      (.loader
+       :border-width "2px"
+       :border-style "solid"
+       :border-color %text%
+       :border-top-color %accent%
+       :border-left-color %accent%
+       :border-radius "50%"
+       :display "inline-block"
+       :width "7px"
+       :height "7px"
+       :animation "spin 1s linear infinite")
+      ("@keyframes spin"
+       ("0%" :transform "rotate(0deg)")
+       ("100%" :transform "rotate(360deg)"))
+      (".arrow-right"
+       :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)"
+       :margin-right "-10px")
+      (".arrow-left"
+       :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0% 50%)"
+       :margin-left "-10px")
+      ("#container"
+       :display "grid"
+       ;; Columns: controls, url, tabs, modes
+       :grid-template-columns "90px minmax(auto, 30ch) 1fr 220px"
+       :overflow-y "hidden")
+      ("#container-vi"
+       :display "grid"
+       ;; Columns: controls, vi-status, url, tabs, modes
+       :grid-template-columns "90px 30px minmax(auto, 30ch) 1fr 220px"
+       :overflow-y "hidden")
+      ("#controls"
+       :font-size "16px"
+       :font-weight "700"
+       :background-color %primary%
+       :color %background%
+       :padding-left "5px"
+       :overflow "hidden"
+       :white-space "nowrap"
+       :z-index "4")
+      ("#vi-mode"
+       :padding-right "10px"
+       :padding-left "10px"
+       :text-align "center"
+       :z-index "3")
+      (".vi-normal-mode"
+       :color %text%
+       :background-color %tertiary%)
+      (".vi-insert-mode"
+       :color %text%
+       :background-color %accent%)
+      ("#url"
+       :color %background%
+       :background-color %tertiary%
+       :min-width "100px"
+       :text-overflow "ellipsis"
+       :overflow-x "hidden"
+       :white-space "nowrap"
+       :padding-right "10px"
+       :padding-left "15px"
+       :z-index "2")
+      ("#tabs"
+       :color %text%
+       :background-color %secondary%
+       :min-width "100px"
+       :white-space "nowrap"
+       :overflow-x "scroll"
+       :text-align "left"
+       :padding-left "15px"
+       :padding-right "10px"
+       :z-index "1")
+      ("#tabs::-webkit-scrollbar"
+       :display "none")
+      (.tab
+       :color %background%
+       :white-space "nowrap"
+       :text-decoration "none"
+       :padding-left "5px"
+       :padding-right "5px")
+      (".tab:hover"
+       :color %text%)
+      ("#modes"
+       :background-color %tertiary%
+       :color %background%
+       :text-align "right"
+       :padding-left "10px"
+       :padding-right "5px"
+       :overflow-x "scroll"
+       :white-space "nowrap"
+       :z-index "2")
+      ("#modes::-webkit-scrollbar"
+       :display "none")
+      (.button
+       :color %background%
+       :text-decoration "none"
+       :padding-left "2px"
+       :padding-right "2px"
+       :margin-left "2px"
+       :margin-right "2px")
+      (|.button:hover|
+       :color %text%))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
