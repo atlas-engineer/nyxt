@@ -78,18 +78,19 @@ suggestions."
 (define-command spellcheck-text-input (&key text)
   "Spell check full text input provided by the user."
   (let ((selected-text (prompt :input text
-                               :prompt "Suggest spelling (3+ characters)"
+                               :prompt "Suggest spelling"
                                :sources (make-instance 'enchant-text-input))))
     (trivial-clipboard:text selected-text)
     (echo "Text copied to clipboard.")))
 
 (define-class enchant-text-input (prompter:source)
   ((case-sensitive-p nil)
+   (minimum-search-length 3)
    (prompter:name "Enchant for text")
    (prompter:filter nil)
    (prompter:filter-preprocessor
     (lambda (preprocessed-suggestions text input)
-      (declare (ignore preprocessed-suggestions text))
-      (when (> (length input) 2)
+      (declare (ignore preprocessed-suggestions))
+      (when (>= (length input) (minimum-search-length text))
         (enchant:with-dict (lang (spell-check-language *browser*))
           (mapcar #'spell-check-and-suggest (str:words input))))))))
