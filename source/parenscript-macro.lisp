@@ -42,6 +42,15 @@
            (setf (chain ,tag selection-start) origin)
            (setf (chain ,tag selection-end) (+ origin (chain ,input-text length)))))))
 
+(export-always 'element-editable-p)
+(defpsmacro element-editable-p (element)
+  "Is the element editable?"
+  `(let ((tag (chain ,element tag-name)))
+     (if (or (string= tag "INPUT")
+             (string= tag "TEXTAREA")
+             (chain ,element is-content-editable))
+         t nil)))
+
 (export-always 'element-drawable-p)
 (defpsmacro element-drawable-p (element)
   "Is the element drawable?"

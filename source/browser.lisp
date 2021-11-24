@@ -711,7 +711,7 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-buffer-enable-webgl (buffer value))
 (define-ffi-generic ffi-buffer-auto-load-image (buffer value))
 (define-ffi-generic ffi-buffer-enable-sound (buffer value))
-(define-ffi-generic ffi-buffer-user-agent (buffer value))
+(define-ffi-generic ffi-buffer-user-agent (buffer &optional value))
 (define-ffi-generic ffi-buffer-set-proxy (buffer &optional proxy-url ignore-hosts))
 (define-ffi-generic ffi-buffer-get-proxy (buffer))
 (define-ffi-generic ffi-buffer-download (buffer url))
@@ -753,3 +753,39 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-set-preferred-languages (buffer value))
 (define-ffi-generic ffi-focused-p (buffer))
 (define-ffi-generic ffi-set-tracking-prevention (buffer value))
+(define-ffi-generic ffi-buffer-copy (buffer)
+  (:method ((buffer buffer))
+    (with-current-buffer buffer
+      ;; On some systems like Xorg, clipboard pasting happens just-in-time.  So if we
+      ;; copy something from the context menu 'Copy' action, upon pasting we will
+      ;; retrieve the text from the GTK thread.  This is prone to create
+      ;; dead-locks (e.g. when executing a Parenscript that acts upon the clipboard).
+      ;;
+      ;; To avoid this, we can 'flush' the clipboard to ensure that the copied text
+      ;; is present the clipboard and need not be retrieved from the GTK thread.
+      ;; TODO: Do we still need to flush now that we have multiple threads?
+      ;; (trivial-clipboard:text (trivial-clipboard:text))
+      (let ((input (%copy)))
+        (copy-to-clipboard input)
+        (echo "Text copied: ~s" input)))))
+(define-ffi-generic ffi-buffer-paste (buffer)
+  (:method ((buffer buffer))
+    (with-current-buffer buffer
+      (%paste))))
+(define-ffi-generic ffi-buffer-cut (buffer)
+  (:method ((buffer buffer))
+    (with-current-buffer buffer
+      (let ((input (%cut)))
+        (when input
+          (copy-to-clipboard input)
+          (echo "Text cut: ~s" input))))))
+(define-ffi-generic ffi-buffer-select-all (buffer)
+  (:method ((buffer buffer))
+    (with-current-buffer buffer
+      (%select-all))))
+(define-ffi-generic ffi-buffer-undo (buffer)
+  (:method ((buffer buffer))
+    (echo-warning "Undoing the edits is not yet implemented for this renderer.")))
+(define-ffi-generic ffi-buffer-redo (buffer)
+  (:method ((buffer buffer))
+    (echo-warning "Redoing the edits is not yet implemented for this renderer.")))
