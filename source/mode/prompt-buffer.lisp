@@ -73,7 +73,8 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "C-f" 'cursor-forwards
        "C-b" 'cursor-backwards
        "M-f" 'cursor-forwards-word
-       "M-b" 'cursor-backwards-word)
+       "M-b" 'cursor-backwards-word
+       "C-x h" 'select-all)
 
       scheme:vi-normal
       (list
@@ -439,3 +440,6 @@ Only available if `multi-selection-p' is non-nil."
   "Move cursor backwards by one word."
   (with-current-buffer prompt-buffer
     (nyxt/input-edit-mode:cursor-backwards-word)))
+
+(define-command-prompt select-all (prompt-buffer)
+  (ffi-buffer-select-all prompt-buffer))
