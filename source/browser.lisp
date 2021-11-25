@@ -216,8 +216,14 @@ prevents otherwise."))
   (%get-user-data profile path (user-data-cache *browser*)))
 
 (defmethod set-user-data ((profile data-profile) (path data-path) value)
-  (setf (data (%get-user-data profile path (user-data-cache *browser*)))
-        value))
+  (let ((user-data (%get-user-data profile path (user-data-cache *browser*))))
+    (setf (data user-data) value)
+    ;; WARNING: We must mark the data as restored, otherwise setting the data
+    ;; manually with `%set-data' and then calling `get-data' will cause the
+    ;; latter to try to restore it from a possibly empty file, which result in
+    ;; NIL data (thus invalidating the first `%set-data').
+    (setf (restored-p user-data) t)
+    value))
 
 (defmethod get-containing-window-for-buffer ((buffer buffer)
                                              (browser browser))

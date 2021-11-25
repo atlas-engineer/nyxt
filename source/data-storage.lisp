@@ -388,8 +388,10 @@ means the store operations are systematically delayed."))
   (%get-user-data profile path (user-data-cache profile)))
 
 (defmethod set-user-data ((profile nosave-data-profile) (path data-path) value)
-  (setf (data (%get-user-data profile path (user-data-cache profile)))
-        value))
+  (let ((user-data (%get-user-data profile path (user-data-cache profile))))
+    (setf (data user-data) value)
+    (setf (restored-p user-data) t)
+    value))
 
 (export-always 'get-data)               ; TODO: Unexport?
 ;; TODO: Better name? Isn't it too wide?
