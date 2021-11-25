@@ -363,9 +363,8 @@ Only available if `multi-selection-p' is non-nil."
 
 (define-command-prompt paste (prompt-buffer)
   "Paste clipboard text to input."
-  (nyxt::set-prompt-buffer-input
-   (ring-insert-clipboard (nyxt::clipboard-ring *browser*))
-   prompt-buffer))
+  (ffi-buffer-paste prompt-buffer)
+  (nyxt::update-prompt-input prompt-buffer))
 
 (defun history-entries (&optional (window (current-window)))
   (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
