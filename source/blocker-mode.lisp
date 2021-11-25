@@ -62,7 +62,8 @@ See the `hostlist' class documentation."
                     (when file
                       (uiop:read-file-string file)))))
         (when data
-          (nyxt::%set-data path data)))
+          (nyxt::%set-data path data)
+          data))
     (error (c)
       (echo-warning "Failed to load hostlist from ~s: ~a"
                     (expand-path path) c))))
@@ -90,8 +91,12 @@ The hostlist is downloaded in the background."
               ""))
         (progn
           (log:debug "Restoring hostlist from ~a" path)
-          (the (values string &optional)
-               (get-data hostlist))))))
+          (let ((hostlist-string (get-data hostlist)))
+            (typecase hostlist-string
+              (string hostlist-string)
+              (t
+               (log:debug "Could not restore non-string hostlist")
+               "")))))))
 
 (-> load-hostlist (hostlist blocker-mode) boolean)
 (defun load-hostlist (hostlist mode)
