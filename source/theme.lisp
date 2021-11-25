@@ -51,6 +51,38 @@ Should contrast with every other color in the theme.")
   (:export-predicate-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
+(defvar %theme% nil
+  "The theme currently used for CSS transformation.
+Internal variables, what you usually want is `theme' slot of `browser'.")
+
+(defun substitute-special-theme-symbols (rule)
+  "A helper function to rebuilt the themed-css expressions so that everything
+except special theme variables is quoted."
+  (typecase rule
+    (symbol
+     (if (str:s-member (list "%background%" "%text%" "%primary%" "%secondary%"
+                             "%tertiary%" "%quaternary%" "%accent%" "%font%")
+                       (str:downcase (symbol-name rule)))
+         rule
+         `(quote ,rule)))
+    (list
+     (if (and (symbolp (first rule))
+              (string-equal (str:downcase (symbol-name (first rule))) "%if-dark"))
+         `(%if-dark ,@(mapcar #'substitute-special-theme-symbols (rest rule)))
+         `(list ,@(mapcar #'substitute-special-theme-symbols rule))))
+    (t `(quote ,rule))))
+
+(defun parse-theme-aware-form (form)
+  "A helper for %EVAL clause of `themed-css'.
+Quotes everything except `%theme%'."
+  (typecase form
+    (symbol (if (string-equal "%theme%" (symbol-name form))
+                %theme%
+                form))
+    (list
+     (mapcar #'parse-theme-aware-form form))
+    (t form)))
+
 (export-always 'themed-css)
 (defmacro themed-css (theme &body rules)
   "Generate a CSS styled according to the THEME.
@@ -88,44 +120,23 @@ headings have border of tertiary color.
            (p
             :color (%if-dark %accent% %secondary%)
             :background-color %text%))"
-  (labels ((substitute-special-theme-symbols (rule)
-             (typecase rule
-               (symbol
-                (if (str:s-member (list "%background%" "%text%" "%primary%" "%secondary%"
-                                        "%tertiary%" "%quaternary%" "%accent%" "%font%")
-                                  (str:downcase (symbol-name rule)))
-                    rule
-                    `(quote ,rule)))
-               (list
-                (if (and (symbolp (first rule))
-                         (string-equal (str:downcase (symbol-name (first rule))) "%if-dark"))
-                    `(%if-dark ,@(mapcar #'substitute-special-theme-symbols (rest rule)))
-                    `(list ,@(mapcar #'substitute-special-theme-symbols rule))))
-               (t `(quote ,rule)))))
-    `(let ((%theme% ,theme))
-       (declare (ignorable %theme%))
-       (macrolet ((,(intern "%IF-DARK") (DARK light)
-                    (if (dark-p %theme%)
-                        dark
-                        light))
-                  (,(intern "%EVAL") (form)
-                    (labels ((parse-theme-aware-form (form)
-                               (typecase form
-                                 (symbol (if (string-equal "%theme%" (symbol-name form))
-                                             %theme%
-                                             form))
-                                 (list
-                                  (mapcar #'parse-theme-aware-form form))
-                                 (t form))))
-                      (eval (parse-theme-aware-form form)))))
-         (symbol-macrolet
-             ((,(intern "%BACKGROUND%") (background-color %theme%))
-              (,(intern "%TEXT%") (text-color %theme%))
-              (,(intern "%PRIMARY%") (primary-color %theme%))
-              (,(intern "%SECONDARY%") (secondary-color %theme%))
-              (,(intern "%TERTIARY%") (tertiary-color %theme%))
-              (,(intern "%QUATERNARY%") (quaternary-color %theme%))
-              (,(intern "%ACCENT%") (accent-color %theme%))
-              (,(intern "%FONT%") (font-family %theme%)))
-           (cl-css:css
-            ,(substitute-special-theme-symbols rules)))))))
+  `(let ((%theme% ,theme))
+     (declare (ignorable %theme%)
+              (special %theme%))
+     (macrolet ((,(intern "%IF-DARK") (DARK light)
+                  (if (dark-p %theme%)
+                      dark
+                      light))
+                (,(intern "%EVAL") (form)
+                  (eval (parse-theme-aware-form form))))
+       (symbol-macrolet
+           ((,(intern "%BACKGROUND%") (background-color %theme%))
+            (,(intern "%TEXT%") (text-color %theme%))
+            (,(intern "%PRIMARY%") (primary-color %theme%))
+            (,(intern "%SECONDARY%") (secondary-color %theme%))
+            (,(intern "%TERTIARY%") (tertiary-color %theme%))
+            (,(intern "%QUATERNARY%") (quaternary-color %theme%))
+            (,(intern "%ACCENT%") (accent-color %theme%))
+            (,(intern "%FONT%") (font-family %theme%)))
+         (cl-css:css
+          ,(substitute-special-theme-symbols rules))))))
