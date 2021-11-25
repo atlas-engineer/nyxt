@@ -442,4 +442,5 @@ Only available if `multi-selection-p' is non-nil."
     (nyxt/input-edit-mode:cursor-backwards-word)))
 
 (define-command-prompt select-all (prompt-buffer)
+  "Select all the text in the prompt input."
   (ffi-buffer-select-all prompt-buffer))
