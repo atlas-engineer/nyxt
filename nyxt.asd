@@ -129,6 +129,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                (:file "lisp-system")
                ;; Core Modes
                (:file "mode/auto")
+               (:file "mode/input-edit")
                (:file "mode/prompt-buffer")
                (:file "mode/editor")
                (:file "mode/plaintext-editor")
@@ -167,7 +168,6 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                (:file "mode/expedition")
                (:file "mode/tts")
                (:file "mode/bookmarklets")
-               (:file "mode/input-edit")
                (:file "mode/element-hint")
                (:file "mode/element-frame")
                (:file "mode/jump-heading")
