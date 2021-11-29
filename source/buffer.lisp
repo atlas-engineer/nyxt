@@ -14,6 +14,7 @@
     :documentation "Unique identifier for a buffer.
 Dead buffers or placeholder buffers (i.e. those not associated with a web view)
 have an empty ID.")
+   ;; TODO: Or maybe a dead-buffer should just be a buffer history?
    (data-profile
     (make-instance (or (find-data-profile (getf *options* :data-profile))
                        'default-data-profile))
