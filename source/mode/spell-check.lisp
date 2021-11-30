@@ -26,9 +26,9 @@ pull up a prompt of suggestions."
   "Spell check `word', if incorrectly spelled, prompt the user with
 suggestions."
   (if (spell-check-word :word word)
-        (echo "Highlighted word ~s spelled correctly." word)
-        (progn (echo "Highlighted word ~s spelled incorrectly." word)
-               (spell-check-suggest-word :word word))))
+      (echo "Highlighted word ~s spelled correctly." word)
+      (progn (echo "Highlighted word ~s spelled incorrectly." word)
+             (spell-check-suggest-word :word word))))
 
 (define-command spell-check-word-at-cursor ()
   "Spell check the word at the cursor."
@@ -61,3 +61,36 @@ suggestions."
       (when (> (length input) 2)
         (enchant:with-dict (lang (spell-check-language *browser*))
           (enchant:dict-suggest lang input)))))))
+
+(define-command spell-check-list-languages ()
+  "List all languages supported on your machine."
+  (echo "Supported languages: ~s"
+        (mapcar #'first (enchant:with-broker bkr
+                          (enchant:broker-list-dicts bkr)))))
+
+(defun spell-check-and-suggest (word)
+  "Only suggest if `word' is incorrect."
+  (enchant:with-dict (lang (spell-check-language *browser*))
+    (let ((result (enchant:dict-check lang word)))
+      (or result
+          (enchant:dict-suggest lang word)))))
+
+(define-command spell-check-text-input (&key text)
+  "Spell check full text input provided by the user."
+  (let ((selected-text (prompt :input text
+                               :prompt "Suggest spelling"
+                               :sources (make-instance 'enchant-text-input))))
+    (trivial-clipboard:text selected-text)
+    (echo "Text copied to clipboard.")))
+
+(define-class enchant-text-input (prompter:source)
+  ((case-sensitive-p nil)
+   (minimum-search-length 3)
+   (prompter:name "Enchant for text")
+   (prompter:filter nil)
+   (prompter:filter-preprocessor
+    (lambda (preprocessed-suggestions text input)
+      (declare (ignore preprocessed-suggestions))
+      (when (>= (length input) (slot-value text 'minimum-search-length))
+        (enchant:with-dict (lang (spell-check-language *browser*))
+          (mapcar #'spell-check-and-suggest (str:words input))))))))
