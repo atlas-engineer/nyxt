@@ -170,8 +170,9 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
       (prompter:selected-suggestion prompt-buffer)
     (values (when suggestion (prompter:value suggestion)) source)))
 
-(defun show-prompt-buffer (prompt-buffer &key height)
-  "Show the last active prompt-buffer, if any."
+(defun show-prompt-buffer (prompt-buffer &key height wait-p)
+  "Show the last active prompt-buffer, if any.
+With WAIT-P, block and return PROMPT-BUFFER results."
   ;; TODO: Add method that returns if there is only 1 source with no filter.
   (when prompt-buffer
     (push prompt-buffer (active-prompt-buffers (window prompt-buffer)))
@@ -182,7 +183,15 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
     (ffi-window-set-prompt-buffer-height
      (window prompt-buffer)
      (or height
-         (prompt-buffer-open-height (window prompt-buffer))))))
+         (prompt-buffer-open-height (window prompt-buffer))))
+    (when wait-p
+      (calispel:fair-alt
+        ((calispel:? (prompter:result-channel prompt-buffer) results)
+         (hide-prompt-buffer prompt-buffer)
+         results)
+        ((calispel:? (prompter:interrupt-channel prompt-buffer))
+         (hide-prompt-buffer prompt-buffer)
+         (error 'nyxt-prompt-buffer-canceled))))))
 
 (export-always 'hide-prompt-buffer)
 (defun hide-prompt-buffer (prompt-buffer)
@@ -414,17 +423,6 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
            (ps:lisp input))))
   (update-prompt-input prompt-buffer input))
 
-(defun wait-on-prompt-buffer (prompt-buffer)
-  "Block and return PROMPT-BUFFER results."
-  (when (prompt-buffer-p prompt-buffer)
-    (calispel:fair-alt
-      ((calispel:? (prompter:result-channel prompt-buffer) results)
-       (hide-prompt-buffer prompt-buffer)
-       results)
-      ((calispel:? (prompter:interrupt-channel prompt-buffer))
-       (hide-prompt-buffer prompt-buffer)
-       (error 'nyxt-prompt-buffer-canceled)))))
-
 (export-always 'prompt)
 (sera:eval-always
   (define-function prompt (append
@@ -456,10 +454,9 @@ See the documentation of `prompt-buffer' to know more about the options."
                                               :window (current-window)
                                               :result-channel (make-channel)
                                               :interrupt-channel (make-channel))))))
-           (show-prompt-buffer prompt-buffer)
            (calispel:! prompt-object-channel prompt-buffer))))
       (let ((new-prompt (calispel:? prompt-object-channel)))
-        (wait-on-prompt-buffer new-prompt)))))
+        (show-prompt-buffer new-prompt :wait-p t)))))
 
 (defmethod prompter:object-attributes ((prompt-buffer prompt-buffer))
   `(("Prompt" ,(prompter:prompt prompt-buffer))
@@ -481,5 +478,4 @@ See the documentation of `prompt-buffer' to know more about the options."
                   :sources (list (make-instance 'resume-prompt-source))))))
     (when old-prompt
       (prompter:resume old-prompt)
-      (show-prompt-buffer old-prompt)
-      (wait-on-prompt-buffer old-prompt))))
+      (show-prompt-buffer old-prompt :wait-p t))))
