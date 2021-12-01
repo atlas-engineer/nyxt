@@ -18,25 +18,25 @@
        "return" 'return-input)
       scheme:emacs
       (list)))
-   (style (themed-css (theme *browser*)
+   (style (theme:themed-css (theme *browser*)
             (* :font-family "monospace,monospace")
             (body :margin-right "0")
             ("#container" :display "flex"
                           :flex-flow "column"
                           :height "100%"
-                          :color %text%
-                          :background-color %background%)
+                          :color theme:text
+                          :background-color theme:background)
             ("#input" :display "grid"
                       :grid-template-columns "auto 1fr"
                       :width "100%"
                       :padding 0
                       :margin 0
-                      :background-color %tertiary%)
+                      :background-color theme:tertiary)
             ("#input-buffer" :width "100%"
                              :border "none"
                              :outline "none"
                              :padding "3px"
-                             :background-color %quaternary%
+                             :background-color theme:quaternary
                              :autofocus "true")
             ("#evaluation-history"
              :font-size "12px"
@@ -46,7 +46,7 @@
             ("#prompt" :padding-right "4px"
                        :padding-left "4px"
                        :line-height "30px"
-                       :color %background%)
+                       :color theme:background)
             (ul :list-style "none"
                 :padding "0"
                 :margin "0")

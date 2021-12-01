@@ -104,12 +104,12 @@ appearance in the buffer when they are setf'd."
 (define-mode download-mode ()
   "Display list of downloads."
   ((style
-    (themed-css (theme *browser*)
+    (theme:themed-css (theme *browser*)
       (".download"
        :margin-top "10px"
        :padding-left "5px"
-       :background-color %background%
-       :color %text%
+       :background-color theme:background
+       :color theme:text
        :brightness "80%"
        :border-radius "3px")
       (".download-url"
@@ -117,7 +117,7 @@ appearance in the buffer when they are setf'd."
        :white-space "nowrap")
       (".download-url a"
        :font-size "small"
-       :color %text%)
+       :color theme:text)
       (".status p"
        :display "inline-block"
        :margin-right "10px")
@@ -126,10 +126,10 @@ appearance in the buffer when they are setf'd."
        :width "100%")
       (".progress-bar-base"
        :height "100%"
-       :background-color %secondary%)
+       :background-color theme:secondary)
       (".progress-bar-fill"
        :height "100%"
-       :background-color %tertiary%)))))
+       :background-color theme:tertiary)))))
 
 
 (define-command list-downloads ()

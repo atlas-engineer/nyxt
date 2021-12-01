@@ -10,8 +10,8 @@
   "Mode for listing history."
   ((rememberable-p nil)
    (style
-    (themed-css (theme *browser*)
+    (theme:themed-css (theme *browser*)
       (a
-       :color %text%)
+       :color theme:text)
       ("a:hover"
-       :color %primary%)))))
+       :color theme:primary)))))

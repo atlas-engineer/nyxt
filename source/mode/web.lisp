@@ -35,9 +35,9 @@ search.")
     nil
     :type boolean
     :documentation "Whether history navigation is restricted by buffer-local history.")
-   (box-style (themed-css (theme *browser*)
+   (box-style (theme:themed-css (theme *browser*)
                   (".nyxt-hint"
-                   :background-color %primary%
+                   :background-color theme:primary
                    :opacity 0.8
                    :color "white"
                    :font-weight "bold"
@@ -45,9 +45,9 @@ search.")
                    :border-radius "2px"
                    :z-index #.(1- (expt 2 31))))
               :documentation "The style of the boxes, e.g. link hints.")
-   (highlighted-box-style (themed-css (theme *browser*)
+   (highlighted-box-style (theme:themed-css (theme *browser*)
                            (".nyxt-hint.nyxt-highlight-hint"
-                            :background %accent%))
+                            :background theme:accent))
                           :documentation "The style of highlighted boxes, e.g. link hints.")
    (hints-alphabet "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                    :type string

@@ -404,9 +404,9 @@ CLASS is a class symbol."
   "Print the buffer with the list of all known bindings for the current buffer
 optimizing the use of space."
   (nyxt::html-set-style
-   (themed-css (theme *browser*)
+   (theme:themed-css (theme *browser*)
      (h3 :font-size "10px"
-         :font-family %font%
+         :font-family theme:font-family
          :font-weight 500)
      (tr :font-size "7px")
      (div :display inline-block))
@@ -655,22 +655,22 @@ System information is also saved into the clipboard."
                      collect (:li (title bookmark) separator
                                   (:a :href (render-url (url bookmark))
                                       (render-url (url bookmark)))))))))
-    (let ((dashboard-style (themed-css (theme *browser*)
+    (let ((dashboard-style (theme:themed-css (theme *browser*)
                              (body
-                              :color %text%
-                              :background-color %background%
+                              :color theme:text
+                              :background-color theme:background
                               :margin-top 0
                               :margin-bottom 0)
                              ("#title"
                               :font-size "400%")
                              (.section
                               :border-style "solid none none none"
-                              :border-color %secondary%
+                              :border-color theme:secondary
                               :margin-top "10px"
                               :overflow "scroll"
                               :min-height "150px")
                              (".section h3"
-                              :color %tertiary%)
+                              :color theme:tertiary)
                              ("#container"
                               :display "flex"
                               :flex-flow "column"
