@@ -1325,7 +1325,8 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
               (list (make-instance 'new-url-query
                                    :query       input
                                    :check-dns-p check-dns-p)))
-            (sera:and-let* ((buffer (current-buffer))
+            (sera:and-let* ((completion engine-completion-p)
+                            (buffer (current-buffer))
                             (always (search-always-auto-complete-p buffer))
                             (engine (default-search-engine))
                             (completion (completion-function engine))
