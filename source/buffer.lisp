@@ -56,7 +56,7 @@ after the mode-specific hook.")
     :type boolean
     :documentation "Whether search suggestions are requested and displayed.")
    (search-always-auto-complete-p
-    nil
+    t
     :type boolean
     :documentation "Whether auto-completion works even for non-prefixed search.
 Auto-completions come from the default search engine.")
