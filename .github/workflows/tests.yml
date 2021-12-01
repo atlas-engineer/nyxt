@@ -11,7 +11,7 @@ jobs:
     name: ${{ matrix.lisp }} on ${{ matrix.os }}
     strategy:
       matrix:
-        lisp: [sbcl-bin] # CCL disabled, to renable add to list.
+        lisp: [sbcl-bin ccl]
         os: [ ubuntu-latest ]
 
     # run the job on every combination of "lisp" and "os" above
