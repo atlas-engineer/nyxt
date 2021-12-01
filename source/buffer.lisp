@@ -1325,33 +1325,33 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
               (list (make-instance 'new-url-query
                                    :query       input
                                    :check-dns-p check-dns-p)))
-            (sera:and-let* ((completion engine-completion-p)
-                            (buffer (current-buffer))
-                            (always (search-always-auto-complete-p buffer))
-                            (engine (default-search-engine))
-                            (completion (completion-function engine))
-                            (all-terms (str:join " " terms)))
-              (mapcar (alex:curry #'make-instance 'new-url-query
-                                  :engine engine :query)
-                      (funcall (completion-function engine) all-terms)))
-            (alex:mappend (lambda (engine)
-                            (append
-                             (list (make-instance 'new-url-query
-                                                  :query       (str:join " " (rest terms))
-                                                  :engine      engine
-                                                  :check-dns-p check-dns-p))
-                             ;; Some engines (I'm looking at you, Wikipedia!)
-                             ;; return garbage in response to an empty request.
-                             (when (and engine-completion-p
-                                        (completion-function engine) (rest terms))
-                               (mapcar (alex:curry #'make-instance 'new-url-query
-                                                   :engine      engine
-                                                   :check-dns-p check-dns-p
-                                                   :query)
-                                       (with-protect ("Error while completing search: ~a" :condition)
-                                         (funcall (completion-function engine)
-                                                  (str:join " " (rest terms))))))))
-                          engines))))
+            (or (alex:mappend (lambda (engine)
+                                (append
+                                 (list (make-instance 'new-url-query
+                                                      :query       (str:join " " (rest terms))
+                                                      :engine      engine
+                                                      :check-dns-p check-dns-p))
+                                 ;; Some engines (I'm looking at you, Wikipedia!)
+                                 ;; return garbage in response to an empty request.
+                                 (when (and engine-completion-p
+                                            (completion-function engine) (rest terms))
+                                   (mapcar (alex:curry #'make-instance 'new-url-query
+                                                       :engine      engine
+                                                       :check-dns-p check-dns-p
+                                                       :query)
+                                           (with-protect ("Error while completing search: ~a" :condition)
+                                             (funcall (completion-function engine)
+                                                      (str:join " " (rest terms))))))))
+                              engines)
+                (sera:and-let* ((completion engine-completion-p)
+                                (buffer (current-buffer))
+                                (always (search-always-auto-complete-p buffer))
+                                (engine (default-search-engine))
+                                (completion (completion-function engine))
+                                (all-terms (str:join " " terms)))
+                  (mapcar (alex:curry #'make-instance 'new-url-query
+                                      :engine engine :query)
+                          (funcall (completion-function engine) all-terms)))))))
 
 (define-class new-url-or-search-source (prompter:source)
   ((prompter:name "New URL or search query")
