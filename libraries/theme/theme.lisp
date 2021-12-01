@@ -69,7 +69,7 @@ Should strongly contrast with the `text-color'.")
    (accent-color
     "#37a8e4"
     :type string
-    :documentation "The color of the accented elements that need attention.
+    :documentation "The color of the highlighted elements that need attention.
 Should contrast with every other color in the theme.")
    (font-family
     "Helvetica Neue, Helvetica"
