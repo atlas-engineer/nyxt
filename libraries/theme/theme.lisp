@@ -40,12 +40,12 @@
    (background-color
     "white"
     :type string
-    :documentation "The background color of the theme")
+    :documentation "The background color of the theme.")
    (text-color
     "black"
     :type string
     :documentation "The main color of the text in the theme.
-Should contrast with the `background-color'")
+Should contrast with the `background-color'.")
    (primary-color
     "gray"
     :type string
