@@ -753,7 +753,7 @@ See `gtk-browser's `modifier-translator' slot."
                    (log:debug "Forward to ~s's renderer (unchanged URL)."
                               buffer)
                    (webkit:webkit-policy-decision-use response-policy-decision))
-                  (t
+                  ((nyxt/auto-mode::new-page-request-p request-data)
                    ;; Low-level URL string, we must not render the puni codes so use
                    ;; `quri:render-uri'.
                    (setf (webkit:webkit-uri-request-uri request) (quri:render-uri (url request-data)))
@@ -764,7 +764,12 @@ See `gtk-browser's `modifier-translator' slot."
                    ;; start the new load request, or else WebKit will be
                    ;; confused about which URL to load.
                    (webkit:webkit-policy-decision-ignore response-policy-decision)
-                   (webkit:webkit-web-view-load-request (gtk-object buffer) request)))))
+                   (webkit:webkit-web-view-load-request (gtk-object buffer) request))
+                  (t
+                   (echo-warning "Cannot redirect to ~a, forwarding to ~a."
+                                 (render-url (url request-data))
+                                 (webkit:webkit-uri-request-uri request))
+                   (webkit:webkit-policy-decision-use response-policy-decision)))))
           (progn
             (log:debug "Don't forward to ~s's renderer (non request data)."
                        buffer)
