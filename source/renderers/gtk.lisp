@@ -755,7 +755,7 @@ See `gtk-browser's `modifier-translator' slot."
                    (webkit:webkit-policy-decision-ignore response-policy-decision)
                    (webkit:webkit-web-view-load-request (gtk-object buffer) request))
                   (t
-                   (echo-warning "Cannot redirect to ~a, forwarding to ~a."
+                   (echo-warning "Cannot redirect to ~a in an iframe, forwarding to the original URL (~a)."
                                  (render-url (url request-data))
                                  (webkit:webkit-uri-request-uri request))
                    (webkit:webkit-policy-decision-use response-policy-decision)))))
