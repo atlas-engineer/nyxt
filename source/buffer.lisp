@@ -409,39 +409,39 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 
 (define-class internal-buffer (user-buffer)
   ((style
-    (themed-css
+    (theme:themed-css
         (theme *browser*)
       (body
-       :color %text%
-       :background-color %background%
+       :color theme:text
+       :background-color theme:background
        :margin-left "20px"
        :margin-top "20px")
       ("h1,h2,h3,h4,h5,h6"
-       :font-family %font%
+       :font-family theme:font-family
        :font-weight 500)
       (hr
        :height "3px"
        :border-radius "2px"
        :border-width "0"
-       :color %secondary%
-       :background-color %secondary%)
+       :color theme:secondary
+       :background-color theme:secondary)
       (.button
        :display "inline-block"
-       :background-color %primary%
-       :color %background%
+       :background-color theme:primary
+       :color theme:background
        :text-decoration "none"
        :border-radius "2px"
        :padding "6px"
        :margin-left "2px"
        :margin-right "2px")
       (|.button:hover|
-       :color %text%)
+       :color theme:text)
       (|.button:visited|
-       :color %background%)
+       :color theme:background)
       (|.button:active|
-       :color %background%)
+       :color theme:background)
       (a
-       :color %primary%))))
+       :color theme:primary))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -451,34 +451,34 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 
 (define-class panel-buffer (internal-buffer)
   ((width 250 :documentation "The width in pixels.")
-   (style (themed-css (theme *browser*)
+   (style (theme:themed-css (theme *browser*)
             (body
-             :background-color %background%
+             :background-color theme:background
              :margin "0"
              :padding "10px"
              :border-style "solid"
              :border-width "0px 1px"
-             :border-color %tertiary%)
+             :border-color theme:tertiary)
             ("h1,h2,h3,h4,h5,h6"
-             :font-family %font%
+             :font-family theme:font-family
              :font-weight 500)
             (a
-             :color %primary%)
+             :color theme:primary)
             (.button
              :display "inline-block"
              :background-color "darkgray"
-             :color %background%
+             :color theme:background
              :text-decoration "none"
              :border-radius "2px"
              :padding "6px"
              :margin-left "2px"
              :margin-right "2px")
             (|.button:hover|
-             :color %text%)
+             :color theme:text)
             (|.button:visited|
-             :color %background%)
+             :color theme:background)
             (|.button:active|
-             :color %background%))))
+             :color theme:background))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
@@ -519,21 +519,21 @@ Delete it with `ffi-buffer-delete'."
     nil
     :documentation "Display the modes as a list of glyphs.")
    (style
-    (themed-css (theme *browser*)
+    (theme:themed-css (theme *browser*)
       (body
-       :color %text%
-       :background %tertiary%
+       :color theme:text
+       :background theme:tertiary
        :font-size "14px"
-       :color %text%
+       :color theme:text
        :padding 0
        :margin 0
        :line-height "24px")
       (.loader
        :border-width "2px"
        :border-style "solid"
-       :border-color %text%
-       :border-top-color %accent%
-       :border-left-color %accent%
+       :border-color theme:text
+       :border-top-color theme:accent
+       :border-left-color theme:accent
        :border-radius "50%"
        :display "inline-block"
        :width "7px"
@@ -561,8 +561,8 @@ Delete it with `ffi-buffer-delete'."
       ("#controls"
        :font-size "16px"
        :font-weight "700"
-       :background-color %primary%
-       :color %background%
+       :background-color theme:primary
+       :color theme:background
        :padding-left "5px"
        :overflow "hidden"
        :white-space "nowrap"
@@ -573,14 +573,14 @@ Delete it with `ffi-buffer-delete'."
        :text-align "center"
        :z-index "3")
       (".vi-normal-mode"
-       :color %text%
-       :background-color %tertiary%)
+       :color theme:text
+       :background-color theme:tertiary)
       (".vi-insert-mode"
-       :color %text%
-       :background-color %accent%)
+       :color theme:text
+       :background-color theme:accent)
       ("#url"
-       :color %background%
-       :background-color %tertiary%
+       :color theme:background
+       :background-color theme:tertiary
        :min-width "100px"
        :text-overflow "ellipsis"
        :overflow-x "hidden"
@@ -589,8 +589,8 @@ Delete it with `ffi-buffer-delete'."
        :padding-left "15px"
        :z-index "2")
       ("#tabs"
-       :color %text%
-       :background-color %secondary%
+       :color theme:text
+       :background-color theme:secondary
        :min-width "100px"
        :white-space "nowrap"
        :overflow-x "scroll"
@@ -601,16 +601,16 @@ Delete it with `ffi-buffer-delete'."
       ("#tabs::-webkit-scrollbar"
        :display "none")
       (.tab
-       :color %background%
+       :color theme:background
        :white-space "nowrap"
        :text-decoration "none"
        :padding-left "5px"
        :padding-right "5px")
       (".tab:hover"
-       :color %text%)
+       :color theme:text)
       ("#modes"
-       :background-color %tertiary%
-       :color %background%
+       :background-color theme:tertiary
+       :color theme:background
        :text-align "right"
        :padding-left "10px"
        :padding-right "5px"
@@ -620,14 +620,14 @@ Delete it with `ffi-buffer-delete'."
       ("#modes::-webkit-scrollbar"
        :display "none")
       (.button
-       :color %background%
+       :color theme:background
        :text-decoration "none"
        :padding-left "2px"
        :padding-right "2px"
        :margin-left "2px"
        :margin-right "2px")
       (|.button:hover|
-       :color %text%))))
+       :color theme:text))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)

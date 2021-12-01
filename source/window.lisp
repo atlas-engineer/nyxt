@@ -40,10 +40,10 @@ It's a function of the window argument that returns the title as a string.")
     16
     :documentation "The height of the message buffer in pixels.")
    (message-buffer-style
-    (themed-css (theme *browser*)
+    (theme:themed-css (theme *browser*)
       (body
-       :color %text%
-       :background-color %background%
+       :color theme:text
+       :background-color theme:background
        :font-size "12px"
        :padding 0
        :padding-left "4px"

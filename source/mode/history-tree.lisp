@@ -13,26 +13,26 @@
                                :documentation "Whether to show unique glyphs
 matching buffer `id's along with buffer history entries.")
    (style
-    (themed-css (theme *browser*)
+    (theme:themed-css (theme *browser*)
       (body
-       :color %text%
-       :background %background%
+       :color theme:text
+       :background theme:background
        :line-height "initial")
       (* :margin 0
          :padding 0
          :list-style "none")
       (a
-       :color %text%)
+       :color theme:text)
       ("a:hover"
-       :color %primary%)
+       :color theme:primary)
       (".current-buffer a"
-       :color %text%)
+       :color theme:text)
       (".current-buffer a:hover"
-       :color %primary%)
+       :color theme:primary)
       (".other-buffer a"
-       :color %primary%)
+       :color theme:primary)
       (".other-buffer a:hover"
-       :color %secondary%)
+       :color theme:secondary)
       (li
        :white-space "nowrap")
       ("ul li"
@@ -43,7 +43,7 @@ matching buffer `id's along with buffer history entries.")
        :content "' '"
        :position "absolute"
        :width "1px"
-       :background-color %text%
+       :background-color theme:text
        :top "5px"
        :bottom "-12px"
        :left "-10px")
@@ -56,7 +56,7 @@ matching buffer `id's along with buffer history entries.")
        :content "' '"
        :position "absolute"
        :width "1px"
-       :background-color %text%
+       :background-color theme:text
        :top "5px"
        :bottom "7px"
        :height "7px"
@@ -67,5 +67,5 @@ matching buffer `id's along with buffer history entries.")
        :left "-10px"
        :width "10px"
        :height "1px"
-       :background-color %text%
+       :background-color theme:text
        :top "12px")))))

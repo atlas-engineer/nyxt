@@ -88,7 +88,8 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                nyxt/keymap
                nyxt/class-star
                nyxt/ospm
-               nyxt/prompter)
+               nyxt/prompter
+               nyxt/theme)
   :pathname "source/"
   :components ((:file "package")
                ;; Independent utilities
@@ -97,7 +98,6 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                (:file "conditions")
                (:file "debug")
                (:file "user-interface")
-               (:file "theme")
                ;; Core functionality
                (:file "global")
                (:file "concurrency")
@@ -588,3 +588,19 @@ See `asdf::*immutable-systems*'."
   :components ((:file "libraries/prompter/test-package"))
   :perform (test-op (op c)
                     (nyxt-run-test c "libraries/prompter/tests/")))
+
+(defsystem "nyxt/theme"
+  :depends-on (alexandria
+               serapeum
+               nyxt/class-star
+               cl-css)
+  :pathname "libraries/theme/"
+  :components ((:file "package")
+               (:file "theme"))
+  :in-order-to ((test-op (test-op "nyxt/theme/tests"))))
+
+(defsystem "nyxt/theme/tests"
+  :depends-on (nyxt/theme prove)
+  :components ((:file "libraries/theme/test-package"))
+  :perform (test-op (op c)
+                    (nyxt-run-test c "libraries/theme/tests/")))
