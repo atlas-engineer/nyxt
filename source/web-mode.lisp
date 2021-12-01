@@ -79,7 +79,7 @@ and to index the top of the page.")
        "M-c h" 'copy-hint-url
        "C-c" 'copy
        "C-v" 'paste
-       ;; FIXME: C-x is a command prefix, thus no cutting in CUA :/
+       "C-x" 'cut
        "C-a" 'select-all
        "C-z" 'undo
        "C-Z" 'redo
