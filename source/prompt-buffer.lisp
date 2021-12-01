@@ -414,6 +414,17 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
            (ps:lisp input))))
   (update-prompt-input prompt-buffer input))
 
+(defun wait-on-prompt-buffer (prompt-buffer)
+  "Block and return PROMPT-BUFFER results."
+  (when (prompt-buffer-p prompt-buffer)
+    (calispel:fair-alt
+      ((calispel:? (prompter:result-channel prompt-buffer) results)
+       (hide-prompt-buffer prompt-buffer)
+       results)
+      ((calispel:? (prompter:interrupt-channel prompt-buffer))
+       (hide-prompt-buffer prompt-buffer)
+       (error 'nyxt-prompt-buffer-canceled)))))
+
 (export-always 'prompt)
 (sera:eval-always
   (define-function prompt (append
@@ -435,9 +446,7 @@ Example use:
   :sources (list (make-instance 'prompter:source :filter #'my-suggestion-filter)))
 
 See the documentation of `prompt-buffer' to know more about the options."
-    (let ((result-channel (make-channel))
-          (interrupt-channel (make-channel))
-          (parent-thread-prompt-buffer nil))
+    (let ((prompt-object-channel (make-channel 1)))
       (ffi-within-renderer-thread
        *browser*
        (lambda ()
@@ -445,17 +454,12 @@ See the documentation of `prompt-buffer' to know more about the options."
                                      (append args
                                              (list
                                               :window (current-window)
-                                              :result-channel result-channel
-                                              :interrupt-channel interrupt-channel)))))
-           (setf parent-thread-prompt-buffer prompt-buffer)
-           (show-prompt-buffer prompt-buffer))))
-      (calispel:fair-alt
-        ((calispel:? result-channel results)
-         (hide-prompt-buffer parent-thread-prompt-buffer)
-         results)
-        ((calispel:? interrupt-channel)
-         (hide-prompt-buffer parent-thread-prompt-buffer)
-         (error 'nyxt-prompt-buffer-canceled))))))
+                                              :result-channel (make-channel)
+                                              :interrupt-channel (make-channel))))))
+           (show-prompt-buffer prompt-buffer)
+           (calispel:! prompt-object-channel prompt-buffer))))
+      (let ((new-prompt (calispel:? prompt-object-channel)))
+        (wait-on-prompt-buffer new-prompt)))))
 
 (export-always 'prompt1)
 (defmacro prompt1 (&body body)
@@ -482,4 +486,5 @@ See the documentation of `prompt-buffer' to know more about the options."
             :sources (list (make-instance 'resume-prompt-source)))))
     (when old-prompt
       (prompter:resume old-prompt)
-      (show-prompt-buffer old-prompt))))
+      (show-prompt-buffer old-prompt)
+      (wait-on-prompt-buffer old-prompt))))
