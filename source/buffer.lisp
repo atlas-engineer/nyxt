@@ -70,8 +70,9 @@ Auto-completions come from the default search engine.")
                           :base-url "https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=~a"
                           :processing-function
                           #'(lambda (results)
-                              (when results
-                                (second (json:decode-json-from-string results))))))
+                              (alex:when-let* ((results results)
+                                               (results (json:decode-json-from-string results)))
+                                (mapcar #'list (second results) (fourth results))))))
           (make-instance 'search-engine
                          :shortcut "ddg"
                          :search-url "https://duckduckgo.com/?q=~a"
@@ -1186,6 +1187,9 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
 (define-class new-url-query ()
   ((query ""
           :documentation "Either a URL or a string query passed to `engine'.")
+   (label nil
+          :type (or null string)
+          :documentation "The meaningful text for the query, if query is a URL.")
    (engine nil
            :type (or null search-engine)))
   (:export-class-name-p t)
@@ -1250,8 +1254,19 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
      (t (query query)))))
 
 (defmethod prompter:object-attributes ((query new-url-query))
-  `(("URL or new query" ,(query query))
+  `(("URL or new query" ,(or (label query) (query query)))
     ("Search engine?" ,(if (engine query) (shortcut (engine query)) ""))))
+
+(defun make-completion-query (completion &key engine (check-dns-p t))
+  (typecase completion
+    (string (make-instance 'new-url-query
+                           :engine      engine
+                           :check-dns-p check-dns-p
+                           :query completion))
+    (list (make-instance 'new-url-query
+                         :check-dns-p check-dns-p
+                         :query (second completion)
+                         :label (first completion)))))
 
 (defun input->queries (input &key (check-dns-p t)
                                (engine-completion-p))
@@ -1282,10 +1297,9 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
                                  ;; return garbage in response to an empty request.
                                  (when (and engine-completion-p
                                             (completion-function engine) (rest terms))
-                                   (mapcar (alex:curry #'make-instance 'new-url-query
-                                                       :engine      engine
-                                                       :check-dns-p check-dns-p
-                                                       :query)
+                                   (mapcar (alex:rcurry #'make-completion-query
+                                                        :engine      engine
+                                                        :check-dns-p check-dns-p)
                                            (with-protect ("Error while completing search: ~a" :condition)
                                              (funcall (completion-function engine)
                                                       (str:join " " (rest terms))))))))
@@ -1296,8 +1310,9 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
                                 (engine (default-search-engine))
                                 (completion (completion-function engine))
                                 (all-terms (str:join " " terms)))
-                  (mapcar (alex:curry #'make-instance 'new-url-query
-                                      :engine engine :query)
+                  (mapcar (alex:rcurry #'make-completion-query
+                                       :engine      engine
+                                       :check-dns-p check-dns-p)
                           (funcall (completion-function engine) all-terms)))))))
 
 (define-class new-url-or-search-source (prompter:source)
