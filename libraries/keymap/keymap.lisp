@@ -447,10 +447,18 @@ VISITED is used to detect cycles."
   (when keys
     (let ((hit (fset:@ (entries keymap) (first keys))))
       (when hit
-        (if (and (keymap-p hit)
-                 (rest keys))
-            (lookup-key* hit (rest keys) visited)
-            hit)))))
+        (cond
+          ((and (keymap-p hit)
+                (rest keys))
+           (lookup-key* hit (rest keys) visited))
+          ((and (not (keymap-p hit))
+                (rest keys))
+           ;; Found a binding instead of a prefix keymap, skip it since it
+           ;; should be shadowed.
+           ;; Example: we loop up "C-x C-f" which is meant to be bound to
+           ;; 'open-file, but "C-x" is bound to 'cut in a parent keymap.
+           nil)
+          (t hit))))))
 
 (declaim (ftype (function (keymap
                            list-of-keys
