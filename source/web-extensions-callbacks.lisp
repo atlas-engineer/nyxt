@@ -191,7 +191,7 @@ the description of the mechanism that sends the results back."
     (when style-sheet
       (setf (gethash message-params %style-sheets%)
             style-sheet))
-    ""))
+    "null"))
 
 (-> tabs-remove-css (string) string)
 (defun tabs-remove-css (message-params)
@@ -204,7 +204,7 @@ the description of the mechanism that sends the results back."
          (style-sheet (gethash message-params %style-sheets%)))
     (ffi-buffer-remove-user-style buffer-to-remove style-sheet)
     (remhash message-params %style-sheets%)
-    ""))
+    "null"))
 
 (-> tabs-execute-script (buffer string) string)
 (defun tabs-execute-script (buffer message-params)
@@ -233,7 +233,7 @@ the description of the mechanism that sends the results back."
                                  (string= (gethash "runAt" script-data) "document_start"))
        :all-frames-p (gethash "allFrames" script-data)
        :world-name (name extension)))
-    ""))
+    "[]"))
 
 (-> storage-local-get (buffer string) (values string &optional))
 (defun storage-local-get (buffer message-params)
