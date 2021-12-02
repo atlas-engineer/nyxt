@@ -134,8 +134,11 @@ DEFAULT-DIRECTORY specifies which directory to start from. Defaults to user home
 directory.
 
 By default, it uses the `xdg-open' command. The user can override the
-`open-file-function' of `file-mode' which takes the filename (or
-directory name) as parameter."
+`open-file-function' of `file-source' which takes the filename (or
+directory name) as parameter.
+
+`file-source' also has `supported-media-types'. You can append new types to
+it. Every type in `supported-media-types' will be opened directly in Nyxt."
   (prompt
    :input (uiop:native-namestring default-directory)
    :prompt "Open file"
