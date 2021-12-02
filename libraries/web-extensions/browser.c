@@ -11,13 +11,13 @@ browser_reply_message_callback (unsigned long int message_id, JSCValue *result)
 }
 
 static JSCValue *
-browser_get_result_callback (int index)
+browser_get_result_callback (unsigned long int index)
 {
         return get_result(index, 0);
 }
 
 static JSCValue *
-browser_check_result_callback (int index)
+browser_check_result_callback (unsigned long int index)
 {
         return get_result(index, 1);
 }
