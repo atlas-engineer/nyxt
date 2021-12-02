@@ -336,7 +336,7 @@ promise_callback (JSCValue *success, JSCValue *failure, void *user_data)
         JSCContext *context = jsc_context_get_current();
         JSCValue *tmp = jsc_value_function_call(
                 JSCEVAL(context, "browser.drain"),
-                G_TYPE_ULONG, (unsigned long long) user_data,
+                G_TYPE_ULONG, (unsigned long int) user_data,
                 JSC_TYPE_VALUE, success,
                 JSC_TYPE_VALUE, failure,
                 JSC_TYPE_VALUE, jsc_value_new_undefined(context),
@@ -349,7 +349,7 @@ promise_callback (JSCValue *success, JSCValue *failure, void *user_data)
  * Creates a promise wrapping around the provided ID.
  */
 JSCValue *
-make_promise (JSCContext *context, unsigned long long int id)
+make_promise (JSCContext *context, unsigned long int id)
 {
         JSCValue *promise_initializer = jsc_value_new_function(
                 context, NULL, G_CALLBACK(promise_callback),

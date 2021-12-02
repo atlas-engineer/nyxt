@@ -142,6 +142,6 @@ JSCValue *todo_method_callback(GPtrArray *args, void *user_data);
 
 JSCValue *todo_property_callback(void *instance, void *user_data);
 
-JSCValue *make_promise(JSCContext *context, unsigned long long int id);
+JSCValue *make_promise(JSCContext *context, unsigned long int id);
 
 #endif /* __GLOBALS_H__ */
