@@ -186,7 +186,6 @@ See also `hide-prompt-buffer'."
      (or height
          (prompt-buffer-open-height (window prompt-buffer))))))
 
-(export-always 'hide-prompt-buffer)     ; TODO: Unexport for 3.0.
 (defun hide-prompt-buffer (prompt-buffer)
   "Hide PROMPT-BUFFER, display next active one.
 This is a low-level display function.
