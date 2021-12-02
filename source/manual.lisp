@@ -134,6 +134,15 @@ keymap.")
 \(define-configuration (buffer web-buffer)
   ((default-modes (append '(my-mode) %slot-default%))))"))
 
+    (:p "Bindings are subject to various translations as per "
+         (:code "keymap:*translator*") ". "
+         "By default if it fails to find a binding it tries again with inverted
+shifts.  For instance if " (:code "C-x C-F") " fails to match anything " (:code "C-x C-f")
+" is tried."
+"See the default value of " (:code "keymap:*translator*") " to learn how to
+         custsomize it or set it to " (:code "nil") " to disable all forms of
+         translation.")
+
     (:h3 "Search engines")
     (:p "See the " (:code "search-engines") " buffer slot documentation.
 Bookmarks can also be used as search engines, see the corresponding section.")
