@@ -171,7 +171,9 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
     (values (when suggestion (prompter:value suggestion)) source)))
 
 (defun show-prompt-buffer (prompt-buffer &key height)
-  "Show the last active prompt-buffer, if any."
+  "Show the last active prompt-buffer, if any.
+This is a low-level display function.
+See also `hide-prompt-buffer'."
   ;; TODO: Add method that returns if there is only 1 source with no filter.
   (when prompt-buffer
     (push prompt-buffer (active-prompt-buffers (window prompt-buffer)))
@@ -184,9 +186,11 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
      (or height
          (prompt-buffer-open-height (window prompt-buffer))))))
 
-(export-always 'hide-prompt-buffer)
+(export-always 'hide-prompt-buffer)     ; TODO: Unexport for 3.0.
 (defun hide-prompt-buffer (prompt-buffer)
-  "Hide PROMPT-BUFFER, display next active one."
+  "Hide PROMPT-BUFFER, display next active one.
+This is a low-level display function.
+See also `show-prompt-buffer'."
   (let ((window (window prompt-buffer)))
     ;; Note that PROMPT-BUFFER is not necessarily first in the list, e.g. a new
     ;; prompt-buffer was invoked before the old one reaches here.
@@ -414,9 +418,10 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
            (ps:lisp input))))
   (update-prompt-input prompt-buffer input))
 
-(defun wait-on-prompt-buffer (prompt-buffer)
+(defun wait-on-prompt-buffer (prompt-buffer) ; TODO: Export?  Better name?
   "Block and return PROMPT-BUFFER results."
   (when (prompt-buffer-p prompt-buffer)
+    (show-prompt-buffer prompt-buffer)
     (calispel:fair-alt
       ((calispel:? (prompter:result-channel prompt-buffer) results)
        (hide-prompt-buffer prompt-buffer)
@@ -456,7 +461,6 @@ See the documentation of `prompt-buffer' to know more about the options."
                                               :window (current-window)
                                               :result-channel (make-channel)
                                               :interrupt-channel (make-channel))))))
-           (show-prompt-buffer prompt-buffer)
            (calispel:! prompt-object-channel prompt-buffer))))
       (let ((new-prompt (calispel:? prompt-object-channel)))
         (wait-on-prompt-buffer new-prompt)))))
@@ -486,5 +490,4 @@ See the documentation of `prompt-buffer' to know more about the options."
             :sources (list (make-instance 'resume-prompt-source)))))
     (when old-prompt
       (prompter:resume old-prompt)
-      (show-prompt-buffer old-prompt)
       (wait-on-prompt-buffer old-prompt))))
