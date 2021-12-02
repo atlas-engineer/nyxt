@@ -44,7 +44,6 @@ tabs_print_callback ()
 static JSCValue *
 tabs_send_message_callback (GPtrArray *args, void *extension_id)
 {
-        g_print("tabs_send_message_callback entered\n");
         JSCContext *context = jsc_context_get_current();
         JSCValue *tab_id = args->pdata[0];
         JSCValue *object = args->pdata[1];
