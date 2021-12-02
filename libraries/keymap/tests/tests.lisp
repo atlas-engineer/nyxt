@@ -436,4 +436,16 @@
       (prove:is km keymap)
       (prove:is (keymap:keys->keyspecs key) "a"))))
 
+(prove:subtest "Don't shadow a prefix keymap"
+  (let* ((parent (empty-keymap))
+         (keymap (empty-keymap parent)))
+    (keymap:define-key parent "C-x" 'parent-x)
+    (keymap:define-key keymap "C-x C-f" 'keymap-x)
+    (prove:is (keymap:lookup-key "C-x C-f" keymap)
+              'keymap-x)
+    (prove:is (keymap:lookup-key "C-x C-f" parent)
+              nil)
+    (prove:is (keymap:lookup-key "C-x" parent)
+              'parent-x)))
+
 (prove:finalize)
