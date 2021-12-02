@@ -36,3 +36,7 @@ flake.lock
 
 # Ignore etags/ctags
 TAGS
+
+# Ignore C object files and libraries
+*.o
+*.so
