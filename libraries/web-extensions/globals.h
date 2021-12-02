@@ -34,6 +34,11 @@
 #define ERROR_MESSAGE_PREFIX "error: "
 #endif
 
+/** TODO_METHOD
+ *
+ * A macro to mark the methods that are not yet implemented. Outputs
+ * "$METHOD is not yet implemented" to the shell.
+ */
 #define TODO_METHOD(Context, Object, Method)                            \
         do {                                                            \
                 jsc_value_object_set_property(                          \
@@ -45,6 +50,14 @@
                                 NULL, JSC_TYPE_VALUE));                 \
         } while (0);
 
+/** TODO_PROP
+ *
+ * A macro to mark the object properties that are not yet
+ * implemented. Outputs "$PROPERTY is not yet implemented" to the
+ * shell.
+ *
+ * FIXME: It doesn't. Broken.
+ */
 #define TODO_PROP(Class, Property)                                      \
         do {                                                            \
                 jsc_class_add_property(                                 \
@@ -54,9 +67,15 @@
                         NULL, #Class "." #Property, NULL);              \
         } while (0);                                                    \
 
+/* Small convenience macro to evaluate JS code of arbitrary length. */
 #define JSCEVAL(Context, ...)                           \
         jsc_context_evaluate(Context, __VA_ARGS__, -1)
 
+/** MAKE_CLASS
+ *
+ * Create a JSCClass and register and empty constructor for it. Bind
+ * it to Object_name in Context.
+ */
 #define MAKE_CLASS(Context, Class, Object_name)                              \
         JSCClass *Class = jsc_context_register_class(                   \
                 Context, #Class, NULL, NULL, NULL);                     \
@@ -67,6 +86,14 @@
         jsc_context_set_value(Context, Object_name,                     \
                 jsc_value_new_object(Context, NULL, Class));
 
+/** MAKE_FN
+ *
+ * Create a JS function and bind it to Prop_name (literal string) of
+ * Object_name (literal string) in Context. Bind Callback to it, with
+ * User_data passed as the last argument (if not NULL). Varargs are a
+ * number of arguments and GTypes of those (see
+ * jsc_value_new_function).
+ */
 #define MAKE_FN(Context, Object_name, Prop_name, Callback, User_data, ...) \
         jsc_value_object_set_property(                                  \
                 JSCEVAL(Context, Object_name), Prop_name,               \
@@ -74,6 +101,14 @@
                         Context, NULL, G_CALLBACK(Callback),            \
                         (void *)User_data, NULL, __VA_ARGS__));         \
 
+/** MAKE_FNV
+ *
+ * Create a variadic function. Bind it to Prop_name (literal string)
+ * of Object_name (literal string) in Context. Callback and User_data
+ * work like in MAKE_FN, except for the fact that Callback always
+ * accepts GPtrArray of JSValues (see
+ * jsc_value_new_function_variadic).
+ */
 #define MAKE_FNV(Context, Object_name, Prop_name, Callback, User_data)  \
         jsc_value_object_set_property(                                  \
                 JSCEVAL(Context, Object_name), Prop_name,               \
@@ -81,11 +116,24 @@
                         Context, NULL, G_CALLBACK(Callback),            \
                         (void *)User_data, NULL, JSC_TYPE_VALUE));      \
 
+/** MAKE_EVENT
+ *
+ * Created an ExtEvent (JS class this library introduces for
+ * WebExtensions events) and binds it to Prop_name (literal string) of
+ * Object_name (literal string) in Context.
+ */
 #define MAKE_EVENT(Context, Object_name, Prop_name)         \
         jsc_value_object_set_property(                      \
                 JSCEVAL(Context, Object_name), Prop_name,   \
                 JSCEVAL(Context, "new ExtEvent()"));        \
 
+/** BIND_FN
+ *
+ * Bind a result of JS-evaluation of varargs to Prop_name (literal
+ * string) of Object_name (literal string) in Context.
+ *
+ * Varargs are expected to be a string.
+ */
 #define BIND_FN(Context, Object_name, Prop_name, ...)               \
         do {                                                        \
                 jsc_value_object_set_property(                      \
@@ -93,6 +141,12 @@
                         JSCEVAL(Context, __VA_ARGS__));             \
         } while (0);
 
+/** SEND_MESSAGE_RETURN_PROMISE
+ *
+ * Creates a promise waiting on the message callback and resolving
+ * itself when there's a result. This is the macro that you want to
+ * end most of your Promise-returning C callbacks with.
+ */
 #define SEND_MESSAGE_RETURN_PROMISE(Message, Context, Index_name)       \
         unsigned long int Index_name = get_next_data_counter();         \
         webkit_web_page_send_message_to_view(                           \
