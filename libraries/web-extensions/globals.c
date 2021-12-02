@@ -347,6 +347,13 @@ promise_callback (JSCValue *success, JSCValue *failure, void *user_data)
 /** make_promise
  *
  * Creates a promise wrapping around the provided ID.
+ *
+ * This Promise waits for the result of the message with this ID. Once
+ * the result is there, it runs the success callback.
+ *
+ * If the result is a JS Error object (constructed if you return
+ * something starting with ERROR_MESSAGE_PREFIX), it will run failure
+ * callback.
  */
 JSCValue *
 make_promise (JSCContext *context, unsigned long int id)
