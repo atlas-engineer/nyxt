@@ -947,7 +947,8 @@ See `gtk-browser's `modifier-translator' slot."
             (:webkit-script-dialog-before-unload-confirm
              (webkit:webkit-script-dialog-confirm-set-confirmed
               dialog (if-confirm
-                      ((format nil "Stay on the page? ~a" (webkit:webkit-script-dialog-get-message dialog)))
+                      ;; FIXME: This asks for keyword override in if-confirm.
+                      ((format nil "~a ['yes' = leave, 'no' = stay]" (webkit:webkit-script-dialog-get-message dialog)))
                       t nil))))
           (webkit:webkit-script-dialog-close dialog)
           (webkit:webkit-script-dialog-unref dialog))
