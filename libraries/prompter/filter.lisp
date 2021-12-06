@@ -10,12 +10,14 @@ The norm is closer to 1 if
 - substrings length are closer to the length of STRING.
 
 Only substrings of SUBSTRING-LENGTH characters or more are considered."
-  ;; TODO: Remove duplicates in SUBSTRINGS?  Repeats could mean we insist more on it.
   (let ((position-factor 1.0)
         (length-factor 1.0)
-        (long-substrings (remove-if (lambda (s) (> substring-length (length s)))
-                                    substrings)))
-    (if long-substrings
+        (no-duplicate-long-substrs (remove-duplicates
+                                    (remove-if (lambda (s)
+                                                 (> substring-length (length s)))
+                                               substrings)
+                                    :test #'string-equal)))
+    (if no-duplicate-long-substrs
         (/ (apply #'+
                   (mapcar (lambda (s)
                             (let ((position (search s string)))
@@ -30,8 +32,8 @@ Only substrings of SUBSTRING-LENGTH characters or more are considered."
                                            (/ (min (length s) (length string))
                                               (length string))))
                                      (+ position-factor length-factor)))))
-                          long-substrings))
-           (length long-substrings))
+                          no-duplicate-long-substrs))
+           (length no-duplicate-long-substrs))
         0)))
 
 (defun score-suggestion-string (input suggestion-string)
