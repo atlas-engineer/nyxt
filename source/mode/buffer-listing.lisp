@@ -40,10 +40,12 @@ With LINEAR-VIEW-P, list buffers linearly instead."
              ;; See https://github.com/ruricolist/spinneret/issues/37.
              (let ((*print-pretty* nil))
                (spinneret:with-html
-                 (:p (:a :class "button"
-                         :href (lisp-url `(nyxt::delete-buffer :id ,(id buffer))) "✕")
-                     (:a :class "button"
-                         :href (lisp-url `(nyxt::switch-buffer :id ,(id buffer))) "→")
+                 (:p (:button :class "button"
+                              :onclick (ps:ps (nyxt/ps:send-lisp-url
+                                               `(nyxt::delete-buffer :id ,(id buffer)))) "✕")
+                     (:button :class "button"
+                              :onclick (ps:ps (nyxt/ps:send-lisp-url
+                                               `(nyxt::switch-buffer :id ,(id buffer)))) "→")
                      (:span (title buffer) "  "
                             (:u (render-url (url buffer))))))))
            (buffer-tree->html (root-buffer)
@@ -69,12 +71,13 @@ With LINEAR-VIEW-P, list buffers linearly instead."
     (spinneret:with-html-string
       (:style (style buffer))
       (:h1 "Buffers")
-      (:a :class "button"
-          :href (lisp-url '(nyxt/buffer-listing-mode::list-buffers))
-          "Tree display")
-      (:a :class "button"
-          :href (lisp-url '(nyxt/buffer-listing-mode::list-buffers :linear-view-p t))
-          "Linear display")
+      (:button :class "button"
+               :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt/buffer-listing-mode::list-buffers)))
+               "Tree display")
+      (:button :class "button"
+               :onclick (ps:ps (nyxt/ps:send-lisp-url
+                                '(nyxt/buffer-listing-mode::list-buffers :linear-view-p t)))
+               "Linear display")
       (:br "")
       (:div
        (if cluster
@@ -92,8 +95,9 @@ With LINEAR-VIEW-P, list buffers linearly instead."
   (flet ((buffer-markup (buffer)
            "Create the presentation for a buffer."
            (spinneret:with-html
-             (:p (:a :class "button"
-                     :href (lisp-url `(nyxt::switch-buffer :id ,(id buffer)))
+             (:p (:button :class "button"
+                          :onclick (ps:ps (nyxt/ps:send-lisp-url
+                                           `(nyxt::switch-buffer :id ,(id buffer))))
                      (:span :title (title buffer) :class "title" (title buffer)))))))
     (spinneret:with-html-string (:style (style panel-buffer))
                                 (:style (cl-css:css
@@ -104,6 +108,9 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                                             :text-overflow "ellipsis"))))
                                 (:body
                                  (:h1 "Buffers")
-                                 (:a :class "button" :href (lisp-url '(nyxt/buffer-listing-mode::|SHOW-BUFFERS-PANEL|)) "Update ↺")
+                                 (:button :class "button"
+                                          :onclick (ps:ps (nyxt/ps:send-lisp-url
+                                                           '(nyxt/buffer-listing-mode::|SHOW-BUFFERS-PANEL|)))
+                                          "Update ↺")
                                  (loop for buffer in (buffer-list)
                                        collect (buffer-markup buffer))))))

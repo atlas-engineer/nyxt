@@ -231,10 +231,14 @@ Example:
         (error "There's no nyxt:~a page defined" (param-name function-name)))))
 
 (export-always 'lisp-url)
-(defun lisp-url (&rest args)
-  (declare (ignore args))
-  (echo-warning "Lisp URLs are deprecated, use 'nyxt' URL instead.")
-  "")
+(-> lisp-url (t &rest t) string)
+(defun lisp-url  (lisp-form &rest more-lisp-forms)
+  "Generate a lisp:// URL from the given Lisp FUNCTION-NAME and ARGS. This is useful for encoding
+functionality into internal-buffers."
+  (the (values string &optional)
+       (apply #'str:concat "lisp://"
+              (mapcar (alex:compose #'quri:url-encode #'write-to-string)
+                      (cons lisp-form more-lisp-forms)))))
 
 (export-always 'parse-nyxt-url)
 (-> parse-nyxt-url ((or string quri:uri)) (values symbol list &optional))
@@ -257,7 +261,9 @@ guarantee of the same result."
                 (alex:mappend (lambda (pair)
                                 (let ((key (intern (str:upcase (first pair)) :keyword))
                                       (value (read-from-string (rest pair))))
-                                  (if (constantp value)
+                                  ;; Symbols are safe (are they?)
+                                  (if (or (symbolp value)
+                                          (constantp value))
                                       (list key value)
                                       (error "A non-constant value passed in URL params: ~a" value))))
                               params))
