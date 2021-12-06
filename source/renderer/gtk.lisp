@@ -6,7 +6,14 @@
 (setf +renderer+ "GTK")
 
 (define-class gtk-browser ()
-  (#+darwin
+  (#+webkit2-cors-allowlist
+   (gtk-cors-allowlist
+    '("lisp://*/*")
+    :type list-of-strings
+    :documentation "The list of URL patterns to allow requesting resources from.
+These URLs will be accessible to any page that is capable of JavaScript
+requests. Be cautious about who requests those.")
+   #+darwin
    (modifiers '()
               :documentation "On macOS some modifiers like Super and Meta are
 seen like regular keys.
@@ -291,7 +298,7 @@ response.  The BODY is wrapped with `with-protect'."
   (%within-renderer-thread-async
    (lambda ()
      (with-slots (gtk-object) buffer
-       (setf gtk-object (make-web-view))
+       (setf gtk-object (make-web-view :context-buffer buffer))
        (connect-signal-function
         buffer "decide-policy"
         (make-decide-policy-handler buffer))))))
@@ -724,8 +731,31 @@ See `gtk-browser's `modifier-translator' slot."
                  (t (error "Cannot display evaluation result")))))))
        (lambda (condition)
          (echo-warning "Error while routing \"nyxt:\" URL: ~a" condition)))
+      (webkit:webkit-web-context-register-uri-scheme-callback
+       context "lisp"
+       (lambda (request)
+         (let ((url (quri:uri (webkit:webkit-uri-scheme-request-get-uri request))))
+           (if (or (status-buffer-p buffer)
+                   (panel-buffer-p buffer)
+                   (equal "nyxt" (quri:uri-scheme (url buffer))))
+               (let* ((schemeless-url (schemeless-url url))
+                      (code-raw (quri:url-decode schemeless-url :lenient t))
+                      (code (subseq code-raw 0 (1- (length code-raw)))))
+                 (log:debug "Evaluate Lisp code from internal page: ~a" code)
+                 (values (handler-case
+                             (cl-json:encode-json-to-string (evaluate code))
+                           (json:unencodable-value-error ()
+                             "null"))
+                         "application/json"))
+               "")))
+       (lambda (condition)
+         (echo-warning "Error while routing \"lisp:\" URL: ~a" condition)))
       (webkit:webkit-security-manager-register-uri-scheme-as-local
        (webkit:webkit-web-context-get-security-manager context) "nyxt")
+      (webkit:webkit-security-manager-register-uri-scheme-as-cors-enabled
+       (webkit:webkit-web-context-get-security-manager context) "lisp")
+      #+webkit2-cors
+      (webkit:webkit-web-view-set-cors-allowlist (gtk-cors-allowlist buffer))
       (when (and buffer
                  (web-buffer-p buffer)
                  (expand-path (cookies-path buffer)))
@@ -1083,6 +1113,10 @@ See `gtk-browser's `modifier-translator' slot."
   (if (smooth-scrolling buffer)
       (ffi-buffer-enable-smooth-scrolling buffer t)
       (ffi-buffer-enable-smooth-scrolling buffer nil))
+  #+webkit2-cors-allowlist
+  (webkit:webkit-web-view-set-cors-allowlist
+   (gtk-object buffer)
+   (gtk-cors-allowlist *browser*))
   (connect-signal-function buffer "decide-policy" (make-decide-policy-handler buffer))
   (connect-signal buffer "load-changed" t (web-view load-event)
     (declare (ignore web-view))

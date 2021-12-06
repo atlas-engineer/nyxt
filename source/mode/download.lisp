@@ -37,13 +37,13 @@ will be downloaded to on disk.")
 cancelling a download. This can be set by the download engine.")
    (cancel-button (make-instance 'user-interface:button
                                  :text "✕"
-                                 :url (lisp-url '(echo "Can't cancel download.")))
+                                 :url (lisp-url (echo "Can't cancel download.")))
                   :documentation "The download is referenced by its
 URL. The URL for this button is therefore encoded as a funcall to
 cancel-download with an argument of the URL to cancel.")
    (open-button (make-instance 'user-interface:button
                                :text "🗁"
-                               :url (lisp-url '(echo "Can't open file, file path unknown.")))
+                               :url (lisp-url (echo "Can't open file, file path unknown.")))
                 :documentation "The file name to open is encoded
 within the button's URL when the destinaton path is set.")
    (progress-text (make-instance 'user-interface:paragraph))

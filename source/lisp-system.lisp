@@ -20,8 +20,8 @@
               (:h2 name)
               (:p "Size: " size)
               (:p "Requires: " dependencies)
-              (:p (:a :class "button"
-                      :href (lisp-url `(ql:quickload ,name)) "Load"))
+              (:p (:button :class "button"
+                           :onclick (ps:ps (nyxt/ps:send-lisp-url `(ql:quickload ,name))) "Load"))
               (:hr)))))))
 
 (define-class quicklisp-source (prompter:source)
