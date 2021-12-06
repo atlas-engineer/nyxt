@@ -6,14 +6,7 @@
 (setf +renderer+ "GTK")
 
 (define-class gtk-browser ()
-  (#+webkit2-cors-allowlist
-   (gtk-cors-allowlist
-    '("lisp://*/*")
-    :type list-of-strings
-    :documentation "The list of URL patterns to allow requesting resources from.
-These URLs will be accessible to any page that is capable of JavaScript
-requests. Be cautious about who requests those.")
-   #+darwin
+  (#+darwin
    (modifiers '()
               :documentation "On macOS some modifiers like Super and Meta are
 seen like regular keys.
@@ -754,8 +747,6 @@ See `gtk-browser's `modifier-translator' slot."
        (webkit:webkit-web-context-get-security-manager context) "nyxt")
       (webkit:webkit-security-manager-register-uri-scheme-as-cors-enabled
        (webkit:webkit-web-context-get-security-manager context) "lisp")
-      #+webkit2-cors
-      (webkit:webkit-web-view-set-cors-allowlist (gtk-cors-allowlist buffer))
       (when (and buffer
                  (web-buffer-p buffer)
                  (expand-path (cookies-path buffer)))
@@ -1113,10 +1104,6 @@ See `gtk-browser's `modifier-translator' slot."
   (if (smooth-scrolling buffer)
       (ffi-buffer-enable-smooth-scrolling buffer t)
       (ffi-buffer-enable-smooth-scrolling buffer nil))
-  #+webkit2-cors-allowlist
-  (webkit:webkit-web-view-set-cors-allowlist
-   (gtk-object buffer)
-   (gtk-cors-allowlist *browser*))
   (connect-signal-function buffer "decide-policy" (make-decide-policy-handler buffer))
   (connect-signal buffer "load-changed" t (web-view load-event)
     (declare (ignore web-view))
