@@ -764,7 +764,7 @@ See `gtk-browser's `modifier-translator' slot."
                        buffer)
             (webkit:webkit-policy-decision-ignore response-policy-decision))))))
 
-(define-ffi-method on-signal-load-changed ((buffer gtk-buffer) load-event)
+(defmethod on-signal-load-changed ((buffer gtk-buffer) load-event)
   ;; `url' can be nil if buffer didn't have any URL associated
   ;; to the web view, e.g. the start page, or if the load failed.
   (let* ((url (ignore-errors
