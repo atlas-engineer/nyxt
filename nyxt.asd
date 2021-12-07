@@ -142,6 +142,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                (:file "mode/passthrough")
                (:file "mode/history-tree")
                (:file "mode/list-history")
+               (:file "mode/bookmark-frequent-visits")
                (:file "mode/web")
                (:file "mode/reading-line")
                (:file "mode/style")
