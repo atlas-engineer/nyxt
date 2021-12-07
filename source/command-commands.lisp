@@ -19,14 +19,13 @@
   `(("Name" ,(str:downcase (hooks:name handler)))))
 
 (defun command-attributes (command &optional (buffer (active-buffer (current-window :no-rescan))))
-  (let ((scheme-name (keymap-scheme-name buffer))
-        (bindings '()))
-    (loop for mode in (modes buffer)
-          for scheme-keymap = (keymap:get-keymap scheme-name (keymap-scheme mode))
-          when scheme-keymap
-          do (setf bindings (keymap:binding-keys (name command) scheme-keymap))
-          when (not (null bindings))
-          return bindings)
+  (let* ((scheme-name (keymap-scheme-name buffer))
+         (bindings (keymap:binding-keys
+                    (name command)
+                    (delete nil
+                            (mapcar (lambda (mode)
+                                      (keymap:get-keymap scheme-name (keymap-scheme mode)))
+                                    (modes buffer))))))
     `(("Name" ,(string-downcase (name command)))
       ("Bindings" ,(format nil "~{~a~^, ~}" bindings))
       ("Docstring" ,(or (first (sera::lines (nyxt::docstring command)))
