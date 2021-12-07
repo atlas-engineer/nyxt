@@ -176,7 +176,6 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                (:file "mode/search-buffer")
                (:file "mode/spell-check")
                (:file "mode/zoom")
-               (:file "mode/record-input-field")
                (:file "mode/macro-edit")
                ;; Needs web-mode
                (:file "help")
