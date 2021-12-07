@@ -60,7 +60,7 @@ chosen suggestions inside brackets.")
                :margin "0"
                :padding "0")
               ("#prompt-area"
-               :background-color theme:primary
+               :background-color theme:secondary
                :display "grid"
                :grid-template-columns "auto auto 1fr auto"
                :width "100%"
@@ -102,10 +102,10 @@ chosen suggestions inside brackets.")
               (".source-glyph"
                :margin-right "3px")
               (".source-name"
-               :color theme:text
+               :color theme:background
                :padding-left "5px"
                :line-height "24px"
-               :background-color theme:primary)
+               :background-color theme:secondary)
               ("#suggestions"
                :color theme:text
                :background-color theme:background

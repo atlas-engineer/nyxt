@@ -423,8 +423,8 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
        :margin-left "20px"
        :margin-top "20px")
       ("h1,h2,h3,h4,h5,h6"
-       :font-family theme:font-family
-       :font-weight 500)
+       :color theme:primary
+       :font-family theme:font-family)
       (hr
        :height "3px"
        :border-radius "2px"
@@ -433,7 +433,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
        :background-color theme:secondary)
       (.button
        :display "inline-block"
-       :background-color theme:primary
+       :background-color theme:secondary
        :color theme:background
        :text-decoration "none"
        :border-radius "2px"
@@ -537,7 +537,7 @@ Delete it with `ffi-buffer-delete'."
       (.loader
        :border-width "2px"
        :border-style "solid"
-       :border-color theme:text
+       :border-color "transparent"
        :border-top-color theme:accent
        :border-left-color theme:accent
        :border-radius "50%"
@@ -580,13 +580,13 @@ Delete it with `ffi-buffer-delete'."
        :z-index "3")
       (".vi-normal-mode"
        :color theme:text
-       :background-color theme:tertiary)
+       :background-color theme:secondary)
       (".vi-insert-mode"
        :color theme:text
        :background-color theme:accent)
       ("#url"
        :color theme:background
-       :background-color theme:tertiary
+       :background-color theme:secondary
        :min-width "100px"
        :text-overflow "ellipsis"
        :overflow-x "hidden"
@@ -596,7 +596,7 @@ Delete it with `ffi-buffer-delete'."
        :z-index "2")
       ("#tabs"
        :color theme:text
-       :background-color theme:secondary
+       :background-color theme:tertiary
        :min-width "100px"
        :white-space "nowrap"
        :overflow-x "scroll"
@@ -615,7 +615,7 @@ Delete it with `ffi-buffer-delete'."
       (".tab:hover"
        :color theme:text)
       ("#modes"
-       :background-color theme:tertiary
+       :background-color theme:secondary
        :color theme:background
        :text-align "right"
        :padding-left "10px"
