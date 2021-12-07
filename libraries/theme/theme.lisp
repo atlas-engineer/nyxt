@@ -7,7 +7,7 @@
   "A dynamic variable to bind to current `theme' in `themed-css'.")
 
 (defvar background nil
-  "A dynamic variable to bind to `backround-color' of the current `theme' in `themed-css'.")
+  "A dynamic variable to bind to `background-color' of the current `theme' in `themed-css'.")
 
 (defvar text nil
   "A dynamic variable to bind to `text-color' of the current `theme' in `themed-css'.")
@@ -44,17 +44,17 @@
     :documentation "The main color of the text in the theme.
 Should contrast with the `background-color'.")
    (primary-color
-    "gray"
+    "rgb(60, 60, 60)"
     :type string
     :documentation "The main non-text/interface color.
 Should preferably contrast both `background-color' and `text-color'.")
    (secondary-color
-    "lightgray"
+    "rgb(120, 120, 120)"
     :type string
     :documentation "The secondary interface color.
 Should contrast with the `text-color'.")
    (tertiary-color
-    "darkgray"
+    "rgb(140, 140, 140)"
     :type string
     :documentation "The tertiary interface color.
 Should contrast with the `background-color'.")
