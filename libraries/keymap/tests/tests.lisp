@@ -400,7 +400,13 @@
     (prove:is (multiple-value-list (keymap:binding-keys 'foo-a keymap3))
               `(("C-c a" "a")
                 (("C-c a" ,keymap1)
-                 ("a" ,keymap1))))))
+                 ("a" ,keymap1))))
+
+    ;; Shadowing:
+    (keymap:define-key keymap3 "a" 'shadowed-a)
+    (prove:is (multiple-value-list (keymap:binding-keys 'foo-a keymap3))
+              `(("C-c a")
+                (("C-c a" ,keymap1))))))
 
 (prove:subtest "undefine"
   (let* ((keymap (empty-keymap)))

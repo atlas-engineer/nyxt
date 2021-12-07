@@ -671,6 +671,7 @@ Comparison against BINDING is done with TEST."
 The result is ordered by priority of keymaps, that is, keymaps hits from
 beginning to end of the keymap list.
 Duplicates are removed.
+Shadowed bindings are removed.
 
 A a second value, return an alist of (keyspec keymap) for all the `keyspec's
 bound to BINDING in KEYMAP.
@@ -687,6 +688,11 @@ For instance, to list all keymaps that have a binding, call
                               (alex:mappend #'keymap-with-parents
                                             (uiop:ensure-list keymap-or-keymaps))))))
     (setf alist (delete-duplicates alist :key #'first :test #'string= :from-end t))
+    (setf alist (delete-if (lambda (keyspec)
+                             (not
+                              ;; TODO: Which comparison operator should we use?
+                              (eq bound-value (lookup-key keyspec keymap-or-keymaps))))
+                           alist :key #'first))
     (values
      (mapcar #'first alist)
      alist)))
