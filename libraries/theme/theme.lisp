@@ -7,31 +7,28 @@
   "A dynamic variable to bind to current `theme' in `themed-css'.")
 
 (defvar background nil
-  "A dynamic variable to bind `backround-color' of the current `theme' to in `themed-css'.")
+  "A dynamic variable to bind to `backround-color' of the current `theme' in `themed-css'.")
 
 (defvar text nil
-  "A dynamic variable to bind `text-color' of the current `theme' to in `themed-css'.")
+  "A dynamic variable to bind to `text-color' of the current `theme' in `themed-css'.")
 
 (defvar primary nil
-  "A dynamic variable to bind `primary-color' of the current `theme' to in `themed-css'.")
+  "A dynamic variable to bind to `primary-color' of the current `theme' in `themed-css'.")
 
 (defvar secondary nil
-  "A dynamic variable to bind `secondary-color' of the current `theme' to in `themed-css'.")
-
-(defvar secondary nil
-  "A dynamic variable to bind `secondary-color' of the current `theme' to in `themed-css'.")
+  "A dynamic variable to bind to `secondary-color' of the current `theme' in `themed-css'.")
 
 (defvar tertiary nil
-  "A dynamic variable to bind `tertiary-color' of the current `theme' to in `themed-css'.")
+  "A dynamic variable to bind to `tertiary-color' of the current `theme' in `themed-css'.")
 
 (defvar quaternary nil
-  "A dynamic variable to bind `quaternary-color' of the current `theme' to in `themed-css'.")
+  "A dynamic variable to bind to `quaternary-color' of the current `theme' in `themed-css'.")
 
 (defvar accent nil
-  "A dynamic variable to bind `accent-color' of the current `theme' to in `themed-css'.")
+  "A dynamic variable to bind to `accent-color' of the current `theme' in `themed-css'.")
 
 (defvar font-family nil
-  "A dynamic variable to bind `font-family' of the current `theme' to in `themed-css'.")
+  "A dynamic variable to bind to `font-family' of the current `theme' in `themed-css'.")
 
 (define-class theme ()
   ((dark-p
@@ -80,19 +77,21 @@ Should contrast with every other color in the theme.")
   (:export-predicate-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defun regular-css-rule-p (rule)
-  (loop for i below (length (rest rule))
-        for elem in (rest rule)
-        when (and (evenp i) (not (keywordp elem)))
-          do (return nil)
-        finally (return t)))
+(defun plist-p (object)
+  "Return non-nil if OBJECT is a plist."
+  (and (listp object)
+       (alexandria:proper-list-p object)
+       (evenp (length object))
+       (loop :for x :in object :by #'cddr
+             :always (keywordp x))))
 
 (defun requote-rule (rule)
-  (if (regular-css-rule-p rule)
+  (if (plist-p (rest rule))
       (cons 'list (mapcar (lambda (elem)
                             (typecase elem
                               (symbol (if (equalp "theme" (package-name (symbol-package elem)))
-                                          elem `(quote ,elem)))
+                                          elem
+                                          `(quote ,elem)))
                               (atom (if (constantp elem)
                                         elem `(quote ,elem)))
                               (list elem)
@@ -115,8 +114,9 @@ encountered:
 - `theme:accent' -- accent color of the THEME.
 - `theme:font' -- font family of the theme.
 
-Any non-atomic s-expression will be evaluated too, so you can put
-arbitrarily complex expressions as property values.
+Any non-atomic s-expression put as value of CSS property will be
+evaluated too, so you can put arbitrarily complex expressions as
+property values.
 
 Example: color all the paragraph text in accent color if the theme is dark, and
 in secondary color otherwise. Use the text color as background color. Make
