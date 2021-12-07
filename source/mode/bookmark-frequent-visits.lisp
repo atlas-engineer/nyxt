@@ -47,8 +47,16 @@ bookmarks. If this is the case, prompt the user about bookmarking it."
                     (current-url-address
                       (render-url (url current-url-history)))
                     (threshold threshold))
-                   (run-thread
-                    (if (and (> implicit-visits-value threshold)
-                           (bookmarked-url-p current-url-address))
+                   ;; (run-thread  ;; is running thread really needed?
+                   ;;  (if (and (> implicit-visits-value threshold)
+                   ;;           (bookmarked-url-p current-url-address))
+                   ;;    (if-confirm ("Bookmark ~a?" current-url-address)
+                   ;;                (bookmark-url :url current-url-address))))
+                   (if (and (> implicit-visits-value threshold)
+                             (bookmarked-url-p current-url-address))
                       (if-confirm ("Bookmark ~a?" current-url-address)
-                                  (bookmark-url :url current-url-address)))))))
+                                  (bookmark-url :url current-url-address))))))
+
+(defmethod nyxt:on-signal-load-finished ((mode bookmark-frequent-visits-mode) url)
+  (bookmark-frequent-visit (threshold mode))
+  url)
