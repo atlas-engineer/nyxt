@@ -12,7 +12,7 @@ The norm is closer to 1 if
 Only substrings of SUBSTRING-LENGTH characters or more are considered."
   (let ((position-factor 1.0)
         (length-factor 1.0)
-        (no-duplicate-long-substrs (remove-duplicates
+        (no-duplicate-long-substrs (delete-duplicates
                                     (remove-if (lambda (s)
                                                  (< (length s) substring-length))
                                                substrings)
@@ -62,7 +62,7 @@ A higher score means the suggestion-string comes first."
   suggestion)
 
 (export-always 'submatches)
-(defun submatches (suggestion source input) ; Function is not used; TODO some tests?
+(defun submatches (suggestion source input) ; TODO add some tests?
   "Return SUGGESTION untouched if all INPUT strings are contained in it.
 
 This is suitable as a prompter `filter'.
