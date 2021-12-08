@@ -98,7 +98,7 @@ the developer's documentation at [[file:documents/README.org][documents/README.o
 ** History of changes
 
 If you are running a recent version of Nyxt please run the =changelog=
-command. For older versions, please see the [[file:documents/CHANGELOG.org][CHANGELOG]].
+command. For older versions, please see the [[https://github.com/atlas-engineer/nyxt/blob/2.2.1/documents/CHANGELOG.org][CHANGELOG]].
 
 # Local Variables:
 # fill-column: 72
