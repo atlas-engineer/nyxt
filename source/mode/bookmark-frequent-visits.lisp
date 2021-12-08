@@ -41,8 +41,7 @@ bookmarks. If this is the case, prompt the user about bookmarking it."
                     (implicit-visits-value
                      (nyxt::implicit-visits current-url-history))
                     (current-url-string
-                     (render-url (url current-url-history)))
-                    (threshold threshold))
+                     (render-url (url current-url-history))))
       (when (and (> implicit-visits-value threshold)
                  (bookmarked-url-p current-url-string))
         (if-confirm ("Bookmark ~a?" current-url-string)
