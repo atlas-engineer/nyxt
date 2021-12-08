@@ -663,10 +663,11 @@ Delete it with `ffi-buffer-delete'."
        (let ((contents (serapeum:string-join
                         (map 'list (lambda (e) (plump:text e))
                              (clss:select "p" (document-model buffer))) " ")))
-         (setf (keywords-document-model buffer)
-               (document-model buffer)
-               (slot-value buffer 'keywords)
-               (analysis:extract-keywords contents)))
+
+         (setf (keywords-document-model buffer) (document-model buffer))
+         (let ((keywords (analysis:extract-keywords contents)))
+           (unless (equal keywords '(("" . 1))) ; Same as no keywords, no need to store this so we can still check for NIL.
+             (setf  (slot-value buffer 'keywords) keywords))))
        (slot-value buffer 'keywords))))
 
 (-> proxy-adress (buffer &key (:downloads-only boolean)) *)
@@ -752,9 +753,18 @@ BUFFER's modes."
     ("Title" ,(title buffer))))
 
 (defmethod prompter:object-attributes ((buffer web-buffer))
-  `(("URL" ,(render-url (url buffer)))
-    ("Title" ,(title buffer))
-    ("Keywords" ,(format nil "~:{~a~^ ~}" (keywords buffer)))))
+  (let ((attributes `(("URL" ,(render-url (url buffer)))
+                      ("Title" ,(title buffer))
+                      ;; WARNING: `keywords' is slow, use direct access instead.
+                      ("Keywords" ,(format nil "~:{~a~^ ~}"
+                                           ;; (keywords buffer)
+                                           (slot-value buffer 'keywords))))))
+    (unless (slot-value buffer 'keywords)
+      (run-thread "buffer keywords"
+        (setf (alex:assoc-value attributes "Keywords" :test 'equal)
+              (list (format nil "~:{~a~^ ~}"
+                            (keywords buffer))))))
+    attributes))
 
 (-> make-buffer
     (&key (:title string)
