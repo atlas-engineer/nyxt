@@ -40,6 +40,20 @@
   - [[#irc-channel][IRC Channel]]
 :END:
 
+* Attention
+
+In case you already have a stable release version of Nyxt running in
+your environment, such as those provided on the [[https://nyxt.atlas.engineer/download][Download section]], be
+aware that having Nyxt running from source might cause problems on
+previous stable releases. In other words, a *stable* release might
+become /unstable/ after running cutting-edge Nyxt from source.
+
+For instance, along with the 2-series, changes were made on how the
+history file was being written by Nyxt. Thus, navigating with a newer
+version of Nyxt would write data in a different way, and, as a
+consequence, the file would not be readable by past stable releases,
+generating a hang bug. Other problems like this one might occur.
+
 * Developer installation with Guix
 
 First, clone the Nyxt repository.  It is most convenient to clone the
