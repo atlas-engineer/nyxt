@@ -40,14 +40,14 @@ bookmarks. If this is the case, prompt the user about bookmarking it."
                       (find (url (current-buffer)) history-entries :test #'equalp :key #'url))
                     (implicit-visits-value
                       (nyxt::implicit-visits current-url-history))
-                    (current-url-address
+                    (current-url-string
                       (render-url (url current-url-history)))
                     (threshold threshold))
                    (run-thread  ;; is running thread really needed?
                     (if (and (> implicit-visits-value threshold)
-                             (bookmarked-url-p current-url-address))
-                      (if-confirm ("Bookmark ~a?" current-url-address)
-                                  (bookmark-url :url current-url-address)))))))
+                             (bookmarked-url-p current-url-string))
+                      (if-confirm ("Bookmark ~a?" current-url-string)
+                                  (bookmark-url :url current-url-string)))))))
 
 (defmethod nyxt:on-signal-load-finished ((mode bookmark-frequent-visits-mode) url)
   (bookmark-frequent-visit (threshold mode))
