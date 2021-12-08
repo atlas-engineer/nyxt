@@ -13,10 +13,6 @@
 (in-package :nyxt/bookmark-frequent-visits)
 (use-nyxt-package-nicknames)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
-  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
-
 (define-mode bookmark-frequent-visits-mode ()
   "Mode to bookmark frequently visited URLs while navigating the web."
   ((threshold 3)
