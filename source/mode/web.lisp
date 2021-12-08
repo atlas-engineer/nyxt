@@ -219,9 +219,7 @@ and to index the top of the page.")
                                                        (window (current-window)))
   (let ((response (%clicked-in-input?)))
     (if (input-tag-p response)
-        (ffi-generate-input-event
-         window
-         (nyxt::last-event buffer))
+        (forward-to-renderer :window window :buffer buffer)
         (funcall command))))
 
 (define-command maybe-scroll-to-bottom (&optional (buffer (current-buffer)))
