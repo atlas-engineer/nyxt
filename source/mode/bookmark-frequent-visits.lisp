@@ -27,11 +27,11 @@ bookmarks. If this is the case, prompt the user about bookmarking it."
              "The local function `bookmarked-url-p' returns the URL
            address itself if it is new to the bookmark list or NIL if it is
            already there."
-             (let ((bookmarks-address-list
+             (let ((bookmark-url-strings
                      (mapcar #'(lambda (e) (render-url (url e)))
                              (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
                                bookmarks))))
-               (if (member url-address bookmarks-address-list :test #'string=)
+               (if (member url-address bookmark-url-strings :test #'string=)
                    nil
                    url-address))))
     (sera:and-let* ((history-entries (with-data-unsafe (history (history-path (current-buffer)))
