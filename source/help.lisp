@@ -397,7 +397,7 @@ CLASS is a class symbol."
                              using (hash-value bound-value)
                              collect (:tr
                                       (:td keyspec)
-                                      (:td (string-downcase bound-value)))))))))))
+                                      (:td (format nil "~(~a~)" bound-value)))))))))))
 
 (define-command print-bindings-cheatsheet ()
   "Print the buffer with the list of all known bindings for the current buffer
