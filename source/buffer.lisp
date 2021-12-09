@@ -969,7 +969,11 @@ associated to the buffer is already killed."
 
 (export-always 'buffer-list)
 (defun buffer-list ()
-  (alex:hash-table-values (buffers *browser*)))
+  "Order is stable."
+  (sort
+   (alex:hash-table-values (buffers *browser*))
+   #'string>
+   :key #'id))
 
 (defun sort-by-time (sequence &key (key #'last-access))
   "Return a timely ordered SEQUENCE by KEY.  More recent elements come first."
@@ -1464,45 +1468,50 @@ any."))
                     (parent-id (htree:creator-id owner)))
                    (gethash parent-id (buffers *browser*)))))
 
+(defun buffers-with-history (history)
+  "Return the list of buffers that have history HISTORY.
+HISTORY may be NIL for buffers without history."
+  (remove-if (complement (sera:eqs history))
+             (buffer-list)
+             :key (alex:compose #'get-data #'history-path)))
+
 (defun buffer-children (&optional (buffer (current-buffer)))
-  (let* ((current-history (get-data (history-path buffer)))
-         (buffers (remove-if (complement (sera:eqs current-history))
-                             (buffer-list)
-                             :key (alex:compose #'get-data #'history-path))))
-    (with-data-unsafe (history (history-path buffer))
-      (sort (sera:filter
-             (sera:equals (id buffer))
-             buffers
-             :key (lambda (b) (alex:when-let ((owner (htree:owner history (id b))))
-                                             (htree:creator-id owner))))
-            #'string< :key #'id))))
+  (with-current-buffer buffer
+    (let* ((current-history (get-data (history-path buffer)))
+           (buffers (buffers-with-history current-history)))
+      (with-data-unsafe (history (history-path buffer))
+        (sort (sera:filter
+               (sera:equals (id buffer))
+               buffers
+               :key (lambda (b) (alex:when-let ((owner (htree:owner history (id b))))
+                                  (htree:creator-id owner))))
+              #'string< :key #'id)))))
 
 (defun buffer-siblings (&optional (buffer (current-buffer)))
-  (let* ((current-history (get-data (history-path buffer)))
-         (buffers (remove-if (complement (sera:eqs current-history))
-                             (buffer-list)
-                             :key (alex:compose #'get-data #'history-path))))
-    (with-data-unsafe (history (history-path buffer))
-      (flet ((existing-creator-id (owner)
-               "If owner's creator does not exist anymore
+  (with-current-buffer buffer
+    (let* ((current-history (get-data (history-path buffer)))
+           (buffers (buffers-with-history current-history)))
+      (with-data-unsafe (history (history-path buffer))
+        (flet ((existing-creator-id (owner)
+                 "If owner's creator does not exist anymore
 (i.e. parent has been deleted), return NIL so has mimick top-level owners."
-               (if (htree:owner history (htree:creator-id owner))
-                   (htree:creator-id owner)
-                   nil)))
-        (let* ((owner (htree:owner history (id buffer)))
-               (current-parent-id (when owner (existing-creator-id owner)))
-               (common-parent-buffers
-                 (sera:filter
-                  (sera:equals current-parent-id)
-                  buffers
-                  :key (lambda (b)
-                         (alex:when-let ((owner (htree:owner history (id b))))
-                                        (existing-creator-id owner)))))
-               (common-parent-buffers
-                 (sort common-parent-buffers #'string< :key #'id)))
-          (sera:split-sequence-if (sera:equals (id buffer))
-                                  common-parent-buffers
-                                  :key #'id))))))
+                 (if (htree:owner history (htree:creator-id owner))
+                     (htree:creator-id owner)
+                     nil)))
+          (let* ((owner (htree:owner history (id buffer)))
+                 (current-parent-id (when owner (existing-creator-id owner)))
+                 (common-parent-buffers
+                   (sera:filter
+                    (sera:equals current-parent-id)
+                    buffers
+                    :key (lambda (b)
+                           (alex:when-let ((owner (htree:owner history (id b))))
+                             (existing-creator-id owner)))))
+                 (common-parent-buffers
+                   (sort common-parent-buffers #'string< :key #'id)))
+            (sera:split-sequence-if (sera:equals (id buffer))
+                                    common-parent-buffers
+                                    :key #'id)))))))
 
 (define-command switch-buffer-previous (&optional (buffer (current-buffer)))
   "Switch to the previous buffer in the buffer tree.

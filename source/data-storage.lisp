@@ -405,6 +405,8 @@ means the store operations are systematically delayed."))
 
 (export-always 'get-data)               ; TODO: Unexport?
 ;; TODO: Better name? Isn't it too wide?
+;; TODO: Inferring the data-profile is poor design, because it easily trips the
+;; caller when the PATH does not belong to the current buffer.
 (defmethod get-data ((path data-path))
   "Return the data for PATH.
 Data is restored with the `restore' method if required.
