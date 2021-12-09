@@ -224,6 +224,45 @@ distance scroll-left or scroll-right will scroll.")
     :documentation "The ratio of the page to scroll.
 A value of 0.95 means that the bottom 5% will be the top 5% when scrolling
 down.")
+   (style
+    (theme:themed-css
+        (theme *browser*)
+      (body
+       :color theme:text
+       :background-color theme:background
+       :margin-left "20px"
+       :margin-top "20px")
+      ("h1,h2,h3,h4,h5,h6"
+       :color theme:primary
+       :font-family theme:font-family)
+      (hr
+       :height "3px"
+       :border-radius "2px"
+       :border-width "0"
+       :color theme:secondary
+       :background-color theme:secondary)
+      (.button
+       :display "inline-block"
+       :background-color theme:secondary
+       :color theme:background
+       :text-decoration "none"
+       :border-radius "2px"
+       :padding "6px"
+       :margin-left "2px"
+       :margin-right "2px")
+      (|.button:hover|
+       :color theme:text)
+      (|.button:visited|
+       :color theme:background)
+      (|.button:active|
+       :color theme:background)
+      (a
+       :color theme:primary)
+      (pre
+       :color theme:text
+       :background-color theme:quaternary
+       :border-radius "2px"
+       :padding-bottom "10px")))
    (buffer-load-hook
     (make-hook-url->url
      :combination #'hooks:combine-composed-hook)
@@ -428,45 +467,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
 (define-user-class background-buffer)
 
 (define-class internal-buffer (user-buffer)
-  ((style
-    (theme:themed-css
-        (theme *browser*)
-      (body
-       :color theme:text
-       :background-color theme:background
-       :margin-left "20px"
-       :margin-top "20px")
-      ("h1,h2,h3,h4,h5,h6"
-       :color theme:primary
-       :font-family theme:font-family)
-      (hr
-       :height "3px"
-       :border-radius "2px"
-       :border-width "0"
-       :color theme:secondary
-       :background-color theme:secondary)
-      (.button
-       :display "inline-block"
-       :background-color theme:secondary
-       :color theme:background
-       :text-decoration "none"
-       :border-radius "2px"
-       :padding "6px"
-       :margin-left "2px"
-       :margin-right "2px")
-      (|.button:hover|
-       :color theme:text)
-      (|.button:visited|
-       :color theme:background)
-      (|.button:active|
-       :color theme:background)
-      (a
-       :color theme:primary)
-      (pre
-       :color theme:text
-       :background-color theme:quaternary
-       :border-radius "2px"
-       :padding-bottom "10px"))))
+  ()
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
