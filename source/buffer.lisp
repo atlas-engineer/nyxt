@@ -450,7 +450,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
        :color theme:primary)
       (pre
        :color theme:text
-       :background-color theme:tertiary
+       :background-color theme:quaternary
        :border-radius "2px"
        :padding-bottom "10px"))))
   (:export-class-name-p t)
