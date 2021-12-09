@@ -730,7 +730,7 @@ See `gtk-browser's `modifier-translator' slot."
          (let ((url (quri:uri (webkit:webkit-uri-scheme-request-get-uri request))))
            (if (or (status-buffer-p buffer)
                    (panel-buffer-p buffer)
-                   (equal "nyxt" (quri:uri-scheme (url buffer))))
+                   (internal-url-p (url buffer)))
                (let* ((schemeless-url (schemeless-url url))
                       (code-raw (quri:url-decode schemeless-url :lenient t))
                       (code (subseq code-raw 0 (1- (length code-raw)))))

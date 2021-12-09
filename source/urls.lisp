@@ -83,7 +83,7 @@ The domain name existence is verified only if CHECK-DNS-P is T. Domain
 name validation may take significant time since it looks up the DNS."
   ;; List of URI schemes: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
   ;; Last updated 2020-08-26.
-  (let* ((nyxt-schemes '("lisp" "javascript" "web-extension"))
+  (let* ((nyxt-schemes '("nyxt" "lisp" "web-extension" "javascript"))
          (iana-schemes
            '("aaa" "aaas" "about" "acap" "acct" "cap" "cid" "coap" "coap+tcp" "coap+ws"
              "coaps" "coaps+tcp" "coaps+ws" "crid" "data" "dav" "dict" "dns" "example" "file"
@@ -192,8 +192,8 @@ Authority is compared case-insensitively (RFC 3986)."
 (export-always 'nyxt-url)
 (-> nyxt-url (t &rest t &key &allow-other-keys) string)
 (defun nyxt-url (function-name &rest args &key &allow-other-keys)
-  "Generate an nyxt: URL from the given FUNCTION-NAME applied to ARGS This is
-useful for encoding functionality into internal-buffers.
+  "Generate a nyxt: URL from the given FUNCTION-NAME applied to ARGS.
+ This is useful to generate internal pages.
 
 ARGS is an arbitrary keyword (!) arguments list that will be translated to
 URL parameters.
@@ -230,9 +230,12 @@ Example:
                        params)))
         (error "There's no nyxt:~a page defined" (param-name function-name)))))
 
+(defun internal-url-p (url)
+  (string= "nyxt" (quri:uri-scheme (url url))))
+
 (export-always 'lisp-url)
 (-> lisp-url (t &rest t) string)
-(defun lisp-url  (lisp-form &rest more-lisp-forms)
+(defun lisp-url (lisp-form &rest more-lisp-forms)
   "Generate a lisp:// URL from the given Lisp FUNCTION-NAME and ARGS. This is useful for encoding
 functionality into internal-buffers."
   (the (values string &optional)
@@ -243,10 +246,10 @@ functionality into internal-buffers."
 (export-always 'parse-nyxt-url)
 (-> parse-nyxt-url ((or string quri:uri)) (values symbol list &optional))
 (defun parse-nyxt-url (url)
-  "Return (1) the name of the function and (2) the arguments to it, parsed from about: URL.
+  "Return (1) the name of the function and (2) the arguments to it, parsed from nyxt: URL.
 
-Errors if some of the params are not constants. Thanks to this,
-`parse-nyxt-url' can be repeatedly called on the same about: URL, with the
+Error out if some of the params are not constants. Thanks to this,
+`parse-nyxt-url' can be repeatedly called on the same nyxt: URL, with the
 guarantee of the same result."
   (let* ((url (url url))
          (path (str:split "/" (quri:uri-path url)))
