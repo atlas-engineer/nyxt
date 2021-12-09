@@ -103,10 +103,6 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
                       (|insertAdjacentHTML| "afterbegin"
                                             (ps:lisp style)))))))
 
-(defvar *nyxt-url-commands* (make-hash-table)
-  "A map from allowed nyxt: URLs symbols to the functions that generate code of
-  the pages related to these commands.")
-
 (defmacro define-internal-page-command (name (&rest arglist)
                                         (buffer-var title mode)
                                         &body body)
