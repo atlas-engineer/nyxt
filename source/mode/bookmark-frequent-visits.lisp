@@ -24,16 +24,13 @@
   "Check if current URL is frequently visited and not included in the
 bookmarks. If this is the case, prompt the user about bookmarking it."
   (labels ((bookmarked-url-p (url-address)
-             "The local function `bookmarked-url-p' returns the URL
-           address itself if it is new to the bookmark list or NIL if it is
-           already there."
+             "The local function `bookmarked-url-p' checks if the current URL is
+             already bookmarked or not."
              (let ((bookmark-url-strings
                      (mapcar #'(lambda (e) (render-url (url e)))
                              (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
                                bookmarks))))
-               (if (member url-address bookmark-url-strings :test #'string=)
-                   nil
-                   url-address))))
+               (find url-address bookmark-url-strings :test #'string=))))
     (sera:and-let* ((history-entries (with-data-unsafe (history (history-path (current-buffer)))
                                        (mapcar #'htree:data (alex:hash-table-keys (htree:entries history)))))
                     (current-url-history
@@ -43,7 +40,7 @@ bookmarks. If this is the case, prompt the user about bookmarking it."
                     (current-url-string
                      (render-url (url current-url-history))))
       (when (and (> implicit-visits-value threshold)
-                 (bookmarked-url-p current-url-string))
+                 (not (bookmarked-url-p current-url-string)))
         (if-confirm ("Bookmark ~a?" current-url-string)
                     (bookmark-url :url current-url-string))))))
 
