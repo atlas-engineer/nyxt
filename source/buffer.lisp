@@ -447,7 +447,12 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
       (|.button:active|
        :color theme:background)
       (a
-       :color theme:primary))))
+       :color theme:primary)
+      (pre
+       :color theme:text
+       :background-color theme:tertiary
+       :border-radius "2px"
+       :padding-bottom "10px"))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
