@@ -19,7 +19,9 @@
              :border "none"
              :outline "none"
              :padding "5px"
-             :autofocus "true")))
+             :autofocus "true"
+             :background-color theme:background
+             :color theme:text)))
    (constructor
     (lambda (mode)
       (initialize-display mode)))))
