@@ -460,6 +460,7 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
    (style (theme:themed-css (theme *browser*)
             (body
              :background-color theme:background
+             :color theme:text
              :margin "0"
              :padding "10px"
              :border-style "solid"
