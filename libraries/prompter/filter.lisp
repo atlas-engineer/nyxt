@@ -10,14 +10,13 @@ The norm is closer to 1 if
 - substrings length are closer to the length of STRING.
 
 Only substrings of SUBSTRING-LENGTH characters or more are considered."
+  ;; TODO: Remove duplicates in SUBSTRINGS?  Repeats could mean we insist more on it.
   (let ((position-factor 1.0)
         (length-factor 1.0)
-        (no-duplicate-long-substrs (delete-duplicates
-                                    (remove-if (lambda (s)
-                                                 (< (length s) substring-length))
-                                               substrings)
-                                    :test #'string-equal)))
-    (if no-duplicate-long-substrs
+        (long-substrings (remove-if (lambda (s)
+                                      (< (length s) substring-length))
+                                    substrings)))
+    (if long-substrings
         (/ (apply #'+
                   (mapcar (lambda (s)
                             (let ((position (search s string)))
@@ -32,13 +31,13 @@ Only substrings of SUBSTRING-LENGTH characters or more are considered."
                                            (/ (min (length s) (length string))
                                               (length string))))
                                      (+ position-factor length-factor)))))
-                          no-duplicate-long-substrs))
-           (length no-duplicate-long-substrs))
+                          long-substrings))
+           (length long-substrings))
         0)))
 
 (defun score-suggestion-string (input suggestion-string)
   "Return a SUGGESTION's score for INPUT.
-A higher score means the suggestion-string comes first."
+A higher score means the SUGGESTION-STRING comes first."
   ;; The Jaccard metric seems to provide much better results than, say,
   ;; Damerau-Levensthein but it's much slower.
   ;; TODO: Check out fzf for a possibly good scoring algorithm.
