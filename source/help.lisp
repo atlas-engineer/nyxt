@@ -104,15 +104,15 @@
       (:p (:raw (value->html (symbol-value variable) :help-mode help-mode))))))
 
 (define-internal-page-command describe-function
-    (&key (function (first (prompt
-                            :prompt "Describe function"
-                            :sources (make-instance 'function-source)))))
-    (buffer (str:concat "*Help-" (symbol-name function) "*")
-            'nyxt/help-mode:help-mode)
+  (&key (function (first (prompt
+                          :prompt "Describe function"
+                          :sources (make-instance 'function-source)))))
+  (buffer (str:concat "*Help-" (symbol-name function) "*")
+          'nyxt/help-mode:help-mode)
   "Inspect a function and show it in a help buffer.
 For generic functions, describe all the methods."
-  (if function-suggestion
-      (let ((input function-suggestion))
+  (if function
+      (let ((input function))
         (flet ((method-desc (method)
                  (spinneret:with-html-string
                    (:h1 (symbol-name input) " " (write-to-string (mopu:method-specializers method)))
