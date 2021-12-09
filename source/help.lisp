@@ -663,6 +663,8 @@ System information is also saved into the clipboard."
                               :margin-bottom 0)
                              ("#title"
                               :font-size "400%")
+                             ("#subtitle"
+                              :color theme:tertiary)
                              (.section
                               :border-style "solid none none none"
                               :border-color theme:secondary
@@ -679,23 +681,22 @@ System information is also saved into the clipboard."
                               :list-style-type "circle"))))
       (with-current-html-buffer (buffer "*Dashboard*" 'base-mode)
         (spinneret:with-html-string
-         (:style (style buffer))
-         (:style dashboard-style)
-         (:div :id "container"
-               (:div
-                     ;; FIXME: Use theme instead of inline style.
-                     (:h1 :id "title" "Nyxt " (:span :style "color: lightgray" "browser ☺"))
-                     (:h3 (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+))
-                     (:a :class "button" :href (lisp-url `(nyxt::restore-history-by-name)) "🗁 Restore Session")
-                     (:a :class "button" :href (lisp-url `(nyxt::manual)) "🕮 Manual")
-                     (:a :class "button" :href (lisp-url `(nyxt::execute-command)) "≡ Execute Command")
-                     (:a :class "button" :href "https://nyxt.atlas.engineer/download" "⇡ Update"))
-               (:div :class "section" :style "flex: 3"
-                     (:h3 (:b "Bookmarks"))
-                     (:ul (:raw (list-bookmarks))))
-               (:div :class "section" :style "flex: 5"
-                     (:h3 (:b "Recent URLs"))
-                     (:ul (:raw (history-html-list))))))))))
+          (:style (style buffer))
+          (:style dashboard-style)
+          (:div :id "container"
+                (:div
+                 (:h1 :id "title" "Nyxt " (:span :id "subtitle" "browser ☺"))
+                 (:h3 (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+))
+                 (:a :class "button" :href (lisp-url `(nyxt::restore-history-by-name)) "🗁 Restore Session")
+                 (:a :class "button" :href (lisp-url `(nyxt::manual)) "🕮 Manual")
+                 (:a :class "button" :href (lisp-url `(nyxt::execute-command)) "≡ Execute Command")
+                 (:a :class "button" :href "https://nyxt.atlas.engineer/download" "⇡ Update"))
+                (:div :class "section" :style "flex: 3"
+                      (:h3 (:b "Bookmarks"))
+                      (:ul (:raw (list-bookmarks))))
+                (:div :class "section" :style "flex: 5"
+                      (:h3 (:b "Recent URLs"))
+                      (:ul (:raw (history-html-list))))))))))
 
 (defun dump-command-descriptions (file)
   "Dump the command descriptions as an HTML file."
