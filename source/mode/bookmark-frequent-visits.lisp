@@ -15,7 +15,7 @@
 
 (define-mode bookmark-frequent-visits-mode ()
   "Mode to bookmark frequently visited URLs while navigating the web."
-  ((threshold 3)
+  ((threshold 20)
    (constructor
     (lambda (mode)
       (nyxt:on-signal-load-finished mode (url (current-buffer)))))))
