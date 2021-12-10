@@ -40,7 +40,7 @@
       ("lastAccessed" . ,(* 1000 (local-time:timestamp-to-unix (nyxt::last-access buffer))))
       ("selected" . ,(eq buffer (nyxt::active-buffer (current-window))))
       ("status" . ,(if (web-buffer-p buffer)
-                       (case (slot-value buffer 'nyxt::load-status)
+                       (case (slot-value buffer 'nyxt::status)
                          ((:finished :failed) "complete")
                          ((:unloaded :loading) "loading"))
                        "complete"))
@@ -143,7 +143,7 @@ the description of the mechanism that sends the results back."
                   (echo-warning "Message error: ~a" condition)
                   ;; Notify the listener that we are done.
                   (calispel:! channel nil)))))
-        (if (not (member (slot-value buffer 'nyxt::load-status) '(:finished :failed)))
+        (if (not (member (slot-value buffer 'nyxt::status) '(:finished :failed)))
             (let ((channel (nyxt::make-channel 1)))
               (hooks:add-hook (buffer-loaded-hook buffer)
                               (nyxt::make-handler-buffer
