@@ -1070,7 +1070,8 @@ See `gtk-browser's `modifier-translator' slot."
                     ;;
                     ;; TODO: Use cl-webkit provided error types. How
                     ;; do we use it, actually?
-                    (= 204 (webkit::g-error-code error)))
+                    (= 204 (webkit::g-error-code error))
+                    (= 302 (webkit::g-error-code error)))
           (echo "Failed to load URL ~a in buffer ~a." failing-url (id buffer))
           (setf (slot-value buffer 'status) :failed)
           (html-set
