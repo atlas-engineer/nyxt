@@ -6,10 +6,10 @@
 (defun substring-norm (substrings string &key (substring-length 2))
   "Return the norm of SUBSTRINGS with regard to STRING.
 The norm is closer to 1 if
-- substrings start near the beginning of STRING;
-- substrings length are closer to the length of STRING.
+- SUBSTRINGS start near the beginning of STRING;
+- SUBSTRINGS length are closer to the length of STRING.
 
-Only substrings of SUBSTRING-LENGTH characters or more are considered."
+Only SUBSTRINGS of SUBSTRING-LENGTH characters or more are considered."
   ;; TODO: Remove duplicates in SUBSTRINGS?  Repeats could mean we insist more on it.
   (let ((position-factor 1.0)
         (length-factor 1.0)
@@ -38,14 +38,14 @@ Only substrings of SUBSTRING-LENGTH characters or more are considered."
 
 (defun score-suggestion-string (input suggestion-string)
   "Return a SUGGESTION's score for INPUT.
-A higher score means the suggestion-string comes first."
+A higher score means the SUGGESTION-STRING comes first."
   ;; The Jaccard metric seems to provide much better results than, say,
   ;; Damerau-Levensthein but it's much slower.
   ;; TODO: Check out fzf for a possibly good scoring algorithm.
   (+ (* 1.0 (mk-string-metrics:norm-damerau-levenshtein suggestion-string input))
      (* 1.0 (substring-norm (str:split " " input) suggestion-string))))
 
-(defvar score-threshold 0.0             ; TODO: Learn good value and enable low-score filtering.
+(defvar score-threshold 0.0 ; TODO: Learn good value and enable low-score filtering.
   "The threshold under which suggestions are eleminated.")
 
 (export-always 'score>)
