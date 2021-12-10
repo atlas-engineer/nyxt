@@ -263,7 +263,8 @@ WebKit browsing engine.")
        ("cl-gobject-introspection" ,cl-gobject-introspection)
        ("gtk" ,gtk+)                    ; For the main loop.
        ("webkitgtk" ,webkitgtk)         ; Required when we use its typelib.
-       ("gobject-introspection" ,gobject-introspection)))
+       ("gobject-introspection" ,gobject-introspection)
+       ("pkg-config" ,pkg-config)))
     (synopsis "Extensible web-browser in Common Lisp")
     (home-page "https://nyxt.atlas.engineer")
     (description "Nyxt is a keyboard-oriented, extensible web-browser
