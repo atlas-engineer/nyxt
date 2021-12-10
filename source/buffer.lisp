@@ -754,7 +754,7 @@ BUFFER's modes."
 (defmethod prompter:object-attributes ((buffer web-buffer))
   `(("URL" ,(render-url (url buffer)))
     ("Title" ,(title buffer))
-    ("Keywords" ,(format nil "~:{~a~^ ~}" (keywords buffer)))))
+    ("Keywords" ,(lambda (buffer) (format nil "~:{~a~^ ~}" (keywords buffer))))))
 
 (-> make-buffer
     (&key (:title string)
