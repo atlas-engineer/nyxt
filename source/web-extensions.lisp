@@ -60,7 +60,7 @@ A list of objects. Does not necessarily have the same order as `files' of the sc
                                      :allow-list (match-patterns script))
          (user-scripts script)))))
 
-(defun make-content-script (&key (matches (error "Matches key is mandatory.")) js css)
+(defun make-content-script (json)
   "Create a Lisp-friendly content script representation of our WebExtension keys.
 
 MATCHES, JS, and CSS are all keys of the \"content_scripts\" manifest.json keys:
@@ -70,8 +70,8 @@ https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_s
                                                                   "<all_urls>" "*://*/*"))))
     (make-instance
      'content-script
-     :match-pattern (mapcar sanitize-mozilla-regex (uiop:ensure-list matches))
-     :files (append (uiop:ensure-list js) (uiop:ensure-list css)))))
+     :match-patterns (mapcar sanitize-mozilla-regex (uiop:ensure-list (gethash "matches" json)))
+     :files (append (uiop:ensure-list (gethash "js" json)) (uiop:ensure-list (gethash "css" json))))))
 
 
 (defun make-data-url (file &optional mime-type)
@@ -91,18 +91,22 @@ Can have:
   "Find the best browser action icon using OPTIMAL-HEIGHT of `status-buffer'.
 
 JSON is the parsed extension manifest."
-  (sera:and-let* ((browser-action (gethash "browser_action" json))
-                  (default-icon (gethash "default_icon" browser-action)))
-    (if (stringp default-icon)
-        default-icon
-        (rest (first (sort (append (and (gethash "default_icon" browser-action)
-                                        (alex:hash-table-alist (gethash "default_icon" browser-action)))
-                                   (and (gethash "icons" json)
-                                        (alex:hash-table-alist (gethash "icons" json))))
-                           (lambda (a b)
-                             (> (abs (- optimal-height a))
-                                (abs (- optimal-height b))))
-                           :key (alex:compose #'parse-integer #'symbol-name #'first)))))))
+  (handler-case
+      (sera:and-let* ((browser-action (gethash "browser_action" json))
+                      (default-icon (gethash "default_icon" browser-action)))
+        (if (stringp default-icon)
+            default-icon
+            (rest (first (sort (append (and (gethash "default_icon" browser-action)
+                                            (alex:hash-table-alist (gethash "default_icon" browser-action)))
+                                       (and (gethash "icons" json)
+                                            (alex:hash-table-alist (gethash "icons" json))))
+                               (lambda (a b)
+                                 (> (abs (- optimal-height a))
+                                    (abs (- optimal-height b))))
+                               :key (alex:compose #'parse-integer #'symbol-name #'first))))))
+    (error ()
+      (cdr (first (and (gethash "icons" json)
+                       (alex:hash-table-alist (gethash "icons" json))))))))
 
 (defun encode-browser-action-icon (json extension-directory)
   "Return the proper <img> HTML with the embedded browser action icon.
@@ -139,10 +143,12 @@ https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.
                    :default-title (when browser-action
                                     (gethash "default_title" browser-action))
                    :default-icon default-icon
-                   :default-dark-icon (or (gethash "dark" max-icon)
-                                          (gethash "light" max-icon))
-                   :default-light-icon (or (gethash "light" max-icon)
-                                           (gethash "dark" max-icon)))))
+                   :default-dark-icon (when (hash-table-p max-icon)
+                                        (or (gethash "dark" max-icon)
+                                            (gethash "light" max-icon)))
+                   :default-light-icon (when (hash-table-p max-icon)
+                                         (or (gethash "light" max-icon)
+                                             (gethash "dark" max-icon))))))
 
 (define-class browser-action ()
   ((default-popup nil
@@ -373,9 +379,7 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
           (homepage-url ,(gethash "homepage_url" json))
           (browser-action ,(make-browser-action json))
           (permissions (quote ,(gethash "permissions" json)))
-          (content-scripts (list ,@(mapcar (lambda (content-script-hash)
-                                             (apply #'make-content-script
-                                                    (alex:hash-table-plist content-script-hash)))
+          (content-scripts (list ,@(mapcar #'make-content-script
                                            (gethash "content_scripts" json))))))
        (defmethod initialize-instance :after ((extension ,lispy-name) &key)
          ;; This is to simulate the browser action on-click-popup behavior.
