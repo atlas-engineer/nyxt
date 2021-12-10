@@ -436,4 +436,42 @@
                   "100 foo"))
       (prompter:all-ready-p prompter))))
 
+(class-star:define-class buffer ()
+  ((title "")
+   (keywords '("foo" "bar")))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(defmethod prompter:object-attributes ((buffer buffer))
+  `(("Title" ,(title buffer))
+    ("Keywords" ,(lambda (buffer) (sleep 1) (write-to-string (keywords buffer))))))
+
+(prove:subtest "Async-attribute computation"
+  (with-report-dangling-threads
+      (let* ((buffer1 (make-instance 'buffer :title "buffer1" :keywords '("foo1" "bar1")))
+             (buffer2 (make-instance 'buffer :title "buffer2" :keywords '("foo2" "bar2")))
+             (prompter (prompter:make
+                        :sources (list (make-instance 'prompter:source
+                                                      :name "Test source"
+                                                      :constructor (list buffer1 buffer2)
+                                                      :active-attributes-keys '("Title"))))))
+        (prove:is (prompter:active-attributes
+                   (prompter:selected-suggestion prompter)
+                   :source (prompter:selected-source prompter))
+                  `(("Title" ,(title buffer1))))
+        (setf (prompter:active-attributes-keys (prompter:selected-source prompter))
+                  '("Title" "Keywords"))
+
+        (prove:is (first (alex:assoc-value (prompter:active-attributes
+                                            (prompter:selected-suggestion prompter)
+                                            :source (prompter:selected-source prompter))
+                                           "Keywords" :test 'equal))
+                  "")
+        (sleep 2)
+
+        (prove:is (prompter:active-attributes
+                   (prompter:selected-suggestion prompter)
+                   :source (prompter:selected-source prompter))
+                  `(("Title" ,(title buffer1))
+                    ("Keywords" ,(write-to-string (keywords buffer1))))))))
+
 (prove:finalize)

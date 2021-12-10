@@ -171,7 +171,7 @@ compution is not finished.")))
   text)
 
 (export-always 'destroy)
-(defun destroy (prompter)
+(defmethod destroy ((prompter prompter))
   "First call `before-destructor', then call all the source destructors, finally call
 `after-destructor'.
 Signal destruction by sending a value to PROMPTER's `interrupt-channel'."
