@@ -1062,7 +1062,7 @@ See `gtk-browser's `modifier-translator' slot."
     ;; ignore these.
     (if (loading-webkit-history-p buffer)
         (setf (loading-webkit-history-p buffer) nil)
-        (unless (or (member (slot-value buffer 'load-status) '(:finished :failed))
+        (unless (or (member (slot-value buffer 'status) '(:finished :failed))
                     ;; WebKitGTK emits the WEBKIT_PLUGIN_ERROR_WILL_HANDLE_LOAD
                     ;; (204) if the plugin will handle loading content of the
                     ;; URL. This often happens with videos. The only thing we
