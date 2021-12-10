@@ -1287,7 +1287,7 @@ requested a reload."
     (webkit:webkit-user-content-manager-add-script
      content-manager script)
     (when (and run-now-p
-               (member (slot-value buffer 'load-status)
+               (member (slot-value buffer 'status)
                        '(:finished :failed)))
       (reload-buffers (list buffer)))
     script))
@@ -1620,16 +1620,3 @@ As a second value, return the current buffer index starting from 0."
        (webkit:webkit-web-view-execute-editing-command
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-redo+)))
    (lambda (e) (echo-warning "Cannot redo: ~a" e))))
-
-(define-ffi-method ffi-extension-make-background-view ((extension nyxt/web-extensions:extension) &optional url)
-  (unless (nyxt/web-extensions::background-view extension)
-    (let ((view (make-web-view :context-buffer (current-buffer))))
-      (webkit:webkit-web-view-load-uri view (if url
-                                                (render-url (url url))
-                                                "about:blank"))
-      (setf (nyxt/web-extensions::background-view extension) view)
-      (connect-signal view "user-message-received" (web-view message)
-        (process-user-message web-view message)))))
-
-(define-ffi-method ffi-extension-delete-background-view ((extension nyxt/web-extensions:extension))
-    (gtk:gtk-widget-destroy (nyxt/web-extensions:background-view extension)))
