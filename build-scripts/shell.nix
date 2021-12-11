@@ -20,6 +20,7 @@ stdenv.mkDerivation {
 
   buildInputs = [
     pkgs.gobjectIntrospection
+    pkgs.pkg-config
     pkgs.enchant.out
     pkgs.gsettings-desktop-schemas.out
     pkgs.glib-networking.out
@@ -41,6 +42,7 @@ stdenv.mkDerivation {
 
   propogatedBuildInputs = [
     pkgs.enchant.out
+    pkgs.pkg-config.out
     pkgs.gsettings-desktop-schemas.out
     pkgs.glib-networking.out
     pkgs.pango.out
@@ -57,6 +59,7 @@ stdenv.mkDerivation {
                                                           pkgs.glib-networking.out
                                                           pkgs.webkitgtk
                                                           pkgs.gobjectIntrospection
+                                                          pkgs.pkg-config.out
                                                           pkgs.gtk3
                                                           pkgs.pango.out
                                                           pkgs.cairo.out
