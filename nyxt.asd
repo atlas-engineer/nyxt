@@ -611,6 +611,7 @@ See `asdf::*immutable-systems*'."
 
 (defsystem "nyxt/web-extensions"
   :pathname "libraries/web-extensions/"
+  :depends-on (:cffi-toolchain)
   :components ((:static-file "alarms.c")
                (:static-file "bookmarks.c")
                (:static-file "browser.c")
@@ -634,8 +635,8 @@ See `asdf::*immutable-systems*'."
                                     t))
   :perform (compile-op
             (o c)
-            (let ((c-compiler (or (uiop:getenv "CC")
-                                  "gcc"))
+            (let ((c-compiler (symbol-value
+                               (uiop:find-symbol* :*cc* :cffi-toolchain)))
                   (c-flags (uiop:split-string
                             (uiop:run-program
                              '("pkg-config" "gobject-2.0" "webkit2gtk-web-extension-4.0" "--cflags")
