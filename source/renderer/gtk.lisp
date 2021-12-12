@@ -795,7 +795,7 @@ See `gtk-browser's `modifier-translator' slot."
                    (log:debug "Forward to ~s's renderer (unchanged URL)."
                               buffer)
                    (webkit:webkit-policy-decision-use response-policy-decision))
-                  ((nyxt/auto-mode::new-page-request-p request-data)
+                  ((quri:uri= (quri:uri (webkit:webkit-uri-request-uri request)) url)
                    ;; Low-level URL string, we must not render the puni codes so use
                    ;; `quri:render-uri'.
                    (setf (webkit:webkit-uri-request-uri request) (quri:render-uri (url request-data)))
