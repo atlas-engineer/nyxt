@@ -1370,7 +1370,9 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
                                  ;; Some engines (I'm looking at you, Wikipedia!)
                                  ;; return garbage in response to an empty request.
                                  (when (and engine-completion-p
-                                            (completion-function engine) (rest terms))
+                                            (search-auto-complete-p (current-buffer))
+                                            (completion-function engine)
+                                            (rest terms))
                                    (mapcar (alex:rcurry #'make-completion-query
                                                         :engine      engine
                                                         :check-dns-p check-dns-p)
@@ -1380,7 +1382,8 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
                               engines)
                 (sera:and-let* ((completion engine-completion-p)
                                 (buffer (current-buffer))
-                                (always (search-always-auto-complete-p buffer))
+                                (complete (search-auto-complete-p buffer))
+                                (always-complete (search-always-auto-complete-p buffer))
                                 (engine (default-search-engine))
                                 (completion (completion-function engine))
                                 (all-terms (str:join " " terms)))
