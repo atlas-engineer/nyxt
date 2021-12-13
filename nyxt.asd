@@ -154,6 +154,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                (:file "mode/no-image")
                (:file "mode/no-sound")
                (:file "mode/no-script")
+               (:file "mode/no-search-completion")
                (:file "mode/no-webgl")
                (:file "mode/reduce-bandwidth")
                (:file "mode/download")
