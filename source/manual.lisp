@@ -33,7 +33,20 @@ existing object instances.")
 similar programming language.")
      (:p "The user needs to manually create the Nyxt configuration file "
          (:code (expand-path *init-file-path*))
-         ", and the parent folders if necessary.")
+         ", and the parent folders if necessary. You can also press the button
+below to create said file, if it's not created yet.")
+     (let ((init-file-path (expand-path *init-file-path*)))
+       (if (uiop:file-exists-p init-file-path)
+           (:a :class "button" :onclick (echo "Init file exists") "Init file exists")
+           (:a :class "button"
+               :onclick (progn
+                          (with-open-file (_ init-file-path
+                                             :direction :output
+                                             :if-does-not-exist :create)
+                            (echo "Init file created at ~a."
+                                  init-file-path)))
+               "Create init file")))
+     ;; (:a :class "button" :href (lisp-url `(nyxt::describe-bindings)) "List bindings")
      (:p "Example:")
      (:pre (:code "
 \(define-configuration buffer
