@@ -134,6 +134,7 @@ run the following:
 - libfixposix
 - xclip (for clipboard support)
 - enchant (for spellchecking)
+- pkg-config (for web-extensions)
 
 - Debian-based distributions:
   #+begin_src sh
@@ -234,6 +235,7 @@ details about how to install it on your system.
 - libfixposix
 - xclip (for clipboard support)
 - enchant (for spellchecking)
+- pkg-config (for web-extensions)
 
 *** macOS dependencies
 
