@@ -31,9 +31,24 @@ existing object instances.")
         (:code (expand-path *init-file-path*)) ".")
     (:p "The following section assumes knowledge of basic Common Lisp or a
 similar programming language.")
-    (:p "Nyxt configuration can be persisted in the user
-file " (:code (expand-path *init-file-path*)) " (create the parent folders if
-necessary).")
+    (:p "The user needs to manually create the Nyxt configuration file "
+         (:code (expand-path *init-file-path*))
+         ", and the parent folders if necessary. You can also press the button
+below to create said file, if it's not created yet.")
+     (let ((init-file-path (expand-path *init-file-path*)))
+       (ensure-directories-exist init-file-path)
+       (:p (if (uiop:file-exists-p init-file-path)
+               (:a :class "button"
+                   :href (lisp-url `(echo "Init file exists"))
+                   "Init file exists")
+               (:a :class "button"
+                   :href (lisp-url `(with-open-file (_ ,init-file-path
+                                                       :direction :output
+                                                       :if-exists nil
+                                                       :if-does-not-exist :create)
+                                      (echo "Init file created at ~a."
+                                            ,init-file-path)))
+                   "Create init file"))))
     (:p "Example:")
     (:pre (:code "
 \(define-configuration buffer
