@@ -34,7 +34,7 @@
                    preserve-vars))))
 
 (defun nyxt--guix-preserve-vars (&rest preserve-vars)
-  "Return the arguments to pass to `guix environment' to preserve PRESERVE-VARS."
+  "Return the arguments to pass to `guix shell' to preserve PRESERVE-VARS."
   (mapcar (lambda (var) (format "--preserve=^%s$" var))
           preserve-vars))
 
@@ -53,7 +53,7 @@
 (defvar nyxt-guix-profile-directory "~/.guix-temp-profiles/nyxt"
   "Default directory where to dump auto-generated Guix profiles for Nyxt development.")
 
-(cl-defun nyxt-guix-lazy-environment-command (root &key
+(cl-defun nyxt-guix-lazy-shell-command (root &key
                                                    ;; expression
                                                    load
                                                    ;; manifest
@@ -66,18 +66,18 @@
                                                    no-grafts
                                                    extra-args
                                                    command-args)
-  "Return the command to load a Guix environment, persisted at ROOT.
-If the ROOT environment already exists, don't regenerate it.
+  "Return the command to load a Guix shell, persisted at ROOT.
+If the ROOT shell already exists, don't regenerate it.
 
-If CONTAINER is non nil, the environment is containerized,
+If CONTAINER is non nil, the shell is containerized,
 otherwise it's pure (that is, it does not inherit from the
 current environment variables.)
 
 PRESERVE is a list of environment variables (list of strings) to preserve.
 
-EXTRA-ARGS is passed to `guix environment', before \"--\".
+EXTRA-ARGS is passed to `guix shell', before \"--\".
 
-COMMAND-ARGS as passed after EXTRA-ARGS and \"--\", or, if the environment
+COMMAND-ARGS as passed after EXTRA-ARGS and \"--\", or, if the shell
 already exists and CONTAINER is nil, after sourcing \"etc/profile\"."
   (let ((root-env (concat root "/etc/profile")))
     (if (and (not container)
@@ -89,7 +89,7 @@ already exists and CONTAINER is nil, after sourcing \"etc/profile\"."
                (format "source %s && %s" (shell-quote-argument root-env)
                        (mapconcat #'shell-quote-argument command-args " "))))
       (append
-       '("guix" "environment")
+       '("guix" "shell")
        `(,@(when no-grafts '("--no-grafts"))
          ,@(if container
                `("--container"
@@ -100,9 +100,9 @@ already exists and CONTAINER is nil, after sourcing \"etc/profile\"."
          ,@(if (file-exists-p root-env)
                `("-p" ,root)
              `("-r" ,root
-               ,@(when load `(,(concat "--load=" load)))))
+               ,@(when load `("-D" ,(concat "--file=" load)))))
          ,@(when ad-hoc
-             `("--ad-hoc" ,@ad-hoc))
+             `(,@ad-hoc))
 
          ,@(apply #'nyxt--guix-preserve-vars preserve)
          ,@extra-args
@@ -150,7 +150,7 @@ implementation.  Example:
         (guix-def (concat nyxt-checkout "/build-scripts/nyxt.scm")))
     (setenv "CL_SOURCE_REGISTRY" cl-source-registry)
     (cl-flet ((guix-environment (&rest command-args)
-                                (nyxt-guix-lazy-environment-command
+                                (nyxt-guix-lazy-shell-command
                                  root
                                  :load guix-def
                                  :ad-hoc (cons "lisp-repl-core-dumper" ad-hoc)
