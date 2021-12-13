@@ -189,6 +189,7 @@ these fixes.
 - WebKitGTK+
 - XQuartz
 - libfixposix
+- pkg-config
 
 Notes:
 
@@ -239,6 +240,7 @@ details about how to install it on your system.
 - Qt 5.14.0+
 - Qt WebEngine
 - libfixposix
+- pkg-config
 
 ** Fetch the source code
 
