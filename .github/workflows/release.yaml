@@ -58,7 +58,8 @@ jobs:
     - name: Ensure no locale warning
       run: test -z "$(guix --version 2>&1 >/dev/null)"
     - name: Build Guix package
-      run: guix environment --container --user=dummy-user --load=build-scripts/nyxt.scm --ad-hoc guix -- make all NYXT_SUBMODULES=false
+      run: |
+          guix shell --container -D -f build-scripts/nyxt.scm --user=dummy-user --ad-hoc guix -- make all NYXT_SUBMODULES=false
 
     - name: Set version environment variable
       shell: bash
