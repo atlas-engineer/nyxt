@@ -86,7 +86,8 @@ The handlers take the window as argument."))
 (defmethod window-add-panel-buffer ((window window) (buffer panel-buffer) side)
   "Add a panel buffer to a window. Side can either be :right or :left."
   (pushnew buffer (panel-buffers window))
-  (ffi-window-add-panel-buffer window buffer side))
+  (ffi-window-add-panel-buffer window buffer side)
+  buffer)
 
 (defmethod window-delete-panel-buffer ((window window) (buffer panel-buffer))
   "Remove a panel buffer from a window."
@@ -110,26 +111,56 @@ The handlers take the window as argument."))
                                              :window window)))))
     (mapc (lambda (i) (window-delete-panel-buffer window i)) panels)))
 
-(defmacro define-panel (name (buffer-variable) &body body)
-  (let ((panel-name (format nil "*~a Panel*" name))
-        (docstring-show (format nil "Show ~a panel." name))
-        (docstring-toggle (format nil "Toggle ~a panel." name))
-        (name-show (intern (format nil "~:@(show-~a-panel~)" name)))
-        (name-toggle (intern (format nil "~:@(toggle-~a-panel~)" name))))
-    `(progn
-       (define-command-global ,name-show (&key (side :left))
-         ,docstring-show
-         (with-current-panel (,buffer-variable ,panel-name :side side)
-           ,@body))
-       (define-command-global ,name-toggle (&key (side :left))
-         ,docstring-toggle
-         (let* ((window (current-window))
-                (panel (find ,panel-name (panel-buffers window)
-                             :key #'title
-                             :test #'equal)))
-           (if panel
-               (window-delete-panel-buffer window panel)
-               (,name-show :side side)))))))
+(defmacro define-panel (name (&rest arglist)
+                        (buffer-var title &optional (side :left))
+                        &body body)
+  "Define a panel buffer and:
+- A command called NAME-panel creating this panel-buffer or closing it if it's shown already.
+- A nyxt:NAME-panel URL for the content of this panel buffer.
+
+Should end with a form returning HTML as a string.
+
+BUFFER-VAR is the variable the created panel will be bound to in the BODY. SIDE
+is either :LEFT (default) or :RIGHT.
+
+ARGLIST is arguments for the command and for the underlying page-generating
+function. Any argument from it is safe to use in the body of this macro.
+Beware: the ARGLIST should have nothing but keyword arguments because it's
+mapped to query parameters."
+  (let ((args (alex:mappend #'first (nth-value 3 (alex:parse-ordinary-lambda-list arglist))))
+        (name-panel (intern (format nil "~:@(~a-panel~)" (symbol-name name)) :nyxt)))
+    (multiple-value-bind (body declarations documentation)
+        (alex:parse-body body :documentation t)
+      `(progn
+         (setf (gethash (quote ,name-panel) *nyxt-url-commands*)
+               (lambda (,@arglist)
+                 ,@(when documentation (list documentation))
+                 ,@declarations
+                 ;; We need to ignore those to avoid warnings, as the same arglist
+                 ;; is used in both internal function and a command.
+                 (declare (ignorable ,@(loop for arg in (rest args) by #'cddr
+                                             collect arg)))
+                 (let* ((url (quri:uri (nyxt-url (quote ,name-panel) ,@args)))
+                        (,buffer-var (or (find url (panel-buffers (current-window))
+                                               :key #'url :test #'quri:uri=)
+                                         (first (panel-buffers (current-window))))))
+                   ;; We need to ignore those to avoid warnings, as the same arglist
+                   ;; is used in both internal function and a command.
+                   (declare (ignorable ,buffer-var url))
+                   ,@body)))
+         (define-command-global ,name-panel (,@arglist)
+           ,@(when documentation (list documentation))
+           (let* ((url (quri:uri (nyxt-url (quote ,name-panel) ,@args)))
+                  (,buffer-var (find url (panel-buffers (current-window))
+                                     :test #'quri:uri= :key #'url)))
+             (if ,buffer-var
+                 (window-delete-panel-buffer (current-window) ,buffer-var)
+                 (let ((,buffer-var (make-instance 'user-panel-buffer
+                                                   :title ,title
+                                                   :url url)))
+                   (buffer-load url :buffer ,buffer-var)
+                   (window-add-panel-buffer (current-window) ,buffer-var ,side)))
+             ,buffer-var))))))
 
 (defmethod (setf active-buffer) (buffer (window window))
   (setf (slot-value window 'active-buffer) buffer)

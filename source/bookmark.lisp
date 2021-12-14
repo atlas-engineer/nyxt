@@ -144,7 +144,9 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                       (:hr "")))))
            (format nil "No bookmarks in ~s." (expand-path (bookmarks-path (current-buffer)))))))))
 
-(define-panel bookmarks (panel-buffer)
+(define-panel bookmarks ()
+    (panel-buffer "*Bookmarks panel*")
+  "Shows all the bookmarks in a compact panel-buffer layout."
   (spinneret:with-html-string
     (:style (style panel-buffer))
     (:style (cl-css:css
@@ -161,10 +163,10 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
      (or (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
            (loop for bookmark in bookmarks
                  collect
-                    (let ((url-href (render-url (url bookmark))))
-                      (:div
-                       (:p (title bookmark))
-                       (:p (:a :href url-href url-href))))))
+                 (let ((url-href (render-url (url bookmark))))
+                   (:div
+                    (:p (title bookmark))
+                    (:p (:a :href url-href url-href))))))
          (format nil "No bookmarks in ~s." (expand-path (bookmarks-path (current-buffer))))))))
 
 (export-always 'url-bookmark-tags)
