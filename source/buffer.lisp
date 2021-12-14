@@ -1230,12 +1230,6 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
       ;; partly duplicates the code in `preprocess-request'.  Can we factor this
       ;; out?
       (cond
-        ((and (internal-buffer-p buffer) (equal "lisp" (quri:uri-scheme url)))
-         (let ((code (quri:url-decode (schemeless-url url) :lenient t)))
-           (log:debug "Evaluate Lisp code from internal buffer: ~a" code)
-           (evaluate-async code)))
-        ((internal-buffer-p buffer)
-         (make-buffer-focus :url url))
         ((equal "javascript" (quri:uri-scheme url))
          (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url))))
         (t (ffi-buffer-load buffer url))))))
