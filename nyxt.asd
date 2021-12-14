@@ -637,16 +637,20 @@ See `asdf::*immutable-systems*'."
             (o c)
             (let ((c-compiler (symbol-value
                                (uiop:find-symbol* :*cc* :cffi-toolchain)))
-                  (c-flags (uiop:split-string
-                            (uiop:run-program
-                             '("pkg-config" "gobject-2.0" "webkit2gtk-web-extension-4.0" "--cflags")
-                             :output '(:string :stripped t)
-                             :error-output :output)))
-                  (ld-flags (uiop:split-string
+                  (c-flags (remove-if
+                            #'uiop:emptyp
+                            (uiop:split-string
                              (uiop:run-program
-                              '("pkg-config" "gobject-2.0" "webkit2gtk-web-extension-4.0" "--libs")
+                              '("pkg-config" "gobject-2.0" "webkit2gtk-web-extension-4.0" "--cflags")
                               :output '(:string :stripped t)
                               :error-output :output))))
+                  (ld-flags (remove-if
+                             #'uiop:emptyp
+                             (uiop:split-string
+                              (uiop:run-program
+                               '("pkg-config" "gobject-2.0" "webkit2gtk-web-extension-4.0" "--libs")
+                               :output '(:string :stripped t)
+                               :error-output :output)))))
               (uiop:with-current-directory ((component-pathname c))
                 (mapc (lambda (c-component)
                         ;; TODO: Allow compiler customization?
