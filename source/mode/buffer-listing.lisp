@@ -91,26 +91,35 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                  (unless (nyxt::buffer-parent buffer)
                    (buffer-tree->html buffer)))))))))
 
-(nyxt::define-panel buffers (panel-buffer)
+(nyxt::define-panel buffers ()
+    (panel-buffer "*Buffers panel*")
+  "Display a list of buffers with easy switching."
   (flet ((buffer-markup (buffer)
            "Create the presentation for a buffer."
            (spinneret:with-html
              (:p (:button :class "button"
                           :onclick (ps:ps (nyxt/ps:send-lisp-url
                                            `(nyxt::switch-buffer :id ,(id buffer))))
-                     (:span :title (title buffer) :class "title" (title buffer)))))))
+                          (:span :title (title buffer) :class "title" (title buffer)))))))
     (spinneret:with-html-string (:style (style panel-buffer))
-                                (:style (cl-css:css
-                                         '((".button"
-                                            :white-space "nowrap"
-                                            :overflow-x "hidden"
-                                            :display "block"
-                                            :text-overflow "ellipsis"))))
-                                (:body
-                                 (:h1 "Buffers")
-                                 (:button :class "button"
-                                          :onclick (ps:ps (nyxt/ps:send-lisp-url
-                                                           '(nyxt/buffer-listing-mode::|SHOW-BUFFERS-PANEL|)))
-                                          "Update ↺")
-                                 (loop for buffer in (buffer-list)
-                                       collect (buffer-markup buffer))))))
+      (:style (cl-css:css
+               '((".button"
+                  :white-space "nowrap"
+                  :overflow-x "hidden"
+                  :display "block"
+                  :text-overflow "ellipsis"))))
+      (:body
+       (:h1 "Buffers")
+       (:button :class "button"
+                :onclick (ps:ps (nyxt/ps:send-lisp-url
+                                 `(reload-buffers
+                                   (list
+                                    (find
+                                     ,(render-url (url panel-buffer))
+                                     (panel-buffers (current-window))
+                                     :test #'string=
+                                     :key (alexandria:compose
+                                           #'render-url #'url))))))
+                "Update ↺")
+       (loop for buffer in (buffer-list)
+             collect (buffer-markup buffer))))))

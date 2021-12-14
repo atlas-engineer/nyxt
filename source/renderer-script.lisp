@@ -116,8 +116,8 @@ always a buffer that the generated code is loaded into.
 
 ARGLIST is arguments for the command and for the underlying page-generating
 function. Any argument from it is safe to use in the body of this macro.
-Beware: the ARGLIST should have keyword arguments only because it's mapped to
-query parameters."
+Beware: the ARGLIST should have nothing but keyword arguments because it's
+mapped to query parameters."
   (let ((args (alex:mappend #'first (nth-value 3 (alex:parse-ordinary-lambda-list arglist)))))
     (multiple-value-bind (body declarations documentation)
         (alex:parse-body body :documentation t)
