@@ -650,12 +650,14 @@ See `asdf::*immutable-systems*'."
               (uiop:with-current-directory ((component-pathname c))
                 (mapc (lambda (c-component)
                         ;; TODO: Allow compiler customization?
-                        (uiop:run-program `(,c-compiler "-c" ,(uiop:native-namestring (component-pathname c-component))
-                                                        ,@c-flags "-fPIC")
+                        (uiop:run-program `(,c-compiler ,@c-flags "-fPIC"
+                                                        "-c" ,(uiop:native-namestring (component-pathname c-component)))
                                           :output t
                                           :error-output :output))
                       (module-components c))
                 ;; TODO: Allow linker customization.
                 (uiop:run-program `(,c-compiler ,@ld-flags "-fPIC" "-shared" "-o" "libnyxt.so"
                                                 ,@(mapcar #'uiop:native-namestring
-                                                          (uiop:directory-files (component-pathname c) "*.o"))))))))
+                                                          (uiop:directory-files (component-pathname c) "*.o")))
+                                  :output t
+                                  :error-output :output)))))
