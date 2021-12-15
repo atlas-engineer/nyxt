@@ -635,8 +635,10 @@ See `asdf::*immutable-systems*'."
                                     t))
   :perform (compile-op
             (o c)
-            (let ((c-compiler (symbol-value
-                               (uiop:find-symbol* :*cc* :cffi-toolchain)))
+            (let ((c-compiler (or (uiop:getenv "CC")
+                                  (symbol-value
+                                   (uiop:find-symbol* :*cc* :cffi-toolchain))
+                                  "gcc"))
                   (c-flags (remove-if
                             #'uiop:emptyp
                             (uiop:split-string
