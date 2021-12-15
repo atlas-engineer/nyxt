@@ -654,8 +654,8 @@ See `asdf::*immutable-systems*'."
               (uiop:with-current-directory ((component-pathname c))
                 (mapc (lambda (c-component)
                         ;; TODO: Allow compiler customization?
-                        (uiop:run-program `(,c-compiler ,@c-flags "-fPIC"
-                                                        "-c" ,(uiop:native-namestring (component-pathname c-component)))
+                        (uiop:run-program `(,c-compiler "-c" ,(uiop:native-namestring (component-pathname c-component))
+                                                        ,@c-flags "-fPIC")
                                           :output t
                                           :error-output :output))
                       (module-components c))
