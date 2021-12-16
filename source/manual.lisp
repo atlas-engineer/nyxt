@@ -37,14 +37,15 @@ similar programming language.")
 below to create said file, if it's not created yet.")
      (let ((init-file-path (expand-path *init-file-path*)))
        (if (uiop:file-exists-p init-file-path)
-           (:a :class "button" :onclick (echo "Init file exists") "Init file exists")
            (:a :class "button"
-               :onclick (progn
-                          (with-open-file (_ init-file-path
-                                             :direction :output
-                                             :if-does-not-exist :create)
-                            (echo "Init file created at ~a."
-                                  init-file-path)))
+               :href (lisp-url '(echo "Init file exists"))
+               "Init file exists")
+           (:a :class "button"
+               :herf (lisp-url `(with-open-file (_ init-file-path
+                                                   :direction :output
+                                                   :if-does-not-exist :create)
+                                  (echo "Init file created at ~a."
+                                        init-file-path)))
                "Create init file")))
      ;; (:a :class "button" :href (lisp-url `(nyxt::describe-bindings)) "List bindings")
      (:p "Example:")
