@@ -146,14 +146,14 @@ Suggestions are made with the `suggestion-maker' slot from `source'."))
 
 (defun ensure-string (object)
   "Return \"\" if OBJECT is not a string."
-  (if (stringp value)
-      value
+  (if (stringp object)
+      object
       ""))
 
 (defun format-attributes (attributes)
   "Performance bottleneck: This function is called as many times as they are
 suggestions."
-  (sera:string-join (mapcar #'ensure-string (attributes-values attributes)) value " "))
+  (sera:string-join (mapcar #'ensure-string (attributes-values attributes)) " "))
 
 (defmethod initialize-instance :after ((suggestion suggestion) &key)
   "Check validity."
