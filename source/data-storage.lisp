@@ -14,7 +14,7 @@
           :type hash-table
           :documentation "The content of the cache.
 Keys are expanded data paths as strings, values are `user-data'.")
-   (lock (bt:make-lock)
+   (lock (bt:make-lock "cache lock")
          :type bt:lock
          :documentation "Protect against concurrent accesses."))
   (:export-class-name-p t)
@@ -341,7 +341,7 @@ This function can be used on browser-less globals like `*init-file-path*'."
                :type boolean
                :export nil
                :documentation "Whether the data was `restore'd.")
-   (lock (bt:make-recursive-lock)
+   (lock (bt:make-recursive-lock "user-data lock")
          :type bt:lock
          :documentation "The lock to guard from race conditions when accessing this data."))
   (:export-class-name-p t)
