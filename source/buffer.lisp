@@ -985,7 +985,8 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (sera:and-let* ((owner (htree:owner history (id buffer)))
                     (current (htree:current owner))
                     (data (htree:data current)))
-      (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer))))
+      (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer))
+      (htree:delete-owner history (id buffer))))
   (ffi-buffer-delete buffer))
 
 (defun buffer-hide (buffer)
@@ -993,8 +994,6 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 Should be called from/instead of `ffi-buffer-delete' when the renderer view
 associated to the buffer is already killed."
   (let ((parent-window (find buffer (window-list) :key 'active-buffer)))
-    (with-data-access (history (history-path buffer))
-      (htree:delete-owner history (id buffer)))
     (when parent-window
       (let ((replacement-buffer (or (first (get-inactive-buffers))
                                     (make-buffer :load-url-p nil
