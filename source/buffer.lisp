@@ -813,7 +813,7 @@ BUFFER's modes."
   (update-document-model :buffer buffer)
   (dolist (mode (modes buffer))
     (on-signal-load-finished mode url))
-  (run-thread (hooks:run-hook (buffer-loaded-hook buffer) buffer)))
+  (run-thread "buffer-loaded-hook" (hooks:run-hook (buffer-loaded-hook buffer) buffer)))
 
 (hooks:define-hook-type buffer (function (buffer)))
 
