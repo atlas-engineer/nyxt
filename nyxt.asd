@@ -643,14 +643,14 @@ See `asdf::*immutable-systems*'."
                             #'uiop:emptyp
                             (uiop:split-string
                              (uiop:run-program
-                              '("pkg-config" "gobject-2.0" "webkit2gtk-web-extension-4.0" "--cflags")
+                              '("pkg-config" "gobject-2.0" "webkit2gtk-4.0" "--cflags")
                               :output '(:string :stripped t)
                               :error-output :output))))
                   (ld-flags (remove-if
                              #'uiop:emptyp
                              (uiop:split-string
                               (uiop:run-program
-                               '("pkg-config" "gobject-2.0" "webkit2gtk-web-extension-4.0" "--libs")
+                               '("pkg-config" "gobject-2.0" "webkit2gtk-4.0" "--libs")
                                :output '(:string :stripped t)
                                :error-output :output)))))
               (uiop:with-current-directory ((component-pathname c))
