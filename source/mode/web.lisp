@@ -54,6 +54,11 @@ search.")
                    :documentation "The alphabet (charset) to use for hints.
 Order matters -- the ones that go first are more likely to appear more often
 and to index the top of the page.")
+   (hints-selector "a, button, input, textarea, details, select, img:not([alt=\"\"])"
+                   :type string
+                   :documentation "Defines which elements are to be hinted. The
+hints-selector syntax is that of CLSS, and broadly, that of CSS. Use it to
+define which elements are picked up by element hinting.")
    (keymap-scheme
     (define-scheme "web"
       scheme:cua
