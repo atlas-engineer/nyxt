@@ -48,89 +48,97 @@ chosen suggestions inside brackets.")
      ;; You will want edit this to match the changes done to `style'.")
      (hide-single-source-header-p nil
                                   :documentation "Hide source header when there is only one.")
-     (style #.(cl-css:css
-               '((* :font-family "monospace,monospace"
-                    :font-size "14px"
-                    :line-height "18px")
-                 (body
-                  :overflow "hidden"
-                  :margin "0"
-                  :padding "0")
-                 ("#prompt-area"
-                  :background-color "dimgray"
-                  :display "grid"
-                  :grid-template-columns "auto auto 1fr auto"
-                  :width "100%"
-                  :color "white")
-                 ("#prompt-area-vi"
-                  :background-color "dimgray"
-                  :display "grid"
-                  :grid-template-columns "auto auto 1em 1fr auto"
-                  :width "100%"
-                  :color "white")
-                 ("#prompt"
-                  :padding-left "10px"
-                  :line-height "26px")
-                 ("#prompt-extra"
-                  :line-height "26px"
-                  :padding-right "7px")
-                 ("#prompt-modes"
-                  :line-height "26px"
-                  :padding-left "3px"
-                  :padding-right "3px")
-                 ("#vi-mode"
-                  :margin "2px"
-                  :padding "1px")
-                 (".vi-normal-mode"
-                  :background-color "rgb(80,80,80)")
-                 (".vi-insert-mode"
-                  :background-color "#37a8e4")
-                 ("#input"
-                  :border "none"
-                  :outline "none"
-                  :padding "3px"
-                  :background-color "gainsboro"
-                  :width "100%"
-                  :autofocus "true")
-                 (".source"
-                  :margin-left "10px"
-                  :margin-top "15px")
-                 (".source-glyph"
-                  :margin-right "3px")
-                 (".source-name"
-                  :color "white"
-                  :padding-left "5px"
-                  :line-height "24px"
-                  :background-color "gray")
-                 ("#suggestions"
-                  :overflow-y "hidden"
-                  :overflow-x "hidden"
-                  :height "100%"
-                  :width "100%")
-                 (".source-content"
-                  :margin-left "16px"
-                  :background-color "white"
-                  :width "100%"
-                  :table-layout "fixed")
-                 (".source-content td"
-                  :white-space "nowrap"
-                  :height "20px"
-                  :overflow "auto")
-                 (".source-content th"
-                  :font-weight "normal"
-                  :padding-left "3px"
-                  :text-align "left"
-                  :background-color "gainsboro")
-                 (".source-content td::-webkit-scrollbar"
-                  :display "none")
-                 ("#selection"
-                  :background-color "#37a8e4"
-                  :color "white")
-                 (.marked :background-color "darkgray"
-                          :font-weight "bold"
-                          :color "white")
-                 (.selected :background-color "gray"
-                            :color "white")))
+     (style (theme:themed-css
+                (theme *browser*)
+              (* :font-family "monospace,monospace"
+                 :font-size "14px"
+                 :line-height "18px")
+              (body
+               :color theme:text
+               :background theme:background
+               :overflow "hidden"
+               :margin "0"
+               :padding "0")
+              ("#prompt-area"
+               :background-color theme:secondary
+               :display "grid"
+               :grid-template-columns "auto auto 1fr auto"
+               :width "100%"
+               :color theme:background)
+              ("#prompt-area-vi"
+               :background-color theme:tertiary
+               :display "grid"
+               :grid-template-columns "auto auto 1em 1fr auto"
+               :width "100%"
+               :color theme:background)
+              ("#prompt"
+               :padding-left "10px"
+               :line-height "26px")
+              ("#prompt-extra"
+               :line-height "26px"
+               :padding-right "7px")
+              ("#prompt-modes"
+               :line-height "26px"
+               :padding-left "3px"
+               :padding-right "3px")
+              ("#vi-mode"
+               :margin "2px"
+               :padding "1px")
+              (".vi-normal-mode"
+               :background-color theme:primary)
+              (".vi-insert-mode"
+               :background-color theme:accent)
+              ("#input"
+               :border "none"
+               :outline "none"
+               :padding "3px"
+               :color theme:text
+               :background-color theme:quaternary
+               :width "100%"
+               :autofocus "true")
+              (".source"
+               :margin-left "10px"
+               :margin-top "15px")
+              (".source-glyph"
+               :margin-right "3px")
+              (".source-name"
+               :color theme:background
+               :padding-left "5px"
+               :line-height "24px"
+               :background-color theme:secondary)
+              ("#suggestions"
+               :color theme:text
+               :background-color theme:background
+               :overflow-y "hidden"
+               :overflow-x "hidden"
+               :height "100%"
+               :width "100%")
+              (".source-content"
+               :margin-left "16px"
+               :background-color theme:background
+               :color theme:text
+               :width "100%"
+               :table-layout "fixed")
+              (".source-content td"
+               :white-space "nowrap"
+               :height "20px"
+               :overflow "auto")
+              (".source-content th"
+               :font-weight "normal"
+               :padding-left "3px"
+               :text-align "left"
+               :color theme:text
+               :background-color theme:quaternary)
+              (".source-content td::-webkit-scrollbar"
+               :display "none")
+              ("#selection"
+               :background-color theme:accent
+               :color theme:background)
+              (.marked :background-color theme:tertiary
+                       :font-weight "bold"
+                       :color theme:background)
+              (.selected :background-color theme:primary
+                         :color theme:background))
             :documentation "The CSS applied to a prompt-buffer when it is set-up.")
      (override-map (make-keymap "override-map")
                    :type keymap:keymap
@@ -171,7 +179,9 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
     (values (when suggestion (prompter:value suggestion)) source)))
 
 (defun show-prompt-buffer (prompt-buffer &key height)
-  "Show the last active prompt-buffer, if any."
+  "Show the last active prompt-buffer, if any.
+This is a low-level display function.
+See also `hide-prompt-buffer'."
   ;; TODO: Add method that returns if there is only 1 source with no filter.
   (when prompt-buffer
     (push prompt-buffer (active-prompt-buffers (window prompt-buffer)))
@@ -184,9 +194,10 @@ To access the suggestion instead, see `prompter:selected-suggestion'."
      (or height
          (prompt-buffer-open-height (window prompt-buffer))))))
 
-(export-always 'hide-prompt-buffer)
 (defun hide-prompt-buffer (prompt-buffer)
-  "Hide PROMPT-BUFFER, display next active one."
+  "Hide PROMPT-BUFFER, display next active one.
+This is a low-level display function.
+See also `show-prompt-buffer'."
   (let ((window (window prompt-buffer)))
     ;; Note that PROMPT-BUFFER is not necessarily first in the list, e.g. a new
     ;; prompt-buffer was invoked before the old one reaches here.
@@ -414,6 +425,18 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
            (ps:lisp input))))
   (update-prompt-input prompt-buffer input))
 
+(defun wait-on-prompt-buffer (prompt-buffer) ; TODO: Export?  Better name?
+  "Block and return PROMPT-BUFFER results."
+  (when (prompt-buffer-p prompt-buffer)
+    (show-prompt-buffer prompt-buffer)
+    (calispel:fair-alt
+      ((calispel:? (prompter:result-channel prompt-buffer) results)
+       (hide-prompt-buffer prompt-buffer)
+       results)
+      ((calispel:? (prompter:interrupt-channel prompt-buffer))
+       (hide-prompt-buffer prompt-buffer)
+       (error 'nyxt-prompt-buffer-canceled)))))
+
 (export-always 'prompt)
 (sera:eval-always
   (define-function prompt (append
@@ -435,9 +458,7 @@ Example use:
   :sources (list (make-instance 'prompter:source :filter #'my-suggestion-filter)))
 
 See the documentation of `prompt-buffer' to know more about the options."
-    (let ((result-channel (make-channel))
-          (interrupt-channel (make-channel))
-          (parent-thread-prompt-buffer nil))
+    (let ((prompt-object-channel (make-channel 1)))
       (ffi-within-renderer-thread
        *browser*
        (lambda ()
@@ -445,17 +466,11 @@ See the documentation of `prompt-buffer' to know more about the options."
                                      (append args
                                              (list
                                               :window (current-window)
-                                              :result-channel result-channel
-                                              :interrupt-channel interrupt-channel)))))
-           (setf parent-thread-prompt-buffer prompt-buffer)
-           (show-prompt-buffer prompt-buffer))))
-      (calispel:fair-alt
-        ((calispel:? result-channel results)
-         (hide-prompt-buffer parent-thread-prompt-buffer)
-         results)
-        ((calispel:? interrupt-channel)
-         (hide-prompt-buffer parent-thread-prompt-buffer)
-         (error 'nyxt-prompt-buffer-canceled))))))
+                                              :result-channel (make-channel)
+                                              :interrupt-channel (make-channel))))))
+           (calispel:! prompt-object-channel prompt-buffer))))
+      (let ((new-prompt (calispel:? prompt-object-channel)))
+        (wait-on-prompt-buffer new-prompt)))))
 
 (export-always 'prompt1)
 (defmacro prompt1 (&body body)
@@ -482,4 +497,4 @@ See the documentation of `prompt-buffer' to know more about the options."
             :sources (list (make-instance 'resume-prompt-source)))))
     (when old-prompt
       (prompter:resume old-prompt)
-      (show-prompt-buffer old-prompt))))
+      (wait-on-prompt-buffer old-prompt))))

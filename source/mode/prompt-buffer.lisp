@@ -67,7 +67,14 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "M-[" 'select-previous-source    ; Emacs Helm binding.
        "C-j" 'run-follow-mode-function
        "C-g" 'cancel-input
-       "C-h b" 'run-prompt-buffer-command)
+       "C-h b" 'run-prompt-buffer-command
+       "C-e" 'move-end-of-input
+       "C-a" 'move-start-of-input
+       "C-f" 'cursor-forwards
+       "C-b" 'cursor-backwards
+       "M-f" 'cursor-forwards-word
+       "M-b" 'cursor-backwards-word
+       "C-x h" 'select-all)
 
       scheme:vi-normal
       (list
@@ -89,7 +96,13 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "z f" 'toggle-follow
        "z a" 'toggle-attributes-display
        "y" 'copy-selection
-       "p" 'paste)
+       "p" 'paste
+       "$" 'move-end-of-input
+       "^" 'move-start-of-input
+       "l" 'cursor-forwards
+       "h" 'cursor-backwards
+       "w" 'cursor-forwards-word
+       "b" 'cursor-backwards-word)
 
       scheme:vi-insert
       (list
@@ -361,9 +374,8 @@ Only available if `multi-selection-p' is non-nil."
 
 (define-command-prompt paste (prompt-buffer)
   "Paste clipboard text to input."
-  (nyxt::set-prompt-buffer-input
-   (ring-insert-clipboard (nyxt::clipboard-ring *browser*))
-   prompt-buffer))
+  (ffi-buffer-paste prompt-buffer)
+  (nyxt::update-prompt-input prompt-buffer))
 
 (defun history-entries (&optional (window (current-window)))
   (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
@@ -390,3 +402,45 @@ Only available if `multi-selection-p' is non-nil."
   (alex:when-let ((selection (prompter:attributes-default
                               (prompter:selected-suggestion prompt-buffer))))
     (nyxt::set-prompt-buffer-input selection)))
+
+(define-command-prompt move-start-of-input (prompt-buffer)
+  "Move to the beginning of PROMPT-BUFFER input."
+  (ffi-buffer-evaluate-javascript
+   prompt-buffer
+   (ps:ps
+     (let ((input (ps:chain document (get-element-by-id "input"))))
+       (setf (ps:@ input selection-start) 0
+             (ps:@ input selection-end) 0)))))
+
+(define-command-prompt move-end-of-input (prompt-buffer)
+  "Move to the end of PROMPT-BUFFER input."
+  (ffi-buffer-evaluate-javascript
+   prompt-buffer
+   (ps:ps
+     (let ((input (ps:chain document (get-element-by-id "input"))))
+       (setf (ps:@ input selection-start) (ps:@ input value length)
+             (ps:@ input selection-end) (ps:@ input value length))))))
+
+(define-command-prompt cursor-forwards (prompt-buffer)
+  "Move cursor forward by one character."
+  (with-current-buffer prompt-buffer
+    (nyxt/input-edit-mode:cursor-forwards)))
+
+(define-command-prompt cursor-backwards (prompt-buffer)
+  "Move cursor backwards by one character."
+  (with-current-buffer prompt-buffer
+    (nyxt/input-edit-mode:cursor-backwards)))
+
+(define-command-prompt cursor-forwards-word (prompt-buffer)
+  "Move cursor forward by one word."
+  (with-current-buffer prompt-buffer
+    (nyxt/input-edit-mode:cursor-forwards-word)))
+
+(define-command-prompt cursor-backwards-word (prompt-buffer)
+  "Move cursor backwards by one word."
+  (with-current-buffer prompt-buffer
+    (nyxt/input-edit-mode:cursor-backwards-word)))
+
+(define-command-prompt select-all (prompt-buffer)
+  "Select all the text in the prompt input."
+  (ffi-buffer-select-all prompt-buffer))

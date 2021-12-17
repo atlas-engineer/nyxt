@@ -135,6 +135,10 @@ buffers, load data files, open prompt buffer, etc).")
     :type boolean
     :documentation "Whether to use prompt-buffer-reliant script dialogs and file-chooser.
 If nil, renderer-provided dialogs are used.")
+   (theme
+    (make-instance 'theme:theme)
+    :type theme:theme
+    :documentation "The theme to use for all the browser interface elements.")
    (session-restore-prompt
     :always-ask
     :documentation "Ask whether to restore the session.
@@ -237,8 +241,14 @@ prevents otherwise."))
   (%get-user-data profile path (user-data-cache *browser*)))
 
 (defmethod set-user-data ((profile data-profile) (path data-path) value)
-  (setf (data (%get-user-data profile path (user-data-cache *browser*)))
-        value))
+  (let ((user-data (%get-user-data profile path (user-data-cache *browser*))))
+    (setf (data user-data) value)
+    ;; WARNING: We must mark the data as restored, otherwise setting the data
+    ;; manually with `%set-data' and then calling `get-data' will cause the
+    ;; latter to try to restore it from a possibly empty file, which result in
+    ;; NIL data (thus invalidating the first `%set-data').
+    (setf (restored-p user-data) t)
+    value))
 
 (defmethod get-containing-window-for-buffer ((buffer buffer) (browser browser))
   "Get the window containing a buffer."
@@ -531,9 +541,9 @@ view.")
                    :cookies "")
          ;; TODO: WebKitGTK emits "load-failed" if we call
          ;; webkit-policy-decision-ignore on a download requestion.
-         ;; To work around this, we set the `load-status' to a value other than
+         ;; To work around this, we set the `status' to a value other than
          ;; `:loading'.
-         (setf (slot-value buffer 'load-status) :finished)
+         (setf (slot-value buffer 'status) :finished)
          nil)
         (t
          (log:debug "Forwarding ~a for buffer ~s" (render-url url) buffer)
@@ -703,6 +713,14 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-buffer-load (buffer url))
 (define-ffi-generic ffi-buffer-evaluate-javascript (buffer javascript &optional world-name))
 (define-ffi-generic ffi-buffer-evaluate-javascript-async (buffer javascript &optional world-name))
+(define-ffi-generic ffi-buffer-add-user-style (buffer css &key
+                                                      world-name all-frames-p inject-as-author-p
+                                                      allow-list block-list))
+(define-ffi-generic ffi-buffer-remove-user-style (buffer style-sheet))
+(define-ffi-generic ffi-buffer-add-user-script (buffer javascript &key
+                                                       world-name all-frames-p at-document-start-p
+                                                       run-now-p allow-list block-list))
+(define-ffi-generic ffi-buffer-remove-user-script (buffer script))
 (define-ffi-generic ffi-buffer-enable-javascript (buffer value))
 (define-ffi-generic ffi-buffer-enable-javascript-markup (buffer value))
 (define-ffi-generic ffi-buffer-enable-smooth-scrolling (buffer value))
@@ -711,7 +729,7 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-buffer-enable-webgl (buffer value))
 (define-ffi-generic ffi-buffer-auto-load-image (buffer value))
 (define-ffi-generic ffi-buffer-enable-sound (buffer value))
-(define-ffi-generic ffi-buffer-user-agent (buffer value))
+(define-ffi-generic ffi-buffer-user-agent (buffer &optional value))
 (define-ffi-generic ffi-buffer-set-proxy (buffer &optional proxy-url ignore-hosts))
 (define-ffi-generic ffi-buffer-get-proxy (buffer))
 (define-ffi-generic ffi-buffer-download (buffer url))
@@ -747,9 +765,46 @@ sometimes yields the wrong result."
     (finalize browser urls startup-timestamp)))
 (define-ffi-generic ffi-inspector-show (buffer))
 (define-ffi-generic ffi-print-status (window text))
-(define-ffi-generic ffi-print-message (window message))
+(define-ffi-generic ffi-print-message (window message)
+  (:documentation "Print MESSAGE which is an HTML string."))
 (define-ffi-generic ffi-display-url (text))
 (define-ffi-generic ffi-buffer-cookie-policy (buffer value))
 (define-ffi-generic ffi-set-preferred-languages (buffer value))
 (define-ffi-generic ffi-focused-p (buffer))
 (define-ffi-generic ffi-set-tracking-prevention (buffer value))
+(define-ffi-generic ffi-buffer-copy (buffer)
+  (:method ((buffer buffer))
+    (with-current-buffer buffer
+      ;; On some systems like Xorg, clipboard pasting happens just-in-time.  So if we
+      ;; copy something from the context menu 'Copy' action, upon pasting we will
+      ;; retrieve the text from the GTK thread.  This is prone to create
+      ;; dead-locks (e.g. when executing a Parenscript that acts upon the clipboard).
+      ;;
+      ;; To avoid this, we can 'flush' the clipboard to ensure that the copied text
+      ;; is present the clipboard and need not be retrieved from the GTK thread.
+      ;; TODO: Do we still need to flush now that we have multiple threads?
+      ;; (trivial-clipboard:text (trivial-clipboard:text))
+      (let ((input (%copy)))
+        (copy-to-clipboard input)
+        (echo "Text copied: ~s" input)))))
+(define-ffi-generic ffi-buffer-paste (buffer)
+  (:method ((buffer buffer))
+    (with-current-buffer buffer
+      (%paste))))
+(define-ffi-generic ffi-buffer-cut (buffer)
+  (:method ((buffer buffer))
+    (with-current-buffer buffer
+      (let ((input (%cut)))
+        (when input
+          (copy-to-clipboard input)
+          (echo "Text cut: ~s" input))))))
+(define-ffi-generic ffi-buffer-select-all (buffer)
+  (:method ((buffer buffer))
+    (with-current-buffer buffer
+      (%select-all))))
+(define-ffi-generic ffi-buffer-undo (buffer)
+  (:method ((buffer buffer))
+    (echo-warning "Undoing the edits is not yet implemented for this renderer.")))
+(define-ffi-generic ffi-buffer-redo (buffer)
+  (:method ((buffer buffer))
+    (echo-warning "Redoing the edits is not yet implemented for this renderer.")))

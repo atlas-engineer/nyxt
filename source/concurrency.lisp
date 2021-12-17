@@ -11,12 +11,12 @@ the amount of CPU cores.."
 
 (export-always 'with-protect)
 (defmacro with-protect ((format-string &rest args) &body body)
-  "Run body with muffled condition when `*run-from-repl-p*' is nil, run normally otherwise.
-Then the condition is muffled, a warning is reported to the user as per
+  "Run body with muffled conditions when `*run-from-repl-p*' is nil, run normally otherwise.
+When the condition is muffled, a warning is reported to the user as per
 FORMAT-STRING and ARGS.
 As a special case, the first `:condition' keyword in ARGS is replaced with the
-condition."
-  (alex:with-gensyms (c)
+raised condition."
+  (alex:with-gensyms (c sub-c)
     `(if *run-from-repl-p*
          (handler-case (progn ,@body)
            (nyxt-prompt-buffer-canceled ()
@@ -26,17 +26,20 @@ condition."
               ((error
                  (lambda (,c)
                    (declare (ignorable ,c))
-                   ,(let* ((condition-index (position :condition args))
-                           (new-args (if condition-index
-                                         (append (subseq args 0 condition-index)
-                                                 `(,c)
-                                                 (subseq args (1+ condition-index)))
-                                         args)))
-                      `(handler-bind ((t (lambda (c)
-                                           (declare (ignore c))
-                                           (log:error ,format-string ,@new-args)
-                                           (invoke-restart 'continue))))
-                         (echo-warning ,format-string ,@new-args))))))
+                   ,(let ((condition-index (position :condition args)))
+                      (flet ((new-args (condition condition-index &optional escaped-p)
+                               (if condition-index
+                                   (append (subseq args 0 condition-index)
+                                           (list (if escaped-p
+                                                     `(plump:encode-entities (princ-to-string ,condition))
+                                                     `,condition))
+                                           (subseq args (1+ condition-index)))
+                                   'args)))
+                        `(handler-bind ((t (lambda (,sub-c)
+                                             (declare (ignore ,sub-c))
+                                             (log:error ,format-string ,@(new-args c condition-index))
+                                             (invoke-restart 'continue))))
+                           (echo-warning ,format-string ,@(new-args c condition-index :escaped-p))))))))
             ,@body)))))
 
 (defun make-channel (&optional size)

@@ -4,7 +4,8 @@
 	shallow = true
 [submodule "_build/rt"]
 	path = _build/rt
-	url = http://git.kpe.io/rt.git
+	url = https://gitlab.common-lisp.net/nyxt/rt.git
+	shallow = true
 [submodule "_build/bordeaux-threads"]
 	path = _build/bordeaux-threads
 	url = https://github.com/sionescu/bordeaux-threads
@@ -243,13 +244,16 @@
 	shallow = true
 [submodule "_build/cl-base64"]
 	path = _build/cl-base64
-	url = http://git.kpe.io/cl-base64.git/
+	url = https://gitlab.common-lisp.net/nyxt/cl-base64.git
+	shallow = true
 [submodule "_build/ptester"]
 	path = _build/ptester
-	url = http://git.kpe.io/ptester.git
+	url = https://gitlab.common-lisp.net/nyxt/ptester.git
+	shallow = true
 [submodule "_build/kmrcl"]
 	path = _build/kmrcl
-	url = http://git.kpe.io/kmrcl.git/
+	url = https://gitlab.common-lisp.net/nyxt/kmrcl.git
+	shallow = true
 [submodule "_build/cl-reexport"]
 	path = _build/cl-reexport
 	url = https://github.com/takagi/cl-reexport
@@ -308,7 +312,8 @@
 	shallow = true
 [submodule "_build/puri"]
 	path = _build/puri
-	url = http://git.kpe.io/puri.git
+	url = https://gitlab.common-lisp.net/nyxt/puri.git
+	shallow = true
 [submodule "_build/cl-enchant"]
 	path = _build/cl-enchant
 	url = https://github.com/tlikonen/cl-enchant
@@ -532,3 +537,7 @@
 [submodule "_build/cl-https-everywhere"]
 	path = _build/cl-https-everywhere
 	url = https://github.com/ruricolist/cl-https-everywhere
+[submodule "_build/osicat"]
+	path = _build/osicat
+	url = https://github.com/osicat/osicat
+	shallow = true

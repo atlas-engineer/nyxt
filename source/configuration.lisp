@@ -275,14 +275,31 @@ PROMPT is a list fed to `format nil'."
          ,yes-form
          ,no-form)))
 
+(export-always 'reset-asdf-registries)
+(defun reset-asdf-registries ()
+  "Nyxt sets the ASDF registries to its own location.
+Call this function from your initialization file to re-enable the default ASDF registries."
+  (setf asdf:*default-source-registries*
+        '(nyxt-source-registry
+          ;; Default value:
+          asdf/source-registry:environment-source-registry
+          asdf/source-registry:user-source-registry
+          asdf/source-registry:user-source-registry-directory
+          asdf/source-registry:default-user-source-registry
+          asdf/source-registry:system-source-registry
+          asdf/source-registry:system-source-registry-directory
+          asdf/source-registry:default-system-source-registry))
+  (asdf:clear-configuration))
+
 (export-always 'load-after-system)
 (defun load-after-system (system &optional file)
-  "Load Common Lisp SYSTEM, afterwards if system was loaded, load file.
+  "Load Common Lisp SYSTEM, then on success load FILE.
 Use Quicklisp if possible.
+See also `reset-asdf-registries'.
 
-Initialization file use case:
+Example:
 
-(load-after-system :xyz \"configure-xyz.lisp\")"
+  (load-after-system :xyz \"configure-xyz.lisp\")"
   (flet ((load-system (system)
            (handler-case
                (progn
@@ -292,6 +309,9 @@ Initialization file use case:
                  (asdf:load-system system))
              (error (c)
                (echo-warning "Could not load system ~a: ~a" system c)
+               (log:warn "Maybe you want to use `reset-asdf-registries'?")
+               (log:warn "Current ASDF registries: ~{~a~^, ~}"
+                         asdf:*default-source-registries*)
                nil))))
     (when (and (load-system system) file)
       (load file))))

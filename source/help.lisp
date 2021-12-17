@@ -398,23 +398,25 @@ CLASS is a class symbol."
                              using (hash-value bound-value)
                              collect (:tr
                                       (:td keyspec)
-                                      (:td (string-downcase bound-value)))))))))))
+                                      (:td (format nil "~(~a~)" bound-value)))))))))))
 
 (define-command print-bindings-cheatsheet ()
   "Print the buffer with the list of all known bindings for the current buffer
 optimizing the use of space."
-  (nyxt::html-set-style 
-   (cl-css:css '((h3 :font-size "10px" :font-family Helvetica Neue Helvetica
-                     :font-weight 500)
-                 (tr :font-size "7px")
-                 (div :display inline-block)))
+  (nyxt::html-set-style
+   (theme:themed-css (theme *browser*)
+     (h3 :font-size "10px"
+         :font-family theme:font-family
+         :font-weight 500)
+     (tr :font-size "7px")
+     (div :display inline-block))
    (nyxt:describe-bindings))
   (print-buffer))
 
 (defun tls-help (buffer url)
   "This function is invoked upon TLS certificate errors to give users
 help on how to proceed."
-  (setf (slot-value buffer 'load-status) :failed)
+  (setf (slot-value buffer 'status) :failed)
   (html-set
    (spinneret:with-html-string
     (:h1 (format nil "TLS Certificate Error: ~a" (render-url url)))
@@ -653,43 +655,48 @@ System information is also saved into the clipboard."
                      collect (:li (title bookmark) separator
                                   (:a :href (render-url (url bookmark))
                                       (render-url (url bookmark)))))))))
-    (let ((dashboard-style (cl-css:css
-                            '((body
-                               :margin-top 0
-                               :margin-bottom 0)
-                              ("#title"
-                               :font-size "400%")
-                              (.section
-                               :border-top "solid lightgray"
-                               :margin-top "10px"
-                               :overflow "scroll"
-                               :min-height "150px")
-                              (".section h3"
-                               :color "dimgray")
-                              ("#container"
-                               :display "flex"
-                               :flex-flow "column"
-                               :height "100vh")
-                              ("ul"
-                               :list-style-type "circle")))))
+    (let ((dashboard-style (theme:themed-css (theme *browser*)
+                             (body
+                              :color theme:text
+                              :background-color theme:background
+                              :margin-top 0
+                              :margin-bottom 0)
+                             ("#title"
+                              :font-size "400%")
+                             ("#subtitle"
+                              :color theme:tertiary)
+                             (.section
+                              :border-style "solid none none none"
+                              :border-color theme:secondary
+                              :margin-top "10px"
+                              :overflow "scroll"
+                              :min-height "150px")
+                             (".section h3"
+                              :color theme:tertiary)
+                             ("#container"
+                              :display "flex"
+                              :flex-flow "column"
+                              :height "100vh")
+                             ("ul"
+                              :list-style-type "circle"))))
       (with-current-html-buffer (buffer "*Dashboard*" 'base-mode)
         (spinneret:with-html-string
-         (:style (style buffer))
-         (:style dashboard-style)
-         (:div :id "container"
-               (:div
-                     (:h1 :id "title" "Nyxt " (:span :style "color: lightgray" "browser ☺"))
-                     (:h3 (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+))
-                     (:a :class "button" :href (lisp-url `(nyxt::restore-history-by-name)) "🗁 Restore Session")
-                     (:a :class "button" :href (lisp-url `(nyxt::manual)) "🕮 Manual")
-                     (:a :class "button" :href (lisp-url `(nyxt::execute-command)) "≡ Execute Command")
-                     (:a :class "button" :href "https://nyxt.atlas.engineer/download" "⇡ Update"))
-               (:div :class "section" :style "flex: 3"
-                     (:h3 (:b "Bookmarks"))
-                     (:ul (:raw (list-bookmarks))))
-               (:div :class "section" :style "flex: 5"
-                     (:h3 (:b "Recent URLs"))
-                     (:ul (:raw (history-html-list))))))))))
+          (:style (style buffer))
+          (:style dashboard-style)
+          (:div :id "container"
+                (:div
+                 (:h1 :id "title" "Nyxt " (:span :id "subtitle" "browser ☺"))
+                 (:h3 (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+))
+                 (:a :class "button" :href (lisp-url `(nyxt::restore-history-by-name)) "🗁 Restore Session")
+                 (:a :class "button" :href (lisp-url `(nyxt::manual)) "🕮 Manual")
+                 (:a :class "button" :href (lisp-url `(nyxt::execute-command)) "≡ Execute Command")
+                 (:a :class "button" :href "https://nyxt.atlas.engineer/download" "⇡ Update"))
+                (:div :class "section" :style "flex: 3"
+                      (:h3 (:b "Bookmarks"))
+                      (:ul (:raw (list-bookmarks))))
+                (:div :class "section" :style "flex: 5"
+                      (:h3 (:b "Recent URLs"))
+                      (:ul (:raw (history-html-list))))))))))
 
 (defun dump-command-descriptions (file)
   "Dump the command descriptions as an HTML file."

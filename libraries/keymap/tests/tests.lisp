@@ -400,7 +400,13 @@
     (prove:is (multiple-value-list (keymap:binding-keys 'foo-a keymap3))
               `(("C-c a" "a")
                 (("C-c a" ,keymap1)
-                 ("a" ,keymap1))))))
+                 ("a" ,keymap1))))
+
+    ;; Shadowing:
+    (keymap:define-key keymap3 "a" 'shadowed-a)
+    (prove:is (multiple-value-list (keymap:binding-keys 'foo-a keymap3))
+              `(("C-c a")
+                (("C-c a" ,keymap1))))))
 
 (prove:subtest "undefine"
   (let* ((keymap (empty-keymap)))
@@ -435,5 +441,17 @@
       (prove:is hit 'foo-a)
       (prove:is km keymap)
       (prove:is (keymap:keys->keyspecs key) "a"))))
+
+(prove:subtest "Don't shadow a prefix keymap"
+  (let* ((parent (empty-keymap))
+         (keymap (empty-keymap parent)))
+    (keymap:define-key parent "C-x" 'parent-x)
+    (keymap:define-key keymap "C-x C-f" 'keymap-x)
+    (prove:is (keymap:lookup-key "C-x C-f" keymap)
+              'keymap-x)
+    (prove:is (keymap:lookup-key "C-x C-f" parent)
+              nil)
+    (prove:is (keymap:lookup-key "C-x" parent)
+              'parent-x)))
 
 (prove:finalize)

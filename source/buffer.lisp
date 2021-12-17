@@ -9,15 +9,17 @@
 (hooks:define-hook-type url->url (function (quri:uri) quri:uri))
 
 (define-class buffer ()
-  ((id ""
-       :documentation "Unique identifier for a buffer.
+  ((id
+    ""
+    :documentation "Unique identifier for a buffer.
 Dead buffers or placeholder buffers (i.e. those not associated with a web view)
 have an empty ID.")
    ;; TODO: Or maybe a dead-buffer should just be a buffer history?
-   (data-profile (make-instance (or (find-data-profile (getf *options* :data-profile))
-                                    'default-data-profile))
-                 :type data-profile
-                 :documentation "Profile to use for all persisted files.
+   (data-profile
+    (make-instance (or (find-data-profile (getf *options* :data-profile))
+                       'default-data-profile))
+    :type data-profile
+    :documentation "Profile to use for all persisted files.
 See the `data-path' class and the `expand-path' function.")
    (document-model-delta-threshold
     10
@@ -32,52 +34,66 @@ Created from the page code with the help of `plump:parse'. See `update-document-
    (url (quri:uri ""))
    (url-at-point (quri:uri ""))
    (title "")
-   (last-access (local-time:now)
-                :export nil
-                :documentation "Timestamp when the buffer was last switched to.")
-   (modes '()
-          :documentation "The list of mode instances.
+   (last-access
+    (local-time:now)
+    :export nil
+    :documentation "Timestamp when the buffer was last switched to.")
+   (modes
+    '()
+    :documentation "The list of mode instances.
 Modes are instantiated over the result of the `default-modes' method, with
 `initialize-modes' and not in the initform so that the instantiation form can
 access the initialized buffer.")
-   (enable-mode-hook (make-hook-mode)
-                     :type hook-mode
-                     :documentation "Hook run on every mode activation,
+   (enable-mode-hook
+    (make-hook-mode)
+    :type hook-mode
+    :documentation "Hook run on every mode activation,
 after the mode-specific hook.")
-   (disable-mode-hook (make-hook-mode)
-                      :type hook-mode
-                      :documentation "Hook run on every mode deactivation,
+   (disable-mode-hook
+    (make-hook-mode)
+    :type hook-mode
+    :documentation "Hook run on every mode deactivation,
 after the mode-specific hook.")
-   (keymap-scheme-name scheme:cua
-                       :documentation "The keymap scheme that will be used for all modes in the current buffer.")
-   (search-auto-complete-p t
-                           :type boolean
-                           :documentation "Whether search suggestions are requested and displayed.")
-   (search-engines (list (make-instance 'search-engine
-                                        :shortcut "wiki"
-                                        :search-url "https://en.wikipedia.org/w/index.php?search=~a"
-                                        :fallback-url (quri:uri "https://en.wikipedia.org/")
-                                        :completion-function
-                                        (make-search-completion-function
-                                         :base-url "https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=~a"
-                                         :processing-function
-                                         #'(lambda (results)
-                                             (when results
-                                               (second (json:decode-json-from-string results))))))
-                         (make-instance 'search-engine
-                                        :shortcut "ddg"
-                                        :search-url "https://duckduckgo.com/?q=~a"
-                                        :fallback-url (quri:uri "https://duckduckgo.com/")
-                                        :completion-function
-                                        (make-search-completion-function
-                                         :base-url "https://duckduckgo.com/ac/?q=~a"
-                                         :processing-function
-                                         #'(lambda (results)
-                                             (when results
-                                               (mapcar #'cdar
-                                                       (json:decode-json-from-string results)))))))
-                   :type (cons search-engine *)
-                   :documentation "A list of the `search-engine' objects.
+   (keymap-scheme-name
+    scheme:cua
+    :documentation "The keymap scheme that will be used for all modes in the current buffer.")
+   (search-auto-complete-p
+    t
+    :type boolean
+    :documentation "Whether search suggestions are requested and displayed.")
+   (search-always-auto-complete-p
+    t
+    :type boolean
+    :documentation "Whether auto-completion works even for non-prefixed search.
+Auto-completions come from the default search engine.")
+   (search-engines
+    (list (make-instance 'search-engine
+                         :shortcut "wiki"
+                         :search-url "https://en.wikipedia.org/w/index.php?search=~a"
+                         :fallback-url (quri:uri "https://en.wikipedia.org/")
+                         :completion-function
+                         (make-search-completion-function
+                          :base-url "https://en.wikipedia.org/w/api.php?action=opensearch&format=json&search=~a"
+                          :processing-function
+                          #'(lambda (results)
+                              (alex:when-let* ((results results)
+                                               (results (decode-json results)))
+                                (mapcar #'list (second results) (fourth results))))))
+          (make-instance 'search-engine
+                         :shortcut "ddg"
+                         :search-url "https://duckduckgo.com/?q=~a"
+                         :fallback-url (quri:uri "https://duckduckgo.com/")
+                         :completion-function
+                         (make-search-completion-function
+                          :base-url "https://duckduckgo.com/ac/?q=~a"
+                          :processing-function
+                          #'(lambda (results)
+                              (when results
+                                (mapcar (lambda (hash-table)
+                                          (first (alex:hash-table-values hash-table)))
+                                        (decode-json results)))))))
+    :type (cons search-engine *)
+    :documentation "A list of the `search-engine' objects.
 You can invoke them from the prompt-buffer by prefixing your query with SHORTCUT.
 If the query is empty, FALLBACK-URL is loaded instead.  If
 FALLBACK-URL is empty, SEARCH-URL is used on an empty search.
@@ -94,10 +110,11 @@ query is not a valid URL, or the first keyword is not recognized.")
     :documentation "If non-nil, the cursor moves to the end
 (resp. beginning) of the word when `move-forward-word'
 (resp. `move-backward-word') is called.")
-   (override-map (let ((map (make-keymap "override-map")))
-                   (define-key map
-                     "C-space" 'execute-command))
-                 :documentation "Keymap that overrides all other bindings.
+   (override-map
+    (let ((map (make-keymap "override-map")))
+      (define-key map
+        "C-space" 'execute-command))
+    :documentation "Keymap that overrides all other bindings.
 
 `override-map` takes priority over everything, including text insertion, and is
 therefore better used with modifier-prefixed bindings.
@@ -113,36 +130,41 @@ Example:
                                \"M-x\" 'execute-command
                                \"C-q\" 'quit)
                    map))))")
-   (forward-input-events-p t
-                           :documentation "When non-nil, keyboard events are
+   (forward-input-events-p
+    t
+    :documentation "When non-nil, keyboard events are
 forwarded to the renderer when no binding is found.  Pointer
 events (e.g. mouse events) are not affected by this, they are always
 forwarded when no binding is found.")
-   (last-event nil
-               :type t
-               :export nil
-               ;; TODO: Store multiple events?  Maybe when implementing keyboard macros.
-               :documentation "The last event received in the current buffer.")
-   (pre-request-hook (make-hook-resource
-                      :combination #'combine-composed-hook-until-nil)
-                     :type hook-resource
-                     :documentation "Hook run before the `request-resource-hook'.
+   (last-event
+    nil
+    :type t
+    :export nil
+    ;; TODO: Store multiple events?  Maybe when implementing keyboard macros.
+    :documentation "The last event received in the current buffer.")
+   (pre-request-hook
+    (make-hook-resource
+     :combination #'combine-composed-hook-until-nil)
+    :type hook-resource
+    :documentation "Hook run before the `request-resource-hook'.
 One example of its application is `auto-mode' that changes mode setup. Any
 action on modes that can possibly change the handlers in `request-resource-hook'
 should find its place there.")
-   (request-resource-scheme (define-scheme "request-resource"
-                              scheme:cua
-                              (list
-                               "C-button1" 'request-resource-open-url-focus
-                               "button2" 'request-resource-open-url-focus
-                               "C-shift-button1" 'request-resource-open-url))
-                            :documentation "This keymap can be looked up when
+   (request-resource-scheme
+    (define-scheme "request-resource"
+      scheme:cua
+      (list
+       "C-button1" 'request-resource-open-url-focus
+       "button2" 'request-resource-open-url-focus
+       "C-shift-button1" 'request-resource-open-url))
+    :documentation "This keymap can be looked up when
 `request-resource-hook' handlers run.
 The functions are expected to take key arguments like `:url'.")
-   (request-resource-hook (make-hook-resource
-                           :combination #'combine-composed-hook-until-nil)
-                          :type hook-resource
-                          :documentation "Hook run on every resource load.
+   (request-resource-hook
+    (make-hook-resource
+     :combination #'combine-composed-hook-until-nil)
+    :type hook-resource
+    :documentation "Hook run on every resource load.
 The handlers are composed, passing a `request-data'
 until one of them returns nil or all handlers apply successfully.
 
@@ -164,57 +186,71 @@ Example:
     (reduce #'hooks:add-hook
             (mapcar #'make-handler-resource (list #'old-reddit-handler #'auto-proxy-handler))
             :initial-value %slot-default%))))")
-   (default-new-buffer-url (quri:uri "https://nyxt.atlas.engineer/start")
-                           :type url-designator
-                           :documentation "The URL set to a new blank buffer opened by Nyxt.")
-   (scroll-distance 50
-                    :type integer
-                    :documentation "The distance scroll-down or scroll-up will scroll.")
-   (smooth-scrolling nil
-                     :documentation "Whether to scroll smoothly with the mouse.")
-   (horizontal-scroll-distance 50
-                               :type integer
-                               :documentation "Horizontal scroll distance. The
+   (default-new-buffer-url
+    (quri:uri "https://nyxt.atlas.engineer/start")
+    :type url-designator
+    :documentation "The URL set to a new blank buffer opened by Nyxt.")
+   (scroll-distance
+    50
+    :type integer
+    :documentation "The distance scroll-down or scroll-up will scroll.")
+   (smooth-scrolling
+    nil
+    :documentation "Whether to scroll smoothly with the mouse.")
+   (horizontal-scroll-distance
+    50
+    :type integer
+    :documentation "Horizontal scroll distance. The
 distance scroll-left or scroll-right will scroll.")
-   (current-zoom-ratio 1.0
-                       :type float
-                       :documentation "The current zoom relative to the default zoom.")
-   (zoom-ratio-step 0.2
-                    :type float
-                    :documentation "The step size for zooming in and out.")
-   (zoom-ratio-min 0.2
-                   :type float
-                   :documentation "The minimum zoom ratio relative to the default.")
-   (zoom-ratio-max 5.0
-                   :type float
-                   :documentation "The maximum zoom ratio relative to the default.")
-   (zoom-ratio-default 1.0
-                       :type float
-                       :documentation "The default zoom ratio.")
-   (page-scroll-ratio 0.90
-                      :type float
-                      :documentation "The ratio of the page to scroll.
+   (current-zoom-ratio
+    1.0
+    :type float
+    :documentation "The current zoom relative to the default zoom.")
+   (zoom-ratio-step
+    0.2
+    :type float
+    :documentation "The step size for zooming in and out.")
+   (zoom-ratio-min
+    0.2
+    :type float
+    :documentation "The minimum zoom ratio relative to the default.")
+   (zoom-ratio-max
+    5.0
+    :type float
+    :documentation "The maximum zoom ratio relative to the default.")
+   (zoom-ratio-default
+    1.0
+    :type float
+    :documentation "The default zoom ratio.")
+   (page-scroll-ratio
+    0.90
+    :type float
+    :documentation "The ratio of the page to scroll.
 A value of 0.95 means that the bottom 5% will be the top 5% when scrolling
 down.")
-   (buffer-load-hook (make-hook-url->url
-                      :combination #'hooks:combine-composed-hook)
-                     :type hook-url->url
-                     :accessor nil
-                     :export nil ; TODO: Export?  Maybe not since `request-resource-hook' mostly supersedes it.
-                     :documentation "Hook run in `buffer-load' before loading.
+   (buffer-load-hook
+    (make-hook-url->url
+     :combination #'hooks:combine-composed-hook)
+    :type hook-url->url
+    :accessor nil
+    :export nil
+    :documentation "Hook run in `buffer-load' before loading.
 The handlers take the URL going to be loaded as argument
 and must return a (possibly new) URL.")
-   (buffer-loaded-hook (make-hook-buffer)
-                       :type hook-buffer
-                       :documentation "Hook run on `on-signal-load-finished'.
+   (buffer-loaded-hook
+    (make-hook-buffer)
+    :type hook-buffer
+    :documentation "Hook run on `on-signal-load-finished'.
 The handlers take the buffer as argument.")
-   (buffer-delete-hook (make-hook-buffer)
-                       :type hook-buffer
-                       :documentation "Hook run before `buffer-delete' takes effect.
+   (buffer-delete-hook
+    (make-hook-buffer)
+    :type hook-buffer
+    :documentation "Hook run before `buffer-delete' takes effect.
 The handlers take the buffer as argument.")
-   (password-interface (make-password-interface)
-                       :type (or null password::password-interface)
-                       :documentation "The current password interface.
+   (password-interface
+    (make-password-interface)
+    :type (or null password::password-interface)
+    :documentation "The current password interface.
 See `password:*interfaces*' for the list of all currently registered interfaces.
 To use, say, KeepassXC, set this slot to
 
@@ -222,46 +258,55 @@ To use, say, KeepassXC, set this slot to
 
 Password interfaces may have user classes (that is, prefixed with 'user-' as in
 the above example), in which case you can use `define-configuration' on them.")
-   (download-path (make-instance 'download-data-path)
-                  :type data-path
-                  :documentation "Path of directory where downloads will be
+   (download-path
+    (make-instance 'download-data-path)
+    :type data-path
+    :documentation "Path of directory where downloads will be
 stored.  Nil means use system default.
 Downloads are kept in browser's `user-data', keyed by the expanded `download-path'.")
-   (download-engine :initform :renderer
-                    :type symbol
-                    :documentation "Select a download engine to use,
+   (download-engine
+    :initform :renderer
+    :type symbol
+    :documentation "Select a download engine to use,
 such as :lisp or :renderer.")
-   (history-path (make-instance 'history-data-path)
-                 :type data-path
-                 :documentation "
+   (history-path
+    (make-instance 'history-data-path)
+    :type data-path
+    :documentation "
 The path where the system will create/save the global history.
 History data is kept in browser's `user-data', keyed by the expanded `history-path'.")
-   (bookmarks-path (make-instance 'bookmarks-data-path)
-                   :type data-path
-                   :documentation "
+   (bookmarks-path
+    (make-instance 'bookmarks-data-path)
+    :type data-path
+    :documentation "
 The path where the system will create/save the bookmarks.
 Bookmarks' data is kept in browser's `user-data', keyed by the expanded `bookmarks-path'.")
-   (annotations-path (make-instance 'annotations-data-path)
-                     :type data-path
-                     :documentation "
+   (annotations-path
+    (make-instance 'annotations-data-path)
+    :type data-path
+    :documentation "
 The path where the system will create/save annotations.
 Annotation' data is kept in browser's `user-data', keyed by the expanded
 `annotations-path'.")
-   (inputs-path (make-instance 'inputs-data-path)
-                :type data-path
-                :documentation "
+   (inputs-path
+    (make-instance 'inputs-data-path)
+    :type data-path
+    :documentation "
 The path where the system will create/save the input data.
 Inputs' data is kept in browser's `user-data', keyed by the expanded `save-inputs-path'.")
-   (auto-mode-rules-path (make-instance 'auto-mode-rules-data-path)
-                         :type data-path
-                         :documentation "The path where the auto-mode rules are saved.
+   (auto-mode-rules-path
+    (make-instance 'auto-mode-rules-data-path)
+    :type data-path
+    :documentation "The path where the auto-mode rules are saved.
 Rules are kept in browser's `user-data', keyed by the expanded `auto-mode-rules-path'.")
-   (standard-output-path (make-instance 'standard-output-data-path)
-                         :type data-path
-                         :documentation "Path where `*standard-output*' can be written to.")
-   (error-output-path (make-instance 'error-output-data-path)
-                      :type data-path
-                      :documentation "Path where `*error-output*' can be written to."))
+   (standard-output-path
+    (make-instance 'standard-output-data-path)
+    :type data-path
+    :documentation "Path where `*standard-output*' can be written to.")
+   (error-output-path
+    (make-instance 'error-output-data-path)
+    :type data-path
+    :documentation "Path where `*error-output*' can be written to."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -301,14 +346,15 @@ inherited from the superclasses."))
                      :from-end t))
 
 (define-class web-buffer (user-buffer)
-  ((load-status :unloaded ; TODO: Rename to `status' to be consistent with download-mode?
-                :type (member :loading
-                              :finished
-                              :unloaded
-                              :failed)
-                :accessor nil
-                :export nil ; TODO: Need to decide if we want progress / errors before exposing to the user.
-                :documentation "The status of the buffer.
+  ((status
+    :unloaded
+    :type (member :loading
+                  :finished
+                  :unloaded
+                  :failed)
+    :accessor nil
+    :export nil ; TODO: Need to decide if we want progress / errors before exposing to the user.
+    :documentation "The status of the buffer.
 - `:loading' when loading a web resource.
 - `:finished' when done loading a web resource.
 - `:unloaded' for buffers that have not been loaded yet, like
@@ -322,20 +368,24 @@ inherited from the superclasses."))
     nil
     :export nil
     :documentation "The document model used to calculate the keywords.")
-   (proxy nil
-          :accessor nil
-          :type (or proxy null)
-          :documentation "Proxy for buffer.")
-   (certificate-exceptions '()
-                           :type list-of-strings
-                           :documentation "A list of hostnames for which certificate errors shall be ignored.")
-   (cookies-path (make-instance 'cookies-data-path)
-                 :type data-path
-                 :documentation "The path where cookies are stored.  Not all
+   (proxy
+    nil
+    :accessor nil
+    :type (or proxy null)
+    :documentation "Proxy for buffer.")
+   (certificate-exceptions
+    '()
+    :type list-of-strings
+    :documentation "A list of hostnames for which certificate errors shall be ignored.")
+   (cookies-path
+    (make-instance 'cookies-data-path)
+    :type data-path
+    :documentation "The path where cookies are stored.  Not all
 renderers might support this.")
-   (default-cookie-policy :no-third-party
-                          :type cookie-policy
-                          :documentation "Cookie policy of new buffers.
+   (default-cookie-policy
+    :no-third-party
+    :type cookie-policy
+    :documentation "Cookie policy of new buffers.
 Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 `:no-third-party' (accept cookies for current website only)."))
   (:export-class-name-p t)
@@ -364,52 +414,63 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 (defmethod default-modes append ((buffer nosave-buffer))
   '(certificate-exception-mode))
 
+(define-class background-buffer (user-web-buffer)
+  ()
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:export-predicate-name-p t)
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:documentation "A non-user-facing buffer to run background processes in.
+Examples of the processes to run in background buffers are:
+- WebExtensions background pages.
+- Page scraping processes.
+- Anything else requiring a renderer running invisible to the user.
+
+These buffers are not referenced by `browser', so the only way to control these is to
+store them somewhere and `ffi-buffer-delete' them once done."))
+
+(define-user-class background-buffer)
+
 (define-class internal-buffer (user-buffer)
-  ((style #.(cl-css:css
-             '((body
-                :margin-left "20px"
-                :margin-top "20px")
-               (h1
-                :font-family "Helvetica Neue, Helvetica"
-                :font-weight 500)
-               (h2
-                :font-family "Helvetica Neue, Helvetica"
-                :font-weight 500)
-               (h3
-                :font-family "Helvetica Neue, Helvetica"
-                :font-weight 500)
-               (h4
-                :font-family "Helvetica Neue, Helvetica"
-                :font-weight 500)
-               (h5
-                :font-family "Helvetica Neue, Helvetica"
-                :font-weight 500)
-               (h6
-                :font-family "Helvetica Neue, Helvetica"
-                :font-weight 500)
-               (hr
-                :height "3px"
-                :border-radius "2px"
-                :border-width "0"
-                :color "lightgray"
-                :background-color "lightgray")
-               (.button
-                :display "inline-block"
-                :background-color "darkgray"
-                :color "white"
-                :text-decoration "none"
-                :border-radius "2px"
-                :padding "6px"
-                :margin-left "2px"
-                :margin-right "2px")
-               (|.button:hover|
-                :color "black")
-               (|.button:visited|
-                :color "white")
-               (|.button:active|
-                :color "white")
-               (a
-                :color "gray")))))
+  ((style
+    (theme:themed-css
+        (theme *browser*)
+      (body
+       :color theme:text
+       :background-color theme:background
+       :margin-left "20px"
+       :margin-top "20px")
+      ("h1,h2,h3,h4,h5,h6"
+       :color theme:primary
+       :font-family theme:font-family)
+      (hr
+       :height "3px"
+       :border-radius "2px"
+       :border-width "0"
+       :color theme:secondary
+       :background-color theme:secondary)
+      (.button
+       :display "inline-block"
+       :background-color theme:secondary
+       :color theme:background
+       :text-decoration "none"
+       :border-radius "2px"
+       :padding "6px"
+       :margin-left "2px"
+       :margin-right "2px")
+      (|.button:hover|
+       :color theme:text)
+      (|.button:visited|
+       :color theme:background)
+      (|.button:active|
+       :color theme:background)
+      (a
+       :color theme:primary)
+      (pre
+       :color theme:text
+       :background-color theme:quaternary
+       :border-radius "2px"
+       :padding-bottom "10px"))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -417,50 +478,37 @@ Must be one of `:always' (accept all cookies), `:never' (reject all cookies),
 
 (define-user-class internal-buffer)
 
-(define-class panel-buffer (internal-buffer)
+(define-class panel-buffer (user-web-buffer)
   ((width 250 :documentation "The width in pixels.")
-   (style (cl-css:css
-           '((body
-              :background-color "#F7F7F7"
-              :margin "0"
-              :padding "10px"
-              :border-right "1px solid darkgray"
-              :border-left "1px solid darkgray")
-             (h1
-              :font-family "Helvetica Neue, Helvetica"
-              :font-weight 500)
-             (h2
-              :font-family "Helvetica Neue, Helvetica"
-              :font-weight 500)
-             (h3
-              :font-family "Helvetica Neue, Helvetica"
-              :font-weight 500)
-             (h4
-              :font-family "Helvetica Neue, Helvetica"
-              :font-weight 500)
-             (h5
-              :font-family "Helvetica Neue, Helvetica"
-              :font-weight 500)
-             (h6
-              :font-family "Helvetica Neue, Helvetica"
-              :font-weight 500)
-             (a
-              :color "gray")
-             (.button
-              :display "inline-block"
-              :background-color "darkgray"
-              :color "white"
-              :text-decoration "none"
-              :border-radius "2px"
-              :padding "6px"
-              :margin-left "2px"
-              :margin-right "2px")
-             (|.button:hover|
-              :color "black")
-             (|.button:visited|
-              :color "white")
-             (|.button:active|
-              :color "white")))))
+   (style (theme:themed-css (theme *browser*)
+            (body
+             :background-color theme:background
+             :color theme:text
+             :margin "0"
+             :padding "10px"
+             :border-style "solid"
+             :border-width "0px 1px"
+             :border-color theme:tertiary)
+            ("h1,h2,h3,h4,h5,h6"
+             :font-family theme:font-family
+             :font-weight 500)
+            (a
+             :color theme:primary)
+            (.button
+             :display "inline-block"
+             :background-color "darkgray"
+             :color theme:background
+             :text-decoration "none"
+             :border-radius "2px"
+             :padding "6px"
+             :margin-left "2px"
+             :margin-right "2px")
+            (|.button:hover|
+             :color theme:text)
+            (|.button:visited|
+             :color theme:background)
+            (|.button:active|
+             :color theme:background))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
@@ -500,109 +548,116 @@ Delete it with `ffi-buffer-delete'."
    (glyph-mode-presentation-p
     nil
     :documentation "Display the modes as a list of glyphs.")
-   (style 
-    #.(cl-css:css
-       '((body
-          :background "rgb(150, 150, 150)"
-          :font-size "14px"
-          :color "black"
-          :padding 0
-          :margin 0
-          :line-height "24px")
-         (.loader
-          :border "2px solid rgba(0,0,0,0)"
-          :border-top-color "#37a8e4"
-          :border-left-color "#37a8e4"
-          :border-radius "50%"
-          :display "inline-block"
-          :width "7px"
-          :height "7px"
-          :animation "spin 1s linear infinite")
-         ("@keyframes spin"
-          ("0%" :transform "rotate(0deg)")
-          ("100%" :transform "rotate(360deg)"))
-         (".arrow-right"
-          :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)"
-          :margin-right "-10px")
-         (".arrow-left"
-          :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0% 50%)"
-          :margin-left "-10px")
-         ("#container"
-          :display "grid"
-          ;; Columns: controls, url, tabs, modes
-          :grid-template-columns "90px minmax(auto, 30ch) 1fr 220px"
-          :overflow-y "hidden")
-         ("#container-vi"
-          :display "grid"
-          ;; Columns: controls, vi-status, url, tabs, modes
-          :grid-template-columns "90px 30px minmax(auto, 30ch) 1fr 220px"
-          :overflow-y "hidden")
-         ("#controls"
-          :font-size "16px"
-          :font-weight "700"
-          :background-color "rgb(50,50,50)"
-          :padding-left "5px"
-          :overflow "hidden"
-          :white-space "nowrap"
-          :z-index "4")
-         ("#vi-mode"
-          :padding-right "10px"
-          :padding-left "10px"
-          :text-align "center"
-          :z-index "3")
-         (".vi-normal-mode"
-          :background-color "rgb(100,100,100)")
-         (".vi-insert-mode"
-          :background-color "#37a8e4")
-         ("#url"
-          :color "white"
-          :background-color "rgb(100,100,100)"
-          :min-width "100px"
-          :text-overflow "ellipsis"
-          :overflow-x "hidden"
-          :white-space "nowrap"
-          :padding-right "10px"
-          :padding-left "15px"
-          :z-index "2")
-         ("#tabs"
-          :background-color "rgb(140,140,140)"
-          :min-width "100px"
-          :white-space "nowrap"
-          :overflow-x "scroll"
-          :text-align "left"
-          :padding-left "15px"
-          :padding-right "10px"
-          :z-index "1")
-         ("#tabs::-webkit-scrollbar"
-          :display "none")
-         (.tab
-          :color "white"
-          :white-space "nowrap"
-          :text-decoration "none"
-          :padding-left "5px"
-          :padding-right "5px")
-         (".tab:hover"
-          :color "black")
-         ("#modes"
-          :background-color "rgb(110,110,110)"
-          :color "white"
-          :text-align "right"
-          :padding-left "10px"
-          :padding-right "5px"
-          :overflow-x "scroll"
-          :white-space "nowrap"
-          :z-index "2")
-         ("#modes::-webkit-scrollbar"
-          :display "none")
-         (.button
-          :color "white"
-          :text-decoration "none"
-          :padding-left "2px"
-          :padding-right "2px"
-          :margin-left "2px"
-          :margin-right "2px")
-         (|.button:hover|
-          :color "black")))))
+   (style
+    (theme:themed-css (theme *browser*)
+      (body
+       :color theme:text
+       :background theme:tertiary
+       :font-size "14px"
+       :color theme:text
+       :padding 0
+       :margin 0
+       :line-height "24px")
+      (.loader
+       :border-width "2px"
+       :border-style "solid"
+       :border-color "transparent"
+       :border-top-color theme:accent
+       :border-left-color theme:accent
+       :border-radius "50%"
+       :display "inline-block"
+       :width "7px"
+       :height "7px"
+       :animation "spin 1s linear infinite")
+      ("@keyframes spin"
+       ("0%" :transform "rotate(0deg)")
+       ("100%" :transform "rotate(360deg)"))
+      (".arrow-right"
+       :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)"
+       :margin-right "-10px")
+      (".arrow-left"
+       :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0% 50%)"
+       :margin-left "-10px")
+      ("#container"
+       :display "grid"
+       ;; Columns: controls, url, tabs, modes
+       :grid-template-columns "90px minmax(auto, 30ch) 1fr 220px"
+       :overflow-y "hidden")
+      ("#container-vi"
+       :display "grid"
+       ;; Columns: controls, vi-status, url, tabs, modes
+       :grid-template-columns "90px 30px minmax(auto, 30ch) 1fr 220px"
+       :overflow-y "hidden")
+      ("#controls"
+       :font-size "16px"
+       :font-weight "700"
+       :background-color theme:primary
+       :color theme:background
+       :padding-left "5px"
+       :overflow "hidden"
+       :white-space "nowrap"
+       :z-index "4")
+      ("#vi-mode"
+       :padding-right "10px"
+       :padding-left "10px"
+       :text-align "center"
+       :z-index "3")
+      (".vi-normal-mode"
+       :color theme:text
+       :background-color theme:secondary)
+      (".vi-insert-mode"
+       :color theme:text
+       :background-color theme:accent)
+      ("#url"
+       :color theme:background
+       :background-color theme:secondary
+       :min-width "100px"
+       :text-overflow "ellipsis"
+       :overflow-x "hidden"
+       :white-space "nowrap"
+       :padding-right "10px"
+       :padding-left "15px"
+       :z-index "2")
+      ("#tabs"
+       :color theme:text
+       :background-color theme:tertiary
+       :min-width "100px"
+       :white-space "nowrap"
+       :overflow-x "scroll"
+       :text-align "left"
+       :padding-left "15px"
+       :padding-right "10px"
+       :z-index "1")
+      ("#tabs::-webkit-scrollbar"
+       :display "none")
+      (.tab
+       :color theme:background
+       :white-space "nowrap"
+       :text-decoration "none"
+       :padding-left "5px"
+       :padding-right "5px")
+      (".tab:hover"
+       :color theme:text)
+      ("#modes"
+       :background-color theme:secondary
+       :color theme:background
+       :text-align "right"
+       :padding-left "10px"
+       :padding-right "5px"
+       :overflow-x "scroll"
+       :white-space "nowrap"
+       :z-index "2")
+      ("#modes::-webkit-scrollbar"
+       :display "none")
+      (.button
+       :color theme:background
+       :text-decoration "none"
+       :padding-left "2px"
+       :padding-right "2px"
+       :margin-left "2px"
+       :margin-right "2px")
+      (|.button:hover|
+       :color theme:text))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -615,18 +670,18 @@ Delete it with `ffi-buffer-delete'."
   (ffi-buffer-evaluate-javascript
    buffer
    (ps:ps
-     (defvar nyxt-identifier-counter 0)
-     (defun add-nyxt-identifiers (node)
-       (unless (ps:chain node (has-attribute "nyxt-identifier"))
-         (ps:chain node (set-attribute "nyxt-identifier" (ps:stringify nyxt-identifier-counter))))
-       (incf nyxt-identifier-counter)
-       (dolist (child (ps:chain node children))
-         (add-nyxt-identifiers child))
-       nyxt-identifier-counter)
-     (setf nyxt-identifier-counter (add-nyxt-identifiers (ps:chain document body)))))
+    (defvar nyxt-identifier-counter 0)
+    (defun add-nyxt-identifiers (node)
+      (unless (ps:chain node (has-attribute "nyxt-identifier"))
+        (ps:chain node (set-attribute "nyxt-identifier" (ps:stringify nyxt-identifier-counter))))
+      (incf nyxt-identifier-counter)
+      (dolist (child (ps:chain node children))
+        (add-nyxt-identifiers child))
+      nyxt-identifier-counter)
+    (setf nyxt-identifier-counter (add-nyxt-identifiers (ps:chain document body)))))
   (alex:when-let ((body-json (nyxt/dom::get-document-body-json)))
-    (setf (document-model buffer)
-          (nyxt/dom::named-json-parse body-json))))
+                 (setf (document-model buffer)
+                       (nyxt/dom::named-json-parse body-json))))
 
 (defun dead-buffer-p (buffer) ; TODO: Use this wherever needed.
   (str:empty? (id buffer)))
@@ -642,17 +697,17 @@ Delete it with `ffi-buffer-delete'."
              dom-counter)
            (setf dom-counter 0)
            (count-dom-elements (nyxt/ps:qs document "html"))))
-    (if (dead-buffer-p buffer)
-        (call-next-method)
-        (with-current-buffer buffer
-          (let ((value (call-next-method))
-                (element-count (%count-dom-elements)))
-            (if (and value element-count
-                     ;; Check whether the difference in element count is significant.
-                     (< (abs (- (length (clss:select "*" value)) (truncate element-count)))
-                        (document-model-delta-threshold buffer)))
-                value
-                (update-document-model :buffer buffer)))))))
+         (if (dead-buffer-p buffer)
+             (call-next-method)
+             (with-current-buffer buffer
+               (let ((value (call-next-method))
+                     (element-count (%count-dom-elements)))
+                 (if (and value element-count
+                          ;; Check whether the difference in element count is significant.
+                          (< (abs (- (length (clss:select "*" value)) (truncate element-count)))
+                             (document-model-delta-threshold buffer)))
+                     value
+                     (update-document-model :buffer buffer)))))))
 
 (export-always 'get-nyxt-id)
 (defmethod get-nyxt-id ((element plump:element))
@@ -706,7 +761,7 @@ See `buffer-make'."
 (defun load-failed-p (buffer)
   "Only web-buffer loads can fail."
   (and (web-buffer-p buffer)
-       (eq (slot-value buffer 'load-status) :failed)))
+       (eq (slot-value buffer 'status) :failed)))
 
 (export-always 'on-signal-notify-uri)
 (defmethod on-signal-notify-uri ((buffer buffer) no-url)
@@ -769,7 +824,7 @@ BUFFER's modes."
 (defmethod prompter:object-attributes ((buffer web-buffer))
   `(("URL" ,(render-url (url buffer)))
     ("Title" ,(title buffer))
-    ("Keywords" ,(format nil "~:{~a~^ ~}" (keywords buffer)))))
+    ("Keywords" ,(lambda (buffer) (format nil "~:{~a~^ ~}" (keywords buffer))))))
 
 (-> make-buffer
     (&key (:title string)
@@ -781,7 +836,7 @@ BUFFER's modes."
           (:buffer-class (or null symbol)))
     *)
 (define-command make-buffer (&key (title "") modes (url (quri:uri "")) parent-buffer
-                             no-history-p (load-url-p t) buffer-class)
+                                  no-history-p (load-url-p t) buffer-class)
   "Create a new buffer.
 MODES is a list of mode symbols.
 If URL is empty, the `default-new-buffer-url' buffer slot is used instead.
@@ -810,7 +865,7 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
           (:load-url-p boolean))
     *)
 (define-command make-nosave-buffer (&rest args
-                                    &key title modes url load-url-p)
+                                          &key title modes url load-url-p)
   "Create a new buffer that won't save anything to the filesystem.
 See `make-buffer' for a description of the arguments."
   (declare (ignorable title modes url load-url-p))
@@ -829,6 +884,17 @@ See `make-buffer'."
                     (make-buffer :url url :parent-buffer parent-buffer))))
     (set-current-buffer buffer)
     buffer))
+
+(declaim (ftype (function (&key (:title string)
+                                (:modes (or null (cons symbol *)))
+                                (:url quri:uri)))
+                make-background-buffer))
+(export-always 'make-background-buffer)
+(defun make-background-buffer (&rest args &key title modes url)
+  "Create a new web-aware buffer that won't be registered by the `browser'.
+See `make-buffer' for a description of the arguments."
+  (declare (ignorable title modes url))
+  (apply #'make-buffer (append (list :buffer-class 'user-background-buffer :no-history-p t) args)))
 
 (define-command make-internal-buffer (&key (title "") modes no-history-p)
   "Create a new buffer.
@@ -879,7 +945,9 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (mapc (alex:rcurry #'make-mode buffer) extra-modes)
     (when dead-buffer                   ; TODO: URL should be already set.  Useless?
       (setf (url buffer) (url dead-buffer)))
-    (buffers-set (id buffer) buffer)
+    ;; Background buffers are invisible to the browser.
+    (unless (eq buffer-class 'user-background-buffer)
+      (buffers-set (id buffer) buffer))
     (unless no-history-p
       ;; When we create buffer, current one can override the
       ;; data-profile of the created buffer. This is dangerous,
@@ -913,26 +981,36 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 (defun buffer-delete (buffer)
   "For dummy buffers, use `ffi-buffer-delete' instead."
   (hooks:run-hook (buffer-delete-hook buffer) buffer)
+  (with-data-access (history (history-path buffer))
+    (sera:and-let* ((owner (htree:owner history (id buffer)))
+                    (current (htree:current owner))
+                    (data (htree:data current)))
+      (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer))))
+  (ffi-buffer-delete buffer))
+
+(defun buffer-hide (buffer)
+  "Stop showing the buffer in Nyxt.
+Should be called from/instead of `ffi-buffer-delete' when the renderer view
+associated to the buffer is already killed."
   (let ((parent-window (find buffer (window-list) :key 'active-buffer)))
     (with-data-access (history (history-path buffer))
-      (sera:and-let* ((owner (htree:owner history (id buffer)))
-                      (current (htree:current owner))
-                      (data (htree:data current)))
-        (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer)))
       (htree:delete-owner history (id buffer)))
     (when parent-window
       (let ((replacement-buffer (or (first (get-inactive-buffers))
                                     (make-buffer :load-url-p nil
                                                  :url (quri:uri "about:blank")))))
         (window-set-buffer parent-window replacement-buffer)))
-    (ffi-buffer-delete buffer)
     (buffers-delete (id buffer))
     ;; (setf (id buffer) "") ; TODO: Reset ID?
     (add-to-recent-buffers buffer)))
 
 (export-always 'buffer-list)
 (defun buffer-list ()
-  (alex:hash-table-values (buffers *browser*)))
+  "Order is stable."
+  (sort
+   (alex:hash-table-values (buffers *browser*))
+   #'string>
+   :key #'id))
 
 (defun sort-by-time (sequence &key (key #'last-access))
   "Return a timely ordered SEQUENCE by KEY.  More recent elements come first."
@@ -992,7 +1070,7 @@ proceeding."
     (set-window-title window)
     (print-status nil window)
     (when (and (web-buffer-p buffer)
-               (eq (slot-value buffer 'load-status) :unloaded))
+               (eq (slot-value buffer 'status) :unloaded))
       (reload-buffers (list buffer)))))
 
 (defun last-active-buffer ()
@@ -1005,8 +1083,8 @@ proceeding."
           (mapcar #'active-buffer (window-list)))
         (buffers (buffer-list)))
     (alex:when-let ((diff (set-difference buffers active-buffers)))
-       ;; Display the most recent inactive buffer.
-       (sort-by-time diff))))
+                   ;; Display the most recent inactive buffer.
+                   (sort-by-time diff))))
 
 (define-command copy-url ()
   "Save current URL to clipboard."
@@ -1038,11 +1116,11 @@ proceeding."
    (prompter:follow-mode-functions #'(lambda (buffer)
                                        (set-current-buffer buffer :focus nil)))
    (prompter:destructor (let ((buffer (current-buffer)))
-                           (lambda (prompter source)
-                             (declare (ignore source))
-                             (unless (or (prompter:returned-p prompter)
-                                         (eq buffer (current-buffer)))
-                               (set-current-buffer buffer))))))
+                          (lambda (prompter source)
+                            (declare (ignore source))
+                            (unless (or (prompter:returned-p prompter)
+                                        (eq buffer (current-buffer)))
+                              (set-current-buffer buffer))))))
   (:export-class-name-p t))
 (define-user-class buffer-source)
 
@@ -1098,7 +1176,7 @@ set of useful URLs or preparing a list to send to a someone else."
                                           :multi-selection-p t))))
     (with-current-html-buffer (reduced-buffer "*Reduced Buffers*" 'base-mode)
       (spinneret:with-html-string
-        (:style (style reduced-buffer))
+          (:style (style reduced-buffer))
         (:h1 "Reduced Buffers:")
         (:div
          (loop for buffer in buffers
@@ -1136,7 +1214,7 @@ When BUFFER is omitted, it defaults to the current one."
          (buffers-to-delete (remove buffer all-buffers))
          (count (list-length buffers-to-delete)))
     (if-confirm ("Delete ~a buffer~p?" count count)
-      (mapcar #'buffer-delete buffers-to-delete))))
+                (mapcar #'buffer-delete buffers-to-delete))))
 
 (export-always 'buffer-load)
 (declaim (ftype (function (url-designator &key (:buffer buffer)))
@@ -1146,9 +1224,9 @@ When BUFFER is omitted, it defaults to the current one."
 URL is then transformed by BUFFER's `buffer-load-hook'."
   (let* ((url (url url-designator))
          (new-url
-          (ignore-errors
-           (handler-bind ((error (lambda (c) (log:error "In `buffer-load-hook': ~a" c))))
-             (hooks:run-hook (slot-value buffer 'buffer-load-hook) url)))))
+           (ignore-errors
+            (handler-bind ((error (lambda (c) (log:error "In `buffer-load-hook': ~a" c))))
+              (hooks:run-hook (slot-value buffer 'buffer-load-hook) url)))))
     (when new-url
       (check-type new-url quri:uri)
       (setf url new-url)
@@ -1183,6 +1261,9 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
 (define-class new-url-query ()
   ((query ""
           :documentation "Either a URL or a string query passed to `engine'.")
+   (label nil
+          :type (or null string)
+          :documentation "The meaningful text for the query, if query is a URL.")
    (engine nil
            :type (or null search-engine)))
   (:export-class-name-p t)
@@ -1198,14 +1279,16 @@ If prefixing with 'https://' results in a valid URL, set `query' to this result
 on instantiation.
 Finally, if nothing else, set the `engine' to the `default-search-engine'."))
 
-(defmethod initialize-instance :after ((query new-url-query) &key)
+(defmethod initialize-instance :after ((query new-url-query)
+                                       &key check-dns-p &allow-other-keys)
   ;; Trim whitespace, in particular to detect URL properly.
   (setf (query query) (str:trim (query query)))
   (cond
     ((engine query)
      ;; First check engine: if set, no need to change anything.
      nil)
-    ((valid-url-p (query query))
+    ((valid-url-p (query query)
+                  :check-dns-p check-dns-p)
      ;; Valid URLs should be passed forward.
      nil)
     ;; Rest is for invalid URLs:
@@ -1216,7 +1299,9 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
             (uiop:native-namestring
              (uiop:ensure-absolute-pathname
               (query query) *default-pathname-defaults*)))))
-    ((valid-url-p (str:concat "https://" (query query)))
+    ((and check-dns-p
+          (valid-url-p (str:concat "https://" (query query))
+                       :check-dns-p check-dns-p))
      (setf (query query)
            (str:concat "https://" (query query))))
     (t
@@ -1236,17 +1321,29 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
            (not (uiop:emptyp (query query))))
       (format nil (search-url (engine query))
               (str:join ""
-                (mapcar #'encode-url-char
-                        (map 'list #'string (query query))))))
+                        (mapcar #'encode-url-char
+                                (map 'list #'string (query query))))))
      ((engine query)
       (fallback-url (engine query)))
      (t (query query)))))
 
 (defmethod prompter:object-attributes ((query new-url-query))
-  `(("URL or new query" ,(query query))
+  `(("URL or new query" ,(or (label query) (query query)))
     ("Search engine?" ,(if (engine query) (shortcut (engine query)) ""))))
 
-(defun input->queries (input)
+(defun make-completion-query (completion &key engine (check-dns-p t))
+  (typecase completion
+    (string (make-instance 'new-url-query
+                           :engine      engine
+                           :check-dns-p check-dns-p
+                           :query completion))
+    (list (make-instance 'new-url-query
+                         :check-dns-p check-dns-p
+                         :query (second completion)
+                         :label (first completion)))))
+
+(defun input->queries (input &key (check-dns-p t)
+                               (engine-completion-p))
   (let* ((terms (sera:tokens input))
          (engines (let ((all-prefixed-engines
                           (remove-if
@@ -1261,29 +1358,55 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
     (append (unless (and engines (member (first terms)
                                          (mapcar #'shortcut engines)
                                          :test #'string=))
-              (list (make-instance 'new-url-query :query input)))
-            (alex:mappend (lambda (engine)
-                            (append
-                             (list (make-instance 'new-url-query
-                                                  :query (str:join " " (rest terms))
-                                                  :engine engine))
-                             ;; Some engines (I'm looking at you, Wikipedia!)
-                             ;; return garbage in response to an empty request.
-                             (when (and (completion-function engine) (rest terms))
-                               (mapcar (alex:curry #'make-instance 'new-url-query
-                                                   :engine engine :query)
-                                       (with-protect ("Error while completing search: ~a" :condition)
-                                         (funcall (completion-function engine)
-                                                  (str:join " " (rest terms))))))))
-                          engines))))
+              (list (make-instance 'new-url-query
+                                   :query       input
+                                   :check-dns-p check-dns-p)))
+            (or (alex:mappend (lambda (engine)
+                                (append
+                                 (list (make-instance 'new-url-query
+                                                      :query       (str:join " " (rest terms))
+                                                      :engine      engine
+                                                      :check-dns-p check-dns-p))
+                                 ;; Some engines (I'm looking at you, Wikipedia!)
+                                 ;; return garbage in response to an empty request.
+                                 (when (and engine-completion-p
+                                            (search-auto-complete-p (current-buffer))
+                                            (completion-function engine)
+                                            (rest terms))
+                                   (mapcar (alex:rcurry #'make-completion-query
+                                                        :engine      engine
+                                                        :check-dns-p check-dns-p)
+                                           (with-protect ("Error while completing search: ~a" :condition)
+                                             (funcall (completion-function engine)
+                                                      (str:join " " (rest terms))))))))
+                              engines)
+                (sera:and-let* ((completion engine-completion-p)
+                                (buffer (current-buffer))
+                                (complete (search-auto-complete-p buffer))
+                                (always-complete (search-always-auto-complete-p buffer))
+                                (engine (default-search-engine))
+                                (completion (completion-function engine))
+                                (all-terms (str:join " " terms)))
+                  (mapcar (alex:rcurry #'make-completion-query
+                                       :engine      engine
+                                       :check-dns-p check-dns-p)
+                          (funcall (completion-function engine) all-terms)))))))
 
 (define-class new-url-or-search-source (prompter:source)
   ((prompter:name "New URL or search query")
    (prompter:filter-preprocessor
     (lambda (suggestions source input)
-      (declare (ignorable suggestions source))
-      (input->queries input)))
+      (declare (ignore suggestions source))
+      (input->queries input
+                      :check-dns-p nil
+                      :engine-completion-p nil)))
    (prompter:filter nil)
+   (prompter:filter-postprocessor
+    (lambda (suggestions source input)
+      (declare (ignore suggestions source))
+      (input->queries input
+                      :check-dns-p t
+                      :engine-completion-p t)))
    (prompter:actions '(buffer-load)))
   (:export-class-name-p t)
   (:documentation "This prompter source tries to \"do the right thing\" to
@@ -1291,25 +1414,32 @@ generate a new URL query from user input.
 - If the query is a URL, open it directly.
 - If it's a file, prefix the query with 'file://'.
 - If it's a search engine shortcut, include it in the suggestions.
-- If it's none of the above, use the `default-search-engine'."))
+- If it's none of the above, use the `default-search-engine'.
+
+It runs in two passes.  The first pass does not check the DNS for domain
+validity, nor does it return any search engine suggestions.  This guarantees
+that a good-enough default suggestion is showed instantaneously.
+(We really want this prompter source to be fast!)  The second pass checks the
+DNS to precisely validate domains and returns the search engines suggestions, if
+any."))
 (define-user-class new-url-or-search-source)
 
 (defun pushnew-url-history (history url)
   "URL is not pushed if empty."
   (when (and history (not (url-empty-p url)))
-      (prompter::history-pushnew history (render-url url))))
+    (prompter::history-pushnew history (render-url url))))
 
 (define-command set-url (&key (prefill-current-url-p t))
   "Set the URL for the current buffer, completing with history."
   (let ((history (set-url-history *browser*))
         (actions (list (make-command buffer-load* (suggestion-values)
-                         "Load first selected URL in current buffer and the rest in new buffer(s)."
-                         (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
-                         (buffer-load (url (first suggestion-values))))
+                                     "Load first selected URL in current buffer and the rest in new buffer(s)."
+                                     (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
+                                     (buffer-load (url (first suggestion-values))))
                        (make-command new-buffer-load (suggestion-values)
-                         "Load URL(s) in new buffer(s)."
-                         (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
-                         (make-buffer-focus :url (url (first suggestion-values)))))))
+                                     "Load URL(s) in new buffer(s)."
+                                     (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
+                                     (make-buffer-focus :url (url (first suggestion-values)))))))
     (pushnew-url-history history (url (current-buffer)))
     (prompt
      :prompt "Open URL"
@@ -1325,10 +1455,10 @@ generate a new URL query from user input.
   "Prompt for a URL and set it in a new focused buffer."
   (let ((history (set-url-history *browser*))
         (actions (list (make-command new-buffer-load (suggestion-values)
-                         "Load URL(s) in new buffer(s)"
-                         (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
-                               (rest suggestion-values))
-                         (make-buffer-focus :url (url (first suggestion-values)))))))
+                                     "Load URL(s) in new buffer(s)"
+                                     (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
+                                           (rest suggestion-values))
+                                     (make-buffer-focus :url (url (first suggestion-values)))))))
     (pushnew-url-history history (url (current-buffer)))
     (prompt
      :prompt "Open URL in new buffer"
@@ -1343,12 +1473,12 @@ generate a new URL query from user input.
 (define-command set-url-new-nosave-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused nosave buffer."
   (let ((actions
-         (list (make-command new-nosave-buffer-load (suggestion-values)
-                 "Load URL(s) in new nosave buffer(s)"
-                 (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion)))
-                       (rest suggestion-values))
-                 (make-buffer-focus :url (url (first suggestion-values))
-                                    :nosave-buffer-p t)))))
+          (list (make-command new-nosave-buffer-load (suggestion-values)
+                              "Load URL(s) in new nosave buffer(s)"
+                              (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion)))
+                                    (rest suggestion-values))
+                              (make-buffer-focus :url (url (first suggestion-values))
+                                                 :nosave-buffer-p t)))))
     (prompt
      :prompt "Open URL in new nosave buffer"
      :input (if prefill-current-url-p
@@ -1376,47 +1506,52 @@ generate a new URL query from user input.
   (with-data-unsafe (history (history-path buffer))
     (sera:and-let* ((owner (htree:owner history (id buffer)))
                     (parent-id (htree:creator-id owner)))
-      (gethash parent-id (buffers *browser*)))))
+                   (gethash parent-id (buffers *browser*)))))
+
+(defun buffers-with-history (history)
+  "Return the list of buffers that have history HISTORY.
+HISTORY may be NIL for buffers without history."
+  (remove-if (complement (sera:eqs history))
+             (buffer-list)
+             :key (alex:compose #'get-data #'history-path)))
 
 (defun buffer-children (&optional (buffer (current-buffer)))
-  (let* ((current-history (get-data (history-path buffer)))
-         (buffers (remove-if (complement (sera:eqs current-history))
-                             (buffer-list)
-                             :key (alex:compose #'get-data #'history-path))))
-    (with-data-unsafe (history (history-path buffer))
-      (sort (sera:filter
-              (sera:equals (id buffer))
-              buffers
-              :key (lambda (b) (alex:when-let ((owner (htree:owner history (id b))))
-                                 (htree:creator-id owner))))
-            #'string< :key #'id))))
+  (with-current-buffer buffer
+    (let* ((current-history (get-data (history-path buffer)))
+           (buffers (buffers-with-history current-history)))
+      (with-data-unsafe (history (history-path buffer))
+        (sort (sera:filter
+               (sera:equals (id buffer))
+               buffers
+               :key (lambda (b) (alex:when-let ((owner (htree:owner history (id b))))
+                                  (htree:creator-id owner))))
+              #'string< :key #'id)))))
 
 (defun buffer-siblings (&optional (buffer (current-buffer)))
-  (let* ((current-history (get-data (history-path buffer)))
-         (buffers (remove-if (complement (sera:eqs current-history))
-                             (buffer-list)
-                             :key (alex:compose #'get-data #'history-path))))
-    (with-data-unsafe (history (history-path buffer))
-      (flet ((existing-creator-id (owner)
-               "If owner's creator does not exist anymore
+  (with-current-buffer buffer
+    (let* ((current-history (get-data (history-path buffer)))
+           (buffers (buffers-with-history current-history)))
+      (with-data-unsafe (history (history-path buffer))
+        (flet ((existing-creator-id (owner)
+                 "If owner's creator does not exist anymore
 (i.e. parent has been deleted), return NIL so has mimick top-level owners."
-               (if (htree:owner history (htree:creator-id owner))
-                   (htree:creator-id owner)
-                   nil)))
-        (let* ((owner (htree:owner history (id buffer)))
-               (current-parent-id (when owner (existing-creator-id owner)))
-               (common-parent-buffers
-                 (sera:filter
-                  (sera:equals current-parent-id)
-                  buffers
-                  :key (lambda (b)
-                         (alex:when-let ((owner (htree:owner history (id b))))
-                           (existing-creator-id owner)))))
-               (common-parent-buffers
-                 (sort common-parent-buffers #'string< :key #'id)))
-          (sera:split-sequence-if (sera:equals (id buffer))
-                                  common-parent-buffers
-                                  :key #'id))))))
+                 (if (htree:owner history (htree:creator-id owner))
+                     (htree:creator-id owner)
+                     nil)))
+          (let* ((owner (htree:owner history (id buffer)))
+                 (current-parent-id (when owner (existing-creator-id owner)))
+                 (common-parent-buffers
+                   (sera:filter
+                    (sera:equals current-parent-id)
+                    buffers
+                    :key (lambda (b)
+                           (alex:when-let ((owner (htree:owner history (id b))))
+                             (existing-creator-id owner)))))
+                 (common-parent-buffers
+                   (sort common-parent-buffers #'string< :key #'id)))
+            (sera:split-sequence-if (sera:equals (id buffer))
+                                    common-parent-buffers
+                                    :key #'id)))))))
 
 (define-command switch-buffer-previous (&optional (buffer (current-buffer)))
   "Switch to the previous buffer in the buffer tree.
@@ -1424,20 +1559,20 @@ The tree is browsed in a depth-first fashion.
 When there is no previous buffer, go to the last one so as to cycle."
   (labels ((buffer-last-child (&optional (buffer (current-buffer)))
              (alex:if-let ((next-siblings (second (buffer-siblings buffer))))
-               (buffer-last-child (alex:last-elt next-siblings))
-               (alex:if-let ((children (buffer-children buffer)))
-                 (buffer-last-child (alex:last-elt children))
-                 buffer)))
+                          (buffer-last-child (alex:last-elt next-siblings))
+                          (alex:if-let ((children (buffer-children buffer)))
+                                       (buffer-last-child (alex:last-elt children))
+                                       buffer)))
            (buffer-sibling-previous (&optional (buffer (current-buffer)))
              (alex:when-let ((previous-siblings (first (buffer-siblings buffer))))
-               (alex:last-elt previous-siblings))))
+                            (alex:last-elt previous-siblings))))
     (alex:when-let ((previous (or (alex:when-let ((previous-sibling (buffer-sibling-previous buffer)))
-                                    (alex:if-let ((children (buffer-children previous-sibling)))
-                                      (buffer-last-child (first children))
-                                      previous-sibling))
+                                                 (alex:if-let ((children (buffer-children previous-sibling)))
+                                                              (buffer-last-child (first children))
+                                                              previous-sibling))
                                   (buffer-parent buffer)
                                   (buffer-last-child buffer))))
-      (set-current-buffer previous))))
+                   (set-current-buffer previous))))
 
 (define-command switch-buffer-next (&optional (buffer (current-buffer)))
   "Switch to the next buffer in the buffer tree.
@@ -1445,20 +1580,20 @@ The tree is browsed in a depth-first fashion.
 When there is no next buffer, go to the first one so as to cycle."
   (labels ((buffer-first-root (buffer)
              (alex:if-let ((parent (buffer-parent buffer)))
-               (buffer-first-root parent)
-               (first (first (buffer-siblings buffer)))))
+                          (buffer-first-root parent)
+                          (first (first (buffer-siblings buffer)))))
            (buffer-next-parent-sibling (buffer)
              (alex:when-let ((parent (buffer-parent buffer)))
-               (alex:if-let ((next-siblings (second (buffer-siblings parent))))
-                 (first next-siblings)
-                 (buffer-next-parent-sibling parent))))
+                            (alex:if-let ((next-siblings (second (buffer-siblings parent))))
+                                         (first next-siblings)
+                                         (buffer-next-parent-sibling parent))))
            (buffer-sibling-next (&optional (buffer (current-buffer)))
              (first (second (buffer-siblings buffer)))))
     (alex:when-let ((next (or (first (buffer-children buffer))
                               (buffer-sibling-next buffer)
                               (buffer-next-parent-sibling buffer)
                               (buffer-first-root buffer))))
-      (set-current-buffer next))))
+                   (set-current-buffer next))))
 
 (define-command switch-buffer-last ()
   "Switch to the last showing buffer in the list of buffers.
@@ -1477,7 +1612,7 @@ If MODE does not exist, return nil."
      mode)
     ((symbolp mode)
      (alex:when-let ((command (mode-command mode)))
-       (name command)))
+                    (name command)))
     (t
      (mode-name (sera:class-name-of mode)))))
 
@@ -1585,11 +1720,11 @@ ARGS are passed to the mode command."
                            :sources (make-instance 'user-mode-source
                                                    :actions (list 'identity
                                                                   (make-command force-disable-auto-mode (modes)
-                                                                    "Return selection but force disabling auto-mode.
+                                                                                "Return selection but force disabling auto-mode.
 This is convenient when you use auto-mode by default and you want to toggle a
 mode permanently for this buffer."
-                                                                    (delete (read-from-string "nyxt/auto-mode:auto-mode" )
-                                                                            modes)))
+                                                                                (delete (read-from-string "nyxt/auto-mode:auto-mode" )
+                                                                                        modes)))
                                                    :marks (mapcar #'mode-name (modes buffer)))))
          (modes-to-disable (set-difference (all-mode-names) modes-to-enable
                                            :test #'string=)))
@@ -1605,10 +1740,3 @@ mode permanently for this buffer."
   "Print the current buffer."
   (pflet ((print-buffer () (print)))
          (print-buffer)))
-
-(define-deprecated-command focus-first-input-field (&key (type-blacklist '("hidden"
-                                                                           "checkbox"
-                                                                           "button")))
-  "Superseded by `nyxt/web-mode:focus-first-input-field'."
-  (funcall (find-symbol "FOCUS-FIRST-INPUT-FIELD" (find-package :nyxt/web-mode))
-           :type-blacklist type-blacklist))

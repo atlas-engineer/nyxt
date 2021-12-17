@@ -13,6 +13,7 @@
    (diff-html :documentation "String HTML representation of the computed diff
    between `old-html' and `new-html' slots.")
    (diff-style (cl-css:css
+                ;; TODO: Apply theme here?
                 '((".nyxt-diff-insert"
                    :text-decoration "none"
                    :background-color "#bbeabb")

@@ -112,7 +112,7 @@ removed, for instance on buffer deletion.")
   ((basename "inputs")
    (ref "inputs"))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-class download-data-path (data-path) ; TODO: Rename to downloads-data-path?
   ((dirname (xdg-download-dir))
    (ref "download"))
@@ -163,7 +163,8 @@ removed, for instance on buffer deletion.")
 (define-class default-data-profile (data-profile)
   ((name :initform "default"))
   (:export-class-name-p t)
-  (:documentation "With the default profile all data is persisted to the standard locations."))
+  (:documentation "With the default profile all data is persisted to the standard locations.")
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class nosave-data-profile (data-profile)
   ((name :initform "nosave")
@@ -397,11 +398,15 @@ means the store operations are systematically delayed."))
   (%get-user-data profile path (user-data-cache profile)))
 
 (defmethod set-user-data ((profile nosave-data-profile) (path data-path) value)
-  (setf (data (%get-user-data profile path (user-data-cache profile)))
-        value))
+  (let ((user-data (%get-user-data profile path (user-data-cache profile))))
+    (setf (data user-data) value)
+    (setf (restored-p user-data) t)
+    value))
 
 (export-always 'get-data)               ; TODO: Unexport?
 ;; TODO: Better name? Isn't it too wide?
+;; TODO: Inferring the data-profile is poor design, because it easily trips the
+;; caller when the PATH does not belong to the current buffer.
 (defmethod get-data ((path data-path))
   "Return the data for PATH.
 Data is restored with the `restore' method if required.

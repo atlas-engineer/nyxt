@@ -1,0 +1,437 @@
+#+TITLE:Nyxt WebExtensions API support library
+
+This is a WebKitWebExtension library to support the necessary
+[[https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Browser_support_for_JavaScript_APIs][JavaScript APIs]]. Most of the communication with the browser happens
+via WebKitUserMessages. To hook into the library in a WebKit-based
+browser, connect to the [[https://webkitgtk.org/reference/webkit2gtk/stable/WebKitWebView.html#WebKitWebView-user-message-received]["user-message-received"]] signal and dispatch it
+based on message name -- it will be the same as the JS function name
+(e.g. "runtime.sendMessage").
+* Extension initialization and extension descriptions
+The extension should be initialized with user data. User data should
+be a string GVariant containing JSON descriptions for extensions the
+library should handle. The schema is:
+#+begin_src js
+  [
+      {name : // Extension name as string
+       [id, // ID as a string
+        manifest, // full text of the extension manifest as a string
+        is_privileged, // integer: 0 if non-privileged, 1 if privileged.
+
+        // "Privileged" means that this extension can run the code in
+        // the default JS world/environment/context
+
+        [file_name : // string with a file name relative to the extension root
+         url, // string URL to load this extension with. Right now should be a data: URL
+         ... // same for all the files extension is allowed to access
+        ]
+       ]
+      },
+      ... // more extension descriptions
+  ]
+#+end_src
+
+Initialization without user_data is not an option and crashes the view
+it loads into. There used to be an option of user_data-less loading
+(see
+https://github.com/atlas-engineer/nyxt/commit/38b3b84a0e48e9a81ea1eb393c66c48531a0dc8c
+and
+https://github.com/atlas-engineer/nyxt/commit/dc51d55d478f1fb155aa7db99ae20e093b712e86),
+but it's not there anymore.
+
+* Implementing an API endpoint (example of browser.foo.bar())
+** (if there are no files for the browser.foo API yet) Create a foo.h and foo.c files.
+  Header is usually boring and contains something like
+  #+begin_src C
+      #ifndef __FOO_H__
+    #define __FOO_H__
+
+    void inject_foo_api (char* extension_name);
+
+    #endif /* __FOO_H__ */
+  #+end_src
+  where =inject_foo_api= is a conventional name for API-injecting function.
+  The foo.c file should be something like
+  #+begin_src C
+    #include "globals.h"
+    #include "foo.h"
+
+    void inject_foo_api (char* extension_name)
+    {
+            /* This is to get the extension-specific context to inject values into. */
+            JSCContext *context = get_extension_context(IS_PRIVILEGED ? NULL : extension_name);
+            /* Create the foo object with an empty constructor. */
+            MAKE_CLASS(context, Foo, "foo");
+
+            /* Method/property/event definitions go there... */
+
+            /* Bind foo to browser.foo. */
+            jsc_value_object_set_property(
+                    jsc_context_evaluate(context, "browser", -1), "foo",
+                    jsc_context_evaluate(context, "foo", -1));
+    }
+
+#+end_src
+
+** Write a JS method
+*** No need in browser communication (easy)
+Say, foo.bar doesn't need to communicate with the browser and always
+returns the same result. The callback could then be as simple as
+#+begin_src C
+  static JSCValue *
+  /* Translate "foo.bar callback" into underscored name. */
+  foo_bar_callback ()
+  {
+          /* The JS context callback runs in. A convenient way to get
+           ,* the context to return/inject things into. */
+          JSCContext *context = jsc_context_get_current();
+          return jsc_value_new_number(context, (double) 42);
+  }
+#+end_src
+
+and you could bind it in =inject_foo_api= with
+#+begin_src C
+  /* The number and list of args is obviously adjustable. */
+  MAKE_FN(context, fooBar, foo_bar_callback, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
+  BIND_FN(context, "foo", "bar", "foo.bar = function () { return fooBar(); }; foo.bar");
+  /* Or equivalent macro-less code: */
+  JSCValue *fooBar = jsc_value_new_function(
+          context, "fooBar", G_CALLBACK(foo_bar_callback),
+          NULL, NULL,
+          JSC_TYPE_VALUE, 0, G_TYPE_NONE);
+  jsc_context_set_value(context, "fooBar", fooBar);
+  jsc_value_object_set_property(
+          jsc_context_evaluate(context, "foo", -1), "bar",
+          jsc_context_evaluate(
+                  context,
+                  "foo.bar = function () { return fooBar(); }; foo.bar", -1));
+#+end_src
+And after the API is injected you'll have a simple =browser.foo.bar=
+method to get your answers anytime you like.
+
+The examples of such simple functions are =browser.runtime.getManifest()=
+and =browser.runtime.getURL()= (both can be found in runtime.c.)
+
+*** Need a response from the browser (hard)
+In case you need to communicate with the browser, it gets a bit more
+convoluted. The sequence of actions that happens there is:
+- JS: Call a method.
+- C: Enter the callback and send the message to the browser there.
+  - The message should be indexed by the unique ID of the request so
+    that there are no race conditions.
+  - The callback should return this same ID to the JS-side so that the
+    result can be awaited with =browser.drain=.
+- JS: Run =browser.drain= on the ID returned from C callback (see
+  browser.c for the exact mechanism).
+- BROWSER: Respond to the message in the "user-message-received" signal.
+- C (=message_reply_and_save_callback=): Put the result into global data storage (=DATA=).
+- C (implicit call in =browser.drain=): Check the global data storage
+  for the result being returned (see =get_result= in globals.c).
+- JS: If there's a result, fetch it from the C side (still inside the =browser.drain=) and successfully
+  return.
+
+Now to the code. The C callback is something like
+#+begin_src C
+  static unsigned long int
+  foo_bar_callback ()
+  {
+          WebKitUserMessage *message = webkit_user_message_new("foo.bar", NULL);
+          SEND_MESSAGE_RETURN_ID(message, i);
+          /* OR, macro-expanded version of the above */
+          unsigned long int i = get_next_data_counter(); /* globals.c */
+          webkit_web_page_send_message_to_view(
+                  PAGE, message, NULL, message_reply_and_save_callback,
+                  (void*) i);
+          return i;
+  }
+#+end_src
+And the way to bind it in =inject_foo_api= would be
+#+begin_src C
+  /* Remember the G_TYPE_ULONG as a return type there -- you'll need it
+   ,* often. It's the return type of all the functions we need to wait
+   ,* for the result of. */
+  MAKE_FN(context, fooBar, foo_bar_callback, G_TYPE_ULONG, 0, G_TYPE_NONE);
+  /* Most WebExtension API endpoints return a Promise, so remember this
+   ,* pattern too. */
+  BIND_FN(context, "foo", "bar", "foo.bar = function () {                 \
+      return new Promise(function (success, failure) {                    \
+          try {                                                           \
+              /* Look at the browser.drain here. It waits on the result   \
+               ,* that the browser returns, using the ID we return. */     \
+              browser.drain(fooBar(), success, {}, 5000);                 \
+          } catch (error) {                                               \
+              return failure(error);                                      \
+          };                                                              \
+      });                                                                 \
+  };                                                                      \
+                                                                          \
+  foo.bar");
+#+end_src
+
+With the possible expansions of the macros left as an exercise for you
+if you need to break the abstraction there.
+
+Almost any WebExtension JS function return a Promise, thus this is the
+template for most of them.
+*** Need a browser-mediated communication (insane)
+These cases are rare and most complex. Examples are
+=browser.runtime.sendMessage()= and =browser.tabs.sendMessage()=. The
+solutions are usually function specific, but let's walk through the
+=browser.runtime.sendMessage()= just in case it can come in handy.
+
+First, a callback.
+#+begin_src C
+  static unsigned long int
+  runtime_send_message_callback (char *extension_id, JSCValue *object)
+  {
+          /* Get context to evaluate things in. */
+          JSCContext *context = jsc_context_get_current();
+          /* Create a wrapper object to embed the data into. */
+          JSCValue *wrapper = jsc_value_new_object(context, NULL, NULL);
+          jsc_value_object_set_property(
+                  wrapper, "extensionId",
+                  jsc_value_new_string(context, extension_id));
+          jsc_value_object_set_property(wrapper, "message", object);
+          /* Translate this object to JSON for easier serialization. */
+          char *json = jsc_value_to_json(wrapper, 0);
+          /* Wrap the JSON into GVariant, as messages require GVariants as contents. */
+          GVariant *variant = g_variant_new("ms", json);
+          /* Create message with the meaningful name and contents. */
+          WebKitUserMessage *message = webkit_user_message_new("runtime.sendMessage", variant);
+          /* Send the message and return the ID. */
+          SEND_MESSAGE_RETURN_ID(message, i);
+  }
+#+end_src
+
+That's mostly familiar, with maybe JSCValue juggling that's a bit more
+complicated than in trivial functions.
+
+What should happen at the browser side is a call to the
+=browser.runtime.onMessage= of another part of the extension. So this is
+yet another piece of asynchronous communication, and it's the one that
+the browser handles. Because of the possible lag between browser and
+extension, we need the browser to send another message to certify that
+there's a response. That's why there's the "message" clause in
+=user_message_received= (nyxt.c):
+#+begin_src C
+  if (!strcmp("message", name) && contents){
+          /* Temporarily parse data. */
+          JSCValue *meta = jsc_value_new_from_json(jsc_context_new(), contents);
+          /* Get the extension context based on the received data. */
+          char *extension_name = jsc_value_to_string(jsc_value_object_get_property(meta, "extensionName"));
+          JSCContext *context = get_extension_context(extension_name);
+          /* Re-create object in the proper context. */
+          meta = jsc_value_new_from_json(context, contents);
+          /* Get properties of the object */
+          JSCValue *sender = jsc_value_object_get_property(meta, "sender");
+          JSCValue *object = jsc_value_object_get_property(meta, "message");
+          unsigned long int id = get_next_data_counter();
+          /* Call a closure with browser.runtime.onMessage of the
+           ,* extension and respond with browser.replyMessage once the
+           ,* Promise is resolved. */
+          JSCValue *tmp = jsc_value_function_call(
+                  jsc_context_evaluate(
+                          context, "var run  = (object, sender, id) => {\
+  var p = browser.runtime.onMessage.run(object, sender);                  \
+  if (p && p !== undefined)                                               \
+          p.then((result) => browser.replyMessage(id, result));    \
+  return p;                                                               \
+  };                                                                      \
+                                                                          \
+  run", -1),
+                  JSC_TYPE_VALUE, object, JSC_TYPE_VALUE, sender,
+                  G_TYPE_ULONG, id,
+                  G_TYPE_NONE);
+          /* Check whether it's false/undefined as the evaluation result. */
+          if (tmp &&
+              JSC_IS_VALUE(tmp) &&
+              !(jsc_value_is_boolean(tmp) && !jsc_value_to_boolean(tmp)) &&
+              !(jsc_value_is_undefined(tmp))) {
+                  /* If it's not false/undefined and thus there's a
+                   ,* response, set it. */
+                  g_object_ref(message);
+                  unsigned long int *key = malloc(sizeof(unsigned long int));
+                  ,*key = id;
+                  g_hash_table_insert(DATA, (void *) key, message);
+          }
+          else {
+                  /* If there's no result, reply with NULL. */
+                  webkit_user_message_send_reply(
+                          message, webkit_user_message_new(name, NULL));
+          }
+  }
+#+end_src
+yet another layer of callbacks here, but we're close to unwrapping
+it. Here's what =browser.replyMessage= does, as its C callback:
+#+begin_src C
+  static void
+  browser_reply_message_callback (unsigned long int message_id, JSCValue *result)
+  {
+          /* Wrap the result into GVariant. */
+          GVariant *reply_contents = g_variant_new_string(
+                  jsc_value_to_json(result, 0));
+          /* Create a message reply. */
+          WebKitUserMessage *reply = webkit_user_message_new("message", reply_contents);
+          /* Send the reply to the initial message. */
+          webkit_user_message_send_reply(g_hash_table_lookup(DATA, &message_id), reply);
+  }
+#+end_src
+
+So, to drive the browser-extension communication, there seems to be no
+better way than to do nested user messages and JS Promises. Altering
+the list from the previous heading:
+- JS: Call a method.
+- C: Enter the callback and send the message to the browser there.
+  - The message should be indexed by the unique ID of the request so
+    that there are no race conditions.
+  - The callback should return this same ID to the JS-side so that the
+    result can be awaited with =browser.drain=.
+- JS: Run =browser.drain= on the ID returned from C callback (see
+  browser.c for the exact mechanism).
+- BROWSER: Send the message to another extension instance and wait for the result.
+- BROWSER: Send a separate message to the extension.
+- C (=user_message_received=): Process the message received from the
+  browser and set the global data to the result of the initial
+  message.
+- C (implicit call in =browser.drain=): Check the global data storage
+  for the result of the initial message (see =get_result= in globals.c).
+- JS: If there's a result, fetch it from the C side (still inside the =browser.drain=) and successfully
+  return.
+** Add a property
+Usually it's as simple as
+#+begin_src C
+  jsc_value_object_set_property(
+          JSCEVAL(context, "foo"), "bar",
+          jsc_value_new_number(context, (double) 42));
+#+end_src
+
+If it's something more complex, I'd try tinkering with [[https://webkitgtk.org/reference/jsc-glib/stable/JSCClass.html#JSCClassVTable][JSCClassVTable]],
+but it looks scary.
+** Add an event
+WebExtensions events are special -- they have an unusual API with a
+list of listeners that can be added/deleted at will and that are ran
+in sequence with the result returned as the result of the event.
+
+For these, there's an extevent.c sub-library. You usually don't need
+to even know what's there, except that every event has a =run()= method
+to run all the listeners with arbitrary arguments and that
+=MAKE_EVENT()= C macro creates a fully usable event.
+
+So, the general way to create event would be
+#+begin_src C
+  MAKE_EVENT(context, "runtime", "onMessage");
+  /* OR */
+  jsc_value_object_set_property(
+          JSCEVAL(context, "runtime"), "onMessage",
+          /* Yes, new empty ExtEvent from extevent.c. "Event" is already
+           ,* taken by JS-native class, we don't want to override it. */
+          JSCEVAL(context, "new ExtEvent()"));
+#+end_src
+
+And if you need to invoke it with all the listeners the extension could've added to it, simply do =browser.runtime.onMessage.run(some, args, there)=.
+
+* APIs and messages
+Every message matching the JS API call passes certain parameters
+(always a string GVariant, mostly containing JSON) that you can use to
+process the call. Those are usually function arguments augmented by
+some meta-information. Here are all the functions implemented so far
+with the example parameters passed with the messages:
+** tabs.query
+The only parameter is the JSON-stringified =query-object= [[https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/query][passed to the function]].
+** tabs.create
+The only parameter is the JSON-stringified =create-properties= [[https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/create][passed to it]].
+** tabs.getCurrent
+Has no parameters (=NULL= instead of GVariant).
+** tabs.get
+Parameters are a integer ID of the tab passed as string.
+** tabs.print
+No parameters.
+** tabs.sendMessage & runtime.sendMessage
+Params are a JSON string object looking like
+#+begin_src js
+  {
+      "extensionId" : string, // The ID of the extension sending the message
+      "tabId" : number, // The ID of the tab receiving the message
+      "message" : any // The actual message
+  }
+#+end_src
+for tabs.sendMessage and
+#+begin_src js
+  {
+      "extensionId" : string, // The ID of the extension sending the message
+      "message" : any // The actual message
+  }
+#+end_src
+for runtime.sendMessage.
+
+The tabs.sendMessage/runtime.sendMessage is a complex piece of API
+requiring a communication of several parts of the extension. So, what
+you need to do is to:
+- Get the message from one part of the extension.
+- Parse it according to the schemas above.
+- Find the matching recipient.
+- Send a new WebKitUser message to this tab
+  - Type should be "message".
+  - Params should conform to the scheme that [[https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/runtime/onMessage#parameters][runtime.onMessage requires]]:
+#+begin_src js
+  {
+      "sender" : object, // The description of the tab that sent the message
+      "message" : any // The actual message
+  }
+#+end_src
+
+Once this message is replied to by this library, you can reply to
+original message with the reply contents (reply params will be a
+JSON-serialized result of listeners of onMessage or undefined in case
+nothing ran/there was an error).
+** tabs.insertCSS
+Params are:
+#+begin_src js
+  {
+      "extensionId" : string, // The ID of the extension adding CSS
+      "tabId" : number, // The ID of the tab to insert it to
+      "css" : any // The actual CSS description
+  }
+#+end_src
+
+FIXME: Right now this function doesn't wait for reply and simply
+resolves after 10 milliseconds.
+** tabs.removeCSS
+Params are:
+#+begin_src js
+  {
+      "extensionId" : string, // The ID of the extension removing CSS
+      "tabId" : number, // The ID of the tab to remove it from
+      "css" : any // The actual CSS description
+  }
+#+end_src
+
+FIXME: Right now this function doesn't wait for reply and simply
+resolves after 10 milliseconds.
+** tabs.executeScript
+Params are:
+#+begin_src js
+  {
+      "extensionId" : string, // The ID of the extension executing a script
+      "tabId" : number, // The ID of the tab to execute it in
+      "script" : any // The actual script description
+  }
+#+end_src
+
+FIXME: Right now this function doesn't wait for reply and simply
+resolves after 10 milliseconds.
+** management.getSelf
+The parameters are an extension name as a string.
+** runtime.getPlatformInfo
+There are no parameters, but the response should be a valid [[https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/runtime/PlatformInfo][runtime.PlatformInfo]].
+** runtime.getBrowserInfo
+No params either, but response should pass valid [[https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/runtime/getBrowserInfo#return_value][runtime.BrowserInfo]].
+** storage.<storageArea>.get, storage.<storageArea>.set, storage.<storageArea>.remove
+Params are:
+#+begin_src js
+  {
+      "extensionId" : string, // The ID of the extension requesting a storagae acces
+      "keys" : string, array of string, or object // The keys to get values of
+  }
+#+end_src
+** storage.<storageArea>.clear
+The only parameter is the extension ID as a string.

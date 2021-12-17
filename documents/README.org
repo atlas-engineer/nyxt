@@ -107,14 +107,17 @@ REPL:
 ** GTK dependencies
 *** Lisp dependencies
 
-Nyxt requires some Lisp libraries that are not all available through
-Quicklisp, or not at the right version.
+Nyxt requires some Lisp libraries.  Some pinned at specific versions,
+some are forks, so you should not rely on Quicklisp.
 
-These are included as a submodule of this repository, so if you use the
-Makefile there is nothing more to be done.
+All Lisp dependencies are included as a submodule of this repository, so
+if you did not disable submodules (with ~NYXT_SUBMODULES=false~), there
+is nothing more to be done.
 
-Otherwise clone each repository mentioned in =.gitmodules= into
-=~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF will find it]]):
+Otherwise clone the required repositories listed in =.gitmodules= into
+=~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF will find it]]).  For
+instance, to get the latest version of =cl-webkit=, you would typically
+run the following:
 
 #+begin_src sh
   mkdir -p ~/common-lisp
@@ -131,26 +134,27 @@ Otherwise clone each repository mentioned in =.gitmodules= into
 - libfixposix
 - xclip (for clipboard support)
 - enchant (for spellchecking)
+- pkg-config (for web-extensions)
 
 - Debian-based distributions:
   #+begin_src sh
-    sudo apt install sbcl libwebkit2gtk-4.0-dev gobject-introspection glib-networking gsettings-desktop-schemas libfixposix-dev xclip enchant-2
+    sudo apt install sbcl libwebkit2gtk-4.0-dev gobject-introspection glib-networking gsettings-desktop-schemas libfixposix-dev pkg-config xclip enchant-2
   #+end_src
 
 - Arch Linux:
   #+begin_src sh
     sudo pacman -S git sbcl cl-asdf webkit2gtk glib-networking gsettings-desktop-schemas enchant
   #+end_src
-  The package libfixposix can be installed from the [[https://aur.archlinux.org/packages/libfixposix][AUR]]
+  The package libfixposix can be installed from the [[https://aur.archlinux.org/packages/libfixposix][AUR]], same fo ~pkg-config~.
 
 - Fedora:
   #+begin_src sh
-    sudo dnf install sbcl webkit2gtk3-devel glib-networking gsettings-desktop-schemas libfixposix-devel xclip enchant
+    sudo dnf install sbcl webkit2gtk3-devel glib-networking gsettings-desktop-schemas libfixposix-devel xclip enchant pkgconf
   #+end_src
 
 - FreeBSD and derivatives
   #+begin_src sh
-    pkg install sbcl webkit2-gtk3 glib-networking libfixposix xclip enchant
+    pkg install sbcl webkit2-gtk3 glib-networking libfixposix xclip enchant rubygem-pkg-config
   #+end_src
 
 If your distribution does not install libraries in an [[https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard][FHS]]-expected location, you
@@ -186,6 +190,7 @@ these fixes.
 - WebKitGTK+
 - XQuartz
 - libfixposix
+- pkg-config
 
 Notes:
 
@@ -230,12 +235,14 @@ details about how to install it on your system.
 - libfixposix
 - xclip (for clipboard support)
 - enchant (for spellchecking)
+- pkg-config (for web-extensions)
 
 *** macOS dependencies
 
 - Qt 5.14.0+
 - Qt WebEngine
 - libfixposix
+- pkg-config
 
 ** Fetch the source code
 

@@ -63,14 +63,25 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
 (define-parenscript %paste (&key (input-text (ring-insert-clipboard (clipboard-ring *browser*))))
   (let ((active-element (ps:chain document active-element))
         (tag (ps:chain document active-element tag-name)))
-    (when (or (string= tag "INPUT")
-              (string= tag "TEXTAREA"))
+    (when (nyxt/ps:element-editable-p active-element)
       (nyxt/ps:insert-at active-element (ps:lisp input-text)))))
 
 (export-always '%copy)
 (define-parenscript %copy ()
   "Return selected text from javascript."
   (ps:chain window (get-selection) (to-string)))
+
+(define-parenscript %cut ()
+  (let ((active-element (ps:chain document active-element)))
+    (when (nyxt/ps:element-editable-p active-element)
+      (let ((selection-text (ps:chain window (get-selection) (to-string))))
+        (nyxt/ps:insert-at active-element "")
+        selection-text))))
+
+(define-parenscript %select-all ()
+  (let ((active-element (ps:chain document active-element)))
+    (when (nyxt/ps:element-editable-p active-element)
+      (ps:chain active-element (set-selection-range 0 (ps:@ active-element value length))))))
 
 (defun html-write (content &optional (buffer (current-buffer)))
   (ffi-buffer-evaluate-javascript-async
@@ -138,3 +149,67 @@ BODY must return the HTML markup as a string."
           ,@body)
         ,buffer-var)
        ,buffer-var)))
+
+(defvar *json-object-accumulator* (make-hash-table :test 'equal)
+  "Our own object accumulator to override the default `cl-json:decode-json' object->alist behavior.
+Objects are transformed to the hash-tables instead.")
+
+(defvar *json-last-object-key* nil
+  "The last key used in `*json-object-accumulator*'.")
+
+(defun json-object-init ()
+  (setf *json-object-accumulator* (make-hash-table :test 'equal)))
+
+(defun json-object-add-key (key)
+  (setf (gethash key *json-object-accumulator*) nil
+        *json-last-object-key* key))
+
+(defun json-object-add-value (value)
+  (setf (gethash *json-last-object-key* *json-object-accumulator*) value))
+
+(defun json-object-get ()
+  *json-object-accumulator*)
+
+;; TODO: Decode arrays as vectors?
+(sera:-> decode-json (string) t)
+(export-always 'decode-json)
+(defun decode-json (string)
+  "An overridden version of `cl-json:decode-json-from-string'.
+Distinguishes between null/false and arrays/objects.
+Decodes:
+- null as :NULL,
+- undefined as :UNDEFINED,
+- false as nil,
+- true as t,
+- objects as hash-tables.
+
+Otherwise behaves like plain `cl-json:decode-json-from-string'."
+  (let ((json::+json-lisp-symbol-tokens+
+          '(("true" . t)
+            ("false" . nil)
+            ("null" . :null)
+            ("undefined" . :undefined)))
+        (json:*object-scope-variables* '(json:*internal-decoder* *json-object-accumulator* *json-last-object-key*))
+        (json:*beginning-of-object-handler* #'json-object-init)
+        (json:*object-key-handler* #'json-object-add-key)
+        (json:*object-value-handler* #'json-object-add-value)
+        (json:*end-of-object-handler* #'json-object-get))
+    (json:decode-json-from-string string)))
+
+(sera:-> encode-json (t) (values string &optional))
+(export-always 'encode-json)
+(defun encode-json (data)
+  "Overridden version of `cl-json:encode-json-to-string'.
+Distinguishes between null and false.
+Encodes:
+- :NULL as null,
+- :UNDEFINED as undefined,
+- nil as false.
+
+Otherwise behaves the same as `cl-json:encode-json-to-string'."
+  (let ((json::+json-lisp-symbol-tokens+
+          '(("true" . t)
+            ("false" . nil)
+            ("null" . :null)
+            ("undefined" . :undefined))))
+    (json:encode-json-to-string data)))

@@ -35,18 +35,19 @@ search.")
     nil
     :type boolean
     :documentation "Whether history navigation is restricted by buffer-local history.")
-   (box-style (cl-css:css
-               '((".nyxt-hint"
-                  :background "rgba(120,120,120,0.80)"
-                  :color "white"
-                  :font-weight "bold"
-                  :padding "0px 3px 0px 3px"
-                  :border-radius "2px"
-                  :z-index #.(1- (expt 2 31)))))
+   (box-style (theme:themed-css (theme *browser*)
+                  (".nyxt-hint"
+                   :background-color theme:primary
+                   :opacity 0.8
+                   :color "white"
+                   :font-weight "bold"
+                   :padding "0px 3px 0px 3px"
+                   :border-radius "2px"
+                   :z-index #.(1- (expt 2 31))))
               :documentation "The style of the boxes, e.g. link hints.")
-   (highlighted-box-style (cl-css:css
-                           '((".nyxt-hint.nyxt-highlight-hint"
-                              :background "#37a8e4")))
+   (highlighted-box-style (theme:themed-css (theme *browser*)
+                           (".nyxt-hint.nyxt-highlight-hint"
+                            :background theme:accent))
                           :documentation "The style of highlighted boxes, e.g. link hints.")
    (hints-alphabet "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                    :type string
@@ -57,7 +58,7 @@ and to index the top of the page.")
     (define-scheme "web"
       scheme:cua
       (list
-       "C-z" 'nyxt/passthrough-mode:passthrough-mode
+       "C-M-Z" 'nyxt/passthrough-mode:passthrough-mode
        "C-M-right" 'history-forwards-all-query
        "C-M-left" 'history-all-query
        "C-shift-h" 'history-all-query
@@ -74,9 +75,13 @@ and to index the top of the page.")
        "C-J" 'follow-hint-new-buffer
        "C-M-j" 'follow-hint-nosave-buffer-focus
        "C-u C-M-j" 'follow-hint-nosave-buffer
-       "C-x C-w" 'copy-hint-url
+       "M-c h" 'copy-hint-url
        "C-c" 'copy
        "C-v" 'paste
+       "C-x" 'cut
+       "C-a" 'select-all
+       "C-z" 'undo
+       "C-Z" 'redo
        "button9" 'history-forwards
        "button8" 'history-backwards
        "C-+" 'zoom-page
@@ -96,7 +101,7 @@ and to index the top of the page.")
        "C-down" 'scroll-to-bottom
        "C-up" 'scroll-to-top
        "C-i" 'autofill
-       "C-u C-x C-f" 'edit-with-external-editor
+       "C-u C-o" 'edit-with-external-editor
        ;; Leave SPACE and arrow keys unbound so that the renderer decides whether to
        ;; navigate textboxes (arrows), insert or scroll (space).
        ;; keypad, gtk:
@@ -127,6 +132,10 @@ and to index the top of the page.")
        "C-x C-w" 'copy-hint-url
        "C-y" 'paste
        "M-w" 'copy
+       "C-/" 'undo
+       "C-?" 'redo ; / shifted on QWERTY
+       "C-w" 'cut
+       "C-x h" 'select-all
        "button9" 'history-forwards
        "button8" 'history-backwards
        "C-p" 'scroll-up
@@ -144,7 +153,8 @@ and to index the top of the page.")
        "M->" 'scroll-to-bottom
        "M-<" 'scroll-to-top
        "C-v" 'scroll-page-down
-       "M-v" 'scroll-page-up)
+       "M-v" 'scroll-page-up
+       "C-u C-x C-f" 'edit-with-external-editor)
 
       scheme:vi-normal
       (list
@@ -152,6 +162,9 @@ and to index the top of the page.")
        "L" 'history-forwards
        "y y" 'copy
        "p" 'paste
+       "d d" 'cut
+       "u" 'undo
+       "C-r" 'redo
        "M-h" 'history-backwards-query
        "M-l" 'history-forwards-query
        "M-H" 'history-all-query
@@ -206,9 +219,7 @@ and to index the top of the page.")
                                                        (window (current-window)))
   (let ((response (%clicked-in-input?)))
     (if (input-tag-p response)
-        (ffi-generate-input-event
-         window
-         (nyxt::last-event buffer))
+        (forward-to-renderer :window window :buffer buffer)
         (funcall command))))
 
 (define-command maybe-scroll-to-bottom (&optional (buffer (current-buffer)))
@@ -511,18 +522,9 @@ Otherwise go forward to the only child."
       (:h1 "History")
       (:ul (:raw (nyxt::history-html-list :limit limit))))))
 
-(define-command paste ()
+(define-command paste (&optional (buffer (current-buffer)))
   "Paste from clipboard into active element."
-  ;; On some systems like Xorg, clipboard pasting happens just-in-time.  So if we
-  ;; copy something from the context menu 'Copy' action, upon pasting we will
-  ;; retrieve the text from the GTK thread.  This is prone to create
-  ;; dead-locks (e.g. when executing a Parenscript that acts upon the clipboard).
-  ;;
-  ;; To avoid this, we can 'flush' the clipboard to ensure that the copied text
-  ;; is present the clipboard and need not be retrieved from the GTK thread.
-  ;; TODO: Do we still need to flush now that we have multiple threads?
-  ;; (trivial-clipboard:text (trivial-clipboard:text))
-  (%paste))
+  (ffi-buffer-paste buffer))
 
 (define-class ring-source (prompter:source)
   ((prompter:name "Clipboard ring")
@@ -543,11 +545,9 @@ Otherwise go forward to the only child."
    :sources (list (make-instance 'user-ring-source
                                  :ring (nyxt::clipboard-ring *browser*)))))
 
-(define-command copy ()
+(define-command copy (&optional (buffer (current-buffer)))
   "Copy selected text to clipboard."
-  (let ((input (%copy)))
-    (copy-to-clipboard input)
-    (echo "Text copied.")))
+  (ffi-buffer-copy buffer))
 
 (define-command copy-placeholder ()
   "Copy placeholder text to clipboard."
@@ -558,6 +558,22 @@ Otherwise go forward to the only child."
           (echo "No active selected placeholder.")
           (progn (copy-to-clipboard current-value)
                  (echo "Placeholder copied."))))))
+
+(define-command cut (&optional (buffer (current-buffer)))
+  "Cut the selected text in BUFFER."
+  (ffi-buffer-cut buffer))
+
+(define-command undo (&optional (buffer (current-buffer)))
+  "Undo the last editing action."
+  (ffi-buffer-undo buffer))
+
+(define-command redo (&optional (buffer (current-buffer)))
+  "Redo the last editing action."
+  (ffi-buffer-redo buffer))
+
+(define-command select-all (&optional (buffer (current-buffer)))
+  "Select all the text in the text field."
+  (ffi-buffer-select-all buffer))
 
 (define-class autofill-source (prompter:source)
   ((prompter:name "Autofills")
@@ -630,8 +646,8 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
     (log:debug "Notify URL ~a for buffer ~a with load status ~a"
                url
                buffer
-               (slot-value buffer 'nyxt::load-status))
-    (when (eq (slot-value buffer 'nyxt::load-status) :finished)
+               (slot-value buffer 'nyxt::status))
+    (when (eq (slot-value buffer 'nyxt::status) :finished)
       ;; We also add history entries here when URL changes without initiating
       ;; any load, e.g. when clicking on an anchor.
       (with-current-buffer buffer
@@ -641,7 +657,7 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
 
 (defmethod nyxt:on-signal-notify-uri ((mode web-mode) url)
   (declare (type quri:uri url))
-  (when (eq :finished (slot-value (buffer mode) 'nyxt::load-status))
+  (when (eq :finished (slot-value (buffer mode) 'nyxt::status))
     (add-url-to-history url (buffer mode) mode))
   url)
 

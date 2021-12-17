@@ -135,37 +135,30 @@ JSON should have the format like what `get-document-body-json' produces:
   - Some objects can have 'attributes' (a string->string dictionary).
   - Some objects have a subarray ('children') of objects working by these three
     rules."
-  (labels ((json-to-plump (json-alist parent)
+  (labels ((json-to-plump (json-hash parent)
              (let ((element
                      (cond
-                       ((string-equal (alex:assoc-value json-alist :name) "#text")
-                        (plump:make-text-node parent (alex:assoc-value json-alist :text)))
-                       ((string-equal (alex:assoc-value json-alist :name) "#cdata-section")
-                        (plump:make-cdata parent :text (alex:assoc-value json-alist :text)))
-                       ((string-equal (alex:assoc-value json-alist :name) "#comment")
-                        (plump:make-comment parent (alex:assoc-value json-alist :text)))
+                       ((string-equal (gethash "name" json-hash) "#text")
+                        (plump:make-text-node parent (gethash "text" json-hash)))
+                       ((string-equal (gethash "name" json-hash) "#cdata-section")
+                        (plump:make-cdata parent :text (gethash "text" json-hash)))
+                       ((string-equal (gethash "name" json-hash) "#comment")
+                        (plump:make-comment parent (gethash "text" json-hash)))
                        (t (plump:make-element parent (str:downcase
-                                                      (alex:assoc-value json-alist :name)))))))
+                                                      (gethash "name" json-hash)))))))
                (when (typep element 'plump:nesting-node)
                  (setf (plump:children element)
                        (plump:ensure-child-array
                         (map 'vector (alex:rcurry #'json-to-plump element)
-                             (let ((children (alex:assoc-value json-alist :children)))
+                             (let ((children (gethash "children" json-hash)))
                                (if (stringp children)
-                                   (json:decode-json-from-string children)
+                                   (decode-json children)
                                    children))))))
                (when (typep element 'plump:element)
                  (setf (plump:attributes element)
-                       (alex:alist-hash-table
-                        (mapcar #'(lambda (pair)
-                                    (cons (str:downcase (symbol-name (first pair)))
-                                          (rest pair)))
-                                (alex:assoc-value json-alist :attributes))
-                        :test 'equalp
-                        :size (length (alex:assoc-value json-alist
-                                                        :attributes)))))
+                       (gethash "attributes" json-hash)))
                element)))
-    (let ((json (json:decode-json-from-string json))
+    (let ((json (decode-json json))
           (root (plump:make-root)))
       (json-to-plump json root)
       (name-dom-elements root))))

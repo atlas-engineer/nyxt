@@ -12,8 +12,6 @@
 
 ;; TODO: Performance: plists are faster, especially when it comes to modifying
 ;; existing attributes.
-;; TODO: Performance: Consider computing the attribute values only when active.
-;; Lazy evaluation would make it easy.
 
 (deftype function-symbol ()
   `(and symbol (satisfies fboundp)))
@@ -84,7 +82,8 @@ inherited or used across different sources)."
           :type t)
    (attributes '()
                :documentation "A non-dotted alist of attributes to structure the filtering.
-Both the key and the value are strings.")
+Both the key and the value are strings or functions.
+If a function, it is run asynchronously and must return a string.")
    (match-data nil
                :type t
                :documentation "Arbitrary data that can be used by the `filter'
@@ -95,7 +94,7 @@ the match-data is ready for its own use.")
 used by the `sort-predicate'."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Suggestions are processed and listed in `source'.
 It wraps arbitrary object stored in the `value' slot.
 The other slots are optional.
@@ -134,7 +133,7 @@ Suggestions are made with the `suggestion-maker' slot from `source'."))
              :always (keywordp x))))
 
 (defun object-attributes-p (object)
-  (undotted-alist-p object 'string))
+  (undotted-alist-p object '(or string function)))
 
 (defmethod attribute-key ((attribute t))
   (first attribute))
@@ -359,11 +358,24 @@ The source object is sent to the channel.
 If update calculation is aborted, nil is sent instead.")
 
    (update-thread nil
-                  :type t
+                  :type (or null bt:thread)
                   :export nil
                   :initarg nil
                   :documentation "Thread where the `filter-preprocessor', `filter' and
 `filter-postprocessor' are run.  We store it in a slot so that we can terminate it.")
+
+   (attribute-thread nil
+                     :type (or null bt:thread)
+                     :export nil
+                     :initarg nil
+                     :documentation "Thread where the attributes get asynchronously computer.  See `attribute-channel'.")
+
+   (attribute-channel (make-channel)
+                      :type (or null calispel:channel)
+                      :export nil
+                      :initarg nil
+                      :documentation "Channel used to communicate attributes to
+`attribute-thread' to compute asynchronously")
 
    (multi-selection-p nil
                       :type boolean
@@ -400,7 +412,7 @@ For convenience, it may be initialized with a single function, in which case it
 will be automatically turned into a list."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "A prompter source instance is meant to be used by a
 `prompter' object.  See its `sources' slot.  A source is a consistent collection
 of suggestions, filters, actions.
@@ -420,7 +432,7 @@ call."))
    (constructor '("yes" "no"))
    (hide-attribute-header-p :always))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompt source for yes-no questions."))
 
 (defun make-input-suggestion (suggestions source input)
@@ -436,7 +448,7 @@ call."))
    (hide-suggestion-count-p t)
    (multi-selection-p nil))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompt source for raw user input.
 Its only suggestion is the user input, thus it has no constructor.
 If you are looking for a source that just returns its plain suggestions, use `source'."))
@@ -460,7 +472,7 @@ If you are looking for a source that just returns its plain suggestions, use `so
    (hide-attribute-header-p :always)
    (multi-selection-p t))
   (:export-class-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompt source for user input words."))
 
 (export-always 'ensure-suggestions-list)
@@ -476,6 +488,7 @@ If you are looking for a source that just returns its plain suggestions, use `so
 
 (defmethod initialize-instance :after ((source source) &key)
   "See the `constructor' documentation of `source'."
+  (setf (attribute-thread source) (bt:make-thread (make-attribute-thread source)))
   (let ((wait-channel (make-channel)))
     (bt:make-thread
      (lambda ()
@@ -561,10 +574,33 @@ Active attributes are queried from SOURCE."
   (let ((inactive-keys (set-difference (attributes-keys (attributes suggestion))
                                        (active-attributes-keys source)
                                        :test #'string=)))
-    (remove-if
-     (lambda (attr)
-       (find (attribute-key attr) inactive-keys :test #'string=))
-     (attributes suggestion))))
+    (mapcar
+     (lambda (attribute)
+       (if (functionp (attribute-value attribute))
+           (progn
+             (calispel:! (attribute-channel source) (list suggestion attribute))
+             (list (attribute-key attribute) ""))
+           attribute))
+     (remove-if
+      (lambda (attr)
+        (find (attribute-key attr) inactive-keys :test #'string=))
+      (attributes suggestion)))))
+
+(defun make-attribute-thread (source)
+  "Return a thread that is bound to SOURCE and used to compute its suggestion attributes asynchronously.
+Asynchronous attributes have a string-returning function as a value."
+  (lambda ()
+    ;; TODO: Notify when done updating, maybe using `update-notifier'?
+    (sera:nlet lp ((sugg-attr-pair (calispel:? (attribute-channel source))))
+      (destructuring-bind (sugg attr) sugg-attr-pair
+        ;; Recheck type here to protect against race conditions.
+        (when (functionp (attribute-value attr))
+          (setf (alex:assoc-value (attributes sugg)  (attribute-key attr))
+                (list
+                 (handler-case (funcall (attribute-value attr) (value sugg))
+                   (error (c)
+                     (format nil "keyword error: ~a" c)))))))
+      (lp (calispel:? (attribute-channel source))))))
 
 (export-always 'marked-p)
 (defun marked-p (source value)
@@ -613,6 +649,14 @@ If SIZE is NIL, capicity is infinite."
                      (slot-value object slot)))
              (mopu:slot-names class-sym))))))
 
+(defmethod destroy ((source source))
+  ;; Ignore errors in case thread is already terminated.
+  ;; REVIEW: Is there a cleaner way to do this?
+  (ignore-errors
+   (mapc #'bt:destroy-thread
+         (list (update-thread source)
+               (attribute-thread source)))))
+
 (defun update (source input new-ready-channel) ; TODO: Store `input' in the source?
   "Update SOURCE to narrow down the list of `suggestions' according to INPUT.
 If a previous suggestion computation was not finished, it is forcefully terminated.
@@ -637,9 +681,7 @@ feedback to the user while the list of suggestions is being computed."
     ;; OK, only the first value is read, so worst case the caller sees that the
     ;; source is terminated even though it just finished updating.
     (calispel:! (ready-channel source) nil)
-    ;; Ignore errors in case thread is already terminated.
-    ;; REVIEW: Is there a cleaner way to do this?
-    (ignore-errors (bt:destroy-thread (update-thread source))))
+    (destroy source))
   (setf (ready-channel source) new-ready-channel)
   (setf input (ensure-non-base-string input))
   (setf (update-thread source)

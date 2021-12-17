@@ -9,13 +9,13 @@ The main types are:
   modifiers (the order is to avoid inequality on permutation) and possibly more
   in the future.
 
-  Whitespaces are the only reserved characters.  Anything else can be store in
+  Whitespaces are the only reserved characters.  Anything else can be stored in
   the =key= value.
 
 - A =keyspec= is a string representation of a =key=.  A =keyspecs= is a
-  space-separate string representation of a sequence of =key='s.
+  space-separated string representation of a sequence of =key='s.
 
-- A =keymap= is contains a hash-table where the keys are a keyspec and the values
+- A =keymap= contains a hash-table where the keys are a =keyspec= and the values
   either a keymap or anything else.  As a special case, a =nil= value signifies
   to unbind the key.
 

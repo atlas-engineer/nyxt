@@ -113,9 +113,7 @@ vi-normal-mode.")
 See also `vi-normal-mode' and `vi-insert-mode'."
   ;; First we generate a button1 event so that the web view element is clicked
   ;; (e.g. a text field gets focus).
-  (ffi-generate-input-event
-   (current-window)
-   (nyxt::last-event buffer))
+  (forward-to-renderer :window (current-window) :buffer buffer)
   (let ((response (nyxt/web-mode:%clicked-in-input? buffer)))
     (cond
       ((and (nyxt/web-mode:input-tag-p response)

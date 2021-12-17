@@ -238,15 +238,18 @@ Such contexts are not needed for internal buffers."
     ;; Even if errors are caught with `with-protect', we must ignore the policy
     ;; decision on error, lest we load a web page in an internal buffer for
     ;; instance.
-    (handler-bind ((error (lambda (c)
-                            (echo-warning "decide policy error: ~a" c)
-                            ;; TODO: Don't automatically call the restart when from the REPL?
-                            ;; (unless *run-from-repl-p*
-                            ;;   (invoke-restart 'ignore-policy-decision))
-                            (invoke-restart 'ignore-policy-decision))))
-      (restart-case (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)
-        (ignore-policy-decision ()
-          (webkit:webkit-policy-decision-ignore response-policy-decision))))))
+    (g:g-object-ref (g:pointer response-policy-decision))
+    (run-thread "asynchronous decide-policy processing"
+      (handler-bind ((error (lambda (c)
+                              (echo-warning "decide policy error: ~a" c)
+                              ;; TODO: Don't automatically call the restart when from the REPL?
+                              ;; (unless *run-from-repl-p*
+                              ;;   (invoke-restart 'ignore-policy-decision))
+                              (invoke-restart 'ignore-policy-decision))))
+        (restart-case (on-signal-decide-policy buffer response-policy-decision policy-decision-type-response)
+          (ignore-policy-decision ()
+            (webkit:webkit-policy-decision-ignore response-policy-decision)))))
+    t))
 
 
 (defmacro connect-signal-function (object signal fn)
@@ -639,6 +642,8 @@ See `gtk-browser's `modifier-translator' slot."
            (context (make-instance 'webkit-web-context :website-data-manager manager))
            (cookie-manager (webkit:webkit-web-context-get-cookie-manager context))
            (extensions-path (expand-path (gtk-extensions-path buffer))))
+      (webkit:webkit-web-context-add-path-to-sandbox
+       context (namestring (asdf:system-relative-pathname :nyxt "libraries/web-extensions/")) t)
       (when extensions-path
         ;; TODO: Should we also use `connect-signal' here?  Does this yield a memory leak?
         (gobject:g-signal-connect
@@ -646,7 +651,47 @@ See `gtk-browser's `modifier-translator' slot."
          (lambda (context)
            (with-protect ("Error in signal thread: ~a" :condition)
              (webkit:webkit-web-context-set-web-extensions-directory
-              context extensions-path)))))
+              context extensions-path)
+             (webkit:webkit-web-context-set-web-extensions-initialization-user-data
+              context (glib:g-variant-new-string
+                       (flet ((describe-extension (extension &key privileged-p)
+                                (cons (nyxt/web-extensions::name extension)
+                                      (vector (id extension)
+                                              (nyxt/web-extensions::manifest extension)
+                                              (if privileged-p 1 0)
+                                              (nyxt/web-extensions::extension-files extension)))))
+                         (let ((extensions
+                                 (when buffer
+                                   (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))))
+                           (encode-json
+                            (if (or (background-buffer-p buffer)
+                                    (panel-buffer-p buffer))
+                                (alex:when-let* ((extension
+                                                  (or (find buffer extensions :key #'background-buffer)
+                                                      (find buffer extensions :key #'nyxt/web-extensions:popup-buffer))))
+                                  (list (describe-extension extension :privileged-p t)))
+                                (mapcar #'describe-extension extensions)))))))))))
+      ;; Is not used anywhere at the moment.
+      (webkit:webkit-web-context-register-uri-scheme-callback
+       context "web-extension"
+       (lambda (request)
+         (let ((data "<h1>Resource not found</h1>")
+               (type "text/html"))
+           (with-protect ("Error while processing the web-extension scheme: ~a" :condition)
+             (sera:and-let* ((path (webkit:webkit-uri-scheme-request-get-path request))
+                             (parts (str:split "/" path :limit 2))
+                             (extension-id (first parts))
+                             (inner-path (second parts))
+                             (extension (find extension-id (sera:filter #'nyxt/web-extensions::extension-p
+                                                                        (modes buffer))
+                                              :key #'id
+                                              :test #'string-equal))
+                             (full-path (nyxt/web-extensions:merge-extension-path extension inner-path)))
+               (setf data (alex:read-file-into-byte-vector full-path)
+                     type (mimes:mime full-path))))
+           (values data type)))
+       (lambda (condition)
+         (echo-warning "Error while re-routing web accessible resource: ~a" condition)))
       (when (and buffer
                  (web-buffer-p buffer)
                  (expand-path (cookies-path buffer)))
@@ -735,8 +780,7 @@ See `gtk-browser's `modifier-translator' slot."
               (progn
                 (log:debug "Forward to ~s's renderer (no request-resource-hook handlers)."
                            buffer)
-                (webkit:webkit-policy-decision-use response-policy-decision)
-                nil)
+                (webkit:webkit-policy-decision-use response-policy-decision))
               (let ((request-data
                       (hooks:run-hook
                        (request-resource-hook buffer)
@@ -746,14 +790,12 @@ See `gtk-browser's `modifier-translator' slot."
                   ((not (typep request-data 'request-data))
                    (log:debug "Don't forward to ~s's renderer (non request data)."
                               buffer)
-                   (webkit:webkit-policy-decision-ignore response-policy-decision)
-                   nil)
+                   (webkit:webkit-policy-decision-ignore response-policy-decision))
                   ((quri:uri= url (url request-data))
                    (log:debug "Forward to ~s's renderer (unchanged URL)."
                               buffer)
-                   (webkit:webkit-policy-decision-use response-policy-decision)
-                   nil)
-                  (t
+                   (webkit:webkit-policy-decision-use response-policy-decision))
+                  ((quri:uri= (quri:uri (webkit:webkit-uri-request-uri request)) url)
                    ;; Low-level URL string, we must not render the puni codes so use
                    ;; `quri:render-uri'.
                    (setf (webkit:webkit-uri-request-uri request) (quri:render-uri (url request-data)))
@@ -764,15 +806,18 @@ See `gtk-browser's `modifier-translator' slot."
                    ;; start the new load request, or else WebKit will be
                    ;; confused about which URL to load.
                    (webkit:webkit-policy-decision-ignore response-policy-decision)
-                   (webkit:webkit-web-view-load-request (gtk-object buffer) request)
-                   nil))))
+                   (webkit:webkit-web-view-load-request (gtk-object buffer) request))
+                  (t
+                   (echo-warning "Cannot redirect to ~a in an iframe, forwarding to the original URL (~a)."
+                                 (render-url (url request-data))
+                                 (webkit:webkit-uri-request-uri request))
+                   (webkit:webkit-policy-decision-use response-policy-decision)))))
           (progn
             (log:debug "Don't forward to ~s's renderer (non request data)."
                        buffer)
-            (webkit:webkit-policy-decision-ignore response-policy-decision)
-            nil)))))
+            (webkit:webkit-policy-decision-ignore response-policy-decision))))))
 
-(define-ffi-method on-signal-load-changed ((buffer gtk-buffer) load-event)
+(defmethod on-signal-load-changed ((buffer gtk-buffer) load-event)
   ;; `url' can be nil if buffer didn't have any URL associated
   ;; to the web view, e.g. the start page, or if the load failed.
   (let* ((url (ignore-errors
@@ -781,7 +826,7 @@ See `gtk-browser's `modifier-translator' slot."
                   (url buffer)
                   url)))
     (cond ((eq load-event :webkit-load-started)
-           (setf (slot-value buffer 'load-status) :loading)
+           (setf (slot-value buffer 'status) :loading)
            (print-status nil (get-containing-window-for-buffer buffer *browser*))
            (echo "Loading ~s." (render-url url)))
           ((eq load-event :webkit-load-redirected)
@@ -790,8 +835,8 @@ See `gtk-browser's `modifier-translator' slot."
            (on-signal-load-committed buffer url))
           ((eq load-event :webkit-load-finished)
            (setf (loading-webkit-history-p buffer) nil)
-           (unless (eq (slot-value buffer 'load-status) :failed)
-             (setf (slot-value buffer 'load-status) :finished))
+           (unless (eq (slot-value buffer 'status) :failed)
+             (setf (slot-value buffer 'status) :finished))
            (on-signal-load-finished buffer url)
            (print-status nil (get-containing-window-for-buffer buffer *browser*))
            (echo "Finished loading ~s." (render-url url))))))
@@ -947,10 +992,16 @@ See `gtk-browser's `modifier-translator' slot."
                    (progn
                      (webkit:webkit-script-dialog-prompt-set-text dialog (cffi:null-pointer))
                      (webkit:webkit-script-dialog-close dialog)))))
-            ((:webkit-script-dialog-confirm :webkit-script-dialog-before-unload-confirm)
+            (:webkit-script-dialog-confirm
              (webkit:webkit-script-dialog-confirm-set-confirmed
               dialog (if-confirm
                       ((webkit:webkit-script-dialog-get-message dialog))
+                      t nil)))
+            (:webkit-script-dialog-before-unload-confirm
+             (webkit:webkit-script-dialog-confirm-set-confirmed
+              dialog (if-confirm
+                      ;; FIXME: This asks for keyword override in if-confirm.
+                      ((format nil "~a ['yes' = leave, 'no' = stay]" (webkit:webkit-script-dialog-get-message dialog)))
                       t nil))))
           (webkit:webkit-script-dialog-close dialog)
           (webkit:webkit-script-dialog-unref dialog))
@@ -1027,20 +1078,44 @@ See `gtk-browser's `modifier-translator' slot."
   (connect-signal buffer "notify::title" nil (web-view param-spec)
     (declare (ignore web-view param-spec))
     (on-signal-notify-title buffer nil))
-  (connect-signal buffer "web-process-crashed" nil (web-view)
-    (echo-warning "Web process crashed for buffer ~a" (id buffer))
-    (log:debug "Web process crashed for web view ~a" web-view)
-    (delete-buffer :id (id buffer)))
+  (connect-signal buffer "web-process-terminated" nil (web-view reason)
+    ;; TODO: Bind WebKitWebProcessTerminationReason in cl-webkit.
+    (echo-warning
+     "Web process terminated for buffer ~a (opening ~a) because ~[it crashed~;of memory exhaustion~;we had to close it~]"
+     (id buffer)
+     (url buffer)
+     (cffi:foreign-enum-value 'webkit:webkit-web-process-termination-reason reason))
+    (log:debug
+     "Web process terminated for web view ~a because of ~[WEBKIT_WEB_PROCESS_CRASHED~;WEBKIT_WEB_PROCESS_EXCEEDED_MEMORY_LIMIT~;WEBKIT_WEB_PROCESS_TERMINATED_BY_API~]"
+     web-view
+     (cffi:foreign-enum-value 'webkit:webkit-web-process-termination-reason reason))
+    (buffer-delete buffer))
+  (connect-signal buffer "close" nil (web-view)
+    (mapc (lambda (handler-id)
+            (gobject:g-signal-handler-disconnect web-view handler-id))
+          (handler-ids buffer))
+    (buffer-hide buffer)
+    (gtk:gtk-widget-destroy web-view)
+    (setf (gtk-object buffer) nil))
   (connect-signal buffer "load-failed" nil (web-view load-event failing-url error)
-    (declare (ignore load-event web-view error))
+    (declare (ignore load-event web-view))
     ;; TODO: WebKitGTK sometimes (when?) triggers "load-failed" when loading a
     ;; page from the webkit-history cache.  Upstream bug?  Anyways, we should
     ;; ignore these.
     (if (loading-webkit-history-p buffer)
         (setf (loading-webkit-history-p buffer) nil)
-        (unless (member (slot-value buffer 'load-status) '(:finished :failed))
+        (unless (or (member (slot-value buffer 'status) '(:finished :failed))
+                    ;; WebKitGTK emits the WEBKIT_PLUGIN_ERROR_WILL_HANDLE_LOAD
+                    ;; (204) if the plugin will handle loading content of the
+                    ;; URL. This often happens with videos. The only thing we
+                    ;; can do is ignore it.
+                    ;;
+                    ;; TODO: Use cl-webkit provided error types. How
+                    ;; do we use it, actually?
+                    (= 204 (webkit::g-error-code error))
+                    (= 302 (webkit::g-error-code error)))
           (echo "Failed to load URL ~a in buffer ~a." failing-url (id buffer))
-          (setf (slot-value buffer 'load-status) :failed)
+          (setf (slot-value buffer 'status) :failed)
           (html-set
            (spinneret:with-html-string
              (:h1 "Page could not be loaded.")
@@ -1073,16 +1148,23 @@ See `gtk-browser's `modifier-translator' slot."
             (:webkit-context-menu-action-download-link-to-disk
              (webkit:webkit-context-menu-remove context-menu item))))))
     nil)
+  (connect-signal buffer "user-message-received" nil (view message)
+    (declare (ignorable view))
+    (g:g-object-ref (g:pointer message))
+    (run-thread
+      "Process user messsage"
+      (nyxt/web-extensions:process-user-message buffer message))
+    (sleep 0.01)
+    (run-thread
+      "Reply user message"
+      (nyxt/web-extensions:reply-user-message buffer message))
+    t)
   buffer)
 
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
-  (mapc (lambda (handler-id)
-          (gobject:g-signal-handler-disconnect (gtk-object buffer)
-                                               handler-id))
-        (handler-ids buffer))
-  (when (slot-value buffer 'gtk-object) ; Not all buffers have their own web view, e.g. prompt buffers.
-    (gtk:gtk-widget-destroy (gtk-object buffer))
-    (setf (gtk-object buffer) nil)))
+  (if (slot-value buffer 'gtk-object) ; Not all buffers have their own web view, e.g. prompt buffers.
+      (webkit:webkit-web-view-try-close (gtk-object buffer))
+      (buffer-hide buffer)))
 
 (define-ffi-method ffi-buffer-load ((buffer gtk-buffer) url)
   "Load URL in BUFFER.
@@ -1099,7 +1181,7 @@ requested a reload."
     ;; Mark buffer as :loading right away so functions like `window-set-buffer'
     ;; don't try to reload if they are called before the "load-changed" signal
     ;; is emitted.
-    (setf (slot-value buffer 'load-status) :loading)
+    (setf (slot-value buffer 'status) :loading)
     (if (and entry (not (quri:uri= url (url buffer))))
         (progn
           (log:debug "Load URL from history entry ~a" entry)
@@ -1109,32 +1191,114 @@ requested a reload."
 (defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript &optional world-name)
   (%within-renderer-thread
    (lambda (&optional channel)
-     (webkit2:webkit-web-view-evaluate-javascript
-      (gtk-object buffer)
-      javascript
-      (if channel
-          (lambda (result jsc-result)
-            (declare (ignore jsc-result))
-            (calispel:! channel result))
+     (when (gtk-object buffer)
+       (webkit2:webkit-web-view-evaluate-javascript
+        (gtk-object buffer)
+        javascript
+        (if channel
+            (lambda (result jsc-result)
+              (declare (ignore jsc-result))
+              (calispel:! channel result))
           (lambda (result jsc-result)
             (declare (ignore jsc-result))
             result))
-      (lambda (condition)
-        (javascript-error-handler condition)
-        ;; Notify the listener that we are done.
-        (when channel
-          (calispel:! channel nil)))
-      world-name))))
+        (lambda (condition)
+          (javascript-error-handler condition)
+          ;; Notify the listener that we are done.
+          (when channel
+            (calispel:! channel nil)))
+        world-name)))))
 
 (defmethod ffi-buffer-evaluate-javascript-async ((buffer gtk-buffer) javascript &optional world-name)
   (%within-renderer-thread-async
    (lambda ()
-     (webkit2:webkit-web-view-evaluate-javascript
-      (gtk-object buffer)
-      javascript
-      nil
-      #'javascript-error-handler
-      world-name))))
+     (when (gtk-object buffer)
+       (webkit2:webkit-web-view-evaluate-javascript
+        (gtk-object buffer)
+        javascript
+        nil
+        #'javascript-error-handler
+        world-name)))))
+
+(defun list-of-string-to-foreign (list)
+  (if list
+      (cffi:foreign-alloc :string
+                          :count (length list)
+                          :initial-contents list
+                          :null-terminated-p t)
+      (cffi:null-pointer)))
+
+(define-ffi-method ffi-buffer-add-user-style ((buffer gtk-buffer) css &key
+                                              world-name all-frames-p inject-as-author-p
+                                              allow-list block-list)
+  (let* ((content-manager
+           (webkit:webkit-web-view-get-user-content-manager
+            (gtk-object buffer)))
+         (frames (if all-frames-p
+                     :webkit-user-content-inject-all-frames
+                     :webkit-user-content-inject-top-frame))
+         (style-level (if inject-as-author-p
+                          :webkit-user-style-level-author
+                          :webkit-user-style-level-user))
+         (style-sheet
+           (if world-name
+               (webkit:webkit-user-style-sheet-new-for-world
+                css frames style-level world-name
+                (list-of-string-to-foreign allow-list)
+                (list-of-string-to-foreign block-list))
+               (webkit:webkit-user-style-sheet-new
+                css frames style-level
+                (list-of-string-to-foreign allow-list)
+                (list-of-string-to-foreign block-list)))))
+    (webkit:webkit-user-content-manager-add-style-sheet
+     content-manager style-sheet)
+    style-sheet))
+
+(define-ffi-method ffi-buffer-remove-user-style ((buffer gtk-buffer) style-sheet)
+  (let ((content-manager
+          (webkit:webkit-web-view-get-user-content-manager
+           (gtk-object buffer))))
+    (when style-sheet
+      (webkit:webkit-user-content-manager-remove-style-sheet
+       content-manager style-sheet))))
+
+(define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) javascript &key
+                                               world-name all-frames-p
+                                               at-document-start-p run-now-p
+                                               allow-list block-list)
+  (let* ((content-manager
+           (webkit:webkit-web-view-get-user-content-manager
+            (gtk-object buffer)))
+         (frames (if all-frames-p
+                     :webkit-user-content-inject-all-frames
+                     :webkit-user-content-inject-top-frame))
+         (inject-time (if at-document-start-p
+                          :webkit-user-script-inject-at-document-start
+                          :webkit-user-script-inject-at-document-end))
+         (script (if world-name
+                     (webkit:webkit-user-script-new-for-world
+                      javascript frames inject-time world-name
+                      (list-of-string-to-foreign allow-list)
+                      (list-of-string-to-foreign block-list))
+                     (webkit:webkit-user-script-new
+                      javascript frames inject-time
+                      (list-of-string-to-foreign allow-list)
+                      (list-of-string-to-foreign block-list)))))
+    (webkit:webkit-user-content-manager-add-script
+     content-manager script)
+    (when (and run-now-p
+               (member (slot-value buffer 'status)
+                       '(:finished :failed)))
+      (reload-buffers (list buffer)))
+    script))
+
+(define-ffi-method ffi-buffer-remove-user-script ((buffer gtk-buffer) script)
+  (let ((content-manager
+          (webkit:webkit-web-view-get-user-content-manager
+           (gtk-object buffer))))
+    (when script
+      (webkit:webkit-user-content-manager-remove-script
+       content-manager script))))
 
 (define-ffi-method ffi-buffer-enable-javascript ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-enable-javascript
@@ -1210,10 +1374,13 @@ requested a reload."
         ;; If download was too small, it may not have been updated.
         (setf (completion-percentage download) 100)))))
 
-(define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) value)
-  (setf (webkit:webkit-settings-user-agent
-         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
-        value))
+(define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) &optional value)
+  (if value
+      (setf (webkit:webkit-settings-user-agent
+             (webkit:webkit-web-view-get-settings (gtk-object buffer)))
+            value)
+      (webkit:webkit-settings-user-agent
+       (webkit:webkit-web-view-get-settings (gtk-object buffer)))))
 
 (define-ffi-method ffi-buffer-webgl-enabled-p ((buffer gtk-buffer))
   (webkit:webkit-settings-enable-webgl
@@ -1305,7 +1472,9 @@ custom (the specified proxy) and none."
        (ps:ps (setf (ps:@ document body |innerHTML|)
                     (ps:lisp text)))))))
 
-(define-ffi-method ffi-display-url (text)
+;; This method does not need a renderer, so no need to use `define-ffi-method'
+;; which is prone to race conditions.
+(defmethod ffi-display-url (text)
   (webkit:webkit-uri-for-display text))
 
 (-> set-cookie-policy (webkit:webkit-cookie-manager cookie-policy) *)
@@ -1396,4 +1565,58 @@ As a second value, return the current buffer index starting from 0."
   (webkit:webkit-website-data-manager-set-itp-enabled
    (webkit:webkit-web-context-website-data-manager
     (webkit:webkit-web-view-web-context (gtk-object buffer)))
-   t))
+   value))
+
+(defmethod ffi-buffer-copy ((gtk-buffer gtk-buffer))
+  (webkit:webkit-web-view-can-execute-editing-command
+   (gtk-object gtk-buffer) webkit2:+webkit-editing-command-copy+
+   (lambda (can-execute?)
+     (when can-execute?
+       (webkit:webkit-web-view-execute-editing-command
+        (gtk-object gtk-buffer) webkit2:+webkit-editing-command-copy+)))
+   (lambda (e) (echo-warning "Cannot copy: ~a" e))))
+
+(defmethod ffi-buffer-paste ((gtk-buffer gtk-buffer))
+  (webkit:webkit-web-view-can-execute-editing-command
+   (gtk-object gtk-buffer) webkit2:+webkit-editing-command-paste+
+   (lambda (can-execute?)
+     (when can-execute?
+       (webkit:webkit-web-view-execute-editing-command
+        (gtk-object gtk-buffer) webkit2:+webkit-editing-command-paste+)))
+   (lambda (e) (echo-warning "Cannot paste: ~a" e))))
+
+(defmethod ffi-buffer-cut ((gtk-buffer gtk-buffer))
+  (webkit:webkit-web-view-can-execute-editing-command
+   (gtk-object gtk-buffer) webkit2:+webkit-editing-command-cut+
+   (lambda (can-execute?)
+     (when can-execute?
+       (webkit:webkit-web-view-execute-editing-command
+        (gtk-object gtk-buffer) webkit2:+webkit-editing-command-cut+)))
+   (lambda (e) (echo-warning "Cannot cut: ~a" e))))
+
+(defmethod ffi-buffer-select-all ((gtk-buffer gtk-buffer))
+  (webkit:webkit-web-view-can-execute-editing-command
+   (gtk-object gtk-buffer) webkit2:+webkit-editing-command-select-all+
+   (lambda (can-execute?)
+     (when can-execute?
+       (webkit:webkit-web-view-execute-editing-command
+        (gtk-object gtk-buffer) webkit2:+webkit-editing-command-select-all+)))
+   (lambda (e) (echo-warning "Cannot select all: ~a" e))))
+
+(defmethod ffi-buffer-undo ((gtk-buffer gtk-buffer))
+  (webkit:webkit-web-view-can-execute-editing-command
+   (gtk-object gtk-buffer) webkit2:+webkit-editing-command-undo+
+   (lambda (can-execute?)
+     (when can-execute?
+       (webkit:webkit-web-view-execute-editing-command
+        (gtk-object gtk-buffer) webkit2:+webkit-editing-command-undo+)))
+   (lambda (e) (echo-warning "Cannot undo: ~a" e))))
+
+(defmethod ffi-buffer-redo ((gtk-buffer gtk-buffer))
+  (webkit:webkit-web-view-can-execute-editing-command
+   (gtk-object gtk-buffer) webkit2:+webkit-editing-command-redo+
+   (lambda (can-execute?)
+     (when can-execute?
+       (webkit:webkit-web-view-execute-editing-command
+        (gtk-object gtk-buffer) webkit2:+webkit-editing-command-redo+)))
+   (lambda (e) (echo-warning "Cannot redo: ~a" e))))
