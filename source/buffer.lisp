@@ -896,6 +896,25 @@ See `make-buffer' for a description of the arguments."
   (declare (ignorable title modes url))
   (apply #'make-buffer (append (list :buffer-class 'user-background-buffer :no-history-p t) args)))
 
+(define-command duplicate-buffer-with-current-modes (&key parent-buffer)
+  "Duplicate current buffer in a new buffer with current modes as well."
+  (let ((buffer (current-buffer)))
+    (make-buffer :title (title buffer)
+                 :url (url buffer)
+                 :modes (mapcar #'mode-name (modes buffer))
+                 :parent-buffer parent-buffer)
+    (set-current-buffer buffer)
+    buffer))
+
+(define-command duplicate-buffer (&key parent-buffer)
+  "Duplicate current buffer in a new buffer."
+  (let ((buffer (current-buffer)))
+    (make-buffer :title (title buffer)
+                 :url (url buffer)
+                 :parent-buffer parent-buffer)
+    (set-current-buffer buffer)
+    buffer))
+
 (define-command make-internal-buffer (&key (title "") modes no-history-p)
   "Create a new buffer.
 MODES is a list of mode symbols.
