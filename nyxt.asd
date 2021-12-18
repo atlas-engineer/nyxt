@@ -611,7 +611,7 @@ See `asdf::*immutable-systems*'."
 
 (defsystem "nyxt/web-extensions"
   :pathname "libraries/web-extensions/"
-  :depends-on (:cffi-toolchain)
+  :defsystem-depends-on (:cffi-toolchain :serapeum)
   :components ((:static-file "alarms.c")
                (:static-file "bookmarks.c")
                (:static-file "browser.c")
@@ -635,24 +635,34 @@ See `asdf::*immutable-systems*'."
                                     t))
   :perform (compile-op
             (o c)
-            (let ((c-compiler (or (uiop:getenv "CC")
-                                  (symbol-value
-                                   (uiop:find-symbol* :*cc* :cffi-toolchain))
-                                  "gcc"))
-                  (c-flags (remove-if
-                            #'uiop:emptyp
-                            (uiop:split-string
-                             (uiop:run-program
-                              '("pkg-config" "gobject-2.0" "webkit2gtk-4.0" "--cflags")
-                              :output '(:string :stripped t)
-                              :error-output :output))))
-                  (ld-flags (remove-if
+            (let* ((c-compiler (uiop:symbol-call
+                                :serapeum :resolve-executable
+                                (or (uiop:getenv "CC")
+                                    (symbol-value
+                                     (uiop:find-symbol* :*cc* :cffi-toolchain))
+                                    "gcc")))
+                   (pkg-config (namestring (uiop:symbol-call
+                                            :serapeum :resolve-executable "pkg-config")))
+                   (c-flags (remove-if
                              #'uiop:emptyp
                              (uiop:split-string
                               (uiop:run-program
-                               '("pkg-config" "gobject-2.0" "webkit2gtk-4.0" "--libs")
+                               `(,pkg-config "gobject-2.0" "webkit2gtk-4.0" "--cflags")
                                :output '(:string :stripped t)
-                               :error-output :output)))))
+                               :error-output :output
+                               :force-shell t
+                               :environment (list (concatenate 'string "PKG_CONFIG_PATH="
+                                                               (uiop:getenv "PKG_CONFIG_PATH")))))))
+                   (ld-flags (remove-if
+                              #'uiop:emptyp
+                              (uiop:split-string
+                               (uiop:run-program
+                                `(,pkg-config "gobject-2.0" "webkit2gtk-4.0" "--libs")
+                                :output '(:string :stripped t)
+                                :error-output :output
+                                :force-shell t
+                                :environment (list (concatenate 'string "PKG_CONFIG_PATH="
+                                                                (uiop:getenv "PKG_CONFIG_PATH"))))))))
               (uiop:with-current-directory ((component-pathname c))
                 (mapc (lambda (c-component)
                         ;; TODO: Allow compiler customization?
