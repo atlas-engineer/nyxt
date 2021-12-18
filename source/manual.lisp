@@ -36,13 +36,13 @@ similar programming language.")
          ", and the parent folders if necessary. You can also press the button
 below to create said file, if it's not created yet.")
      (let ((init-file-path (expand-path *init-file-path*)))
+       (ensure-directories-exist init-file-path)
        (:p (if (uiop:file-exists-p init-file-path)
                (:a :class "button"
                    :href (lisp-url `(echo "Init file exists"))
                    "Init file exists")
                (:a :class "button"
-                   :href (lisp-url `(ensure-directories-exist ,init-file-path)
-                                   `(with-open-file (_ ,init-file-path
+                   :href (lisp-url `(with-open-file (_ ,init-file-path
                                                        :direction :output
                                                        :if-exists nil
                                                        :if-does-not-exist :create)
