@@ -41,7 +41,8 @@ below to create said file, if it's not created yet.")
                    :href (lisp-url `(echo "Init file exists"))
                    "Init file exists")
                (:a :class "button"
-                   :href (lisp-url `(with-open-file (_ ,init-file-path
+                   :href (lisp-url `(ensure-directories-exist ,init-file-path)
+                                   `(with-open-file (_ ,init-file-path
                                                        :direction :output
                                                        :if-exists nil
                                                        :if-does-not-exist :create)
