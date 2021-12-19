@@ -898,27 +898,21 @@ See `make-buffer' for a description of the arguments."
 
 (define-command duplicate-modes (&key (url (quri:uri "")) parent-buffer)
   "Duplicate current modes in a new buffer."
-  (let ((modes (mapcar #'mode-name (modes (current-buffer)))))
-    (if-confirm ("Duplicate current modes: ~a?" modes)
-                (progn
-                  (let ((buffer (make-buffer :url url
-                                             :modes modes
-                                             :parent-buffer parent-buffer)))
-                    (set-current-buffer buffer)
-                    buffer)))))
+  (let ((buffer (make-buffer :url url
+                             :modes (mapcar #'mode-name (modes (current-buffer)))
+                             :parent-buffer parent-buffer)))
+    (set-current-buffer buffer)
+    buffer))
 
 (define-command duplicate-buffer-with-current-modes (&key parent-buffer)
   "Duplicate current buffer in a new buffer with current modes as well."
-  (let* ((buffer (current-buffer))
-         (modes (mapcar #'mode-name (modes buffer))))
-    (if-confirm ("Duplicate current modes: ~a?" modes)
-                (progn
-                  (make-buffer :title (title buffer)
-                               :url (url buffer)
-                               :modes modes
-                               :parent-buffer parent-buffer)
-                  (set-current-buffer buffer)
-                  buffer))))
+  (let* ((buffer (current-buffer)))
+    (make-buffer :title (title buffer)
+                 :url (url buffer)
+                 :modes (mapcar #'mode-name (modes buffer))
+                 :parent-buffer parent-buffer)
+    (set-current-buffer buffer)
+    buffer))
 
 (define-command duplicate-buffer (&key parent-buffer)
   "Duplicate current buffer in a new buffer."
