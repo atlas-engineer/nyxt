@@ -187,7 +187,7 @@ User input is evaluated Lisp."
     (hooks:disable-hook (value hook-desc) handler)))
 
 (define-command enable-hook-handler ()
-  "Remove handler(s) from a hook."
+  "Enable handler(s) from a hook."
   (let* ((hook-desc (first (prompt
                             :prompt "Hook where to enable handler"
                             :sources (make-instance 'hook-source))))
