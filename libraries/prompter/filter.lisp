@@ -21,7 +21,7 @@ A higher score means the SUGGESTION-STRING comes first."
              (let ((next (position-if (lambda (c) (member c word-separator :test 'eq))
                                       suggestion-string :start i)))
                (unless next (setq next (length suggestion-string)))
-               (incf score (/ 1.0 (1+ next)))
+               (incf score (/ 1.0 (+ 3.0 next)))
                (setq i 0))))
       ;; flex match, with higher weight for the beginning
       (loop for c across input do
@@ -33,8 +33,8 @@ A higher score means the SUGGESTION-STRING comes first."
                     ;; bonus for continuous match
                     (when (and (> next 0)
                                (eq (aref suggestion-string (1- next)) lastchar))
-                      (incf score 0.1))
-                    (incf score (/ 1.0 (1+ next)))
+                      (incf score 0.3))
+                    (incf score (/ 1.0 (+ 3.0 next)))
                     (setq i next lastchar c))
                   (return)))))
       (when (> i 0) (word-end)))
