@@ -16,25 +16,28 @@ A higher score means the SUGGESTION-STRING comes first."
     (declare (optimize (speed 3) (safety 0))
              (type single-float score) (type fixnum i) (type character lastchar)
              (type (simple-array character) input suggestion-string))
-    ;; flex match, with higher weight for the beginning
-    (loop for c across input do
-      (if (member c word-separator :test 'eq)
-          ;; bonus for word ending early (shorter words at the beginning wins)
-          (let ((next (position-if (lambda (c) (member c word-separator :test 'eq))
-                                   suggestion-string :start i)))
-            (when next (incf score (/ 1.0 (1+ next))))
-            (setq i 0))
-          (let ((next (position c suggestion-string :start i :test 'eq)))
-            (if next
-                (progn
-                  ;; bonus for continuous match
-                  (when (and (> next 0)
-                             (eq (aref suggestion-string (1- next)) lastchar))
-                    (incf score 0.1))
-                  (incf score (/ 1.0 (1+ next)))
-                  (setq i next lastchar c))
-                (return)))))
-
+    (flet ((word-end ()
+             ;; bonus for word ending early (shorter words at the beginning wins)
+             (let ((next (position-if (lambda (c) (member c word-separator :test 'eq))
+                                      suggestion-string :start i)))
+               (unless next (setq next (length suggestion-string)))
+               (incf score (/ 1.0 (1+ next)))
+               (setq i 0))))
+      ;; flex match, with higher weight for the beginning
+      (loop for c across input do
+        (if (member c word-separator :test 'eq)
+            (word-end)
+            (let ((next (position c suggestion-string :start i :test 'eq)))
+              (if next
+                  (progn
+                    ;; bonus for continuous match
+                    (when (and (> next 0)
+                               (eq (aref suggestion-string (1- next)) lastchar))
+                      (incf score 0.1))
+                    (incf score (/ 1.0 (1+ next)))
+                    (setq i next lastchar c))
+                  (return)))))
+      (when (> i 0) (word-end)))
     score))
 
 (defvar score-threshold 0.0 ; TODO: Learn good value and enable low-score filtering.
