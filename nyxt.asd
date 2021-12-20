@@ -60,7 +60,6 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                local-time
                lparallel
                log4cl
-               mk-string-metrics
                #-sbcl
                osicat
                parenscript
