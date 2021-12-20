@@ -7,36 +7,43 @@
   "List of characters that are considered as word separators by
   `score-suggestion-string'.")
 
+(defvar start-bonus 0.3
+  "Additional weight `score-suggestion-string' gives to beginning of
+suggesting string.  Must be a positive single-float value.")
+
+(defvar continuous-bonus 0.3
+  "Bonus `score-suggestion-string' gives to continuous match.")
+
 (defun score-suggestion-string (input suggestion-string)
   "Return a SUGGESTION's score for INPUT.
 A higher score means the SUGGESTION-STRING comes first."
-  (let ((i 0)
-        (score 0.0)
-        (lastchar #\ ))
+  (let ((i 0) (score 0.0) (lastchar #\ )
+        (inverse-start-bonus (/ 1.0 start-bonus)))
     (declare (optimize (speed 3) (safety 0))
              (type single-float score) (type fixnum i) (type character lastchar)
              (type (simple-array character) input suggestion-string))
-    (flet ((word-end ()
+    (flet ((word-body (c)
+             (let ((next (or (position c suggestion-string :start i)
+                             (length suggestion-string))))
+               ;; bonus for continuous match
+               (when (and (> next 0)
+                          (eq (aref suggestion-string (1- next)) lastchar))
+                 (incf score continuous-bonus))
+               (incf score (/ 1.0 (+ inverse-start-bonus next)))
+               (setf i next)
+               (setf lastchar c)))
+           (word-end ()
              ;; bonus for word ending early (shorter words at the beginning wins)
-             (let ((next (position-if (lambda (c) (member c word-separator :test 'eq))
-                                      suggestion-string :start i)))
-               (unless next (setq next (length suggestion-string)))
-               (incf score (/ 1.0 (+ 3.0 next)))
-               (setq i 0))))
+             (let ((next (or (position-if (lambda (c) (member c word-separator))
+                                          suggestion-string :start i)
+                             (length suggestion-string))))
+               (incf score (/ 1.0 (+ inverse-start-bonus next))))
+             (setf i 0)))
       ;; flex match, with higher weight for the beginning
       (loop for c across input do
-        (if (member c word-separator :test 'eq)
+        (if (member c word-separator)
             (word-end)
-            (let ((next (position c suggestion-string :start i :test 'eq)))
-              (if next
-                  (progn
-                    ;; bonus for continuous match
-                    (when (and (> next 0)
-                               (eq (aref suggestion-string (1- next)) lastchar))
-                      (incf score 0.3))
-                    (incf score (/ 1.0 (+ 3.0 next)))
-                    (setq i next lastchar c))
-                  (return)))))
+            (word-body c)))
       (when (> i 0) (word-end)))
     score))
 
