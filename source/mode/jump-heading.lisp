@@ -77,7 +77,8 @@ of buffers."
            "Create the presentation for a buffer."
            (spinneret:with-html
              (:p (:a :class "button"
-                     :href (lisp-url `(scroll-page-to-heading heading))
+                     :href (lisp-url `(switch-buffer :id ,(id (buffer heading)))
+                                     `(scroll-page-to-heading heading))
                      (:span :title (title heading)
                             :class "title" (title heading)))))))
     (spinneret:with-html-string (:style (style panel-buffer))
