@@ -72,3 +72,22 @@ of buffers."
                              :name (format nil "Headings: ~a" (title buffer))
                              :buffer buffer)))))
 
+(nyxt::define-panel headings (panel-buffer)
+  (flet ((buffer-markup (heading)
+           "Create the presentation for a buffer."
+           (spinneret:with-html
+             (:p (:a :class "button"
+                     :href (lisp-url `(scroll-page-to-heading heading))
+                     (:span :title (title heading)
+                            :class "title" (title heading)))))))
+    (spinneret:with-html-string (:style (style panel-buffer))
+      (:style (cl-css:css
+               '((".button"
+                  :white-space "nowrap"
+                  :overflow-x "hidden"
+                  :display "block"
+                  :text-overflow "ellipsis"))))
+      (:body
+       (:h1 "Headings")
+       (loop for heading in (get-headings)
+             collect (buffer-markup heading))))))
