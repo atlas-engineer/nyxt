@@ -207,6 +207,14 @@ This is mostly useful for third-party packages to define globally-accessible
 commands without polluting Nyxt packages."
   `(%define-command ,name (:global-p t) (,@arglist) ,@body))
 
+(export-always 'delete-command)
+(defun delete-command (name)
+  "Remove command NAME, if any.
+Any function or macro definition of NAME is also removed,
+regardless of whether NAME is defined as a command."
+  (setf *command-list* (delete name *command-list* :key #'name))
+  (fmakunbound name))
+
 ;; TODO: Should `define-deprecated-command' report the version number of deprecation?
 ;; Maybe OK to just remove all deprecated commands on major releases.
 (defmacro define-deprecated-command (name (&rest arglist) &body body)
