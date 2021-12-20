@@ -172,9 +172,8 @@ If unset, set it to the return value of `format-attributes'."
     (setf (match-data suggestion)
           (if (and (match-data suggestion)
                    (typep (match-data suggestion) 'string)
-                   ;; mk-string-metrics requires the (simple-array character)
-                   ;; type, but 'string should be enough.  See
-                   ;; `mk-string-metrics:damerau-levenshtein'.
+                   ;; `score-suggestion-string' requires the (simple-array character)
+                   ;; type, but 'string should be enough.
                    (not (typep (match-data suggestion) 'base-string)))
               (if (not (eq (last-input-downcase-p source)
                            (current-input-downcase-p source)))
