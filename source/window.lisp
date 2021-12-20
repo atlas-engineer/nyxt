@@ -110,6 +110,13 @@ The handlers take the window as argument."))
                                              :window window)))))
     (mapc (lambda (i) (window-delete-panel-buffer window i)) panels)))
 
+(define-command-global delete-all-panel-buffers (&key (window (current-window)))
+  "Delete all panel buffers, with confirmation."
+  (if-confirm ("Delete all current panel buffers?")
+              (mapcar (lambda (panel)
+                        (window-delete-panel-buffer window panel))
+                      (panel-buffers window))))
+
 (defmacro define-panel (name (buffer-variable) &body body)
   (let ((panel-name (format nil "*~a Panel*" name))
         (docstring-show (format nil "Show ~a panel." name))
