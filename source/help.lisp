@@ -103,7 +103,7 @@
 For generic functions, describe all the methods."
   (if function-suggestion
       (let ((input function-suggestion))
-        (flet ((method-desc (method buffer)
+        (flet ((method-desc (method)
                  (spinneret:with-html-string
                    (:h1 (symbol-name input) " " (write-to-string (mopu:method-specializers method)))
                    (:pre (documentation method 't))
@@ -124,7 +124,7 @@ For generic functions, describe all the methods."
                   (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
                        (when (macro-function input) " (macro)"))
                   (:pre (documentation input 'function))
-                  (:raw (apply #'str:concat (mapcar (alex:rcurry #'method-desc buffer)
+                  (:raw (apply #'str:concat (mapcar #'method-desc
                                                     (mopu:generic-function-methods
                                                      (symbol-function input))))))
                 (str:concat
