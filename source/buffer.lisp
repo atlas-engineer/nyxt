@@ -904,24 +904,21 @@ See `make-buffer' for a description of the arguments."
     (set-current-buffer buffer)
     buffer))
 
-(define-command duplicate-buffer-with-current-modes (&key parent-buffer)
+(define-command duplicate-buffer-with-current-modes (&key (modes nil) parent-buffer)
   "Duplicate current buffer in a new buffer with current modes as well."
-  (let* ((buffer (current-buffer)))
-    (make-buffer :title (title buffer)
-                 :url (url buffer)
-                 :modes (mapcar #'mode-name (modes buffer))
-                 :parent-buffer parent-buffer)
+  (let* ((curr-buffer (current-buffer))
+         (buffer (make-buffer :title (title curr-buffer)
+                              :url (url curr-buffer)
+                              :modes (or modes
+                                         (mapcar #'mode-name
+                                                 (modes curr-buffer)))
+                              :parent-buffer parent-buffer)))
     (set-current-buffer buffer)
     buffer))
 
 (define-command duplicate-buffer (&key parent-buffer)
   "Duplicate current buffer in a new buffer."
-  (let ((buffer (current-buffer)))
-    (make-buffer :title (title buffer)
-                 :url (url buffer)
-                 :parent-buffer parent-buffer)
-    (set-current-buffer buffer)
-    buffer))
+  (duplicate-buffer-with-current-modes :modes '(web-mode base-mode)))
 
 (define-command make-internal-buffer (&key (title "") modes no-history-p)
   "Create a new buffer.
