@@ -78,7 +78,7 @@ of buffers."
            (spinneret:with-html
              (:p (:a :class "button"
                      :href (lisp-url `(switch-buffer :id ,(id (buffer heading)))
-                                     `(scroll-page-to-heading heading))
+                                     `(scroll-to-element :nyxt-identifier ,(get-nyxt-id (element heading))))
                      (:span :title (title heading)
                             :class "title" (title heading)))))))
     (spinneret:with-html-string (:style (style panel-buffer))
@@ -90,5 +90,4 @@ of buffers."
                   :text-overflow "ellipsis"))))
       (:body
        (:h1 "Headings")
-       (loop for heading in (get-headings)
-             collect (buffer-markup heading))))))
+       (mapcar #'buffer-markup (get-headings))))))
