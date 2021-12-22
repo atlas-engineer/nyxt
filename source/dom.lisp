@@ -171,6 +171,7 @@ JSON should have the format like what `get-document-body-json' produces:
                           (when (quri:uri-host url) `(:host ,(quri:uri-host url)))
                           (when (quri:uri-port url) `(:port ,(quri:uri-port url)))
                           (when (quri:uri-path url) `(:path ,(quri:uri-path url)))
+                          (when (quri:uri-query url) `(:query ,(quri:uri-query url)))
                           (when (quri:uri-fragment url) `(:fragment ,(quri:uri-fragment url)))))))
     (alex:when-let* ((result (call-next-method))
                      (url (nyxt::ensure-url result)))
