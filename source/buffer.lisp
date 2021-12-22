@@ -686,7 +686,7 @@ Delete it with `ffi-buffer-delete'."
 (defun dead-buffer-p (buffer) ; TODO: Use this wherever needed.
   (str:empty? (id buffer)))
 
-(defmethod document-model :around ((buffer buffer))
+(defmethod document-model ((buffer buffer))
   (pflet ((%count-dom-elements
            ()
            (defvar dom-counter 0)
@@ -698,9 +698,9 @@ Delete it with `ffi-buffer-delete'."
            (setf dom-counter 0)
            (count-dom-elements (nyxt/ps:qs document "html"))))
          (if (dead-buffer-p buffer)
-             (call-next-method)
+             (slot-value buffer 'document-model)
              (with-current-buffer buffer
-               (let ((value (call-next-method))
+               (let ((value (slot-value buffer 'document-model))
                      (element-count (%count-dom-elements)))
                  (if (and value element-count
                           ;; Check whether the difference in element count is significant.
