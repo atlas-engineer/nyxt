@@ -1011,10 +1011,6 @@ associated to the buffer is already killed."
    #'string>
    :key #'id))
 
-(defun sort-by-time (sequence &key (key #'last-access))
-  "Return a timely ordered SEQUENCE by KEY.  More recent elements come first."
-  (sort sequence #'local-time:timestamp> :key key))
-
 (defun buffers-get (id)
   (gethash id (slot-value *browser* 'buffers)))
 
