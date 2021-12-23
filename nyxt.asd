@@ -571,7 +571,6 @@ See `asdf::*immutable-systems*'."
                cl-containers
                closer-mop
                lparallel
-               mk-string-metrics
                moptilities
                serapeum
                str
