@@ -29,6 +29,7 @@
     `(("active" . ,(if (member buffer (mapcar #'nyxt::active-buffer
                                               (alex:hash-table-values (nyxt::windows *browser*))))
                        t nil))
+      #+webkit2-mute
       ("audible" . ,(not (webkit:webkit-web-view-is-muted (nyxt::gtk-object buffer))))
       ("height" . ,(gdk:gdk-rectangle-height
                     (gtk:gtk-widget-get-allocation (nyxt::gtk-object buffer))))
@@ -324,7 +325,12 @@ there. `reply-user-mesage' takes care of sending the response back."
                (setf (gethash (cffi:pointer-address (g:pointer message))
                               %message-channels%)
                      channel)
-               (calispel:! channel value))))
+               (calispel:! channel value)))
+           (cons* (se1 se2 &rest ignore)
+             ;; This is useful when conditional reader macro reads in some
+             ;; superfluous items.
+             (declare (ignore ignore))
+             (cons se1 se2)))
       (str:string-case message-name
         ("management.getSelf"
          (wrap-in-channel
@@ -353,22 +359,20 @@ there. `reply-user-mesage' takes care of sending the response back."
           (encode-json
            (list
             ;; TODO: This begs for trivial-features.
-            (cons "os"
-                  #+(or darwin macos macosx)
-                  "mac"
-                  #+bsd
-                  "openbsd"
-                  #+linux
-                  "linux"
-                  #-(or darwin macos macosx linux bsd)
-                  "")
-            (cons "arch"
-                  #+X86-64
-                  "x86-64"
-                  #+(or X86 X86-32)
-                  "x86-32"
-                  #-(or X86 X86-32 X86-64)
-                  "arm")))))
+            (cons* "os"
+                   #+(or darwin macos macosx)
+                   "mac"
+                   #+bsd
+                   "openbsd"
+                   #+linux
+                   "linux"
+                   "")
+            (cons* "arch"
+                   #+X86-64
+                   "x86-64"
+                   #+(or X86 X86-32)
+                   "x86-32"
+                   "arm")))))
         ("runtime.getBrowserInfo"
          (wrap-in-channel
           (encode-json
