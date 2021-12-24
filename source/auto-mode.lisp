@@ -417,15 +417,15 @@ Auto-mode is re-enabled once the page is reloaded."
 (defmethod serialize-object ((rule auto-mode-rule) stream)
   (flet ((write-if-present (slot &key modes-p)
            (when (funcall slot rule)
-             (format t " :~a ~a"
+             (format t " :~a ~s"
                      slot
                      (let ((value (funcall slot rule)))
                        (if modes-p
                            (mapcar
                             #'(lambda (mode-invocation)
                                 (if (arguments mode-invocation)
-                                    (list (name mode-invocation)
-                                          (arguments mode-invocation))
+                                    `(,(name mode-invocation)
+                                      ,@(arguments mode-invocation))
                                     (name mode-invocation)))
                             value)
                            value))))))
