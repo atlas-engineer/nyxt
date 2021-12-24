@@ -17,8 +17,7 @@ The build time for the Guix package database is not taken into account."
 Inputs are random character sequences taken from the docstrings."
   (let* ((suggestions (loop for command in nyxt::*command-list*
                             if (> (length (slot-value command 'nyxt::docstring)) 0)
-                              collect (prompter::ensure-non-base-string
-                                       (slot-value command 'nyxt::docstring))))
+                              collect (slot-value command 'nyxt::docstring)))
          (inverse-probability 3)
          (inputs (mapcar (lambda (suggestion)
                            (remove-if (lambda (c)
