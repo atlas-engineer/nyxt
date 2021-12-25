@@ -49,7 +49,9 @@
        "C-a" 'beginning-line
        "C-e" 'end-line
        "M-a" 'backward-sentence
-       "M-e" 'forward-sentence)
+       "M-e" 'forward-sentence
+       "M-}" 'forward-paragraph
+       "M-{" 'backward-paragraph)
       ;; vi keybindings only enable use of vim's plain "visual" mode for now
       scheme:vi-normal
       (list
@@ -241,6 +243,20 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"))
     (caret-move :action (caret-action mode)
                 :direction :backward
                 :scale :sentence)))
+
+(define-command forward-paragraph ()
+  "Move caret forward by a paragraph."
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (caret-move :action (caret-action mode)
+                :direction :forward
+                :scale :paragraph)))
+
+(define-command backward-paragraph ()
+  "Move caret backward by a paragraph."
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (caret-move :action (caret-action mode)
+                :direction :backward
+                :scale :paragraph)))
 
 (define-command forward-line-with-selection ()
   "Set mark and move caret forward by a line."
