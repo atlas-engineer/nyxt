@@ -65,6 +65,22 @@ Example:
        (eql :never)
        (eql :no-third-party)))
 
+;; The following types represent the positional arguments documented at
+;; https://developer.mozilla.org/en-US/docs/Web/API/Selection/modify#parameters
+
+(deftype selection-action ()
+  "The type of change to apply."
+  '(member :move :extend))
+
+(deftype selection-direction ()
+  "The direction in which to adjust the current selection."
+  '(member :forward :backward))
+
+(deftype selection-scale ()
+  "The distance to adjust the current selection or cursor position."
+  '(member :character :word :sentence :line :paragraph :lineboundary
+    :sentenceboundary :paragraphboundary :documentboundary))
+
 (export-always 'html-string-p)
 (defun html-string-p (string)
   (and (stringp string)
