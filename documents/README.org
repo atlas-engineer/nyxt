@@ -39,7 +39,6 @@
   - [[#contributing][Contributing]]
   - [[#irc-channel][IRC Channel]]
 :END:
-
 * Developer installation with Guix
 
 First, clone the Nyxt repository.  It is most convenient to clone the
@@ -206,8 +205,7 @@ Notes:
    `webkit2-gtk(-devel)` instead of `webkit-gtk3` via your favorite
    package manager. If you are on a legacy version of macOS which is not
    supported by HomeBrew, you may want to try install these via MacPorts.
-
-
+  
 ** Qt dependencies
 
 Qt is only required if you want to build Nyxt over the WebEngine renderer.
@@ -382,12 +380,20 @@ values can be configured in the respective init files.
 
 [[https://github.com/joaotavora/sly][=SLY=]] is a fork of =SLIME= with additional functionality.
 
-Follow the following steps:
+Prerequisites:
+  - You need to have [[https://www.quicklisp.org/beta/][Quicklisp]] installed.
+    
+Steps:
 
-1. Add the following line to your Nyxt init file
+1. Add the following lines to your Nyxt init file. If your quicklisp directory differs, change it accordingly.
   #+begin_src lisp
-    (load-after-system :slynk "~/.config/nyxt/my-slynk.lisp")
+  (load (merge-pathnames #p"quicklisp/setup.lisp" (user-homedir-pathname)))
+  (ql:quickload 'slynk)
+   
+  ;; (nyxt-init-file) points to path/to/your/nyxt/config/directory
+  (load-after-system :slynk (nyxt-init-file "my-slynk.lisp"))
   #+end_src
+
 2. Create a file called =my-slynk.lisp= where you will specify your
    =start-slynk= command
   #+NAME: my-slynk.lisp
@@ -403,11 +409,11 @@ Follow the following steps:
         (slynk:create-server :port slynk-port :dont-close t)
         (echo "Slynk server started at port ~a" slynk-port))
   #+end_src
+
 3. Run the command =start-slynk= in Nyxt
 
-Then proceed as in the previous SLIME section by relacing
+Then proceed as in the previous SLIME section by replacing
 ~slime-connect~ with ~sly-connect~.
-
 
 * Help & Community
 
