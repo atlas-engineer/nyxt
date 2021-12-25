@@ -59,14 +59,13 @@
           "SWITCH-BUFFER"
           "match 'swit buf' with real suggestions list")
 
-      ;; TODO: Fix reverse fuzzy matching.
-      ;; (prove:is (match "buf swit" '("about" "switch-buffer-next" "switch-buffer" "delete-buffer"))
-      ;;   "switch-buffer"
-      ;;   "reverse match 'buf swit' (small list)")
+      (prove:is (match "buf swit" '("about" "switch-buffer-next" "switch-buffer" "delete-buffer"))
+        "switch-buffer"
+        "reverse match 'buf swit' (small list)")
 
-      ;; (prove:is (match "buf swit" *suggestions*)
-      ;;     "SWITCH-BUFFER"
-      ;;     "reverse match 'buf swit' with real suggestions list")
+      (prove:is (match "buf swit" *suggestions*)
+          "SWITCH-BUFFER"
+          "reverse match 'buf swit' with real suggestions list")
 
       (prove:is (match "de" '("some-mode" "delete-foo"))
           "delete-foo"
