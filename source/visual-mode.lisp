@@ -64,6 +64,8 @@
        "$" 'end-line
        ")" 'forward-sentence
        "(" 'backward-sentence
+       "}" 'forward-paragraph
+       "{" 'backward-paragraph
        "0" 'beginning-line
        "v" 'toggle-mark
        "C-c" 'visual-mode)))
