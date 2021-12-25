@@ -62,6 +62,8 @@
        "w" 'forward-word
        "b" 'backward-word
        "$" 'end-line
+       ")" 'forward-sentence
+       "(" 'backward-sentence
        "0" 'beginning-line
        "v" 'toggle-mark
        "C-c" 'visual-mode)))
