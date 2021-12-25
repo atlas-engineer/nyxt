@@ -336,8 +336,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
 (defsystem "nyxt/gtk"
   :depends-on (nyxt
                cl-cffi-gtk
-               cl-webkit2
-               nyxt/web-extensions)
+               cl-webkit2)
   :pathname "source/"
   :serial t
   :components ((:file "web-extensions")
@@ -608,72 +607,3 @@ See `asdf::*immutable-systems*'."
   :components ((:file "libraries/theme/test-package"))
   :perform (test-op (op c)
                     (nyxt-run-test c "libraries/theme/tests/")))
-
-(defsystem "nyxt/web-extensions"
-  :pathname "libraries/web-extensions/"
-  :depends-on (:cffi-toolchain :serapeum)
-  :components ((:static-file "alarms.c")
-               (:static-file "bookmarks.c")
-               (:static-file "browser.c")
-               (:static-file "browser_action.c")
-               (:static-file "commands.c")
-               (:static-file "extension.c")
-               (:static-file "extevent.c")
-               (:static-file "globals.c")
-               (:static-file "history.c")
-               (:static-file "management.c")
-               (:static-file "notifications.c")
-               (:static-file "nyxt.c")
-               (:static-file "permissions.c")
-               (:static-file "runtime.c")
-               (:static-file "storage.c")
-               (:static-file "tabs.c")
-               (:static-file "web_navigation.c")
-               (:static-file "web_request.c"))
-  :output-files (compile-op (o c)
-                            (values (list (uiop:merge-pathnames* "libnyxt.so" (asdf:component-pathname c)))
-                                    t))
-  :perform (compile-op
-            (o c)
-            (let* ((c-compiler (uiop:symbol-call
-                                :serapeum :resolve-executable
-                                (or (uiop:getenv "CC")
-                                    (symbol-value
-                                     (uiop:find-symbol* :*cc* :cffi-toolchain))
-                                    "gcc")))
-                   (pkg-config (namestring (uiop:symbol-call
-                                            :serapeum :resolve-executable "pkg-config")))
-                   (c-flags (remove-if
-                             #'uiop:emptyp
-                             (uiop:split-string
-                              (uiop:run-program
-                               `(,pkg-config "gobject-2.0" "webkit2gtk-4.0" "--cflags")
-                               :output '(:string :stripped t)
-                               :error-output :output
-                               :force-shell t
-                               :environment (list (concatenate 'string "PKG_CONFIG_PATH="
-                                                               (uiop:getenv "PKG_CONFIG_PATH")))))))
-                   (ld-flags (remove-if
-                              #'uiop:emptyp
-                              (uiop:split-string
-                               (uiop:run-program
-                                `(,pkg-config "gobject-2.0" "webkit2gtk-4.0" "--libs")
-                                :output '(:string :stripped t)
-                                :error-output :output
-                                :force-shell t
-                                :environment (list (concatenate 'string "PKG_CONFIG_PATH="
-                                                                (uiop:getenv "PKG_CONFIG_PATH"))))))))
-              (uiop:with-current-directory ((component-pathname c))
-                (mapc (lambda (c-component)
-                        ;; TODO: Allow compiler customization?
-                        (uiop:run-program `(,c-compiler "-c" ,(uiop:native-namestring (component-pathname c-component))
-                                                        ,@c-flags "-fPIC")
-                                          :output t
-                                          :error-output :output))
-                      (module-components c))
-                ;; TODO: Allow linker customization.
-                (uiop:run-program `(,c-compiler ,@ld-flags "-fPIC" "-shared" "-o" "libnyxt.so"
-                                                ,@(mapcar #'uiop:native-namestring
-                                                          (uiop:directory-files (component-pathname c) "*.o")))
-                                  :output t
-                                  :error-output :output)))))

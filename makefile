@@ -37,6 +37,9 @@ nyxt: $(lisp_files)
 		--eval '(asdf:make :nyxt/$(NYXT_RENDERER)-application)' \
 		$(lisp_quit) || (printf "\n%s\n%s\n" "Compilation failed, see the above stacktrace." && exit 1)
 
+web-extensions:
+	$(MAKE) -C libraries/web-extensions/ all
+
 .PHONY: app-bundle
 app-bundle:
 	mkdir -p ./Nyxt.app/Contents/MacOS
@@ -50,9 +53,9 @@ install-app-bundle:
 	cp -r Nyxt.app $(DESTDIR)/Applications
 
 .PHONY: all
-all: nyxt
+all: nyxt web-extensions
 ifeq ($(UNAME), Darwin)
-all: nyxt app-bundle
+all: nyxt web-extensions app-bundle
 endif
 
 .PHONY: install
