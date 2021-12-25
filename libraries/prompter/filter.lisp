@@ -28,13 +28,13 @@ A higher score means the SUGGESTION-STRING comes first."
              (word-body (c)
                (let ((next (position c suggestion-string :start i)))
                  (setf i next)
-                 (setf lastchar c)
                  (when (not next) (return-from word-body))
                  ;; bonus for continuous match
                  (when (and (> next 0)
                             (eq (aref suggestion-string (1- next)) lastchar))
                    (incf score continuous-bonus))
-                 (match-bonus i)))
+                 (match-bonus next)
+                 (setf lastchar c)))
              (word-end ()
                ;; bonus for word ending early (shorter words at the beginning wins)
                (match-bonus
