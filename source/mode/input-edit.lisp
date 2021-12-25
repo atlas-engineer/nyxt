@@ -131,6 +131,5 @@ necessary."
        "M-f" 'cursor-forwards-word
        "M-b" 'cursor-backwards-word
        "C-d" 'delete-forwards
-       "backspace" 'delete-backwards
        "M-backspace" 'delete-backwards-word
        "M-d" 'delete-forwards-word)))))
