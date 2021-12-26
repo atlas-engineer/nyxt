@@ -44,9 +44,9 @@ Package prefix is optional.")
       (echo-warning "Auto-mode rule: unknown mode symbol ~s" mode)))
   (:method ((mode list))
     (check-type mode (cons symbol *))
-    (when (rememberable-p (make-instance (first mode)))
+    (when (rememberable-p (make-instance (mode-name (first mode))))
       (make-instance 'mode-invocation
-                     :name (first mode)
+                     :name (mode-name (first mode))
                      :arguments (rest mode)))))
 
 (defun mode-invocations (mode-list)
