@@ -275,7 +275,7 @@ These modes will then be activated on every visit to this domain/host/URL."
     :type boolean
     :documentation "Whether the user is asked to confirm adding the rule
 corresponding to a mode toggle.")
-   (previous-url 
+   (previous-url
     nil
     :type (or quri:uri null)
     :documentation "The last URL for which `auto-mode-handler' was fired.  We
