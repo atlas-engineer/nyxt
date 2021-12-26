@@ -175,10 +175,10 @@ ENABLE-P is whether mode is being enabled (non-nil) or disabled (nil).
 Mode is covered if:
 - It's not rememberable (has `rememberable-p' set to nil).
 - There is a rule it matches and:
-  - when mode is ENABLED-P and part of `included' modes in the rule, or
-  - when mode is not ENABLED-P and part of `excluded' modes in the rule.
-- If there's no matching rule but it's part of `last-active-modes' and needs to be ENABLED-P.
-- If it's getting disabled (not ENABLED-P) after being enabled by a rule on the previous page."
+  - when mode is ENABLE-P and part of `included' modes in the rule, or
+  - when mode is not ENABLE-P and part of `excluded' modes in the rule.
+- If there's no matching rule but it's part of `last-active-modes' and needs to be ENABLE-P.
+- If it's getting disabled (not ENABLE-P) after being enabled by a rule on the previous page."
   (let ((invocation (mode-invocation mode)))
     (flet ((invocation-member (list)
              (member invocation list :test #'equals)))
