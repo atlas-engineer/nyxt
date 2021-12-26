@@ -424,10 +424,9 @@ If you aren't using Quicklisp, you can configure Nyxt to start a Slynk server wi
 
 2. Add the following lines to your Nyxt's init.lisp (the configuration file) depending on whether you are using the Emacs Sly package, or you cloned the repository:
    
-   - *If you are pointing Nyxt to your Emacs Sly package installation directory add these lines to your =nyxt/init.lisp=:*
+   - *If you have installed Sly with =package-install= (or similar method) in Emacs, add these lines to your =nyxt/init.lisp=:*
    #+NAME: nyxt/init.lisp
    #+begin_src lisp
-   ;; Change the push directory below to where you've cloned Sly.
    (asdf:load-system :slynk)
    (slynk:create-server :port 4008)
    #+end_src
@@ -436,7 +435,7 @@ If you aren't using Quicklisp, you can configure Nyxt to start a Slynk server wi
      Remember to replace the directory in the push expression with where you cloned Sly.
      #+NAME: nyxt/init.lisp
      #+begin_src lisp
-     (push #p"~/dir/to/newly/cloned/sly/dir" asdf:*central-registry*)  
+     (push #p"~/dir/to/newly/cloned/sly/dir" asdf:*central-registry*)
      (asdf:load-system :slynk)
      (slynk:create-server :port 4008)
      #+end_src
@@ -460,6 +459,7 @@ If you aren't using Quicklisp, you can configure Nyxt to start a Slynk server wi
 
 Then proceed as in the previous SLIME section by replacing
 ~slime-connect~ with ~sly-connect~. Remember to choose the correct port (in this case, 4008).
+
 * Help & Community
 
 There are several ways to ask for help from the community.
