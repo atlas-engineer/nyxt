@@ -155,10 +155,8 @@ WebKit browsing engine.")
     (source (local-file %source-dir #:recursive? #t #:select? git-file?))
     (build-system gnu-build-system)     ; TODO: Use glib-or-gtk-build-system instead?
     (arguments
-     `(#:make-flags (list "all" "NYXT_SUBMODULES=false"
+     `(#:make-flags (list "nyxt" "NYXT_SUBMODULES=false"
                           (string-append "DESTDIR=" (assoc-ref %outputs "out"))
-                          (string-append "CC=" (assoc-ref %build-inputs "gcc")
-                                         "/bin/gcc")
                           "PREFIX=")
        #:strip-binaries? #f             ; Stripping breaks SBCL binaries.
        #:phases
