@@ -216,7 +216,7 @@ The rules are:
 (-> make-mode-toggle-prompting-handler (boolean t) (function (root-mode)))
 (defun make-mode-toggle-prompting-handler (enable-p auto-mode)
   #'(lambda (mode)
-      (let ((invocation (mode-invocation mode)))
+      (alex:when-let* ((invocation (mode-invocation mode)))
         (when (not (mode-covered-by-auto-mode-p mode auto-mode enable-p))
           (if-confirm ("Permanently ~:[disable~;enable~] ~a for this URL?"
                        enable-p (mode-name mode))
