@@ -7,6 +7,7 @@
   (:import-from #:nyxt/web-mode #:query-hints #:get-nyxt-id)
   (:documentation "Visual mode."))
 (in-package :nyxt/visual-mode)
+(use-nyxt-package-nicknames)
 
 (define-mode visual-mode ()
   "Visual mode. For documentation on commands and keybindings, see the manual."
@@ -262,50 +263,45 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"))
                 :direction :backward
                 :scale :paragraph)))
 
-(define-command forward-line-with-selection ()
+(defmacro define-command-with-selection (name args &body body)
+  (declare (ignore args))
+  (alex:with-gensyms (mode)
+    (multiple-value-bind (body decls doc)
+      (alex:parse-body body :documentation t)
+        `(define-command ,name ()
+           ,@decls ,@(sera:unsplice doc)
+           (let ((,mode (find-submode (current-buffer) 'visual-mode)))
+             (setf (mark-set ,mode) t)
+             ,@body)))))
+
+(define-command-with-selection forward-line-with-selection ()
   "Set mark and move caret forward by a line."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
-    (setf (mark-set mode) t)
-    (forward-line)))
+  (forward-line))
 
-(define-command backward-line-with-selection ()
+(define-command-with-selection backward-line-with-selection ()
   "Set mark and move caret backward by a line."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
-    (setf (mark-set mode) t)
-    (backward-line)))
+  (backward-line))
 
-(define-command forward-char-with-selection ()
+(define-command-with-selection forward-char-with-selection ()
   "Set mark and move caret forward by a character."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
-    (setf (mark-set mode) t)
-    (forward-char)))
+  (forward-char))
 
-(define-command backward-char-with-selection ()
+(define-command-with-selection backward-char-with-selection ()
   "Set mark and move caret backward by a character."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
-    (setf (mark-set mode) t)
-    (backward-char)))
+  (backward-char))
 
-(define-command forward-word-with-selection ()
+(define-command-with-selection forward-word-with-selection ()
   "Set mark and move caret forward by a word."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
-    (setf (mark-set mode) t)
-    (forward-word)))
+  (forward-word))
 
-(define-command backward-word-with-selection ()
+(define-command-with-selection backward-word-with-selection ()
   "Set mark and move caret backward by a word."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
-    (setf (mark-set mode) t)
-    (backward-word)))
+  (backward-word))
 
-(define-command beginning-line-with-selection ()
+(define-command-with-selection beginning-line-with-selection ()
   "Set mark and move caret to the beginning of the line."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
-    (setf (mark-set mode) t)
-    (beginning-line)))
+  (beginning-line))
 
-(define-command end-line-with-selection ()
+(define-command-with-selection end-line-with-selection ()
   "Set mark and move caret to the end of line."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
-    (setf (mark-set mode) t)
-    (end-line)))
+  (end-line))
