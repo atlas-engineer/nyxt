@@ -156,7 +156,7 @@ non-new-page requests, buffer URL is not altered."
          (rule (matching-auto-mode-rule (url request-data) (buffer request-data)))
          (previous-url (previous-url auto-mode))
          (previous-rule (when previous-url (matching-auto-mode-rule previous-url (buffer request-data)))))
-    (when (and rule previous-url (not previous-rule))
+    (when (and rule (not previous-rule))
       (save-last-active-modes auto-mode previous-url))
     (cond
       ((and (not rule) (new-page-request-p request-data))
