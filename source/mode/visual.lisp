@@ -52,7 +52,9 @@
        "M-a" 'backward-sentence
        "M-e" 'forward-sentence
        "M-}" 'forward-paragraph
-       "M-{" 'backward-paragraph)
+       "M-{" 'backward-paragraph
+       "M->" 'forward-document
+       "M-<" 'backward-document)
       ;; vi keybindings only enable use of vim's plain "visual" mode for now
       scheme:vi-normal
       (list
@@ -67,6 +69,8 @@
        "(" 'backward-sentence
        "}" 'forward-paragraph
        "{" 'backward-paragraph
+       "G" 'forward-document
+       "g g" 'backward-document
        "0" 'beginning-line
        "v" 'toggle-mark
        "C-c" 'visual-mode)))
