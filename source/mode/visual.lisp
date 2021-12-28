@@ -263,6 +263,20 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"))
                 :direction :backward
                 :scale :paragraph)))
 
+(define-command forward-document ()
+  "Move caret forward to the end of the document."
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (caret-move :action (caret-action mode)
+                :direction :forward
+                :scale :documentboundary)))
+
+(define-command backward-document ()
+  "Move caret backward to the beginning of the document."
+  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+    (caret-move :action (caret-action mode)
+                :direction :backward
+                :scale :documentboundary)))
+
 (defmacro define-command-with-selection (name args &body body)
   (declare (ignore args))
   (alex:with-gensyms (mode)
