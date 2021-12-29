@@ -7,7 +7,7 @@ LDLIBS += ${shell pkg-config ${PKG_MODULES} --libs}
 all: libnyxt.so
 
 libnyxt.so: nyxt.o globals.o extevent.o browser.o tabs.o management.o runtime.o extension.o storage.o alarms.o bookmarks.o browser_action.o commands.o history.o notifications.o permissions.o web_navigation.o web_request.o
-	${LD} ${LDFLAGS} -fPIC -shared -o $@ $^ ${LDLIBS}
+	${LD} -fPIC -shared -o $@ $^ ${LDLIBS}
 
 install: libnyxt.so
 	${INSTALL} $^
