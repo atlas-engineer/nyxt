@@ -390,7 +390,7 @@ values can be configured in the respective init files.
   #+NAME: nyxt/init.lisp
   #+begin_src lisp
   (load (merge-pathnames #p"quicklisp/setup.lisp" (user-homedir-pathname)))
-  (ql:quickload 'slynk)   
+  (ql:quickload 'slynk)
   ;; Note: (nyxt-init-file) points to path/to/your/nyxt/config/directory
   (load-after-system :slynk (nyxt-init-file "my-slynk.lisp"))
   #+end_src
@@ -423,7 +423,7 @@ If you aren't using Quicklisp, you can configure Nyxt to start a Sly/Slynk serve
 1. Ensure you have the Sly Package installed for Emacs with =package-install=. You may also clone the repository from [[https://github.com/joaotavora/sly.git][here]]. Should you choose to clone the repository, see the appropriate section in step 2.
 
 2. Add the following lines to your Nyxt's init.lisp (the configuration file) depending on whether you are using the Emacs Sly package, or you cloned the repository:
-   
+
    - If you have installed Sly with =package-install= (or similar method) in Emacs, add these lines to your =nyxt/init.lisp= :
 
    #+NAME: nyxt/init.lisp
@@ -433,14 +433,14 @@ If you aren't using Quicklisp, you can configure Nyxt to start a Sly/Slynk serve
    #+end_src
 
    - If you are cloning from git, it's the same as above but with an extra =push= expression:
-     
+
      #+NAME: nyxt/init.lisp
      #+begin_src lisp
      (push #p"~/dir/to/newly/cloned/sly/dir" asdf:*central-registry*)
      (asdf:load-system :slynk)
      (slynk:create-server :port 4008)
      #+end_src
-   
+
 2. Create a file called =my-slynk.lisp= in your Nyxt configuration directory (see =(nyxt-init-file)= where you will create a =start-slynk= command.
 
   #+NAME: nyxt/my-slynk.lisp
