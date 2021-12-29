@@ -22,10 +22,13 @@ want to change the behaviour of modifiers, for instance swap 'control' and
   \"Swap control and meta.\"
   (declare (ignore event))
   (let ((plist '(:control-mask \"meta\"
-                 :mod1-mask \"control\"
+                 :mod1-mask \"control\" ;; Usually it is Alt.
+                 :mod5-mask nil         ;; See your config for what mod1-5 mean.
                  :shift-mask \"shift\"
                  :super-mask \"super\"
-                 :hyper-mask \"hyper\")))
+                 :hyper-mask \"hyper\"
+                 :meta-mask nil         ;; Meta.
+                 :lock-mask nil)))
     (delete nil (mapcar (lambda (mod) (getf plist mod)) modifier-state))))
 
 \(define-configuration browser
@@ -465,9 +468,12 @@ See `gtk-browser's `modifier-translator' slot."
   (declare (ignore event))
   (let ((plist '(:control-mask "control"
                  :mod1-mask "meta"
+                 :mod5-mask nil
                  :shift-mask "shift"
                  :super-mask "super"
-                 :hyper-mask "hyper")))
+                 :hyper-mask "hyper"
+                 :meta-mask nil
+                 :lock-mask nil)))
     (delete nil (mapcar (lambda (mod) (getf plist mod)) modifier-state))))
 
 #+darwin
