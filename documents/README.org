@@ -459,7 +459,7 @@ If you aren't using Quicklisp, you can configure Nyxt to start a Sly/Slynk serve
 
 3. Run the command =start-slynk= in Nyxt with =M-x start-slynk=.
 
-Then proceed as in the previous SLIME section by replacing ~slime-connect~ with ~sly-connect~. Remember to choose the correct port (in this case, 4008).
+4. Proceed as in the previous SLIME section by replacing ~slime-connect~ with ~sly-connect~. Remember to choose the correct port (in this case, 4008).
 
 * Help & Community
 
