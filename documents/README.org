@@ -387,19 +387,19 @@ values can be configured in the respective init files.
 *Steps:*
 1. Add the following lines to your Nyxt init file. If your Quicklisp directory differs, change it accordingly:
 
-  #+NAME: nyxt/init.lisp
-  #+begin_src lisp
-  (load (merge-pathnames #p"quicklisp/setup.lisp" (user-homedir-pathname)))
-  (ql:quickload 'slynk)
-  ;; Note: (nyxt-init-file) points to path/to/your/nyxt/config/directory
-  (load-after-system :slynk (nyxt-init-file "my-slynk.lisp"))
-  #+end_src
+#+NAME: nyxt/init.lisp
+#+begin_src lisp
+(load (merge-pathnames #p"quicklisp/setup.lisp" (user-homedir-pathname)))
+(ql:quickload 'slynk)
+;; Note: (nyxt-init-file) points to path/to/your/nyxt/config/directory
+(load-after-system :slynk (nyxt-init-file "my-slynk.lisp"))
+#+end_src
 
 2. Create a file called =my-slynk.lisp= where you will specify your =start-slynk= command:
 
-  #+NAME: nyxt/my-slynk.lisp
-  #+begin_src lisp
-    (define-command-global start-slynk (&optional (slynk-port *swank-port*))
+#+NAME: nyxt/my-slynk.lisp
+#+begin_src lisp
+(define-command-global start-slynk (&optional (slynk-port *swank-port*))
         "Start a Slynk server that can be connected to, for instance, in
     Emacs via SLY.
 
@@ -407,9 +407,9 @@ values can be configured in the respective init files.
     arbitrary code with the privileges of the user running Nyxt.  Make sure
     you understand the security risks associated with this before running
     this command."
-        (slynk:create-server :port slynk-port :dont-close t)
-        (echo "Slynk server started at port ~a" slynk-port))
-  #+end_src
+  (slynk:create-server :port slynk-port :dont-close t)
+  (echo "Slynk server started at port ~a" slynk-port))
+#+end_src
 
 3. Run the command =start-slynk= in Nyxt.
 
@@ -426,26 +426,26 @@ If you aren't using Quicklisp, you can configure Nyxt to start a Sly/Slynk serve
 
    - If you have installed Sly with =package-install= (or similar method) in Emacs, add these lines to your =nyxt/init.lisp= :
 
-   #+NAME: nyxt/init.lisp
-   #+begin_src lisp
-   (asdf:load-system :slynk)
-   (slynk:create-server :port 4008)
-   #+end_src
+#+NAME: nyxt/init.lisp
+#+begin_src lisp
+(asdf:load-system :slynk)
+(slynk:create-server :port 4008)
+#+end_src
 
    - If you are cloning from git, it's the same as above but with an extra =push= expression:
 
-     #+NAME: nyxt/init.lisp
-     #+begin_src lisp
-     (push #p"~/dir/to/newly/cloned/sly/dir" asdf:*central-registry*)
-     (asdf:load-system :slynk)
-     (slynk:create-server :port 4008)
-     #+end_src
+#+NAME: nyxt/init.lisp
+#+begin_src lisp
+(push #p"~/dir/to/newly/cloned/sly/dir" asdf:*central-registry*)
+(asdf:load-system :slynk)
+(slynk:create-server :port 4008)
+#+end_src
 
 2. Create a file called =my-slynk.lisp= in your Nyxt configuration directory (see =(nyxt-init-file)= where you will create a =start-slynk= command.
 
-  #+NAME: nyxt/my-slynk.lisp
-  #+begin_src lisp
-    (define-command-global start-slynk (&optional (slynk-port *swank-port*))
+#+NAME: nyxt/my-slynk.lisp
+#+begin_src lisp
+(define-command-global start-slynk (&optional (slynk-port *swank-port*))
         "Start a Slynk server that can be connected to, for instance, in
     Emacs via SLY.
 
@@ -453,9 +453,9 @@ If you aren't using Quicklisp, you can configure Nyxt to start a Sly/Slynk serve
     arbitrary code with the privileges of the user running Nyxt.  Make sure
     you understand the security risks associated with this before running
     this command."
-        (slynk:create-server :port slynk-port :dont-close t)
-        (echo "Slynk server started at port ~a" slynk-port))
-  #+end_src
+  (slynk:create-server :port slynk-port :dont-close t)
+  (echo "Slynk server started at port ~a" slynk-port))
+#+end_src
 
 3. Run the command =start-slynk= in Nyxt with =M-x start-slynk=.
 
