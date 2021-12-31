@@ -178,7 +178,7 @@ Bookmarks can have the following settings:")
                                 bookmark-url nyxt/web-mode:bookmark-hint
                                 set-url-from-bookmark delete-bookmark
                                 list-bookmarks)))
-   (:h3 "Application mode")
+   (:h3 "Passthrough mode")
    (:p "The command " (:code "passthrough-mode") " forwards all keys to the
 renderer. For instance, using the default binding of Nyxt (" (:code "web-cua-map") ") the
 key-binding " (:code "C-i") " executes " (:code "autofill") ". Suppose
