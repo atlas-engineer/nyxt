@@ -138,7 +138,13 @@ not return."
         (funcall thunk))))
 
 (defmacro define-ffi-method (name args &body body)
-  "Make a window."
+  "Define an FFI method to run in the renderer thread.
+
+Always returns a value retrieved from the renderer thread, using Calispel
+channels if the current thread is not the renderer one.
+
+Is a `defmethod' wrapper. If you don't need the body of the method to execute in
+the renderer thread, use plain `defmethod'."
   (multiple-value-bind (forms declares docstring)
       (alex:parse-body body :documentation t)
     `(defmethod ,name ,args
