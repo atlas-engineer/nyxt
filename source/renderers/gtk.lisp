@@ -143,8 +143,8 @@ not return."
 Always returns a value retrieved from the renderer thread, using Calispel
 channels if the current thread is not the renderer one.
 
-Is a `defmethod' wrapper. If you don't need the body of the method to execute in
-the renderer thread, use plain `defmethod'."
+It's a `defmethod' wrapper. If you don't need the body of the method to execute in
+the renderer thread, use `defmethod' instead."
   (multiple-value-bind (forms declares docstring)
       (alex:parse-body body :documentation t)
     `(defmethod ,name ,args
