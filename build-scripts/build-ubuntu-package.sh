@@ -14,7 +14,7 @@ git clone --depth=1 --branch=sbcl-2.1.0 https://github.com/sbcl/sbcl.git ~/sbcl 
 (
     cd ~/sbcl
     set +e
-    sh make.sh --fancy --with-sb-linkable-runtime --with-sb-dynamic-core &> sbcl-build.log
+    sh make.sh --fancy --with-sb-linkable-runtime --with-sb-dynamic-core --with-sb-core-compression --dynamic-space-size=3072 &> sbcl-build.log
     code=$?
     set -e
     test $code = 0 || (cat sbcl-build.log && exit 1)

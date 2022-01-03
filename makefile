@@ -6,8 +6,12 @@ SHELL = /bin/sh
 UNAME := $(shell uname)
 
 LISP ?= sbcl
+SBCL_FLAGS =
+ifeq ($(LISP), sbcl)
+	SBCL_FLAGS=--dynamic-space-size $(shell sbcl --noinform --no-userinit --non-interactive --eval '(prin1 (max 3072 (/ (sb-ext:dynamic-space-size) 1024 1024)))' --quit)
+endif
 ## We use --non-interactive with SBCL so that errors don't interrupt the CI.
-LISP_FLAGS ?= --no-userinit --non-interactive
+LISP_FLAGS ?= $(SBCL_FLAGS) --no-userinit --non-interactive
 
 NYXT_SUBMODULES=true
 NYXT_RENDERER=gi-gtk
