@@ -159,6 +159,7 @@ extern WebKitWebPage *PAGE;
 typedef struct {
         char *name;
         char *extension_id;
+        char *tab_id;
         char *manifest;
         JSCValue *files;
         WebKitScriptWorld *world;
