@@ -755,3 +755,29 @@ Requirements:
                                    (nyxt-init-file ,name))))
           (uiop:subprocess-error ()
             (echo-warning "Cannot install extension: failed to clone git repository"))))))
+
+(define-command install-web-extension (&optional (url (url (current-buffer))))
+  "Install the Nyxt extension from the URL.
+
+Requirements:
+- Only addons.mozilla.org is allowed for extension installation.
+- The page with the extension should be loaded in the current buffer.
+- ? should be in the PATH.
+- Repository name and ASDF system names should be the same."
+  (when (str:s-member (quri:uri-host url) "addons.mozilla.org")
+    (let ((download-url (plump:get-attribute
+                         (elt (clss:select ".InstallButtonWrapper-download-link"
+                                (document-model (current-buffer)))
+                              0)
+                         "href")))
+      (hooks:add-hook (after-download-hook *browser*)
+                      (make-handler-download
+                       (lambda (download)
+                         (when (string= download-url (url download))
+                           ;; TODO: What is the most accessible archive
+                           ;; extractor supporting xpi archives?
+                           (uiop:run-program '())
+                           (hooks:remove-hook (after-download-hook *browser*)
+                                              'download-web-extension-handler)))
+                       'download-web-extension-handler))
+      (download (current-buffer) download-url))))
