@@ -36,7 +36,7 @@ gboolean send_request_callback (WebKitWebPage     *web_page,
         jsc_value_object_set_property(details, "parentFrameId",
                                       jsc_value_new_number(context, -1));
         /* FIXME: Always false.
-         * Maybe ask the browser for which page is incognito?. */
+         * Maybe ask the browser for which page is incognito? */
         jsc_value_object_set_property(details, "incognito",
                                       jsc_value_new_boolean(context, 0));
         if (webkit_uri_request_get_http_method(request))
