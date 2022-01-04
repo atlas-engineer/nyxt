@@ -31,10 +31,12 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 \(define-configuration browser
   ((modifier-translator #'my-translate-modifiers)))")
    (web-contexts (make-hash-table :test 'equal)
-                 :documentation "Persistent `nyxt:webkit-web-contexts'
-Keyed by strings as they must be backed to unique folders")
+                 :documentation "Persistent `nyxt::webkit-web-context's
+Keyed by strings as they must be backed to unique folders
+See also the `ephemeral-web-contexts' slot.")
    (ephemeral-web-contexts (make-hash-table :test 'equal)
-                           :documentation "Ephemeral `nyxt:webkit-web-contexts'"))
+                           :documentation "Ephemeral `nyxt::webkit-web-context's.
+See also the `web-contexts' slot."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
@@ -116,8 +118,9 @@ failures."))
 (defclass webkit-website-data-manager (webkit:webkit-website-data-manager) ()
   (:metaclass gobject:gobject-class))
 
-;; create-gobject-from-class in gobject.base.lisp directly reads the initargs to make-instance, so this cannot
-;; be used to enforce ephermerality (or anything else that needs to happen in the cffi constructor)
+;; `gobject::create-gobject-from-class' directly reads the initargs to
+;; `make-instance', so this cannot be used to enforce ephemerality (or anything
+;; else that needs to happen in the CFFI constructor).
 (defmethod initialize-instance :after ((data-manager webkit-website-data-manager) &key)
   #+webkit2-tracking
   (webkit:webkit-website-data-manager-set-itp-enabled data-manager t)
