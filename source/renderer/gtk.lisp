@@ -300,9 +300,9 @@ the renderer thread, use `defmethod' instead."
 
 (defun cookies-data-path-for-context (name)
   (make-instance 'cookies-data-path
-                   :ref (format nil "~a-web-context-cookies" name)
-                   :dirname (uiop:xdg-data-home +data-root+
-                                                 (format nil "~a-web-context" name))))
+                 :ref (format nil "~a-web-context-cookies" name)
+                 :dirname (uiop:xdg-data-home +data-root+
+                                              (format nil "~a-web-context" name))))
 
 (defclass webkit-web-view-ephemeral (webkit:webkit-web-view) ()
   (:metaclass gobject:gobject-class))
@@ -316,10 +316,10 @@ the renderer thread, use `defmethod' instead."
   "Return a web view instance.
 
 If passed a context-name, a `nyxt:webkit-web-context' with that name is used for
-the `webkit:webkit-web-view'.  Otherwise, if :buffer is an internal-buffer or is
+the `webkit:webkit-web-view'.  If :buffer is an internal-buffer or is
 not set, the browser's \"internal\" `nyxt:webkit-web-context' is
-used. Otherwise (such as an external web buffer), the \"default\"
-webkit-web-context is used,
+used.  Otherwise (such as an external web buffer), the \"default\"
+webkit-web-context is used.
 
 If ephemeral-p is set, the buffer is a nosave-buffer, or the current
 data-protife is a nosave-data-profile, then an ephemeral context is used, with
