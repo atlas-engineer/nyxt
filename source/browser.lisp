@@ -368,34 +368,37 @@ reached (during which no new progress has been made)."
 (defmethod download ((buffer buffer) url &key cookies (proxy-url :auto))
   "Download URL.
 When PROXY-URL is :AUTO (the default), the proxy address is guessed from the
-current buffer."
+current buffer.
+
+Return the download object matching the download."
   (hooks:run-hook (before-download-hook *browser*) url) ; TODO: Set URL to download-hook result?
-  (match (download-engine buffer)
-    (:lisp
-     (alex:when-let* ((path (download-path buffer))
-                      (download-dir (expand-path path)))
-       (when (eq proxy-url :auto)
-         (setf proxy-url (proxy-url buffer :downloads-only t)))
-       (let* ((download nil))
-         (with-protect ("Download error: ~a" :condition)
-           (with-data-access (downloads path)
-             (setf download
-                   (download-manager:resolve url
-                                             :directory download-dir
-                                             :cookies cookies
-                                             :proxy proxy-url))
-             (push download downloads)
-             ;; Add a watcher / renderer for monitoring download
-             (let ((download-render (make-instance 'user-download :url (render-url url))))
-               (setf (destination-path download-render)
-                     (download-manager:filename download))
-               (push download-render (downloads *browser*))
-               (run-thread
-                 (download-watch download-render download)))
-             download)))))
-    (:renderer
-     (ffi-buffer-download buffer (render-url url))))
-  (list-downloads))
+  (prog1
+      (match (download-engine buffer)
+        (:lisp
+         (alex:when-let* ((path (download-path buffer))
+                          (download-dir (expand-path path)))
+           (when (eq proxy-url :auto)
+             (setf proxy-url (proxy-url buffer :downloads-only t)))
+           (let* ((download nil))
+             (with-protect ("Download error: ~a" :condition)
+               (with-data-access (downloads path)
+                 (setf download
+                       (download-manager:resolve url
+                                                 :directory download-dir
+                                                 :cookies cookies
+                                                 :proxy proxy-url))
+                 (push download downloads)
+                 ;; Add a watcher / renderer for monitoring download
+                 (let ((download-render (make-instance 'user-download :url (render-url url))))
+                   (setf (destination-path download-render)
+                         (download-manager:filename download))
+                   (push download-render (downloads *browser*))
+                   (run-thread
+                     (download-watch download-render download)))
+                 download)))))
+        (:renderer
+         (ffi-buffer-download buffer (render-url url))))
+    (list-downloads)))
 
 (defmethod get-unique-window-identifier ((browser browser))
   (format nil "~s" (incf (slot-value browser 'total-window-count))))
