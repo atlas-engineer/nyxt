@@ -236,7 +236,7 @@ not return."
 
 (define-class data-manager-data-path (data-path)
   ((context-name (error "Context name required."))
-   (dirname (uiop:xdg-data-home +data-root+))
+   (dirname (uiop:native-namestring (uiop:xdg-data-home +data-root+)))
    (ref "web-context"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
@@ -248,22 +248,17 @@ not return."
 (defmethod expand-data-path ((profile data-profile) (path data-manager-data-path))
   (expand-default-path
    path
-   :root (uiop:merge-pathnames* (str:concat (context-name path) "-web-context")
-                                (dirname path))))
-
-(defun data-manager-data-path-for-context (name)
-  (let ((ref (format nil "~a-web-context" name)))
-    (make-instance 'data-manager-data-path
-                   :ref ref
-                   :dirname (uiop:xdg-data-home +data-root+ ref))))
+   :root (uiop:strcat (uiop:native-namestring (dirname path))
+                      (uiop:directory-separator-for-host)
+                      (str:concat (context-name path) "-web-context"))))
 
 (define-class data-manager-cache-path (data-manager-data-path)
   ((dirname (uiop:xdg-cache-home +data-root+)))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class gtk-extensions-data-path (data-path)
-  ((dirname (uiop:xdg-config-home +data-root+ "extensions"))
+(define-class gtk-extensions-data-path (data-manager-data-path)
+  ((dirname (uiop:native-namestring (uiop:xdg-config-home +data-root+)))
    (ref :initform "gtk-extensions"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
@@ -273,11 +268,12 @@ not return."
   "We shouldn't enable (possibly) user-identifying extensions for `nosave-data-profile'."
   nil)
 
-(defun gtk-extensions-data-path-for-context (name)
-  (let ((ref (format nil "~a-gtk-extensions" name)))
-    (make-instance 'data-manager-cache-path
-                   :ref ref
-                   :dirname (uiop:xdg-config-home +data-root+ ref))))
+(defmethod expand-data-path ((profile data-profile) (path gtk-extensions-data-path))
+  (expand-default-path
+   path
+   :root (uiop:strcat (uiop:native-namestring (dirname path))
+                      (uiop:directory-separator-for-host)
+                      (str:concat (context-name path) "-gtk-extensions"))))
 
 (define-class gtk-download (download)
   ((gtk-object)
@@ -288,9 +284,9 @@ not return."
 
 (defmethod expand-data-path ((profile data-profile) (path gtk-extensions-data-path))
   "Return finalized path for gtk-extension directory."
-  (expand-default-path path :root (namestring (if (str:emptyp (namestring (dirname path)))
-                                                  (uiop:xdg-data-home +data-root+ "gtk-extensions")
-                                                  (dirname path)))))
+  (expand-default-path path :root (uiop:native-namestring (if (str:emptyp (namestring (dirname path)))
+                                                              (uiop:xdg-data-home +data-root+ "gtk-extensions")
+                                                              (dirname path)))))
 
 (defun cookies-data-path-for-context (name)
   (make-instance 'cookies-data-path
@@ -737,11 +733,11 @@ See `gtk-browser's `modifier-translator' slot."
                                 (make-instance 'webkit-website-data-manager
                                                :base-data-directory (expand-path data-manager-data-path)
                                                :base-cache-directory (expand-path data-manager-cache-path))))))
-         (gtk-extensions-path (expand-path (gtk-extensions-data-path-for-context name)))
+         (gtk-extensions-path (expand-path (make-instance 'gtk-extensions-data-path :context-name name)))
          (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
     (unless (or ephemeral-p
                 (internal-context-p name))
-      (when gtk-extensions-path
+      (unless (uiop:emptyp gtk-extensions-path)
         ;; TODO: Should we also use `connect-signal' here?  Does this yield a memory leak?
         (gobject:g-signal-connect
          context "initialize-web-extensions"
