@@ -242,8 +242,9 @@ the renderer thread, use `defmethod' instead."
     (gtk:leave-gtk-main)))
 
 (define-class data-manager-data-path (data-path)
-  ((dirname (uiop:xdg-data-home +data-root+ "web-context"))
-   (ref :initform "web-context"))
+  ((context-name (error "Context name required."))
+   (dirname (uiop:xdg-data-home +data-root+))
+   (ref "web-context"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
@@ -251,27 +252,22 @@ the renderer thread, use `defmethod' instead."
   "We shouldn't store any `data-manager' data for `nosave-data-profile'."
   nil)
 
+(defmethod expand-data-path ((profile data-profile) (path data-manager-data-path))
+  (expand-default-path
+   path
+   :root (uiop:merge-pathnames* (str:concat (context-name path) "-web-context")
+                                (dirname path))))
+
 (defun data-manager-data-path-for-context (name)
   (let ((ref (format nil "~a-web-context" name)))
     (make-instance 'data-manager-data-path
                    :ref ref
                    :dirname (uiop:xdg-data-home +data-root+ ref))))
 
-(define-class data-manager-cache-path (data-path)
-  ((dirname (uiop:xdg-cache-home +data-root+ "web-context"))
-   (ref :initform "web-context"))
+(define-class data-manager-cache-path (data-manager-data-path)
+  ((dirname (uiop:xdg-cache-home +data-root+)))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
-
-(defmethod expand-data-path ((profile nosave-data-profile) (path data-manager-cache-path))
-  "We shouldn't store any `data-manager-cache' data for `nosave-data-profile'."
-  nil)
-
-(defun data-manager-cache-path-for-context (name)
-  (let ((ref (format nil "~a-web-context" name)))
-    (make-instance 'data-manager-cache-path
-                   :ref ref
-                   :dirname (uiop:xdg-cache-home +data-root+ ref))))
 
 (define-class gtk-extensions-data-path (data-path)
   ((dirname (uiop:xdg-config-home +data-root+ "extensions"))
@@ -755,16 +751,16 @@ See `gtk-browser's `modifier-translator' slot."
   "Initializes the CFFI object `nyxt:webkit-website-web-context' and its
 `nyxt:webkit-website-data-manager'"
   (if ephemeral-p
-      ;; An ephemeral data-manager cannot be given any directories, even if they are set to nil
+      ;; An ephemeral data-manager cannot be given any directories, even if they are set to nil.
       (make-instance 'webkit-web-context-ephemeral
                      :website-data-manager (make-instance 'webkit-website-data-manager-ephemeral
                                                           :is-ephemeral t))
-      (let ((data-manager-data-path (expand-path (data-manager-data-path-for-context name)))
-            (data-manager-cache-path (expand-path (data-manager-cache-path-for-context name))))
+      (let ((data-manager-data-path (make-instance 'data-manager-data-path :context-name name))
+            (data-manager-cache-path (make-instance 'data-manager-cache-path :context-name name)))
         (make-instance 'webkit-web-context
                        :website-data-manager (make-instance 'webkit-website-data-manager
-                                                            :base-data-directory data-manager-data-path
-                                                            :base-cache-directory data-manager-cache-path)))))
+                                                            :base-data-directory (expand-path data-manager-data-path)
+                                                            :base-cache-directory (expand-path data-manager-cache-path))))))
 
 (defun make-context (name &key ephemeral-p)
   ;; This is to ensure that paths are not expanded when we make
