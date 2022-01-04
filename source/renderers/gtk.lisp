@@ -41,13 +41,11 @@ Keyed by strings as they must be backed to unique folders")
 (define-user-class browser (gtk-browser))
 
 (defmethod get-context ((browser gtk-browser) name &key ephemeral-p)
-  (if ephemeral-p
-      (or (gethash name (ephemeral-web-contexts browser))
-          (setf (gethash name (ephemeral-web-contexts browser))
-                (make-context name :ephemeral-p t)))
-      (or (gethash name (web-contexts browser))
-          (setf (gethash name (web-contexts browser))
-                (make-context name)))))
+  (alexandria:ensure-gethash name
+                             (if ephemeral-p
+                                 (ephemeral-web-contexts browser)
+                                 (web-contexts browser))
+                             (make-context name :ephemeral-p ephemeral-p)))
 
 (define-class gtk-window ()
   ((gtk-object)
