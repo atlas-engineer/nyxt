@@ -379,6 +379,9 @@ following packages:")
      (:li "gstreamer1-plugins-base-devel"))
     (:p "After the desired plugins have been installed, clear the GStreamer cache at "
         (:code "~/.cache/gstreamer-1.0") " and restart Nyxt.")
+    (:h3 "Website crashes")
+    (:p "If some websites systematically crash, try to install all the required Gstreamer plugins
+as mentioned in the 'Playing videos' section.")
     (:h3 "Input method support (CJK, etc.)")
     (:p "Depending on your setup, you might have to set some environment
 variables or run some commands before starting Nyxt, for instance")
