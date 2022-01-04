@@ -61,9 +61,7 @@ Example:
   (assert (not (typep nil 'alist-of-strings))))
 
 (deftype cookie-policy ()
-  `(or (eql :always)
-       (eql :never)
-       (eql :no-third-party)))
+  `(member :always :never :no-third-party))
 
 ;; The following types represent the positional arguments documented at
 ;; https://developer.mozilla.org/en-US/docs/Web/API/Selection/modify#parameters

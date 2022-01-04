@@ -45,6 +45,9 @@ See also the `web-contexts' slot."))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-user-class browser (gtk-browser))
 
+(alex:define-constant +internal+ "internal" :test 'equal)
+(alex:define-constant +default+ "default" :test 'equal)
+
 (defmethod get-context ((browser gtk-browser) name &key ephemeral-p)
   (alexandria:ensure-gethash name
                              (if ephemeral-p
@@ -317,8 +320,8 @@ the renderer thread, use `defmethod' instead."
 
 If passed a context-name, a `nyxt:webkit-web-context' with that name is used for
 the `webkit:webkit-web-view'.  If :buffer is an internal-buffer or is
-not set, the browser's \"internal\" `nyxt:webkit-web-context' is
-used.  Otherwise (such as an external web buffer), the \"default\"
+not set, the browser's `+internal+' `nyxt:webkit-web-context' is
+used.  Otherwise (such as an external web buffer), the `+default+'
 webkit-web-context is used.
 
 If ephemeral-p is set, the buffer is a nosave-buffer, or the current
@@ -333,7 +336,7 @@ the same naming rules as above."
                        'webkit-web-view-ephemeral
                        'webkit:webkit-web-view)
                    :web-context (get-context *browser* (or context-name
-                                                           (if internal-p "internal" "default"))
+                                                           (if internal-p +internal+ +default+))
                                              :ephemeral-p ephemeral-p))))
 
 (defun make-decide-policy-handler (buffer)
@@ -982,7 +985,7 @@ See `gtk-browser's `modifier-translator' slot."
     context))
 
 (defun internal-context-p (name)
-  (equal name "internal"))
+  (equal name +internal+))
 
 (defmethod initialize-instance :after ((buffer gtk-buffer) &key)
   (ffi-buffer-make buffer))
