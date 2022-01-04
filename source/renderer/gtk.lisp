@@ -1385,7 +1385,8 @@ requested a reload."
       (unless (member (status download) '(:canceled :failed))
         (setf (status download) :finished)
         ;; If download was too small, it may not have been updated.
-        (setf (completion-percentage download) 100)))))
+        (setf (completion-percentage download) 100)))
+    download))
 
 (define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) &optional value)
   (if value
