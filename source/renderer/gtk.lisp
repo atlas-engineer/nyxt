@@ -835,26 +835,24 @@ See `gtk-browser's `modifier-translator' slot."
             (alex:rcurry 'typep '(and number (not complex))))
            object))
 
-(defun construct-web-context (name &key ephemeral-p) ; TODO: Rename to a less ambiguous name.
-  "Initializes the CFFI object `nyxt:webkit-website-web-context' and its
-`nyxt:webkit-website-data-manager'"
-  (if ephemeral-p
-      ;; An ephemeral data-manager cannot be given any directories, even if they are set to nil.
-      (make-instance 'webkit-web-context-ephemeral
-                     :website-data-manager (make-instance 'webkit-website-data-manager-ephemeral
-                                                          :is-ephemeral t))
-      (let ((data-manager-data-path (make-instance 'data-manager-data-path :context-name name))
-            (data-manager-cache-path (make-instance 'data-manager-cache-path :context-name name)))
-        (make-instance 'webkit-web-context
-                       :website-data-manager (make-instance 'webkit-website-data-manager
-                                                            :base-data-directory (expand-path data-manager-data-path)
-                                                            :base-cache-directory (expand-path data-manager-cache-path))))))
-
-(defun make-context (name &key ephemeral-p buffer)
+(defun make-context (name &key ephemeral-p)
   ;; This is to ensure that paths are not expanded when we make
   ;; contexts for `nosave-buffer's.
   (with-current-buffer buffer
-    (let* ((context (construct-web-context name :ephemeral-p ephemeral-p))
+    (let* ((context
+             (if ephemeral-p
+                 ;; An ephemeral data-manager cannot be given any directories, even if they are set to nil.
+                 (make-instance 'webkit-web-context-ephemeral
+                                :website-data-manager
+                                (make-instance  'webkit-website-data-manager-ephemeral
+                                                :is-ephemeral t))
+                 (let ((data-manager-data-path (make-instance 'data-manager-data-path :context-name name))
+                       (data-manager-cache-path (make-instance 'data-manager-cache-path :context-name name)))
+                   (make-instance 'webkit-web-context
+                                  :website-data-manager
+                                  (make-instance 'webkit-website-data-manager
+                                                 :base-data-directory (expand-path data-manager-data-path)
+                                                 :base-cache-directory (expand-path data-manager-cache-path))))))
            (gtk-extensions-path (expand-path (gtk-extensions-data-path-for-context name)))
            (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
       (webkit:webkit-web-context-add-path-to-sandbox
