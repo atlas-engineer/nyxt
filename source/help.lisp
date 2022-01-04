@@ -725,3 +725,33 @@ System information is also saved into the clipboard."
                              (:p (:pre (documentation (fn command) t)))
                              (:pre :class "nyxt-source" (:code (let ((*print-case* :downcase))
                                                                  (write-to-string (sexp command)))))))))))
+
+(define-command install-lisp-extension (&optional (url (url (current-buffer))))
+  "Install the Nyxt extension from the git repository at URL.
+
+Requirements:
+- git should be in the PATH.
+- Repository name and ASDF system names should be the same."
+  (let* ((name (alex:lastcar (str:split "/" (quri:uri-path url))))
+         (install-path (str:concat (expand-path *extensions-path*) name))
+         (config-path (make-instance 'init-data-path
+                                     :dirname (dirname *init-file-path*)
+                                     :basename name)))
+    (if (uiop:directory-exists-p install-path)
+        (echo "This extension is already installed at ~s" install-path)
+        (handler-case
+            (progn
+              (uiop:run-program
+               `("git" "clone" "--recurse-submodules" ,(render-url url) ,install-path))
+              (alex:write-string-into-file
+               (format nil "(in-package :nyxt-user)
+
+;; Put your configuration for ~a here." name)
+               (expand-path config-path)
+               :if-does-not-exist :create
+               :if-exists nil)
+              (nyxt::append-configuration
+               `(load-after-system ,(intern (str:upcase name) :keyword)
+                                   (nyxt-init-file ,name))))
+          (uiop:subprocess-error ()
+            (echo-warning "Cannot install extension: failed to clone git repository"))))))
