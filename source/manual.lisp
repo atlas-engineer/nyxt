@@ -6,11 +6,14 @@
 (defun manual-content ()
   (str:concat
    (spinneret:with-html-string
-    (:h1 "Nyxt manual")
-    (:p "This manual first includes the tutorial, then covers the configuration
+     (:h1 "Nyxt manual")
+     (:p "This manual first includes the tutorial, then covers the configuration
 of Nyxt."))
    (tutorial-content)
-   (spinneret:with-html-string (:h2 "Configuration")
+   (config-content)))
+
+(defun config-content ()
+  (spinneret:with-html-string (:h2 "Configuration")
     (:p "Nyxt is written in the Common Lisp programming language which offers a
 great perk: everything in the browser can be customized by the user, even while
 it's running!")
@@ -408,4 +411,4 @@ nyxt
     (:p "If you are experiencing problems with blank web-views on some sites you
     can try to disable compositing. To disable compositing from your
     initialization file, you can do the following: ")
-    (:code "(setf (uiop:getenv \"WEBKIT_DISABLE_COMPOSITING_MODE\") \"1\")"))))
+    (:code "(setf (uiop:getenv \"WEBKIT_DISABLE_COMPOSITING_MODE\") \"1\")")))
