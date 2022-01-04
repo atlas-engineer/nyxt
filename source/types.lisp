@@ -61,9 +61,7 @@ Example:
   (assert (not (typep nil 'alist-of-strings))))
 
 (deftype cookie-policy ()
-  `(or (eql :always)
-       (eql :never)
-       (eql :no-third-party)))
+  `(member :always :never :no-third-party))
 
 (export-always 'html-string-p)
 (defun html-string-p (string)
