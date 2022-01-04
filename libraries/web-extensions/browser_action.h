@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Atlas Engineer LLC
+// SPDX-License-Identifier: BSD-3-Clause
+
 #ifndef __BROWSE_RACTION_H__
 #define __BROWSE_RACTION_H__
 

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Atlas Engineer LLC
+// SPDX-License-Identifier: BSD-3-Clause
+
 #include "globals.h"
 #include "alarms.h"
 
