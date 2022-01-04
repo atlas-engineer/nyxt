@@ -1,16 +1,22 @@
-PKG_MODULES := gobject-2.0 webkit2gtk-web-extension-4.0
+# REVIEW: Is there a better way to find the .pc file regardless of the version suffix?
+PKG_MODULES := gobject-2.0 ${shell pkg-config --list-all | awk '/^webkit2gtk-web-extension/ {print $$1}'}
+
+# See https://stackoverflow.com/questions/5618615/check-if-a-program-exists-from-a-makefile.
+CC := ${shell command -v ${CC} 2> /dev/null || echo gcc}
 
 CFLAGS += ${shell pkg-config ${PKG_MODULES} --cflags} -fPIC
 LDLIBS += ${shell pkg-config ${PKG_MODULES} --libs}
 
+objects = ${wildcard *.o}
+
 .PHONY: all install clean
 all: libnyxt.so
 
-libnyxt.so: nyxt.o globals.o extevent.o browser.o tabs.o management.o runtime.o extension.o storage.o alarms.o bookmarks.o browser_action.o commands.o history.o notifications.o permissions.o web_navigation.o web_request.o
+libnyxt.so: ${objects}
 	${CC} -fPIC -shared -o $@ $^ ${LDLIBS} ${LDFLAGS}
 
 install: libnyxt.so
 	${INSTALL} $^
 
 clean:
-	${RM} libnyxt.so nyxt.o globals.o extevent.o browser.o tabs.o management.o runtime.o extension.o storage.o alarms.o bookmarks.o browser_action.o commands.o history.o notifications.o permissions.o web_navigation.o web_request.o
+	${RM} libnyxt.so ${objects}
