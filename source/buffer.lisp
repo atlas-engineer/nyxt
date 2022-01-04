@@ -896,14 +896,6 @@ See `make-buffer' for a description of the arguments."
   (declare (ignorable title modes url))
   (apply #'make-buffer (append (list :buffer-class 'user-background-buffer :no-history-p t) args)))
 
-(define-command duplicate-modes (&key (url (quri:uri "")) parent-buffer)
-  "Duplicate current modes in a new buffer."
-  (let ((buffer (make-buffer :url url
-                             :modes (mapcar #'mode-name (modes (current-buffer)))
-                             :parent-buffer parent-buffer)))
-    (set-current-buffer buffer)
-    buffer))
-
 (define-command duplicate-buffer-with-current-modes (&key (modes nil) parent-buffer)
   "Duplicate current buffer in a new buffer with current modes as well."
   (let* ((curr-buffer (current-buffer))
