@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Atlas Engineer LLC
+// SPDX-License-Identifier: BSD-3-Clause
+
 #ifndef __WEB_REQUEST_H__
 #define __WEB_REQUEST_H__
 

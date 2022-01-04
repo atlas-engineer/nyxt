@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Atlas Engineer LLC
+# SPDX-License-Identifier: BSD-3-Clause
+
 # REVIEW: Is there a better way to find the .pc file regardless of the version suffix?
 PKG_MODULES := gobject-2.0 ${shell pkg-config --list-all | awk '/^webkit2gtk-web-extension/ {print $$1}'}
 
