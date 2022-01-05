@@ -207,7 +207,7 @@ The resulting URL should be perfectly parseable back to the initial form with
 
 Example:
 \(nyxt-url 'nyxt:describe-command :value 'nyxt:describe-value)
-=> \"about:describe-command?value=NYXT%3ADESCRIBE-VALUE\"
+=> \"nyxt:describe-command?value=NYXT%3ADESCRIBE-VALUE\"
 
 \(parse-nyxt-url (nyxt-url 'nyxt:describe-value :value ''nyxt:*browser*))
 => NYXT:DESCRIBE-VALUE
@@ -216,10 +216,7 @@ Example:
            (if (member (package-name (symbol-package symbol)) '("nyxt" "keyword")
                        :test #'string-equal)
                (str:downcase (symbol-name symbol))
-               (str:downcase
-                (format nil "~a/~a"
-                        (package-name (symbol-package symbol))
-                        (symbol-name symbol))))))
+               (format nil "~(~s~)" symbol))))
     (if (gethash function-name *nyxt-url-commands*)
         (let ((params (quri:url-encode-params
                        (mapcar (lambda (pair)
@@ -256,13 +253,9 @@ Error out if some of the params are not constants. Thanks to this,
 `parse-nyxt-url' can be repeatedly called on the same nyxt: URL, with the
 guarantee of the same result."
   (let* ((url (url url))
-         (path (str:split "/" (quri:uri-path url)))
-         (package (if (sera:single path)
-                      "nyxt"
-                      (first path)))
-         (symbol (or (second path) (first path)))
+         (symbol (quri:uri-path url))
          (params (quri:uri-query-params url))
-         (function (intern (str:upcase symbol) (intern (str:upcase package) :keyword))))
+         (function (read-from-string (str:upcase symbol))))
     (if (gethash function *nyxt-url-commands*)
         (values function
                 (alex:mappend (lambda (pair)
