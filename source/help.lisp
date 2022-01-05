@@ -44,7 +44,7 @@
                                                   (describe-function :function function))))
                   (make-instance 'user-command-source
                                  :actions (list (make-command describe-command* (command)
-                                                  (describe-command :command command))))
+                                                  (describe-command :command (name command)))))
                   (make-instance 'class-source
                                  :actions (list (make-command describe-class* (class)
                                                   (describe-class :class class))))
@@ -156,17 +156,18 @@ For generic functions, describe all the methods."
        :sources (make-instance 'function-source))))
 
 (define-internal-page-command describe-command
-    (&key (command (first (prompt
+    (&key (command (name (prompt1
                            :prompt "Describe command"
                            :sources (make-instance 'user-command-source)))))
-    (buffer (str:concat "*Help-" (symbol-name (name command)) "*")
+    (buffer (str:concat "*Help-" (symbol-name command) "*")
             'nyxt/help-mode:help-mode)
   "Inspect a command and show it in a help buffer.
 A command is a special kind of function that can be called with
 `execute-command' and can be bound to a key."
-  (let* ((key-keymap-pairs (nth-value 1 (keymap:binding-keys
-                                         (name command)
-                                         (all-keymaps))))
+  (let* ((command (find command (list-commands) :key #'name))
+         (key-keymap-pairs (nth-value 1 (keymap:binding-keys
+                                            command
+                                            (all-keymaps))))
          (key-keymapname-pairs (mapcar (lambda (pair)
                                          (list (first pair)
                                                (keymap:name (second pair))))
@@ -458,7 +459,7 @@ This function can be used as a `window' `input-dispatcher'."
               ((and bound-value (not (keymap:keymap-p bound-value)))
                ;; TODO: Highlight hit bindings and display translation if any.
                ;; For this, we probably need to call `lookup-key' on key-stack.
-               (describe-command :command (function-command (symbol-function bound-value)))
+               (describe-command :command (name (function-command (symbol-function bound-value))))
                (setf key-stack nil)
                (setf (input-dispatcher window) #'dispatch-input-event))
               ((not bound-value)
