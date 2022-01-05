@@ -212,24 +212,25 @@ Example:
 \(parse-nyxt-url (nyxt-url 'nyxt:describe-value :value ''nyxt:*browser*))
 => NYXT:DESCRIBE-VALUE
 => (:VALUE 'NYXT:*BROWSER*)"
-  (flet ((param-name (symbol)
-           (if (member (package-name (symbol-package symbol)) '("nyxt" "keyword")
-                       :test #'string-equal)
-               (str:downcase (symbol-name symbol))
-               (format nil "~(~s~)" symbol))))
-    (if (gethash function-name *nyxt-url-commands*)
-        (let ((params (quri:url-encode-params
-                       (mapcar (lambda (pair)
-                                 (cons (param-name (first pair))
-                                       ;; This is to safely parse the args afterwards
-                                       (prin1-to-string (rest pair))))
-                               (alexandria:plist-alist args)))))
-          (the (values string &optional)
-               (format nil "nyxt:~a~@[~*?~a~]"
-                       (param-name function-name)
-                       (not (uiop:emptyp params))
-                       params)))
-        (error "There's no nyxt:~a page defined" (param-name function-name)))))
+  (let ((*print-case* :downcase))
+    (flet ((param-name (symbol)
+             (let ((*package* (find-package :nyxt)))
+               (if (keywordp symbol)
+                   (format nil "~(~a~)" symbol)
+                   (format nil "~s" symbol)))))
+      (if (gethash function-name *nyxt-url-commands*)
+          (let ((params (quri:url-encode-params
+                         (mapcar (lambda (pair)
+                                   (cons (param-name (first pair))
+                                         ;; This is to safely parse the args afterwards
+                                         (prin1-to-string (rest pair))))
+                                 (alexandria:plist-alist args)))))
+            (the (values string &optional)
+                 (format nil "nyxt:~a~@[~*?~a~]"
+                         (param-name function-name)
+                         (not (uiop:emptyp params))
+                         params)))
+          (error "There's no nyxt:~a page defined" (param-name function-name))))))
 
 (defun internal-url-p (url)
   (string= "nyxt" (quri:uri-scheme (url url))))
