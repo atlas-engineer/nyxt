@@ -764,7 +764,7 @@ Requirements:
 - The page with the extension should be loaded in the current buffer.
 - ? should be in the PATH.
 - Repository name and ASDF system names should be the same."
-  (when (str:s-member (quri:uri-host url) "addons.mozilla.org")
+  (when (string= (quri:uri-host url) "addons.mozilla.org")
     (let ((download-url (plump:get-attribute
                          (elt (clss:select ".InstallButtonWrapper-download-link"
                                 (document-model (current-buffer)))
