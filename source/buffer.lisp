@@ -498,6 +498,13 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :font-weight 500)
             (a
              :color theme:primary)
+            (button
+             :background "none"
+             :color "inherit"
+             :border "none"
+             :padding 0
+             :font "inherit"
+             :outline "inherit")
             (.button
              :display "inline-block"
              :background-color "darkgray"
