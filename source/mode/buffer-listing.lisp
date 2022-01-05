@@ -101,7 +101,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                           :onclick (ps:ps (nyxt/ps:send-lisp-url
                                            `(nyxt::switch-buffer :id ,(id buffer))))
                           (:span :title (title buffer) :class "title" (title buffer)))))))
-    (spinneret:with-html-string (:style (style panel-buffer))
+    (spinneret:with-html-string
       (:style (cl-css:css
                '((".button"
                   :white-space "nowrap"

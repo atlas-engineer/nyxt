@@ -148,7 +148,6 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
     (panel-buffer "*Bookmarks panel*")
   "Shows all the bookmarks in a compact panel-buffer layout."
   (spinneret:with-html-string
-    (:style (style panel-buffer))
     (:style (cl-css:css
              '((p
                 :font-size "12px"
