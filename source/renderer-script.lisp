@@ -108,7 +108,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
                                         &body body)
   "Define a command called NAME creating an internal interface page.
 
-Should end with a form returning HTML as a string.
+Should end with a form returning HTML body as a string.
 
 Create a buffer (and bind it to BUFFER-VAR) in case there's no buffer with TITLE
 and MODE. If there is one, bind BUFFER-VAR to it. Either way, BUFFER-VAR is
@@ -142,7 +142,12 @@ mapped to query parameters."
                    ;; We need to ignore those to avoid warnings, as the same arglist
                    ;; is used in both internal function and a command.
                    (declare (ignorable ,buffer-var))
-                   ,@body)))
+                   (spinneret:with-html-string
+                     (:head
+                      (:title ,title)
+                      (:style (style ,buffer-var)))
+                     (:body
+                      (:raw ,@body))))))
          (define-command-global ,name (,@arglist)
            ,@(when documentation (list documentation))
            (let* ((,buffer-var (or (find-if (lambda (b)
