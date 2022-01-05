@@ -733,14 +733,17 @@ See `gtk-browser's `modifier-translator' slot."
                    (internal-url-p (url buffer)))
                (let* ((schemeless-url (schemeless-url url))
                       (code-raw (quri:url-decode schemeless-url :lenient t))
+                      ;; All URLs WebKitGTK gives us end with an unnecessary forward slash.
                       (code (subseq code-raw 0 (1- (length code-raw)))))
                  (log:debug "Evaluate Lisp code from internal page: ~a" code)
-                 (values (handler-case
-                             (cl-json:encode-json-to-string (evaluate code))
-                           (json:unencodable-value-error ()
-                             "null"))
+                 (values (let ((result (first (evaluate code))))
+                           ;; Objects and other complex structures make cl-json choke.
+                           (unless (or (typep result 'standard-object)
+                                       (and (typep result 'cons)
+                                            (some #'listp result)))
+                             (cl-json:encode-json-to-string result)))
                          "application/json"))
-               "")))
+               (values "undefined" "application/json"))))
        (lambda (condition)
          (echo-warning "Error while routing \"lisp:\" URL: ~a" condition)))
       (webkit:webkit-security-manager-register-uri-scheme-as-local
