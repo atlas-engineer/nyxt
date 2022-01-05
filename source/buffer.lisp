@@ -913,7 +913,7 @@ See `make-buffer' for a description of the arguments."
   (duplicate-buffer-with-current-modes :modes '(web-mode base-mode)
                                        :parent-buffer parent-buffer))
 
-(define-command make-internal-buffer (&key (title "") modes no-history-p)
+(define-command make-internal-buffer (&key (url (quri:uri "")) (title "") modes no-history-p)
   "Create a new buffer.
 MODES is a list of mode symbols.
 If URL is `:default', use `default-new-buffer-url'."
