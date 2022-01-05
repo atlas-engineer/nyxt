@@ -757,7 +757,7 @@ Requirements:
             (echo-warning "Cannot install extension: failed to clone git repository"))))))
 
 (define-command install-web-extension (&optional (url (url (current-buffer))))
-  "Install the Nyxt extension from the URL.
+  "Install the Firefox WebExtensions-compliant addon from the URL.
 
 Requirements:
 - Only addons.mozilla.org is allowed for extension installation.
