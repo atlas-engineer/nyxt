@@ -26,6 +26,8 @@ See the `data-path' class and the `expand-path' function.")
     :export nil)
    (document-model
     nil
+    :reader nil                         ; We use a custom reader.
+    :writer t
     :type (or null plump:node)
     :documentation "A parsed representation of the page currently opened.
 Created from the page code with the help of `plump:parse'. See `update-document-model'.")
