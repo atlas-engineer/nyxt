@@ -278,6 +278,7 @@ the renderer thread, use `defmethod' instead."
   nil)
 
 (defmethod expand-data-path ((profile data-profile) (path gtk-extensions-data-path))
+  "Return finalized path for gtk-extension directory."
   (expand-default-path
    path
    :root (uiop:strcat (uiop:native-namestring (dirname path))
@@ -290,12 +291,6 @@ the renderer thread, use `defmethod' instead."
     :documentation "See `gtk-buffer' slot of the same name."))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-user-class download (gtk-download))
-
-(defmethod expand-data-path ((profile data-profile) (path gtk-extensions-data-path))
-  "Return finalized path for gtk-extension directory."
-  (expand-default-path path :root (uiop:native-namestring (if (str:emptyp (namestring (dirname path)))
-                                                              (uiop:xdg-data-home +data-root+ "gtk-extensions")
-                                                              (dirname path)))))
 
 (defun cookies-data-path-for-context (name)
   (make-instance 'cookies-data-path
