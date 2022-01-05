@@ -147,7 +147,12 @@ mapped to query parameters."
                    ;; We need to ignore those to avoid warnings, as the same arglist
                    ;; is used in both internal function and a command.
                    (declare (ignorable ,buffer-var url))
-                   ,@body)))
+                   (spinneret:with-html-string
+                     (:head
+                      (:title ,title)
+                      (:style (style ,buffer-var)))
+                     (:body
+                      (:raw ,@body))))))
          (define-command-global ,name-panel (,@arglist)
            ,@(when documentation (list documentation))
            (let* ((url (quri:uri (nyxt-url (quote ,name-panel) ,@args)))
