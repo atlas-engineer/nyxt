@@ -31,7 +31,8 @@ A higher score means the SUGGESTION-STRING comes first."
                  (when (not next) (return-from word-body))
                  ;; bonus for continuous match
                  (when (and (> next 0)
-                            (eq (aref suggestion-string (1- next)) lastchar))
+                            (eq (aref (the (simple-array character) suggestion-string) (1- next))
+                                lastchar))
                    (incf score continuous-bonus))
                  (match-bonus next)
                  (setf lastchar c)))
@@ -39,11 +40,11 @@ A higher score means the SUGGESTION-STRING comes first."
                ;; bonus for word ending early (shorter words at the beginning wins)
                (match-bonus
                 (or (position-if (lambda (c) (member c word-separator))
-                                 suggestion-string :start i)
+                                 (the (simple-array character) suggestion-string) :start i)
                     (length suggestion-string)))
                (setf i 0)))
       ;; flex match, with higher weight for the beginning
-      (loop for c across input do
+      (loop for c across (the simple-array input) do
         (if (member c word-separator)
             (progn
               (when i (word-end))
