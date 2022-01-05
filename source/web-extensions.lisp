@@ -33,6 +33,7 @@ A list of objects. Does not necessarily have the same order as `files' of the sc
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (defmethod remove-content-script ((buffer buffer) extension (script content-script))
+  (declare (ignore extension))
   (dolist (s (user-scripts script))
     (ffi-buffer-remove-user-script buffer s))
   (dolist (s (user-styles script))
