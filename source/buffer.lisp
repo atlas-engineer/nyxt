@@ -836,7 +836,7 @@ BUFFER's modes."
                                   no-history-p (load-url-p t) buffer-class)
   "Create a new buffer.
 MODES is a list of mode symbols.
-If URL is empty, the `default-new-buffer-url' buffer slot is used instead.
+If URL is empty, the `default-new-buffer-url' browser slot is used instead.
 To load nothing, set it to 'about:blank'.
 PARENT-BUFFER is useful when we want to record buffer- and history relationships.
 LOAD-URL-P controls whether to load URL right at buffer creation."
@@ -848,7 +848,7 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
                         (when buffer-class
                           (list :buffer-class buffer-class))))
          (url (if (url-empty-p url)
-                  (default-new-buffer-url buffer)
+                  (default-new-buffer-url *browser*)
                   url)))
     (if load-url-p
         (buffer-load url :buffer buffer)
