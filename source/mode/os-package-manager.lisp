@@ -128,10 +128,10 @@
     (flet ((format-inputs (inputs)
              (spinneret:with-html
                (dolist (input inputs)
-                 (:a :href (lisp-url
-                            '(%describe-os-package
-                              (ospm:find-os-packages input)))
-                     input))))
+                 (:button :onclick (ps:ps (nyxt/ps:send-lisp-url
+                                           `(%describe-os-package
+                                             (ospm:find-os-packages ,input))))
+                          input))))
            (format-outputs (outputs)
              (spinneret:with-html
                (:div
@@ -160,15 +160,16 @@
                       (when (typep package 'ospm:guix-package)
                         (:li "Outputs: "
                              (unless (ospm:expanded-outputs-p package)
-                               (:a :class "button"
-                                   :href (lisp-url '(echo "Computing path & size...")
-                                                   `(ospm:expand-outputs (first (ospm:find-os-packages
-                                                                                 ,(ospm:name package)
-                                                                                 :version ,(ospm:version package))))
-                                                   `(%describe-os-package
-                                                     (ospm:find-os-packages ,(ospm:name package)
-                                                                            :version ,(ospm:version package))))
-                                   "Compute path & size"))
+                               (:button :class "button"
+                                        :onclick (ps:ps (nyxt/ps:send-lisp-url
+                                                         `(progn (echo "Computing path & size...")
+                                                                 (ospm:expand-outputs (first (ospm:find-os-packages
+                                                                                              ,(ospm:name package)
+                                                                                              :version ,(ospm:version package))))
+                                                                 (%describe-os-package
+                                                                  (ospm:find-os-packages ,(ospm:name package)
+                                                                                         :version ,(ospm:version package))))))
+                                        "Compute path & size"))
                              (format-outputs (ospm:outputs package)))
                         (:li "Supported systems: " (str:join " " (ospm:supported-systems package)))
                         (:li "Inputs: " (format-inputs (ospm:inputs package)))
@@ -268,9 +269,10 @@ OBJECTS can be a list of packages, a generation, etc."
                  (:style (style buffer))
                  (:h1 title)
                  (:p
-                  (:a :class "button"
-                      :href (lisp-url '(nyxt/os-package-manager-mode:cancel-package-operation))
-                      "Cancel")))
+                  (:button :class "button"
+                           :onclick (ps:ps (nyxt/ps:send-lisp-url
+                                            '(nyxt/os-package-manager-mode:cancel-package-operation)))
+                           "Cancel")))
                buffer)
               (format-command-stream
                process-info
@@ -363,14 +365,15 @@ OBJECTS can be a list of packages, a generation, etc."
        (:ul
         (dolist (package-output (ospm:list-packages (ospm:path generation)))
           (let ((package (ospm:parent-package package-output)))
-            (:li (:a :class "button"
-                     :href (lisp-url `(%describe-os-package
-                                       (or (ospm:find-os-packages
-                                            ,(ospm:name package)
-                                            :version ,(ospm:version package))
-                                           (ospm:find-os-packages
-                                            ,(ospm:name package)))))
-                     (prompter:attributes-default package-output))
+            (:li (:button :class "button"
+                          :onclick (ps:ps (nyxt/ps:send-lisp-url
+                                           `(%describe-os-package
+                                             (or (ospm:find-os-packages
+                                                  ,(ospm:name package)
+                                                  :version ,(ospm:version package))
+                                                 (ospm:find-os-packages
+                                                  ,(ospm:name package))))))
+                          (prompter:attributes-default package-output))
                  " " (ospm:version package))))))
      buffer)
     (echo "")

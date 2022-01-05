@@ -29,3 +29,7 @@ An ASC-TIMESTRING is in the form of `Tue Oct 1 15:55:09 2019'."
         (log:debug "Error creating timestamp: ~a" c)
         nil))
     timestamp))
+
+(defun sort-by-time (sequence &key (key #'last-access))
+  "Return a timely ordered SEQUENCE by KEY.  More recent elements come first."
+  (sort sequence #'local-time:timestamp> :key key))

@@ -20,10 +20,12 @@ library should handle. The schema is:
         // "Privileged" means that this extension can run the code in
         // the default JS world/environment/context
 
-        [file_name : // string with a file name relative to the extension root
+        {file_name : // string with a file name relative to the extension root
          url, // string URL to load this extension with. Right now should be a data: URL
          ... // same for all the files extension is allowed to access
-        ]
+        },
+        tab_id // ID of the tab that this library is housed in.
+        // We imply one WebKitWebContext per tab here.
        ]
       },
       ... // more extension descriptions
@@ -72,6 +74,12 @@ but it's not there anymore.
 
 #+end_src
 
+and then go to nyxt.c and add
+#+begin_src C
+  inject_foo_api((char *) extension_name);
+#+end_src
+to =inject_apis= and =#include "foo.h"= to the top of the file. Your API should load automatically after you recompile and load the library.
+
 ** Write a JS method
 *** No need in browser communication (easy)
 Say, foo.bar doesn't need to communicate with the browser and always
@@ -91,19 +99,7 @@ returns the same result. The callback could then be as simple as
 and you could bind it in =inject_foo_api= with
 #+begin_src C
   /* The number and list of args is obviously adjustable. */
-  MAKE_FN(context, fooBar, foo_bar_callback, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
-  BIND_FN(context, "foo", "bar", "foo.bar = function () { return fooBar(); }; foo.bar");
-  /* Or equivalent macro-less code: */
-  JSCValue *fooBar = jsc_value_new_function(
-          context, "fooBar", G_CALLBACK(foo_bar_callback),
-          NULL, NULL,
-          JSC_TYPE_VALUE, 0, G_TYPE_NONE);
-  jsc_context_set_value(context, "fooBar", fooBar);
-  jsc_value_object_set_property(
-          jsc_context_evaluate(context, "foo", -1), "bar",
-          jsc_context_evaluate(
-                  context,
-                  "foo.bar = function () { return fooBar(); }; foo.bar", -1));
+  MAKE_FN(context, "runtime", "getManifest", runtime_get_manifest_callback, extension_name, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
 #+end_src
 And after the API is injected you'll have a simple =browser.foo.bar=
 method to get your answers anytime you like.
@@ -118,16 +114,15 @@ convoluted. The sequence of actions that happens there is:
 - C: Enter the callback and send the message to the browser there.
   - The message should be indexed by the unique ID of the request so
     that there are no race conditions.
-  - The callback should return this same ID to the JS-side so that the
-    result can be awaited with =browser.drain=.
-- JS: Run =browser.drain= on the ID returned from C callback (see
-  browser.c for the exact mechanism).
+- C: construct the Promise waiting for the browser response (via =make_promise=).
+- C/JS: Run =browser.drain= on the ID of the message (see
+  browser.c/globals.c for the exact mechanism).
 - BROWSER: Respond to the message in the "user-message-received" signal.
 - C (=message_reply_and_save_callback=): Put the result into global data storage (=DATA=).
 - C (implicit call in =browser.drain=): Check the global data storage
   for the result being returned (see =get_result= in globals.c).
-- JS: If there's a result, fetch it from the C side (still inside the =browser.drain=) and successfully
-  return.
+- C: If there's a result, fetch it from =DATA= (still inside the =browser.drain= inside the Promise initializer) and set it as the Promise result.
+  - If the result starts with =ERROR_MESSAGE_PREFIX=, return the Error object with the description of the error.
 
 Now to the code. The C callback is something like
 #+begin_src C
@@ -135,39 +130,21 @@ Now to the code. The C callback is something like
   foo_bar_callback ()
   {
           WebKitUserMessage *message = webkit_user_message_new("foo.bar", NULL);
-          SEND_MESSAGE_RETURN_ID(message, i);
+          SEND_MESSAGE_RETURN_PROMISE(message, jsc_context_get_current(), i);
           /* OR, macro-expanded version of the above */
           unsigned long int i = get_next_data_counter(); /* globals.c */
           webkit_web_page_send_message_to_view(
-                  PAGE, message, NULL, message_reply_and_save_callback,
+                  PAGE, Message, NULL, message_reply_and_save_callback,
                   (void*) i);
-          return i;
+          return make_promise(Context, i); /* globals.c */
   }
 #+end_src
 And the way to bind it in =inject_foo_api= would be
 #+begin_src C
-  /* Remember the G_TYPE_ULONG as a return type there -- you'll need it
-   ,* often. It's the return type of all the functions we need to wait
-   ,* for the result of. */
-  MAKE_FN(context, fooBar, foo_bar_callback, G_TYPE_ULONG, 0, G_TYPE_NONE);
-  /* Most WebExtension API endpoints return a Promise, so remember this
-   ,* pattern too. */
-  BIND_FN(context, "foo", "bar", "foo.bar = function () {                 \
-      return new Promise(function (success, failure) {                    \
-          try {                                                           \
-              /* Look at the browser.drain here. It waits on the result   \
-               ,* that the browser returns, using the ID we return. */     \
-              browser.drain(fooBar(), success, {}, 5000);                 \
-          } catch (error) {                                               \
-              return failure(error);                                      \
-          };                                                              \
-      });                                                                 \
-  };                                                                      \
-                                                                          \
-  foo.bar");
+  MAKE_FN(context, "foo", "bar", runtime_get_platform_info_callback, NULL, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
 #+end_src
 
-With the possible expansions of the macros left as an exercise for you
+With the possible expansion of the macro left as an exercise for you
 if you need to break the abstraction there.
 
 Almost any WebExtension JS function return a Promise, thus this is the
@@ -180,25 +157,44 @@ solutions are usually function specific, but let's walk through the
 
 First, a callback.
 #+begin_src C
-  static unsigned long int
-  runtime_send_message_callback (char *extension_id, JSCValue *object)
+
+  static JSCValue *
+  runtime_send_message_callback (GPtrArray *args, void* extension_name)
   {
           /* Get context to evaluate things in. */
           JSCContext *context = jsc_context_get_current();
+          JSCValue *extension_id;
+          /* Create a wrapper object to embed the data into. */
+          JSCValue *payload;
+          /* Sanitize args per specification. */
+          if (args->len == 1) {
+                  payload = args->pdata[0];
+                  extension_id = jsc_value_new_string(
+                          context, get_extension_id((char *) extension_name));
+          } else if (args->len == 2 &&
+                     jsc_value_object_has_property(
+                             args->pdata[1], "includeTlsChannelId") &&
+                     jsc_value_is_undefined(
+                             jsc_value_object_get_property_at_index(args->pdata[1], 1))) {
+                  payload = args->pdata[0];
+                  extension_id = jsc_value_new_string(
+                          context, get_extension_id((char *) extension_name));
+          } else if (args->len == 2 || args->len == 3) {
+                  extension_id = args->pdata[0];
+                  payload = args->pdata[1];
+          }
           /* Create a wrapper object to embed the data into. */
           JSCValue *wrapper = jsc_value_new_object(context, NULL, NULL);
-          jsc_value_object_set_property(
-                  wrapper, "extensionId",
-                  jsc_value_new_string(context, extension_id));
-          jsc_value_object_set_property(wrapper, "message", object);
+          jsc_value_object_set_property(wrapper, "extensionId", extension_id);
+          jsc_value_object_set_property(wrapper, "message", payload);
           /* Translate this object to JSON for easier serialization. */
           char *json = jsc_value_to_json(wrapper, 0);
           /* Wrap the JSON into GVariant, as messages require GVariants as contents. */
           GVariant *variant = g_variant_new("ms", json);
           /* Create message with the meaningful name and contents. */
           WebKitUserMessage *message = webkit_user_message_new("runtime.sendMessage", variant);
-          /* Send the message and return the ID. */
-          SEND_MESSAGE_RETURN_ID(message, i);
+          /* Send the message and return the Promise. */
+          SEND_MESSAGE_RETURN_PROMISE(message, context, id);
   }
 #+end_src
 
@@ -283,19 +279,18 @@ the list from the previous heading:
 - C: Enter the callback and send the message to the browser there.
   - The message should be indexed by the unique ID of the request so
     that there are no race conditions.
-  - The callback should return this same ID to the JS-side so that the
-    result can be awaited with =browser.drain=.
-- JS: Run =browser.drain= on the ID returned from C callback (see
-  browser.c for the exact mechanism).
+- C: construct the Promise waiting for the browser response (via =make_promise=).
+- C/JS: Run =browser.drain= on the ID of the message (see
+  browser.c/globals.c for the exact mechanism).
 - BROWSER: Send the message to another extension instance and wait for the result.
 - BROWSER: Send a separate message to the extension.
 - C (=user_message_received=): Process the message received from the
   browser and set the global data to the result of the initial
   message.
 - C (implicit call in =browser.drain=): Check the global data storage
-  for the result of the initial message (see =get_result= in globals.c).
-- JS: If there's a result, fetch it from the C side (still inside the =browser.drain=) and successfully
-  return.
+  for the result being returned (see =get_result= in globals.c).
+- C: If there's a result, fetch it from =DATA= (still inside the =browser.drain= inside the Promise initializer) and set it as the Promise result.
+  - If the result starts with =ERROR_MESSAGE_PREFIX=, return the Error object with the description of the error.
 ** Add a property
 Usually it's as simple as
 #+begin_src C
@@ -304,8 +299,8 @@ Usually it's as simple as
           jsc_value_new_number(context, (double) 42));
 #+end_src
 
-If it's something more complex, I'd try tinkering with [[https://webkitgtk.org/reference/jsc-glib/stable/JSCClass.html#JSCClassVTable][JSCClassVTable]],
-but it looks scary.
+If it's something more complex, I'd try tinkering with [[https://webkitgtk.org/reference/jsc-glib/stable/JSCClass.html#JSCClassVTable][JSCClassVTable]].
+It looks scary, though.
 ** Add an event
 WebExtensions events are special -- they have an unusual API with a
 list of listeners that can be added/deleted at will and that are ran

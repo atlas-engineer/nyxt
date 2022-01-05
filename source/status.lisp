@@ -7,18 +7,24 @@
 (defun format-status-modes (buffer window)
   (spinneret:with-html-string
     (when (nosave-buffer-p buffer) (:span "⚠ nosave"))
-    (:a :class "button"
-        :href (lisp-url '(nyxt:toggle-modes))
-        :title (str:concat "Enabled modes: " (list-modes buffer)) "✚")
+    (:button :type "button"
+             :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt:toggle-modes)))
+             :title (str:concat "Enabled modes: " (list-modes buffer)) "✚")
     (loop for mode in (sera:filter #'visible-in-status-p (modes buffer))
           collect (let* ((formatted-mode (if (glyph-mode-presentation-p (status-buffer window))
                                              (glyph mode)
                                              (format-mode mode))))
                     (if (html-string-p formatted-mode)
                         (:raw formatted-mode)
-                        (:a :class "button" :href (lisp-url `(describe-class ',(mode-name mode)))
-                            :title (format nil "Describe ~a" (mode-name mode))
-                            formatted-mode))))))
+                      ;; FIXME: We should ideally intercept requests coming
+                        ;; from status-buffer and redirect those to the current
+                        ;; web-buffer.
+                        (:button :class "button"
+                                 :onclick (ps:ps (nyxt/ps:send-lisp-url
+                                                  `(buffer-load ,(nyxt-url 'describe-class
+                                                                           :class `,(mode-name mode)))))
+                                 :title (format nil "Describe ~a" (mode-name mode))
+                                 formatted-mode))))))
 
 (defun list-modes (buffer)
   (format nil "~{~a~^ ~}" (mapcar #'format-mode (modes buffer))))
@@ -26,19 +32,31 @@
 (export-always 'format-status-buttons)
 (defun format-status-buttons ()
   (spinneret:with-html-string
-    (:a :class "button" :title "Backwards" :href (lisp-url '(nyxt/web-mode:history-backwards)) "«")
-    (:a :class "button" :title "Reload" :href (lisp-url '(nyxt:reload-current-buffer)) "↺")
-    (:a :class "button" :title "Forwards" :href (lisp-url '(nyxt/web-mode:history-forwards)) "»")
-    (:a :class "button" :title "Execute" :href (lisp-url '(nyxt:execute-command)) "≡")))
+    (:button :type "button"
+             :title "Backwards"
+             :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt/web-mode:history-backwards))) "«")
+    (:button :type "button"
+             :title "Reload"
+             :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt:reload-current-buffer))) "↺")
+    (:button :type "button"
+             :title "Forwards"
+             :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt/web-mode:history-forwards))) "»")
+    (:button :type "button"
+             :title "Execute"
+             :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt:execute-command))) "≡")))
 
 (defun format-status-vi-mode (&optional (buffer (current-buffer)))
   (spinneret:with-html-string
     (cond ((find-submode buffer 'vi-normal-mode)
            (:div
-            (:a :class "button" :title "vi-normal-mode" :href (lisp-url '(nyxt/vi-mode:vi-insert-mode)) "N")))
+            (:button :type "button"
+                     :title "vi-normal-mode"
+                     :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt/vi-mode:vi-insert-mode))) "N")))
           ((find-submode buffer 'vi-insert-mode)
            (:div
-            (:a :class "button" :title "vi-insert-mode" :href (lisp-url '(nyxt/vi-mode:vi-normal-mode)) "I")))
+            (:button :type "button"
+                     :title "vi-insert-mode"
+                     :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt/vi-mode:vi-normal-mode))) "I")))
           (t (:span "")))))
 
 (export-always 'format-status-load-status)
@@ -51,11 +69,11 @@
 (export-always 'format-status-url)
 (defun format-status-url (buffer)
   (spinneret:with-html-string
-    (:a :class "button"
-        :href (lisp-url '(nyxt:set-url))
-        (format nil " ~a — ~a"
-                (render-url (url buffer))
-                (title buffer)))))
+    (:button :type "button"
+             :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt:set-url)))
+             (format nil " ~a — ~a"
+                     (render-url (url buffer))
+                     (title buffer)))))
 
 (export-always 'format-status-tabs)
 (defun format-status-tabs ()
@@ -64,8 +82,10 @@
                          (sera:filter-map #'quri:uri-domain
                                           (mapcar #'url (sort-by-time (buffer-list))))
                          :test #'equal)
-          collect (:a :class "tab"
-                      :href (lisp-url `(nyxt::switch-buffer-or-query-domain ,domain)) domain))))
+          collect (:button :type "tab"
+                           :onclick (ps:ps (nyxt/ps:send-lisp-url
+                                            `(nyxt::switch-buffer-or-query-domain ,domain)))
+                           domain))))
 
 (defun format-status (window)
   (let* ((buffer (current-buffer window))

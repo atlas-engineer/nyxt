@@ -83,7 +83,7 @@ The domain name existence is verified only if CHECK-DNS-P is T. Domain
 name validation may take significant time since it looks up the DNS."
   ;; List of URI schemes: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
   ;; Last updated 2020-08-26.
-  (let* ((nyxt-schemes '("lisp" "javascript" "web-extension"))
+  (let* ((nyxt-schemes '("nyxt" "lisp" "web-extension" "javascript"))
          (iana-schemes
            '("aaa" "aaas" "about" "acap" "acct" "cap" "cid" "coap" "coap+tcp" "coap+ws"
              "coaps" "coaps+tcp" "coaps+ws" "crid" "data" "dav" "dict" "dns" "example" "file"
@@ -189,15 +189,85 @@ Authority is compared case-insensitively (RFC 3986)."
                       (lambda (url1 url2) (equalp (quri:uri-authority url1)
                                                   (quri:uri-authority url2)))))))
 
+(defvar *nyxt-url-commands* (make-hash-table)
+  "A map from allowed nyxt: URLs symbols to the functions that generate code of
+  the pages related to these commands.")
+
+(export-always 'nyxt-url)
+(-> nyxt-url (t &rest t &key &allow-other-keys) string)
+(defun nyxt-url (function-name &rest args &key &allow-other-keys)
+  "Generate a nyxt: URL from the given FUNCTION-NAME applied to ARGS.
+ This is useful to generate internal pages.
+
+ARGS is an arbitrary keyword (!) arguments list that will be translated to
+URL parameters.
+
+The resulting URL should be perfectly parseable back to the initial form with
+`parse-nyxt-url'.
+
+Example:
+\(nyxt-url 'nyxt:describe-command :value 'nyxt:describe-value)
+=> \"nyxt:describe-command?value=NYXT%3ADESCRIBE-VALUE\"
+
+\(parse-nyxt-url (nyxt-url 'nyxt:describe-value :value ''nyxt:*browser*))
+=> NYXT:DESCRIBE-VALUE
+=> (:VALUE 'NYXT:*BROWSER*)"
+  (flet ((param-name (symbol)
+           (if (member (package-name (symbol-package symbol)) '("nyxt" "keyword")
+                       :test #'string-equal)
+               (str:downcase (symbol-name symbol))
+               (format nil "~(~s~)" symbol))))
+    (if (gethash function-name *nyxt-url-commands*)
+        (let ((params (quri:url-encode-params
+                       (mapcar (lambda (pair)
+                                 (cons (param-name (first pair))
+                                       ;; This is to safely parse the args afterwards
+                                       (prin1-to-string (rest pair))))
+                               (alexandria:plist-alist args)))))
+          (the (values string &optional)
+               (format nil "nyxt:~a~@[~*?~a~]"
+                       (param-name function-name)
+                       (not (uiop:emptyp params))
+                       params)))
+        (error "There's no nyxt:~a page defined" (param-name function-name)))))
+
+(defun internal-url-p (url)
+  (string= "nyxt" (quri:uri-scheme (url url))))
+
 (export-always 'lisp-url)
 (-> lisp-url (t &rest t) string)
 (defun lisp-url (lisp-form &rest more-lisp-forms)
-  "Generate a lisp:// URL from the given Lisp forms. This is useful for encoding
+  "Generate a lisp:// URL from the given Lisp FUNCTION-NAME and ARGS. This is useful for encoding
 functionality into internal-buffers."
   (the (values string &optional)
        (apply #'str:concat "lisp://"
               (mapcar (alex:compose #'quri:url-encode #'write-to-string)
                       (cons lisp-form more-lisp-forms)))))
+
+(export-always 'parse-nyxt-url)
+(-> parse-nyxt-url ((or string quri:uri)) (values symbol list &optional))
+(defun parse-nyxt-url (url)
+  "Return (1) the name of the function and (2) the arguments to it, parsed from nyxt: URL.
+
+Error out if some of the params are not constants. Thanks to this,
+`parse-nyxt-url' can be repeatedly called on the same nyxt: URL, with the
+guarantee of the same result."
+  (let* ((url (url url))
+         (symbol (quri:uri-path url))
+         (params (quri:uri-query-params url))
+         (function (read-from-string (str:upcase symbol))))
+    (if (gethash function *nyxt-url-commands*)
+        (values function
+                (alex:mappend (lambda (pair)
+                                (let ((key (intern (str:upcase (first pair)) :keyword))
+                                      (value (read-from-string (rest pair))))
+                                  ;; Symbols are safe (are they?)
+                                  (if (or (symbolp value)
+                                          (constantp value))
+                                      (list key value)
+                                      (error "A non-constant value passed in URL params: ~a" value))))
+                              params))
+        (error "There's no nyxt:~a page defined" symbol))))
 
 (-> path= (quri:uri quri:uri) boolean)
 (defun path= (url1 url2)

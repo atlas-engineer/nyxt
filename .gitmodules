@@ -358,10 +358,6 @@
 	path = _build/slime
 	url = https://github.com/slime/slime/
 	shallow = true
-[submodule "_build/mk-string-metrics"]
-	path = _build/mk-string-metrics
-	url = https://github.com/cbaggers/mk-string-metrics/
-	shallow = true
 [submodule "_build/moptilities"]
 	path = _build/moptilities
 	url = https://github.com/gwkkwg/moptilities/

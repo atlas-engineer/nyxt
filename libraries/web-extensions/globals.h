@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Atlas Engineer LLC
+// SPDX-License-Identifier: BSD-3-Clause
+
 #ifndef __GLOBALS_H__
 #define __GLOBALS_H__
 
@@ -159,6 +162,7 @@ extern WebKitWebPage *PAGE;
 typedef struct {
         char *name;
         char *extension_id;
+        char *tab_id;
         char *manifest;
         JSCValue *files;
         WebKitScriptWorld *world;

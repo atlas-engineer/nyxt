@@ -65,6 +65,9 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "M-<" 'select-first
        "M-]" 'select-next-source        ; Emacs Helm binding.
        "M-[" 'select-previous-source    ; Emacs Helm binding.
+       ;; Those two are only bound in Emacs mode. CUA, VI?
+       "C-M-n" 'scroll-other-buffer-down
+       "C-M-p" 'scroll-other-buffer-up
        "C-j" 'run-follow-mode-function
        "C-g" 'cancel-input
        "C-h b" 'run-prompt-buffer-command
@@ -444,3 +447,23 @@ Only available if `multi-selection-p' is non-nil."
 (define-command-prompt select-all (prompt-buffer)
   "Select all the text in the prompt input."
   (ffi-buffer-select-all prompt-buffer))
+
+(define-command-prompt scroll-other-buffer-up (prompt-buffer
+                                               &key (scroll-distance
+                                                     (scroll-distance (current-buffer))))
+  "Scroll the buffer behind the prompt up."
+  (with-current-buffer (current-buffer)
+    ;; FIXME: Copy-paste from scroll.lisp. Move it somewhere prompt-buffer.lisp can reach it?
+    (pflet ((scroll-up ()
+            (ps:chain window (scroll-by 0 (ps:lisp (- scroll-distance))))))
+    (scroll-up))))
+
+(define-command-prompt scroll-other-buffer-down (prompt-buffer
+                                                 &key (scroll-distance
+                                                       (scroll-distance (current-buffer))))
+  "Scroll the buffer behind the prompt down."
+  (with-current-buffer (current-buffer)
+    ;; FIXME: Copy-paste from scroll.lisp. Move it somewhere prompt-buffer.lisp can reach it?
+    (pflet ((scroll-down ()
+            (ps:chain window (scroll-by 0 (ps:lisp scroll-distance)))))
+    (scroll-down))))

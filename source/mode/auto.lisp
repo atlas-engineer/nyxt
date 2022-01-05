@@ -44,9 +44,9 @@ Package prefix is optional.")
       (echo-warning "Auto-mode rule: unknown mode symbol ~s" mode)))
   (:method ((mode list))
     (check-type mode (cons symbol *))
-    (when (rememberable-p (make-instance (first mode)))
+    (when (rememberable-p (make-instance (mode-name (first mode))))
       (make-instance 'mode-invocation
-                     :name (first mode)
+                     :name (mode-name (first mode))
                      :arguments (rest mode)))))
 
 (defun mode-invocations (mode-list)
@@ -175,10 +175,10 @@ ENABLE-P is whether mode is being enabled (non-nil) or disabled (nil).
 Mode is covered if:
 - It's not rememberable (has `rememberable-p' set to nil).
 - There is a rule it matches and:
-  - when mode is ENABLED-P and part of `included' modes in the rule, or
-  - when mode is not ENABLED-P and part of `excluded' modes in the rule.
-- If there's no matching rule but it's part of `last-active-modes' and needs to be ENABLED-P.
-- If it's getting disabled (not ENABLED-P) after being enabled by a rule on the previous page."
+  - when mode is ENABLE-P and part of `included' modes in the rule, or
+  - when mode is not ENABLE-P and part of `excluded' modes in the rule.
+- If there's no matching rule but it's part of `last-active-modes' and needs to be ENABLE-P.
+- If it's getting disabled (not ENABLE-P) after being enabled by a rule on the previous page."
   (let ((invocation (mode-invocation mode)))
     (flet ((invocation-member (list)
              (member invocation list :test #'equals)))
@@ -218,7 +218,7 @@ The rules are:
 (-> make-mode-toggle-prompting-handler (boolean t) (function (root-mode)))
 (defun make-mode-toggle-prompting-handler (enable-p auto-mode)
   #'(lambda (mode)
-      (let ((invocation (mode-invocation mode)))
+      (alex:when-let* ((invocation (mode-invocation mode)))
         (when (not (mode-covered-by-auto-mode-p mode auto-mode enable-p))
           (if-confirm ("Permanently ~:[disable~;enable~] ~a for this URL?"
                        enable-p (mode-name mode))
@@ -275,7 +275,7 @@ These modes will then be activated on every visit to this domain/host/URL."
     :type boolean
     :documentation "Whether the user is asked to confirm adding the rule
 corresponding to a mode toggle.")
-   (previous-url 
+   (previous-url
     nil
     :type (or quri:uri null)
     :documentation "The last URL for which `auto-mode-handler' was fired.  We
@@ -421,15 +421,15 @@ Auto-mode is re-enabled once the page is reloaded."
 (defmethod serialize-object ((rule auto-mode-rule) stream)
   (flet ((write-if-present (slot &key modes-p)
            (when (funcall slot rule)
-             (format t " :~a ~a"
+             (format t " :~a ~s"
                      slot
                      (let ((value (funcall slot rule)))
                        (if modes-p
                            (mapcar
                             #'(lambda (mode-invocation)
                                 (if (arguments mode-invocation)
-                                    (list (name mode-invocation)
-                                          (arguments mode-invocation))
+                                    `(,(name mode-invocation)
+                                      ,@(arguments mode-invocation))
                                     (name mode-invocation)))
                             value)
                            value))))))

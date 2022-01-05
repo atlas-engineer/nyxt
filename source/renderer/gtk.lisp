@@ -22,10 +22,13 @@ want to change the behaviour of modifiers, for instance swap 'control' and
   \"Swap control and meta.\"
   (declare (ignore event))
   (let ((plist '(:control-mask \"meta\"
-                 :mod1-mask \"control\"
+                 :mod1-mask \"control\" ;; Usually it is Alt.
+                 :mod5-mask nil         ;; See your config for what mod1-5 mean.
                  :shift-mask \"shift\"
                  :super-mask \"super\"
-                 :hyper-mask \"hyper\")))
+                 :hyper-mask \"hyper\"
+                 :meta-mask nil         ;; Meta.
+                 :lock-mask nil)))
     (delete nil (mapcar (lambda (mod) (getf plist mod)) modifier-state))))
 
 \(define-configuration browser
@@ -135,7 +138,13 @@ not return."
         (funcall thunk))))
 
 (defmacro define-ffi-method (name args &body body)
-  "Make a window."
+  "Define an FFI method to run in the renderer thread.
+
+Always returns a value retrieved from the renderer thread, using Calispel
+channels if the current thread is not the renderer one.
+
+It's a `defmethod' wrapper. If you don't need the body of the method to execute in
+the renderer thread, use `defmethod' instead."
   (multiple-value-bind (forms declares docstring)
       (alex:parse-body body :documentation t)
     `(defmethod ,name ,args
@@ -282,7 +291,7 @@ response.  The BODY is wrapped with `with-protect'."
   (%within-renderer-thread-async
    (lambda ()
      (with-slots (gtk-object) buffer
-       (setf gtk-object (make-web-view))
+       (setf gtk-object (make-web-view :context-buffer buffer))
        (connect-signal-function
         buffer "decide-policy"
         (make-decide-policy-handler buffer))))))
@@ -465,9 +474,12 @@ See `gtk-browser's `modifier-translator' slot."
   (declare (ignore event))
   (let ((plist '(:control-mask "control"
                  :mod1-mask "meta"
+                 :mod5-mask nil
                  :shift-mask "shift"
                  :super-mask "super"
-                 :hyper-mask "hyper")))
+                 :hyper-mask "hyper"
+                 :meta-mask nil
+                 :lock-mask nil)))
     (delete nil (mapcar (lambda (mod) (getf plist mod)) modifier-state))))
 
 #+darwin
@@ -659,7 +671,8 @@ See `gtk-browser's `modifier-translator' slot."
                                       (vector (id extension)
                                               (nyxt/web-extensions::manifest extension)
                                               (if privileged-p 1 0)
-                                              (nyxt/web-extensions::extension-files extension)))))
+                                              (nyxt/web-extensions::extension-files extension)
+                                              (id buffer)))))
                          (let ((extensions
                                  (when buffer
                                    (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))))
@@ -692,6 +705,48 @@ See `gtk-browser's `modifier-translator' slot."
            (values data type)))
        (lambda (condition)
          (echo-warning "Error while re-routing web accessible resource: ~a" condition)))
+      (webkit:webkit-web-context-register-uri-scheme-callback
+       context "nyxt"
+       (lambda (request)
+         (with-protect ("Error while processing the \"nyxt:\" URL: ~a" :condition)
+           (sera:and-let* ((url (quri:uri (webkit:webkit-uri-scheme-request-get-uri request)))
+                           (function-name (parse-nyxt-url url))
+                           (page-generating-function (gethash function-name *nyxt-url-commands*)))
+                          (let ((result (multiple-value-list (apply page-generating-function
+                                                                    (nth-value 1 (parse-nyxt-url url))))))
+               (cond
+                 ((and (alex:length= result 2)
+                       (arrayp (first result))
+                       (stringp (second result)))
+                  (values (first result) (second result)))
+                 ((arrayp (first result))
+                  (first result))
+                 (t (error "Cannot display evaluation result")))))))
+       (lambda (condition)
+         (echo-warning "Error while routing \"nyxt:\" URL: ~a" condition)))
+      (webkit:webkit-web-context-register-uri-scheme-callback
+       context "lisp"
+       (lambda (request)
+         (let ((url (quri:uri (webkit:webkit-uri-scheme-request-get-uri request))))
+           (if (or (status-buffer-p buffer)
+                   (panel-buffer-p buffer)
+                   (internal-url-p (url buffer)))
+               (let* ((schemeless-url (schemeless-url url))
+                      (code-raw (quri:url-decode schemeless-url :lenient t))
+                      (code (subseq code-raw 0 (1- (length code-raw)))))
+                 (log:debug "Evaluate Lisp code from internal page: ~a" code)
+                 (values (handler-case
+                             (cl-json:encode-json-to-string (evaluate code))
+                           (json:unencodable-value-error ()
+                             "null"))
+                         "application/json"))
+               "")))
+       (lambda (condition)
+         (echo-warning "Error while routing \"lisp:\" URL: ~a" condition)))
+      (webkit:webkit-security-manager-register-uri-scheme-as-local
+       (webkit:webkit-web-context-get-security-manager context) "nyxt")
+      (webkit:webkit-security-manager-register-uri-scheme-as-cors-enabled
+       (webkit:webkit-web-context-get-security-manager context) "lisp")
       (when (and buffer
                  (web-buffer-p buffer)
                  (expand-path (cookies-path buffer)))
@@ -795,7 +850,7 @@ See `gtk-browser's `modifier-translator' slot."
                    (log:debug "Forward to ~s's renderer (unchanged URL)."
                               buffer)
                    (webkit:webkit-policy-decision-use response-policy-decision))
-                  ((quri:uri= (quri:uri (webkit:webkit-uri-request-uri request)) url)
+                  ((not (quri:uri= (quri:uri (webkit:webkit-uri-request-uri request)) (url request-data)))
                    ;; Low-level URL string, we must not render the puni codes so use
                    ;; `quri:render-uri'.
                    (setf (webkit:webkit-uri-request-uri request) (quri:render-uri (url request-data)))
@@ -808,9 +863,9 @@ See `gtk-browser's `modifier-translator' slot."
                    (webkit:webkit-policy-decision-ignore response-policy-decision)
                    (webkit:webkit-web-view-load-request (gtk-object buffer) request))
                   (t
-                   (echo-warning "Cannot redirect to ~a in an iframe, forwarding to the original URL (~a)."
-                                 (render-url (url request-data))
-                                 (webkit:webkit-uri-request-uri request))
+                   (log:info "Cannot redirect to ~a in an iframe, forwarding to the original URL (~a)."
+                             (render-url (url request-data))
+                             (webkit:webkit-uri-request-uri request))
                    (webkit:webkit-policy-decision-use response-policy-decision)))))
           (progn
             (log:debug "Don't forward to ~s's renderer (non request data)."
@@ -1045,9 +1100,7 @@ See `gtk-browser's `modifier-translator' slot."
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
   (unless (gtk-object buffer) ; Buffer may already have a view, e.g. the prompt-buffer.
-    (setf (gtk-object buffer) (make-web-view
-                               :context-buffer (unless (internal-buffer-p buffer)
-                                                 buffer))))
+    (setf (gtk-object buffer) (make-web-view :context-buffer buffer)))
   (if (smooth-scrolling buffer)
       (ffi-buffer-enable-smooth-scrolling buffer t)
       (ffi-buffer-enable-smooth-scrolling buffer nil))
@@ -1372,7 +1425,8 @@ requested a reload."
       (unless (member (status download) '(:canceled :failed))
         (setf (status download) :finished)
         ;; If download was too small, it may not have been updated.
-        (setf (completion-percentage download) 100)))))
+        (setf (completion-percentage download) 100)))
+    download))
 
 (define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) &optional value)
   (if value

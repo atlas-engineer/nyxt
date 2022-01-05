@@ -109,42 +109,44 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                            (mapcar #'car (keywords (buffer source))))))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-command list-bookmarks ()
+(define-internal-page-command list-bookmarks ()
+    (bookmarks-buffer "*Bookmarks*" 'base-mode)
   "List all bookmarks in a new buffer."
   (flet ((html-bookmark-id (id)
            (format nil "bookmark-~d" id)))
-    (with-current-html-buffer (bookmarks-buffer "*Bookmarks*" 'base-mode)
-      (spinneret:with-html-string
-        (:style (style bookmarks-buffer))
-        (:h1 "Bookmarks")
-        (:body
-         (or (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
-               (loop for bookmark in bookmarks
-                     for id from 0 by 1
-                     collect
-                     (let ((url-display (render-url (url bookmark)))
-                           (url-href (render-url (url bookmark))))
-                       (:div
-                        :id (html-bookmark-id id)
-                        (:p (:b "Title: ") (title bookmark))
-                        (:p (:b "URL: ") (:a :href url-href
-                                             url-display))
-                        (:p (:b "Tags: ")
-                            (when (tags bookmark)
-                              (format nil " (~{~a~^, ~})" (tags bookmark))))
-                        (:p (:a :class "button"
-                                :onclick
-                                (ps:ps
-                                  (let ((element
-                                          (ps:chain
-                                           document
-                                           (get-element-by-id (ps:lisp (html-bookmark-id id))))))
-                                    (ps:chain element parent-node (remove-child element))))
-                                :href (lisp-url `(nyxt::delete-bookmark ,url-href)) "Delete"))
-                        (:hr "")))))
-             (format nil "No bookmarks in ~s." (expand-path (bookmarks-path (current-buffer))))))))))
+    (spinneret:with-html-string
+      (:style (style bookmarks-buffer))
+      (:h1 "Bookmarks")
+      (:body
+       (or (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
+             (loop for bookmark in bookmarks
+                   for id from 0 by 1
+                   collect
+                   (let ((url-display (render-url (url bookmark)))
+                         (url-href (render-url (url bookmark))))
+                     (:div
+                      :id (html-bookmark-id id)
+                      (:p (:b "Title: ") (title bookmark))
+                      (:p (:b "URL: ") (:a :href url-href
+                                           url-display))
+                      (:p (:b "Tags: ")
+                          (when (tags bookmark)
+                            (format nil " (~{~a~^, ~})" (tags bookmark))))
+                      (:p (:a :class "button"
+                              :onclick
+                              (ps:ps
+                                (let ((element
+                                        (ps:chain
+                                         document
+                                         (get-element-by-id (ps:lisp (html-bookmark-id id))))))
+                                  (ps:chain element parent-node (remove-child element))))
+                              :href (lisp-url `(nyxt::delete-bookmark ,url-href)) "Delete"))
+                      (:hr "")))))
+           (format nil "No bookmarks in ~s." (expand-path (bookmarks-path (current-buffer)))))))))
 
-(define-panel bookmarks (panel-buffer)
+(define-panel bookmarks ()
+    (panel-buffer "*Bookmarks panel*")
+  "Shows all the bookmarks in a compact panel-buffer layout."
   (spinneret:with-html-string
     (:style (style panel-buffer))
     (:style (cl-css:css
@@ -161,10 +163,10 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
      (or (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
            (loop for bookmark in bookmarks
                  collect
-                    (let ((url-href (render-url (url bookmark))))
-                      (:div
-                       (:p (title bookmark))
-                       (:p (:a :href url-href url-href))))))
+                 (let ((url-href (render-url (url bookmark))))
+                   (:div
+                    (:p (title bookmark))
+                    (:p (:a :href url-href url-href))))))
          (format nil "No bookmarks in ~s." (expand-path (bookmarks-path (current-buffer))))))))
 
 (export-always 'url-bookmark-tags)

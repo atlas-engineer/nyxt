@@ -18,7 +18,7 @@
     ;; Set profile to nosave to inhibit serialization / deserialization.
     ;; TODO: We should still test serialization and deserialization.
     (setf *global-data-profile* (make-instance 'test-data-profile))
-    (let ((buffer (nyxt::make-internal-buffer)))
+    (let ((buffer (nyxt::make-buffer)))
       (nyxt:with-current-buffer buffer
         (let ((path (history-path buffer)))
           (nyxt::history-add (quri:uri "http://example.org"))
