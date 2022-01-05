@@ -292,6 +292,15 @@ FUNCTION is the action to perform on the selected elements."
 (defmethod %follow-hint-nosave-buffer ((element plump:element))
   (echo "Unsupported operation for hint: can't open in new buffer."))
 
+(defmethod %follow-hint-with-current-modes-new-buffer ((a nyxt/dom:a-element) &optional parent-buffer)
+  (make-buffer :url (url a)
+               :modes (mapcar #'mode-name (modes (current-buffer)))
+               :parent-buffer parent-buffer))
+
+(defmethod %follow-hint-with-current-modes-new-buffer ((element plump:element) &optional parent-buffer)
+  (declare (ignore parent-buffer))
+  (echo "Unsupported operation for hint: can't open in new buffer."))
+
 (defmethod %copy-hint-url ((a nyxt/dom:a-element))
   (trivial-clipboard:text (render-url (url a))))
 
@@ -366,6 +375,15 @@ visible nosave active buffer."
                  (%follow-hint-nosave-buffer-focus (first result))
                  (mapcar #'%follow-hint-nosave-buffer (rest result)))
                :multi-selection-p t))
+
+(define-command follow-hint-with-current-modes-new-buffer ()
+  "Follow hint and open link in a new buffer with current modes."
+  (let ((buffer (current-buffer)))
+    (query-hints "Open element with current modes in new buffer"
+                 (lambda (result)
+                   (mapcar (alex:rcurry #'%follow-hint-with-current-modes-new-buffer buffer)
+                           result))
+                 :multi-selection-p t)))
 
 (define-command copy-hint-url ()
   "Show a set of element hints, and copy the URL of the user inputted one."
