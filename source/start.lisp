@@ -39,7 +39,11 @@ variable.")
 (export-always 'nyxt-init-file)
 (defun nyxt-init-file (&optional subpath)
   "Return SUBPATH relative to `*init-file-path*'.
-Return nil if `*init-file-path*' is nil."
+Return nil if `*init-file-path*' is nil.
+
+Example:
+If for example, we want to load a define-command procedure that lives in ~/path/to/nyxt/config/dir/my-slink.lisp
+(load-after-system :slynk (nyxt-init-file \"my-slink.lisp\"))"
   (if subpath
       (uiop:subpathname* (uiop:pathname-directory-pathname
                           (expand-path *init-file-path*))

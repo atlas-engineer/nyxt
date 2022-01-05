@@ -103,31 +103,67 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
                       (|insertAdjacentHTML| "afterbegin"
                                             (ps:lisp style)))))))
 
-(export-always 'with-current-html-buffer)
-(defmacro with-current-html-buffer ((buffer-var title mode
-                                     &key no-history-p)
-                                    &body body)
-  "Switch to a buffer in MODE displaying BODY.
-If a buffer in MODE with TITLE exists, reuse it, otherwise create a new buffer.
-BUFFER-VAR is bound to the new buffer in BODY.
-MODE is a mode symbol.
-BODY must return the HTML markup as a string."
-  (alex:once-only (title mode)
-    `(let* ((,buffer-var (or (find-if (lambda (b)
-                                        (and (string= (title b) ,title)
-                                             (find-mode b ,mode)))
-                                      (buffer-list))
-                             (funcall (symbol-function ,mode)
-                                      :activate t
-                                      :buffer (make-internal-buffer
-                                               :title ,title
-                                               :no-history-p ,no-history-p)))))
-       (html-set
-        (progn
-          ,@body)
-        ,buffer-var)
-       (set-current-buffer ,buffer-var)
-       ,buffer-var)))
+(defmacro define-internal-page-command (name (&rest arglist)
+                                        (buffer-var title mode)
+                                        &body body)
+  "Define a command called NAME creating an internal interface page.
+
+Should end with a form returning HTML body as a string.
+
+Create a buffer (and bind it to BUFFER-VAR) in case there's no buffer with TITLE
+and MODE. If there is one, bind BUFFER-VAR to it. Either way, BUFFER-VAR is
+always a buffer that the generated code is loaded into.
+
+ARGLIST is arguments for the command and for the underlying page-generating
+function. Any argument from it is safe to use in the body of this macro.
+Beware: the ARGLIST should have nothing but keyword arguments because it's
+mapped to query parameters."
+  (let ((args (alex:mappend #'first (nth-value 3 (alex:parse-ordinary-lambda-list arglist)))))
+    (multiple-value-bind (body declarations documentation)
+        (alex:parse-body body :documentation t)
+      `(progn
+         (setf (gethash (quote ,name) *nyxt-url-commands*)
+               (lambda (,@arglist)
+                 ,@(when documentation (list documentation))
+                 ,@declarations
+                 ;; We need to ignore those to avoid warnings, as the same arglist
+                 ;; is used in both internal function and a command.
+                 (declare (ignorable ,@(loop for arg in (rest args) by #'cddr
+                                             collect arg)))
+                 ;; TODO: Maybe create buffer here too?
+                 ;; This way it won't fail when called from a URL.
+                 (let ((,buffer-var (or (find (quri:uri
+                                               (nyxt-url
+                                                (quote ,name)
+                                                ,@args))
+                                              (buffer-list) :key #'url
+                                              :test #'quri:uri=)
+                                        (current-buffer))))
+                   ;; We need to ignore those to avoid warnings, as the same arglist
+                   ;; is used in both internal function and a command.
+                   (declare (ignorable ,buffer-var))
+                   (spinneret:with-html-string
+                     (:head
+                      (:title ,title)
+                      (:style (style ,buffer-var)))
+                     (:body
+                      (:raw ,@body))))))
+         (define-command-global ,name (,@arglist)
+           ,@(when documentation (list documentation))
+           (let* ((,buffer-var (or (find-if (lambda (b)
+                                              (and (string= (title b) ,title)
+                                                   (find-mode b ,mode)))
+                                            (buffer-list))
+                                   (funcall (symbol-function ,mode)
+                                            :activate t
+                                            :buffer (make-buffer
+                                                     :title ,title
+                                                     :url (quri:uri
+                                                           (nyxt-url
+                                                            (quote ,name)
+                                                            ,@args)))))))
+             (set-current-buffer ,buffer-var)
+             ,buffer-var))))))
 
 (defmacro with-current-panel ((buffer-var title &key (side :left))
                               &body body)

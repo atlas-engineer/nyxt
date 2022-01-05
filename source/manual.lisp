@@ -6,11 +6,14 @@
 (defun manual-content ()
   (str:concat
    (spinneret:with-html-string
-    (:h1 "Nyxt manual")
-    (:p "This manual first includes the tutorial, then covers the configuration
+     (:h1 "Nyxt manual")
+     (:p "This manual first includes the tutorial, then covers the configuration
 of Nyxt."))
    (tutorial-content)
-   (spinneret:with-html-string (:h2 "Configuration")
+   (config-content)))
+
+(defun config-content ()
+  (spinneret:with-html-string (:h2 "Configuration")
     (:p "Nyxt is written in the Common Lisp programming language which offers a
 great perk: everything in the browser can be customized by the user, even while
 it's running!")
@@ -31,9 +34,24 @@ existing object instances.")
         (:code (expand-path *init-file-path*)) ".")
     (:p "The following section assumes knowledge of basic Common Lisp or a
 similar programming language.")
-    (:p "Nyxt configuration can be persisted in the user
-file " (:code (expand-path *init-file-path*)) " (create the parent folders if
-necessary).")
+    (:p "The user needs to manually create the Nyxt configuration file "
+         (:code (expand-path *init-file-path*))
+         ", and the parent folders if necessary. You can also press the button
+below to create said file, if it's not created yet.")
+     (let ((init-file-path (expand-path *init-file-path*)))
+       (ensure-directories-exist init-file-path)
+       (:p (if (uiop:file-exists-p init-file-path)
+               (:a :class "button"
+                   :href (lisp-url `(echo "Init file exists"))
+                   "Init file exists")
+               (:a :class "button"
+                   :href (lisp-url `(with-open-file (_ ,init-file-path
+                                                       :direction :output
+                                                       :if-exists nil
+                                                       :if-does-not-exist :create)
+                                      (echo "Init file created at ~a."
+                                            ,init-file-path)))
+                   "Create init file"))))
     (:p "Example:")
     (:pre (:code "
 \(define-configuration buffer
@@ -49,10 +67,11 @@ run " (:code "describe-command") " and type 'mode'.")
     (:h3 "Slot configuration")
     (:p "Slots store values that can be either accessed (get) or changed
 (set). Setting new values for slots allows many possibilities of customization.
-For instance, keyboard layouts vary across the world. The slot " (:code
-"hints-alphabet") " has the default value of " (:code
-"ABCDEFGHIJKLMNOPQRSTUVWXYZ" ) ". If the user has an American keyboard, they can
-do:")
+For instance, keyboard layouts vary across the world. The slot "
+        (:code "hints-alphabet")
+        " has the default value of "
+        (:code "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+        ". If the user has an American keyboard, they can do:")
     (:ol
      (:li "Execute command " (command-markup 'describe-slot) ";")
      (:li "Type " (:code 'hints-alphabet)";")
@@ -80,27 +99,27 @@ is specialized by these child classes.")
 add the following to your configuration:")
     (:ul
      (:li "vi bindings:"
-      (:pre (:code "
+          (:pre (:code "
 \(define-configuration buffer
   ((default-modes (append '(vi-normal-mode) %slot-default%))))")))
      (:li "Emacs bindings:"
-      (:pre (:code "
+          (:pre (:code "
 \(define-configuration buffer
   ((default-modes (append '(emacs-mode) %slot-default%))))"))))
     (:p "You can create new scheme names with " (:code "keymap:make-scheme-name")
         ".  Also see the " (:code "scheme-name") " class and the "
         (:code "define-scheme") " macro.")
-     (:p "To extend the bindings of a specific mode, you can extend the mode with "
-         (:code "define-configuration") " and extend its binding scheme with "
-         (:code "define-scheme") ". For example:")
-     (:pre (:code "
+    (:p "To extend the bindings of a specific mode, you can extend the mode with "
+        (:code "define-configuration") " and extend its binding scheme with "
+        (:code "define-scheme") ". For example:")
+    (:pre (:code "
 \(define-configuration base-mode
   ((keymap-scheme
     (define-scheme (:name-prefix \"my-base\" :import %slot-default%)
       scheme:vi-normal
       (list \"g b\" (make-command switch-buffer* ()
                     (switch-buffer :current-is-last-p t)))))))"))
-     (:p "The " (:code "override-map") " is a keymap that has priority over
+    (:p "The " (:code "override-map") " is a keymap that has priority over
 all other keymaps.  By default, it has few bindings like the one
 for " (:code "execute-command") ".  You can use it to set keys globally:")
     (:pre (:code "
@@ -135,11 +154,11 @@ keymap.")
   ((default-modes (append '(my-mode) %slot-default%))))"))
 
     (:p "Bindings are subject to various translations as per "
-         (:code "keymap:*translator*") ". "
-         "By default if it fails to find a binding it tries again with inverted
+        (:code "keymap:*translator*") ". "
+        "By default if it fails to find a binding it tries again with inverted
 shifts.  For instance if " (:code "C-x C-F") " fails to match anything " (:code "C-x C-f")
-" is tried."
-"See the default value of " (:code "keymap:*translator*") " to learn how to
+        " is tried."
+        "See the default value of " (:code "keymap:*translator*") " to learn how to
          custsomize it or set it to " (:code "nil") " to disable all forms of
          translation.")
 
@@ -168,7 +187,7 @@ Bookmarks can also be used as search engines, see the corresponding section.")
     (:p "Note that the last search engine is the default one. For example, in
 order to make python3 the default, the above code can be slightly modified as
 follows.")
-        (:pre (:code "
+    (:pre (:code "
 \(defvar *my-search-engines*
   (list
    '(\"doi\" \"https://dx.doi.org/~a\" \"https://dx.doi.org/\")
@@ -195,7 +214,7 @@ documentation.")
     (:h3 "Custom commands")
     (:p "Creating your own invokable commands is similar to creating a Common
 Lisp function, except the form is " (:code "define-command") " instead of "
-        (:code "defun") ". If you want this command to be invokable outside of
+(:code "defun") ". If you want this command to be invokable outside of
         the context of a mode, use " (:code "define-command-global") ".")
     (:p "Example:")
     (:pre (:code
@@ -408,4 +427,4 @@ nyxt
     (:p "If you are experiencing problems with blank web-views on some sites you
     can try to disable compositing. To disable compositing from your
     initialization file, you can do the following: ")
-    (:code "(setf (uiop:getenv \"WEBKIT_DISABLE_COMPOSITING_MODE\") \"1\")"))))
+    (:code "(setf (uiop:getenv \"WEBKIT_DISABLE_COMPOSITING_MODE\") \"1\")")))

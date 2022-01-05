@@ -32,14 +32,15 @@
   - [[#run-from-source][Run from source]]
   - [[#interacting-with-a-compiled-version-of-nyxt][Interacting with a compiled version of Nyxt]]
     - [[#slime][SLIME]]
-    - [[#sly][SLY]]
+    - [[#slyslynk][SLY/SLYNK]]
+      - [[#quicklisp-setup][Quicklisp Setup]]
+      - [[#non-quicklisp-setup][Non-Quicklisp Setup]]
 - [[#help--community][Help & Community]]
   - [[#issue-tracker][Issue tracker]]
   - [[#learning-common-lisp][Learning Common Lisp]]
   - [[#contributing][Contributing]]
   - [[#irc-channel][IRC Channel]]
 :END:
-
 * Developer installation with Guix
 
 First, clone the Nyxt repository.  It is most convenient to clone the
@@ -134,26 +135,27 @@ run the following:
 - libfixposix
 - xclip (for clipboard support)
 - enchant (for spellchecking)
+- pkg-config (for web-extensions)
 
 - Debian-based distributions:
   #+begin_src sh
-    sudo apt install sbcl libwebkit2gtk-4.0-dev gobject-introspection glib-networking gsettings-desktop-schemas libfixposix-dev xclip enchant-2
+    sudo apt install sbcl libwebkit2gtk-4.0-dev gobject-introspection glib-networking gsettings-desktop-schemas libfixposix-dev pkg-config xclip enchant-2
   #+end_src
 
 - Arch Linux:
   #+begin_src sh
     sudo pacman -S git sbcl cl-asdf webkit2gtk glib-networking gsettings-desktop-schemas enchant
   #+end_src
-  The package libfixposix can be installed from the [[https://aur.archlinux.org/packages/libfixposix][AUR]]
+  The package libfixposix can be installed from the [[https://aur.archlinux.org/packages/libfixposix][AUR]], same fo ~pkg-config~.
 
 - Fedora:
   #+begin_src sh
-    sudo dnf install sbcl webkit2gtk3-devel glib-networking gsettings-desktop-schemas libfixposix-devel xclip enchant
+    sudo dnf install sbcl webkit2gtk3-devel glib-networking gsettings-desktop-schemas libfixposix-devel xclip enchant pkgconf
   #+end_src
 
 - FreeBSD and derivatives
   #+begin_src sh
-    pkg install sbcl webkit2-gtk3 glib-networking libfixposix xclip enchant
+    pkg install sbcl webkit2-gtk3 glib-networking libfixposix xclip enchant rubygem-pkg-config
   #+end_src
 
 If your distribution does not install libraries in an [[https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard][FHS]]-expected location, you
@@ -189,6 +191,7 @@ these fixes.
 - WebKitGTK+
 - XQuartz
 - libfixposix
+- pkg-config
 
 Notes:
 
@@ -204,8 +207,7 @@ Notes:
    `webkit2-gtk(-devel)` instead of `webkit-gtk3` via your favorite
    package manager. If you are on a legacy version of macOS which is not
    supported by HomeBrew, you may want to try install these via MacPorts.
-
-
+  
 ** Qt dependencies
 
 Qt is only required if you want to build Nyxt over the WebEngine renderer.
@@ -233,12 +235,14 @@ details about how to install it on your system.
 - libfixposix
 - xclip (for clipboard support)
 - enchant (for spellchecking)
+- pkg-config (for web-extensions)
 
 *** macOS dependencies
 
 - Qt 5.14.0+
 - Qt WebEngine
 - libfixposix
+- pkg-config
 
 ** Fetch the source code
 
@@ -305,13 +309,13 @@ a container on GNU/Linux.
 
 - With Guix:
   #+begin_src sh
-    guix environment --container --network --preserve='^DISPLAY$' --expose=/etc/ssl/certs --ad-hoc nss-certs nyxt -- nyxt
+    guix shell --container --network --preserve='^DISPLAY$' --expose=/etc/ssl/certs nss-certs nyxt -- nyxt
   #+end_src
 
   If you want to load your configuration and use the data files:
 
   #+begin_src sh
-    guix environment --container --network --preserve='^DISPLAY$' --expose=/etc/ssl/certs --expose="$HOME/.config/nyxt/" --share="$HOME/.local/share/nyxt"="$HOME/.local/share/nyxt/" --ad-hoc nss-certs nyxt -- nyxt
+    guix shell --container --network --preserve='^DISPLAY$' --expose=/etc/ssl/certs --expose="$HOME/.config/nyxt/" --share="$HOME/.local/share/nyxt"="$HOME/.local/share/nyxt/" nss-certs nyxt -- nyxt
   #+end_src
 
   If you get the following error:
@@ -374,21 +378,28 @@ different from its counterpart variable =slime-port= in Emacs to avoid
 collisions with an ~*inferior-lisp*~ process.  Both of these default
 values can be configured in the respective init files.
 
-*** SLY
+*** SLY/SLYNK
 
 [[https://github.com/joaotavora/sly][=SLY=]] is a fork of =SLIME= with additional functionality.
 
-Follow the following steps:
+**** Quicklisp Setup
 
-1. Add the following line to your Nyxt init file
-  #+begin_src lisp
-    (load-after-system :slynk "~/.config/nyxt/my-slynk.lisp")
-  #+end_src
-2. Create a file called =my-slynk.lisp= where you will specify your
-   =start-slynk= command
-  #+NAME: my-slynk.lisp
-  #+begin_src lisp
-    (define-command-global start-slynk (&optional (slynk-port *swank-port*))
+*Steps:*
+1. Add the following lines to your Nyxt init file. If your Quicklisp directory differs, change it accordingly:
+
+#+NAME: nyxt/init.lisp
+#+begin_src lisp
+(load (merge-pathnames #p"quicklisp/setup.lisp" (user-homedir-pathname)))
+(ql:quickload 'slynk)
+;; Note: (nyxt-init-file) points to path/to/your/nyxt/config/directory
+(load-after-system :slynk (nyxt-init-file "my-slynk.lisp"))
+#+end_src
+
+2. Create a file called =my-slynk.lisp= where you will specify your =start-slynk= command:
+
+#+NAME: nyxt/my-slynk.lisp
+#+begin_src lisp
+(define-command-global start-slynk (&optional (slynk-port *swank-port*))
         "Start a Slynk server that can be connected to, for instance, in
     Emacs via SLY.
 
@@ -396,14 +407,59 @@ Follow the following steps:
     arbitrary code with the privileges of the user running Nyxt.  Make sure
     you understand the security risks associated with this before running
     this command."
-        (slynk:create-server :port slynk-port :dont-close t)
-        (echo "Slynk server started at port ~a" slynk-port))
-  #+end_src
-3. Run the command =start-slynk= in Nyxt
+  (slynk:create-server :port slynk-port :dont-close t)
+  (echo "Slynk server started at port ~a" slynk-port))
+#+end_src
 
-Then proceed as in the previous SLIME section by relacing
-~slime-connect~ with ~sly-connect~.
+3. Run the command =start-slynk= in Nyxt.
 
+4. Proceed as in the previous SLIME section by replacing ~slime-connect~ with ~sly-connect~.
+
+**** Non-Quicklisp Setup
+
+If you aren't using Quicklisp, you can configure Nyxt to start a Sly/Slynk server with the following steps.
+
+*Steps:*
+1. Ensure you have the Sly Package installed for Emacs with =package-install=. You may also clone the repository from [[https://github.com/joaotavora/sly.git][here]]. Should you choose to clone the repository, see the appropriate section in step 2.
+
+2. Add the following lines to your Nyxt's init.lisp (the configuration file) depending on whether you are using the Emacs Sly package, or you cloned the repository:
+
+   - If you have installed Sly with =package-install= (or similar method) in Emacs, add these lines to your =nyxt/init.lisp= :
+
+#+NAME: nyxt/init.lisp
+#+begin_src lisp
+(asdf:load-system :slynk)
+(slynk:create-server :port 4008)
+#+end_src
+
+   - If you are cloning from git, it's the same as above but with an extra =push= expression:
+
+#+NAME: nyxt/init.lisp
+#+begin_src lisp
+(push #p"~/dir/to/newly/cloned/sly/dir" asdf:*central-registry*)
+(asdf:load-system :slynk)
+(slynk:create-server :port 4008)
+#+end_src
+
+2. Create a file called =my-slynk.lisp= in your Nyxt configuration directory (see =(nyxt-init-file)= where you will create a =start-slynk= command.
+
+#+NAME: nyxt/my-slynk.lisp
+#+begin_src lisp
+(define-command-global start-slynk (&optional (slynk-port *swank-port*))
+        "Start a Slynk server that can be connected to, for instance, in
+    Emacs via SLY.
+
+    Warning: This allows Nyxt to be controlled remotely, that is, to execute
+    arbitrary code with the privileges of the user running Nyxt.  Make sure
+    you understand the security risks associated with this before running
+    this command."
+  (slynk:create-server :port slynk-port :dont-close t)
+  (echo "Slynk server started at port ~a" slynk-port))
+#+end_src
+
+3. Run the command =start-slynk= in Nyxt with =M-x start-slynk=.
+
+4. Proceed as in the previous SLIME section by replacing ~slime-connect~ with ~sly-connect~. Remember to choose the correct port (in this case, 4008).
 
 * Help & Community
 

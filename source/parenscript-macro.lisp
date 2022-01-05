@@ -68,3 +68,14 @@
               (<= (chain rect right) (chain window inner-width))
               (<= (chain rect bottom) (chain window inner-height)))
          t nil)))
+
+(export-always 'send-lisp-url)
+(defpsmacro send-lisp-url (form &optional callback)
+  "Request the lisp: URL and invoke callback when there's a successful result."
+  `(let ((request (fetch (lisp (nyxt:lisp-url ,form)))))
+     (when ,callback
+       (chain request
+              (then (lambda (response)
+                      (when (@ response ok)
+                        (chain response (json)))))
+              (then (lambda (data) (funcall ,callback data)))))))

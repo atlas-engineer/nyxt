@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Atlas Engineer LLC
+// SPDX-License-Identifier: BSD-3-Clause
+
 #include <webkit2/webkit-web-extension.h>
 #include "globals.h"
 #include "extevent.h"
@@ -207,6 +210,7 @@ webkit_web_extension_initialize_with_user_data
         DATA_COUNTER = 0;
         DATA = g_hash_table_new_full(g_int64_hash, g_int64_equal,
                                         (GDestroyNotify) free, NULL);
+        REQUESTS = g_hash_table_new(g_str_hash, g_str_equal);
 
         const char *json = g_variant_get_string(user_data, NULL);
         g_signal_connect (extension, "page-created",

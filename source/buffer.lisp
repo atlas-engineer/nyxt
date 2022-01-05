@@ -186,10 +186,6 @@ Example:
     (reduce #'hooks:add-hook
             (mapcar #'make-handler-resource (list #'old-reddit-handler #'auto-proxy-handler))
             :initial-value %slot-default%))))")
-   (default-new-buffer-url
-    (quri:uri "https://nyxt.atlas.engineer/start")
-    :type url-designator
-    :documentation "The URL set to a new blank buffer opened by Nyxt.")
    (scroll-distance
     50
     :type integer
@@ -228,6 +224,52 @@ distance scroll-left or scroll-right will scroll.")
     :documentation "The ratio of the page to scroll.
 A value of 0.95 means that the bottom 5% will be the top 5% when scrolling
 down.")
+   (style
+    (theme:themed-css
+        (theme *browser*)
+      (body
+       :color theme:text
+       :background-color theme:background
+       :margin-left "20px"
+       :margin-top "20px")
+      ("h1,h2,h3,h4,h5,h6"
+       :color theme:primary
+       :font-family theme:font-family)
+      (hr
+       :height "3px"
+       :border-radius "2px"
+       :border-width "0"
+       :color theme:secondary
+       :background-color theme:secondary)
+      (button
+       :background "none"
+       :color "inherit"
+       :border "none"
+       :padding 0
+       :font "inherit"
+       :outline "inherit")
+      (.button
+       :display "inline-block"
+       :background-color theme:secondary
+       :color theme:background
+       :text-decoration "none"
+       :border-radius "2px"
+       :padding "6px"
+       :margin-left "2px"
+       :margin-right "2px")
+      (|.button:hover|
+       :color theme:text)
+      (|.button:visited|
+       :color theme:background)
+      (|.button:active|
+       :color theme:background)
+      (a
+       :color theme:primary)
+      (pre
+       :color theme:text
+       :background-color theme:quaternary
+       :border-radius "2px"
+       :padding-bottom "10px")))
    (buffer-load-hook
     (make-hook-url->url
      :combination #'hooks:combine-composed-hook)
@@ -432,45 +474,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
 (define-user-class background-buffer)
 
 (define-class internal-buffer (user-buffer)
-  ((style
-    (theme:themed-css
-        (theme *browser*)
-      (body
-       :color theme:text
-       :background-color theme:background
-       :margin-left "20px"
-       :margin-top "20px")
-      ("h1,h2,h3,h4,h5,h6"
-       :color theme:primary
-       :font-family theme:font-family)
-      (hr
-       :height "3px"
-       :border-radius "2px"
-       :border-width "0"
-       :color theme:secondary
-       :background-color theme:secondary)
-      (.button
-       :display "inline-block"
-       :background-color theme:secondary
-       :color theme:background
-       :text-decoration "none"
-       :border-radius "2px"
-       :padding "6px"
-       :margin-left "2px"
-       :margin-right "2px")
-      (|.button:hover|
-       :color theme:text)
-      (|.button:visited|
-       :color theme:background)
-      (|.button:active|
-       :color theme:background)
-      (a
-       :color theme:primary)
-      (pre
-       :color theme:text
-       :background-color theme:quaternary
-       :border-radius "2px"
-       :padding-bottom "10px"))))
+  ()
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -494,6 +498,13 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :font-weight 500)
             (a
              :color theme:primary)
+            (button
+             :background "none"
+             :color "inherit"
+             :border "none"
+             :padding 0
+             :font "inherit"
+             :outline "inherit")
             (.button
              :display "inline-block"
              :background-color "darkgray"
@@ -649,6 +660,13 @@ Delete it with `ffi-buffer-delete'."
        :z-index "2")
       ("#modes::-webkit-scrollbar"
        :display "none")
+      (button
+       :background "none"
+       :color "inherit"
+       :border "none"
+       :padding 0
+       :font "inherit"
+       :outline "inherit")
       (.button
        :color theme:background
        :text-decoration "none"
@@ -686,7 +704,7 @@ Delete it with `ffi-buffer-delete'."
 (defun dead-buffer-p (buffer) ; TODO: Use this wherever needed.
   (str:empty? (id buffer)))
 
-(defmethod document-model :around ((buffer buffer))
+(defmethod document-model ((buffer buffer))
   (pflet ((%count-dom-elements
            ()
            (defvar dom-counter 0)
@@ -698,9 +716,9 @@ Delete it with `ffi-buffer-delete'."
            (setf dom-counter 0)
            (count-dom-elements (nyxt/ps:qs document "html"))))
          (if (dead-buffer-p buffer)
-             (call-next-method)
+             (slot-value buffer 'document-model)
              (with-current-buffer buffer
-               (let ((value (call-next-method))
+               (let ((value (slot-value buffer 'document-model))
                      (element-count (%count-dom-elements)))
                  (if (and value element-count
                           ;; Check whether the difference in element count is significant.
@@ -813,7 +831,7 @@ BUFFER's modes."
   (update-document-model :buffer buffer)
   (dolist (mode (modes buffer))
     (on-signal-load-finished mode url))
-  (run-thread (hooks:run-hook (buffer-loaded-hook buffer) buffer)))
+  (run-thread "buffer-loaded-hook" (hooks:run-hook (buffer-loaded-hook buffer) buffer)))
 
 (hooks:define-hook-type buffer (function (buffer)))
 
@@ -839,7 +857,7 @@ BUFFER's modes."
                                   no-history-p (load-url-p t) buffer-class)
   "Create a new buffer.
 MODES is a list of mode symbols.
-If URL is empty, the `default-new-buffer-url' buffer slot is used instead.
+If URL is empty, the `default-new-buffer-url' browser slot is used instead.
 To load nothing, set it to 'about:blank'.
 PARENT-BUFFER is useful when we want to record buffer- and history relationships.
 LOAD-URL-P controls whether to load URL right at buffer creation."
@@ -851,7 +869,7 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
                         (when buffer-class
                           (list :buffer-class buffer-class))))
          (url (if (url-empty-p url)
-                  (default-new-buffer-url buffer)
+                  (default-new-buffer-url *browser*)
                   url)))
     (if load-url-p
         (buffer-load url :buffer buffer)
@@ -896,14 +914,18 @@ See `make-buffer' for a description of the arguments."
   (declare (ignorable title modes url))
   (apply #'make-buffer (append (list :buffer-class 'user-background-buffer :no-history-p t) args)))
 
-(define-command make-internal-buffer (&key (title "") modes no-history-p)
+(define-command make-internal-buffer (&key (url (quri:uri "")) (title "") modes no-history-p)
   "Create a new buffer.
 MODES is a list of mode symbols.
-If URL is `:default', use `default-new-buffer-url'."
-  (buffer-make *browser* :title title
-                         :extra-modes modes
-                         :buffer-class 'user-internal-buffer
-                         :no-history-p no-history-p))
+URL is a URL to load into the buffer."
+  (let ((buffer (buffer-make *browser* :title title
+                                       :extra-modes modes
+                                       :buffer-class 'user-internal-buffer
+                                       :no-history-p no-history-p))
+        (url (if (url-empty-p url)
+                 (default-new-buffer-url *browser*)
+                 url)))
+    (buffer-load url :buffer buffer)))
 
 (define-command make-editor-buffer (&key (title "") modes)
   "Create a new editor buffer."
@@ -985,7 +1007,8 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
     (sera:and-let* ((owner (htree:owner history (id buffer)))
                     (current (htree:current owner))
                     (data (htree:data current)))
-      (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer))))
+      (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer))
+      (htree:delete-owner history (id buffer))))
   (ffi-buffer-delete buffer))
 
 (defun buffer-hide (buffer)
@@ -993,8 +1016,6 @@ If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
 Should be called from/instead of `ffi-buffer-delete' when the renderer view
 associated to the buffer is already killed."
   (let ((parent-window (find buffer (window-list) :key 'active-buffer)))
-    (with-data-access (history (history-path buffer))
-      (htree:delete-owner history (id buffer)))
     (when parent-window
       (let ((replacement-buffer (or (first (get-inactive-buffers))
                                     (make-buffer :load-url-p nil
@@ -1011,10 +1032,6 @@ associated to the buffer is already killed."
    (alex:hash-table-values (buffers *browser*))
    #'string>
    :key #'id))
-
-(defun sort-by-time (sequence &key (key #'last-access))
-  "Return a timely ordered SEQUENCE by KEY.  More recent elements come first."
-  (sort sequence #'local-time:timestamp> :key key))
 
 (defun buffers-get (id)
   (gethash id (slot-value *browser* 'buffers)))
@@ -1165,7 +1182,8 @@ second latest buffer first."
                                :multi-selection-p t
                                :actions (list (make-mapped-command buffer-delete))))))
 
-(define-command reduce-to-buffer (&key (delete t))
+(define-internal-page-command reduce-to-buffer (&key (delete t))
+    (reduced-buffer "*Reduced Buffers*" 'base-mode)
   "Query the buffer(s) to \"reduce \" by copying their titles/URLs to a
 single buffer, optionally delete them. This function is useful for archiving a
 set of useful URLs or preparing a list to send to a someone else."
@@ -1174,24 +1192,23 @@ set of useful URLs or preparing a list to send to a someone else."
                   :sources (make-instance 'user-buffer-source
                                           :actions '()
                                           :multi-selection-p t))))
-    (with-current-html-buffer (reduced-buffer "*Reduced Buffers*" 'base-mode)
-      (spinneret:with-html-string
-          (:style (style reduced-buffer))
-        (:h1 "Reduced Buffers:")
-        (:div
-         (loop for buffer in buffers
-               collect
-                  (with-current-buffer buffer
-                    (:div
-                     (:p (:b "Title: ") (title buffer))
-                     (:p (:b "URL: ") (:a :href (render-url (url buffer))
-                                          (render-url (url buffer))))
-                     (:p (:b "Automatically generated summary: ")
-                         (:ul
-                          (loop for summary-bullet in (analysis:summarize-text
-                                                       (document-get-paragraph-contents :limit 10000))
-                                collect (:li (str:collapse-whitespaces summary-bullet)))))
-                     (:hr "")))))))
+    (spinneret:with-html-string
+      (:style (style reduced-buffer))
+      (:h1 "Reduced Buffers:")
+      (:div
+       (loop for buffer in buffers
+             collect
+             (with-current-buffer buffer
+               (:div
+                (:p (:b "Title: ") (title buffer))
+                (:p (:b "URL: ") (:a :href (render-url (url buffer))
+                                     (render-url (url buffer))))
+                (:p (:b "Automatically generated summary: ")
+                    (:ul
+                     (loop for summary-bullet in (analysis:summarize-text
+                                                  (document-get-paragraph-contents :limit 10000))
+                           collect (:li (str:collapse-whitespaces summary-bullet)))))
+                (:hr ""))))))
     (when delete (mapcar #'buffer-delete buffers))))
 
 (define-command delete-all-buffers (&key (confirmation-p t))
@@ -1234,12 +1251,6 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
       ;; partly duplicates the code in `preprocess-request'.  Can we factor this
       ;; out?
       (cond
-        ((and (internal-buffer-p buffer) (equal "lisp" (quri:uri-scheme url)))
-         (let ((code (quri:url-decode (schemeless-url url) :lenient t)))
-           (log:debug "Evaluate Lisp code from internal buffer: ~a" code)
-           (evaluate-async code)))
-        ((internal-buffer-p buffer)
-         (make-buffer-focus :url url))
         ((equal "javascript" (quri:uri-scheme url))
          (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url))))
         (t (ffi-buffer-load buffer url))))))

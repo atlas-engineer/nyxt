@@ -20,3 +20,8 @@
   nx-kaomoji lets you paste Kaomojis to any input field with a
   dedicated command. Load it and run =kaomoji-fill= (or bind it to a
   key) in Nyxt.
+
+- [[https://github.com/atlas-engineer/nx-fruit][nx-fruit]] ::
+  nx-fruit lets you discover the fruit of the day! A simple extension
+  that you can use to test your Nyxt installation (i.e. can you load
+  extensions).

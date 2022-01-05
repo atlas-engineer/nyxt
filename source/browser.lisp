@@ -78,6 +78,9 @@ Most recent messages are first.")
     (make-ring)
     :documentation "The default history of all prompt buffer entries.
 This history is used if no history is specified for a given prompt buffer.")
+   (default-new-buffer-url (quri:uri (nyxt-url 'help))
+                           :type url-designator
+                           :documentation "The URL set to a new blank buffer opened by Nyxt.")
    (set-url-history
     (make-ring)
     :documentation "The history of all URLs set via set-url")
@@ -350,14 +353,15 @@ restored."
                     (get-data (history-path buffer))
                     (clear-history-owners buffer))))))
            (load-start-urls (urls)
-             (when urls (open-urls urls))))
+             (open-urls (or urls (list (default-new-buffer-url browser))))))
     (window-make browser)
-    (let ((window (current-window)))
-      (window-set-buffer window (help :no-history-p t))
+    (let ((dummy (make-dummy-buffer)))
+      (window-set-buffer (current-window) dummy)
       ;; Restore session before opening command line URLs, otherwise it will
       ;; reset the session with the new URLs.
       (restore-session)
-      (load-start-urls urls))
+      (load-start-urls urls)
+      (ffi-buffer-delete dummy))
     (funcall* (startup-error-reporter-function *browser*))))
 
 ;; Catch a common case for a better error message.
@@ -392,34 +396,37 @@ reached (during which no new progress has been made)."
 (defmethod download ((buffer buffer) url &key cookies (proxy-url :auto))
   "Download URL.
 When PROXY-URL is :AUTO (the default), the proxy address is guessed from the
-current buffer."
+current buffer.
+
+Return the download object matching the download."
   (hooks:run-hook (before-download-hook *browser*) url) ; TODO: Set URL to download-hook result?
-  (match (download-engine buffer)
-    (:lisp
-     (alex:when-let* ((path (download-path buffer))
-                      (download-dir (expand-path path)))
-       (when (eq proxy-url :auto)
-         (setf proxy-url (proxy-url buffer :downloads-only t)))
-       (let* ((download nil))
-         (with-protect ("Download error: ~a" :condition)
-           (with-data-access (downloads path)
-             (setf download
-                   (download-manager:resolve url
-                                             :directory download-dir
-                                             :cookies cookies
-                                             :proxy proxy-url))
-             (push download downloads)
-             ;; Add a watcher / renderer for monitoring download
-             (let ((download-render (make-instance 'user-download :url (render-url url))))
-               (setf (destination-path download-render)
-                     (download-manager:filename download))
-               (push download-render (downloads *browser*))
-               (run-thread
-                 (download-watch download-render download)))
-             download)))))
-    (:renderer
-     (ffi-buffer-download buffer (render-url url))))
-  (list-downloads))
+  (prog1
+      (match (download-engine buffer)
+        (:lisp
+         (alex:when-let* ((path (download-path buffer))
+                          (download-dir (expand-path path)))
+           (when (eq proxy-url :auto)
+             (setf proxy-url (proxy-url buffer :downloads-only t)))
+           (let* ((download nil))
+             (with-protect ("Download error: ~a" :condition)
+               (with-data-access (downloads path)
+                 (setf download
+                       (download-manager:resolve url
+                                                 :directory download-dir
+                                                 :cookies cookies
+                                                 :proxy proxy-url))
+                 (push download downloads)
+                 ;; Add a watcher / renderer for monitoring download
+                 (let ((download-render (make-instance 'user-download :url (render-url url))))
+                   (setf (destination-path download-render)
+                         (download-manager:filename download))
+                   (push download-render (downloads *browser*))
+                   (run-thread
+                     (download-watch download-render download)))
+                 download)))))
+        (:renderer
+         (ffi-buffer-download buffer (render-url url))))
+    (list-downloads)))
 
 (defmethod get-unique-identifier ((browser browser))
   (symbol-name (gensym "")))
@@ -517,12 +524,7 @@ view.")
                                 (keymap:lookup-key keys keymap))))
       (declare (type quri:uri url))
       (cond
-        ((and (internal-buffer-p buffer) (equal "lisp" (quri:uri-scheme url)))
-         (let ((code (quri:url-decode (schemeless-url url) :lenient t)))
-           (log:debug "Evaluate Lisp code from internal buffer: ~a" code)
-           (evaluate-async code))
-         nil)
-        ((internal-buffer-p buffer)
+        ((and (internal-buffer-p buffer) (not (internal-url-p url)))
          (log:debug "Load URL from internal buffer in new buffer: ~a" (render-url url))
          (make-buffer-focus :url url)
          nil)

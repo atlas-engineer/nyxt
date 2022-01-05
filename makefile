@@ -6,8 +6,12 @@ SHELL = /bin/sh
 UNAME := $(shell uname)
 
 LISP ?= sbcl
+SBCL_FLAGS =
+ifeq ($(LISP), sbcl)
+	SBCL_FLAGS=--dynamic-space-size $(shell sbcl --noinform --no-userinit --non-interactive --eval '(prin1 (max 3072 (/ (sb-ext:dynamic-space-size) 1024 1024)))' --quit)
+endif
 ## We use --non-interactive with SBCL so that errors don't interrupt the CI.
-LISP_FLAGS ?= --no-userinit --non-interactive
+LISP_FLAGS ?= $(SBCL_FLAGS) --no-userinit --non-interactive
 
 NYXT_SUBMODULES=true
 NYXT_RENDERER=gi-gtk
@@ -37,6 +41,9 @@ nyxt: $(lisp_files)
 		--eval '(asdf:make :nyxt/$(NYXT_RENDERER)-application)' \
 		$(lisp_quit) || (printf "\n%s\n%s\n" "Compilation failed, see the above stacktrace." && exit 1)
 
+web-extensions:
+	$(MAKE) -C libraries/web-extensions/ all
+
 .PHONY: app-bundle
 app-bundle:
 	mkdir -p ./Nyxt.app/Contents/MacOS
@@ -50,9 +57,9 @@ install-app-bundle:
 	cp -r Nyxt.app $(DESTDIR)/Applications
 
 .PHONY: all
-all: nyxt
+all: nyxt web-extensions
 ifeq ($(UNAME), Darwin)
-all: nyxt app-bundle
+all: nyxt web-extensions app-bundle
 endif
 
 .PHONY: install

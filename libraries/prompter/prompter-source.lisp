@@ -155,13 +155,6 @@ suggestions."
     (warn "Attributes of ~s should be a non-dotted alist instead of ~s" (value suggestion) (attributes suggestion))
     (setf (attributes suggestion) (default-object-attributes (value suggestion)))))
 
-(defun ensure-non-base-string (s)
-  "Convert S to (simple-array character) type."
-  (if (typep s 'base-string)
-      ;; REVIEW: Maybe simpler to coerce to 'string?
-      (coerce s `(simple-array character (,(length s))))
-      s))
-
 (defun ensure-match-data-string (suggestion source)
   "Return SUGGESTION's `match-data' as a string.
 If unset, set it to the return value of `format-attributes'."
@@ -171,17 +164,12 @@ If unset, set it to the return value of `format-attributes'."
                s)))
     (setf (match-data suggestion)
           (if (and (match-data suggestion)
-                   (typep (match-data suggestion) 'string)
-                   ;; mk-string-metrics requires the (simple-array character)
-                   ;; type, but 'string should be enough.  See
-                   ;; `mk-string-metrics:damerau-levenshtein'.
-                   (not (typep (match-data suggestion) 'base-string)))
+                   (typep (match-data suggestion) 'string))
               (if (not (eq (last-input-downcase-p source)
                            (current-input-downcase-p source)))
                   (maybe-downcase (match-data suggestion))
                   (match-data suggestion))
-              (let ((result (ensure-non-base-string
-                             (format-attributes (attributes suggestion)))))
+              (let ((result (format-attributes (attributes suggestion))))
                 (maybe-downcase result)))))
   (match-data suggestion))
 
@@ -683,7 +671,6 @@ feedback to the user while the list of suggestions is being computed."
     (calispel:! (ready-channel source) nil)
     (destroy source))
   (setf (ready-channel source) new-ready-channel)
-  (setf input (ensure-non-base-string input))
   (setf (update-thread source)
         (bt:make-thread
          (lambda ()

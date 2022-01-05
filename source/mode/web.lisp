@@ -54,6 +54,11 @@ search.")
                    :documentation "The alphabet (charset) to use for hints.
 Order matters -- the ones that go first are more likely to appear more often
 and to index the top of the page.")
+   (hints-selector "a, button, input, textarea, details, select, img:not([alt=\"\"])"
+                   :type string
+                   :documentation "Defines which elements are to be hinted. The
+hints-selector syntax is that of CLSS, and broadly, that of CSS. Use it to
+define which elements are picked up by element hinting.")
    (keymap-scheme
     (define-scheme "web"
       scheme:cua
@@ -454,73 +459,73 @@ Otherwise go forward to the only child."
         (render-url (url history-entry))
         title)))
 
-(define-command buffer-history-tree (&optional (buffer (current-buffer)))
+(nyxt::define-internal-page-command buffer-history-tree (&key (buffer (current-buffer)))
+  (output-buffer (format nil "*History-~a*" (id buffer))
+                 'nyxt/history-tree-mode:history-tree-mode)
   "Open a new buffer displaying the whole history tree of a buffer."
-  (with-current-html-buffer (output-buffer (format nil "*History-~a*" (id buffer))
-                                           'nyxt/history-tree-mode:history-tree-mode)
-    (with-history-unsafe (history buffer)
-      (let ((mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
-            (tree (spinneret:with-html-string
-                    (:ul (:raw (htree:map-owned-tree
-                                #'(lambda (node)
-                                    (spinneret:with-html-string
-                                      (:li
-                                       (:a :href (render-url (url (htree:data node)))
-                                           (let ((title (title-or-fallback (htree:data node))))
-                                             (if (eq node (htree:owner-node history (id buffer)))
-                                                 (:b title)
-                                                 title))))))
-                                history
-                                (htree:owner history (id buffer))
-                                :include-root t
-                                :collect-function #'(lambda (a b) (str:concat a (when b
-                                                                                  (spinneret:with-html-string
-                                                                                    (:ul (:raw (str:join "" b)))))))))))))
-        (spinneret:with-html-string
-          (:body (:h1 "History")
-                 (:style (style output-buffer))
-                 (:style (style mode))
-                 (:div (:raw tree))))))))
+  (with-history-unsafe (history buffer)
+    (let ((mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
+          (tree (spinneret:with-html-string
+                  (:ul (:raw (htree:map-owned-tree
+                              #'(lambda (node)
+                                  (spinneret:with-html-string
+                                    (:li
+                                     (:a :href (render-url (url (htree:data node)))
+                                         (let ((title (title-or-fallback (htree:data node))))
+                                           (if (eq node (htree:owner-node history (id buffer)))
+                                               (:b title)
+                                               title))))))
+                              history
+                              (htree:owner history (id buffer))
+                              :include-root t
+                              :collect-function #'(lambda (a b) (str:concat a (when b
+                                                                                (spinneret:with-html-string
+                                                                                  (:ul (:raw (str:join "" b)))))))))))))
+      (spinneret:with-html-string
+        (:body (:h1 "History")
+               (:style (style output-buffer))
+               (:style (style mode))
+               (:div (:raw tree)))))))
 
-(define-command history-tree ()         ; TODO: Factor this with `buffer-history-tree'.
+;; TODO: Factor this with `buffer-history-tree'.
+(nyxt::define-internal-page-command history-tree (&key (current-buffer-id (id (current-buffer))))
+    (output-buffer "*History*"
+                   'nyxt/history-tree-mode:history-tree-mode)
   "Open a new buffer displaying the whole history branch the current buffer is on."
-  (let ((current-buffer-id (id (current-buffer))))
-    (nyxt::with-current-html-buffer (output-buffer "*History*"
-                                     'nyxt/history-tree-mode:history-tree-mode)
-      (with-history-unsafe (history)
-        (let ((mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
-              (tree (spinneret:with-html-string
-                      (:ul (:raw (htree:map-tree
-                                  #'(lambda (node)
-                                      (spinneret:with-html-string
-                                        (:li (:a :href (render-url (url (htree:data node)))
-                                                 (let ((title (title-or-fallback (htree:data node))))
-                                                   (cond
-                                                     ((eq node (htree:owner-node history current-buffer-id))
-                                                      (:i (:b title)))
-                                                     ((htree:owned-p (htree:owner history current-buffer-id) node)
-                                                      (:b title))
-                                                     (t title))))))) ; Color?  Smaller?
-                                  history
-                                  :owner (htree:owner history current-buffer-id)
-                                  :include-root t
-                                  :collect-function #'(lambda (a b) (str:concat a (when b
-                                                                                    (spinneret:with-html-string
-                                                                                      (:ul (:raw (str:join "" b)))))))))))))
-          (spinneret:with-html-string
-            (:body (:h1 "History")
-                   (:style (style output-buffer))
-                   (:style (style mode))
-                   (:div (:raw tree)))))))))
+  (with-history-unsafe (history)
+    (let ((mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
+          (tree (spinneret:with-html-string
+                  (:ul (:raw (htree:map-tree
+                              #'(lambda (node)
+                                  (spinneret:with-html-string
+                                    (:li (:a :href (render-url (url (htree:data node)))
+                                             (let ((title (title-or-fallback (htree:data node))))
+                                               (cond
+                                                 ((eq node (htree:owner-node history current-buffer-id))
+                                                  (:i (:b title)))
+                                                 ((htree:owned-p (htree:owner history current-buffer-id) node)
+                                                  (:b title))
+                                                 (t title))))))) ; Color?  Smaller?
+                              history
+                              :owner (htree:owner history current-buffer-id)
+                              :include-root t
+                              :collect-function #'(lambda (a b) (str:concat a (when b
+                                                                                (spinneret:with-html-string
+                                                                                  (:ul (:raw (str:join "" b)))))))))))))
+      (spinneret:with-html-string
+        (:body (:h1 "History")
+               (:style (style output-buffer))
+               (:style (style mode))
+               (:div (:raw tree)))))))
 
-(define-command list-history (&key (limit 100))
+(nyxt::define-internal-page-command list-history (&key (limit 100))
+  (buffer "*History list*" 'nyxt/list-history-mode:list-history-mode)
   "Print the user history as a list."
-  (with-current-html-buffer (buffer "*History list*" 'nyxt/list-history-mode:list-history-mode)
-    (spinneret:with-html-string
-      (:style (style buffer))
-      (:style (style (find-submode buffer 'nyxt/list-history-mode:list-history-mode)))
-      (:h1 "History")
-      (:ul (:raw (nyxt::history-html-list :limit limit))))))
+  (spinneret:with-html-string
+    (:style (style buffer))
+    (:style (style (find-submode buffer 'nyxt/list-history-mode:list-history-mode)))
+    (:h1 "History")
+    (:ul (:raw (nyxt::history-html-list :limit limit)))))
 
 (define-command paste (&optional (buffer (current-buffer)))
   "Paste from clipboard into active element."
@@ -683,27 +688,26 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
       (setf (nyxt:document-scroll-position (buffer mode)) scroll-position)))
   url)
 
-(define-command show-qrcode-of-current-url (&optional (buffer (current-buffer)))
-  "In a new buffer, show the QR code containing the URL for the current buffer."
-  (with-current-buffer buffer
-    (let* ((stream (flexi-streams:make-in-memory-output-stream))
-           (url (quri:render-uri (url (current-buffer))))
-           (title (format nil "Buffer ~a URL QRcode " (id buffer))))
-      (cl-qrencode:encode-png-stream url stream)
-      (with-current-html-buffer (buffer (format nil "*~a*" title) 'base-mode)
-        (spinneret:with-html-string
-          (:style (style buffer))
-          (:h1 title)
-          (:p (:u url))
-          (:p (:img :src (str:concat "data:image/png;base64,"
-                                     (cl-base64:usb8-array-to-base64-string
-                                      (flexi-streams:get-output-stream-sequence stream)))
-                    :alt url)))))))
-
-(define-command view-source (&optional (buffer (current-buffer)))
-  "View source of the current page in a separate buffer."
-  (with-current-html-buffer (source-buffer (format nil "*Source of ~a" (render-url (url buffer))) 'base-mode)
+(nyxt::define-internal-page-command show-qrcode-of-current-url (&key (buffer (current-buffer))
+                                                                (title (format nil "*Buffer ~a URL QRcode*" (id buffer))))
+    (buffer title 'base-mode)
+    "In a new buffer, show the QR code containing the URL for the current buffer."
+  (let* ((stream (flexi-streams:make-in-memory-output-stream))
+         (url (quri:render-uri (url buffer))))
+    (cl-qrencode:encode-png-stream url stream)
     (spinneret:with-html-string
-      (:pre (if (web-buffer-p buffer)
-                (plump:serialize (document-model buffer) nil)
-                (ffi-buffer-get-document buffer))))))
+      (:style (style buffer))
+      (:h1 title)
+      (:p (:u url))
+      (:p (:img :src (str:concat "data:image/png;base64,"
+                                 (cl-base64:usb8-array-to-base64-string
+                                  (flexi-streams:get-output-stream-sequence stream)))
+                :alt url)))))
+
+(nyxt::define-internal-page-command view-source (&key (buffer (current-buffer)))
+  (source-buffer (format nil "*Source of ~a" (render-url (url buffer))) 'base-mode)
+  "View source of the current page in a separate buffer."
+  (spinneret:with-html-string
+    (:pre (if (web-buffer-p buffer)
+              (plump:serialize (document-model buffer) nil)
+              (ffi-buffer-get-document buffer)))))

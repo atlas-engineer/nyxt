@@ -18,24 +18,27 @@
 macro. The key represents a unique identifier for a command, and the value
 represents a command.")))
 
-(define-command-global edit-macro ()
+(nyxt::define-internal-page-command edit-macro ()
+    (buffer "*Macro edit*" 'nyxt/macro-edit-mode:macro-edit-mode)
   "Edit a macro."
-  (with-current-html-buffer (buffer "*Macro edit*" 'nyxt/macro-edit-mode:macro-edit-mode)
-    (spinneret:with-html-string
-      (:style (style buffer))
-      (:h1 "Macro edit")
-      (:p "Name")
-      (:input :type "text" :id "macro-name")
-      (:p "Commands")
-      (:p (:a :class "button"
-              :href (lisp-url '(nyxt/macro-edit-mode::add-command)) "+ Add command"))
-      (:div :id "commands" "")
-      (:br)
-      (:hr)
-      (:a :class "button"
-          :href (lisp-url '(nyxt/macro-edit-mode::save-macro)) "Save macro")
-      (:a :class "button"
-          :href (lisp-url '(nyxt/macro-edit-mode::evaluate-macro)) "Evaluate macro"))))
+  (spinneret:with-html-string
+    (:style (style buffer))
+    (:h1 "Macro edit")
+    (:p "Name")
+    (:input :type "text" :id "macro-name")
+    (:p "Commands")
+    (:p (:button :class "button"
+                 :onclick (ps:ps (nyxt/ps:send-lisp-url (nyxt/macro-edit-mode::add-command)))
+                 "+ Add command"))
+    (:div :id "commands" "")
+    (:br)
+    (:hr)
+    (:button :class "button"
+             :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt/macro-edit-mode::save-macro)))
+             "Save macro")
+    (:button :class "button"
+             :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt/macro-edit-mode::evaluate-macro)))
+             "Evaluate macro")))
 
 (defmethod render-functions ((macro-editor macro-edit-mode))
   (flet ((render-functions ()
@@ -43,16 +46,18 @@ represents a command.")))
              (:table
               (loop for key being the hash-keys of (functions macro-editor)
                     using (hash-value value)
-                    collect (:tr (:td (:a :class "button"
-                                          :href (lisp-url `(nyxt/macro-edit-mode::remove-function
-                                                            (current-mode 'macro-edit-mode)
-                                                            ,key))
-                                          "✕"))
-                                 (:td (:a :class "button"
-                                          :href (lisp-url `(nyxt/macro-edit-mode::command-help
-                                                            (current-mode 'macro-edit-mode)
-                                                            ,key))
-                                          "🛈"))
+                    collect (:tr (:td (:button :class "button"
+                                               :onclick (ps:ps (nyxt/ps:send-lisp-url
+                                                                `(nyxt/macro-edit-mode::remove-function
+                                                                  (current-mode 'macro-edit-mode)
+                                                                  ,key)))
+                                               "✕"))
+                                 (:td (:button :class "button"
+                                               :onclick (ps:ps (nyxt/ps:send-lisp-url
+                                                                `(nyxt/macro-edit-mode::command-help
+                                                                  (current-mode 'macro-edit-mode)
+                                                                  ,key)))
+                                               "🛈"))
                                  (:td (symbol-name (name value)))))))))
     (ffi-buffer-evaluate-javascript-async
      (buffer macro-editor)
@@ -62,7 +67,7 @@ represents a command.")))
               (render-functions)))))))
 
 (defmethod command-help ((macro-editor macro-edit-mode) command-id)
-  (nyxt::describe-command (gethash command-id (functions macro-editor))))
+  (nyxt::describe-command :command (gethash command-id (functions macro-editor))))
 
 (defmethod add-function ((macro-editor macro-edit-mode) command)
   (setf (gethash (parse-integer (symbol-name (gensym "")))
