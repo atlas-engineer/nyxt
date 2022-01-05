@@ -112,6 +112,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                (:file "window")
                (:file "mode")
                (:file "search-engine")
+               (:file "gopher")
                (:file "browser")
                (:file "clipboard")
                (:file "input")

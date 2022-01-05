@@ -646,6 +646,11 @@ See `gtk-browser's `modifier-translator' slot."
                                            :is-ephemeral ,(not path)))))
     manager))
 
+(defun process-gopher-scheme (request)
+  (let* ((url (webkit:webkit-uri-scheme-request-get-uri request))
+         (contents (cl-gopher:get-line-contents (cl-gopher:parse-gopher-uri url))))
+    (render-gopher-contents contents)))
+
 (defun make-context (&optional buffer)
   ;; This is to ensure that paths are not expanded when we make
   ;; contexts for `nosave-buffer's.
@@ -746,6 +751,11 @@ See `gtk-browser's `modifier-translator' slot."
                (values "undefined" "application/json"))))
        (lambda (condition)
          (echo-warning "Error while routing \"lisp:\" URL: ~a" condition)))
+      (webkit:webkit-web-context-register-uri-scheme-callback
+       context "gopher"
+       #'process-gopher-scheme
+       (lambda (condition)
+         (echo-warning "Error while routing \"gopher:\" URL: ~a" condition)))
       (webkit:webkit-security-manager-register-uri-scheme-as-local
        (webkit:webkit-web-context-get-security-manager context) "nyxt")
       (webkit:webkit-security-manager-register-uri-scheme-as-cors-enabled
