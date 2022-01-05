@@ -7,7 +7,9 @@
   (:import-from #:nyxt/web-mode #:query-hints #:get-nyxt-id)
   (:documentation "Visual mode."))
 (in-package :nyxt/visual-mode)
-(use-nyxt-package-nicknames)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria)
+  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum))
 
 (define-mode visual-mode ()
   "Visual mode. For documentation on commands and keybindings, see the manual."
