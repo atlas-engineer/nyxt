@@ -910,7 +910,8 @@ See `make-buffer' for a description of the arguments."
 
 (define-command duplicate-buffer (&key parent-buffer)
   "Duplicate current buffer in a new buffer."
-  (duplicate-buffer-with-current-modes :modes '(web-mode base-mode)))
+  (duplicate-buffer-with-current-modes :modes '(web-mode base-mode)
+                                       :parent-buffer parent-buffer))
 
 (define-command make-internal-buffer (&key (title "") modes no-history-p)
   "Create a new buffer.
