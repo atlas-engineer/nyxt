@@ -285,3 +285,41 @@ used to happen when loading resource-intensive pages.")
 out-of-date.")
    (:li "Work around load failures when going backward or forward in history.")
    (:li "Catch more errors in search completion.")))
+
+(define-version "2.2.4"
+  (:ul
+   (:li "New " (:code "forward-to-renderer") " command.  When a key is bound to
+   it, this last keypress is forwarded to the renderer.")
+   (:li "New " (:code "reset-asdf-registries") " helper function.  "
+        "Call it in your initialization file to re-enabled the default ASDF
+search paths, "
+        "e.g. to find your Common Lisp libraries in ~/common-lisp or your Emacs
+SLY install.")
+   (:li "Prompt buffer attributes can now be computer asynchronously."
+        "This is used for instance to speed up " (:code "switch-buffer") ".")
+   (:li "Non-prefixed completion is now enabled for the default search engine."
+        "You can turn off this behaviour it with the "
+        (:code "search-always-auto-complete-p") " slot option.")
+   (:li "New " (:code "delete-command") " command.  (Thanks to @BlueFlo0d!)")
+   (:li "More bindings and some minor improvements to " (:code "visual-mode") ".  (Thanks to @hendursaga!)"))
+
+  (:h3 "Platform support")
+  (:p "Nyxt is compiled with SBCL set to use a dynamic-space-size of at least 3GiB."
+      "This should mitigate memory errors since Nyxt is very memory intensive."
+      "You can override this by setting the " (:code "LISP_FLAGS") " variable as
+      per the installation instructions.")
+  (:h3 "Bug fixes")
+  (:ul
+   (:li "Fix the frequent dead locks on multi-buffer deletion.")
+   (:li "Fix some rare dead locks on page load.")
+   (:li "Fix iframe support on redirects (for instance with "
+        (:code "blocker-mode") ").")
+   (:li "Keymap fixes:"
+        (:ul
+         (:li "Prefix keymaps can no longer be shadowed.")
+         (:li "Remove shadowed bindings from the binding listing.")
+         (:li "Don't list shadowed parent keymap bindings.")))
+   (:li "Fix " (:code "resume-prompt") " to hide the resumed prompt buffer when done.")
+   (:li "Fix freeze due to errors in " (:code "blocker-mode") ".")
+   (:li "Fix formatting of web process crash report.")
+   (:li "Fix some " (:code "auto-mode") " issues.  (Thanks to @efimerspan!)")))
