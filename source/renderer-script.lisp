@@ -151,7 +151,7 @@ mapped to query parameters."
                                             (buffer-list))
                                    (funcall (symbol-function ,mode)
                                             :activate t
-                                            :buffer (make-internal-buffer
+                                            :buffer (make-buffer
                                                      :title ,title
                                                      :url (quri:uri
                                                            (nyxt-url
