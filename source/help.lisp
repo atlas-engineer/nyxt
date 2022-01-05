@@ -752,7 +752,7 @@ Requirements:
                :if-exists nil)
               (nyxt::append-configuration
                `(load-after-system ,(intern (str:upcase name) :keyword)
-                                   (nyxt-init-file ,name))))
+                                   (nyxt-init-file (str:concat ,name ".lisp")))))
           (uiop:subprocess-error ()
             (echo-warning "Cannot install extension: failed to clone git repository"))))))
 
