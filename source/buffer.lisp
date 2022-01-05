@@ -241,6 +241,13 @@ down.")
        :border-width "0"
        :color theme:secondary
        :background-color theme:secondary)
+      (button
+       :background "none"
+       :color "inherit"
+       :border "none"
+       :padding 0
+       :font "inherit"
+       :outline "inherit")
       (.button
        :display "inline-block"
        :background-color theme:secondary
@@ -646,6 +653,13 @@ Delete it with `ffi-buffer-delete'."
        :z-index "2")
       ("#modes::-webkit-scrollbar"
        :display "none")
+      (button
+       :background "none"
+       :color "inherit"
+       :border "none"
+       :padding 0
+       :font "inherit"
+       :outline "inherit")
       (.button
        :color theme:background
        :text-decoration "none"
