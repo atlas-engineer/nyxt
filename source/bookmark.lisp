@@ -132,15 +132,17 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                       (:p (:b "Tags: ")
                           (when (tags bookmark)
                             (format nil " (~{~a~^, ~})" (tags bookmark))))
-                      (:p (:a :class "button"
-                              :onclick
-                              (ps:ps
-                                (let ((element
-                                        (ps:chain
-                                         document
-                                         (get-element-by-id (ps:lisp (html-bookmark-id id))))))
-                                  (ps:chain element parent-node (remove-child element))))
-                              :href (lisp-url `(nyxt::delete-bookmark ,url-href)) "Delete"))
+                      (:p (:button :class "button"
+                                   :onclick
+                                   (ps:ps
+                                    (let ((element
+                                           (ps:chain
+                                            document
+                                            (get-element-by-id (ps:lisp (html-bookmark-id id))))))
+                                      (ps:chain element parent-node (remove-child element))
+                                      (nyxt/ps:send-lisp-url
+                                       `(nyxt::delete-bookmark ,url-href))))
+                                   "Delete"))
                       (:hr "")))))
            (format nil "No bookmarks in ~s." (expand-path (bookmarks-path (current-buffer)))))))))
 
