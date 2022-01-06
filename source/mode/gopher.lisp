@@ -95,6 +95,8 @@ Second return value should be the MIME-type of the content."))
               :alt (cl-gopher:display-string line)))))
 
 (defmethod line->html ((line cl-gopher:search-line))
+  "We use `search-gopher' command and custom URLs to simulate search.
+That's why `cl-gopher:search-line' renders to nothing."
   "")
 
 (defmethod render ((line cl-gopher:gopher-line) &optional (mode (current-mode 'gopher)))
