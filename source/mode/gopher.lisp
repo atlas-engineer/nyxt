@@ -99,6 +99,18 @@ Second return value should be the MIME-type of the content."))
 That's why `cl-gopher:search-line' renders to nothing."
   "")
 
+(defmethod line->html ((line cl-gopher:text-file))
+  (spinneret:with-html-string
+    (:a :href (cl-gopher:uri-for-gopher-line line)
+        (cl-gopher:display-string line))
+    (:br)))
+
+(defmethod line->html ((line cl-gopher:html-file))
+  (spinneret:with-html-string
+    (:a :href (cl-gopher:uri-for-gopher-line line)
+        (cl-gopher:display-string line))
+    (:br)))
+
 (defmethod render ((line cl-gopher:gopher-line) &optional (mode (current-mode 'gopher)))
   (let ((contents (cl-gopher:get-line-contents line)))
     (spinneret:with-html-string
