@@ -80,8 +80,23 @@ Second return value should be the MIME-type of the content."))
 (defmethod line->html ((line cl-gopher:submenu))
   (spinneret:with-html-string
     (:a :class "button" :href (cl-gopher:uri-for-gopher-line line)
-        (cl-gopher:display-string line))
-    (:br)))
+        (cl-gopher:display-string line))))
+
+(defmethod line->html ((line cl-gopher:gif))
+  (let ((contents (cl-gopher:get-line-contents line)))
+    (spinneret:with-html-string
+      (:img :src (str:concat "data:image/gif;base64,"
+                             (base64:usb8-array-to-base64-string
+                              (cl-gopher:content-array contents)))
+            :alt (cl-gopher:display-string line)))))
+
+(defmethod line->html ((line cl-gopher:png))
+  (let ((contents (cl-gopher:get-line-contents line)))
+    (spinneret:with-html-string
+      (:img :src (str:concat "data:image/png;base64,"
+                             (base64:usb8-array-to-base64-string
+                              (cl-gopher:content-array contents)))
+            :alt (cl-gopher:display-string line)))))
 
 (defmethod line->html ((line cl-gopher:search-line))
   "")
@@ -93,6 +108,11 @@ Second return value should be the MIME-type of the content."))
       (:style (style mode))
       (loop for line in (cl-gopher:lines contents)
             collect (:raw (line->html line))))))
+
+(defmethod render ((line cl-gopher:html-file) &optional (mode (current-mode 'gopher)))
+  (declare (ignore mode))
+  (let ((contents (cl-gopher:get-line-contents line)))
+    (cl-gopher:content-string contents)))
 
 (defmethod render ((line cl-gopher:text-file) &optional (mode (current-mode 'gopher)))
   (declare (ignore mode))
