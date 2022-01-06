@@ -69,7 +69,9 @@ Second return value should be the MIME-type of the content."))
 
 (defmethod line->html ((line cl-gopher:gopher-line))
   (spinneret:with-html-string
-    (:pre (cl-gopher:display-string line))))
+    (:pre (symbol-name (class-name (class-of line)))
+          (cl-gopher:display-string line)
+          (cl-gopher:uri-for-gopher-line line))))
 
 (defmethod line->html ((line cl-gopher:info-message))
   (spinneret:with-html-string
