@@ -647,9 +647,12 @@ See `gtk-browser's `modifier-translator' slot."
     manager))
 
 (defun process-gopher-scheme (request)
-  (let* ((url (webkit:webkit-uri-scheme-request-get-uri request))
-         (contents (cl-gopher:get-line-contents (cl-gopher:parse-gopher-uri url))))
-    (render-gopher-contents contents)))
+  (let* ((url (webkit:webkit-uri-scheme-request-get-uri request)))
+    (enable-modes '(gopher-mode)
+                  (find (webkit:webkit-uri-scheme-request-get-web-view request)
+                        (buffer-list)
+                        :key #'gtk-object))
+    (nyxt/gopher-mode:render (cl-gopher:parse-gopher-uri url))))
 
 (defun make-context (&optional buffer)
   ;; This is to ensure that paths are not expanded when we make
