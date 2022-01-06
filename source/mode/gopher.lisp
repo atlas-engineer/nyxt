@@ -19,7 +19,24 @@
              :margin 0
              :border-radius 0)
             (.button
-             :margin "3px")))))
+             :margin "3px")))
+   (destructor
+    (lambda (mode)
+      (hooks:remove-hook
+       (pre-request-hook (buffer mode))
+       'gopher-mode-disable)))
+   (constructor
+    (lambda (mode)
+      (hooks:add-hook
+       (pre-request-hook (buffer mode))
+       (make-handler-resource
+        (lambda (request-data)
+          (when (string/= "gopher" (quri:uri-scheme (url request-data)))
+            (disable-modes '(gopher-mode) (buffer mode))
+            (hooks:remove-hook
+             (pre-request-hook (buffer mode))
+             'gopher-mode-disable)))
+        :name 'gopher-mode-disable))))))
 
 (defgeneric line->html (line)
   (:documentation "Transform a gopher line to a reasonable HTML representation."))
