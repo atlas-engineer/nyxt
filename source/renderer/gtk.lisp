@@ -647,12 +647,19 @@ See `gtk-browser's `modifier-translator' slot."
     manager))
 
 (defun process-gopher-scheme (request)
-  (let* ((url (webkit:webkit-uri-scheme-request-get-uri request)))
+  (let* ((url (quri:uri (webkit:webkit-uri-scheme-request-get-uri request)))
+         (query (quri:uri-query-params url))
+         (clean-url (progn
+                      (setf (quri:uri-query url) "")
+                      (render-url url)))
+         (line (cl-gopher:parse-gopher-uri clean-url)))
     (enable-modes '(gopher-mode)
                   (find (webkit:webkit-uri-scheme-request-get-web-view request)
                         (buffer-list)
                         :key #'gtk-object))
-    (nyxt/gopher-mode:render (cl-gopher:parse-gopher-uri url))))
+    (when query
+      (setf (cl-gopher:terms line) (str:s-assoc-value query "q")))
+    (nyxt/gopher-mode:render line)))
 
 (defun make-context (&optional buffer)
   ;; This is to ensure that paths are not expanded when we make
