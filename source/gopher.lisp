@@ -32,5 +32,6 @@ Second return value should be the MIME-type of the content."))
 
 (defmethod render-gopher-contents ((contents cl-gopher:submenu-contents))
   (spinneret:with-html-string
+    (:style (style (current-buffer)))
     (loop for line in (cl-gopher:lines contents)
           collect (:raw (gopher-line->html line)))))
