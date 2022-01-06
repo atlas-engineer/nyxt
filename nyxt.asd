@@ -43,6 +43,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                calispel
                cl-base64
                cl-css
+               cl-gopher
                cl-html-diff
                cl-json
                cl-ppcre
