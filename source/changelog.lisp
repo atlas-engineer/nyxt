@@ -289,13 +289,13 @@ out-of-date.")
 (define-version "2.2.4"
   (:ul
    (:li "New " (:code "forward-to-renderer") " command.  When a key is bound to
-   it, this last keypress is forwarded to the renderer.")
+   it, the last keypress is forwarded to the renderer.")
    (:li "New " (:code "reset-asdf-registries") " helper function.  "
-        "Call it in your initialization file to re-enabled the default ASDF
+        "Call it in your initialization file to re-enable the default ASDF
 search paths, "
         "e.g. to find your Common Lisp libraries in ~/common-lisp or your Emacs
 SLY install.")
-   (:li "Prompt buffer attributes can now be computer asynchronously."
+   (:li "Prompt buffer attributes can now be computed asynchronously."
         "This is used for instance to speed up " (:code "switch-buffer") ".")
    (:li "Non-prefixed completion is now enabled for the default search engine."
         "You can turn off this behaviour it with the "
