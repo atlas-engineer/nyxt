@@ -734,7 +734,7 @@ See `gtk-browser's `modifier-translator' slot."
                (let* ((schemeless-url (schemeless-url url))
                       (code-raw (quri:url-decode schemeless-url :lenient t))
                       ;; All URLs WebKitGTK gives us end with an unnecessary forward slash.
-                      (code (subseq code-raw 0 (1- (length code-raw)))))
+                      (code (sera:slice code-raw 0 -1)))
                  (log:debug "Evaluate Lisp code from internal page: ~a" code)
                  (values (let ((result (first (evaluate code))))
                            ;; Objects and other complex structures make cl-json choke.
