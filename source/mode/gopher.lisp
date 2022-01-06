@@ -10,9 +10,15 @@
 (in-package :nyxt/gopher-mode)
 (use-nyxt-package-nicknames)
 
+(defun update (mode)
+  (setf (line mode) (cl-gopher:parse-gopher-uri (render-url (url (buffer mode))))
+        (contents mode) (cl-gopher:get-line-contents (line mode))))
+
 (define-mode gopher-mode ()
   "Gopher page interaction mode."
   ((rememberable-p nil)
+   (line :documentation "The line being opened.")
+   (contents :documentation "The contents of the current page.")
    (style (theme:themed-css (nyxt::theme *browser*)
             (pre
              :padding 0
@@ -27,15 +33,16 @@
        'gopher-mode-disable)))
    (constructor
     (lambda (mode)
+      (update mode)
       (hooks:add-hook
        (pre-request-hook (buffer mode))
        (make-handler-resource
         (lambda (request-data)
-          (when (string/= "gopher" (quri:uri-scheme (url request-data)))
-            (disable-modes '(gopher-mode) (buffer mode))
-            (hooks:remove-hook
-             (pre-request-hook (buffer mode))
-             'gopher-mode-disable)))
+          (when (nyxt/auto-mode::new-page-request-p request-data)
+            (if (string= "gopher" (quri:uri-scheme (url request-data)))
+                (update mode)
+                (disable-modes '(gopher-mode) (buffer mode))))
+          request-data)
         :name 'gopher-mode-disable))))))
 
 (defgeneric line->html (line)
