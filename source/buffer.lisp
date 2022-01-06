@@ -1421,7 +1421,8 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
                   (mapcar (alex:rcurry #'make-completion-query
                                        :engine      engine
                                        :check-dns-p check-dns-p)
-                          (funcall (completion-function engine) all-terms)))))))
+                          (with-protect ("Error while completing default search: ~a" :condition)
+                            (funcall (completion-function engine) all-terms))))))))
 
 (define-class new-url-or-search-source (prompter:source)
   ((prompter:name "New URL or search query")
