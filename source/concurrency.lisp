@@ -71,7 +71,7 @@ This is a blocking operation."
 
 (export-always 'run-thread)
 (defmacro run-thread (&body body)
-  "Run body in a new protected new thread.
+  "Run body in a new protected thread.
 This supersedes `bt:make-thread' in Nyxt.  Don't use the latter unless you know
 what you are doing!"
   ;; We parse the body instead of using a macro argument for backward compatibility.
