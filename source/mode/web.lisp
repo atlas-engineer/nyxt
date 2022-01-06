@@ -153,8 +153,6 @@ define which elements are picked up by element hinting.")
        "C-s s" 'search-buffer
        "C-s k" 'remove-search-hints
        "C-." 'jump-to-heading
-       "M-s->" 'scroll-to-bottom
-       "M-s-<" 'scroll-to-top
        "M->" 'scroll-to-bottom
        "M-<" 'scroll-to-top
        "C-v" 'scroll-page-down
