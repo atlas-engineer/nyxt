@@ -686,26 +686,30 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
       (setf (nyxt:document-scroll-position (buffer mode)) scroll-position)))
   url)
 
-(nyxt::define-internal-page-command show-qrcode-of-current-url (&key (buffer (current-buffer))
-                                                                (title (format nil "*Buffer ~a URL QRcode*" (id buffer))))
-    (buffer title 'base-mode)
-    "In a new buffer, show the QR code containing the URL for the current buffer."
-  (let* ((stream (flexi-streams:make-in-memory-output-stream))
-         (url (quri:render-uri (url buffer))))
+;; REVIEW: Shorten the name to e.g., `show-url-qr'? It's no longer current URL only.
+(nyxt::define-internal-page-command show-qrcode-of-current-url
+    (&key (buffer-id (id (current-buffer)))
+     (url (quri:render-uri (url (nyxt::buffers-get buffer-id)))))
+    (buffer (format nil "*Buffer ~a (~a) QRcode*" buffer-id url) 'base-mode)
+  "In a new buffer, show the QR code containing the URL for the current buffer."
+  (let* ((stream (flexi-streams:make-in-memory-output-stream)))
     (cl-qrencode:encode-png-stream url stream)
     (spinneret:with-html-string
-      (:style (style buffer))
-      (:h1 title)
       (:p (:u url))
       (:p (:img :src (str:concat "data:image/png;base64,"
                                  (cl-base64:usb8-array-to-base64-string
                                   (flexi-streams:get-output-stream-sequence stream)))
                 :alt url)))))
 
-(nyxt::define-internal-page-command view-source (&key (buffer (current-buffer)))
-  (source-buffer (format nil "*Source of ~a" (render-url (url buffer))) 'base-mode)
-  "View source of the current page in a separate buffer."
-  (spinneret:with-html-string
-    (:pre (if (web-buffer-p buffer)
-              (plump:serialize (document-model buffer) nil)
-              (ffi-buffer-get-document buffer)))))
+(nyxt::define-internal-page-command view-source (&key (url (render-url (url (current-buffer)))))
+  (source-buffer (format nil "*Source of ~a" url) 'base-mode)
+  "View source of the URL (by default current page) in a separate buffer."
+  (let ((buffer (or (find (quri:uri url) (buffer-list) :test #'quri:uri= :key #'url)
+                    (make-background-buffer :url url))))
+    (unwind-protect
+         (spinneret:with-html-string
+           (:pre (if (web-buffer-p buffer)
+                     (plump:serialize (document-model buffer) nil)
+                     (ffi-buffer-get-document buffer))))
+      (when (background-buffer-p buffer)
+        (ffi-buffer-delete buffer)))))
