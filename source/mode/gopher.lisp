@@ -166,7 +166,7 @@ That's why `cl-gopher:search-line' renders to nothing."
     (values (cl-gopher:content-array contents) "image/png")))
 
 (defmethod prompter:object-attributes ((line cl-gopher:search-line))
-  `(("Terms" ,(cl-gopher:terms line))
+  `(("Terms" ,(or (cl-gopher:terms line) ""))
     ("Name" ,(cl-gopher:display-string line))))
 
 (define-class gopher-search-source (prompter:source)
