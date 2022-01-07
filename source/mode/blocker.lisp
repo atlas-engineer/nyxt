@@ -48,6 +48,69 @@ See `*default-hostlist*' for an example."))
 See the `hostlist' class documentation."
   (apply #'make-instance 'hostlist args))
 
+
+(serapeum:export-always '*default-hostlist*)
+(defparameter *default-hostlist*
+  (make-instance 'hostlist
+                 :url (quri:uri "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts")
+                 :basename "hostlist-stevenblack.txt")
+  "Default hostlist for `blocker-mode'.")
+
+(define-mode blocker-mode ()
+  "Enable blocking of listed hosts.
+To customize the list of blocked hosts, set the `hostlists' slot.
+See the `hostlist' class documentation.
+
+Example:
+
+\(defvar *my-blocked-hosts*
+  (nyxt/blocker-mode:make-hostlist
+   :hosts '(\"platform.twitter.com\"
+            \"syndication.twitter.com\"
+            \"m.media-amazon.com\")))
+
+\(define-mode my-blocker-mode (nyxt/blocker-mode:blocker-mode)
+  \"Blocker mode with custom hosts from `*my-blocked-hosts*'.\"
+  ((nyxt/blocker-mode:hostlists (list *my-blocked-hosts* nyxt/blocker-mode:*default-hostlist*))))
+
+\(define-configuration buffer
+  ((default-modes (append '(my-blocker-mode) %slot-default%))))"
+  ((hostlists (list *default-hostlist*))
+   (thread
+    nil
+    :type (or bt:thread null)
+    :export nil
+    :documentation "This thread is used to update the hostlists in the background.")
+   (worker-channel
+    nil
+    :type (or calispel:channel null)
+    :export nil
+    :documentation "Communication channel between `thread' and `blocker-mode'.")
+   (blocked-hosts
+    (make-hash-table :test 'equal)
+    :export nil
+    :documentation "The set of domain names to block.")
+   (destructor
+    (lambda (mode)
+      (bt:destroy-thread (thread mode))
+      (when (web-buffer-p (buffer mode))
+        (hooks:remove-hook (request-resource-hook (buffer mode))
+                           'request-resource-block))))
+   (constructor
+    (lambda (mode)
+      (setf (worker-channel mode) (nyxt::make-channel))
+      (setf (thread mode)
+            (run-thread "blocker-mode hostlist update worker"
+              (worker mode)))
+      (load-hostlists mode)
+      (when (web-buffer-p (buffer mode))
+        (if (request-resource-hook (buffer mode))
+            (hooks:add-hook (request-resource-hook (buffer mode))
+                            (make-handler-resource #'request-resource-block))
+            (make-hook-resource
+             :combination #'combine-composed-hook-until-nil
+             :handlers (list #'request-resource-block))))))))
+
 (defmethod store ((profile data-profile) (path hostlist) &key &allow-other-keys)
   (with-data-file (file path :direction :output)
     (write-string (get-data path) file)))
@@ -137,68 +200,6 @@ Return NIL on failure, T on success."
   (do () (nil)
     (alex:when-let ((hostlist (calispel:? (worker-channel mode))))
       (load-hostlist hostlist mode))))
-
-(serapeum:export-always '*default-hostlist*)
-(defparameter *default-hostlist*
-  (make-instance 'hostlist
-                 :url (quri:uri "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts")
-                 :basename "hostlist-stevenblack.txt")
-  "Default hostlist for `blocker-mode'.")
-
-(define-mode blocker-mode ()
-  "Enable blocking of listed hosts.
-To customize the list of blocked hosts, set the `hostlists' slot.
-See the `hostlist' class documentation.
-
-Example:
-
-\(defvar *my-blocked-hosts*
-  (nyxt/blocker-mode:make-hostlist
-   :hosts '(\"platform.twitter.com\"
-            \"syndication.twitter.com\"
-            \"m.media-amazon.com\")))
-
-\(define-mode my-blocker-mode (nyxt/blocker-mode:blocker-mode)
-  \"Blocker mode with custom hosts from `*my-blocked-hosts*'.\"
-  ((nyxt/blocker-mode:hostlists (list *my-blocked-hosts* nyxt/blocker-mode:*default-hostlist*))))
-
-\(define-configuration buffer
-  ((default-modes (append '(my-blocker-mode) %slot-default%))))"
-  ((hostlists (list *default-hostlist*))
-   (thread
-    nil
-    :type (or bt:thread null)
-    :export nil
-    :documentation "This thread is used to update the hostlists in the background.")
-   (worker-channel
-    nil
-    :type (or calispel:channel null)
-    :export nil
-    :documentation "Communication channel between `thread' and `blocker-mode'.")
-   (blocked-hosts
-    (make-hash-table :test 'equal)
-    :export nil
-    :documentation "The set of domain names to block.")
-   (destructor
-    (lambda (mode)
-      (bt:destroy-thread (thread mode))
-      (when (web-buffer-p (buffer mode))
-        (hooks:remove-hook (request-resource-hook (buffer mode))
-                           'request-resource-block))))
-   (constructor
-    (lambda (mode)
-      (setf (worker-channel mode) (nyxt::make-channel))
-      (setf (thread mode)
-            (run-thread "blocker-mode hostlist update worker"
-              (worker mode)))
-      (load-hostlists mode)
-      (when (web-buffer-p (buffer mode))
-        (if (request-resource-hook (buffer mode))
-            (hooks:add-hook (request-resource-hook (buffer mode))
-                            (make-handler-resource #'request-resource-block))
-            (make-hook-resource
-             :combination #'combine-composed-hook-until-nil
-             :handlers (list #'request-resource-block))))))))
 
 (defmethod blocklisted-host-p ((mode blocker-mode) host)
   "Return non-nil of HOST if found in the hostlists of MODE.

@@ -166,38 +166,6 @@ non-new-page requests, buffer URL is not altered."
     (setf (previous-url auto-mode) (url request-data)))
   request-data)
 
-(-> mode-covered-by-auto-mode-p
-    (root-mode auto-mode boolean)
-    (values (or list boolean) &optional))
-(defun mode-covered-by-auto-mode-p (mode auto-mode enable-p)
-  "Says whether AUTO-MODE already knows what to do with MODE.
-ENABLE-P is whether mode is being enabled (non-nil) or disabled (nil).
-Mode is covered if:
-- It's not rememberable (has `rememberable-p' set to nil).
-- There is a rule it matches and:
-  - when mode is ENABLE-P and part of `included' modes in the rule, or
-  - when mode is not ENABLE-P and part of `excluded' modes in the rule.
-- If there's no matching rule but it's part of `last-active-modes' and needs to be ENABLE-P.
-- If it's getting disabled (not ENABLE-P) after being enabled by a rule on the previous page."
-  (let ((invocation (mode-invocation mode)))
-    (flet ((invocation-member (list)
-             (member invocation list :test #'equals)))
-      (or (not (rememberable-p mode))
-          (alex:when-let ((matching-rule (matching-auto-mode-rule (url (buffer auto-mode))
-                                                                  (buffer auto-mode))))
-            (or (and enable-p (invocation-member (included matching-rule)))
-                (and (not enable-p) (invocation-member (excluded matching-rule)))))
-          ;; Mode is covered by auto-mode only if it is both in
-          ;; last-active-modes and gets enabled.  If it gets disabled, user
-          ;; should be prompted, because they may want to persist it.
-          (and enable-p (invocation-member (last-active-modes auto-mode)))
-          (and (not enable-p)
-               (invocation-member
-                (alex:when-let* ((previous-url (previous-url auto-mode))
-                                 (matching-rule (matching-auto-mode-rule previous-url
-                                                                         (buffer auto-mode))))
-                  (included matching-rule))))))))
-
 (-> url-infer-match (string) list)
 (defun url-infer-match (url)
   "Infer the best `test' for `auto-mode-rule', based on the form of URL.
@@ -308,6 +276,39 @@ modes that were in place before the nyxt.atlas.engineer rule was applied are
 restored.")
    (destructor #'clean-up-auto-mode)
    (constructor #'initialize-auto-mode)))
+
+
+(-> mode-covered-by-auto-mode-p
+    (root-mode auto-mode boolean)
+    (values (or list boolean) &optional))
+(defun mode-covered-by-auto-mode-p (mode auto-mode enable-p)
+  "Says whether AUTO-MODE already knows what to do with MODE.
+ENABLE-P is whether mode is being enabled (non-nil) or disabled (nil).
+Mode is covered if:
+- It's not rememberable (has `rememberable-p' set to nil).
+- There is a rule it matches and:
+  - when mode is ENABLED-P and part of `included' modes in the rule, or
+  - when mode is not ENABLED-P and part of `excluded' modes in the rule.
+- If there's no matching rule but it's part of `last-active-modes' and needs to be ENABLED-P.
+- If it's getting disabled (not ENABLED-P) after being enabled by a rule on the previous page."
+  (let ((invocation (mode-invocation mode)))
+    (flet ((invocation-member (list)
+             (member invocation list :test #'equals)))
+      (or (not (rememberable-p mode))
+          (alex:when-let ((matching-rule (matching-auto-mode-rule (url (buffer auto-mode))
+                                                                  (buffer auto-mode))))
+            (or (and enable-p (invocation-member (included matching-rule)))
+                (and (not enable-p) (invocation-member (excluded matching-rule)))))
+          ;; Mode is covered by auto-mode only if it is both in
+          ;; last-active-modes and gets enabled.  If it gets disabled, user
+          ;; should be prompted, because they may want to persist it.
+          (and enable-p (invocation-member (last-active-modes auto-mode)))
+          (and (not enable-p)
+               (invocation-member
+                (alex:when-let* ((previous-url (previous-url auto-mode))
+                                 (matching-rule (matching-auto-mode-rule previous-url
+                                                                         (buffer auto-mode))))
+                  (included matching-rule))))))))
 
 (define-command save-non-default-modes-for-future-visits ()
   "Save the modes present in `default-modes' and not present in current modes as :excluded,

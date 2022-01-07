@@ -223,6 +223,12 @@ If STEPS is negative, go to next pages instead."
                  :value attribute
                  :attributes `(("Attribute key" ,attribute))))
 
+(define-class attribute-source (prompter:source)
+  ((prompter:name "List of prompter attributes")
+   (prompter:multi-selection-p t)
+   (prompter:suggestion-maker 'make-attribute-suggestion)
+   (prompter:actions '(return-marks-only))))
+
 (defun return-marks-only (suggestion-values)
   "Return marked suggestions only.
 They are returned untouched.
@@ -235,12 +241,6 @@ current unmarked selection."
         (remove (prompter:value suggestion) suggestion-values
                 :test #'equal)
         suggestion-values)))
-
-(define-class attribute-source (prompter:source)
-  ((prompter:name "List of prompter attributes")
-   (prompter:multi-selection-p t)
-   (prompter:suggestion-maker 'make-attribute-suggestion)
-   (prompter:actions '(return-marks-only))))
 
 (define-command-prompt toggle-attributes-display (prompt-buffer)
   "Prompt for which prompter attributes to display."
