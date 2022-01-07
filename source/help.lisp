@@ -265,12 +265,15 @@ A command is a special kind of function that can be called with
                                                 (mopu:generic-functions class)))
                  collect (:li (:a :href (nyxt-url 'describe-function :function method) method)))))))
 
-(define-internal-page-command nyxt/prompt-buffer-mode::describe-prompt-buffer
-    (&key (prompt-buffer (current-prompt-buffer)))
-    (buffer (str:concat "*Help-" (prompter:prompt prompt-buffer) "-prompter*")
+;; FIXME: Arglist used to have prompt-buffer, but it's not URL-serializable.
+;; Maybe have prompt-buffers have IDs so that we can identify those by IDs?
+;; How do we actually identify prompt-buffers?
+(define-internal-page-command nyxt/prompt-buffer-mode::describe-prompt-buffer ()
+    (buffer (str:concat "*Help-" (prompter:prompt (current-prompt-buffer)) "-prompter*")
             'nyxt/help-mode:help-mode)
   "Describe a prompt buffer instance."
-  (let* ((modes (modes prompt-buffer))
+  (let* ((prompt-buffer (current-prompt-buffer))
+         (modes (modes prompt-buffer))
          (sources (prompter:sources prompt-buffer)))
     (spinneret:with-html-string
       (:style (style buffer))
