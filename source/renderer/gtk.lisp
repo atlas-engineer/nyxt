@@ -760,6 +760,13 @@ See `gtk-browser's `modifier-translator' slot."
        #'process-gopher-scheme
        (lambda (condition)
          (echo-warning "Error while routing \"gopher:\" URL: ~a" condition)))
+      ;; This is a response to the problem of Gopher searches not being mirrored
+      ;; in the gopher: URLs. Much like the search requests that pass data in
+      ;; POST body instead of query parameters.
+      ;;
+      ;; Is that additional scheme pretty enough to leave it, or should there be
+      ;; some other way allowing to use just one scheme and interactive search
+      ;; line elements?
       (webkit:webkit-web-context-register-uri-scheme-callback
        context "gopher-search"
        (lambda (request)
