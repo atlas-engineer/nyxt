@@ -140,24 +140,6 @@ If the node has no owner, return Epoch."
                      (alex:hash-table-values (bindings node))))
       (local-time:unix-to-timestamp 0)))
 
-(export-always 'data-last-access)
-(declaim (ftype (function (history-tree t) local-time:timestamp) data-last-access))
-(defun data-last-access (history data)
-  "Return data last access across all its nodes, regardless of the owner.
-Return Epoch if DATA is not found or if entry has no timestamp."
-  (let* ((entry (find-entry history data))
-         (nodes (when entry (nodes entry))))
-    (the (values local-time:timestamp &optional)
-         (if nodes
-             (let ((new-last-access
-                     (apply #'local-time:timestamp-maximum
-                            (mapcar #'last-access nodes))))
-               (setf (last-access entry) new-last-access)
-               new-last-access)
-             (if entry
-                 (last-access entry)
-                 (local-time:unix-to-timestamp 0))))))
-
 (define-class owner ()
   ;; REVIEW: Add slot pointing to history an owner belongs to?  As long as the
   ;; owner has at least one node, the history can be accessed via the entry.
@@ -350,6 +332,24 @@ if if were a function."))
       (setf (gethash owner (htree:owners history))
             (make-instance 'htree:owner)))
     history))
+
+(export-always 'data-last-access)
+(declaim (ftype (function (history-tree t) local-time:timestamp) data-last-access))
+(defun data-last-access (history data)
+  "Return data last access across all its nodes, regardless of the owner.
+Return Epoch if DATA is not found or if entry has no timestamp."
+  (let* ((entry (find-entry history data))
+         (nodes (when entry (nodes entry))))
+    (the (values local-time:timestamp &optional)
+         (if nodes
+             (let ((new-last-access
+                     (apply #'local-time:timestamp-maximum
+                            (mapcar #'last-access nodes))))
+               (setf (last-access entry) new-last-access)
+               new-last-access)
+             (if entry
+                 (last-access entry)
+                 (local-time:unix-to-timestamp 0))))))
 
 (export-always 'owner)
 (defun owner (history owner-spec)
