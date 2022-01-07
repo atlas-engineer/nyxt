@@ -643,13 +643,13 @@ the "
 System information is also saved into the clipboard."
   (let* ((*print-length* nil)
          (nyxt-information (system-information)))
-    (spinneret:with-html-string
-      (:style (style buffer))
-      (:h1 "System information")
-      (:pre nyxt-information))
-    (copy-to-clipboard nyxt-information)
-    (log:info nyxt-information)
-    (echo "System information copied to clipboard.")))
+    (prog1
+        (spinneret:with-html-string
+          (:h1 "System information")
+          (:pre nyxt-information))
+      (copy-to-clipboard nyxt-information)
+      (log:info nyxt-information)
+      (echo "System information copied to clipboard."))))
 
 (define-internal-page-command dashboard ()
     (buffer "*Dashboard*" 'base-mode)
