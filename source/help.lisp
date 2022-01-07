@@ -88,9 +88,9 @@
 
 (define-internal-page-command describe-variable
     (&key (variable
-           (first (prompt
-                   :prompt "Describe variable:"
-                   :sources (make-instance 'variable-source)))))
+           (prompt1
+             :prompt "Describe variable:"
+             :sources (make-instance 'variable-source))))
     (buffer (str:concat "*Help-" (symbol-name variable) "*")
             'nyxt/help-mode:help-mode)
   "Inspect a variable and show it in a help buffer."
@@ -104,11 +104,11 @@
       (:p (:raw (value->html (symbol-value variable) :help-mode help-mode))))))
 
 (define-internal-page-command describe-function
-  (&key (function (first (prompt
-                          :prompt "Describe function"
-                          :sources (make-instance 'function-source)))))
-  (buffer (str:concat "*Help-" (symbol-name function) "*")
-          'nyxt/help-mode:help-mode)
+    (&key (function (prompt1
+                      :prompt "Describe function"
+                      :sources (make-instance 'function-source))))
+    (buffer (str:concat "*Help-" (symbol-name function) "*")
+            'nyxt/help-mode:help-mode)
   "Inspect a function and show it in a help buffer.
 For generic functions, describe all the methods."
   (if function
@@ -197,9 +197,9 @@ A command is a special kind of function that can be called with
                      (write-to-string (sexp command))))))))
 
 (define-internal-page-command describe-slot
-    (&key (slot (first (prompt
-                        :prompt "Describe slot"
-                        :sources (make-instance 'slot-source)))))
+    (&key (slot (prompt1
+                  :prompt "Describe slot"
+                  :sources (make-instance 'slot-source))))
     (buffer (str:concat "*Help-" (symbol-name (name slot)) "*")
             'nyxt/help-mode:help-mode)
   "Inspect a slot and show it in a help buffer."
@@ -237,9 +237,9 @@ A command is a special kind of function that can be called with
                         "Configure"))))))))
 
 (define-internal-page-command describe-class
-    (&key (class (first (prompt
-                         :prompt "Describe class"
-                         :sources (make-instance 'class-source)))))
+    (&key (class (prompt1
+                   :prompt "Describe class"
+                   :sources (make-instance 'class-source))))
     (buffer (str:concat "*Help-" (symbol-name class) "*")
             'nyxt/help-mode:help-mode)
   "Inspect a class and show it in a help buffer."
