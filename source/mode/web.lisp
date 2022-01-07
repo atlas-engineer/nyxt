@@ -457,11 +457,11 @@ Otherwise go forward to the only child."
         (render-url (url history-entry))
         title)))
 
-(nyxt::define-internal-page-command buffer-history-tree (&key (buffer (current-buffer)))
-  (output-buffer (format nil "*History-~a*" (id buffer))
+(nyxt::define-internal-page-command buffer-history-tree (&key (id (id (current-buffer))))
+  (output-buffer (format nil "*History-~a*" id)
                  'nyxt/history-tree-mode:history-tree-mode)
   "Open a new buffer displaying the whole history tree of a buffer."
-  (with-history-unsafe (history buffer)
+  (with-history-unsafe (history (nyxt::buffers-get id))
     (let ((mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
           (tree (spinneret:with-html-string
                   (:ul (:raw (htree:map-owned-tree
@@ -470,20 +470,18 @@ Otherwise go forward to the only child."
                                     (:li
                                      (:a :href (render-url (url (htree:data node)))
                                          (let ((title (title-or-fallback (htree:data node))))
-                                           (if (eq node (htree:owner-node history (id buffer)))
+                                           (if (eq node (htree:owner-node history id))
                                                (:b title)
                                                title))))))
                               history
-                              (htree:owner history (id buffer))
+                              (htree:owner history id)
                               :include-root t
                               :collect-function #'(lambda (a b) (str:concat a (when b
                                                                                 (spinneret:with-html-string
                                                                                   (:ul (:raw (str:join "" b)))))))))))))
       (spinneret:with-html-string
-        (:body (:h1 "History")
-               (:style (style output-buffer))
-               (:style (style mode))
-               (:div (:raw tree)))))))
+        (:style (style mode))
+        (:div (:raw tree))))))
 
 ;; TODO: Factor this with `buffer-history-tree'.
 (nyxt::define-internal-page-command history-tree (&key (current-buffer-id (id (current-buffer))))
