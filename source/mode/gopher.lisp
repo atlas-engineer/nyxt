@@ -32,7 +32,11 @@ Create those with `make-gopher-search-engine'.")
              :margin 0
              :border-radius 0)
             (.button
-             :margin "3px")))
+             :margin "3px")
+            (.error
+             :background-color theme:accent
+             :color theme:background
+             :padding "1em 0")))
    (destructor
     (lambda (mode)
       (hooks:remove-hook
@@ -72,6 +76,11 @@ Second return value should be the MIME-type of the content."))
     (:pre (symbol-name (class-name (class-of line)))
           (cl-gopher:display-string line)
           (cl-gopher:uri-for-gopher-line line))))
+
+(defmethod line->html ((line cl-gopher:gopher-line))
+  (spinneret:with-html-string
+    (:pre :class "error"
+          "Error: " (cl-gopher:display-string line))))
 
 (defmethod line->html ((line cl-gopher:info-message))
   (spinneret:with-html-string
