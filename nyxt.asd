@@ -164,17 +164,21 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                (:file "diff-mode")
                (:file "expedition-mode")
                ;; Web-mode commands
-               (:file "bookmarklets")
-               (:file "input-edit")
-               (:file "element-hint")
-               (:file "element-hint-mode")
-               (:file "element-frame")
-               (:file "jump-heading")
-               (:file "summarize")
-               (:file "scroll")
-               (:file "search-buffer")
-               (:file "spell-check")
-               (:file "zoom")
+               (:module "web-mode-commands"
+                :pathname ""
+                :serial nil
+                :components
+                ((:file "bookmarklets")
+                 (:file "input-edit")
+                 (:file "element-hint" :depends-on ("search-buffer"))
+                 (:file "element-hint-mode")
+                 (:file "element-frame")
+                 (:file "jump-heading")
+                 (:file "summarize")
+                 (:file "scroll")
+                 (:file "search-buffer")
+                 (:file "spell-check")
+                 (:file "zoom")))
                ;; Needs web-mode
                (:file "help")
                (:file "macro-edit-mode")
