@@ -204,12 +204,9 @@ That's why `cl-gopher:search-line' renders to nothing."
 
 (export-always 'make-gopher-search-engine)
 (defun make-gopher-search-engine (url name)
-  (let ((url (quri:uri url)))
-    (make-instance 'cl-gopher:search-line
-                   :hostname (quri:uri-host url)
-                   :port (or (quri:uri-port url) 70)
-                   :selector (or (quri:uri-path url) "/")
-                   :display-string name)))
+  (let ((line (cl-gopher:parse-gopher-uri url)))
+    (setf (cl-gopher:display-string line) name)
+    line))
 
 (define-command search-gopher ()
   "Prompt for terms and search those in current page and saved search engines."
