@@ -534,7 +534,7 @@ As third value the name."
                    (first-line-tokens (str:split " " (first output)))
                    (key (let ((key-string (second (member "ID" first-line-tokens :test #'string=))))
                           (if (str:ends-with? "," key-string)
-                              (subseq key-string 0 (1- (length key-string)))
+                              (sera:slice key-string 0 -1)
                               key-string)))
                    (second-line (str:trim (second output)))
                    (mail-start (position #\space second-line :from-end t))
