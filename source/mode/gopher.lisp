@@ -11,8 +11,10 @@
 (use-nyxt-package-nicknames)
 
 (defun update (mode)
-  (setf (line mode) (cl-gopher:parse-gopher-uri (render-url (url (buffer mode))))
-        (contents mode) (cl-gopher:get-line-contents (line mode))))
+  (let ((url (url (buffer mode))))
+    (unless (string= "gopher-search" (quri:uri-scheme url))
+        (setf (line mode) (cl-gopher:parse-gopher-uri (render-url url))
+              (contents mode) (cl-gopher:get-line-contents (line mode))))))
 
 (define-mode gopher-mode ()
   "Gopher page interaction mode."
@@ -186,12 +188,14 @@ That's why `cl-gopher:search-line' renders to nothing."
                   (prompter:make-suggestion value)))
               suggestions)))
    (prompter:actions (list (make-command search-gopher* (lines)
-                             (buffer-load (str:concat (cl-gopher:uri-for-gopher-line (first lines))
-                                                      "?q=" (cl-gopher:terms (first lines))))
+                             (buffer-load (uiop:strcat "gopher-search:"
+                                                       (cl-gopher:terms (first lines)) "/"
+                                                       (cl-gopher:uri-for-gopher-line (first lines))))
                              (dolist (line (rest lines))
                                (make-buffer
-                                :url (str:concat (cl-gopher:uri-for-gopher-line (first lines))
-                                                 "?q=" (cl-gopher:terms (first lines)))
+                                :url (uiop:strcat "gopher-search:"
+                                                  (cl-gopher:terms line) "/"
+                                                  (cl-gopher:uri-for-gopher-line line))
                                 :parent-buffer (current-buffer))))
                            (make-command save-search-engine (lines)
                              (nyxt::configure-slot
