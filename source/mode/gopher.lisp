@@ -99,6 +99,7 @@ Second return value should be the MIME-type of the content."))
 (defmethod line->html ((line cl-gopher:search-line))
   "We use `search-gopher' command and custom URLs to simulate search.
 That's why `cl-gopher:search-line' renders to nothing."
+  (declare (ignore line))
   "")
 
 (defmethod line->html ((line cl-gopher:text-file))
