@@ -22,7 +22,10 @@ A higher score means the SUGGESTION-STRING comes first."
     (declare (optimize (speed 3) (safety 0))
              (type single-float score) (type (or fixnum null) i)
              (type character lastchar)
-             (type string input suggestion-string))
+             (type string input suggestion-string)
+             ;; FIXME: Optimized arithmetic typing is hard to get right.  Can we fix it?
+             #+sbcl
+             (sb-ext:muffle-conditions sb-ext:compiler-note))
     (labels ((match-bonus (i)
                (incf score (/ 1.0 (+ inverse-start-bonus i))))
              (word-body (c)
