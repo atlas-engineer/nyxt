@@ -647,18 +647,12 @@ See `gtk-browser's `modifier-translator' slot."
     manager))
 
 (defun process-gopher-scheme (request)
-  (let* ((url (quri:uri (webkit:webkit-uri-scheme-request-get-uri request)))
-         (query (quri:uri-query-params url))
-         (clean-url (progn
-                      (setf (quri:uri-query url) "")
-                      (render-url url)))
-         (line (cl-gopher:parse-gopher-uri clean-url)))
+  (let* ((url (webkit:webkit-uri-scheme-request-get-uri request))
+         (line (cl-gopher:parse-gopher-uri url)))
     (enable-modes '(gopher-mode)
                   (find (webkit:webkit-uri-scheme-request-get-web-view request)
                         (buffer-list)
                         :key #'gtk-object))
-    (when query
-      (setf (cl-gopher:terms line) (str:s-assoc-value query "q")))
     (nyxt/gopher-mode:render line)))
 
 (defun make-context (&optional buffer)
@@ -766,6 +760,22 @@ See `gtk-browser's `modifier-translator' slot."
        #'process-gopher-scheme
        (lambda (condition)
          (echo-warning "Error while routing \"gopher:\" URL: ~a" condition)))
+      (webkit:webkit-web-context-register-uri-scheme-callback
+       context "gopher-search"
+       (lambda (request)
+         (let ((path (webkit:webkit-uri-scheme-request-get-path request))
+               line)
+           (destructuring-bind (terms url) (str:split "/" path :limit 2)
+             (setf line (cl-gopher:parse-gopher-uri url)
+                   (cl-gopher:terms line) terms)
+             ;; FIXME: Copy-pasted from `process-gopher-scheme'.
+             (enable-modes '(gopher-mode)
+                           (find (webkit:webkit-uri-scheme-request-get-web-view request)
+                                 (buffer-list)
+                                 :key #'gtk-object))
+             (nyxt/gopher-mode:render line))))
+       (lambda (condition)
+         (echo-warning "Error while routing \"gopher-search:\" URL: ~a" condition)))
       (webkit:webkit-security-manager-register-uri-scheme-as-local
        (webkit:webkit-web-context-get-security-manager context) "nyxt")
       (webkit:webkit-security-manager-register-uri-scheme-as-cors-enabled
