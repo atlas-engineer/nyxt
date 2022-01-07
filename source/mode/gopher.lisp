@@ -84,6 +84,12 @@ Second return value should be the MIME-type of the content."))
     (:a :class "button" :href (cl-gopher:uri-for-gopher-line line)
         (cl-gopher:display-string line))))
 
+(defmethod line->html ((line cl-gopher:image))
+  (spinneret:with-html-string
+    (:a :href (cl-gopher:uri-for-gopher-line line)
+        (:img :src (cl-gopher:uri-for-gopher-line line)
+              :alt (cl-gopher:display-string line)))))
+
 (defmethod line->html ((line cl-gopher:gif))
   (spinneret:with-html-string
     (:a :href (cl-gopher:uri-for-gopher-line line)
@@ -131,6 +137,14 @@ That's why `cl-gopher:search-line' renders to nothing."
   (declare (ignore mode))
   (let ((contents (cl-gopher:get-line-contents line)))
     (values (str:join +newline+ (cl-gopher:lines contents)) "text/plain")))
+
+(defmethod render ((line cl-gopher:image) &optional (mode (current-mode 'gopher)))
+  (declare (ignore mode))
+  (let* ((url (quri:uri (cl-gopher:uri-for-gopher-line line)))
+         (file (pathname (quri:uri-path url)))
+         (mime (mimes:mime file))
+         (contents (cl-gopher:get-line-contents line)))
+    (values (cl-gopher:content-array contents) mime)))
 
 (defmethod render ((line cl-gopher:gif) &optional (mode (current-mode 'gopher)))
   (declare (ignore mode))
