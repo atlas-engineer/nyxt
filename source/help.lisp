@@ -393,7 +393,6 @@ CLASS is a class symbol."
     (buffer "*Help-bindings*" 'base-mode)
   "Show a buffer with the list of all known bindings for the current buffer."
   (spinneret:with-html-string
-    (:style (style buffer))
     (:h1 "Bindings")
     (:p (loop for keymap in (current-keymaps (current-buffer))
               collect (:div
@@ -523,7 +522,6 @@ evaluate in order."
     (buffer title 'nyxt/help-mode:help-mode)
   "Print some help."
   (spinneret:with-html-string
-    (:style (style buffer))
     (:h1 "Error occured:")
     (:pre text)))
 
