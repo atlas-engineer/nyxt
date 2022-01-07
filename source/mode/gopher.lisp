@@ -171,11 +171,12 @@ That's why `cl-gopher:search-line' renders to nothing."
                            (make-command save-search-engine (lines)
                              (nyxt::configure-slot
                               'search-engines 'gopher-mode
-                              :value `(append %slot-default% ,@(mapcar (lambda (line)
-                                                                         (make-gopher-search-engine
-                                                                          (cl-gopher:uri-for-gopher-line line)
-                                                                          (cl-gopher:display-string line)))
-                                                                       lines))))))))
+                              :value `(append %slot-default%
+                                              ,@(mapcar (lambda (line)
+                                                          (make-gopher-search-engine
+                                                           (cl-gopher:uri-for-gopher-line line)
+                                                           (cl-gopher:display-string line)))
+                                                        lines))))))))
 
 (export-always 'make-gopher-search-engine)
 (defun make-gopher-search-engine (url name)
