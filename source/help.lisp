@@ -332,8 +332,9 @@ CLASS is a class symbol."
   (with-data-file (file *auto-config-file-path*
                         :direction :output
                         :if-exists :append)
-    (log:info "Appending to ~s:~&~s" (expand-path *auto-config-file-path*) form)
-    (format file format-directive form)))
+    (let ((*print-case* :downcase))
+      (log:info "Appending to ~s:~&~s" (expand-path *auto-config-file-path*) form)
+      (format file format-directive form))))
 
 (define-internal-page-command common-settings ()
     (buffer "*Settings*" 'nyxt/help-mode:help-mode)
