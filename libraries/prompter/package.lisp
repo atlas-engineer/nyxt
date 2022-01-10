@@ -42,3 +42,8 @@ All ARGS are declared as `ignorable'."
 (defun public-initargs (class-specifier)
   "Return CLASS-SPECIFIER initargs as symbols (not keywords)."
   (delete-if (complement #'exported-p) (initargs class-specifier)))
+
+(sera:export-always '*debug-on-error*)
+(defvar *debug-on-error* nil
+  "When non-nil, the Lisp debugger is invoked when a condition is raised.
+Otherwise all errors occuring in threads are demoted to warnings.")
