@@ -617,10 +617,10 @@ Delete it with `ffi-buffer-delete'."
        :text-align "center"
        :z-index "3")
       (".vi-normal-mode"
-       :color theme:text
+       :color theme:background
        :background-color theme:secondary)
       (".vi-insert-mode"
-       :color theme:text
+       :color theme:background
        :background-color theme:accent)
       ("#url"
        :color theme:background
