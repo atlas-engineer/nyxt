@@ -95,23 +95,20 @@ Second return value should be the MIME-type of the content."))
     (:a :class "button" :href (cl-gopher:uri-for-gopher-line line)
         (cl-gopher:display-string line))))
 
-(defmethod line->html ((line cl-gopher:image))
+(defun image->html (line)
   (spinneret:with-html-string
     (:a :href (cl-gopher:uri-for-gopher-line line)
         (:img :src (cl-gopher:uri-for-gopher-line line)
               :alt (cl-gopher:display-string line)))))
+
+(defmethod line->html ((line cl-gopher:image))
+  (image->html line))
 
 (defmethod line->html ((line cl-gopher:gif))
-  (spinneret:with-html-string
-    (:a :href (cl-gopher:uri-for-gopher-line line)
-        (:img :src (cl-gopher:uri-for-gopher-line line)
-              :alt (cl-gopher:display-string line)))))
+  (image->html line))
 
 (defmethod line->html ((line cl-gopher:png))
-  (spinneret:with-html-string
-    (:a :href (cl-gopher:uri-for-gopher-line line)
-        (:img :src (cl-gopher:uri-for-gopher-line line)
-              :alt (cl-gopher:display-string line)))))
+  (image->html line))
 
 (defmethod line->html ((line cl-gopher:search-line))
   "We use `search-gopher' command and custom URLs to simulate search.
@@ -151,23 +148,40 @@ That's why `cl-gopher:search-line' renders to nothing."
   (let ((contents (cl-gopher:get-line-contents line)))
     (values (str:join +newline+ (cl-gopher:lines contents)) "text/plain")))
 
-(defmethod render ((line cl-gopher:image) &optional (mode (current-mode 'gopher)))
-  (declare (ignore mode))
+(defun render-binary-content (line &optional mime)
   (let* ((url (quri:uri (cl-gopher:uri-for-gopher-line line)))
          (file (pathname (quri:uri-path url)))
-         (mime (mimes:mime file))
+         (mime (or mime (mimes:mime file)))
          (contents (cl-gopher:get-line-contents line)))
     (values (cl-gopher:content-array contents) mime)))
 
+(defmethod render ((line cl-gopher:image) &optional (mode (current-mode 'gopher)))
+  (declare (ignore mode))
+  (render-binary-content line))
+
+(defmethod render ((line cl-gopher:binary-file) &optional (mode (current-mode 'gopher)))
+  (declare (ignore mode))
+  (render-binary-content line))
+
+(defmethod render ((line cl-gopher:binhex-file) &optional (mode (current-mode 'gopher)))
+  (declare (ignore mode))
+  (render-binary-content line))
+
+(defmethod render ((line cl-gopher:dos-file) &optional (mode (current-mode 'gopher)))
+  (declare (ignore mode))
+  (render-binary-content line))
+
+(defmethod render ((line cl-gopher:uuencoded-file) &optional (mode (current-mode 'gopher)))
+  (declare (ignore mode))
+  (render-binary-content line))
+
 (defmethod render ((line cl-gopher:gif) &optional (mode (current-mode 'gopher)))
   (declare (ignore mode))
-  (let ((contents (cl-gopher:get-line-contents line)))
-    (values (cl-gopher:content-array contents) "image/gif")))
+  (render-binary-content line "image/gif"))
 
 (defmethod render ((line cl-gopher:png) &optional (mode (current-mode 'gopher)))
   (declare (ignore mode))
-  (let ((contents (cl-gopher:get-line-contents line)))
-    (values (cl-gopher:content-array contents) "image/png")))
+  (render-binary-content line "image/png"))
 
 (defmethod prompter:object-attributes ((line cl-gopher:search-line))
   `(("Terms" ,(or (cl-gopher:terms line) ""))
