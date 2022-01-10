@@ -118,13 +118,15 @@ That's why `cl-gopher:search-line' renders to nothing."
 
 (defmethod line->html ((line cl-gopher:text-file))
   (spinneret:with-html-string
-    (:a :href (cl-gopher:uri-for-gopher-line line)
+    (:a :class "button"
+        :href (cl-gopher:uri-for-gopher-line line)
         (cl-gopher:display-string line))
     (:br)))
 
 (defmethod line->html ((line cl-gopher:html-file))
   (spinneret:with-html-string
-    (:a :href (if (str:starts-with-p "URL:" (cl-gopher:selector line))
+    (:a :class "button"
+        :href (if (str:starts-with-p "URL:" (cl-gopher:selector line))
                   (sera:slice (cl-gopher:selector line) 4)
                   (cl-gopher:uri-for-gopher-line line))
         (cl-gopher:display-string line))
