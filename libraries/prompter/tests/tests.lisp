@@ -474,4 +474,26 @@
                   `(("Title" ,(title buffer1))
                     ("Keywords" ,(write-to-string (keywords buffer1))))))))
 
+(prove:subtest "Error handling"
+  (with-report-dangling-threads
+    (let ((prompter (prompter:make
+                     :sources (list
+                               (make-instance 'prompter:source
+                                              :name "Test source"
+                                              :constructor '("foo" "bar")
+                                              :filter-postprocessor
+                                              (lambda (suggestions source input)
+                                                (declare (ignore suggestions source))
+                                                (/ 1 input)))))))
+      (flet ((selection-value ()
+               (prompter:value (prompter:selected-suggestion prompter))))
+        (prompter:all-ready-p prompter)
+        (prove:is (selection-value)
+                  "foo")
+        (setf (prompter:input prompter) "bar")
+        (prompter:all-ready-p prompter)
+        (prove:is (selection-value)
+                  "bar")
+        (prompter:all-ready-p prompter)))))
+
 (prove:finalize)
