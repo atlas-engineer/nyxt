@@ -255,7 +255,7 @@ WebKit browsing engine.")
        ("gcc" ,gcc-toolchain)           ; Needed for cl-iolib.
        ;; WebKitGTK deps
        ("cl-cffi-gtk" ,cl-cffi-gtk)
-       ("cl-webkit" ,sbcl-cl-webkit)
+       ("cl-webkit" ,cl-webkit)
        ("glib-networking" ,glib-networking)
        ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
        ;; GObjectIntrospection
