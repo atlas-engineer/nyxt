@@ -127,7 +127,9 @@ That's why `cl-gopher:search-line' renders to nothing."
 
 (defmethod line->html ((line cl-gopher:html-file))
   (spinneret:with-html-string
-    (:a :href (cl-gopher:uri-for-gopher-line line)
+    (:a :href (if (str:starts-with-p "URL:" (cl-gopher:selector line))
+                  (sera:slice (cl-gopher:selector line) 4)
+                  (cl-gopher:uri-for-gopher-line line))
         (cl-gopher:display-string line))
     (:br)))
 
