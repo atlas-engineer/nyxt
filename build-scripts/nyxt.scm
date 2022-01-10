@@ -44,8 +44,7 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix licenses)
   #:use-module (guix git-download)
-  #:use-module (guix build-system asdf) ; TODO: Remove sbcl-cl-webkit once Guix has 3.3.0.
-  #:use-module (guix build-system asdf) ; TODO: Remove sbcl-cl-webkit once Guix has 3.4.0.
+  #:use-module (guix build-system asdf) ; TODO: Remove sbcl-cl-webkit once Guix has 3.5.0.
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system glib-or-gtk)
   #:use-module (gnu packages)
@@ -62,11 +61,11 @@
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages webkit))
 
-;; TODO: Remove sbcl-cl-webkit once Guix has 3.4.0.
+;; TODO: Remove sbcl-cl-webkit once Guix has 3.5.0.
 (define-public sbcl-cl-webkit
   (package
     (name "sbcl-cl-webkit")
-    (version "3.4.0")
+    (version "3.5.0")
     (source
      (origin
        (method git-fetch)
@@ -256,7 +255,7 @@ WebKit browsing engine.")
        ("gcc" ,gcc-toolchain)           ; Needed for cl-iolib.
        ;; WebKitGTK deps
        ("cl-cffi-gtk" ,cl-cffi-gtk)
-       ("cl-webkit" ,cl-webkit)
+       ("cl-webkit" ,sbcl-cl-webkit)
        ("glib-networking" ,glib-networking)
        ("gsettings-desktop-schemas" ,gsettings-desktop-schemas)
        ;; GObjectIntrospection
