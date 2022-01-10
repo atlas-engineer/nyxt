@@ -772,7 +772,7 @@ See `gtk-browser's `modifier-translator' slot."
        (lambda (request)
          (let ((path (webkit:webkit-uri-scheme-request-get-path request))
                line)
-           (destructuring-bind (terms url) (str:split "/" path :limit 2)
+           (destructuring-bind (url terms) (str:split "///" path :limit 2)
              (setf line (cl-gopher:parse-gopher-uri url)
                    (cl-gopher:terms line) terms)
              ;; FIXME: Copy-pasted from `process-gopher-scheme'.
