@@ -86,7 +86,8 @@ Second return value should be the MIME-type of the content."))
 
 (defmethod line->html ((line cl-gopher:info-message))
   (spinneret:with-html-string
-    (if (str:emptyp (cl-gopher:display-string line))
+    (if (or (str:emptyp (cl-gopher:display-string line))
+            (every #'sera:whitespacep (cl-gopher:display-string line)))
         (:br)
         (:pre (cl-gopher:display-string line)))))
 
