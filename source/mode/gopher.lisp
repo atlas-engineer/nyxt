@@ -160,6 +160,12 @@ Second return value should be the MIME-type of the content."))
 (defmethod line->html ((line cl-gopher:gif)) (image->html line))
 (defmethod line->html ((line cl-gopher:png)) (image->html line))
 
+(defmethod line->html ((line cl-gopher:sound-file))
+  (spinneret:with-html-string
+    (:audio :src (cl-gopher:uri-for-gopher-line line)
+            :controls t
+            (cl-gopher:display-string line))))
+
 (defmethod line->html ((line cl-gopher:search-line))
   "We use `search-gopher' command and custom URLs to simulate search."
   (spinneret:with-html-string
