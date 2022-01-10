@@ -35,6 +35,8 @@ Create those with `make-gopher-search-engine'.")
              :border-radius 0)
             (.button
              :margin "3px")
+            (.search
+             :background-color theme:accent)
             (.error
              :background-color theme:accent
              :color theme:background
@@ -112,10 +114,11 @@ Second return value should be the MIME-type of the content."))
   (image->html line))
 
 (defmethod line->html ((line cl-gopher:search-line))
-  "We use `search-gopher' command and custom URLs to simulate search.
-That's why `cl-gopher:search-line' renders to nothing."
-  (declare (ignore line))
-  "")
+  "We use `search-gopher' command and custom URLs to simulate search."
+  (spinneret:with-html-string
+    (:button :class "button search"
+             :onclick (ps:ps (nyxt/ps:send-lisp-url `(nyxt/gopher-mode:search-gopher)))
+             (cl-gopher:display-string line))))
 
 (defmethod line->html ((line cl-gopher:text-file))
   (spinneret:with-html-string
@@ -127,9 +130,8 @@ That's why `cl-gopher:search-line' renders to nothing."
 (defmethod line->html ((line cl-gopher:html-file))
   (spinneret:with-html-string
     (:a :class "button"
-        :href (if (str:starts-with-p "URL:" (cl-gopher:selector line))
-                  (sera:slice (cl-gopher:selector line) 4)
-                  (cl-gopher:uri-for-gopher-line line))
+        :href (when (str:starts-with-p "URL:" (cl-gopher:selector line))
+                (sera:slice (cl-gopher:selector line) 4))
         (cl-gopher:display-string line))
     (:br)))
 
