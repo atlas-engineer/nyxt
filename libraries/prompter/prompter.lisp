@@ -153,11 +153,9 @@ compution is not finished.")))
   (let ((source (selected-source prompter)))
     (when (follow-p source)
       (if (< 0 (follow-delay source))
-          (bt:make-thread
-           (lambda ()
-             (sleep (follow-delay source))
-             (call-follow-mode-function prompter))
-           :name "Prompter follow selection thread")
+          (run-thread "Prompter follow selection thread"
+            (sleep (follow-delay source))
+            (call-follow-mode-function prompter))
           (call-follow-mode-function prompter)))))
 
 (export-always 'input)
