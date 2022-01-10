@@ -528,7 +528,6 @@ This is a \"safe\" wrapper around `bt:make-thread'."
 
 (defmethod initialize-instance :after ((source source) &key)
   "See the `constructor' documentation of `source'."
-  (setf (attribute-thread source) (make-attribute-thread source))
   (let ((wait-channel (make-channel)))
     (run-thread "Prompter source init thread"
       (bt:acquire-lock (initial-suggestions-lock source))
@@ -611,18 +610,24 @@ If the `active-attributes' slot is NIL, return all attributes keys."
 Active attributes are queried from SOURCE."
   (let ((inactive-keys (set-difference (attributes-keys (attributes suggestion))
                                        (active-attributes-keys source)
-                                       :test #'string=)))
-    (mapcar
-     (lambda (attribute)
-       (if (functionp (attribute-value attribute))
-           (progn
-             (calispel:! (attribute-channel source) (list suggestion attribute))
-             (list (attribute-key attribute) ""))
-           attribute))
-     (remove-if
-      (lambda (attr)
-        (find (attribute-key attr) inactive-keys :test #'string=))
-      (attributes suggestion)))))
+                                       :test #'string=))
+        (attribute-thread nil))
+    (prog1
+        (mapcar
+         (lambda (attribute)
+           (if (functionp (attribute-value attribute))
+               (progn
+                 (unless attribute-thread (setf attribute-thread (make-attribute-thread source)))
+                 (calispel:! (attribute-channel source) (list suggestion attribute))
+                 (list (attribute-key attribute) ""))
+               attribute))
+         (remove-if
+          (lambda (attr)
+            (find (attribute-key attr) inactive-keys :test #'string=))
+          (attributes suggestion)))
+      (when attribute-thread
+        ;; Terminate thread:
+        (calispel:! (attribute-channel source) (list nil nil))))))
 
 (defun make-attribute-thread (source)
   "Return a thread that is bound to SOURCE and used to compute its suggestion attributes asynchronously.
@@ -637,8 +642,8 @@ Asynchronous attributes have a string-returning function as a value."
                 (list
                  (handler-case (funcall (attribute-value attr) (value sugg))
                    (error (c)
-                     (format nil "keyword error: ~a" c)))))))
-      (lp (calispel:? (attribute-channel source))))))
+                     (format nil "keyword error: ~a" c)))))
+          (lp (calispel:? (attribute-channel source))))))))
 
 (export-always 'marked-p)
 (defun marked-p (source value)
@@ -690,10 +695,8 @@ If SIZE is NIL, capicity is infinite."
 (defmethod destroy ((source source))
   ;; Ignore errors in case thread is already terminated.
   ;; REVIEW: Is there a cleaner way to do this?
-  (ignore-errors
-   (mapc #'bt:destroy-thread
-         (list (update-thread source)
-               (attribute-thread source)))))
+  (ignore-errors (bt:destroy-thread (update-thread source)))
+  (ignore-errors (bt:destroy-thread (attribute-thread source))))
 
 (defun update (source input new-ready-channel) ; TODO: Store `input' in the source?
   "Update SOURCE to narrow down the list of `suggestions' according to INPUT.
