@@ -208,13 +208,13 @@ That's why `cl-gopher:search-line' renders to nothing."
               suggestions)))
    (prompter:actions (list (make-command search-gopher* (lines)
                              (buffer-load (uiop:strcat "gopher-search:"
-                                                       (cl-gopher:terms (first lines)) "/"
-                                                       (cl-gopher:uri-for-gopher-line (first lines))))
+                                                       (cl-gopher:uri-for-gopher-line (first lines))
+                                                       "///" (cl-gopher:terms (first lines))))
                              (dolist (line (rest lines))
                                (make-buffer
                                 :url (uiop:strcat "gopher-search:"
-                                                  (cl-gopher:terms line) "/"
-                                                  (cl-gopher:uri-for-gopher-line line))
+                                                  (cl-gopher:uri-for-gopher-line line)
+                                                  "///" (cl-gopher:terms (first lines)))
                                 :parent-buffer (current-buffer))))
                            (make-command save-search-engine (lines)
                              (nyxt::configure-slot
