@@ -156,14 +156,9 @@ Second return value should be the MIME-type of the content."))
         (:img :src (cl-gopher:uri-for-gopher-line line)
               :alt (cl-gopher:display-string line)))))
 
-(defmethod line->html ((line cl-gopher:image))
-  (image->html line))
-
-(defmethod line->html ((line cl-gopher:gif))
-  (image->html line))
-
-(defmethod line->html ((line cl-gopher:png))
-  (image->html line))
+(defmethod line->html ((line cl-gopher:image)) (image->html line))
+(defmethod line->html ((line cl-gopher:gif)) (image->html line))
+(defmethod line->html ((line cl-gopher:png)) (image->html line))
 
 (defmethod line->html ((line cl-gopher:search-line))
   "We use `search-gopher' command and custom URLs to simulate search."
