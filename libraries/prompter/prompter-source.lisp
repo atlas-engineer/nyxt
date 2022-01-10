@@ -769,14 +769,16 @@ feedback to the user while the list of suggestions is being computed."
                                            (slot-value source 'suggestions)
                                            source
                                            input))))))
-            (wait-for-initial-suggestions)
-            (setf (last-input-downcase-p source) (current-input-downcase-p source))
-            (setf (current-input-downcase-p source) (str:downcasep input))
-            (process!
-             (preprocess
-              ;; We copy the list of initial-suggestions so that the
-              ;; preprocessor cannot modify them.
-              (mapcar #'copy-object (initial-suggestions source))))
-            (postprocess!)
-            ;; Signal this source is done:
-            (calispel:! new-ready-channel source)))))
+            (unwind-protect
+                 (progn
+                   (wait-for-initial-suggestions)
+                   (setf (last-input-downcase-p source) (current-input-downcase-p source))
+                   (setf (current-input-downcase-p source) (str:downcasep input))
+                   (process!
+                    (preprocess
+                     ;; We copy the list of initial-suggestions so that the
+                     ;; preprocessor cannot modify them.
+                     (mapcar #'copy-object (initial-suggestions source))))
+                   (postprocess!))
+              ;; Signal this source is done:
+              (calispel:! new-ready-channel source))))))
