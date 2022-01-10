@@ -480,31 +480,63 @@ If you are looking for a source that just returns its plain suggestions, use `so
                   source)))
    (uiop:ensure-list elements)))
 
+(defmacro with-protect ((format-string &rest args) &body body) ; TODO: Inspired by Nyxt.  Move to serapeum?
+  "Run body while capturing all conditions and echoing them as a warning.
+The warning is reported to the user as per
+FORMAT-STRING and ARGS.
+As a special case, the first `:condition' keyword in ARGS is replaced with the
+raised condition."
+  (alex:with-gensyms (c)
+    `(handler-case (progn ,@body)
+       (error (,c)
+         (declare (ignorable ,c))
+         ,(let* ((condition-index (position :condition args))
+                 (new-args (if condition-index
+                               (append (subseq args 0 condition-index)
+                                       `(,c)
+                                       (subseq args (1+ condition-index)))
+                               args)))
+            `(warn ,format-string ,@new-args))))))
+
+(defmacro run-thread (&body body)   ; TODO: Copied from Nyxt.  Move to serapeum?
+  "Run body in a new protected new thread.
+This is a \"safe\" wrapper around `bt:make-thread'."
+  ;; We parse the body instead of using a macro argument for backward compatibility.
+  (let* ((name (if (stringp (first body))
+                   (first body)
+                   "anonymous thread"))
+         (body (if (stringp (first body))
+                   (rest body)
+                   body)))
+    `(bt:make-thread
+      (lambda ()
+        (with-protect ("Error on separate prompter thread: ~a" :condition)
+          ,@body))
+      :name ,name)))
+
 (defmethod initialize-instance :after ((source source) &key)
   "See the `constructor' documentation of `source'."
-  (setf (attribute-thread source) (bt:make-thread (make-attribute-thread source)))
+  (setf (attribute-thread source) (make-attribute-thread source))
   (let ((wait-channel (make-channel)))
-    (bt:make-thread
-     (lambda ()
-       (bt:acquire-lock (initial-suggestions-lock source))
-       ;; `initial-suggestions' initialization must be done before first input can be processed.
-       (cond ((listp (constructor source))
-              (setf (slot-value source 'initial-suggestions)
-                    (constructor source)))
-             ((constructor source)
-              ;; Run constructor asynchronously.
-              (calispel:! wait-channel t)
-              (setf (slot-value source 'initial-suggestions)
-                    (funcall (constructor source) source))))
-       (setf (slot-value source 'initial-suggestions)
-             (ensure-suggestions-list source (initial-suggestions source)))
-       ;; TODO: Setting `suggestions' is not needed?
-       (setf (slot-value source 'suggestions) (initial-suggestions source))
-       (bt:release-lock (initial-suggestions-lock source))
-       (when (listp (constructor source))
-         ;; Initial suggestions are set synchronously in this case.
-         (calispel:! wait-channel t)))
-     :name "Prompter source init thread")
+    (run-thread "Prompter source init thread"
+      (bt:acquire-lock (initial-suggestions-lock source))
+      ;; `initial-suggestions' initialization must be done before first input can be processed.
+      (cond ((listp (constructor source))
+             (setf (slot-value source 'initial-suggestions)
+                   (constructor source)))
+            ((constructor source)
+             ;; Run constructor asynchronously.
+             (calispel:! wait-channel t)
+             (setf (slot-value source 'initial-suggestions)
+                   (funcall (constructor source) source))))
+      (setf (slot-value source 'initial-suggestions)
+            (ensure-suggestions-list source (initial-suggestions source)))
+      ;; TODO: Setting `suggestions' is not needed?
+      (setf (slot-value source 'suggestions) (initial-suggestions source))
+      (bt:release-lock (initial-suggestions-lock source))
+      (when (listp (constructor source))
+        ;; Initial suggestions are set synchronously in this case.
+        (calispel:! wait-channel t)))
     ;; Wait until above thread has acquired the `initial-suggestions-lock'.
     (calispel:? wait-channel))
   (setf (follow-mode-functions source)
@@ -583,13 +615,13 @@ Active attributes are queried from SOURCE."
 (defun make-attribute-thread (source)
   "Return a thread that is bound to SOURCE and used to compute its suggestion attributes asynchronously.
 Asynchronous attributes have a string-returning function as a value."
-  (lambda ()
-    ;; TODO: Notify when done updating, maybe using `update-notifier'?
+  ;; TODO: Notify when done updating, maybe using `update-notifier'?
+  (run-thread "Prompter attribute thread"
     (sera:nlet lp ((sugg-attr-pair (calispel:? (attribute-channel source))))
       (destructuring-bind (sugg attr) sugg-attr-pair
         ;; Recheck type here to protect against race conditions.
         (when (functionp (attribute-value attr))
-          (setf (alex:assoc-value (attributes sugg)  (attribute-key attr))
+          (setf (alex:assoc-value (attributes sugg) (attribute-key attr))
                 (list
                  (handler-case (funcall (attribute-value attr) (value sugg))
                    (error (c)
@@ -678,56 +710,54 @@ feedback to the user while the list of suggestions is being computed."
     (destroy source))
   (setf (ready-channel source) new-ready-channel)
   (setf (update-thread source)
-        (bt:make-thread
-         (lambda ()
-           (flet ((wait-for-initial-suggestions ()
-                    (bt:acquire-lock (initial-suggestions-lock source))
-                    (bt:release-lock (initial-suggestions-lock source)))
-                  (preprocess (initial-suggestions-copy)
-                    (if (filter-preprocessor source)
-                        (ensure-suggestions-list
-                         source
-                         (funcall (filter-preprocessor source)
-                                  initial-suggestions-copy source input))
-                        initial-suggestions-copy))
-                  (process! (preprocessed-suggestions)
-                    (let ((last-notification-time (get-internal-real-time)))
-                      (setf (slot-value source 'suggestions) '())
-                      (if (or (str:empty? input)
-                              (not (filter source)))
-                          (setf (slot-value source 'suggestions) preprocessed-suggestions)
-                          (dolist (suggestion preprocessed-suggestions)
-                            (sera:and-let* ((processed-suggestion
-                                             (funcall (filter source) suggestion source input)))
-                              (setf (slot-value source 'suggestions)
-                                    (insert-item-at suggestion (sort-predicate source)
-                                                    (suggestions source)))
-                              (let* ((now (get-internal-real-time))
-                                     (duration (/ (- now last-notification-time)
-                                                  internal-time-units-per-second)))
-                                (when (or (> duration (notification-delay source))
-                                          (= (length (slot-value source 'suggestions))
-                                             (length preprocessed-suggestions)))
-                                  (calispel:! (update-notifier source) t)
-                                  (setf last-notification-time now))))))))
-                  (postprocess! ()
-                    (when (filter-postprocessor source)
-                      (setf (slot-value source 'suggestions)
-                            (ensure-suggestions-list
-                             source
-                             (maybe-funcall (filter-postprocessor source)
-                                            (slot-value source 'suggestions)
-                                            source
-                                            input))))))
-             (wait-for-initial-suggestions)
-             (setf (last-input-downcase-p source) (current-input-downcase-p source))
-             (setf (current-input-downcase-p source) (str:downcasep input))
-             (process!
-              (preprocess
-               ;; We copy the list of initial-suggestions so that the
-               ;; preprocessor cannot modify them.
-               (mapcar #'copy-object (initial-suggestions source))))
-             (postprocess!)
-             ;; Signal this source is done:
-             (calispel:! new-ready-channel source)))
-         :name "Prompter update thread")))
+        (run-thread "Prompter update thread"
+          (flet ((wait-for-initial-suggestions ()
+                   (bt:acquire-lock (initial-suggestions-lock source))
+                   (bt:release-lock (initial-suggestions-lock source)))
+                 (preprocess (initial-suggestions-copy)
+                   (if (filter-preprocessor source)
+                       (ensure-suggestions-list
+                        source
+                        (funcall (filter-preprocessor source)
+                                 initial-suggestions-copy source input))
+                       initial-suggestions-copy))
+                 (process! (preprocessed-suggestions)
+                   (let ((last-notification-time (get-internal-real-time)))
+                     (setf (slot-value source 'suggestions) '())
+                     (if (or (str:empty? input)
+                             (not (filter source)))
+                         (setf (slot-value source 'suggestions) preprocessed-suggestions)
+                         (dolist (suggestion preprocessed-suggestions)
+                           (sera:and-let* ((processed-suggestion
+                                            (funcall (filter source) suggestion source input)))
+                             (setf (slot-value source 'suggestions)
+                                   (insert-item-at suggestion (sort-predicate source)
+                                                   (suggestions source)))
+                             (let* ((now (get-internal-real-time))
+                                    (duration (/ (- now last-notification-time)
+                                                 internal-time-units-per-second)))
+                               (when (or (> duration (notification-delay source))
+                                         (= (length (slot-value source 'suggestions))
+                                            (length preprocessed-suggestions)))
+                                 (calispel:! (update-notifier source) t)
+                                 (setf last-notification-time now))))))))
+                 (postprocess! ()
+                   (when (filter-postprocessor source)
+                     (setf (slot-value source 'suggestions)
+                           (ensure-suggestions-list
+                            source
+                            (maybe-funcall (filter-postprocessor source)
+                                           (slot-value source 'suggestions)
+                                           source
+                                           input))))))
+            (wait-for-initial-suggestions)
+            (setf (last-input-downcase-p source) (current-input-downcase-p source))
+            (setf (current-input-downcase-p source) (str:downcasep input))
+            (process!
+             (preprocess
+              ;; We copy the list of initial-suggestions so that the
+              ;; preprocessor cannot modify them.
+              (mapcar #'copy-object (initial-suggestions source))))
+            (postprocess!)
+            ;; Signal this source is done:
+            (calispel:! new-ready-channel source)))))
