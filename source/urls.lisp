@@ -233,7 +233,7 @@ Example:
           (error "There's no nyxt:~a page defined" (param-name function-name))))))
 
 (defun internal-url-p (url)
-  (string= "nyxt" (quri:uri-scheme (url url))))
+  (str:s-member (list "nyxt" "gopher") (quri:uri-scheme (url url))))
 
 (export-always 'lisp-url)
 (-> lisp-url (t &rest t) string)
