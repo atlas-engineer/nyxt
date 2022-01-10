@@ -75,7 +75,7 @@
        (file-name (git-file-name "cl-webkit" version))
        (sha256
         (base32
-         "0l6ml7g0r0kzbgf49bsgj2yxhgralh8fc0h9vpc79fvw20qgsd56"))))
+         "1a16dka15lqzpli0f0qd3afmi14vgdxnfkn9z9d1r4cw9p11s71l"))))
     (build-system asdf-build-system/sbcl)
     (inputs
      `(("cffi" ,sbcl-cffi)
