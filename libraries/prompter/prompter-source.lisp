@@ -522,8 +522,11 @@ This is a \"safe\" wrapper around `bt:make-thread'."
                    body)))
     `(bt:make-thread
       (lambda ()
-        (with-protect ("Error on separate prompter thread: ~a" :condition)
-          ,@body))
+        ,(if *debug-on-error*
+             `(progn
+                ,@body)
+             `(with-protect ("Error on separate prompter thread: ~a" :condition)
+                ,@body)))
       :name ,name)))
 
 (defmethod initialize-instance :after ((source source) &key)
