@@ -67,6 +67,58 @@ Create those with `make-gopher-search-engine'.")
               (cl-gopher:search-line engine)))
           (slot-value mode 'search-engines)))
 
+(defmethod prompter:object-attributes ((line cl-gopher:search-line))
+  `(("Terms" ,(or (cl-gopher:terms line) ""))
+    ("Name" ,(cl-gopher:display-string line))))
+
+(define-class gopher-search-source (prompter:source)
+  ((prompter:name "Term Search")
+   (prompter:constructor (let ((mode (current-mode 'gopher)))
+                           (union (search-engines mode)
+                                  (sera:filter (alex:rcurry #'typep 'cl-gopher:search-line)
+                                               (cl-gopher:lines (contents mode)))
+                                  :test #'string= :key #'cl-gopher:uri-for-gopher-line)))
+   (prompter:multi-selection-p t)
+   (prompter:filter-preprocessor
+    (lambda (suggestions source input)
+      (declare (ignore source))
+      (mapcar (lambda (suggestion)
+                (let ((value (cl-gopher:copy-gopher-line (prompter:value suggestion))))
+                  (setf (cl-gopher:terms value) input)
+                  (prompter:make-suggestion value)))
+              suggestions)))
+   (prompter:actions (list (make-command search-gopher* (lines)
+                             (buffer-load (uiop:strcat "gopher-search:"
+                                                       (cl-gopher:uri-for-gopher-line (first lines))
+                                                       "///" (cl-gopher:terms (first lines))))
+                             (dolist (line (rest lines))
+                               (make-buffer
+                                :url (uiop:strcat "gopher-search:"
+                                                  (cl-gopher:uri-for-gopher-line line)
+                                                  "///" (cl-gopher:terms (first lines)))
+                                :parent-buffer (current-buffer))))
+                           (make-command save-search-engine (lines)
+                             (nyxt::configure-slot
+                              'search-engines 'gopher-mode
+                              :value `(append %slot-default%
+                                              (list
+                                               ,@(mapcar (lambda (line)
+                                                           `(make-gopher-search-engine
+                                                             ,(cl-gopher:uri-for-gopher-line line)
+                                                             ,(cl-gopher:display-string line)))
+                                                         lines)))))))))
+
+(export-always 'make-gopher-search-engine)
+(defun make-gopher-search-engine (url name)
+  (let ((line (cl-gopher:parse-gopher-uri url)))
+    (setf (cl-gopher:display-string line) name)
+    line))
+
+(define-command search-gopher ()
+  "Prompt for terms and search those in current page and saved search engines."
+  (prompt :prompt "Search Gopher for"
+          :sources (list (make-instance 'gopher-search-source))))
+
 (defgeneric line->html (line)
   (:documentation "Transform a gopher line to a reasonable HTML representation."))
 
@@ -187,55 +239,3 @@ Second return value should be the MIME-type of the content."))
 (defmethod render ((line cl-gopher:png) &optional (mode (current-mode 'gopher)))
   (declare (ignore mode))
   (render-binary-content line "image/png"))
-
-(defmethod prompter:object-attributes ((line cl-gopher:search-line))
-  `(("Terms" ,(or (cl-gopher:terms line) ""))
-    ("Name" ,(cl-gopher:display-string line))))
-
-(define-class gopher-search-source (prompter:source)
-  ((prompter:name "Term Search")
-   (prompter:constructor (let ((mode (current-mode 'gopher)))
-                           (union (search-engines mode)
-                                  (sera:filter (alex:rcurry #'typep 'cl-gopher:search-line)
-                                               (cl-gopher:lines (contents mode)))
-                                  :test #'string= :key #'cl-gopher:uri-for-gopher-line)))
-   (prompter:multi-selection-p t)
-   (prompter:filter-preprocessor
-    (lambda (suggestions source input)
-      (declare (ignore source))
-      (mapcar (lambda (suggestion)
-                (let ((value (cl-gopher:copy-gopher-line (prompter:value suggestion))))
-                  (setf (cl-gopher:terms value) input)
-                  (prompter:make-suggestion value)))
-              suggestions)))
-   (prompter:actions (list (make-command search-gopher* (lines)
-                             (buffer-load (uiop:strcat "gopher-search:"
-                                                       (cl-gopher:uri-for-gopher-line (first lines))
-                                                       "///" (cl-gopher:terms (first lines))))
-                             (dolist (line (rest lines))
-                               (make-buffer
-                                :url (uiop:strcat "gopher-search:"
-                                                  (cl-gopher:uri-for-gopher-line line)
-                                                  "///" (cl-gopher:terms (first lines)))
-                                :parent-buffer (current-buffer))))
-                           (make-command save-search-engine (lines)
-                             (nyxt::configure-slot
-                              'search-engines 'gopher-mode
-                              :value `(append %slot-default%
-                                              (list
-                                               ,@(mapcar (lambda (line)
-                                                           `(make-gopher-search-engine
-                                                             ,(cl-gopher:uri-for-gopher-line line)
-                                                             ,(cl-gopher:display-string line)))
-                                                         lines)))))))))
-
-(export-always 'make-gopher-search-engine)
-(defun make-gopher-search-engine (url name)
-  (let ((line (cl-gopher:parse-gopher-uri url)))
-    (setf (cl-gopher:display-string line) name)
-    line))
-
-(define-command search-gopher ()
-  "Prompt for terms and search those in current page and saved search engines."
-  (prompt :prompt "Search Gopher for"
-          :sources (list (make-instance 'gopher-search-source))))
