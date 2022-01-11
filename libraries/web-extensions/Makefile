@@ -10,7 +10,7 @@ CC := ${shell command -v ${CC} 2> /dev/null || echo gcc}
 CFLAGS += ${shell pkg-config ${PKG_MODULES} --cflags} -fPIC
 LDLIBS += ${shell pkg-config ${PKG_MODULES} --libs}
 
-objects = nyxt.o globals.o extevent.o browser.o tabs.o management.o runtime.o extension.o storage.o alarms.o bookmarks.o browser_action.o commands.o history.o notifications.o permissions.o web_navigation.o web_request.o
+objects = $(patsubst %.c,%.o,$(wildcard *.c))
 
 .PHONY: all install clean
 all: libnyxt.so
