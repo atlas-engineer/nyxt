@@ -93,6 +93,7 @@
       (fire-extension-event
        extension tabs on-active-changed
        (ps:lisp (integer-id new-buffer))
+       ;; FIXME: Any way to get the window buffer belongs to?
        (ps:create window-id (ps:lisp (integer-id (current-window))))))))
 
 (defmethod tabs-on-created ((buffer buffer))
