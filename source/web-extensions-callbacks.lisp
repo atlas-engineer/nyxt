@@ -67,6 +67,19 @@
       ("successorTabId" . 0)
       ("windowId" . 0))))
 
+(defmethod tabs-on-activated ((old-buffer buffer) (new-buffer buffer))
+  (flet ((integer-id (object)
+           (or (ignore-errors (parse-integer (id object)))
+               0)))
+    (dolist (buffer (buffer-list))
+      (dolist (extension (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))
+        (ffi-buffer-evaluate-javascript
+         buffer (ps:ps (ps:chain browser tabs on-activated
+                                 (run (ps:create previous-tab-id (ps:lisp (integer-id old-buffer))
+                                                 tab-id (ps:lisp (integer-id new-buffer))
+                                                 window-id (ps:lisp (integer-id (current-window)))))))
+         (name extension))))))
+
 (-> tabs-query ((or null string)) (values string &optional))
 (defun tabs-query (query-object)
   (flet ((%tabs-query (query-object)

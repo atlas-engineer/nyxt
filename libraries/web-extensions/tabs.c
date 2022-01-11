@@ -129,7 +129,7 @@ inject_tabs_api (char* extension_name)
         char *extension_id = get_extension_id(extension_name);
         MAKE_CLASS(context, Tabs, "tabs");
 
-        /* TODO_PROP(Tabs, onActivated); */
+        MAKE_EVENT(context, "tabs", "onActivated");
         /* TODO_PROP(Tabs, onActiveChanged); */
         /* TODO_PROP(Tabs, onAttached); */
         /* TODO_PROP(Tabs, onCreated); */

@@ -935,12 +935,14 @@ See `gtk-browser's `modifier-translator' slot."
 
 (define-ffi-method ffi-window-set-buffer ((window gtk-window) (buffer gtk-buffer) &key (focus t))
   "Set BROWSER's WINDOW buffer to BUFFER."
-  (gtk:gtk-container-remove (main-buffer-container window) (gtk-object (active-buffer window)))
-  (gtk:gtk-box-pack-start (main-buffer-container window) (gtk-object buffer) :expand t :fill t)
-  (gtk:gtk-widget-show (gtk-object buffer))
-  (when focus
-    (gtk:gtk-widget-grab-focus (gtk-object buffer)))
-  buffer)
+  (let ((old-buffer (active-buffer window)))
+    (gtk:gtk-container-remove (main-buffer-container window) (gtk-object old-buffer))
+    (gtk:gtk-box-pack-start (main-buffer-container window) (gtk-object buffer) :expand t :fill t)
+    (gtk:gtk-widget-show (gtk-object buffer))
+    (when focus
+      (gtk:gtk-widget-grab-focus (gtk-object buffer)))
+    (nyxt/web-extensions::tabs-on-activated old-buffer buffer)
+    buffer))
 
 (define-ffi-method ffi-window-add-panel-buffer ((window gtk-window) (buffer panel-buffer) side)
   "Add a panel buffer to a window."
