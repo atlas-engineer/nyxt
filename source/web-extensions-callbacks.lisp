@@ -78,6 +78,12 @@
                                  (run (ps:create previous-tab-id (ps:lisp (integer-id old-buffer))
                                                  tab-id (ps:lisp (integer-id new-buffer))
                                                  window-id (ps:lisp (integer-id (current-window)))))))
+         (name extension))
+        ;; tabs.onActiveChanged is deprecated. No harm in having it, though.
+        (ffi-buffer-evaluate-javascript
+         buffer (ps:ps (ps:chain browser tabs on-active-changed
+                                 (run (ps:lisp (integer-id new-buffer))
+                                      (ps:create window-id (ps:lisp (integer-id (current-window)))))))
          (name extension))))))
 
 (-> tabs-query ((or null string)) (values string &optional))

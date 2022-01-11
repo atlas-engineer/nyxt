@@ -130,6 +130,7 @@ inject_tabs_api (char* extension_name)
         MAKE_CLASS(context, Tabs, "tabs");
 
         MAKE_EVENT(context, "tabs", "onActivated");
+        MAKE_EVENT(context, "tabs", "onActiveChanged");
         /* TODO_PROP(Tabs, onActiveChanged); */
         /* TODO_PROP(Tabs, onAttached); */
         /* TODO_PROP(Tabs, onCreated); */
