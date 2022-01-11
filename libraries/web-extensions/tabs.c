@@ -137,7 +137,7 @@ inject_tabs_api (char* extension_name)
         /* TODO_PROP(Tabs, onHighlightChanged); */
         /* TODO_PROP(Tabs, onHighlighted); */
         /* TODO_PROP(Tabs, onMoved); */
-        /* TODO_PROP(Tabs, onRemoved); */
+        MAKE_EVENT(context, "tabs", "onRemoved");
         /* TODO_PROP(Tabs, onReplaced); */
         /* TODO_PROP(Tabs, onSelectionChanged); */
         /* TODO_PROP(Tabs, onUpdated); */

@@ -103,6 +103,18 @@
      ;; trouble encoding, thus this JSON parsing hack.
      (ps:chain *j-s-o-n (parse (ps:lisp (encode-json (buffer->tab-description (buffer extension)))))))))
 
+(defmethod tabs-on-removed ((buffer buffer))
+  (flet ((integer-id (object)
+           (or (ignore-errors (parse-integer (id object)))
+               0)))
+    (dolist (extension (all-extensions))
+      (fire-extension-event
+       extension tabs on-removed
+       (ps:lisp (integer-id buffer))
+       (ps:create window-id (integer-id (current-window))
+                  ;; FIXME: How do we know if it's closing?
+                  is-window-closing false)))))
+
 (-> tabs-query ((or null string)) (values string &optional))
 (defun tabs-query (query-object)
   (flet ((%tabs-query (query-object)
