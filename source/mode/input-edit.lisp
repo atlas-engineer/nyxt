@@ -39,21 +39,25 @@
      ,@body))
 
 (defmacro with-input-area ((contents cursor-position) &body body)
-  `(let* ((,contents (active-input-area-content))
-          (,cursor-position (truncate (active-input-area-cursor))))
-     ,@body))
+  (let ((unprocessed-cursor (gensym)))
+    `(let* ((,contents (active-input-area-content))
+            (,unprocessed-cursor (active-input-area-cursor))
+            (,cursor-position (when (numberp ,unprocessed-cursor)
+                                (truncate (active-input-area-cursor)))))
+       (declare (ignorable ,contents ,cursor-position))
+       (if cursor-position
+           ,@body
+           (echo-warning "Cannot get cursor position. Are you in an input field?")))))
 
 (define-command cursor-forwards ()
   "Move cursor forward by one element."
-  (let* ((cursor-position (active-input-area-cursor)))
-    (let ((new-position (1+ cursor-position)))
-      (set-active-input-area-cursor new-position new-position))))
+  (with-input-area (contents cursor-position)
+    (set-active-input-area-cursor (1+ cursor-position) (1+ cursor-position))))
 
 (define-command cursor-backwards ()
   "Move cursor backwards by one element."
-  (let* ((cursor-position (truncate (active-input-area-cursor))))
-    (let ((new-position (1- cursor-position)))
-      (set-active-input-area-cursor new-position new-position))))
+  (with-input-area (contents cursor-position)
+    (set-active-input-area-cursor (1- cursor-position) (1- cursor-position))))
 
 (define-command cursor-forwards-word ()
   "Move cursor forwards a word."
