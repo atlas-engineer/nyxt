@@ -82,7 +82,7 @@
           (ps:ps (ps:chain browser ,object ,event
                            (run ,@args)))
           (name ,extension))
-         (log:debug "Event ~a.~a is not injected" (ps:ps ,object) (ps:ps ,event)))))
+         (log:debug "Event not injected: ~a" (ps:ps (ps:@ ,object ,event))))))
 
 (defmethod tabs-on-activated ((old-buffer buffer) (new-buffer buffer))
   (flet ((integer-id (object)
