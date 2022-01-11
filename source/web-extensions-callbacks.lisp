@@ -67,24 +67,33 @@
       ("successorTabId" . 0)
       ("windowId" . 0))))
 
+(defun all-extensions (&key (buffers (buffer-list)))
+  (loop for buffer in buffers
+        append (sera:filter #'nyxt/web-extensions::extension-p (modes buffer))))
+
+(defmacro fire-extension-event (extension object event &rest args)
+  (alex:once-only (extension)
+    `(ffi-buffer-evaluate-javascript
+      (buffer ,extension)
+      (ps:ps (ps:chain browser ,object ,event
+                       (run ,@args)))
+      (name ,extension))))
+
 (defmethod tabs-on-activated ((old-buffer buffer) (new-buffer buffer))
   (flet ((integer-id (object)
            (or (ignore-errors (parse-integer (id object)))
                0)))
-    (dolist (buffer (buffer-list))
-      (dolist (extension (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))
-        (ffi-buffer-evaluate-javascript
-         buffer (ps:ps (ps:chain browser tabs on-activated
-                                 (run (ps:create previous-tab-id (ps:lisp (integer-id old-buffer))
-                                                 tab-id (ps:lisp (integer-id new-buffer))
-                                                 window-id (ps:lisp (integer-id (current-window)))))))
-         (name extension))
-        ;; tabs.onActiveChanged is deprecated. No harm in having it, though.
-        (ffi-buffer-evaluate-javascript
-         buffer (ps:ps (ps:chain browser tabs on-active-changed
-                                 (run (ps:lisp (integer-id new-buffer))
-                                      (ps:create window-id (ps:lisp (integer-id (current-window)))))))
-         (name extension))))))
+    (dolist (extension (all-extensions))
+      (fire-extension-event
+       extension tabs on-activated
+       (ps:create previous-tab-id (ps:lisp (integer-id old-buffer))
+                  tab-id (ps:lisp (integer-id new-buffer))
+                  window-id (ps:lisp (integer-id (current-window)))))
+      ;; tabs.onActiveChanged is deprecated. No harm in having it, though.
+      (fire-extension-event
+       extension tabs on-active-changed
+       (ps:lisp (integer-id new-buffer))
+       (ps:create window-id (ps:lisp (integer-id (current-window))))))))
 
 (-> tabs-query ((or null string)) (values string &optional))
 (defun tabs-query (query-object)
