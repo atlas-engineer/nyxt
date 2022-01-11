@@ -17,7 +17,25 @@
               (contents mode) (cl-gopher:get-line-contents (line mode))))))
 
 (define-mode gopher-mode ()
-  "Gopher page interaction mode."
+  "Gopher page interaction mode.
+
+Renders gopher elements (provided by `cl-gopher') to human-readable HTML.
+
+The rendering of pages is done via the `render' method, while rendering of
+separate lines constituting a page is done in `line->html'. If you're
+unsatisfied with how pages are rendered, override either of the two.
+
+For example, if you want to render images as links instead of inline image
+loading, you'd need to override `line->html' in the following way:
+
+\(defun image->link (line)
+  (spinneret:with-html-string
+    (:a :href (cl-gopher:uri-for-gopher-line line)
+        (cl-gopher:display-string line))))
+
+\(defmethod line->html ((line cl-gopher:image)) (image->link line))
+\(defmethod line->html ((line cl-gopher:gif)) (image->html line))
+\(defmethod line->html ((line cl-gopher:png)) (image->link line))"
   ((rememberable-p nil)
    (line :documentation "The line being opened.")
    (contents :documentation "The contents of the current page.")
@@ -119,6 +137,7 @@ Create those with `make-gopher-search-engine'.")
   (prompt :prompt "Search Gopher for"
           :sources (list (make-instance 'gopher-search-source))))
 
+(export-always 'line->html)
 (defgeneric line->html (line)
   (:documentation "Transform a gopher line to a reasonable HTML representation."))
 
