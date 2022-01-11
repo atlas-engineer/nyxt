@@ -309,9 +309,10 @@ slash. WebExtensions require this :/"
 
 (defmethod nyxt::format-mode ((extension extension))
   (spinneret:with-html-string
-    (:a :class "button" :href (lisp-url `(toggle-extension-popup ',(mode-name extension)))
-        :title (format nil "Open the browser action of ~a" (mode-name extension))
-        (name extension))))
+    (:button :class "button"
+             :onclick (ps:ps (nyxt/ps:send-lisp-url `(toggle-extension-popup ',(mode-name extension))))
+             :title (format nil "Open the browser action of ~a" (mode-name extension))
+             (name extension))))
 
 (define-command toggle-extension-popup (&optional extension-class (buffer (current-buffer)))
   "Open the popup of the extension of EXTENSION-CLASS.
@@ -386,7 +387,9 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
          ;; This is to simulate the browser action on-click-popup behavior.
          (setf (nyxt:glyph extension)
                (spinneret:with-html-string
-                 (:a :class "button" :href (lisp-url `(toggle-extension-popup ',(mode-name extension)))
-                     :title (format nil "Open the browser action of ~a" (mode-name extension))
-                     (:raw (setf (default-icon (browser-action extension))
-                                 (encode-browser-action-icon (quote ,json) ,directory))))))))))
+                 (:button :class "button"
+                          :onclick (ps:ps (nyxt/ps:send-lisp-url
+                                           `(toggle-extension-popup ',(mode-name extension))))
+                          :title (format nil "Open the browser action of ~a" (mode-name extension))
+                          (:raw (setf (default-icon (browser-action extension))
+                                      (encode-browser-action-icon (quote ,json) ,directory))))))))))
