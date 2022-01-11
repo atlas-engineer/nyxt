@@ -77,15 +77,16 @@ of buffers."
   (flet ((buffer-markup (heading)
            "Create the presentation for a buffer."
            (spinneret:with-html
-             (:p (:button :class "button"
-                          :onclick (ps:ps (nyxt/ps:send-lisp-url
-                                           `(progn (switch-buffer :id ,(id (buffer heading)))
-                                                   (scroll-to-element :nyxt-identifier ,(get-nyxt-id (element heading))))))
-                          (:span :title (title heading)
-                                 :class "title" (title heading)))))))
+             (:button :class "button"
+                      :onclick (ps:ps (nyxt/ps:send-lisp-url
+                                       `(progn (switch-buffer :id ,(id (buffer heading)))
+                                               (scroll-to-element :nyxt-identifier ,(get-nyxt-id (element heading))))))
+                      (:span :title (title heading)
+                             :class "title" (title heading))))))
     (spinneret:with-html-string
       (:style (theme:themed-css (theme *browser*)
                 (.button
+                 :margin-top "20px"
                  :white-space "nowrap"
                  :overflow-x "hidden"
                  :display "block"
