@@ -131,9 +131,8 @@ inject_tabs_api (char* extension_name)
 
         MAKE_EVENT(context, "tabs", "onActivated");
         MAKE_EVENT(context, "tabs", "onActiveChanged");
-        /* TODO_PROP(Tabs, onActiveChanged); */
         /* TODO_PROP(Tabs, onAttached); */
-        /* TODO_PROP(Tabs, onCreated); */
+        MAKE_EVENT(context, "tabs", "onCreated");
         /* TODO_PROP(Tabs, onDetached); */
         /* TODO_PROP(Tabs, onHighlightChanged); */
         /* TODO_PROP(Tabs, onHighlighted); */

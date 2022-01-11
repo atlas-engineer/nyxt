@@ -95,6 +95,14 @@
        (ps:lisp (integer-id new-buffer))
        (ps:create window-id (ps:lisp (integer-id (current-window))))))))
 
+(defmethod tabs-on-created ((buffer buffer))
+  (dolist (extension (all-extensions))
+    (fire-extension-event
+     extension tabs on-created
+     ;; buffer->tab-description returns the representation that Parenscript has
+     ;; trouble encoding, thus this JSON parsing hack.
+     (ps:chain *j-s-o-n (parse (ps:lisp (encode-json (buffer->tab-description (buffer extension)))))))))
+
 (-> tabs-query ((or null string)) (values string &optional))
 (defun tabs-query (query-object)
   (flet ((%tabs-query (query-object)

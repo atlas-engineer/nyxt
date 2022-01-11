@@ -1219,6 +1219,7 @@ See `gtk-browser's `modifier-translator' slot."
       "Reply user message"
       (nyxt/web-extensions:reply-user-message buffer message))
     t)
+  (nyxt/web-extensions::tabs-on-created buffer)
   buffer)
 
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
