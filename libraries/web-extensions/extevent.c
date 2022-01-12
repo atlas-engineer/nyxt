@@ -9,6 +9,7 @@ extevent_constructor_callback ()
 {
         Extevent *event = malloc(sizeof(Extevent));
         event->listeners = g_ptr_array_new();
+        event->listeners_data = g_ptr_array_new();
         return event;
 }
 
@@ -20,10 +21,15 @@ extevent_free (Extevent *event)
 }
 
 static void
-extevent_add_listener_callback (Extevent *instance, JSCValue *callback, void *user_data)
+extevent_add_listener_callback (Extevent *instance, GPtrArray *args, void *user_data)
 {
+        JSCContext *context = jsc_context_get_current();
+        JSCValue *jsargs = jsc_value_new_array_from_garray(context, args);
+        JSCValue *callback = jsc_value_object_get_property_at_index(jsargs, 0);
         g_object_ref(callback);
+        g_object_ref(jsargs);
         g_ptr_array_add(instance->listeners, callback);
+        g_ptr_array_add(instance->listeners_data, jsargs);
 }
 
 static JSCValue *
@@ -45,7 +51,11 @@ extevent_has_listeners_callback (Extevent *instance, JSCValue *callback, void *u
 static void
 extevent_remove_listener_callback (Extevent *instance, JSCValue *callback, void *user_data)
 {
-        g_ptr_array_remove(instance->listeners, callback);
+        unsigned int index;
+        if (g_ptr_array_find(instance->listeners, callback, &index)) {
+                g_ptr_array_remove_index(instance->listeners, index);
+                g_ptr_array_remove_index(instance->listeners_data, index);
+        }
 }
 
 static JSCValue *
@@ -81,9 +91,9 @@ void inject_extevent_api (char* extension_name)
         JSCValue *ExtEvent_constructor = jsc_class_add_constructor(
                 ExtEvent, NULL, G_CALLBACK(extevent_constructor_callback),
                 NULL, NULL, G_TYPE_POINTER, 0, G_TYPE_NONE);
-        jsc_class_add_method(ExtEvent, "addListener",
-                             G_CALLBACK(extevent_add_listener_callback),
-                             NULL, NULL, G_TYPE_NONE, 1, JSC_TYPE_VALUE);
+        jsc_class_add_method_variadic(ExtEvent, "addListener",
+                                      G_CALLBACK(extevent_add_listener_callback),
+                                      NULL, NULL, G_TYPE_NONE);
         jsc_class_add_method(ExtEvent, "hasListener",
                              G_CALLBACK(extevent_has_listener_callback),
                              NULL, NULL, JSC_TYPE_VALUE, 1, JSC_TYPE_VALUE);
