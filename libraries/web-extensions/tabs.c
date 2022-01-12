@@ -155,7 +155,8 @@ inject_tabs_api (char* extension_name)
         MAKE_FNV(context, "tabs", "executeScript", tabs_execute_script_callback, extension_id);
 
         jsc_value_object_set_property(jsc_context_evaluate(context, "tabs", -1),
-                                      "TAB_ID_NONE", jsc_value_new_number(context, 0));
+                                      "TAB_ID_NONE", jsc_value_new_number(
+                                              context, TAB_ID_NONE));
         TODO_METHOD(context, tabs, captureTab);
         TODO_METHOD(context, tabs, captureVisibleTab);
         TODO_METHOD(context, tabs, connect);
