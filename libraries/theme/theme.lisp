@@ -59,7 +59,7 @@ Should contrast with the `text-color'.")
     :documentation "The tertiary interface color.
 Should contrast with the `background-color'.")
    (quaternary-color
-    "gainsboro"
+    "rgb(230, 230, 230)"
     :type string
     :documentation "The quaternary color.
 Should strongly contrast with the `text-color'.")
