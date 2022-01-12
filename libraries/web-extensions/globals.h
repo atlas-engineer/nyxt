@@ -124,11 +124,19 @@
  * Created an ExtEvent (JS class this library introduces for
  * WebExtensions events) and binds it to Prop_name (literal string) of
  * Object_name (literal string) in Context.
+ *
+ * Varargs should be a JSCValue pointer, a form returning it, or
+ * NULL. It will be used as filter to decide whether to run the
+ * listener given listener args and run args at the moment of event
+ * invocation.
  */
-#define MAKE_EVENT(Context, Object_name, Prop_name)         \
-        jsc_value_object_set_property(                      \
-                JSCEVAL(Context, Object_name), Prop_name,   \
-                JSCEVAL(Context, "new ExtEvent()"));        \
+#define MAKE_EVENT(Context, Object_name, Prop_name, ...)            \
+        jsc_value_object_set_property(                              \
+                JSCEVAL(Context, Object_name), Prop_name,           \
+                jsc_value_constructor_call(                         \
+                        jsc_context_get_value(context, "ExtEvent"), \
+                        G_TYPE_POINTER, __VA_ARGS__,                \
+                        G_TYPE_NONE));                              \
 
 /** BIND_FN
  *
