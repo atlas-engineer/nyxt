@@ -100,7 +100,7 @@ void inject_runtime_api (char* extension_name)
         MAKE_FN(context, "runtime", "getBrowserInfo", runtime_get_browser_info_callback, NULL, JSC_TYPE_VALUE, 0, G_TYPE_NONE);
         MAKE_FN(context, "runtime", "getURL", runtime_get_url_callback, extension_name, G_TYPE_STRING, 1, G_TYPE_STRING);
 
-        MAKE_EVENT(context, "runtime", "onMessage");
+        MAKE_EVENT(context, "runtime", "onMessage", NULL);
 
         jsc_value_object_set_property(
                 jsc_context_evaluate(context, "runtime", -1), "id",

@@ -5,11 +5,12 @@
 #include "extevent.h"
 
 static Extevent *
-extevent_constructor_callback ()
+extevent_constructor_callback (JSCValue *run_filter)
 {
         Extevent *event = malloc(sizeof(Extevent));
         event->listeners = g_ptr_array_new();
         event->listeners_data = g_ptr_array_new();
+        event->run_filter = run_filter;
         return event;
 }
 
@@ -91,7 +92,7 @@ void inject_extevent_api (char* extension_name)
                 context, "ExtEvent", NULL, NULL, (GDestroyNotify) extevent_free);
         JSCValue *ExtEvent_constructor = jsc_class_add_constructor(
                 ExtEvent, NULL, G_CALLBACK(extevent_constructor_callback),
-                NULL, NULL, G_TYPE_POINTER, 0, G_TYPE_NONE);
+                NULL, NULL, G_TYPE_POINTER, 1, JSC_TYPE_VALUE);
         jsc_class_add_method_variadic(ExtEvent, "addListener",
                                       G_CALLBACK(extevent_add_listener_callback),
                                       NULL, NULL, G_TYPE_NONE);

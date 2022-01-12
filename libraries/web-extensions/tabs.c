@@ -129,15 +129,15 @@ inject_tabs_api (char* extension_name)
         char *extension_id = get_extension_id(extension_name);
         MAKE_CLASS(context, Tabs, "tabs");
 
-        MAKE_EVENT(context, "tabs", "onActivated");
-        MAKE_EVENT(context, "tabs", "onActiveChanged");
+        MAKE_EVENT(context, "tabs", "onActivated", NULL);
+        MAKE_EVENT(context, "tabs", "onActiveChanged", NULL);
         /* TODO_PROP(Tabs, onAttached); */
-        MAKE_EVENT(context, "tabs", "onCreated");
+        MAKE_EVENT(context, "tabs", "onCreated", NULL);
         /* TODO_PROP(Tabs, onDetached); */
         /* TODO_PROP(Tabs, onHighlightChanged); */
         /* TODO_PROP(Tabs, onHighlighted); */
         /* TODO_PROP(Tabs, onMoved); */
-        MAKE_EVENT(context, "tabs", "onRemoved");
+        MAKE_EVENT(context, "tabs", "onRemoved", NULL);
         /* TODO_PROP(Tabs, onReplaced); */
         /* TODO_PROP(Tabs, onSelectionChanged); */
         /* TODO_PROP(Tabs, onUpdated); */

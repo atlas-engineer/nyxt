@@ -7,6 +7,7 @@
 typedef struct {
         GPtrArray *listeners;
         GPtrArray *listeners_data;
+        JSCValue *run_filter;
 } Extevent;
 
 void inject_extevent_api (char* extension_name);
