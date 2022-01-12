@@ -571,7 +571,7 @@ Delete it with `ffi-buffer-delete'."
        :color theme:text
        :padding 0
        :margin 0
-       :line-height "24px")
+       :line-height "20px")
       (.loader
        :border-width "2px"
        :border-style "solid"
@@ -633,7 +633,7 @@ Delete it with `ffi-buffer-delete'."
        :padding-left "15px"
        :z-index "2")
       ("#tabs"
-       :color theme:text
+       :color theme:background
        :background-color theme:tertiary
        :min-width "100px"
        :white-space "nowrap"
