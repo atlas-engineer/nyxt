@@ -523,14 +523,15 @@ This is a \"safe\" wrapper around `bt:make-thread'."
     (run-thread "Prompter source init thread"
       (bt:acquire-lock (initial-suggestions-lock source))
       ;; `initial-suggestions' initialization must be done before first input can be processed.
-      (cond ((listp (constructor source))
-             (setf (slot-value source 'initial-suggestions)
-                   (constructor source)))
-            ((constructor source)
-             ;; Run constructor asynchronously.
-             (calispel:! wait-channel t)
-             (setf (slot-value source 'initial-suggestions)
-                   (funcall (constructor source) source))))
+      (etypecase (constructor source)
+        (list
+         (setf (slot-value source 'initial-suggestions)
+               (constructor source)))
+        (function
+         ;; Run constructor asynchronously.
+         (calispel:! wait-channel t)
+         (setf (slot-value source 'initial-suggestions)
+               (funcall (constructor source) source))))
       (setf (slot-value source 'initial-suggestions)
             (ensure-suggestions-list source (initial-suggestions source)))
       ;; TODO: Setting `suggestions' is not needed?
