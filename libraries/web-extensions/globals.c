@@ -141,60 +141,85 @@ get_extension_id (char* extension_name)
  * checking. May be useful some time later, though.
  */
 
-/* int */
-/* host_permission_p (char *string) */
-/* { */
-/*         /\* This regexp is sufficient because the domain of host */
-/*          * permission checking is extremely restricted by the domain */
-/*          * of permissions checking. All the other match pattern */
-/*          * related things are managed by WebKit for us (are they?). */
-/*          *\/ */
-/*         return g_regex_match_simple(".*://.*", string, 0, 0); */
-/* } */
+int
+host_permission_p (char *string)
+{
+        /* This regexp is sufficient because the domain of host
+         * permission checking is extremely restricted by the domain
+         * of permissions checking. All the other match pattern
+         * related things are managed by WebKit for us (are they?).
+         */
+        return g_regex_match_simple(".*://.*", string, 0, 0);
+}
 
-/* int */
-/* match_host (char *hostname, char *uri_hostname) */
-/* { */
-/*         if (!strcmp(hostname, "*")) */
-/*                 return 1; */
-/*         if (*hostname == '*' && *(hostname+1) == '.') */
-/*                 for */
-/*         for (i = 0, cu = *uri_hostname, cmp = mp_hostname;; i++, cu++, cmp++) */
-/*                 if (cmp == '*') */
-/*                         for() */
-/* } */
+int
+match_scheme (char *scheme, char uri_scheme)
+{
+        if (!strcmp(scheme, "*")) {
+                /* Star only matches http(s) and ws(s). */
+                return (!strcmp("http", uri_scheme) ||
+                        !strcmp("https", uri_scheme) ||
+                        !strcmp("ws", uri_scheme) ||
+                        !strcmp("wss", uri_scheme));
+        } else {
+                return !strcmp(scheme, uri_scheme);
+        }
+}
 
-/* int */
-/* match_pattern_match (char *match_pattern, char *uri) */
-/* { */
-/*         char *uri_scheme = g_uri_parse_scheme(uri); */
-/*         char **uri_hostname = malloc(sizeof(char) * 1000); */
-/*         char *uri_path = g_filename_from_uri(uri, hostname, NULL); */
-/*         char **mp_parts = g_strsplit(host_permission, "://", 2); */
-/*         /\* Testing scheme. It can be either a full scheme or a star. */
-/*          * */
-/*          * If both strcmp-s return non-zero, then it's neither the */
-/*          * same scheme as the uri, nor the star. */
-/*          *\/ */
-/*         if(strcmp(*mp_parts, "*") && */
-/*            strcmp(*mp_parts, uri_scheme)) */
-/*                 return 0; */
+int
+match_host (char *hostname, char *uri_hostname)
+{
+        if (!strcmp(hostname, "*"))
+                return 1;
+        else if (hostname[0] == '*' &&
+                 hostname[1] == '.' &&
+                 strlen(hostname) < strlen(uri_hostname))
+                return match_host(
+                        (hostname+2),
+                        (uri_hostname +
+                         (strlen(uri_hostname) - strlen(hostname) - 3)));
+        else
+                return !strcmp(hostname, uri_hostname);
+}
 
-/*         /\* Testing hostname. */
-/*          * */
-/*          * Hostname is anything before '?' or '/'. If the string */
-/*          * starts with '/', then there's no hostname. */
-/*          *\/ */
+int
+match_path (char *path, char *uri_path, char *uri_query)
+{
+        /* TODO: Write it. */
+        return 1;
+}
 
-/*         char **mp_remains = g_strsplit(*(mp_parts+1), "/", 2); */
-/*         int has_hostname = !(**(mp_parts+1) == '/'); */
-/*         char *mp_hostname = has_hostname ? *mp_remains : ""; */
-/*         char *mp_path = *(mp_remains+(has_hostname?1:0)); */
-/*         char *cu, *cmp; */
-/*         int i; */
-/*         if(!match_host(mp_hostname, uri_hostname)) */
-/*                 return 0; */
-/* } */
+int
+match_pattern_match (char *match_pattern, char *uri)
+{
+        /* FIXME: What is the maximum scheme length? */
+        char *uri_scheme = malloc(sizeof(char) * 20);
+        char *uri_host = malloc(sizeof(char) * 1000);
+        char *uri_path = malloc(sizeof(char) * 10000);
+        char *uri_query = malloc(sizeof(char) * 10000);
+        /* FIXME: Maybe process the last arg (GError)? */
+        g_uri_split(uri, G_URI_FLAGS_NONE,
+                    &uri_scheme, NULL,
+                    &uri_host, NULL,
+                    &uri_path, &uri_query, NULL, NULL);
+        char **tmp = g_strsplit(match_pattern, "://", 2);
+        char *scheme = tmp[0];
+        char **tmp2 = g_strsplit(tmp, "/", 2);
+        char *host = tmp2[0];
+        char *path = tmp2[1];
+        /* Testing scheme. */
+        if (!match_scheme(scheme, uri_scheme))
+                return 0;
+
+        /* Testing hostname. */
+        if (!match_host(host, uri_host))
+                return 0;
+
+        if (!match_path(path, uri_path, uri_query))
+                return 0;
+
+        return 1;
+}
 
 /** has_permission
  *

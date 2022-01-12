@@ -234,6 +234,8 @@ JSCContext *get_extension_context (char* extension_name);
 
 char *get_extension_id (char* extension_name);
 
+int match_pattern_match (char *match_pattern, char *uri);
+
 int has_permission (char* extension_name, char* permission);
 
 void *empty_constructor_callback (void);
