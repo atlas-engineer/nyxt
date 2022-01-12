@@ -13,6 +13,13 @@ void inject_windows_api (char* extension_name)
         MAKE_EVENT(context, "windows", "onRemoved");
         MAKE_EVENT(context, "windows", "onFocusChanged");
 
+        jsc_value_object_set_property(JSCEVAL(context, "windows"),
+                                      "WINDOW_ID_NONE",
+                                      jsc_value_new_number(context, 0));
+        jsc_value_object_set_property(JSCEVAL(context, "windows"),
+                                      "WINDOW_ID_CURRENT",
+                                      jsc_value_new_number(context, -1));
+
         TODO_METHOD(context, windows, get);
         TODO_METHOD(context, windows, getCurrent);
         TODO_METHOD(context, windows, getLastFocused);
