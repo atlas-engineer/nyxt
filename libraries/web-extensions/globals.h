@@ -37,6 +37,30 @@
 #define ERROR_MESSAGE_PREFIX "error: "
 #endif
 
+/** WINDOW_ID_NONE
+ *
+ * What (integer) number to use as browser.windows.WINDOW_ID_NONE constant.
+ */
+#ifndef WINDOW_ID_NONE
+#define WINDOW_ID_NONE 0
+#endif
+
+/** TAB_ID_NONE
+ *
+ * What (integer) number to use as browser.tabs.TAB_ID_NONE constant.
+ */
+#ifndef TAB_ID_NONE
+#define TAB_ID_NONE 0
+#endif
+
+/** WINDOW_ID_CURRENT
+ *
+ * What (integer) number to use as browser.windows.WINDOW_ID_CURRENT constant.
+ */
+#ifndef WINDOW_ID_CURRENT
+#define WINDOW_ID_CURRENT -1
+#endif
+
 /** TODO_METHOD
  *
  * A macro to mark the methods that are not yet implemented. Outputs
