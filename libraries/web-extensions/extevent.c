@@ -17,6 +17,7 @@ static void
 extevent_free (Extevent *event)
 {
         g_ptr_array_free(event->listeners, TRUE);
+        g_ptr_array_free(event->listeners_data, TRUE);
         free(event);
 }
 
