@@ -70,15 +70,15 @@ void inject_web_request_api (char* extension_name)
         JSCContext *context = get_extension_context(IS_PRIVILEGED ? NULL : extension_name);
         MAKE_CLASS(context, WebRequest, "webRequest");
 
-        MAKE_EVENT(context, "webRequest", "onBeforeRequest", NULL);
-        MAKE_EVENT(context, "webRequest", "onBeforeSendHeaders", NULL);
-        MAKE_EVENT(context, "webRequest", "onSendHeaders", NULL);
-        MAKE_EVENT(context, "webRequest", "onHeadersReceived", NULL);
-        MAKE_EVENT(context, "webRequest", "onAuthRequired", NULL);
-        MAKE_EVENT(context, "webRequest", "onResponseStarted", NULL);
-        MAKE_EVENT(context, "webRequest", "onBeforeRedirect", NULL);
-        MAKE_EVENT(context, "webRequest", "onCompleted", NULL);
-        MAKE_EVENT(context, "webRequest", "onErrorOccured", NULL);
+        MAKE_EVENT(context, "webRequest", "onBeforeRequest");
+        MAKE_EVENT(context, "webRequest", "onBeforeSendHeaders");
+        MAKE_EVENT(context, "webRequest", "onSendHeaders");
+        MAKE_EVENT(context, "webRequest", "onHeadersReceived");
+        MAKE_EVENT(context, "webRequest", "onAuthRequired");
+        MAKE_EVENT(context, "webRequest", "onResponseStarted");
+        MAKE_EVENT(context, "webRequest", "onBeforeRedirect");
+        MAKE_EVENT(context, "webRequest", "onCompleted");
+        MAKE_EVENT(context, "webRequest", "onErrorOccured");
 
         TODO_METHOD(context, web_request, handlerBehaviorChanged);
         TODO_METHOD(context, web_request, filterResponseData);

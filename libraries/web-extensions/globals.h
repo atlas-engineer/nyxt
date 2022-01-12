@@ -125,17 +125,31 @@
  * WebExtensions events) and binds it to Prop_name (literal string) of
  * Object_name (literal string) in Context.
  *
- * Varargs should be a JSCValue pointer, a form returning it, or
- * NULL. It will be used as filter to decide whether to run the
- * listener given listener args and run args at the moment of event
- * invocation.
  */
-#define MAKE_EVENT(Context, Object_name, Prop_name, ...)            \
+#define MAKE_EVENT(Context, Object_name, Prop_name)            \
         jsc_value_object_set_property(                              \
                 JSCEVAL(Context, Object_name), Prop_name,           \
                 jsc_value_constructor_call(                         \
                         jsc_context_get_value(context, "ExtEvent"), \
-                        G_TYPE_POINTER, __VA_ARGS__,                \
+                        JSC_TYPE_VALUE, jsc_value_new_null(Context),    \
+                        G_TYPE_NONE));                              \
+/** MAKE_EVENT_FILTERED
+ *
+ * Creates an event, much line MAKE_EVENT does. The only difference is
+ * the ability to pass custom run filter.
+ *
+ * Varargs should be a JSCValue pointer or a form returning it. It
+ * will be used as a filter to decide whether to run the listener
+ * given listener args and run args at the moment of event
+ * invocation. Use undefined or null JSCValues if you want to accept
+ * all listeners.
+ */
+#define MAKE_EVENT_FILTERED(Context, Object_name, Prop_name, ...)   \
+        jsc_value_object_set_property(                              \
+                JSCEVAL(Context, Object_name), Prop_name,           \
+                jsc_value_constructor_call(                         \
+                        jsc_context_get_value(context, "ExtEvent"), \
+                        JSC_TYPE_VALUE, __VA_ARGS__,                \
                         G_TYPE_NONE));                              \
 
 /** BIND_FN
