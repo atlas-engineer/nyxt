@@ -47,12 +47,16 @@ loading, you'd need to override `line->html' in the following way:
     :documentation "A list of Gopher search-engines to use when doing `search-gopher'.
 Create those with `make-gopher-search-engine'.")
    (style (theme:themed-css (nyxt::theme *browser*)
+            (body
+             :background-color theme:background)
             (pre
-             :padding 0
-             :margin 0
+             :background-color theme:quaternary
+             :padding "2px"
+             :margin "0"
              :border-radius 0)
             (.button
-             :margin "3px")
+             :margin "0 3px 3px 0"
+             :font-size "15px")
             (.search
              :background-color theme:accent)
             (.error
