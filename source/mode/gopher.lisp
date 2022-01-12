@@ -110,14 +110,10 @@ Create those with `make-gopher-search-engine'.")
                   (prompter:make-suggestion value)))
               suggestions)))
    (prompter:actions (list (make-command search-gopher* (lines)
-                             (buffer-load (uiop:strcat "gopher-search:"
-                                                       (cl-gopher:uri-for-gopher-line (first lines))
-                                                       "///" (cl-gopher:terms (first lines))))
+                             (buffer-load (cl-gopher:uri-for-gopher-line (first lines)))
                              (dolist (line (rest lines))
                                (make-buffer
-                                :url (uiop:strcat "gopher-search:"
-                                                  (cl-gopher:uri-for-gopher-line line)
-                                                  "///" (cl-gopher:terms (first lines)))
+                                :url (cl-gopher:uri-for-gopher-line line)
                                 :parent-buffer (current-buffer))))
                            (make-command save-search-engine (lines)
                              (nyxt::configure-slot
@@ -125,6 +121,8 @@ Create those with `make-gopher-search-engine'.")
                               :value `(append %slot-default%
                                               (list
                                                ,@(mapcar (lambda (line)
+                                                           ;; FIXME: Maybe save the query, actually?
+                                                           (setf (cl-gopher:terms line) "")
                                                            `(make-gopher-search-engine
                                                              ,(cl-gopher:uri-for-gopher-line line)
                                                              ,(cl-gopher:display-string line)))

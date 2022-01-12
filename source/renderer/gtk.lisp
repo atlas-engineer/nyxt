@@ -760,29 +760,6 @@ See `gtk-browser's `modifier-translator' slot."
        #'process-gopher-scheme
        (lambda (condition)
          (echo-warning "Error while routing \"gopher:\" URL: ~a" condition)))
-      ;; This is a response to the problem of Gopher searches not being mirrored
-      ;; in the gopher: URLs. Much like the search requests that pass data in
-      ;; POST body instead of query parameters.
-      ;;
-      ;; Is that additional scheme pretty enough to leave it, or should there be
-      ;; some other way allowing to use just one scheme and interactive search
-      ;; line elements?
-      (webkit:webkit-web-context-register-uri-scheme-callback
-       context "gopher-search"
-       (lambda (request)
-         (let ((path (webkit:webkit-uri-scheme-request-get-path request))
-               line)
-           (destructuring-bind (url terms) (str:split "///" path :limit 2)
-             (setf line (cl-gopher:parse-gopher-uri url)
-                   (cl-gopher:terms line) terms)
-             ;; FIXME: Copy-pasted from `process-gopher-scheme'.
-             (enable-modes '(gopher-mode)
-                           (find (webkit:webkit-uri-scheme-request-get-web-view request)
-                                 (buffer-list)
-                                 :key #'gtk-object))
-             (nyxt/gopher-mode:render line))))
-       (lambda (condition)
-         (echo-warning "Error while routing \"gopher-search:\" URL: ~a" condition)))
       (webkit:webkit-security-manager-register-uri-scheme-as-local
        (webkit:webkit-web-context-get-security-manager context) "nyxt")
       (webkit:webkit-security-manager-register-uri-scheme-as-cors-enabled
