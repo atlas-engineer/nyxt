@@ -237,10 +237,10 @@ mapped to query parameters."
       (ffi-window-unfullscreen window)
       (ffi-window-fullscreen window)))
 
-(define-command toggle-toolbars ()
+(define-command toggle-toolbars (&optional (window (current-window)))
   "Toggle the visibility of the message and status buffer areas."
-  (toggle-status-buffer)
-  (toggle-message-buffer))
+  (toggle-status-buffer window)
+  (toggle-message-buffer window))
 
 (define-command toggle-status-buffer (&optional (window (current-window)))
   "Toggle the visibility of the status buffer."
@@ -251,5 +251,15 @@ mapped to query parameters."
 (define-command toggle-message-buffer (&optional (window (current-window)))
   "Toggle the visibility of the message buffer."
   (if (zerop (ffi-window-get-message-buffer-height window))
-      (ffi-window-set-message-buffer-height window (height (message-buffer-height window)))
+      (ffi-window-set-message-buffer-height window (message-buffer-height window))
       (ffi-window-set-message-buffer-height window 0)))
+
+(defun present-current-window (&optional (window (current-window)))
+  "Hide everything but the current buffer."
+  (ffi-window-set-status-buffer-height window 0)
+  (ffi-window-set-message-buffer-height window 0))
+
+(defun unpresent-current-window (&optional (window (current-window)))
+  "Unhide everything but the current buffer."
+  (ffi-window-set-status-buffer-height window (height (status-buffer window)))
+  (ffi-window-set-message-buffer-height window (message-buffer-height window)))
