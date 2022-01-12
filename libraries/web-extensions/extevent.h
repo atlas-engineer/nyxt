@@ -5,7 +5,8 @@
 #define __EXTEVENT_H__
 
 typedef struct {
-        GPtrArray* listeners;
+        GPtrArray *listeners;
+        GPtrArray *listeners_data;
 } Extevent;
 
 void inject_extevent_api (char* extension_name);
