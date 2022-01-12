@@ -70,6 +70,16 @@ extevent_run_callback (Extevent *instance, GPtrArray *args, void *user_data)
         if (instance->listeners->len) {
                 for (i = 0; i < instance->listeners->len; i++) {
                         JSCValue *fn = instance->listeners->pdata[i];
+                        JSCValue *listener_args = instance->listeners_data->pdata[i];
+                        if (!jsc_value_is_undefined(instance->run_filter) &&
+                            !jsc_value_is_null(instance->run_filter) &&
+                            !jsc_value_to_boolean(
+                                    jsc_value_function_call(
+                                            instance->run_filter,
+                                            JSC_TYPE_VALUE, listener_args,
+                                            JSC_TYPE_VALUE, jsargs,
+                                            G_TYPE_NONE)))
+                                continue;
                         JSCValue *tmp = jsc_value_function_call(
                                 jsc_context_evaluate(
                                         context, "var apply = (fn, args) => fn(...args); apply", -1),

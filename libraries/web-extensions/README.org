@@ -313,14 +313,14 @@ to run all the listeners with arbitrary arguments and that
 
 So, the general way to create event would be
 #+begin_src C
-    MAKE_EVENT(context, "runtime", "onMessage", NULL);
+    MAKE_EVENT(context, "runtime", "onMessage");
     /* OR */
   jsc_value_object_set_property(
                   JSCEVAL(context, "runtime"), "onMessage",
                   jsc_value_constructor_call(
                           /* "Event" is already taken by JS-native class. */
                           jsc_context_get_value(context, "ExtEvent"),
-                          G_TYPE_POINTER, NULL,
+                          JSC_TYPE_VALUE, jsc_value_new_null(context),
                           G_TYPE_NONE));
 #+end_src
 
