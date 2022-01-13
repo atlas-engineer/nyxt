@@ -385,6 +385,8 @@ there. `reply-user-mesage' takes care of sending the response back."
                           (webkit:webkit-user-message-get-parameters message)))
          (extensions (when buffer
                        (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))))
+    (log:debug "Message ~a with ~s parameters received."
+               message-name message-params)
     (flet ((wrap-in-channel (value)
              (let ((channel (nyxt::make-channel 1)))
                (setf (gethash (cffi:pointer-address (g:pointer message))
