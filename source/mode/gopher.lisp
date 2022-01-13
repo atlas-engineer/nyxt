@@ -187,7 +187,6 @@ Second return value should be the MIME-type of the content."))
             (cl-gopher:display-string line))))
 
 (defmethod line->html ((line cl-gopher:search-line))
-  "We use `search-gopher' command and custom URLs to simulate search."
   (spinneret:with-html-string
     (:button :class "button search"
              :onclick (ps:ps (nyxt/ps:send-lisp-url `(nyxt/gopher-mode:search-gopher)))
