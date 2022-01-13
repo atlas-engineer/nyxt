@@ -365,6 +365,49 @@ separated from one another, so that each has its own behaviour and settings."))
 
 (define-user-class buffer)
 
+(defmethod initialize-instance :after ((buffer buffer)
+                                       &key (browser *browser*) extra-modes
+                                         parent-buffer no-history-p
+                                         no-hook-p
+                                       &allow-other-keys)
+  "Make buffer with EXTRA-MODES.
+
+When NO-HOOK-P is nil, run `*browser*'s `buffer-before-make-hook', initialize
+the modes, then run `buffer-make-hook' over the created buffer.
+
+Return the created buffer."
+  (setf (id buffer) (get-unique-buffer-identifier browser))
+  (unless no-hook-p
+    (hooks:run-hook (buffer-before-make-hook browser) buffer))
+  ;; Modes might require that buffer exists, so we need to initialize them
+  ;; after the view has been created.
+  (initialize-modes buffer)
+  (mapc (alex:rcurry #'make-mode buffer) extra-modes)
+  ;; Background buffers are invisible to the browser.
+  (unless (eq buffer-class 'user-background-buffer)
+    (buffers-set (id buffer) buffer))
+  (unless no-history-p
+    ;; When we create buffer, current one can override the
+    ;; data-profile of the created buffer. This is dangerous,
+    ;; especially for nosave buffers.
+    (with-current-buffer buffer
+      ;; Register buffer in global history:
+      (with-data-access (history (history-path buffer)
+                                 :default (make-history-tree buffer))
+        ;; Owner may already exist if history was just created with the above
+        ;; default value.
+        (unless (htree:owner history (id buffer))
+          (htree:add-owner history (id buffer)
+                           :creator-id (when (and parent-buffer
+                                                  (not (nosave-buffer-p buffer))
+                                                  (not (nosave-buffer-p parent-buffer)))
+                                         (id parent-buffer)))))))
+  (unless no-hook-p
+    ;; Run hooks before `initialize-modes' to allow for last-minute modification
+    ;; of the default modes.
+    (hooks:run-hook (buffer-make-hook browser) buffer))
+  buffer)
+
 (defmethod print-object ((buffer buffer) stream)
   (print-unreadable-object (buffer stream :type t :identity t)
     (format stream "~a" (id buffer))))
@@ -537,7 +580,8 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   "Internal buffers are lighter than full-blown buffers which can have a
 WebKit context, etc.
 Delete it with `ffi-buffer-delete'."
-  (make-instance 'user-internal-buffer))
+  (make-instance 'user-internal-buffer :no-history-p t :default-modes nil
+                 :no-hook-p t))
 
 (define-class status-buffer (user-internal-buffer)
   ((height
@@ -692,6 +736,12 @@ Delete it with `ffi-buffer-delete'."
 (defun dead-buffer-p (buffer) ; TODO: Use this wherever needed.
   (str:empty? (id buffer)))
 
+(-> resurrect-buffer (buffer &key (:browser browser)) buffer)
+(defun resurrect-buffer (dead-buffer &key (browser *browser*))
+  (setf (id dead-buffer) (get-unique-buffer-identifier browser))
+  (ffi-buffer-make dead-buffer)
+  dead-buffer)
+
 (defmethod document-model ((buffer buffer))
   (pflet ((%count-dom-elements
            ()
@@ -760,7 +810,7 @@ when `proxied-downloads-p' is true."
 (defmethod initialize-modes ((buffer buffer))
   "Initialize BUFFER modes.
 This is called after BUFFER has been created by the renderer.
-See `buffer-make'."
+See `buffer's `initialize-instance' `:after' method."
   (dolist (mode-symbol (reverse (default-modes buffer)))
     (make-mode mode-symbol buffer)))
 
@@ -833,35 +883,38 @@ BUFFER's modes."
     ("Keywords" ,(lambda (buffer) (format nil "~:{~a~^ ~}" (keywords buffer))))))
 
 (-> make-buffer
-    (&key (:title string)
-          (:modes (or null (cons symbol *)))
-          (:url quri:uri)
-          (:parent-buffer (or null buffer))
-          (:no-history-p boolean)
-          (:load-url-p boolean)
-          (:buffer-class (or null symbol)))
-    *)
-(define-command make-buffer (&key (title "") modes (url (quri:uri "")) parent-buffer
-                                  no-history-p (load-url-p t) buffer-class)
+    (&rest t
+           &key (:title string)
+           (:modes (or null (cons symbol *)))
+           (:url quri:uri)
+           (:parent-buffer (or null buffer))
+           (:no-history-p boolean)
+           (:load-url-p boolean)
+           (:buffer-class (or null symbol))
+           &allow-other-keys)
+    buffer)
+(define-command make-buffer (&rest args &key (title "") modes (url (quri:uri "")) parent-buffer
+                             no-history-p (load-url-p t) (buffer-class 'user-web-buffer)
+                             &allow-other-keys)
   "Create a new buffer.
 MODES is a list of mode symbols.
 If URL is empty, the `default-new-buffer-url' browser slot is used instead.
 To load nothing, set it to 'about:blank'.
 PARENT-BUFFER is useful when we want to record buffer- and history relationships.
 LOAD-URL-P controls whether to load URL right at buffer creation."
-  (let* ((buffer (apply #'buffer-make *browser*
+  (let* ((buffer (apply #'make-instance buffer-class
                         :title title
                         :extra-modes modes
                         :parent-buffer parent-buffer
                         :no-history-p no-history-p
-                        (when buffer-class
-                          (list :buffer-class buffer-class))))
-         (url (if (url-empty-p url)
-                  (default-new-buffer-url *browser*)
-                  url)))
-    (if load-url-p
-        (buffer-load url :buffer buffer)
-        (setf (url buffer) (quri:uri url)))
+                        (append
+                         (unless (url-empty-p url)
+                           (list :url url))
+                         (uiop:remove-plist-keys '(:title :modes :url :parent-buffer
+                                                   :no-history-p :load-url-p)
+                                                 args)))))
+    (when load-url-p
+      (buffer-load url :buffer buffer))
     buffer))
 
 (-> make-nosave-buffer
@@ -922,79 +975,17 @@ See `make-buffer' for a description of the arguments."
 (define-command make-internal-buffer (&key (url (quri:uri "")) (title "") modes no-history-p)
   "Create a new buffer.
 MODES is a list of mode symbols.
-URL is a URL to load into the buffer."
-  (let ((buffer (buffer-make *browser* :title title
-                                       :extra-modes modes
-                                       :buffer-class 'user-internal-buffer
-                                       :no-history-p no-history-p))
-        (url (if (url-empty-p url)
-                 (default-new-buffer-url *browser*)
-                 url)))
-    (buffer-load url :buffer buffer)))
+If URL is `:default', use `default-new-buffer-url'."
+  (make-buffer :title title
+               :extra-modes modes
+               :buffer-class 'user-internal-buffer
+               :no-history-p no-history-p))
 
 (define-command make-editor-buffer (&key (title "") modes)
   "Create a new editor buffer."
-  (buffer-make *browser* :title title
-                         :extra-modes modes
-                         :buffer-class 'user-editor-buffer))
-
-(-> buffer-make
-    (browser &key
-             (:title string)
-             (:data-profile data-profile)
-             (:extra-modes list)
-             (:dead-buffer buffer)
-             (:nosave-buffer-p boolean)
-             (:buffer-class symbol)
-             (:parent-buffer buffer)
-             (:no-history-p boolean))
-    *)
-(defun buffer-make (browser &key data-profile title extra-modes
-                                 dead-buffer (buffer-class 'user-web-buffer)
-                                 parent-buffer no-history-p
-                                 (nosave-buffer-p (nosave-buffer-p parent-buffer)))
-  "Make buffer with title TITLE and with EXTRA-MODES.
-Run `*browser*'s `buffer-make-hook' over the created buffer before returning it.
-If DEAD-BUFFER is a dead buffer, recreate its web view and give it a new ID."
-  (let ((buffer (if dead-buffer
-                    (progn
-                      ;; Dead buffer ID must be renewed before calling `ffi-buffer-make'.
-                      (setf (id dead-buffer) (get-unique-identifier *browser*))
-                      (ffi-buffer-make dead-buffer))
-                    (apply #'make-instance buffer-class
-                           :id (get-unique-identifier *browser*)
-                           (append (when title `(:title ,title))
-                                   (when data-profile `(:data-profile ,data-profile)))))))
-    (hooks:run-hook (buffer-before-make-hook *browser*) buffer)
-    ;; Modes might require that buffer exists, so we need to initialize them
-    ;; after the view has been created.
-    (initialize-modes buffer)
-    (mapc (alex:rcurry #'make-mode buffer) extra-modes)
-    (when dead-buffer                   ; TODO: URL should be already set.  Useless?
-      (setf (url buffer) (url dead-buffer)))
-    ;; Background buffers are invisible to the browser.
-    (unless (eq buffer-class 'user-background-buffer)
-      (buffers-set (id buffer) buffer))
-    (unless no-history-p
-      ;; When we create buffer, current one can override the
-      ;; data-profile of the created buffer. This is dangerous,
-      ;; especially for nosave buffers.
-      (with-current-buffer buffer
-        ;; Register buffer in global history:
-        (with-data-access (history (history-path buffer)
-                                   :default (make-history-tree buffer))
-          ;; Owner may already exist if history was just created with the above
-          ;; default value.
-          (unless (htree:owner history (id buffer))
-            (htree:add-owner history (id buffer)
-                             :creator-id (when (and parent-buffer
-                                                    (not nosave-buffer-p)
-                                                    (not (nosave-buffer-p parent-buffer)))
-                                           (id parent-buffer)))))))
-    ;; Run hooks before `initialize-modes' to allow for last-minute modification
-    ;; of the default modes.
-    (hooks:run-hook (buffer-make-hook browser) buffer)
-    buffer))
+  (make-buffer :title title
+               :extra-modes modes
+               :buffer-class 'user-editor-buffer))
 
 (-> add-to-recent-buffers (buffer) *)
 (defun add-to-recent-buffers (buffer)
