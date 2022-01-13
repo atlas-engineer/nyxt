@@ -173,11 +173,11 @@ match_host (char *hostname, char *uri_hostname)
                 return 1;
         else if (hostname[0] == '*' &&
                  hostname[1] == '.' &&
-                 strlen(hostname) < strlen(uri_hostname))
+                 (strlen(hostname) - 2) < strlen(uri_hostname))
                 return match_host(
                         (hostname+2),
                         (uri_hostname +
-                         (strlen(uri_hostname) - strlen(hostname) - 3)));
+                         (strlen(uri_hostname) - strlen(hostname+2))));
         else
                 return !strcmp(hostname, uri_hostname);
 }
