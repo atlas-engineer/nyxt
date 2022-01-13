@@ -117,7 +117,12 @@ Create those with `make-gopher-search-engine'.")
                                (make-buffer
                                 :url (cl-gopher:uri-for-gopher-line line)
                                 :parent-buffer (current-buffer))))
-                           (make-command save-search-engine (lines)
+                           (make-command search-gopher-new-buffer* (lines)
+                             (dolist (line lines)
+                               (make-buffer
+                                :url (cl-gopher:uri-for-gopher-line line)
+                                :parent-buffer (current-buffer))))
+                           (make-command save-search-engine* (lines)
                              (nyxt::configure-slot
                               'search-engines 'gopher-mode
                               :value `(append %slot-default%
