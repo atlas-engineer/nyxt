@@ -109,6 +109,17 @@
      ;; trouble encoding, thus this JSON parsing hack.
      (ps:chain *j-s-o-n (parse (ps:lisp (encode-json (buffer->tab-description (buffer extension)))))))))
 
+(defmethod tabs-on-updated ((buffer buffer) properties)
+  "Invoke the browser.tabs.onUpdated event with PROPERTIES being an alist of BUFFER changes."
+  (dolist (extension (all-extensions))
+    (fire-extension-event
+     extension tabs on-updated
+     (ps:lisp (parse-integer (id buffer)))
+     (ps:chain *j-s-o-n (parse (ps:lisp (encode-json properties))))
+     ;; buffer->tab-description returns the representation that Parenscript has
+     ;; trouble encoding, thus this JSON parsing hack.
+     (ps:chain *j-s-o-n (parse (ps:lisp (encode-json (buffer->tab-description (buffer extension)))))))))
+
 (defmethod tabs-on-removed ((buffer buffer))
   (flet ((integer-id (object)
            (or (ignore-errors (parse-integer (id object)))

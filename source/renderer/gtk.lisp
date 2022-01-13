@@ -901,16 +901,24 @@ See `gtk-browser's `modifier-translator' slot."
                   url)))
     (cond ((eq load-event :webkit-load-started)
            (setf (slot-value buffer 'status) :loading)
+           (nyxt/web-extensions::tabs-on-updated buffer '(("status" . "loading")))
+           (nyxt/web-extensions::tabs-on-updated buffer `(("url" . ,(render-url url))))
            (print-status nil (get-containing-window-for-buffer buffer *browser*))
            (echo "Loading ~s." (render-url url)))
           ((eq load-event :webkit-load-redirected)
+           (nyxt/web-extensions::tabs-on-updated buffer '(("status" . "loading")))
+           (nyxt/web-extensions::tabs-on-updated buffer `(("url" . ,(render-url url))))
            (on-signal-load-redirected buffer url))
           ((eq load-event :webkit-load-committed)
+           (nyxt/web-extensions::tabs-on-updated buffer '(("status" . "loading")))
+           (nyxt/web-extensions::tabs-on-updated buffer `(("url" . ,(render-url url))))
            (on-signal-load-committed buffer url))
           ((eq load-event :webkit-load-finished)
            (setf (loading-webkit-history-p buffer) nil)
            (unless (eq (slot-value buffer 'status) :failed)
              (setf (slot-value buffer 'status) :finished))
+           (nyxt/web-extensions::tabs-on-updated buffer '(("status" . "complete")))
+           (nyxt/web-extensions::tabs-on-updated buffer `(("url" . ,(render-url url))))
            (on-signal-load-finished buffer url)
            (print-status nil (get-containing-window-for-buffer buffer *browser*))
            (echo "Finished loading ~s." (render-url url))))))
@@ -956,6 +964,9 @@ See `gtk-browser's `modifier-translator' slot."
     (when focus
       (gtk:gtk-widget-grab-focus (gtk-object buffer)))
     (nyxt/web-extensions::tabs-on-activated old-buffer buffer)
+    (nyxt/web-extensions::tabs-on-updated buffer `(("attention" . t)))
+    (nyxt/web-extensions::tabs-on-updated
+     old-buffer (alex:alist-hash-table `(("attention" . nil))))
     buffer))
 
 (define-ffi-method ffi-window-add-panel-buffer ((window gtk-window) (buffer panel-buffer) side)
@@ -1147,10 +1158,14 @@ See `gtk-browser's `modifier-translator' slot."
     (declare (ignore web-view errors))
     (on-signal-load-failed-with-tls-errors buffer certificate (quri:uri failing-url)))
   (connect-signal buffer "notify::uri" nil (web-view param-spec)
-    (declare (ignore web-view param-spec))
+    (declare (ignore param-spec))
+    (nyxt/web-extensions::tabs-on-updated
+     buffer `(("url" . ,(webkit:webkit-web-view-uri web-view))))
     (on-signal-notify-uri buffer nil))
   (connect-signal buffer "notify::title" nil (web-view param-spec)
-    (declare (ignore web-view param-spec))
+    (declare (ignore  param-spec))
+    (nyxt/web-extensions::tabs-on-updated
+     buffer `(("title" . ,(webkit:webkit-web-view-title web-view))))
     (on-signal-notify-title buffer nil))
   (connect-signal buffer "web-process-terminated" nil (web-view reason)
     ;; TODO: Bind WebKitWebProcessTerminationReason in cl-webkit.
@@ -1416,6 +1431,8 @@ requested a reload."
 
 #+webkit2-mute
 (defmethod ffi-buffer-enable-sound ((buffer gtk-buffer) value)
+  (nyxt/web-extensions::tabs-on-updated
+   buffer (alex:alist-hash-table `(("audible" . ,value))))
   (webkit:webkit-web-view-set-is-muted (gtk-object buffer) (not value)))
 
 (defmethod ffi-buffer-download ((buffer gtk-buffer) url)
