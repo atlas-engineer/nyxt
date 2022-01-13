@@ -20,6 +20,9 @@
 
 Renders gopher elements (provided by `cl-gopher') to human-readable HTML.
 
+The default style is rendering info messages to <pre> text, inlining
+images/sounds and showing everything else as buttons.
+
 The rendering of pages is done via the `render' method, while rendering of
 separate lines constituting a page is done in `line->html'. If you're
 unsatisfied with how pages are rendered, override either of the two.
@@ -190,7 +193,7 @@ Second return value should be the MIME-type of the content."))
   (spinneret:with-html-string
     (:button :class "button search"
              :onclick (ps:ps (nyxt/ps:send-lisp-url `(nyxt/gopher-mode:search-gopher)))
-             (cl-gopher:display-string line))))
+             (:b "[SEARCH] ") (cl-gopher:display-string line))))
 
 (defmethod line->html ((line cl-gopher:html-file))
   (spinneret:with-html-string
@@ -200,15 +203,21 @@ Second return value should be the MIME-type of the content."))
         (cl-gopher:display-string line))
     (:br)))
 
+(defmethod line->html ((line cl-gopher:text-file))
+  (spinneret:with-html-string
+    (:a :class "button"
+       :href (cl-gopher:uri-for-gopher-line line)
+       (cl-gopher:display-string line))
+    (:br)))
+
 (defun file-link->html (line)
   (spinneret:with-html-string
     (:a :class "button"
         :style (format nil "background-color: ~a" (theme:primary-color (theme *browser*)))
         :href (cl-gopher:uri-for-gopher-line line)
-        (cl-gopher:display-string line))
+        (:b "[FILE] ") (cl-gopher:display-string line))
     (:br)))
 
-(defmethod line->html ((line cl-gopher:text-file)) (file-link->html line))
 (defmethod line->html ((line cl-gopher:binary-file)) (file-link->html line))
 (defmethod line->html ((line cl-gopher:binhex-file)) (file-link->html line))
 (defmethod line->html ((line cl-gopher:dos-file)) (file-link->html line))
