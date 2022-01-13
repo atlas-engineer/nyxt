@@ -80,7 +80,7 @@
 (define-parenscript remove-element-hints ()
   (defun hints-remove-all ()
     "Removes all the elements"
-    (ps:dolist (element (nyxt/ps:qsa document ".nyxt-hint"))
+    (ps:dolist (element (nyxt/ps:qsa document ":not(.nyxt-search-node) > .nyxt-hint"))
       (ps:chain element (remove))))
   (hints-remove-all))
 
