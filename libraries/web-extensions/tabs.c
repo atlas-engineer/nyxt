@@ -122,12 +122,81 @@ tabs_execute_script_callback (GPtrArray *args, void *extension_id)
         SEND_MESSAGE_RETURN_PROMISE(message, context, i);
 }
 
+int js_array_contains (JSCContext *context, JSCValue *arr, JSCValue *elem)
+{
+        JSCValue *contains = jsc_context_evaluate(
+                context, "function contains (arr, elem) \
+{ return (arr.indexOf(elem) >= 0); };                   \
+contains", -1);
+        return jsc_value_to_boolean(
+                jsc_value_function_call(
+                        contains, JSC_TYPE_VALUE, arr, JSC_TYPE_VALUE, elem));
+}
+
+int
+update_filter_callback (JSCValue *listener_args, JSCValue *call_args)
+{
+        JSCContext *context = jsc_context_get_current();
+        JSCValue *tab_id = jsc_value_object_get_property_at_index(call_args, 0);
+        JSCValue *change_info = jsc_value_object_get_property_at_index(call_args, 1);
+        JSCValue *tab = jsc_value_object_get_property_at_index(call_args, 2);
+        JSCValue *extra, *properties, *urls, *pattern;
+        int i, matched;
+        char **prop_names = {"attention", "audible", "discarded", "favIconUrl",
+                "hidden", "isArticle", "mutedInfo", "pinned",
+                "sharingState", "status", "title", "url", NULL},
+                **current;
+        if (!jsc_value_object_has_property(listener_args, "1"))
+                return 1;
+        extra = jsc_value_object_get_property(listener_args, "1");
+        if (jsc_value_object_has_property(extra, "urls")) {
+                urls = jsc_value_object_get_property(extra, "urls");
+                i = 0, matched = 0;
+                while (!jsc_value_is_undefined(
+                               pattern = jsc_value_object_get_property_at_index(
+                                       urls, i++)))
+                        /* FIXME: This requires "url" property which
+                         * is not always there. */
+                        if (match_pattern_match(
+                                    jsc_value_to_string(pattern),
+                                    jsc_value_object_get_property(tab, "url")))
+                                matched = 1;
+                if (!matched)
+                        return 0;
+        }
+        if (jsc_value_object_has_property(extra, "properties")) {
+                properties = jsc_value_object_get_property(extra, "properties");
+                for (current = prop_names; *current != NULL; current++)
+                        if (js_array_contains(context, properties, *current) &&
+                            !jsc_value_object_has_property(change_info, *current))
+                                return 0;
+        }
+        if (jsc_value_object_has_property(extra, "tabId")) {
+                if (jsc_value_to_int32(jsc_value_object_get_property(tab, "id"))
+                    != jsc_value_to_int32(
+                            jsc_value_object_get_property(extra, "tabId")))
+                        return 0;
+        }
+        if (jsc_value_object_has_property(extra, "windowId")) {
+                if (jsc_value_to_int32(
+                            jsc_value_object_get_property(tab, "windowId"))
+                    != jsc_value_to_int32(
+                            jsc_value_object_get_property(extra, "windowId")))
+                        return 0;
+        }
+        return 1;
+}
+
 void
 inject_tabs_api (char* extension_name)
 {
         JSCContext *context = get_extension_context(IS_PRIVILEGED ? NULL : extension_name);
         char *extension_id = get_extension_id(extension_name);
         MAKE_CLASS(context, Tabs, "tabs");
+        JSCValue *update_filter = jsc_value_new_function(
+                context, NULL,
+                G_CALLBACK(update_filter_callback),
+                NULL, NULL, G_TYPE_INT, 2, JSC_TYPE_VALUE, JSC_TYPE_VALUE);
 
         MAKE_EVENT(context, "tabs", "onActivated");
         MAKE_EVENT(context, "tabs", "onActiveChanged");
@@ -140,7 +209,7 @@ inject_tabs_api (char* extension_name)
         MAKE_EVENT(context, "tabs", "onRemoved");
         /* TODO_PROP(Tabs, onReplaced); */
         /* TODO_PROP(Tabs, onSelectionChanged); */
-        /* TODO_PROP(Tabs, onUpdated); */
+        MAKE_EVENT_FILTERED(context, "tabs", "onUpdated", update_filter);
         /* TODO_PROP(Tabs, onZoomChange); */
 
         MAKE_FN(context, "tabs", "query", tabs_query_callback, NULL, JSC_TYPE_VALUE, 1, JSC_TYPE_VALUE);
