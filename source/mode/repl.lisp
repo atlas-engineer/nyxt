@@ -54,11 +54,7 @@
           :documentation "The CSS applied to a REPL when it is set-up.")
    (evaluation-history (list)
                        :documentation "A list of pairs of (INPUT RESULTS).
-INPUT is a string and RESULTS is a list of Lisp values.")
-   (constructor
-    (lambda (mode)
-      (initialize-display mode)
-      (update-evaluation-history-display mode)))))
+INPUT is a string and RESULTS is a list of Lisp values.")))
 
 (defun package-short-name (package)
   (first (sort (append (package-nicknames package)
@@ -85,20 +81,6 @@ INPUT is a string and RESULTS is a list of Lisp values.")
            (setf (ps:chain document (get-element-by-id "input-buffer") value) "")))
       (clear-input-buffer-text))))
 
-(defmethod initialize-display ((repl repl-mode))
-  (let* ((content (spinneret:with-html-string
-                    (:head (:style (style repl)))
-                    (:body
-                     (:div :id "container"
-                           (:div :id "evaluation-history" "")
-                           (:div :id "input"
-                                 (:span :id "prompt"
-                                        (format nil "~a>" (package-short-name *package*)))
-                                 (:input :type "text" :id "input-buffer"))))))
-         (insert-content (ps:ps (ps:chain document
-                                          (write (ps:lisp content))))))
-    (ffi-buffer-evaluate-javascript-async (buffer repl) insert-content)))
-
 (defmethod add-object-to-evaluation-history ((repl repl-mode) item)
   (push item (evaluation-history repl)))
 
@@ -117,10 +99,15 @@ INPUT is a string and RESULTS is a list of Lisp values.")
        (setf (ps:chain document (get-element-by-id "evaluation-history") |innerHTML|)
              (ps:lisp (generate-evaluation-history-html repl)))))))
 
-(define-command-global lisp-repl ()
+(nyxt::define-internal-page-command lisp-repl ()
+    (repl-buffer "*Lisp REPL*" 'repl-mode)
   "Show Lisp REPL."
-  (let* ((repl-buffer (make-internal-buffer
-                       :title "*Lisp REPL*"
-                       :modes '(nyxt/repl-mode:repl-mode base-mode))))
-    (set-current-buffer repl-buffer)
-    repl-buffer))
+  (spinneret:with-html-string
+    (:head (:style (style (find-mode repl-buffer 'repl-mode))))
+    (:body
+     (:div :id "container"
+           (:div :id "evaluation-history" "")
+           (:div :id "input"
+                 (:span :id "prompt"
+                        (format nil "~a>" (package-short-name *package*)))
+                 (:input :type "text" :id "input-buffer"))))))
