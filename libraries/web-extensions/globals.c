@@ -153,7 +153,7 @@ host_permission_p (char *string)
 }
 
 int
-match_scheme (char *scheme, char uri_scheme)
+match_scheme (char *scheme, char *uri_scheme)
 {
         if (!strcmp(scheme, "*")) {
                 /* Star only matches http(s) and ws(s). */
@@ -198,13 +198,13 @@ match_pattern_match (char *match_pattern, char *uri)
         char *uri_path = malloc(sizeof(char) * 10000);
         char *uri_query = malloc(sizeof(char) * 10000);
         /* FIXME: Maybe process the last arg (GError)? */
-        g_uri_split(uri, G_URI_FLAGS_NONE,
+        g_uri_split(uri, 0,
                     &uri_scheme, NULL,
                     &uri_host, NULL,
                     &uri_path, &uri_query, NULL, NULL);
         char **tmp = g_strsplit(match_pattern, "://", 2);
         char *scheme = tmp[0];
-        char **tmp2 = g_strsplit(tmp, "/", 2);
+        char **tmp2 = g_strsplit(*tmp, "/", 2);
         char *host = tmp2[0];
         char *path = tmp2[1];
         /* Testing scheme. */
