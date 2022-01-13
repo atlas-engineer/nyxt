@@ -213,6 +213,7 @@ Second return value should be the MIME-type of the content."))
 (defmethod line->html ((line cl-gopher:binhex-file)) (file-link->html line))
 (defmethod line->html ((line cl-gopher:dos-file)) (file-link->html line))
 (defmethod line->html ((line cl-gopher:uuencoded-file)) (file-link->html line))
+(defmethod line->html ((line cl-gopher:unknown)) (file-link->html line))
 
 (defmethod render ((line cl-gopher:gopher-line) &optional (mode (current-mode 'gopher)))
   (let ((contents (cl-gopher:get-line-contents line)))
