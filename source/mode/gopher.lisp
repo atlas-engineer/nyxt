@@ -12,9 +12,8 @@
 
 (defun update (mode)
   (let ((url (url (buffer mode))))
-    (unless (string= "gopher-search" (quri:uri-scheme url))
-        (setf (line mode) (cl-gopher:parse-gopher-uri (render-url url))
-              (contents mode) (cl-gopher:get-line-contents (line mode))))))
+    (setf (line mode) (cl-gopher:parse-gopher-uri (render-url url))
+          (contents mode) (cl-gopher:get-line-contents (line mode)))))
 
 (define-mode gopher-mode ()
   "Gopher page interaction mode.
