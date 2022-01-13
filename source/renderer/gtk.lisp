@@ -1168,6 +1168,7 @@ See `gtk-browser's `modifier-translator' slot."
     (mapc (lambda (handler-id)
             (gobject:g-signal-handler-disconnect web-view handler-id))
           (handler-ids buffer))
+    (nyxt/web-extensions::tabs-on-removed buffer)
     (buffer-hide buffer)
     (gtk:gtk-widget-destroy web-view)
     (setf (gtk-object buffer) nil))
@@ -1249,7 +1250,6 @@ See `gtk-browser's `modifier-translator' slot."
   buffer)
 
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
-  (nyxt/web-extensions::tabs-on-removed buffer)
   (if (slot-value buffer 'gtk-object) ; Not all buffers have their own web view, e.g. prompt buffers.
       (webkit:webkit-web-view-try-close (gtk-object buffer))
       (buffer-hide buffer)))
