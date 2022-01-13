@@ -203,6 +203,7 @@ Second return value should be the MIME-type of the content."))
 (defun file-link->html (line)
   (spinneret:with-html-string
     (:a :class "button"
+        :style (format nil "background-color: ~a" (theme:primary-color (theme *browser*)))
         :href (cl-gopher:uri-for-gopher-line line)
         (cl-gopher:display-string line))
     (:br)))
