@@ -686,7 +686,7 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-window-get-status-buffer-height (window))
 (define-ffi-generic ffi-window-get-message-buffer-height (window))
 (define-ffi-generic ffi-window-get-prompt-buffer-height (window))
-(define-ffi-generic ffi-buffer-make (browser))
+(define-ffi-generic ffi-buffer-make (buffer))
 (define-ffi-generic ffi-buffer-delete (buffer))
 (define-ffi-generic ffi-buffer-load (buffer url))
 (define-ffi-generic ffi-buffer-evaluate-javascript (buffer javascript &optional world-name))
