@@ -144,14 +144,14 @@ renderer get terminated.  The handlers take no argument.")
 The handlers take the window as argument.")
    (buffer-make-hook (make-hook-buffer)
                      :type hook-buffer
-                     :documentation "Hook run after `buffer-make' and before `ffi-buffer-load'.
+                     :documentation "Hook run after `buffer' initialization and before the URL is loaded.
 It is run before `initialize-modes' so that the default mode list can still be
 altered from the hooks.
 The handlers take the buffer as argument.")
    (buffer-before-make-hook
     (make-hook-buffer)
     :type hook-buffer
-    :documentation "Hook run before `buffer-make'.
+    :documentation "Hook run at the beginning of `buffer' initialization.
 The buffer web view is not allocated, so it's not possible to run any
 parenscript from this hook.  See `buffer-make-hook' for a hook.
 The handlers take the buffer as argument.")

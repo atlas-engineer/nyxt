@@ -1176,7 +1176,7 @@ See `gtk-browser's `modifier-translator' slot."
     t)
   (connect-signal buffer "create" (web-view navigation-action)
     (declare (ignore web-view))
-    (let ((new-buffer (buffer-make *browser*))
+    (let ((new-buffer (make-instance 'user-buffer))
           (url (webkit:webkit-uri-request-uri
                 (webkit:webkit-navigation-action-get-request
                  (gobject:pointer navigation-action)))))
