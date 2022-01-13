@@ -1,13 +1,19 @@
-;; IT WAS NEEDED TO USE (in-package :nyxt), OTHERWISE, IT WOULD NOT WORK
-;; (uiop:define-package :nyxt/no-procrastinate-mode
-;;     (:use :common-lisp :nyxt :nyxt/blocker-mode)
-;;   (:import-from #:class-star #:define-class)
-;;   (:documentation "Block resource queries for listed hosts."))
-;; (in-package :nyxt/no-procrastinate-mode)
-;; (eval-when (:compile-toplevel :load-toplevel :execute)
-;;   (use-nyxt-package-nicknames))
+(uiop:define-package :nyxt/no-procrastinate-mode
+    (:use :common-lisp :nyxt :nyxt/blocker-mode)
+  (:import-from #:class-star #:define-class)
+  (:documentation "Block resource queries for listed hosts."))
+(in-package :nyxt/no-procrastinate-mode)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (use-nyxt-package-nicknames))
 
+;; IT WAS NEEDED TO USE (in-package :nyxt), OTHERWISE, IT WOULD NOT WORK
 (in-package :nyxt)
+
+(define-mode no-procrastinate-mode ()
+  "Mode to block access to hosts associated to procrastination."
+  ((constructor
+    (lambda (mode)
+      (nyxt:on-signal-load-finished mode (url (current-buffer)))))))
 
 ;; (defun procrastination-host-add (host) 
 ;;   (with-data-access (x (no-procrastination-path (current-buffer)))
@@ -49,30 +55,167 @@
           (push entry bookmarks-without-url)
           (setf no-procrastination-list bookmarks-without-url))))))
 
+(define-internal-page-command list-no-procrastinate-hosts ()
+    (no-procrastinate-list-buffer "*Hostnames to avoid procrastination*" 'base-mode)
+  "List all hosts associated to no-procrastinate in a new buffer."
+  (flet ((html-no-procrastinate-item-id (id)
+           (format nil "no-procrastinate-host-~d" id)))
+    (spinneret:with-html-string
+      (:style (style no-procrastinate-list-buffer))
+      (:h1 "No procrastination on the following hostnames")
+      (:body
+       (or (with-data-unsafe (no-procrastinate-list (no-procrastination-path (current-buffer)))
+             (loop for no-procrastinate-item in no-procrastinate-list
+                   for id from 0 by 1
+                   collect
+                   (let ((url-display (quri:uri-host (url no-procrastinate-item)))
+                         (url-href (render-url (url no-procrastinate-item))))
+                     (:div
+                      :id (html-no-procrastinate-item-id id)
+                      (:p (:b "Title: ") (title no-procrastinate-item))
+                      (:p (:b "Hostname: ") (:a :href url-href
+                                                 url-display))
+                      (:p (:b "Tags: ")
+                          (when (tags no-procrastinate-item)
+                            (format nil " (~{~a~^, ~})" (tags no-procrastinate-item))))
+                      (:p (:button :class "button"
+                                   :onclick
+                                   (ps:ps
+                                    (let ((element
+                                           (ps:chain
+                                            document
+                                            (get-element-by-id (ps:lisp (html-no-procrastinate-item-id id))))))
+                                      (ps:chain element parent-node (remove-child element))
+                                      (nyxt/ps:send-lisp-url
+                                       `(nyxt::delete-no-procrastinate-host ,url-href))))
+                                   "Delete"))
+                      (:hr "")))))
+           (format nil "No hostnames associated to no-procrastinate in ~s."
+                   (expand-path (no-procrastination-path (current-buffer)))))))))
+
+(defun url-no-procrastinate-host-tags (url)
+  "Return the list of tags of the host corresponding to URL."
+  (with-data-unsafe (no-procrastinate-hosts (no-procrastination-path (current-buffer)))
+    (alex:when-let ((existing (find url no-procrastinate-hosts :key #'url :test #'url-equal)))
+      (tags existing))))
+
+(define-command no-procrastinate-current-host (&optional (buffer (current-buffer)))
+  "Block procrastination on current hostname of BUFFER's URL."
+  (if (url-empty-p (url buffer))
+      (echo "Buffer has no URL.")
+      (let ((tags (prompt
+                   :prompt "Tag(s)"
+                   :sources (list
+                             (make-instance 'prompter:word-source
+                                            :name "New tags"
+                                            ;; On no input, suggest the empty tag which effectively acts as "no tag".
+                                            ;; Without it, we would be force to specify a tag.
+                                            :filter-postprocessor
+                                            (lambda (suggestions source input)
+                                              (declare (ignore source input))
+                                              (or suggestions
+                                                  (list "")))
+                                            :multi-selection-p t)
+                             (make-instance 'keyword-source
+                                            :buffer buffer)
+                             (make-instance 'tag-source
+                                            :marks (url-no-procrastinate-host-tags (url buffer)))))))
+        (no-procrastinate-add (url buffer)
+                      :title (title buffer)
+                      :tags tags)
+        (echo "Associated as a host to avoid procrastination ~a." (render-url (url buffer))))))
+
+(define-class no-procrastinate-source (prompter:source)
+  ((prompter:name "Hosts to avoid procrastination")
+   (prompter:constructor (get-data (no-procrastination-path (current-buffer))))
+   (prompter:multi-selection-p t)
+   (prompter:active-attributes-keys '("URL" "Title" "Tags"))))
+
+(define-command delete-no-procrastinate-host (&optional urls-or-bookmark-entries)
+  "Delete bookmark(s) matching URLS-OR-BOOKMARK-ENTRIES.
+URLS is either a list or a single element."
+  (if urls-or-bookmark-entries
+      (with-data-access (bookmarks (no-procrastination-path (current-buffer)))
+        (setf bookmarks
+              (set-difference
+               bookmarks
+               (mapcar (lambda (url)
+                         (if (bookmark-entry-p url)
+                             url
+                             (make-instance 'no-procrastinate-entry :url (quri:uri url))))
+                       (uiop:ensure-list urls-or-bookmark-entries))
+               :test #'equals)))
+      (let ((entries (prompt
+                      :prompt "Delete bookmark(s)"
+                      ;; :default-modes '(minibuffer-tag-mode minibuffer-mode)
+                      :sources (make-instance 'no-procrastinate-source
+                                              :multi-selection-p t))))
+        (delete-no-procrastinate-host entries))))
+
+(define-command no-procrastinate-host (&key url)
+  "Allow the user to avoid procrastination on a HOST via minibuffer input."
+  (let ((url (or url
+                 (ignore-errors
+                  (quri:uri
+                   (first
+                    (prompt
+                     :prompt "Avoid procrastination on HOST"
+                     :sources (list
+                               (make-instance 'prompter:raw-source
+                                              :name "New URL")))))))))
+    (if (not (valid-url-p url))
+        (echo "Invalid URL '~a'" url)
+        (let* ((url (quri:uri url))
+               (tags (prompt
+                      :prompt "Tag(s)"
+                      :sources (list
+                                (make-instance 'prompter:word-source
+                                               :name "New tags"
+                                               :multi-selection-p t)
+                                (make-instance 'tag-source
+                                               :marks (url-no-procrastinate-host-tags url))))))
+          (no-procrastinate-add url :tags tags)))))
+
+(define-command no-procrastinate-buffer-host ()
+  "Add to the list of hostnames to avoid procrastination the currently opened
+page(s) in the active buffer."
+  (prompt
+   :prompt "Avoid procrastination on HOSTS from buffer(s)"
+   :sources (make-instance 'user-buffer-source
+                           :multi-selection-p t
+                           :actions (list (make-unmapped-command no-procrastinate-current-host)))))
+
+;; I already have the no-procrastinate-current-host
 ;; (define-command no-procrastinate-current-url (&optional (buffer (current-buffer)))
-;;   "Bookmark the URL of BUFFER."
+;;   "Add to the list to avoid procrastination the BUFFER's HOST."
 ;;   (if (url-empty-p (url buffer))
 ;;       (echo "Buffer has no URL.")
 ;;       (progn (procrastination-host-add (quri:uri-host (url buffer)))
 ;;              (echo "Associated as a procrastination host ~a." (render-url
 ;;                                                                (url buffer))))))
-;; (defun list-procrastinating-hosts ()
-;;   "Lists all hosts' associated to procrastination saved in the local file."
-;;   (with-data-access (no-procrastination-hosts (no-procrastination-path (current-buffer)))
-;;     no-procrastination-hosts))
 
-;; NEED TO COMPILE AFTER NYXT STARTED, DO NOT KNOW WHY.
-;; (defvar *my-blocked-hosts*
-;;   (nyxt/blocker-mode:make-hostlist
-;;    :hosts (list-procrastinating-hosts)))
+(defun list-procrastinating-hosts ()
+  "Lists all hosts' associated to procrastination saved in the local file."
+  (with-data-access (no-procrastination-hosts (no-procrastination-path (current-buffer)))
+    no-procrastination-hosts))
 
-;; NEED TO COMPILE AFTER NYXT STARTED, DO NOT KNOW WHY.
-;; (define-mode no-procrastinate-mode (nyxt/blocker-mode:blocker-mode)
-;;   "Blocker mode with custom hosts from `*my-blocked-hosts*'."
-;;   ((nyxt/blocker-mode:hostlists
-;;     (list *my-blocked-hosts* nyxt/blocker-mode:*default-hostlist*))))
+;;See the documentation of the BLOCKER-MODE and customizations
+;;NEED TO COMPILE AFTER NYXT STARTED, DO NOT KNOW WHY. Probably, because of the Constructor
+(defvar *my-blocked-hosts*
+  (nyxt/blocker-mode:make-hostlist
+   :hosts (mapcar #'(lambda (no-procrastinate-entry)
+                      (quri:uri-host (url no-procrastinate-entry)))
+                  (list-procrastinating-hosts))))
 
-;; NEED TO COMPILE AFTER NYXT STARTED, DO NOT KNOW WHY.
+;; See the documentation of the BLOCKER-MODE and customizations
+;; NEED TO COMPILE AFTER NYXT STARTED, DO NOT KNOW WHY. Probably, because of the Constructor
+(define-mode no-procrastinate-mode (nyxt/blocker-mode:blocker-mode)
+  "Blocker mode with custom hosts from `*my-blocked-hosts*'."
+  ((nyxt/blocker-mode:hostlists
+    (list *my-blocked-hosts* nyxt/blocker-mode:*default-hostlist*))))
+
+;; See the documentation of the BLOCKER-MODE and customizations
+;; NEED TO COMPILE AFTER NYXT STARTED, DO NOT KNOW WHY. Probably, because of the Constructor
 ;; (define-configuration buffer
 ;;   ((default-modes (append '(no-procrastinate-mode) %slot-default%))))
 
@@ -126,7 +269,6 @@
           (write-string ")"))
         (write-string ")")))))
 
-;; CHANGE THE NAME
 (defmethod deserialize-no-procrastinate-hosts (stream)
   (handler-case
       (let ((*standard-input* stream))
@@ -174,3 +316,6 @@
       (echo-warning "Failed to load no-procrastinate host from ~s: ~a"
                     (expand-path path) c))))
 
+(defmethod nyxt:on-signal-load-finished ((mode no-procrastinate-mode) url)
+  ;call-function-to-create-instance-of-blocker-mode
+  (echo "test"))
