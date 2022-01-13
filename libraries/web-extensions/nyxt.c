@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: Atlas Engineer LLC
 // SPDX-License-Identifier: BSD-3-Clause
 
+#include <glib-2.0/glib.h>
 #include <webkit2/webkit-web-extension.h>
 #include "globals.h"
 #include "extevent.h"
