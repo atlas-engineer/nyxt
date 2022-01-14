@@ -3,13 +3,6 @@
 
 (in-package :cl-user)
 
-(pushnew
- (intern (format nil "NYXT-~a"
-                 (first (uiop:parse-version
-                         (asdf:component-version (asdf:find-system :nyxt)))))
-         "KEYWORD")
- *features*)
-
 ;; Some compilers (e.g. SBCL) fail to reload the system with `defpackage' when
 ;; exports are spread around.  `uiop:define-package' does not have this problem.
 (uiop:define-package nyxt
