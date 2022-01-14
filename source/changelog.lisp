@@ -312,6 +312,7 @@ SLY install.")
   (:ul
    (:li "Fix the frequent dead locks on multi-buffer deletion.")
    (:li "Fix some rare dead locks on page load.")
+   (:li "Fix crash on unhandled condition in a prompt buffer thread.")
    (:li "Fix iframe support on redirects (for instance with "
         (:code "blocker-mode") ").")
    (:li "Keymap fixes:"
