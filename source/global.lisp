@@ -109,6 +109,6 @@ Don't set this, it would lose its meaning.")
       (push-feature (format nil "NYXT-~a.~a" major minor))
       (push-feature (format nil "NYXT-~a.~a.~a" major minor patch))
       (when commit
-        (push-feature (format nil "NYXT-~a" commit)))
+        (push-feature (format nil "NYXT-~:@(~a~)" commit)))
       (when (and commits (not (zerop commits)))
         (push-feature "NYXT-UNSTABLE")))))
