@@ -251,8 +251,8 @@ mapped to query parameters."
 
 (define-command toggle-toolbars (&optional (window (current-window)))
   "Toggle the visibility of the message and status buffer areas."
-  (toggle-status-buffer window)
-  (toggle-message-buffer window))
+  (toggle-status-buffer :window window)
+  (toggle-message-buffer :window window))
 
 (define-command toggle-status-buffer (&key (window (current-window))
                                       (show-p nil show-provided-p))
