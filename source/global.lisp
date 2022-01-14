@@ -104,8 +104,7 @@ Don't set this, it would lose its meaning.")
                        (major (first parsed-version))
                        (minor (second parsed-version))
                        (patch (third parsed-version)))
-        (loop for v from 1 upto major
-              do (push-feature (format nil "NYXT-~a" v)))
+        (push-feature (format nil "NYXT-~a" major))
         (push-feature (format nil "NYXT-~a.~a" major minor))
         (push-feature (format nil "NYXT-~a.~a.~a" major minor patch)))
       (when commit
