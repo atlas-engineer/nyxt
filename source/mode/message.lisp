@@ -15,7 +15,7 @@
   (setf (slot-value *browser* 'messages-content) '())
   (echo "Messages cleared."))
 
-(nyxt::define-internal-page-command list-messages ()
+(define-internal-page-command list-messages ()
     (buffer "*Messages*" 'nyxt/message-mode:message-mode)
   "Show the *Messages* buffer."
   (spinneret:with-html-string

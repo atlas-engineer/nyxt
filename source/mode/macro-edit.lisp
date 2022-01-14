@@ -18,7 +18,7 @@
 macro. The key represents a unique identifier for a command, and the value
 represents a command.")))
 
-(nyxt::define-internal-page-command edit-macro ()
+(define-internal-page-command edit-macro ()
     (buffer "*Macro edit*" 'nyxt/macro-edit-mode:macro-edit-mode)
   "Edit a macro."
   (spinneret:with-html-string

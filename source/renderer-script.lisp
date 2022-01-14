@@ -103,6 +103,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
                       (|insertAdjacentHTML| "afterbegin"
                                             (ps:lisp style)))))))
 
+(export-always 'define-internal-page-command)
 (defmacro define-internal-page-command (name (&rest arglist)
                                         (buffer-var title mode)
                                         &body body)

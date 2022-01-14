@@ -1,6 +1,6 @@
 (in-package :nyxt/web-mode)
 
-(nyxt::define-internal-page-command summarize-buffer (&key (summary-length 5) (id (id (current-buffer))))
+(define-internal-page-command summarize-buffer (&key (summary-length 5) (id (id (current-buffer))))
   (output (format nil "*Summary ~a*" (title (nyxt::buffers-get id))) 'base-mode)
   "Summarize the current buffer by creating a new summary buffer."
   (let ((buffer (nyxt::buffers-get id)))

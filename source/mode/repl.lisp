@@ -99,7 +99,7 @@ INPUT is a string and RESULTS is a list of Lisp values.")))
        (setf (ps:chain document (get-element-by-id "evaluation-history") |innerHTML|)
              (ps:lisp (generate-evaluation-history-html repl)))))))
 
-(nyxt::define-internal-page-command lisp-repl ()
+(define-internal-page-command lisp-repl ()
     (repl-buffer "*Lisp REPL*" 'repl-mode)
   "Show Lisp REPL."
   (spinneret:with-html-string

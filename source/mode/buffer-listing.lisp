@@ -10,7 +10,7 @@
   "Mode for buffer-listing."
   ((rememberable-p nil)))
 
-(nyxt::define-internal-page-command list-buffers (&key (cluster nil)
+(define-internal-page-command list-buffers (&key (cluster nil)
                                                   linear-view-p) ; TODO: Document `cluster'.
     (buffer "*Buffers*" 'nyxt/buffer-listing-mode:buffer-listing-mode)
   "Show a buffer listing all buffer trees.
