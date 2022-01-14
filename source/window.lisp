@@ -237,20 +237,47 @@ mapped to query parameters."
       (ffi-window-unfullscreen window)
       (ffi-window-fullscreen window)))
 
-(define-command toggle-toolbars (&optional (window (current-window)))
-  "Toggle the visibility of the message and status buffer areas."
-  (if (= 0
-         (ffi-window-get-status-buffer-height window)
-         (ffi-window-get-message-buffer-height window))
-      (unpresent-current-window window)
-      (present-current-window window)))
+(defun enable-status-buffer (&optional (window (current-window)))
+  (ffi-window-set-status-buffer-height window (height (status-buffer window))))
 
-(defun present-current-window (&optional (window (current-window)))
-  "Hide everything but the current buffer."
-  (ffi-window-set-status-buffer-height window 0)
+(defun disable-status-buffer (&optional (window (current-window)))
+  (ffi-window-set-status-buffer-height window 0))
+
+(defun enable-message-buffer (&optional (window (current-window)))
+  (ffi-window-set-message-buffer-height window (message-buffer-height window)))
+
+(defun disable-message-buffer (&optional (window (current-window)))
   (ffi-window-set-message-buffer-height window 0))
 
-(defun unpresent-current-window (&optional (window (current-window)))
-  "Unhide everything but the current buffer."
-  (ffi-window-set-status-buffer-height window (height (status-buffer window)))
-  (ffi-window-set-message-buffer-height window (message-buffer-height window)))
+(define-command toggle-toolbars (&optional (window (current-window)))
+  "Toggle the visibility of the message and status buffer areas."
+  (toggle-status-buffer :window window)
+  (toggle-message-buffer :window window))
+
+(define-command toggle-status-buffer (&key (window (current-window))
+                                      (show-p nil show-provided-p))
+  "Toggle the visibility of the status buffer.
+
+If SHOW-P is provided:
+- If SHOW-P is T, then `status-buffer' is always enabled;
+- Otherwise, it is always disabled."
+  (cond ((and show-provided-p show-p)
+         (enable-status-buffer window))
+        ((and (not show-provided-p)
+              (zerop (ffi-window-get-status-buffer-height window)))
+         (enable-status-buffer window))
+        (t (disable-status-buffer window))))
+
+(define-command toggle-message-buffer (&key (window (current-window))
+                                       (show-p nil show-provided-p))
+  "Toggle the visibility of the message buffer.
+
+If SHOW-P is provided:
+- If SHOW-P is T, then `message-buffer' is always enabled;
+- Otherwise, it is always disabled."
+  (cond ((and show-provided-p show-p)
+         (enable-message-buffer window))
+        ((and (not show-provided-p)
+              (zerop (ffi-window-get-message-buffer-height window)))
+         (enable-message-buffer window))
+        (t (disable-message-buffer window))))
