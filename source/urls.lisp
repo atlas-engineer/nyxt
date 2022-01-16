@@ -333,6 +333,15 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
         (some (alex:curry #'string= (quri:uri-domain (url url-designator)))
               (cons domain other-domains)))))
 
+(-> match-port (integer &rest integer) (function (quri:uri) boolean))
+(export-always 'match-port)
+(defun match-port (port &rest other-ports)
+  "Return a predicate for URL designators matching one of PORT or OTHER-PORTS."
+  #'(lambda (url-designator)
+      (when url-designator
+        (some (alex:curry #'eq (quri:uri-port (url url-designator)))
+              (cons port other-ports)))))
+
 (-> match-file-extension (string &rest string) (function (quri:uri) boolean))
 (export-always 'match-file-extension)
 (defun match-file-extension (extension &rest other-extensions)
