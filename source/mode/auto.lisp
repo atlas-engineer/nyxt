@@ -485,6 +485,8 @@ Auto-mode is re-enabled once the page is reloaded."
 ;; - match-regex works for any address that matches a given regex. You can add these manually,
 ;;   but remember: with great regex comes great responsibility!
 ;;   Example: (match-regex \"https://github\\.com/.*/.*\") will activate only in repos on GitHub.
+;; - match-port matches the port number(s) only.
+;;   Example: (match-port 8000 8080) will work for e.g. localhost:8000, 127.0.0.1:8080, etc.
 ;; - String format matches the exact URL and nothing else
 ;;   Example: \"https://lispcookbook.github.io/cl-cookbook/pattern_matching.html\"
 ;;            will work on the Pattern Matching article of CL Cookbook, and nowhere else.
