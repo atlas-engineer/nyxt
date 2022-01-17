@@ -716,18 +716,29 @@ See `gtk-browser's `modifier-translator' slot."
                 (buffer (find (webkit:webkit-uri-scheme-request-get-web-view request)
                               (buffer-list) :key #'gtk-object))
                 (status body (phos/gemini:request url)))
-    (case (first status)
-      (:success (if (str:starts-with-p "text/gemini" (second status))
-                    (gemini-render body)
-                    (values body (second status))))
-      ((:input :sensitive-input)
-       (let ((text (quri:url-encode
-                    (handler-case
-                        (prompt1 :prompt (second status)
-                          :sources (list (make-instance 'prompter:raw-source))
-                          :invisible-input-p (eq (first status) :sensitive-input))
-                      (nyxt-prompt-buffer-canceled () "")))))
-         (buffer-load (str:concat url "?" text) :buffer buffer))))))
+    (flet ((make-gemini-error-page (title)
+             (spinneret:with-html-string
+               (:h1 title)
+               (:pre (second status)))))
+      (case (first status)
+        ((:input :sensitive-input)
+         (let ((text (quri:url-encode
+                      (handler-case
+                          (prompt1 :prompt (second status)
+                            :sources (list (make-instance 'prompter:raw-source))
+                            :invisible-input-p (eq (first status) :sensitive-input))
+                        (nyxt-prompt-buffer-canceled () "")))))
+           (buffer-load (str:concat url "?" text) :buffer buffer)))
+        (:success (if (str:starts-with-p "text/gemini" (second status))
+                      (gemini-render body)
+                      (values body (second status))))
+        ((:temporary-failure :server-unavailable :cgi-error :proxy-error :slow-down
+                             :permanent-failure :not-found :gone :proxy-request-refused :bad-request)
+         (make-gemini-error-page
+          "Error"))
+        ((:client-certificate-required :certificate-not-authorised :certificate-not-valid)
+         (make-gemini-error-page
+          "Certificate error"))))))
 
 (defun sequence-p (object)
   "Return true if OBJECT is a sequence that's not a string."
