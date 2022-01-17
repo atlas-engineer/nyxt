@@ -703,11 +703,6 @@ See `gtk-browser's `modifier-translator' slot."
                (slot-value element 'phos/gemtext:text)))))
     (:br)))
 
-(defmethod element->html ((element phos/gemtext:verbatim) (elements-after list) previous-element)
-  (declare (ignore elements-after previous-element))
-  (spinneret:with-html-string
-    (:pre (slot-value element 'phos/gemtext:text))))
-
 (defun gemini-render (body)
   (let ((elements (phos/gemtext:parse-string body)))
     (spinneret:with-html-string
