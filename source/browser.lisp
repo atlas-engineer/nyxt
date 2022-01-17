@@ -422,6 +422,7 @@ Return the download object matching the download."
                          (download-manager:filename download))
                    (push download-render (downloads *browser*))
                    (run-thread
+                     "download watcher"
                      (download-watch download-render download)))
                  download)))))
         (:renderer

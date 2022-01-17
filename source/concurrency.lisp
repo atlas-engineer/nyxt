@@ -70,19 +70,12 @@ This is a blocking operation."
           (nreverse (fetch)))))
 
 (export-always 'run-thread)
-(defmacro run-thread (&body body)
+(defmacro run-thread (name &body body)
   "Run body in a new protected thread.
 This supersedes `bt:make-thread' in Nyxt.  Don't use the latter unless you know
 what you are doing!"
-  ;; We parse the body instead of using a macro argument for backward compatibility.
-  (let* ((name (if (stringp (first body))
-                   (first body)
-                   "anonymous thread"))
-         (body (if (stringp (first body))
-                   (rest body)
-                   body)))
-    `(bt:make-thread
-      (lambda ()
-        (with-protect ("Error on separate thread: ~a" :condition)
-          ,@body))
-      :name ,(str:concat "Nyxt " name))))
+  `(bt:make-thread
+    (lambda ()
+      (with-protect ("Error on separate thread: ~a" :condition)
+        ,@body))
+    :name ,(str:concat "Nyxt " name)))

@@ -44,7 +44,7 @@ Accepts the path to the acted-on document and `process-mode' instance.")
 (defmethod initialize ((mode process-mode))
   (setf (path-url mode) (or (path-url mode) (url (current-buffer)))
         (thread mode) (unless (thread-terminated-p mode)
-                        (run-thread
+                        (run-thread "process"
                           (loop with cond = (firing-condition mode)
                                 with cond-func = (typecase cond
                                                    (function cond)
