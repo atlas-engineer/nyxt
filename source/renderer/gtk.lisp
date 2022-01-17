@@ -656,6 +656,67 @@ See `gtk-browser's `modifier-translator' slot."
                         :key #'gtk-object))
     (nyxt/gopher-mode:render line)))
 
+(defun gemini-render (body)
+  (let ((elements (phos/gemtext:parse-string body)))
+    (spinneret:with-html-string
+      (loop for elements-tail on elements
+            and element = (first elements-tail)
+            and prev = nil then element
+            collect (typecase element
+                      (phos/gemtext:paragraph
+                       (:p (slot-value element 'phos/gemtext:text)))
+                      (phos/gemtext:title
+                       (case (slot-value element 'phos/gemtext:level)
+                         (1 (:h1 (slot-value element 'phos/gemtext:text)))
+                         (2 (:h2 (slot-value element 'phos/gemtext:text)))
+                         (3 (:h3 (slot-value element 'phos/gemtext:text)))))
+                      (phos/gemtext:item
+                       (unless (typep prev 'phos/gemtext:item)
+                         (:ul (loop for elt in elements-tail
+                                    until (not (typep elt 'phos/gemtext:item))
+                                    collect (:li (slot-value elt 'phos/gemtext:text))))))
+                      (phos/gemtext:link
+                       (let* ((path (quri:uri-path (quri:uri (slot-value element 'phos/gemtext:url))))
+                              (mime (mimes:mime-lookup path)))
+                         (cond
+                           ((str:starts-with-p "image/" mime)
+                            (:a :href (slot-value element 'phos/gemtext:url)
+                                (:img :src (slot-value element 'phos/gemtext:url)
+                                      :alt (slot-value element 'phos/gemtext:text))))
+                           ((str:starts-with-p "audio/" mime)
+                            (:audio :src (slot-value element 'phos/gemtext:url)
+                                    :controls t
+                                    (slot-value element 'phos/gemtext:text)))
+                           ((str:starts-with-p "video/" mime)
+                            (:video :src (slot-value element 'phos/gemtext:url)
+                                    :controls t))
+                           (t (:a :class "button"
+                                  :href (slot-value element 'phos/gemtext:url)
+                                  (slot-value element 'phos/gemtext:text)))))
+                       (:br))
+                      (phos/gemtext:verbatim
+                       (:pre (slot-value element 'phos/gemtext:text)))
+                      (phos/gemtext:blockquote
+                       (:pre (slot-value element 'phos/gemtext:text))))))))
+
+(defun process-gemini-scheme (request)
+  (sera:mvlet* ((url (webkit:webkit-uri-scheme-request-get-uri request))
+                (buffer (find (webkit:webkit-uri-scheme-request-get-web-view request)
+                              (buffer-list) :key #'gtk-object))
+                (status body (phos/gemini:request url)))
+    (case (first status)
+      (:success (if (str:starts-with-p "text/gemini" (second status))
+                    (gemini-render body)
+                    (values body (second status))))
+      ((:input :sensitive-input)
+       (let ((text (quri:url-encode
+                    (handler-case
+                        (prompt1 :prompt (second status)
+                          :sources (list (make-instance 'prompter:raw-source))
+                          :invisible-input-p (eq (first status) :sensitive-input))
+                      (nyxt-prompt-buffer-canceled () "")))))
+         (buffer-load (str:concat url "?" text) :buffer buffer))))))
+
 (defun sequence-p (object)
   "Return true if OBJECT is a sequence that's not a string."
   (typep object '(and sequence (not string))))
@@ -783,6 +844,11 @@ See `gtk-browser's `modifier-translator' slot."
        #'process-gopher-scheme
        (lambda (condition)
          (echo-warning "Error while routing \"gopher:\" URL: ~a" condition)))
+      (webkit:webkit-web-context-register-uri-scheme-callback
+       context "gemini"
+       #'process-gemini-scheme
+       (lambda (condition)
+         (echo-warning "Error while routing \"gemini:\" URL: ~a" condition)))
       (webkit:webkit-security-manager-register-uri-scheme-as-local
        (webkit:webkit-web-context-get-security-manager context) "nyxt")
       (webkit:webkit-security-manager-register-uri-scheme-as-cors-enabled
