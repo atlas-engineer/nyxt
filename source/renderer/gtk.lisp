@@ -656,51 +656,51 @@ See `gtk-browser's `modifier-translator' slot."
                         :key #'gtk-object))
     (nyxt/gopher-mode:render line)))
 
-(defmethod element->html ((element phos/gemtext:element) (elements-after list) previous-element)
+(defmethod element->html ((element gemtext:element) (elements-after list) previous-element)
   (declare (ignore elements-after previous-element))
   (spinneret:with-html-string
-    (:pre (slot-value element 'phos/gemtext:text))))
+    (:pre (gemtext:text element))))
 
-(defmethod element->html ((element phos/gemtext:paragraph) (elements-after list) previous-element)
+(defmethod element->html ((element gemtext:paragraph) (elements-after list) previous-element)
   (declare (ignore elements-after previous-element))
   (spinneret:with-html-string
-    (:p (slot-value element 'phos/gemtext:text))))
+    (:p (gemtext:text element))))
 
-(defmethod element->html ((element phos/gemtext:title) (elements-after list) previous-element)
+(defmethod element->html ((element gemtext:title) (elements-after list) previous-element)
   (declare (ignore elements-after previous-element))
   (spinneret:with-html-string
-    (case (slot-value element 'phos/gemtext:level)
-      (1 (:h1 (slot-value element 'phos/gemtext:text)))
-      (2 (:h2 (slot-value element 'phos/gemtext:text)))
-      (3 (:h3 (slot-value element 'phos/gemtext:text))))))
+    (case (gemtext:level element)
+      (1 (:h1 (gemtext:text element)))
+      (2 (:h2 (gemtext:text element)))
+      (3 (:h3 (gemtext:text element))))))
 
-(defmethod element->html ((element phos/gemtext:item) (elements-after list) previous-element)
+(defmethod element->html ((element gemtext:item) (elements-after list) previous-element)
   (spinneret:with-html-string
-    (unless (typep previous-element 'phos/gemtext:item)
+    (unless (gemtext:item-p previous-element)
       (:ul (loop for elt in (cons element elements-after)
-                 until (not (typep elt 'phos/gemtext:item))
-                 collect (:li (slot-value elt 'phos/gemtext:text)))))))
+                 until (not (gemtext:item-p elt))
+                 collect (:li (gemtext:text elt)))))))
 
-(defmethod element->html ((element phos/gemtext:link) (elements-after list) previous-element)
+(defmethod element->html ((element gemtext:link) (elements-after list) previous-element)
   (declare (ignore elements-after previous-element))
   (spinneret:with-html-string
-    (let* ((path (quri:uri-path (quri:uri (slot-value element 'phos/gemtext:url))))
+    (let* ((path (quri:uri-path (gemtext:url element)))
            (mime (mimes:mime-lookup path)))
       (cond
         ((str:starts-with-p "image/" mime)
-         (:a :href (slot-value element 'phos/gemtext:url)
-             (:img :src (slot-value element 'phos/gemtext:url)
-                   :alt (slot-value element 'phos/gemtext:text))))
+         (:a :href (render-url (gemtext:url element))
+             (:img :src (render-url (gemtext:url element))
+                   :alt (gemtext:text element))))
         ((str:starts-with-p "audio/" mime)
-         (:audio :src (slot-value element 'phos/gemtext:url)
+         (:audio :src (render-url (gemtext:url element))
                  :controls t
-                 (slot-value element 'phos/gemtext:text)))
+                 (gemtext:text element)))
         ((str:starts-with-p "video/" mime)
-         (:video :src (slot-value element 'phos/gemtext:url)
+         (:video :src (render-url (gemtext:url element))
                  :controls t))
         (t (:a :class "button"
-               :href (slot-value element 'phos/gemtext:url)
-               (slot-value element 'phos/gemtext:text)))))
+               :href (render-url (gemtext:url element))
+               (gemtext:text element)))))
     (:br)))
 
 (defun gemini-render (body)
