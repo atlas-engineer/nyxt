@@ -125,7 +125,7 @@ define which elements are picked up by element hinting.")
        "C-M-b" 'history-all-query
        "M-f" 'history-forwards-query
        "M-b" 'history-backwards-query
-       "C-f" 'history-forwards
+       "C-f" 'history-forwards-maybe-query
        "C-b" 'history-backwards
        "C-g" 'nothing              ; Emacs users may hit C-g out of habit.
        "M-g M-g" 'follow-hint              ; Corresponds to Emacs' `goto-line'.
@@ -162,7 +162,7 @@ define which elements are picked up by element hinting.")
       scheme:vi-normal
       (list
        "H" 'history-backwards
-       "L" 'history-forwards
+       "L" 'history-forwards-maybe-query
        "y y" 'copy
        "p" 'paste
        "d d" 'cut
