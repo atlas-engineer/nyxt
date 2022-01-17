@@ -29,26 +29,28 @@
 
 (defclass button (ui-element)
   ((text :initform "" :initarg :text)
-   (url :initform ""  :initarg :url)))
+   (action :initform ""  :initarg :action)))
 
 (defmethod (setf text) (text (button button))
   (setf (slot-value button 'text) text)
   (when (slot-boundp button 'buffer)
     (update button)))
 
-(defmethod (setf url) (url (button button))
-  (setf (slot-value button 'url) url)
+(defmethod (setf action) (action (button button))
+  (setf (slot-value button 'action) action)
   (when (slot-boundp button 'buffer)
     (update button)))
 
 (defmethod text ((button button))
   (slot-value button 'text))
 
-(defmethod url ((button button))
-  (slot-value button 'url))
+(defmethod action ((button button))
+  (slot-value button 'action))
 
 (defmethod object-expression ((button button))
-  `(:a :id ,(id button) :class "button" :href ,(url button) ,(text button)))
+  `(:button :id ,(id button) :class "button"
+            :onclick ,(action button)
+            ,(text button)))
 
 (defclass paragraph (ui-element)
   ((text :initform "" :initarg :text)))

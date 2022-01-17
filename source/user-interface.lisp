@@ -22,4 +22,4 @@
    (user-interface:buffer button)
    (ps:ps (let ((element (ps:chain document (get-element-by-id (ps:lisp (user-interface:id button))))))
             (setf (ps:chain element text-content) (ps:lisp (user-interface:text button)))
-            (setf (ps:chain element href) (ps:lisp (user-interface:url button)))))))
+            (setf (ps:chain element onclick) (ps:lisp (user-interface:action button)))))))

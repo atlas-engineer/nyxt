@@ -10,7 +10,7 @@
    #:buffer
    #:update
    #:text
-   #:url
+   #:action
    #:object-expression
    #:paragraph
    #:progress-bar

@@ -37,13 +37,13 @@ will be downloaded to on disk.")
 cancelling a download. This can be set by the download engine.")
    (cancel-button (make-instance 'user-interface:button
                                  :text "✕"
-                                 :url (lisp-url (echo "Can't cancel download.")))
+                                 :action (ps:ps (nyxt/ps:send-lisp-url '(echo "Can't cancel download."))))
                   :documentation "The download is referenced by its
 URL. The URL for this button is therefore encoded as a funcall to
 cancel-download with an argument of the URL to cancel.")
    (open-button (make-instance 'user-interface:button
                                :text "🗁"
-                               :url (lisp-url (echo "Can't open file, file path unknown.")))
+                               :action (ps:ps (nyxt/ps:send-lisp-url '(echo "Can't open file, file path unknown."))))
                 :documentation "The file name to open is encoded
 within the button's URL when the destinaton path is set.")
    (progress-text (make-instance 'user-interface:paragraph))
@@ -63,8 +63,8 @@ finds it, it will invoke its cancel-function."
 
 (defmethod (setf cancel-function) (cancel-function (download download))
   (setf (slot-value download 'cancel-function) cancel-function)
-  (setf (user-interface:url (cancel-button download))
-        (lisp-url `(cancel-download ,(url download)))))
+  (setf (user-interface:action (cancel-button download))
+        (ps:ps (nyxt/ps:send-lisp-url `(cancel-download ,(url download))))))
 
 (defmethod (setf status) (value (download download))
   (setf (slot-value download 'status) value)
@@ -86,8 +86,8 @@ finds it, it will invoke its cancel-function."
 (defmethod (setf destination-path) (path (download download))
   (check-type path string)
   (setf (slot-value download 'destination-path) path)
-  (setf (user-interface:url (open-button download))
-        (lisp-url `(nyxt::default-open-file-function ,path))))
+  (setf (user-interface:action (open-button download))
+        (ps:ps (nyxt/ps:send-lisp-url `(nyxt::default-open-file-function ,path)))))
 
 (defmethod connect ((download download) buffer)
   "Connect the user-interface objects within the download to the
@@ -103,33 +103,34 @@ appearance in the buffer when they are setf'd."
 ;; TODO: Move to separate package
 (define-mode download-mode ()
   "Display list of downloads."
-  ((style
-    (theme:themed-css (theme *browser*)
-      (".download"
-       :margin-top "10px"
-       :padding-left "5px"
-       :background-color theme:background
-       :color theme:text
-       :brightness "80%"
-       :border-radius "3px")
-      (".download-url"
-       :overflow "auto"
-       :white-space "nowrap")
-      (".download-url a"
-       :font-size "small"
-       :color theme:text)
-      (".status p"
-       :display "inline-block"
-       :margin-right "10px")
-      (".progress-bar-container"
-       :height "20px"
-       :width "100%")
-      (".progress-bar-base"
-       :height "100%"
-       :background-color theme:secondary)
-      (".progress-bar-fill"
-       :height "100%"
-       :background-color theme:tertiary)))))
+  ((rememberable-p nil)
+   (style
+       (theme:themed-css (theme *browser*)
+         (".download"
+          :margin-top "10px"
+          :padding-left "5px"
+          :background-color theme:background
+          :color theme:text
+          :brightness "80%"
+          :border-radius "3px")
+         (".download-url"
+          :overflow "auto"
+          :white-space "nowrap")
+         (".download-url a"
+          :font-size "small"
+          :color theme:text)
+         (".status p"
+          :display "inline-block"
+          :margin-right "10px")
+         (".progress-bar-container"
+          :height "20px"
+          :width "100%")
+         (".progress-bar-base"
+          :height "100%"
+          :background-color theme:secondary)
+         (".progress-bar-fill"
+          :height "100%"
+          :background-color theme:tertiary)))))
 
 
 (define-internal-page-command list-downloads ()
@@ -138,8 +139,7 @@ appearance in the buffer when they are setf'd."
 We iterate through the browser's downloads to draw every single
 download."
   (spinneret:with-html-string
-    (:style (style buffer))
-    (:style (style (make-instance 'download-mode)))
+    (:style (style (current-mode 'download)))
     (:h1 "Downloads")
     (:hr)
     (:div
