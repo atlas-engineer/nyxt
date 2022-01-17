@@ -34,7 +34,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-m C-s" 'bookmark-buffer-url
        "C-m k" 'delete-bookmark
        "C-t" 'make-buffer-focus
-       "C-m u" 'bookmark-url
+       "C-m l" 'bookmark-url
        "C-b" 'list-bookmarks
        "M-c l" 'copy-url
        "M-c t" 'copy-title
@@ -74,7 +74,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-x b" 'switch-buffer
        "C-x C-b" 'nyxt/buffer-listing-mode::list-buffers
        "C-M-l" 'copy-url
-       "C-M-i" 'copy-title
+       "C-M-t" 'copy-title
        "C-h C-h" 'help
        "C-h h" 'help
        "C-h t" 'tutorial
@@ -93,7 +93,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-x r M" 'bookmark-current-url
        "C-x r m" 'bookmark-buffer-url
        "C-x r k" 'delete-bookmark
-       "C-x r u" 'bookmark-url
+       "C-x r l" 'bookmark-url
        "C-x 5 2" 'make-window
        "C-x 5 0" 'delete-current-window
        "C-x 5 1" 'delete-window
