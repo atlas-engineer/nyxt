@@ -538,3 +538,7 @@
 	path = _build/cl-gopher
 	url = https://github.com/knusbaum/cl-gopher
     shallow = true
+[submodule "_build/phos"]
+	path = _build/phos
+	url = https://github.com/omar-polo/phos
+    shallow = true

@@ -83,7 +83,7 @@ The domain name existence is verified only if CHECK-DNS-P is T. Domain
 name validation may take significant time since it looks up the DNS."
   ;; List of URI schemes: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
   ;; Last updated 2020-08-26.
-  (let* ((nyxt-schemes '("nyxt" "lisp" "web-extension" "javascript"))
+  (let* ((nyxt-schemes '("nyxt" "lisp" "web-extension" "javascript" "gemini"))
          (iana-schemes
            '("aaa" "aaas" "about" "acap" "acct" "cap" "cid" "coap" "coap+tcp" "coap+ws"
              "coaps" "coaps+tcp" "coaps+ws" "crid" "data" "dav" "dict" "dns" "example" "file"

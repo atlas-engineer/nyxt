@@ -67,6 +67,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                quri
                serapeum
                str
+               phos
                plump
                clss
                spinneret
