@@ -282,7 +282,8 @@ response.  The BODY is wrapped with `with-protect'."
                           ,@(sera:unsplice documentation)
                           ,@declares
                           ,(if new-thread-p
-                               `(run-thread ,@forms)
+                               `(run-thread "renderer signal handler"
+                                    ,@forms)
                                `(with-protect ("Error in signal on renderer thread: ~a" :condition)
                                   ,@forms))))))
        (push handler-id (handler-ids ,object)))))
@@ -1023,7 +1024,7 @@ See `gtk-browser's `modifier-translator' slot."
   (with-protect ("Failed to process file chooser request: ~a" :condition)
     (when (native-dialogs *browser*)
       (gobject:g-object-ref (gobject:pointer file-chooser-request))
-      (run-thread
+      (run-thread "file chooser"
         (let ((files (mapcar
                       #'uiop:native-namestring
                       (handler-case
@@ -1064,7 +1065,7 @@ See `gtk-browser's `modifier-translator' slot."
     (when (native-dialogs *browser*)
       (let ((dialog (gobject:pointer dialog)))
         (webkit:webkit-script-dialog-ref dialog)
-        (run-thread
+        (run-thread "script dialog"
           (case (webkit:webkit-script-dialog-get-dialog-type dialog)
             (:webkit-script-dialog-alert (echo (webkit:webkit-script-dialog-get-message dialog)))
             (:webkit-script-dialog-prompt
@@ -1096,7 +1097,7 @@ See `gtk-browser's `modifier-translator' slot."
 
 (defun process-permission-request (web-view request)
   (g:g-object-ref (g:pointer request))
-  (run-thread
+  (run-thread "permission requester"
    (if-confirm ((format
                  nil "[~a] ~a"
                  (webkit:webkit-web-view-uri web-view)

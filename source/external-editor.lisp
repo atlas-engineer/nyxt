@@ -62,7 +62,7 @@ so invoke on a separate thread when possible."
 (define-command edit-with-external-editor ()
   "Edit the current input field using `external-editor-program'."
   (if (external-editor-program *browser*)
-      (run-thread
+      (run-thread "external editor"
         (select-input-field)
         (%paste :input-text (%edit-with-external-editor (%copy)))
         (move-caret-to-end))
@@ -105,6 +105,6 @@ separate thread when possible."
   "Edit the current page source using `external-editor-program'.
 Has no effect on the page, use only to look at sources!"
   (if (external-editor-program *browser*)
-      (run-thread
+      (run-thread "source viewer"
         (%view-source-with-external-editor))
       (echo-warning "Please set `external-editor-program' browser slot.")))

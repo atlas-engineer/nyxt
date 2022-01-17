@@ -498,24 +498,17 @@ raised condition."
                                args)))
             `(warn ,format-string ,@new-args))))))
 
-(defmacro run-thread (&body body)   ; TODO: Copied from Nyxt.  Move to serapeum?
+(defmacro run-thread (name &body body)   ; TODO: Copied from Nyxt.  Move to serapeum?
   "Run body in a new protected new thread.
 This is a \"safe\" wrapper around `bt:make-thread'."
-  ;; We parse the body instead of using a macro argument for backward compatibility.
-  (let* ((name (if (stringp (first body))
-                   (first body)
-                   "anonymous thread"))
-         (body (if (stringp (first body))
-                   (rest body)
-                   body)))
-    `(bt:make-thread
-      (lambda ()
-        ,(if *debug-on-error*
-             `(progn
-                ,@body)
-             `(with-protect ("Error on separate prompter thread: ~a" :condition)
-                ,@body)))
-      :name ,name)))
+  `(bt:make-thread
+    (lambda ()
+      ,(if *debug-on-error*
+           `(progn
+              ,@body)
+           `(with-protect ("Error on separate prompter thread: ~a" :condition)
+              ,@body)))
+    :name ,name))
 
 (defmethod initialize-instance :after ((source source) &key)
   "See the `constructor' documentation of `source'."
