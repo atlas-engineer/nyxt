@@ -666,10 +666,12 @@ See `gtk-browser's `modifier-translator' slot."
                 (status meta body (phos/gemini:request url)))
     ;; FIXME: This better become a default auto-mode rule.
     (enable-modes '(small-web-mode) buffer)
-    (flet ((make-gemini-error-page (title)
+    (flet ((make-gemini-error-page (title &optional text)
              (spinneret:with-html-string
                (:h1 title)
-               (:pre meta))))
+               (:pre (or text meta)))))
+      (unless (member status '(:redirect :permanent-redirect))
+        (setf (nyxt/small-web-mode:redirections (current-mode 'small-web)) nil))
       (case status
         ((:input :sensitive-input)
          (let ((text (quri:url-encode
@@ -679,17 +681,27 @@ See `gtk-browser's `modifier-translator' slot."
                             :invisible-input-p (eq status :sensitive-input))
                         (nyxt-prompt-buffer-canceled () "")))))
            (buffer-load (str:concat url "?" text) :buffer buffer)))
-        (:success (if (str:starts-with-p "text/gemini" meta)
+        (:success
+         (if (str:starts-with-p "text/gemini" meta)
                       (nyxt/small-web-mode:gemini-render body)
                       (values body meta)))
+        ((:redirect :permanent-redirect)
+         (push url (nyxt/small-web-mode:redirections (current-mode 'small-web)))
+         (if (< (length (nyxt/small-web-mode:redirections (current-mode 'small-web))) 5)
+             (buffer-load (quri:merge-uris (quri:uri meta) (quri:uri url)) :buffer buffer)
+             (make-gemini-error-page
+              "Error"
+              (format nil "The server has caused too much (5+) redirections.~& ~a~{ -> ~a~}"
+                      (alex:lastcar (nyxt/small-web-mode:redirections (current-mode 'small-web)))
+                      (butlast (nyxt/small-web-mode:redirections (current-mode 'small-web)))))))
         ((:temporary-failure :server-unavailable :cgi-error :proxy-error
           :permanent-failure :not-found :gone :proxy-request-refused :bad-request)
          (make-gemini-error-page
           "Error"))
         (:slow-down
-         (spinneret:with-html-string
-           (:h1 "Slow down error")
-           (:pre (format nil "Try reloading the page in ~a seconds." meta))))
+         (make-gemini-error-page
+          "Slow down error"
+          (format nil "Try reloading the page in ~a seconds." meta)))
         ((:client-certificate-required :certificate-not-authorised :certificate-not-valid)
          (make-gemini-error-page
           "Certificate error"))))))

@@ -53,6 +53,7 @@ Gemini support is a bit more chaotic, but you can override `line->html' for
   ((rememberable-p nil)
    (url :documentation "The URL being opened.")
    (model :documentation "The contents of the current page.")
+   (redirections nil :documentation "The list of redirection Gemini URLs.")
    (search-engines
     '()
     :type list
