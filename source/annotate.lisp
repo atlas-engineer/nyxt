@@ -69,12 +69,13 @@
   (with-data-access (annotations (annotations-path (current-buffer)))
     annotations))
 
-(define-command annotate-current-url (&optional (buffer (current-buffer)))
-  "Create a annotation of the URL of BUFFER."
-  (let* ((data (prompt1
-                 :prompt "Annotation"
-                 :sources (list (make-instance 'prompter:raw-source
-                                               :name "Note"))))
+(define-command annotate-current-url (&optional (buffer-id (id (current-buffer))))
+  "Create a annotation of the URL of buffer with BUFFER-ID."
+  (let* ((buffer (buffers-get buffer-id))
+         (data (prompt1
+                    :prompt "Annotation"
+                    :sources (list (make-instance 'prompter:raw-source
+                                                  :name "Note"))))
          (tags (prompt
                 :prompt "Tag(s)"
                 :sources (list (make-instance 'prompter:word-source
@@ -112,20 +113,21 @@
                                       :tags tags)))
       (annotation-add annotation))))
 
-(define-internal-page-command render-annotations (&key annotations)
-    (buffer "*Annotations*" 'base-mode)
+(defun render-annotations (&key annotations)
   "Show the ANNOTATIONS in a new buffer"
   (spinneret:with-html-string
-    (:style (style buffer))
-    (:h1 "Annotations")
     (loop for annotation in annotations
           collect (:div (:raw (render annotation))
                         (:hr)))))
 
-(define-command show-annotations-for-current-url (&optional (source-buffer (current-buffer)))
+(define-internal-page-command show-annotations-for-current-url
+    (&key (source-buffer-id (id (current-buffer))))
+    (buffer "*Annotations*" 'base-mode)
   "Create a new buffer with the annotations of the current URL of BUFFER."
-  (with-data-access (annotations (annotations-path (current-buffer)))
-    (let ((filtered-annotations (remove-if-not (lambda (i) (url-equal (quri:uri (url i)) (url source-buffer))) annotations)))
+  (with-data-access (annotations (annotations-path buffer))
+    (let ((filtered-annotations (remove-if-not (lambda (i)
+                                                 (url-equal (quri:uri (url i)) (url (buffers-get source-buffer-id))))
+                                               annotations)))
       (render-annotations :annotations filtered-annotations))))
 
 (define-class annotation-source (prompter:source)
@@ -153,7 +155,8 @@
             #'string-lessp))))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-command show-annotation ()
+(define-internal-page-command show-annotation ()
+    (buffer "*Annotations*" 'base-mode)
   "Show an annotation(s)."
   (let ((selected-annotations
           (prompt
@@ -162,7 +165,8 @@
                                    :actions nil))))
     (render-annotations :annotations selected-annotations)))
 
-(define-command show-annotations ()
+(define-internal-page-command show-annotations ()
+    (buffer "*Annotations*" 'base-mode)
   "Show all annotations"
-  (with-data-access (annotations (annotations-path (current-buffer)))
+  (with-data-access (annotations (annotations-path buffer))
     (render-annotations :annotations annotations)))
