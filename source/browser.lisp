@@ -179,8 +179,8 @@ The handlers take the buffer as argument.")
 class is instantiated and before initializing the prompt-buffer modes.
 The handlers take the prompt-buffer as argument.")
    (before-download-hook
-    (make-hook-download)
-    :type hook-download
+    (make-hook-url->url)
+    :type hook-url->url
     :documentation "Hook run before downloading a URL.
 The handlers take the URL as argument.")
    (after-download-hook
@@ -381,7 +381,7 @@ reached (during which no new progress has been made)."
     (loop for d = (calispel:? download-manager:*notifications*)
           while d
           when (download-manager:finished-p d)
-          do (hooks:run-hook (after-download-hook *browser*))
+          do (hooks:run-hook (after-download-hook *browser*) d)
           do (sleep 0.1) ; avoid excessive polling
              (setf (bytes-downloaded download-render)
                    (download-manager:bytes-fetched download-object))
