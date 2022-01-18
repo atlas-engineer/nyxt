@@ -656,6 +656,24 @@ See `gtk-browser's `modifier-translator' slot."
                         :key #'gtk-object))
     (nyxt/gopher-mode:render line)))
 
+(defun sequence-p (object)
+  "Return true if OBJECT is a sequence that's not a string."
+  (typep object '(and sequence (not string))))
+
+(defun scalar-p (object)
+  ;; See `sb-int::compound-object-p'.
+  "Return true if OBJECT is a of one of the following types:
+- symbol,
+- character,
+- string,
+- non-complex number."
+  (funcall (alex:disjoin
+            'symbolp
+            'characterp
+            'stringp
+            (alex:rcurry 'typep '(and number (not complex))))
+           object))
+
 (defun make-context (&optional buffer)
   ;; This is to ensure that paths are not expanded when we make
   ;; contexts for `nosave-buffer's.
@@ -748,9 +766,13 @@ See `gtk-browser's `modifier-translator' slot."
                  (log:debug "Evaluate Lisp code from internal page: ~a" code)
                  (values (let ((result (first (evaluate code))))
                            ;; Objects and other complex structures make cl-json choke.
-                           (unless (or (typep result 'standard-object)
-                                       (and (typep result 'cons)
-                                            (some #'listp result)))
+                           ;; TODO: Maybe encode it to the format that `cl-json'
+                           ;; supports, then we can override the encoding and
+                           ;; decoding methods and allow arbitrary objects (like
+                           ;; buffers) in the nyxt:// URL arguments..
+                           (when (or (scalar-p result)
+                                     (and (sequence-p result)
+                                          (every #'scalar-p result)))
                              (cl-json:encode-json-to-string result)))
                          "application/json"))
                (values "undefined" "application/json"))))
