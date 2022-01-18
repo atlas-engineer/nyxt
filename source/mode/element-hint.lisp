@@ -130,7 +130,7 @@
                                 (prompter:input (current-prompt-buffer))
                                 (plump:get-attribute  suggestion "nyxt-hint")))
                       (input (prompter:input (current-prompt-buffer))))
-        (run-thread "auto-follow-thread"
+        (run-thread "hint auto-follow thread"
           (sleep (nyxt/web-mode:auto-follow-timer (current-mode 'web)))
           (when (string= input (prompter:input (current-prompt-buffer)))
             (prompter:return-selection (current-prompt-buffer)))))))
