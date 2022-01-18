@@ -650,72 +650,22 @@ See `gtk-browser's `modifier-translator' slot."
 (defun process-gopher-scheme (request)
   (let* ((url (webkit:webkit-uri-scheme-request-get-uri request))
          (line (cl-gopher:parse-gopher-uri url)))
-    (enable-modes '(gopher-mode)
+    ;; FIXME: This better become a default auto-mode rule.
+    (enable-modes '(small-web-mode)
                   (find (webkit:webkit-uri-scheme-request-get-web-view request)
                         (buffer-list)
                         :key #'gtk-object))
-    (nyxt/gopher-mode:render line)))
+    (nyxt/small-web-mode:gopher-render line)))
 
-(defmethod element->html ((element gemtext:element) (elements-after list) previous-element)
-  (declare (ignore elements-after previous-element))
-  (spinneret:with-html-string
-    (:pre (gemtext:text element))))
 
-(defmethod element->html ((element gemtext:paragraph) (elements-after list) previous-element)
-  (declare (ignore elements-after previous-element))
-  (spinneret:with-html-string
-    (:p (gemtext:text element))))
-
-(defmethod element->html ((element gemtext:title) (elements-after list) previous-element)
-  (declare (ignore elements-after previous-element))
-  (spinneret:with-html-string
-    (case (gemtext:level element)
-      (1 (:h1 (gemtext:text element)))
-      (2 (:h2 (gemtext:text element)))
-      (3 (:h3 (gemtext:text element))))))
-
-(defmethod element->html ((element gemtext:item) (elements-after list) previous-element)
-  (spinneret:with-html-string
-    (unless (gemtext:item-p previous-element)
-      (:ul (loop for elt in (cons element elements-after)
-                 until (not (gemtext:item-p elt))
-                 collect (:li (gemtext:text elt)))))))
-
-(defmethod element->html ((element gemtext:link) (elements-after list) previous-element)
-  (declare (ignore elements-after previous-element))
-  (spinneret:with-html-string
-    (let* ((path (quri:uri-path (gemtext:url element)))
-           (mime (mimes:mime-lookup path)))
-      (cond
-        ((str:starts-with-p "image/" mime)
-         (:a :href (render-url (gemtext:url element))
-             (:img :src (render-url (gemtext:url element))
-                   :alt (gemtext:text element))))
-        ((str:starts-with-p "audio/" mime)
-         (:audio :src (render-url (gemtext:url element))
-                 :controls t
-                 (gemtext:text element)))
-        ((str:starts-with-p "video/" mime)
-         (:video :src (render-url (gemtext:url element))
-                 :controls t))
-        (t (:a :class "button"
-               :href (render-url (gemtext:url element))
-               (gemtext:text element)))))
-    (:br)))
-
-(defun gemini-render (body)
-  (let ((elements (phos/gemtext:parse-string body)))
-    (spinneret:with-html-string
-      (loop for elements-tail on elements
-            and element = (first elements-tail)
-            and prev = nil then element
-            collect (:raw (element->html element (rest elements-tail) prev))))))
 
 (defun process-gemini-scheme (request)
   (sera:mvlet* ((url (webkit:webkit-uri-scheme-request-get-uri request))
                 (buffer (find (webkit:webkit-uri-scheme-request-get-web-view request)
                               (buffer-list) :key #'gtk-object))
                 (status meta body (phos/gemini:request url)))
+    ;; FIXME: This better become a default auto-mode rule.
+    (enable-modes '(small-web-mode) buffer)
     (flet ((make-gemini-error-page (title)
              (spinneret:with-html-string
                (:h1 title)
@@ -730,12 +680,16 @@ See `gtk-browser's `modifier-translator' slot."
                         (nyxt-prompt-buffer-canceled () "")))))
            (buffer-load (str:concat url "?" text) :buffer buffer)))
         (:success (if (str:starts-with-p "text/gemini" meta)
-                      (gemini-render body)
+                      (nyxt/small-web-mode:gemini-render body)
                       (values body meta)))
-        ((:temporary-failure :server-unavailable :cgi-error :proxy-error :slow-down
-                             :permanent-failure :not-found :gone :proxy-request-refused :bad-request)
+        ((:temporary-failure :server-unavailable :cgi-error :proxy-error
+          :permanent-failure :not-found :gone :proxy-request-refused :bad-request)
          (make-gemini-error-page
           "Error"))
+        (:slow-down
+         (spinneret:with-html-string
+           (:h1 "Slow down error")
+           (:pre (format nil "Try reloading the page in ~a seconds." meta))))
         ((:client-certificate-required :certificate-not-authorised :certificate-not-valid)
          (make-gemini-error-page
           "Certificate error"))))))

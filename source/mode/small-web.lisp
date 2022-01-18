@@ -1,22 +1,31 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/gopher-mode
+(uiop:define-package :nyxt/small-web-mode
   (:use :common-lisp :nyxt)
   (:import-from #:class-star #:define-class)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:import-from #:serapeum #:-> #:export-always)
-  (:documentation "Mode for Gopher page interaction."))
-(in-package :nyxt/gopher-mode)
+  (:documentation "Mode for Gopher/Gemini page interaction."))
+(in-package :nyxt/small-web-mode)
 (use-nyxt-package-nicknames)
 
 (defun update (mode)
   (let ((url (url (buffer mode))))
-    (setf (line mode) (cl-gopher:parse-gopher-uri (render-url url))
-          (contents mode) (cl-gopher:get-line-contents (line mode)))))
+    (run-thread "small-web-mode update thread"
+      (setf (url mode) url
+            (model mode) (str:string-case (quri:uri-scheme url)
+                           ("gopher" (cl-gopher:get-line-contents (cl-gopher:parse-gopher-uri url)))
+                           ("gemini" (multiple-value-bind (status meta body)
+                                         (gemini:request url)
+                                       (if (and (eq :success status)
+                                                (str:starts-with-p "text/gemini" meta)
+                                                (stringp body))
+                                           (gemtext:parse-string body)
+                                           body))))))))
 
-(define-mode gopher-mode ()
-  "Gopher page interaction mode.
+(define-mode small-web-mode ()
+  "Gopher/Gemini page interaction mode.
 
 Renders gopher elements (provided by `cl-gopher') to human-readable HTML.
 
@@ -37,10 +46,13 @@ loading, you'd need to override `line->html' in the following way:
 
 \(defmethod line->html ((line cl-gopher:image)) (image->link line))
 \(defmethod line->html ((line cl-gopher:gif)) (image->html line))
-\(defmethod line->html ((line cl-gopher:png)) (image->link line))"
+\(defmethod line->html ((line cl-gopher:png)) (image->link line))
+
+Gemini support is a bit more chaotic, but you can override `line->html' for
+`phos/gemtext' elements too."
   ((rememberable-p nil)
-   (line :documentation "The line being opened.")
-   (contents :documentation "The contents of the current page.")
+   (url :documentation "The URL being opened.")
+   (model :documentation "The contents of the current page.")
    (search-engines
     '()
     :type list
@@ -69,7 +81,7 @@ Create those with `make-gopher-search-engine'.")
     (lambda (mode)
       (hooks:remove-hook
        (pre-request-hook (buffer mode))
-       'gopher-mode-disable)))
+       'small-web-mode-disable)))
    (constructor
     (lambda (mode)
       (update mode)
@@ -78,13 +90,14 @@ Create those with `make-gopher-search-engine'.")
        (make-handler-resource
         (lambda (request-data)
           (when (nyxt/auto-mode::new-page-request-p request-data)
-            (if (string= "gopher" (quri:uri-scheme (url request-data)))
+            (if (str:s-member '("gopher" "gemini")
+                              (quri:uri-scheme (url request-data)))
                 (update mode)
-                (disable-modes '(gopher-mode) (buffer mode))))
+                (disable-modes '(small-web-mode) (buffer mode))))
           request-data)
-        :name 'gopher-mode-disable))))))
+        :name 'small-web-mode-disable))))))
 
-(defmethod search-engines ((mode gopher-mode))
+(defmethod search-engines ((mode small-web-mode))
   (mapcar (lambda (engine)
             (typecase engine
               (string (cl-gopher:parse-gopher-uri engine))
@@ -97,10 +110,10 @@ Create those with `make-gopher-search-engine'.")
 
 (define-class gopher-search-source (prompter:source)
   ((prompter:name "Term Search")
-   (prompter:constructor (let ((mode (current-mode 'gopher)))
+   (prompter:constructor (let ((mode (current-mode 'small-web)))
                            (union (search-engines mode)
                                   (sera:filter (alex:rcurry #'typep 'cl-gopher:search-line)
-                                               (cl-gopher:lines (contents mode)))
+                                               (cl-gopher:lines (model mode)))
                                   :test #'string= :key #'cl-gopher:uri-for-gopher-line)))
    (prompter:multi-selection-p t)
    (prompter:filter-preprocessor
@@ -124,7 +137,7 @@ Create those with `make-gopher-search-engine'.")
                                 :parent-buffer (current-buffer))))
                            (make-command save-search-engine* (lines)
                              (nyxt::configure-slot
-                              'search-engines 'gopher-mode
+                              'search-engines 'small-web-mode
                               :value `(append %slot-default%
                                               (list
                                                ,@(mapcar (lambda (line)
@@ -146,13 +159,15 @@ Create those with `make-gopher-search-engine'.")
   (prompt :prompt "Search Gopher for"
           :sources (list (make-instance 'gopher-search-source))))
 
+;;; Gopher rendering.
+
 (export-always 'line->html)
 (defgeneric line->html (line)
   (:documentation "Transform a gopher line to a reasonable HTML representation."))
 
-(export-always 'render)
-(defgeneric render (line &optional mode)
-  (:documentation "Produce a page content string/array given LINE.
+(export-always 'gopher-render)
+(defgeneric gopher-render (line &optional mode)
+  (:documentation "Produce a Gopher page content string/array given LINE.
 Second return value should be the MIME-type of the content."))
 
 (defmethod line->html ((line cl-gopher:gopher-line))
@@ -197,7 +212,7 @@ Second return value should be the MIME-type of the content."))
 (defmethod line->html ((line cl-gopher:search-line))
   (spinneret:with-html-string
     (:button :class "button search"
-             :onclick (ps:ps (nyxt/ps:lisp-eval `(nyxt/gopher-mode:search-gopher)))
+             :onclick (ps:ps (nyxt/ps:lisp-eval `(nyxt/small-web-mode:search-gopher)))
              (:b "[SEARCH] ") (cl-gopher:display-string line))))
 
 (defmethod line->html ((line cl-gopher:html-file))
@@ -229,20 +244,21 @@ Second return value should be the MIME-type of the content."))
 (defmethod line->html ((line cl-gopher:uuencoded-file)) (file-link->html line))
 (defmethod line->html ((line cl-gopher:unknown)) (file-link->html line))
 
-(defmethod render ((line cl-gopher:gopher-line) &optional (mode (current-mode 'gopher)))
-  (let ((contents (cl-gopher:get-line-contents line)))
+(defmethod gopher-render ((line cl-gopher:gopher-line) &optional (mode (current-mode 'small-web)))
+  (let ((contents (cl-gopher:get-line-contents line))
+        (spinneret:*html-style* :tree))
     (spinneret:with-html-string
       (:style (style (buffer mode)))
       (:style (style mode))
       (loop for line in (cl-gopher:lines contents)
             collect (:raw (line->html line))))))
 
-(defmethod render ((line cl-gopher:html-file) &optional (mode (current-mode 'gopher)))
+(defmethod gopher-render ((line cl-gopher:html-file) &optional (mode (current-mode 'small-web)))
   (declare (ignore mode))
   (let ((contents (cl-gopher:get-line-contents line)))
     (cl-gopher:content-string contents)))
 
-(defmethod render ((line cl-gopher:text-file) &optional (mode (current-mode 'gopher)))
+(defmethod gopher-render ((line cl-gopher:text-file) &optional (mode (current-mode 'small-web)))
   (declare (ignore mode))
   (let ((contents (cl-gopher:get-line-contents line)))
     (values (str:join +newline+ (cl-gopher:lines contents)) "text/plain")))
@@ -254,30 +270,87 @@ Second return value should be the MIME-type of the content."))
          (contents (cl-gopher:get-line-contents line)))
     (values (cl-gopher:content-array contents) mime)))
 
-(defmethod render ((line cl-gopher:image) &optional (mode (current-mode 'gopher)))
+(defmethod gopher-render ((line cl-gopher:image) &optional (mode (current-mode 'small-web)))
   (declare (ignore mode))
   (render-binary-content line))
 
-(defmethod render ((line cl-gopher:binary-file) &optional (mode (current-mode 'gopher)))
+(defmethod gopher-render ((line cl-gopher:binary-file) &optional (mode (current-mode 'small-web)))
   (declare (ignore mode))
   (render-binary-content line))
 
-(defmethod render ((line cl-gopher:binhex-file) &optional (mode (current-mode 'gopher)))
+(defmethod gopher-render ((line cl-gopher:binhex-file) &optional (mode (current-mode 'small-web)))
   (declare (ignore mode))
   (render-binary-content line))
 
-(defmethod render ((line cl-gopher:dos-file) &optional (mode (current-mode 'gopher)))
+(defmethod gopher-render ((line cl-gopher:dos-file) &optional (mode (current-mode 'small-web)))
   (declare (ignore mode))
   (render-binary-content line))
 
-(defmethod render ((line cl-gopher:uuencoded-file) &optional (mode (current-mode 'gopher)))
+(defmethod gopher-render ((line cl-gopher:uuencoded-file) &optional (mode (current-mode 'small-web)))
   (declare (ignore mode))
   (render-binary-content line))
 
-(defmethod render ((line cl-gopher:gif) &optional (mode (current-mode 'gopher)))
+(defmethod gopher-render ((line cl-gopher:gif) &optional (mode (current-mode 'small-web)))
   (declare (ignore mode))
   (render-binary-content line "image/gif"))
 
-(defmethod render ((line cl-gopher:png) &optional (mode (current-mode 'gopher)))
+(defmethod gopher-render ((line cl-gopher:png) &optional (mode (current-mode 'small-web)))
   (declare (ignore mode))
   (render-binary-content line "image/png"))
+
+;;; Gemini rendering.
+
+(defmethod line->html ((element gemtext:element))
+  (spinneret:with-html-string
+    (:pre (gemtext:text element))))
+
+(defmethod line->html ((element gemtext:paragraph))
+  (spinneret:with-html-string
+    (:p (gemtext:text element))))
+
+(defmethod line->html ((element gemtext:title))
+  (spinneret:with-html-string
+    (case (gemtext:level element)
+      (1 (:h1 (gemtext:text element)))
+      (2 (:h2 (gemtext:text element)))
+      (3 (:h3 (gemtext:text element))))))
+
+;; TODO: We used to build <ul>-lists out of those. Should we?
+(defmethod line->html ((element gemtext:item))
+  (spinneret:with-html-string
+    (:li (gemtext:text element))))
+
+(defmethod line->html ((element gemtext:link))
+  (spinneret:with-html-string
+    (let* ((url (gemtext:url element))
+           (path (quri:uri-path url))
+           (mime (when (pathnamep path)
+                   (mimes:mime-lookup path)))
+           (text (cond
+                   ((and (gemtext:text element)
+                         (not (uiop:emptyp (gemtext:text element))))
+                    (gemtext:text element))
+                   ((not (uiop:emptyp (render-url url)))
+                    (render-url (gemtext:url element)))
+                   (t "[LINK]"))))
+      (cond
+        ((str:starts-with-p "image/" mime)
+         (:a :href (render-url url)
+             (:img :src (render-url url) :alt text)))
+        ((str:starts-with-p "audio/" mime)
+         (:audio :src (render-url url) :controls t text))
+        ((str:starts-with-p "video/" mime)
+         (:video :src (render-url url) :controls t))
+        (t (:a :class "button" :href (render-url url) text))))
+    (:br)))
+
+(export-always 'gemini-render)
+(defun gemini-render (body &optional (mode (current-mode 'small-web)))
+  (let ((elements (phos/gemtext:parse-string body))
+        (spinneret::*html-style* :tree))
+    (unwind-protect
+         (spinneret:with-html-string
+           (:style (style (buffer mode)))
+           (:style (style mode))
+           (loop for element in elements
+                 collect (:raw (line->html element)))))))
