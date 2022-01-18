@@ -35,6 +35,19 @@ search.")
     nil
     :type boolean
     :documentation "Whether history navigation is restricted by buffer-local history.")
+   (auto-follow-hints-p
+    nil
+    :type boolean
+    :documentation "Whether the hints are automatically followed when matching user input inputted.
+
+Matches the hint code (like \"ABC\"). Only follows when hint code
+case-insensitively equal to user input (\"abc\", \"AbC\" etc.).")
+   (auto-follow-timer
+    0.5
+    :type float
+    :documentation "For how long should Nyxt wait until auto-following the hint.
+
+See `auto-follow-hints-p'.")
    (box-style (theme:themed-css (theme *browser*)
                   (".nyxt-hint"
                    :background-color theme:primary

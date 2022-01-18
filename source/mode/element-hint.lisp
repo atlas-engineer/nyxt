@@ -121,9 +121,19 @@
            suggestions
            :key #'prompter:value)
         (append matching-hints other-hints))))
-   (prompter:follow-mode-functions (lambda (suggestion)
-                                     (highlight-selected-hint :element suggestion
-                                                              :scroll nil)))
+   (prompter:follow-mode-functions
+    (lambda (suggestion)
+      (highlight-selected-hint :element suggestion
+                               :scroll nil)
+      (sera:and-let* ((auto-follow (nyxt/web-mode:auto-follow-hints-p (current-mode 'web)))
+                      (matches (string-equal
+                                (prompter:input (current-prompt-buffer))
+                                (plump:get-attribute  suggestion "nyxt-hint")))
+                      (input (prompter:input (current-prompt-buffer))))
+        (run-thread "auto-follow-thread"
+          (sleep (nyxt/web-mode:auto-follow-timer (current-mode 'web)))
+          (when (string= input (prompter:input (current-prompt-buffer)))
+            (prompter:return-selection (current-prompt-buffer)))))))
    (prompter:actions (list 'identity
                            (make-command click* (elements)
                              (dolist (element (rest elements))
