@@ -72,7 +72,8 @@
 (export-always 'send-lisp-url)
 (defpsmacro send-lisp-url (form &optional callback)
   "Request the lisp: URL and invoke callback when there's a successful result."
-  `(let ((request (fetch (lisp (nyxt:lisp-url ,form)))))
+  `(let ((request (fetch (lisp (apply #'str:concat "lisp://"
+                                      (quri:url-encode (write-to-string ,form)))))))
      (when ,callback
        (chain request
               (then (lambda (response)

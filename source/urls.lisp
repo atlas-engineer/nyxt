@@ -235,16 +235,6 @@ Example:
 (defun internal-url-p (url)
   (str:s-member (list "nyxt" "gopher") (quri:uri-scheme (url url))))
 
-(export-always 'lisp-url)
-(-> lisp-url (t &rest t) string)
-(defun lisp-url (lisp-form &rest more-lisp-forms)
-  "Generate a lisp:// URL from the given Lisp FUNCTION-NAME and ARGS. This is useful for encoding
-functionality into internal-buffers."
-  (the (values string &optional)
-       (apply #'str:concat "lisp://"
-              (mapcar (alex:compose #'quri:url-encode #'write-to-string)
-                      (cons lisp-form more-lisp-forms)))))
-
 (export-always 'parse-nyxt-url)
 (-> parse-nyxt-url ((or string quri:uri)) (values symbol list &optional))
 (defun parse-nyxt-url (url)

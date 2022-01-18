@@ -42,15 +42,16 @@ below to create said file, if it's not created yet.")
        (ensure-directories-exist init-file-path)
        (:p (if (uiop:file-exists-p init-file-path)
                (:a :class "button"
-                   :href (lisp-url `(echo "Init file exists"))
+                   :href (ps:ps (nyxt/ps:send-lisp-url  `(echo "Init file exists")))
                    "Init file exists")
                (:a :class "button"
-                   :href (lisp-url `(with-open-file (_ ,init-file-path
-                                                       :direction :output
-                                                       :if-exists nil
-                                                       :if-does-not-exist :create)
-                                      (echo "Init file created at ~a."
-                                            ,init-file-path)))
+                   :href (ps:ps (nyxt/ps:send-lisp-url
+                                 `(with-open-file (_ ,init-file-path
+                                                     :direction :output
+                                                     :if-exists nil
+                                                     :if-does-not-exist :create)
+                                    (echo "Init file created at ~a."
+                                          ,init-file-path))))
                    "Create init file"))))
     (:p "Example:")
     (:pre (:code "
