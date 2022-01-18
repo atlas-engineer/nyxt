@@ -145,7 +145,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                (:file "mode/list-history")
                (:file "mode/bookmark-frequent-visits")
                (:file "mode/web")
-               (:file "mode/gopher")
+               (:file "mode/small-web")
                (:file "mode/reading-line")
                (:file "mode/style")
                (:file "mode/certificate-exception")
