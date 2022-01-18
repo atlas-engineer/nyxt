@@ -660,16 +660,26 @@ See `gtk-browser's `modifier-translator' slot."
 
 
 (defun process-gemini-scheme (request)
-  (sera:mvlet* ((url (webkit:webkit-uri-scheme-request-get-uri request))
-                (buffer (find (webkit:webkit-uri-scheme-request-get-web-view request)
-                              (buffer-list) :key #'gtk-object))
-                (status meta body (phos/gemini:request url)))
-    ;; FIXME: This better become a default auto-mode rule.
-    (enable-modes '(small-web-mode) buffer)
-    (flet ((make-gemini-error-page (title &optional text)
+  (flet ((make-gemini-error-page (title text)
              (spinneret:with-html-string
                (:h1 title)
-               (:pre (or text meta)))))
+               (:pre text))))
+    (sera:mvlet* ((url (webkit:webkit-uri-scheme-request-get-uri request))
+                  (buffer (find (webkit:webkit-uri-scheme-request-get-web-view request)
+                                (buffer-list) :key #'gtk-object))
+                  (status meta body (handler-case
+                                        (gemini:request url)
+                                      (gemini::malformed-response (e)
+                                        (return-from process-gemini-scheme
+                                          (make-gemini-error-page
+                                           "Malformed response"
+                                           (format nil "The response for the URL you're requesting (~s) is malformed.
+Make sure you have typed it right.
+
+~a"
+                                                   url e)))))))
+      ;; FIXME: This better become a default auto-mode rule.
+      (enable-modes '(small-web-mode) buffer)
       (unless (member status '(:redirect :permanent-redirect))
         (setf (nyxt/small-web-mode:redirections (current-mode 'small-web)) nil))
       (case status
@@ -683,8 +693,8 @@ See `gtk-browser's `modifier-translator' slot."
            (buffer-load (str:concat url "?" text) :buffer buffer)))
         (:success
          (if (str:starts-with-p "text/gemini" meta)
-                      (nyxt/small-web-mode:gemini-render body)
-                      (values body meta)))
+             (nyxt/small-web-mode:gemini-render body)
+             (values body meta)))
         ((:redirect :permanent-redirect)
          (push url (nyxt/small-web-mode:redirections (current-mode 'small-web)))
          (if (< (length (nyxt/small-web-mode:redirections (current-mode 'small-web))) 5)
@@ -696,15 +706,13 @@ See `gtk-browser's `modifier-translator' slot."
                       (butlast (nyxt/small-web-mode:redirections (current-mode 'small-web)))))))
         ((:temporary-failure :server-unavailable :cgi-error :proxy-error
           :permanent-failure :not-found :gone :proxy-request-refused :bad-request)
-         (make-gemini-error-page
-          "Error"))
+         (make-gemini-error-page "Error" meta))
         (:slow-down
          (make-gemini-error-page
           "Slow down error"
           (format nil "Try reloading the page in ~a seconds." meta)))
         ((:client-certificate-required :certificate-not-authorised :certificate-not-valid)
-         (make-gemini-error-page
-          "Certificate error"))))))
+         (make-gemini-error-page "Certificate error" meta))))))
 
 (defun sequence-p (object)
   "Return true if OBJECT is a sequence that's not a string."
