@@ -1,7 +1,34 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt)
+(uiop:define-package :nyxt/file-manager-mode
+  (:use :common-lisp :nyxt)
+  (:import-from #:keymap #:define-key #:define-scheme)
+  (:import-from #:class-star #:define-class)
+  (:import-from #:serapeum #:export-always)
+  (:documentation "Mode for file choosing prompt buffer"))
+(in-package :nyxt/file-manager-mode)
+(use-nyxt-package-nicknames)
+
+(nyxt/prompt-buffer-mode::define-command-prompt directory-up (prompt-buffer)
+  "Remove one level of directory nesting from the current PROMPT-BUFFER file input."
+  (let* ((input (prompter:input prompt-buffer))
+         (path (uiop:parse-native-namestring input))
+         (parent (if (uiop:directory-pathname-p path)
+                     (uiop:pathname-parent-directory-pathname path)
+                     (uiop:pathname-directory-pathname path))))
+    (nyxt::set-prompt-buffer-input (namestring parent) prompt-buffer)))
+
+(define-mode file-manager-mode (nyxt/prompt-buffer-mode:prompt-buffer-mode)
+  "Prompt buffer mode for file choosing."
+  ((keymap-scheme
+    (define-scheme "element-hint"
+      scheme:cua
+      (list
+       "C-backspace" 'directory-up)
+      scheme:emacs
+      (list
+       "C-l" 'directory-up)))))
 
 (export-always 'directory-elements)
 (defun directory-elements (directory)
@@ -25,6 +52,23 @@
         finally (return (if include-directories-p
                             (append files included-directories)
                             files))))
+
+(export-always 'recursive-directory-elements)
+(defun executables ()
+  (let ((paths (serapeum::$path))) ; FIXME: It's not an exported API.
+    ;; FIXME: Check for executability? A lot of junk without it.
+    ;; StumpWM uses non-portable (sb-unix:unix-access filename sb-unix:x_ok).
+    (alex:mappend (lambda (path) (uiop:directory-files path)) paths)))
+
+(define-class program-source (prompter:source)
+  ((prompter:name "Programs")
+   (prompter:constructor (executables))
+   (prompter:multi-selection-p t))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:documentation "Prompt source for user-accessible programs."))
+(define-user-class program-source)
 
 (defmethod prompter:object-attributes ((path pathname))
   ;; TODO: Add dirname, basename, extension.
@@ -98,6 +142,7 @@ See `supported-media-types' of `file-mode'."
   (setf (slot-value source 'prompter:actions)
         (append
          (list (make-command open-file* (files)
+                 "Opens the file with `open-file-function' (a sensible default)."
                  (let* ((new-buffer-p (open-file-in-new-buffer-p source)))
                    ;; Open first file according to `open-file-in-new-buffer-p'
                    (funcall (open-file-function source) (first files)
@@ -107,7 +152,14 @@ See `supported-media-types' of `file-mode'."
                    (dolist (file (rest files))
                      (funcall (open-file-function source) file
                               :new-buffer-p t
-                              :supported-p (supported-media-or-directory file source))))))
+                              :supported-p (supported-media-or-directory file source)))))
+               (make-command open-with* (files)
+                 "Open the file with selected program."
+                 (let* ((program (prompt1
+                                   :prompt "The program to open the selected files with"
+                                   :sources (list (make-instance 'user-program-source)))))
+                   (dolist (file files)
+                     (uiop:launch-program (list program (namestring file)))))))
          (slot-value source 'prompter:actions))))
 
 #+linux
@@ -141,7 +193,7 @@ Can be used as a `open-file-function'."
       ;; We can probably signal something and display a notification.
       (error (c) (log:error "Opening ~a: ~a~&" filename c)))))
 
-(define-command open-file (&key (default-directory *default-pathname-defaults*))
+(define-command-global open-file (&key (default-directory *default-pathname-defaults*))
   "Open a file from the filesystem.
 
 The user is prompted with the prompt-buffer, files are browsable with
@@ -157,6 +209,7 @@ directory name) as parameter.
 `file-source' also has `supported-media-types'. You can append new types to
 it. Every type in `supported-media-types' will be opened directly in Nyxt."
   (prompt
+   :extra-modes '(file-manager-mode)
    :input (uiop:native-namestring default-directory)
    :prompt "Open file"
    :sources (list (make-instance 'user-open-file-source))))

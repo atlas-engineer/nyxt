@@ -264,7 +264,8 @@ Value is the loadable URL of that file.")
                                            (if (equal (mimes:mime file) "text/html")
                                                (format nil "file://~a" file)
                                                (make-data-url file)))))
-                                 (recursive-directory-elements (extension-directory mode)))))))))
+                                 (nyxt/file-manager-mode:recursive-directory-elements
+                                  (extension-directory mode)))))))))
 
 (export-always 'has-permission-p)
 (defmethod has-permission-p ((extension extension) (permission string))
