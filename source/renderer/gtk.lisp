@@ -692,7 +692,14 @@ See `gtk-browser's `modifier-translator' slot."
            (buffer-load (str:concat url "?" text) :buffer buffer)))
         (:success
          (if (str:starts-with-p "text/gemini" meta)
-             (nyxt/small-web-mode:gemini-render body)
+             (let ((mode (current-mode 'small-web))
+                   (elements (phos/gemtext:parse-string body))
+                   (spinneret::*html-style* :tree))
+               (spinneret:with-html-string
+                (:style (style buffer))
+                (:style (style mode))
+                (loop for element in elements
+                      collect (:raw (nyxt/small-web-mode:line->html element)))))
              (values body meta)))
         ((:redirect :permanent-redirect)
          (push url (nyxt/small-web-mode:redirections (current-mode 'small-web)))
