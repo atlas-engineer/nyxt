@@ -58,13 +58,6 @@ Gemini support is a bit more chaotic, but you can override `line->html' for
    (allowed-redirections-count
     5
     :documentation "The number of redirections that Gemini resources are allowed to make.")
-   (search-engines
-    '()
-    :type list
-    :reader nil
-    :writer t
-    :documentation "A list of Gopher search-engines to use when doing `search-gopher'.
-Create those with `make-gopher-search-engine'.")
    (style (theme:themed-css (nyxt::theme *browser*)
             (body
              :background-color theme:background)
@@ -101,68 +94,6 @@ Create those with `make-gopher-search-engine'.")
                 (disable-modes '(small-web-mode) (buffer mode))))
           request-data)
         :name 'small-web-mode-disable))))))
-
-(defmethod search-engines ((mode small-web-mode))
-  (mapcar (lambda (engine)
-            (typecase engine
-              (string (cl-gopher:parse-gopher-uri engine))
-              (cl-gopher:search-line engine)))
-          (slot-value mode 'search-engines)))
-
-(defmethod prompter:object-attributes ((line cl-gopher:search-line))
-  `(("Terms" ,(or (cl-gopher:terms line) ""))
-    ("Name" ,(cl-gopher:display-string line))))
-
-(define-class gopher-search-source (prompter:source)
-  ((prompter:name "Term Search")
-   (prompter:constructor (let ((mode (current-mode 'small-web)))
-                           (union (search-engines mode)
-                                  (sera:filter (alex:rcurry #'typep 'cl-gopher:search-line)
-                                               (cl-gopher:lines (model mode)))
-                                  :test #'string= :key #'cl-gopher:uri-for-gopher-line)))
-   (prompter:multi-selection-p t)
-   (prompter:filter-preprocessor
-    (lambda (suggestions source input)
-      (declare (ignore source))
-      (mapcar (lambda (suggestion)
-                (let ((value (cl-gopher:copy-gopher-line (prompter:value suggestion))))
-                  (setf (cl-gopher:terms value) input)
-                  (prompter:make-suggestion value)))
-              suggestions)))
-   (prompter:actions (list (make-command search-gopher* (lines)
-                             (buffer-load (cl-gopher:uri-for-gopher-line (first lines)))
-                             (dolist (line (rest lines))
-                               (make-buffer
-                                :url (cl-gopher:uri-for-gopher-line line)
-                                :parent-buffer (current-buffer))))
-                           (make-command search-gopher-new-buffer* (lines)
-                             (dolist (line lines)
-                               (make-buffer
-                                :url (cl-gopher:uri-for-gopher-line line)
-                                :parent-buffer (current-buffer))))
-                           (make-command save-search-engine* (lines)
-                             (nyxt::configure-slot
-                              'search-engines 'small-web-mode
-                              :value `(append %slot-default%
-                                              (list
-                                               ,@(mapcar (lambda (line)
-                                                           ;; FIXME: Maybe save the query, actually?
-                                                           (setf (cl-gopher:terms line) "")
-                                                           `(make-gopher-search-engine
-                                                             ,(cl-gopher:uri-for-gopher-line line)
-                                                             ,(cl-gopher:display-string line)))
-                                                         lines)))))))))
-
-(export-always 'make-gopher-search-engine)
-(defun make-gopher-search-engine (url name)
-  (let ((line (cl-gopher:parse-gopher-uri url)))
-    (setf (cl-gopher:display-string line) name)
-    line))
-
-(define-command search-gopher ()
-  "Prompt for terms and search those in current page and saved search engines."
-  (prompt :prompt "Search Gopher for"
-          :sources (list (make-instance 'gopher-search-source))))
 
 ;;; Gopher rendering.
 
@@ -216,9 +147,9 @@ Second return value should be the MIME-type of the content."))
 
 (defmethod line->html ((line cl-gopher:search-line))
   (spinneret:with-html-string
-    (:button :class "button search"
-             :onclick (ps:ps (nyxt/ps:lisp-eval `(nyxt/small-web-mode:search-gopher)))
-             (:b "[SEARCH] ") (cl-gopher:display-string line))))
+    (:a :class "button search"
+        :href (cl-gopher:uri-for-gopher-line line)
+        (:b "[SEARCH] ") (cl-gopher:display-string line))))
 
 (defmethod line->html ((line cl-gopher:html-file))
   (spinneret:with-html-string

@@ -649,15 +649,19 @@ See `gtk-browser's `modifier-translator' slot."
 
 (defun process-gopher-scheme (request)
   (let* ((url (webkit:webkit-uri-scheme-request-get-uri request))
-         (line (cl-gopher:parse-gopher-uri url)))
+         (line (cl-gopher:parse-gopher-uri url))
+         (buffer (find (webkit:webkit-uri-scheme-request-get-web-view request)
+                       (buffer-list) :key #'gtk-object)))
     ;; FIXME: This better become a default auto-mode rule.
-    (enable-modes '(small-web-mode)
-                  (find (webkit:webkit-uri-scheme-request-get-web-view request)
-                        (buffer-list)
-                        :key #'gtk-object))
-    (nyxt/small-web-mode:gopher-render line)))
-
-
+    (enable-modes '(small-web-mode) buffer)
+    (if (and (typep line 'cl-gopher:search-line)
+             (uiop:emptyp (cl-gopher:terms line)))
+        (progn (setf (cl-gopher:terms line)
+                     (prompt1
+                       :prompt (format nil "Search query for ~a" url)
+                       :sources (list (make-instance 'prompter:raw-source))))
+               (buffer-load (cl-gopher:uri-for-gopher-line line) :buffer buffer))
+        (nyxt/small-web-mode:gopher-render line))))
 
 (defun process-gemini-scheme (request)
   (flet ((make-gemini-error-page (title text)
