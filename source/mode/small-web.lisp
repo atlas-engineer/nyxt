@@ -345,13 +345,3 @@ Second return value should be the MIME-type of the content."))
          (:video :src url :controls t))
         (t (:a :class "button" :href url text))))
     (:br)))
-
-(export-always 'gemini-render)
-(defun gemini-render (body &optional (mode (current-mode 'small-web)))
-  (let ((elements (phos/gemtext:parse-string body))
-        (spinneret::*html-style* :tree))
-    (spinneret:with-html-string
-      (:style (style (buffer mode)))
-      (:style (style mode))
-      (loop for element in elements
-            collect (:raw (line->html element))))))
