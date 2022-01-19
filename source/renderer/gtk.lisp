@@ -674,7 +674,6 @@ See `gtk-browser's `modifier-translator' slot."
                                           (make-gemini-error-page
                                            "Malformed response"
                                            (format nil "The response for the URL you're requesting (~s) is malformed.
-Make sure you have typed it right.
 
 ~a"
                                                    url e)))))))
@@ -697,11 +696,13 @@ Make sure you have typed it right.
              (values body meta)))
         ((:redirect :permanent-redirect)
          (push url (nyxt/small-web-mode:redirections (current-mode 'small-web)))
-         (if (< (length (nyxt/small-web-mode:redirections (current-mode 'small-web))) 5)
+         (if (< (length (nyxt/small-web-mode:redirections (current-mode 'small-web)))
+                (nyxt/small-web-mode:allowed-redirections-count (current-mode 'small-web)))
              (buffer-load (quri:merge-uris (quri:uri meta) (quri:uri url)) :buffer buffer)
              (make-gemini-error-page
               "Error"
-              (format nil "The server has caused too much (5+) redirections.~& ~a~{ -> ~a~}"
+              (format nil "The server has caused too much (~a+) redirections.~& ~a~{ -> ~a~}"
+                      (nyxt/small-web-mode:allowed-redirections-count (current-mode 'small-web))
                       (alex:lastcar (nyxt/small-web-mode:redirections (current-mode 'small-web)))
                       (butlast (nyxt/small-web-mode:redirections (current-mode 'small-web)))))))
         ((:temporary-failure :server-unavailable :cgi-error :proxy-error

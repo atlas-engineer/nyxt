@@ -54,6 +54,9 @@ Gemini support is a bit more chaotic, but you can override `line->html' for
    (url :documentation "The URL being opened.")
    (model :documentation "The contents of the current page.")
    (redirections nil :documentation "The list of redirection Gemini URLs.")
+   (allowed-redirections-count
+    5
+    :documentation "The number of redirections that Gemini resources are allowed to make.")
    (search-engines
     '()
     :type list
@@ -323,26 +326,24 @@ Second return value should be the MIME-type of the content."))
 
 (defmethod line->html ((element gemtext:link))
   (spinneret:with-html-string
-    (let* ((url (gemtext:url element))
-           (path (quri:uri-path url))
+    (let* ((url (render-url (gemtext:url element)))
+           (path (quri:uri-path (gemtext:url element)))
            (mime (when (pathnamep path)
                    (mimes:mime-lookup path)))
            (text (cond
-                   ((and (gemtext:text element)
-                         (not (uiop:emptyp (gemtext:text element))))
+                   ((not (uiop:emptyp (gemtext:text element)))
                     (gemtext:text element))
-                   ((not (uiop:emptyp (render-url url)))
-                    (render-url (gemtext:url element)))
+                   ((not (uiop:emptyp url))
+                    url)
                    (t "[LINK]"))))
       (cond
         ((str:starts-with-p "image/" mime)
-         (:a :href (render-url url)
-             (:img :src (render-url url) :alt text)))
+         (:a :href url (:img :src url :alt text)))
         ((str:starts-with-p "audio/" mime)
-         (:audio :src (render-url url) :controls t text))
+         (:audio :src url :controls t text))
         ((str:starts-with-p "video/" mime)
-         (:video :src (render-url url) :controls t))
-        (t (:a :class "button" :href (render-url url) text))))
+         (:video :src url :controls t))
+        (t (:a :class "button" :href url text))))
     (:br)))
 
 (export-always 'gemini-render)
