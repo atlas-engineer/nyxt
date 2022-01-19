@@ -47,17 +47,12 @@
            (split-input-attributes (str)
              (str:split "~" str :omit-nulls t))
            (list-input-data-as-string (str)
-             (mapcar #'(lambda (e) (split-input-attributes e)) (split-input-fields str)))
-           (convert-string-to-keyword (string
-                                       &key
-                                         (upcase t)
-                                         (max-string-length 100))
+             (mapcar #'split-input-attributes (split-input-fields str)))
+           (convert-string-to-keyword (string &key (max-string-length 100))
              (and (<= 2 (length string) max-string-length)
-                  (char= (char string 0) #\:)
+                  (str:starts-with-p ":" string)
                   (let ((string1 (subseq string 1)))
-                    (when upcase
-                      (setf string1 (string-upcase string1)))
-                    (values (intern string1 "KEYWORD")))))
+                    (alex:make-keyword (string-upcase string1)))))
            (convert-key-value-lists (lists)
              (loop for list in lists
                    collect (loop for (key value) on list by #'cddr
@@ -148,6 +143,6 @@ the current buffer."
       (echo-warning "Failed to load inputs from ~s: ~a" (expand-path path) c))))
 
 (defun input-fields ()
-  "Lists all input entries objects saved in the local file."
+  "List all input entries objects saved in the local file."
   (with-data-access (input-fields (inputs-path (current-buffer)))
     input-fields))
