@@ -140,7 +140,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                             document
                                             (get-element-by-id (ps:lisp (html-bookmark-id id))))))
                                       (ps:chain element parent-node (remove-child element))
-                                      (nyxt/ps:send-lisp-url
+                                      (nyxt/ps:lisp-eval
                                        `(nyxt::delete-bookmark ,url-href))))
                                    "Delete"))
                       (:hr "")))))

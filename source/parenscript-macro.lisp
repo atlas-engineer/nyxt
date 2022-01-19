@@ -69,8 +69,8 @@
               (<= (chain rect bottom) (chain window inner-height)))
          t nil)))
 
-(export-always 'send-lisp-url)
-(defpsmacro send-lisp-url (form &optional callback)
+(export-always 'lisp-eval)
+(defpsmacro lisp-eval (form &optional callback)
   "Request the lisp: URL and invoke callback when there's a successful result."
   `(let ((request (fetch (lisp (apply #'str:concat "lisp://"
                                       (quri:url-encode (write-to-string ,form)))))))

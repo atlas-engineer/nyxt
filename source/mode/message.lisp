@@ -21,11 +21,11 @@
   (spinneret:with-html-string
     (:style (style buffer))
     (:h1 "Messages")
-    (:p (:button :class "button" :onclick (ps:ps (nyxt/ps:send-lisp-url `(nyxt::manual))) "Manual")
+    (:p (:button :class "button" :onclick (ps:ps (nyxt/ps:lisp-eval `(nyxt::manual))) "Manual")
         "See the troubleshooting section of the manual if you need help diagnose some warnings and errors.")
     (:p
      (:button :class "button"
-              :onclick (ps:ps (nyxt/ps:send-lisp-url `(progn
+              :onclick (ps:ps (nyxt/ps:lisp-eval `(progn
                                                         (nyxt/message-mode:clear-messages)
                                                         (nyxt::reload-buffers
                                                          (nyxt::buffers-get ,(id buffer))))))

@@ -28,16 +28,16 @@ represents a command.")))
     (:input :type "text" :id "macro-name")
     (:p "Commands")
     (:p (:button :class "button"
-                 :onclick (ps:ps (nyxt/ps:send-lisp-url (nyxt/macro-edit-mode::add-command)))
+                 :onclick (ps:ps (nyxt/ps:lisp-eval (nyxt/macro-edit-mode::add-command)))
                  "+ Add command"))
     (:div :id "commands" "")
     (:br)
     (:hr)
     (:button :class "button"
-             :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt/macro-edit-mode::save-macro)))
+             :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/macro-edit-mode::save-macro)))
              "Save macro")
     (:button :class "button"
-             :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt/macro-edit-mode::evaluate-macro)))
+             :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/macro-edit-mode::evaluate-macro)))
              "Evaluate macro")))
 
 (defmethod render-functions ((macro-editor macro-edit-mode))
@@ -47,13 +47,13 @@ represents a command.")))
               (loop for key being the hash-keys of (functions macro-editor)
                     using (hash-value value)
                     collect (:tr (:td (:button :class "button"
-                                               :onclick (ps:ps (nyxt/ps:send-lisp-url
+                                               :onclick (ps:ps (nyxt/ps:lisp-eval
                                                                 `(nyxt/macro-edit-mode::remove-function
                                                                   (current-mode 'macro-edit-mode)
                                                                   ,key)))
                                                "✕"))
                                  (:td (:button :class "button"
-                                               :onclick (ps:ps (nyxt/ps:send-lisp-url
+                                               :onclick (ps:ps (nyxt/ps:lisp-eval
                                                                 `(nyxt/macro-edit-mode::command-help
                                                                   (current-mode 'macro-edit-mode)
                                                                   ,key)))

@@ -232,7 +232,7 @@ A command is a special kind of function that can be called with
           (:li "Documentation: " (:pre (getf props :documentation))))
         (unless (user-class-p class)
           (:li (:button :class "button"
-                        :onclick (ps:ps (nyxt/ps:send-lisp-url
+                        :onclick (ps:ps (nyxt/ps:lisp-eval
                                          `(nyxt::configure-slot ',slot ',class :type ',(getf props :type))))
                         "Configure"))))))))
 
@@ -347,7 +347,7 @@ CLASS is a class symbol."
           "Changes only apply to newly created buffers.")
       (:h2 "Keybinding style")
       (:p (:button :class "button"
-                   :onclick (ps:ps (nyxt/ps:send-lisp-url
+                   :onclick (ps:ps (nyxt/ps:lisp-eval
                                     `(progn (nyxt::configure-slot
                                              'default-modes 'buffer
                                              :value '%slot-default%)
@@ -355,7 +355,7 @@ CLASS is a class symbol."
                                             (nyxt/vi-mode:vi-normal-mode :activate nil))))
                    "Use default (CUA)"))
       (:p (:button :class "button"
-                   :onclick (ps:ps (nyxt/ps:send-lisp-url
+                   :onclick (ps:ps (nyxt/ps:lisp-eval
                                     `(progn (nyxt::configure-slot
                                              'default-modes 'buffer
                                              :value '(append '(emacs-mode) %slot-default%))
@@ -363,7 +363,7 @@ CLASS is a class symbol."
                                             (nyxt/vi-mode:vi-normal-mode :activate nil))))
                    "Use Emacs"))
       (:p (:button :class "button"
-                   :onclick (ps:ps (nyxt/ps:send-lisp-url
+                   :onclick (ps:ps (nyxt/ps:lisp-eval
                                     `(progn (nyxt::configure-slot
                                              'default-modes 'buffer
                                              :value '(append '(vi-normal-mode) %slot-default%))
@@ -372,12 +372,12 @@ CLASS is a class symbol."
                    "Use vi"))
       (:h2 "Default new buffer URL")
       (:button :class "button"
-               :onclick (ps:ps (nyxt/ps:send-lisp-url
+               :onclick (ps:ps (nyxt/ps:lisp-eval
                                 `(nyxt::configure-slot 'default-new-buffer-url 'browser :type 'STRING)))
                "Set default new buffer URL")
       (:h2 "Default zoom ratio")
       (:button :class "button"
-               :onclick (ps:ps (nyxt/ps:send-lisp-url
+               :onclick (ps:ps (nyxt/ps:lisp-eval
                                 `(nyxt::configure-slot 'current-zoom-ratio 'buffer)))
                "Set default zoom ratio")
       (:h2 "Disable compositing")
@@ -385,7 +385,7 @@ CLASS is a class symbol."
      are experiencing blank web-views, you can try to disable compositing. After
      disabling compositing, you will need to restart Nyxt.")
       (:button :class "button"
-               :onclick (ps:ps (nyxt/ps:send-lisp-url
+               :onclick (ps:ps (nyxt/ps:lisp-eval
                                 `(nyxt::append-configuration
                                   '(setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1"))))
                "Disable compositing"))))
@@ -568,7 +568,7 @@ The version number is stored in the clipboard."
             (:tr (:td (:a :class "button" :href (nyxt-url 'describe-bindings) "List bindings"))
                  (:td "List all bindings for the current buffer."))
             (:tr (:td (:button :class "button"
-                               :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt::edit-user-file-with-external-editor)))
+                               :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt::edit-user-file-with-external-editor)))
                                "Edit user files"))
                  (:td "Edit user configuration and other files in external text editor."))
             (:tr (:td (:a :class "button" :href (nyxt-url 'tutorial) "Tutorial"))
@@ -693,12 +693,12 @@ System information is also saved into the clipboard."
               (:div
                (:h1 :id "title" "Nyxt " (:span :id "subtitle" "browser ☺"))
                (:h3 (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+))
-               (:button :class "button" :onclick (ps:ps (nyxt/ps:send-lisp-url
+               (:button :class "button" :onclick (ps:ps (nyxt/ps:lisp-eval
                                                          `(nyxt::restore-history-by-name)))
                         "🗁 Restore Session")
                (:a :class "button" :href (nyxt-url 'manual) "🕮 Manual")
                (:button :class "button"
-                        :onclick (ps:ps (nyxt/ps:send-lisp-url `(nyxt::execute-command)))
+                        :onclick (ps:ps (nyxt/ps:lisp-eval `(nyxt::execute-command)))
                         "≡ Execute Command")
                (:a :class "button" :href "https://nyxt.atlas.engineer/download" "⇡ Update"))
               (:div :class "section" :style "flex: 3"
