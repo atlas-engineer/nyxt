@@ -61,34 +61,6 @@
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages webkit))
 
-(define-public sbcl-phos
-  (let ((commit "d9b03c3523a190a439a6e2417f75c5cdddd98313"))
-    (package
-     (name "sbcl-phos")
-     (version (git-version "0.0.0" "1" commit))
-     (source
-      (origin
-       (method git-fetch)
-       (uri (git-reference
-             (url "https://github.com/omar-polo/phos")
-             (commit commit)))
-       (sha256
-        (base32
-         "0jyyk9sxf00ibpm0p2vir3jx58hni8m63dphdwrp860j2jsxik80"))))
-     (build-system asdf-build-system/sbcl)
-    (inputs
-     (list cl-quri cl-ppcre cl-trivia cl-usocket cl-cl+ssl))
-    (arguments
-     `(#:asd-systems '("phos")
-       #:tests? #f))
-    (home-page "https://github.com/omar-polo/phos")
-    (synopsis "Gemini client library and experimental GUI")
-    (description "Gemini client library and experimental GUI.")
-    (license license:isc))))
-
-(define-public cl-phos
-  (sbcl-package->cl-source-package sbcl-phos))
-
 ;; TODO: Remove sbcl-cl-webkit once Guix has 3.5.0.
 (define-public sbcl-cl-webkit
   (package
@@ -245,7 +217,6 @@ WebKit browsing engine.")
        ("cl-css" ,cl-css)
        ("cl-custom-hash-table" ,cl-custom-hash-table)
        ("cl-gopher" ,cl-gopher)
-       ("cl-phos" ,cl-phos)
        ("cl-html-diff" ,cl-html-diff)
        ("cl-json" ,cl-json)
        ("cl-ppcre" ,cl-ppcre)
