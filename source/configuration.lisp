@@ -354,3 +354,6 @@ exists."
           (and (equalp "file" (quri:uri-scheme url))
                (uiop:file-exists-p (quri:uri-path url)))
           (equalp "file" (quri:uri-scheme url))))))
+
+(defun ensure-file-exists (pathname)
+  (open pathname :direction :probe :if-does-not-exist :create))
