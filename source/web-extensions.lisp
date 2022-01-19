@@ -310,7 +310,7 @@ slash. WebExtensions require this :/"
 (defmethod nyxt::format-mode ((extension extension))
   (spinneret:with-html-string
     (:button :class "button"
-             :onclick (ps:ps (nyxt/ps:send-lisp-url `(toggle-extension-popup ',(mode-name extension))))
+             :onclick (ps:ps (nyxt/ps:lisp-eval `(toggle-extension-popup ',(mode-name extension))))
              :title (format nil "Open the browser action of ~a" (mode-name extension))
              (name extension))))
 
@@ -388,7 +388,7 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
          (setf (nyxt:glyph extension)
                (spinneret:with-html-string
                  (:button :class "button"
-                          :onclick (ps:ps (nyxt/ps:send-lisp-url
+                          :onclick (ps:ps (nyxt/ps:lisp-eval
                                            `(toggle-extension-popup ',(mode-name extension))))
                           :title (format nil "Open the browser action of ~a" (mode-name extension))
                           (:raw (setf (default-icon (browser-action extension))

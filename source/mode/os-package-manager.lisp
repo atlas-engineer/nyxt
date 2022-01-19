@@ -128,7 +128,7 @@
     (flet ((format-inputs (inputs)
              (spinneret:with-html
                (dolist (input inputs)
-                 (:button :onclick (ps:ps (nyxt/ps:send-lisp-url
+                 (:button :onclick (ps:ps (nyxt/ps:lisp-eval
                                            `(%describe-os-package
                                              (ospm:find-os-packages ,input))))
                           input))))
@@ -161,7 +161,7 @@
                         (:li "Outputs: "
                              (unless (ospm:expanded-outputs-p package)
                                (:button :class "button"
-                                        :onclick (ps:ps (nyxt/ps:send-lisp-url
+                                        :onclick (ps:ps (nyxt/ps:lisp-eval
                                                          `(progn (echo "Computing path & size...")
                                                                  (ospm:expand-outputs (first (ospm:find-os-packages
                                                                                               ,(ospm:name package)
@@ -270,7 +270,7 @@ OBJECTS can be a list of packages, a generation, etc."
                  (:h1 title)
                  (:p
                   (:button :class "button"
-                           :onclick (ps:ps (nyxt/ps:send-lisp-url
+                           :onclick (ps:ps (nyxt/ps:lisp-eval
                                             '(nyxt/os-package-manager-mode:cancel-package-operation)))
                            "Cancel")))
                buffer)
@@ -366,7 +366,7 @@ OBJECTS can be a list of packages, a generation, etc."
         (dolist (package-output (ospm:list-packages (ospm:path generation)))
           (let ((package (ospm:parent-package package-output)))
             (:li (:button :class "button"
-                          :onclick (ps:ps (nyxt/ps:send-lisp-url
+                          :onclick (ps:ps (nyxt/ps:lisp-eval
                                            `(%describe-os-package
                                              (or (ospm:find-os-packages
                                                   ,(ospm:name package)

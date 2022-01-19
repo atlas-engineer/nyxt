@@ -89,7 +89,7 @@ of buffers."
            "Create the presentation for a buffer."
            (spinneret:with-html
              (:button :class "button"
-                      :onclick (ps:ps (nyxt/ps:send-lisp-url
+                      :onclick (ps:ps (nyxt/ps:lisp-eval
                                        `(progn (switch-buffer :id ,(id (buffer heading)))
                                                (scroll-to-element :nyxt-identifier ,(get-nyxt-id (element heading))))))
                       (:span :title (title heading)

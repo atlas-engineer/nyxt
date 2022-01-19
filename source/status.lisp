@@ -8,7 +8,7 @@
   (spinneret:with-html-string
     (when (nosave-buffer-p buffer) (:span "⚠ nosave"))
     (:button :type "button"
-             :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt:toggle-modes)))
+             :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:toggle-modes)))
              :title (str:concat "Enabled modes: " (list-modes buffer)) "✚")
     (loop for mode in (sera:filter #'visible-in-status-p (modes buffer))
           collect (let* ((formatted-mode (if (glyph-mode-presentation-p (status-buffer window))
@@ -20,7 +20,7 @@
                         ;; from status-buffer and redirect those to the current
                         ;; web-buffer.
                         (:button :class "button"
-                                 :onclick (ps:ps (nyxt/ps:send-lisp-url
+                                 :onclick (ps:ps (nyxt/ps:lisp-eval
                                                   `(buffer-load ,(nyxt-url 'describe-class
                                                                            :class `,(mode-name mode)))))
                                  :title (format nil "Describe ~a" (mode-name mode))
@@ -34,16 +34,16 @@
   (spinneret:with-html-string
     (:button :type "button"
              :title "Backwards"
-             :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt/web-mode:history-backwards))) "«")
+             :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/web-mode:history-backwards))) "«")
     (:button :type "button"
              :title "Reload"
-             :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt:reload-current-buffer))) "↺")
+             :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:reload-current-buffer))) "↺")
     (:button :type "button"
              :title "Forwards"
-             :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt/web-mode:history-forwards))) "»")
+             :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/web-mode:history-forwards))) "»")
     (:button :type "button"
              :title "Execute"
-             :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt:execute-command))) "≡")))
+             :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:execute-command))) "≡")))
 
 (defun format-status-vi-mode (&optional (buffer (current-buffer)))
   (spinneret:with-html-string
@@ -51,12 +51,12 @@
            (:div
             (:button :type "button"
                      :title "vi-normal-mode"
-                     :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt/vi-mode:vi-insert-mode))) "N")))
+                     :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/vi-mode:vi-insert-mode))) "N")))
           ((find-submode buffer 'vi-insert-mode)
            (:div
             (:button :type "button"
                      :title "vi-insert-mode"
-                     :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt/vi-mode:vi-normal-mode))) "I")))
+                     :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/vi-mode:vi-normal-mode))) "I")))
           (t (:span "")))))
 
 (export-always 'format-status-load-status)
@@ -70,7 +70,7 @@
 (defun format-status-url (buffer)
   (spinneret:with-html-string
     (:button :type "button"
-             :onclick (ps:ps (nyxt/ps:send-lisp-url '(nyxt:set-url)))
+             :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:set-url)))
              (format nil " ~a — ~a"
                      (render-url (url buffer))
                      (title buffer)))))
@@ -83,7 +83,7 @@
                                           (mapcar #'url (sort-by-time (buffer-list))))
                          :test #'equal)
           collect (:button :type "tab"
-                           :onclick (ps:ps (nyxt/ps:send-lisp-url
+                           :onclick (ps:ps (nyxt/ps:lisp-eval
                                             `(nyxt::switch-buffer-or-query-domain ,domain)))
                            domain))))
 
