@@ -46,12 +46,9 @@ below to create said file, if it's not created yet.")
                    "Init file exists")
                (:a :class "button"
                    :href (ps:ps (nyxt/ps:send-lisp-url
-                                 `(with-open-file (_ ,init-file-path
-                                                     :direction :output
-                                                     :if-exists nil
-                                                     :if-does-not-exist :create)
-                                    (echo "Init file created at ~a."
-                                          ,init-file-path))))
+                                 `(progn (ensure-file-exists ,init-file-path)
+                                         (echo "Init file created at ~a."
+                                               ,init-file-path))))
                    "Create init file"))))
     (:p "Example:")
     (:pre (:code "
