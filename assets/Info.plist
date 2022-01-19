@@ -24,20 +24,30 @@
     <key>CFBundleURLTypes</key>
     <array>
       <dict>
-	<key>CFBundleURLName</key>
-	<string>http URL</string>
-	<key>CFBundleURLSchemes</key>
-	<array>
-	  <string>http</string>
-	</array>
+	    <key>CFBundleURLName</key>
+	    <string>http URL</string>
+	    <key>CFBundleURLSchemes</key>
+	    <array>
+	      <string>http</string>
+	    </array>
       </dict>
       <dict>
-	<key>CFBundleURLName</key>
-	<string>https URL</string>
-	<key>CFBundleURLSchemes</key>
-	<array>
-	  <string>https</string>
-	</array>
+	    <key>CFBundleURLName</key>
+	    <string>https URL</string>
+	    <key>CFBundleURLSchemes</key>
+	    <array>
+	      <string>https</string>
+	    </array>
+      </dict>
+    </array>
+    <key>CFBundleDocumentTypes</key>
+    <array>
+      <dict>
+	    <key>CFBundleTypeExtensions</key>
+	    <array>
+	      <string>html</string>
+          <string>xhtml</string>
+	    </array>
       </dict>
     </array>
   </dict>
