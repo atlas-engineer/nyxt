@@ -16,20 +16,31 @@
   (subseq (inner-text heading) 0 (position #\[ (inner-text heading))))
 
 (defmethod prompter:object-attributes ((heading heading))
-  `(("Title" ,(title heading))
+  `(("Title" ,(format nil "~a ~a"
+                      (make-string (typecase (element heading)
+                                     (nyxt/dom:h1-element 1)
+                                     (nyxt/dom:h2-element 2)
+                                     (nyxt/dom:h3-element 3)
+                                     (nyxt/dom:h4-element 4)
+                                     (nyxt/dom:h5-element 5)
+                                     (nyxt/dom:h6-element 6)
+                                     (t 0))
+                                   :initial-element #\*)
+                      (title heading)))
     ("Keywords" ,(format nil "~:{~a~^ ~}" (keywords heading)))))
 
 (defun get-headings (&key (buffer (current-buffer)))
   (with-current-buffer buffer
-    (map 'list
-         (lambda (e)
-           (make-instance 'heading :inner-text (plump:text e)
-                                   :element e
-                                   :buffer buffer
-                                   :keywords (ignore-errors
-                                              (analysis:extract-keywords
-                                               (plump:text (plump:next-element e))))))
-         (clss:select "h1, h2, h3, h4, h5, h6" (document-model buffer)))))
+    (sort (map 'list
+               (lambda (e)
+                 (make-instance 'heading :inner-text (plump:text e)
+                                         :element e
+                                         :buffer buffer
+                                         :keywords (ignore-errors
+                                                    (analysis:extract-keywords
+                                                     (plump:text (plump:next-element e))))))
+               (clss:select "h1, h2, h3, h4, h5, h6" (document-model buffer)))
+          #'< :key (alex:compose #'parse-integer #'get-nyxt-id #'element))))
 
 (define-parenscript scroll-to-element (&key nyxt-identifier)
   (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier)))
