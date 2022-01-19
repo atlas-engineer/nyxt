@@ -15,7 +15,8 @@
     (run-thread "small-web-mode update thread"
       (setf (url mode) url
             (model mode) (str:string-case (quri:uri-scheme url)
-                           ("gopher" (cl-gopher:get-line-contents (cl-gopher:parse-gopher-uri url)))
+                           ("gopher" (cl-gopher:get-line-contents
+                                      (cl-gopher:parse-gopher-uri (render-url url))))
                            ("gemini" (multiple-value-bind (status meta body)
                                          (gemini:request url)
                                        (if (and (eq :success status)
