@@ -350,9 +350,8 @@ Second return value should be the MIME-type of the content."))
 (defun gemini-render (body &optional (mode (current-mode 'small-web)))
   (let ((elements (phos/gemtext:parse-string body))
         (spinneret::*html-style* :tree))
-    (unwind-protect
-         (spinneret:with-html-string
-           (:style (style (buffer mode)))
-           (:style (style mode))
-           (loop for element in elements
-                 collect (:raw (line->html element)))))))
+    (spinneret:with-html-string
+      (:style (style (buffer mode)))
+      (:style (style mode))
+      (loop for element in elements
+            collect (:raw (line->html element))))))
