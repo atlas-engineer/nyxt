@@ -328,7 +328,7 @@ Second return value should be the MIME-type of the content."))
   (spinneret:with-html-string
     (let* ((url (render-url (gemtext:url element)))
            (path (quri:uri-path (gemtext:url element)))
-           (mime (when (pathnamep path)
+           (mime (unless (uiop:emptyp path)
                    (mimes:mime-lookup path)))
            (text (cond
                    ((not (uiop:emptyp (gemtext:text element)))
