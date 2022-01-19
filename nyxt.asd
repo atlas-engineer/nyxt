@@ -126,13 +126,13 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                (:file "history")
                (:file "autofill")
                (:file "external-editor")
-               (:file "file-manager")
                #+quicklisp
                (:file "lisp-system")
                ;; Core Modes
                (:file "mode/auto")
                (:file "mode/input-edit")
                (:file "mode/prompt-buffer")
+               (:file "mode/file-manager")
                (:file "mode/editor")
                (:file "mode/plaintext-editor")
                (:file "mode/buffer-listing")
