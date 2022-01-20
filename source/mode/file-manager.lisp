@@ -159,8 +159,7 @@ See `supported-media-types' of `file-mode'."
                  (let* ((program (prompt1
                                    :prompt "The program to open the selected files with"
                                    :sources (list (make-instance 'user-program-source)))))
-                   (dolist (file files)
-                     (uiop:launch-program (list program (namestring file)))))))
+                   (uiop:launch-program (cons (uiop:native-namestring program) (mapcar #'uiop:native-namestring files))))))
          (slot-value source 'prompter:actions))))
 
 #+linux
