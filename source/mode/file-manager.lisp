@@ -95,7 +95,7 @@ When the user is unspecified, take the current one."
      (remove-if
       #'uiop:hidden-pathname-p
       (mapcar #'uiop:resolve-symlinks
-              (alex:mappend (lambda (path) (uiop:directory-files path)) paths))))))
+              (alex:mappend #'uiop:directory-files paths))))))
 
 (define-class program-source (prompter:source)
   ((prompter:name "Programs")
