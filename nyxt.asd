@@ -120,8 +120,6 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                (:file "prompt-buffer")
                (:file "command-commands")
                (:file "recent-buffers")
-               (:file "password")
-               (:file "bookmark")
                (:file "annotate")
                (:file "history")
                (:file "autofill")
@@ -133,6 +131,9 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                (:file "mode/input-edit")
                (:file "mode/prompt-buffer")
                (:file "mode/file-manager")
+               ;; Not modes, but depend on file-manager-mode.
+               (:file "password")
+               (:file "bookmark")
                (:file "mode/editor")
                (:file "mode/plaintext-editor")
                (:file "mode/buffer-listing")
