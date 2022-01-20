@@ -143,7 +143,7 @@ See `supported-media-types' of `file-mode'."
   (setf (slot-value source 'prompter:actions)
         (append
          (list (make-command open-file* (files)
-                 "Opens the file with `open-file-function' (a sensible default)."
+                 "Open files with `open-file-function' (a sensible default)."
                  (let* ((new-buffer-p (open-file-in-new-buffer-p source)))
                    ;; Open first file according to `open-file-in-new-buffer-p'
                    (funcall (open-file-function source) (first files)
@@ -155,7 +155,7 @@ See `supported-media-types' of `file-mode'."
                               :new-buffer-p t
                               :supported-p (supported-media-or-directory file source)))))
                (make-command open-with* (files)
-                 "Open the file with selected program."
+                 "Open files with the selected program."
                  (let* ((program (prompt1
                                    :prompt "The program to open the selected files with"
                                    :sources (list (make-instance 'user-program-source)))))
