@@ -260,7 +260,7 @@ can set a hook like the following in your configuration file:")
 
 \(define-configuration web-buffer
   ((request-resource-hook
-    (hooks:add-hook %slot-default% (make-handler-resource #'old-reddit-handler)))))"))
+    (hooks:add-hook %slot-default% 'old-reddit-handler))))"))
     (:p "(See " (:code "url-dispatching-handler")
         " for a simpler way to achieve the same result.)")
     (:p "Or, if you want to set multiple handlers at once,")
@@ -268,8 +268,7 @@ can set a hook like the following in your configuration file:")
 \(define-configuration web-buffer
   ((request-resource-hook
     (reduce #'hooks:add-hook
-            (mapcar #'make-handler-resource (list #'old-reddit-handler
-                                                  #'my-other-handler))
+            '(old-reddit-handler auto-proxy-handler)
             :initial-value %slot-default%))))"))
     (:p "Some hooks like the above example expect a return value, so it's
 important to make sure we return " (:code "request-data") " here.  See the

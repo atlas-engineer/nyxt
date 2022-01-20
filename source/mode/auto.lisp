@@ -211,15 +211,14 @@ The rules are:
           (mode-invocations (default-modes (buffer mode)))))
   (when (prompt-on-mode-toggle mode)
     (hooks:add-hook (enable-mode-hook (buffer mode))
-                    (nyxt::make-handler-mode
-                     (make-mode-toggle-prompting-handler t mode)
-                     :name 'enable-mode-auto-mode-handler))
+                    (make-instance 'nyxt::handler-mode
+                                   :fn (make-mode-toggle-prompting-handler t mode)
+                                   :name 'enable-mode-auto-mode-handler))
     (hooks:add-hook (disable-mode-hook (buffer mode))
-                    (nyxt::make-handler-mode
-                     (make-mode-toggle-prompting-handler nil mode)
-                     :name 'disable-mode-auto-mode-handler)))
-  (hooks:add-hook (pre-request-hook (buffer mode))
-                  (make-handler-resource #'auto-mode-handler)))
+                    (make-instance 'nyxt::handler-mode
+                                   :fn (make-mode-toggle-prompting-handler nil mode)
+                                   :name 'disable-mode-auto-mode-handler)))
+  (hooks:add-hook (pre-request-hook (buffer mode)) 'auto-mode-handler))
 
 (defun clean-up-auto-mode (mode)
   (hooks:remove-hook (pre-request-hook (buffer mode))
@@ -377,12 +376,13 @@ Auto-mode is re-enabled once the page is reloaded."
                                  (set-difference (nyxt::all-mode-names) modes-to-enable
                                                  :test #'string=))))
     (hooks:add-hook (request-resource-hook buffer)
-                    (make-handler-resource
-                     (lambda (request-data)
-                       (auto-mode :activate t)
-                       (hooks:remove-hook (request-resource-hook buffer)
-                                          'auto-mode-reenable)
-                       request-data)
+                    (make-instance
+                     'handler
+                     :fn (lambda (request-data)
+                           (auto-mode :activate t)
+                           (hooks:remove-hook (request-resource-hook buffer)
+                                              'auto-mode-reenable)
+                           request-data)
                      :name 'auto-mode-reenable))
     (disable-modes (uiop:ensure-list modes-to-disable) buffer)
     (enable-modes (uiop:ensure-list modes-to-enable) buffer)

@@ -70,8 +70,7 @@ Example:
                          'force-https-handler)))
    (constructor
     (lambda (mode)
-      (hooks:add-hook (request-resource-hook (buffer mode))
-                      (make-handler-resource #'force-https-handler))))))
+      (hooks:add-hook (request-resource-hook (buffer mode)) 'force-https-handler)))))
 
 (defmethod on-signal-load-finished ((mode force-https-mode) url)
   (declare (ignore url))

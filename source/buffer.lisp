@@ -5,7 +5,7 @@
 
 (hooks:define-hook-type keymaps-buffer (function (list-of-keymaps buffer)
                                                  (values &optional list-of-keymaps buffer)))
-(export-always '(make-hook-keymaps-buffer make-handler-keymaps-buffer))
+(export-always '(hook-keymaps-buffer))
 (hooks:define-hook-type url->url (function (quri:uri) quri:uri))
 
 (define-class buffer ()
@@ -48,12 +48,12 @@ Modes are instantiated over the result of the `default-modes' method, with
 `initialize-modes' and not in the initform so that the instantiation form can
 access the initialized buffer.")
    (enable-mode-hook
-    (make-hook-mode)
+    (make-instance 'hook-mode)
     :type hook-mode
     :documentation "Hook run on every mode activation,
 after the mode-specific hook.")
    (disable-mode-hook
-    (make-hook-mode)
+    (make-instance 'hook-mode)
     :type hook-mode
     :documentation "Hook run on every mode deactivation,
 after the mode-specific hook.")
@@ -104,7 +104,7 @@ FALLBACK-URL is empty, SEARCH-URL is used on an empty search.
 The default search engine (as per `default-search-engine') is used when the
 query is not a valid URL, or the first keyword is not recognized.")
    (current-keymaps-hook
-    (make-hook-keymaps-buffer
+    (make-instance 'hook-keymaps-buffer
      :combination #'hooks:combine-composed-hook)
     :type hook-keymaps-buffer
     :documentation "Hook run as a return value of `current-keymaps'.")
@@ -146,8 +146,8 @@ forwarded when no binding is found.")
     ;; TODO: Store multiple events?  Maybe when implementing keyboard macros.
     :documentation "The last event received in the current buffer.")
    (pre-request-hook
-    (make-hook-resource
-     :combination #'combine-composed-hook-until-nil)
+    (make-instance 'hook-resource
+                   :combination #'combine-composed-hook-until-nil)
     :type hook-resource
     :documentation "Hook run before the `request-resource-hook'.
 One example of its application is `auto-mode' that changes mode setup. Any
@@ -164,8 +164,8 @@ should find its place there.")
 `request-resource-hook' handlers run.
 The functions are expected to take key arguments like `:url'.")
    (request-resource-hook
-    (make-hook-resource
-     :combination #'combine-composed-hook-until-nil)
+    (make-instance 'hook-resource
+                   :combination #'combine-composed-hook-until-nil)
     :type hook-resource
     :documentation "Hook run on every resource load.
 The handlers are composed, passing a `request-data'
@@ -187,7 +187,7 @@ Example:
 \(define-configuration buffer
   ((request-resource-hook
     (reduce #'hooks:add-hook
-            (mapcar #'make-handler-resource (list #'old-reddit-handler #'auto-proxy-handler))
+            '(old-reddit-handler auto-proxy-handler)
             :initial-value %slot-default%))))")
    (scroll-distance
     50
@@ -274,7 +274,7 @@ down.")
        :border-radius "2px"
        :padding-bottom "10px")))
    (buffer-load-hook
-    (make-hook-url->url
+    (make-instance 'hook-url->url
      :combination #'hooks:combine-composed-hook)
     :type hook-url->url
     :accessor nil
@@ -283,12 +283,12 @@ down.")
 The handlers take the URL going to be loaded as argument
 and must return a (possibly new) URL.")
    (buffer-loaded-hook
-    (make-hook-buffer)
+    (make-instance 'hook-buffer)
     :type hook-buffer
     :documentation "Hook run on `on-signal-load-finished'.
 The handlers take the buffer as argument.")
    (buffer-delete-hook
-    (make-hook-buffer)
+    (make-instance 'hook-buffer)
     :type hook-buffer
     :documentation "Hook run before `buffer-delete' takes effect.
 The handlers take the buffer as argument.")

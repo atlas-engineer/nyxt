@@ -28,8 +28,7 @@ See the mode `keymap-scheme' for special bindings."
       (echo "passthrough-mode disabled.")))
    (constructor
     (lambda (mode)
-      (hooks:add-hook (current-keymaps-hook (buffer mode))
-                      (make-handler-keymaps-buffer #'keep-override-map))
+      (hooks:add-hook (current-keymaps-hook (buffer mode)) 'keep-override-map)
       (echo "passthrough-mode enabled.")))))
 
 (-> keep-override-map (list-of-keymaps buffer) (values list-of-keymaps buffer))

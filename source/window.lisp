@@ -57,7 +57,7 @@ It's a function of the window argument that returns the title as a string.")
 It takes EVENT, BUFFER, WINDOW and PRINTABLE-P parameters.
 Cannot be null.")
    (window-set-buffer-hook
-    (make-hook-window-buffer)
+    (make-instance 'hook-window-buffer)
     :type hook-window-buffer
     :documentation "Hook run before `window-set-buffer' takes effect.
 The handlers take the window and the buffer as argument.")
@@ -68,7 +68,7 @@ The handlers take the window and the buffer as argument.")
 a string to be printed in the status view.
 Cannot be null.")
    (window-delete-hook
-    (make-hook-window)
+    (make-instance 'hook-window)
     :type hook-window
     :documentation "Hook run after `ffi-window-delete' takes effect.
 The handlers take the window as argument."))

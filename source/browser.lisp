@@ -6,7 +6,7 @@
 (hooks:define-hook-type prompt-buffer (function (prompt-buffer)))
 (hooks:define-hook-type download (function (download)))
 (hooks:define-hook-type resource (function (request-data) (or request-data null)))
-(export-always '(make-hook-resource make-handler-resource))
+(export-always '(hook-resource))
 
 (define-class proxy ()
   ((url
@@ -148,24 +148,24 @@ If nil, renderer-provided dialogs are used.")
 The possible values are `:always-ask', `:always-restore' and `:never-restore'.")
    ;; Hooks follow:
    (before-exit-hook
-    (hooks:make-hook-void)
+    (make-instance 'hooks:hook-void)
     :type hooks:hook-void
     :documentation "Hook run before both `*browser*' and the
 renderer get terminated.  The handlers take no argument.")
    (window-make-hook
-    (make-hook-window)
+    (make-instance 'hook-window)
     :type hook-window
     :documentation "Hook run after `window-make'.
 The handlers take the window as argument.")
    (buffer-make-hook
-    (make-hook-buffer)
+    (make-instance 'hook-buffer)
     :type hook-buffer
     :documentation "Hook run after `buffer-make' and before `ffi-buffer-load'.
 It is run before `initialize-modes' so that the default mode list can still be
 altered from the hooks.
 The handlers take the buffer as argument.")
    (buffer-before-make-hook
-    (make-hook-buffer)
+    (make-instance 'hook-buffer)
     :type hook-buffer
     :documentation "Hook run before `buffer-make'.
 This hook is mostly useful to set the `cookies-path'.
@@ -173,18 +173,18 @@ The buffer web view is not allocated, so it's not possible to run any
 parenscript from this hook.  See `buffer-make-hook' for a hook.
 The handlers take the buffer as argument.")
    (prompt-buffer-make-hook
-    (make-hook-prompt-buffer)
+    (make-instance 'hook-prompt-buffer)
     :type hook-prompt-buffer
     :documentation "Hook run after the `prompt-buffer'
 class is instantiated and before initializing the prompt-buffer modes.
 The handlers take the prompt-buffer as argument.")
    (before-download-hook
-    (make-hook-url->url)
-    :type hook-url->url
+    (make-instance 'hook-download)
+    :type hook-download
     :documentation "Hook run before downloading a URL.
 The handlers take the URL as argument.")
    (after-download-hook
-    (make-hook-download)
+    (make-instance 'hook-download)
     :type hook-download
     :documentation "Hook run after a download has completed.
 The handlers take the `download-manager:download' class instance as argument.")
@@ -261,14 +261,15 @@ prevents otherwise."))
   (flet ((set-error-message (message full-message)
            (let ((*package* (find-package :cl))) ; Switch package to use non-nicknamed packages.
              (write-to-string
-              `(serapeum/contrib/hooks:add-hook
+              `(hooks:add-hook
                 nyxt:*after-init-hook*
-                (serapeum/contrib/hooks:make-handler-void
-                 (lambda ()
-                   (setf (nyxt::startup-error-reporter-function *browser*)
-                         (lambda ()
-                           (nyxt:echo-warning "Restarted without init file due to error: ~a." ,message)
-                           (nyxt::error-in-new-window "*Initialization error*" ,full-message))))
+                (make-instance
+                 'hooks:handler
+                 :fn (lambda ()
+                       (setf (nyxt::startup-error-reporter-function *browser*)
+                             (lambda ()
+                               (nyxt:echo-warning "Restarted without init file due to error: ~a." ,message)
+                               (nyxt::error-in-new-window "*Initialization error*" ,full-message))))
                  :name 'error-reporter))))))
     (let* ((message (princ-to-string condition))
            (full-message (format nil "Startup error: ~a.~%~&Restarted Nyxt without init file ~s."
@@ -596,30 +597,31 @@ The following example does a few things:
                                               `(\"emacs\" ,(quri:uri-path url)))
                                              nil)))
                                     :initial-value %slot-default%))))"
-  (make-handler-resource
-   #'(lambda (request-data)
-       (let ((url (url request-data)))
-         (if (funcall test url)
-             (etypecase action
-               (function
-                (let* ((new-url (funcall action url)))
-                  (log:info "Applied ~s URL-dispatcher on ~s and got ~s"
-                            (symbol-name name)
-                            (render-url url)
-                            (when new-url (render-url new-url)))
-                  (when new-url
-                    (setf (url request-data) new-url)
-                    request-data)))
-               (string (let ((action #'(lambda (url)
-                                         (uiop:launch-program
-                                          (format nil action
-                                                  (render-url url)))
-                                         nil)))
-                         (funcall action url)
-                         (log:info "Applied ~s shell-command URL-dispatcher on ~s"
-                                   (symbol-name name)
-                                   (render-url url)))))
-             request-data)))
+  (make-instance
+   'handler
+   :fn (lambda (request-data)
+         (let ((url (url request-data)))
+           (if (funcall test url)
+               (etypecase action
+                 (function
+                  (let* ((new-url (funcall action url)))
+                    (log:info "Applied ~s URL-dispatcher on ~s and got ~s"
+                              (symbol-name name)
+                              (render-url url)
+                              (when new-url (render-url new-url)))
+                    (when new-url
+                      (setf (url request-data) new-url)
+                      request-data)))
+                 (string (let ((action #'(lambda (url)
+                                           (uiop:launch-program
+                                            (format nil action
+                                                    (render-url url)))
+                                           nil)))
+                           (funcall action url)
+                           (log:info "Applied ~s shell-command URL-dispatcher on ~s"
+                                     (symbol-name name)
+                                     (render-url url)))))
+               request-data)))
    :name name))
 
 (defun javascript-error-handler (condition)
