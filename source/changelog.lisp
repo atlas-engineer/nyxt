@@ -324,3 +324,34 @@ SLY install.")
    (:li "Fix freeze due to errors in " (:code "blocker-mode") ".")
    (:li "Fix formatting of web process crash report.")
    (:li "Fix some " (:code "auto-mode") " issues.  (Thanks to @efimerspan!)")))
+
+(define-version "3.0.0"
+  (:ul
+   (:li "Revamp status area design.")
+   (:li "New prompt-buffer fuzzy matching algorithm, hopefully offering more
+  relevant results.  (Thanks to @BlueFlo0d!)")
+   (:li "Add support for the Gopher and Gemini protocols.")
+   (:li "New " (:code "save-input-data") ", " (:code "set-input-data-from-saved")
+        " and " (:code "set-input-data-from-saved-domain") " commands to record
+and restore input fields.")
+   (:li "Internal pages are now using the " (:code "nyxt") " URL scheme.  They support the "
+        (:code "lisp") " protocol to allow evaluating arbitrary Lisp, for instance from a button click."
+        "Internal pages also have a URL now, which means they have history support.")
+   (:li "New " (:code "define-internal-page-command") " helper to define internal pages.")
+   (:li (:code "jump-to-heading") " commands now sort and indent the headings in a natural fashion.")
+   (:li "New " (:code "match-port") " URL designator predicate for auto-mode rules.")
+   (:li "New " (:code "toggle-message-buffer") " and " (:code "toggle-status-buffer") " commands.")
+   (:li "New " (:code "bookmark-frequent-visits") " mode.")
+
+   (:h3 "Bindings")
+   (:ul
+    (:li "Rebind " (:code "history-forwards") " to " (:code "history-forwards-maybe-query") " in the Emacs and VI schemes.")
+    (:li "Rebind " (:code "bookmark-url") " and " (:code "copy-title") " to be more consistent with other bindings."))
+
+   (:h3 "Programming interface")
+   (:ul
+    (:li "Thread name is now mandatory in " (:code "run-thread") ".")
+    (:li "New " (:code "nyxt-unstable") " " (:code "*features*") " when built from source on an untagged commit.  A feature with the commit is also added.")
+    (:li "New " (:code "prompt1") " helper.")
+    (:li "New " (:code "theme") " library.")
+    (:li "Rename buffer slot " (:code "load-status") " to " (:code "status") "."))))
