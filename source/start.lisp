@@ -284,8 +284,9 @@ Return the short error message and the full error message as second value."
            (alex:if-let ((init-path (expand-path *init-file-path*)))
              (uiop:pathname-directory-pathname (pathname init-path))
              (uiop:getcwd)))
+   :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
    :sources
-   (make-instance 'user-file-source
+   (make-instance 'nyxt/file-manager-mode:user-file-source
                   :actions (list (make-command load-file* (files)
                                                (dolist (file files)
                                                  (load-lisp file)))))))
