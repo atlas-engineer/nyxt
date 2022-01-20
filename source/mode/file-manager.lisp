@@ -77,7 +77,7 @@
   "Return non-nil if FILE is executable for USER name.
 When the user is unspecified, take the current one."
   (sera:true
-   ;; FIXME: Some files (like /usr/bin/[) cause IOLIB to choke on ENOENT.
+   ;; FIXME: Some files cause IOLIB to choke on ENOENT.
    (let ((permissions (ignore-errors (iolib/os:file-permissions file))))
      (or (and (string= (file-author file)
                        user)
