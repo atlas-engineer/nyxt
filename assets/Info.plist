@@ -39,6 +39,22 @@
 	      <string>https</string>
 	    </array>
       </dict>
+      <dict>
+	    <key>CFBundleURLName</key>
+	    <string>gopher URL</string>
+	    <key>CFBundleURLSchemes</key>
+	    <array>
+	      <string>gopher</string>
+	    </array>
+      </dict>
+      <dict>
+	    <key>CFBundleURLName</key>
+	    <string>gemini URL</string>
+	    <key>CFBundleURLSchemes</key>
+	    <array>
+	      <string>gemini</string>
+	    </array>
+      </dict>
     </array>
     <key>CFBundleDocumentTypes</key>
     <array>
