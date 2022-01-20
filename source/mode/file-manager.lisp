@@ -54,12 +54,49 @@
                             (append files included-directories)
                             files))))
 
-(export-always 'recursive-directory-elements)
+(defun current-user ()
+  #+sbcl
+  (sb-posix:passwd-name (sb-posix:getpwuid (sb-posix:getuid)))
+  #-sbcl
+  (uiop:getenv "USER"))
+
+(defun group-id (user)
+  "Return the group ID of USER name."
+  #+sbcl
+  (sb-posix:passwd-gid (sb-posix:getpwnam user))
+  #-sbcl
+  (alex:assoc-value (osicat:user-info user) :group-id))
+
+(defun file-group-id (file)
+  #+sbcl
+  (sb-posix:stat-gid (sb-posix:lstat file))
+  #-sbcl
+  (osicat-posix:stat-gid (osicat-posix:lstat file)))
+
+(sera:-> executable-p ((or trivial-types:pathname-designator) &key (:user string)) boolean)
+(defun executable-p (file &key (user (current-user)))
+  "Return non-nil if FILE is executable for USER name.
+When the user is unspecified, take the current one."
+  (sera:true
+   ;; FIXME: Some files (like /usr/bin/[) cause IOLIB to choke on ENOENT.
+   (let ((permissions (ignore-errors (iolib/os:file-permissions file))))
+     (or (and (string= (file-author file)
+                       user)
+              (member :user-exec permissions))
+         (and (= (file-group-id file)
+                 (group-id user))
+              (member :group-exec permissions))
+         (member :other-exec permissions)))))
+
+(export-always 'executables)
 (defun executables ()
-  (let ((paths (serapeum::$path))) ; FIXME: It's not an exported API.
-    ;; FIXME: Check for executability? A lot of junk without it.
-    ;; StumpWM uses non-portable (sb-unix:unix-access filename sb-unix:x_ok).
-    (alex:mappend (lambda (path) (uiop:directory-files path)) paths)))
+  (let ((paths (str:split ":" (uiop:getenv "PATH") :omit-nulls t)))
+    (sera:filter
+     #'executable-p
+     (remove-if
+      #'uiop:hidden-pathname-p
+      (mapcar #'uiop:resolve-symlinks
+              (alex:mappend (lambda (path) (uiop:directory-files path)) paths))))))
 
 (define-class program-source (prompter:source)
   ((prompter:name "Programs")
