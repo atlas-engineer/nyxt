@@ -357,11 +357,12 @@ rest in background buffers."
                        (prompt1
                          ;; TODO: Is there a more intuitive directory for bookmarks?
                          :input (uiop:native-namestring (uiop:getcwd))
+                         :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
                          :sources (make-instance
-                                   'user-file-source
+                                   'nyxt/file-manager-mode:user-file-source
                                    :filter-preprocessor
-                                   (make-file-source-preprocessor
-                                    (alex:disjoin (match-extension "html")
+                                   (nyxt/file-manager-mode::make-file-source-preprocessor
+                                    (alex:disjoin (nyxt/file-manager-mode::match-extension "html")
                                                   #'uiop:directory-pathname-p)))))))
     (if (and (uiop:file-exists-p html-file)
              (equal (pathname-type html-file) "html"))
