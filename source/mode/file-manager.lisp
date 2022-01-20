@@ -34,9 +34,8 @@
 (defun directory-elements (directory)
   "Return list of all the files and subdirectories inside DIRECTORY."
   (let ((directory (pathname directory)))
-    (mapcar #'uiop:resolve-symlinks
-            (append (uiop:subdirectories directory)
-                    (uiop:directory-files directory)))))
+    (append (uiop:subdirectories directory)
+            (uiop:directory-files directory))))
 
 (export-always 'recursive-directory-elements)
 (defun recursive-directory-elements (directory &key include-directories-p)
