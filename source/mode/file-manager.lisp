@@ -5,7 +5,7 @@
   (:use :common-lisp :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:import-from #:class-star #:define-class)
-  (:import-from #:serapeum #:export-always)
+  (:import-from #:serapeum #:export-always #:->)
   (:documentation "Mode for file choosing prompt buffer"))
 (in-package :nyxt/file-manager-mode)
 (use-nyxt-package-nicknames)
@@ -73,7 +73,7 @@
   #-sbcl
   (osicat-posix:stat-gid (osicat-posix:lstat file)))
 
-(sera:-> executable-p ((or trivial-types:pathname-designator) &key (:user string)) boolean)
+(-> executable-p ((or trivial-types:pathname-designator) &key (:user string)) boolean)
 (defun executable-p (file &key (user (current-user)))
   "Return non-nil if FILE is executable for USER name.
 When the user is unspecified, take the current one."
