@@ -106,10 +106,10 @@ Example:
       (when (web-buffer-p (buffer mode))
         (if (request-resource-hook (buffer mode))
             (hooks:add-hook (request-resource-hook (buffer mode))
-                            (make-handler-resource #'request-resource-block))
-            (make-hook-resource
+                            'request-resource-block)
+            (make-instance 'hook-resource
              :combination #'combine-composed-hook-until-nil
-             :handlers (list #'request-resource-block))))))))
+             :handlers '(request-resource-block))))))))
 
 (defmethod store ((profile data-profile) (path hostlist) &key &allow-other-keys)
   (with-data-file (file path :direction :output)

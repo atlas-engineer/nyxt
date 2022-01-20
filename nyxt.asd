@@ -66,6 +66,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                parenscript
                quri
                serapeum
+               nhooks
                str
                phos
                plump

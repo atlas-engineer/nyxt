@@ -34,8 +34,7 @@ This hook is run after the `*browser*' is instantiated and before the
 
 A handler can be added with:
 
-  (hooks:add-hook *after-init-hook*
-    (hooks:make-handler-void #'my-foo-function))")
+  (hooks:add-hook *after-init-hook* 'my-foo-function)")
 
 (export-always '*swank-port*)
 (defvar *swank-port* 4006

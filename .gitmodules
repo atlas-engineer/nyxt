@@ -394,6 +394,10 @@
 	path = _build/serapeum
 	url = https://github.com/ruricolist/serapeum
 	shallow = true
+[submodule "_build/nhooks"]
+	path = _build/nhooks
+	url = https://github.com/atlas-engineer/nhooks
+	shallow = true
 [submodule "_build/trivia"]
 	path = _build/trivia
 	url = https://github.com/guicho271828/trivia

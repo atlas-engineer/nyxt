@@ -85,14 +85,15 @@ Gemini support is a bit more chaotic, but you can override `line->html' for
       (update mode)
       (hooks:add-hook
        (pre-request-hook (buffer mode))
-       (make-handler-resource
-        (lambda (request-data)
-          (when (nyxt/auto-mode::new-page-request-p request-data)
-            (if (str:s-member '("gopher" "gemini")
-                              (quri:uri-scheme (url request-data)))
-                (update mode)
-                (disable-modes '(small-web-mode) (buffer mode))))
-          request-data)
+       (make-instance
+        'hooks:handler
+        :fn (lambda (request-data)
+              (when (nyxt/auto-mode::new-page-request-p request-data)
+                (if (str:s-member '("gopher" "gemini")
+                                  (quri:uri-scheme (url request-data)))
+                    (update mode)
+                    (disable-modes '(small-web-mode) (buffer mode))))
+              request-data)
         :name 'small-web-mode-disable))))))
 
 ;;; Gopher rendering.

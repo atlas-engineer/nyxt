@@ -157,9 +157,9 @@ Example:
                               (symbol-package name))))
       `(progn
          (export-always ',before-hook (symbol-package ',name))
-         (defparameter ,before-hook (hooks:make-hook-void))
+         (defparameter ,before-hook (make-instance 'hooks:hook-void))
          (export-always ',after-hook (symbol-package ',name))
-         (defparameter ,after-hook (hooks:make-hook-void))
+         (defparameter ,after-hook (make-instance 'hooks:hook-void))
          (export-always ',name (symbol-package ',name))
          ;; We define the function at compile-time so that macros from the same
          ;; file can find the symbol function.

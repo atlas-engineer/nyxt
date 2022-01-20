@@ -212,10 +212,11 @@ the description of the mechanism that sends the results back."
         (if (not (member (slot-value buffer 'nyxt::status) '(:finished :failed)))
             (let ((channel (nyxt::make-channel 1)))
               (hooks:add-hook (buffer-loaded-hook buffer)
-                              (nyxt::make-handler-buffer
-                               (lambda (buffer)
-                                 (calispel:! channel (send-message result-channel))
-                                 (hooks:remove-hook (buffer-loaded-hook buffer) 'send-message-when-loaded))
+                              (make-instance
+                               'nyxt::handler-buffer
+                               :fn (lambda (buffer)
+                                     (calispel:! channel (send-message result-channel))
+                                     (hooks:remove-hook (buffer-loaded-hook buffer) 'send-message-when-loaded))
                                :name 'send-message-when-loaded))
               (calispel:? channel))
             (send-message result-channel))))
