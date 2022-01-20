@@ -4,7 +4,7 @@
 (in-package :nyxt)
 
 (hooks:define-hook-type prompt-buffer (function (prompt-buffer)))
-(hooks:define-hook-type download (function (download-manager:download)))
+(hooks:define-hook-type download (function (download)))
 (hooks:define-hook-type resource (function (request-data) (or request-data null)))
 (export-always '(make-hook-resource make-handler-resource))
 
@@ -381,7 +381,7 @@ reached (during which no new progress has been made)."
     (loop for d = (calispel:? download-manager:*notifications*)
           while d
           when (download-manager:finished-p d)
-          do (hooks:run-hook (after-download-hook *browser*) d)
+            do (hooks:run-hook (after-download-hook *browser*) download-render)
           do (sleep 0.1) ; avoid excessive polling
              (setf (bytes-downloaded download-render)
                    (download-manager:bytes-fetched download-object))

@@ -1540,6 +1540,7 @@ requested a reload."
          (download (make-instance 'user-download
                                   :url url
                                   :gtk-object webkit-download)))
+    (hooks:run-hook (before-download-hook *browser*) url)
     (setf (cancel-function download)
           #'(lambda ()
               (setf (status download) :canceled)
@@ -1577,7 +1578,8 @@ requested a reload."
       (unless (member (status download) '(:canceled :failed))
         (setf (status download) :finished)
         ;; If download was too small, it may not have been updated.
-        (setf (completion-percentage download) 100)))
+        (setf (completion-percentage download) 100)
+        (hooks:run-hook (after-download-hook *browser*) download)))
     download))
 
 (define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) &optional value)
