@@ -238,6 +238,7 @@ WebKit browsing engine.")
        ("named-readtables" ,cl-named-readtables)
        ;; ("osicat" ,cl-osicat) ; Not needed for SBCL.
        ("parenscript" ,cl-parenscript)
+       ("phos" ,cl-phos)
        ("plump" ,cl-plump)
        ("clss" ,cl-clss)
        ("quri" ,cl-quri)
