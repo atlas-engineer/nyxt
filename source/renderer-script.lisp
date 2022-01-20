@@ -119,7 +119,8 @@ ARGLIST is arguments for the command and for the underlying page-generating
 function. Any argument from it is safe to use in the body of this macro.
 Beware: the ARGLIST should have nothing but keyword arguments because it's
 mapped to query parameters."
-  (let ((args (alex:mappend #'first (nth-value 3 (alex:parse-ordinary-lambda-list arglist)))))
+  (let ((args (alex:mappend #'first (nth-value 3 (alex:parse-ordinary-lambda-list arglist))))
+        (url (gensym "URL")))
     (multiple-value-bind (body declarations documentation)
         (alex:parse-body body :documentation t)
       `(progn
@@ -151,7 +152,11 @@ mapped to query parameters."
                       (:raw ,@body))))))
          (define-command-global ,name (,@arglist)
            ,@(when documentation (list documentation))
-           (let* ((,buffer-var (or (find-if (lambda (b)
+           (let* ((,url (quri:uri
+                         (nyxt-url
+                          (quote ,name)
+                          ,@args)))
+                  (,buffer-var (or (find-if (lambda (b)
                                               (and (string= (title b) ,title)
                                                    (find-mode b ,mode)))
                                             (buffer-list))
@@ -159,10 +164,8 @@ mapped to query parameters."
                                             :activate t
                                             :buffer (make-buffer
                                                      :title ,title
-                                                     :url (quri:uri
-                                                           (nyxt-url
-                                                            (quote ,name)
-                                                            ,@args)))))))
+                                                     :url ,url)))))
+             (buffer-load ,url :buffer ,buffer-var)
              (set-current-buffer ,buffer-var)
              ,buffer-var))))))
 
