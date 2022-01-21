@@ -115,22 +115,26 @@ When the user is unspecified, take the current one."
   (lambda (pathname)
     (string-equal (pathname-type pathname) ext)))
 
-(defun make-file-source-preprocessor (&rest filters)
-  "Return a preprocessor that lists all files satisfying all FILTERS.
+(defun make-file-source-preprocessor ()
+  "Return a preprocessor that lists all files satisfying `extensions' and `allow-directories'.
 It's suitable for `prompter:filter-preprocessor'."
   (lambda (suggestions source input)
     (declare (ignore suggestions))
-    (let ((pathname (uiop:ensure-pathname (if (uiop:emptyp input)
-                                              *default-pathname-defaults*
-                                              input))))
+    (let* ((pathname (uiop:ensure-pathname (if (uiop:emptyp input)
+                                               *default-pathname-defaults*
+                                               input)))
+           (directory (uiop:pathname-directory-pathname pathname)))
       (prompter:filter-exact-matches
        (prompter:ensure-suggestions-list
         source
         (sera:filter
-         (apply #'alex:conjoin (or filters (list #'identity)))
-         (directory-elements (if (uiop:directory-pathname-p pathname)
-                                 pathname
-                                 (uiop:pathname-directory-pathname pathname)))))
+         (lambda (path)
+           (or (and (uiop:directory-pathname-p path)
+                    (allow-directories source))
+               (and (uiop:file-pathname-p path)
+                    (or (null (extensions source))
+                        (str:s-member (extensions source) (pathname-type path))))))
+         (directory-elements directory)))
        source
        input))))
 
@@ -139,6 +143,13 @@ It's suitable for `prompter:filter-preprocessor'."
    (prompter:filter-preprocessor (make-file-source-preprocessor))
    (prompter:multi-selection-p t)
    (open-file-in-new-buffer-p t :documentation "If nil, don't open files and directories in a new buffer.")
+   (extensions nil
+               :type list-of-strings
+               :documentation "File extensions that this source lists.
+If nil, allow everything.")
+   (allow-directories t
+                      :type boolean
+                      :documentation "Whether directories are listed too.")
    (supported-media-types '("mp3" "ogg" "mp4" "flv" "wmv" "webm" "mkv")
                           :type list-of-strings
                           :documentation "Media types that Nyxt can open.

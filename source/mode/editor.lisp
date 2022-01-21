@@ -65,9 +65,10 @@ get/set-content (which is necessary for operation)."
   "Open a file in the internal editor."
   (let ((file (prompt1
                 :prompt "Open file"
+                :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
                 :input (uiop:native-namestring (uiop:getcwd))
                 :sources
-                (list (make-instance 'user-file-source
+                (list (make-instance 'nyxt/file-manager-mode:user-file-source
                                      :name "Absolute file path"
                                      :actions '(identity))
                       (make-instance 'prompter:raw-source

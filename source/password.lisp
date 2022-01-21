@@ -90,10 +90,7 @@ for which the `executable' slot is non-nil."
                      :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
                      :sources (list (make-instance
                                      'nyxt/file-manager-mode:user-file-source
-                                     :filter-preprocessor
-                                     (nyxt/file-manager-mode::make-file-source-preprocessor
-                                      (alex:disjoin (nyxt/file-manager-mode::match-extension "kdbx")
-                                                    #'uiop:directory-pathname-p))))))))
+                                     :extensions '("kdbx")))))))
   (loop :until (password:password-correct-p password-interface)
         :do (setf (password::master-password password-interface)
                   (prompt1
