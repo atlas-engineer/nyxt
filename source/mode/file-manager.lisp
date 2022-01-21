@@ -77,12 +77,11 @@
   "Return non-nil if FILE is executable for USER name.
 When the user is unspecified, take the current one."
   (sera:true
-   ;; FIXME: Some files cause IOLIB to choke on ENOENT.
-   (let ((permissions (ignore-errors (iolib/os:file-permissions file))))
-     (or (and (string= (file-author file)
-                       user)
+   (let* ((filename (uiop:native-namestring file))
+          (permissions (iolib/os:file-permissions filename)))
+     (or (and (string= (file-author file) user)
               (member :user-exec permissions))
-         (and (= (file-group-id file)
+         (and (= (file-group-id filename)
                  (group-id user))
               (member :group-exec permissions))
          (member :other-exec permissions)))))
