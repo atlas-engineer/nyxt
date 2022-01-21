@@ -377,7 +377,7 @@ Auto-mode is re-enabled once the page is reloaded."
                                                  :test #'string=))))
     (hooks:add-hook (request-resource-hook buffer)
                     (make-instance
-                     'handler
+                     'hooks:handler
                      :fn (lambda (request-data)
                            (auto-mode :activate t)
                            (hooks:remove-hook (request-resource-hook buffer)

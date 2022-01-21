@@ -598,7 +598,7 @@ The following example does a few things:
                                              nil)))
                                     :initial-value %slot-default%))))"
   (make-instance
-   'handler
+   'hooks:handler
    :fn (lambda (request-data)
          (let ((url (url request-data)))
            (if (funcall test url)
