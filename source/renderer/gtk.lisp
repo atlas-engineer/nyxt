@@ -1040,7 +1040,8 @@ See `gtk-browser's `modifier-translator' slot."
                                             (webkit:webkit-file-chooser-request-selected-files
                                              file-chooser-request)))
                                           (uiop:native-namestring (uiop:getcwd)))
-                                  :sources (list (make-instance 'file-source)))
+                                  :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
+                                  :sources (list (make-instance 'nyxt/file-manager-mode:user-file-source)))
                         (nyxt-prompt-buffer-canceled ()
                           nil)))))
           (if files

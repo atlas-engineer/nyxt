@@ -360,10 +360,7 @@ rest in background buffers."
                          :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
                          :sources (make-instance
                                    'nyxt/file-manager-mode:user-file-source
-                                   :filter-preprocessor
-                                   (nyxt/file-manager-mode::make-file-source-preprocessor
-                                    (alex:disjoin (nyxt/file-manager-mode::match-extension "html")
-                                                  #'uiop:directory-pathname-p)))))))
+                                   :extensions '("html"))))))
     (if (and (uiop:file-exists-p html-file)
              (equal (pathname-type html-file) "html"))
         (with-open-file (in-html html-file :external-format :utf-8)

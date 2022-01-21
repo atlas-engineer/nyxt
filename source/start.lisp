@@ -287,6 +287,7 @@ Return the short error message and the full error message as second value."
    :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
    :sources
    (make-instance 'nyxt/file-manager-mode:user-file-source
+                  :extensions '("lisp")
                   :actions (list (make-command load-file* (files)
                                                (dolist (file files)
                                                  (load-lisp file)))))))
