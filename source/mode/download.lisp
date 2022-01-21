@@ -133,7 +133,7 @@ appearance in the buffer when they are setf'd."
           :background-color theme:tertiary)))))
 
 
-(define-internal-page-command list-downloads ()
+(define-internal-page-command-global list-downloads ()
     (buffer "*Downloads*" 'download-mode)
   "Display a buffer listing all downloads.
 We iterate through the browser's downloads to draw every single

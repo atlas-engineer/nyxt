@@ -1202,7 +1202,7 @@ second latest buffer first."
                                :multi-selection-p t
                                :actions (list (make-mapped-command buffer-delete))))))
 
-(define-internal-page-command reduce-to-buffer (&key (delete t))
+(define-internal-page-command-global reduce-to-buffer (&key (delete t))
     (reduced-buffer "*Reduced Buffers*" 'base-mode)
   "Query the buffer(s) to \"reduce \" by copying their titles/URLs to a
 single buffer, optionally delete them. This function is useful for archiving a

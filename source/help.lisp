@@ -70,7 +70,7 @@
       (t
        (:raw (princ-to-string value))))))
 
-(define-internal-page-command describe-value
+(define-internal-page-command-global describe-value
     (&key value)
     (buffer "*Help-value*" 'nyxt/help-mode:help-mode)
   "Inspect VALUE and show it in a help buffer."
@@ -86,7 +86,7 @@
   "Return non-nil if OBJECT has `prompter:object-attributes' specialization."
   (has-method-p object #'prompter:object-attributes))
 
-(define-internal-page-command describe-variable
+(define-internal-page-command-global describe-variable
     (&key (variable
            (prompt1
              :prompt "Describe variable:"
@@ -103,7 +103,7 @@
       (:h2 "Current Value:")
       (:p (:raw (value->html (symbol-value variable) :help-mode help-mode))))))
 
-(define-internal-page-command describe-function
+(define-internal-page-command-global describe-function
     (&key (function (prompt1
                       :prompt "Describe function"
                       :sources (make-instance 'function-source))))
@@ -155,7 +155,7 @@ For generic functions, describe all the methods."
        :prompt "Describe function"
        :sources (make-instance 'function-source))))
 
-(define-internal-page-command describe-command
+(define-internal-page-command-global describe-command
     (&key (command (name (prompt1
                            :prompt "Describe command"
                            :sources (make-instance 'user-command-source)))))
@@ -196,7 +196,7 @@ A command is a special kind of function that can be called with
       (:pre (:code (let ((*print-case* :downcase))
                      (write-to-string (sexp command))))))))
 
-(define-internal-page-command describe-slot
+(define-internal-page-command-global describe-slot
     (&key (slot (prompt1
                   :prompt "Describe slot"
                   :sources (make-instance 'slot-source))))
@@ -236,7 +236,7 @@ A command is a special kind of function that can be called with
                                          `(nyxt::configure-slot ',slot ',class :type ',(getf props :type))))
                         "Configure"))))))))
 
-(define-internal-page-command describe-class
+(define-internal-page-command-global describe-class
     (&key (class (prompt1
                    :prompt "Describe class"
                    :sources (make-instance 'class-source))))
@@ -336,7 +336,7 @@ CLASS is a class symbol."
       (log:info "Appending to ~s:~&~s" (expand-path *auto-config-file-path*) form)
       (format file format-directive form))))
 
-(define-internal-page-command common-settings ()
+(define-internal-page-command-global common-settings ()
     (buffer "*Settings*" 'nyxt/help-mode:help-mode)
   "Configure a set of frequently used settings."
   (let ((spinneret:*html-style* :tree))
@@ -390,7 +390,7 @@ CLASS is a class symbol."
                                   '(setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1"))))
                "Disable compositing"))))
 
-(define-internal-page-command describe-bindings ()
+(define-internal-page-command-global describe-bindings ()
     (buffer "*Help-bindings*" 'base-mode)
   "Show a buffer with the list of all known bindings for the current buffer."
   (spinneret:with-html-string
@@ -519,7 +519,7 @@ evaluate in order."
             until (eq object :eof)
             collect (funcall (lambda () (eval object)))))))
 
-(define-internal-page-command error-buffer (&key title text)
+(define-internal-page-command error-buffer (&key (title "Unknown error") (text ""))
     (buffer title 'nyxt/help-mode:help-mode)
   "Print some help."
   (spinneret:with-html-string
@@ -551,7 +551,7 @@ The version number is stored in the clipboard."
     (or (first (keymap:binding-keys fn keymaps))
         "UNBOUND")))
 
-(define-internal-page-command help ()
+(define-internal-page-command-global help ()
     (buffer "*Help*" 'nyxt/help-mode:help-mode)
   "Open up a small help buffer."
   (spinneret:with-html-string
@@ -578,7 +578,7 @@ The version number is stored in the clipboard."
             (:tr (:td (:a :class "button" :href (nyxt-url 'changelog) "Change Log"))
                  (:td "Information about changes between Nyxt versions.")))))
 
-(define-internal-page-command manual ()
+(define-internal-page-command-global manual ()
     (buffer "*Manual*" 'nyxt/help-mode:help-mode)
   "Show the manual."
   (spinneret:with-html-string (:style (style buffer))
@@ -586,7 +586,7 @@ The version number is stored in the clipboard."
                            :max-width "80ch"))))
     (:raw (manual-content))))
 
-(define-internal-page-command tutorial ()
+(define-internal-page-command-global tutorial ()
     (buffer "*Tutorial*" 'nyxt/help-mode:help-mode)
   "Show the tutorial."
   (spinneret:with-html-string
@@ -638,7 +638,7 @@ the "
      (when (sera:resolve-executable "guix")
        (str:concat "Guix version: " (guix-information) +newline+)))))
 
-(define-internal-page-command show-system-information ()
+(define-internal-page-command-global show-system-information ()
     (buffer "*System information*" 'base-mode)
   "Show buffer with Lisp version, Lisp features, OS kernel, etc.
 System information is also saved into the clipboard."
@@ -652,7 +652,7 @@ System information is also saved into the clipboard."
       (log:info nyxt-information)
       (echo "System information copied to clipboard."))))
 
-(define-internal-page-command dashboard ()
+(define-internal-page-command-global dashboard ()
     (buffer "*Dashboard*" 'base-mode)
   "Print a dashboard."
   (flet ((list-bookmarks (&key (separator " → "))

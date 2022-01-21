@@ -3,7 +3,7 @@
 
 (in-package :nyxt)
 
-(define-internal-page-command about ()
+(define-internal-page-command-global about ()
   (buffer "*About*" 'base-mode)
   "Show the list of contributors."
   (spinneret:with-html-string

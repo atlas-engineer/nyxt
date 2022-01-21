@@ -103,22 +103,9 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
                       (|insertAdjacentHTML| "afterbegin"
                                             (ps:lisp style)))))))
 
-(export-always 'define-internal-page-command)
-(defmacro define-internal-page-command (name (&rest arglist)
-                                        (buffer-var title mode)
-                                        &body body)
-  "Define a command called NAME creating an internal interface page.
-
-Should end with a form returning HTML body as a string.
-
-Create a buffer (and bind it to BUFFER-VAR) in case there's no buffer with TITLE
-and MODE. If there is one, bind BUFFER-VAR to it. Either way, BUFFER-VAR is
-always a buffer that the generated code is loaded into.
-
-ARGLIST is arguments for the command and for the underlying page-generating
-function. Any argument from it is safe to use in the body of this macro.
-Beware: the ARGLIST should have nothing but keyword arguments because it's
-mapped to query parameters."
+(defun %define-internal-page (global-p name arglist
+                              buffer-var title mode
+                              body)
   (let ((args (alex:mappend #'first (nth-value 3 (alex:parse-ordinary-lambda-list arglist))))
         (url (gensym "URL")))
     (multiple-value-bind (body declarations documentation)
@@ -150,24 +137,55 @@ mapped to query parameters."
                       (:style (style ,buffer-var)))
                      (:body
                       (:raw ,@body))))))
-         (define-command-global ,name (,@arglist)
-           ,@(when documentation (list documentation))
-           (let* ((,url (quri:uri
-                         (nyxt-url
-                          (quote ,name)
-                          ,@args)))
-                  (,buffer-var (or (find-if (lambda (b)
-                                              (and (string= (title b) ,title)
-                                                   (find-mode b ,mode)))
-                                            (buffer-list))
-                                   (funcall (symbol-function ,mode)
-                                            :activate t
-                                            :buffer (make-buffer
-                                                     :title ,title
-                                                     :url ,url)))))
-             (buffer-load ,url :buffer ,buffer-var)
-             (set-current-buffer ,buffer-var)
-             ,buffer-var))))))
+         (,(if global-p 'define-command-global 'define-command) ,name (,@arglist)
+          ,@(when documentation (list documentation))
+          (let* ((,url (quri:uri
+                        (nyxt-url
+                         (quote ,name)
+                         ,@args)))
+                 (,buffer-var (or (find-if (lambda (b)
+                                             (and (string= (title b) ,title)
+                                                  (find-mode b ,mode)))
+                                           (buffer-list))
+                                  (funcall (symbol-function ,mode)
+                                           :activate t
+                                           :buffer (make-buffer
+                                                    :title ,title
+                                                    :url ,url)))))
+            (buffer-load ,url :buffer ,buffer-var)
+            (set-current-buffer ,buffer-var)
+            ,buffer-var))))))
+
+(export-always 'define-internal-page-command)
+(defmacro define-internal-page-command (name (&rest arglist)
+                                        (buffer-var title mode)
+                                        &body body)
+  "Define a command called NAME creating an internal interface page.
+
+Define a command to access this page.
+
+Should end with a form returning HTML body as a string.
+
+Create a buffer (and bind it to BUFFER-VAR) in case there's no buffer with TITLE
+and MODE. If there is one, bind BUFFER-VAR to it. Either way, BUFFER-VAR is
+always a buffer that the generated code is loaded into.
+
+ARGLIST is arguments for the command and for the underlying page-generating
+function. Any argument from it is safe to use in the body of this macro.
+Beware: the ARGLIST should have nothing but keyword arguments because it's
+mapped to query parameters."
+  (%define-internal-page nil name arglist buffer-var title mode body))
+
+(export-always 'define-internal-page-command-global)
+(defmacro define-internal-page-command-global (name (&rest arglist)
+                                               (buffer-var title mode)
+                                               &body body)
+  "Define a command called NAME creating an internal interface page.
+
+Define a global command to access this page.
+
+See `define-internal-page-command' for the explanation of arguments."
+  (%define-internal-page t name arglist buffer-var title mode body))
 
 (defmacro with-current-panel ((buffer-var title &key (side :left))
                               &body body)

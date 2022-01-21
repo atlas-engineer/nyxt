@@ -111,22 +111,9 @@ The handlers take the window as argument."))
                                              :window window)))))
     (mapc (lambda (i) (window-delete-panel-buffer window i)) panels)))
 
-(defmacro define-panel (name (&rest arglist)
-                        (buffer-var title &optional (side :left))
-                        &body body)
-  "Define a panel buffer and:
-- A command called NAME-panel creating this panel-buffer or closing it if it's shown already.
-- A nyxt:NAME-panel URL for the content of this panel buffer.
-
-Should end with a form returning HTML as a string.
-
-BUFFER-VAR is the variable the created panel will be bound to in the BODY. SIDE
-is either :LEFT (default) or :RIGHT.
-
-ARGLIST is arguments for the command and for the underlying page-generating
-function. Any argument from it is safe to use in the body of this macro.
-Beware: the ARGLIST should have nothing but keyword arguments because it's
-mapped to query parameters."
+(defun %define-panel (global-p name arglist
+                      buffer-var title side
+                      body)
   (let ((args (alex:mappend #'first (nth-value 3 (alex:parse-ordinary-lambda-list arglist))))
         (name-panel (intern (format nil "~:@(~a-panel~)" (symbol-name name)) :nyxt)))
     (multiple-value-bind (body declarations documentation)
@@ -153,7 +140,7 @@ mapped to query parameters."
                       (:style (style ,buffer-var)))
                      (:body
                       (:raw ,@body))))))
-         (define-command-global ,name-panel (,@arglist)
+         (,(if global-p 'define-command-global 'define-command) ,name-panel (,@arglist)
            ,@(when documentation (list documentation))
            (let* ((url (quri:uri (nyxt-url (quote ,name-panel) ,@args)))
                   (,buffer-var (find url (panel-buffers (current-window))
@@ -166,6 +153,32 @@ mapped to query parameters."
                    (buffer-load url :buffer ,buffer-var)
                    (window-add-panel-buffer (current-window) ,buffer-var ,side)))
              ,buffer-var))))))
+
+(defmacro define-panel (name (&rest arglist)
+                        (buffer-var title &optional (side :left))
+                        &body body)
+  "Define a panel buffer and:
+- A local command called NAME-panel creating this panel-buffer or closing it if it's shown already.
+- A nyxt:NAME-panel URL for the content of this panel buffer.
+
+Should end with a form returning HTML as a string.
+
+BUFFER-VAR is the variable the created panel will be bound to in the BODY. SIDE
+is either :LEFT (default) or :RIGHT.
+
+ARGLIST is arguments for the command and for the underlying page-generating
+function. Any argument from it is safe to use in the body of this macro.
+Beware: the ARGLIST should have nothing but keyword arguments because it's
+mapped to query parameters."
+  (%define-panel nil name arglist buffer-var title side body))
+
+(defmacro define-panel-global (name (&rest arglist)
+                               (buffer-var title &optional (side :left))
+                               &body body)
+  "Define a panel buffer with a global command showing it.
+
+See `define-panel' for the description of the arguments."
+  (%define-panel t name arglist buffer-var title side body))
 
 (defmethod (setf active-buffer) (buffer (window window))
   (setf (slot-value window 'active-buffer) buffer)

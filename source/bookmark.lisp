@@ -109,7 +109,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                            (mapcar #'car (keywords (buffer source))))))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-internal-page-command list-bookmarks ()
+(define-internal-page-command-global list-bookmarks ()
     (bookmarks-buffer "*Bookmarks*" 'base-mode)
   "List all bookmarks in a new buffer."
   (flet ((html-bookmark-id (id)
@@ -146,7 +146,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                       (:hr "")))))
            (format nil "No bookmarks in ~s." (expand-path (bookmarks-path (current-buffer)))))))))
 
-(define-panel bookmarks ()
+(define-panel-global bookmarks ()
     (panel-buffer "*Bookmarks panel*")
   "Shows all the bookmarks in a compact panel-buffer layout."
   (spinneret:with-html-string

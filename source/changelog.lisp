@@ -11,7 +11,7 @@ particular revision.")
   `(setf (gethash ,version-string +changelog+)
          (spinneret:with-html-string (:div (:h2 ,version-string) ,@body))))
 
-(define-internal-page-command changelog ()
+(define-internal-page-command-global changelog ()
     (buffer "*Changelog*" 'base-mode)
   "Show the changelog."
   (spinneret:with-html-string

@@ -3,7 +3,7 @@
 
 (in-package :nyxt)
 
-(define-internal-page-command list-systems ()
+(define-internal-page-command-global list-systems ()
     (buffer "*Systems*" 'base-mode)
   "List systems available via Quicklisp."
   (spinneret:with-html-string

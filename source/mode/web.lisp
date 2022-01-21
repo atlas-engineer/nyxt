@@ -470,7 +470,7 @@ Otherwise go forward to the only child."
         (render-url (url history-entry))
         title)))
 
-(define-internal-page-command buffer-history-tree (&key (id (id (current-buffer))))
+(define-internal-page-command-global buffer-history-tree (&key (id (id (current-buffer))))
   (output-buffer (format nil "*History-~a*" id)
                  'nyxt/history-tree-mode:history-tree-mode)
   "Open a new buffer displaying the whole history tree of a buffer."
@@ -497,7 +497,7 @@ Otherwise go forward to the only child."
         (:div (:raw tree))))))
 
 ;; TODO: Factor this with `buffer-history-tree'.
-(define-internal-page-command history-tree (&key (current-buffer-id (id (current-buffer))))
+(define-internal-page-command-global history-tree (&key (current-buffer-id (id (current-buffer))))
     (output-buffer "*History*"
                    'nyxt/history-tree-mode:history-tree-mode)
   "Open a new buffer displaying the whole history branch the current buffer is on."
@@ -527,7 +527,7 @@ Otherwise go forward to the only child."
                (:style (style mode))
                (:div (:raw tree)))))))
 
-(define-internal-page-command list-history (&key (limit 100))
+(define-internal-page-command-global list-history (&key (limit 100))
   (buffer "*History list*" 'nyxt/list-history-mode:list-history-mode)
   "Print the user history as a list."
   (spinneret:with-html-string
@@ -698,7 +698,7 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
   url)
 
 ;; REVIEW: Shorten the name to e.g., `show-url-qr'? It's no longer current URL only.
-(define-internal-page-command show-qrcode-of-current-url
+(define-internal-page-command-global show-qrcode-of-current-url
     (&key (buffer-id (id (current-buffer)))
      (url (quri:render-uri (url (nyxt::buffers-get buffer-id)))))
     (buffer (format nil "*Buffer ~a (~a) QRcode*" buffer-id url) 'base-mode)
@@ -712,7 +712,7 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
                                   (flexi-streams:get-output-stream-sequence stream)))
                 :alt url)))))
 
-(define-internal-page-command view-source (&key (url (render-url (url (current-buffer)))))
+(define-internal-page-command-global view-source (&key (url (render-url (url (current-buffer)))))
   (source-buffer (format nil "*Source of ~a" url) 'base-mode)
   "View source of the URL (by default current page) in a separate buffer."
   (let ((buffer (or (find (quri:uri url) (buffer-list) :test #'quri:uri= :key #'url)

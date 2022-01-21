@@ -83,7 +83,7 @@ of buffers."
                              :name (format nil "Headings: ~a" (title buffer))
                              :buffer buffer)))))
 
-(nyxt::define-panel headings () (panel-buffer "*Headings panel*")
+(nyxt::define-panel-global headings () (panel-buffer "*Headings panel*")
   "Display a list of heading for jumping."
   (flet ((buffer-markup (heading)
            "Create the presentation for a buffer."

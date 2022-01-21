@@ -120,7 +120,7 @@
           collect (:div (:raw (render annotation))
                         (:hr)))))
 
-(define-internal-page-command show-annotations-for-current-url
+(define-internal-page-command-global show-annotations-for-current-url
     (&key (source-buffer-id (id (current-buffer))))
     (buffer "*Annotations*" 'base-mode)
   "Create a new buffer with the annotations of the current URL of BUFFER."
@@ -155,7 +155,7 @@
             #'string-lessp))))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-internal-page-command show-annotation ()
+(define-internal-page-command-global show-annotation ()
     (buffer "*Annotations*" 'base-mode)
   "Show an annotation(s)."
   (let ((selected-annotations
@@ -165,7 +165,7 @@
                                    :actions nil))))
     (render-annotations :annotations selected-annotations)))
 
-(define-internal-page-command show-annotations ()
+(define-internal-page-command-global show-annotations ()
     (buffer "*Annotations*" 'base-mode)
   "Show all annotations"
   (with-data-access (annotations (annotations-path buffer))
