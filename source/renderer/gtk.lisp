@@ -1228,6 +1228,14 @@ See `gtk-browser's `modifier-translator' slot."
                 (webkit:webkit-permission-request-allow request)
                 (webkit:webkit-permission-request-deny request))))
 
+(defun process-notification (web-view notification)
+  (declare (ignore web-view))
+  (when (native-dialogs *browser*)
+    (let* ((title (webkit:webkit-notification-get-title notification))
+           (body (webkit:webkit-notification-get-body notification)))
+      (echo "<b>~a<b>: ~a" title body)
+      t)))
+
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
   (unless (gtk-object buffer) ; Buffer may already have a view, e.g. the prompt-buffer.
@@ -1252,6 +1260,7 @@ See `gtk-browser's `modifier-translator' slot."
   (connect-signal-function buffer "script-dialog" #'process-script-dialog)
   (connect-signal-function buffer "run-file-chooser" #'process-file-chooser-request)
   (connect-signal-function buffer "permission-request" #'process-permission-request)
+  (connect-signal-function buffer "show-notification" #'process-notification)
   ;; TLS certificate handling
   (connect-signal buffer "load-failed-with-tls-errors" nil (web-view failing-url certificate errors)
     (declare (ignore web-view errors))
