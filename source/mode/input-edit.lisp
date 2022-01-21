@@ -49,15 +49,19 @@
            ,@body
            (echo-warning "Cannot get cursor position. Are you in an input field?")))))
 
+(defun move-n-elements (n)
+  (with-input-area (contents cursor-position)
+    (let ((new-position (+ cursor-position n)))
+      (set-active-input-area-cursor new-position
+                                    new-position))))
+
 (define-command cursor-forwards ()
   "Move cursor forward by one element."
-  (with-input-area (contents cursor-position)
-    (set-active-input-area-cursor (1+ cursor-position) (1+ cursor-position))))
+  (move-n-elements 1))
 
 (define-command cursor-backwards ()
   "Move cursor backwards by one element."
-  (with-input-area (contents cursor-position)
-    (set-active-input-area-cursor (1- cursor-position) (1- cursor-position))))
+  (move-n-elements -1))
 
 (define-command cursor-forwards-word ()
   "Move cursor forwards a word."
