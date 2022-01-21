@@ -317,7 +317,7 @@ and maintain a table of (old-id -> new-id).  Finally go through all the owners
 and update their creator."
   (let (latest-id)
     (with-data-access (history history-path)
-      (log:info "Restoring ~a buffers from history."
+      (log:info "Restoring ~a buffer~:p from history."
                 (hash-table-count (htree:owners history)))
       (let ((old-id->new-id (make-hash-table :test #'equalp))
             (new-owners (make-hash-table :test #'equalp)))
