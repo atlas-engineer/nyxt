@@ -51,6 +51,8 @@ and `serapeum:':
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria :nyxt-user)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum :nyxt-user)"))
 
+(trivial-package-local-nicknames:add-package-local-nickname :hooks :nhooks :nyxt-user)
+
 ;; Unlike other modes, nyxt/prompt-buffer-mode is declared here because
 ;; certain files depend upon its existence being declared beforehand
 ;; (for compilation).
