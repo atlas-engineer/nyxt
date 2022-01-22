@@ -60,7 +60,8 @@ See `auto-follow-hints-p'.")
               :documentation "The style of the boxes, e.g. link hints.")
    (highlighted-box-style (theme:themed-css (theme *browser*)
                            (".nyxt-hint.nyxt-highlight-hint"
-                            :background theme:accent))
+                            :background-color theme:accent
+                            :color theme:background))
                           :documentation "The style of highlighted boxes, e.g. link hints.")
    (hints-alphabet "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                    :type string
