@@ -211,11 +211,11 @@ The rules are:
           (mode-invocations (default-modes (buffer mode)))))
   (when (prompt-on-mode-toggle mode)
     (hooks:add-hook (enable-mode-hook (buffer mode))
-                    (make-instance 'nyxt::handler-mode
+                    (make-instance 'hooks:handler
                                    :fn (make-mode-toggle-prompting-handler t mode)
                                    :name 'enable-mode-auto-mode-handler))
     (hooks:add-hook (disable-mode-hook (buffer mode))
-                    (make-instance 'nyxt::handler-mode
+                    (make-instance 'hooks:handler
                                    :fn (make-mode-toggle-prompting-handler nil mode)
                                    :name 'disable-mode-auto-mode-handler)))
   (hooks:add-hook (pre-request-hook (buffer mode)) 'auto-mode-handler))
