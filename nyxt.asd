@@ -398,7 +398,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
   (defmethod perform ((o image-op) (c system))
     (uiop:dump-image (output-file o c)
                      :executable t
-                     :compression (uiop:getenv "NYXT_COMPRESS"))))
+                     :compression (parse-integer (uiop:getenv "NYXT_COMPRESS")))))
 
 (defmethod perform :before ((o image-op) (c system))
   "Register immutable systems to prevent compiled images of Nyxt from
