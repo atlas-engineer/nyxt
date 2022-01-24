@@ -131,12 +131,13 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
                    ;; We need to ignore those to avoid warnings, as the same arglist
                    ;; is used in both internal function and a command.
                    (declare (ignorable ,buffer-var))
-                   (spinneret:with-html-string
-                     (:head
-                      (:title ,title)
-                      (:style (style ,buffer-var)))
-                     (:body
-                      (:raw (progn ,@body)))))))
+                   (values (spinneret:with-html-string
+                             (:head
+                              (:title ,title)
+                              (:style (style ,buffer-var)))
+                             (:body
+                              (:raw (progn ,@body))))
+                           "text/html;charset=utf8"))))
          (,(if global-p 'define-command-global 'define-command) ,name (,@arglist)
           ,@(when documentation (list documentation))
           (let* ((,url (quri:uri

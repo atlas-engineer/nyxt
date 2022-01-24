@@ -184,21 +184,23 @@ Second return value should be the MIME-type of the content."))
 (defmethod gopher-render ((line cl-gopher:gopher-line) &optional (mode (current-mode 'small-web)))
   (let ((contents (cl-gopher:get-line-contents line))
         (spinneret:*html-style* :tree))
-    (spinneret:with-html-string
-      (:style (style (buffer mode)))
-      (:style (style mode))
-      (loop for line in (cl-gopher:lines contents)
-            collect (:raw (line->html line))))))
+    (values (spinneret:with-html-string
+              (:style (style (buffer mode)))
+              (:style (style mode))
+              (loop for line in (cl-gopher:lines contents)
+                    collect (:raw (line->html line))))
+            "text/html;charset=utf8")))
 
 (defmethod gopher-render ((line cl-gopher:html-file) &optional (mode (current-mode 'small-web)))
   (declare (ignore mode))
   (let ((contents (cl-gopher:get-line-contents line)))
-    (cl-gopher:content-string contents)))
+    (values (cl-gopher:content-string contents) "text/html;charset=utf8")))
 
 (defmethod gopher-render ((line cl-gopher:text-file) &optional (mode (current-mode 'small-web)))
   (declare (ignore mode))
   (let ((contents (cl-gopher:get-line-contents line)))
-    (values (str:join +newline+ (cl-gopher:lines contents)) "text/plain")))
+    ;; TODO: Guess encoding?
+    (values (str:join +newline+ (cl-gopher:lines contents)) "text/plain;charset=utf8")))
 
 (defun render-binary-content (line &optional mime)
   (let* ((url (quri:uri (cl-gopher:uri-for-gopher-line line)))
@@ -237,17 +239,17 @@ Second return value should be the MIME-type of the content."))
 
 ;; TODO: :display-isolated-p?
 (define-internal-scheme ("gopher")
-  (let* ((line (cl-gopher:parse-gopher-uri %url%)))
-    ;; FIXME: This better become a default auto-mode rule.
-    (enable-modes '(small-web-mode) %buffer%)
-    (if (and (typep line 'cl-gopher:search-line)
-             (uiop:emptyp (cl-gopher:terms line)))
-        (progn (setf (cl-gopher:terms line)
-                     (prompt1
-                       :prompt (format nil "Search query for ~a" %url%)
-                       :sources (list (make-instance 'prompter:raw-source))))
-               (buffer-load (cl-gopher:uri-for-gopher-line line) :buffer %buffer%))
-        (nyxt/small-web-mode:gopher-render line))))
+    (let* ((line (cl-gopher:parse-gopher-uri %url%)))
+      ;; FIXME: This better become a default auto-mode rule.
+      (enable-modes '(small-web-mode) %buffer%)
+      (if (and (typep line 'cl-gopher:search-line)
+               (uiop:emptyp (cl-gopher:terms line)))
+          (progn (setf (cl-gopher:terms line)
+                       (prompt1
+                         :prompt (format nil "Search query for ~a" %url%)
+                         :sources (list (make-instance 'prompter:raw-source))))
+                 (buffer-load (cl-gopher:uri-for-gopher-line line) :buffer %buffer%))
+          (nyxt/small-web-mode:gopher-render line))))
 
 ;;; Gemini rendering.
 
@@ -297,9 +299,10 @@ Second return value should be the MIME-type of the content."))
 (define-internal-scheme ("gemini")
   (block process-gemini-scheme
     (flet ((make-gemini-error-page (title text)
-             (spinneret:with-html-string
-               (:h1 title)
-               (:pre text))))
+             (values (spinneret:with-html-string
+                       (:h1 title)
+                       (:pre text))
+                     "text/html;charset=utf8")))
       (sera:mvlet* ((status meta body (handler-case
                                           (gemini:request %url%)
                                         (gemini::malformed-response (e)
@@ -328,11 +331,12 @@ Second return value should be the MIME-type of the content."))
                (let ((mode (current-mode 'small-web))
                      (elements (phos/gemtext:parse-string body))
                      (spinneret::*html-style* :tree))
-                 (spinneret:with-html-string
-                   (:style (style %buffer%))
-                   (:style (style mode))
-                   (loop for element in elements
-                         collect (:raw (nyxt/small-web-mode:line->html element)))))
+                 (values (spinneret:with-html-string
+                           (:style (style %buffer%))
+                           (:style (style mode))
+                           (loop for element in elements
+                                 collect (:raw (nyxt/small-web-mode:line->html element))))
+                         "text/html;charset=utf8"))
                (values body meta)))
           ((:redirect :permanent-redirect)
            (push %url% (nyxt/small-web-mode:redirections (current-mode 'small-web)))
