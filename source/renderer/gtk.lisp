@@ -48,12 +48,12 @@ See also the `web-contexts' slot."))
 (alex:define-constant +internal+ "internal" :test 'equal)
 (alex:define-constant +default+ "default" :test 'equal)
 
-(defmethod get-context ((browser gtk-browser) name &key ephemeral-p)
+(defmethod get-context ((browser gtk-browser) name buffer &key ephemeral-p)
   (alexandria:ensure-gethash name
                              (if ephemeral-p
                                  (ephemeral-web-contexts browser)
                                  (web-contexts browser))
-                             (make-context name :ephemeral-p ephemeral-p)))
+                             (make-context name buffer :ephemeral-p ephemeral-p)))
 
 (define-class gtk-window ()
   ((gtk-object)
@@ -328,6 +328,7 @@ the same naming rules as above."
                        'webkit:webkit-web-view)
                    :web-context (get-context *browser* (or context-name
                                                            (if internal-p +internal+ +default+))
+                                             buffer
                                              :ephemeral-p ephemeral-p))))
 
 (defun make-decide-policy-handler (buffer)
@@ -826,7 +827,7 @@ See `gtk-browser's `modifier-translator' slot."
             (alex:rcurry 'typep '(and number (not complex))))
            object))
 
-(defun make-context (name &key ephemeral-p)
+(defun make-context (name buffer &key ephemeral-p)
   ;; This is to ensure that paths are not expanded when we make
   ;; contexts for `nosave-buffer's.
   (with-current-buffer buffer
@@ -958,20 +959,15 @@ See `gtk-browser's `modifier-translator' slot."
          (webkit:webkit-web-context-get-security-manager context) "nyxt")
         (webkit:webkit-security-manager-register-uri-scheme-as-cors-enabled
          (webkit:webkit-web-context-get-security-manager context) "lisp")
-        (when (and buffer
-                   (web-buffer-p buffer)
-                   (expand-path (cookies-path buffer)))
-          (webkit:webkit-cookie-manager-set-persistent-storage
-           cookie-manager
-           cookies-data-path
-           :webkit-cookie-persistent-storage-text)))
-      (let ((cookies-data-path (expand-path (cookies-data-path-for-context name))))
-        (webkit:webkit-cookie-manager-set-persistent-storage
-         cookie-manager
-         cookies-data-path
-         :webkit-cookie-persistent-storage-text))
-      (set-cookie-policy cookie-manager (default-cookie-policy *browser*)))
-    context))
+        (alex:when-let ((cookies-data-path (expand-path (cookies-data-path-for-context name))))
+          (when  (and buffer
+                      (web-buffer-p buffer))
+            (webkit:webkit-cookie-manager-set-persistent-storage
+             cookie-manager
+             cookies-data-path
+             :webkit-cookie-persistent-storage-text))))
+      (set-cookie-policy cookie-manager (default-cookie-policy *browser*))
+      context)))
 
 (defun internal-context-p (name)
   (equal name +internal+))

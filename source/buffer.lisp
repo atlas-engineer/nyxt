@@ -376,7 +376,7 @@ When NO-HOOK-P is nil, run `*browser*'s `buffer-before-make-hook', initialize
 the modes, then run `buffer-make-hook' over the created buffer.
 
 Return the created buffer."
-  (setf (id buffer) (get-unique-buffer-identifier browser))
+  (setf (id buffer) (get-unique-identifier browser))
   (unless no-hook-p
     (hooks:run-hook (buffer-before-make-hook browser) buffer))
   ;; Modes might require that buffer exists, so we need to initialize them
@@ -384,7 +384,7 @@ Return the created buffer."
   (initialize-modes buffer)
   (mapc (alex:rcurry #'make-mode buffer) extra-modes)
   ;; Background buffers are invisible to the browser.
-  (unless (eq buffer-class 'user-background-buffer)
+  (unless (typep buffer 'user-background-buffer)
     (buffers-set (id buffer) buffer))
   (unless no-history-p
     ;; When we create buffer, current one can override the
@@ -393,7 +393,7 @@ Return the created buffer."
     (with-current-buffer buffer
       ;; Register buffer in global history:
       (with-data-access (history (history-path buffer)
-                                 :default (make-history-tree buffer))
+                         :default (make-history-tree buffer))
         ;; Owner may already exist if history was just created with the above
         ;; default value.
         (unless (htree:owner history (id buffer))
@@ -736,9 +736,9 @@ Delete it with `ffi-buffer-delete'."
 (defun dead-buffer-p (buffer) ; TODO: Use this wherever needed.
   (str:empty? (id buffer)))
 
-(-> resurrect-buffer (buffer &key (:browser browser)) buffer)
+(-> resurrect-buffer (buffer &key (:browser browser)) (values &optional buffer))
 (defun resurrect-buffer (dead-buffer &key (browser *browser*))
-  (setf (id dead-buffer) (get-unique-buffer-identifier browser))
+  (setf (id dead-buffer) (get-unique-identifier browser))
   (ffi-buffer-make dead-buffer)
   dead-buffer)
 
@@ -892,7 +892,7 @@ BUFFER's modes."
            (:load-url-p boolean)
            (:buffer-class (or null symbol))
            &allow-other-keys)
-    buffer)
+    (or buffer t))
 (define-command make-buffer (&rest args &key (title "") modes (url (quri:uri "")) parent-buffer
                              no-history-p (load-url-p t) (buffer-class 'user-web-buffer)
                              &allow-other-keys)
@@ -977,6 +977,7 @@ See `make-buffer' for a description of the arguments."
 MODES is a list of mode symbols.
 If URL is `:default', use `default-new-buffer-url'."
   (make-buffer :title title
+               :url url
                :extra-modes modes
                :buffer-class 'user-internal-buffer
                :no-history-p no-history-p))
