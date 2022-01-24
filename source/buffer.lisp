@@ -365,6 +365,23 @@ separated from one another, so that each has its own behaviour and settings."))
 
 (define-user-class buffer)
 
+(define-class background-buffer (user-web-buffer)
+  ()
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:export-predicate-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:documentation "A non-user-facing buffer to run background processes in.
+Examples of the processes to run in background buffers are:
+- WebExtensions background pages.
+- Page scraping processes.
+- Anything else requiring a renderer running invisible to the user.
+
+These buffers are not referenced by `browser', so the only way to control these is to
+store them somewhere and `ffi-buffer-delete' them once done."))
+
+(define-user-class background-buffer)
+
 (defmethod initialize-instance :after ((buffer buffer)
                                        &key (browser *browser*) extra-modes
                                          parent-buffer no-history-p
@@ -486,23 +503,6 @@ inherited from the superclasses."))
 
 (defmethod default-modes append ((buffer nosave-buffer))
   '(certificate-exception-mode))
-
-(define-class background-buffer (user-web-buffer)
-  ()
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:export-predicate-name-p t)
-  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
-  (:documentation "A non-user-facing buffer to run background processes in.
-Examples of the processes to run in background buffers are:
-- WebExtensions background pages.
-- Page scraping processes.
-- Anything else requiring a renderer running invisible to the user.
-
-These buffers are not referenced by `browser', so the only way to control these is to
-store them somewhere and `ffi-buffer-delete' them once done."))
-
-(define-user-class background-buffer)
 
 (define-class internal-buffer (user-buffer)
   ()
