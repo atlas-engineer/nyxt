@@ -128,39 +128,33 @@ QtWebEngine-specific.")
 Keys are scheme strings, values are `scheme' objects.")
 
 (export-always 'define-internal-scheme)
-(defmacro define-internal-scheme ((scheme-name
-                                   &key local-p local-access-p
-                                     no-access-p
-                                     display-isolated-p
-                                     service-workers-allowed-p view-source-p
-                                     secure-p
-                                     bypass-csp-p cors-enabled-p)
-                                  &body body)
-  "Define a handler (running BODY) for SCHEME-NAME scheme.
+(defun define-internal-scheme (scheme-name callback
+                               &key local-p local-access-p
+                                 no-access-p
+                                 display-isolated-p
+                                 service-workers-allowed-p view-source-p
+                                 secure-p
+                                 bypass-csp-p cors-enabled-p)
+  "Define a handler (running CALBACK) for SCHEME-NAME scheme.
 
-Magic variables %URL% and %BUFFER% are accessible inside BODY, bound
-to (respectively)
+CALLBACK is called with two arguments:
 - the URL that was requested with this scheme, and
 - buffer that it was requested in.
 
 For keyword arguments' meaning, see `scheme' slot documentation."
-  (let ((url (intern "%URL%"))
-        (buffer (intern "%BUFFER%")))
-    `(setf (gethash ,scheme-name *internal-schemes*)
-           (make-instance 'scheme
-                          :name ,scheme-name
-                          :callback (lambda (,url ,buffer)
-                                      (declare (ignorable ,url ,buffer))
-                                      ,@body)
-                          :local-p ,local-p
-                          :local-access-p ,local-access-p
-                          :no-access-p ,no-access-p
-                          :display-isolated-p ,display-isolated-p
-                          :service-workers-allowed-p ,service-workers-allowed-p
-                          :view-source-p ,view-source-p
-                          :secure-p ,secure-p
-                          :bypass-csp-p ,bypass-csp-p
-                          :cors-enabled-p ,cors-enabled-p))))
+  (setf (gethash scheme-name *internal-schemes*)
+        (make-instance 'scheme
+                       :name scheme-name
+                       :callback callback
+                       :local-p local-p
+                       :local-access-p local-access-p
+                       :no-access-p no-access-p
+                       :display-isolated-p display-isolated-p
+                       :service-workers-allowed-p service-workers-allowed-p
+                       :view-source-p view-source-p
+                       :secure-p secure-p
+                       :bypass-csp-p bypass-csp-p
+                       :cors-enabled-p cors-enabled-p)))
 
 (defmemo lookup-hostname (name)
   "Resolve hostname NAME and memoize the result."
@@ -357,21 +351,24 @@ guarantee of the same result."
                               params))
         (error "There's no nyxt:~a page defined" symbol))))
 
-(define-internal-scheme ("nyxt" :local-p t)
-  (with-protect ("Error while processing the \"nyxt:\" URL: ~a" :condition)
-    (sera:and-let* ((url (quri:uri %url%))
-                    (function-name (parse-nyxt-url url))
-                    (page-generating-function (gethash function-name *nyxt-url-commands*)))
-      (let ((result (multiple-value-list (apply page-generating-function
-                                                (nth-value 1 (parse-nyxt-url url))))))
-        (cond
-          ((and (alex:length= result 2)
-                (arrayp (first result))
-                (stringp (second result)))
-           (values (first result) (second result)))
-          ((arrayp (first result))
-           (first result))
-          (t (error "Cannot display evaluation result")))))))
+(define-internal-scheme "nyxt"
+    (lambda (url buffer)
+      (declare (ignore buffer))
+      (with-protect ("Error while processing the \"nyxt:\" URL: ~a" :condition)
+        (sera:and-let* ((url (quri:uri url))
+                        (function-name (parse-nyxt-url url))
+                        (page-generating-function (gethash function-name *nyxt-url-commands*)))
+          (let ((result (multiple-value-list (apply page-generating-function
+                                                    (nth-value 1 (parse-nyxt-url url))))))
+            (cond
+              ((and (alex:length= result 2)
+                    (arrayp (first result))
+                    (stringp (second result)))
+               (values (first result) (second result)))
+              ((arrayp (first result))
+               (first result))
+              (t (error "Cannot display evaluation result")))))))
+  :local-p t)
 
 (defun sequence-p (object)
   "Return true if OBJECT is a sequence that's not a string."
@@ -391,28 +388,30 @@ guarantee of the same result."
             (alex:rcurry 'typep '(and number (not complex))))
            object))
 
-(define-internal-scheme ("lisp" :cors-enabled-p t)
-  (let ((url (quri:uri %url%)))
-    (if (or (status-buffer-p %buffer%)
-            (panel-buffer-p %buffer%)
-            (internal-url-p (url %buffer%)))
-        (let* ((schemeless-url (schemeless-url url))
-               (code-raw (quri:url-decode schemeless-url :lenient t))
-               ;; All URLs WebKitGTK gives us end with an unnecessary forward slash.
-               (code (sera:slice code-raw 0 -1)))
-          (log:debug "Evaluate Lisp code from internal page: ~a" code)
-          (values (let ((result (first (evaluate code))))
-                    ;; Objects and other complex structures make cl-json choke.
-                    ;; TODO: Maybe encode it to the format that `cl-json'
-                    ;; supports, then we can override the encoding and
-                    ;; decoding methods and allow arbitrary objects (like
-                    ;; buffers) in the nyxt:// URL arguments..
-                    (when (or (scalar-p result)
-                              (and (sequence-p result)
-                                   (every #'scalar-p result)))
-                      (cl-json:encode-json-to-string result)))
-                  "application/json"))
-        (values "undefined" "application/json;charset=utf8"))))
+(define-internal-scheme "lisp"
+    (lambda (url buffer)
+      (let ((url (quri:uri url)))
+        (if (or (status-buffer-p buffer)
+                (panel-buffer-p buffer)
+                (internal-url-p (url buffer)))
+            (let* ((schemeless-url (schemeless-url url))
+                   (code-raw (quri:url-decode schemeless-url :lenient t))
+                   ;; All URLs WebKitGTK gives us end with an unnecessary forward slash.
+                   (code (sera:slice code-raw 0 -1)))
+              (log:debug "Evaluate Lisp code from internal page: ~a" code)
+              (values (let ((result (first (evaluate code))))
+                        ;; Objects and other complex structures make cl-json choke.
+                        ;; TODO: Maybe encode it to the format that `cl-json'
+                        ;; supports, then we can override the encoding and
+                        ;; decoding methods and allow arbitrary objects (like
+                        ;; buffers) in the nyxt:// URL arguments..
+                        (when (or (scalar-p result)
+                                  (and (sequence-p result)
+                                       (every #'scalar-p result)))
+                          (cl-json:encode-json-to-string result)))
+                      "application/json"))
+            (values "undefined" "application/json;charset=utf8"))))
+  :cors-enabled-p t)
 
 (-> path= (quri:uri quri:uri) boolean)
 (defun path= (url1 url2)
