@@ -647,85 +647,6 @@ See `gtk-browser's `modifier-translator' slot."
                                            :is-ephemeral ,(not path)))))
     manager))
 
-(defun process-gopher-scheme (request)
-  (let* ((url (webkit:webkit-uri-scheme-request-get-uri request))
-         (line (cl-gopher:parse-gopher-uri url))
-         (buffer (find (webkit:webkit-uri-scheme-request-get-web-view request)
-                       (buffer-list) :key #'gtk-object)))
-    ;; FIXME: This better become a default auto-mode rule.
-    (enable-modes '(small-web-mode) buffer)
-    (if (and (typep line 'cl-gopher:search-line)
-             (uiop:emptyp (cl-gopher:terms line)))
-        (progn (setf (cl-gopher:terms line)
-                     (prompt1
-                       :prompt (format nil "Search query for ~a" url)
-                       :sources (list (make-instance 'prompter:raw-source))))
-               (buffer-load (cl-gopher:uri-for-gopher-line line) :buffer buffer))
-        (nyxt/small-web-mode:gopher-render line))))
-
-(defun process-gemini-scheme (request)
-  (flet ((make-gemini-error-page (title text)
-             (spinneret:with-html-string
-               (:h1 title)
-               (:pre text))))
-    (sera:mvlet* ((url (webkit:webkit-uri-scheme-request-get-uri request))
-                  (buffer (find (webkit:webkit-uri-scheme-request-get-web-view request)
-                                (buffer-list) :key #'gtk-object))
-                  (status meta body (handler-case
-                                        (gemini:request url)
-                                      (gemini::malformed-response (e)
-                                        (return-from process-gemini-scheme
-                                          (make-gemini-error-page
-                                           "Malformed response"
-                                           (format nil "The response for the URL you're requesting (~s) is malformed.
-
-~a"
-                                                   url e)))))))
-      ;; FIXME: This better become a default auto-mode rule.
-      (enable-modes '(small-web-mode) buffer)
-      (unless (member status '(:redirect :permanent-redirect))
-        (setf (nyxt/small-web-mode:redirections (current-mode 'small-web)) nil))
-      (case status
-        ((:input :sensitive-input)
-         (let ((text (quri:url-encode
-                      (handler-case
-                          (prompt1 :prompt meta
-                            :sources (list (make-instance 'prompter:raw-source))
-                            :invisible-input-p (eq status :sensitive-input))
-                        (nyxt-prompt-buffer-canceled () "")))))
-           (buffer-load (str:concat url "?" text) :buffer buffer)))
-        (:success
-         (if (str:starts-with-p "text/gemini" meta)
-             (let ((mode (current-mode 'small-web))
-                   (elements (phos/gemtext:parse-string body))
-                   (spinneret::*html-style* :tree))
-               (spinneret:with-html-string
-                (:style (style buffer))
-                (:style (style mode))
-                (loop for element in elements
-                      collect (:raw (nyxt/small-web-mode:line->html element)))))
-             (values body meta)))
-        ((:redirect :permanent-redirect)
-         (push url (nyxt/small-web-mode:redirections (current-mode 'small-web)))
-         (if (< (length (nyxt/small-web-mode:redirections (current-mode 'small-web)))
-                (nyxt/small-web-mode:allowed-redirections-count (current-mode 'small-web)))
-             (buffer-load (quri:merge-uris (quri:uri meta) (quri:uri url)) :buffer buffer)
-             (make-gemini-error-page
-              "Error"
-              (format nil "The server has caused too much (~a+) redirections.~& ~a~{ -> ~a~}"
-                      (nyxt/small-web-mode:allowed-redirections-count (current-mode 'small-web))
-                      (alex:lastcar (nyxt/small-web-mode:redirections (current-mode 'small-web)))
-                      (butlast (nyxt/small-web-mode:redirections (current-mode 'small-web)))))))
-        ((:temporary-failure :server-unavailable :cgi-error :proxy-error
-          :permanent-failure :not-found :gone :proxy-request-refused :bad-request)
-         (make-gemini-error-page "Error" meta))
-        (:slow-down
-         (make-gemini-error-page
-          "Slow down error"
-          (format nil "Try reloading the page in ~a seconds." meta)))
-        ((:client-certificate-required :certificate-not-authorised :certificate-not-valid)
-         (make-gemini-error-page "Certificate error" meta))))))
-
 (defun sequence-p (object)
   "Return true if OBJECT is a sequence that's not a string."
   (typep object '(and sequence (not string))))
@@ -782,86 +703,36 @@ See `gtk-browser's `modifier-translator' slot."
                                                       (find buffer extensions :key #'nyxt/web-extensions:popup-buffer))))
                                   (list (describe-extension extension :privileged-p t)))
                                 (mapcar #'describe-extension extensions)))))))))))
-      ;; Is not used anywhere at the moment.
-      (webkit:webkit-web-context-register-uri-scheme-callback
-       context "web-extension"
-       (lambda (request)
-         (let ((data "<h1>Resource not found</h1>")
-               (type "text/html"))
-           (with-protect ("Error while processing the web-extension scheme: ~a" :condition)
-             (sera:and-let* ((path (webkit:webkit-uri-scheme-request-get-path request))
-                             (parts (str:split "/" path :limit 2))
-                             (extension-id (first parts))
-                             (inner-path (second parts))
-                             (extension (find extension-id (sera:filter #'nyxt/web-extensions::extension-p
-                                                                        (modes buffer))
-                                              :key #'id
-                                              :test #'string-equal))
-                             (full-path (nyxt/web-extensions:merge-extension-path extension inner-path)))
-               (setf data (alex:read-file-into-byte-vector full-path)
-                     type (mimes:mime full-path))))
-           (values data type)))
-       (lambda (condition)
-         (echo-warning "Error while re-routing web accessible resource: ~a" condition)))
-      (webkit:webkit-web-context-register-uri-scheme-callback
-       context "nyxt"
-       (lambda (request)
-         (with-protect ("Error while processing the \"nyxt:\" URL: ~a" :condition)
-           (sera:and-let* ((url (quri:uri (webkit:webkit-uri-scheme-request-get-uri request)))
-                           (function-name (parse-nyxt-url url))
-                           (page-generating-function (gethash function-name *nyxt-url-commands*)))
-                          (let ((result (multiple-value-list (apply page-generating-function
-                                                                    (nth-value 1 (parse-nyxt-url url))))))
-               (cond
-                 ((and (alex:length= result 2)
-                       (arrayp (first result))
-                       (stringp (second result)))
-                  (values (first result) (second result)))
-                 ((arrayp (first result))
-                  (first result))
-                 (t (error "Cannot display evaluation result")))))))
-       (lambda (condition)
-         (echo-warning "Error while routing \"nyxt:\" URL: ~a" condition)))
-      (webkit:webkit-web-context-register-uri-scheme-callback
-       context "lisp"
-       (lambda (request)
-         (let ((url (quri:uri (webkit:webkit-uri-scheme-request-get-uri request))))
-           (if (or (status-buffer-p buffer)
-                   (panel-buffer-p buffer)
-                   (internal-url-p (url buffer)))
-               (let* ((schemeless-url (schemeless-url url))
-                      (code-raw (quri:url-decode schemeless-url :lenient t))
-                      ;; All URLs WebKitGTK gives us end with an unnecessary forward slash.
-                      (code (sera:slice code-raw 0 -1)))
-                 (log:debug "Evaluate Lisp code from internal page: ~a" code)
-                 (values (let ((result (first (evaluate code))))
-                           ;; Objects and other complex structures make cl-json choke.
-                           ;; TODO: Maybe encode it to the format that `cl-json'
-                           ;; supports, then we can override the encoding and
-                           ;; decoding methods and allow arbitrary objects (like
-                           ;; buffers) in the nyxt:// URL arguments..
-                           (when (or (scalar-p result)
-                                     (and (sequence-p result)
-                                          (every #'scalar-p result)))
-                             (cl-json:encode-json-to-string result)))
-                         "application/json"))
-               (values "undefined" "application/json"))))
-       (lambda (condition)
-         (echo-warning "Error while routing \"lisp:\" URL: ~a" condition)))
-      (webkit:webkit-web-context-register-uri-scheme-callback
-       context "gopher"
-       #'process-gopher-scheme
-       (lambda (condition)
-         (echo-warning "Error while routing \"gopher:\" URL: ~a" condition)))
-      (webkit:webkit-web-context-register-uri-scheme-callback
-       context "gemini"
-       #'process-gemini-scheme
-       (lambda (condition)
-         (echo-warning "Error while routing \"gemini:\" URL: ~a" condition)))
-      (webkit:webkit-security-manager-register-uri-scheme-as-local
-       (webkit:webkit-web-context-get-security-manager context) "nyxt")
-      (webkit:webkit-security-manager-register-uri-scheme-as-cors-enabled
-       (webkit:webkit-web-context-get-security-manager context) "lisp")
+      (maphash
+       (lambda (scheme scheme-object)
+         (webkit:webkit-web-context-register-uri-scheme-callback
+          context scheme
+          (lambda (request)
+            (funcall* (callback scheme-object)
+                      (webkit:webkit-uri-scheme-request-get-uri request)
+                      buffer))
+          (lambda (condition)
+            (echo-warning "Error while routing ~s resource: ~a" scheme condition)))
+         ;; We err on the side of caution, assigning the most restrictive policy
+         ;; out of those provided. Should it be the other way around?
+         (let ((manager (webkit:webkit-web-context-get-security-manager context)))
+           (cond
+             ((local-p scheme-object)
+              (webkit:webkit-security-manager-register-uri-scheme-as-local
+               manager scheme))
+             ((no-access-p scheme-object)
+              (webkit:webkit-security-manager-register-uri-scheme-as-no-access
+               manager scheme))
+             ((display-isolated-p scheme-object)
+              (webkit:webkit-security-manager-register-uri-scheme-as-display-isolated
+               manager scheme))
+             ((secure-p scheme-object)
+              (webkit:webkit-security-manager-register-uri-scheme-as-secure
+               manager scheme))
+             ((cors-enabled-p scheme-object)
+              (webkit:webkit-security-manager-register-uri-scheme-as-cors-enabled
+               manager scheme)))))
+       nyxt::*internal-schemes*)
       (when (and buffer
                  (web-buffer-p buffer)
                  (expand-path (cookies-path buffer)))

@@ -235,6 +235,20 @@ Second return value should be the MIME-type of the content."))
   (declare (ignore mode))
   (render-binary-content line "image/png"))
 
+;; TODO: :display-isolated-p?
+(define-internal-scheme ("gopher")
+  (let* ((line (cl-gopher:parse-gopher-uri %url%)))
+    ;; FIXME: This better become a default auto-mode rule.
+    (enable-modes '(small-web-mode) %buffer%)
+    (if (and (typep line 'cl-gopher:search-line)
+             (uiop:emptyp (cl-gopher:terms line)))
+        (progn (setf (cl-gopher:terms line)
+                     (prompt1
+                       :prompt (format nil "Search query for ~a" %url%)
+                       :sources (list (make-instance 'prompter:raw-source))))
+               (buffer-load (cl-gopher:uri-for-gopher-line line) :buffer %buffer%))
+        (nyxt/small-web-mode:gopher-render line))))
+
 ;;; Gemini rendering.
 
 (defmethod line->html ((element gemtext:element))
@@ -278,3 +292,65 @@ Second return value should be the MIME-type of the content."))
          (:video :src url :controls t))
         (t (:a :class "button" :href url text))))
     (:br)))
+
+;; TODO: :secure-p t?
+(define-internal-scheme ("gemini")
+  (block process-gemini-scheme
+    (flet ((make-gemini-error-page (title text)
+             (spinneret:with-html-string
+               (:h1 title)
+               (:pre text))))
+      (sera:mvlet* ((status meta body (handler-case
+                                          (gemini:request %url%)
+                                        (gemini::malformed-response (e)
+                                          (return-from process-gemini-scheme
+                                            (make-gemini-error-page
+                                             "Malformed response"
+                                             (format nil "The response for the URL you're requesting (~s) is malformed.
+
+~a"
+                                                     %url% e)))))))
+        ;; FIXME: This better become a default auto-mode rule.
+        (enable-modes '(small-web-mode) %buffer%)
+        (unless (member status '(:redirect :permanent-redirect))
+          (setf (nyxt/small-web-mode:redirections (current-mode 'small-web)) nil))
+        (case status
+          ((:input :sensitive-input)
+           (let ((text (quri:url-encode
+                        (handler-case
+                            (prompt1 :prompt meta
+                              :sources (list (make-instance 'prompter:raw-source))
+                              :invisible-input-p (eq status :sensitive-input))
+                          (nyxt::nyxt-prompt-buffer-canceled () "")))))
+             (buffer-load (str:concat %url% "?" text) :buffer %buffer%)))
+          (:success
+           (if (str:starts-with-p "text/gemini" meta)
+               (let ((mode (current-mode 'small-web))
+                     (elements (phos/gemtext:parse-string body))
+                     (spinneret::*html-style* :tree))
+                 (spinneret:with-html-string
+                   (:style (style %buffer%))
+                   (:style (style mode))
+                   (loop for element in elements
+                         collect (:raw (nyxt/small-web-mode:line->html element)))))
+               (values body meta)))
+          ((:redirect :permanent-redirect)
+           (push %url% (nyxt/small-web-mode:redirections (current-mode 'small-web)))
+           (if (< (length (nyxt/small-web-mode:redirections (current-mode 'small-web)))
+                  (nyxt/small-web-mode:allowed-redirections-count (current-mode 'small-web)))
+               (buffer-load (quri:merge-uris (quri:uri meta) (quri:uri %url%)) :buffer %buffer%)
+               (make-gemini-error-page
+                "Error"
+                (format nil "The server has caused too much (~a+) redirections.~& ~a~{ -> ~a~}"
+                        (nyxt/small-web-mode:allowed-redirections-count (current-mode 'small-web))
+                        (alex:lastcar (nyxt/small-web-mode:redirections (current-mode 'small-web)))
+                        (butlast (nyxt/small-web-mode:redirections (current-mode 'small-web)))))))
+          ((:temporary-failure :server-unavailable :cgi-error :proxy-error
+            :permanent-failure :not-found :gone :proxy-request-refused :bad-request)
+           (make-gemini-error-page "Error" meta))
+          (:slow-down
+           (make-gemini-error-page
+            "Slow down error"
+            (format nil "Try reloading the page in ~a seconds." meta)))
+          ((:client-certificate-required :certificate-not-authorised :certificate-not-valid)
+           (make-gemini-error-page "Certificate error" meta)))))))
