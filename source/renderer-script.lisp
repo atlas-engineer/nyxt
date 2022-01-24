@@ -136,7 +136,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
                       (:title ,title)
                       (:style (style ,buffer-var)))
                      (:body
-                      (:raw ,@body))))))
+                      (:raw (progn ,@body)))))))
          (,(if global-p 'define-command-global 'define-command) ,name (,@arglist)
           ,@(when documentation (list documentation))
           (let* ((,url (quri:uri
