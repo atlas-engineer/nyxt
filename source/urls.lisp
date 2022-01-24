@@ -123,8 +123,7 @@ QtWebEngine-specific.")
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Representation of Nyxt-specific internal schemes."))
 
-(defvar *internal-schemes*
-  (make-hash-table :test 'equal)
+(defvar *internal-schemes* (sera:dict)
   "A table of internal schemes registered in Nyxt.
 Keys are scheme strings, values are `scheme' objects.")
 
