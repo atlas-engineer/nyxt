@@ -24,7 +24,7 @@
 (defvar *submodules-jobs* (or (uiop:getenv "NYXT_SUBMODULES_JOBS")
                               4)
   "Number of parallel 'git clone' jobs to fetch the Git submodules.
-A naive benchmark on a 16 Mpbs bandwidth gives us
+A naive benchmark on a 16Mpbs bandwidth gives us
 
     1 job:  5m17s
     2 jobs: 3m38s
@@ -135,6 +135,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "history")
                  (:file "autofill")
                  (:file "external-editor")
+                 (:file "no-procrastinate")
                  #+quicklisp
                  (:file "lisp-system")))
                (:module "Core modes"
@@ -210,6 +211,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "no-sound")
                  (:file "no-script")
                  (:file "no-webgl")
+                 (:file "no-procrastinate")
                  (:file "reduce-bandwidth")
                  (:file "force-https")
                  (:file "reduce-tracking")
@@ -546,7 +548,7 @@ See `asdf::*immutable-systems*'."
                uiop
                nyxt/class-star
                serapeum)
-p  :pathname "libraries/password-manager/"
+  :pathname "libraries/password-manager/"
   :components ((:file "package")
                (:file "password")
                (:file "password-keepassxc")

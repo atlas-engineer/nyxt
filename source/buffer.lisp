@@ -337,27 +337,26 @@ The file where the system will create/save the global history.")
     (make-instance 'bookmarks-file)
     :type bookmarks-file
     :documentation "The file where the system will create/save the bookmarks.")
-   (annotations-file
-    (make-instance 'annotations-file)
-    :type annotations-file
-    :documentation "
-The path where the system will create/save the bookmarks.
-Bookmarks' data is kept in browser's `user-data', keyed by the expanded `bookmarks-path'.")
-   (no-procrastination-path (make-instance 'no-procrastination-data-path)
-                          :type data-path
-                          :documentation "
-The path where the system will create/save the hosts associated to
-procrastination.  Procrastination hosts' data is kept in browser's `user-data',
-keyed by the expanded `no-procrastination-path'.")
-   (annotations-path
-    (make-instance 'annotations-data-path)
-    :type data-path
+   (no-procrastinate-hosts-file
+    (make-instance 'no-procrastinate-hosts-file)
+    :type no-procrastinate-hosts-file
+    :documentation "The file where the system will create/save hosts associated
+to procrastination that should be blocked.")
+    (annotations-file
+     (make-instance 'annotations-file)
+     :type annotations-file
+     :documentation "
+The file where the system will create/save annotations.")
+   (inputs-file
+    (make-instance 'inputs-file)
+    :type inputs-file
     :documentation "
 The file where the system will create/save the input data.")
    (auto-mode-rules-file
     (make-instance 'auto-mode-rules-file)
     :type auto-mode-rules-file
-    :documentation "The file where the auto-mode rules are saved.")
+    :documentation "
+The file where the auto-mode rules are saved.")
    (standard-output-file
     (make-instance 'standard-output-file)
     :type standard-output-file

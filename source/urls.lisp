@@ -52,13 +52,10 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
          (or (ignore-errors (ffi-display-url url))
              url))))
 
-;; Still need to solve this edge case
-;; PATH do capitolio, path com /*&%%%right&*
-;; decode is needed
 (defun render-url-without-path (url)
   "Return decoded URL without path, if existent."
-  (str:replace-first (quri:uri-path url) ""
-                     (render-url url)))
+  (format nil "~a://~a" (quri:uri-scheme url)
+                      (quri:uri-host url)))
 
 (defmacro defmemo (name params &body body) ; TODO: Replace with https://github.com/AccelerationNet/function-cache?
   (alex:with-gensyms (memo-table args result result?)
