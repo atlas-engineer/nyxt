@@ -672,8 +672,10 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
 
 (defmethod nyxt:on-signal-notify-uri ((mode web-mode) url)
   (declare (type quri:uri url))
-  (when (eq :finished (slot-value (buffer mode) 'nyxt::status))
-    (add-url-to-history url (buffer mode) mode))
+  (let ((buffer (buffer mode)))
+    (when (web-buffer-p buffer)
+      (when (eq :finished (slot-value buffer 'nyxt::status))
+        (add-url-to-history url buffer mode))))
   url)
 
 (defmethod nyxt:on-signal-notify-title ((mode web-mode) title)
