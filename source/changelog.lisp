@@ -342,6 +342,7 @@ and restore input fields.")
    (:li "New " (:code "match-port") " URL designator predicate for auto-mode rules.")
    (:li "New " (:code "toggle-message-buffer") " and " (:code "toggle-status-buffer") " commands.")
    (:li "New " (:code "bookmark-frequent-visits") " mode.")
+   (:li (:code "application-mode") " is now " (:code "passthrough-mode") ".")
 
    (:h3 "Bindings")
    (:ul
