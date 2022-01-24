@@ -405,7 +405,11 @@ Return the created buffer."
   (initialize-modes buffer)
   (mapc (alex:rcurry #'make-mode buffer) extra-modes)
   ;; Background buffers are invisible to the browser.
-  (unless (typep buffer 'user-background-buffer)
+  ;; TODO: We should redo our buffer class hierarchy so that this wouldn't be
+  ;; needed.
+  (unless (or (typep buffer 'background-buffer)
+              (typep buffer 'prompt-buffer)
+              (typep buffer 'status-buffer))
     (buffers-set (id buffer) buffer))
   (unless no-history-p
     ;; When we create buffer, current one can override the
