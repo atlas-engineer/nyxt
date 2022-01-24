@@ -660,12 +660,13 @@ System information is also saved into the clipboard."
     (buffer "*Dashboard*" 'base-mode)
   "Print a dashboard."
   (flet ((list-bookmarks (&key (separator " → "))
-           (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
-             (spinneret:with-html-string
-               (loop for bookmark in bookmarks
-                     collect (:li (title bookmark) separator
-                                  (:a :href (render-url (url bookmark))
-                                      (render-url (url bookmark)))))))))
+           (spinneret:with-html-string
+             (or (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
+                   (loop for bookmark in bookmarks
+                         collect (:li (title bookmark) separator
+                                      (:a :href (render-url (url bookmark))
+                                          (render-url (url bookmark))))))
+                 (:p (format nil "No bookmarks in ~s." (expand-path (bookmarks-path (current-buffer)))))))))
     (let ((dashboard-style (theme:themed-css (theme *browser*)
                              (body
                               :color theme:text
