@@ -1815,3 +1815,27 @@ As a second value, return the current buffer index starting from 0."
        (webkit:webkit-web-view-execute-editing-command
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-redo+)))
    (lambda (e) (echo-warning "Cannot redo: ~a" e))))
+
+(define-class context-source (prompter:source)
+  ((prompter:name "Context list")
+   (prompter:constructor (sort (delete-duplicates (append (mapcar #'context-name (buffer-list))
+                                                          (list +internal+ +default+))
+                                                  :test 'equal)
+                               'string<)))
+  (:export-class-name-p t))
+
+(define-command make-buffer-with-context (&rest args
+                                          &key title modes url load-url-p
+                                          context-name)
+  "Create a new buffer with a given context.
+See the `context-name' documention.
+See `make-buffer' for a description of the other arguments."
+  (declare (ignorable title modes url load-url-p))
+  (setf (getf args :context-name)
+        (or context-name
+            (prompt1
+             :prompt "Choose context"
+             :sources (list (make-instance 'prompter:raw-source :name "New context")
+                            'context-source))))
+  (apply #'make-buffer (append (list :buffer-class 'user-buffer)
+                               args)))
