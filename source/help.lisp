@@ -50,7 +50,8 @@
                                                   (describe-class :class class))))
                   (make-instance 'slot-source
                                  :actions (list (make-command describe-slot** (slot)
-                                                  (describe-slot :slot slot)))))))
+                                                  (describe-slot :class (class-sym slot)
+                                                                 :name (name slot))))))))
 
 (defun value->html (value &key (help-mode (current-mode 'help)))
   "Return the HTML representation of VALUE."
@@ -197,15 +198,18 @@ A command is a special kind of function that can be called with
                      (write-to-string (sexp command))))))))
 
 (define-internal-page-command-global describe-slot
-    (&key (slot (prompt1
-                  :prompt "Describe slot"
-                  :sources (make-instance 'slot-source))))
-    (buffer (str:concat "*Help-" (symbol-name (name slot)) "*")
+    (&key class name)
+    (buffer (str:concat "*Help-" (symbol-name name) "*")
             'nyxt/help-mode:help-mode)
   "Inspect a slot and show it in a help buffer."
-  (str:concat (spinneret:with-html-string (:style (style buffer)))
-              (describe-slot* (name slot) (class-sym slot)
-                              :mention-class-p t)))
+  (unless (and class name)
+    (let ((slot (prompt1
+                  :prompt "Describe slot"
+                  :sources (make-instance 'slot-source))))
+      (setf name (name slot)
+            class (class-sym slot))
+      ""))
+  (describe-slot* name class :mention-class-p t))
 
 (defun describe-slot* (slot class &key mention-class-p)
   "Create the HTML that represents a slot."
@@ -214,7 +218,7 @@ A command is a special kind of function that can be called with
   (let ((props (mopu:slot-properties (find-class class) slot)))
     (spinneret:with-html-string
       (:ul
-       (:li slot)
+       (:li (symbol-name slot))
        (:ul
         (when mention-class-p
           (:li (format nil "Class: ~s" class)))
