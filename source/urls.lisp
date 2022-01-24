@@ -82,39 +82,14 @@ Optionally returns two values:
    (local-p
     nil
     :documentation "Local schemes are not accessible to the pages of other schemes.")
-   (local-access-p
-    nil
-    :documentation "Local-access-allowed schemes can load resources from other schemes.
-
-QtWebEngine-specific.")
    (no-access-p
     nil
-    :documentation "No-access schemes cannot access pages with any other scheme. ")
-   (display-isolated-p
-    nil
-    :documentation "Display isolated schemes cannot be displayed (in iframes, for example) by other schemes.
-
-WebKitGTK-specific.")
-   (service-workers-allowed-p
-    nil
-    :documentation "Whether service workers can run on this scheme.
-
-QtWebEngine-specific.")
-   (view-source-p
-    nil
-    :documentation "View-source schemes allow looking at the source of the pages.
-
-QtWebEngine-specific.")
+    :documentation "No-access schemes cannot access pages with any other scheme.")
    (secure-p
     nil
     :documentation "Secure schemes can access the Web, Web can access them too.
 
 Requires encryption or other means of security.")
-   (bypass-csp-p
-    nil
-    :documentation "Whether this scheme passes all Content Security Policy checks unconditionally.
-
-QtWebEngine-specific.")
    (cors-enabled-p
     nil
     :documentation "Whether other pages can do requests to the resources with this scheme."))
@@ -122,6 +97,7 @@ QtWebEngine-specific.")
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Representation of Nyxt-specific internal schemes."))
+(define-user-class scheme)
 
 (defvar *internal-schemes* (sera:dict)
   "A table of internal schemes registered in Nyxt.
@@ -129,12 +105,12 @@ Keys are scheme strings, values are `scheme' objects.")
 
 (export-always 'define-internal-scheme)
 (defun define-internal-scheme (scheme-name callback
-                               &key local-p local-access-p
+                               &rest keys
+                               &key local-p
                                  no-access-p
-                                 display-isolated-p
-                                 service-workers-allowed-p view-source-p
                                  secure-p
-                                 bypass-csp-p cors-enabled-p)
+                                 cors-enabled-p
+                               &allow-other-keys)
   "Define a handler (running CALBACK) for SCHEME-NAME scheme.
 
 CALLBACK is called with two arguments:
@@ -142,19 +118,12 @@ CALLBACK is called with two arguments:
 - buffer that it was requested in.
 
 For keyword arguments' meaning, see `scheme' slot documentation."
+  (declare (ignorable local-p no-access-p secure-p cors-enabled-p))
   (setf (gethash scheme-name *internal-schemes*)
-        (make-instance 'scheme
-                       :name scheme-name
-                       :callback callback
-                       :local-p local-p
-                       :local-access-p local-access-p
-                       :no-access-p no-access-p
-                       :display-isolated-p display-isolated-p
-                       :service-workers-allowed-p service-workers-allowed-p
-                       :view-source-p view-source-p
-                       :secure-p secure-p
-                       :bypass-csp-p bypass-csp-p
-                       :cors-enabled-p cors-enabled-p)))
+        (apply #'make-instance 'user-scheme
+               :name scheme-name
+               :callback callback
+               keys)))
 
 (defmemo lookup-hostname (name)
   "Resolve hostname NAME and memoize the result."
