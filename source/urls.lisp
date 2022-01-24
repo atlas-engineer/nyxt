@@ -71,8 +71,14 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
 E.g. \"gopher\", \"irc\".")
    (callback
     nil
-    :type (or null (function (url-designator) t))
-    :documentation "Callback to get the page contents when accessing resource with this scheme.")
+    :type (or null (function (url-designator buffer) t))
+    :documentation "Callback to get the page contents when accessing resource with this scheme.
+
+Takes two arguments: the URL with scheme and the buffer it was requested in.
+
+Optionally returns two values:
+- The data for page contents (either as string or as a unsigned byte array).
+- The MIME type for the contents.")
    (local-p
     nil
     :documentation "Local schemes are not accessible to the pages of other schemes.")
@@ -133,6 +139,14 @@ Keys are scheme strings, values are `scheme' objects.")
                                      secure-p
                                      bypass-csp-p cors-enabled-p)
                                   &body body)
+  "Define a handler (running BODY) for SCHEME-NAME scheme.
+
+Magic variables %URL% and %BUFFER% are accessible inside BODY, bound
+to (respectively)
+- the URL that was requested with this scheme, and
+- buffer that it was requested in.
+
+For keyword arguments' meaning, see `scheme' slot documentation."
   (let ((url (intern "%URL%"))
         (buffer (intern "%BUFFER%")))
     `(setf (gethash ,scheme-name *internal-schemes*)
