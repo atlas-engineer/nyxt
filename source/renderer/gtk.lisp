@@ -713,6 +713,9 @@ See `gtk-browser's `modifier-translator' slot."
                manager scheme))
              ((cors-enabled-p scheme-object)
               (webkit:webkit-security-manager-register-uri-scheme-as-cors-enabled
+               manager scheme))
+             ((empty-document-p scheme-object)
+              (webkit:webkit-security-manager-register-uri-scheme-as-empty-document
                manager scheme)))))
        nyxt::*internal-schemes*)
       (when (and buffer
