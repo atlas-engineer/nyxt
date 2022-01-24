@@ -68,7 +68,7 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
 (define-class scheme ()
   ((name (error "Scheme must have a name/scheme")
          :documentation "Scheme/name of the internal scheme.
-E.g. \"gopher\", \"irc\".")
+For instance, \"gopher\", \"irc\".")
    (callback
     nil
     :type (or null (function (url-designator buffer) t))
@@ -84,17 +84,15 @@ Optionally returns two values:
     :documentation "Local schemes are not accessible to the pages of other schemes.")
    (local-access-p
     nil
-    :documentation "Local access allowed schemes can load resources from other schemes.
+    :documentation "Local-access-allowed schemes can load resources from other schemes.
 
 QtWebEngine-specific.")
    (no-access-p
     nil
-    :documentation "No-access schemes cannot access pages with any other scheme.
-
-Has slightly different behavior between ports.")
+    :documentation "No-access schemes cannot access pages with any other scheme. ")
    (display-isolated-p
     nil
-    :documentation "Display isolated schemes cannot be displayed by other schemes.
+    :documentation "Display isolated schemes cannot be displayed (in iframes, for example) by other schemes.
 
 WebKitGTK-specific.")
    (service-workers-allowed-p
@@ -123,7 +121,7 @@ QtWebEngine-specific.")
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
-  (:documentation "Representation of Nyxt-specific internal scheme."))
+  (:documentation "Representation of Nyxt-specific internal schemes."))
 
 (defvar *internal-schemes*
   (make-hash-table :test 'equal)
@@ -381,8 +379,8 @@ guarantee of the same result."
   (typep object '(and sequence (not string))))
 
 (defun scalar-p (object)
-  ;; See `sb-int::compound-object-p'.
-  "Return true if OBJECT is a of one of the following types:
+  ;; REVIEW: List direct T subclasses instead?
+  "Return true if OBJECT is of one of the following types:
 - symbol,
 - character,
 - string,
