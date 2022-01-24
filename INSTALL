@@ -25,17 +25,17 @@ Set NYXT_TESTS_ERROR_ON_FAIL to error out when a test fails.  This is useful for
 continuous integration and build systems.
 
 If NYXT_SUBMODULES is "true" (the default), all Lisp
-dependencies will be fetched with =git submodules= into the
+dependencies will be fetched with `git submodules' into the
 NYXT_SUBMODULES_DIR directory.
 
 Otherwise, the dependencies will have to be locally installed
-on your system.  You may have to accomodate the LISP_FLAGS
+on your system.  You may have to accommodate the LISP_FLAGS
 to use your local install of Quicklisp.  For example:
 
     make all NYXT_SUBMODULES=false LISP_FLAGS=
 
 But in this case, you don't have to use `make' at all.  Instead, you could build
-Nyxt with an invocation along those lines:
+Nyxt with an invocation along these lines:
 
     sbcl --eval '(asdf:load-asd "'$(pwd)'/nyxt.asd")' --eval '(ql:quickload :nyxt/gi-gtk-application)' --quit
 
