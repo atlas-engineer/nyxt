@@ -80,6 +80,13 @@ See also the `web-contexts' slot."))
 
 (define-class gtk-buffer ()
   ((gtk-object)
+   (context-name
+    +default+
+    :type string
+    :documentation "Name of the WebKit context.
+When given the same context, multiple buffers share their internal browsing data.
+`+default+' is the default context.
+`+internal+' is a context that's not persisted to disk.")
    (handler-ids
     :documentation "Store all GObject signal handler IDs so that we can disconnect the signal handler when the object is finalised.
 See https://developer.gnome.org/gobject/stable/gobject-Signals.html#signal-memory-management.")
@@ -306,7 +313,7 @@ the renderer thread, use `defmethod' instead."
     (error 'nyxt-web-context-condition :context web-context
                                        :message "Tried to make an ephemeral web-view in a non-ephemeral context")))
 
-(defun make-web-view (&key buffer context-name ephemeral-p)
+(defun make-web-view (&key buffer ephemeral-p)
   "Return a web view instance.
 
 If passed a context-name, a `nyxt:webkit-web-context' with that name is used for
@@ -326,8 +333,7 @@ the same naming rules as above."
     (make-instance (if ephemeral-p
                        'webkit-web-view-ephemeral
                        'webkit:webkit-web-view)
-                   :web-context (get-context *browser* (or context-name
-                                                           (if internal-p +internal+ +default+))
+                   :web-context (get-context *browser* (if internal-p +internal+ (context-name buffer))
                                              buffer
                                              :ephemeral-p ephemeral-p))))
 
