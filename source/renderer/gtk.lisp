@@ -48,12 +48,12 @@ See also the `web-contexts' slot."))
 (alex:define-constant +internal+ "internal" :test 'equal)
 (alex:define-constant +default+ "default" :test 'equal)
 
-(defmethod get-context ((browser gtk-browser) name &key ephemeral-p)
+(defmethod get-context ((browser gtk-browser) name buffer &key ephemeral-p)
   (alexandria:ensure-gethash name
                              (if ephemeral-p
                                  (ephemeral-web-contexts browser)
                                  (web-contexts browser))
-                             (make-context name :ephemeral-p ephemeral-p)))
+                             (make-context name buffer :ephemeral-p ephemeral-p)))
 
 (define-class gtk-window ()
   ((gtk-object)
@@ -328,6 +328,7 @@ the same naming rules as above."
                        'webkit:webkit-web-view)
                    :web-context (get-context *browser* (or context-name
                                                            (if internal-p +internal+ +default+))
+                                             buffer
                                              :ephemeral-p ephemeral-p))))
 
 (defun make-decide-policy-handler (buffer)
@@ -741,7 +742,7 @@ See `gtk-browser's `modifier-translator' slot."
   (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-user-class scheme (gtk-scheme))
 
-(defun make-context (name &key ephemeral-p)
+(defun make-context (name buffer &key ephemeral-p)
   ;; This is to ensure that paths are not expanded when we make
   ;; contexts for `nosave-buffer's.
   (with-current-buffer buffer
