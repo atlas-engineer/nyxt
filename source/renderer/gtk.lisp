@@ -647,6 +647,18 @@ See `gtk-browser's `modifier-translator' slot."
                                            :is-ephemeral ,(not path)))))
     manager))
 
+(define-class gtk-scheme ()
+  ((display-isolated-p
+    nil
+    :documentation "Display isolated schemes cannot be displayed (in iframes, for example) by other schemes.")
+   (empty-document-p
+    nil
+    :documentation "Empty document schemes can be loaded synchronously by websites referring to them."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+(define-user-class scheme (gtk-scheme))
+
 (defun make-context (&optional buffer)
   ;; This is to ensure that paths are not expanded when we make
   ;; contexts for `nosave-buffer's.
