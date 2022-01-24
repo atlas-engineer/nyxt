@@ -65,6 +65,92 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
                               ,@body)
                             ,args))))))))
 
+(define-class scheme ()
+  ((name (error "Scheme must have a name/scheme")
+         :documentation "Scheme/name of the internal scheme.
+E.g. \"gopher\", \"irc\".")
+   (callback
+    nil
+    :type (or null (function (url-designator) t))
+    :documentation "Callback to get the page contents when accessing resource with this scheme.")
+   (local-p
+    nil
+    :documentation "Local schemes are not accessible to the pages of other schemes.")
+   (local-access-p
+    nil
+    :documentation "Local access allowed schemes can load resources from other schemes.
+
+QtWebEngine-specific.")
+   (no-access-p
+    nil
+    :documentation "No-access schemes cannot access pages with any other scheme.
+
+Has slightly different behavior between ports.")
+   (display-isolated-p
+    nil
+    :documentation "Display isolated schemes cannot be displayed by other schemes.
+
+WebKitGTK-specific.")
+   (service-workers-allowed-p
+    nil
+    :documentation "Whether service workers can run on this scheme.
+
+QtWebEngine-specific.")
+   (view-source-p
+    nil
+    :documentation "View-source schemes allow looking at the source of the pages.
+
+QtWebEngine-specific.")
+   (secure-p
+    nil
+    :documentation "Secure schemes can access the Web, Web can access them too.
+
+Requires encryption or other means of security.")
+   (bypass-csp-p
+    nil
+    :documentation "Whether this scheme passes all Content Security Policy checks unconditionally.
+
+QtWebEngine-specific.")
+   (cors-enabled-p
+    nil
+    :documentation "Whether other pages can do requests to the resources with this scheme."))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:documentation "Representation of Nyxt-specific internal scheme."))
+
+(defvar *internal-schemes*
+  (make-hash-table :test 'equal)
+  "A table of internal schemes registered in Nyxt.
+Keys are scheme strings, values are `scheme' objects.")
+
+(export-always 'define-internal-scheme)
+(defmacro define-internal-scheme ((scheme-name
+                                   &key local-p local-access-p
+                                     no-access-p
+                                     display-isolated-p
+                                     service-workers-allowed-p view-source-p
+                                     secure-p
+                                     bypass-csp-p cors-enabled-p)
+                                  &body body)
+  (let ((url (intern "%URL%"))
+        (buffer (intern "%BUFFER%")))
+    `(setf (gethash ,scheme-name *internal-schemes*)
+           (make-instance 'scheme
+                          :name ,scheme-name
+                          :callback (lambda (,url ,buffer)
+                                      (declare (ignorable ,url ,buffer))
+                                      ,@body)
+                          :local-p ,local-p
+                          :local-access-p ,local-access-p
+                          :no-access-p ,no-access-p
+                          :display-isolated-p ,display-isolated-p
+                          :service-workers-allowed-p ,service-workers-allowed-p
+                          :view-source-p ,view-source-p
+                          :secure-p ,secure-p
+                          :bypass-csp-p ,bypass-csp-p
+                          :cors-enabled-p ,cors-enabled-p))))
+
 (defmemo lookup-hostname (name)
   "Resolve hostname NAME and memoize the result."
   ;; `sb-bsd-sockets:get-host-by-name' may signal a `ns-try-again-condition' which is
@@ -83,7 +169,7 @@ The domain name existence is verified only if CHECK-DNS-P is T. Domain
 name validation may take significant time since it looks up the DNS."
   ;; List of URI schemes: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
   ;; Last updated 2020-08-26.
-  (let* ((nyxt-schemes '("nyxt" "lisp" "web-extension" "javascript" "gemini"))
+  (let* ((nyxt-schemes (cons "javascript" (alex:hash-table-keys *internal-schemes*)))
          (iana-schemes
            '("aaa" "aaas" "about" "acap" "acct" "cap" "cid" "coap" "coap+tcp" "coap+ws"
              "coaps" "coaps+tcp" "coaps+ws" "crid" "data" "dav" "dict" "dns" "example" "file"
@@ -233,7 +319,7 @@ Example:
           (error "There's no nyxt:~a page defined" (param-name function-name))))))
 
 (defun internal-url-p (url)
-  (str:s-member (list "nyxt" "gopher") (quri:uri-scheme (url url))))
+  (string= "nyxt" (quri:uri-scheme (url url))))
 
 (export-always 'parse-nyxt-url)
 (-> parse-nyxt-url ((or string quri:uri)) (values symbol list &optional))
@@ -259,6 +345,45 @@ guarantee of the same result."
                                       (error "A non-constant value passed in URL params: ~a" value))))
                               params))
         (error "There's no nyxt:~a page defined" symbol))))
+
+(define-internal-scheme ("nyxt" :local-p t)
+  (with-protect ("Error while processing the \"nyxt:\" URL: ~a" :condition)
+    (sera:and-let* ((url (quri:uri %url%))
+                    (function-name (parse-nyxt-url url))
+                    (page-generating-function (gethash function-name *nyxt-url-commands*)))
+      (let ((result (multiple-value-list (apply page-generating-function
+                                                (nth-value 1 (parse-nyxt-url url))))))
+        (cond
+          ((and (alex:length= result 2)
+                (arrayp (first result))
+                (stringp (second result)))
+           (values (first result) (second result)))
+          ((arrayp (first result))
+           (first result))
+          (t (error "Cannot display evaluation result")))))))
+
+(define-internal-scheme ("lisp" :cors-enabled-p t)
+  (let ((url (quri:uri %url%)))
+    (if (or (status-buffer-p %buffer%)
+            (panel-buffer-p %buffer%)
+            (internal-url-p (url %buffer%)))
+        (let* ((schemeless-url (schemeless-url url))
+               (code-raw (quri:url-decode schemeless-url :lenient t))
+               ;; All URLs WebKitGTK gives us end with an unnecessary forward slash.
+               (code (sera:slice code-raw 0 -1)))
+          (log:debug "Evaluate Lisp code from internal page: ~a" code)
+          (values (let ((result (first (evaluate code))))
+                    ;; Objects and other complex structures make cl-json choke.
+                    ;; TODO: Maybe encode it to the format that `cl-json'
+                    ;; supports, then we can override the encoding and
+                    ;; decoding methods and allow arbitrary objects (like
+                    ;; buffers) in the nyxt:// URL arguments..
+                    (when (or (scalar-p result)
+                              (and (sequence-p result)
+                                   (every #'scalar-p result)))
+                      (cl-json:encode-json-to-string result)))
+                  "application/json"))
+        (values "undefined" "application/json"))))
 
 (-> path= (quri:uri quri:uri) boolean)
 (defun path= (url1 url2)
