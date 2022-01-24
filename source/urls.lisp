@@ -376,6 +376,24 @@ guarantee of the same result."
            (first result))
           (t (error "Cannot display evaluation result")))))))
 
+(defun sequence-p (object)
+  "Return true if OBJECT is a sequence that's not a string."
+  (typep object '(and sequence (not string))))
+
+(defun scalar-p (object)
+  ;; See `sb-int::compound-object-p'.
+  "Return true if OBJECT is a of one of the following types:
+- symbol,
+- character,
+- string,
+- non-complex number."
+  (funcall (alex:disjoin
+            'symbolp
+            'characterp
+            'stringp
+            (alex:rcurry 'typep '(and number (not complex))))
+           object))
+
 (define-internal-scheme ("lisp" :cors-enabled-p t)
   (let ((url (quri:uri %url%)))
     (if (or (status-buffer-p %buffer%)
