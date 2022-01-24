@@ -415,7 +415,7 @@ guarantee of the same result."
                                    (every #'scalar-p result)))
                       (cl-json:encode-json-to-string result)))
                   "application/json"))
-        (values "undefined" "application/json"))))
+        (values "undefined" "application/json;charset=utf8"))))
 
 (-> path= (quri:uri quri:uri) boolean)
 (defun path= (url1 url2)
