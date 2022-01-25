@@ -442,7 +442,7 @@ Return (values HISTORY OWNER)."
 Return (VALUES HISTORY OWNER)."
   (check-type count positive-integer)
   (let ((owner (owner history owner-spec)))
-    (when (and owner (parent (current owner)))
+    (when (and owner (current owner) (parent (current owner)))
       (let ((former-current (current owner)))
         (visit history owner (parent (current owner)))
         ;; Put former current node back as forward-child if it is not already
@@ -459,7 +459,7 @@ Return (VALUES HISTORY OWNER)."
 Only contiguous owned parents are considered.
 Return (VALUES HISTORY OWNER)."
   (let ((owner (owner history owner-spec)))
-    (when (and owner (owned-parent owner (current owner)))
+    (when (and owner (current owner) (owned-parent owner (current owner)))
       (backward history count))
     (values history owner)))
 
