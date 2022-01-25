@@ -334,7 +334,11 @@ prevents otherwise."))
 After this, buffers from a previous session are permanently lost, they cannot be
 restored."
              (with-data-access (history (history-path buffer))
-               (clrhash (htree:owners history))))
+               ;; TODO: `when history' should not be needed here because
+               ;; `with-data-access' is supposed to be a no-op when the path
+               ;; expands to nil, but this fails with `async-data-path'
+               (when history
+                 (clrhash (htree:owners history)))))
            (restore-session ()
              (let ((buffer (current-buffer)))
                (when (histories-list buffer)
