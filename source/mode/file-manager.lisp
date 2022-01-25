@@ -128,12 +128,13 @@ It's suitable for `prompter:filter-preprocessor'."
        (prompter:ensure-suggestions-list
         source
         (sera:filter
-         (lambda (path)
-           (or (and (uiop:directory-pathname-p path)
-                    (allow-directories source))
-               (and (uiop:file-pathname-p path)
-                    (or (null (extensions source))
-                        (str:s-member (extensions source) (pathname-type path))))))
+         (or (filter source)
+             (lambda (path)
+               (or (and (uiop:directory-pathname-p path)
+                        (allow-directories source))
+                   (and (uiop:file-pathname-p path)
+                        (or (null (extensions source))
+                            (str:s-member (extensions source) (pathname-type path)))))))
          (directory-elements directory)))
        source
        input))))
@@ -150,6 +151,14 @@ If nil, allow everything.")
    (allow-directories t
                       :type boolean
                       :documentation "Whether directories are listed too.")
+   (filter
+    nil
+    :type (or null (function (pathname) boolean))
+    :documentation "Function to arbitrarily filter files if directory/extension is not enough.
+
+Takes a pathname and returns:
+- True if the pathname should stay.
+- False if the pathname should be removed.")
    (supported-media-types '("mp3" "ogg" "mp4" "flv" "wmv" "webm" "mkv")
                           :type list-of-strings
                           :documentation "Media types that Nyxt can open.
