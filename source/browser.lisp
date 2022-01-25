@@ -175,7 +175,16 @@ The handlers take the buffer as argument.")
     :type hook-buffer
     :documentation "Hook run at the beginning of `buffer' initialization.
 The buffer web view is not allocated, so it's not possible to run any
-parenscript from this hook.  See `buffer-make-hook' for a hook.
+parenscript from this hook.
+See `buffer-make-hook' and `buffer-after-make-hook' for other hook options.
+The handlers take the buffer as argument.")
+   (buffer-after-make-hook
+    (make-instance 'hook-buffer)
+    :type hook-buffer
+    :documentation "Hook run after `buffer' initialization and before the URL is
+loaded.
+It is run as the very last step of buffer initialization, when everything else is ready.
+See also `buffer-make-hook' and `buffer-before-make-hook'.
 The handlers take the buffer as argument.")
    (prompt-buffer-make-hook
     (make-instance 'hook-prompt-buffer)

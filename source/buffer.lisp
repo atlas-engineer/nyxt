@@ -383,11 +383,11 @@ store them somewhere and `ffi-buffer-delete' them once done."))
 (define-user-class background-buffer)
 
 (defmethod initialize-instance :after ((buffer buffer)
-                                       &key (browser *browser*) extra-modes
+                                       &key (browser *browser*)
                                          parent-buffer no-history-p
                                          no-hook-p
                                        &allow-other-keys)
-  "Make buffer with EXTRA-MODES.
+  "Make buffer.
 
 When NO-HOOK-P is nil, run `*browser*'s `buffer-before-make-hook', initialize
 the modes, then run `buffer-make-hook' over the created buffer.
@@ -396,10 +396,6 @@ Return the created buffer."
   (setf (id buffer) (get-unique-identifier browser))
   (unless no-hook-p
     (hooks:run-hook (buffer-before-make-hook browser) buffer))
-  ;; Modes might require that buffer exists, so we need to initialize them
-  ;; after the view has been created.
-  (initialize-modes buffer)
-  (mapc (alex:rcurry #'make-mode buffer) extra-modes)
   ;; Background buffers are invisible to the browser.
   ;; TODO: We should redo our buffer class hierarchy so that this wouldn't be
   ;; needed.
@@ -423,11 +419,19 @@ Return the created buffer."
                                                   (not (nosave-buffer-p buffer))
                                                   (not (nosave-buffer-p parent-buffer)))
                                          (id parent-buffer)))))))
-  (unless no-hook-p
-    ;; Run hooks before `initialize-modes' to allow for last-minute modification
-    ;; of the default modes.
-    (hooks:run-hook (buffer-make-hook browser) buffer))
   buffer)
+
+(defmethod finalize-buffer (buffer &key (browser *browser*) no-hook-p extra-modes)
+  "Finalize instantiation of BUFFER.
+In particular, initialize the default modes plus EXTRA-MODES, and run the last hooks.
+This method should be called by the renderer after instantiating the web view
+of BUFFER."
+  (unless no-hook-p
+    (hooks:run-hook (buffer-make-hook browser) buffer))
+  (initialize-modes buffer)
+  (mapc (alex:rcurry #'make-mode buffer) extra-modes)
+  (unless no-hook-p
+    (hooks:run-hook (buffer-after-make-hook browser) buffer)))
 
 (defmethod print-object ((buffer buffer) stream)
   (print-unreadable-object (buffer stream :type t :identity t)
