@@ -165,8 +165,7 @@ Example: --with-path bookmarks=/path/to/bookmarks
   (ffi-kill-browser *browser*)
   (setf (slot-value *browser* 'ready-p) nil)
   (when (socket-thread *browser*)
-    (ignore-errors
-     (bt:destroy-thread (socket-thread *browser*)))
+    (destroy-thread* (socket-thread *browser*))
     ;; Warning: Don't attempt to remove socket-path if socket-thread was not
     ;; running or we risk remove an unrelated file.
     (let ((socket-path (expand-path *socket-path*)))
@@ -175,7 +174,7 @@ Example: --with-path bookmarks=/path/to/bookmarks
         (uiop:delete-file-if-exists socket-path))))
   (unless *run-from-repl-p*
     (uiop:quit 0 nil))
-  (mapc #'bt:destroy-thread (non-terminating-threads *browser*)))
+  (mapc #'destroy-thread* (non-terminating-threads *browser*)))
 
 (define-command quit-after-clearing-session (&key confirmation-p) ; TODO: Rename?
   "Close all buffers then quit Nyxt."

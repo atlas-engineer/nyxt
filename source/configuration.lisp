@@ -357,3 +357,9 @@ exists."
 
 (defun ensure-file-exists (pathname)
   (open pathname :direction :probe :if-does-not-exist :create))
+
+(export-always 'destroy-thread*)
+(defun destroy-thread* (thread)
+  "Like `bt:destroy-thread' but does not raise an error.
+Particularly useful to avoid errors on already terminated threads."
+  (ignore-errors (bt:destroy-thread thread)))

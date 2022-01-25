@@ -92,7 +92,7 @@ Example:
     :documentation "The set of domain names to block.")
    (destructor
     (lambda (mode)
-      (bt:destroy-thread (thread mode))
+      (destroy-thread* (thread mode))
       (when (web-buffer-p (buffer mode))
         (hooks:remove-hook (request-resource-hook (buffer mode))
                            'request-resource-block))))
