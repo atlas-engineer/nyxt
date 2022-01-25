@@ -23,24 +23,36 @@
 
 ;; TODO: Use `with-prompt-buffer-test'.
 ;; (with-prompt-buffer-test (set-url)
-;;   (set-prompt-input (current-prompt-buffer) "foobar"))
+;;   (update-prompt-input (current-prompt-buffer) "foobar"))
 
 (subtest "set-url"
-  (setf nyxt::*headless-p* t)
-  (nyxt:start :no-init t :no-auto-config t
-              :socket "/tmp/nyxt-test.socket"
-              :data-profile "test")
-  (sleep 2)                             ; TODO: Wait properly.
-  (let ((url "http://example.org/"))
-    (let ((thread (bt:make-thread (lambda () (nyxt:set-url)))))
-      (calispel:? (nyxt::prompt-buffer-channel (nyxt:current-window)))
-      (nyxt::set-prompt-input (nyxt:current-prompt-buffer) url)
-      (prompter:all-ready-p (nyxt:current-prompt-buffer))
-      (nyxt/prompt-buffer-mode:return-selection)
-      ;; (bt:join-thread thread) ; TODO: Make sure thread always returns.
-      )
-    (sleep 1)                           ; TODO: Wait properly.
-    (prove:is (nyxt:render-url (nyxt:url (nyxt:current-buffer)))
-              url)))
+  (let ((url-channel (nyxt::make-channel 1))
+        (url "http://example.org/"))
+    (setf nyxt::*headless-p* t)
+    (nhooks:add-hook
+     nyxt:*after-startup-hook*
+     (make-instance
+      'nhooks:handler
+      :fn (lambda ()
+            (let ((thread (bt:make-thread (lambda () (nyxt:set-url)))))
+              (declare (ignorable thread))
+              (calispel:? (nyxt::prompt-buffer-channel (nyxt:current-window)))
+              (nyxt::update-prompt-input (nyxt:current-prompt-buffer) url)
+              (prompter:all-ready-p (nyxt:current-prompt-buffer))
+              (nyxt/prompt-buffer-mode:return-selection)
+              ;; (bt:join-thread thread) ; TODO: Make sure thread always returns.
+              )
+            (nhooks:add-hook
+             (buffer-loaded-hook (current-buffer))
+             (make-instance
+              'nhooks:handler
+              :fn (lambda (buffer)
+                    (calispel:! url-channel (nyxt:render-url (nyxt:url buffer))))
+              :name 'check-buffer-url)))
+      :name 'browser-started))
+    (nyxt:start :no-init t :no-auto-config t
+                :socket "/tmp/nyxt-test.socket"
+                :data-profile "test")
+    (prove:is (calispel:? url-channel 20) url)))
 
 (finalize)
