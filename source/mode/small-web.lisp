@@ -239,7 +239,7 @@ Second return value should be the MIME-type of the content."))
 
 ;; TODO: :display-isolated-p? Gopher's behavior implies inability to embed it
 ;; into pages of the bigger Web, which is exactly what display-isolated means.
-(define-scheme "gopher"
+(define-internal-scheme "gopher"
     (lambda (url buffer)
       (let* ((line (cl-gopher:parse-gopher-uri url)))
         ;; FIXME: This better become a default auto-mode rule.
@@ -298,7 +298,7 @@ Second return value should be the MIME-type of the content."))
     (:br)))
 
 ;; TODO: :secure-p t? Gemini is encrypted, so it can be considered secure.
-(define-scheme "gemini"
+(define-internal-scheme "gemini"
     (lambda (url buffer)
       (flet ((make-gemini-error-page (title text)
                (values (spinneret:with-html-string

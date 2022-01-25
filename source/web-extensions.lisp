@@ -395,7 +395,7 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
                           (:raw (setf (default-icon (browser-action extension))
                                       (encode-browser-action-icon (quote ,json) ,directory))))))))))
 
-(define-scheme "web-extension"
+(define-internal-scheme "web-extension"
     (lambda (url buffer)
       (let ((data "<h1>Resource not found</h1>")
             (type "text/html;charset=utf8"))
