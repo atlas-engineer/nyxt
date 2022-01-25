@@ -39,14 +39,14 @@ similar programming language.")
          ", and the parent folders if necessary. You can also press the button
 below to create said file, if it's not created yet.")
      (let ((init-file-path (expand-path *init-file-path*)))
-       (ensure-directories-exist init-file-path)
        (:p (if (uiop:file-exists-p init-file-path)
                (:a :class "button"
-                   :href (ps:ps (nyxt/ps:lisp-eval  `(echo "Init file exists")))
+                   :href (ps:ps (nyxt/ps:lisp-eval `(echo "Init file exists")))
                    "Init file exists")
                (:a :class "button"
                    :href (ps:ps (nyxt/ps:lisp-eval
-                                 `(progn (ensure-file-exists ,init-file-path)
+                                 `(progn (ensure-directories-exist ,init-file-path)
+                                         (ensure-file-exists ,init-file-path)
                                          (echo "Init file created at ~a."
                                                ,init-file-path))))
                    "Create init file"))))
