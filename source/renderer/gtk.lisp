@@ -729,7 +729,7 @@ See `gtk-browser's `modifier-translator' slot."
              ((empty-document-p scheme-object)
               (webkit:webkit-security-manager-register-uri-scheme-as-empty-document
                manager scheme)))))
-       nyxt::*internal-schemes*)
+       nyxt::*schemes*)
       (when (and buffer
                  (web-buffer-p buffer)
                  (expand-path (cookies-path buffer)))

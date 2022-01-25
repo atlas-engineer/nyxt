@@ -99,18 +99,18 @@ Requires encryption or other means of security.")
   (:documentation "Representation of Nyxt-specific internal schemes."))
 (define-user-class scheme)
 
-(defvar *internal-schemes* (sera:dict)
+(defvar *schemes* (sera:dict)
   "A table of internal schemes registered in Nyxt.
 Keys are scheme strings, values are `scheme' objects.")
 
-(export-always 'define-internal-scheme)
-(defun define-internal-scheme (scheme-name callback
-                               &rest keys
-                               &key local-p
-                                 no-access-p
-                                 secure-p
-                                 cors-enabled-p
-                               &allow-other-keys)
+(export-always 'define-scheme)
+(defun define-scheme (scheme-name callback
+                      &rest keys
+                      &key local-p
+                        no-access-p
+                        secure-p
+                        cors-enabled-p
+                      &allow-other-keys)
   "Define a handler (running CALBACK) for SCHEME-NAME scheme.
 
 CALLBACK is called with two arguments:
@@ -119,7 +119,7 @@ CALLBACK is called with two arguments:
 
 For keyword arguments' meaning, see `scheme' slot documentation."
   (declare (ignorable local-p no-access-p secure-p cors-enabled-p))
-  (setf (gethash scheme-name *internal-schemes*)
+  (setf (gethash scheme-name *schemes*)
         (apply #'make-instance 'user-scheme
                :name scheme-name
                :callback callback
@@ -143,7 +143,7 @@ The domain name existence is verified only if CHECK-DNS-P is T. Domain
 name validation may take significant time since it looks up the DNS."
   ;; List of URI schemes: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
   ;; Last updated 2020-08-26.
-  (let* ((nyxt-schemes (cons "javascript" (alex:hash-table-keys *internal-schemes*)))
+  (let* ((nyxt-schemes (cons "javascript" (alex:hash-table-keys *schemes*)))
          (iana-schemes
            '("aaa" "aaas" "about" "acap" "acct" "cap" "cid" "coap" "coap+tcp" "coap+ws"
              "coaps" "coaps+tcp" "coaps+ws" "crid" "data" "dav" "dict" "dns" "example" "file"
@@ -320,7 +320,7 @@ guarantee of the same result."
                               params))
         (error "There's no nyxt:~a page defined" symbol))))
 
-(define-internal-scheme "nyxt"
+(define-scheme "nyxt"
     (lambda (url buffer)
       (declare (ignore buffer))
       (with-protect ("Error while processing the \"nyxt:\" URL: ~a" :condition)
@@ -357,7 +357,7 @@ guarantee of the same result."
             (alex:rcurry 'typep '(and number (not complex))))
            object))
 
-(define-internal-scheme "lisp"
+(define-scheme "lisp"
     (lambda (url buffer)
       (let ((url (quri:uri url)))
         (if (or (status-buffer-p buffer)
