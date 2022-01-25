@@ -79,6 +79,10 @@ Takes two arguments: the URL with scheme and the buffer it was requested in.
 Optionally returns two values:
 - The data for page contents (either as string or as a unsigned byte array).
 - The MIME type for the contents.")
+   (error-callback
+    nil
+    :type (or null (function (condition)))
+    :documentation "Callback to use when a condition is signalled.")
    (local-p
     nil
     :documentation "Local schemes are not accessible to the pages of other schemes.")
@@ -380,7 +384,8 @@ guarantee of the same result."
                           (cl-json:encode-json-to-string result)))
                       "application/json"))
             (values "undefined" "application/json;charset=utf8"))))
-  :cors-enabled-p t)
+  :cors-enabled-p t
+  :error-callback (lambda (c) (log:debug "Error when evaluating lisp URL: ~a" c)))
 
 (-> path= (quri:uri quri:uri) boolean)
 (defun path= (url1 url2)

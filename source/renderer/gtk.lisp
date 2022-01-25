@@ -705,8 +705,9 @@ See `gtk-browser's `modifier-translator' slot."
             (funcall* (callback scheme-object)
                       (webkit:webkit-uri-scheme-request-get-uri request)
                       buffer))
-          (lambda (condition)
-            (echo-warning "Error while routing ~s resource: ~a" scheme condition)))
+          (or (error-callback scheme-object)
+              (lambda (condition)
+                (echo-warning "Error while routing ~s resource: ~a" scheme condition))) )
          ;; We err on the side of caution, assigning the most restrictive policy
          ;; out of those provided. Should it be the other way around?
          (let ((manager (webkit:webkit-web-context-get-security-manager context)))
