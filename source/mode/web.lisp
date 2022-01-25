@@ -285,11 +285,19 @@ define which elements are picked up by element hinting.")
                          &key (buffer (current-buffer))
                               (message "History entry is already the current URL."))
   "Go to HISTORY-NODE's URL."
-  (unless (quri:uri-p url-or-node)
-    (setf url-or-node (url (htree:data url-or-node))))
-  (if (quri:uri= url-or-node (url buffer))
-      (echo message)
-      (buffer-load url-or-node)))
+  (let ((url (if (typep url-or-node 'htree:node)
+                 (url (htree:data url-or-node))
+                 url-or-node)))
+    (cond
+      ((not (quri:uri-p url))
+       (funcall
+        (if nyxt::*run-from-repl-p*
+            'error
+            'echo-warning )
+        "Not a URL nor a history node: ~a" url-or-node))
+      ((quri:uri= url (url buffer))
+       (echo message))
+      (t (buffer-load url)))))
 
 (defmacro with-history-unsafe ((history-sym &optional buffer) &body body)
   "Run body if BUFFER has history entries, that is, if it owns some nodes."
