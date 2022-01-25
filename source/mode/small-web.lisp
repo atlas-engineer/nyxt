@@ -238,7 +238,7 @@ Second return value should be the MIME-type of the content."))
   (render-binary-content line "image/png"))
 
 ;; TODO: :display-isolated-p?
-(define-internal-scheme "gopher"
+(define-scheme "gopher"
     (lambda (url buffer)
       (let* ((line (cl-gopher:parse-gopher-uri url)))
         ;; FIXME: This better become a default auto-mode rule.
@@ -297,7 +297,7 @@ Second return value should be the MIME-type of the content."))
     (:br)))
 
 ;; TODO: :secure-p t?
-(define-internal-scheme "gemini"
+(define-scheme "gemini"
     (lambda (url buffer)
       (flet ((make-gemini-error-page (title text)
                (values (spinneret:with-html-string
