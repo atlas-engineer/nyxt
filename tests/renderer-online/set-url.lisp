@@ -34,25 +34,37 @@
      (make-instance
       'nhooks:handler
       :fn (lambda ()
-            (let ((thread (bt:make-thread (lambda () (nyxt:set-url)))))
-              (declare (ignorable thread))
-              (calispel:? (nyxt::prompt-buffer-channel (nyxt:current-window)))
-              (nyxt::update-prompt-input (nyxt:current-prompt-buffer) url)
-              (prompter:all-ready-p (nyxt:current-prompt-buffer))
-              (nyxt/prompt-buffer-mode:return-selection)
-              ;; (bt:join-thread thread) ; TODO: Make sure thread always returns.
-              )
-            (nhooks:add-hook
-             (buffer-loaded-hook (current-buffer))
-             (make-instance
-              'nhooks:handler
-              :fn (lambda (buffer)
-                    (calispel:! url-channel (nyxt:render-url (nyxt:url buffer))))
-              :name 'check-buffer-url)))
+            (let ((buffer-loaded-channel (nyxt::make-channel 1)))
+              (nhooks:add-hook
+               (buffer-loaded-hook (current-buffer))
+               (make-instance
+                'nhooks:handler
+                :fn (lambda (buffer)
+                      (calispel:! buffer-loaded-channel t)
+                      (nhooks:remove-hook (buffer-loaded-hook buffer) 'first-buffer-loaded))
+                :name 'first-buffer-loaded))
+              (let ((thread (bt:make-thread (lambda ()
+                                              (calispel:? buffer-loaded-channel 10)
+                                              (nyxt:set-url)))))
+                (declare (ignorable thread))
+                (calispel:? (nyxt::prompt-buffer-channel (nyxt:current-window)))
+                (nyxt::update-prompt-input (nyxt:current-prompt-buffer) url)
+                (prompter:all-ready-p (nyxt:current-prompt-buffer))
+                (nyxt/prompt-buffer-mode:return-selection)
+                (nhooks:add-hook
+                 (buffer-loaded-hook (current-buffer))
+                 (make-instance
+                  'nhooks:handler
+                  :fn (lambda (buffer)
+                        (calispel:! url-channel (nyxt:render-url (nyxt:url buffer)))
+                        (nhooks:remove-hook (buffer-loaded-hook buffer) 'example-org-loaded))
+                  :name 'example-org-loaded))
+                ;; (bt:join-thread thread) ; TODO: Make sure thread always returns.
+                )))
       :name 'browser-started))
     (nyxt:start :no-init t :no-auto-config t
                 :socket "/tmp/nyxt-test.socket"
                 :data-profile "test")
-    (prove:is (calispel:? url-channel 20) url)))
+    (prove:is (calispel:? url-channel 10) url)))
 
 (finalize)
