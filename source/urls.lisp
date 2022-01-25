@@ -107,8 +107,8 @@ Requires encryption or other means of security.")
   "A table of internal schemes registered in Nyxt.
 Keys are scheme strings, values are `scheme' objects.")
 
-(export-always 'define-scheme)
-(defun define-scheme (scheme-name callback
+(export-always 'define-internal-scheme)
+(defun define-internal-scheme (scheme-name callback
                       &rest keys
                       &key local-p
                         no-access-p
@@ -324,7 +324,7 @@ guarantee of the same result."
                               params))
         (error "There's no nyxt:~a page defined" symbol))))
 
-(define-scheme "nyxt"
+(define-internal-scheme "nyxt"
     (lambda (url buffer)
       (declare (ignore buffer))
       (with-protect ("Error while processing the \"nyxt:\" URL: ~a" :condition)
@@ -361,7 +361,7 @@ guarantee of the same result."
             (alex:rcurry 'typep '(and number (not complex))))
            object))
 
-(define-scheme "lisp"
+(define-internal-scheme "lisp"
     (lambda (url buffer)
       (let ((url (quri:uri url)))
         (if (or (status-buffer-p buffer)
