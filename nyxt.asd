@@ -358,10 +358,10 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                bordeaux-threads)
   :pathname "source/"
   :components ((:file "renderer/gi-gtk"))
-  :in-order-to ((test-op (test-op "nyxt/gobject/gtk/tests"))))
+  :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests"))))
 
-(defsystem "nyxt/gobject/gtk/tests"
-  :depends-on (nyxt/gobject/gtk prove)
+(defsystem "nyxt/gi-gtk/tests"
+  :depends-on (nyxt/gi-gtk prove)
   :components ((:file "tests/renderer-package"))
   :perform (test-op (op c)
                     (nyxt-run-test c "tests/renderer-offline/")
