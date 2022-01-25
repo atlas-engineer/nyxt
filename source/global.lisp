@@ -27,7 +27,7 @@ It can be initialized with
 It's possible to run multiple interfaces of Nyxt at the same time.  You can
 let-bind *browser* to temporarily switch interface.")
 
-(declaim (type hooks:hook-void *after-init-hook*))
+(declaim (type hooks:hook-void *after-init-hook* *after-startup-hook*))
 (export-always '*after-init-hook*)
 (defvar *after-init-hook* (make-instance 'hooks:hook-void)
   "The entry-point object to configure everything in Nyxt.
@@ -39,6 +39,11 @@ This hook is run after the `*browser*' is instantiated and before the
 A handler can be added with:
 
   (hooks:add-hook *after-init-hook* 'my-foo-function)")
+
+(export-always '*after-startup-hook*)
+(defvar *after-startup-hook* (make-instance 'hooks:hook-void)
+  "Hook run when the browser is started and ready for interaction.
+The handlers take no argument.")
 
 (export-always '*swank-port*)
 (defvar *swank-port* 4006
