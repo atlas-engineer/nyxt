@@ -147,11 +147,16 @@ If nil, renderer-provided dialogs are used.")
     :documentation "Ask whether to restore the session.
 The possible values are `:always-ask', `:always-restore' and `:never-restore'.")
    ;; Hooks follow:
+   (after-startup-hook
+    (make-instance 'hooks:hook-void)
+    :type hooks:hook-void
+    :documentation "Hook run when the browser is started and ready for interaction.
+The handlers take no argument.")
    (before-exit-hook
     (make-instance 'hooks:hook-void)
     :type hooks:hook-void
-    :documentation "Hook run before both `*browser*' and the
-renderer get terminated.  The handlers take no argument.")
+    :documentation "Hook run before both `*browser*' and the renderer get terminated.
+The handlers take no argument.")
    (window-make-hook
     (make-instance 'hook-window)
     :type hook-window
@@ -324,6 +329,7 @@ prevents otherwise."))
                (startup browser urls)))))))
   ;; Set `init-time' at the end of finalize to take the complete startup time
   ;; into account.
+  (hooks:run-hook (after-startup-hook *browser*))
   (setf (slot-value *browser* 'init-time)
         (local-time:timestamp-difference (local-time:now) startup-timestamp))
   (setf (slot-value *browser* 'ready-p) t))
