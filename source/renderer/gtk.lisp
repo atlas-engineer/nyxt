@@ -1701,12 +1701,10 @@ requested a reload."
     download))
 
 (define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) &optional value)
-  (if value
-      (setf (webkit:webkit-settings-user-agent
-             (webkit:webkit-web-view-get-settings (gtk-object buffer)))
-            value)
-      (webkit:webkit-settings-user-agent
-       (webkit:webkit-web-view-get-settings (gtk-object buffer)))))
+  (alex:when-let ((settings (webkit:webkit-web-view-get-settings (gtk-object buffer))))
+    (if value
+        (setf (webkit:webkit-settings-user-agent settings) value)
+        (webkit:webkit-settings-user-agent settings))))
 
 (define-ffi-method ffi-buffer-webgl-enabled-p ((buffer gtk-buffer))
   (webkit:webkit-settings-enable-webgl
