@@ -495,9 +495,10 @@ Otherwise go forward to the only child."
                               :collect-function #'(lambda (a b) (str:concat a (when b
                                                                                 (spinneret:with-html-string
                                                                                   (:ul (:raw (str:join "" b)))))))))))))
-      (spinneret:with-html-string
-        (:style (style mode))
-        (:div (:raw tree))))))
+      (when tree
+        (spinneret:with-html-string
+          (:style (style mode))
+          (:div (:raw tree)))))))
 
 ;; TODO: Factor this with `buffer-history-tree'.
 (define-internal-page-command-global history-tree (&key (current-buffer-id (id (current-buffer))))
@@ -524,11 +525,12 @@ Otherwise go forward to the only child."
                               :collect-function #'(lambda (a b) (str:concat a (when b
                                                                                 (spinneret:with-html-string
                                                                                   (:ul (:raw (str:join "" b)))))))))))))
-      (spinneret:with-html-string
-        (:body (:h1 "History")
-               (:style (style output-buffer))
-               (:style (style mode))
-               (:div (:raw tree)))))))
+      (when tree
+        (spinneret:with-html-string
+          (:body (:h1 "History")
+                 (:style (style output-buffer))
+                 (:style (style mode))
+                 (:div (:raw tree))))))))
 
 (define-internal-page-command-global list-history (&key (limit 100))
   (buffer "*History list*" 'nyxt/list-history-mode:list-history-mode)
