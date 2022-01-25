@@ -309,7 +309,6 @@ prevents otherwise."))
                (startup browser urls)))))))
   ;; Set `init-time' at the end of finalize to take the complete startup time
   ;; into account.
-  (hooks:run-hook *after-startup-hook*)
   (setf (slot-value *browser* 'init-time)
         (local-time:timestamp-difference (local-time:now) startup-timestamp))
   (setf (slot-value *browser* 'ready-p) t))
@@ -346,6 +345,7 @@ restored."
     ;; reset the session with the new URLs.
     (restore-session)
     (load-start-urls urls)
+    (hooks:run-hook *after-startup-hook*)
     (funcall* (startup-error-reporter-function *browser*))))
 
 ;; Catch a common case for a better error message.
