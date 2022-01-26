@@ -147,7 +147,7 @@ It is run before the destructor.")
                   :type keymap:scheme)))
 
 (defmethod prompter:object-attributes ((mode root-mode))
-  `(("Name" ,(mode-name mode))))
+  `(("Name" ,(princ-to-string (mode-name mode)))))
 
 (export-always 'glyph)
 (defmethod glyph ((mode root-mode))
