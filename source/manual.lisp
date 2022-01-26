@@ -427,4 +427,4 @@ nyxt
     (:p "If you are experiencing problems with blank web-views on some sites you
     can try to disable compositing. To disable compositing from your
     initialization file, you can do the following: ")
-    (:code "(setf (uiop:getenv \"WEBKIT_DISABLE_COMPOSITING_MODE\") \"1\")")))
+    (:pre (:code "(setf (uiop:getenv \"WEBKIT_DISABLE_COMPOSITING_MODE\") \"1\")"))))
