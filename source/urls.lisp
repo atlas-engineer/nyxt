@@ -309,6 +309,7 @@ Example:
                          params)))
           (error "There's no nyxt:~a page defined" (param-name function-name))))))
 
+(export-always 'internal-url-p)
 (defun internal-url-p (url)
   (string= "nyxt" (quri:uri-scheme (url url))))
 
