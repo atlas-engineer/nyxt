@@ -13,7 +13,13 @@
   (:import-from #:serapeum
                 #:export-always
                 #:->)
-  (:export #:use-nyxt-package-nicknames))
+  (:export #:use-nyxt-package-nicknames)
+  (:documentation "The core package of Nyxt, the infinitely extensible browser.
+
+This package is should not be modified by the users.
+
+It's recommended to use the `nyxt-user' package instead to create new functions,
+modes, commands, etc."))
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria :nyxt)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum :nyxt)
