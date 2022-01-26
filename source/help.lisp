@@ -51,26 +51,36 @@
   ((prompter:name "Packages")
    (prompter:constructor (mapcar (alex:compose #'intern #'package-name) (list-all-packages)))))
 
-(define-command describe-any ()
-  "Inspect anything and show it in a help buffer."
-  (prompt
-   :prompt "Describe:"
-   :sources (list (make-instance 'variable-source
-                                 :actions (list (make-command describe-variable* (variable)
-                                                  (describe-variable :variable variable))))
-                  (make-instance 'function-source
-                                 :actions (list (make-command describe-function* (function)
-                                                  (describe-function :function function))))
-                  (make-instance 'user-command-source
-                                 :actions (list (make-command describe-command* (command)
-                                                  (describe-command :command (name command)))))
-                  (make-instance 'class-source
-                                 :actions (list (make-command describe-class* (class)
-                                                  (describe-class :class class))))
-                  (make-instance 'slot-source
-                                 :actions (list (make-command describe-slot** (slot)
-                                                  (describe-slot :class (class-sym slot)
-                                                                 :name (name slot))))))))
+(define-command describe-any (&optional input)
+  "Inspect anything and show it in a help buffer.
+If INPUT, narrow down to exact matches of it."
+  (let ((preprocessor (if input
+                          'prompter:filter-exact-match
+                          'prompter:delete-inexact-matches)))
+    (prompt
+     :prompt "Describe:"
+     :input input
+     :sources (list (make-instance 'variable-source
+                                   :actions (list (make-command describe-variable* (variable)
+                                                    (describe-variable :variable variable)))
+                                   :filter-preprocessor preprocessor)
+                    (make-instance 'function-source
+                                   :actions (list (make-command describe-function* (function)
+                                                    (describe-function :function function)))
+                                   :filter-preprocessor preprocessor)
+                    (make-instance 'user-command-source
+                                   :actions (list (make-command describe-command* (command)
+                                                    (describe-command :command (name command))))
+                                   :filter-preprocessor preprocessor)
+                    (make-instance 'class-source
+                                   :actions (list (make-command describe-class* (class)
+                                                    (describe-class :class class)))
+                                   :filter-preprocessor preprocessor)
+                    (make-instance 'slot-source
+                                   :actions (list (make-command describe-slot** (slot)
+                                                    (describe-slot :class (class-sym slot)
+                                                                   :name (name slot))))
+                                   :filter-preprocessor preprocessor)))))
 
 (defun value->html (value &key (help-mode (current-mode 'help)))
   "Return the HTML representation of VALUE."
