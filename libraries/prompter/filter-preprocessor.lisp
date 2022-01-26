@@ -52,3 +52,13 @@ Suitable as a `source' `filter-preprocessor'."
                      (notevery (lambda (sub) (search sub (ensure-match-data-string suggestion source)))
                                words))
                    suggestions))))
+
+(export-always 'filter-exact-match)
+(defun filter-exact-match (suggestions source input)
+  "Return only SUGGESTIONS that are identical to INPUT"
+  (declare (ignore source))
+  (if (str:empty? input)
+      suggestions
+      (delete-if (lambda (suggestion)
+                   (not (string-equal input (attributes-default suggestion))))
+                 suggestions)))
