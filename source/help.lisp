@@ -28,7 +28,11 @@
 
 (defmethod prompter:object-attributes ((package package))
   `(("Name" ,(package-name package))
-    ("Nicknames" ,(princ-to-string (uiop:package-local-nicknames package)))
+    ("Nicknames" ,(princ-to-string
+                   (append (package-nicknames package)
+                           ;; Old ASDF/UIOP don't know about package-local-nicknames.
+                           (ignore-errors (uiop:symbol-call
+                                           :uiop :package-local-nicknames package)))))
     ("Documentation" ,(or (first-line (documentation package t)) ""))))
 
 (define-class class-source (prompter:source)
