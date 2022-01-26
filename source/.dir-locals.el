@@ -22,6 +22,8 @@
                 "command"
                 "ffi-method"
                 "function"
+                "internal-page-command"
+                "internal-page-command-global"
                 "mode"
                 "parenscript"
                 "user-class"))))))
