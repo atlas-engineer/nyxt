@@ -397,7 +397,17 @@ Auto-mode is re-enabled once the page is reloaded."
     (values list &optional))
 (sera:export-always 'add-modes-to-auto-mode-rules)
 (defun add-modes-to-auto-mode-rules (test &key (append-p nil) exclude include (exact-p nil))
-  (with-data-access (rules (auto-mode-rules-path (current-buffer)))
+  (with-data-access
+      (rules (auto-mode-rules-path (current-buffer))
+       :default (list (make-instance 'auto-mode-rule
+                                     :test '(match-scheme "nyxt")
+                                     :excluded '(no-script-mode))
+                      (make-instance 'auto-mode-rule
+                                     :test '(match-scheme "gopher")
+                                     :included '(small-web-mode))
+                      (make-instance 'auto-mode-rule
+                                     :test '(match-scheme "gemini")
+                                     :included '(small-web-mode))))
     (let* ((rule (or (find test rules
                            :key #'test :test #'equal)
                      (make-instance 'auto-mode-rule :test test)))
