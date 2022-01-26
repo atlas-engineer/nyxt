@@ -16,9 +16,16 @@
             ((and (find-class symbol nil)
                   (mopu:subclassp (find-class symbol) (find-class 'standard-object)))
              (first (sera:lines (documentation symbol 'type))))
+            ((find-package symbol)
+             (first (sera:lines (documentation (find-package symbol) t))))
             (t
              (first (sera:lines (documentation symbol 'variable)))))
           ""))))
+
+(defmethod prompter:object-attributes ((package package))
+  `(("Name" ,(package-name package))
+    ("Nicknames" ,(princ-to-string (uiop:package-local-nicknames package)))
+    ("Documentation" ,(or (first (sera:lines (documentation package t))) ""))))
 
 (define-class class-source (prompter:source)
   ((prompter:name "Classes")
@@ -31,6 +38,10 @@
 (define-class variable-source (prompter:source)
   ((prompter:name "Variables")
    (prompter:constructor (package-variables))))
+
+(define-class package-source (prompter:source)
+  ((prompter:name "Packages")
+   (prompter:constructor (mapcar (alex:compose #'intern #'package-name) (list-all-packages)))))
 
 (define-command describe-any ()
   "Inspect anything and show it in a help buffer."
@@ -104,6 +115,8 @@
                               (nyxt-url 'describe-class :class symbol))
                              ((member type '(defun defmethod defgeneric))
                               (nyxt-url 'describe-function :function symbol))
+                             ((eq type 'defpackage)
+                              (nyxt-url 'describe-package :package symbol))
                              (t nil)))))
              (spinneret:with-html-string
                (if url
@@ -116,6 +129,38 @@
         (spinneret:with-html-string
           (:code (:raw (ppcre:regex-replace-all "`[^'\\s]+'" string #'resolve-regex))))
         "")))
+
+(define-internal-page-command-global describe-package
+    (&key (package
+           (prompt1
+             :prompt "Describe package:"
+             :sources (make-instance 'package-source))))
+    (buffer (str:concat "*Help-" (package-name package) "*")
+            'nyxt/help-mode:help-mode)
+  "Inspect a package and show it in a help buffer."
+  (let ((total-symbols (package-defined-symbols nil (list package)))
+        (external-symbols (package-defined-symbols (list package))))
+    (flet ((package-markup (package)
+             (spinneret:with-html
+               (:a :href (nyxt-url 'describe-package :package (package-name package))
+                   (package-name package)))))
+      (spinneret:with-html-string
+        (:style (style buffer))
+        (:h1 (package-name package))
+        (:raw (resolve-backtick-quote-links (documentation (find-package package) t) package))
+        (:h2 "Symbols:")
+        (:ul
+         (:li "External: " (length external-symbols))
+         (:li "Internal: " (- (length total-symbols) (length external-symbols)))
+         (:li "Total: " (length total-symbols)))
+        (:h2 "Use list:")
+        (:ul
+         (dolist (use (package-use-list package))
+           (:li (package-markup use))))
+        (:h2 "Used by list:")
+        (:ul
+         (dolist (use (package-used-by-list package))
+           (:li (package-markup use))))))))
 
 (define-internal-page-command-global describe-variable
     (&key (variable
