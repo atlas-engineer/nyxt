@@ -102,26 +102,24 @@
   (flet ((resolve-regex (target-string start end match-start match-end reg-starts reg-ends)
            (declare (ignore start end reg-starts reg-ends))
            ;; Excluding backtick & quote.
-           (let* ((name (subseq target-string (1+ match-start) (1- match-end)))
-                  (symbol (let ((*package* (symbol-package parent-symbol)))
-                            (read-from-string name)))
-                  (definition (swank-backend:find-definitions symbol))
-                  (type (caaar definition))
-                  (url (if type
-                           (cond
-                             ((eq type 'defvar)
-                              (nyxt-url 'describe-variable :variable symbol))
-                             ((eq type 'defclass)
-                              (nyxt-url 'describe-class :class symbol))
-                             ((member type '(defun defmethod defgeneric))
-                              (nyxt-url 'describe-function :function symbol))
-                             ((eq type 'defpackage)
-                              (nyxt-url 'describe-package :package symbol))
-                             (t nil)))))
-             (spinneret:with-html-string
-               (if url
-                   (:a :href url (:code name))
-                   (:code name))))))
+           (let ((name (subseq target-string (1+ match-start) (1- match-end))))
+             (or (sera:and-let* ((symbol (let ((*package* (symbol-package parent-symbol)))
+                                           (ignore-errors (read-from-string name nil))))
+                                 (definition (swank-backend:find-definitions symbol))
+                                 (type (caaar definition))
+                                 (url (cond
+                                        ((eq type 'defvar)
+                                         (nyxt-url 'describe-variable :variable symbol))
+                                        ((eq type 'defclass)
+                                         (nyxt-url 'describe-class :class symbol))
+                                        ((member type '(defun defmethod defgeneric))
+                                         (nyxt-url 'describe-function :function symbol))
+                                        ((eq type 'defpackage)
+                                         (nyxt-url 'describe-package :package symbol))
+                                        (t nil))))
+                   (spinneret:with-html-string
+                     (:a :href url (:code name))))
+                 (spinneret:with-html-string (:code name))))))
     (if string
         ;; FIXME: Spaces are disallowed, but |one can use anything in a symbol|.
         ;; Maybe allow it?  The problem then is that it increases the chances of
