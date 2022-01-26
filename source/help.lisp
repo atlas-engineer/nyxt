@@ -61,25 +61,25 @@ If INPUT, narrow down to exact matches of it."
      :prompt "Describe:"
      :input input
      :sources (list (make-instance 'variable-source
-                                   :actions (list (make-command describe-variable* (variable)
-                                                    (describe-variable :variable variable)))
+                                   :actions (list (make-command describe-variable* (variables)
+                                                    (describe-variable :variable (first variables))))
                                    :filter-preprocessor preprocessor)
                     (make-instance 'function-source
-                                   :actions (list (make-command describe-function* (function)
-                                                    (describe-function :function function)))
+                                   :actions (list (make-command describe-function* (functions)
+                                                    (describe-function :function (first functions))))
                                    :filter-preprocessor preprocessor)
                     (make-instance 'user-command-source
-                                   :actions (list (make-command describe-command* (command)
-                                                    (describe-command :command (name command))))
+                                   :actions (list (make-command describe-command* (commands)
+                                                    (describe-command :command (name (first commands)))))
                                    :filter-preprocessor preprocessor)
                     (make-instance 'class-source
-                                   :actions (list (make-command describe-class* (class)
-                                                    (describe-class :class class)))
+                                   :actions (list (make-command describe-class* (classes)
+                                                    (describe-class :class (first classes))))
                                    :filter-preprocessor preprocessor)
                     (make-instance 'slot-source
-                                   :actions (list (make-command describe-slot** (slot)
-                                                    (describe-slot :class (class-sym slot)
-                                                                   :name (name slot))))
+                                   :actions (list (make-command describe-slot** (slots)
+                                                    (describe-slot :class (class-sym (first slots))
+                                                                   :name (name (first slots)))))
                                    :filter-preprocessor preprocessor)))))
 
 (defun value->html (value &key (help-mode (current-mode 'help)))
