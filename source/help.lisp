@@ -111,9 +111,10 @@
                    (:code name))))))
     (if string
         ;; FIXME: Spaces are disallowed, but |one can use anything in a symbol|.
-        ;; Maybe allow it?
+        ;; Maybe allow it?  The problem then is that it increases the chances of
+        ;; false-positives when the "`" character is used for other reasons.
         (spinneret:with-html-string
-          (:code (:raw (ppcre:regex-replace-all "`[^' ]+'" string #'resolve-regex))))
+          (:code (:raw (ppcre:regex-replace-all "`[^'\\s]+'" string #'resolve-regex))))
         "")))
 
 (define-internal-page-command-global describe-variable
