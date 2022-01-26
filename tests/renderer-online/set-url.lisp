@@ -48,7 +48,7 @@
                                               (nyxt:set-url)))))
                 (declare (ignorable thread))
                 (calispel:? (nyxt::prompt-buffer-channel (nyxt:current-window)))
-                (nyxt::update-prompt-input (nyxt:current-prompt-buffer) url)
+                (nyxt::set-prompt-buffer-input url)
                 (prompter:all-ready-p (nyxt:current-prompt-buffer))
                 (nyxt/prompt-buffer-mode:return-selection)
                 (nhooks:add-hook
