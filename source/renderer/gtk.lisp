@@ -858,6 +858,7 @@ See `gtk-browser's `modifier-translator' slot."
                        buffer)
             (webkit:webkit-policy-decision-ignore response-policy-decision))))))
 
+;; See https://webkitgtk.org/reference/webkit2gtk/stable/WebKitWebView.html#WebKitLoadEvent
 (defmethod on-signal-load-changed ((buffer gtk-buffer) load-event)
   ;; `url' can be nil if buffer didn't have any URL associated
   ;; to the web view, e.g. the start page, or if the load failed.
@@ -871,6 +872,7 @@ See `gtk-browser's `modifier-translator' slot."
            (nyxt/web-extensions::tabs-on-updated buffer '(("status" . "loading")))
            (nyxt/web-extensions::tabs-on-updated buffer `(("url" . ,(render-url url))))
            (print-status nil (get-containing-window-for-buffer buffer *browser*))
+           (on-signal-load-started buffer url)
            (echo "Loading ~s." (render-url url)))
           ((eq load-event :webkit-load-redirected)
            (nyxt/web-extensions::tabs-on-updated buffer '(("status" . "loading")))

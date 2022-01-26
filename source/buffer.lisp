@@ -819,15 +819,21 @@ BUFFER's modes."
     (on-signal-notify-title mode (url buffer)))
   (title buffer))
 
-(export-always 'on-signal-load-committed)
-(defmethod on-signal-load-committed ((buffer buffer) url)
+;; See https://webkitgtk.org/reference/webkit2gtk/stable/WebKitWebView.html#WebKitLoadEvent
+(export-always 'on-signal-load-started)
+(defmethod on-signal-load-started ((buffer buffer) url)
   (dolist (mode (modes buffer))
-    (on-signal-load-committed mode url)))
+    (on-signal-load-started mode url)))
 
 (export-always 'on-signal-load-redirected)
 (defmethod on-signal-load-redirected ((buffer buffer) url)
   (dolist (mode (modes buffer))
     (on-signal-load-redirected mode url)))
+
+(export-always 'on-signal-load-committed)
+(defmethod on-signal-load-committed ((buffer buffer) url)
+  (dolist (mode (modes buffer))
+    (on-signal-load-committed mode url)))
 
 (export-always 'on-signal-load-finished)
 (defmethod on-signal-load-finished ((buffer buffer) url)
