@@ -104,20 +104,12 @@ If INPUT, narrow down to exact matches of it."
            (let* ((name (subseq target-string (1+ match-start) (1- match-end)))
                   (symbol (let ((*package* (symbol-package parent-symbol)))
                             (read-from-string name)))
-                  (definition (swank-backend:find-definitions symbol))
-                  (type (caaar definition))
-                  (url (if type
-                           (cond
-                             ((eq type 'defvar)
-                              (nyxt-url 'describe-variable :variable symbol))
-                             ((eq type 'defclass)
-                              (nyxt-url 'describe-class :class symbol))
-                             ((member type '(defun defmethod defgeneric))
-                              (nyxt-url 'describe-function :function symbol))
-                             (t nil)))))
+                  (url (when symbol
+                         (ps:ps (nyxt/ps:lisp-eval `(nyxt::describe-any ,(princ-to-string symbol)))))))
              (spinneret:with-html-string
                (if url
-                   (:a :href url (:code name))
+                   (:button :class "button" ; TODO: Can we make it look slimmer?  Maybe more like a link?
+                            :onclick url (:code name))
                    (:code name))))))
     (if string
         ;; FIXME: Spaces are disallowed, but |one can use anything in a symbol|.
