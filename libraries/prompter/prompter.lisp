@@ -81,6 +81,12 @@ It's called after the sources are cleaned up.
 
 Note that the function is executed *before* performing an action.")
 
+     (auto-return-p nil
+                    :type boolean
+                    :documentation
+                    "Automatically return and run default action when the
+suggestions are narrowed down to just one item.")
+
      (history (make-history)
               :type (or containers:ring-buffer-reverse null)
               :documentation
@@ -166,6 +172,9 @@ compution is not finished.")))
       (setf (slot-value prompter 'input) text)
       (update-sources prompter text)
       (select-first prompter)))
+  (when (and (auto-return-p prompter)
+             (sera:single (all-suggestions prompter)))
+    (return-selection prompter))
   text)
 
 (export-always 'destroy)
