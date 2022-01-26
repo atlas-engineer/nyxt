@@ -523,18 +523,16 @@ evaluate in order."
             until (eq object :eof)
             collect (funcall (lambda () (eval object)))))))
 
-(define-internal-page-command error-buffer (&key (title "Unknown error") (text ""))
-    (buffer title 'nyxt/help-mode:help-mode)
-  "Print some help."
-  (spinneret:with-html-string
-    (:h1 "Error occured:")
-    (:pre text)))
+(defun error-buffer (&optional (title "Unknown error") (text ""))
+  (sera:lret* ((error-buffer (make-instance 'user-web-buffer)))
+    (with-current-buffer error-buffer
+      (html-set (error-help title text)
+                error-buffer))))
 
 (defun error-in-new-window (title text)
-  (let* ((window (window-make *browser*))
-         (error-buffer (error-buffer :title title :text text)))
-    (window-set-buffer window error-buffer)
-    error-buffer))
+  (sera:lret* ((window (window-make *browser*))
+               (error-buffer (error-buffer title text)))
+    (window-set-buffer window error-buffer)))
 
 (define-command nyxt-version ()
   "Version number of this version of Nyxt.

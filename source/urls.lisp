@@ -65,6 +65,19 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
                               ,@body)
                             ,args))))))))
 
+(export-always 'error-help)
+(defun error-help (&optional (title "Unknown error") (text ""))
+  "A helper to print error messages as displayable HTML."
+  (values
+   (spinneret:with-html-string
+     (:head
+      (:title title)
+      (:style (style (current-buffer))))
+     (:body
+      (:h1 title)
+      (:pre text)))
+   "text/html;charset=utf8"))
+
 (define-class scheme ()
   ((name (error "Scheme must have a name/scheme")
          :documentation "Scheme/name of the internal scheme.
