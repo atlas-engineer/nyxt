@@ -7,25 +7,29 @@
   ((prompter:name "Functions")
    (prompter:constructor (package-functions))))
 
+(defun first-line (string)
+  "Return first non-empty line in STRING."
+  (find-if (complement #'uiop:emptyp) (sera:lines string)))
+
 (defmethod prompter:object-attributes ((symbol symbol))
   `(("Name" ,(write-to-string symbol))
     ("Documentation"
      ,(or (cond
             ((fboundp symbol)
-             (first (sera:lines (documentation symbol 'function))))
+             (first-line (documentation symbol 'function)))
             ((and (find-class symbol nil)
                   (mopu:subclassp (find-class symbol) (find-class 'standard-object)))
-             (first (sera:lines (documentation symbol 'type))))
+             (first-line (documentation symbol 'type)))
             ((find-package symbol)
-             (first (sera:lines (documentation (find-package symbol) t))))
+             (first-line (documentation (find-package symbol) t)))
             (t
-             (first (sera:lines (documentation symbol 'variable)))))
+             (first-line (documentation symbol 'variable))))
           ""))))
 
 (defmethod prompter:object-attributes ((package package))
   `(("Name" ,(package-name package))
     ("Nicknames" ,(princ-to-string (uiop:package-local-nicknames package)))
-    ("Documentation" ,(or (first (sera:lines (documentation package t))) ""))))
+    ("Documentation" ,(or (first-line (documentation package t)) ""))))
 
 (define-class class-source (prompter:source)
   ((prompter:name "Classes")
