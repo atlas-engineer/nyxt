@@ -9,7 +9,9 @@
   "Print FN in HTML followed its bindings in parentheses."
   `(let ((spinneret:*suppress-inserted-spaces* t))
      (spinneret:with-html (:span
-                           (:code (string-downcase (symbol-name ,fn)))
+                           (:a :href (nyxt-url 'describe-command :command ,fn)
+                               (:code (let ((*print-case* :downcase))
+                                        (format nil "~a" ,fn))))
                            " ("
                            (:code (apply #'binding-keys ,fn (if ,explicit-modes-p
                                                                 (list :modes ,modes)

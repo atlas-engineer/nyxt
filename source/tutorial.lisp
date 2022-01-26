@@ -8,7 +8,7 @@
    (:h2 "Core concepts")
    (:h3 "Keybindings and commands")
    (:p "Commands are invoked by pressing specific keys or from
-the " (:code "execute-command") " menu (" (:code (binding-keys 'execute-command))
+the " (command-markup 'execute-command)
 ").")
    (:p "Keybindings are represented like this: 'C-x'. In this example, 'C' is a
 shortcut for the modifier 'control', and 'x' represents the character 'x'. To
@@ -126,7 +126,7 @@ full URL including the 'http://' prefix.")
    (:ul
     (list-command-information '(copy-url copy-title nyxt/web-mode:copy-placeholder nyxt/web-mode:copy-hint-url)))
    (:p "Leveraging password managers: ")
-   (:ul 
+   (:ul
     (list-command-information '(copy-username copy-password copy-password-prompt-details)))
    (:p "And more: ")
    (:ul
@@ -187,10 +187,10 @@ executing " (:code "passthrough-mode") " the " (:code "C-i") " binding is associ
 with the webpage's italic command instead of " (:code "autofill") ". Finally, the
 user can return to their configuration just by executing " (:code "passthrough-mode") " again.")
    (:h3 "Enable, disable, and toggle multiple modes")
-   (:p "The command " (:code "enable-mode") " allows the user to apply multiple
+   (:p "The command " (command-markup 'enable-mode) " allows the user to apply multiple
 modes (such as " (:code "nosound-mode") " and " (:code "dark-mode") ") to
 multiple buffers at once. Conversely, it is possible to revert this action by
-executing "(:code "disable-mode") " while choosing exactly the same buffers and
+executing " (command-markup 'disable-mode) " while choosing exactly the same buffers and
 modes previously selected. Finally, " (:code "toggle-mode") " also allows
 activation and deactivation of multiple modes, but only for the current
 buffer.")

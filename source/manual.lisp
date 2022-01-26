@@ -23,8 +23,8 @@ it's running!")
         ". It contains numerous pointers to other resources, including
         free books both for beginners and seasoned programmers.")
     (:p "Nyxt provides a mechanism for new users unfamiliar with Lisp to
-customize Nyxt. Start by invoking the commands " (:code "describe-class") "
-or " (:code "describe-slot") ".  You can press the button marked 'Configure' to
+customize Nyxt. Start by invoking the commands " (command-markup 'describe-class) "
+or " (command-markup 'describe-slot) ".  You can press the button marked 'Configure' to
 change the value of a setting. The settings will be applied immediately and
 saved for future sessions. Please note that these settings will not alter
 existing object instances.")
@@ -35,8 +35,8 @@ existing object instances.")
     (:p "The following section assumes knowledge of basic Common Lisp or a
 similar programming language.")
     (:p "The user needs to manually create the Nyxt configuration file "
-         (:code (expand-path *init-file-path*))
-         ", and the parent folders if necessary. You can also press the button
+        (:code (expand-path *init-file-path*))
+        ", and the parent folders if necessary. You can also press the button
 below to create said file, if it's not created yet.")
      (let ((init-file-path (expand-path *init-file-path*)))
        (:p (if (uiop:file-exists-p init-file-path)
@@ -60,7 +60,7 @@ every buffer.")
 the slots of classes like the browser, buffers, windows, etc.  Refer to the
 class and slot documentation for the individual details.")
     (:p "To find out about all modes known to Nyxt,
-run " (:code "describe-command") " and type 'mode'.")
+run " (command-markup 'describe-command) " and type 'mode'.")
 
     (:h3 "Slot configuration")
     (:p "Slots store values that can be either accessed (get) or changed
@@ -119,7 +119,7 @@ add the following to your configuration:")
                     (switch-buffer :current-is-last-p t)))))))"))
     (:p "The " (:code "override-map") " is a keymap that has priority over
 all other keymaps.  By default, it has few bindings like the one
-for " (:code "execute-command") ".  You can use it to set keys globally:")
+for " (command-markup 'execute-command) ".  You can use it to set keys globally:")
     (:pre (:code "
 \(define-configuration buffer
   ((override-map (let ((map (make-keymap \"override-map\")))
@@ -128,7 +128,7 @@ for " (:code "execute-command") ".  You can use it to set keys globally:")
                      \"C-space\" 'nothing)))))"))
     (:p "The " (:code "nothing") " command is useful to override bindings to do
 nothing. Note that it's possible to bind any command, including those of
-disabled modes that are not listed in " (:code "execute-command") ".")
+disabled modes that are not listed in " (command-markup 'execute-command) ".")
     (:p "In addition, a more flexible approach is to create your own mode with
 your custom keybindings.  When this mode is added first to the buffer mode list,
 its keybindings have priorities over the other modes.
@@ -203,7 +203,7 @@ magnet links.  See the" (:code "url-dispatching-handler") " function
 documentation.")
 
     (:h3 "Downloads")
-    (:p "See the " (:code "list-downloads") " command and the "
+    (:p "See the " (command-markup 'list-downloads) " command and the "
         (:code "download-path") " buffer slot documentation.")
 
     (:h3 "Proxy and Tor")
@@ -352,8 +352,8 @@ the " (:code "status-formatter") " window slot.")
     (:p "You can evaluate multiple --eval and --load in a row, they are
 executed in the order they appear.")
     (:p "You can also evaluate a Lisp file from the Nyxt interface with
-the " (:code "load-file") " command.  For
-convenience, " (:code "load-init-file") " (re)loads your initialization file.")
+the " (command-markup 'load-file) " command.  For
+convenience, " (command-markup 'load-init-file) " (re)loads your initialization file.")
     (:p "You can even make scripts.  Here is an example foo.lisp:")
     (:pre (:code "#!nyxt --script
 \(format t \"~a~&\" +version+)"))
