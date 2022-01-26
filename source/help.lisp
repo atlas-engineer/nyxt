@@ -116,7 +116,8 @@ If INPUT, narrow down to exact matches of it."
         ;; Maybe allow it?  The problem then is that it increases the chances of
         ;; false-positives when the "`" character is used for other reasons.
         (spinneret:with-html-string
-          (:code (:raw (ppcre:regex-replace-all "`[^'\\s]+'" string #'resolve-regex))))
+          (:pre
+           (:code (:raw (ppcre:regex-replace-all "`[^'\\s]+'" string #'resolve-regex)))))
         "")))
 
 (define-internal-page-command-global describe-variable
