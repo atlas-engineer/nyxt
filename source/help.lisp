@@ -60,6 +60,7 @@ If INPUT, narrow down to exact matches of it."
     (prompt
      :prompt "Describe:"
      :input input
+     :auto-return-p (not (uiop:emptyp input))
      :sources (list (make-instance 'variable-source
                                    :actions (list (make-command describe-variable* (variables)
                                                     (describe-variable :variable (first variables))))
