@@ -87,6 +87,35 @@
   "Return non-nil if OBJECT has `prompter:object-attributes' specialization."
   (has-method-p object #'prompter:object-attributes))
 
+(defun resolve-backtick-quote-links (string parent-symbol)
+  (flet ((resolve-regex (target-string start end match-start match-end reg-starts reg-ends)
+           (declare (ignore start end reg-starts reg-ends))
+           ;; Excluding backtick & quote.
+           (let* ((name (subseq target-string (1+ match-start) (1- match-end)))
+                  (symbol (let ((*package* (symbol-package parent-symbol)))
+                            (read-from-string name)))
+                  (definition (swank-backend:find-definitions symbol))
+                  (type (caaar definition))
+                  (url (if type
+                           (cond
+                             ((eq type 'defvar)
+                              (nyxt-url 'describe-variable :variable symbol))
+                             ((eq type 'defclass)
+                              (nyxt-url 'describe-class :class symbol))
+                             ((member type '(defun defmethod defgeneric))
+                              (nyxt-url 'describe-function :function symbol))
+                             (t nil)))))
+             (spinneret:with-html-string
+               (if url
+                   (:a :href url (:code name))
+                   (:code name))))))
+    (if string
+        ;; FIXME: Spaces are disallowed, but |one can use anything in a symbol|.
+        ;; Maybe allow it?
+        (spinneret:with-html-string
+          (:code (:raw (ppcre:regex-replace-all "`[^' ]+'" string #'resolve-regex))))
+        "")))
+
 (define-internal-page-command-global describe-variable
     (&key (variable
            (prompt1
@@ -100,7 +129,7 @@
     (spinneret:with-html-string
       (:style (style buffer))
       (:h1 (format nil "~s" variable)) ; Use FORMAT to keep package prefix.
-      (:pre (documentation variable 'variable))
+      (:raw (resolve-backtick-quote-links (documentation variable 'variable) variable))
       (:h2 "Current Value:")
       (:p (:raw (value->html (symbol-value variable) :help-mode help-mode))))))
 
@@ -117,7 +146,8 @@ For generic functions, describe all the methods."
         (flet ((method-desc (method)
                  (spinneret:with-html-string
                    (:h1 (symbol-name input) " " (write-to-string (mopu:method-specializers method)))
-                   (:pre (documentation method 't))
+                   (:raw (resolve-backtick-quote-links (documentation method 't)
+                                                       (mopu:method-name method)))
                    (:h2 "Argument list")
                    (:p (write-to-string (closer-mop:method-lambda-list method)))
                    (alex:when-let* ((definition (swank:find-definition-for-thing method))
@@ -131,7 +161,7 @@ For generic functions, describe all the methods."
                 (:style (style buffer))
                 (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
                      (when (macro-function input) " (macro)"))
-                (:pre (documentation input 'function))
+                (:raw (resolve-backtick-quote-links (documentation input 'function) input))
                 (:raw (apply #'str:concat (mapcar #'method-desc
                                                   (mopu:generic-function-methods
                                                    (symbol-function input))))))
@@ -139,7 +169,7 @@ For generic functions, describe all the methods."
                 (:style (style buffer))
                 (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
                      (when (macro-function input) " (macro)"))
-                (:pre (documentation input 'function))
+                (:raw (resolve-backtick-quote-links (documentation input 'function) input))
                 (:h2 "Argument list")
                 (:p (write-to-string (mopu:function-arglist input)))
                 #+sbcl
@@ -167,8 +197,8 @@ A command is a special kind of function that can be called with
 `execute-command' and can be bound to a key."
   (let* ((command (find command (list-commands) :key #'name))
          (key-keymap-pairs (nth-value 1 (keymap:binding-keys
-                                            command
-                                            (all-keymaps))))
+                                         command
+                                         (all-keymaps))))
          (key-keymapname-pairs (mapcar (lambda (pair)
                                          (list (first pair)
                                                (keymap:name (second pair))))
@@ -184,11 +214,12 @@ A command is a special kind of function that can be called with
                        (symbol-package (name command)))
              (format nil " (~a)"
                      (package-name (symbol-package (name command))))))
-      (:p (:pre
+      (:p (:raw
            ;; TODO: This only displays the first method,
            ;; i.e. the first command of one of the modes.
            ;; Ask for modes instead?
-           (documentation (fn command) t)))
+           (resolve-backtick-quote-links (documentation (fn command) t)
+                                         (swank-backend:function-name (fn command)))))
       (:h2 "Bindings")
       (:p (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
       (:h2 (format nil "Source~a: " (if source-file
@@ -232,8 +263,8 @@ A command is a special kind of function that can be called with
                 (:li "Default value: " (:pre (:code initform-string)))
                 (:li "Default value: " (:code initform-string)))))
         (when (getf props :documentation)
-          ;; We use :pre for documentation so that code samples get formatted properly.
-          (:li "Documentation: " (:pre (getf props :documentation))))
+          (:li "Documentation: " (:raw (resolve-backtick-quote-links
+                                        (getf props :documentation) slot))))
         (unless (user-class-p class)
           (:li (:button :class "button"
                         :onclick (ps:ps (nyxt/ps:lisp-eval
@@ -252,7 +283,7 @@ A command is a special kind of function that can be called with
     (spinneret:with-html-string
       (:style (style buffer))
       (:h1 (symbol-name class))
-      (:p (:pre (documentation class 'type)))
+      (:p (:raw (resolve-backtick-quote-links (documentation class 'type) class)))
       (when (mopu:direct-superclasses class)
         (:h2 "Direct superclasses:")
         (:ul (loop for class-name in (mapcar #'class-name (mopu:direct-superclasses class))
@@ -282,7 +313,7 @@ A command is a special kind of function that can be called with
     (spinneret:with-html-string
       (:style (style buffer))
       (:h1 (prompter:prompt prompt-buffer))
-      (:p (:pre (documentation prompt-buffer 'type)))
+      (:p (:raw (resolve-backtick-quote-links (documentation 'prompt-buffer 'type) 'prompt-buffer)))
       (:h2 "Modes:")
       (:ul
        (loop for mode in modes
