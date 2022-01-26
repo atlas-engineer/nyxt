@@ -346,7 +346,7 @@ Second return value should be the MIME-type of the content."))
                 "Slow down error"
                 (format nil "Try reloading the page in ~a seconds." meta)))
               ((:client-certificate-required :certificate-not-authorised :certificate-not-valid)
-               (make-gemini-error-page "Certificate error" meta))))
+               (error-help "Certificate error" meta))))
         (gemini::malformed-response (e)
           (error-help
            "Malformed response"
