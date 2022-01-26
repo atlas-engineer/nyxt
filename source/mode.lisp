@@ -266,10 +266,13 @@ If there is no corresponding keymap, return nil."
   (on-signal-notify-uri mode (url (buffer mode)))
   title)
 
-(defmethod on-signal-load-committed ((mode root-mode) url)
+(defmethod on-signal-load-started ((mode root-mode) url)
   url)
 
 (defmethod on-signal-load-redirected ((mode root-mode) url)
+  url)
+
+(defmethod on-signal-load-committed ((mode root-mode) url)
   url)
 
 (defmethod on-signal-load-finished ((mode root-mode) url)
