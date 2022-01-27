@@ -309,6 +309,11 @@ Example:
                          params)))
           (error "There's no nyxt:~a page defined" (param-name function-name))))))
 
+(export-always 'javascript-url)
+(defun javascript-url (javascript-string)
+  "Return a string that's a suitable value for an HTML href."
+  (str:concat "javascript:" (quri:url-encode javascript-string)))
+
 (export-always 'internal-url-p)
 (defun internal-url-p (url)
   (string= "nyxt" (quri:uri-scheme (url url))))
