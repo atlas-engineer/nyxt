@@ -177,6 +177,23 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "search-buffer")
                  (:file "spell-check")
                  (:file "zoom")))
+               (:file "status" :depends-on ("Core"))
+               (:file "start" :depends-on ("Core"))
+               (:module "Editor modes"
+                :pathname "mode"
+                :depends-on ("Core modes")
+                :components
+                ((:file "editor")
+                 (:file "plaintext-editor")))
+               (:module "Help"
+                :pathname ""
+                :depends-on ("Core modes")
+                :components
+                ((:file "help")
+                 (:file "about")
+                 (:file "tutorial")
+                 (:file "changelog")
+                 (:file "manual")))
                (:module "Misc modes"
                 :pathname "mode"
                 :depends-on ("Core modes")
@@ -201,24 +218,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "expedition")
                  (:file "tts")
                  (:file "record-input-field")
-                 (:file "macro-edit")))
-               (:file "status" :depends-on ("Core"))
-               (:file "start" :depends-on ("Core"))
-               (:module "Editor modes"
-                :pathname "mode"
-                :depends-on ("Core modes")
-                :components
-                ((:file "editor")
-                 (:file "plaintext-editor")))
-               (:module "Help"
-                :pathname ""
-                :depends-on ("Core modes")
-                :components
-                ((:file "help")
-                 (:file "about")
-                 (:file "tutorial")
-                 (:file "changelog")
-                 (:file "manual"))))
+                 (:file "macro-edit"))))
   :in-order-to ((test-op (test-op "nyxt/tests")
                          (test-op "nyxt/download-manager/tests")
                          (test-op "nyxt/history-tree/tests")
