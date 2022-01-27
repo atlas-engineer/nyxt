@@ -185,7 +185,7 @@ See also `hide-prompt-buffer'."
   ;; TODO: Add method that returns if there is only 1 source with no filter.
   (when prompt-buffer
     (push prompt-buffer (active-prompt-buffers (window prompt-buffer)))
-    (calispel:! (prompt-buffer-channel (window prompt-buffer)) prompt-buffer)
+    (hooks:run-hook (prompt-buffer-ready-hook *browser*) prompt-buffer)
     (prompt-render prompt-buffer)
     (run-thread "Show prompt watcher"
       (let ((prompt-buffer prompt-buffer))
@@ -203,8 +203,6 @@ See also `show-prompt-buffer'."
     ;; Note that PROMPT-BUFFER is not necessarily first in the list, e.g. a new
     ;; prompt-buffer was invoked before the old one reaches here.
     (alex:deletef (active-prompt-buffers window) prompt-buffer)
-    ;; The channel values are irrelevant, so is the element order:
-    (calispel:? (prompt-buffer-channel (window prompt-buffer)) 0)
     (if (resumable-p prompt-buffer)
         (flet ((prompter= (prompter1 prompter2)
                  (and (string= (prompter:prompt prompter1)
