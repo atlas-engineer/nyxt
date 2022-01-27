@@ -197,7 +197,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "macro-edit")))
                (:file "password" :depends-on ("Core modes"))
                (:file "bookmark" :depends-on ("Core modes"))
-               (:file "bookmark-frequent-visits" :pathname "mode" :depends-on ("bookmark"))
+               (:file "mode/bookmark-frequent-visits" :depends-on ("bookmark"))
                (:file "status" :depends-on ("Core"))
                (:file "start" :depends-on ("Core"))
                (:module "Editor modes"
