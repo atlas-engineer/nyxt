@@ -187,7 +187,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "plaintext-editor")))
                (:module "Help"
                 :pathname ""
-                :depends-on ("Core modes")
+                :depends-on ("Core modes" "Modes")
                 :components
                 ((:file "help")
                  (:file "about")
