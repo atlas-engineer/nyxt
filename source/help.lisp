@@ -141,21 +141,15 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
                   (symbol (let ((*package* (symbol-package parent-symbol)))
                             (ignore-errors (read-from-string name nil))))
                   (url (when symbol
-                         (let ((old-indent ps:*indent-num-spaces*)
-                               (old-print-pretty ps:*ps-print-pretty*))
-                           (unwind-protect
-                                (progn
-                                  ;; TODO: Set those for all of Nyxt?
-                                  (setf ps:*indent-num-spaces* 0
-                                        ps:*ps-print-pretty* nil)
-                                  (ps:ps (nyxt/ps:lisp-eval `(nyxt::describe-any ,(princ-to-string symbol)))))
-                             (setf ps:*indent-num-spaces* old-indent
-                                   ps:*ps-print-pretty* old-print-pretty))))))
-             (spinneret:with-html-string
-               (if url
-                   (:a :href (javascript-url url)
-                        (:code name))
-                   (:code name))))))
+                         (ps:ps (nyxt/ps:lisp-eval `(nyxt::describe-any ,(princ-to-string symbol)))))))
+             (let ((*print-pretty* nil))
+               ;; Disable pretty-printing to avoid spurious space insertion within links:
+               ;; https://github.com/ruricolist/spinneret/issues/37#issuecomment-884740046
+               (spinneret:with-html-string
+                 (if url
+                     (:a :href (javascript-url url)
+                         (:code name))
+                     (:code name)))))))
     (if string
         ;; FIXME: Spaces are disallowed, but |one can use anything in a symbol|.
         ;; Maybe allow it?  The problem then is that it increases the chances of
