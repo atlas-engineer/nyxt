@@ -765,35 +765,27 @@ System information is also saved into the clipboard."
                               :margin-top "10px"
                               :overflow "scroll"
                               :min-height "150px")
-                             (".section h3"
+                             ("h3"
                               :color theme:tertiary)
-                             ("#container"
-                              :display "flex"
-                              :flex-flow "column"
-                              :height "100vh")
                              ("ul"
                               :list-style-type "circle"))))
       (spinneret:with-html-string
-        (:style (style buffer))
         (:style dashboard-style)
-        (:div :id "container"
-              (:div
-               (:h1 :id "title" "Nyxt " (:span :id "subtitle" "browser ☺"))
-               (:h3 (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+))
-               (:button :class "button" :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                         `(nyxt::restore-history-by-name)))
-                        "🗁 Restore Session")
-               (:a :class "button" :href (nyxt-url 'manual) "🕮 Manual")
-               (:button :class "button"
-                        :onclick (ps:ps (nyxt/ps:lisp-eval `(nyxt::execute-command)))
-                        "≡ Execute Command")
-               (:a :class "button" :href "https://nyxt.atlas.engineer/download" "⇡ Update"))
-              (:div :class "section" :style "flex: 3"
-                    (:h3 (:b "Bookmarks"))
-                    (:ul (:raw (list-bookmarks))))
-              (:div :class "section" :style "flex: 5"
-                    (:h3 (:b "Recent URLs"))
-                    (:ul (:raw (history-html-list)))))))))
+        (:div
+         (:h1 :id "title" "Nyxt " (:span :id "subtitle" "browser ☺"))
+         (:h3 (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+))
+         (:button :class "button" :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                   `(nyxt::restore-history-by-name)))
+                  "🗁 Restore Session")
+         (:a :class "button" :href (nyxt-url 'manual) "🕮 Manual")
+         (:button :class "button"
+                  :onclick (ps:ps (nyxt/ps:lisp-eval `(nyxt::execute-command)))
+                  "≡ Execute Command")
+         (:a :class "button" :href "https://nyxt.atlas.engineer/download" "⇡ Update"))
+        (:h3 (:b "Bookmarks"))
+        (:ul (:raw (list-bookmarks)))
+        (:h3 (:b "Recent URLs"))
+        (:ul (:raw (history-html-list)))))))
 
 (defun dump-command-descriptions (file)
   "Dump the command descriptions as an HTML file."
