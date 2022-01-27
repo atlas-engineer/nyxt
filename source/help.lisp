@@ -122,7 +122,14 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
                   (symbol (let ((*package* (symbol-package parent-symbol)))
                             (read-from-string name)))
                   (url (when symbol
-                         (ps:ps (nyxt/ps:lisp-eval `(nyxt::describe-any ,(princ-to-string symbol)))))))
+                         (let ((old-indent ps:*indent-num-spaces*)
+                               (old-pring-pretty ps:*ps-print-pretty*))
+                           ;; Set those for all of Nyxt?
+                           (setf ps:*indent-num-spaces* 0
+                                 ps:*ps-print-pretty* nil)
+                           (ps:ps (nyxt/ps:lisp-eval `(nyxt::describe-any ,(princ-to-string symbol))))
+                           (setf ps:*indent-num-spaces* old-indent
+                                 ps:*ps-print-pretty* old-print-pretty)))))
              (spinneret:with-html-string
                (if url
                    (:a :href (javascript-url url)
