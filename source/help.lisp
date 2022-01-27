@@ -128,8 +128,8 @@ If INPUT, narrow down to exact matches of it."
                          (ps:ps (nyxt/ps:lisp-eval `(nyxt::describe-any ,(princ-to-string symbol)))))))
              (spinneret:with-html-string
                (if url
-                   (:button :class "button" ; TODO: Can we make it look slimmer?  Maybe more like a link?
-                            :onclick url (:code name))
+                   (:a :href (javascript-url url)
+                        (:code name))
                    (:code name))))))
     (if string
         ;; FIXME: Spaces are disallowed, but |one can use anything in a symbol|.
