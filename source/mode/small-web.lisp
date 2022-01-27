@@ -220,7 +220,9 @@ Second return value should be the MIME-type of the content."))
 ;; into pages of the bigger Web, which is exactly what display-isolated means.
 (define-internal-scheme "gopher"
     (lambda (url buffer)
-      (let* ((line (cl-gopher:parse-gopher-uri url)))
+      (let* ((line (if (uiop:emptyp (quri:uri-path (quri:uri url)))
+                       (buffer-load (str:concat url "/") :buffer buffer)
+                       (cl-gopher:parse-gopher-uri url))))
         ;; FIXME: This better become a default auto-mode rule.
         (enable-modes '(small-web-mode) buffer)
         (if (and (typep line 'cl-gopher:search-line)
@@ -231,7 +233,7 @@ Second return value should be the MIME-type of the content."))
                            :sources (list (make-instance 'prompter:raw-source))))
                    (buffer-load (cl-gopher:uri-for-gopher-line line) :buffer buffer))
             (with-current-buffer buffer
-                (nyxt/small-web-mode:gopher-render line))))))
+              (nyxt/small-web-mode:gopher-render line))))))
 
 ;;; Gemini rendering.
 
