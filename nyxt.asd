@@ -157,9 +157,16 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "proxy")
                  (:file "download")
                  (:file "process")))
+               (:module "file-manager-mode deps"
+                :pathname ""
+                :depends-on ("Core modes")
+                :components
+                ((:file "password")
+                 (:file "bookmark")
+                 (:file "mode/bookmark-frequent-visits" :depends-on ("bookmark"))))
                (:module "web-mode commands"
                 :pathname "mode"
-                :depends-on ("Core modes" "bookmark")
+                :depends-on ("Core modes" "file-manager-mode deps")
                 :components
                 ((:file "bookmarklets")
                  (:file "element-hint" :depends-on ("search-buffer"))
@@ -195,9 +202,6 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "tts")
                  (:file "record-input-field")
                  (:file "macro-edit")))
-               (:file "password" :depends-on ("Core modes"))
-               (:file "bookmark" :depends-on ("Core modes"))
-               (:file "mode/bookmark-frequent-visits" :depends-on ("bookmark"))
                (:file "status" :depends-on ("Core"))
                (:file "start" :depends-on ("Core"))
                (:module "Editor modes"
