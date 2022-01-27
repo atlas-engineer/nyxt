@@ -34,35 +34,51 @@
 
 (define-command describe-any (&optional input)
   "Inspect anything and show it in a help buffer.
-If INPUT, narrow down to exact matches of it."
-  (let ((preprocessor (if input
-                          'prompter:filter-exact-match
-                          'prompter:delete-inexact-matches)))
-    (prompt
-     :prompt "Describe:"
-     :input input
-     :auto-return-p (not (uiop:emptyp input))
-     :sources (list (make-instance 'variable-source
-                                   :actions (list (make-command describe-variable* (variables)
-                                                    (describe-variable :variable (first variables))))
-                                   :filter-preprocessor preprocessor)
-                    (make-instance 'function-source
-                                   :actions (list (make-command describe-function* (functions)
-                                                    (describe-function :function (first functions))))
-                                   :filter-preprocessor preprocessor)
-                    (make-instance 'user-command-source
-                                   :actions (list (make-command describe-command* (commands)
-                                                    (describe-command :command (name (first commands)))))
-                                   :filter-preprocessor preprocessor)
-                    (make-instance 'class-source
-                                   :actions (list (make-command describe-class* (classes)
-                                                    (describe-class :class (first classes))))
-                                   :filter-preprocessor preprocessor)
-                    (make-instance 'slot-source
-                                   :actions (list (make-command describe-slot** (slots)
-                                                    (describe-slot :class (class-sym (first slots))
-                                                                   :name (name (first slots)))))
-                                   :filter-preprocessor preprocessor)))))
+When INPUT  has a unique exact match in the sources, describe it
+directly without prompting.
+When INPUT does not have a unique match, prompt for the list of exact matches."
+  (let* ((preprocessor (if (uiop:emptyp input)
+                           'prompter:delete-inexact-matches
+                           'prompter:filter-exact-match))
+         (sources (list (make-instance 'variable-source
+                                       :actions (list (make-command describe-variable* (variables)
+                                                        (describe-variable :variable (first variables))))
+                                       :filter-preprocessor preprocessor)
+                        (make-instance 'function-source
+                                       :actions (list (make-command describe-function* (functions)
+                                                        (describe-function :function (first functions))))
+                                       :filter-preprocessor preprocessor)
+                        (make-instance 'user-command-source
+                                       :actions (list (make-command describe-command* (commands)
+                                                        (describe-command :command (name (first commands)))))
+                                       :filter-preprocessor preprocessor)
+                        (make-instance 'class-source
+                                       :actions (list (make-command describe-class* (classes)
+                                                        (describe-class :class (first classes))))
+                                       :filter-preprocessor preprocessor)
+                        (make-instance 'slot-source
+                                       :actions (list (make-command describe-slot** (slots)
+                                                        (describe-slot :class (class-sym (first slots))
+                                                                       :name (name (first slots)))))
+                                       :filter-preprocessor preprocessor))))
+    (let ((suggestion+action-pairs
+            (and input
+                 (loop with result = '()
+                       for source in sources
+                       do (loop for suggestion in (prompter:suggestions source)
+                                while (< (length result) 2)
+                                when (string-equal input (prompter:attributes-default suggestion))
+                                  do (push (list (prompter:value suggestion)
+                                                 (prompter:default-action source))
+                                           result))
+                       return result))))
+      (match suggestion+action-pairs
+        ((list (list suggestion action))
+         (funcall action (list suggestion)))
+        (_ (prompt
+            :prompt "Describe:"
+            :input input
+            :sources sources))))))
 
 (defun value->html (value &key (help-mode (current-mode 'help)))
   "Return the HTML representation of VALUE."
