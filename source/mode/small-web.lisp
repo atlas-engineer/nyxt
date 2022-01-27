@@ -103,7 +103,7 @@ Gemini support is a bit more chaotic, but you can override `line->html' for
   (:documentation "Transform a gopher line to a reasonable HTML representation."))
 
 (export-always 'gopher-render)
-(defgeneric gopher-render (line &optional mode)
+(defgeneric gopher-render (line)
   (:documentation "Produce a Gopher page content string/array given LINE.
 Second return value should be the MIME-type of the content."))
 
@@ -181,23 +181,22 @@ Second return value should be the MIME-type of the content."))
 (defmethod line->html ((line cl-gopher:uuencoded-file)) (file-link->html line))
 (defmethod line->html ((line cl-gopher:unknown)) (file-link->html line))
 
-(defmethod gopher-render ((line cl-gopher:gopher-line) &optional (mode (current-mode 'small-web)))
+(defmethod gopher-render ((line cl-gopher:gopher-line))
   (let ((contents (cl-gopher:get-line-contents line))
         (spinneret:*html-style* :tree))
     (values (spinneret:with-html-string
-              (:style (style (buffer mode)))
-              (:style (style mode))
+              (:style (style (current-buffer)))
+              (:style (when (current-mode 'small-web)
+                        (style (current-mode 'small-web))))
               (loop for line in (cl-gopher:lines contents)
                     collect (:raw (line->html line))))
             "text/html;charset=utf8")))
 
-(defmethod gopher-render ((line cl-gopher:html-file) &optional (mode (current-mode 'small-web)))
-  (declare (ignore mode))
+(defmethod gopher-render ((line cl-gopher:html-file))
   (let ((contents (cl-gopher:get-line-contents line)))
     (values (cl-gopher:content-string contents) "text/html;charset=utf8")))
 
-(defmethod gopher-render ((line cl-gopher:text-file) &optional (mode (current-mode 'small-web)))
-  (declare (ignore mode))
+(defmethod gopher-render ((line cl-gopher:text-file))
   (let ((contents (cl-gopher:get-line-contents line)))
     ;; TODO: Guess encoding?
     (values (str:join +newline+ (cl-gopher:lines contents)) "text/plain;charset=utf8")))
@@ -209,33 +208,13 @@ Second return value should be the MIME-type of the content."))
          (contents (cl-gopher:get-line-contents line)))
     (values (cl-gopher:content-array contents) mime)))
 
-(defmethod gopher-render ((line cl-gopher:image) &optional (mode (current-mode 'small-web)))
-  (declare (ignore mode))
-  (render-binary-content line))
-
-(defmethod gopher-render ((line cl-gopher:binary-file) &optional (mode (current-mode 'small-web)))
-  (declare (ignore mode))
-  (render-binary-content line))
-
-(defmethod gopher-render ((line cl-gopher:binhex-file) &optional (mode (current-mode 'small-web)))
-  (declare (ignore mode))
-  (render-binary-content line))
-
-(defmethod gopher-render ((line cl-gopher:dos-file) &optional (mode (current-mode 'small-web)))
-  (declare (ignore mode))
-  (render-binary-content line))
-
-(defmethod gopher-render ((line cl-gopher:uuencoded-file) &optional (mode (current-mode 'small-web)))
-  (declare (ignore mode))
-  (render-binary-content line))
-
-(defmethod gopher-render ((line cl-gopher:gif) &optional (mode (current-mode 'small-web)))
-  (declare (ignore mode))
-  (render-binary-content line "image/gif"))
-
-(defmethod gopher-render ((line cl-gopher:png) &optional (mode (current-mode 'small-web)))
-  (declare (ignore mode))
-  (render-binary-content line "image/png"))
+(defmethod gopher-render ((line cl-gopher:image)) (render-binary-content line))
+(defmethod gopher-render ((line cl-gopher:binary-file)) (render-binary-content line))
+(defmethod gopher-render ((line cl-gopher:binhex-file)) (render-binary-content line))
+(defmethod gopher-render ((line cl-gopher:dos-file)) (render-binary-content line))
+(defmethod gopher-render ((line cl-gopher:uuencoded-file)) (render-binary-content line))
+(defmethod gopher-render ((line cl-gopher:gif)) (render-binary-content line "image/gif"))
+(defmethod gopher-render ((line cl-gopher:png)) (render-binary-content line "image/png"))
 
 ;; TODO: :display-isolated-p? Gopher's behavior implies inability to embed it
 ;; into pages of the bigger Web, which is exactly what display-isolated means.
@@ -251,7 +230,8 @@ Second return value should be the MIME-type of the content."))
                            :prompt (format nil "Search query for ~a" url)
                            :sources (list (make-instance 'prompter:raw-source))))
                    (buffer-load (cl-gopher:uri-for-gopher-line line) :buffer buffer))
-            (nyxt/small-web-mode:gopher-render line)))))
+            (with-current-buffer buffer
+                (nyxt/small-web-mode:gopher-render line))))))
 
 ;;; Gemini rendering.
 
