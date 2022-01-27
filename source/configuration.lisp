@@ -366,12 +366,13 @@ ARGS can be
 - A list of arguments.
 - An empty list, if the hook is void."
   (let ((handler-name (gensym "on-hook-handler")))
-    `(hooks:add-hook
-      ,hook (make-instance 'hooks:handler
-                           :fn (lambda ,(alex:ensure-list args)
-                                 (declare (ignorable ,@(alex:ensure-list args)))
-                                 ,@body)
-                           :name (quote ,handler-name)))))
+    (alex:once-only (args)
+      `(hooks:add-hook
+        ,hook (make-instance 'hooks:handler
+                             :fn (lambda ,(alex:ensure-list args)
+                                   (declare (ignorable ,@(alex:ensure-list args)))
+                                   ,@body)
+                             :name (quote ,handler-name))))))
 
 (export-always 'once-on)
 (defmacro once-on (hook args &body body)
@@ -381,12 +382,12 @@ Remove the handler after it fires the first time.
 
 See `on'."
   (let ((handler-name (gensym "once-on-hook-handler")))
-    (alex:once-only (hook)
+    (alex:once-only (hook args)
       `(hooks:add-hook
         ,hook (make-instance 'hooks:handler
                              :fn (lambda ,(alex:ensure-list args)
                                    (declare (ignorable ,@(alex:ensure-list args)))
                                    (unwind-protect
-                                        ,@body
+                                        (progn ,@body)
                                      (hooks:remove-hook ,hook (quote ,handler-name))))
                              :name (quote ,handler-name))))))
