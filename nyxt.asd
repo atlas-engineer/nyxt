@@ -194,7 +194,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "tutorial")
                  (:file "changelog")
                  (:file "manual")))
-               (:module "Misc modes"
+               (:module "Modes"
                 :pathname "mode"
                 :depends-on ("Core modes")
                 :components
