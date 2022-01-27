@@ -421,6 +421,9 @@ suggestions; they only set the `suggestions' once they are done.  Conversely,
 `filter' is passed one suggestion at a time and it updates `suggestions' on each
 call."))
 
+(defmethod default-action ((source source))
+  (first (slot-value source 'actions)))
+
 (define-class yes-no-source (source)
   ((name "Confirm")
    (constructor '("yes" "no"))
