@@ -489,7 +489,8 @@ suggestions."
   "Return the list of the suggestions in the prompter."
   (alex:mappend #'suggestions (sources prompter)))
 
-(defun default-action (prompter)
+(export-always 'default-action)
+(defmethod default-action ((prompter prompter))
   (first (actions prompter)))
 
 (export-always 'resume)
