@@ -629,6 +629,22 @@ evaluate in order."
             until (eq object :eof)
             collect (funcall (lambda () (eval object)))))))
 
+(defmethod prompter:object-attributes ((restart restart))
+  `(("Name" ,(restart-name restart))))
+
+(define-class restarts-source (prompter:source)
+  ((prompter:name "Restarts"))
+  (:export-class-name-p t)
+  (:export-predicate-name-p t))
+
+(defun debug-prompt (condition)
+  (handler-case
+      (prompt1 :prompt (format nil "~a" condition)
+        :sources (list (make-instance 'restarts-source
+                                      :constructor (compute-restarts condition))))
+    (nyxt-prompt-buffer-canceled () 'abort)
+    (error () 'abort)))
+
 (defun error-buffer (&optional (title "Unknown error") (text ""))
   (sera:lret* ((error-buffer (make-instance 'user-web-buffer)))
     (with-current-buffer error-buffer
