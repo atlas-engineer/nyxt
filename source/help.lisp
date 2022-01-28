@@ -645,6 +645,14 @@ evaluate in order."
     (nyxt-prompt-buffer-canceled () 'abort)
     (error () 'abort)))
 
+(define-command-global toggle-debug-on-error (&key (value nil value-provided-p))
+  "Toggle Nyxt-native debugging.
+
+See `*debug-on-error*'."
+  (if value-provided-p
+      (setf *debug-on-error* value)
+      (setf *debug-on-error* (not *debug-on-error*))))
+
 (defun error-buffer (&optional (title "Unknown error") (text ""))
   (sera:lret* ((error-buffer (make-instance 'user-web-buffer)))
     (with-current-buffer error-buffer
