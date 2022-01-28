@@ -629,9 +629,6 @@ evaluate in order."
             until (eq object :eof)
             collect (funcall (lambda () (eval object)))))))
 
-(defmethod prompter:object-attributes ((restart restart))
-  `(("Name" ,(restart-name restart))))
-
 (define-class restarts-source (prompter:source)
   ((prompter:name "Restarts"))
   (:export-class-name-p t)
