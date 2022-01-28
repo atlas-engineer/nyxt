@@ -16,31 +16,50 @@ When the condition is muffled, a warning is reported to the user as per
 FORMAT-STRING and ARGS.
 As a special case, the first `:condition' keyword in ARGS is replaced with the
 raised condition."
-  (alex:with-gensyms (c sub-c)
-    `(if *run-from-repl-p*
-         (handler-case (progn ,@body)
-           (nyxt-prompt-buffer-canceled ()
-             (log:debug "Prompt buffer interrupted")))
-         (ignore-errors
-          (handler-bind
-              ((error
-                 (lambda (,c)
-                   (declare (ignorable ,c))
-                   ,(let ((condition-index (position :condition args)))
-                      (flet ((new-args (condition condition-index &optional escaped-p)
-                               (if condition-index
-                                   (append (subseq args 0 condition-index)
-                                           (list (if escaped-p
-                                                     `(plump:encode-entities (princ-to-string ,condition))
-                                                     `,condition))
-                                           (subseq args (1+ condition-index)))
-                                   'args)))
-                        `(handler-bind ((t (lambda (,sub-c)
-                                             (declare (ignore ,sub-c))
-                                             (log:error ,format-string ,@(new-args c condition-index))
-                                             (invoke-restart 'continue))))
-                           (echo-warning ,format-string ,@(new-args c condition-index :escaped-p))))))))
-            ,@body)))))
+  (alex:with-gensyms (c sub-c int-c)
+    `(cond
+       ((or *run-from-repl-p* *debug-on-error*)
+        (handler-bind ((error (lambda (,int-c)
+                                (when *debug-on-error*
+                                  (let* ((restart (uiop:symbol-call :nyxt :debug-prompt ,int-c))
+                                         (prompt "[restart prompt]")
+                                         (*query-io*
+                                           (make-two-way-stream
+                                            ;; TODO: Understand how Swank does those streams.
+                                            (swank-backend:make-input-stream
+                                             (lambda ()
+                                               (prompt :prompt prompt
+                                                       :sources (list (make-instance 'prompter:raw-source)))))
+                                            (swank-backend:make-output-stream
+                                             #'(lambda (string)
+                                                 (setf prompt string))))))
+                                    (invoke-restart-interactively restart)))))
+                       (nyxt-prompt-buffer-canceled
+                         (lambda (,int-c)
+                           (declare (ignore ,int-c))
+                           (log:debug "Prompt buffer interrupted")
+                           (invoke-restart 'continue))))
+          (progn ,@body)))
+       (t (ignore-errors
+           (handler-bind
+               ((error
+                  (lambda (,c)
+                    (declare (ignorable ,c))
+                    ,(let ((condition-index (position :condition args)))
+                       (flet ((new-args (condition condition-index &optional escaped-p)
+                                (if condition-index
+                                    (append (subseq args 0 condition-index)
+                                            (list (if escaped-p
+                                                      `(plump:encode-entities (princ-to-string ,condition))
+                                                      `,condition))
+                                            (subseq args (1+ condition-index)))
+                                    'args)))
+                         `(handler-bind ((t (lambda (,sub-c)
+                                              (declare (ignore ,sub-c))
+                                              (log:error ,format-string ,@(new-args c condition-index))
+                                              (invoke-restart 'continue))))
+                            (echo-warning ,format-string ,@(new-args c condition-index :escaped-p))))))))
+             ,@body))))))
 
 (defun make-channel (&optional size)
   "Return a channel of capacity SIZE.

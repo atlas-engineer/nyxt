@@ -13,6 +13,11 @@
 This is useful when the browser is run from a REPL so that quitting does not
 close the connection.")
 
+(export-always '*debug-on-error*)
+(defvar *debug-on-error* nil
+  "Whether the Nyxt-internal debugger pops up when an error happens.
+Allows the user to fix immediate errors in runtime, given enough understanding.")
+
 (export-always '*browser*)
 (defvar *browser* nil
   "The entry-point object to a complete instance of Nyxt.
