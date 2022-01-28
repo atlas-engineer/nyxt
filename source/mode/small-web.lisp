@@ -220,20 +220,38 @@ Second return value should be the MIME-type of the content."))
 ;; into pages of the bigger Web, which is exactly what display-isolated means.
 (define-internal-scheme "gopher"
     (lambda (url buffer)
-      (let* ((line (if (uiop:emptyp (quri:uri-path (quri:uri url)))
-                       (buffer-load (str:concat url "/") :buffer buffer)
-                       (cl-gopher:parse-gopher-uri url))))
-        ;; FIXME: This better become a default auto-mode rule.
-        (enable-modes '(small-web-mode) buffer)
-        (if (and (typep line 'cl-gopher:search-line)
-                 (uiop:emptyp (cl-gopher:terms line)))
-            (progn (setf (cl-gopher:terms line)
-                         (prompt1
-                           :prompt (format nil "Search query for ~a" url)
-                           :sources (list (make-instance 'prompter:raw-source))))
-                   (buffer-load (cl-gopher:uri-for-gopher-line line) :buffer buffer))
-            (with-current-buffer buffer
-              (nyxt/small-web-mode:gopher-render line))))))
+      (handler-case
+          (let* ((line (if (uiop:emptyp (quri:uri-path (quri:uri url)))
+                           (buffer-load (str:concat url "/") :buffer buffer)
+                           (cl-gopher:parse-gopher-uri url))))
+            ;; FIXME: This better become a default auto-mode rule.
+            (enable-modes '(small-web-mode) buffer)
+            (if (and (typep line 'cl-gopher:search-line)
+                     (uiop:emptyp (cl-gopher:terms line)))
+                (progn (setf (cl-gopher:terms line)
+                             (prompt1
+                               :prompt (format nil "Search query for ~a" url)
+                               :sources (list (make-instance 'prompter:raw-source))))
+                       (buffer-load (cl-gopher:uri-for-gopher-line line) :buffer buffer))
+                (with-current-buffer buffer
+                  (nyxt/small-web-mode:gopher-render line))))
+        (cl-gopher:bad-submenu-error ()
+          (error-help (format nil "Malformed line at ~s" url)
+                      (format nil "One of the lines on this page has an improper format.
+Please report this to the server admin.")))
+        (cl-gopher:bad-uri-error ()
+          (error-help (format nil "Malformed URL: ~s" url)
+                      (format nil "The URL you inputted most probably has a typo in it.
+Please, check URL correctness and try again.")))
+        (usocket:ns-condition (condition)
+          (error-help (format nil "Error resolving ~s" url)
+                      (format nil "Original text of ~a:~%~a" (type-of condition) condition)))
+        (usocket:socket-condition (condition)
+          (error-help (format nil "Socket malfunction when accessing ~s" url)
+                      (format nil "Original text of ~a:~%~a" (type-of condition) condition)))
+        (condition (condition)
+          (error-help "Unknown error"
+                      (format nil "Original text of ~a:~%~a" (type-of condition) condition))))))
 
 ;;; Gemini rendering.
 
@@ -332,7 +350,13 @@ Second return value should be the MIME-type of the content."))
         (gemini::malformed-response (e)
           (error-help
            "Malformed response"
-           (format nil "The response for the URL you're requesting (~s) is malformed.
-
-~a"
-                   url e))))))
+           (format nil "The response for the URL you're requesting (~s) is malformed:~2%~a" url e)))
+        (usocket:ns-condition (condition)
+          (error-help (format nil "Error resolving ~s" url)
+                      (format nil "Original text of ~a:~%~a" (type-of condition) condition)))
+        (usocket:socket-condition (condition)
+          (error-help (format nil "Socket malfunction when accessing ~s" url)
+                      (format nil "Original text of ~a:~%~a" (type-of condition) condition)))
+        (condition (condition)
+          (error-help "Unknown error"
+                      (format nil "Original text of ~a:~%~a" (type-of condition) condition))))))
