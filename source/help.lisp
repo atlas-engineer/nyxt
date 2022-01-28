@@ -631,14 +631,29 @@ evaluate in order."
 
 (define-class restarts-source (prompter:source)
   ((prompter:name "Restarts"))
-  (:export-class-name-p t)
-  (:export-predicate-name-p t))
+  (:export-class-name-p t))
 
+(define-class backtrace-source (prompter:source)
+  ((prompter:name "Backtrace"))
+  (:export-class-name-p t))
+
+;; TODO: Make it resumable somehow. Channels?
 (defun debug-prompt (condition)
   (handler-case
       (prompt1 :prompt (format nil "~a" condition)
         :sources (list (make-instance 'restarts-source
-                                      :constructor (compute-restarts condition))))
+                                      :constructor (compute-restarts condition))
+                       ;; FIXME: Maybe use internal pages instead of prompt-buffer?
+                       (make-instance 'backtrace-source
+                                      :constructor (serapeum:filter
+                                                    (lambda (line)
+                                                      (digit-char-p (aref line 0)))
+                                                    (str:split
+                                                     #\newline
+                                                     (with-output-to-string (s)
+                                                       (uiop:print-backtrace
+                                                        :stream s))
+                                                     :omit-nulls t)))))
     (nyxt-prompt-buffer-canceled () 'abort)
     (error () 'abort)))
 
