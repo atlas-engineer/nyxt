@@ -109,43 +109,6 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                            (mapcar #'car (keywords (buffer source))))))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-internal-page-command-global list-bookmarks ()
-    (bookmarks-buffer "*Bookmarks*" 'base-mode)
-  "List all bookmarks in a new buffer."
-  (flet ((html-bookmark-id (id)
-           (format nil "bookmark-~d" id)))
-    (spinneret:with-html-string
-      (:style (style bookmarks-buffer))
-      (:h1 "Bookmarks")
-      (:body
-       (or (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
-             (loop for bookmark in bookmarks
-                   for id from 0 by 1
-                   collect
-                   (let ((url-display (render-url (url bookmark)))
-                         (url-href (render-url (url bookmark))))
-                     (:div
-                      :id (html-bookmark-id id)
-                      (:p (:b "Title: ") (title bookmark))
-                      (:p (:b "URL: ") (:a :href url-href
-                                           url-display))
-                      (:p (:b "Tags: ")
-                          (when (tags bookmark)
-                            (format nil " (~{~a~^, ~})" (tags bookmark))))
-                      (:p (:button :class "button"
-                                   :onclick
-                                   (ps:ps
-                                    (let ((element
-                                           (ps:chain
-                                            document
-                                            (get-element-by-id (ps:lisp (html-bookmark-id id))))))
-                                      (ps:chain element parent-node (remove-child element))
-                                      (nyxt/ps:lisp-eval
-                                       `(nyxt::delete-bookmark ,url-href))))
-                                   "Delete"))
-                      (:hr "")))))
-           (format nil "No bookmarks in ~s." (expand-path (bookmarks-path (current-buffer)))))))))
-
 (define-panel-global bookmarks ()
     (panel-buffer "*Bookmarks panel*")
   "Shows all the bookmarks in a compact panel-buffer layout."
