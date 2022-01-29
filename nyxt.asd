@@ -163,7 +163,8 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                 :components
                 ((:file "password")
                  (:file "bookmark")
-                 (:file "mode/bookmark-frequent-visits" :depends-on ("bookmark"))))
+                 (:file "mode/bookmark-frequent-visits" :depends-on ("bookmark"))
+                 (:file "mode/bookmark" :depends-on ("bookmark"))))
                (:module "web-mode commands"
                 :pathname "mode"
                 :depends-on ("Core modes" "file-manager-mode deps")
