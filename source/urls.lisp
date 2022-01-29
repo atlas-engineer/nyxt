@@ -397,10 +397,11 @@ guarantee of the same result."
                         ;; supports, then we can override the encoding and
                         ;; decoding methods and allow arbitrary objects (like
                         ;; buffers) in the nyxt:// URL arguments..
-                        (when (or (scalar-p result)
-                                  (and (sequence-p result)
-                                       (every #'scalar-p result)))
-                          (cl-json:encode-json-to-string result)))
+                        (cl-json:encode-json-to-string
+                         (when (or (scalar-p result)
+                                   (and (sequence-p result)
+                                        (every #'scalar-p result)))
+                           result)))
                       "application/json"))
             (values "undefined" "application/json;charset=utf8"))))
   :cors-enabled-p t
