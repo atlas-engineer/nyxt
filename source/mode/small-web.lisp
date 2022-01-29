@@ -98,6 +98,9 @@ Gemini support is a bit more chaotic, but you can override `line->html' for
 
 ;;; Gopher rendering.
 
+(defmethod cl-gopher:display-string :around ((line cl-gopher:gopher-line))
+  (cl-ppcre:regex-replace-all "\\e\\[[\\d;]*[A-Za-z]" (slot-value line 'cl-gopher:display-string) ""))
+
 (export-always 'line->html)
 (defgeneric line->html (line)
   (:documentation "Transform a gopher line to a reasonable HTML representation."))
