@@ -69,6 +69,10 @@ after the mode-specific hook.")
     :type boolean
     :documentation "Whether auto-completion works even for non-prefixed search.
 Auto-completions come from the default search engine.")
+   (keep-search-hints-p
+    t
+    :type boolean
+    :documentation "Whether to keep search hints when the prompter is closed.")
    (search-engines
     (list (make-instance 'search-engine
                          :shortcut "wiki"
