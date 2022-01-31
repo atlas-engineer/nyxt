@@ -165,7 +165,7 @@ place rather than having to jump around in a buffer (or multiple buffers).")
    (:h3 "Bookmarks")
    (:p "The bookmark file "
        (:code (let ((buffer (make-instance 'buffer)))
-                (expand-path (bookmarks-file buffer))))
+                (nfiles:expand (bookmarks-file buffer))))
        " is made to be human readable and editable.
 Bookmarks can have the following settings:")
    (:ul
