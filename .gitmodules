@@ -541,8 +541,12 @@
 [submodule "_build/cl-gopher"]
 	path = _build/cl-gopher
 	url = https://github.com/knusbaum/cl-gopher
-    shallow = true
+	shallow = true
 [submodule "_build/phos"]
 	path = _build/phos
 	url = https://github.com/omar-polo/phos
-    shallow = true
+	shallow = true
+[submodule "_build/nfiles"]
+	path = _build/nfiles
+	url = https://github.com/atlas-engineer/nfiles
+	shallow = true
