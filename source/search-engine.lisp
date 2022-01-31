@@ -76,9 +76,9 @@ Example (Tor-proxied completion function for Wikipedia):
   `(("Shortcut" ,(shortcut engine))
     ("Search URL" ,(search-url engine))))
 
-(defun bookmark-search-engines (&optional (bookmarks (get-data (bookmarks-path
-                                                                (or (current-buffer)
-                                                                    (make-instance 'user-buffer))))))
+(defun bookmark-search-engines (&optional (bookmarks (nfiles:content (bookmarks-file
+                                                                      (or (current-buffer)
+                                                                          (make-instance 'user-buffer))))))
   (mapcar (lambda (b)
             (make-instance 'search-engine
                            :shortcut (shortcut b)

@@ -60,12 +60,12 @@ It's not always the case, take the socket for instance."))
   ((prompter:name "User files")
    (prompter:active-attributes-keys '("Path" "Exists?" "Type" "Name"))
    (prompter:constructor (let ((path-map (make-hash-table :test 'equal)))
-                           (dolist (path (nfiles:all-files :nyxt)) ; TODO: Filter by subclasses instead?
-                             (sera:and-let* ((nyxt)
-                                             (editable? (editable path))
-                                             (full-path (expand-path path)))
+                           (dolist (file (nfiles:all-files :nyxt)) ; TODO: Filter by subclasses instead?
+                             (sera:and-let* ((nyxt-file-p file)
+                                             (editable? (editable-p file))
+                                             (full-path (nfiles:expand file)))
                                (unless (uiop:directory-pathname-p full-path)
-                                 (setf (gethash full-path path-map) path))))
+                                 (setf (gethash full-path path-map) file))))
                            (alexandria:hash-table-values path-map)))))
 
 (define-class cookies-file (nfiles:data-file nyxt-file)
@@ -164,3 +164,15 @@ Return `*global-profile*' otherwise."
         (or (and buffer (profile buffer))
             *global-profile*))
       *global-profile*))
+
+(-> find-file-name-path (string) (or string null))
+(defun find-file-name-path (ref)
+  "Return the value of the REF found in `*options*'s `:with-path'.
+Example: when passed command line option --with-path foo=bar,
+\(find-file-name-path \"foo\") returns \"bar\"."
+  (second
+   (assoc ref
+          (loop for (opt value . nil) on *options*
+                when (eq opt :with-path)
+                  collect value)
+          :test #'string=)))

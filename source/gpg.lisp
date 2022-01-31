@@ -7,8 +7,8 @@
 
 (define-class gpg-key-source (prompter:source)
   ((prompter:name "GPG Private Keys")
-   (prompter:constructor (nfiles:gpg-private-keys))))
+   (prompter:constructor (nfiles/gpg:gpg-private-keys))))
 
-(defmethod prompter:object-attributes ((gpg-key gpg-key))
-  `(("ID" ,(nfiles:gpg-key-key-id gpg-key))
-    ("Additional" ,(str:join ", " (mapcar #'nfiles:gpg-uid-user-id (nfiles:gpg-key-uids gpg-key))))))
+(defmethod prompter:object-attributes ((gpg-key nfiles/gpg:gpg-key))
+  `(("ID" ,(nfiles/gpg:key-id gpg-key))
+    ("Additional" ,(str:join ", " (mapcar #'nfiles/gpg:user-id (nfiles/gpg:uids gpg-key))))))

@@ -320,8 +320,9 @@ e.g. to develop Nyxt or extensions.")
 \(define-configuration buffer
   ((data-profile (make-instance (or (find-data-profile (getf *options* :data-profile))
                                     'dev-data-profile)))
-   (bookmarks-path (make-instance 'bookmarks-data-path
-                                  :basename \"~/personal/bookmarks/bookmarks.lisp.gpg\"))))"))
+   (bookmarks-file (make-instance 'bookmarks-file
+                                  :path \"~/personal/bookmarks/bookmarks.lisp.gpg\"))))"))
+    ;; TODO: Does the above ~ expansion work?
     (:p "Then you can start a separate instance of Nyxt using this profile
 with " (:code "nyxt --data-profile dev --socket /tmp/nyxt.socket") ".")
 

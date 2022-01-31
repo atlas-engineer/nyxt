@@ -765,12 +765,12 @@ System information is also saved into the clipboard."
   "Print a dashboard."
   (flet ((list-bookmarks (&key (separator " → "))
            (spinneret:with-html-string
-             (or (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
+             (or (let ((bookmarks (nfiles:content (bookmarks-file (current-buffer)))))
                    (loop for bookmark in bookmarks
                          collect (:li (title bookmark) separator
                                       (:a :href (render-url (url bookmark))
                                           (render-url (url bookmark))))))
-                 (:p (format nil "No bookmarks in ~s." (expand-path (bookmarks-path (current-buffer)))))))))
+                 (:p (format nil "No bookmarks in ~s." (nfiles:expand (bookmarks-file (current-buffer)))))))))
     (let ((dashboard-style (theme:themed-css (theme *browser*)
                              (body
                               :color theme:text
