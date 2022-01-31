@@ -44,7 +44,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
     t)
 (export-always 'bookmark-add)
 (defun bookmark-add (url &key date title tags)
-  (with-data-access (bookmarks (bookmarks-path (current-buffer)))
+  (nfiles:with-file-content (bookmarks (bookmarks-file (current-buffer)))
     (unless (or (url-empty-p url)
                 (string= "about:blank" (render-url url)))
       (multiple-value-bind (entries bookmarks-without-url)
@@ -65,12 +65,12 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 
 (define-class bookmark-source (prompter:source)
   ((prompter:name "Bookmarks")
-   (prompter:constructor (get-data (bookmarks-path (current-buffer))))
+   (prompter:constructor (nfiles:content (bookmarks-file (current-buffer))))
    (prompter:multi-selection-p t)
    (prompter:active-attributes-keys '("URL" "Title" "Tags"))))
 
 (defun tag-suggestions ()
-  (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
+  (let ((bookmarks (nfiles:content (bookmarks-file (current-buffer)))))
     ;; Warning: `sort' is destructive and `append' does not copy the last list,
     ;; so if we used `delete-duplicates' here it would have modified the last
     ;; list.
@@ -124,19 +124,19 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                 :padding-bottom "10px"))))
     (:body
      (:h1 "Bookmarks")
-     (or (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
+     (or (let ((bookmarks (nfiles:content (bookmarks-file (current-buffer)))))
            (loop for bookmark in bookmarks
                  collect
                  (let ((url-href (render-url (url bookmark))))
                    (:div
                     (:p (title bookmark))
                     (:p (:a :href url-href url-href))))))
-         (format nil "No bookmarks in ~s." (expand-path (bookmarks-path (current-buffer))))))))
+         (format nil "No bookmarks in ~s." (nfiles:expand (nfiles:content (bookmarks-file (current-buffer)))))))))
 
 (export-always 'url-bookmark-tags)
 (defun url-bookmark-tags (url)
   "Return the list of tags of the bookmark corresponding to URL."
-  (with-data-unsafe (bookmarks (bookmarks-path (current-buffer)))
+  (let ((bookmarks (nfiles:content (bookmarks-file (current-buffer)))))
     (alex:when-let ((existing (find url bookmarks :key #'url :test #'url-equal)))
       (tags existing))))
 
@@ -202,7 +202,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   "Delete bookmark(s) matching URLS-OR-BOOKMARK-ENTRIES.
 URLS is either a list or a single element."
   (if urls-or-bookmark-entries
-      (with-data-access (bookmarks (bookmarks-path (current-buffer)))
+      (nfiles:with-file-content (bookmarks (bookmarks-file (current-buffer)))
         (setf bookmarks
               (set-difference
                bookmarks
@@ -285,34 +285,24 @@ rest in background buffers."
       (log:error "During bookmark deserialization: ~a" c)
       nil)))
 
-(defmethod store ((profile data-profile) (path bookmarks-data-path) &key &allow-other-keys)
-  "Store the bookmarks to the buffer `bookmarks-path'."
-  (with-data-file (file path :direction :output)
-    (%set-data path
-              (sort (get-data path)
-                    #'url< :key #'url))
-    (write-string "(" file)
-    (dolist (entry (get-data path))
-      (write-char #\newline file)
-      (serialize-object entry file))
-    (format file "~%)~%")
-    (echo "Saved ~a bookmarks to ~s."
-          (length (get-data path))
-          (expand-path path)))
+(defmethod nfiles:serialize ((profile application-profile) (file bookmarks-file) &key)
+  (with-output-to-string (s)
+    (let ((content
+            (sort (nfiles:content file)
+                  #'url< :key #'url)))
+      (write-string "(" s)
+      (dolist (entry content)
+        (write-string +newline+ s)
+        (serialize-object entry s))
+      (format s "~%)~%")
+      (echo "Saved ~a bookmarks to ~s."
+            (length content)
+            (nfiles:expand file))))
   t)
 
-(defmethod restore ((profile data-profile) (path bookmarks-data-path) &key &allow-other-keys)
-  "Restore the bookmarks from the buffer `bookmarks-path'."
-  (handler-case
-      (let ((data (with-data-file (file path)
-                    (when file
-                      (deserialize-bookmarks file)))))
-        (when data
-          (echo "Loading ~a bookmarks from ~s." (length data) (expand-path path))
-          (%set-data path data)))
-    (error (c)
-      (echo-warning "Failed to load bookmarks from ~s: ~a"
-                    (expand-path path) c))))
+(defmethod nfiles:deserialize ((profile data-profile) (path bookmarks-data-path) raw-content &key)
+  ;; TODO: Error handling, echo to the user.
+  (deserialize-bookmarks raw-content))
 
 (define-command import-bookmarks-from-html (&key (html-file nil))
   "Import bookmarks from an HTML file."

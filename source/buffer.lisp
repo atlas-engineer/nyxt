@@ -15,6 +15,13 @@
 Dead buffers or placeholder buffers (i.e. those not associated with a web view)
 have an empty ID.")
    ;; TODO: Or maybe a dead-buffer should just be a buffer history?
+   (profile
+    (alex:if-let ((profile (nfiles:find-profile (getf *options* :data-profile))))
+      (make-instance profile)
+      *global-profile*)
+    :type application-profile
+    :documentation "Buffer profiles are used to specialize the behaviour of
+various parts, such as the path of all data files.")
    (data-profile
     (make-instance (or (find-data-profile (getf *options* :data-profile))
                        'default-data-profile))
@@ -324,12 +331,10 @@ such as :lisp or :renderer.")
     :documentation "
 The path where the system will create/save the global history.
 History data is kept in browser's `user-data', keyed by the expanded `history-path'.")
-   (bookmarks-path
-    (make-instance 'bookmarks-data-path)
-    :type data-path
-    :documentation "
-The path where the system will create/save the bookmarks.
-Bookmarks' data is kept in browser's `user-data', keyed by the expanded `bookmarks-path'.")
+   (bookmarks-file
+    (make-instance 'bookmarks-file)
+    :type bookmarks-file
+    :documentation "The file where the system will create/save the bookmarks.")
    (annotations-path
     (make-instance 'annotations-data-path)
     :type data-path

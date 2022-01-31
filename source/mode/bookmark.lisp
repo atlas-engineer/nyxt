@@ -25,7 +25,7 @@
 
 (defun group-bookmarks (buffer)
   (let ((bookmarks-table (make-hash-table :test #'equalp)))
-    (with-data-unsafe (bookmarks (bookmarks-path buffer))
+    (let ((bookmarks (nfiles:content (bookmarks-file buffer))))
       (dolist (bookmark bookmarks)
         (let ((tags (tags bookmark)))
           (if tags
@@ -44,7 +44,7 @@
       (:h1 "Bookmarks")
       (:body
        (if (zerop (hash-table-count bookmarks))
-           (format nil "No bookmarks in ~s." (expand-path (bookmarks-path bookmarks-buffer)))
+           (format nil "No bookmarks in ~s." (nfiles:expand (bookmarks-file bookmarks-buffer)))
            (maphash
             (lambda (tag bookmarks)
               (:details

@@ -61,6 +61,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                local-time
                lparallel
                log4cl
+               nfiles
                #-sbcl
                osicat
                parenscript
@@ -110,6 +111,8 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                 :components
                 ((:file "global")
                  (:file "concurrency")
+                 (:file "gpg")
+                 (:file "user-files")
                  (:file "data-storage")
                  (:file "configuration")
                  (:file "message")
