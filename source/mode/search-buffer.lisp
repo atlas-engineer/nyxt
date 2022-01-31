@@ -164,6 +164,8 @@
                                      (prompt-buffer-selection-highlight-hint :scroll t)))
    (prompter:destructor (lambda (prompter source)
                           (declare (ignore prompter source))
+                          (unless (slot-value (current-buffer) 'keep-search-hints-p)
+                            (remove-search-hints))
                           (remove-focus))))
   (:export-accessor-names-p t)
   (:export-class-name-p t)
@@ -182,7 +184,11 @@
    :prompt "Search text"
    :sources (list
              (make-instance 'user-search-buffer-source
-                            :case-sensitive-p case-sensitive-p))))
+                            :case-sensitive-p case-sensitive-p
+                            :actions (list (lambda (search-match)
+                                             (unless (slot-value (current-buffer) 'keep-search-hints-p)
+                                               (remove-search-hints)
+                                               search-match)))))))
 
 (define-command search-buffers (&key case-sensitive-p)
   "Search multiple buffers."
