@@ -5,7 +5,7 @@
 
 (plan nil)
 
-(define-class test-data-profile (nosave-data-profile)
+(define-class test-data-profile (nosave-data-profile) ; TODO: Use nfiles profile.
   ((name :initform "test"))
   (:documentation "Test profile that does not read nor write to disk."))
 
