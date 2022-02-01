@@ -16,9 +16,8 @@ Dead buffers or placeholder buffers (i.e. those not associated with a web view)
 have an empty ID.")
    ;; TODO: Or maybe a dead-buffer should just be a buffer history?
    (profile
-    (alex:if-let ((profile (nfiles:find-profile (getf *options* :data-profile))))
-      (make-instance profile)
-      *global-profile*)
+    (or (nfiles:find-profile (getf *options* :data-profile)) ; TODO: Change option name.
+        (make-instance 'application-profile))
     :type application-profile
     :documentation "Buffer profiles are used to specialize the behaviour of
 various parts, such as the path of all data files.")
