@@ -3,6 +3,12 @@
 
 (in-package :nyxt)
 
+(define-class annotations-file (nfiles:data-file nyxt-lisp-file)
+  ((nfiles:base-path "annotations-file")
+   (nfiles:name "bookmarks"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
 (define-class annotation ()
   ((data
     ""
