@@ -187,8 +187,8 @@
                             :case-sensitive-p case-sensitive-p
                             :actions (list (lambda (search-match)
                                              (unless (keep-search-hints-p (current-buffer))
-                                               (remove-search-hints)
-                                               search-match)))))))
+                                               (remove-search-hints))
+                                             search-match))))))
 
 (define-command search-buffers (&key case-sensitive-p)
   "Search multiple buffers."
