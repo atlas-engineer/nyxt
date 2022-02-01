@@ -334,9 +334,9 @@ History data is kept in browser's `user-data', keyed by the expanded `history-pa
     (make-instance 'bookmarks-file)
     :type bookmarks-file
     :documentation "The file where the system will create/save the bookmarks.")
-   (annotations-path
-    (make-instance 'annotations-data-path)
-    :type data-path
+   (annotations-file
+    (make-instance 'annotations-file)
+    :type annotations-file
     :documentation "
 The path where the system will create/save annotations.
 Annotation' data is kept in browser's `user-data', keyed by the expanded
