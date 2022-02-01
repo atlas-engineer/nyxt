@@ -43,31 +43,12 @@
     (:p (:b "Annotation: ") (data annotation))
     (:p (:b "Tags: ") (format nil "~{~a ~}" (tags annotation)))))
 
-(defmethod store ((profile data-profile) (path annotations-data-path) &key &allow-other-keys)
-  "Store the annotations to the buffer `annotations-path'."
-  (with-data-file (file path :direction :output)
-    (%set-data path (get-data path))
-    (s-serialization:serialize-sexp (get-data path) file))
-  t)
-
-(defmethod restore ((profile data-profile) (path annotations-data-path) &key &allow-other-keys)
-  "Restore the bookmarks from the buffer `annotations-path'."
-  (handler-case
-      (let ((data (with-data-file (file path)
-                    (when file
-                      (s-serialization:deserialize-sexp file)))))
-        (when data
-          (%set-data path data)))
-    (error (c)
-      (echo-warning "Failed to load annotations from ~s: ~a" (expand-path path) c))))
-
 (defun annotation-add (annotation)
-  (with-data-access (annotations (annotations-path (current-buffer)))
+  (nfiles:with-file-content (annotations (annotations-file (current-buffer)))
     (push annotation annotations)))
 
 (defun annotations ()
-  (with-data-access (annotations (annotations-path (current-buffer)))
-    annotations))
+  (nfiles:content (annotations-file (current-buffer))))
 
 (define-command annotate-current-url (&optional (buffer-id (id (current-buffer))))
   "Create a annotation of the URL of buffer with BUFFER-ID."
@@ -124,7 +105,7 @@
     (&key (source-buffer-id (id (current-buffer))))
     (buffer "*Annotations*" 'base-mode)
   "Create a new buffer with the annotations of the current URL of BUFFER."
-  (with-data-access (annotations (annotations-path buffer))
+  (let ((annotations (nfiles:content (annotations-file buffer))))
     (let ((filtered-annotations (remove-if-not (lambda (i)
                                                  (url-equal (quri:uri (url i)) (url (buffers-get source-buffer-id))))
                                                annotations)))
@@ -132,7 +113,7 @@
 
 (define-class annotation-source (prompter:source)
   ((prompter:name "Annotations")
-   (prompter:constructor (get-data (annotations-path (current-buffer))))
+   (prompter:constructor (get-data (annotations-file (current-buffer))))
    (prompter:multi-selection-p t)))
 
 (define-class annotation-tag-source (prompter:source)
@@ -148,7 +129,7 @@
       (prompter:fuzzy-match suggestion source (last-word input))))
    (prompter:multi-selection-p t)
    (prompter:constructor
-    (with-data-unsafe (annotations (annotations-path (current-buffer)))
+    (let ((annotations (nfiles:content (annotations-file (current-buffer)))))
       (sort (remove-duplicates
              (apply #'append (mapcar #'tags annotations))
              :test #'string-equal)
@@ -168,5 +149,5 @@
 (define-internal-page-command-global show-annotations ()
     (buffer "*Annotations*" 'base-mode)
   "Show all annotations"
-  (with-data-access (annotations (annotations-path buffer))
+  (let ((annotations (nfiles:content (annotations-file buffer))))
     (render-annotations :annotations annotations)))

@@ -49,6 +49,13 @@ It's not always the case, take the socket for instance."))
      (make-pathname :directory `(:relative ,(nfiles:name profile)))
      path)))
 
+(defmethod nfiles:serialize ((profile application-profile) (file nyxt-lisp-file) &key)
+  ;; TODO: Error handling!
+  (s-serialization:serialize-sexp (nfiles:content file) nil))
+
+(defmethod nfiles:deserialize ((profile application-profile) (file nyxt-lisp-file) raw-content &key)
+  (s-serialization:deserialize-sexp raw-content))
+
 (defmethod prompter:object-attributes ((file nfiles:file))
   `(("Path" ,(nfiles:expand file))      ; TODO: Trim if too long?
     ("Exists?" ,(if (uiop:file-exists-p (uiop:ensure-pathname (nfiles:expand file)))
