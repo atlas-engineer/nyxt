@@ -3,8 +3,21 @@
 
 (in-package :nyxt)
 
+(define-class application-profile (nfiles:profile)
+  ((nfiles:name "nyxt"))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:documentation "We define our own 'default profile' (instead of using
+`nfiles:profile' directly) so that we can specialize the methods."))
+
+(export-always '*global-profile*)
+(defvar *global-profile* (make-instance 'application-profile)
+  "The profile to use in the absence of buffers and on browser-less variables.")
+
 (define-class nyxt-file (nfiles:file)
-  ((editable-p
+  ((nfiles:profile *global-profile*)
+   (editable-p
     t
     :type boolean
     :documentation "If the file can be editted using a text editor.
@@ -21,14 +34,6 @@ It's not always the case, take the socket for instance."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Nyxt Lisp files."))
 
-(define-class application-profile (nfiles:profile)
-  ((nfiles:name "nyxt"))
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
-  (:documentation "We define our own 'default profile' (instead of using
-`nfiles:profile' directly) so that we can specialize the methods."))
-
 (define-class nosave-profile (nfiles:read-only-profile application-profile)
   ((nfiles:name "nosave"))
   (:export-class-name-p t)
@@ -36,10 +41,6 @@ It's not always the case, take the socket for instance."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "We define our own 'default profile' (instead of using
 `nfiles:profile' directly) so that we can specialize the methods."))
-
-(export-always '*global-profile*)
-(defvar *global-profile* (make-instance 'application-profile)
-  "The profile to use in the absence of buffers and on browser-less variables.")
 
 (defmethod nfiles:resolve ((profile application-profile) (file nyxt-file))
   "Move files "
