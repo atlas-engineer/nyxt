@@ -45,7 +45,7 @@ It's not always the case, take the socket for instance."))
   "Move files "
   (let ((path (call-next-method)))
     (uiop:merge-pathnames*
-     (make-pathname :directory `(:relative ,(name profile)))
+     (make-pathname :directory `(:relative ,(nfiles:name profile)))
      path)))
 
 (defmethod prompter:object-attributes ((file nfiles:file))
@@ -54,7 +54,7 @@ It's not always the case, take the socket for instance."))
                     "yes"
                     "no"))
     ("Type" ,(string (sera:class-name-of file)))
-    ("Name" ,(name file))))
+    ("Name" ,(nfiles:name file))))
 
 (define-class user-file-source (prompter:source)
   ((prompter:name "User files")
