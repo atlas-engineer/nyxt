@@ -267,20 +267,19 @@ rest in background buffers."
           (write-string ")"))
         (write-string ")")))))
 
-(defmethod deserialize-bookmarks (stream)
+(defmethod deserialize-bookmarks (string)
   (handler-case
-      (let ((*standard-input* stream))
-        (let ((entries (read stream)))
-          (mapcar (lambda (entry)
-                    (when (getf entry :url)
-                      (setf (getf entry :url)
-                            (quri:uri (getf entry :url))))
-                    (when (getf entry :date)
-                      (setf (getf entry :date)
-                            (local-time:parse-timestring (getf entry :date))))
-                    (apply #'make-instance 'bookmark-entry
-                           entry))
-                  entries)))
+      (let ((entries (read-from-string string)))
+        (mapcar (lambda (entry)
+                  (when (getf entry :url)
+                    (setf (getf entry :url)
+                          (quri:uri (getf entry :url))))
+                  (when (getf entry :date)
+                    (setf (getf entry :date)
+                          (local-time:parse-timestring (getf entry :date))))
+                  (apply #'make-instance 'bookmark-entry
+                         entry))
+                entries))
     (error (c)
       (log:error "During bookmark deserialization: ~a" c)
       nil)))
@@ -297,10 +296,10 @@ rest in background buffers."
       (format s "~%)~%")
       (echo "Saved ~a bookmarks to ~s."
             (length content)
-            (nfiles:expand file))))
-  t)
+            (nfiles:expand file)))
+    s))
 
-(defmethod nfiles:deserialize ((profile data-profile) (path bookmarks-data-path) raw-content &key)
+(defmethod nfiles:deserialize ((profile application-profile) (path bookmarks-file) raw-content &key)
   ;; TODO: Error handling, echo to the user.
   (deserialize-bookmarks raw-content))
 
