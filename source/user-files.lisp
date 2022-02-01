@@ -94,12 +94,6 @@ It's not always the case, take the socket for instance."))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class annotations-file (nfiles:data-file nyxt-lisp-file)
-  ((nfiles:base-path "annotations-file")
-   (nfiles:name "bookmarks"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-
 (define-class auto-mode-rules-file (nfiles:data-file nyxt-lisp-file)
   ((nfiles:base-path "auto-mode-rules")
    (nfiles:name "auto-mode-rules"))
