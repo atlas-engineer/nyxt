@@ -106,12 +106,6 @@ It's not always the case, take the socket for instance."))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class bookmarks-file (nfiles:data-file nyxt-lisp-file)
-  ((nfiles:base-path "bookmarks")
-   (nfiles:name "bookmarks"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-
 (define-class css-cache-directory (nfiles:data-file nyxt-file)
   ((nfiles:base-path "style-mode-css-cache/")
    (nfiles:name "mode-css-cache"))
