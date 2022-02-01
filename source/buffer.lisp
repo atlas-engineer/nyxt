@@ -373,6 +373,15 @@ separated from one another, so that each has its own behaviour and settings."))
 
 (define-user-class buffer)
 
+(defmethod initialize-instance :after ((buffer buffer) &key)
+  (let ((file-slot-names (remove-if (lambda (slot-name)
+                                      (not (typep (slot-value buffer slot-name)
+                                                  'nyxt-file)))
+                                    (mopu:slot-names 'buffer))))
+    (dolist (file-slot-name file-slot-names)
+      (setf (nfiles:profile (slot-value buffer file-slot-name))
+            (profile buffer)))))
+
 (define-class background-buffer (user-web-buffer)
   ()
   (:export-class-name-p t)
