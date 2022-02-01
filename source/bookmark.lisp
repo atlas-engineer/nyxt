@@ -304,23 +304,6 @@ rest in background buffers."
           (write-string ")"))
         (write-string ")")))))
 
-(defmethod deserialize-bookmarks (string)
-  (handler-case
-      (let ((entries (read-from-string string)))
-        (mapcar (lambda (entry)
-                  (when (getf entry :url)
-                    (setf (getf entry :url)
-                          (quri:uri (getf entry :url))))
-                  (when (getf entry :date)
-                    (setf (getf entry :date)
-                          (local-time:parse-timestring (getf entry :date))))
-                  (apply #'make-instance 'bookmark-entry
-                         entry))
-                entries))
-    (error (c)
-      (log:error "During bookmark deserialization: ~a" c)
-      nil)))
-
 (defmethod nfiles:serialize ((profile application-profile) (file bookmarks-file) &key)
   (with-output-to-string (s)
     (let ((content
@@ -338,7 +321,21 @@ rest in background buffers."
 
 (defmethod nfiles:deserialize ((profile application-profile) (path bookmarks-file) raw-content &key)
   ;; TODO: Error handling, echo to the user.
-  (deserialize-bookmarks raw-content))
+  (handler-case
+      (let ((entries (read-from-string raw-content)))
+        (mapcar (lambda (entry)
+                  (when (getf entry :url)
+                    (setf (getf entry :url)
+                          (quri:uri (getf entry :url))))
+                  (when (getf entry :date)
+                    (setf (getf entry :date)
+                          (local-time:parse-timestring (getf entry :date))))
+                  (apply #'make-instance 'bookmark-entry
+                         entry))
+                entries))
+    (error (c)
+      (log:error "During bookmark deserialization: ~a" c)
+      nil)))
 
 (define-command import-bookmarks-from-html (&key (html-file nil))
   "Import bookmarks from an HTML file."
