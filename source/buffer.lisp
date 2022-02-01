@@ -72,7 +72,7 @@ Auto-completions come from the default search engine.")
    (keep-search-hints-p
     t
     :type boolean
-    :documentation "Whether to keep search hints when the search prompt is closed.")
+    :documentation "Whether to keep search hints when the search prompt for the `search-buffer' command is closed.")
    (search-engines
     (list (make-instance 'search-engine
                          :shortcut "wiki"
