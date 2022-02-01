@@ -347,7 +347,9 @@ FUNCTION is the action to perform on the selected elements."
 
 (define-command follow-hint ()
   "Show a set of element hints, and go to the user inputted one in the current
-buffer."
+buffer.
+
+Auto-follows hints by their ID, if `web-mode's `auto-follow-hints-p' is true."
   (query-hints "Go to element" (lambda (results) (%follow-hint (first results)))))
 
 (define-command follow-hint-new-buffer ()

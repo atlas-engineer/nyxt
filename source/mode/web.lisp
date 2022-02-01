@@ -38,14 +38,16 @@ search.")
    (auto-follow-hints-p
     nil
     :type boolean
-    :documentation "Whether the hints are automatically followed when matching user input inputted.
+    :documentation "Whether the hints are automatically followed when matching user input.
 
 Matches the hint code (like \"ABC\"). Only follows when hint code
-case-insensitively equal to user input (\"abc\", \"AbC\" etc.).")
+case-insensitively equal to user input (\"abc\", \"AbC\" etc.).
+
+The period after which the auto-follow will happen is governed by `auto-follow-timer'.")
    (auto-follow-timer
     0.5
     :type float
-    :documentation "For how long should Nyxt wait until auto-following the hint.
+    :documentation "For how long (in seconds) should Nyxt wait until auto-following the hint.
 
 See `auto-follow-hints-p'.")
    (box-style (theme:themed-css (theme *browser*)
