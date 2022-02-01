@@ -179,7 +179,14 @@
                 (minimum-search-length source))))
 
 (define-command search-buffer (&key case-sensitive-p)
-  "Search on the current buffer."
+  "Search on the current buffer.
+If you want to remove the search hints when you close the search
+prompt, Set BUFFER's `keep-search-hints-p' slot to nil.
+
+Example:
+
+  (define-configuration buffer
+    ((keep-search-hints-p nil)))"
   (prompt
    :prompt "Search text"
    :sources (list
