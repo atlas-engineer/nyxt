@@ -50,7 +50,7 @@
 ;; CCL randomly fails here.  TODO: There may be a race condition.
 #+ccl
 (defmacro with-report-dangling-threads (&body body)
-  `,@body)
+  `(progn ,@body))
 
 (prove:subtest "Prompter init"
   (with-report-dangling-threads
