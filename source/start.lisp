@@ -38,17 +38,17 @@ variable.")
 
 (export-always 'nyxt-init-file)
 (defun nyxt-init-file (&optional subpath)
-  "Return SUBPATH relative to `*init-file-path*'.
-Return nil if `*init-file-path*' is nil.
+  "Return SUBPATH relative to `*init-file*'.
+Return nil if `*init-file*' is nil.
 
 Example:
 If for example, we want to load a define-command procedure that lives in ~/path/to/nyxt/config/dir/my-slink.lisp
 (load-after-system :slynk (nyxt-init-file \"my-slink.lisp\"))"
   (if subpath
       (uiop:subpathname* (uiop:pathname-directory-pathname
-                          (expand-path *init-file-path*))
+                          (nfiles:expand *init-file*))
                          subpath)
-      (expand-path *init-file-path*)))
+      (nfiles:expand *init-file*)))
 
 (defun handle-malformed-cli-arg (condition)
   (format t "Error parsing argument ~a: ~a.~&" (opts:option condition) condition)
@@ -80,7 +80,7 @@ and not the build environment."
        :long "init"
        :arg-parser #'identity
        :description (format nil "Set path to initialization file.
-Default: ~s" (expand-path *init-file-path*)))
+Default: ~s" (nfiles:expand *init-file*)))
       (:name :no-init
        :short #\I
        :long "no-init"
@@ -90,7 +90,7 @@ Default: ~s" (expand-path *init-file-path*)))
        :long "auto-config"
        :arg-parser #'identity
        :description (format nil "Set path to auto-config file.
-Default: ~s" (expand-path *auto-config-file-path*)))
+Default: ~s" (nfiles:expand *auto-config-file*)))
       (:name :no-auto-config
        :short #\C
        :long "no-auto-config"
@@ -280,9 +280,10 @@ Return the short error message and the full error message as second value."
   (prompt
    :prompt "Load file"
    :input (uiop:native-namestring
-           (alex:if-let ((init-path (expand-path *init-file-path*)))
-             (uiop:pathname-directory-pathname (pathname init-path))
-             (uiop:getcwd)))
+           (let ((init-path (nfiles:expand *init-file*)))
+             (if (uiop:file-exists-p init-path)
+                 (uiop:pathname-directory-pathname init-path)
+                 (uiop:getcwd))))
    :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
    :sources
    (make-instance 'nyxt/file-manager-mode:user-file-source
@@ -291,7 +292,7 @@ Return the short error message and the full error message as second value."
                                                (dolist (file files)
                                                  (load-lisp file)))))))
 
-(define-command load-init-file (&key (init-file (expand-path *init-file-path*)))
+(define-command load-init-file (&key (init-file (nfiles:expand *init-file*)))
   "Load or reload the init file."
   (load-lisp init-file :package (find-package :nyxt-user)))
 
@@ -489,7 +490,7 @@ Examples:
      (princ (system-information)))
 
     ((getf options :list-data-profiles)
-     (load-lisp (expand-path *init-file-path*) :package (find-package :nyxt-user))
+     (load-lisp (nfiles:expand *init-file*) :package (find-package :nyxt-user))
      (mapcar (lambda (pair)
                (format t "~a~10t~a~&" (first pair) (indent (second pair) 10)))
              (mapcar #'rest (package-data-profiles))))
@@ -531,14 +532,14 @@ Examples:
 (defun start-load-or-eval ()
   "Evaluate Lisp.
 The evaluation may happen on its own instance or on an already running instance."
-  (load-lisp (expand-path *auto-config-file-path*) :package (find-package :nyxt-user))
-  (load-lisp (expand-path *init-file-path*):package (find-package :nyxt-user))
+  (load-lisp (nfiles:expand *auto-config-file*) :package (find-package :nyxt-user))
+  (load-lisp (nfiles:expand *init-file*):package (find-package :nyxt-user))
   (load-or-eval :remote (getf *options* :remote)))
 
 (defun start-browser (url-strings)
   "Start Nyxt.
-First load AUTO-CONFIG-FILE.
-Then load INIT-FILE if non-nil.
+First load `*auto-config-file*' if any.
+Then load `*init-file*' if any.
 Instantiate `*browser*'.
 Finally, run the browser, load URL-STRINGS if any, then run
 `*after-init-hook*'."
@@ -551,8 +552,8 @@ Finally, run the browser, load URL-STRINGS if any, then run
               (getf *options* :no-socket)
               (null (expand-path *socket-path*)))
       (format t "Nyxt version ~a~&" +version+)
-      (load-lisp (expand-path *auto-config-file-path*) :package (find-package :nyxt-user))
-      (match (multiple-value-list (load-lisp (expand-path *init-file-path*)
+      (load-lisp (nfiles:expand *auto-config-file*) :package (find-package :nyxt-user))
+      (match (multiple-value-list (load-lisp (nfiles:expand *init-file*)
                                              :package (find-package :nyxt-user)))
         (nil nil)
         ((list message full-message)

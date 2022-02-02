@@ -29,16 +29,16 @@ change the value of a setting. The settings will be applied immediately and
 saved for future sessions. Please note that these settings will not alter
 existing object instances.")
     (:p "Settings created by Nyxt are stored in "
-        (:code (expand-path *auto-config-file-path*)) ".")
+        (:code (nfiles:expand *auto-config-file*)) ".")
     (:p "Any settings can be overridden manually by "
-        (:code (expand-path *init-file-path*)) ".")
+        (:code (nfiles:expand *init-file*)) ".")
     (:p "The following section assumes knowledge of basic Common Lisp or a
 similar programming language.")
     (:p "The user needs to manually create the Nyxt configuration file "
-        (:code (expand-path *init-file-path*))
+        (:code (nfiles:expand *init-file*))
         ", and the parent folders if necessary. You can also press the button
 below to create said file, if it's not created yet.")
-     (let ((init-file-path (expand-path *init-file-path*)))
+     (let ((init-file-path (nfiles:expand *init-file*)))
        (:p (if (uiop:file-exists-p init-file-path)
                (:a :class "button"
                    :href (ps:ps (nyxt/ps:lisp-eval `(echo "Init file exists")))
