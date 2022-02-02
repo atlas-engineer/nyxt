@@ -629,44 +629,67 @@ evaluate in order."
             until (eq object :eof)
             collect (funcall (lambda () (eval object)))))))
 
-(defmethod prompter:object-attributes ((restart restart))
-  `(("Name" ,(restart-name restart))))
+(defvar *debug-conditions* (make-hash-table)
+  "A hash-table from numeric condition ID to the (CONDITION RESTARTS CHANNEL) lists.
 
-(define-class restarts-source (prompter:source)
-  ((prompter:name "Restarts"))
-  (:export-class-name-p t))
+- CONDITION is the signaled condition.
+- RESTARTS is the list of restarts computed for this CONDITION.
+- CHANNEL is the channel to send the user-chosen restart at.")
 
-(define-class backtrace-source (prompter:source)
-  ((prompter:name "Backtrace"))
-  (:export-class-name-p t))
+(defun debugger-hook (condition hook)
+  ;; FIXME: It handles recursive errors, but has no way to fall back to the
+  ;; default debugger, like SLY.
+  (declare (ignore hook))
+  (when *debug-on-error*
+    (let* ((*debugger-hook* #'debugger-hook)
+           (id (parse-integer (get-unique-identifier *browser*)))
+           (restarts (compute-restarts condition))
+           (channel (make-channel 1))
+           (prompt "[restart prompt]")
+           (*query-io*
+             (make-two-way-stream
+              ;; TODO: Understand how Swank makes those streams.
+              (swank-backend:make-input-stream
+               (lambda () (prompt :prompt prompt
+                                  :sources (list (make-instance 'prompter:raw-source)))))
+              (swank-backend:make-output-stream (lambda (string) (setf prompt string))))))
+      (setf (gethash id *debug-conditions*) (list condition restarts channel))
+      (open-debugger :id id)
+      ;; FIXME: Waits indefinitely. Should it?
+      (invoke-restart-interactively (calispel:? channel)))))
 
-;; TODO: Make it resumable somehow. Channels?
-(defun debug-prompt (condition)
-  (handler-case
-      (prompt1 :prompt (format nil "~a" condition)
-        :sources (list (make-instance 'restarts-source
-                                      :constructor (compute-restarts condition))
-                       ;; FIXME: Maybe use internal pages instead of prompt-buffer?
-                       (make-instance 'backtrace-source
-                                      :constructor (serapeum:filter
-                                                    (lambda (line)
-                                                      (digit-char-p (aref line 0)))
-                                                    (str:split
-                                                     #\newline
-                                                     (with-output-to-string (s)
-                                                       (uiop:print-backtrace
-                                                        :stream s))
-                                                     :omit-nulls t)))))
-    (nyxt-prompt-buffer-canceled () 'abort)
-    (error () 'abort)))
+(defun debug->html (condition id &optional restarts)
+  "Produce HTML code for the CONDITION with RESTARTS."
+  (spinneret:with-html-string
+    (:h* (symbol-name (type-of condition)))
+    (:pre (format nil "~a" condition))
+    (:section
+     (loop for restart in restarts
+           for i from 0 by 1
+           collect (:button :class "button"
+                            :onclick (ps:ps (nyxt/ps:lisp-eval
+                                             `(calispel:!
+                                               (third (gethash ,id *debug-conditions*))
+                                               (nth ,i (second (gethash ,id *debug-conditions*))))))
+                            (format nil "[~d] ~a" i (restart-name restart))))
+     (:h* "Backtrace")
+     (:pre (with-output-to-string (s) (uiop:print-backtrace :stream s :condition condition))))))
+
+;; FIXME: Not for interactive use?
+(define-internal-page-command open-debugger (&key id)
+    ;; TODO: Introduce debug-mode with keys invoking restarts and toggling backtrace.
+    (buffer (format nil "*Debug-~d*" id) 'base-mode)
+  "Open the debugger with the condition indexed by ID."
+  (destructuring-bind (condition restarts channel)
+      (gethash id *debug-conditions*)
+    (declare (ignore channel))
+    (debug->html condition id restarts)))
 
 (define-command-global toggle-debug-on-error (&key (value nil value-provided-p))
   "Toggle Nyxt-native debugging.
 
 See `*debug-on-error*'."
-  (if value-provided-p
-      (setf *debug-on-error* value)
-      (setf *debug-on-error* (not *debug-on-error*))))
+  (setf *debug-on-error* (if value-provided-p value (not *debug-on-error*))))
 
 (defun error-buffer (&optional (title "Unknown error") (text ""))
   (sera:lret* ((error-buffer (make-instance 'user-web-buffer)))
