@@ -57,10 +57,17 @@ It's not always the case, take the socket for instance."))
 
 (defmethod nfiles:serialize ((profile application-profile) (file nyxt-lisp-file) &key)
   ;; TODO: Error handling!
-  (s-serialization:serialize-sexp (nfiles:content file) nil))
+  ;; We need to make sure current package is :nyxt so that symbols are printed
+  ;; with consistent namespaces.
+  (let ((*package* (find-package :nyxt))
+        (*print-length* nil))
+    (s-serialization:serialize-sexp (nfiles:content file) nil)))
 
 (defmethod nfiles:deserialize ((profile application-profile) (file nyxt-lisp-file) raw-content &key)
-  (s-serialization:deserialize-sexp raw-content))
+  ;; We need to make sure current package is :nyxt so that symbols are printed
+  ;; with consistent namespaces.
+  (let ((*package* (find-package :nyxt)))
+    (s-serialization:deserialize-sexp raw-content)))
 
 (defmethod prompter:object-attributes ((file nfiles:file))
   `(("Path" ,(nfiles:expand file))      ; TODO: Trim if too long?
