@@ -273,25 +273,23 @@ rest in background buffers."
           (write-string ")"))
         (write-string ")")))))
 
-(defmethod nfiles:serialize ((profile application-profile) (file bookmarks-file) &key)
-  (with-output-to-string (s)
-    (let ((content
-            (sort (nfiles:content file)
-                  #'url< :key #'url)))
-      (write-string "(" s)
-      (dolist (entry content)
-        (write-string +newline+ s)
-        (serialize-object entry s))
-      (format s "~%)~%")
-      (echo "Saved ~a bookmarks to ~s."
-            (length content)
-            (nfiles:expand file)))
-    s))
+(defmethod nfiles:serialize ((profile application-profile) (file bookmarks-file) stream &key)
+  (let ((content
+          (sort (nfiles:content file)
+                #'url< :key #'url)))
+    (write-string "(" stream)
+    (dolist (entry content)
+      (write-string +newline+ stream)
+      (serialize-object entry stream))
+    (format stream "~%)~%")
+    (echo "Saved ~a bookmarks to ~s."
+          (length content)
+          (nfiles:expand file))))
 
 (defmethod nfiles:deserialize ((profile application-profile) (path bookmarks-file) raw-content &key)
   ;; TODO: Error handling, echo to the user.
   (handler-case
-      (let ((entries (read-from-string raw-content)))
+      (let ((entries (read raw-content)))
         (mapcar (lambda (entry)
                   (when (getf entry :url)
                     (setf (getf entry :url)

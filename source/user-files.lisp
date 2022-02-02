@@ -55,13 +55,13 @@ It's not always the case, take the socket for instance."))
            (nfiles:base-path file))))
   (call-next-method))
 
-(defmethod nfiles:serialize ((profile application-profile) (file nyxt-lisp-file) &key)
+(defmethod nfiles:serialize ((profile application-profile) (file nyxt-lisp-file) stream &key)
   ;; TODO: Error handling!
   ;; We need to make sure current package is :nyxt so that symbols are printed
   ;; with consistent namespaces.
   (let ((*package* (find-package :nyxt))
         (*print-length* nil))
-    (s-serialization:serialize-sexp (nfiles:content file) nil)))
+    (s-serialization:serialize-sexp (nfiles:content file) stream)))
 
 (defmethod nfiles:deserialize ((profile application-profile) (file nyxt-lisp-file) raw-content &key)
   ;; We need to make sure current package is :nyxt so that symbols are printed

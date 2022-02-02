@@ -199,20 +199,20 @@ lot."
                          (:a :href (render-url (url data))
                              (render-url (url data))))))))
 
-(defmethod nfiles:serialize ((profile application-profile) (file history-file) &key)
+(defmethod nfiles:serialize ((profile application-profile) (file history-file) stream &key)
   (let ((*package* (find-package :nyxt))
         (*print-length* nil))
     ;; We need to make sure current package is :nyxt so that symbols are printed
     ;; with consistent namespaces.
-    (format nil
-            "~s"
-            (with-input-from-string (in (with-output-to-string (out)
-                                          (s-serialization:serialize-sexp
-                                           (list +version+ (nfiles:content file))
-                                           out)))
-              ;; We READ the output of serialize-sexp to make it more
-              ;; human-readable.
-              (read in)))))
+    (write
+     (with-input-from-string (in (with-output-to-string (out)
+                                   (s-serialization:serialize-sexp
+                                    (list +version+ (nfiles:content file))
+                                    out)))
+       ;; We READ the output of serialize-sexp to make it more
+       ;; human-readable.
+       (read in))
+     :stream stream)))
 
 ;; REVIEW: This works around the issue of cl-prevalence to deserialize structs
 ;; with custom constructors: https://github.com/40ants/cl-prevalence/issues/16.
@@ -353,8 +353,7 @@ Finally go through all the owners and update their creator."
     (let ((data (let ((*package* (find-package :nyxt)))
                   ;; We need to make sure current package is :nyxt so that
                   ;; symbols are printed with consistent namespaces.
-                  (with-input-from-string (s raw-content)
-                    (history-deserialize-sexp s)))))
+                  (history-deserialize-sexp raw-content))))
       (match data
         (nil nil)
         ((guard (list version history) t)
