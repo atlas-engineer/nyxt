@@ -757,8 +757,8 @@ See `gtk-browser's `modifier-translator' slot."
                  ;; An ephemeral data-manager cannot be given any directories, even if they are set to nil.
                  (make-instance 'webkit-web-context-ephemeral
                                 :website-data-manager
-                                (make-instance  'webkit-website-data-manager-ephemeral
-                                                :is-ephemeral t))
+                                (make-instance 'webkit-website-data-manager-ephemeral
+                                               :is-ephemeral t))
                  (let ((data-manager-data-path (make-instance 'data-manager-data-path :context-name name))
                        (data-manager-cache-path (make-instance 'data-manager-cache-path :context-name name)))
                    (make-instance 'webkit-web-context
@@ -810,7 +810,7 @@ See `gtk-browser's `modifier-translator' slot."
                         buffer))
             (or (error-callback scheme-object)
                 (lambda (condition)
-                  (echo-warning "Error while routing ~s resource: ~a" scheme condition))) )
+                  (echo-warning "Error while routing ~s resource: ~a" scheme condition))))
            ;; We err on the side of caution, assigning the most restrictive policy
            ;; out of those provided. Should it be the other way around?
            (let ((manager (webkit:webkit-web-context-get-security-manager context)))
@@ -839,7 +839,7 @@ See `gtk-browser's `modifier-translator' slot."
            cookie-manager
            cookies-data-path
            :webkit-cookie-persistent-storage-text))
-        (set-cookie-policy cookie-manager (default-cookie-policy buffer)))
+        (set-cookie-policy cookie-manager (default-cookie-policy *browser*)))
       context)))
 
 (defun internal-context-p (name)
