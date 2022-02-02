@@ -86,7 +86,7 @@ class."
 
 (defun make-history-tree (&optional (buffer (current-buffer)))
   "Return a new global history tree for `history-entry' data."
-  (htree:make :key 'history-tree-key :initial-owners (list (id buffer))))
+  (htree:make :key 'history-tree-key :initial-owners (when buffer (list (id buffer)))))
 
 (-> history-add (quri:uri &key (:title string) (:buffer buffer)) *)
 (defun history-add (url &key (title "") (buffer (current-buffer)))
