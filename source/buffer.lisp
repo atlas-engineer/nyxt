@@ -416,21 +416,17 @@ Return the created buffer."
               (typep buffer 'status-buffer))
     (buffers-set (id buffer) buffer))
   (unless no-history-p
-    ;; When we create buffer, current one can override the
-    ;; data-profile of the created buffer. This is dangerous,
-    ;; especially for nosave buffers.
-    (with-current-buffer buffer
-      ;; Register buffer in global history:
-      (nfiles:with-file-content (history (history-file buffer)
-                                 :default (make-history-tree buffer))
-        ;; Owner may already exist if history was just created with the above
-        ;; default value.
-        (unless (htree:owner history (id buffer))
-          (htree:add-owner history (id buffer)
-                           :creator-id (when (and parent-buffer
-                                                  (not (nosave-buffer-p buffer))
-                                                  (not (nosave-buffer-p parent-buffer)))
-                                         (id parent-buffer)))))))
+    ;; Register buffer in global history:
+    (nfiles:with-file-content (history (history-file buffer)
+                               :default (make-history-tree buffer))
+      ;; Owner may already exist if history was just created with the above
+      ;; default value.
+      (unless (htree:owner history (id buffer))
+        (htree:add-owner history (id buffer)
+                         :creator-id (when (and parent-buffer
+                                                (not (nosave-buffer-p buffer))
+                                                (not (nosave-buffer-p parent-buffer)))
+                                       (id parent-buffer))))))
   buffer)
 
 (defmethod finalize-buffer (buffer &key (browser *browser*) no-hook-p extra-modes)

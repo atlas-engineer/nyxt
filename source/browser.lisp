@@ -362,7 +362,8 @@ restored."
                                     (log:debug "Prompt buffer interrupted")
                                     nil)))
                    (:always-restore
-                    (restore-history-buffers (buffer-history buffer)))
+                    (restore-history-buffers (buffer-history buffer)
+                                             (history-file buffer)))
                    (:never-restore
                     (log:info "Not restoring session.")
                     (clear-history-owners buffer))))))
