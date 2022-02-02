@@ -16,7 +16,7 @@
 ;;;   removing the initform forces us to put lots of (slot-boundp ...).
 
 (define-class bookmarks-file (nfiles:data-file nyxt-lisp-file)
-  ((nfiles:base-path "bookmarks")
+  ((nfiles:base-path #p"bookmarks")
    (nfiles:name "bookmarks"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
