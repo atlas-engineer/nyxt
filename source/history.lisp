@@ -82,8 +82,8 @@ class."
 (defun history-add (url &key (title "") (buffer (current-buffer)))
   "Add URL to the global/buffer-local history.
 The `implicit-visits' count is incremented."
-  (with-data-access (history (history-path (current-buffer))
-                     :default (make-history-tree))
+  (nfiles:with-file-content (history (history-file (current-buffer))
+                                     :default (make-history-tree))
     (unless (or (url-empty-p url)
                 ;; If buffer was not registered in the global history, don't
                 ;; proceed.  See `buffer's `initialize-instance' `:after' method..
@@ -103,7 +103,7 @@ The `implicit-visits' count is incremented."
                   :prompt "Delete entries"
                   :sources (list (make-instance 'history-disowned-source
                                                 :buffer buffer)))))
-    (with-data-access (history (history-path buffer))
+    (nfiles:with-file-content (history (history-file buffer))
       (dolist (entry entries)
         (htree:delete-data history entry)))))
 
@@ -118,7 +118,7 @@ then become available for deletion with `delete-history-entry'."
                       :prompt "Reset histories of buffer(s)"
                       :sources (list (make-instance 'user-buffer-source
                                                     :actions '()))))))
-    (with-data-access (history (history-path (current-buffer)))
+    (nfiles:with-file-content (history (history-file (current-buffer)))
       (dolist (buffer buffers)
         (htree:reset-owner history (id buffer))))))
 
@@ -145,19 +145,19 @@ lot."
            0))))
 
 (defun history-initial-suggestions (&key prefix-urls) ; TODO: Rename?  Make this a preprocessor so that it runs in the background?
-  "TODO: Complete me!"
-  (with-data-unsafe (hist (history-path (current-buffer)))
-    (let* ((all-history-entries (when hist
-                                  (mapcar #'htree:data
-                                          (sort (alex:hash-table-keys (htree:entries hist))
-                                                (lambda (x y)
-                                                  (> (score-history-entry x)
-                                                     (score-history-entry y)))))))
-           (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
-      (when prefix-urls
-        (setf all-history-entries (append (mapcar #'quri:url-decode prefix-urls)
-                                          all-history-entries)))
-      all-history-entries)))
+  "Return all history entries, with PREFIX-URLS prepended to the result."
+  (let* ((history (nfiles:content (history-file (current-buffer))))
+         (all-history-entries (when history
+                                (mapcar #'htree:data
+                                        (sort (alex:hash-table-keys (htree:entries history))
+                                              (lambda (x y)
+                                                (> (score-history-entry x)
+                                                   (score-history-entry y)))))))
+         (prefix-urls (delete-if #'uiop:emptyp prefix-urls)))
+    (when prefix-urls
+      (setf all-history-entries (append (mapcar #'quri:url-decode prefix-urls)
+                                        all-history-entries)))
+    all-history-entries))
 
 (define-class history-disowned-source (prompter:source)
   ((prompter:name "Disowned History")
@@ -165,51 +165,44 @@ lot."
    (prompter:multi-selection-p t)
    (prompter:constructor
     (lambda (source)
-      (with-data-unsafe (hist (history-path (buffer source)))
-        (let ((owner-less-history-entries
-                (when hist
-                  (mapcar #'htree:data
-                          (sort
-                           (delete-if (lambda (entry) (htree:nodes entry))
-                                      (alex:hash-table-keys (htree:entries hist)))
-                           (lambda (x y)
-                             (> (score-history-entry x)
-                                (score-history-entry y))))))))
-          owner-less-history-entries))))))
+      (let* ((history (nfiles:content (history-file (buffer source))))
+             (owner-less-history-entries
+               (when history
+                 (mapcar #'htree:data
+                         (sort
+                          (delete-if (lambda (entry) (htree:nodes entry))
+                                     (alex:hash-table-keys (htree:entries history)))
+                          (lambda (x y)
+                            (> (score-history-entry x)
+                               (score-history-entry y))))))))
+        owner-less-history-entries)))))
 
 (defun history-html-list (&key (limit 100) (separator " → "))
-  (with-data-unsafe (history (history-path (current-buffer)))
-    (let* ((history-entries
-             (sort-by-time (alex:hash-table-keys (htree:entries history))
-                           :key #'htree:last-access)))
-      (spinneret:with-html-string
-        (loop for entry in (sera:take limit (the list history-entries))
-              for data = (htree:data entry)
-              collect (:li (title data) (unless (str:emptyp (title data)) separator)
-                           (:a :href (render-url (url data))
-                               (render-url (url data)))))))))
+  (let* ((history (nfiles:content (history-file (current-buffer))))
+         (history-entries
+           (sort-by-time (alex:hash-table-keys (htree:entries history))
+                         :key #'htree:last-access)))
+    (spinneret:with-html-string
+      (loop for entry in (sera:take limit (the list history-entries))
+            for data = (htree:data entry)
+            collect (:li (title data) (unless (str:emptyp (title data)) separator)
+                         (:a :href (render-url (url data))
+                             (render-url (url data))))))))
 
-(defun history-stored-data (path)
-  "Return the history data that needs to be serialized.
-This data can be used to restore the session later, e.g. when starting a new
-instance of Nyxt."
-  (list +version+ (get-data path)))
-
-(defmethod store ((profile data-profile) (path history-data-path) &key &allow-other-keys)
-  "Store the global/buffer-local history to the PATH."
-  (with-data-file (file path :direction :output)
-    ;; We READ the output of serialize-sexp to make it more human-readable.
-    (let ((*package* (find-package :nyxt))
-          (*print-length* nil))
-      ;; We need to make sure current package is :nyxt so that
-      ;; symbols are printed with consistent namespaces.
-      (format file
-              "~s"
-              (with-input-from-string (in (with-output-to-string (out)
-                                            (s-serialization:serialize-sexp
-                                             (history-stored-data path)
-                                             out)))
-                (read in))))))
+(defmethod nfiles:serialize ((profile application-profile) (file history-file) &key)
+  (let ((*package* (find-package :nyxt))
+        (*print-length* nil))
+    ;; We need to make sure current package is :nyxt so that symbols are printed
+    ;; with consistent namespaces.
+    (format nil
+            "~s"
+            (with-input-from-string (in (with-output-to-string (out)
+                                          (s-serialization:serialize-sexp
+                                           (list +version+ (nfiles:content file))
+                                           out)))
+              ;; We READ the output of serialize-sexp to make it more
+              ;; human-readable.
+              (read in)))))
 
 ;; REVIEW: This works around the issue of cl-prevalence to deserialize structs
 ;; with custom constructors: https://github.com/40ants/cl-prevalence/issues/16.
@@ -303,113 +296,73 @@ instance of Nyxt."
   (let ((history (make-history-tree)))
     history))
 
-(defvar flat-history-path (make-instance 'history-data-path :basename "history") ; TODO: Move to global.lisp?
-  "Global flat history that was used before the introduction of the global history tree.
-This is deprecated.
-We keep this variable as a means to import the old format to the new one.")
-
-(defun restore-history-buffers (history-path)
-  "Restore buffers corresponding to the HISTORY-PATH owners.
+(defun restore-history-buffers (history)
+  "Restore buffers corresponding to the HISTORY owners.
 
 This modifies the history owners as follows.
 For each owner, make a buffer, swap old owner identifier for the new buffer ID
-and maintain a table of (old-id -> new-id).  Finally go through all the owners
-and update their creator."
-  (let (latest-id)
-    (with-data-access (history history-path)
-      (log:info "Restoring ~a buffer~:p from history."
-                (hash-table-count (htree:owners history)))
-      (let ((old-id->new-id (make-hash-table :test #'equalp))
-            (new-owners (make-hash-table :test #'equalp)))
-        ;; We can't `maphash' over (htree:owners history) because
-        ;; `make-buffer' modifies the owners hash table.
-        (mapc (lambda-match
-                ((cons owner-id owner)
-                 (let ((current-node (htree:current
-                                      (htree:owner history owner-id))))
-                   ;; Node-less owners can safely be ignored.
-                   (when current-node
-                     (let ((new-buffer (make-buffer :title (title (htree:data current-node))
+and maintain a table of (old-id -> new-id).
+Finally go through all the owners and update their creator."
+  (log:info "Restoring ~a buffer~:p from history."
+            (hash-table-count (htree:owners history)))
+  (let ((old-id->new-id (make-hash-table :test #'equalp))
+        (new-owners (make-hash-table :test #'equalp)))
+    ;; We can't `maphash' over (htree:owners history) because
+    ;; `make-buffer' modifies the owners hash table.
+    (mapc (lambda-match
+            ((cons owner-id owner)
+             (let ((current-node (htree:current
+                                  (htree:owner history owner-id))))
+               ;; Node-less owners can safely be ignored.
+               (when current-node
+                 (let ((new-buffer (make-buffer :title (title (htree:data current-node))
 
-                                                    :url (url (htree:data current-node))
-                                                    :no-history-p t
-                                                    :load-url-p nil)))
-                       (setf (gethash owner-id old-id->new-id) (id new-buffer))
-                       (setf (gethash (id new-buffer) new-owners) owner))))))
-              (alex:hash-table-alist (htree:owners history)))
-        (maphash (lambda (_ owner)
-                   (declare (ignore _))
-                   (setf (htree:creator-id owner)
-                         (gethash (htree:creator-id owner) old-id->new-id)))
-                 (htree:owners history))
-        (setf (htree:owners history) new-owners))
-      (setf latest-id (first
-                       (first
-                        (sort-by-time (alex:hash-table-alist (htree:owners history))
-                                      :key (alex:compose #'htree:last-access #'rest))))))
-    (when latest-id
-      (switch-buffer :id latest-id))))
+                                                :url (url (htree:data current-node))
+                                                :no-history-p t
+                                                :load-url-p nil)))
+                   (setf (gethash owner-id old-id->new-id) (id new-buffer))
+                   (setf (gethash (id new-buffer) new-owners) owner))))))
+          (alex:hash-table-alist (htree:owners history)))
+    (maphash (lambda (_ owner)
+               (declare (ignore _))
+               (setf (htree:creator-id owner)
+                     (gethash (htree:creator-id owner) old-id->new-id)))
+             (htree:owners history))
+    (setf (htree:owners history) new-owners))
+  (alex:when-let ((latest-id (first
+                              (first
+                               (sort-by-time (alex:hash-table-alist (htree:owners history))
+                                             :key (alex:compose #'htree:last-access #'rest))))))
+    (switch-buffer :id latest-id)))
 
-(defmethod restore ((profile data-profile) (path history-data-path)
-                    &key &allow-other-keys)
+(defmethod nfiles:deserialize ((profile application-profile) (file history-file) raw-content &key)
   "Restore the global/buffer-local history and session from the PATH."
-  (labels ((restore-flat-history (old-history old-path)
-             (echo "Importing deprecated global history of ~a URLs from ~s."
-                   (hash-table-count old-history)
-                   (expand-path old-path))
-             ;; REVIEW: `with-data-access' relies on `restore', so it shouldn't
-             ;; be used inside of what it relies on. That's a vicious circle.
-             ;; TODO: Use `get-data' instead.
-             (with-data-access (history path
-                                :default (make-history-tree)) ; TODO: What shall the default owner be here?
-               (maphash (lambda (key data)
-                          (declare (ignore key))
-                          (let ((last-access (last-access data)))
-                            ;; Remove last-access from DATA to avoid storing it
-                            ;; twice.
-                            (setf (last-access data) "")
-                            (htree:add-entry history data last-access)))
-                        old-history)
-               history)))
-    (with-protect ("Failed to restore history from ~a: ~a"
-                        (expand-path path) :condition)
-      (let* ((path (if (uiop:file-exists-p (expand-path path))
-                       path
-                       flat-history-path))
-             (data (with-data-file (file path)
-                     (when file
-                       ;; We need to make sure current package is :nyxt so that
-                       ;; symbols are printed with consistent namespaces.
-                       (let ((*package* (find-package :nyxt)))
-                         (history-deserialize-sexp file))))))
-        (match data
-          (nil nil)
-          ((guard (list version history) t)
-           (unless (string= version +version+)
-             (log:warn "History version ~s differs from current version ~s"
-                       version +version+))
-           (ctypecase history
-             (htree:history-tree
-              (echo "Loading history of ~a URLs from ~s."
-                    (hash-table-count (htree:entries history))
-                    (expand-path path))
-              history)
-
-             (hash-table
-              (restore-flat-history history path))))
-          (_ (progn
-               (error "Expected (list version history) structure.")
-               nil)))))))
+  ;; TODO: Move `with-protect' to a more general `nfiles:deserialize' method?
+  (with-protect ("Failed to restore history from ~a: ~a"
+                 (nfiles:expand file) :condition)
+    (let ((data (let ((*package* (find-package :nyxt)))
+                  ;; We need to make sure current package is :nyxt so that
+                  ;; symbols are printed with consistent namespaces.
+                  (history-deserialize-sexp raw-content))))
+      (match data
+        (nil nil)
+        ((guard (list version history) t)
+         (unless (string= version +version+)
+           (log:warn "History version ~s differs from current version ~s"
+                     version +version+))
+         (echo "Loading history of ~a URLs from ~s."
+               (hash-table-count (htree:entries history))
+               (nfiles:expand file)))
+        (_ (progn
+             (error "Expected (list version history) structure.")
+             nil))))))
 
 (defun histories-list (&optional (buffer (current-buffer)))
-  (alex:when-let ((dir (parent (history-path buffer))))
+  (alex:when-let ((dir (nfiles:parent (nfiles:expand (history-file buffer)))))
     (mapcar #'pathname-name
-            (remove-if
-             #'(lambda (pathname)
-                 (let ((type (pathname-type pathname)))
-                   (or (not (stringp type))
-                       (not (string-equal "lisp" type)))))
-             (uiop:directory-files dir)))))
+            (remove "lisp" (uiop:directory-files dir)
+                    :test 'string-equal
+                    :key #'nfiles:pathname-type*))))
 
 (define-class history-name-source (prompter:source)
   ((prompter:name "Histories")
@@ -423,14 +376,12 @@ Useful for session snapshots, as `restore-history-by-name' will restore opened b
                           :prompt "The name to store history with"
                           :sources (list (make-instance 'prompter:raw-source)
                                          (make-instance 'history-name-source))))
-                  (path (make-instance 'history-data-path
-                                       :dirname (parent (history-path (current-buffer)))
-                                       :basename name)))
-    (with-data-unsafe (history (history-path (current-buffer)))
-      (%set-data path history))
-    (let ((profile (data-profile (current-buffer))))
-      (store profile path)
-      (echo "History stored to ~s." (expand-data-path profile path)))))
+                  (new-file (make-instance 'history-file :base-path name)))
+    (when (or (not (uiop:file-exists-p (nfiles:expand new-file)))
+              (if-confirm ("Overwrite ~s?" (nfiles:expand new-file))
+                          t)))
+    (setf (nfiles:content new-file) (nfiles:content (history-file (current-buffer))))
+    (echo "History stored to ~s." (nfiles:expand new-file))))
 
 (define-command restore-history-by-name ()
   "Delete all the buffers of the current session/history and import the history chosen by user.
@@ -441,13 +392,12 @@ If you want to save the current history file beforehand, call
   (sera:and-let* ((name (prompt1
                           :prompt "The name of the history to restore"
                           :sources (list (make-instance 'history-name-source))))
-                  (path (make-instance 'history-data-path
-                                       :dirname (parent (history-path (current-buffer)))
-                                       :basename name)))
-    (let ((old-buffers (buffer-list)))
-      (sera:and-let* ((new-history (get-data path)))
-        ;; TODO: Maybe modify `history-path' of all the buffers instead of polluting history?
-        (%set-data (history-path (current-buffer)) new-history)
-        (restore-history-buffers (history-path (current-buffer)))
-        (dolist (buffer old-buffers)
-          (buffer-delete buffer))))))
+                  (new-file (make-instance 'history-file
+                                           :base-name (uiop:ensure-pathname name))))
+    (let ((old-buffers (buffer-list))
+          (new-history (nfiles:content new-file)))
+      (restore-history-buffers new-history)
+      (setf (nfiles:content (history-file (current-buffer)))
+            new-history)
+      (dolist (buffer old-buffers)
+        (buffer-delete buffer)))))
