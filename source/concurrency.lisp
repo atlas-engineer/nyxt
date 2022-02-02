@@ -19,14 +19,14 @@ raised condition."
   (alex:with-gensyms (c sub-c int-c)
     `(cond
        ((or *run-from-repl-p* *debug-on-error*)
-        (handler-bind ((error (lambda (,int-c)
-                                (when *debug-on-error*
-                                  (debugger-hook ,int-c nil))))
-                       (nyxt-prompt-buffer-canceled
+        (handler-bind ((nyxt-prompt-buffer-canceled
                          (lambda (,int-c)
                            (declare (ignore ,int-c))
                            (log:debug "Prompt buffer interrupted")
-                           (invoke-restart 'continue))))
+                           (invoke-restart 'continue)))
+                       (t (lambda (,int-c)
+                                (when *debug-on-error*
+                                  (debugger-hook ,int-c nil)))))
           (progn ,@body)))
        (t (ignore-errors
            (handler-bind
