@@ -149,7 +149,7 @@ run", -1),
                     !(jsc_value_is_boolean(tmp) && !jsc_value_to_boolean(tmp)) &&
                     !(jsc_value_is_undefined(tmp))) {
                         g_object_ref(message);
-                        unsigned long int *key = malloc(sizeof(unsigned long int));
+                        unsigned long int *key = g_malloc(sizeof(unsigned long int));
                         *key = id;
                         g_hash_table_insert(DATA, (void *) key, message);
                 }

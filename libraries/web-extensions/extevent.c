@@ -7,7 +7,7 @@
 static Extevent *
 extevent_constructor_callback (JSCValue *run_filter)
 {
-        Extevent *event = malloc(sizeof(Extevent));
+        Extevent *event = g_malloc(sizeof(Extevent));
         event->listeners = g_ptr_array_new();
         event->listeners_data = g_ptr_array_new();
         event->run_filter = run_filter;

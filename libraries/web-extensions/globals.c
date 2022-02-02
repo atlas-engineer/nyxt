@@ -78,7 +78,7 @@ extensions_data_add_from_json(const char *json)
                         } else {
                                 world = webkit_script_world_new_with_name(name);
                         }
-                        extension = malloc(sizeof(ExtensionData));
+                        extension = g_malloc(sizeof(ExtensionData));
                         extension->name = (char*) name;
                         extension->manifest = manifest;
                         extension->files = files;
@@ -193,10 +193,10 @@ int
 match_pattern_match (char *match_pattern, char *uri)
 {
         /* FIXME: What is the maximum scheme length? */
-        char *uri_scheme = malloc(sizeof(char) * 20);
-        char *uri_host = malloc(sizeof(char) * 1000);
-        char *uri_path = malloc(sizeof(char) * 10000);
-        char *uri_query = malloc(sizeof(char) * 10000);
+        char *uri_scheme = g_malloc(sizeof(char) * 20);
+        char *uri_host = g_malloc(sizeof(char) * 1000);
+        char *uri_path = g_malloc(sizeof(char) * 10000);
+        char *uri_query = g_malloc(sizeof(char) * 10000);
         /* FIXME: Maybe process the last arg (GError)? */
         g_uri_split(uri, 0,
                     &uri_scheme, NULL,
@@ -291,7 +291,7 @@ message_reply_and_save_callback (GObject *web_page,
                 webkit_web_page_send_message_to_view_finish((WebKitWebPage *) PAGE, res, NULL);
         GVariant *params = webkit_user_message_get_parameters(message);
         char *contents = NULL;
-        int* index = malloc(sizeof(unsigned long int));
+        int* index = g_malloc(sizeof(unsigned long int));
         *index = (unsigned long int) user_data;
         if (params)
                 contents = (char*) g_variant_get_string(params, NULL);

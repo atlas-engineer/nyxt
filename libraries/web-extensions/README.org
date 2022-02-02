@@ -245,7 +245,7 @@ there's a response. That's why there's the "message" clause in
                   /* If it's not false/undefined and thus there's a
                    ,* response, set it. */
                   g_object_ref(message);
-                  unsigned long int *key = malloc(sizeof(unsigned long int));
+                  unsigned long int *key = g_malloc(sizeof(unsigned long int));
                   ,*key = id;
                   g_hash_table_insert(DATA, (void *) key, message);
           }

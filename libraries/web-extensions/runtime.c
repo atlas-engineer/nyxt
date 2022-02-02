@@ -62,7 +62,7 @@ runtime_get_url_callback (char *path, void* extension_name)
 {
         JSCContext *context = jsc_context_get_current();
         char *solid_path = path + (path[0] == '/' ? 1 : 0);
-        char *result = malloc(sizeof(char) * 4000000000); /* 4GB */
+        char *result = g_malloc(sizeof(char) * 4000000000); /* 4GB */
         result = "data:text/html,<h1>Resource not found</h1>";
         ExtensionData *data = g_hash_table_lookup(EXTENSIONS_DATA, (char *)extension_name);
         if (!data)
