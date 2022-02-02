@@ -107,9 +107,9 @@ When the user is unspecified, take the current one."
 (define-user-class program-source)
 
 (defmethod prompter:object-attributes ((path pathname))
-  ;; TODO: Add dirname, basename, extension.
-  ;; It will be useful when we have per-attribute filtering.
-  `(("Path" ,(uiop:native-namestring path))))
+  `(("Name" ,(pathname-name path))
+    ("Extension" ,(or (nfiles:pathname-type* path) ""))
+    ("Directory" ,(uiop:native-namestring (nfiles:parent path)))))
 
 (defun match-extension (ext)
   (lambda (pathname)

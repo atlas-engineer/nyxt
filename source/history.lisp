@@ -306,44 +306,44 @@ lot."
   (let ((history (make-history-tree)))
     history))
 
-(defun restore-history-buffers (history)
+(defun restore-history-buffers (history history-file)
   "Restore buffers corresponding to the HISTORY owners.
 
 This modifies the history owners as follows.
 For each owner, make a buffer, swap old owner identifier for the new buffer ID
 and maintain a table of (old-id -> new-id).
 Finally go through all the owners and update their creator."
-  (log:info "Restoring ~a buffer~:p from history."
-            (hash-table-count (htree:owners history)))
-  (let ((old-id->new-id (make-hash-table :test #'equalp))
-        (new-owners (make-hash-table :test #'equalp)))
-    ;; We can't `maphash' over (htree:owners history) because
-    ;; `make-buffer' modifies the owners hash table.
-    (mapc (lambda-match
-            ((cons owner-id owner)
-             (let ((current-node (htree:current
-                                  (htree:owner history owner-id))))
-               ;; Node-less owners can safely be ignored.
-               (when current-node
-                 (let ((new-buffer (make-buffer :title (title (htree:data current-node))
-
-                                                :url (url (htree:data current-node))
-                                                :no-history-p t
-                                                :load-url-p nil)))
-                   (setf (gethash owner-id old-id->new-id) (id new-buffer))
-                   (setf (gethash (id new-buffer) new-owners) owner))))))
-          (alex:hash-table-alist (htree:owners history)))
-    (maphash (lambda (_ owner)
-               (declare (ignore _))
-               (setf (htree:creator-id owner)
-                     (gethash (htree:creator-id owner) old-id->new-id)))
-             (htree:owners history))
-    (setf (htree:owners history) new-owners))
-  (alex:when-let ((latest-id (first
-                              (first
-                               (sort-by-time (alex:hash-table-alist (htree:owners history))
-                                             :key (alex:compose #'htree:last-access #'rest))))))
-    (switch-buffer :id latest-id)))
+  (when history
+    (log:info "Restoring ~a buffer~:p from history."
+              (hash-table-count (htree:owners history)))
+    (let ((old-id->new-id (make-hash-table :test #'equalp))
+          (new-owners (make-hash-table :test #'equalp)))
+      ;; We can't `maphash' over (htree:owners history) because
+      ;; `make-buffer' modifies the owners hash table.
+      (mapc (lambda-match
+              ((cons owner-id owner)
+               (let ((current-node (htree:current
+                                    (htree:owner history owner-id))))
+                 ;; Node-less owners can safely be ignored.
+                 (when current-node
+                   (let ((new-buffer (make-buffer :title (title (htree:data current-node))
+                                                  :history-file history-file
+                                                  :url (url (htree:data current-node))
+                                                  :load-url-p nil)))
+                     (setf (gethash owner-id old-id->new-id) (id new-buffer))
+                     (setf (gethash (id new-buffer) new-owners) owner))))))
+            (alex:hash-table-alist (htree:owners history)))
+      (maphash (lambda (_ owner)
+                 (declare (ignore _))
+                 (setf (htree:creator-id owner)
+                       (gethash (htree:creator-id owner) old-id->new-id)))
+               (htree:owners history))
+      (setf (htree:owners history) new-owners))
+    (alex:when-let ((latest-id (first
+                                (first
+                                 (sort-by-time (alex:hash-table-alist (htree:owners history))
+                                               :key (alex:compose #'htree:last-access #'rest))))))
+      (switch-buffer :id latest-id))))
 
 (defmethod nfiles:deserialize ((profile application-profile) (file history-file) raw-content &key)
   "Restore the global/buffer-local history and session from the PATH."
@@ -353,26 +353,27 @@ Finally go through all the owners and update their creator."
     (let ((data (let ((*package* (find-package :nyxt)))
                   ;; We need to make sure current package is :nyxt so that
                   ;; symbols are printed with consistent namespaces.
-                  (history-deserialize-sexp raw-content))))
+                  (with-input-from-string (s raw-content)
+                    (history-deserialize-sexp s)))))
       (match data
         (nil nil)
         ((guard (list version history) t)
          (unless (string= version +version+)
            (log:warn "History version ~s differs from current version ~s"
                      version +version+))
-         (echo "Loading history of ~a URLs from ~s."
-               (hash-table-count (htree:entries history))
-               (nfiles:expand file)))
+         history)
         (_ (progn
              (error "Expected (list version history) structure.")
              nil))))))
 
+(defun histories-directory (&optional (buffer (current-buffer)))
+  (nfiles:parent (nfiles:expand (history-file buffer))))
+
 (defun histories-list (&optional (buffer (current-buffer)))
-  (alex:when-let ((dir (nfiles:parent (nfiles:expand (history-file buffer)))))
-    (mapcar #'pathname-name
-            (remove "lisp" (uiop:directory-files dir)
-                    :test 'string-equal
-                    :key #'nfiles:pathname-type*))))
+  (alex:when-let ((dir (histories-directory buffer)))
+    (sera:keep "lisp" (uiop:directory-files dir)
+               :test 'string-equal
+               :key #'nfiles:pathname-type*)))
 
 (define-class history-name-source (prompter:source)
   ((prompter:name "Histories")
@@ -386,12 +387,15 @@ Useful for session snapshots, as `restore-history-by-name' will restore opened b
                           :prompt "The name to store history with"
                           :sources (list (make-instance 'prompter:raw-source)
                                          (make-instance 'history-name-source))))
-                  (new-file (make-instance 'history-file :base-path name)))
+                  (new-file (make-instance 'history-file
+                                           :base-path (make-pathname
+                                                       :name name
+                                                       :directory (pathname-directory (histories-directory))))))
     (when (or (not (uiop:file-exists-p (nfiles:expand new-file)))
               (if-confirm ("Overwrite ~s?" (nfiles:expand new-file))
-                          t)))
-    (setf (nfiles:content new-file) (buffer-history))
-    (echo "History stored to ~s." (nfiles:expand new-file))))
+                          t))
+      (setf (nfiles:content new-file) (buffer-history))
+      (echo "History stored to ~s." (nfiles:expand new-file)))))
 
 (define-command restore-history-by-name ()
   "Delete all the buffers of the current session/history and import the history chosen by user.
@@ -403,11 +407,9 @@ If you want to save the current history file beforehand, call
                           :prompt "The name of the history to restore"
                           :sources (list (make-instance 'history-name-source))))
                   (new-file (make-instance 'history-file
-                                           :base-name (uiop:ensure-pathname name))))
+                                           :base-path (uiop:ensure-pathname name :truename t))))
     (let ((old-buffers (buffer-list))
           (new-history (nfiles:content new-file)))
-      (restore-history-buffers new-history)
-      (setf (nfiles:content (buffer-history))
-            new-history)
+      (restore-history-buffers new-history (history-file (current-buffer)))
       (dolist (buffer old-buffers)
         (buffer-delete buffer)))))
