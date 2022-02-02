@@ -109,7 +109,7 @@ represents a command.")))
        (alexandria:hash-table-values (functions macro-editor))))
 
 (define-command save-macro (&optional (macro-editor (current-mode 'macro-edit-mode)))
-  "Save the macro to the auto-config.lisp file."
+  "Save the macro to the `*auto-config-file*' file."
   (if (macro-form-valid-p macro-editor)
       (nyxt::append-configuration (generate-macro-form macro-editor))
       (echo "Macro form is invalid; check it has a title and functions.")))

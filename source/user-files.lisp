@@ -43,11 +43,17 @@ It's not always the case, take the socket for instance."))
 `nfiles:profile' directly) so that we can specialize the methods."))
 
 (defmethod nfiles:resolve ((profile application-profile) (file nyxt-file))
-  "Move files "
-  (let ((path (call-next-method)))
-    (uiop:merge-pathnames*
-     (make-pathname :directory `(:relative ,(nfiles:name profile)))
-     path)))
+  "Prefix FILE base-path with PROFILE's `nfiles:name'."
+  (unless (or (uiop:absolute-pathname-p (nfiles:base-path file))
+              (string=
+               (nfiles:name profile)
+               (second (pathname-directory (uiop:ensure-directory-pathname
+                                            (nfiles:base-path file))))))
+    (setf (slot-value file 'nfiles:base-path)
+          (sera:path-join
+           (uiop:ensure-directory-pathname (nfiles:name profile))
+           (nfiles:base-path file))))
+  (call-next-method))
 
 (defmethod nfiles:serialize ((profile application-profile) (file nyxt-lisp-file) &key)
   ;; TODO: Error handling!

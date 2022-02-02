@@ -3,58 +3,51 @@
 
 (in-package :nyxt)
 
-(define-class init-data-path (data-path)
-  ((basename "init"))
+(define-class init-file (nfiles:config-file nyxt-lisp-file)
+  ((nfiles:base-path #p"init")
+   (command-line-option :init
+                        :accessor nil
+                        :type keyword))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class auto-init-data-path (init-data-path)
-  ((basename "auto-config"))
+(define-class auto-init-file (init-file) ; TODO: Be consistent here for 3.0!
+  ((nfiles:base-path #p"auto-config")
+   (command-line-option :auto-init
+                        :accessor nil
+                        :type keyword))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defun expand-init-path (data-path option no-option)
-  "Helper for `init-data-path''s `expand-data-path'."
-  (unless (getf *options* no-option)
-    (let ((path (or (getf *options* option)
-                    (expand-default-path
-                     data-path
-                     :root (uiop:native-namestring (uiop:xdg-config-home +data-root+))))))
-      (unless (uiop:emptyp path)
-        (when (and (getf *options* option) (not (uiop:file-exists-p path)))
-          (log:warn "File ~s does not exist." path))
-        path))))
+(defmethod nfiles:resolve ((profile application-profile) (init-file init-file))
+  (let* ((option (slot-value init-file 'command-line-option))
+         (no-option (alex:make-keyword
+                     (uiop:strcat "NO-" (symbol-name option)))))
+    (if (getf *options* no-option)
+        #p""
+        (let ((path (or (uiop:ensure-pathname (getf *options* option))
+                        (call-next-method))))
+          (unless (uiop:emptyp path)
+            (when (and (getf *options* option) (not (uiop:file-exists-p path)))
+              (log:warn "File ~s does not exist." path))
+            path)))))
 
-(defmethod expand-data-path ((profile data-profile) (path init-data-path))
-  "Return finalized path for initialization files."
-  (expand-init-path path :init :no-init))
+(export-always '*auto-config-file*)
+(defvar *auto-config-file* (make-instance 'auto-init-file)
+  "The generated configuration file.")
 
-(defmethod expand-data-path ((profile data-profile) (path auto-init-data-path))
-  "Return finalized path for automatic configuration files."
-  (expand-init-path path :auto-config :no-auto-config))
+(export-always '*init-file*)
+(defvar *init-file* (make-instance 'init-file)
+  "The initialization file.")
 
-(export-always '*auto-config-file-path*)
-(defvar *auto-config-file-path* (make-instance 'auto-init-data-path)
-  "The path of the generated configuration file.")
-
-(export-always '*init-file-path*)
-(defvar *init-file-path* (make-instance 'init-data-path)
-  "The path of the initialization file.")
-
-(define-class extensions-data-path (data-path)
-  ((ref "extensions"))
+(define-class extensions-directory (nfiles:data-file nyxt-file)
+  ((nfiles:base-path "extensions/")
+   (ref "extensions"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod expand-data-path ((profile data-profile) (path extensions-data-path))
-  "Return finalized path for extension directory."
-  (expand-default-path path :root (uiop:native-namestring
-                                   (if (str:emptyp (namestring (dirname path)))
-                                       (uiop:xdg-data-home +data-root+ "extensions")
-                                       (dirname path)))))
-
-(export-always '*extensions-path*)
-(defvar *extensions-path* (make-instance 'extensions-data-path)
+(export-always '*extensions-directory*)
+(defvar *extensions-directory* (make-instance 'extensions-directory)
   "The directory where extensions are stored.
 This is set globally so that extensions can be loaded even if there is no
 `*browser*' instance.")
@@ -62,7 +55,7 @@ This is set globally so that extensions can be loaded even if there is no
 (export-always 'nyxt-source-registry)
 (defun nyxt-source-registry ()
   `(:source-registry
-    (:tree ,(expand-path *extensions-path*))
+    (:tree ,(nfiles:expand *extensions-directory*))
     :inherit-configuration))
 
 (defparameter %buffer nil)              ; TODO: Make a monad?

@@ -439,12 +439,13 @@ CLASS is a class symbol."
                    ((,slot ,accepted-input))))))))
 
 (defun append-configuration (form &key (format-directive "~&~s~%"))
-  (with-data-file (file *auto-config-file-path*
-                        :direction :output
-                        :if-exists :append)
-    (let ((*print-case* :downcase))
-      (log:info "Appending to ~s:~&~s" (expand-path *auto-config-file-path*) form)
-      (format file format-directive form))))
+  (let ((path (nfiles:expand *auto-config-file*)))
+    (with-open-file (file path
+                          :direction :output
+                          :if-exists :append)
+      (let ((*print-case* :downcase))
+        (log:info "Appending to ~s:~&~s" path form)
+        (format file format-directive form)))))
 
 (define-internal-page-command-global common-settings ()
     (buffer "*Settings*" 'nyxt/help-mode:help-mode)
