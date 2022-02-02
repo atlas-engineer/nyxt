@@ -299,19 +299,23 @@ define which elements are picked up by element hinting.")
        (echo message))
       (t (buffer-load url)))))
 
-(defmacro with-history-unsafe ((history-sym &optional buffer) &body body)
-  "Run body if BUFFER has history entries, that is, if it owns some nodes."
-  `(with-data-unsafe (,history-sym (history-path (or ,buffer (current-buffer))))
-     (if (or (not ,buffer)
-             (htree:owner history (id ,buffer)))
+(defmacro with-history ((history-sym buffer) &body body)
+  "Run body if BUFFER has history entries, that is, if it owns some nodes.
+This does not save the history to disk."
+  `(let ((,history-sym (nfiles:content (history-file (or ,buffer (current-buffer))))))
+     (if (and ,history-sym
+              (or (not ,buffer)
+                  (htree:owner ,history-sym (id ,buffer))))
          (progn ,@body)
          (echo "Buffer ~a has no history." (id ,buffer)))))
 
 (defmacro with-history-access ((history-sym buffer) &body body)
-  "Run body if BUFFER has history entries, that is, if it owns some nodes."
-  `(with-data-access (,history-sym (history-path (or ,buffer (current-buffer))))
-     (if (or (not ,buffer)
-             (htree:owner history (id ,buffer)))
+  "Run body if BUFFER has history entries, that is, if it owns some nodes.
+This saves the history to disk when BODY exits."
+  `(nfiles:with-file-content (,history-sym (history-file (or ,buffer (current-buffer))))
+     (if (and ,history-sym
+              (or (not ,buffer)
+                  (htree:owner ,history-sym (id ,buffer))))
          (progn ,@body)
          (echo "Buffer ~a has no history." (id ,buffer)))))
 
@@ -340,7 +344,7 @@ define which elements are picked up by element hinting.")
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
     (lambda (source)
-      (with-history-unsafe (history (buffer source))
+      (with-history (history (buffer source))
         (let ((owner (htree:owner history (id (buffer source)))))
           (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
               (htree:all-contiguous-owned-parents history owner)
@@ -370,7 +374,7 @@ define which elements are picked up by element hinting.")
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
     (lambda (source)
-      (with-history-unsafe (history (buffer source))
+      (with-history (history (buffer source))
         (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
             (htree:owned-children (htree:owner history (id (buffer source))))
             (htree:children (htree:owner-node history (id (buffer source)))))))))
@@ -392,7 +396,7 @@ define which elements are picked up by element hinting.")
 (define-command history-forwards-maybe-query (&optional (buffer (current-buffer)))
   "If current node has multiple children, query which one to navigate to.
 Otherwise go forward to the only child."
-  (with-history-unsafe (history buffer)
+  (with-history (history buffer)
     (if (<= 2 (length
                (if (conservative-history-movement-p (find-mode buffer 'web-mode))
                    (htree:owned-children (htree:owner history (id buffer)))
@@ -405,7 +409,7 @@ Otherwise go forward to the only child."
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
     (lambda (source)
-      (with-history-unsafe (history (buffer source))
+      (with-history (history (buffer source))
         (htree:all-forward-children history (id (buffer source)))))))
   (:export-class-name-p t))
 (define-user-class history-forwards-source)
@@ -430,7 +434,7 @@ Otherwise go forward to the only child."
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
     (lambda (source)
-      (with-history-unsafe (history (buffer source))
+      (with-history (history (buffer source))
         (let ((owner (htree:owner history (id (buffer source)))))
           (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
               (htree:all-contiguous-owned-children history owner)
@@ -445,7 +449,7 @@ Otherwise go forward to the only child."
                  :sources (list (make-instance 'user-all-history-forwards-source
                                                :buffer buffer)))))
     (when input
-      (with-history-access (history buffer)
+      (with-history (history buffer)
         (htree:forward history (id buffer)))
       (load-history-url input))))
 
@@ -454,7 +458,7 @@ Otherwise go forward to the only child."
    (buffer :initarg :buffer :accessor buffer :initform nil)
    (prompter:constructor
     (lambda (source)
-      (with-history-unsafe (history (buffer source))
+      (with-history (history (buffer source))
         (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
                      #'htree:all-owner-nodes
                      #'htree:all-branch-nodes)
@@ -470,7 +474,7 @@ Otherwise go forward to the only child."
                  :sources (list (make-instance 'user-history-all-source
                                                :buffer buffer)))))
     (when input
-      (with-history-access (history buffer)
+      (with-history (history buffer)
         (htree:visit-all history (id buffer) input))
       (load-history-url input))))
 
@@ -485,7 +489,7 @@ Otherwise go forward to the only child."
   (output-buffer (format nil "*History-~a*" id)
                  'nyxt/history-tree-mode:history-tree-mode)
   "Open a new buffer displaying the whole history tree of a buffer."
-  (with-history-unsafe (history (nyxt::buffers-get id))
+  (with-history (history (nyxt::buffers-get id))
     (let ((mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
           (tree (spinneret:with-html-string
                   (:ul (:raw (htree:map-owned-tree
@@ -513,7 +517,7 @@ Otherwise go forward to the only child."
     (output-buffer "*History*"
                    'nyxt/history-tree-mode:history-tree-mode)
   "Open a new buffer displaying the whole history branch the current buffer is on."
-  (with-history-unsafe (history)
+  (with-history (history (current-buffer))
     (let ((mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
           (tree (spinneret:with-html-string
                   (:ul (:raw (htree:map-tree
@@ -704,7 +708,7 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
   (add-url-to-history url (buffer mode) mode)
   (reset-page-zoom :buffer (buffer mode)
                    :ratio (current-zoom-ratio (buffer mode)))
-  (with-history-unsafe (history (buffer mode))
+  (with-history (history (buffer mode))
     (sera:and-let* ((owner (htree:owner history (id (buffer mode))))
                     (node (htree:current owner))
                     (data (htree:data node))

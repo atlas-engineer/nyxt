@@ -347,10 +347,7 @@ prevents otherwise."))
              "Warning: We clear the previous owners here.
 After this, buffers from a previous session are permanently lost, they cannot be
 restored."
-             (with-data-access (history (history-path buffer))
-               ;; TODO: `when history' should not be needed here because
-               ;; `with-data-access' is supposed to be a no-op when the path
-               ;; expands to nil, but this fails with `async-data-path'
+             (nfiles:with-file-content (history (history-file buffer))
                (when history
                  (clrhash (htree:owners history)))))
            (restore-session ()
@@ -365,11 +362,9 @@ restored."
                                     (log:debug "Prompt buffer interrupted")
                                     nil)))
                    (:always-restore
-                    (get-data (history-path buffer))
-                    (restore-history-buffers (history-path buffer)))
+                    (restore-history-buffers (nfiles:content (history-file buffer))))
                    (:never-restore
                     (log:info "Not restoring session.")
-                    (get-data (history-path buffer))
                     (clear-history-owners buffer))))))
            (load-start-urls (urls)
              (open-urls (or urls (list (default-new-buffer-url browser))))))

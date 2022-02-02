@@ -24,7 +24,7 @@ bookmarks. If this is the case, prompt the user about bookmarking it."
                      (mapcar #'(lambda (e) (render-url (url e)))
                              (nfiles:content (bookmarks-file (current-buffer))))))
                (find url-address bookmark-url-strings :test #'string=))))
-    (sera:and-let* ((history-entries (with-data-unsafe (history (history-path (current-buffer)))
+    (sera:and-let* ((history-entries (let ((history (nfiles:content (history-file (current-buffer)))))
                                        (mapcar #'htree:data (alex:hash-table-keys (htree:entries history)))))
                     (current-url-history
                      (find (url (current-buffer)) history-entries :test #'equalp :key #'url))

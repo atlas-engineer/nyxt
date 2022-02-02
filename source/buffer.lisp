@@ -324,12 +324,11 @@ Downloads are kept in browser's `user-data', keyed by the expanded `download-pat
     :type symbol
     :documentation "Select a download engine to use,
 such as :lisp or :renderer.")
-   (history-path
-    (make-instance 'history-data-path)
-    :type data-path
+   (history-file
+    (make-instance 'history-file)
+    :type history-file
     :documentation "
-The path where the system will create/save the global history.
-History data is kept in browser's `user-data', keyed by the expanded `history-path'.")
+The file where the system will create/save the global history.")
    (bookmarks-file
     (make-instance 'bookmarks-file)
     :type bookmarks-file
@@ -338,9 +337,7 @@ History data is kept in browser's `user-data', keyed by the expanded `history-pa
     (make-instance 'annotations-file)
     :type annotations-file
     :documentation "
-The path where the system will create/save annotations.
-Annotation' data is kept in browser's `user-data', keyed by the expanded
-`annotations-path'.")
+The file where the system will create/save annotations.")
    (inputs-path
     (make-instance 'inputs-data-path)
     :type data-path
@@ -424,8 +421,8 @@ Return the created buffer."
     ;; especially for nosave buffers.
     (with-current-buffer buffer
       ;; Register buffer in global history:
-      (with-data-access (history (history-path buffer)
-                         :default (make-history-tree buffer))
+      (nfiles:with-file-content (history (history-file buffer)
+                                 :default (make-history-tree buffer))
         ;; Owner may already exist if history was just created with the above
         ;; default value.
         (unless (htree:owner history (id buffer))
@@ -1029,7 +1026,7 @@ If URL is `:default', use `default-new-buffer-url'."
 (defun buffer-delete (buffer)
   "For dummy buffers, use `ffi-buffer-delete' instead."
   (hooks:run-hook (buffer-delete-hook buffer) buffer)
-  (with-data-access (history (history-path buffer))
+  (nfiles:with-file-content (history (history-file buffer))
     (sera:and-let* ((owner (htree:owner history (id buffer)))
                     (current (htree:current owner))
                     (data (htree:data current)))
@@ -1541,7 +1538,7 @@ any."))
                                :actions (list 'reload-buffers)))))
 
 (defun buffer-parent (&optional (buffer (current-buffer)))
-  (with-data-unsafe (history (history-path buffer))
+  (let ((history (nfiles:content (history-file buffer))))
     (sera:and-let* ((owner (htree:owner history (id buffer)))
                     (parent-id (htree:creator-id owner)))
                    (gethash parent-id (buffers *browser*)))))
@@ -1551,45 +1548,41 @@ any."))
 HISTORY may be NIL for buffers without history."
   (remove-if (complement (sera:eqs history))
              (buffer-list)
-             :key (alex:compose #'get-data #'history-path)))
+             :key (alex:compose #'nfiles:content #'history-file)))
 
 (defun buffer-children (&optional (buffer (current-buffer)))
-  (with-current-buffer buffer
-    (let* ((current-history (get-data (history-path buffer)))
-           (buffers (buffers-with-history current-history)))
-      (with-data-unsafe (history (history-path buffer))
-        (sort (sera:filter
-               (sera:equals (id buffer))
-               buffers
-               :key (lambda (b) (alex:when-let ((owner (htree:owner history (id b))))
-                                  (htree:creator-id owner))))
-              #'string< :key #'id)))))
+  (let* ((history (nfiles:content (history-file buffer)))
+         (buffers (buffers-with-history history)))
+    (sort (sera:filter
+           (sera:equals (id buffer))
+           buffers
+           :key (lambda (b) (alex:when-let ((owner (htree:owner history (id b))))
+                              (htree:creator-id owner))))
+          #'string< :key #'id)))
 
 (defun buffer-siblings (&optional (buffer (current-buffer)))
-  (with-current-buffer buffer
-    (let* ((current-history (get-data (history-path buffer)))
-           (buffers (buffers-with-history current-history)))
-      (with-data-unsafe (history (history-path buffer))
-        (flet ((existing-creator-id (owner)
-                 "If owner's creator does not exist anymore
+  (let* ((history (nfiles:content (history-file buffer)))
+         (buffers (buffers-with-history history)))
+    (flet ((existing-creator-id (owner)
+             "If owner's creator does not exist anymore
 (i.e. parent has been deleted), return NIL so has mimick top-level owners."
-                 (if (htree:owner history (htree:creator-id owner))
-                     (htree:creator-id owner)
-                     nil)))
-          (let* ((owner (htree:owner history (id buffer)))
-                 (current-parent-id (when owner (existing-creator-id owner)))
-                 (common-parent-buffers
-                   (sera:filter
-                    (sera:equals current-parent-id)
-                    buffers
-                    :key (lambda (b)
-                           (alex:when-let ((owner (htree:owner history (id b))))
-                             (existing-creator-id owner)))))
-                 (common-parent-buffers
-                   (sort common-parent-buffers #'string< :key #'id)))
-            (sera:split-sequence-if (sera:equals (id buffer))
-                                    common-parent-buffers
-                                    :key #'id)))))))
+             (if (htree:owner history (htree:creator-id owner))
+                 (htree:creator-id owner)
+                 nil)))
+      (let* ((owner (htree:owner history (id buffer)))
+             (current-parent-id (when owner (existing-creator-id owner)))
+             (common-parent-buffers
+               (sera:filter
+                (sera:equals current-parent-id)
+                buffers
+                :key (lambda (b)
+                       (alex:when-let ((owner (htree:owner history (id b))))
+                         (existing-creator-id owner)))))
+             (common-parent-buffers
+               (sort common-parent-buffers #'string< :key #'id)))
+        (sera:split-sequence-if (sera:equals (id buffer))
+                                common-parent-buffers
+                                :key #'id)))))
 
 (define-command switch-buffer-previous (&optional (buffer (current-buffer)))
   "Switch to the previous buffer in the buffer tree.
