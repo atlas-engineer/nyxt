@@ -302,7 +302,7 @@ define which elements are picked up by element hinting.")
 (defmacro with-history ((history-sym buffer) &body body)
   "Run body if BUFFER has history entries, that is, if it owns some nodes.
 This does not save the history to disk."
-  `(let ((,history-sym (nfiles:content (history-file (or ,buffer (current-buffer))))))
+  `(let ((,history-sym (buffer-history (or ,buffer (current-buffer)))))
      (if (and ,history-sym
               (or (not ,buffer)
                   (htree:owner ,history-sym (id ,buffer))))

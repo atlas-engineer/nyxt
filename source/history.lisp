@@ -3,6 +3,16 @@
 
 (in-package :nyxt)
 
+(define-class history-file (nfiles:data-file nyxt-lisp-file)
+  ((nfiles:base-path "history/default")
+   (nfiles:name "history"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(export-always 'buffer-history)
+(defun buffer-history (&optional (buffer (current-buffer)))
+  (nfiles:content (history-file buffer)))
+
 (define-class history-entry ()          ; TODO: Export?
   ((url (quri:uri "")
         :accessor nil
@@ -146,7 +156,7 @@ lot."
 
 (defun history-initial-suggestions (&key prefix-urls) ; TODO: Rename?  Make this a preprocessor so that it runs in the background?
   "Return all history entries, with PREFIX-URLS prepended to the result."
-  (let* ((history (nfiles:content (history-file (current-buffer))))
+  (let* ((history (buffer-history))
          (all-history-entries (when history
                                 (mapcar #'htree:data
                                         (sort (alex:hash-table-keys (htree:entries history))
@@ -165,7 +175,7 @@ lot."
    (prompter:multi-selection-p t)
    (prompter:constructor
     (lambda (source)
-      (let* ((history (nfiles:content (history-file (buffer source))))
+      (let* ((history (buffer-history (buffer source)))
              (owner-less-history-entries
                (when history
                  (mapcar #'htree:data
@@ -178,7 +188,7 @@ lot."
         owner-less-history-entries)))))
 
 (defun history-html-list (&key (limit 100) (separator " → "))
-  (let* ((history (nfiles:content (history-file (current-buffer))))
+  (let* ((history (buffer-history))
          (history-entries
            (sort-by-time (alex:hash-table-keys (htree:entries history))
                          :key #'htree:last-access)))
@@ -380,7 +390,7 @@ Useful for session snapshots, as `restore-history-by-name' will restore opened b
     (when (or (not (uiop:file-exists-p (nfiles:expand new-file)))
               (if-confirm ("Overwrite ~s?" (nfiles:expand new-file))
                           t)))
-    (setf (nfiles:content new-file) (nfiles:content (history-file (current-buffer))))
+    (setf (nfiles:content new-file) (buffer-history))
     (echo "History stored to ~s." (nfiles:expand new-file))))
 
 (define-command restore-history-by-name ()
@@ -397,7 +407,7 @@ If you want to save the current history file beforehand, call
     (let ((old-buffers (buffer-list))
           (new-history (nfiles:content new-file)))
       (restore-history-buffers new-history)
-      (setf (nfiles:content (history-file (current-buffer)))
+      (setf (nfiles:content (buffer-history))
             new-history)
       (dolist (buffer old-buffers)
         (buffer-delete buffer)))))

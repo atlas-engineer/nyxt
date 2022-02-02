@@ -126,12 +126,6 @@ It's not always the case, take the socket for instance."))
    (name profile)
    (uiop:xdg-data-home (call-next-method))))
 
-(define-class history-file (nfiles:data-file nyxt-lisp-file)
-  ((nfiles:base-path "history/default")
-   (nfiles:name "history"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-
 (define-class inputs-file (nfiles:data-file nyxt-lisp-file)
   ((nfiles:base-path "inputs")
    (nfiles:name "inputs"))

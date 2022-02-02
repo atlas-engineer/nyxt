@@ -1538,7 +1538,7 @@ any."))
                                :actions (list 'reload-buffers)))))
 
 (defun buffer-parent (&optional (buffer (current-buffer)))
-  (let ((history (nfiles:content (history-file buffer))))
+  (let ((history (buffer-history buffer)))
     (sera:and-let* ((owner (htree:owner history (id buffer)))
                     (parent-id (htree:creator-id owner)))
                    (gethash parent-id (buffers *browser*)))))
@@ -1548,10 +1548,10 @@ any."))
 HISTORY may be NIL for buffers without history."
   (remove-if (complement (sera:eqs history))
              (buffer-list)
-             :key (alex:compose #'nfiles:content #'history-file)))
+             :key #'buffer-history))
 
 (defun buffer-children (&optional (buffer (current-buffer)))
-  (let* ((history (nfiles:content (history-file buffer)))
+  (let* ((history (buffer-history buffer))
          (buffers (buffers-with-history history)))
     (sort (sera:filter
            (sera:equals (id buffer))
@@ -1561,7 +1561,7 @@ HISTORY may be NIL for buffers without history."
           #'string< :key #'id)))
 
 (defun buffer-siblings (&optional (buffer (current-buffer)))
-  (let* ((history (nfiles:content (history-file buffer)))
+  (let* ((history (buffer-history buffer))
          (buffers (buffers-with-history history)))
     (flet ((existing-creator-id (owner)
              "If owner's creator does not exist anymore
