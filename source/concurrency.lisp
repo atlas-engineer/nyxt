@@ -21,19 +21,7 @@ raised condition."
        ((or *run-from-repl-p* *debug-on-error*)
         (handler-bind ((error (lambda (,int-c)
                                 (when *debug-on-error*
-                                  (let* ((restart (uiop:symbol-call :nyxt :debug-prompt ,int-c))
-                                         (prompt "[restart prompt]")
-                                         (*query-io*
-                                           (make-two-way-stream
-                                            ;; TODO: Understand how Swank does those streams.
-                                            (swank-backend:make-input-stream
-                                             (lambda ()
-                                               (prompt :prompt prompt
-                                                       :sources (list (make-instance 'prompter:raw-source)))))
-                                            (swank-backend:make-output-stream
-                                             #'(lambda (string)
-                                                 (setf prompt string))))))
-                                    (invoke-restart-interactively restart)))))
+                                  (debugger-hook ,int-c nil))))
                        (nyxt-prompt-buffer-canceled
                          (lambda (,int-c)
                            (declare (ignore ,int-c))
