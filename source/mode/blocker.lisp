@@ -136,7 +136,7 @@ new list."
   "Load BLOCKER-MODE's hostlists into `blocked-hosts' (in the background)."
   (dolist (hostlist (hostlists blocker-mode))
     (dolist (host (or (hosts hostlist)
-                      (nfiles:content hostlist force-update-p)))
+                      (nfiles:content hostlist :force-read force-update-p)))
       (setf (gethash host (blocked-hosts blocker-mode)) host))))
 
 (defmethod blocklisted-host-p ((mode blocker-mode) host)
