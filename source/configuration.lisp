@@ -42,7 +42,7 @@
 
 (define-class extensions-directory (nfiles:data-file nyxt-file)
   ((nfiles:base-path "extensions/")
-   (ref "extensions"))
+   (nfiles:name "extensions"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
