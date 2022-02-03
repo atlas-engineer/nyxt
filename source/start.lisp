@@ -238,13 +238,11 @@ Don't run this from a REPL, prefer `start' instead."
     ((or null trivial-types:pathname-designator) &key (:package (or null package)))
     *)
 (defun load-lisp (file &key package)
-  "Load the Lisp FILE (or stream).
-We accept a null FILE value so that `load-lisp' may be called over the expansion
-of data-paths, which may be nil.
+  "Load the Lisp FILE (can also be a stream).
 Return the short error message and the full error message as second value."
-  (let ((*package* (or (find-package package) *package*)))
-    (flet ((unsafe-load ()
-             (unless (uiop:emptyp file)
+  (unless (or (uiop:emptyp file) (nfiles:nil-pathname-p file))
+    (let ((*package* (or (find-package package) *package*)))
+      (flet ((unsafe-load ()
                (cond
                  ((streamp file)
                   (load file))
@@ -252,26 +250,26 @@ Return the short error message and the full error message as second value."
                   (log:info "Loading Lisp file ~s." file)
                   (load file))
                  (t
-                  (log:debug "Lisp file ~s does not exist." file))))
-             nil))
-      (if *run-from-repl-p*
-          (unsafe-load)
-          (catch 'lisp-file-error
-           (handler-bind ((error (lambda (c)
-                                   (let* ((error-message "Could not load the init file")
-                                          (type-error-message (str:concat error-message
-                                                                          " because of a type error"))
-                                          (message (if (subtypep (type-of c) 'type-error)
-                                                       type-error-message
-                                                       error-message))
-                                          (backtrace (with-output-to-string (stream)
-                                                       (uiop:print-backtrace :stream stream :condition c)))
-                                          (full-message (format nil "~a: ~a~%~%~%~a" message c backtrace)))
-                                     (throw 'lisp-file-error
-                                       (if *browser*
-                                           (error-in-new-window "*Init file errors*" full-message)
-                                           (values message full-message)))))))
-             (unsafe-load)))))))
+                  (log:debug "Lisp file ~s does not exist." file)))
+               nil))
+        (if *run-from-repl-p*
+            (unsafe-load)
+            (catch 'lisp-file-error
+              (handler-bind ((error (lambda (c)
+                                      (let* ((error-message "Could not load the init file")
+                                             (type-error-message (str:concat error-message
+                                                                             " because of a type error"))
+                                             (message (if (subtypep (type-of c) 'type-error)
+                                                          type-error-message
+                                                          error-message))
+                                             (backtrace (with-output-to-string (stream)
+                                                          (uiop:print-backtrace :stream stream :condition c)))
+                                             (full-message (format nil "~a: ~a~%~%~%~a" message c backtrace)))
+                                        (throw 'lisp-file-error
+                                          (if *browser*
+                                              (error-in-new-window "*Init file errors*" full-message)
+                                              (values message full-message)))))))
+                (unsafe-load))))))))
 
 (define-command load-file ()
   "Load the prompted Lisp file."
