@@ -313,12 +313,10 @@ To use, say, KeepassXC, set this slot to
 
 Password interfaces may have user classes (that is, prefixed with 'user-' as in
 the above example), in which case you can use `define-configuration' on them.")
-   (download-path
-    (make-instance 'download-data-path)
-    :type data-path
-    :documentation "Path of directory where downloads will be
-stored.  Nil means use system default.
-Downloads are kept in browser's `user-data', keyed by the expanded `download-path'.")
+   (download-directory
+    (make-instance 'download-directory)
+    :type download-directory
+    :documentation "Directory where downloads will be stored.")
    (download-engine
     :initform :renderer
     :type symbol
