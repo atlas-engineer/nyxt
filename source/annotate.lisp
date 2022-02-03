@@ -119,7 +119,7 @@
 
 (define-class annotation-source (prompter:source)
   ((prompter:name "Annotations")
-   (prompter:constructor (get-data (annotations-file (current-buffer))))
+   (prompter:constructor (nfiles:content (annotations-file (current-buffer))))
    (prompter:multi-selection-p t)))
 
 (define-class annotation-tag-source (prompter:source)
