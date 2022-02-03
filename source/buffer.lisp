@@ -338,12 +338,11 @@ The file where the system will create/save the global history.")
     :type annotations-file
     :documentation "
 The file where the system will create/save annotations.")
-   (inputs-path
-    (make-instance 'inputs-data-path)
-    :type data-path
+   (inputs-file
+    (make-instance 'inputs-file)
+    :type inputs-file
     :documentation "
-The path where the system will create/save the input data.
-Inputs' data is kept in browser's `user-data', keyed by the expanded `save-inputs-path'.")
+The file where the system will create/save the input data.")
    (auto-mode-rules-file
     (make-instance 'auto-mode-rules-file)
     :type auto-mode-rules-file
