@@ -389,13 +389,13 @@ Return the download object matching the download."
   (prog1
       (match (download-engine buffer)
         (:lisp
-         (alex:when-let* ((path (download-path buffer))
-                          (download-dir (expand-path path)))
+         (alex:when-let* ((path (downloads-directory buffer))
+                          (download-dir (nfiles:expand path)))
            (when (eq proxy-url :auto)
              (setf proxy-url (proxy-url buffer :downloads-only t)))
            (let* ((download nil))
              (with-protect ("Download error: ~a" :condition)
-               (with-data-access (downloads path)
+               (nfiles:with-file-content (downloads path)
                  (setf download
                        (download-manager:resolve url
                                                  :directory download-dir
@@ -652,13 +652,13 @@ sometimes yields the wrong result."
   "Set the *standard-output* and *error-output* to write to a log file."
   (let ((buffer (current-buffer)))
     (values
-     (sera:and-let* ((path (expand-path (standard-output-path buffer))))
+     (sera:and-let* ((path (nfiles:expand (standard-output-file buffer))))
        (setf *standard-output*
              (open path
                    :direction :output
                    :if-does-not-exist :create
                    :if-exists :append)))
-     (sera:and-let* ((path (expand-path (error-output-path buffer))))
+     (sera:and-let* ((path (nfiles:expand (error-output-file buffer))))
        (setf *error-output*
              (open path
                    :direction :output

@@ -333,9 +333,9 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
     urls))
 
 (defun listen-socket ()
-  (let ((socket-path (expand-path *socket-file*)))
+  (let ((socket-path (nfiles:expand *socket-file*)))
     (when socket-path
-      (ensure-parent-exists socket-path)
+      (ensure-directories-exist socket-path)
       ;; TODO: Catch error against race conditions?
       (iolib:with-open-socket (s :address-family :local
                                  :connect :passive
@@ -364,7 +364,7 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
 (defun listening-socket-p ()
   (ignore-errors
    (iolib:with-open-socket (s :address-family :local
-                              :remote-filename (expand-path *socket-file*))
+                              :remote-filename (nfiles:expand *socket-file*))
      (iolib:socket-connected-p s))))
 
 (defun file-is-socket-p (path)
@@ -388,7 +388,7 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
 (defun listen-or-query-socket (urls)
   "If another Nyxt is listening on the socket, tell it to open URLS.
 Otherwise bind socket and return the listening thread."
-  (let ((socket-path (expand-path *socket-file*)))
+  (let ((socket-path (nfiles:expand *socket-file*)))
     (cond
       ((listening-socket-p)
        (if urls
@@ -414,7 +414,7 @@ Otherwise bind socket and return the listening thread."
   (if (listening-socket-p)
       (progn
         (iolib:with-open-socket (s :address-family :local
-                                   :remote-filename (expand-path *socket-file*))
+                                   :remote-filename (nfiles:expand *socket-file*))
           (write-string expr s))
         (uiop:quit))
       (progn
@@ -543,13 +543,13 @@ Instantiate `*browser*'.
 Finally, run the browser, load URL-STRINGS if any, then run
 `*after-init-hook*'."
   (let* ((urls (strings->urls url-strings))
-         (thread (when (expand-path *socket-file*)
+         (thread (when (nfiles:expand *socket-file*)
                    (listen-or-query-socket urls)))
          (startup-timestamp (local-time:now))
          (startup-error-reporter nil))
     (when (or thread
               (getf *options* :no-socket)
-              (null (expand-path *socket-file*)))
+              (null (nfiles:expand *socket-file*)))
       (format t "Nyxt version ~a~&" +version+)
       (load-lisp (nfiles:expand *auto-config-file*) :package (find-package :nyxt-user))
       (match (multiple-value-list (load-lisp (nfiles:expand *init-file*)
