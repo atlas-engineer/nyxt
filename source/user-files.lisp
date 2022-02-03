@@ -49,15 +49,16 @@ It's not always the case, take the socket for instance."))
 
 (defmethod nfiles:resolve ((profile application-profile) (file nyxt-file))
   "Prefix FILE base-path with PROFILE's `nfiles:name'."
-  (unless (or (uiop:absolute-pathname-p (nfiles:base-path file))
-              (string=
-               (nfiles:name profile)
-               (second (pathname-directory (uiop:ensure-directory-pathname
-                                            (nfiles:base-path file))))))
-    (setf (slot-value file 'nfiles:base-path)
-          (sera:path-join
-           (uiop:ensure-directory-pathname (nfiles:name profile))
-           (nfiles:base-path file))))
+  (flet ((pathname-first-directory (path)
+           (second (pathname-directory (uiop:ensure-directory-pathname path)))))
+    (unless (or (uiop:absolute-pathname-p (nfiles:base-path file))
+                (string=
+                 (nfiles:name profile)
+                 (pathname-first-directory (nfiles:base-path file))))
+      (setf (slot-value file 'nfiles:base-path)
+            (sera:path-join
+             (uiop:ensure-directory-pathname (nfiles:name profile))
+             (nfiles:base-path file)))))
   (call-next-method))
 
 (defmethod nfiles:serialize ((profile application-profile) (file nyxt-lisp-file) stream &key)
