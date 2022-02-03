@@ -277,54 +277,52 @@ documentation of the respective hooks for more details.")
     (:h3 "Data paths and data profiles")
     (:p "Nyxt provides a uniform configuration interface for all data files
 persisted to disk (bookmarks, cookies, etc.).  To each file corresponds
-a " (:code "data-path") " object. A " (:code "data-profile") " is a unique but
+a " (:code "nyxt-file") " object. An " (:code "application-profile") " is a
 customizable object that helps define general rules for data storage.  Both
-data-paths and data-profiles compose, so it's possible to define general rules
-for all data-paths (even for those not known in advance) while it's also
-possible to specialize some data-paths given a data-profile.")
-    (:p "The data-profile can be set from command line and from the configuration file."
-        "You can list all known data profiles (including the user-defined
-        profiles) with the " (:code "--list-data-profiles") " command-line option.")
-    (:p "The data-paths can be passed a hint from the "
-        (:code "--with-path") " command line option, but each data-path and
-data-profile rules are free to ignore it. The " (:code "expand-default-path") "
-helper function uses the --with-path value first, then fallback to a default.
-See its documentation for more details.")
-    (:p "When the data path ends with the " (:code ".gpg") " extension, your
+nyxt-file and application-profiles compose, so it's possible to define general rules
+for all files (even for those not known in advance) while it's also
+possible to specialize some data given an application-profile.")
+    (:p "The profile can be set from command line and from the
+configuration file."
+        "You can list all known profiles (including the user-defined
+profiles) with the " (:code "--list-profiles") " command-line option.")
+    (:p "The nyxt-files can be passed a hint from the "
+        (:code "--with-path") " command line option, but each nyxt-file and
+profile rules are free to ignore it.")
+    (:p "When a path ends with the " (:code ".gpg") " extension, by default your
 GnuPG key is used to decrypt and encrypt the file transparently.  Refer to the
 GnuPG documentation for how to set it up.")
-    (:p "Note that the socket and the initialization data-paths cannot be set in
+    (:p "Note that the socket and the initialization nyxt-paths cannot be set in
 your configuration (the socket is used before the initialization file is
 loaded).  Instead you can specify these paths from their respective command-line
 option.  You can instantiate a unique, separate Nyxt instance when you provide a
-new socket path.  This is particularly useful in combination with data profiles,
-e.g. to develop Nyxt or extensions.")
-    (:p "Example to create a development data-profile that stores all data in "
+new socket path.  This is particularly useful in combination with profiles,
+say to develop Nyxt or extensions.")
+    (:p "Example to create a development profile that stores all data in "
         (:code "/tmp/nyxt") " and stores bookmark in an encrypted file:")
     (:pre (:code "
-\(define-class dev-data-profile (data-profile)
-   ((name :initform \"dev\"))
+\(define-class dev-profile (application-profile)
+   ((nfiles:name :initform \"dev\"))
    (:documentation \"Development profile.\"))
 
-\(defmethod nyxt:expand-data-path ((profile dev-data-profile) (path data-path))
-  \"Persist data to /tmp/nyxt/.\"
-  (expand-default-path (make-instance (class-name (class-of path))
-                                      :basename (basename path)
-                                      :dirname \"/tmp/nyxt/\")))
+\(defmethod nfiles:resolve :around ((profile dev-profile) (path nyxt-file))
+  \"Persist all data to /tmp/nyxt/.\"
+  (merge-pathnames (uiop:relativize-pathname-directory (call-next-method))
+                   #p\"/tmp/nyxt/\"))
 
-\(defmethod nyxt:expand-data-path ((profile dev-data-profile) (path history-data-path))
+\(defmethod nyxt:resolve ((profile dev-profile) (file history-file))
   \"Persist history to default location.\"
-  (expand-data-path *global-data-profile* path))
+  (call-next-method))
 
 ;; Make new profile the default:
 \(define-configuration buffer
-  ((data-profile (make-instance (or (find-data-profile (getf *options* :data-profile))
-                                    'dev-data-profile)))
+  ((profile (or (nfiles:find-profile (getf *options* :profile))
+                (make-instance 'application-profile)))
    (bookmarks-file (make-instance 'bookmarks-file
                                   :path \"~/personal/bookmarks/bookmarks.lisp.gpg\"))))"))
     ;; TODO: Does the above ~ expansion work?
     (:p "Then you can start a separate instance of Nyxt using this profile
-with " (:code "nyxt --data-profile dev --socket /tmp/nyxt.socket") ".")
+with " (:code "nyxt --profile dev --socket /tmp/nyxt.socket") ".")
 
     (:h3 "Password management")
     (:p "Nyxt provides a uniform interface to some password managers including "
@@ -364,7 +362,7 @@ existing instance instead of a separate instance that exits immediately.")
 instance must be non-nil.")
     (:p "To let know a private instance of Nyxt to load a foo.lisp script and run its
 `foo' function:")
-    (:pre (:code "nyxt --data-profile nosave --remote --load foo.lisp --eval '(foo)'"))
+    (:pre (:code "nyxt --profile nosave --remote --load foo.lisp --eval '(foo)'"))
 
     (:h2 "Extensions")
     (:p "To install an extension, copy inside the "
