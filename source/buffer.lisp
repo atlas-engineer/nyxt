@@ -21,12 +21,6 @@ have an empty ID.")
     :type application-profile
     :documentation "Buffer profiles are used to specialize the behaviour of
 various parts, such as the path of all data files.")
-   (data-profile
-    (make-instance (or (find-data-profile (getf *options* :data-profile))
-                       'default-data-profile))
-    :type data-profile
-    :documentation "Profile to use for all persisted files.
-See the `data-path' class and the `expand-path' function.")
    (document-model-delta-threshold
     10
     :documentation "Update the document model when the amount of elements on the
@@ -505,7 +499,7 @@ inherited from the superclasses."))
   '(certificate-exception-mode))
 
 (define-class nosave-buffer (user-web-buffer)
-  ((data-profile (make-instance 'nosave-data-profile)))
+  ((profile (make-instance 'nosave-profile)))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)

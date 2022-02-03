@@ -50,10 +50,6 @@ Without handler, return ARG.  This is an acceptable `combination' for
 understand the risks before enabling this: a privileged user with access to your
 system can then take control of the browser and execute arbitrary code under
 your user profile.")
-   (user-data-cache
-    (make-instance 'cache)
-    :type cache
-    :documentation "Table that maps the expanded `data-path's to the `user-data' (possibly) stored there.")
    (socket-thread
     nil
     :type t
@@ -241,31 +237,6 @@ prevents otherwise."))
 
 (defmethod external-editor-program ((browser browser))
   (alex:ensure-list (slot-value browser 'external-editor-program)))
-
-(defun %get-user-data (profile path cache)
-  (sera:and-let* ((expanded-path (expand-data-path profile path)))
-    (with-locked-cache cache
-      (multiple-value-bind (user-data found?)
-          (getcache expanded-path cache)
-        (if found?
-            user-data
-            (let ((user-data (make-instance (user-data-type profile path))))
-              (setf (getcache expanded-path cache)
-                    user-data)
-              user-data))))))
-
-(defmethod get-user-data ((profile data-profile) (path data-path))
-  (%get-user-data profile path (user-data-cache *browser*)))
-
-(defmethod set-user-data ((profile data-profile) (path data-path) value)
-  (let ((user-data (%get-user-data profile path (user-data-cache *browser*))))
-    (setf (data user-data) value)
-    ;; WARNING: We must mark the data as restored, otherwise setting the data
-    ;; manually with `%set-data' and then calling `get-data' will cause the
-    ;; latter to try to restore it from a possibly empty file, which result in
-    ;; NIL data (thus invalidating the first `%set-data').
-    (setf (restored-p user-data) t)
-    value))
 
 (defmethod get-containing-window-for-buffer ((buffer buffer) (browser browser))
   "Get the window containing a buffer."

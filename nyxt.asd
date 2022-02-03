@@ -112,7 +112,6 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "concurrency")
                  (:file "gpg")
                  (:file "user-files")
-                 (:file "data-storage")
                  (:file "configuration")
                  (:file "message")
                  (:file "command")
