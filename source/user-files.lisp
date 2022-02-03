@@ -170,8 +170,8 @@ Return `*global-profile*' otherwise."
 
 (-> find-file-name-path (string) (or string null))
 (defun find-file-name-path (ref)
-  "Return the value of the REF found in `*options*'s `:with-path'.
-Example: when passed command line option --with-path foo=bar,
+  "Return the value of the REF found in `*options*'s `:with-file'.
+Example: when passed command line option --with-file foo=bar,
 \(find-file-name-path \"foo\") returns \"bar\"."
   (second
    (assoc ref
