@@ -89,12 +89,6 @@ It's not always the case, take the socket for instance."))
                                  (setf (gethash full-path path-map) file))))
                            (alexandria:hash-table-values path-map)))))
 
-(define-class cookies-file (nfiles:data-file nyxt-file)
-  ((nfiles:base-path "cookies.txt")
-   (nfiles:name "cookies"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-
 (define-class standard-output-file (nfiles:data-file nyxt-file)
   ((nfiles:base-path "standard-output.txt")
    (nfiles:name "standard-output"))
