@@ -58,7 +58,7 @@ your user profile.")
     nil
     :type t
     :documentation "Thread that listens on socket.
-See `*socket-path*'.
+See `*socket-file*'.
 This slot is mostly meant to clean up the thread if necessary.")
    (non-terminating-threads
     '()
