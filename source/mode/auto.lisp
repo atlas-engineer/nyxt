@@ -11,7 +11,7 @@
 (use-nyxt-package-nicknames)
 
 (define-class auto-mode-rules-file (nfiles:data-file nyxt-lisp-file)
-  ((nfiles:base-path "auto-mode-rules")
+  ((nfiles:base-path #p"auto-mode-rules")
    (nfiles:name "auto-mode-rules"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
@@ -496,6 +496,7 @@ Auto-mode is re-enabled once the page is reloaded."
     (echo "Saved ~a auto-mode rules to ~s." (length rules) (nfiles:expand file))))
 
 (defmethod nfiles:deserialize ((profile application-profile) (file auto-mode-rules-file) raw-content &key)
+  (declare (ignore raw-content))
   (let ((rules (call-next-method)))
     (mapcar #'(lambda (rule)
                 (let ((rule (append '(:test) rule)))

@@ -4,7 +4,7 @@
 (in-package :nyxt)
 
 (define-class inputs-file (nfiles:data-file nyxt-lisp-file)
-  ((nfiles:base-path "inputs")
+  ((nfiles:base-path #p"inputs")
    (nfiles:name "inputs"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))

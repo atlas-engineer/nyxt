@@ -41,7 +41,7 @@
   "The initialization file.")
 
 (define-class extensions-directory (nfiles:data-file nyxt-file)
-  ((nfiles:base-path "extensions/")
+  ((nfiles:base-path #p"extensions/")
    (nfiles:name "extensions"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))

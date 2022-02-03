@@ -4,7 +4,7 @@
 (in-package :nyxt)
 
 (define-class history-file (nfiles:data-file nyxt-lisp-file)
-  ((nfiles:base-path "history/default")
+  ((nfiles:base-path #p"history/default")
    (nfiles:name "history"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
