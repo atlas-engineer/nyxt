@@ -5,27 +5,27 @@
 
 (plan nil)
 
-(define-class test-data-profile (nosave-data-profile) ; TODO: Use nfiles profile.
+(define-class test-profile (nosave-profile)
   ((name :initform "test"))
   (:documentation "Test profile that does not read nor write to disk."))
 
-(defmethod nyxt:restore ((profile test-data-profile) (path data-path) &key &allow-other-keys)
-  "This method guarantees PATH will not be loaded from disk in TEST-DATA-PROFILE."
+(defmethod nfiles:read-file ((profile test-profile) (file nyxt-file) &key &allow-other-keys)
+  "This method guarantees FILE will not be loaded from disk in TEST-PROFILE."
   nil)
 
 (subtest "Global history"
   (let* ((*browser* (make-instance 'user-browser)))
     ;; Set profile to nosave to inhibit serialization / deserialization.
     ;; TODO: We should still test serialization and deserialization.
-    (setf *global-data-profile* (make-instance 'test-data-profile))
+    (setf *global-profile* (make-instance 'test-profile))
     (let ((buffer (nyxt::make-buffer)))
       (nyxt:with-current-buffer buffer
-        (let ((path (history-path buffer)))
+        (let ((file (history-file buffer)))
           (nyxt::history-add (quri:uri "http://example.org"))
-          (is (length (htree:all-data (nyxt:get-data path)))
+          (is (length (htree:all-data (nfiles:content path)))
               1
               "history has 1 entry")
-          (let ((entry (first (htree:all-data (nyxt:get-data path)))))
+          (let ((entry (first (htree:all-data (nfiles:content file)))))
             (is (url entry)
                 (quri:uri "http://example.org")
                 :test #'quri:uri=
@@ -34,19 +34,19 @@
                 ""
                 "value has no title"))
           (nyxt::history-add (quri:uri "http://example.org") :title "foo")
-          (is (length (htree:all-data (nyxt:get-data path)))
+          (is (length (htree:all-data (nfiles:content file)))
               1
               "history has still 1 entry after adding same URL")
-          (is (nyxt::implicit-visits (first (htree:all-data (nyxt:get-data path))))
+          (is (nyxt::implicit-visits (first (htree:all-data (nfiles:content file))))
               2)
-          (let ((entry (first (htree:all-data (nyxt:get-data path)))))
+          (let ((entry (first (htree:all-data (nfiles:content file)))))
             (is (title entry)
                 "foo"
                 "value now has title"))
           (nyxt::history-add (quri:uri "http://example.org/sub"))
-          (is (length (htree:all-data (nyxt:get-data path)))
+          (is (length (htree:all-data (nfiles:content file)))
               2
               "history now has 2 entries")
-          (uiop:delete-file-if-exists (expand-path (history-path buffer))))))))
+          (uiop:delete-file-if-exists (nfiles:expand (history-file buffer))))))))
 
 (finalize)
