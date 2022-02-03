@@ -345,14 +345,14 @@ The file where the system will create/save the input data.")
     (make-instance 'auto-mode-rules-file)
     :type auto-mode-rules-file
     :documentation "The file where the auto-mode rules are saved.")
-   (standard-output-path
-    (make-instance 'standard-output-data-path)
-    :type data-path
-    :documentation "Path where `*standard-output*' can be written to.")
-   (error-output-path
-    (make-instance 'error-output-data-path)
-    :type data-path
-    :documentation "Path where `*error-output*' can be written to."))
+   (standard-output-file
+    (make-instance 'standard-output-file)
+    :type standard-output-file
+    :documentation "File `*standard-output*' can be written to.")
+   (error-output-file
+    (make-instance 'error-output-file)
+    :type error-output-file
+    :documentation "File `*error-output*' can be written to."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
