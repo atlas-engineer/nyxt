@@ -27,6 +27,11 @@ It's not always the case, take the socket for instance."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "All Nyxt files."))
 
+(define-class nyxt-data-directory (nfiles:data-file nyxt-file)
+  ((nfiles:base-path #p""))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
 (define-class nyxt-lisp-file (nyxt-file nfiles:lisp-file)
   ()
   (:export-class-name-p t)
