@@ -173,12 +173,17 @@ https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-class extension-storage-file (nfiles:data-file nyxt-lisp-file)
-  ((nfiles:name "extension-storage"))
+  ((nfiles:name "extension-storage")
+   (extension-name ""))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "The `nyxt-file' for the browser.storage API data storage (see
   https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage
   for API description)."))
+
+(defmethod initialize-instance :after ((file extension-storage-file) &key)
+  (setf (nfiles:base-path file)
+        (pathname (format nil "extension-storage/~a.txt" (extension-name file)))))
 
 (define-mode extension ()
   "The base mode for any extension to inherit from."
@@ -205,8 +210,8 @@ Is only set when popup is active.")
    (homepage-url nil
                  :type (or null quri:uri))
    (extension-directory nil
-              :type (or null pathname)
-              :documentation "The directory that the extension resides in.")
+                        :type (or null pathname)
+                        :documentation "The directory that the extension resides in.")
    (extension-files (make-hash-table)
                     :type hash-table
                     :documentation "All the files extension packages.
@@ -354,9 +359,7 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
                              :allocation :class)
           (popup-buffer nil
                         :allocation :class)
-          (storage-path (make-instance
-                         'extension-storage-file
-                         :base-path (format nil "extnsion-storage/~a.txt" ,name))
+          (storage-path (make-instance 'extension-storage-file :extension-name ,name)
                         :allocation :class)
           (description ,(gethash "description" json))
           (extension-directory ,directory)
