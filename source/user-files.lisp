@@ -120,12 +120,6 @@ It's not always the case, take the socket for instance."))
    (name profile)
    (uiop:xdg-data-home (call-next-method))))
 
-(define-class inputs-file (nfiles:data-file nyxt-lisp-file)
-  ((nfiles:base-path "inputs")
-   (nfiles:name "inputs"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-
 (export-always 'xdg-download-dir)
 (defun xdg-download-dir ()
   (let ((dir (ignore-errors (uiop:run-program '("xdg-user-dir" "DOWNLOAD")

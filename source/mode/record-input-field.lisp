@@ -3,6 +3,12 @@
 
 (in-package :nyxt)
 
+(define-class inputs-file (nfiles:data-file nyxt-lisp-file)
+  ((nfiles:base-path "inputs")
+   (nfiles:name "inputs"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
 (define-parenscript %get-input-data ()
   (let* ((inputs (ps:chain document (query-selector-all "input")))
          (len-inputs (ps:chain inputs length))
@@ -59,7 +65,7 @@
                                  collect (convert-string-to-keyword key)
                                  collect value)))
            (input-field-add (input-field) 
-             (with-data-access (input-fields (inputs-path (current-buffer)))
+             (nfiles:with-file-content (input-fields (inputs-file (current-buffer)))
                (push (make-instance 'input-entry :url (url (current-buffer))
                                                  :title (title (current-buffer))
                                                  :date (local-time:now)
@@ -94,14 +100,14 @@
 
 (define-class input-data-source (prompter:source)
   ((prompter:name "Inputs")
-   (prompter:constructor (get-data (inputs-path (current-buffer))))))
+   (prompter:constructor (nfiles:content (inputs-file (current-buffer))))))
 
 (define-class filtered-domain-input-data-source (prompter:source)
   ((prompter:name "Inputs")
    (prompter:constructor (remove-if-not #'(lambda (input-entry)
                                             (equal (quri:uri-domain (quri:uri (url input-entry)))
                                                    (quri:uri-domain (url (current-buffer)))))
-                                        (get-data (inputs-path (current-buffer)))))))
+                                        (nfiles:content (inputs-file (current-buffer)))))))
 
 (define-command set-input-data-from-saved 
     (&key (actions (list (make-command set-input-data* (suggestion-values)
@@ -124,25 +130,6 @@ the current buffer."
    :sources (make-instance 'filtered-domain-input-data-source
                            :actions actions)))
 
-(defmethod store ((profile data-profile) (path inputs-data-path) &key &allow-other-keys)
-  "Store the input data to the buffer `inputs-path'."
-  (with-data-file (file path :direction :output)
-    (%set-data path (get-data path))
-    (s-serialization:serialize-sexp (get-data path) file))
-  t)
-
-(defmethod restore ((profile data-profile) (path inputs-data-path) &key &allow-other-keys)
-  "Restore the input data from the buffer `inputs-path'."
-  (handler-case
-      (let ((data (with-data-file (file path)
-                    (when file
-                      (s-serialization:deserialize-sexp file)))))
-        (when data
-          (%set-data path data)))
-    (error (c)
-      (echo-warning "Failed to load inputs from ~s: ~a" (expand-path path) c))))
-
 (defun input-fields ()
   "List all input entries objects saved in the local file."
-  (with-data-access (input-fields (inputs-path (current-buffer)))
-    input-fields))
+  (nfiles:content (inputs-file (current-buffer))))
