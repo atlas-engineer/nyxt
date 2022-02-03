@@ -6,7 +6,7 @@
 (plan nil)
 
 (define-class test-profile (nosave-profile)
-  ((name :initform "test"))
+  ((nfiles:name :initform "test"))
   (:documentation "Test profile that does not read nor write to disk."))
 
 (defmethod nfiles:read-file ((profile test-profile) (file nyxt-file) &key &allow-other-keys)
@@ -22,7 +22,7 @@
       (nyxt:with-current-buffer buffer
         (let ((file (history-file buffer)))
           (nyxt::history-add (quri:uri "http://example.org"))
-          (is (length (htree:all-data (nfiles:content path)))
+          (is (length (htree:all-data (nfiles:content file)))
               1
               "history has 1 entry")
           (let ((entry (first (htree:all-data (nfiles:content file)))))
