@@ -173,7 +173,7 @@ https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
 (define-class extension-storage-file (nfiles:data-file nyxt-lisp-file)
-  ((ref "extension-storage"))
+  ((nfiles:name "extension-storage"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "The `nyxt-file' for the browser.storage API data storage (see
