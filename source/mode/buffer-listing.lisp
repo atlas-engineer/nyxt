@@ -34,6 +34,8 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                (analysis::generate-document-distance-vectors collection)
                (analysis::dbscan collection :minimum-points 1 :epsilon 0.075)
                (analysis::clusters collection)))
+           (make-buffer-id (buffer)
+             (format nil "buffer-~a" (id buffer)))
            (buffer-markup (buffer)
              "Present a buffer in HTML."
              ;; To avoid spurious spaces.
@@ -41,8 +43,13 @@ With LINEAR-VIEW-P, list buffers linearly instead."
              (let ((*print-pretty* nil))
                (spinneret:with-html
                  (:p (:button :class "button"
-                              :onclick (ps:ps (nyxt/ps:lisp-eval
-                                               `(nyxt::delete-buffer :id ,(id buffer)))) "✕")
+                              :onclick (let ((selector (format nil "#~a" (make-buffer-id buffer))))
+                                         (ps:ps
+                                           (nyxt/ps:lisp-eval
+                                            `(nyxt::delete-buffer :id ,(id buffer))
+                                            ((ps:chain
+                                              (nyxt/ps:qs document (ps:lisp selector))
+                                              remove))))) "✕")
                      (:button :class "button"
                               :onclick (ps:ps (nyxt/ps:lisp-eval
                                                `(nyxt::switch-buffer :id ,(id buffer)))) "→")
@@ -51,10 +58,11 @@ With LINEAR-VIEW-P, list buffers linearly instead."
            (buffer-tree->html (root-buffer)
              "Present a single buffer tree in HTML."
              (spinneret:with-html
-               (:div (buffer-markup root-buffer))
-               (:ul
-                (dolist (child-buffer (nyxt::buffer-children root-buffer))
-                  (:li (buffer-tree->html child-buffer))))))
+               (:div :id (make-buffer-id root-buffer)
+                (:div (buffer-markup root-buffer))
+                (:ul
+                 (dolist (child-buffer (nyxt::buffer-children root-buffer))
+                   (:li (buffer-tree->html child-buffer)))))))
            (cluster-markup (cluster-id cluster)
              "Present a cluster in HTML."
              (spinneret:with-html
