@@ -172,4 +172,4 @@ download."
 
 (define-command download-open-file ()
   "Open file in Nyxt or externally."
-  (nyxt/file-manager-mode:open-file :default-directory (nfiles:expand (download-directory (current-buffer)))))
+  (nyxt/file-manager-mode:open-file :default-directory (nfiles:expand (downloads-directory (current-buffer)))))
