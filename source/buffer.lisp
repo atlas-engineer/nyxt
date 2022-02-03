@@ -344,11 +344,10 @@ The file where the system will create/save annotations.")
     :documentation "
 The path where the system will create/save the input data.
 Inputs' data is kept in browser's `user-data', keyed by the expanded `save-inputs-path'.")
-   (auto-mode-rules-path
-    (make-instance 'auto-mode-rules-data-path)
-    :type data-path
-    :documentation "The path where the auto-mode rules are saved.
-Rules are kept in browser's `user-data', keyed by the expanded `auto-mode-rules-path'.")
+   (auto-mode-rules-file
+    (make-instance 'auto-mode-rules-file)
+    :type auto-mode-rules-file
+    :documentation "The file where the auto-mode rules are saved.")
    (standard-output-path
     (make-instance 'standard-output-data-path)
     :type data-path

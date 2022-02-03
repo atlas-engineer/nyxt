@@ -10,6 +10,12 @@
 (in-package :nyxt/auto-mode)
 (use-nyxt-package-nicknames)
 
+(define-class auto-mode-rules-file (nfiles:data-file nyxt-lisp-file)
+  ((nfiles:base-path "auto-mode-rules")
+   (nfiles:name "auto-mode-rules"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
 (define-class mode-invocation ()
   ((name
     (error "Mode invocation should have a name to call mode through.")
@@ -87,7 +93,7 @@ If the mode specifier is not known, it's omitted from the results."
 
 (-> matching-auto-mode-rule (quri:uri buffer) (or auto-mode-rule null))
 (defun matching-auto-mode-rule (url buffer)
-  (with-data-unsafe (rules (auto-mode-rules-path buffer))
+  (let ((rules (nfiles:content (auto-mode-rules-file buffer))))
     (flet ((priority (test1 test2)
              (let ((priority-list '(match-regex match-url match-host match-domain)))
                (< (or (position (first test1) priority-list) 4)
@@ -318,7 +324,7 @@ inferring the matching condition with `url-infer-match'.
 This command does not save non-rememberable modes. If you want to auto-mode to
 save a particular mode, configure it to be `rememberable-p' in your initfile.
 
-For the storage format see the comment in the head of your `auto-mode-rules-data-path' file."
+For the storage format see the comment in the head of your `auto-mode-rules-file'."
   (let ((url (prompt1
               :prompt "URL:"
               :input (render-url (url (current-buffer)))
@@ -346,7 +352,7 @@ Uses `url-infer-match', see its documentation for matching rules.
 This command does not save non-rememberable modes. If you want to auto-mode to
 save a particular mode, configure it to be `rememberable-p' in your initfile.
 
-For the storage format see the comment in the head of your `auto-mode-rules-data-path' file."
+For the storage format see the comment in the head of your `auto-mode-rules-file'."
   ;; TODO: Should it prompt for modes to save?
   ;; One may want to adjust the modes before persisting them as :exact-p rule.
   (let ((url (prompt1
@@ -397,7 +403,7 @@ Auto-mode is re-enabled once the page is reloaded."
     (values list &optional))
 (sera:export-always 'add-modes-to-auto-mode-rules)
 (defun add-modes-to-auto-mode-rules (test &key (append-p nil) exclude include (exact-p nil))
-  (with-data-access (rules (auto-mode-rules-path (current-buffer)))
+  (let ((rules (nfiles:content (auto-mode-rules-file (current-buffer)))))
     (let* ((rule (or (find test rules
                            :key #'test :test #'equal)
                      (make-instance 'auto-mode-rule :test test)))
@@ -419,7 +425,7 @@ Auto-mode is re-enabled once the page is reloaded."
                    :key #'test :test #'equal)))
     rules))
 
-(defmethod serialize-object ((rule auto-mode-rule) stream)
+(defun serialize-object (rule &optional (stream *standard-output*))
   (flet ((write-if-present (slot &key modes-p)
            (when (funcall slot rule)
              (format t " :~a ~s"
@@ -446,22 +452,10 @@ Auto-mode is re-enabled once the page is reloaded."
       (write-if-present 'exact-p)
       (write-string ")" stream))))
 
-(defmethod deserialize-auto-mode-rules (stream)
-  (let ((*standard-input* stream))
-    (let ((rules (read stream)))
-      (mapcar #'(lambda (rule)
-                  (let ((rule (append '(:test) rule)))
-                    (setf (getf rule :included) (mode-invocations (getf rule :included))
-                          (getf rule :excluded) (mode-invocations (getf rule :excluded)))
-                    (when (stringp (getf rule :test))
-                      (setf (getf rule :test) `(match-url ,(getf rule :test))))
-                    (apply #'make-instance 'auto-mode-rule rule)))
-              rules))))
-
-(defmethod store ((profile data-profile) (path auto-mode-rules-data-path) &key &allow-other-keys)
-  (with-data-file (file path :direction :output)
-    (let ((*package* (find-package :nyxt/auto-mode))
-          (rules (get-data path)))
+(defmethod nfiles:serialize ((profile application-profile) (file auto-mode-rules-file) stream &key)
+  (let ((rules (nfiles:content file)))
+    (let ((*standard-output* stream)
+          (*package* (find-package :nyxt/auto-mode)))
       (write-string ";; List of auto-mode rules.
 ;; It is made to be easily readable and editable, but you still need to remember some things:
 ;;
@@ -493,21 +487,21 @@ Auto-mode is re-enabled once the page is reloaded."
 ;;
 ;; You can write additional URLs in the bracketed conditions, to reuse the rule for other URL
 ;; Example: (match-host \"reddit.com\" \"old.reddit.com\" \"www6.reddit.com\")
-" file)
-    (write-string "(" file)
-    (dolist (rule rules)
-      (write-char #\newline file)
-      (serialize-object rule file))
-    (format file "~%)~%")
-    (echo "Saved ~a auto-mode rules to ~s." (length rules) (expand-path path)))))
+")
+      (write-string "(" )
+      (dolist (rule rules)
+        (write-char #\newline)
+        (serialize-object rule))
+      (format t "~%)~%"))
+    (echo "Saved ~a auto-mode rules to ~s." (length rules) (nfiles:expand file))))
 
-(defmethod restore ((profile data-profile) (path auto-mode-rules-data-path) &key &allow-other-keys)
-  (with-protect ("Failed to load auto-mode-rules from ~s: ~a"
-                      (expand-path path) :condition)
-    (let ((data (with-data-file (file path)
-                  (when file
-                    (let ((*package* (find-package :nyxt/auto-mode)))
-                      (deserialize-auto-mode-rules file))))))
-      (when data
-        (echo "Loading ~a auto-mode rules from ~s." (length data) (expand-path path))
-        (nyxt::%set-data path data)))))
+(defmethod nfiles:deserialize ((profile application-profile) (file auto-mode-rules-file) raw-content &key)
+  (let ((rules (call-next-method)))
+    (mapcar #'(lambda (rule)
+                (let ((rule (append '(:test) rule)))
+                  (setf (getf rule :included) (mode-invocations (getf rule :included))
+                        (getf rule :excluded) (mode-invocations (getf rule :excluded)))
+                  (when (stringp (getf rule :test))
+                    (setf (getf rule :test) `(match-url ,(getf rule :test))))
+                  (apply #'make-instance 'auto-mode-rule rule)))
+            rules)))
