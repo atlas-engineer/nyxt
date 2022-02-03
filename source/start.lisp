@@ -3,31 +3,30 @@
 
 (in-package :nyxt)
 
-(define-class socket-data-path (data-path)
+(define-class socket-file (nfiles:runtime-file nyxt-file)
   ((basename "nyxt.socket")
-   (editable nil))
+   (editable-p nil))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Socket files are typically stored in a dedicated directory."))
 
-(defmethod expand-data-path ((profile data-profile) (data-path socket-data-path))
+(defmethod nfiles:resolve ((profile application-profile) (socket socket-file))
   "Return finalized path for socket files."
-  (unless (getf *options* :no-socket)
-    (let ((path (or (getf *options* :socket)
-                    (uiop:getenv "NYXT_SOCKET")
-                    (expand-default-path
-                     data-path
-                     :root (uiop:native-namestring (uiop:xdg-runtime-dir +data-root+))))))
-      (unless (uiop:emptyp path)
-        path))))
+  (if (getf *options* :no-socket)
+      #p""
+      (uiop:ensure-pathname
+       (or (getf *options* :socket)
+           (uiop:getenv "NYXT_SOCKET")
+           (call-next-method))
+       :truenamize t)))
 
-(export-always '*socket-path*)
-(defvar *socket-path* (make-instance 'socket-data-path)
+(export-always '*socket-file*)
+(defvar *socket-file* (make-instance 'socket-file)
   "Path of the Unix socket used to communicate between different instances of
 Nyxt.
 
-If `expand-path' resolves this to `nil', then Nyxt starts in multi-instance mode.
+If `nfiles:expand' resolves this to #p\"\", then Nyxt starts in multi-instance mode.
 This means that re-running Nyxt will start a new instance of Nyxt instead of
 prompting the first instance.
 
@@ -136,20 +135,19 @@ Set to '-' to read standard input instead.")
 Implies --quit.
 The remote instance must be listening on a socket which you can specify with --socket
 and have the `remote-execution-p' browser slot to non-nil.")
-      (:name :data-profile
-       :short #\d
-       :long "data-profile"
+      (:name :profile
+       :short #\p
+       :long "profile"
        :arg-parser #'identity
-       :description "Use the given data profile. ")
-      (:name :list-data-profiles
-       :long "list-data-profiles"
-       :description "List the known data profiles and exit.
-Known profiles are found among global variables that are a subclass of
-`data-profile'.")
+       :description "Use the given profile. ")
+      (:name :list-profiles
+       :long "list-profiles"
+       :description "List the known profiles and exit.
+Known profiles are found among subclasses of `application-profile'.")
       (:name :with-path
        :long "with-path"
        :arg-parser (lambda (arg) (str:split "=" arg :limit 2))
-       :description "Set data path reference to the given path.
+       :description "Set path reference to the given path.
 Can be specified multiple times.  An empty path means it won't be used.
 Example: --with-path bookmarks=/path/to/bookmarks
          --with-path session="))))
@@ -168,10 +166,10 @@ Example: --with-path bookmarks=/path/to/bookmarks
     (destroy-thread* (socket-thread *browser*))
     ;; Warning: Don't attempt to remove socket-path if socket-thread was not
     ;; running or we risk remove an unrelated file.
-    (let ((socket-path (expand-path *socket-path*)))
-      (when (uiop:file-exists-p socket-path)
-        (log:info "Deleting socket ~s." socket-path)
-        (uiop:delete-file-if-exists socket-path))))
+    (let ((socket (nfiles:expand *socket-file*)))
+      (when (uiop:file-exists-p socket)
+        (log:info "Deleting socket ~s." socket)
+        (uiop:delete-file-if-exists socket))))
   (unless *run-from-repl-p*
     (uiop:quit 0 nil))
   (mapc #'destroy-thread* (non-terminating-threads *browser*)))
@@ -337,7 +335,7 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
     urls))
 
 (defun listen-socket ()
-  (let ((socket-path (expand-path *socket-path*)))
+  (let ((socket-path (expand-path *socket-file*)))
     (when socket-path
       (ensure-parent-exists socket-path)
       ;; TODO: Catch error against race conditions?
@@ -368,7 +366,7 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
 (defun listening-socket-p ()
   (ignore-errors
    (iolib:with-open-socket (s :address-family :local
-                              :remote-filename (expand-path *socket-path*))
+                              :remote-filename (expand-path *socket-file*))
      (iolib:socket-connected-p s))))
 
 (defun file-is-socket-p (path)
@@ -392,7 +390,7 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
 (defun listen-or-query-socket (urls)
   "If another Nyxt is listening on the socket, tell it to open URLS.
 Otherwise bind socket and return the listening thread."
-  (let ((socket-path (expand-path *socket-path*)))
+  (let ((socket-path (expand-path *socket-file*)))
     (cond
       ((listening-socket-p)
        (if urls
@@ -418,7 +416,7 @@ Otherwise bind socket and return the listening thread."
   (if (listening-socket-p)
       (progn
         (iolib:with-open-socket (s :address-family :local
-                                   :remote-filename (expand-path *socket-path*))
+                                   :remote-filename (expand-path *socket-file*))
           (write-string expr s))
         (uiop:quit))
       (progn
@@ -456,7 +454,7 @@ Examples:
 - Display version and return immediately:
   (nyxt:start :version t)
 
-- Start the browser with increased verbosity, a different history data path and
+- Start the browser with increased verbosity, a different history file and
   open the given URLs.
   (nyxt:start :urls '(\"https://nyxt.atlas.engineer\" \"https://en.wikipedia.org\")
               :verbose t
@@ -489,11 +487,14 @@ Examples:
     ((getf options :system-information)
      (princ (system-information)))
 
-    ((getf options :list-data-profiles)
+    ((getf options :list-profiles)
      (load-lisp (nfiles:expand *init-file*) :package (find-package :nyxt-user))
-     (mapcar (lambda (pair)
-               (format t "~a~10t~a~&" (first pair) (indent (second pair) 10)))
-             (mapcar #'rest (package-data-profiles))))
+     (mapcar (lambda (profile-class)
+               (format t "~a~10t~a~&"
+                       (getf (mopu:slot-properties profile-class 'nfiles:name) :initform)
+                       (indent (documentation profile-class t) 10)))
+             (cons (find-class 'nyxt:application-profile)
+                   (mopu:subclasses 'nyxt:application-profile))))
 
     ((getf options :script)
      (flet ((run-script (stream)
@@ -544,13 +545,13 @@ Instantiate `*browser*'.
 Finally, run the browser, load URL-STRINGS if any, then run
 `*after-init-hook*'."
   (let* ((urls (strings->urls url-strings))
-         (thread (when (expand-path *socket-path*)
+         (thread (when (expand-path *socket-file*)
                    (listen-or-query-socket urls)))
          (startup-timestamp (local-time:now))
          (startup-error-reporter nil))
     (when (or thread
               (getf *options* :no-socket)
-              (null (expand-path *socket-path*)))
+              (null (expand-path *socket-file*)))
       (format t "Nyxt version ~a~&" +version+)
       (load-lisp (nfiles:expand *auto-config-file*) :package (find-package :nyxt-user))
       (match (multiple-value-list (load-lisp (nfiles:expand *init-file*)
