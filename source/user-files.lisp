@@ -123,24 +123,6 @@ It's not always the case, take the socket for instance."))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-
-(export-always 'current-profile)
-(defun current-profile ()
-  "If `%buffer' is non-nil, return its data-profile.
-Return `*global-profile*' otherwise."
-  ;; TODO: %BUFFER is not defined yet. Move %BUFFER there?
-  ;; `current-profile' may be called during startup when no window exists,
-  ;; which means `current-buffer' neither.  But `current-buffer' calls
-  ;; `current-window' which calls `ffi-window-active' and may result in a thread
-  ;; dead-lock.  To prevent this, we look for the last active window without
-  ;; relying on the renderer.
-  (if (and *browser* (slot-value *browser* 'last-active-window))
-      (let ((buffer (or (current-buffer (slot-value *browser* 'last-active-window))
-                        (make-instance 'user-buffer))))
-        (or (and buffer (profile buffer))
-            *global-profile*))
-      *global-profile*))
-
 (-> find-file-name-path (string) (or string null))
 (defun find-file-name-path (ref)
   "Return the value of the REF found in `*options*'s `:with-file'.
