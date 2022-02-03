@@ -108,12 +108,11 @@ When the download is done, `nfiles:content' should automatically retrieve the
 new list."
   (let ((path (nfiles:expand hostlist)))
     (if (and (not (url-empty-p (url hostlist)))
-             (or ;; (force-update-p hostlist)
-              (not (uiop:file-exists-p path))
-              (< (update-interval hostlist)
-                 (- (get-universal-time) (uiop:safe-file-write-date path)))))
+             (or (not (uiop:file-exists-p path))
+                 (< (update-interval hostlist)
+                    (- (get-universal-time) (uiop:safe-file-write-date path)))))
         (run-thread "blocker-mode hostlist updater"
-          (nfiles:write-file hostlist))
+          (nfiles:write-file profile hostlist))
         (when (uiop:file-exists-p path)
           (log:debug "Restoring hostlist from ~a" path)
           (call-next-method)))))
