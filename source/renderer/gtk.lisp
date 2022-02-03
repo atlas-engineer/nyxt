@@ -251,46 +251,51 @@ the renderer thread, use `defmethod' instead."
   (unless *run-from-repl-p*
     (gtk:leave-gtk-main)))
 
-(define-class data-manager-data-path (data-path)
+(define-class data-manager-file (nyxt-file)
   ((context-name (error "Context name required."))
-   (dirname (uiop:native-namestring (uiop:xdg-data-home +data-root+)))
-   (ref "web-context"))
+   (nfiles:name "web-context"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod expand-data-path ((profile nosave-data-profile) (path data-manager-data-path))
-  "We shouldn't store any `data-manager' data for `nosave-data-profile'."
+(defmethod initialize-instance :after ((file data-manager-file) &key)
+  (setf (nfiles:base-path file)
+        (pathname (str:concat (context-name file) "-web-context"))))
+
+(defmethod nfiles:resolve ((profile nosave-profile) (file data-manager-file))
+  "We shouldn't store any `data-manager' data for `nosave-profile'."
+  #p"")
+
+(define-class data-manager-data-file (nfiles:data-file data-manager-file)
+  ()
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(define-class data-manager-cache-directory (nfiles:cache-file data-manager-file)
+  ()
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(define-class gtk-extensions-directory (nfiles:data-file data-manager-file)
+  ((name "gtk-extensions"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(defmethod initialize-instance :after ((file gtk-extensions-directory) &key)
+  (setf (nfiles:base-path file)
+        (pathname (str:concat (context-name file) "-gtk-extensions"))))
+
+(define-class cookies-file (nfiles:data-file data-manager-file)
+  ((nfiles:name "cookies"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(defmethod initialize-instance :after ((file cookies-file) &key)
+  (setf (nfiles:base-path file)
+        (pathname (str:concat (context-name file) "-cookies"))))
+
+(defmethod nfiles:resolve ((profile nosave-profile) (path gtk-extensions-directory))
+  "We shouldn't enable (possibly) user-identifying extensions for `nosave-profile'."
   nil)
-
-(defmethod expand-data-path ((profile data-profile) (path data-manager-data-path))
-  (expand-default-path
-   path
-   :root (uiop:strcat (uiop:native-namestring (dirname path))
-                      (uiop:directory-separator-for-host)
-                      (str:concat (context-name path) "-web-context"))))
-
-(define-class data-manager-cache-path (data-manager-data-path)
-  ((dirname (uiop:xdg-cache-home +data-root+)))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-
-(define-class gtk-extensions-data-path (data-manager-data-path)
-  ((dirname (uiop:native-namestring (uiop:xdg-data-home +data-root+)))
-   (ref :initform "gtk-extensions"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-
-(defmethod expand-data-path ((profile nosave-data-profile) (path gtk-extensions-data-path))
-  "We shouldn't enable (possibly) user-identifying extensions for `nosave-data-profile'."
-  nil)
-
-(defmethod expand-data-path ((profile data-profile) (path gtk-extensions-data-path))
-  "Return finalized path for gtk-extension directory."
-  (expand-default-path
-   path
-   :root (uiop:strcat (uiop:native-namestring (dirname path))
-                      (uiop:directory-separator-for-host)
-                      (str:concat (context-name path) "-gtk-extensions"))))
 
 (define-class gtk-download (download)
   ((gtk-object)
@@ -298,12 +303,6 @@ the renderer thread, use `defmethod' instead."
     :documentation "See `gtk-buffer' slot of the same name."))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-user-class download (gtk-download))
-
-(defun cookies-data-path-for-context (name)
-  (make-instance 'cookies-data-path
-                 :ref (format nil "~a-web-context-cookies" name)
-                 :dirname (uiop:xdg-data-home +data-root+
-                                              (format nil "~a-web-context" name))))
 
 (defclass webkit-web-view-ephemeral (webkit:webkit-web-view) ()
   (:metaclass gobject:gobject-class))
@@ -323,12 +322,12 @@ used.  Otherwise (such as an external web buffer), the `+default+'
 webkit-web-context is used.
 
 If ephemeral-p is set, the buffer is a nosave-buffer, or the current
-data-protife is a nosave-data-profile, then an ephemeral context is used, with
+`protife' is a `nosave-profile', then an ephemeral context is used, with
 the same naming rules as above."
   (let ((internal-p (or (not buffer)
                         (internal-buffer-p buffer)))
         (ephemeral-p (or ephemeral-p
-                         (typep (current-data-profile) 'nosave-data-profile)
+                         (typep (current-profile) 'nosave-profile)
                          (typep buffer 'nosave-buffer))))
     (make-instance (if ephemeral-p
                        'webkit-web-view-ephemeral
@@ -759,14 +758,14 @@ See `gtk-browser's `modifier-translator' slot."
                                 :website-data-manager
                                 (make-instance 'webkit-website-data-manager-ephemeral
                                                :is-ephemeral t))
-                 (let ((data-manager-data-path (make-instance 'data-manager-data-path :context-name name))
-                       (data-manager-cache-path (make-instance 'data-manager-cache-path :context-name name)))
+                 (let ((data-manager-data-directory (make-instance 'data-manager-data-directory :context-name name))
+                       (data-manager-cache-directory (make-instance 'data-manager-cache-directory :context-name name)))
                    (make-instance 'webkit-web-context
                                   :website-data-manager
                                   (make-instance 'webkit-website-data-manager
-                                                 :base-data-directory (expand-path data-manager-data-path)
-                                                 :base-cache-directory (expand-path data-manager-cache-path))))))
-           (gtk-extensions-path (expand-path (make-instance 'gtk-extensions-data-path :context-name name)))
+                                                 :base-data-directory (nfiles:expand data-manager-data-directory)
+                                                 :base-cache-directory (nfiles:expand data-manager-cache-directory))))))
+           (gtk-extensions-path (nfiles:expand (make-instance 'gtk-extensions-directory :context-name name)))
            (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
       (unless (or ephemeral-p
                   (internal-context-p name))
@@ -800,10 +799,44 @@ See `gtk-browser's `modifier-translator' slot."
                                                         (find buffer extensions :key #'nyxt/web-extensions:popup-buffer))))
                                     (list (describe-extension extension :privileged-p t)))
                                   (mapcar #'describe-extension extensions)))))))))))
-        (let ((cookies-data-path (expand-path (cookies-data-path-for-context name))))
+        (maphash
+         (lambda (scheme scheme-object)
+           (webkit:webkit-web-context-register-uri-scheme-callback
+            context scheme
+            (lambda (request)
+              (funcall* (callback scheme-object)
+                        (webkit:webkit-uri-scheme-request-get-uri request)
+                        buffer))
+            (or (error-callback scheme-object)
+                (lambda (condition)
+                  (echo-warning "Error while routing ~s resource: ~a" scheme condition))))
+           ;; We err on the side of caution, assigning the most restrictive policy
+           ;; out of those provided. Should it be the other way around?
+           (let ((manager (webkit:webkit-web-context-get-security-manager context)))
+             (cond
+               ((local-p scheme-object)
+                (webkit:webkit-security-manager-register-uri-scheme-as-local
+                 manager scheme))
+               ((no-access-p scheme-object)
+                (webkit:webkit-security-manager-register-uri-scheme-as-no-access
+                 manager scheme))
+               ((display-isolated-p scheme-object)
+                (webkit:webkit-security-manager-register-uri-scheme-as-display-isolated
+                 manager scheme))
+               ((secure-p scheme-object)
+                (webkit:webkit-security-manager-register-uri-scheme-as-secure
+                 manager scheme))
+               ((cors-enabled-p scheme-object)
+                (webkit:webkit-security-manager-register-uri-scheme-as-cors-enabled
+                 manager scheme))
+               ((empty-document-p scheme-object)
+                (webkit:webkit-security-manager-register-uri-scheme-as-empty-document
+                 manager scheme)))))
+         nyxt::*schemes*)
+        (let ((cookies-path (nfiles:expand (make-instance 'cookies-file :context-name name))))
           (webkit:webkit-cookie-manager-set-persistent-storage
            cookie-manager
-           cookies-data-path
+           cookies-path
            :webkit-cookie-persistent-storage-text))
         (set-cookie-policy cookie-manager (default-cookie-policy *browser*)))
       (maphash
