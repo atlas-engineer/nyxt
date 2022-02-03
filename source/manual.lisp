@@ -287,7 +287,7 @@ configuration file."
         "You can list all known profiles (including the user-defined
 profiles) with the " (:code "--list-profiles") " command-line option.")
     (:p "The nyxt-files can be passed a hint from the "
-        (:code "--with-path") " command line option, but each nyxt-file and
+        (:code "--with-file") " command line option, but each nyxt-file and
 profile rules are free to ignore it.")
     (:p "When a path ends with the " (:code ".gpg") " extension, by default your
 GnuPG key is used to decrypt and encrypt the file transparently.  Refer to the

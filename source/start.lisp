@@ -144,13 +144,13 @@ and have the `remote-execution-p' browser slot to non-nil.")
        :long "list-profiles"
        :description "List the known profiles and exit.
 Known profiles are found among subclasses of `application-profile'.")
-      (:name :with-path
-       :long "with-path"
+      (:name :with-file
+       :long "with-file"
        :arg-parser (lambda (arg) (str:split "=" arg :limit 2))
        :description "Set path reference to the given path.
 Can be specified multiple times.  An empty path means it won't be used.
-Example: --with-path bookmarks=/path/to/bookmarks
-         --with-path session="))))
+Example: --with-file bookmarks=/path/to/bookmarks
+         --with-file session="))))
 ;; Also define command line options at read-time because we parse
 ;; `opts::*options*' in `start'.
 (sera:eval-always (define-opts))
@@ -456,7 +456,7 @@ Examples:
   open the given URLs.
   (nyxt:start :urls '(\"https://nyxt.atlas.engineer\" \"https://en.wikipedia.org\")
               :verbose t
-              :with-path '(\"history\" \"/tmp/nyxt/history.lisp\"))"
+              :with-file '(\"history\" \"/tmp/nyxt/history.lisp\"))"
           (with-output-to-string (s) (opts:describe :stream s)))
   ;; Extensions should be made accessible straight from the beginning,
   ;; e.g. before a script is run.
