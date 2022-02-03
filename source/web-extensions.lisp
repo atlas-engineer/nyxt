@@ -172,31 +172,13 @@ https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(define-class extension-storage-data-path (nyxt:data-path)
+(define-class extension-storage-file (nfiles:data-file nyxt-lisp-file)
   ((ref "extension-storage"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
-  (:documentation "The `data-path' for the browser.storage API data storage (see
+  (:documentation "The `nyxt-file' for the browser.storage API data storage (see
   https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage
   for API description)."))
-
-(defmethod store ((profile data-profile) (path extension-storage-data-path) &key &allow-other-keys)
-  "Store the data to the extension's `extension-storage-data-path'."
-  (with-data-file (file path :direction :output)
-    (format file "~s" (get-data path)))
-  t)
-
-(defmethod restore ((profile data-profile) (path extension-storage-data-path) &key &allow-other-keys)
-  "Restore the data from the extension's `extension-storage-data-path'."
-  (handler-case
-      (let ((data (with-data-file (file path)
-                    (when file
-                      (read file)))))
-        (when data
-          (nyxt::%set-data path data)))
-    (error (c)
-      (echo-warning "Failed to load extension data from ~s: ~a"
-                    (expand-path path) c))))
 
 (define-mode extension ()
   "The base mode for any extension to inherit from."
@@ -240,7 +222,7 @@ Value is the loadable URL of that file.")
                    :type (or null browser-action)
                    :documentation "Configuration for popup opening on extension icon click.")
    (storage-path nil
-                 :type (or null extension-storage-data-path)
+                 :type (or null extension-storage-file)
                  :documentation "The path that the storage API stores data in.")
    (destructor (lambda (mode)
                  (dolist (script (content-scripts mode))
@@ -373,9 +355,8 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
           (popup-buffer nil
                         :allocation :class)
           (storage-path (make-instance
-                         'extension-storage-data-path
-                         :dirname (uiop:xdg-data-home nyxt::+data-root+ "extension-storage")
-                         :basename (format nil "~a.txt" ,name))
+                         'extension-storage-file
+                         :base-path (format nil "extnsion-storage/~a.txt" ,name))
                         :allocation :class)
           (description ,(gethash "description" json))
           (extension-directory ,directory)
