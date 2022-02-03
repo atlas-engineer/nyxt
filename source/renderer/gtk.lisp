@@ -1135,8 +1135,93 @@ See `finalize-buffer'."
                                               (length files)
                                               1)
                                    :null-terminated-p t))
-              (webkit:webkit-file-chooser-request-cancel file-chooser-request))
-          t)))))
+              (webkit:webkit-file-chooser-request-cancel file-chooser-request))))
+      t)))
+
+(defvar *css-colors*
+  '("AliceBlue" "AntiqueWhite" "Aqua" "Aquamarine" "Azure" "Beige" "Bisque" "Black" "BlanchedAlmond"
+    "Blue" "BlueViolet" "Brown" "BurlyWood" "CadetBlue" "Chartreuse" "Chocolate" "Coral"
+    "CornflowerBlue" "Cornsilk" "Crimson" "Cyan" "DarkBlue" "DarkCyan" "DarkGoldenRod" "DarkGray"
+    "DarkGrey" "DarkGreen" "DarkKhaki" "DarkMagenta" "DarkOliveGreen" "DarkOrange" "DarkOrchid"
+    "DarkRed" "DarkSalmon" "DarkSeaGreen" "DarkSlateBlue" "DarkSlateGray" "DarkSlateGrey"
+    "DarkTurquoise" "DarkViolet" "DeepPink" "DeepSkyBlue" "DimGray" "DimGrey" "DodgerBlue"
+    "FireBrick" "FloralWhite" "ForestGreen" "Fuchsia" "Gainsboro" "GhostWhite" "Gold" "GoldenRod"
+    "Gray" "Grey" "Green" "GreenYellow" "HoneyDew" "HotPink" "IndianRed" "Indigo" "Ivory" "Khaki"
+    "Lavender" "LavenderBlush" "LawnGreen" "LemonChiffon" "LightBlue" "LightCoral" "LightCyan"
+    "LightGoldenRodYellow" "LightGray" "LightGrey" "LightGreen" "LightPink" "LightSalmon"
+    "LightSeaGreen" "LightSkyBlue" "LightSlateGray" "LightSlateGrey" "LightSteelBlue" "LightYellow"
+    "Lime" "LimeGreen" "Linen" "Magenta" "Maroon" "MediumAquaMarine" "MediumBlue" "MediumOrchid"
+    "MediumPurple" "MediumSeaGreen" "MediumSlateBlue" "MediumSpringGreen" "MediumTurquoise"
+    "MediumVioletRed" "MidnightBlue" "MintCream" "MistyRose" "Moccasin" "NavajoWhite" "Navy"
+    "OldLace" "Olive" "OliveDrab" "Orange" "OrangeRed" "Orchid" "PaleGoldenRod" "PaleGreen"
+    "PaleTurquoise" "PaleVioletRed" "PapayaWhip" "PeachPuff" "Peru" "Pink" "Plum" "PowderBlue"
+    "Purple" "RebeccaPurple" "Red" "RosyBrown" "RoyalBlue" "SaddleBrown" "Salmon" "SandyBrown"
+    "SeaGreen" "SeaShell" "Sienna" "Silver" "SkyBlue" "SlateBlue" "SlateGray" "SlateGrey" "Snow"
+    "SpringGreen" "SteelBlue" "Tan" "Teal" "Thistle" "Tomato" "Turquoise" "Violet" "Wheat" "White"
+    "WhiteSmoke" "Yellow" "YellowGreen")
+  "All the named CSS colors to construct `color-source' from.")
+
+(defstruct color
+  name)
+
+(define-class color-source (prompter:source)
+  ((prompter:name "Color")
+   (prompter:constructor (mapcar (alex:curry #'make-color :name) *css-colors*))
+   (prompter:filter-preprocessor
+    (lambda (suggestions source input)
+      (declare (ignore source))
+      (cons (make-color :name input) suggestions)))
+   (prompter:follow-p t)
+   (prompter:follow-mode-functions
+    (lambda (color)
+      (pflet ((color-input-area
+               (color)
+               (setf (ps:chain (nyxt/ps:qs document "#input") style background-color)
+                     (ps:lisp color))))
+        (with-current-buffer (current-prompt-buffer)
+          (color-input-area (color-name color)))))))
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(defmethod prompter:object-attributes ((color color))
+  `(("Color" ,(color-name color))))
+
+(defun process-color-chooser-request (web-view color-chooser-request)
+  (declare (ignore web-view))
+  (with-protect ("Failed to process file chooser request: ~a" :condition)
+    (when (native-dialogs *browser*)
+      (gobject:g-object-ref (gobject:pointer color-chooser-request))
+      (run-thread
+          "color chooser"
+        (pflet ((get-rgba (color)
+                          (let ((div (ps:chain document (create-element "div"))))
+                            (setf (ps:chain div style color)
+                                  (ps:lisp color))
+                            (ps:chain document body (append-child div))
+                            (ps:stringify (ps:chain window (get-computed-style div) color)))))
+          (let* ((rgba (cffi:foreign-alloc :double :count 4))
+                 (rgba (progn (webkit:webkit-color-chooser-request-get-rgba
+                               color-chooser-request rgba)
+                              rgba))
+                 (color (get-rgba
+                         (color-name
+                          (prompt1 :prompt "Color"
+                            :input (format nil "rgba(~d, ~d, ~d, ~d)"
+                                           (round (* 255 (cffi:mem-ref rgba :double 0)))
+                                           (round (* 255 (cffi:mem-ref rgba :double 1)))
+                                           (round (* 255 (cffi:mem-ref rgba :double 2)))
+                                           (round (* 255 (cffi:mem-ref rgba :double 3))))
+                            :sources (list (make-instance 'color-source))))))
+                 (rgba (gdk:gdk-rgba-parse color)))
+            (unless (uiop:emptyp color)
+              (webkit:webkit-color-chooser-request-set-rgba
+               color-chooser-request
+               (cffi:foreign-alloc
+                :double
+                :count 4
+                :initial-contents (list (gdk:gdk-rgba-red rgba) (gdk:gdk-rgba-green rgba)
+                                        (gdk:gdk-rgba-blue rgba) (gdk:gdk-rgba-alpha rgba))))
+              (webkit:webkit-color-chooser-request-finish (g:pointer color-chooser-request))))))
+      t)))
 
 (defun process-script-dialog (web-view dialog)
   (declare (ignore web-view))
@@ -1240,6 +1325,7 @@ See `finalize-buffer'."
     (on-signal-scroll-event buffer event))
   (connect-signal-function buffer "script-dialog" #'process-script-dialog)
   (connect-signal-function buffer "run-file-chooser" #'process-file-chooser-request)
+  (connect-signal-function buffer "run-color-chooser" #'process-color-chooser-request)
   (connect-signal-function buffer "permission-request" #'process-permission-request)
   (connect-signal-function buffer "show-notification" #'process-notification)
   ;; TLS certificate handling
