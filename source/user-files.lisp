@@ -101,19 +101,6 @@ It's not always the case, take the socket for instance."))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class css-cache-directory (nfiles:data-file nyxt-file)
-  ((nfiles:base-path "style-mode-css-cache/")
-   (nfiles:name "mode-css-cache"))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-
-(defmethod nfiles:resolve ((profile application-profile) (file css-cache-directory))
-  ;; TODO: Can we be more dynamic and reuse CLOS more?
-  (serapeum:path-join
-   (nfiles:base-path file)
-   (name profile)
-   (uiop:xdg-data-home (call-next-method))))
-
 (export-always 'xdg-download-dir)
 (defun xdg-download-dir ()
   (let ((dir (ignore-errors (uiop:run-program '("xdg-user-dir" "DOWNLOAD")

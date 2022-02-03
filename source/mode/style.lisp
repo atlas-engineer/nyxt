@@ -2,15 +2,28 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/style-mode
-    (:use :common-lisp :nyxt)
+  (:use :common-lisp :nyxt)
+  (:import-from #:class-star #:define-class)
   (:documentation "Mode for styling documents."))
-
 (in-package :nyxt/style-mode)
 (use-nyxt-package-nicknames)
 
+(define-class css-cache-directory (nfiles:data-file nyxt-file)
+  ((nfiles:base-path "style-mode-css-cache/")
+   (nfiles:name "mode-css-cache"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+;; (defmethod nfiles:resolve ((profile application-profile) (file css-cache-directory))
+;;   ;; TODO: Can we be more dynamic and reuse CLOS more?
+;;   (serapeum:path-join
+;;    (nfiles:base-path file)
+;;    (name profile)
+;;    (uiop:xdg-data-home (call-next-method))))
+
 (define-mode style-mode ()
   "A mode for styling documents."
-  ((css-cache-path (make-instance 'css-cache-data-path))
+  ((css-cache-directory (make-instance 'css-cache-directory))
    (style-url nil
               :type (or null string quri:uri)
               :documentation "Remote CSS file.  If supplied, set `style' to the
@@ -32,7 +45,7 @@ If nil, look for CSS in `style-file' or `style-url'.")
   "Style can be set by one of the `style', `style-file' or `style-url' slots.")
 
 (defmethod initialize ((mode style-mode))
-  (ensure-parent-exists (expand-path (css-cache-path mode)))
+  (ensure-directories-exist (nfiles:expand (css-cache-directory mode)))
   (unless (style mode)
     (setf (style mode)
           (or (ignore-errors (uiop:read-file-string
@@ -44,7 +57,7 @@ If nil, look for CSS in `style-file' or `style-url'.")
   (when (style mode)
     (nyxt::html-set-style (style mode) (buffer mode))))
 
-(defmethod open-or-cache-url ((mode style-mode) url)
+(defmethod open-or-cache-url ((mode style-mode) url) ; TODO: Leverage `nfiles' to make this happen in the background.  See `blocker-mode'.
   (when (and url
              (or (quri:uri-p url)
                  (valid-url-p url)))
@@ -52,13 +65,13 @@ If nil, look for CSS in `style-file' or `style-url'.")
                     (quri:uri url)
                     url))
            (path (url-file-path mode url)))
-      (ensure-parent-exists (expand-path path))
-      (log:info "Loading CSS from ~s." (expand-path path))
-      (handler-case (uiop:read-file-string (expand-path path))
+      (ensure-directories-exist (nfiles:expand path))
+      (log:info "Loading CSS from ~s." (nfiles:expand path))
+      (handler-case (uiop:read-file-string (nfiles:expand path))
         (error ()
-          (log:info "Downloading ~s." (expand-path path))
+          (log:info "Downloading ~s." (nfiles:expand path))
           (let ((file-contents (dex:get (render-url url))))
-            (with-open-file (f (expand-path path) :direction :output :if-exists :supersede)
+            (with-open-file (f (nfiles:expand path) :direction :output :if-exists :supersede)
               (format f "~a" file-contents))
             file-contents))))))
 
@@ -66,8 +79,7 @@ If nil, look for CSS in `style-file' or `style-url'.")
   (flet ((url->name (url)
            (str:replace-all "/" "-" (quri:uri-path url))))
     (make-instance 'css-cache-data-path
-                   :dirname (dirname (css-cache-path mode))
-                   :basename (url->name url))))
+                   :base-path (url->name url))))
 
 (defmethod nyxt:on-signal-load-finished ((mode style-mode) url)
   (declare (ignore url))
@@ -76,10 +88,8 @@ If nil, look for CSS in `style-file' or `style-url'.")
 (define-mode dark-mode (style-mode)
   "A mode for styling documents with a dark background. Unlike other modes, to
 effectively disable `dark-mode' you must also reload the buffer."
-  ((css-cache-path (make-instance 'css-cache-data-path
-                                  :dirname (uiop:xdg-data-home
-                                            nyxt::+data-root+
-                                            "dark-mode-css-cache")))))
+  ((css-cache-directory (make-instance 'css-cache-directory
+                                       :base-path "style-mode-css-cache/"))))
 
 (defmethod apply-style ((mode dark-mode))
   (if (style mode)
