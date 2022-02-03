@@ -9,17 +9,10 @@
 (use-nyxt-package-nicknames)
 
 (define-class css-cache-directory (nfiles:data-file nyxt-file)
-  ((nfiles:base-path "style-mode-css-cache/")
+  ((nfiles:base-path #p"style-mode-css-cache/")
    (nfiles:name "mode-css-cache"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
-
-;; (defmethod nfiles:resolve ((profile application-profile) (file css-cache-directory))
-;;   ;; TODO: Can we be more dynamic and reuse CLOS more?
-;;   (serapeum:path-join
-;;    (nfiles:base-path file)
-;;    (name profile)
-;;    (uiop:xdg-data-home (call-next-method))))
 
 (define-mode style-mode ()
   "A mode for styling documents."
@@ -79,7 +72,7 @@ If nil, look for CSS in `style-file' or `style-url'.")
   (flet ((url->name (url)
            (str:replace-all "/" "-" (quri:uri-path url))))
     (make-instance 'css-cache-data-path
-                   :base-path (url->name url))))
+                   :base-path (uiop:ensure-pathname (url->name url)))))
 
 (defmethod nyxt:on-signal-load-finished ((mode style-mode) url)
   (declare (ignore url))
@@ -89,7 +82,7 @@ If nil, look for CSS in `style-file' or `style-url'.")
   "A mode for styling documents with a dark background. Unlike other modes, to
 effectively disable `dark-mode' you must also reload the buffer."
   ((css-cache-directory (make-instance 'css-cache-directory
-                                       :base-path "style-mode-css-cache/"))))
+                                       :base-path #p"style-mode-css-cache/"))))
 
 (defmethod apply-style ((mode dark-mode))
   (if (style mode)
