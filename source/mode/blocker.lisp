@@ -11,7 +11,7 @@
 
 ;; TODO: Add convenient interface to block hosts depending on the current URL.
 
-(define-class hostlist (data-path)
+(define-class hostlist (nfiles:data-file nyxt-file)
   ((url
     (quri:uri "")
     :type quri:uri
@@ -22,20 +22,11 @@ will be made at updating it.")
     :type (or (cons string *) null)
     :documentation "List of hosts to ignore.
 This is useful to reference hosts manually instead of via `url'.")
-   (content
-    nil
-    :type (or null string)
-    :export nil)
    (update-interval
     (* 60 60 24)
     :type integer
     :documentation "If URL is provided, update the list after this amount of
-seconds.")
-   (force-update-p
-    nil
-    :type boolean
-    :documentation "If non-nil, the list is re-downloaded before it's (re-)read,
-ignoring the `update-interval'."))
+seconds."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
@@ -53,7 +44,7 @@ See the `hostlist' class documentation."
 (defparameter *default-hostlist*
   (make-instance 'hostlist
                  :url (quri:uri "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts")
-                 :basename "hostlist-stevenblack.txt")
+                 :base-path #p"hostlist-stevenblack.txt")
   "Default hostlist for `blocker-mode'.")
 
 (define-mode blocker-mode ()
@@ -76,32 +67,17 @@ Example:
 \(define-configuration buffer
   ((default-modes (append '(my-blocker-mode) %slot-default%))))"
   ((hostlists (list *default-hostlist*))
-   (thread
-    nil
-    :type (or bt:thread null)
-    :export nil
-    :documentation "This thread is used to update the hostlists in the background.")
-   (worker-channel
-    nil
-    :type (or calispel:channel null)
-    :export nil
-    :documentation "Communication channel between `thread' and `blocker-mode'.")
    (blocked-hosts
     (make-hash-table :test 'equal)
     :export nil
-    :documentation "The set of domain names to block.")
+    :documentation "The set of host names to block.")
    (destructor
     (lambda (mode)
-      (destroy-thread* (thread mode))
       (when (web-buffer-p (buffer mode))
         (hooks:remove-hook (request-resource-hook (buffer mode))
                            'request-resource-block))))
    (constructor
     (lambda (mode)
-      (setf (worker-channel mode) (nyxt::make-channel))
-      (setf (thread mode)
-            (run-thread "blocker-mode hostlist update worker"
-              (worker mode)))
       (load-hostlists mode)
       (when (web-buffer-p (buffer mode))
         (if (request-resource-hook (buffer mode))
@@ -111,95 +87,58 @@ Example:
              :combination #'combine-composed-hook-until-nil
              :handlers '(request-resource-block))))))))
 
-(defmethod store ((profile data-profile) (path hostlist) &key &allow-other-keys)
-  (with-data-file (file path :direction :output)
-    (write-string (get-data path) file)))
+(defmethod nfiles:write-file ((profile application-profile) (hostlist hostlist) &key)
+  "Download the hostlist file if it has a URL."
+  (when (url hostlist)
+    (let ((url-string (render-url (url hostlist)))
+          (path (nfiles:expand hostlist)))
+      (unless (nfiles:nil-pathname-p path)
+        (log:debug "Downloading hostlist from ~a to ~a." url-string path)
+        (with-protect ("Could not download hostlist ~a: ~a" url-string :condition)
+          (uiop:with-staging-pathname (destination path)
+            (with-open-file (stream destination :direction :output :if-exists :supersede)
+              (dex:get url-string :stream stream)))
 
-(defmethod restore ((profile data-profile) (path hostlist) &key &allow-other-keys)
-  "Restore a hostlist."
-  (handler-case
-      (let ((data (with-data-file (file path)
-                    (when file
-                      (uiop:read-file-string file)))))
-        (when data
-          (nyxt::%set-data path data)
-          data))
-    (error (c)
-      (echo-warning "Failed to load hostlist from ~s: ~a"
-                    (expand-path path) c))))
+          (echo "Hostlist ~a updated." url-string))))))
 
-(-> fetch (hostlist) string)
-(defun fetch (hostlist)
-  "Fetch HOSTLIST and return its content.
-If HOSTLIST yields a path with `expand-path', persist it locally.
-Auto-update file if older than UPDATE-INTERVAL seconds and AUTO-UPDATE-P is non-nil.
-The hostlist is downloaded in the background."
-  (let ((path (expand-path hostlist)))
-    (if (and (or (force-update-p hostlist)
-                 (not (uiop:file-exists-p path))
-                 (< (update-interval hostlist)
-                    (- (get-universal-time) (uiop:safe-file-write-date path))))
-             (not (url-empty-p (url hostlist))))
-        (let ((url-string (render-url (url hostlist))))
-          (log:debug "Downloading hostlist from ~a to ~a." url-string path)
-          (or (with-protect ("Could not download hostlist ~a: ~a" url-string :condition)
-                (let ((hostlist-string (dex:get url-string)))
-                  (with-data-access (h hostlist)
-                    (setf h hostlist-string))
-                  (echo "Hostlist ~a updated." (render-url (url hostlist)))
-                  hostlist-string))
-              ""))
-        (progn
+(defmethod nfiles:read-file ((profile application-profile) (hostlist hostlist) &key)
+  "If file does not exist or if `update-interval' is less than the last write date of the file,
+fetch HOSTLIST file in the background from its `url' and save it on disk.
+When the download is done, `nfiles:content' should automatically retrieve the
+new list."
+  (let ((path (nfiles:expand hostlist)))
+    (if (and (not (url-empty-p (url hostlist)))
+             (or ;; (force-update-p hostlist)
+              (not (uiop:file-exists-p path))
+              (< (update-interval hostlist)
+                 (- (get-universal-time) (uiop:safe-file-write-date path)))))
+        (run-thread "blocker-mode hostlist updater"
+          (nfiles:write-file hostlist))
+        (when (uiop:file-exists-p path)
           (log:debug "Restoring hostlist from ~a" path)
-          (let ((hostlist-string (get-data hostlist)))
-            (typecase hostlist-string
-              (string hostlist-string)
-              (t
-               (log:debug "Could not restore non-string hostlist")
-               "")))))))
+          (call-next-method)))))
 
-(-> load-hostlist (hostlist blocker-mode) boolean)
-(defun load-hostlist (hostlist mode)
-  "Load HOSTLIST into MODE's `blocked-hosts'.
-Return NIL on failure, T on success."
-  (cond
-    ((hosts hostlist)
-     (dolist (host (hosts hostlist))
-       (setf (gethash host (blocked-hosts mode)) host)))
-    ((url hostlist)
-     (let ((hostlist-string (fetch hostlist)))
-       (unless (uiop:emptyp hostlist-string)
-         (with-input-from-string (stream hostlist-string)
-           (flet ((empty-line? (line)
-                    (< (length line) 2))
-                  (comment? (line)
-                    (string= (subseq line 0 1) "#"))
-                  (custom-hosts? (line)
-                    (not (str:starts-with? "0.0.0.0" line))))
-             (loop as line = (read-line stream nil)
-                   while line
-                   unless (or (empty-line? line)
-                              (comment? line)
-                              (custom-hosts? line))
-                     do (let ((host (second (str:split " " line))))
-                          (setf (gethash host (blocked-hosts mode)) host)))))
-         t)))
-    (t nil)))
+(defmethod nfiles:deserialize ((profile application-profile) (hostlist hostlist) raw-content &key)
+  (flet ((empty-line? (line)
+           (< (length line) 2))
+         (comment? (line)
+           (string= (subseq line 0 1) "#"))
+         (custom-hosts? (line)
+           (not (str:starts-with? "0.0.0.0" line))))
+    (loop as line = (read-line raw-content nil)
+          while line
+          unless (or (empty-line? line)
+                     (comment? line)
+                     (custom-hosts? line))
+            collect (second (str:split " " line)))))
 
 (-> load-hostlists (blocker-mode &key (:force-update-p boolean)) t)
 (defun load-hostlists (blocker-mode &key force-update-p)
-  "Load BLOCKER-MODE's hostlists into `blocked-hosts' in the background."
+  "Load BLOCKER-MODE's hostlists into `blocked-hosts' (in the background)."
   (dolist (hostlist (hostlists blocker-mode))
-    (when force-update-p
-      ;; TODO: Move and export `copy-object' to a separate library.
-      (setf hostlist (prompter::copy-object hostlist))
-      (setf (force-update-p hostlist) t))
-    (calispel:! (worker-channel blocker-mode) hostlist)))
-
-(defun worker (mode)
-  (do () (nil)
-    (alex:when-let ((hostlist (calispel:? (worker-channel mode))))
-      (load-hostlist hostlist mode))))
+    (dolist (host (or (hosts hostlist)
+                      (nfiles:content hostlist force-update-p)))
+      (setf (gethash host (blocked-hosts blocker-mode)) host))))
 
 (defmethod blocklisted-host-p ((mode blocker-mode) host)
   "Return non-nil of HOST if found in the hostlists of MODE.
