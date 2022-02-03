@@ -311,8 +311,8 @@ the description of the mechanism that sends the results back."
                           :key #'id
                           :test #'string-equal))
          (keys (gethash "keys" json)))
-    (with-data-unsafe (data (nyxt/web-extensions:storage-path extension)
-                       :default (make-hash-table))
+    (let ((data (or (nfiles:content (nyxt/web-extensions:storage-path extension))
+                    (make-hash-table))))
       (if (uiop:emptyp keys)
           "{}"
           (encode-json
@@ -337,8 +337,8 @@ the description of the mechanism that sends the results back."
                           :key #'id
                           :test #'string-equal))
          (keys (gethash "keys" json)))
-    (with-data-access (data (nyxt/web-extensions:storage-path extension)
-                       :default (make-hash-table))
+    (let ((data (or (nfiles:content (nyxt/web-extensions:storage-path extension))
+                    (make-hash-table))))
       (unless (uiop:emptyp keys)
         (dolist (key-value keys)
           (setf (gethash (first key-value) data)
@@ -354,8 +354,8 @@ the description of the mechanism that sends the results back."
                           :key #'id
                           :test #'string-equal))
          (keys (uiop:ensure-list (gethash "keys" json))))
-    (with-data-access (data (nyxt/web-extensions:storage-path extension)
-                       :default (make-hash-table))
+    (let ((data (or (nfiles:content (nyxt/web-extensions:storage-path extension))
+                    (make-hash-table))))
       (unless (uiop:emptyp keys)
         (dolist (key keys)
           (remhash key data)))))
@@ -367,8 +367,8 @@ the description of the mechanism that sends the results back."
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
                           :key #'id)))
-    (with-data-access (data (nyxt/web-extensions:storage-path extension)
-                       :default (make-hash-table))
+    (let ((data (or (nfiles:content (nyxt/web-extensions:storage-path extension))
+                    (make-hash-table))))
       (clrhash data)))
   "")
 
