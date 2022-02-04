@@ -19,7 +19,7 @@ standard locations."))
 
 (define-class nyxt-file (nfiles:file)
   ((nfiles:profile *global-profile*)
-   (nfiles:on-read-error 'nfiles:backup)
+   (nfiles:on-external-modification 'nfiles:reload)
    (editable-p
     t
     :type boolean
@@ -29,7 +29,8 @@ It's not always the case, take the socket for instance."))
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "All Nyxt files.
-By default, a file that fails to be loaded is automatically backed up."))
+By default, a file that fails to be loaded is automatically backed up.
+If the file is modified externally, Nyxt automatically reloads it."))
 
 (define-class nyxt-data-directory (nfiles:data-file nyxt-file)
   ((nfiles:base-path #p""))
@@ -82,12 +83,31 @@ Example: when passed command line option --with-file foo=bar,
             (call-next-method))
           command-line-path))))
 
-(defmethod nfiles:read-file :before ((profile application-profile) (file nyxt-file) &key)
+(defmethod nfiles:read-file :around ((profile application-profile) (file nyxt-file) &key)
   (unless (typep file 'nfiles:virtual-file)
-    (log:info "Loading ~s." (nfiles:expand file))))
+    (let ((path (nfiles:expand file)))
+      (log:info "Loading ~s." path)
+      (if *run-from-repl-p*
+          (call-next-method)
+          (handler-case (call-next-method)
+            (error (c)
+              (log:info "Failed to load ~s: ~a" path c)
+              (handler-case (let ((backup (nfiles:backup path)))
+                              (log:info "Erroring file backed up at ~s." backup))
+                (error (c)
+                  (log:info "Failed to back up file: ~a" c)
+                  nil))
+              nil))))))
+
+(defmethod nfiles:write-file :around ((profile application-profile) (file nyxt-file) &key)
+  (if *run-from-repl-p*
+      (call-next-method)
+      (handler-case (call-next-method)
+        (error (c)
+          (log:info "Failed to save ~s: ~a" (nfiles:expand file) c)
+          nil))))
 
 (defmethod nfiles:serialize ((profile application-profile) (file nyxt-lisp-file) stream &key)
-  ;; TODO: Error handling!
   ;; We need to make sure current package is :nyxt so that symbols are printed
   ;; with consistent namespaces.
   (let ((*package* (find-package :nyxt))
