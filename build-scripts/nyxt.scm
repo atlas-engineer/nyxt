@@ -55,6 +55,7 @@
   #:use-module (gnu packages lisp-check)
   #:use-module (gnu packages lisp-xyz)
   #:use-module (gnu packages gnome)
+  #:use-module (gnu packages gnupg)
   #:use-module (gnu packages gstreamer)
   #:use-module (gnu packages gtk)
   #:use-module (gnu packages pkg-config)
@@ -118,6 +119,50 @@ WebKit browsing engine.")
 
 (define-public cl-webkit
   (sbcl-package->cl-source-package sbcl-cl-webkit))
+
+(define-public sbcl-nfiles
+  (let ((commit "8c3af39019e0dda674ee27c003228ec15d070286"))
+    (package
+      (name "sbcl-nfiles")
+      (version (git-version "0.0.0" "1" commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/atlas-engineer/nfiles")
+               (commit commit)))
+         (file-name (git-file-name "nfiles" version))
+         (sha256
+          (base32
+           "06i0sx5s54yi46jwr2aw8jyjzsld7zny48fymfsb3rm1j247j8ph"))))
+      (build-system asdf-build-system/sbcl)
+      (inputs
+       (list gnupg
+             sbcl-alexandria
+             sbcl-hu.dwim.defclass-star
+             sbcl-serapeum
+             sbcl-trivial-garbage
+             sbcl-trivial-package-local-nicknames
+             sbcl-trivial-types))
+      (native-inputs
+       (list sbcl-prove))
+      (arguments
+       `(#:phases
+         (modify-phases %standard-phases
+           (add-after 'unpack 'fix-paths
+             (lambda* (#:key inputs #:allow-other-keys)
+               (substitute* "gpg.lisp"
+                 (("\"gpg\"")
+                  (string-append "\"" (assoc-ref inputs "gnupg") "/bin/gpg\""))))))))
+      (home-page "https://github.com/atlas-engineer/nfiles")
+      (synopsis "Manage file persistence and loading in Common Lisp")
+      (description
+       "NFiles is a Common Lisp library to help manage file persistence and
+loading, in particular user-centric files like configuration files.")
+      (license license:bsd-3))))
+
+(define-public cl-nfiles                ; TODO: Add iolib for non-SBCL.
+  (sbcl-package->cl-source-package sbcl-nfiles))
 
 (define %source-dir (dirname (dirname (current-filename))))
 
@@ -237,6 +282,7 @@ WebKit browsing engine.")
        ("mk-string-metrics" ,cl-mk-string-metrics)
        ("moptilities" ,cl-moptilities)
        ("named-readtables" ,cl-named-readtables)
+       ("nfiles" ,cl-nfiles)
        ;; ("osicat" ,cl-osicat) ; Not needed for SBCL.
        ("parenscript" ,cl-parenscript)
        ("phos" ,cl-phos)
