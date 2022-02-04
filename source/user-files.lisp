@@ -49,19 +49,39 @@ It's not always the case, take the socket for instance."))
   (:documentation "With the nosave profile no data should be persisted to disk.
 No data should be shared with other nosave buffers either."))
 
+(defun find-file-name-path (ref)
+  "Return the value of the REF found in `*options*'s `:with-file'.
+Example: when passed command line option --with-file foo=bar,
+\(find-file-name-path \"foo\") returns \"bar\"."
+  (unless (uiop:emptyp ref)
+    (uiop:ensure-pathname
+     (second
+      (assoc ref
+             (loop for (opt value . nil) on *options*
+                   when (eq opt :with-file)
+                     collect value)
+             :test #'string=)))))
+
 (defmethod nfiles:resolve ((profile application-profile) (file nyxt-file))
   "Prefix FILE base-path with PROFILE's `nfiles:name'."
   (flet ((pathname-first-directory (path)
            (second (pathname-directory (uiop:ensure-directory-pathname path)))))
-    (unless (or (uiop:absolute-pathname-p (nfiles:base-path file))
-                (string=
-                 (nfiles:name profile)
-                 (pathname-first-directory (nfiles:base-path file))))
-      (setf (slot-value file 'nfiles:base-path)
-            (sera:path-join
-             (uiop:ensure-directory-pathname (nfiles:name profile))
-             (nfiles:base-path file)))))
-  (call-next-method))
+    (let ((command-line-path  (find-file-name-path (nfiles:name file))))
+      (if (nfiles:nil-pathname-p command-line-path)
+          (progn
+            (unless (or (uiop:absolute-pathname-p (nfiles:base-path file))
+                        (string=
+                         (nfiles:name profile)
+                         (pathname-first-directory (nfiles:base-path file))))
+              (setf (slot-value file 'nfiles:base-path)
+                    (sera:path-join
+                     (uiop:ensure-directory-pathname (nfiles:name profile))
+                     (nfiles:base-path file))))
+            (call-next-method))
+          command-line-path))))
+
+(defmethod nfiles:read-file :before ((profile application-profile) (file nyxt-file) &key)
+  (log:info "Loading ~s." (nfiles:expand file)))
 
 (defmethod nfiles:serialize ((profile application-profile) (file nyxt-lisp-file) stream &key)
   ;; TODO: Error handling!
@@ -124,18 +144,6 @@ No data should be shared with other nosave buffers either."))
    (nfiles:name "downloads"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
-
-(-> find-file-name-path (string) (or string null))
-(defun find-file-name-path (ref)
-  "Return the value of the REF found in `*options*'s `:with-file'.
-Example: when passed command line option --with-file foo=bar,
-\(find-file-name-path \"foo\") returns \"bar\"."
-  (second
-   (assoc ref
-          (loop for (opt value . nil) on *options*
-                when (eq opt :with-path)
-                  collect value)
-          :test #'string=)))
 
 (export-always 'profile-class-name)
 (defun profile-class-name (profile-class)
