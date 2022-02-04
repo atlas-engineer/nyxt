@@ -19,6 +19,7 @@ standard locations."))
 
 (define-class nyxt-file (nfiles:file)
   ((nfiles:profile *global-profile*)
+   (nfiles:on-read-error 'nfiles:backup)
    (editable-p
     t
     :type boolean
@@ -27,7 +28,8 @@ It's not always the case, take the socket for instance."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
-  (:documentation "All Nyxt files."))
+  (:documentation "All Nyxt files.
+By default, a file that fails to be loaded is automatically backed up."))
 
 (define-class nyxt-data-directory (nfiles:data-file nyxt-file)
   ((nfiles:base-path #p""))
