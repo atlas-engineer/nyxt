@@ -79,4 +79,4 @@
               (then (lambda (response)
                       (when (@ response ok)
                         (chain response (json)))))
-              (then (lambda (data) (funcall ,callback data)))))))
+              (then ,callback)))))
