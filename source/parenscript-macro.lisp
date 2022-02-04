@@ -73,7 +73,8 @@
 (defpsmacro lisp-eval (form &optional callback)
   "Request the lisp: URL and invoke callback when there's a successful result."
   `(let ((request (fetch (lisp (str:concat
-                                "lisp://" (quri:url-encode (write-to-string ,form)))))))
+                                "lisp://" (quri:url-encode (write-to-string ,form))))
+                         (create :mode "no-cors"))))
      (when ,callback
        (chain request
               (then (lambda (response)
