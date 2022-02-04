@@ -240,7 +240,7 @@ Don't run this from a REPL, prefer `start' instead."
 (defun load-lisp (file &key package)
   "Load the Lisp FILE (can also be a stream).
 Return the short error message and the full error message as second value."
-  (unless (or (uiop:emptyp file) (nfiles:nil-pathname-p file))
+  (unless (nfiles:nil-pathname-p file)
     (let ((*package* (or (find-package package) *package*)))
       (flet ((unsafe-load ()
                (cond
