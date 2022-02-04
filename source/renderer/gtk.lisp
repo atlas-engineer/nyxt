@@ -1198,20 +1198,27 @@ See `finalize-buffer'."
                             (setf (ps:chain div style color)
                                   (ps:lisp color))
                             (ps:chain document body (append-child div))
-                            (ps:stringify (ps:chain window (get-computed-style div) color)))))
+                            (ps:stringify (ps:chain window (get-computed-style div) color))))
+                (get-opacity (color)
+                             (let ((div (ps:chain document (create-element "div"))))
+                               (setf (ps:chain div style color)
+                                     (ps:lisp color))
+                               (ps:chain document body (append-child div))
+                               (ps:stringify (ps:chain window (get-computed-style div) opacity)))))
           (let* ((rgba (cffi:foreign-alloc :double :count 4))
                  (rgba (progn (webkit:webkit-color-chooser-request-get-rgba
                                color-chooser-request rgba)
                               rgba))
-                 (color (get-rgba
-                         (color-name
-                          (prompt1 :prompt "Color"
-                            :input (format nil "rgba(~d, ~d, ~d, ~d)"
-                                           (round (* 255 (cffi:mem-ref rgba :double 0)))
-                                           (round (* 255 (cffi:mem-ref rgba :double 1)))
-                                           (round (* 255 (cffi:mem-ref rgba :double 2)))
-                                           (round (* 255 (cffi:mem-ref rgba :double 3))))
-                            :sources (list (make-instance 'color-source))))))
+                 (color-name (color-name
+                              (prompt1 :prompt "Color"
+                                :input (format nil "rgba(~d, ~d, ~d, ~d)"
+                                               (round (* 255 (cffi:mem-ref rgba :double 0)))
+                                               (round (* 255 (cffi:mem-ref rgba :double 1)))
+                                               (round (* 255 (cffi:mem-ref rgba :double 2)))
+                                               (round (* 255 (cffi:mem-ref rgba :double 3))))
+                                :sources (list (make-instance 'color-source)))))
+                 (color (get-rgba color-name))
+                 (opacity (sera:parse-float (get-opacity color-name)))
                  (rgba (gdk:gdk-rgba-parse color)))
             (unless (uiop:emptyp color)
               (webkit:webkit-color-chooser-request-set-rgba
@@ -1220,7 +1227,7 @@ See `finalize-buffer'."
                 :double
                 :count 4
                 :initial-contents (list (gdk:gdk-rgba-red rgba) (gdk:gdk-rgba-green rgba)
-                                        (gdk:gdk-rgba-blue rgba) (gdk:gdk-rgba-alpha rgba))))
+                                        (gdk:gdk-rgba-blue rgba) (coerce opacity 'double-float))))
               (webkit:webkit-color-chooser-request-finish (g:pointer color-chooser-request))))))
       t)))
 
