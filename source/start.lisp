@@ -4,7 +4,7 @@
 (in-package :nyxt)
 
 (define-class socket-file (nfiles:runtime-file nyxt-file)
-  ((basename "nyxt.socket")
+  ((nfiles:base-path #p"nyxt.socket")
    (editable-p nil))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -333,17 +333,17 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
     urls))
 
 (defun listen-socket ()
-  (let ((socket-path (nfiles:expand *socket-file*)))
-    (when socket-path
+  (nfiles:with-paths ((socket-path *socket-file*))
+    (let ((native-socket-path (uiop:native-namestring socket-path)))
       (ensure-directories-exist socket-path)
       ;; TODO: Catch error against race conditions?
       (iolib:with-open-socket (s :address-family :local
                                  :connect :passive
-                                 :local-filename socket-path)
+                                 :local-filename native-socket-path)
         ;; We don't want group members or others to flood the socket or, worse,
         ;; execute code.
-        (setf (iolib/os:file-permissions socket-path)
-              (set-difference (iolib/os:file-permissions socket-path)
+        (setf (iolib/os:file-permissions native-socket-path)
+              (set-difference (iolib/os:file-permissions native-socket-path)
                               '(:group-read :group-write :group-exec
                                 :other-read :other-write :other-exec)))
         (loop as connection = (iolib:accept-connection s)
@@ -358,8 +358,8 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
                            (parse-urls expr))))
                    ;; If we get pinged too early, we do not have a current-window yet.
                    (when (current-window)
-                     (ffi-window-to-foreground (current-window))))))
-      (log:info "Listening on socket ~s" socket-path))))
+                     (ffi-window-to-foreground (current-window)))))))
+    (log:info "Listening on socket ~s" socket-path)))
 
 (defun listening-socket-p ()
   (ignore-errors
