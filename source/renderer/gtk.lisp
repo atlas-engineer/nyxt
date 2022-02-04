@@ -258,14 +258,14 @@ the renderer thread, use `defmethod' instead."
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod initialize-instance :after ((file data-manager-file) &key)
-  (setf (nfiles:base-path file)
+  (setf (slot-value file 'nfiles:base-path)
         (pathname (str:concat (context-name file) "-web-context"))))
 
 (defmethod nfiles:resolve ((profile nosave-profile) (file data-manager-file))
   "We shouldn't store any `data-manager' data for `nosave-profile'."
   #p"")
 
-(define-class data-manager-data-file (nfiles:data-file data-manager-file)
+(define-class data-manager-data-directory (nfiles:data-file data-manager-file)
   ()
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
@@ -276,12 +276,12 @@ the renderer thread, use `defmethod' instead."
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class gtk-extensions-directory (nfiles:data-file data-manager-file)
-  ((name "gtk-extensions"))
+  ((nfiles:name "gtk-extensions"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod initialize-instance :after ((file gtk-extensions-directory) &key)
-  (setf (nfiles:base-path file)
+  (setf (slot-value file 'nfiles:base-path)
         (pathname (str:concat (context-name file) "-gtk-extensions"))))
 
 (define-class cookies-file (nfiles:data-file data-manager-file)
@@ -290,7 +290,7 @@ the renderer thread, use `defmethod' instead."
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defmethod initialize-instance :after ((file cookies-file) &key)
-  (setf (nfiles:base-path file)
+  (setf (slot-value file 'nfiles:base-path)
         (pathname (str:concat (context-name file) "-cookies"))))
 
 (defmethod nfiles:resolve ((profile nosave-profile) (path gtk-extensions-directory))
@@ -327,7 +327,7 @@ the same naming rules as above."
   (let ((internal-p (or (not buffer)
                         (internal-buffer-p buffer)))
         (ephemeral-p (or ephemeral-p
-                         (typep (profile buffer) 'nosave-profile)
+                         (when buffer (typep (profile buffer) 'nosave-profile))
                          (typep buffer 'nosave-buffer))))
     (make-instance (if ephemeral-p
                        'webkit-web-view-ephemeral
@@ -763,8 +763,10 @@ See `gtk-browser's `modifier-translator' slot."
                    (make-instance 'webkit-web-context
                                   :website-data-manager
                                   (make-instance 'webkit-website-data-manager
-                                                 :base-data-directory (nfiles:expand data-manager-data-directory)
-                                                 :base-cache-directory (nfiles:expand data-manager-cache-directory))))))
+                                                 :base-data-directory (uiop:native-namestring
+                                                                       (nfiles:expand data-manager-data-directory))
+                                                 :base-cache-directory (uiop:native-namestring
+                                                                        (nfiles:expand data-manager-cache-directory)))))))
            (gtk-extensions-path (nfiles:expand (make-instance 'gtk-extensions-directory :context-name name)))
            (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
       (unless (or ephemeral-p
@@ -778,7 +780,8 @@ See `gtk-browser's `modifier-translator' slot."
            (lambda (context)
              (with-protect ("Error in signal thread: ~a" :condition)
                (webkit:webkit-web-context-set-web-extensions-directory
-                context gtk-extensions-path)
+                context
+                (uiop:native-namestring gtk-extensions-path))
                (webkit:webkit-web-context-set-web-extensions-initialization-user-data
                 context (glib:g-variant-new-string
                          (flet ((describe-extension (extension &key privileged-p)
@@ -836,7 +839,7 @@ See `gtk-browser's `modifier-translator' slot."
         (let ((cookies-path (nfiles:expand (make-instance 'cookies-file :context-name name))))
           (webkit:webkit-cookie-manager-set-persistent-storage
            cookie-manager
-           cookies-path
+           (uiop:native-namestring cookies-path)
            :webkit-cookie-persistent-storage-text))
         (set-cookie-policy cookie-manager (default-cookie-policy *browser*)))
       (maphash
