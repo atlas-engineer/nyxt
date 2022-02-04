@@ -3,7 +3,7 @@
 
 (in-package :nyxt)
 
-(define-class init-file (nfiles:config-file nyxt-lisp-file)
+(define-class init-file (nfiles:config-file nyxt-lisp-file nfiles:virtual-file)
   ((nfiles:base-path #p"init")
    (command-line-option :init
                         :accessor nil
