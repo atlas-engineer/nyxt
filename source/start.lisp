@@ -489,10 +489,9 @@ Examples:
      (load-lisp (nfiles:expand *init-file*) :package (find-package :nyxt-user))
      (mapcar (lambda (profile-class)
                (format t "~a~10t~a~&"
-                       (getf (mopu:slot-properties profile-class 'nfiles:name) :initform)
+                       (profile-class-name profile-class)
                        (indent (documentation profile-class t) 10)))
-             (cons (find-class 'nyxt:application-profile)
-                   (mopu:subclasses 'nyxt:application-profile))))
+             (list-profile-classes)))
 
     ((getf options :script)
      (flet ((run-script (stream)

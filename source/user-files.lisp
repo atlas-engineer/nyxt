@@ -134,3 +134,19 @@ Example: when passed command line option --with-file foo=bar,
                 when (eq opt :with-path)
                   collect value)
           :test #'string=)))
+
+(export-always 'profile-class-name)
+(defun profile-class-name (profile-class)
+  (getf (mopu:slot-properties profile-class 'nfiles:name) :initform))
+
+(export-always 'list-profile-classes)
+(defun list-profile-classes ()
+  (cons (find-class 'nyxt:application-profile)
+        (mopu:subclasses 'nyxt:application-profile)))
+
+(export-always 'find-profile-class)
+(defun find-profile-class (name)
+  (find name
+        (list-profile-classes)
+        :test 'string=
+        :key #'profile-class-name))
