@@ -83,7 +83,8 @@ Example: when passed command line option --with-file foo=bar,
           command-line-path))))
 
 (defmethod nfiles:read-file :before ((profile application-profile) (file nyxt-file) &key)
-  (log:info "Loading ~s." (nfiles:expand file)))
+  (unless (typep file 'nfiles:virtual-file)
+    (log:info "Loading ~s." (nfiles:expand file))))
 
 (defmethod nfiles:serialize ((profile application-profile) (file nyxt-lisp-file) stream &key)
   ;; TODO: Error handling!
