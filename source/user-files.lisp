@@ -3,13 +3,15 @@
 
 (in-package :nyxt)
 
+;; We define our own 'default profile' (instead of using `nfiles:profile'
+;; directly) so that we can specialize the methods
 (define-class application-profile (nfiles:profile)
   ((nfiles:name "nyxt"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
-  (:documentation "We define our own 'default profile' (instead of using
-`nfiles:profile' directly) so that we can specialize the methods."))
+  (:documentation "With the default profile all data is persisted to the
+standard locations."))
 
 (export-always '*global-profile*)
 (defvar *global-profile* (make-instance 'application-profile)
@@ -44,8 +46,8 @@ It's not always the case, take the socket for instance."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
-  (:documentation "We define our own 'default profile' (instead of using
-`nfiles:profile' directly) so that we can specialize the methods."))
+  (:documentation "With the nosave profile no data should be persisted to disk.
+No data should be shared with other nosave buffers either."))
 
 (defmethod nfiles:resolve ((profile application-profile) (file nyxt-file))
   "Prefix FILE base-path with PROFILE's `nfiles:name'."
