@@ -1170,7 +1170,8 @@ See `finalize-buffer'."
    (prompter:filter-preprocessor
     (lambda (suggestions source input)
       (declare (ignore source))
-      (cons (make-color :name input) suggestions)))
+      (cons (make-instance 'prompter:suggestion :value (make-color :name input))
+            suggestions)))
    (prompter:follow-p t)
    (prompter:follow-mode-functions
     (lambda (color)
