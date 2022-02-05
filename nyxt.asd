@@ -546,7 +546,7 @@ See `asdf::*immutable-systems*'."
                uiop
                nyxt/class-star
                serapeum)
-  :pathname "libraries/password-manager/"
+p  :pathname "libraries/password-manager/"
   :components ((:file "package")
                (:file "password")
                (:file "password-keepassxc")
