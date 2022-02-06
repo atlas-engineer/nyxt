@@ -153,6 +153,12 @@ For keyword arguments' meaning, see `scheme' slot documentation."
     (iolib/sockets:lookup-hostname name)
     (t () nil)))
 
+(export-always 'valid-tld-p)
+(defun valid-tld-p (name)
+  "Return NIL if hostname NAME does not include a valid TLD as determined by the
+Public Suffix list, T otherwise."
+  (and (cl-tld:get-tld name) T))
+
 (export-always 'valid-url-p)
 (defun valid-url-p (url &key (check-dns-p t))
   "Return non-nil when URL is a valid URL.
@@ -190,8 +196,7 @@ name validation may take significant time since it looks up the DNS."
                 (quri:uri-host url)
                 (or
                  (not check-dns-p)
-                 ;; Onion links are not resolved via DNS, just accept them.
-                 (string= (quri:uri-tld url) "onion")
+                 (valid-tld-p (quri:uri-host url))
                  ;; "http://algo" has the "algo" hostname but it's probably invalid
                  ;; unless it's found on the local network.  We also need to
                  ;; support "localhost" and the current system hostname.
