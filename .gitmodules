@@ -546,3 +546,7 @@
 	path = _build/phos
 	url = https://github.com/omar-polo/phos
     shallow = true
+[submodule "_build/cl-tld"]
+	path = _build/cl-tld
+	url = https://github.com/lu4nx/cl-tld
+	shallow = true

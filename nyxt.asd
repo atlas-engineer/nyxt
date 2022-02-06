@@ -49,6 +49,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                cl-ppcre-unicode
                cl-prevalence
                cl-qrencode
+               cl-tld
                closer-mop
                cl-containers
                moptilities
