@@ -35,6 +35,7 @@
     - [[#slyslynk][SLY/SLYNK]]
       - [[#quicklisp-setup][Quicklisp Setup]]
       - [[#non-quicklisp-setup][Non-Quicklisp Setup]]
+  - [[#adding-new-lisp-dependency][Adding new Lisp dependency]]
 - [[#help--community][Help & Community]]
   - [[#issue-tracker][Issue tracker]]
   - [[#learning-common-lisp][Learning Common Lisp]]
@@ -461,6 +462,10 @@ If you aren't using Quicklisp, you can configure Nyxt to start a Sly/Slynk serve
 
 4. Proceed as in the previous SLIME section by replacing ~slime-connect~ with ~sly-connect~. Remember to choose the correct port (in this case, 4008).
 
+** Adding new Lisp dependency
+- Add and shallow clone upstream source as a Git submodule in [[../_build/]] directory.
+- Add dependency name to [[../nyxt.asd]] and [[SOURCES.org][documents/SOURCES.org]].
+- Add dependency to [[../build-scripts/nyxt.scm]], [[https://guix.gnu.org/en/packages/][checking]] to make sure Guix already has it packaged.
 * Help & Community
 
 There are several ways to ask for help from the community.
