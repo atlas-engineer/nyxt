@@ -1310,7 +1310,7 @@ See `finalize-buffer'."
     (let* ((title (webkit:webkit-notification-get-title notification))
            (body (webkit:webkit-notification-get-body notification))
            (tag (webkit:webkit-notification-get-tag notification)))
-      (echo "[~a] ~a: ~a" (webkit:webkit-web-view-uri web-view) tag title body)
+      (echo "[~a] ~a: ~a" (webkit:webkit-web-view-uri web-view) title body)
       t)))
 
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
