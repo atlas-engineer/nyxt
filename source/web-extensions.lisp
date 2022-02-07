@@ -315,17 +315,17 @@ slash. WebExtensions require this :/"
              :title (format nil "Open the browser action of ~a" (mode-name extension))
              (name extension))))
 
-(define-command toggle-extension-popup (&optional extension-class (buffer (current-buffer)))
+(define-command-global toggle-extension-popup (&optional extension-class (buffer (current-buffer)))
   "Open the popup of the extension of EXTENSION-CLASS.
 If this popup does already exist, close it."
   (let ((extension-class (or extension-class
                              (mode-name
-                              (prompt
-                               :prompt "Extension to toggle the popup of"
-                               :sources (make-instance 'user-active-mode-source
-                                                       :constructor (sera:filter
-                                                                     #'nyxt/web-extensions::extension-p
-                                                                     (modes buffer))))))))
+                              (prompt1
+                                :prompt "Extension to toggle the popup of"
+                                :sources (make-instance 'user-active-mode-source
+                                                        :constructor (sera:filter
+                                                                      #'nyxt/web-extensions::extension-p
+                                                                      (modes buffer))))))))
     (with-current-buffer buffer
       ;;TODO: Send click message to background script if there's no popup.
       (sera:and-let* ((extension (nyxt:find-submode (nyxt:current-buffer) extension-class))
