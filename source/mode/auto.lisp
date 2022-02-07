@@ -496,8 +496,7 @@ Auto-mode is re-enabled once the page is reloaded."
     (echo "Saved ~a auto-mode rules to ~s." (length rules) (nfiles:expand file))))
 
 (defmethod nfiles:deserialize ((profile application-profile) (file auto-mode-rules-file) raw-content &key)
-  (declare (ignore raw-content))
-  (let ((rules (call-next-method)))
+  (let ((rules (read raw-content)))
     (mapcar #'(lambda (rule)
                 (let ((rule (append '(:test) rule)))
                   (setf (getf rule :included) (mode-invocations (getf rule :included))
