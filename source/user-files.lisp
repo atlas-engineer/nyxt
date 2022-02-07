@@ -37,6 +37,17 @@ If the file is modified externally, Nyxt automatically reloads it."))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
+(define-class nyxt-temporary-directory (nfiles:data-file nyxt-file)
+  ((nfiles:base-path #p""))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(defmethod nfiles:resolve ((profile application-profile) (path nyxt-temporary-directory))
+  "Expand all data paths inside a temporary directory."
+  (uiop:ensure-pathname
+   (uiop:merge-pathnames* (nfiles:name profile) (uiop:temporary-directory))
+   :ensure-directory t))
+
 (define-class nyxt-lisp-file (nyxt-file nfiles:lisp-file)
   ()
   (:export-class-name-p t)
