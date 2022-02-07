@@ -182,7 +182,7 @@ https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.
   for API description)."))
 
 (defmethod initialize-instance :after ((file extension-storage-file) &key)
-  (setf (nfiles:base-path file)
+  (setf (slot-value file 'nfiles:base-path)
         (pathname (format nil "extension-storage/~a.txt" (extension-name file)))))
 
 (define-mode extension ()
