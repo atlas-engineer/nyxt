@@ -16,13 +16,9 @@
                                              (format-mode mode))))
                     (if (html-string-p formatted-mode)
                         (:raw formatted-mode)
-                      ;; FIXME: We should ideally intercept requests coming
-                        ;; from status-buffer and redirect those to the current
-                        ;; web-buffer.
                         (:button :class "button"
                                  :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                  `(buffer-load ,(nyxt-url 'describe-class
-                                                                           :class `,(mode-name mode)))))
+                                                  `(describe-class :class `,(mode-name mode))))
                                  :title (format nil "Describe ~a" (mode-name mode))
                                  formatted-mode))))))
 
