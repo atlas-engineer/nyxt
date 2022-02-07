@@ -517,7 +517,7 @@ Otherwise go forward to the only child."
     (output-buffer "*History*"
                    'nyxt/history-tree-mode:history-tree-mode)
   "Open a new buffer displaying the whole history branch the current buffer is on."
-  (with-history (history (current-buffer))
+  (with-history (history (nyxt::buffers-get current-buffer-id))
     (let ((mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
           (tree (spinneret:with-html-string
                   (:ul (:raw (htree:map-tree
