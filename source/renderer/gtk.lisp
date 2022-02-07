@@ -800,46 +800,46 @@ See `gtk-browser's `modifier-translator' slot."
                                                         (find buffer extensions :key #'nyxt/web-extensions:popup-buffer))))
                                     (list (describe-extension extension :privileged-p t)))
                                   (mapcar #'describe-extension extensions)))))))))))
-        (maphash
-         (lambda (scheme scheme-object)
-           (webkit:webkit-web-context-register-uri-scheme-callback
-            context scheme
-            (lambda (request)
-              (funcall* (callback scheme-object)
-                        (webkit:webkit-uri-scheme-request-get-uri request)
-                        buffer))
-            (or (error-callback scheme-object)
-                (lambda (condition)
-                  (echo-warning "Error while routing ~s resource: ~a" scheme condition))))
-           ;; We err on the side of caution, assigning the most restrictive policy
-           ;; out of those provided. Should it be the other way around?
-           (let ((manager (webkit:webkit-web-context-get-security-manager context)))
-             (cond
-               ((local-p scheme-object)
-                (webkit:webkit-security-manager-register-uri-scheme-as-local
-                 manager scheme))
-               ((no-access-p scheme-object)
-                (webkit:webkit-security-manager-register-uri-scheme-as-no-access
-                 manager scheme))
-               ((display-isolated-p scheme-object)
-                (webkit:webkit-security-manager-register-uri-scheme-as-display-isolated
-                 manager scheme))
-               ((secure-p scheme-object)
-                (webkit:webkit-security-manager-register-uri-scheme-as-secure
-                 manager scheme))
-               ((cors-enabled-p scheme-object)
-                (webkit:webkit-security-manager-register-uri-scheme-as-cors-enabled
-                 manager scheme))
-               ((empty-document-p scheme-object)
-                (webkit:webkit-security-manager-register-uri-scheme-as-empty-document
-                 manager scheme)))))
-         nyxt::*schemes*)
         (let ((cookies-data-path (expand-path (cookies-data-path-for-context name))))
           (webkit:webkit-cookie-manager-set-persistent-storage
            cookie-manager
            cookies-data-path
            :webkit-cookie-persistent-storage-text))
         (set-cookie-policy cookie-manager (default-cookie-policy *browser*)))
+      (maphash
+       (lambda (scheme scheme-object)
+         (webkit:webkit-web-context-register-uri-scheme-callback
+          context scheme
+          (lambda (request)
+            (funcall* (callback scheme-object)
+                      (webkit:webkit-uri-scheme-request-get-uri request)
+                      buffer))
+          (or (error-callback scheme-object)
+              (lambda (condition)
+                (echo-warning "Error while routing ~s resource: ~a" scheme condition))))
+         ;; We err on the side of caution, assigning the most restrictive policy
+         ;; out of those provided. Should it be the other way around?
+         (let ((manager (webkit:webkit-web-context-get-security-manager context)))
+           (cond
+             ((local-p scheme-object)
+              (webkit:webkit-security-manager-register-uri-scheme-as-local
+               manager scheme))
+             ((no-access-p scheme-object)
+              (webkit:webkit-security-manager-register-uri-scheme-as-no-access
+               manager scheme))
+             ((display-isolated-p scheme-object)
+              (webkit:webkit-security-manager-register-uri-scheme-as-display-isolated
+               manager scheme))
+             ((secure-p scheme-object)
+              (webkit:webkit-security-manager-register-uri-scheme-as-secure
+               manager scheme))
+             ((cors-enabled-p scheme-object)
+              (webkit:webkit-security-manager-register-uri-scheme-as-cors-enabled
+               manager scheme))
+             ((empty-document-p scheme-object)
+              (webkit:webkit-security-manager-register-uri-scheme-as-empty-document
+               manager scheme)))))
+       nyxt::*schemes*)
       context)))
 
 (defun internal-context-p (name)
