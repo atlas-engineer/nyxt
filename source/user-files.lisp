@@ -181,7 +181,9 @@ Example: when passed command line option --with-file foo=bar,
 
 (export-always 'profile-class-name)
 (defun profile-class-name (profile-class)
-  (getf (mopu:slot-properties profile-class 'nfiles:name) :initform))
+  (getf (mopu:slot-properties (closer-mop:ensure-finalized profile-class)
+                              'nfiles:name)
+        :initform))
 
 (export-always 'list-profile-classes)
 (defun list-profile-classes ()
