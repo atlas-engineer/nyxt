@@ -302,17 +302,18 @@ say to develop Nyxt or extensions.")
         (:code "/tmp/nyxt") " and stores bookmark in an encrypted file:")
     (:pre (:code "
 \(define-class dev-profile (application-profile)
-   ((nfiles:name :initform \"dev\"))
+   ((nfiles:name :initform \"nyxt-dev\"))
    (:documentation \"Development profile.\"))
 
-\(defmethod nfiles:resolve :around ((profile dev-profile) (path nyxt-file))
-  \"Persist all data to /tmp/nyxt/.\"
-  (merge-pathnames (uiop:relativize-pathname-directory (call-next-method))
-                   #p\"/tmp/nyxt/\"))
+
+\(defmethod nfiles:resolve ((profile dev-profile) (path nyxt-file))
+  \"Expand all data paths inside a temporary directory.\"
+  (serapeum:path-join (nfiles:expand (make-instance 'nyxt-temporary-directory))
+                      (uiop:relativize-pathname-directory (call-next-method))))
 
 \(defmethod nyxt:resolve ((profile dev-profile) (file history-file))
   \"Persist history to default location.\"
-  (call-next-method))
+  (nfiles:resolve *global-profile* file))
 
 ;; Make new profile the default:
 \(define-configuration buffer
