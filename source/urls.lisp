@@ -154,10 +154,10 @@ For keyword arguments' meaning, see `scheme' slot documentation."
     (t () nil)))
 
 (export-always 'valid-tld-p)
-(defun valid-tld-p (name)
-  "Return NIL if hostname NAME does not include a valid TLD as determined by the
+(defun valid-tld-p (hostname)
+  "Return NIL if HOSTNAME does not include a valid TLD as determined by the
 Public Suffix list, T otherwise."
-  (and (cl-tld:get-tld name) T))
+  (sera:true (cl:ignore-errors (cl-tld:get-tld hostname))))
 
 (export-always 'valid-url-p)
 (defun valid-url-p (url &key (check-dns-p t))
