@@ -275,7 +275,7 @@ the renderer thread, use `defmethod' instead."
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class gtk-extensions-data-path (data-manager-data-path)
-  ((dirname (uiop:native-namestring (uiop:xdg-config-home +data-root+)))
+  ((dirname (uiop:native-namestring (uiop:xdg-data-home +data-root+)))
    (ref :initform "gtk-extensions"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
