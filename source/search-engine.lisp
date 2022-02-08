@@ -76,20 +76,6 @@ Example (Tor-proxied completion function for Wikipedia):
   `(("Shortcut" ,(shortcut engine))
     ("Search URL" ,(search-url engine))))
 
-(defun bookmark-search-engines (&optional (bookmarks (get-data (bookmarks-path
-                                                                (or (current-buffer)
-                                                                    (make-instance 'user-buffer))))))
-  (mapcar (lambda (b)
-            (make-instance 'search-engine
-                           :shortcut (shortcut b)
-                           :search-url (if (quri:uri-scheme (quri:uri (search-url b)))
-                                           (search-url b)
-                                           (str:concat (render-url (url b)) (search-url b)))
-                           :fallback-url (render-url (url b))))
-          (remove-if (lambda (b) (or (str:emptyp (search-url b))
-                                     (str:emptyp (shortcut b))))
-                     bookmarks)))
-
 (defun all-search-engines ()
   "Return the `search-engines' from the current buffer."
   (let ((buffer (or (current-buffer)
