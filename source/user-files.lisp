@@ -76,23 +76,8 @@ Example: when passed command line option --with-file foo=bar,
                      collect value)
              :test #'string=)))))
 
-(defmethod nfiles:resolve ((profile application-profile) (file nyxt-file))
-  "Prefix FILE base-path with PROFILE's `nfiles:name'."
-  (flet ((pathname-first-directory (path)
-           (second (pathname-directory (uiop:ensure-directory-pathname path)))))
-    (let ((command-line-path  (find-file-name-path (nfiles:name file))))
-      (if (nfiles:nil-pathname-p command-line-path)
-          (progn
-            (unless (or (uiop:absolute-pathname-p (nfiles:base-path file))
-                        (string=
-                         (nfiles:name profile)
-                         (pathname-first-directory (nfiles:base-path file))))
-              (setf (slot-value file 'nfiles:base-path)
-                    (sera:path-join
-                     (uiop:ensure-directory-pathname (nfiles:name profile))
-                     (nfiles:base-path file))))
-            (call-next-method))
-          command-line-path))))
+(defmethod nfiles:resolve ((profile nfiles:profile) (file nyxt-file))
+  (sera:path-join (uiop:ensure-directory-pathname (nfiles:name profile)) (call-next-method)))
 
 (defmethod nfiles:read-file :around ((profile application-profile) (file nyxt-file) &key)
   (unless (typep file 'nfiles:virtual-file)
