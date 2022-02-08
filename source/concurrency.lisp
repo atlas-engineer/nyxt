@@ -16,7 +16,7 @@ When the condition is muffled, a warning is reported to the user as per
 FORMAT-STRING and ARGS.
 As a special case, the first `:condition' keyword in ARGS is replaced with the
 raised condition."
-  (alex:with-gensyms (c sub-c int-c)
+  (alex:with-gensyms (c sub-c)
     `(if (or *run-from-repl-p* *debug-on-error*)
          (handler-case (progn ,@body)
            (nyxt-prompt-buffer-canceled ()
