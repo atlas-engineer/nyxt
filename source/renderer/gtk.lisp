@@ -1308,8 +1308,7 @@ See `finalize-buffer'."
 (defun process-notification (web-view notification)
   (when (native-dialogs *browser*)
     (let* ((title (webkit:webkit-notification-get-title notification))
-           (body (webkit:webkit-notification-get-body notification))
-           (tag (webkit:webkit-notification-get-tag notification)))
+           (body (webkit:webkit-notification-get-body notification)))
       (echo "[~a] ~a: ~a" (webkit:webkit-web-view-uri web-view) title body)
       t)))
 
