@@ -257,11 +257,7 @@ the renderer thread, use `defmethod' instead."
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod initialize-instance :after ((file data-manager-file) &key)
-  (setf (slot-value file 'nfiles:base-path)
-        (pathname (str:concat (context-name file) "-web-context"))))
-
-(defmethod nfiles:resolve ((profile nosave-profile) (file data-manager-file))
+(defmethod nfiles:resolve :around ((profile nosave-profile) (file data-manager-file))
   "We shouldn't store any `data-manager' data for `nosave-profile'."
   #p"")
 
@@ -270,32 +266,40 @@ the renderer thread, use `defmethod' instead."
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
+(defmethod nfiles:resolve ((profile application-profile) (file data-manager-data-directory))
+  (sera:path-join
+   (call-next-method)
+   (pathname (str:concat (context-name file) "-web-context/"))))
+
 (define-class data-manager-cache-directory (nfiles:cache-file data-manager-file)
   ()
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(defmethod nfiles:resolve ((profile application-profile) (file data-manager-cache-directory))
+  (sera:path-join
+   (call-next-method)
+   (pathname (str:concat (context-name file) "-web-context/"))))
 
 (define-class gtk-extensions-directory (nfiles:data-file data-manager-file)
   ((nfiles:name "gtk-extensions"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod initialize-instance :after ((file gtk-extensions-directory) &key)
-  (setf (slot-value file 'nfiles:base-path)
-        (pathname (str:concat (context-name file) "-gtk-extensions"))))
+(defmethod nfiles:resolve ((profile application-profile) (file gtk-extensions-directory))
+  (sera:path-join
+   (call-next-method)
+   (pathname (str:concat (context-name file) "-gtk-extensions/"))))
 
 (define-class cookies-file (nfiles:data-file data-manager-file)
   ((nfiles:name "cookies"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod initialize-instance :after ((file cookies-file) &key)
-  (setf (slot-value file 'nfiles:base-path)
-        (pathname (str:concat (context-name file) "-cookies"))))
-
-(defmethod nfiles:resolve ((profile nosave-profile) (path gtk-extensions-directory))
-  "We shouldn't enable (possibly) user-identifying extensions for `nosave-profile'."
-  nil)
+(defmethod nfiles:resolve ((profile application-profile) (file cookies-file))
+  (sera:path-join
+   (call-next-method)
+   (pathname (str:concat (context-name file) "-cookies"))))
 
 (define-class gtk-download (download)
   ((gtk-object)
