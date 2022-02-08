@@ -199,8 +199,9 @@ JSON should have the format like what `get-document-body-json' produces:
     body))
 
 (defmethod body ((details details-element))
-  (when (clss:select "summary" details)
-    (plump:text (elt (clss:select "summary" details) 0))))
+  (let ((summary (clss:select "summary" details)))
+    (unless (uiop:emptyp summary)
+      (plump:text (elt summary 0)))))
 
 (defmethod body ((select select-element))
   (str:join ", " (map 'list #'plump:text
