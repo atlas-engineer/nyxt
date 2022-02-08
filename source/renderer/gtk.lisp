@@ -1452,7 +1452,7 @@ See `finalize-buffer'."
   buffer)
 
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
-  (if (slot-exists-p buffer 'gtk-object) ; Not all buffers have their own web view, e.g. prompt buffers.
+  (if (slot-value buffer 'gtk-object) ; Not all buffers have their own web view, e.g. prompt buffers.
       (webkit:webkit-web-view-try-close (gtk-object buffer))
       (buffer-hide buffer)))
 
