@@ -172,7 +172,7 @@ https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.
   (:export-accessor-names-p t)
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name)))
 
-(define-class extension-storage-file (nfiles:data-file nyxt-lisp-file)
+(define-class extension-storage-file (nfiles:data-file nyxt-file)
   ((nfiles:name "extension-storage")
    (extension-name ""))
   (:export-class-name-p t)
@@ -181,9 +181,11 @@ https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.
   https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage
   for API description)."))
 
-(defmethod initialize-instance :after ((file extension-storage-file) &key)
-  (setf (slot-value file 'nfiles:base-path)
-        (pathname (format nil "extension-storage/~a.txt" (extension-name file)))))
+(defmethod nfiles:resolve ((profile application-profile) (file extension-storage-file))
+  (sera:path-join
+   (call-next-method)
+   (uiop:ensure-directory-pathname (nfiles:name file))
+   (uiop:strcat (extension-name file) ".txt")))
 
 (define-mode extension ()
   "The base mode for any extension to inherit from."
