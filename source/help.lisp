@@ -689,7 +689,13 @@ evaluate in order."
   "Toggle Nyxt-native debugging.
 
 See `*debug-on-error*'."
-  (setf *debug-on-error* (if value-provided-p value (not *debug-on-error*))))
+  (let ((value (if value-provided-p value (not *debug-on-error*))))
+    (setf *debug-on-error* value)
+    (if value
+        (swank-backend:install-debugger-globally #'debugger-hook)
+        ;; FIXME: This messes up SLIME/SLY debugging in REPL, as they set this too.
+        (swank-backend:install-debugger-globally nil))
+    (echo "Nyxt-native debugging ~:[dis~;en~]abled." value)))
 
 (defun error-buffer (&optional (title "Unknown error") (text ""))
   (sera:lret* ((error-buffer (make-instance 'user-web-buffer)))

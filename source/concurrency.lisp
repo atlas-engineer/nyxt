@@ -17,37 +17,31 @@ FORMAT-STRING and ARGS.
 As a special case, the first `:condition' keyword in ARGS is replaced with the
 raised condition."
   (alex:with-gensyms (c sub-c int-c)
-    `(cond
-       ((or *run-from-repl-p* *debug-on-error*)
-        (handler-bind ((nyxt-prompt-buffer-canceled
-                         (lambda (,int-c)
-                           (declare (ignore ,int-c))
-                           (log:debug "Prompt buffer interrupted")
-                           (invoke-restart 'continue)))
-                       (t (lambda (,int-c)
-                                (when *debug-on-error*
-                                  (debugger-hook ,int-c nil)))))
-          (progn ,@body)))
-       (t (ignore-errors
-           (handler-bind
-               ((error
-                  (lambda (,c)
-                    (declare (ignorable ,c))
-                    ,(let ((condition-index (position :condition args)))
-                       (flet ((new-args (condition condition-index &optional escaped-p)
-                                (if condition-index
-                                    (append (subseq args 0 condition-index)
-                                            (list (if escaped-p
-                                                      `(plump:encode-entities (princ-to-string ,condition))
-                                                      `,condition))
-                                            (subseq args (1+ condition-index)))
-                                    'args)))
-                         `(handler-bind ((t (lambda (,sub-c)
-                                              (declare (ignore ,sub-c))
-                                              (log:error ,format-string ,@(new-args c condition-index))
-                                              (invoke-restart 'continue))))
-                            (echo-warning ,format-string ,@(new-args c condition-index :escaped-p))))))))
-             ,@body))))))
+    `(if (or *run-from-repl-p* *debug-on-error*)
+         (handler-case (progn ,@body)
+           (nyxt-prompt-buffer-canceled ()
+             (log:debug "Prompt buffer interrupted")
+             (invoke-restart 'continue)))
+         (ignore-errors
+          (handler-bind
+              ((error
+                 (lambda (,c)
+                   (declare (ignorable ,c))
+                   ,(let ((condition-index (position :condition args)))
+                      (flet ((new-args (condition condition-index &optional escaped-p)
+                               (if condition-index
+                                   (append (subseq args 0 condition-index)
+                                           (list (if escaped-p
+                                                     `(plump:encode-entities (princ-to-string ,condition))
+                                                     `,condition))
+                                           (subseq args (1+ condition-index)))
+                                   'args)))
+                        `(handler-bind ((t (lambda (,sub-c)
+                                             (declare (ignore ,sub-c))
+                                             (log:error ,format-string ,@(new-args c condition-index))
+                                             (invoke-restart 'continue))))
+                           (echo-warning ,format-string ,@(new-args c condition-index :escaped-p))))))))
+            ,@body)))))
 
 (defun make-channel (&optional size)
   "Return a channel of capacity SIZE.
