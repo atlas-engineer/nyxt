@@ -658,7 +658,7 @@ evaluate in order."
       ;; FIXME: Waits indefinitely. Should it?
       (invoke-restart-interactively (calispel:? channel)))))
 
-(defun debug->html (condition id &optional restarts)
+(defun debug->html (condition id &optional restarts buffer delete-buffer-p)
   "Produce HTML code for the CONDITION with RESTARTS."
   (spinneret:with-html-string
     (:h* (symbol-name (type-of condition)))
@@ -668,11 +668,15 @@ evaluate in order."
            for i from 0 by 1
            collect (:button :class "button"
                             :onclick (ps:ps (nyxt/ps:lisp-eval
-                                             `(calispel:!
-                                               (third (gethash ,id *debug-conditions*))
-                                               (nth ,i (second (gethash ,id *debug-conditions*))))))
+                                             `(progn
+                                                (calispel:!
+                                                 (third (gethash ,id *debug-conditions*))
+                                                 (nth ,i (second (gethash ,id *debug-conditions*))))
+                                                ,@(when (and delete-buffer-p buffer)
+                                                    `((delete-buffer :id ,(id buffer)))))))
                             (format nil "[~d] ~a" i (restart-name restart))))
      (:h* "Backtrace")
+     ;; TODO: SLIME and SLY provide introspectable backtraces. How?
      (:pre (with-output-to-string (s) (uiop:print-backtrace :stream s :condition condition))))))
 
 ;; FIXME: Not for interactive use?
@@ -683,7 +687,7 @@ evaluate in order."
   (destructuring-bind (condition restarts channel)
       (gethash id *debug-conditions*)
     (declare (ignore channel))
-    (debug->html condition id restarts)))
+    (debug->html condition id restarts buffer t)))
 
 (define-command-global toggle-debug-on-error (&key (value nil value-provided-p))
   "Toggle Nyxt-native debugging.
