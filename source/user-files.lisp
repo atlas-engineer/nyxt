@@ -48,7 +48,7 @@ If the file is modified externally, Nyxt automatically reloads it."))
    (uiop:merge-pathnames* (nfiles:name profile) (uiop:temporary-directory))
    :ensure-directory t))
 
-(define-class nyxt-lisp-file (nyxt-file nfiles:lisp-file)
+(define-class nyxt-lisp-file (nfiles:lisp-file nyxt-file)
   ()
   (:export-class-name-p t)
   (:export-accessor-names-p t)
