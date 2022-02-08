@@ -78,9 +78,13 @@ Example (Tor-proxied completion function for Wikipedia):
 
 (defun all-search-engines ()
   "Return the `search-engines' from the current buffer."
-  (let ((buffer (or (current-buffer)
-                    (make-instance 'user-buffer))))
-    (search-engines buffer)))
+  (let* ((current-buffer (current-buffer))
+         (buffer (or current-buffer
+                     (make-instance 'user-buffer))))
+    (unwind-protect
+         (search-engines buffer)
+      (unless current-buffer
+        (buffer-delete buffer)))))
 
 (defun default-search-engine (&optional (search-engines (all-search-engines)))
   "Return the last search engine of the SEARCH-ENGINES."

@@ -653,11 +653,16 @@ The version number is stored in the clipboard."
   ;; We can't use `(modes (make-instance 'buffer))' because modes are only
   ;; instantiated after the buffer web view, which is not possible if there is
   ;; no *browser*.
-  (let ((keymaps (cons (override-map (or (current-buffer)
-                                         (make-instance 'user-buffer)))
-                       (delete nil (mapcar #'keymap modes)))))
-    (or (first (keymap:binding-keys fn keymaps))
-        "UNBOUND")))
+  (let* ((current-buffer (current-buffer))
+         (buffer (or (current-buffer)
+                     (make-instance 'user-buffer)))
+         (keymaps (cons (override-map buffer)
+                        (delete nil (mapcar #'keymap modes)))))
+    (unwind-protect
+         (or (first (keymap:binding-keys fn keymaps))
+             "UNBOUND")
+      (unless current-buffer
+        (buffer-delete buffer)))))
 
 (define-internal-page-command-global help ()
     (buffer "*Help*" 'nyxt/help-mode:help-mode)
