@@ -834,3 +834,52 @@ System information is also saved into the clipboard."
                              (:p (:pre (documentation (fn command) t)))
                              (:pre :class "nyxt-source" (:code (let ((*print-case* :downcase))
                                                                  (write-to-string (sexp command)))))))))))
+
+(defvar *git* "git")
+
+(define-command install-lisp-extension (&optional (url (url (current-buffer))))
+  "Install the Lisp extension for Nyxt from the Git repository at URL.
+
+Requirements:
+- git should be installed."
+  (let* ((name (alex:lastcar (str:split "/" (quri:uri-path url))))
+         (install-path (str:concat (expand-path *extensions-path*) name))
+         (config-path (make-instance 'init-data-path
+                                     :dirname (dirname *init-file-path*)
+                                     :basename name)))
+    (if (uiop:directory-exists-p install-path)
+        (echo "Target directory ~s already exists, not installing." install-path)
+        (handler-case
+            (progn
+              (uiop:run-program
+               (list *git* "clone" "--recurse-submodules" (render-url url) install-path))
+              (let* ((asd (first
+                           (sort (sera:filter (lambda (file) (string= "asd" (pathname-type file)))
+                                              (uiop:directory-files install-path))
+                                 #'< :key #'length)))
+                     (load-asd (asdf:load-asd asd))
+                     (primary-system (first
+                                      (delete-if
+                                       (complement
+                                        (alex:conjoin
+                                         #'asdf:primary-system-p
+                                         (lambda (system)
+                                           (uiop:pathname-equal asd (asdf:system-source-file
+                                                                     (asdf:find-system system))))))
+                                       (asdf:registered-systems)))))
+                (declare (ignore load-asd))
+                (if primary-system
+                    (progn
+                      (alex:write-string-into-file
+                       (format nil "(in-package :nyxt-user)
+
+;; Put your configuration for ~a here.
+" primary-system)
+                       (expand-path config-path)
+                       :if-does-not-exist :create
+                       :if-exists nil)
+                      (nyxt::append-configuration
+                       `(load-after-system ,primary-system ,(expand-path config-path))))
+                    (echo-warning "Cannot install extension: primary ASDF system is not found."))))
+          (uiop:subprocess-error ()
+            (echo-warning "Cannot install extension: failed to clone Git repository."))))))
