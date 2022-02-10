@@ -84,6 +84,7 @@ Don't set this, it would lose its meaning.")
   "Build-time Quicklisp information.
 Don't set this, it would lose its meaning.")
 
+(export-always '*git-program*)
 (defvar *git-program* "git")
 
 (export-always '+version+)
