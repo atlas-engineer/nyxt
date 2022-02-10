@@ -705,10 +705,10 @@ the channel, wrapped alongside the condition and its restarts."))
     ;; TODO: Introduce debug-mode with keys invoking restarts and toggling backtrace.
     (buffer (format nil "*Debug-~d*" id) 'base-mode)
   "Open the debugger with the condition indexed by ID."
-  (destructuring-bind (condition restarts channel)
+  (with-slots (condition-itself restarts channel)
       (gethash id *debug-conditions*)
     (declare (ignore channel))
-    (debug->html condition id restarts buffer t)))
+    (debug->html condition-itself id restarts buffer t)))
 
 (define-command-global toggle-debug-on-error (&key (value nil value-provided-p))
   "Toggle Nyxt-native debugging.
