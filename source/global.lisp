@@ -84,12 +84,14 @@ Don't set this, it would lose its meaning.")
   "Build-time Quicklisp information.
 Don't set this, it would lose its meaning.")
 
+(defvar *git-program* "git")
+
 (export-always '+version+)
 (alex:define-constant +version+
   (or (uiop:getenv "NYXT_VERSION")      ; This is useful for build systems without Git.
       (ignore-errors
        (uiop:with-current-directory ((asdf:system-source-directory :nyxt))
-         (uiop:run-program (list "git" "describe" "--always" "--tags")
+         (uiop:run-program (list *git-program* "describe" "--always" "--tags")
                            :output '(:string :stripped t))))
       (asdf/component:component-version (asdf:find-system :nyxt)))
   :test #'equal)

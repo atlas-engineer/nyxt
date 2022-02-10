@@ -835,8 +835,6 @@ System information is also saved into the clipboard."
                              (:pre :class "nyxt-source" (:code (let ((*print-case* :downcase))
                                                                  (write-to-string (sexp command)))))))))))
 
-(defvar *git* "git")
-
 (define-command install-lisp-extension (&optional (url (url (current-buffer))))
   "Install the Lisp extension for Nyxt from the Git repository at URL.
 
@@ -852,7 +850,7 @@ Requirements:
         (handler-case
             (progn
               (uiop:run-program
-               (list *git* "clone" "--recurse-submodules" (render-url url) install-path))
+               (list *git-program* "clone" "--recurse-submodules" (render-url url) install-path))
               (let* ((asd (first
                            (sort (sera:filter (lambda (file) (string= "asd" (pathname-type file)))
                                               (uiop:directory-files install-path))
