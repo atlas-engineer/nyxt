@@ -716,10 +716,8 @@ the channel, wrapped alongside the condition and its restarts."))
 See `*debug-on-error*'."
   (let ((value (if value-provided-p value (not *debug-on-error*))))
     (setf *debug-on-error* value)
-    (if value
-        (swank-backend:install-debugger-globally #'debugger-hook)
-        ;; FIXME: This messes up SLIME/SLY debugging in REPL, as they set this too.
-        (swank-backend:install-debugger-globally nil))
+    ;; FIXME: This messes up SLIME/SLY debugging in REPL, as they set this too.
+    (swank-backend:install-debugger-globally (when value #'debugger-hook))
     (echo "Nyxt-native debugging ~:[dis~;en~]abled." value)))
 
 (defun error-buffer (&optional (title "Unknown error") (text ""))
