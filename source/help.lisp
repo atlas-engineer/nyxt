@@ -852,7 +852,7 @@ Requirements:
               (uiop:run-program
                (list *git-program* "clone" "--recurse-submodules" (render-url url) install-path))
               (let* ((asd (first
-                           (sort (sera:filter (lambda (file) (string= "asd" (pathname-type file)))
+                           (sort (sera:filter (lambda (file) (string-equal "asd" (pathname-type file)))
                                               (uiop:directory-files install-path))
                                  #'< :key #'length)))
                      (load-asd (asdf:load-asd asd))
