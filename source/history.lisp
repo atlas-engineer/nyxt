@@ -303,7 +303,9 @@ lot."
   ;; - `history-tree' cannot be make-instance'd without specifying some slots like `owners'.
   ;; - We need a history tree
   (declare (ignore slots deserialized-objects))
-  (let ((history (make-history-tree)))
+  ;; WARNING: At this stage, there may be no current-buffer, we make sure to
+  ;; pass NIL to `make-history-tree' to avoid potential dead-locks.
+  (let ((history (make-history-tree nil)))
     history))
 
 (defun restore-history-buffers (history history-file)
