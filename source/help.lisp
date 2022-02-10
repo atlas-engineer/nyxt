@@ -835,7 +835,7 @@ System information is also saved into the clipboard."
                              (:pre :class "nyxt-source" (:code (let ((*print-case* :downcase))
                                                                  (write-to-string (sexp command)))))))))))
 
-(define-command install-lisp-extension (&optional (url (url (current-buffer))))
+(define-command install-lisp-extension (&key (url (url (current-buffer))) system-name)
   "Install the Lisp extension for Nyxt from the Git repository at URL.
 
 Requirements:
@@ -856,15 +856,16 @@ Requirements:
                                               (uiop:directory-files install-path))
                                  #'< :key #'length)))
                      (load-asd (asdf:load-asd asd))
-                     (primary-system (first
-                                      (delete-if
-                                       (complement
-                                        (alex:conjoin
-                                         #'asdf::primary-system-p
-                                         (lambda (system)
-                                           (uiop:pathname-equal asd (asdf:system-source-file
-                                                                     (asdf:find-system system))))))
-                                       (asdf:registered-systems)))))
+                     (primary-system (or system-name
+                                         (first
+                                          (delete-if
+                                           (complement
+                                            (alex:conjoin
+                                             #'asdf::primary-system-p
+                                             (lambda (system)
+                                               (uiop:pathname-equal asd (asdf:system-source-file
+                                                                         (asdf:find-system system))))))
+                                           (asdf:registered-systems))))))
                 (declare (ignore load-asd))
                 (if primary-system
                     (progn
