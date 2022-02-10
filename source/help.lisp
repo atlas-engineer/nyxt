@@ -629,12 +629,28 @@ evaluate in order."
             until (eq object :eof)
             collect (funcall (lambda () (eval object)))))))
 
-(defvar *debug-conditions* (make-hash-table)
-  "A hash-table from numeric condition ID to the (CONDITION RESTARTS CHANNEL) lists.
+(define-class condition-handler ()
+  ((condition-itself
+    (error "condition-handler should always wrap a condition.")
+    :type condition
+    :documentation "The condition itself.")
+   (restarts
+    nil
+    :type list
+    :documentation "A list of restarts for the given condition.
+Stored in the format given by `compute-restarts'.")
+   (channel
+    nil
+    :type (or null calispel:channel)
+    :documentation "The channel to send the chosen restart through."))
+  (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
+  (:documentation "The wrapper for condition.
 
-- CONDITION is the signaled condition.
-- RESTARTS is the list of restarts computed for this CONDITION.
-- CHANNEL is the channel to send the user-chosen restart at.")
+Made so that `debugger-hook' can wait for the condition to be resolved based on
+the channel, wrapped alongside the condition and its restarts."))
+
+(defvar *debug-conditions* (make-hash-table)
+  "A hash-table from numeric condition ID to the `condition-handler' lists.")
 
 (defun debugger-hook (condition hook)
   ;; FIXME: It handles recursive errors, but has no way to fall back to the
@@ -653,7 +669,11 @@ evaluate in order."
                (lambda () (prompt :prompt prompt
                                   :sources (list (make-instance 'prompter:raw-source)))))
               (swank-backend:make-output-stream (lambda (string) (setf prompt string))))))
-      (setf (gethash id *debug-conditions*) (list condition restarts channel))
+      (setf (gethash id *debug-conditions*)
+            (make-instance 'condition-handler
+                           :condition-itself condition
+                           :restarts restarts
+                           :channel channel))
       (open-debugger :id id)
       ;; FIXME: Waits indefinitely. Should it?
       (invoke-restart-interactively (calispel:? channel)))))
@@ -665,13 +685,14 @@ evaluate in order."
     (:pre (format nil "~a" condition))
     (:section
      (loop for restart in restarts
-           for i from 0 by 1
+           for i from 0
            collect (:button :class "button"
                             :onclick (ps:ps (nyxt/ps:lisp-eval
                                              `(progn
-                                                (calispel:!
-                                                 (third (gethash ,id *debug-conditions*))
-                                                 (nth ,i (second (gethash ,id *debug-conditions*))))
+                                                (let ((condition (gethash ,id *debug-conditions*)))
+                                                  (calispel:! (channel condition)
+                                                              (nth ,i (restarts condition)))
+                                                  (remhash ,id *debug-conditions*))
                                                 ,@(when (and delete-buffer-p buffer)
                                                     `((delete-buffer :id ,(id buffer)))))))
                             (format nil "[~d] ~a" i (restart-name restart))))
