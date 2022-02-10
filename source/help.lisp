@@ -865,7 +865,8 @@ Requirements:
                                              (lambda (system)
                                                (uiop:pathname-equal asd (asdf:system-source-file
                                                                          (asdf:find-system system))))))
-                                           (asdf:registered-systems))))))
+                                           (asdf:registered-systems)))))
+                     (config-path (expand-path config-path)))
                 (declare (ignore load-asd))
                 (if primary-system
                     (progn
@@ -874,12 +875,13 @@ Requirements:
 
 ;; Put your configuration for ~a here.
 " primary-system)
-                       (expand-path config-path)
+                       config-path
                        :if-does-not-exist :create
                        :if-exists nil)
                       (nyxt::append-configuration
-                       `(load-after-system ,primary-system ,(expand-path config-path)))
-                      (echo "Extension installed to ~a, configuration file is ~a" install-path (expand-path config-path)))
+                       `(load-after-system ,primary-system ,config-path))
+                      (echo "Extension installed to ~a, configuration file is ~a"
+                            install-path config-path))
                     (echo-warning "Cannot install extension: primary ASDF system not found."))))
           (uiop:subprocess-error ()
             (echo-warning "Cannot install extension: failed to clone Git repository."))))))
