@@ -635,7 +635,7 @@ evaluate in order."
     :type condition
     :documentation "The condition itself.")
    (restarts
-    nil
+    '()
     :type list
     :documentation "A list of restarts for the given condition.
 Stored in the format given by `compute-restarts'.")
