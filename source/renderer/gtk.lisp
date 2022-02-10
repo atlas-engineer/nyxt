@@ -989,6 +989,7 @@ See `finalize-buffer'."
              (nyxt/web-extensions::tabs-on-updated buffer `(("url" . ,(render-url url))))
              (on-signal-load-redirected buffer url))
             ((eq load-event :webkit-load-committed)
+             (setf (url buffer) url)
              (nyxt/web-extensions::tabs-on-updated buffer '(("status" . "loading")))
              (nyxt/web-extensions::tabs-on-updated buffer `(("url" . ,(render-url url))))
              (on-signal-load-committed buffer url))
