@@ -1312,7 +1312,7 @@ See `finalize-buffer'."
     t)
   (connect-signal buffer "create" nil (web-view navigation-action)
     (declare (ignore web-view))
-    (let ((new-buffer (make-instance 'user-buffer))
+    (let ((new-buffer (make-instance 'user-web-buffer :parent-buffer (current-buffer)))
           (url (webkit:webkit-uri-request-uri
                 (webkit:webkit-navigation-action-get-request
                  (gobject:pointer navigation-action)))))
