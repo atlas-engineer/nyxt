@@ -878,7 +878,8 @@ Requirements:
                        :if-does-not-exist :create
                        :if-exists nil)
                       (nyxt::append-configuration
-                       `(load-after-system ,primary-system ,(expand-path config-path))))
+                       `(load-after-system ,primary-system ,(expand-path config-path)))
+                      (echo "Extension installed to ~a, configuration file is ~a" install-path (expand-path config-path)))
                     (echo-warning "Cannot install extension: primary ASDF system not found."))))
           (uiop:subprocess-error ()
             (echo-warning "Cannot install extension: failed to clone Git repository."))))))
