@@ -862,7 +862,7 @@ Requirements:
                                       (delete-if
                                        (complement
                                         (alex:conjoin
-                                         #'asdf:primary-system-p
+                                         #'asdf::primary-system-p
                                          (lambda (system)
                                            (uiop:pathname-equal asd (asdf:system-source-file
                                                                      (asdf:find-system system))))))
