@@ -172,7 +172,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
    :prompt "Bookmark URL from buffer(s)"
    :sources (make-instance 'user-buffer-source
                            :multi-selection-p t
-                           :actions (list (make-unmapped-command bookmark-current-url)))))
+                           :actions (list (make-mapped-command bookmark-current-url)))))
 
 (define-command bookmark-url (&key url)
   "Allow the user to bookmark a URL via minibuffer input."
