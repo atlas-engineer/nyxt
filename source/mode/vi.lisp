@@ -24,6 +24,7 @@ the web page.
 
 See also `vi-insert-mode'."
   ((glyph "vi:N")
+   (rememberable-p nil)
    (previous-keymap-scheme-name nil
     :type (or keymap:scheme-name null)
     :documentation "The previous keymap scheme that will be used when ending
@@ -70,6 +71,7 @@ See `vi-normal-mode'."
   ;; We could inherit from vi-normal-mode to save the declaration of this slot
   ;; but then (find-submode ... 'vi-normal-mode) would match vi-insert-mode.
   ((glyph "vi:I")
+   (rememberable-p nil)
    (previous-keymap-scheme-name nil
     :type (or keymap:scheme-name null)
     :documentation "The previous keymap scheme that will be used when ending

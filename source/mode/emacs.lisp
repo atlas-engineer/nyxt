@@ -17,6 +17,7 @@ Example:
 \(define-configuration buffer
   ((default-modes (append '(emacs-mode) %slot-default%))))"
   ((glyph "ε")
+   (rememberable-p nil)
    (previous-keymap-scheme-name nil
     :type (or keymap:scheme-name null)
     :documentation "The previous keymap scheme that will be used when ending
