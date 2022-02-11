@@ -15,9 +15,25 @@
     (define-scheme "repl"
       scheme:cua
       (list
-       "return" 'return-input)
+       "return" 'return-input
+       "(" 'paren
+       ")" 'closing-paren)
       scheme:emacs
-      (list)))
+      (list
+       "C-f" 'nyxt/input-edit-mode:cursor-forwards
+       "C-b" 'nyxt/input-edit-mode:cursor-backwards
+       "M-f" 'nyxt/input-edit-mode:cursor-forwards-word
+       "M-b" 'nyxt/input-edit-mode:cursor-backwards-word
+       "C-d" 'nyxt/input-edit-mode:delete-forwards
+       "M-backspace" 'nyxt/input-edit-mode:delete-backwards-word
+       "M-d" 'nyxt/input-edit-mode:delete-forwards-word)
+      scheme:vi-normal
+      (list
+       ;; TODO: deleting chars/words
+       "l" 'nyxt/input-edit-mode:cursor-forwards
+       "h" 'nyxt/input-edit-mode:cursor-backwards
+       "w" 'nyxt/input-edit-mode:cursor-forwards-word
+       "b" 'nyxt/input-edit-mode:cursor-backwards-word)))
    (style (theme:themed-css (theme *browser*)
             (* :font-family "monospace,monospace")
             (body :margin-right "0")
@@ -61,25 +77,49 @@ INPUT is a string and RESULTS is a list of Lisp values.")))
                        (list (package-name package)))
                #'string<)))
 
+(defmethod input ((mode repl-mode))
+  (pflet ((input-text ()
+           (ps:@ (nyxt/ps:qs document "#input-buffer") value)))
+    (with-current-buffer (buffer mode)
+      (input-text))))
+
+(defmethod (setf input) (new-text (mode repl-mode))
+  (pflet ((set-input-text (text)
+           (setf (ps:@ (nyxt/ps:qs document "#input-buffer") value) (ps:lisp text))))
+    (with-current-buffer (buffer mode)
+      (set-input-text new-text))))
+
+(defmethod cursor ((mode repl-mode))
+  (pflet ((selection-start ()
+           (ps:chain (nyxt/ps:qs document "#input-buffer") selection-start)))
+    (with-current-buffer (buffer mode)
+      (let ((cursor (selection-start)))
+        (if (numberp cursor)
+            cursor
+            0)))))
+
+(defmethod (setf cursor) (new-position (mode repl-mode))
+  (pflet ((selection-start (position)
+           (setf (ps:chain (nyxt/ps:qs document "#input-buffer") selection-start)
+                 (setf (ps:chain (nyxt/ps:qs document "#input-buffer") selection-end)
+                       (ps:lisp position)))))
+    (with-current-buffer (buffer mode)
+      (selection-start new-position))))
+
 (define-command return-input (&optional (repl (current-mode 'repl)))
   "Return inputted text."
-  (pflet ((input-text ()
-           (ps:chain document (get-element-by-id "input-buffer") value)))
-    (let ((input (input-text)))
-      (add-object-to-evaluation-history repl
-                                        (list (format nil "~a> ~a"
-                                                      (package-short-name *package*)
-                                                      input)
-                                              (nyxt::evaluate input)))
-      (reset-input repl)
-      (update-evaluation-history-display repl))))
+  (let ((input (input repl)))
+    (add-object-to-evaluation-history repl
+                                      (list (format nil "~a> ~a"
+                                                    (package-short-name *package*)
+                                                    input)
+                                            (nyxt::evaluate input)))
+    (reset-input repl)
+    (update-evaluation-history-display repl)))
 
 (define-command reset-input (&optional (repl (current-mode 'repl)))
   "Clear the inputted text."
-  (with-current-buffer (buffer repl)
-    (pflet ((clear-input-buffer-text ()
-           (setf (ps:chain document (get-element-by-id "input-buffer") value) "")))
-      (clear-input-buffer-text))))
+  (setf (input repl) ""))
 
 (defmethod add-object-to-evaluation-history ((repl repl-mode) item)
   (push item (evaluation-history repl)))
@@ -98,6 +138,23 @@ INPUT is a string and RESULTS is a list of Lisp values.")))
              (ps:lisp (format nil "~a>" (package-short-name *package*))))
        (setf (ps:chain document (get-element-by-id "evaluation-history") |innerHTML|)
              (ps:lisp (generate-evaluation-history-html repl)))))))
+
+(define-command paren (&optional (repl (current-mode 'repl)))
+  ;; FIXME: Not an intuitive behavior? What does Emacs do?
+  "Inserts the closing paren after the opening one is inputted."
+  (let ((input (input repl))
+        (cursor (cursor repl)))
+    (setf (input repl) (str:insert "()" cursor input)
+          (cursor repl) (1+ cursor))))
+
+(define-command closing-paren (&optional (repl (current-mode 'repl)))
+  "Automatically closes all the open parens before the cursor."
+  (let* ((input (input repl))
+         (cursor (cursor repl))
+         (parens-to-complete (- (count #\( input :end cursor)
+                                (count #\) input))))
+    (setf (input repl)
+          (str:insert (make-string parens-to-complete :initial-element #\)) cursor input))))
 
 (define-internal-page-command-global lisp-repl ()
     (repl-buffer "*Lisp REPL*" 'repl-mode)
