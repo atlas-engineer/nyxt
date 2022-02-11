@@ -99,23 +99,47 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
             :input input
             :sources sources))))))
 
-(defun value->html (value &key (help-mode (current-mode 'help)))
+(defun value->html (value)
   "Return the HTML representation of VALUE."
-  (spinneret:with-html-string
-    (cond
-      ((consp value)
-       (:ul
-        (loop for e in value
-              for i below (length value)
-              collect (:li (:a :href (nyxt-url 'describe-value :value
-                                               (nth i (nyxt/help-mode:inspected-value help-mode)))
-                               e)))))
-      ((has-attributes-method-p value)
-       (:ul
-        (loop for (attribute-key attribute-value) in (prompter:object-attributes value)
-              collect (:li attribute-key ": " (:code attribute-value)))))
-      (t
-       (:raw (princ-to-string value))))))
+  (let ((spinneret:*html-style* :tree)
+        (*print-case* :downcase))
+    (spinneret:with-html-string
+      (cond
+        ((scalar-p value)
+         (:code (format nil "~s" value)))
+        ((trivial-types:property-list-p value)
+         (:dl
+          (loop for (key val . rest) on value by #'cddr
+                collect (:dt (format nil "~a" key))
+                collect (:dd (:raw (value->html val))))))
+        ((trivial-types:association-list-p value)
+         (:dl
+          (dolist (e value)
+            (:dt (format nil "~a" (car e)))
+            (:dd (:raw (value->html (cdr e)))))))
+        ((and (sequence-p value)
+              ;; Dotted lists are bad.
+              (not (and (consp value)
+                        (cdr value)
+                        (not (consp (cdr value))))))
+         (:ul
+          (dotimes (i (length value))
+            (:li (:raw (value->html (elt value i)))))))
+        ((hash-table-p value)
+         (alex:when-let ((keys (alex:hash-table-keys value)))
+           (:dl
+            (dolist (key keys)
+              (:dt (format nil "~a" key))
+              (:dd (:raw (value->html (gethash key value))))))))
+        ((typep value 'standard-object)
+         (alex:when-let ((slot-names (mapcar #'closer-mop:slot-definition-name
+                                           (closer-mop:class-slots (class-of value)))))
+           (:dl
+            (dolist (slot-name slot-names)
+              (:dt (format nil "~a" slot-name))
+              (:dd (:raw (value->html (slot-value value slot-name))))))))
+        (t
+         (:code (format nil "~s" value)))))))
 
 (define-internal-page-command-global describe-value
     (&key value)
@@ -127,7 +151,7 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
       (spinneret:with-html-string
         (:style (style buffer))
         (:h1 (princ-to-string value))
-        (:p (:raw (value->html value :help-mode help-mode)))))))
+        (:p (:raw (value->html value)))))))
 
 (defun has-attributes-method-p (object)
   "Return non-nil if OBJECT has `prompter:object-attributes' specialization."
@@ -206,7 +230,7 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
       (:h1 (format nil "~s" variable)) ; Use FORMAT to keep package prefix.
       (:raw (resolve-backtick-quote-links (documentation variable 'variable) variable))
       (:h2 "Current Value:")
-      (:p (:raw (value->html (symbol-value variable) :help-mode help-mode))))))
+      (:p (:raw (value->html (symbol-value variable)))))))
 
 (define-internal-page-command-global describe-function
     (&key (function (prompt1
