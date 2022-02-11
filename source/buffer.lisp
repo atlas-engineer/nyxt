@@ -308,9 +308,9 @@ To use, say, KeepassXC, set this slot to
 
 Password interfaces may have user classes (that is, prefixed with 'user-' as in
 the above example), in which case you can use `define-configuration' on them.")
-   (downloads-directory
-    (make-instance 'downloads-directory)
-    :type downloads-directory
+   (download-directory
+    (make-instance 'download-directory)
+    :type download-directory
     :documentation "Directory where downloads will be stored.")
    (download-engine
     :initform :renderer

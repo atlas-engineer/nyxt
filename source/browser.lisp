@@ -389,7 +389,7 @@ Return the download object matching the download."
   (prog1
       (match (download-engine buffer)
         (:lisp
-         (alex:when-let* ((path (downloads-directory buffer))
+         (alex:when-let* ((path (download-directory buffer))
                           (download-dir (nfiles:expand path)))
            (when (eq proxy-url :auto)
              (setf proxy-url (proxy-url buffer :downloads-only t)))

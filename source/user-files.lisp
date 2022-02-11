@@ -158,7 +158,7 @@ Example: when passed command line option --with-file foo=bar,
       (setf dir (uiop:merge-pathnames* #p"Downloads/" (user-homedir-pathname))))
     (uiop:ensure-pathname dir :ensure-directory t)))
 
-(define-class downloads-directory (nfiles:file)
+(define-class download-directory (nfiles:file)
   ((nfiles:base-path (xdg-download-dir))
    (nfiles:name "downloads"))
   (:export-class-name-p t)
