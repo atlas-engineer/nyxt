@@ -643,7 +643,11 @@ Stored in the format given by `compute-restarts'.")
    (channel
     nil
     :type (or null calispel:channel)
-    :documentation "The channel to send the chosen restart through."))
+    :documentation "The channel to send the chosen restart through.")
+   (prompt-text
+    "[restart prompt]"
+    :type string
+    :documentation "The prompt text debugger requires."))
   (:accessor-name-transformer (hu.dwim.defclass-star:make-name-transformer name))
   (:documentation "The wrapper for condition.
 
@@ -662,19 +666,18 @@ the channel, wrapped alongside the condition and its restarts."))
            (id (parse-integer (get-unique-identifier *browser*)))
            (restarts (compute-restarts condition))
            (channel (make-channel 1))
-           (prompt "[restart prompt]")
+           (handler (make-instance 'condition-handler
+                                   :condition-itself condition
+                                   :restarts restarts
+                                   :channel channel))
            (*query-io*
              (make-two-way-stream
               ;; TODO: Understand how Swank makes those streams.
               (swank-backend:make-input-stream
-               (lambda () (prompt :prompt prompt
+               (lambda () (prompt :prompt (prompt-text handler)
                                   :sources (list (make-instance 'prompter:raw-source)))))
-              (swank-backend:make-output-stream (lambda (string) (setf prompt string))))))
-      (setf (gethash id *debug-conditions*)
-            (make-instance 'condition-handler
-                           :condition-itself condition
-                           :restarts restarts
-                           :channel channel))
+              (swank-backend:make-output-stream (lambda (string) (setf (prompt-text handler) string))))))
+      (setf (gethash id *debug-conditions*) handler)
       (open-debugger :id id)
       ;; FIXME: Waits indefinitely. Should it?
       (invoke-restart-interactively (calispel:? channel)))))
