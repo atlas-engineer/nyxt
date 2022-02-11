@@ -683,6 +683,7 @@ the channel, wrapped alongside the condition and its restarts."))
       (unwind-protect
            ;; FIXME: Waits indefinitely. Should it?
            (invoke-restart-interactively (calispel:? channel))
+        (remhash id *debug-conditions*)
         (buffer-delete debug-buffer)))))
 
 (defun debug->html (condition id &optional restarts)
@@ -698,8 +699,7 @@ the channel, wrapped alongside the condition and its restarts."))
                                              `(progn
                                                 (let ((condition (gethash ,id *debug-conditions*)))
                                                   (calispel:! (channel condition)
-                                                              (nth ,i (restarts condition)))
-                                                  (remhash ,id *debug-conditions*)))))
+                                                              (nth ,i (restarts condition)))))))
                             (format nil "[~d] ~a" i (restart-name restart))))
      (:h* "Backtrace")
      ;; TODO: SLIME and SLY provide introspectable backtraces. How?
