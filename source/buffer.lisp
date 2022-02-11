@@ -341,10 +341,17 @@ The file where the system will create/save the global history.")
     (make-instance 'annotations-file)
     :type annotations-file
     :documentation "
-The file where the system will create/save annotations.")
-   (inputs-file
-    (make-instance 'inputs-file)
-    :type inputs-file
+The path where the system will create/save the bookmarks.
+Bookmarks' data is kept in browser's `user-data', keyed by the expanded `bookmarks-path'.")
+   (no-procrastination-path (make-instance 'no-procrastination-data-path)
+                          :type data-path
+                          :documentation "
+The path where the system will create/save the hosts associated to
+procrastination.  Procrastination hosts' data is kept in browser's `user-data',
+keyed by the expanded `no-procrastination-path'.")
+   (annotations-path
+    (make-instance 'annotations-data-path)
+    :type data-path
     :documentation "
 The file where the system will create/save the input data.")
    (auto-mode-rules-file

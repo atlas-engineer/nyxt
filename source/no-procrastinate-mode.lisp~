@@ -1,0 +1,5 @@
+(uiop:define-package :nyxt/no-procrastinate-mode
+    (:use :common-lisp :nyxt :nyxt/blocker-mode)
+  (:import-from #:class-star #:define-class)
+  (:documentation "Block resource queries for listed hosts."))
+(in-package :nyxt/blocker-mode)
