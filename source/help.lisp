@@ -674,10 +674,14 @@ the channel, wrapped alongside the condition and its restarts."))
              (make-two-way-stream
               ;; TODO: Understand how Swank makes those streams.
               (swank-backend:make-input-stream
-               (lambda () (prompt1
-                            :prompt (prompt-text handler)
-                            :sources (list (make-instance 'prompter:raw-source)))))
-              (swank-backend:make-output-stream (lambda (string) (setf (prompt-text handler) string)))))
+               (lambda ()
+                 (str:concat
+                  (prompt1
+                    :prompt (prompt-text handler)
+                    :sources (list (make-instance 'prompter:raw-source)))
+                  +newline+)))
+              (swank-backend:make-output-stream
+               (lambda (string) (setf (prompt-text handler) string)))))
            (debug-buffer (open-debugger :id id)))
       (setf (gethash id *debug-conditions*) handler)
       (unwind-protect
