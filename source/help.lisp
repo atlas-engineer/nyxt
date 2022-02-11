@@ -674,15 +674,18 @@ the channel, wrapped alongside the condition and its restarts."))
              (make-two-way-stream
               ;; TODO: Understand how Swank makes those streams.
               (swank-backend:make-input-stream
-               (lambda () (prompt :prompt (prompt-text handler)
-                                  :sources (list (make-instance 'prompter:raw-source)))))
-              (swank-backend:make-output-stream (lambda (string) (setf (prompt-text handler) string))))))
+               (lambda () (prompt1
+                            :prompt (prompt-text handler)
+                            :sources (list (make-instance 'prompter:raw-source)))))
+              (swank-backend:make-output-stream (lambda (string) (setf (prompt-text handler) string)))))
+           (debug-buffer (open-debugger :id id)))
       (setf (gethash id *debug-conditions*) handler)
-      (open-debugger :id id)
-      ;; FIXME: Waits indefinitely. Should it?
-      (invoke-restart-interactively (calispel:? channel)))))
+      (unwind-protect
+           ;; FIXME: Waits indefinitely. Should it?
+           (invoke-restart-interactively (calispel:? channel))
+        (buffer-delete debug-buffer)))))
 
-(defun debug->html (condition id &optional restarts buffer delete-buffer-p)
+(defun debug->html (condition id &optional restarts)
   "Produce HTML code for the CONDITION with RESTARTS."
   (spinneret:with-html-string
     (:h* (symbol-name (type-of condition)))
@@ -696,9 +699,7 @@ the channel, wrapped alongside the condition and its restarts."))
                                                 (let ((condition (gethash ,id *debug-conditions*)))
                                                   (calispel:! (channel condition)
                                                               (nth ,i (restarts condition)))
-                                                  (remhash ,id *debug-conditions*))
-                                                ,@(when (and delete-buffer-p buffer)
-                                                    `((delete-buffer :id ,(id buffer)))))))
+                                                  (remhash ,id *debug-conditions*)))))
                             (format nil "[~d] ~a" i (restart-name restart))))
      (:h* "Backtrace")
      ;; TODO: SLIME and SLY provide introspectable backtraces. How?
@@ -712,7 +713,7 @@ the channel, wrapped alongside the condition and its restarts."))
   (with-slots (condition-itself restarts channel)
       (gethash id *debug-conditions*)
     (declare (ignore channel))
-    (debug->html condition-itself id restarts buffer t)))
+    (debug->html condition-itself id restarts)))
 
 (define-command-global toggle-debug-on-error (&key (value nil value-provided-p))
   "Toggle Nyxt-native debugging.
