@@ -338,6 +338,7 @@ and restore input fields.")
         (:code "lisp") " protocol to allow evaluating arbitrary Lisp, for instance from a button click."
         "Internal pages also have a URL now, which means they have history support.")
    (:li "New " (:code "define-internal-page-command") " helper to define internal pages.")
+   (:li "New " (:code "define-internal-scheme") " helper to define custom schemes.")
    (:li (:code "jump-to-heading") " commands now sort and indent the headings in a natural fashion.")
    (:li "New " (:code "match-port") " URL designator predicate for auto-mode rules.")
    (:li "New " (:code "toggle-message-buffer") " and " (:code "toggle-status-buffer") " commands.")
