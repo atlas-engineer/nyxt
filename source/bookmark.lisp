@@ -145,7 +145,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   (if (url-empty-p (url buffer))
       (echo "Buffer has no URL.")
       (let ((tags (prompt
-                   :prompt "Tag(s)"
+                   :prompt (format nil "Tag(s) for ~a " (render-url (url buffer)))
                    :sources (list
                              (make-instance 'prompter:word-source
                                             :name "New tags"
@@ -172,7 +172,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
    :prompt "Bookmark URL from buffer(s)"
    :sources (make-instance 'user-buffer-source
                            :multi-selection-p t
-                           :actions (list (make-unmapped-command bookmark-current-url)))))
+                           :actions (list (make-mapped-command bookmark-current-url)))))
 
 (define-command bookmark-url (&key url)
   "Allow the user to bookmark a URL via minibuffer input."
