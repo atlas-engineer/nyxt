@@ -684,11 +684,10 @@ the channel, wrapped alongside the condition and its restarts."))
                (lambda (string) (setf (prompt-text handler) string)))))
            (debug-buffer (open-debugger :id id)))
       (setf (gethash id *debug-conditions*) handler)
-      (unwind-protect
-           ;; FIXME: Waits indefinitely. Should it?
-           (invoke-restart-interactively (calispel:? channel))
-        (remhash id *debug-conditions*)
-        (buffer-delete debug-buffer)))))
+      ;; FIXME: Waits indefinitely. Should it?
+      (invoke-restart-interactively (calispel:? channel))
+      (remhash id *debug-conditions*)
+      (buffer-delete debug-buffer))))
 
 (defun debug->html (condition id &optional restarts)
   "Produce HTML code for the CONDITION with RESTARTS."
