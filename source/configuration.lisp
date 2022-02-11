@@ -19,7 +19,7 @@
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod nfiles:resolve ((profile application-profile) (init-file init-file))
+(defmethod nfiles:resolve ((profile nyxt-profile) (init-file init-file))
   (let* ((option (slot-value init-file 'command-line-option))
          (no-option (alex:make-keyword
                      (uiop:strcat "NO-" (symbol-name option)))))

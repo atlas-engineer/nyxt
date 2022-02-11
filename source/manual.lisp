@@ -277,11 +277,11 @@ documentation of the respective hooks for more details.")
     (:h3 "Data paths and data profiles")
     (:p "Nyxt provides a uniform configuration interface for all data files
 persisted to disk (bookmarks, cookies, etc.).  To each file corresponds
-a " (:code "nyxt-file") " object. An " (:code "application-profile") " is a
+a " (:code "nyxt-file") " object. An " (:code "nyxt-profile") " is a
 customizable object that helps define general rules for data storage.  Both
-nyxt-file and application-profiles compose, so it's possible to define general rules
+nyxt-file and nyxt-profile compose, so it's possible to define general rules
 for all files (even for those not known in advance) while it's also
-possible to specialize some data given an application-profile.")
+possible to specialize some data given an nyxt-profile.")
     (:p "The profile can be set from command line and from the
 configuration file."
         "You can list all known profiles (including the user-defined
@@ -301,7 +301,7 @@ say to develop Nyxt or extensions.")
     (:p "Example to create a development profile that stores all data in "
         (:code "/tmp/nyxt") " and stores bookmark in an encrypted file:")
     (:pre (:code "
-\(define-class dev-profile (application-profile)
+\(define-class dev-profile (nyxt-profile)
    ((nfiles:name :initform \"nyxt-dev\"))
    (:documentation \"Development profile.\"))
 

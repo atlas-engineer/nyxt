@@ -99,14 +99,14 @@ Example:
              :combination #'combine-composed-hook-until-nil
              :handlers '(request-resource-block))))))))
 
-(defmethod nfiles:write-file ((profile application-profile) (hostlist hostlist) &key)
+(defmethod nfiles:write-file ((profile nyxt-profile) (hostlist hostlist) &key)
   "Download the hostlist file if it has a URL."
   (when (url-body hostlist)
     (let ((path (nfiles:expand hostlist)))
       (uiop:with-staging-pathname (destination path)
         (alex:write-string-into-file (url-body hostlist) destination :if-exists :supersede)))))
 
-(defmethod nfiles:read-file :around ((profile application-profile) (hostlist hostlist) &key)
+(defmethod nfiles:read-file :around ((profile nyxt-profile) (hostlist hostlist) &key)
   ;; Must be an `:around' method so that the `nfiles:file' specialization which
   ;; does file existence check is not called.
   "Fetch HOSTLIST file from its `url' and save it on disk.
@@ -140,7 +140,7 @@ If file is already on disk and younger then `update-interval', load it instead o
       (with-input-from-string (s (url-body hostlist))
         (nfiles:deserialize profile hostlist s)))))
 
-(defmethod nfiles:deserialize ((profile application-profile) (hostlist hostlist) raw-content &key)
+(defmethod nfiles:deserialize ((profile nyxt-profile) (hostlist hostlist) raw-content &key)
   (flet ((empty-line? (line)
            (< (length line) 2))
          (comment? (line)

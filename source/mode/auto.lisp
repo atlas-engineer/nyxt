@@ -452,7 +452,7 @@ Auto-mode is re-enabled once the page is reloaded."
       (write-if-present 'exact-p)
       (write-string ")" stream))))
 
-(defmethod nfiles:serialize ((profile application-profile) (file auto-mode-rules-file) stream &key)
+(defmethod nfiles:serialize ((profile nyxt-profile) (file auto-mode-rules-file) stream &key)
   (let ((rules (nfiles:content file)))
     (let ((*standard-output* stream)
           (*package* (find-package :nyxt/auto-mode)))
@@ -495,7 +495,7 @@ Auto-mode is re-enabled once the page is reloaded."
       (format t "~%)~%"))
     (echo "Saved ~a auto-mode rules to ~s." (length rules) (nfiles:expand file))))
 
-(defmethod nfiles:deserialize ((profile application-profile) (file auto-mode-rules-file) raw-content &key)
+(defmethod nfiles:deserialize ((profile nyxt-profile) (file auto-mode-rules-file) raw-content &key)
   (let ((rules (read raw-content)))
     (mapcar #'(lambda (rule)
                 (let ((rule (append '(:test) rule)))

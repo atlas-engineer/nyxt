@@ -19,7 +19,7 @@ have an empty ID.")
     (alex:if-let ((profile-class (find-profile-class (getf *options* :profile))))
       (make-instance profile-class)
       *global-profile*)
-    :type application-profile
+    :type nyxt-profile
     :documentation "Buffer profiles are used to specialize the behaviour of
 various parts, such as the path of all data files.")
    (document-model-delta-threshold

@@ -181,7 +181,7 @@ https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.
   https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage
   for API description)."))
 
-(defmethod nfiles:resolve ((profile application-profile) (file extension-storage-file))
+(defmethod nfiles:resolve ((profile nyxt-profile) (file extension-storage-file))
   (sera:path-join
    (call-next-method)
    (uiop:ensure-directory-pathname (nfiles:name file))

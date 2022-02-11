@@ -273,7 +273,7 @@ rest in background buffers."
           (write-string ")"))
         (write-string ")")))))
 
-(defmethod nfiles:serialize ((profile application-profile) (file bookmarks-file) stream &key)
+(defmethod nfiles:serialize ((profile nyxt-profile) (file bookmarks-file) stream &key)
   (let ((content
           (sort (nfiles:content file)
                 #'url< :key #'url)))
@@ -286,7 +286,7 @@ rest in background buffers."
           (length content)
           (nfiles:expand file))))
 
-(defmethod nfiles:deserialize ((profile application-profile) (path bookmarks-file) raw-content &key)
+(defmethod nfiles:deserialize ((profile nyxt-profile) (path bookmarks-file) raw-content &key)
   (let ((entries (read raw-content)))
     (mapcar (lambda (entry)
               (when (getf entry :url)

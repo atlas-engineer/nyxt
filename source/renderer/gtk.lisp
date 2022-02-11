@@ -266,7 +266,7 @@ the renderer thread, use `defmethod' instead."
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod nfiles:resolve ((profile application-profile) (file data-manager-data-directory))
+(defmethod nfiles:resolve ((profile nyxt-profile) (file data-manager-data-directory))
   (sera:path-join
    (call-next-method)
    (pathname (str:concat (context-name file) "-web-context/"))))
@@ -276,7 +276,7 @@ the renderer thread, use `defmethod' instead."
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod nfiles:resolve ((profile application-profile) (file data-manager-cache-directory))
+(defmethod nfiles:resolve ((profile nyxt-profile) (file data-manager-cache-directory))
   (sera:path-join
    (call-next-method)
    (pathname (str:concat (context-name file) "-web-context/"))))
@@ -286,7 +286,7 @@ the renderer thread, use `defmethod' instead."
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod nfiles:resolve ((profile application-profile) (file gtk-extensions-directory))
+(defmethod nfiles:resolve ((profile nyxt-profile) (file gtk-extensions-directory))
   (sera:path-join
    (call-next-method)
    (pathname (str:concat (context-name file) "-gtk-extensions/"))))
@@ -296,7 +296,7 @@ the renderer thread, use `defmethod' instead."
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod nfiles:resolve ((profile application-profile) (file cookies-file))
+(defmethod nfiles:resolve ((profile nyxt-profile) (file cookies-file))
   (sera:path-join
    (call-next-method)
    (pathname (str:concat (context-name file) "-cookies"))))

@@ -11,7 +11,7 @@
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Socket files are typically stored in a dedicated directory."))
 
-(defmethod nfiles:resolve ((profile application-profile) (socket socket-file))
+(defmethod nfiles:resolve ((profile nyxt-profile) (socket socket-file))
   "Return finalized path for socket files."
   (if (getf *options* :no-socket)
       #p""
@@ -143,7 +143,7 @@ and have the `remote-execution-p' browser slot to non-nil.")
       (:name :list-profiles
        :long "list-profiles"
        :description "List the known profiles and exit.
-Known profiles are found among subclasses of `application-profile'.")
+Known profiles are found among subclasses of `nyxt-profile'.")
       (:name :with-file
        :long "with-file"
        :arg-parser (lambda (arg) (str:split "=" arg :limit 2))

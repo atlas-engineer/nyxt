@@ -5,7 +5,7 @@
 
 ;; We define our own 'default profile' (instead of using `nfiles:profile'
 ;; directly) so that we can specialize the methods
-(define-class application-profile (nfiles:profile)
+(define-class nyxt-profile (nfiles:profile)
   ((nfiles:name "nyxt"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -14,7 +14,7 @@
 standard locations."))
 
 (export-always '*global-profile*)
-(defvar *global-profile* (make-instance 'application-profile)
+(defvar *global-profile* (make-instance 'nyxt-profile)
   "The profile to use in the absence of buffers and on browser-less variables.")
 
 (define-class nyxt-file (nfiles:file)
@@ -42,7 +42,7 @@ If the file is modified externally, Nyxt automatically reloads it."))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod nfiles:resolve ((profile application-profile) (path nyxt-temporary-directory))
+(defmethod nfiles:resolve ((profile nyxt-profile) (path nyxt-temporary-directory))
   "Expand all data paths inside a temporary directory."
   (uiop:ensure-pathname
    (uiop:merge-pathnames* (nfiles:name profile) (uiop:temporary-directory))
@@ -55,7 +55,7 @@ If the file is modified externally, Nyxt automatically reloads it."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Nyxt Lisp files."))
 
-(define-class nosave-profile (nfiles:read-only-profile application-profile)
+(define-class nosave-profile (nfiles:read-only-profile nyxt-profile)
   ((nfiles:name "nosave"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -79,7 +79,7 @@ Example: when passed command line option --with-file foo=bar,
 (defmethod nfiles:resolve ((profile nfiles:profile) (file nyxt-file))
   (sera:path-join (uiop:ensure-directory-pathname (nfiles:name profile)) (call-next-method)))
 
-(defmethod nfiles:read-file :around ((profile application-profile) (file nyxt-file) &key)
+(defmethod nfiles:read-file :around ((profile nyxt-profile) (file nyxt-file) &key)
   (unless (typep file 'nfiles:virtual-file)
     (let ((path (nfiles:expand file)))
       (log:info "Loading ~s." path)
@@ -95,7 +95,7 @@ Example: when passed command line option --with-file foo=bar,
                   nil))
               nil))))))
 
-(defmethod nfiles:write-file :around ((profile application-profile) (file nyxt-file) &key)
+(defmethod nfiles:write-file :around ((profile nyxt-profile) (file nyxt-file) &key)
   (if *run-from-repl-p*
       (call-next-method)
       (handler-case (call-next-method)
@@ -103,14 +103,14 @@ Example: when passed command line option --with-file foo=bar,
           (log:info "Failed to save ~s: ~a" (nfiles:expand file) c)
           nil))))
 
-(defmethod nfiles:serialize ((profile application-profile) (file nyxt-lisp-file) stream &key)
+(defmethod nfiles:serialize ((profile nyxt-profile) (file nyxt-lisp-file) stream &key)
   ;; We need to make sure current package is :nyxt so that symbols are printed
   ;; with consistent namespaces.
   (let ((*package* (find-package :nyxt))
         (*print-length* nil))
     (s-serialization:serialize-sexp (nfiles:content file) stream)))
 
-(defmethod nfiles:deserialize ((profile application-profile) (file nyxt-lisp-file) raw-content &key)
+(defmethod nfiles:deserialize ((profile nyxt-profile) (file nyxt-lisp-file) raw-content &key)
   ;; We need to make sure current package is :nyxt so that symbols are printed
   ;; with consistent namespaces.
   (let ((*package* (find-package :nyxt)))
@@ -172,8 +172,8 @@ Example: when passed command line option --with-file foo=bar,
 
 (export-always 'list-profile-classes)
 (defun list-profile-classes ()
-  (cons (find-class 'nyxt:application-profile)
-        (mopu:subclasses 'nyxt:application-profile)))
+  (cons (find-class 'nyxt:nyxt-profile)
+        (mopu:subclasses 'nyxt:nyxt-profile)))
 
 (export-always 'find-profile-class)
 (defun find-profile-class (name)

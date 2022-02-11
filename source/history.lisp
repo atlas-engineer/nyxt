@@ -199,7 +199,7 @@ lot."
                          (:a :href (render-url (url data))
                              (render-url (url data))))))))
 
-(defmethod nfiles:serialize ((profile application-profile) (file history-file) stream &key)
+(defmethod nfiles:serialize ((profile nyxt-profile) (file history-file) stream &key)
   (let ((*package* (find-package :nyxt))
         (*print-length* nil))
     ;; We need to make sure current package is :nyxt so that symbols are printed
@@ -347,7 +347,7 @@ Finally go through all the owners and update their creator."
                                                :key (alex:compose #'htree:last-access #'rest))))))
       (switch-buffer :id latest-id))))
 
-(defmethod nfiles:deserialize ((profile application-profile) (file history-file) raw-content &key)
+(defmethod nfiles:deserialize ((profile nyxt-profile) (file history-file) raw-content &key)
   "Restore the global/buffer-local history and session from the PATH."
   ;; TODO: Move `with-protect' to a more general `nfiles:deserialize' method?
   (with-protect ("Failed to restore history from ~a: ~a"
