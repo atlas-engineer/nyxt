@@ -124,7 +124,7 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
            (:code (print-scalar value)))
           ((trivial-types:property-list-p value)
            (:dl
-            (loop for (key val . rest) on value by #'cddr
+            (loop for (key val) on value by #'cddr
                   collect (:dt (format nil "~a" key))
                   collect (:dd (:raw (value->html val t))))))
           ((trivial-types:association-list-p value)
