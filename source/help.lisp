@@ -99,59 +99,75 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
             :input input
             :sources sources))))))
 
-(defun value->html (value)
+;; FIXME: Prints with infinite nesting for lists, but only one level of nesting
+;; for hash-tables/objects. Make it uniform?
+(defun value->html (value &optional nested-p)
   "Return the HTML representation of VALUE."
   (let ((spinneret:*html-style* :tree)
         (*print-case* :downcase))
     (spinneret:with-html-string
-      (cond
-        ((scalar-p value)
-         (:code (format nil "~s" value)))
-        ((trivial-types:property-list-p value)
-         (:dl
-          (loop for (key val . rest) on value by #'cddr
-                collect (:dt (format nil "~a" key))
-                collect (:dd (:raw (value->html val))))))
-        ((trivial-types:association-list-p value)
-         (:dl
-          (dolist (e value)
-            (:dt (format nil "~a" (car e)))
-            (:dd (:raw (value->html (cdr e)))))))
-        ((and (sequence-p value)
-              ;; Dotted lists are bad.
-              (not (and (consp value)
-                        (cdr value)
-                        (not (consp (cdr value))))))
-         (:ul
-          (dotimes (i (length value))
-            (:li (:raw (value->html (elt value i)))))))
-        ((hash-table-p value)
-         (alex:when-let ((keys (alex:hash-table-keys value)))
+      (labels ((print-scalar (object)
+                 (format nil "~s" object))
+               (link-to (object)
+                 (spinneret:with-html-string
+                   (let ((help-mode (current-mode 'help))
+                         (id (get-unique-identifier *browser*)))
+                     (if (or (scalar-p object)
+                             (null help-mode))
+                         (:code (print-scalar object))
+                         (progn
+                           (setf (nyxt/help-mode:inspected-value help-mode id) object)
+                           (:a :href (nyxt-url 'describe-value :id id)
+                               (print-scalar object))))))))
+        (cond
+          ((scalar-p value)
+           (:code (print-scalar value)))
+          ((trivial-types:property-list-p value)
            (:dl
-            (dolist (key keys)
-              (:dt (format nil "~a" key))
-              (:dd (:raw (value->html (gethash key value))))))))
-        ((typep value 'standard-object)
-         (alex:when-let ((slot-names (mapcar #'closer-mop:slot-definition-name
-                                           (closer-mop:class-slots (class-of value)))))
+            (loop for (key val . rest) on value by #'cddr
+                  collect (:dt (format nil "~a" key))
+                  collect (:dd (:raw (value->html val t))))))
+          ((trivial-types:association-list-p value)
            (:dl
-            (dolist (slot-name slot-names)
-              (:dt (format nil "~a" slot-name))
-              (:dd (:raw (value->html (slot-value value slot-name))))))))
-        (t
-         (:code (format nil "~s" value)))))))
+            (dolist (e value)
+              (:dt (format nil "~a" (car e)))
+              (:dd (:raw (value->html (cdr e) t))))))
+          ((and (sequence-p value)
+                ;; Dotted lists are bad.
+                (not (and (consp value)
+                          (cdr value)
+                          (not (consp (cdr value))))))
+           (:ul
+            (dotimes (i (length value))
+              (:li (:raw (value->html (elt value i) t))))))
+          (nested-p
+           (:raw (link-to value)))
+          ((hash-table-p value)
+           (alex:when-let ((keys (alex:hash-table-keys value)))
+             (:dl
+              (dolist (key keys)
+                (:dt (format nil "~a" key))
+                (:dd (:raw (value->html (gethash key value) t)))))))
+          ((typep value '(or standard-object structure-object))
+           (alex:when-let ((slot-names (mapcar #'closer-mop:slot-definition-name
+                                               (closer-mop:class-slots (class-of value)))))
+             (:dl
+              (dolist (slot-name slot-names)
+                (:dt (format nil "~a" slot-name))
+                (:dd (:raw (value->html (slot-value value slot-name) t)))))))
+          (t
+           (:code (print-scalar value))))))))
 
 (define-internal-page-command-global describe-value
-    (&key value)
+    (&key id)
     (buffer "*Help-value*" 'nyxt/help-mode:help-mode)
-  "Inspect VALUE and show it in a help buffer."
-  (when value
-    (let ((help-mode (find-mode buffer 'help-mode)))
-      (setf (nyxt/help-mode:inspected-value help-mode) value)
-      (spinneret:with-html-string
-        (:style (style buffer))
-        (:h1 (princ-to-string value))
-        (:p (:raw (value->html value)))))))
+  "Inspect value under ID and show it in a help buffer."
+  (sera:and-let* ((id id)
+                  (help-mode (find-mode buffer 'help-mode))
+                  (value (nyxt/help-mode:inspected-value help-mode id)))
+    (spinneret:with-html-string
+      (:h1 (princ-to-string value))
+      (:p (:raw (value->html value))))))
 
 (defun has-attributes-method-p (object)
   "Return non-nil if OBJECT has `prompter:object-attributes' specialization."
@@ -223,14 +239,12 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
     (buffer (str:concat "*Help-" (symbol-name variable) "*")
             'nyxt/help-mode:help-mode)
   "Inspect a variable and show it in a help buffer."
-  (let ((help-mode (find-mode buffer 'help-mode)))
-    (setf (nyxt/help-mode:inspected-value help-mode) variable)
-    (spinneret:with-html-string
-      (:style (style buffer))
-      (:h1 (format nil "~s" variable)) ; Use FORMAT to keep package prefix.
-      (:raw (resolve-backtick-quote-links (documentation variable 'variable) variable))
-      (:h2 "Current Value:")
-      (:p (:raw (value->html (symbol-value variable)))))))
+  (spinneret:with-html-string
+    (:style (style buffer))
+    (:h1 (format nil "~s" variable)) ; Use FORMAT to keep package prefix.
+    (:raw (resolve-backtick-quote-links (documentation variable 'variable) variable))
+    (:h2 "Current Value:")
+    (:p (:raw (value->html (symbol-value variable))))))
 
 (define-internal-page-command-global describe-function
     (&key (function (prompt1

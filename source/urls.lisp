@@ -291,9 +291,9 @@ Example:
 \(nyxt-url 'nyxt:describe-command :value 'nyxt:describe-value)
 => \"nyxt:describe-command?value=NYXT%3ADESCRIBE-VALUE\"
 
-\(parse-nyxt-url (nyxt-url 'nyxt:describe-value :value ''nyxt:*browser*))
+\(parse-nyxt-url (nyxt-url 'nyxt:describe-value :id \"1000\"))
 => NYXT:DESCRIBE-VALUE
-=> (:VALUE 'NYXT:*BROWSER*)"
+=> (:ID \"1000\")"
   (let ((*print-case* :downcase))
     (flet ((param-name (symbol)
              (let ((*package* (find-package :nyxt)))
