@@ -133,10 +133,9 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
               (:dt (format nil "~a" (car e)))
               (:dd (:raw (value->html (cdr e) t))))))
           ((and (sequence-p value)
-                ;; Dotted lists are bad.
-                (not (and (consp value)
-                          (cdr value)
-                          (not (consp (cdr value))))))
+                ;; Non-proper (dotted and circular) lists are better left out.
+                (or (not (consp value))
+                    (trivial-types:proper-list-p value)))
            (:ul
             (dotimes (i (length value))
               (:li (:raw (value->html (elt value i) t))))))
