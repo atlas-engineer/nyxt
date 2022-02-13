@@ -99,63 +99,92 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
             :input input
             :sources sources))))))
 
-;; FIXME: Prints with infinite nesting for lists, but only one level of nesting
-;; for hash-tables/objects. Make it uniform?
-(defun value->html (value &optional nested-p)
-  "Return the HTML representation of VALUE."
-  (let ((spinneret:*html-style* :tree)
-        (*print-case* :downcase))
+(defun link-to (object)
+  (spinneret:with-html-string
+    (let ((help-mode (current-mode 'help))
+          (id (get-unique-identifier *browser*)))
+      (if (or (scalar-p object)
+              (null help-mode))
+          (:code (format nil "~s" object))
+          (progn
+            (setf (nyxt/help-mode:inspected-value help-mode id) object)
+            (:a :href (nyxt-url 'describe-value :id id)
+                (format nil "~s" object)))))))
+
+(export-always 'value->html)
+(defgeneric value->html (value &optional nested-p)
+  (:method :around (value &optional nested-p)
+    (declare (ignore nested-p))
+    (let ((spinneret:*html-style* :tree)
+          (*print-case* :downcase))
+      (call-next-method)))
+  (:method (value &optional nested-p)
+    (declare (ignore nested-p))
     (spinneret:with-html-string
-      (labels ((print-scalar (object)
-                 (format nil "~s" object))
-               (link-to (object)
-                 (spinneret:with-html-string
-                   (let ((help-mode (current-mode 'help))
-                         (id (get-unique-identifier *browser*)))
-                     (if (or (scalar-p object)
-                             (null help-mode))
-                         (:code (print-scalar object))
-                         (progn
-                           (setf (nyxt/help-mode:inspected-value help-mode id) object)
-                           (:a :href (nyxt-url 'describe-value :id id)
-                               (print-scalar object))))))))
-        (cond
-          ((scalar-p value)
-           (:code (print-scalar value)))
-          ((trivial-types:property-list-p value)
-           (:dl
-            (loop for (key val) on value by #'cddr
-                  collect (:dt (format nil "~a" key))
-                  collect (:dd (:raw (value->html val t))))))
-          ((trivial-types:association-list-p value)
-           (:dl
-            (dolist (e value)
-              (:dt (format nil "~a" (car e)))
-              (:dd (:raw (value->html (cdr e) t))))))
-          ((and (sequence-p value)
-                ;; Non-proper (dotted and circular) lists are better left out.
-                (or (not (consp value))
-                    (trivial-types:proper-list-p value)))
-           (:ul
-            (dotimes (i (length value))
-              (:li (:raw (value->html (elt value i) t))))))
-          (nested-p
-           (:raw (link-to value)))
-          ((hash-table-p value)
-           (alex:when-let ((keys (alex:hash-table-keys value)))
-             (:dl
-              (dolist (key keys)
-                (:dt (format nil "~a" key))
-                (:dd (:raw (value->html (gethash key value) t)))))))
-          ((typep value '(or standard-object structure-object))
-           (alex:when-let ((slot-names (mapcar #'closer-mop:slot-definition-name
-                                               (closer-mop:class-slots (class-of value)))))
-             (:dl
-              (dolist (slot-name slot-names)
-                (:dt (format nil "~a" slot-name))
-                (:dd (:raw (value->html (slot-value value slot-name) t)))))))
-          (t
-           (:code (print-scalar value))))))))
+      (:code (format nil "~s" value))))
+  (:method ((value string) &optional nested-p)
+    (declare (ignore nested-p))
+    (format nil "~s" value))
+  (:documentation "Produce HTML showing the structure of the VALUE.
+If it's NESTED-P, compress the output.
+
+Redefine this method if you want to have a different markup for Lisp values in
+help buffers, REPL and elsewhere."))
+
+(defmethod value->html ((value list) &optional nested-p)
+  (declare (ignore nested-p))
+  (spinneret:with-html-string
+    (cond
+      ((trivial-types:property-list-p value)
+       (:dl
+        (loop for (key val) on value by #'cddr
+              collect (:dt (format nil "~a" key))
+              collect (:dd (:raw (value->html val t))))))
+      ((trivial-types:association-list-p value)
+       (:dl
+        (dolist (e value)
+          (:dt (format nil "~a" (car e)))
+          (:dd (:raw (value->html (cdr e) t))))))
+      ((trivial-types:proper-list-p value)
+       (:ul
+        (dotimes (i (length value))
+          (:li (:raw (value->html (elt value i) t))))))
+      (t (call-next-method)))))
+
+(defmethod value->html ((value sequence) &optional nested-p)
+  (declare (ignore nested-p))
+  (spinneret:with-html-string
+    (:ul
+     (dotimes (i (length value))
+       (:li (:raw (value->html (elt value i) t)))))))
+
+(defmethod value->html ((value hash-table) &optional nested-p)
+  (declare (ignore nested-p))
+  (spinneret:with-html-string
+    (alex:if-let ((keys (alex:hash-table-keys value)))
+      (:dl
+       (dolist (key keys)
+         (:dt (format nil "~a" key))
+         (:dd (:raw (value->html (gethash key value) t)))))
+      "")))
+
+(defun print-complex-object (value nested-p)
+  (if nested-p
+      (link-to value)
+      (spinneret:with-html-string
+        (alex:if-let ((slot-names (mapcar #'closer-mop:slot-definition-name
+                                          (closer-mop:class-slots (class-of value)))))
+          (:dl
+           (dolist (slot-name slot-names)
+             (:dt (format nil "~a" slot-name))
+             (:dd (:raw (value->html (slot-value value slot-name) t)))))
+          ""))))
+
+(defmethod value->html ((value standard-object) &optional nested-p)
+  (print-complex-object value nested-p))
+
+(defmethod value->html ((value structure-object) &optional nested-p)
+  (print-complex-object value nested-p))
 
 (define-internal-page-command-global describe-value
     (&key id)
