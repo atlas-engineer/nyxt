@@ -105,11 +105,11 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
           (id (get-unique-identifier *browser*)))
       (if (or (scalar-p object)
               (null help-mode))
-          (:code (format nil "~s" object))
+          (:raw (escaped-literal-print object))
           (progn
             (setf (nyxt/help-mode:inspected-value help-mode id) object)
             (:a :href (nyxt-url 'describe-value :id id)
-                (format nil "~s" object)))))))
+                (:raw (escaped-literal-print object))))))))
 
 (defun escaped-literal-print (value)
   (spinneret:with-html-string
