@@ -148,6 +148,6 @@ headings have border of tertiary color.
            (p
             :color (if (theme:dark-p theme:theme) theme:accent theme:secondary)
             :background-color theme:text))"
-  `(with-theme
+  `(with-theme ,theme
     (cl-css:css
      (list ,@(mapcar #'requote-rule rules)))))
