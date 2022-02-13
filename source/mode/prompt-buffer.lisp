@@ -77,6 +77,10 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "C-b" 'cursor-backwards
        "M-f" 'cursor-forwards-word
        "M-b" 'cursor-backwards-word
+       "C-d" 'delete-forwards
+       "C-backspace" 'delete-backwards-word
+       "M-backspace" 'delete-backwards-word
+       "M-d" 'delete-forwards-word
        "C-x h" 'select-all)
 
       scheme:vi-normal
@@ -105,7 +109,10 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "l" 'cursor-forwards
        "h" 'cursor-backwards
        "w" 'cursor-forwards-word
-       "b" 'cursor-backwards-word)
+       "b" 'cursor-backwards-word
+       "x" 'delete-forwards
+       ;; VI has no short keybinding for delete-backwards-word, hasn't it?
+       "d w" 'delete-forwards-word)
 
       scheme:vi-insert
       (list
@@ -443,6 +450,26 @@ Only available if `multi-selection-p' is non-nil."
   "Move cursor backwards by one word."
   (with-current-buffer prompt-buffer
     (nyxt/input-edit-mode:cursor-backwards-word)))
+
+(define-command-prompt delete-backwards (prompt-buffer)
+  "Delete one character backwards."
+  (with-current-buffer prompt-buffer
+    (nyxt/input-edit-mode:delete-backwards)))
+
+(define-command-prompt delete-forwards (prompt-buffer)
+  "Delete one character forwards."
+  (with-current-buffer prompt-buffer
+    (nyxt/input-edit-mode:delete-forwards)))
+
+(define-command-prompt delete-backwards-word (prompt-buffer)
+  "Delete one word backwards."
+  (with-current-buffer prompt-buffer
+    (nyxt/input-edit-mode:delete-backwards-word)))
+
+(define-command-prompt delete-forwards-word (prompt-buffer)
+  "Delete one word forwards."
+  (with-current-buffer prompt-buffer
+    (nyxt/input-edit-mode:delete-forwards-word)))
 
 (define-command-prompt select-all (prompt-buffer)
   "Select all the text in the prompt input."
