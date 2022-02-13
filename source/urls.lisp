@@ -367,24 +367,6 @@ guarantee of the same result."
               (t (error "Cannot display evaluation result")))))))
   :local-p t)
 
-(defun sequence-p (object)
-  "Return true if OBJECT is a sequence that's not a string."
-  (typep object '(and sequence (not string))))
-
-(defun scalar-p (object)
-  ;; REVIEW: List direct T subclasses instead?
-  "Return true if OBJECT is of one of the following types:
-- symbol,
-- character,
-- string,
-- non-complex number."
-  (funcall (alex:disjoin
-            'symbolp
-            'characterp
-            'stringp
-            (alex:rcurry 'typep '(and number (not complex))))
-           object))
-
 (define-internal-scheme "lisp"
     (lambda (url buffer)
       (let ((url (quri:uri url)))
