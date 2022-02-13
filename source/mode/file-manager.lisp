@@ -107,7 +107,7 @@ When the user is unspecified, take the current one."
 (define-user-class program-source)
 
 (defmethod prompter:object-attributes ((path pathname))
-  `(("Name" ,(pathname-name path))
+  `(("Name" ,(or (pathname-name path) ""))
     ("Extension" ,(or (nfiles:pathname-type* path) ""))
     ("Directory" ,(uiop:native-namestring (nfiles:parent path)))))
 
