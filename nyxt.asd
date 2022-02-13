@@ -114,6 +114,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "gpg")
                  (:file "user-files")
                  (:file "configuration")
+                 (:file "inspector")
                  (:file "message")
                  (:file "command")
                  (:file "urls")

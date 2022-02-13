@@ -99,105 +99,12 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
             :input input
             :sources sources))))))
 
-(defun link-to (object)
-  (spinneret:with-html-string
-    (let ((help-mode (current-mode 'help))
-          (id (get-unique-identifier *browser*)))
-      (if (or (scalar-p object)
-              (null help-mode))
-          (:raw (escaped-literal-print object))
-          (progn
-            (setf (nyxt/help-mode:inspected-value help-mode id) object)
-            (:a :href (nyxt-url 'describe-value :id id)
-                (:raw (escaped-literal-print object))))))))
-
-(defun escaped-literal-print (value)
-  (spinneret:with-html-string
-    (:code (:raw (spinneret::escape-string (format nil "~s" value))))))
-
-(export-always 'value->html)
-(defgeneric value->html (value &optional nested-p)
-  (:method :around (value &optional nested-p)
-    (let ((spinneret:*html-style* :tree)
-          (*print-case* :downcase))
-      (call-next-method value nested-p)))
-  (:method (value &optional nested-p)
-    (declare (ignore nested-p))
-    (escaped-literal-print value))
-  (:method ((value null) &optional nested-p)
-    (declare (ignore nested-p))
-    (escaped-literal-print value))
-  (:method ((value string) &optional nested-p)
-    (declare (ignore nested-p))
-    (escaped-literal-print value))
-  (:documentation "Produce HTML showing the structure of the VALUE.
-If it's NESTED-P, compress the output.
-
-Redefine this method if you want to have a different markup for Lisp values in
-help buffers, REPL and elsewhere."))
-
-(defmethod value->html ((value list) &optional nested-p)
-  (declare (ignore nested-p))
-  (spinneret:with-html-string
-    (cond
-      ((trivial-types:property-list-p value)
-       (:dl
-        (loop for (key val) on value by #'cddr
-              collect (:dt (format nil "~a" key))
-              collect (:dd (:raw (value->html val t))))))
-      ((trivial-types:association-list-p value)
-       (:dl
-        (dolist (e value)
-          (:dt (format nil "~a" (car e)))
-          (:dd (:raw (value->html (cdr e) t))))))
-      ((trivial-types:proper-list-p value)
-       (:ul
-        (dotimes (i (length value))
-          (:li (:raw (value->html (elt value i) t))))))
-      (t (call-next-method)))))
-
-(defmethod value->html ((value sequence) &optional nested-p)
-  (declare (ignore nested-p))
-  (spinneret:with-html-string
-    (:ul
-     (dotimes (i (length value))
-       (:li (:raw (value->html (elt value i) t)))))))
-
-(defmethod value->html ((value hash-table) &optional nested-p)
-  (declare (ignore nested-p))
-  (spinneret:with-html-string
-    (alex:if-let ((keys (alex:hash-table-keys value)))
-      (:dl
-       (dolist (key keys)
-         (:dt (format nil "~a" key))
-         (:dd (:raw (value->html (gethash key value) t)))))
-      "")))
-
-(defun print-complex-object (value nested-p)
-  (if nested-p
-      (link-to value)
-      (spinneret:with-html-string
-        (alex:if-let ((slot-names (mapcar #'closer-mop:slot-definition-name
-                                          (closer-mop:class-slots (class-of value)))))
-          (:dl
-           (dolist (slot-name slot-names)
-             (:dt (format nil "~a" slot-name))
-             (:dd (:raw (value->html (slot-value value slot-name) t)))))
-          ""))))
-
-(defmethod value->html ((value standard-object) &optional nested-p)
-  (print-complex-object value nested-p))
-
-(defmethod value->html ((value structure-object) &optional nested-p)
-  (print-complex-object value nested-p))
-
 (define-internal-page-command-global describe-value
     (&key id)
     (buffer "*Help-value*" 'nyxt/help-mode:help-mode)
   "Inspect value under ID and show it in a help buffer."
   (sera:and-let* ((id id)
-                  (help-mode (find-mode buffer 'help-mode))
-                  (value (nyxt/help-mode:inspected-value help-mode id)))
+                  (value (inspected-value id)))
     (spinneret:with-html-string
       (:h1 (princ-to-string value))
       (:p (:raw (value->html value))))))
