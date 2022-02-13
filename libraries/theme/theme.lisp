@@ -99,12 +99,10 @@ Should contrast with every other color in the theme.")
                           rule))
       (cons 'list (mapcar (lambda (x) `(quote ,x)) rule))))
 
-(defmacro themed-css (theme &body rules)
-  "Generate a CSS styled according to the THEME.
+(defmacro with-theme (theme &body body)
+  "Evaluate body with the theme bindings available.
 
-RULES is a list of CL-CSS rules (with one level of nesting removed). There are
-special symbols that this macro will substitute for theme elements, if
-encountered:
+The bindings are:
 - `theme:theme' -- THEME itself.
 - `theme:background' -- background color of the THEME.
 - `theme:text' -- text color of the THEME.
@@ -112,7 +110,24 @@ encountered:
 - `theme:secondary' -- secondary color of the THEME.
 - `theme:tertiary' -- tertiary color of the THEME.
 - `theme:accent' -- accent color of the THEME.
-- `theme:font' -- font family of the theme.
+- `theme:font' -- font family of the theme."
+  `(let* ((theme:theme ,theme)
+          (theme:background (background-color theme:theme))
+          (theme:text (text-color theme:theme))
+          (theme:primary (primary-color theme:theme))
+          (theme:secondary (secondary-color theme:theme))
+          (theme:tertiary (tertiary-color theme:theme))
+          (theme:quaternary (quaternary-color theme:theme))
+          (theme:accent (accent-color theme:theme))
+          (theme:font-family (font-family theme:theme)))
+     ,@body))
+
+(defmacro themed-css (theme &body rules)
+  "Generate a CSS styled according to the THEME.
+
+RULES is a list of CL-CSS rules (with one level of nesting removed). There are
+special symbols that this macro will substitute for theme elements, if
+encountered. See `with-theme' for a list of those.
 
 Any non-atomic s-expression put as value of CSS property will be
 evaluated too, so you can put arbitrarily complex expressions as
@@ -133,14 +148,6 @@ headings have border of tertiary color.
            (p
             :color (if (theme:dark-p theme:theme) theme:accent theme:secondary)
             :background-color theme:text))"
-  `(let* ((theme:theme ,theme)
-          (theme:background (background-color theme:theme))
-          (theme:text (text-color theme:theme))
-          (theme:primary (primary-color theme:theme))
-          (theme:secondary (secondary-color theme:theme))
-          (theme:tertiary (tertiary-color theme:theme))
-          (theme:quaternary (quaternary-color theme:theme))
-          (theme:accent (accent-color theme:theme))
-          (theme:font-family (font-family theme:theme)))
-     (cl-css:css
-      (list ,@(mapcar #'requote-rule rules)))))
+  `(with-theme
+    (cl-css:css
+     (list ,@(mapcar #'requote-rule rules)))))

@@ -19,4 +19,5 @@
    #:quaternary
    #:accent
    #:font-family
+   #:with-theme
    #:themed-css))
