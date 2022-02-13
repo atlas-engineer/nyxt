@@ -111,6 +111,10 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
             (:a :href (nyxt-url 'describe-value :id id)
                 (format nil "~s" object)))))))
 
+(defun escaped-literal-print (value)
+  (spinneret:with-html-string
+    (:code (:raw (spinneret::escape-string (format nil "~s" value))))))
+
 (export-always 'value->html)
 (defgeneric value->html (value &optional nested-p)
   (:method :around (value &optional nested-p)
@@ -120,11 +124,13 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
       (call-next-method)))
   (:method (value &optional nested-p)
     (declare (ignore nested-p))
-    (spinneret:with-html-string
-      (:code (format nil "~s" value))))
+    (escaped-literal-print value))
+  (:method ((value null) &optional nested-p)
+    (declare (ignore nested-p))
+    (escaped-literal-print value))
   (:method ((value string) &optional nested-p)
     (declare (ignore nested-p))
-    (format nil "~s" value))
+    (escaped-literal-print value))
   (:documentation "Produce HTML showing the structure of the VALUE.
 If it's NESTED-P, compress the output.
 
