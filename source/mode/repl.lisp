@@ -134,7 +134,7 @@ INPUT is a string and RESULTS is a list of Lisp values.")))
              (:ul (loop for (input results) in (reverse (evaluation-history repl))
                         collect (:li (:b input)
                                      (loop for result in results
-                                           collect (:li (prin1-to-string result)))))))))
+                                           collect (:li (:raw (value->html result t))))))))))
     (ffi-buffer-evaluate-javascript-async
      (buffer repl)
      (ps:ps
