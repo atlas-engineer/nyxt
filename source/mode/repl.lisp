@@ -17,7 +17,8 @@
       (list
        "return" 'return-input
        "(" 'paren
-       ")" 'closing-paren)
+       ")" 'closing-paren
+       "tab" 'tab-complete-symbol)
       scheme:emacs
       (list
        "C-f" 'nyxt/input-edit-mode:cursor-forwards
@@ -154,6 +155,27 @@ INPUT is a string and RESULTS is a list of Lisp values.")))
                                 (count #\) input))))
     (setf (input repl) (str:concat input (make-string parens-to-complete :initial-element #\)))
           (cursor repl) (+ parens-to-complete (length input)))))
+
+(define-command tab-complete-symbol (&optional (repl (current-mode 'repl)))
+  "Complete the current symbol and insert the completion into the REPL prompt."
+  (let* ((input (input repl))
+         (cursor (cursor repl))
+         (paren-or-space (find-if (lambda (c) (member c '(#\( #\) #\ ))) input
+                                  :start (1- cursor) :from-end t))
+         (paren-or-space (if paren-or-space (1+ paren-or-space) 0))
+         (symbol-to-complete (subseq input paren-or-space cursor))
+         (completion (handler-case
+                         (prompt1 :prompt "Symbol to complete"
+                           :input symbol-to-complete
+                           :sources (list (make-instance
+                                           'prompter:source
+                                           :name "Completions"
+                                           :constructor (first (swank:simple-completions
+                                                                symbol-to-complete *package*)))))
+                       (nyxt::nyxt-prompt-buffer-canceled () nil))))
+    (when completion
+      (setf (input repl)
+            (str:concat (subseq input 0 paren-or-space) completion (subseq input cursor))))))
 
 (define-internal-page-command-global lisp-repl ()
     (repl-buffer "*Lisp REPL*" 'repl-mode)
