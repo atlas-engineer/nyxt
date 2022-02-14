@@ -32,6 +32,10 @@
 (defmethod (setf inspected-value) (new-value id)
   (setf (gethash id *inspected-values*) new-value))
 
+(defun escaped-literal-print (value)
+  (spinneret:with-html-string
+    (:code (:raw (spinneret::escape-string (format nil "~s" value))))))
+
 (defun link-to (object)
   (let ((id (get-unique-identifier *browser*)))
     (if (scalar-p object)
@@ -42,10 +46,6 @@
           (spinneret:with-html-string
             (:a :href (nyxt-url 'describe-value :id id)
                 (:raw (escaped-literal-print object))))))))
-
-(defun escaped-literal-print (value)
-  (spinneret:with-html-string
-    (:code (:raw (spinneret::escape-string (format nil "~s" value))))))
 
 (export-always 'value->html)
 (defgeneric value->html (value &optional nested-p)
