@@ -97,21 +97,25 @@ help buffers, REPL and elsewhere."))
        ((trivial-types:property-list-p value)
         (:table
          (unless nested-p
-           (:caption "Property list")
-           (:thead (:th "Property") (:th "Value")))
+           (:caption "Property list"))
+         (:thead (loop for (key val) on value by #'cddr
+                       collect (:th (:raw (escaped-literal-print key)))))
          (:tbody
-          (loop for (key val) on value by #'cddr
-                collect (:tr (:td (format nil "~a" key))
-                             (:td (:raw (value->html val t))))))))
+          (:tr
+           (loop for (key val) on value by #'cddr
+                 collect (:td (:raw (value->html val t))))))))
        ((trivial-types:association-list-p value)
         (:table
          (unless nested-p
            (:caption "Property list")
            (:thead (:th "Property") (:th "Value")))
-         (:tbody
+         (:thead
           (dolist (e value)
-            (:tr (:td (format nil "~a" (car e)))
-                 (:td (:raw (value->html (cdr e) t))))))))
+            (:th (:raw (escaped-literal-print (car e))))))
+         (:tbody
+          (:tr
+           (dolist (e value)
+             (:td (:raw (value->html (cdr e) t))))))))
        ((and (trivial-types:proper-list-p value)
              (not (alexandria:circular-list-p value))
              (not (alexandria:circular-tree-p value)))
@@ -165,12 +169,13 @@ help buffers, REPL and elsewhere."))
      (alex:if-let ((keys (alex:hash-table-keys value)))
        (:table
         (unless nested-p
-          (:caption "Hash-table")
-          (:thead (:th "Key") (:th "Value")))
+          (:caption "Hash-table"))
+        (:thead (dolist (key keys)
+                  (:th (:raw (escaped-literal-print key)))))
         (:tbody
-         (dolist (key keys)
-           (:tr (:td (format nil "~a" key))
-                (:td (:raw (value->html (gethash key value) t)))))))
+         (:tr
+          (dolist (key keys)
+            (:td (:raw (value->html (gethash key value) t)))))))
        (:raw (call-next-method))))))
 
 (defun print-complex-object (value nested-p)
