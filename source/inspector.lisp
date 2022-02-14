@@ -70,55 +70,59 @@ help buffers, REPL and elsewhere."))
 
 (defmethod value->html ((value list) &optional nested-p)
   (spinneret:with-html-string
-    (cond
-      ((trivial-types:property-list-p value)
-       (:table
-        (unless nested-p
-          (:caption "Property list")
-          (:thead (:th "Property") (:th "Value")))
-        (:tbody
-         (loop for (key val) on value by #'cddr
-               collect (:tr (:td (format nil "~a" key))
-                            (:td (:raw (value->html val t))))))))
-      ((trivial-types:association-list-p value)
-       (:table
-        (unless nested-p
-          (:caption "Property list")
-          (:thead (:th "Property") (:th "Value")))
-        (:tbody
-         (dolist (e value)
-           (:tr (:td (format nil "~a" (car e)))
-                (:td (:raw (value->html (cdr e) t))))))))
-      ((trivial-types:proper-list-p value)
-       (:ul
-        (dotimes (i (length value))
-          (:li (:raw (value->html (elt value i) t))))))
-      (t (call-next-method)))))
+    (:div
+     :style "overflow-x: auto"
+     (cond
+       ((trivial-types:property-list-p value)
+        (:table
+         (unless nested-p
+           (:caption "Property list")
+           (:thead (:th "Property") (:th "Value")))
+         (:tbody
+          (loop for (key val) on value by #'cddr
+                collect (:tr (:td (format nil "~a" key))
+                             (:td (:raw (value->html val t))))))))
+       ((trivial-types:association-list-p value)
+        (:table
+         (unless nested-p
+           (:caption "Property list")
+           (:thead (:th "Property") (:th "Value")))
+         (:tbody
+          (dolist (e value)
+            (:tr (:td (format nil "~a" (car e)))
+                 (:td (:raw (value->html (cdr e) t))))))))
+       ((trivial-types:proper-list-p value)
+        (:ul
+         (dotimes (i (length value))
+           (:li (:raw (value->html (elt value i) t))))))
+       (t (:raw (call-next-method)))))))
 
 (defmethod value->html ((value array) &optional nested-p)
   (spinneret:with-html-string
-    (case (length (array-dimensions value))
-      (1 (:table
-          (unless nested-p
-            (:caption "Array")
-            (:thead
-             (:th :colspan (alex:lastcar (array-dimensions value)) "Elements")))
-          (:tbody
-           (:tr
-            (loop for e across value
-                  collect (:td (:raw (value->html e t))))))))
-      (2 (:table
-          (unless nested-p
-            (:caption "Array")
-            (:thead
-             (:th :colspan (alex:lastcar (array-dimensions value)) "Elements")))
-          (:tbody
-           (loop with height = (array-dimension value 0)
-                 and width = (array-dimension value 1)
-                 for y below height
-                 collect (:tr (loop for x below width
-                                    collect (:td (:raw (value->html (aref value y x) t)))))))))
-      (otherwise (:raw (call-next-method))))))
+    (:div
+     :style "overflow-x: auto"
+     (case (length (array-dimensions value))
+       (1 (:table
+           (unless nested-p
+             (:caption "Array")
+             (:thead
+              (:th :colspan (alex:lastcar (array-dimensions value)) "Elements")))
+           (:tbody
+            (:tr
+             (loop for e across value
+                   collect (:td (:raw (value->html e t))))))))
+       (2 (:table
+           (unless nested-p
+             (:caption "Array")
+             (:thead
+              (:th :colspan (alex:lastcar (array-dimensions value)) "Elements")))
+           (:tbody
+            (loop with height = (array-dimension value 0)
+                  and width = (array-dimension value 1)
+                  for y below height
+                  collect (:tr (loop for x below width
+                                     collect (:td (:raw (value->html (aref value y x) t)))))))))
+       (otherwise (:raw (call-next-method)))))))
 
 (defmethod value->html ((value sequence) &optional nested-p)
   (declare (ignore nested-p))
@@ -129,16 +133,18 @@ help buffers, REPL and elsewhere."))
 
 (defmethod value->html ((value hash-table) &optional nested-p)
   (spinneret:with-html-string
-    (alex:if-let ((keys (alex:hash-table-keys value)))
-      (:table
-       (unless nested-p
-         (:caption "Hash-table")
-         (:thead (:th "Key") (:th "Value")))
-       (:tbody
-        (dolist (key keys)
-          (:tr (:td (format nil "~a" key))
-               (:td (:raw (value->html (gethash key value) t)))))))
-      "")))
+    (:div
+     :style "overflow-x: auto"
+     (alex:if-let ((keys (alex:hash-table-keys value)))
+       (:table
+        (unless nested-p
+          (:caption "Hash-table")
+          (:thead (:th "Key") (:th "Value")))
+        (:tbody
+         (dolist (key keys)
+           (:tr (:td (format nil "~a" key))
+                (:td (:raw (value->html (gethash key value) t)))))))
+       (:raw (call-next-method))))))
 
 (defun print-complex-object (value nested-p)
   (if nested-p
@@ -150,7 +156,7 @@ help buffers, REPL and elsewhere."))
            (dolist (slot-name slot-names)
              (:dt (format nil "~a" slot-name))
              (:dd (:raw (value->html (slot-value value slot-name) t)))))
-          ""))))
+          (:raw (escaped-literal-print value))))))
 
 (defmethod value->html ((value standard-object) &optional nested-p)
   (print-complex-object value nested-p))
