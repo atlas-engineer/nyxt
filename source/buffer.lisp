@@ -277,7 +277,17 @@ down.")
        :color theme:text
        :background-color theme:quaternary
        :border-radius "2px"
-       :padding-bottom "10px")))
+       :padding-bottom "10px")
+      ("table, th, td"
+       :border-color theme:quaternary
+       :border-collapse "collapse"
+       :border-width "1px"
+       :border-style "solid"
+       :color theme:text
+       :background-color theme:background)
+      (th
+       :background-color theme:primary
+       :text-align "left")))
    (buffer-load-hook
     (make-instance 'hook-url->url
      :combination #'hooks:combine-composed-hook)
