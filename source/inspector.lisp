@@ -98,11 +98,11 @@ help buffers, REPL and elsewhere."))
         (:table
          (unless nested-p
            (:caption "Property list"))
-         (:thead (loop for (key val) on value by #'cddr
+         (:thead (loop for key in value by #'cddr
                        collect (:th (:raw (escaped-literal-print key)))))
          (:tbody
           (:tr
-           (loop for (key val) on value by #'cddr
+           (loop for val in (rest value) by #'cddr
                  collect (:td (:raw (value->html val t))))))))
        ((trivial-types:association-list-p value)
         (:table
