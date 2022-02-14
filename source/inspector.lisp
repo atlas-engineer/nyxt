@@ -68,6 +68,15 @@ If it's NESTED-P, compress the output.
 Redefine this method if you want to have a different markup for Lisp values in
 help buffers, REPL and elsewhere."))
 
+(defmethod value->html ((value function) &optional nested-p)
+  (declare (ignore nested-p))
+  (spinneret:with-html-string
+    (let ((name (first (alex:ensure-list (swank-backend:function-name value)))))
+      (if (and name (not (eq name 'lambda)))
+          (:a :href (nyxt-url 'describe-function :function name)
+              (:raw (escaped-literal-print value)))
+          (:raw (escaped-literal-print value))))))
+
 (defmethod value->html ((value list) &optional nested-p)
   (spinneret:with-html-string
     (:div
