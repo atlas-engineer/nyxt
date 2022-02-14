@@ -97,25 +97,28 @@ help buffers, REPL and elsewhere."))
 
 (defmethod value->html ((value array) &optional nested-p)
   (spinneret:with-html-string
-    (macrolet ((with-table (&body body)
-                 `(:table
-                   (unless nested-p
-                     (:caption "Array")
-                     (:thead
-                      (:th :colspan (alex:lastcar (array-dimensions value)) "Elements")))
-                   (:tbody ,@body))))
-      (case (length (array-dimensions value))
-        (1 (with-table
-               (:tr
-                (loop for e across value
-                      collect (:td (:raw (value->html e t)))))))
-        (2 (with-table
-               (loop with height = (array-dimension value 0)
-                     and width = (array-dimension value 1)
-                     for y below height
-                     collect (:tr (loop for x below width
-                                        collect (:td (:raw (value->html (aref value y x) t))))))))
-        (otherwise (:raw (call-next-method)))))))
+    (case (length (array-dimensions value))
+      (1 (:table
+          (unless nested-p
+            (:caption "Array")
+            (:thead
+             (:th :colspan (alex:lastcar (array-dimensions value)) "Elements")))
+          (:tbody
+           (:tr
+            (loop for e across value
+                  collect (:td (:raw (value->html e t))))))))
+      (2 (:table
+          (unless nested-p
+            (:caption "Array")
+            (:thead
+             (:th :colspan (alex:lastcar (array-dimensions value)) "Elements")))
+          (:tbody
+           (loop with height = (array-dimension value 0)
+                 and width = (array-dimension value 1)
+                 for y below height
+                 collect (:tr (loop for x below width
+                                    collect (:td (:raw (value->html (aref value y x) t)))))))))
+      (otherwise (:raw (call-next-method))))))
 
 (defmethod value->html ((value sequence) &optional nested-p)
   (declare (ignore nested-p))
