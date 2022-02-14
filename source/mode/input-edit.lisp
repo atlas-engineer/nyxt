@@ -55,15 +55,21 @@
       (set-active-input-area-cursor new-position
                                     new-position))))
 
-(define-command cursor-forwards ()
+(defmacro define-input-edit-command (name (&rest args) documentation &body body)
+  `(define-command ,name (,@args)
+     ,documentation
+     (with-current-buffer (or (current-prompt-buffer) (current-buffer))
+       ,@body)))
+
+(define-input-edit-command cursor-forwards ()
   "Move cursor forward by one element."
   (move-n-elements 1))
 
-(define-command cursor-backwards ()
+(define-input-edit-command cursor-backwards ()
   "Move cursor backwards by one element."
   (move-n-elements -1))
 
-(define-command cursor-forwards-word ()
+(define-input-edit-command cursor-forwards-word ()
   "Move cursor forwards a word."
   (with-input-area (contents cursor-position)
     (with-text-buffer (text-buffer cursor contents cursor-position)
@@ -73,7 +79,7 @@
       (set-active-input-area-cursor (cluffer:cursor-position cursor)
                                     (cluffer:cursor-position cursor)))))
 
-(define-command cursor-backwards-word ()
+(define-input-edit-command cursor-backwards-word ()
   "Move cursor backwards a word."
   (with-input-area (contents cursor-position)
     (with-text-buffer (text-buffer cursor contents cursor-position)
@@ -83,7 +89,7 @@
       (set-active-input-area-cursor (cluffer:cursor-position cursor)
                                     (cluffer:cursor-position cursor)))))
 
-(define-command delete-forwards ()
+(define-input-edit-command delete-forwards ()
   "Delete character after cursor."
   (with-input-area (contents cursor-position)
     (with-text-buffer (text-buffer cursor contents cursor-position)
@@ -93,7 +99,7 @@
       (set-active-input-area-cursor (cluffer:cursor-position cursor)
                                     (cluffer:cursor-position cursor)))))
 
-(define-command delete-backwards ()
+(define-input-edit-command delete-backwards ()
   "Delete character before cursor."
   (with-input-area (contents cursor-position)
     (with-text-buffer (text-buffer cursor contents cursor-position)
@@ -103,7 +109,7 @@
       (set-active-input-area-cursor (cluffer:cursor-position cursor)
                                     (cluffer:cursor-position cursor)))))
 
-(define-command delete-backwards-word ()
+(define-input-edit-command delete-backwards-word ()
   "Delete backwards a word."
   (with-input-area (contents cursor-position)
     (with-text-buffer (text-buffer cursor contents cursor-position)
@@ -113,7 +119,7 @@
       (set-active-input-area-cursor (cluffer:cursor-position cursor)
                                     (cluffer:cursor-position cursor)))))
 
-(define-command delete-forwards-word ()
+(define-input-edit-command delete-forwards-word ()
   "Delete forwards a word."
   (with-input-area (contents cursor-position)
     (with-text-buffer (text-buffer cursor contents cursor-position)
