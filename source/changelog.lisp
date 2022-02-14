@@ -347,7 +347,7 @@ and restore input fields.")
 
    (:h3 "Bindings")
    (:ul
-    (:li "Add Emacs/VI text editing bindings in " (:code "prompt-buffer-mode") ".")
+    (:li "Add Emacs/VI text editing bindings in " (:code "prompt-buffer-mode") " and " (:code "lisp-repl") ".")
     (:li "Rebind " (:code "history-forwards") " to " (:code "history-forwards-maybe-query") " in the Emacs and VI schemes.")
     (:li "Rebind " (:code "bookmark-url") " and " (:code "copy-title") " to be more consistent with other bindings."))
 
