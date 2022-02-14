@@ -91,11 +91,13 @@ help buffers, REPL and elsewhere."))
           (dolist (e value)
             (:tr (:td (format nil "~a" (car e)))
                  (:td (:raw (value->html (cdr e) t))))))))
-       ((trivial-types:proper-list-p value)
+       ((and (trivial-types:proper-list-p value)
+             (not (alexandria:circular-list-p value))
+             (not (alexandria:circular-tree-p value)))
         (:ul
          (dotimes (i (length value))
            (:li (:raw (value->html (elt value i) t))))))
-       (t (:raw (call-next-method)))))))
+       (t (:raw (escaped-literal-print value)))))))
 
 (defmethod value->html ((value array) &optional nested-p)
   (spinneret:with-html-string
