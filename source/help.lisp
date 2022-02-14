@@ -452,7 +452,6 @@ CLASS is a class symbol."
   "Configure a set of frequently used settings."
   (let ((spinneret:*html-style* :tree))
     (spinneret:with-html-string
-      (:style (style (current-buffer)))
       (:h1 "Common Settings")
       (:p "Set the values for frequently configured settings. "
           "Changes only apply to newly created buffers.")
@@ -767,9 +766,11 @@ The version number is stored in the clipboard."
     (buffer "*Help*" 'nyxt/help-mode:help-mode)
   "Open up a small help buffer."
   (spinneret:with-html-string
-    (:style (style buffer))
-    (:style (cl-css:css '(("#documentation .button"
-                           :min-width "100px"))))
+    (:style (:raw (theme:themed-css (theme *browser*)
+                    ("#documentation .button"
+                     :min-width "100px")
+                    ("table, th, td"
+                     :border-width "0"))))
     (:h1 "Welcome to Nyxt :-)")
     (:p (:a :href "https://nyxt.atlas.engineer" "https://nyxt.atlas.engineer"))
     (:h2 "Quick configuration")
