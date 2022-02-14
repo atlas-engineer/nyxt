@@ -73,14 +73,14 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "C-h b" 'run-prompt-buffer-command
        "C-e" 'move-end-of-input
        "C-a" 'move-start-of-input
-       "C-f" 'cursor-forwards
-       "C-b" 'cursor-backwards
-       "M-f" 'cursor-forwards-word
-       "M-b" 'cursor-backwards-word
-       "C-d" 'delete-forwards
-       "C-backspace" 'delete-backwards-word
-       "M-backspace" 'delete-backwards-word
-       "M-d" 'delete-forwards-word
+       "C-f" 'nyxt/input-edit-mode:cursor-forwards
+       "C-b" 'nyxt/input-edit-mode:cursor-backwards
+       "M-f" 'nyxt/input-edit-mode:cursor-forwards-word
+       "M-b" 'nyxt/input-edit-mode:cursor-backwards-word
+       "C-d" 'nyxt/input-edit-mode:delete-forwards
+       "C-backspace" 'nyxt/input-edit-mode:delete-backwards-word
+       "M-backspace" 'nyxt/input-edit-mode:delete-backwards-word
+       "M-d" 'nyxt/input-edit-mode:delete-forwards-word
        "C-x h" 'select-all)
 
       scheme:vi-normal
@@ -106,13 +106,13 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "p" 'paste
        "$" 'move-end-of-input
        "^" 'move-start-of-input
-       "l" 'cursor-forwards
-       "h" 'cursor-backwards
-       "w" 'cursor-forwards-word
-       "b" 'cursor-backwards-word
-       "x" 'delete-forwards
+       "l" 'nyxt/input-edit-mode:cursor-forwards
+       "h" 'nyxt/input-edit-mode:cursor-backwards
+       "w" 'nyxt/input-edit-mode:cursor-forwards-word
+       "b" 'nyxt/input-edit-mode:cursor-backwards-word
+       "x" 'nyxt/input-edit-mode:delete-forwards
        ;; VI has no short keybinding for delete-backwards-word, hasn't it?
-       "d w" 'delete-forwards-word)
+       "d w" 'nyxt/input-edit-mode:delete-forwards-word)
 
       scheme:vi-insert
       (list
@@ -430,46 +430,6 @@ Only available if `multi-selection-p' is non-nil."
      (let ((input (ps:chain document (get-element-by-id "input"))))
        (setf (ps:@ input selection-start) (ps:@ input value length)
              (ps:@ input selection-end) (ps:@ input value length))))))
-
-(define-command-prompt cursor-forwards (prompt-buffer)
-  "Move cursor forward by one character."
-  (with-current-buffer prompt-buffer
-    (nyxt/input-edit-mode:cursor-forwards)))
-
-(define-command-prompt cursor-backwards (prompt-buffer)
-  "Move cursor backwards by one character."
-  (with-current-buffer prompt-buffer
-    (nyxt/input-edit-mode:cursor-backwards)))
-
-(define-command-prompt cursor-forwards-word (prompt-buffer)
-  "Move cursor forward by one word."
-  (with-current-buffer prompt-buffer
-    (nyxt/input-edit-mode:cursor-forwards-word)))
-
-(define-command-prompt cursor-backwards-word (prompt-buffer)
-  "Move cursor backwards by one word."
-  (with-current-buffer prompt-buffer
-    (nyxt/input-edit-mode:cursor-backwards-word)))
-
-(define-command-prompt delete-backwards (prompt-buffer)
-  "Delete one character backwards."
-  (with-current-buffer prompt-buffer
-    (nyxt/input-edit-mode:delete-backwards)))
-
-(define-command-prompt delete-forwards (prompt-buffer)
-  "Delete one character forwards."
-  (with-current-buffer prompt-buffer
-    (nyxt/input-edit-mode:delete-forwards)))
-
-(define-command-prompt delete-backwards-word (prompt-buffer)
-  "Delete one word backwards."
-  (with-current-buffer prompt-buffer
-    (nyxt/input-edit-mode:delete-backwards-word)))
-
-(define-command-prompt delete-forwards-word (prompt-buffer)
-  "Delete one word forwards."
-  (with-current-buffer prompt-buffer
-    (nyxt/input-edit-mode:delete-forwards-word)))
 
 (define-command-prompt select-all (prompt-buffer)
   "Select all the text in the prompt input."
