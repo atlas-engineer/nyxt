@@ -34,7 +34,10 @@
        "l" 'nyxt/input-edit-mode:cursor-forwards
        "h" 'nyxt/input-edit-mode:cursor-backwards
        "w" 'nyxt/input-edit-mode:cursor-forwards-word
-       "b" 'nyxt/input-edit-mode:cursor-backwards-word)))
+       "b" 'nyxt/input-edit-mode:cursor-backwards-word
+       "x" 'nyxt/input-edit-mode:delete-forwards
+       ;; VI has no short keybinding for delete-backwards-word, hasn't it?
+       "d w" 'nyxt/input-edit-mode:delete-forwards-word)))
    (style (theme:themed-css (theme *browser*)
             (* :font-family "monospace,monospace")
             (body :margin-right "0")
