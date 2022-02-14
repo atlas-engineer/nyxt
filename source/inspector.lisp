@@ -69,24 +69,53 @@ Redefine this method if you want to have a different markup for Lisp values in
 help buffers, REPL and elsewhere."))
 
 (defmethod value->html ((value list) &optional nested-p)
-  (declare (ignore nested-p))
   (spinneret:with-html-string
     (cond
       ((trivial-types:property-list-p value)
-       (:dl
-        (loop for (key val) on value by #'cddr
-              collect (:dt (format nil "~a" key))
-              collect (:dd (:raw (value->html val t))))))
+       (:table
+        (unless nested-p
+          (:caption "Property list")
+          (:thead (:th "Property") (:th "Value")))
+        (:tbody
+         (loop for (key val) on value by #'cddr
+               collect (:tr (:td (format nil "~a" key))
+                            (:td (:raw (value->html val t))))))))
       ((trivial-types:association-list-p value)
-       (:dl
-        (dolist (e value)
-          (:dt (format nil "~a" (car e)))
-          (:dd (:raw (value->html (cdr e) t))))))
+       (:table
+        (unless nested-p
+          (:caption "Property list")
+          (:thead (:th "Property") (:th "Value")))
+        (:tbody
+         (dolist (e value)
+           (:tr (:td (format nil "~a" (car e)))
+                (:td (:raw (value->html (cdr e) t))))))))
       ((trivial-types:proper-list-p value)
        (:ul
         (dotimes (i (length value))
           (:li (:raw (value->html (elt value i) t))))))
       (t (call-next-method)))))
+
+(defmethod value->html ((value array) &optional nested-p)
+  (spinneret:with-html-string
+    (macrolet ((with-table (&body body)
+                 `(:table
+                   (unless nested-p
+                     (:caption "Array")
+                     (:thead
+                      (:th :colspan (alex:lastcar (array-dimensions value)) "Elements")))
+                   (:tbody ,@body))))
+      (case (length (array-dimensions value))
+        (1 (with-table
+               (:tr
+                (loop for e across value
+                      collect (:td (:raw (value->html e t)))))))
+        (2 (with-table
+               (loop with height = (array-dimension value 0)
+                     and width = (array-dimension value 1)
+                     for y below height
+                     collect (:tr (loop for x below width
+                                        collect (:td (:raw (value->html (aref value y x) t))))))))
+        (otherwise (:raw (call-next-method)))))))
 
 (defmethod value->html ((value sequence) &optional nested-p)
   (declare (ignore nested-p))
@@ -96,13 +125,16 @@ help buffers, REPL and elsewhere."))
        (:li (:raw (value->html (elt value i) t)))))))
 
 (defmethod value->html ((value hash-table) &optional nested-p)
-  (declare (ignore nested-p))
   (spinneret:with-html-string
     (alex:if-let ((keys (alex:hash-table-keys value)))
-      (:dl
-       (dolist (key keys)
-         (:dt (format nil "~a" key))
-         (:dd (:raw (value->html (gethash key value) t)))))
+      (:table
+       (unless nested-p
+         (:caption "Hash-table")
+         (:thead (:th "Key") (:th "Value")))
+       (:tbody
+        (dolist (key keys)
+          (:tr (:td (format nil "~a" key))
+               (:td (:raw (value->html (gethash key value) t)))))))
       "")))
 
 (defun print-complex-object (value nested-p)
