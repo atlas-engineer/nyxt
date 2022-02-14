@@ -69,13 +69,25 @@ Redefine this method if you want to have a different markup for Lisp values in
 help buffers, REPL and elsewhere."))
 
 (defmethod value->html ((value function) &optional nested-p)
-  (declare (ignore nested-p))
   (spinneret:with-html-string
     (let ((name (first (alex:ensure-list (swank-backend:function-name value)))))
-      (if (and name (not (eq name 'lambda)))
-          (:a :href (nyxt-url 'describe-function :function name)
-              (:raw (escaped-literal-print value)))
-          (:raw (escaped-literal-print value))))))
+      (cond
+        ((and name (eq name 'lambda) nested-p)
+         (:raw (link-to value)))
+        ((and name (eq name 'lambda))
+         (multiple-value-bind (expression closure-p name)
+             (function-lambda-expression value)
+             (:dl
+              (:dt "name")
+              (:dd (:raw (escaped-literal-print name)))
+              (:dt "code")
+              (:dd (:raw (escaped-literal-print expression)))
+              (:dt "closure-p")
+              (:dd (:raw (value->html closure-p))))))
+        (name
+         (:a :href (nyxt-url 'describe-function :function name)
+             (:raw (escaped-literal-print value))))
+        (t (:raw (escaped-literal-print value)))))))
 
 (defmethod value->html ((value list) &optional nested-p)
   (spinneret:with-html-string
