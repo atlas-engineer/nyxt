@@ -107,7 +107,10 @@ When the user is unspecified, take the current one."
 (define-user-class program-source)
 
 (defmethod prompter:object-attributes ((path pathname))
-  `(("Name" ,(or (pathname-name path) ""))
+  `(("Path" ,(uiop:native-namestring path))
+    ("Name" ,(if (uiop:directory-pathname-p path)
+                 (enough-namestring path (nfiles:parent path))
+                 (pathname-name path)))
     ("Extension" ,(or (nfiles:pathname-type* path) ""))
     ("Directory" ,(uiop:native-namestring (nfiles:parent path)))))
 
@@ -141,6 +144,9 @@ It's suitable for `prompter:filter-preprocessor'."
 
 (define-class file-source (prompter:source)
   ((prompter:name "Files")
+   (prompter:active-attributes-keys
+    '("Name" "Extension" "Directory")
+    :accessor nil)
    (prompter:filter-preprocessor (make-file-source-preprocessor))
    (prompter:multi-selection-p t)
    (open-file-in-new-buffer-p t :documentation "If nil, don't open files and directories in a new buffer.")
