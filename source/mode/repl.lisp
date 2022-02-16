@@ -163,8 +163,8 @@ INPUT is a string and RESULTS is a list of Lisp values.")))
   "Complete the current symbol and insert the completion into the REPL prompt."
   (let* ((input (input repl))
          (cursor (cursor repl))
-         (paren-or-space (find-if (lambda (c) (member c '(#\( #\) #\ ))) input
-                                  :start (1- cursor) :from-end t))
+         (paren-or-space (position-if (lambda (c) (member c '(#\( #\) #\ ))) input
+                                      :start (1- cursor) :from-end t))
          (paren-or-space (if paren-or-space (1+ paren-or-space) 0))
          (symbol-to-complete (subseq input paren-or-space cursor))
          (completion (handler-case
