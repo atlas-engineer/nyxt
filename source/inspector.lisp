@@ -34,7 +34,7 @@
 
 (defun escaped-literal-print (value)
   (spinneret:with-html-string
-    (:code (:raw (spinneret::escape-string (format nil "~s" value))))))
+    (:code (:raw (spinneret::escape-string (prin1-to-string value))))))
 
 (defun link-to (object)
   (let ((id (get-unique-identifier *browser*)))
@@ -186,7 +186,7 @@ values in help buffers, REPL and elsewhere."))
                                           (closer-mop:class-slots (class-of value)))))
           (:dl
            (dolist (slot-name slot-names)
-             (:dt (format nil "~a" slot-name))
+             (:dt (prin1-to-string slot-name))
              (:dd (:raw (value->html (slot-value value slot-name) t)))))
           (:raw (escaped-literal-print value))))))
 
