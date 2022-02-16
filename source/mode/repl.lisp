@@ -154,10 +154,13 @@ INPUT is a string and RESULTS is a list of Lisp values.")))
 (define-command closing-paren (&optional (repl (current-mode 'repl)))
   "Automatically closes all the open parens before the cursor."
   (let* ((input (input repl))
-         (parens-to-complete (- (count #\( input)
+         (cursor (cursor repl))
+         (parens-to-complete (- (count #\( input :end cursor)
                                 (count #\) input))))
-    (setf (input repl) (str:concat input (make-string parens-to-complete :initial-element #\)))
-          (cursor repl) (+ parens-to-complete (length input)))))
+    (when (plusp parens-to-complete)
+      (setf (input repl) (str:concat input (make-string parens-to-complete :initial-element #\)))))
+    (alexandria:when-let ((cursor (ignore-errors (1+ (position #\) (input repl) :start cursor)))))
+      (setf (cursor repl) cursor))))
 
 (define-command tab-complete-symbol (&optional (repl (current-mode 'repl)))
   "Complete the current symbol and insert the completion into the REPL prompt."
