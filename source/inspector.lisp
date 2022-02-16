@@ -65,8 +65,8 @@
   (:documentation "Produce HTML showing the structure of the VALUE.
 If it's NESTED-P, compress the output.
 
-Redefine this method if you want to have a different markup for Lisp values in
-help buffers, REPL and elsewhere."))
+Specialize this generic function if you want to have a different markup for Lisp
+values in help buffers, REPL and elsewhere."))
 
 (defmethod value->html ((value function) &optional nested-p)
   (spinneret:with-html-string
