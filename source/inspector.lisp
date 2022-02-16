@@ -48,31 +48,31 @@
                 (:raw (escaped-literal-print object))))))))
 
 (export-always 'value->html)
-(defgeneric value->html (value &optional nested-p)
-  (:method :around (value &optional nested-p)
+(defgeneric value->html (value &optional compact-p)
+  (:method :around (value &optional compact-p)
     (let ((spinneret:*html-style* :tree)
           (*print-case* :downcase))
-      (call-next-method value nested-p)))
-  (:method (value &optional nested-p)
-    (declare (ignore nested-p))
+      (call-next-method value compact-p)))
+  (:method (value &optional compact-p)
+    (declare (ignore compact-p))
     (escaped-literal-print value))
-  (:method ((value null) &optional nested-p)
-    (declare (ignore nested-p))
+  (:method ((value null) &optional compact-p)
+    (declare (ignore compact-p))
     (escaped-literal-print value))
-  (:method ((value string) &optional nested-p)
-    (declare (ignore nested-p))
+  (:method ((value string) &optional compact-p)
+    (declare (ignore compact-p))
     (escaped-literal-print value))
   (:documentation "Produce HTML showing the structure of the VALUE.
-If it's NESTED-P, compress the output.
+If it's COMPACT-P, compress the output.
 
 Specialize this generic function if you want to have a different markup for Lisp
 values in help buffers, REPL and elsewhere."))
 
-(defmethod value->html ((value function) &optional nested-p)
+(defmethod value->html ((value function) &optional compact-p)
   (spinneret:with-html-string
     (let ((name (first (alex:ensure-list (swank-backend:function-name value)))))
       (cond
-        ((and name (eq name 'lambda) nested-p)
+        ((and name (eq name 'lambda) compact-p)
          (:raw (link-to value)))
         ((and name (eq name 'lambda))
          (multiple-value-bind (expression closure-p name)
@@ -89,14 +89,14 @@ values in help buffers, REPL and elsewhere."))
              (:raw (escaped-literal-print value))))
         (t (:raw (escaped-literal-print value)))))))
 
-(defmethod value->html ((value list) &optional nested-p)
+(defmethod value->html ((value list) &optional compact-p)
   (spinneret:with-html-string
     (:div
      :style "overflow-x: auto"
      (cond
        ((trivial-types:property-list-p value)
         (:table
-         (unless nested-p
+         (unless compact-p
            (:caption "Property list"))
          (:thead (loop for key in value by #'cddr
                        collect (:th (:raw (escaped-literal-print key)))))
@@ -106,7 +106,7 @@ values in help buffers, REPL and elsewhere."))
                  collect (:td (:raw (value->html val t))))))))
        ((trivial-types:association-list-p value)
         (:table
-         (unless nested-p
+         (unless compact-p
            (:caption "Property list")
            (:thead (:th "Property") (:th "Value")))
          (:thead
@@ -124,7 +124,7 @@ values in help buffers, REPL and elsewhere."))
            (:li (:raw (value->html (elt value i) t))))))
        (t (:raw (escaped-literal-print value)))))))
 
-(defmethod value->html ((value array) &optional nested-p)
+(defmethod value->html ((value array) &optional compact-p)
   (spinneret:with-html-string
     (if (uiop:emptyp value)
         (:raw (call-next-method))
@@ -132,7 +132,7 @@ values in help buffers, REPL and elsewhere."))
          :style "overflow-x: auto"
          (case (length (array-dimensions value))
            (1 (:table
-               (unless nested-p
+               (unless compact-p
                  (:caption "Array")
                  (:thead
                   (:th :colspan (alex:lastcar (array-dimensions value)) "Elements")))
@@ -141,7 +141,7 @@ values in help buffers, REPL and elsewhere."))
                  (loop for e across value
                        collect (:td (:raw (value->html e t))))))))
            (2 (:table
-               (unless nested-p
+               (unless compact-p
                  (:caption "Array")
                  (:thead
                   (:th :colspan (alex:lastcar (array-dimensions value)) "Elements")))
@@ -153,8 +153,8 @@ values in help buffers, REPL and elsewhere."))
                                          collect (:td (:raw (value->html (aref value y x) t)))))))))
            (otherwise (:raw (call-next-method))))))))
 
-(defmethod value->html ((value sequence) &optional nested-p)
-  (declare (ignore nested-p))
+(defmethod value->html ((value sequence) &optional compact-p)
+  (declare (ignore compact-p))
   (spinneret:with-html-string
     (if (uiop:emptyp value)
         (:raw (escaped-literal-print value))
@@ -162,13 +162,13 @@ values in help buffers, REPL and elsewhere."))
          (dotimes (i (length value))
            (:li (:raw (value->html (elt value i) t))))))))
 
-(defmethod value->html ((value hash-table) &optional nested-p)
+(defmethod value->html ((value hash-table) &optional compact-p)
   (spinneret:with-html-string
     (:div
      :style "overflow-x: auto"
      (alex:if-let ((keys (alex:hash-table-keys value)))
        (:table
-        (unless nested-p
+        (unless compact-p
           (:caption "Hash-table"))
         (:thead (dolist (key keys)
                   (:th (:raw (escaped-literal-print key)))))
@@ -178,8 +178,8 @@ values in help buffers, REPL and elsewhere."))
             (:td (:raw (value->html (gethash key value) t)))))))
        (:raw (call-next-method))))))
 
-(defun print-complex-object (value nested-p)
-  (if nested-p
+(defun print-complex-object (value compact-p)
+  (if compact-p
       (link-to value)
       (spinneret:with-html-string
         (alex:if-let ((slot-names (mapcar #'closer-mop:slot-definition-name
@@ -190,8 +190,8 @@ values in help buffers, REPL and elsewhere."))
              (:dd (:raw (value->html (slot-value value slot-name) t)))))
           (:raw (escaped-literal-print value))))))
 
-(defmethod value->html ((value standard-object) &optional nested-p)
-  (print-complex-object value nested-p))
+(defmethod value->html ((value standard-object) &optional compact-p)
+  (print-complex-object value compact-p))
 
-(defmethod value->html ((value structure-object) &optional nested-p)
-  (print-complex-object value nested-p))
+(defmethod value->html ((value structure-object) &optional compact-p)
+  (print-complex-object value compact-p))
