@@ -164,9 +164,9 @@ Public Suffix list, T otherwise."
   "Return non-nil when URL is a valid URL.
 The domain name existence is verified only if CHECK-DNS-P is T. Domain
 name validation may take significant time since it looks up the DNS."
-  ;; List of URI schemes: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
-  ;; Last updated 2020-08-26.
   (let* ((nyxt-schemes (cons "javascript" (alex:hash-table-keys *schemes*)))
+         ;; List of URI schemes: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
+         ;; Last updated 2020-08-26.
          (iana-schemes
            '("aaa" "aaas" "about" "acap" "acct" "cap" "cid" "coap" "coap+tcp" "coap+ws"
              "coaps" "coaps+tcp" "coaps+ws" "crid" "data" "dav" "dict" "dns" "example" "file"
@@ -178,7 +178,11 @@ name validation may take significant time since it looks up the DNS."
              "soap.beep" "soap.beeps" "stun" "stuns" "tag" "tel" "telnet" "tftp"
              "thismessage" "tip" "tn3270" "turn" "turns" "tv" "urn" "vemmi" "vnc" "ws" "wss"
              "xcon" "xcon-userid" "xmlrpc.beep" "xmlrpc.beeps" "xmpp" "z39.50r" "z39.50s"))
-         (valid-schemes (append nyxt-schemes iana-schemes))
+         ;; https://www.iana.org/assignments/special-use-domain-names/special-use-domain-names.xml
+         ;; TODO: Remove when https://github.com/lu4nx/cl-tld/issues/2 is fixed.
+         (special-use-schemes
+           '("example" "invalid" "local" "localhost" "onion" "test"))
+         (valid-schemes (append nyxt-schemes iana-schemes special-use-schemes))
          (url (ignore-errors (quri:uri url))))
     (flet ((valid-scheme-p (scheme)
              (find scheme valid-schemes :test #'string=))
@@ -191,7 +195,7 @@ name validation may take significant time since it looks up the DNS."
            ;; a valid URL:
            (or (not (http-p (quri:uri-scheme url)))
                (and
-                ;; "http://" does not have a host.
+                ;; "http:/https://www.iana.org/assignments/special-use-domain-names/special-use-domain-names.xml/" does not have a host.
                 ;; A valid URL may have an empty domain, e.g. http://192.168.1.1.
                 (quri:uri-host url)
                 (or
