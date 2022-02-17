@@ -166,10 +166,10 @@ INPUT is a string and RESULTS is a list of Lisp values.")))
   "Complete the current symbol and insert the completion into the REPL prompt."
   (let* ((input (input repl))
          (cursor (cursor repl))
-         (paren-or-space (position-if (lambda (c) (member c '(#\( #\) #\ ))) input
-                                      :start (1- cursor) :from-end t))
-         (paren-or-space (if paren-or-space (1+ paren-or-space) 0))
-         (symbol-to-complete (subseq input paren-or-space cursor))
+         (previous-delimiter (position-if (lambda (c) (member c '(#\( #\) #\space))) input
+                                          :end (1- cursor) :from-end t))
+         (previous-delimiter (if previous-delimiter (1+ previous-delimiter) 0))
+         (symbol-to-complete (subseq input previous-delimiter cursor))
          (completion (handler-case
                          (prompt1 :prompt "Symbol to complete"
                            :input symbol-to-complete
@@ -180,8 +180,9 @@ INPUT is a string and RESULTS is a list of Lisp values.")))
                                                                 symbol-to-complete *package*)))))
                        (nyxt::nyxt-prompt-buffer-canceled () nil))))
     (when completion
-      (setf (input repl)
-            (str:concat (subseq input 0 paren-or-space) completion (subseq input cursor))))))
+      (setf (input repl) (str:concat (subseq input 0 previous-delimiter)
+                                     completion (subseq input cursor))
+            (cursor repl) (+ cursor (- (length completion) (- cursor previous-delimiter)))))))
 
 (define-internal-page-command-global lisp-repl ()
     (repl-buffer "*Lisp REPL*" 'repl-mode)
