@@ -10,6 +10,7 @@
 (define-mode no-procrastinate-mode (nyxt/blocker-mode:blocker-mode)
   "Mode to block access to hosts associated to procrastination."
   ((rememberable-p nil)
+   (load-hostlists-p nil)
    (style (theme:themed-css (theme *browser*)
             ("summary"
              :background-color theme:secondary
@@ -21,9 +22,6 @@
              :border           "none"
              :outline          "none"
              :text-align       "left")))
-   ;; (constructor
-   ;;  (lambda (mode)
-   ;;    (initialize mode)))
    (nyxt/blocker-mode:hostlists
     (list (nyxt/blocker-mode:make-hostlist
            :hosts (mapcar #'(lambda (y) (hostname y))
