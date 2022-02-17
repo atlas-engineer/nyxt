@@ -77,6 +77,21 @@ Should contrast with every other color in the theme.")
   (:export-predicate-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
+(defvar +light-theme+
+  (make-instance 'theme))
+
+(defvar +dark-theme+
+  (make-instance
+           'theme
+           :dark-p t
+           :background-color "black"
+           :text-color "white"
+           :accent-color "#FCBA04"
+           :primary-color "#AD693E"
+           :secondary-color "#DB9665"
+           :tertiary-color "#A45C30"
+           :quaternary-color "#7D3509"))
+
 (defun plist-p (object)
   "Return non-nil if OBJECT is a plist."
   (and (listp object)
