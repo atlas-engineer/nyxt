@@ -165,7 +165,7 @@ If nil, allow everything.")
 Takes a pathname and returns:
 - True if the pathname should stay.
 - False if the pathname should not be listed.")
-   (supported-media-types '("mp3" "ogg" "mp4" "flv" "wmv" "webm" "mkv")
+   (supported-media-types '("xhtml" "html" "mp3" "ogg" "mp4" "flv" "wmv" "webm" "mkv")
                           :type list-of-strings
                           :documentation "Media types that Nyxt can open.
 Others are opened with OS-specific mechanisms.")
