@@ -1219,14 +1219,16 @@ See `finalize-buffer'."
                  (color-name (color-name
                               (prompt1 :prompt "Color"
                                 :input (format nil "rgba(~d, ~d, ~d, ~d)"
-                                               (round (* 255 (cffi:mem-ref rgba :double 0)))
-                                               (round (* 255 (cffi:mem-ref rgba :double 1)))
-                                               (round (* 255 (cffi:mem-ref rgba :double 2)))
-                                               (round (* 255 (cffi:mem-ref rgba :double 3))))
+                                               (round (* 255 (cffi:mem-aref rgba :double 0)))
+                                               (round (* 255 (cffi:mem-aref rgba :double 1)))
+                                               (round (* 255 (cffi:mem-aref rgba :double 2)))
+                                               (round (* 255 (cffi:mem-aref rgba :double 3))))
                                 :sources (list (make-instance 'color-source)))))
                  (color (get-rgba color-name))
                  (opacity (sera:parse-float (get-opacity color-name)))
-                 (rgba (gdk:gdk-rgba-parse color)))
+                 (rgba (progn
+                         (cffi:foreign-free rgba)
+                         (gdk:gdk-rgba-parse color))))
             (unless (uiop:emptyp color)
               (webkit:webkit-color-chooser-request-set-rgba
                color-chooser-request
