@@ -1575,15 +1575,15 @@ requested a reload."
          (inject-time (if at-document-start-p
                           :webkit-user-script-inject-at-document-start
                           :webkit-user-script-inject-at-document-end))
+         (allow-list (if allow-list
+                         (list-of-string-to-foreign allow-list)
+                         '("http://*/*" "https://*/*")))
+         (block-list (list-of-string-to-foreign block-list))
          (script (if world-name
                      (webkit:webkit-user-script-new-for-world
-                      javascript frames inject-time world-name
-                      (list-of-string-to-foreign allow-list)
-                      (list-of-string-to-foreign block-list))
+                      javascript frames inject-time world-name allow-list block-list)
                      (webkit:webkit-user-script-new
-                      javascript frames inject-time
-                      (list-of-string-to-foreign allow-list)
-                      (list-of-string-to-foreign block-list)))))
+                      javascript frames inject-time allow-list block-list))))
     (webkit:webkit-user-content-manager-add-script
      content-manager script)
     (when (and run-now-p
