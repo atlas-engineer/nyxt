@@ -20,8 +20,7 @@ raised condition."
     `(if (or *run-from-repl-p* *debug-on-error*)
          (handler-case (progn ,@body)
            (nyxt-prompt-buffer-canceled ()
-             (log:debug "Prompt buffer interrupted")
-             (invoke-restart 'continue)))
+             (log:debug "Prompt buffer interrupted")))
          (ignore-errors
           (handler-bind
               ((error
