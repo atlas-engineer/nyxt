@@ -283,10 +283,11 @@ down.")
        :border-collapse "collapse"
        :border-width "1px"
        :border-style "solid"
-       :color theme:text
+       :color theme:background
        :background-color theme:background)
       (th
        :background-color theme:primary
+       :color theme:background
        :text-align "left")))
    (buffer-load-hook
     (make-instance 'hook-url->url
