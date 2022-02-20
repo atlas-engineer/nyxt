@@ -44,20 +44,20 @@
     :documentation "The main color of the text in the theme.
 Should contrast with the `background-color'.")
    (primary-color
-    "rgb(60, 60, 60)"
+    "rgb(85, 85, 85)"
     :type string
     :documentation "The main non-text/interface color.
 Should preferably contrast both `background-color' and `text-color'.")
    (secondary-color
-    "rgb(120, 120, 120)"
+    "rgb(115, 115, 115)"
     :type string
     :documentation "The secondary interface color.
-Should contrast with the `text-color'.")
+Should contrast with the `background-color'.")
    (tertiary-color
     "rgb(140, 140, 140)"
     :type string
     :documentation "The tertiary interface color.
-Should contrast with the `background-color'.")
+Should contrast with the `text-color'.")
    (quaternary-color
     "rgb(230, 230, 230)"
     :type string
