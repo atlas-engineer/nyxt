@@ -85,7 +85,7 @@
                (buffer macro-editor)
                (ps:ps
                  (ps:chain document (get-element-by-id "macro-name") value)))))
-    (cond ((not (str:emptyp name)) (setf (slot-value macro-editor 'name) name))
+    (cond ((not (str:emptyp name)) (setf (slot-value macro-editor 'name) (string-upcase name)))
           ((slot-value macro-editor 'name) (slot-value macro-editor 'name))
           (t nil))))
 
