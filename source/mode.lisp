@@ -191,7 +191,7 @@ The \"-mode\" suffix is automatically appended to MODE-SYM if missing."
   (find-submode (current-buffer)
                 (let ((name (string mode-sym)))
                   (if (str:ends-with-p "-mode" name :ignore-case t)
-                      name
+                      mode-sym
                       (intern (str:concat name "-MODE")
                               (symbol-package mode-sym))))))
 
