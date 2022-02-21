@@ -22,7 +22,7 @@
   "Edit a macro."
   (spinneret:with-html-string
     (:style (style buffer))
-    (:h1 "Macro edit")
+    (:h1 "Macro editor")
     (:p "Name")
     (:input :type "text" :id "macro-name")
     (:p "Commands")
@@ -37,7 +37,7 @@
              "Save macro")
     (:button :class "button"
              :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/macro-edit-mode::evaluate-macro)))
-             "Evaluate macro")))
+             "Compile macro")))
 
 (defmethod render-functions ((macro-editor macro-edit-mode))
   (flet ((render-functions ()
@@ -123,5 +123,7 @@
 (define-command evaluate-macro (&optional (macro-editor (current-mode 'macro-edit-mode)))
   "Evaluate the macro for testing."
   (if (macro-form-valid-p macro-editor)
-      (progn (eval (generate-macro-form macro-editor)) (echo "Macro evaluated."))
+      (progn (eval (generate-macro-form macro-editor))
+             (echo "Macro compiled, you may now use the ~s command."
+                   (name macro-editor)))
       (echo "Macro form is invalid; check it has a title and functions.")))
