@@ -283,7 +283,7 @@ down.")
        :border-collapse "collapse"
        :border-width "1px"
        :border-style "solid"
-       :color theme:background
+       :color theme:text
        :background-color theme:background)
       (th
        :background-color theme:primary
