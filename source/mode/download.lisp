@@ -87,7 +87,8 @@ finds it, it will invoke its cancel-function."
   (check-type path string)
   (setf (slot-value download 'destination-path) path)
   (setf (user-interface:action (open-button download))
-        (ps:ps (nyxt/ps:lisp-eval `(nyxt::default-open-file-function ,path)))))
+        (ps:ps (nyxt/ps:lisp-eval `(progn (nyxt/file-manager-mode:default-open-file-function ,path)
+                                          (nyxt:echo "Opening ~s." ,path))))))
 
 (defmethod connect ((download download) buffer)
   "Connect the user-interface objects within the download to the

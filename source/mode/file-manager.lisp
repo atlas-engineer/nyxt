@@ -250,7 +250,8 @@ Can be used as a `open-file-function'."
              #+linux
              (list *xdg-open-program* (quri:render-uri file-url))
              #+darwin
-             (list "open" (uiop:native-namestring filename))))
+             (list "open" (uiop:native-namestring filename))
+             :error-output t))
       ;; We can probably signal something and display a notification.
       (error (c) (log:error "Opening ~a: ~a~&" filename c)))))
 
