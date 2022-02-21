@@ -420,7 +420,8 @@ CLASS is a class symbol."
   (let ((path (nfiles:expand *auto-config-file*)))
     (with-open-file (file path
                           :direction :output
-                          :if-exists :append)
+                          :if-exists :append
+                          :if-does-not-exist :create)
       (let ((*print-case* :downcase))
         (log:info "Appending to ~s:~&~s" path form)
         (format file format-directive form)))))
