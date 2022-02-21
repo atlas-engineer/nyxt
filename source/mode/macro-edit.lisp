@@ -56,7 +56,7 @@
                                                                 `(nyxt/macro-edit-mode::command-help
                                                                   (current-mode 'macro-edit-mode)
                                                                   ,index)))
-                                               "🛈"))
+                                               "ℹ"))
                                  (:td (let ((name (symbol-name (name function))))
                                         (if (str:upcase? name)
                                             (string-downcase name)
