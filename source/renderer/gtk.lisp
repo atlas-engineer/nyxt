@@ -770,73 +770,73 @@ See `gtk-browser's `modifier-translator' slot."
                                                                       (nfiles:expand data-manager-cache-directory)))))))
          (gtk-extensions-path (nfiles:expand (make-instance 'gtk-extensions-directory :context-name name)))
          (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
+    (webkit:webkit-web-context-add-path-to-sandbox
+     context (namestring (asdf:system-relative-pathname :nyxt "libraries/web-extensions/")) t)
+    (unless (uiop:emptyp gtk-extensions-path)
+      ;; TODO: Should we also use `connect-signal' here?  Does this yield a memory leak?
+      (gobject:g-signal-connect
+       context "initialize-web-extensions"
+       (lambda (context)
+         (with-protect ("Error in signal thread: ~a" :condition)
+           (webkit:webkit-web-context-set-web-extensions-directory
+            context
+            (uiop:native-namestring gtk-extensions-path))
+           (webkit:webkit-web-context-set-web-extensions-initialization-user-data
+            context (glib:g-variant-new-string
+                     (flet ((describe-extension (extension &key privileged-p)
+                              (cons (nyxt/web-extensions::name extension)
+                                    (vector (id extension)
+                                            (nyxt/web-extensions::manifest extension)
+                                            (if privileged-p 1 0)
+                                            (nyxt/web-extensions::extension-files extension)
+                                            (id buffer)))))
+                       (let ((extensions
+                               (when buffer
+                                 (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))))
+                         (encode-json
+                          (if (or (background-buffer-p buffer)
+                                  (panel-buffer-p buffer))
+                              (alex:when-let* ((extension
+                                                (or (find buffer extensions :key #'background-buffer)
+                                                    (find buffer extensions :key #'nyxt/web-extensions:popup-buffer))))
+                                (list (describe-extension extension :privileged-p t)))
+                              (mapcar #'describe-extension extensions)))))))))))
+    (maphash
+     (lambda (scheme scheme-object)
+       (webkit:webkit-web-context-register-uri-scheme-callback
+        context scheme
+        (lambda (request)
+          (funcall* (callback scheme-object)
+                    (webkit:webkit-uri-scheme-request-get-uri request)
+                    buffer))
+        (or (error-callback scheme-object)
+            (lambda (condition)
+              (echo-warning "Error while routing ~s resource: ~a" scheme condition))))
+       ;; We err on the side of caution, assigning the most restrictive policy
+       ;; out of those provided. Should it be the other way around?
+       (let ((manager (webkit:webkit-web-context-get-security-manager context)))
+         (cond
+           ((local-p scheme-object)
+            (webkit:webkit-security-manager-register-uri-scheme-as-local
+             manager scheme))
+           ((no-access-p scheme-object)
+            (webkit:webkit-security-manager-register-uri-scheme-as-no-access
+             manager scheme))
+           ((display-isolated-p scheme-object)
+            (webkit:webkit-security-manager-register-uri-scheme-as-display-isolated
+             manager scheme))
+           ((secure-p scheme-object)
+            (webkit:webkit-security-manager-register-uri-scheme-as-secure
+             manager scheme))
+           ((cors-enabled-p scheme-object)
+            (webkit:webkit-security-manager-register-uri-scheme-as-cors-enabled
+             manager scheme))
+           ((empty-document-p scheme-object)
+            (webkit:webkit-security-manager-register-uri-scheme-as-empty-document
+             manager scheme)))))
+     nyxt::*schemes*)
     (unless (or ephemeral-p
                 (internal-context-p name))
-      (webkit:webkit-web-context-add-path-to-sandbox
-       context (namestring (asdf:system-relative-pathname :nyxt "libraries/web-extensions/")) t)
-      (unless (uiop:emptyp gtk-extensions-path)
-        ;; TODO: Should we also use `connect-signal' here?  Does this yield a memory leak?
-        (gobject:g-signal-connect
-         context "initialize-web-extensions"
-         (lambda (context)
-           (with-protect ("Error in signal thread: ~a" :condition)
-             (webkit:webkit-web-context-set-web-extensions-directory
-              context
-              (uiop:native-namestring gtk-extensions-path))
-             (webkit:webkit-web-context-set-web-extensions-initialization-user-data
-              context (glib:g-variant-new-string
-                       (flet ((describe-extension (extension &key privileged-p)
-                                (cons (nyxt/web-extensions::name extension)
-                                      (vector (id extension)
-                                              (nyxt/web-extensions::manifest extension)
-                                              (if privileged-p 1 0)
-                                              (nyxt/web-extensions::extension-files extension)
-                                              (id buffer)))))
-                         (let ((extensions
-                                 (when buffer
-                                   (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))))
-                           (encode-json
-                            (if (or (background-buffer-p buffer)
-                                    (panel-buffer-p buffer))
-                                (alex:when-let* ((extension
-                                                  (or (find buffer extensions :key #'background-buffer)
-                                                      (find buffer extensions :key #'nyxt/web-extensions:popup-buffer))))
-                                  (list (describe-extension extension :privileged-p t)))
-                                (mapcar #'describe-extension extensions)))))))))))
-      (maphash
-       (lambda (scheme scheme-object)
-         (webkit:webkit-web-context-register-uri-scheme-callback
-          context scheme
-          (lambda (request)
-            (funcall* (callback scheme-object)
-                      (webkit:webkit-uri-scheme-request-get-uri request)
-                      buffer))
-          (or (error-callback scheme-object)
-              (lambda (condition)
-                (echo-warning "Error while routing ~s resource: ~a" scheme condition))))
-         ;; We err on the side of caution, assigning the most restrictive policy
-         ;; out of those provided. Should it be the other way around?
-         (let ((manager (webkit:webkit-web-context-get-security-manager context)))
-           (cond
-             ((local-p scheme-object)
-              (webkit:webkit-security-manager-register-uri-scheme-as-local
-               manager scheme))
-             ((no-access-p scheme-object)
-              (webkit:webkit-security-manager-register-uri-scheme-as-no-access
-               manager scheme))
-             ((display-isolated-p scheme-object)
-              (webkit:webkit-security-manager-register-uri-scheme-as-display-isolated
-               manager scheme))
-             ((secure-p scheme-object)
-              (webkit:webkit-security-manager-register-uri-scheme-as-secure
-               manager scheme))
-             ((cors-enabled-p scheme-object)
-              (webkit:webkit-security-manager-register-uri-scheme-as-cors-enabled
-               manager scheme))
-             ((empty-document-p scheme-object)
-              (webkit:webkit-security-manager-register-uri-scheme-as-empty-document
-               manager scheme)))))
-       nyxt::*schemes*)
       (let ((cookies-path (nfiles:expand (make-instance 'cookies-file :context-name name))))
         (webkit:webkit-cookie-manager-set-persistent-storage
          cookie-manager
