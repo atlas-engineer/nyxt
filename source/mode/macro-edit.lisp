@@ -111,7 +111,9 @@ represents a command.")))
 (define-command save-macro (&optional (macro-editor (current-mode 'macro-edit-mode)))
   "Save the macro to the `*auto-config-file*' file."
   (if (macro-form-valid-p macro-editor)
-      (nyxt::append-configuration (generate-macro-form macro-editor))
+      (progn
+        (nyxt::append-configuration (generate-macro-form macro-editor))
+        (echo "Saved macro to ~s." (nfiles:expand *auto-config-file*)))
       (echo "Macro form is invalid; check it has a title and functions.")))
 
 (define-command evaluate-macro (&optional (macro-editor (current-mode 'macro-edit-mode)))
