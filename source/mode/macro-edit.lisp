@@ -5,18 +5,17 @@
   (:use :common-lisp :nyxt)
   (:documentation "Mode for editing macros."))
 (in-package :nyxt/macro-edit-mode)
+(use-nyxt-package-nicknames)
 
 (define-mode macro-edit-mode ()
   "Mode for creating and editing macros."
   ((name
     ""
-    :documentation "The name used for the macro."
-    :accessor nil)
+    :accessor nil
+    :documentation "The name used for the macro.")
    (functions
-    (make-hash-table)
-    :documentation "A hash table of functions the user has added to their
-macro. The key represents a unique identifier for a command, and the value
-represents a command.")))
+    '()
+    :documentation "Functions the user has added to their macro.")))
 
 (define-internal-page-command-global edit-macro ()
     (buffer "*Macro edit*" 'nyxt/macro-edit-mode:macro-edit-mode)
@@ -44,21 +43,21 @@ represents a command.")))
   (flet ((render-functions ()
            (spinneret:with-html-string
              (:table
-              (loop for key being the hash-keys of (functions macro-editor)
-                    using (hash-value value)
+              (loop for function in (functions macro-editor)
+                    for index from 0
                     collect (:tr (:td (:button :class "button"
                                                :onclick (ps:ps (nyxt/ps:lisp-eval
                                                                 `(nyxt/macro-edit-mode::remove-function
                                                                   (current-mode 'macro-edit-mode)
-                                                                  ,key)))
+                                                                  ,index)))
                                                "✕"))
                                  (:td (:button :class "button"
                                                :onclick (ps:ps (nyxt/ps:lisp-eval
                                                                 `(nyxt/macro-edit-mode::command-help
                                                                   (current-mode 'macro-edit-mode)
-                                                                  ,key)))
+                                                                  ,index)))
                                                "🛈"))
-                                 (:td (symbol-name (name value)))))))))
+                                 (:td (symbol-name (name function)))))))))
     (ffi-buffer-evaluate-javascript-async
      (buffer macro-editor)
      (ps:ps
@@ -66,17 +65,19 @@ represents a command.")))
              (ps:lisp
               (render-functions)))))))
 
-(defmethod command-help ((macro-editor macro-edit-mode) command-id)
-  (nyxt::describe-command :command (name (gethash command-id (functions macro-editor)))))
+(defmethod command-help ((macro-editor macro-edit-mode) command-index)
+  (nyxt::describe-command :command (name (nth command-index (functions macro-editor)))))
 
 (defmethod add-function ((macro-editor macro-edit-mode) command)
-  (setf (gethash (parse-integer (symbol-name (gensym "")))
-                 (functions macro-editor))
-        command)
+  (alex:appendf (functions macro-editor)
+                (list command))
   (render-functions macro-editor))
 
-(defmethod remove-function ((macro-editor macro-edit-mode) command-id)
-  (remhash command-id (functions macro-editor))
+(defun delete-nth (n list)
+  (nconc (subseq list 0 n) (nthcdr (1+ n) list)))
+
+(defmethod remove-function ((macro-editor macro-edit-mode) command-index)
+  (setf (functions macro-editor) (delete-nth command-index (functions macro-editor)))
   (render-functions macro-editor))
 
 (defmethod name ((macro-editor macro-edit-mode))
@@ -92,8 +93,8 @@ represents a command.")))
   (let ((name (intern (name macro-editor)))
         (commands (mapcar
                    (lambda (command) `(,(name command)))
-                   (alexandria:hash-table-values (functions macro-editor)))))
-    `(define-command-global ,name () "User generated macro form" ,@commands)))
+                   (functions macro-editor))))
+    `(define-command-global ,name () "User generated macro form." ,@commands)))
 
 (define-command add-command (&optional (macro-editor (current-mode 'macro-edit-mode)))
   "Add a command to the macro."
@@ -106,7 +107,7 @@ represents a command.")))
 
 (defmethod macro-form-valid-p ((macro-editor macro-edit-mode))
   (and (name macro-editor)
-       (alexandria:hash-table-values (functions macro-editor))))
+       (functions macro-editor)))
 
 (define-command save-macro (&optional (macro-editor (current-mode 'macro-edit-mode)))
   "Save the macro to the `*auto-config-file*' file."
