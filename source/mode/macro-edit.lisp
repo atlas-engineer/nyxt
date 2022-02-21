@@ -57,7 +57,10 @@
                                                                   (current-mode 'macro-edit-mode)
                                                                   ,index)))
                                                "🛈"))
-                                 (:td (symbol-name (name function)))))))))
+                                 (:td (let ((name (symbol-name (name function))))
+                                        (if (str:upcase? name)
+                                            (string-downcase name)
+                                            name)))))))))
     (ffi-buffer-evaluate-javascript-async
      (buffer macro-editor)
      (ps:ps
