@@ -28,7 +28,7 @@ represents a command.")))
     (:input :type "text" :id "macro-name")
     (:p "Commands")
     (:p (:button :class "button"
-                 :onclick (ps:ps (nyxt/ps:lisp-eval (nyxt/macro-edit-mode::add-command)))
+                 :onclick (ps:ps (nyxt/ps:lisp-eval `(nyxt/macro-edit-mode::add-command)))
                  "+ Add command"))
     (:div :id "commands" "")
     (:br)
