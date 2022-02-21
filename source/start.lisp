@@ -364,7 +364,8 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
 (defun listening-socket-p ()
   (ignore-errors
    (iolib:with-open-socket (s :address-family :local
-                              :remote-filename (nfiles:expand *socket-file*))
+                              :remote-filename (uiop:native-namestring
+                                                (nfiles:expand *socket-file*)))
      (iolib:socket-connected-p s))))
 
 (defun file-is-socket-p (path)
@@ -395,7 +396,7 @@ Otherwise bind socket and return the listening thread."
            (log:info "Nyxt already started, requesting to open URL(s): ~{~a~^, ~}" urls)
            (log:info "Nyxt already started."))
        (iolib:with-open-socket (s :address-family :local
-                                  :remote-filename socket-path)
+                                  :remote-filename (uiop:native-namestring socket-path))
          ;; Can't use `render-url' at this point because the GTK loop is not running.
          (format s "~s" `(open-external-urls ,@(mapcar #'quri:render-uri urls))))
        nil)
@@ -414,7 +415,8 @@ Otherwise bind socket and return the listening thread."
   (if (listening-socket-p)
       (progn
         (iolib:with-open-socket (s :address-family :local
-                                   :remote-filename (nfiles:expand *socket-file*))
+                                   :remote-filename (uiop:native-namestring
+                                                     (nfiles:expand *socket-file*)))
           (write-string expr s))
         (uiop:quit))
       (progn
