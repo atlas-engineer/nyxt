@@ -438,7 +438,7 @@ response.  The BODY is wrapped with `with-protect'."
                                              :orientation :vertical
                                              :spacing 0))
        (setf key-string-buffer (make-instance 'gtk:gtk-entry))
-       (setf active-buffer (make-dummy-buffer))
+       (setf active-buffer (make-instance 'dummy-buffer))
 
        ;; Add the views to the box layout and to the window
        (gtk:gtk-box-pack-start main-buffer-container (gtk-object active-buffer) :expand t :fill t)
