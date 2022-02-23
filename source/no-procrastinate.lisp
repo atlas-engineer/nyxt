@@ -147,7 +147,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                              :buffer buffer)
                               (make-instance 'tag-source
                                              :marks (url-no-procrastinate-host-tags (url buffer))))))
-             (homepage-url-string (render-url-without-path (url buffer)))
+             (homepage-url-string (render-host-&-scheme (url buffer)))
              (homepage-title (plump:text (aref (clss:select "title" (plump:parse (dex:get homepage-url-string)))
                                                0)))
              (homepage-url-object (quri:uri homepage-url-string))
@@ -173,13 +173,12 @@ page(s) in the active buffer."
   (let* ((url (or url
                   (ignore-errors
                    (quri:uri
-                    (first
-                     (prompt
-                      :prompt "Avoid procrastination the URL's host"
-                      :sources (list
-                                (make-instance 'prompter:raw-source
-                                               :name "New URL"))))))))
-         (homepage-url-string (render-url-without-path url))
+                    (prompt1
+                     :prompt "Avoid procrastination the URL's host"
+                     :sources (list
+                               (make-instance 'prompter:raw-source
+                                              :name "New URL")))))))
+         (homepage-url-string (render-host-&-scheme url))
          (homepage-title (plump:text (aref (clss:select "title" (plump:parse (dex:get homepage-url-string)))
                                            0)))
          (homepage-url-object (quri:uri homepage-url-string))
@@ -255,8 +254,7 @@ URLS is either a list or a single element."
 
 (defmethod nfiles:serialize ((profile nyxt-profile) (file no-procrastinate-hosts-file) stream &key)
   (let ((content
-          (sort (nfiles:content file)
-                #'url< :key #'url)))
+          (nfiles:content file)))
     (write-string "(" stream)
     (dolist (entry content)
       (write-string +newline+ stream)
