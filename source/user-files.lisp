@@ -117,7 +117,7 @@ Example: when passed command line option --with-file foo=bar,
     (s-serialization:deserialize-sexp raw-content)))
 
 (defmethod prompter:object-attributes ((file nfiles:file))
-  `(("Path" ,(nfiles:expand file))      ; TODO: Trim if too long?
+  `(("Path" ,(uiop:native-namestring (nfiles:expand file)))      ; TODO: Trim if too long?
     ("Exists?" ,(if (uiop:file-exists-p (uiop:ensure-pathname (nfiles:expand file)))
                     "yes"
                     "no"))
