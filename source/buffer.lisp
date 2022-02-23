@@ -575,7 +575,7 @@ inherited from the superclasses."))
 
 (define-user-class panel-buffer)
 
-(define-class editor-buffer (internal-buffer)
+(define-class editor-buffer (user-internal-buffer)
   ((file :documentation "The file being edited.")
    (url (quri:uri "editor-buffer"))
    (title "editor-buffer"))
