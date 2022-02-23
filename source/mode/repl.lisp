@@ -18,7 +18,9 @@
        "return" 'return-input
        "(" 'paren
        ")" 'closing-paren
-       "tab" 'tab-complete-symbol)
+       "tab" 'tab-complete-symbol
+       "up" 'evaluation-history-previous
+       "down" 'evaluation-history-next)
       scheme:emacs
       (list
        "C-f" 'nyxt/input-edit-mode:cursor-forwards
@@ -27,10 +29,13 @@
        "M-b" 'nyxt/input-edit-mode:cursor-backwards-word
        "C-d" 'nyxt/input-edit-mode:delete-forwards
        "M-backspace" 'nyxt/input-edit-mode:delete-backwards-word
-       "M-d" 'nyxt/input-edit-mode:delete-forwards-word)
+       "M-d" 'nyxt/input-edit-mode:delete-forwards-word
+       "M-p" 'evaluation-history-previous
+       "M-n" 'evaluation-history-next)
       scheme:vi-normal
       (list
        ;; TODO: deleting chars/words
+       ;; TODO: evaluation-history-(previous|next)
        "l" 'nyxt/input-edit-mode:cursor-forwards
        "h" 'nyxt/input-edit-mode:cursor-backwards
        "w" 'nyxt/input-edit-mode:cursor-forwards-word
@@ -73,8 +78,14 @@
             (li :padding "2px"))
           :documentation "The CSS applied to a REPL when it is set-up.")
    (evaluation-history (list)
-                       :documentation "A list of pairs of (INPUT RESULTS).
-INPUT is a string and RESULTS is a list of Lisp values.")))
+                       :documentation "A list of pairs of (PACKAGE INPUT RESULTS).
+INPUT is a string and RESULTS is a list of Lisp values.")
+   (current-evaluation-history-element
+    nil
+    :type (or null integer)
+    :documentation "Current element of history being edited in the REPL prompt.
+
+Scroll history with `evaluation-history-previous' and `evaluation-history-next'.")))
 
 (defun package-short-name (package)
   (first (sort (append (package-nicknames package)
@@ -114,10 +125,11 @@ INPUT is a string and RESULTS is a list of Lisp values.")))
   "Return inputted text."
   (let ((input (input repl)))
     (add-object-to-evaluation-history repl
-                                      (list (format nil "~a> ~a"
-                                                    (package-short-name *package*)
-                                                    input)
+                                      (list (package-short-name *package*)
+                                            input
                                             (nyxt::evaluate input)))
+    ;; Reset history counter, as it doesn't make sense with new input.
+    (setf (current-evaluation-history-element repl) nil)
     (reset-input repl)
     (update-evaluation-history-display repl)))
 
@@ -131,8 +143,8 @@ INPUT is a string and RESULTS is a list of Lisp values.")))
 (defmethod update-evaluation-history-display ((repl repl-mode))
   (flet ((generate-evaluation-history-html (repl)
            (spinneret:with-html-string
-             (:ul (loop for (input results) in (reverse (evaluation-history repl))
-                        collect (:li (:b input)
+             (:ul (loop for (package input results) in (reverse (evaluation-history repl))
+                        collect (:li (:b package "> " input)
                                      (loop for result in results
                                            collect (:li (:raw (value->html result t))))))))))
     (ffi-buffer-evaluate-javascript-async
@@ -183,6 +195,31 @@ INPUT is a string and RESULTS is a list of Lisp values.")))
       (setf (input repl) (str:concat (subseq input 0 previous-delimiter)
                                      completion (subseq input cursor))
             (cursor repl) (+ cursor (- (length completion) (- cursor previous-delimiter)))))))
+
+(define-command evaluation-history-previous (&optional (repl (current-mode 'repl)))
+  "Fill REPL input with the value of the previous REPL history element."
+  (setf (input repl)
+        (second (elt (evaluation-history repl)
+                     (if (current-evaluation-history-element repl)
+                         (incf (current-evaluation-history-element repl))
+                         (setf (current-evaluation-history-element repl) 0))))))
+
+(define-command evaluation-history-previous (&optional (repl (current-mode 'repl)))
+  "Fill REPL input with the value of the previous REPL history element."
+  (let* ((current (1+ (or (current-evaluation-history-element repl) -1)))
+         (elt (when (> (length (evaluation-history repl)) current)
+                (elt (evaluation-history repl) current))))
+    (if elt
+        (setf (input repl) (second elt)
+              (current-evaluation-history-element repl) current)
+        (echo-warning "No more elements in evaluation history"))))
+
+(define-command evaluation-history-next (&optional (repl (current-mode 'repl)))
+  "Fill REPL input with the value of the next REPL history element."
+  (if (and (current-evaluation-history-element repl)
+           (not (zerop (current-evaluation-history-element repl))))
+      (setf (input repl) (elt (evaluation-history repl) (decf (current-evaluation-history-element repl))))
+      (echo-warning "No more elements in evaluation history")))
 
 (define-internal-page-command-global lisp-repl ()
     (repl-buffer "*Lisp REPL*" 'repl-mode)
