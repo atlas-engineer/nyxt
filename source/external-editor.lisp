@@ -73,12 +73,12 @@ so invoke on a separate thread when possible."
 If the user file is GPG-encrypted, the editor must be capable of decrypting it."
   (if (external-editor-program *browser*)
       (let* ((file (prompt1 :prompt "Edit user file in external editor"
-                            :sources 'data-path-source))
+                            :sources 'user-file-source))
              (path (nfiles:expand file)))
 
         (echo "Using \"~{~a~^ ~}\" to edit ~s." (external-editor-program *browser*) path)
         (uiop:launch-program `(,@(external-editor-program *browser*)
-                               ,path)))
+                               ,(uiop:native-namestring path))))
       (echo-warning "Please set `external-editor-program' browser slot.")))
 
 (defun %view-source-with-external-editor ()
