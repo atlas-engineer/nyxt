@@ -130,30 +130,10 @@ Scroll history with `evaluation-history-previous' and `evaluation-history-next'.
                                             (nyxt::evaluate input)))
     ;; Reset history counter, as it doesn't make sense with new input.
     (setf (current-evaluation-history-element repl) nil)
-    (reset-input repl)
-    (update-evaluation-history-display repl)))
-
-(define-command reset-input (&optional (repl (current-mode 'repl)))
-  "Clear the inputted text."
-  (setf (input repl) ""))
+    (reload-buffers (list (buffer repl)))))
 
 (defmethod add-object-to-evaluation-history ((repl repl-mode) item)
   (push item (evaluation-history repl)))
-
-(defmethod update-evaluation-history-display ((repl repl-mode))
-  (flet ((generate-evaluation-history-html (repl)
-           (spinneret:with-html-string
-             (:ul (loop for (package input results) in (reverse (evaluation-history repl))
-                        collect (:li (:b package "> " input)
-                                     (loop for result in results
-                                           collect (:li (:raw (value->html result t))))))))))
-    (ffi-buffer-evaluate-javascript-async
-     (buffer repl)
-     (ps:ps
-       (setf (ps:chain document (get-element-by-id "prompt") |innerHTML|)
-             (ps:lisp (format nil "~a>" (package-short-name *package*))))
-       (setf (ps:chain document (get-element-by-id "evaluation-history") |innerHTML|)
-             (ps:lisp (generate-evaluation-history-html repl)))))))
 
 (define-command paren (&optional (repl (current-mode 'repl)))
   ;; FIXME: Not an intuitive behavior? What does Emacs do?
@@ -224,12 +204,17 @@ Scroll history with `evaluation-history-previous' and `evaluation-history-next'.
 (define-internal-page-command-global lisp-repl ()
     (repl-buffer "*Lisp REPL*" 'repl-mode)
   "Show Lisp REPL."
-  (spinneret:with-html-string
-    (:head (:style (style (find-mode repl-buffer 'repl-mode))))
-    (:body
-     (:div :id "container"
-           (:div :id "evaluation-history" "")
-           (:div :id "input"
-                 (:span :id "prompt"
-                        (format nil "~a>" (package-short-name *package*)))
-                 (:input :type "text" :id "input-buffer"))))))
+  (let ((repl-mode (find-mode repl-buffer 'repl-mode)))
+    (spinneret:with-html-string
+      (:head (:style (style repl-mode)))
+      (:body
+       (:div :id "container"
+             (:div :id "evaluation-history"
+                   (:ul (loop for (package input results) in (reverse (evaluation-history repl-mode))
+                              collect (:li (:b package "> " input)
+                                           (loop for result in results
+                                                 collect (:li (:raw (value->html result t))))))))
+             (:div :id "input"
+                   (:span :id "prompt"
+                          (format nil "~a>" (package-short-name *package*)))
+                   (:input :type "text" :id "input-buffer")))))))
