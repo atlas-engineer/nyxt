@@ -169,7 +169,7 @@ page(s) in the active buffer."
 
 
 (define-command no-procrastinate-host (&key url)
-  "Allow the user to avoid procrastination on a HOST via minibuffer input."
+  "Allow the user to avoid procrastination on a HOST via prompt buffer input."
   (let* ((url (or url
                   (ignore-errors
                    (quri:uri
