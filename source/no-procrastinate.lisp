@@ -173,12 +173,11 @@ page(s) in the active buffer."
   (let* ((url (or url
                   (ignore-errors
                    (quri:uri
-                    (first
-                     (prompt
-                      :prompt "Avoid procrastination the URL's host"
-                      :sources (list
-                                (make-instance 'prompter:raw-source
-                                               :name "New URL"))))))))
+                    (prompt1
+                     :prompt "Avoid procrastination the URL's host"
+                     :sources (list
+                               (make-instance 'prompter:raw-source
+                                              :name "New URL")))))))
          (homepage-url-string (render-url-without-path url))
          (homepage-title (plump:text (aref (clss:select "title" (plump:parse (dex:get homepage-url-string)))
                                            0)))
