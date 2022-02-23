@@ -594,12 +594,18 @@ inherited from the superclasses."))
 
 (define-user-class editor-buffer)
 
-(defun make-dummy-buffer ()
-  "Internal buffers are lighter than full-blown buffers which can have a
+(define-class dummy-buffer (user-internal-buffer)
+  ((title "dummy"))
+  (:documentation "Internal buffers are lighter than full-blown buffers which can have a
 WebKit context, etc.
-Delete it with `ffi-buffer-delete'."
-  (make-instance 'user-internal-buffer :no-history-p t :default-modes nil
-                 :no-hook-p t))
+Delete it with `ffi-buffer-delete'"))
+
+(defmethod initialize-instance :around ((buffer dummy-buffer) &key)
+  (call-next-method buffer :no-hook-p t :no-history-p t))
+
+(defmethod default-modes :around ((buffer dummy-buffer))
+  ""
+  '())
 
 (define-class status-buffer (user-internal-buffer)
   ((height
@@ -1083,33 +1089,39 @@ proceeding."
     ;; last-access time could be older than, say, buffers opened in the
     ;; background.
     (setf (last-access (active-buffer window)) (local-time:now)))
-  (let ((window-with-same-buffer (find buffer (delete window (window-list))
-                                       :key #'active-buffer)))
-    (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
-        (let ((temp-buffer (make-dummy-buffer))
-              (old-buffer (active-buffer window)))
-          (log:debug "Swapping old buffer ~a with other window ~a to switch to ~a"
-                     (render-url (url old-buffer))
-                     (render-url (url (active-buffer window-with-same-buffer)))
-                     (render-url (url buffer)))
-          (ffi-window-set-buffer window-with-same-buffer temp-buffer)
-          (ffi-window-set-buffer window buffer :focus focus)
-          (setf (active-buffer window) buffer)
-          (window-set-buffer window-with-same-buffer old-buffer)
-          (ffi-buffer-delete temp-buffer))
-        (progn
-          (ffi-window-set-buffer window buffer :focus focus)
-          (setf (active-buffer window) buffer)))
-    (when focus
-      (setf (last-access buffer) (local-time:now)))
-    ;; So that `current-buffer' returns the new value if buffer was
-    ;; switched inside a `with-current-buffer':
-    (setf %buffer nil)
-    (set-window-title window)
-    (print-status nil window)
-    (when (and (web-buffer-p buffer)
-               (eq (slot-value buffer 'status) :unloaded))
-      (reload-buffers (list buffer)))))
+  (if (dummy-buffer-p (active-buffer window))
+      (let ((dummy (active-buffer window)))
+        (ffi-window-set-buffer window buffer :focus focus)
+        (setf (active-buffer window) buffer)
+        (ffi-buffer-delete dummy))
+
+      (let ((window-with-same-buffer (find buffer (delete window (window-list))
+                                           :key #'active-buffer)))
+        (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
+            (let ((temp-buffer (make-instance 'dummy-buffer))
+                  (old-buffer (active-buffer window)))
+              (log:debug "Swapping old buffer ~a with other window ~a to switch to ~a"
+                         (render-url (url old-buffer))
+                         (render-url (url (active-buffer window-with-same-buffer)))
+                         (render-url (url buffer)))
+              (ffi-window-set-buffer window-with-same-buffer temp-buffer)
+              (ffi-window-set-buffer window buffer :focus focus)
+              (setf (active-buffer window) buffer)
+              (window-set-buffer window-with-same-buffer old-buffer)
+              (ffi-buffer-delete temp-buffer))
+            (progn
+              (ffi-window-set-buffer window buffer :focus focus)
+              (setf (active-buffer window) buffer)))))
+  (when focus
+    (setf (last-access buffer) (local-time:now)))
+  ;; So that `current-buffer' returns the new value if buffer was
+  ;; switched inside a `with-current-buffer':
+  (setf %buffer nil)
+  (set-window-title window)
+  (print-status nil window)
+  (when (and (web-buffer-p buffer)
+             (eq (slot-value buffer 'status) :unloaded))
+    (reload-buffers (list buffer))))
 
 (defun last-active-buffer ()
   "Return buffer with most recent `last-access'."

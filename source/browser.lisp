@@ -341,13 +341,10 @@ restored."
            (load-start-urls (urls)
              (open-urls (or urls (list (default-new-buffer-url browser))))))
     (window-make browser)
-    (let ((dummy (make-dummy-buffer)))
-      (window-set-buffer (current-window) dummy)
-      ;; Restore session before opening command line URLs, otherwise it will
-      ;; reset the session with the new URLs.
-      (restore-session)
-      (load-start-urls urls)
-      (ffi-buffer-delete dummy))
+    ;; Restore session before opening command line URLs, otherwise it will
+    ;; reset the session with the new URLs.
+    (restore-session)
+    (load-start-urls urls)
     (funcall* (startup-error-reporter-function *browser*))))
 
 ;; Catch a common case for a better error message.
