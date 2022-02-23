@@ -24,7 +24,7 @@
 (defvar *submodules-jobs* (or (uiop:getenv "NYXT_SUBMODULES_JOBS")
                               4)
   "Number of parallel 'git clone' jobs to fetch the Git submodules.
-A naive benchmark on a 16Mpbs bandwidth gives us
+A naive benchmark on a 16 Mpbs bandwidth gives us
 
     1 job:  5m17s
     2 jobs: 3m38s
