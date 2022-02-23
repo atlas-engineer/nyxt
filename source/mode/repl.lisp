@@ -178,14 +178,6 @@ Scroll history with `evaluation-history-previous' and `evaluation-history-next'.
 
 (define-command evaluation-history-previous (&optional (repl (current-mode 'repl)))
   "Fill REPL input with the value of the previous REPL history element."
-  (setf (input repl)
-        (second (elt (evaluation-history repl)
-                     (if (current-evaluation-history-element repl)
-                         (incf (current-evaluation-history-element repl))
-                         (setf (current-evaluation-history-element repl) 0))))))
-
-(define-command evaluation-history-previous (&optional (repl (current-mode 'repl)))
-  "Fill REPL input with the value of the previous REPL history element."
   (let* ((current (1+ (or (current-evaluation-history-element repl) -1)))
          (elt (when (> (length (evaluation-history repl)) current)
                 (elt (evaluation-history repl) current))))
