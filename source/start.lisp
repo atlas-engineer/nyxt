@@ -135,6 +135,10 @@ Set to '-' to read standard input instead.")
 Implies --quit.
 The remote instance must be listening on a socket which you can specify with --socket
 and have the `remote-execution-p' browser slot to non-nil.")
+      (:name :headless
+       :long "headless"
+       :description "Start Nyxt without showing any graphical element.
+This is useful to run scripts for instance.")
       (:name :profile
        :short #\p
        :long "profile"
@@ -470,6 +474,9 @@ Examples:
 
   ;; Options should be accessible anytime, even when run from the REPL.
   (setf *options* options)
+
+  (when (getf options :headless)
+    (setf *headless-p* t))
 
   (if (getf options :verbose)
       (progn
