@@ -413,7 +413,7 @@ instead."
 (defun next-ready-p (prompter &optional timeout)
   "Block and return next PROMPTER ready source.
 It's the next source that's done updating.
-If all sources are done, return t.
+If all sources are done, return T.
 This is unblocked when the PROMPTER is `destroy'ed.
 
 TIMEOUT is deprecated."
