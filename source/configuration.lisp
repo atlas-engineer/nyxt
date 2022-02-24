@@ -364,7 +364,7 @@ Particularly useful to avoid errors on already terminated threads."
 ARGS can be
 - A symbol if there's only one argument to the callback.
 - A list of arguments.
-- An empty list, if the hook is void."
+- An empty list, if the hook handlers take no argument."
   (let ((handler-name (gensym "on-hook-handler"))
         (args (alex:ensure-list args)))
     `(hooks:add-hook
