@@ -1025,7 +1025,8 @@ See `finalize-buffer'."
 
 (define-ffi-method ffi-window-to-foreground ((window gtk-window))
   "Show window in foreground."
-  (gtk:gtk-window-present (gtk-object window))
+  (unless *headless-p*
+    (gtk:gtk-window-present (gtk-object window)))
   (setf (slot-value *browser* 'last-active-window) window))
 
 (define-ffi-method ffi-window-set-title ((window gtk-window) title)
