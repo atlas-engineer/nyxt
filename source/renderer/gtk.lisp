@@ -1474,7 +1474,10 @@ For WebKit, if the URL matches an entry in the webkit-history then we fetch the
 page from the cache.
 
 We don't use the cache if URL matches BUFFER's URL since this means the user
-requested a reload."
+requested a reload.
+
+Note that we don't use the cache for internal pages (say nyxt:help) since it's
+local anyways, and it's better to refresh it if a load was queried."
   (declare (type quri:uri url))
   (let* ((history (webkit-history buffer))
          (entry (or (find url history :test #'quri:uri= :key #'webkit-history-entry-url)
@@ -1484,7 +1487,9 @@ requested a reload."
     ;; is emitted.
     (when (web-buffer-p buffer)
       (setf (slot-value buffer 'status) :loading))
-    (if (and entry (not (quri:uri= url (url buffer))))
+    (if (and entry
+             (not (internal-url-p url))
+             (not (quri:uri= url (url buffer))))
         (progn
           (log:debug "Load URL from history entry ~a" entry)
           (load-webkit-history-entry buffer entry))
