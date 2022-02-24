@@ -187,27 +187,6 @@ Define a global command to access this page.
 See `define-internal-page-command' for the explanation of arguments."
   (%define-internal-page t name arglist buffer-var title mode body))
 
-(defmacro with-current-panel ((buffer-var title &key (side :left))
-                              &body body)
-  "Display a panel buffer displaying CONTENT.
-If a panel with TITLE exists, reuse it, otherwise create a new panel.
-BUFFER-VAR is bound to the new buffer in BODY.
-BODY must return the HTML markup as a string."
-  (alex:once-only (title)
-    `(let* ((window (current-window))
-            (,buffer-var (or (find ,title
-                                   (panel-buffers window)
-                                   :key #'title
-                                   :test #'string=)
-                             (make-instance 'user-panel-buffer
-                                            :title ,title))))
-       (window-add-panel-buffer window ,buffer-var ,side)
-       (html-set
-        (progn
-          ,@body)
-        ,buffer-var)
-       ,buffer-var)))
-
 (defvar *json-object-accumulator* (make-hash-table :test 'equal)
   "Our own object accumulator to override the default `cl-json:decode-json' object->alist behavior.
 Objects are transformed to the hash-tables instead.")
