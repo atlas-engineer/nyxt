@@ -39,7 +39,7 @@
           (declare (ignorable thread))
           (on (prompt-buffer-ready-hook *browser*)
               (prompt-buffer)
-            (sleep 1)
+            (prompter:all-ready-p prompt-buffer)
             (nyxt::set-prompt-buffer-input url prompt-buffer)
             (prompter:all-ready-p prompt-buffer)
             (nyxt/prompt-buffer-mode:return-selection prompt-buffer)
