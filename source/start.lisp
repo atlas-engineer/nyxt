@@ -397,12 +397,13 @@ Otherwise bind socket and return the listening thread."
     (cond
       ((listening-socket-p)
        (if urls
-           (log:info "Nyxt already started, requesting to open URL(s): ~{~a~^, ~}" urls)
+           (progn
+             (log:info "Nyxt already started, requesting to open URL(s): ~{~a~^, ~}" urls)
+             (iolib:with-open-socket (s :address-family :local
+                                        :remote-filename (uiop:native-namestring socket-path))
+               ;; Can't use `render-url' at this point because the GTK loop is not running.
+               (format s "~s" `(open-external-urls ,@(mapcar #'quri:render-uri urls)))))
            (log:info "Nyxt already started."))
-       (iolib:with-open-socket (s :address-family :local
-                                  :remote-filename (uiop:native-namestring socket-path))
-         ;; Can't use `render-url' at this point because the GTK loop is not running.
-         (format s "~s" `(open-external-urls ,@(mapcar #'quri:render-uri urls))))
        nil)
       ((and (uiop:file-exists-p socket-path)
             (not (file-is-socket-p socket-path)))
