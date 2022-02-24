@@ -246,12 +246,21 @@ Can be used as a `open-file-function'."
             (if new-buffer-p
                 (make-buffer-focus :url file-url)
                 (buffer-load file-url))
-            (uiop:launch-program
-             #+linux
-             (list *xdg-open-program* (quri:render-uri file-url))
-             #+darwin
-             (list "open" (uiop:native-namestring filename))
-             :error-output t))
+            (let ((process (uiop:launch-program
+                            #+linux
+                            (list *xdg-open-program* (quri:render-uri file-url))
+                            #+darwin
+                            (list "open" (uiop:native-namestring filename))
+                            :error-output :stream)))
+              (nyxt:echo "Opening ~s with ~s." filename *xdg-open-program*)
+              (run-thread "file opener"
+                (let ((status (uiop:wait-process process)))
+                  (unless (= 0 status)
+                    (echo-warning "When opening file ~s with ~s : ~a"
+                                  filename
+                                  *xdg-open-program*
+                                  (alex:read-stream-content-into-string
+                                   (uiop:process-info-error-output process))))))))
       ;; We can probably signal something and display a notification.
       (error (c) (log:error "Opening ~a: ~a~&" filename c)))))
 
