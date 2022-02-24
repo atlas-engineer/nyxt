@@ -187,14 +187,14 @@ See also `hide-prompt-buffer'."
     (push prompt-buffer (active-prompt-buffers (window prompt-buffer)))
     (calispel:! (prompt-buffer-channel (window prompt-buffer)) prompt-buffer)
     (prompt-render prompt-buffer)
-    (run-thread "Show prompt watcher"
-      (let ((prompt-buffer prompt-buffer))
-        (update-prompt-input prompt-buffer)))
     (ffi-window-set-prompt-buffer-height
      (window prompt-buffer)
      (or height
          (prompt-buffer-open-height (window prompt-buffer))))
-    (hooks:run-hook (prompt-buffer-ready-hook *browser*) prompt-buffer)))
+    (run-thread "Show prompt watcher"
+      (let ((prompt-buffer prompt-buffer))
+        (update-prompt-input prompt-buffer)
+        (hooks:run-hook (prompt-buffer-ready-hook *browser*) prompt-buffer)))))
 
 (defun hide-prompt-buffer (prompt-buffer)
   "Hide PROMPT-BUFFER, display next active one.
