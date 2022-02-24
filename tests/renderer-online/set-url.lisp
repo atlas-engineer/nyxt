@@ -40,7 +40,7 @@
           (on (prompt-buffer-ready-hook *browser*)
               (prompt-buffer)
             (prompter:all-ready-p prompt-buffer)
-            (nyxt::set-prompt-buffer-input url prompt-buffer)
+            (nyxt:set-prompt-buffer-input url prompt-buffer)
             (prompter:all-ready-p prompt-buffer)
             (nyxt/prompt-buffer-mode:return-selection prompt-buffer)
             (once-on (buffer-loaded-hook (current-buffer)) buffer

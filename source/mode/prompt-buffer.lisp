@@ -404,14 +404,14 @@ Only available if `multi-selection-p' is non-nil."
                       :prompt "Input history"
                       :sources (list (make-instance 'prompt-buffer-history-source)))))
           (unless (str:empty? input)
-            (nyxt::set-prompt-buffer-input input)))
+            (nyxt:set-prompt-buffer-input input)))
         (echo "Prompt buffer has no history."))))
 
 (define-command-prompt insert-selection (prompt-buffer)
   "Insert current selection default property in the prompt buffer input."
   (alex:when-let ((selection (prompter:attributes-default
                               (prompter:selected-suggestion prompt-buffer))))
-    (nyxt::set-prompt-buffer-input selection)))
+    (nyxt:set-prompt-buffer-input selection)))
 
 (define-command-prompt move-start-of-input (prompt-buffer)
   "Move to the beginning of PROMPT-BUFFER input."

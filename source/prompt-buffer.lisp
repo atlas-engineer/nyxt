@@ -415,10 +415,11 @@ If you want to set the input, see `set-prompt-buffer-input'."
          t)
         ((null next-source) nil)
         (t ;; At least one source got updated.
-           (prompt-render-suggestions prompt-buffer)
-           (maybe-update-view (when (find prompt-buffer (active-prompt-buffers (window prompt-buffer)))
-                                (prompter:next-ready-p prompt-buffer))))))))
+         (prompt-render-suggestions prompt-buffer)
+         (maybe-update-view (when (find prompt-buffer (active-prompt-buffers (window prompt-buffer)))
+                              (prompter:next-ready-p prompt-buffer))))))))
 
+(export-always 'set-prompt-buffer-input)
 (defun set-prompt-buffer-input (input &optional (prompt-buffer (current-prompt-buffer)))
   "Set HTML INPUT in PROMPT-BUFFER.
 See `update-prompt-input' to update the changes visually."

@@ -17,7 +17,7 @@
          (parent (if (uiop:directory-pathname-p path)
                      (uiop:pathname-parent-directory-pathname path)
                      (uiop:pathname-directory-pathname path))))
-    (nyxt::set-prompt-buffer-input (namestring parent) prompt-buffer)))
+    (nyxt:set-prompt-buffer-input (namestring parent) prompt-buffer)))
 
 (define-mode file-manager-mode (nyxt/prompt-buffer-mode:prompt-buffer-mode)
   "Prompt buffer mode for file choosing."
