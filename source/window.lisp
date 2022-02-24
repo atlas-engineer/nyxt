@@ -21,6 +21,13 @@ It's a function of the window argument that returns the title as a string.")
     (list)
     :export nil
     :documentation "A list of panel buffers appearing on the window.")
+   (prompt-buffer-channel
+    (make-channel) ; TODO: Rename `prompt-buffer-ready-channel'?
+    :export nil
+    :documentation "A channel one may listen to if waiting
+for the prompt buffer to be available.
+You should not rely on the value of this channel.
+The channel is popped when a prompt buffer is hidden.")
    (key-stack
     '()
     :documentation "A stack of the key chords a user has pressed.")
