@@ -595,7 +595,7 @@ inherited from the superclasses."))
 (define-user-class editor-buffer)
 
 (define-class dummy-buffer (user-internal-buffer)
-  ((title "dummy"))
+  ()
   (:documentation "Internal buffers are lighter than full-blown buffers which can have a
 WebKit context, etc.
 Delete it with `ffi-buffer-delete'"))
