@@ -1671,7 +1671,14 @@ local anyways, and it's better to refresh it if a load was queried."
     (connect-signal download "created-destination" nil (webkit-download destination)
       (declare (ignore destination))
       (setf (destination-path download)
-            (webkit:webkit-download-destination webkit-download)))
+            (webkit:webkit-download-destination webkit-download))
+      ;; TODO: We should not have to update the buffer, button actions should be
+      ;; dynamic.  Bug in `user-interface'?
+      (reload-buffers (list (find-if
+                             (lambda (b)
+                               (and (string= (title b) "*Downloads*")
+                                    (find-mode b 'download-mode)))
+                             (buffer-list)))))
     (connect-signal download "failed" nil (webkit-download error)
       (declare (ignore error))
       (unless (eq (status download) :canceled)
