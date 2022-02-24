@@ -387,7 +387,9 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
   (prompt-render-suggestions prompt-buffer))
 
 (defun update-prompt-input (prompt-buffer &optional input)
-  "This blocks and updates the view."
+  "This blocks and updates the view.
+INPUT is an implementation detail, don't rely on it.
+If you want to set the input, see `set-prompt-buffer-input'."
   (let ((input (or input
                    (ffi-buffer-evaluate-javascript
                     prompt-buffer
@@ -418,7 +420,8 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                 (prompter:next-ready-p prompt-buffer))))))))
 
 (defun set-prompt-buffer-input (input &optional (prompt-buffer (current-prompt-buffer)))
-  "Set HTML INPUT in PROMPT-BUFFER."
+  "Set HTML INPUT in PROMPT-BUFFER.
+See `update-prompt-input' to update the changes visually."
   (ffi-buffer-evaluate-javascript
    prompt-buffer
    (ps:ps
