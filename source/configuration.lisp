@@ -388,7 +388,6 @@ See `on'."
         ,hook (make-instance 'hooks:handler
                              :fn (lambda ,args
                                    (declare (ignorable ,@args))
-                                   (unwind-protect
-                                        (progn ,@body)
-                                     (hooks:remove-hook ,hook (quote ,handler-name))))
+                                   (hooks:remove-hook ,hook (quote ,handler-name))
+                                   ,@body)
                              :name (quote ,handler-name))))))
