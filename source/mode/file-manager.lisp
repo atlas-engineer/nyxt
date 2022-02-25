@@ -238,31 +238,29 @@ NEW-BUFFER-P defines whether the file/directory is opened in a new buffer.
 SUPPORTED-P says whether the file can be opened by Nyxt.
 
 Can be used as a `open-file-function'."
-  (let ((file-url (if (valid-url-p filename)
-                      (quri:uri filename)
-                      (quri::make-uri-file :path filename))))
-    (handler-case
-        (if supported-p
+  (handler-case
+      (if supported-p
+          (let ((file-url (quri::make-uri-file :path filename)))
             (if new-buffer-p
                 (make-buffer-focus :url file-url)
-                (buffer-load file-url))
-            (let ((process (uiop:launch-program
-                            #+linux
-                            (list *xdg-open-program* (quri:render-uri file-url))
-                            #+darwin
-                            (list "open" (uiop:native-namestring filename))
-                            :error-output :stream)))
-              (nyxt:echo "Opening ~s with ~s." filename *xdg-open-program*)
-              (run-thread "file opener"
-                (let ((status (uiop:wait-process process)))
-                  (unless (= 0 status)
-                    (echo-warning "When opening file ~s with ~s : ~a"
-                                  filename
-                                  *xdg-open-program*
-                                  (alex:read-stream-content-into-string
-                                   (uiop:process-info-error-output process))))))))
-      ;; We can probably signal something and display a notification.
-      (error (c) (log:error "Opening ~a: ~a~&" filename c)))))
+                (buffer-load file-url)))
+          (let ((process (uiop:launch-program
+                          #+linux
+                          (list *xdg-open-program* (quri:render-uri filename))
+                          #+darwin
+                          (list "open" (uiop:native-namestring filename))
+                          :error-output :stream)))
+            (nyxt:echo "Opening ~s with ~s." filename *xdg-open-program*)
+            (run-thread "file opener"
+              (let ((status (uiop:wait-process process)))
+                (unless (= 0 status)
+                  (echo-warning "When opening file ~s with ~s : ~a"
+                                filename
+                                *xdg-open-program*
+                                (alex:read-stream-content-into-string
+                                 (uiop:process-info-error-output process))))))))
+    ;; We can probably signal something and display a notification.
+    (error (c) (log:error "Opening ~a: ~a~&" filename c))))
 
 (define-command-global open-file (&key (default-directory *default-pathname-defaults*))
   "Open a file from the filesystem.

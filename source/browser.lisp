@@ -408,7 +408,8 @@ Return the download object matching the download."
                  ;; Add a watcher / renderer for monitoring download
                  (let ((download-render (make-instance 'user-download :url (render-url url))))
                    (setf (destination-path download-render)
-                         (download-manager:filename download))
+                         (uiop:ensure-pathname
+                          (download-manager:filename download)))
                    (push download-render (downloads *browser*))
                    (run-thread
                      "download watcher"
