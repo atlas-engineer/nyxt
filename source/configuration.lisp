@@ -333,21 +333,6 @@ Example:
   "Like `funcall' but does nothing when F is nil."
   (when f (apply #'funcall f args)))
 
-(defun read-file-string (url)
-  "Read a file from a file:// type URL into a string."
-  (uiop:read-file-string (quri:uri-path (quri:uri url))))
-
-(defun file-url-p (url-string &key check-exists-p)
-  "Check if a URL-STRING represents a file, and optionally check if said file
-exists."
-  ;; check if a string starts with file to avoid excessive processing
-  (when (str:starts-with-p "file" url-string)
-    (let ((url (quri:uri url-string)))
-      (if check-exists-p
-          (and (equalp "file" (quri:uri-scheme url))
-               (uiop:file-exists-p (quri:uri-path url)))
-          (equalp "file" (quri:uri-scheme url))))))
-
 (defun ensure-file-exists (pathname)
   (open pathname :direction :probe :if-does-not-exist :create))
 
