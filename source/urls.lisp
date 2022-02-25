@@ -116,6 +116,10 @@ Requires encryption or other means of security.")
   (:documentation "Representation of Nyxt-specific internal schemes."))
 (define-user-class scheme)
 
+(defmethod print-object ((scheme scheme) stream)
+  (print-unreadable-object (scheme stream :type t :identity t)
+    (format stream "~a" (name scheme))))
+
 (defvar *schemes* (sera:dict)
   "A table of internal schemes registered in Nyxt.
 Keys are scheme strings, values are `scheme' objects.")
