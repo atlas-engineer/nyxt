@@ -1675,7 +1675,9 @@ local anyways, and it's better to refresh it if a load was queried."
     (connect-signal download "created-destination" nil (webkit-download destination)
       (declare (ignore destination))
       (setf (destination-path download)
-            (webkit:webkit-download-destination webkit-download))
+            (uiop:ensure-pathname
+             (quri:uri-path (quri:uri
+                             (webkit:webkit-download-destination webkit-download)))))
       ;; TODO: We should not have to update the buffer, button actions should be
       ;; dynamic.  Bug in `user-interface'?
       (reload-buffers (list (find-if
