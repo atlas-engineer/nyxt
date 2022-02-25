@@ -6,6 +6,7 @@
   (:documentation "Mode for interacting with Text-to-Speech (TTS) software."))
 
 (in-package :nyxt/tts-mode)
+(use-nyxt-package-nicknames)
 
 (define-mode tts-mode ()
   "A mode for interacting with Text-to-Speech (TTS) software.
@@ -25,7 +26,6 @@ Example:
   ((executable nil
                :type (or string null)
                :documentation "The executable command to run.")
-   ;; TODO: work around limitation https://github.com/Shinmera/CLSS/issues/14
    (selector "p"
        :type string
        :documentation "CSS selector that describes which elements' text to speak.")
@@ -40,13 +40,14 @@ Example:
   "Fetch the text in buffer that matches `selector` and send it off to the TTS."
   (if (executable mode)
       (let* ((tags
-               (handler-case
-                   (coerce 
-                    (clss:select (selector mode) (document-model (buffer mode)))
-                    'list)
-                 (error ()
-                   (log:warn "tts-mode: no document-model available.")
-                   nil)))
+               (sort (handler-case
+                         (coerce
+                          (clss:select (selector mode) (document-model (buffer mode)))
+                          'list)
+                       (error ()
+                         (log:warn "tts-mode: no document-model available.")
+                         nil))
+                     #'< :key (alex:compose #'parse-integer #'get-nyxt-id)))
              ;; TODO properly handle punctuation like Emacspeak does
              (text (str:remove-punctuation
                     (with-output-to-string (s)
