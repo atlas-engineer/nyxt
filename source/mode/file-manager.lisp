@@ -246,7 +246,7 @@ Can be used as a `open-file-function'."
                 (buffer-load file-url)))
           (let ((process (uiop:launch-program
                           #+linux
-                          (list *xdg-open-program* (quri:render-uri filename))
+                          (list *xdg-open-program* (uiop:native-namestring filename))
                           #+darwin
                           (list "open" (uiop:native-namestring filename))
                           :error-output :stream)))
