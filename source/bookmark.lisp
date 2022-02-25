@@ -274,9 +274,7 @@ rest in background buffers."
         (write-string ")")))))
 
 (defmethod nfiles:serialize ((profile nyxt-profile) (file bookmarks-file) stream &key)
-  (let ((content
-          (sort (nfiles:content file)
-                #'url< :key #'url)))
+  (let ((content (nfiles:content file)))
     (write-string "(" stream)
     (dolist (entry content)
       (write-string +newline+ stream)
