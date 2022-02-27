@@ -14,19 +14,19 @@
 By default, no executable is configured, so for the mode to work, you need to
 configure an executable that can take a string of text. Something like `espeak`
 or `espeak-ng` should work out of the box. The content that will be sent to the
-executable is the text content of paragraph tags on the page. This can be
-configured by changing the `selector` slot.
+executable is the text content of paragraph and heading tags on the page. This
+can be configured by changing the `selector` slot.
 
 Example:
 
 \(define-configuration nyxt/tts-mode:tts-mode
    ((nyxt/tts-mode:executable \"espeak\")
-    (nyxt/tts-mode:selector \"p\")))
+    (nyxt/tts-mode:selector \"p, h1, h2, h3, h4, h5, h6\")))
 "
   ((executable nil
                :type (or string null)
                :documentation "The executable command to run.")
-   (selector "p"
+   (selector "p, h1, h2, h3, h4, h5, h6"
        :type string
        :documentation "CSS selector that describes which elements' text to speak.")
    (executable-process-info nil
