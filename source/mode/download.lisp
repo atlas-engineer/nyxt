@@ -17,22 +17,23 @@ interface.")
            :documentation "Status of the download.")
    (status-text (make-instance 'user-interface:paragraph))
    (completion-percentage 0.0
-                          :reader completion-percentage
+                          :reader t
                           :type float
                           :documentation "A number between 0 and 100
 showing the percentage a download is complete.")
    (bytes-downloaded "-"
-                     :reader bytes-downloaded
+                     :reader t
                      :documentation "The number of bytes downloaded.")
    (bytes-text (make-instance 'user-interface:paragraph) :documentation "The
    interface element showing how many bytes have been downloaded.")
-   (destination-path :initarg :destination-path
-                     :reader destination-path
-                     :documentation "A string represent where the file
-will be downloaded to on disk.")
+   (destination-path #p""
+                     :reader t
+                     :type pathname
+                     :documentation "Where the file will be downloaded to on
+disk.")
    (cancel-function nil
+                    :reader t
                     :type (or null function)
-                    :reader cancel-function
                     :documentation "The function to call when
 cancelling a download. This can be set by the download engine.")
    (cancel-button (make-instance 'user-interface:button
@@ -84,7 +85,6 @@ finds it, it will invoke its cancel-function."
         (format nil "Bytes downloaded: ~a" (bytes-downloaded download))))
 
 (defmethod (setf destination-path) (path (download download))
-  (check-type path string)
   (setf (slot-value download 'destination-path) path)
   (setf (user-interface:action (open-button download))
         (ps:ps (nyxt/ps:lisp-eval `(nyxt/file-manager-mode:default-open-file-function ,path)))))
