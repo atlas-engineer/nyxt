@@ -254,8 +254,7 @@ URLS is either a list or a single element."
 
 (defmethod nfiles:serialize ((profile nyxt-profile) (file no-procrastinate-hosts-file) stream &key)
   (let ((content
-          (sort (nfiles:content file)
-                #'url< :key #'url)))
+          (nfiles:content file)))
     (write-string "(" stream)
     (dolist (entry content)
       (write-string +newline+ stream)
