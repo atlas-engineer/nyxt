@@ -52,7 +52,7 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
          (or (ignore-errors (ffi-display-url url))
              url))))
 
-(defun render-url-without-path (url)
+(defun render-host-&-scheme (url)
   "Return decoded URL without path, if existent."
   (format nil "~a://~a" (quri:uri-scheme url)
                       (quri:uri-host url)))
