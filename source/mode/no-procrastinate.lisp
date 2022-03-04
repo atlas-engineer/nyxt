@@ -7,6 +7,13 @@
 (in-package :nyxt/no-procrastinate-mode)
 (use-nyxt-package-nicknames)
 
+(sera:export-always '*default-hostlist-no-procrastinate*)
+(defparameter *default-hostlist-no-procrastinate*
+  (make-instance 'hostlist
+                 :url (quri:uri "https://raw.githubusercontent.com/atlas-engineer/default-hosts-no-procrastinate/main/hosts")
+                 :base-path #p"hostlist-no-procrastinate.txt")
+  "Default hostlist for `no-procrastinate-mode'.")
+
 (define-mode no-procrastinate-mode (nyxt/blocker-mode:blocker-mode)
   "Mode to block access to hosts associated to procrastination."
   ((rememberable-p nil)
@@ -26,7 +33,7 @@
     (list (nyxt/blocker-mode:make-hostlist
            :hosts (mapcar #'(lambda (y) (hostname y))
                           (nfiles:content (no-procrastinate-hosts-file (current-buffer)))))
-          nyxt/blocker-mode:*default-hostlist*))))
+          *default-hostlist-no-procrastinate*))))
 
 (defun group-no-procrastinate-hosts (buffer)
   (let ((no-procrastinate-hosts-table (make-hash-table :test #'equalp))
