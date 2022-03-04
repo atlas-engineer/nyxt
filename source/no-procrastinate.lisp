@@ -25,7 +25,6 @@
   ((url (quri:uri ""))
    (hostname "")
    (title "")
-   (annotation "")
    (date (local-time:now))
    (tags
     '()
@@ -232,7 +231,6 @@ URLS is either a list or a single element."
         (write-string "(:url ")
         (format t "~s" (render-url (url entry)))
         (write-slot 'title)
-        (write-slot 'annotation)
         (write-slot 'hostname)
         (when (date entry)
           (write-string " :date ")
