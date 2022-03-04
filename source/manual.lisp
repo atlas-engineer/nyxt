@@ -209,6 +209,11 @@ documentation.")
     (:h3 "Proxy and Tor")
     (:p "See the " (:code "proxy-mode") " documentation.")
 
+    (:h3 "Blocker mode")
+    (:p "This mode blocks access to websites related to especific hosts. By
+default, it blocks hosts listed on " (:a :href "https://github.com/StevenBlack/hosts" "Steve Black's list.")
+" To customize host blocking see " (:code "blocker-mode") " documentation.")
+
     (:h3 "Custom commands")
     (:p "Creating your own invokable commands is similar to creating a Common
 Lisp function, except the form is " (:code "define-command") " instead of "
