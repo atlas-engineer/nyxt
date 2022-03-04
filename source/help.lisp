@@ -431,81 +431,80 @@ CLASS is a class symbol."
   "Configure a set of frequently used settings."
   (let ((spinneret:*html-style* :tree))
     (spinneret:with-html-string
-      (theme:with-theme (nyxt:theme nyxt:*browser*)
-        (:h1 "Common Settings")
-        (:p "Set the values for frequently configured settings. "
-            "Changes only apply to newly created buffers.")
-        (:h2 "Keybinding style")
-        (:p (:button :class "button"
-                     :onclick (ps:ps (nyxt/ps:lisp-eval
-                                      `(progn (nyxt::configure-slot
-                                               'default-modes 'buffer
-                                               :value '%slot-default%)
-                                              (nyxt/emacs-mode:emacs-mode :activate nil)
-                                              (nyxt/vi-mode:vi-normal-mode :activate nil))))
-                     "Use default (CUA)"))
-        (:p (:button :class "button"
-                     :onclick (ps:ps (nyxt/ps:lisp-eval
-                                      `(progn (nyxt::configure-slot
-                                               'default-modes 'buffer
-                                               :value '(append '(emacs-mode) %slot-default%))
-                                              (nyxt/emacs-mode:emacs-mode :activate t)
-                                              (nyxt/vi-mode:vi-normal-mode :activate nil))))
-                     "Use Emacs"))
-        (:p (:button :class "button"
-                     :onclick (ps:ps (nyxt/ps:lisp-eval
-                                      `(progn (nyxt::configure-slot
-                                               'default-modes 'buffer
-                                               :value '(append '(vi-normal-mode) %slot-default%))
-                                              (nyxt/emacs-mode:emacs-mode :activate nil)
-                                              (nyxt/vi-mode:vi-normal-mode :activate t))))
-                     "Use vi"))
-        (flet ((generate-colors (theme-symbol text)
-                 (spinneret:with-html-string
-                     (:p (:button :class "button"
-                                  :style (format nil "background-color: ~a; color: ~a"
-                                                 (theme:primary-color (symbol-value theme-symbol))
-                                                 (theme:background-color (symbol-value theme-symbol)))
-                                  :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                   `(configure-slot 'theme 'browser
-                                                                    :value ',theme-symbol)))
-                                  text))
-                   (:p "Colors:")
-                   (:dl
-                    (loop for (name color text-color) in '(("Text" theme:text-color theme:background-color)
-                                                           ("Accent" theme:accent-color theme:background-color)
-                                                           ("Primary" theme:primary-color theme:background-color)
-                                                           ("Secondary" theme:secondary-color theme:background-color)
-                                                           ("Tertiary" theme:tertiary-color theme:text-color)
-                                                           ("Quaternary" theme:quaternary-color theme:text-color)
-                                                           ("Background" theme:background-color theme:text-color))
-                          collect (:dt name ": ")
-                          collect (:dd (:span :style (format nil "background-color: ~a; color: ~a; border-radius: 0.2em"
-                                                             (slot-value (symbol-value theme-symbol) color)
-                                                             (slot-value (symbol-value theme-symbol) text-color))
-                                              (slot-value (symbol-value theme-symbol) color))))))))
-          (:h2 "Theme style")
-          (:raw (generate-colors 'theme::+light-theme+ "Use default (Light theme)"))
-          (:raw (generate-colors 'theme::+dark-theme+ "Use Dark theme")))
-        (:h2 "Default new buffer URL")
-        (:button :class "button"
-                 :onclick (ps:ps (nyxt/ps:lisp-eval
-                                  `(nyxt::configure-slot 'default-new-buffer-url 'browser :type 'STRING)))
-                 "Set default new buffer URL")
-        (:h2 "Default zoom ratio")
-        (:button :class "button"
-                 :onclick (ps:ps (nyxt/ps:lisp-eval
-                                  `(nyxt::configure-slot 'current-zoom-ratio 'buffer)))
-                 "Set default zoom ratio")
-        (:h2 "Disable compositing")
-        (:p "On some systems, compositing can cause issues with rendering. If you
+      (:h1 "Common Settings")
+      (:p "Set the values for frequently configured settings. "
+          "Changes only apply to newly created buffers.")
+      (:h2 "Keybinding style")
+      (:p (:button :class "button"
+                   :onclick (ps:ps (nyxt/ps:lisp-eval
+                                    `(progn (nyxt::configure-slot
+                                             'default-modes 'buffer
+                                             :value '%slot-default%)
+                                            (nyxt/emacs-mode:emacs-mode :activate nil)
+                                            (nyxt/vi-mode:vi-normal-mode :activate nil))))
+                   "Use default (CUA)"))
+      (:p (:button :class "button"
+                   :onclick (ps:ps (nyxt/ps:lisp-eval
+                                    `(progn (nyxt::configure-slot
+                                             'default-modes 'buffer
+                                             :value '(append '(emacs-mode) %slot-default%))
+                                            (nyxt/emacs-mode:emacs-mode :activate t)
+                                            (nyxt/vi-mode:vi-normal-mode :activate nil))))
+                   "Use Emacs"))
+      (:p (:button :class "button"
+                   :onclick (ps:ps (nyxt/ps:lisp-eval
+                                    `(progn (nyxt::configure-slot
+                                             'default-modes 'buffer
+                                             :value '(append '(vi-normal-mode) %slot-default%))
+                                            (nyxt/emacs-mode:emacs-mode :activate nil)
+                                            (nyxt/vi-mode:vi-normal-mode :activate t))))
+                   "Use vi"))
+      (flet ((generate-colors (theme-symbol text)
+               (spinneret:with-html-string
+                 (:p (:button :class "button"
+                              :style (format nil "background-color: ~a; color: ~a"
+                                             (theme:primary-color (symbol-value theme-symbol))
+                                             (theme:background-color (symbol-value theme-symbol)))
+                              :onclick (ps:ps (nyxt/ps:lisp-eval
+                                               `(configure-slot 'theme 'browser
+                                                                :value ',theme-symbol)))
+                              text))
+                 (:p "Colors:")
+                 (:dl
+                  (loop for (name color text-color) in '(("Text" theme:text-color theme:background-color)
+                                                         ("Accent" theme:accent-color theme:background-color)
+                                                         ("Primary" theme:primary-color theme:background-color)
+                                                         ("Secondary" theme:secondary-color theme:background-color)
+                                                         ("Tertiary" theme:tertiary-color theme:text-color)
+                                                         ("Quaternary" theme:quaternary-color theme:text-color)
+                                                         ("Background" theme:background-color theme:text-color))
+                        collect (:dt name ": ")
+                        collect (:dd (:span :style (format nil "background-color: ~a; color: ~a; border-radius: 0.2em"
+                                                           (slot-value (symbol-value theme-symbol) color)
+                                                           (slot-value (symbol-value theme-symbol) text-color))
+                                            (slot-value (symbol-value theme-symbol) color))))))))
+        (:h2 "Theme style")
+        (:raw (generate-colors 'theme::+light-theme+ "Use default (Light theme)"))
+        (:raw (generate-colors 'theme::+dark-theme+ "Use Dark theme")))
+      (:h2 "Default new buffer URL")
+      (:button :class "button"
+               :onclick (ps:ps (nyxt/ps:lisp-eval
+                                `(nyxt::configure-slot 'default-new-buffer-url 'browser :type 'STRING)))
+               "Set default new buffer URL")
+      (:h2 "Default zoom ratio")
+      (:button :class "button"
+               :onclick (ps:ps (nyxt/ps:lisp-eval
+                                `(nyxt::configure-slot 'current-zoom-ratio 'buffer)))
+               "Set default zoom ratio")
+      (:h2 "Disable compositing")
+      (:p "On some systems, compositing can cause issues with rendering. If you
      are experiencing blank web-views, you can try to disable compositing. After
      disabling compositing, you will need to restart Nyxt.")
-        (:button :class "button"
-                 :onclick (ps:ps (nyxt/ps:lisp-eval
-                                  `(nyxt::append-configuration
-                                    '(setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1"))))
-                 "Disable compositing")))))
+      (:button :class "button"
+               :onclick (ps:ps (nyxt/ps:lisp-eval
+                                `(nyxt::append-configuration
+                                  '(setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1"))))
+               "Disable compositing"))))
 
 (define-internal-page-command-global describe-bindings ()
     (buffer "*Help-bindings*" 'base-mode)
