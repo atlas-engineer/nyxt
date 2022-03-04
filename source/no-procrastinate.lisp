@@ -91,11 +91,6 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                       #'string-lessp)))
       tags)))
 
-(defun last-word (s)
-  (if (uiop:emptyp s)
-      ""
-      (alex:last-elt (sera:words s))))
-
 (define-class tag-source (prompter:source)
   ((prompter:name "Tags")
    (prompter:filter-preprocessor
