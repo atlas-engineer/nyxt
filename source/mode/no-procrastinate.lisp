@@ -29,14 +29,14 @@
           nyxt/blocker-mode:*default-hostlist*))))
 
 (defun group-no-procrastinate-hosts (buffer)
-  (let ((no-procrastinate-hosts-table (make-hash-table :test #'equalp)))
-    (let ((no-procrastinate-hosts (nfiles:content (no-procrastinate-hosts-file buffer))))
-      (dolist (no-procrastinate-host no-procrastinate-hosts)
-        (let ((tags (tags no-procrastinate-host)))
-          (if tags
-              (dolist (tag tags)
-                (push no-procrastinate-host (gethash tag no-procrastinate-hosts-table nil)))
-              (push no-procrastinate-host (gethash tags no-procrastinate-hosts-table nil))))))
+  (let ((no-procrastinate-hosts-table (make-hash-table :test #'equalp))
+        (no-procrastinate-hosts (nfiles:content (no-procrastinate-hosts-file buffer))))
+    (dolist (no-procrastinate-host no-procrastinate-hosts)
+      (let ((tags (tags no-procrastinate-host)))
+        (if tags
+            (dolist (tag tags)
+              (push no-procrastinate-host (gethash tag no-procrastinate-hosts-table nil)))
+            (push no-procrastinate-host (gethash tags no-procrastinate-hosts-table nil)))))
     no-procrastinate-hosts-table))
 
 (define-internal-page-command-global list-no-procrastinate-hosts ()
