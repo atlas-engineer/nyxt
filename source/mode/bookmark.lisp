@@ -24,14 +24,14 @@
              :text-align       "left")))))
 
 (defun group-bookmarks (buffer)
-  (let ((bookmarks-table (make-hash-table :test #'equalp)))
-    (let ((bookmarks (nfiles:content (bookmarks-file buffer))))
-      (dolist (bookmark bookmarks)
-        (let ((tags (tags bookmark)))
-          (if tags
-              (dolist (tag tags)
-                (push bookmark (gethash tag bookmarks-table nil)))
-              (push bookmark (gethash tags bookmarks-table nil))))))
+  (let ((bookmarks-table (make-hash-table :test #'equalp))
+        (bookmarks (nfiles:content (bookmarks-file buffer))))
+    (dolist (bookmark bookmarks)
+      (let ((tags (tags bookmark)))
+        (if tags
+            (dolist (tag tags)
+              (push bookmark (gethash tag bookmarks-table nil)))
+            (push bookmark (gethash tags bookmarks-table nil)))))
     bookmarks-table))
 
 (export-always 'list-bookmarks)
