@@ -277,7 +277,7 @@ https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.
                                             (valid-url-p permission)))
                        (matches-p (ppcre:all-matches (match-pattern->regexp permission)
                                                      (render-url (url buffer)))))
-                      (return-from host-permission-holds-p t)))))
+        (return-from host-permission-holds-p t)))))
 
 (export-always 'tab-apis-enabled-p)
 (defmethod tab-apis-enabled-p ((extension extension) (buffer buffer))
