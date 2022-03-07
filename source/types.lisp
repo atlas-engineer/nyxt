@@ -85,3 +85,7 @@ Example:
        (let ((html (ignore-errors (plump:parse string))))
          (not (and (sera:single (plump:children html))
                    (plump:text-node-p (elt (plump:children html) 0)))))))
+
+(export-always 'maybe)
+(deftype maybe (&rest types)
+  `(or null ,@types))
