@@ -47,74 +47,74 @@
 
 (define nyxt
   (package
-    (name "nyxt")
-    (version (nyxt-git-version))
-    (source (local-file %source-dir #:recursive? #t #:select? (git-predicate %source-dir)))
-    (build-system gnu-build-system)     ; TODO: Use glib-or-gtk-build-system instead?
-    (arguments
-     (list
-      #:make-flags #~(list "nyxt" "NYXT_SUBMODULES=false"
-                                (string-append "DESTDIR=" #$output)
-                                "PREFIX=")
-      #:strip-binaries? #f             ; Stripping breaks SBCL binaries.
-      #:phases
-      #~(modify-phases %standard-phases
-          (delete 'configure)
-          (add-before 'build 'fix-common-lisp-cache-folder
-            (lambda _
-              (setenv "HOME" "/tmp")
-              #t))
-          (add-before 'check 'configure-tests
-            (lambda _
-              (setenv "NYXT_TESTS_NO_NETWORK" "1")
-              (setenv "NYXT_TESTS_ERROR_ON_FAIL" "1")
-              #t))
-          (add-after 'install 'wrap-program
-            (lambda* (#:key inputs outputs #:allow-other-keys)
-              (let* ((bin (string-append #$output "/bin/nyxt"))
-                     (libs (list #$(this-package-input "gsettings-desktop-schemas")))
-                     (path (string-join
-                            (map (lambda (lib)
-                                   (string-append lib "/lib"))
-                                 libs)
-                            ":"))
-                     (gi-path (string-join
+   (name "nyxt")
+   (version (nyxt-git-version))
+   (source (local-file %source-dir #:recursive? #t #:select? (git-predicate %source-dir)))
+   (build-system gnu-build-system) ; TODO: Use glib-or-gtk-build-system instead?
+   (arguments
+    (list
+     #:make-flags #~(list "nyxt" "NYXT_SUBMODULES=false"
+                          (string-append "DESTDIR=" #$output)
+                          "PREFIX=")
+     #:strip-binaries? #f            ; Stripping breaks SBCL binaries.
+     #:phases
+     #~(modify-phases %standard-phases
+         (delete 'configure)
+         (add-before 'build 'fix-common-lisp-cache-folder
+           (lambda _
+             (setenv "HOME" "/tmp")
+             #t))
+         (add-before 'check 'configure-tests
+           (lambda _
+             (setenv "NYXT_TESTS_NO_NETWORK" "1")
+             (setenv "NYXT_TESTS_ERROR_ON_FAIL" "1")
+             #t))
+         (add-after 'install 'wrap-program
+           (lambda _
+             (let* ((bin (string-append #$output "/bin/nyxt"))
+                    (libs (list #$(this-package-input "gsettings-desktop-schemas")))
+                    (path (string-join
+                           (map (lambda (lib)
+                                  (string-append lib "/lib"))
+                                libs)
+                           ":"))
+                    (gi-path (string-join
+                              (map (lambda (lib)
+                                     (string-append lib "/lib/girepository-1.0"))
+                                   libs)
+                              ":"))
+                    (xdg-path (string-join
                                (map (lambda (lib)
-                                      (string-append lib "/lib/girepository-1.0"))
+                                      (string-append lib "/share"))
                                     libs)
-                               ":"))
-                     (xdg-path (string-join
-                                (map (lambda (lib)
-                                       (string-append lib "/share"))
-                                     libs)
-                                ":")))
-                (wrap-program bin
-                  `("GIO_EXTRA_MODULES" prefix
-                    (,(string-append #(this-package-input "glib-networking") "/lib/gio/modules")))
-                  `("GI_TYPELIB_PATH" prefix (,gi-path))
-                  `("LD_LIBRARY_PATH" ":" prefix (,path))
-                  `("XDG_DATA_DIRS" ":" prefix (,xdg-path)))
-                #t))))))
-    (native-inputs
-     (list sbcl))
-    (inputs
-     (list
-      ;; System deps
-      gcc-toolchain ; Needed for cl-iolib.
-      glib
-      glib-networking
-      gsettings-desktop-schemas
-      gtk+ ; For the main loop.
-      webkitgtk ; Required when we use its typelib.
-      gobject-introspection))
-    (propagated-inputs
-     ;; For iolib, etc.
-     (list libfixposix))
-    (synopsis "Extensible web-browser in Common Lisp")
-    (home-page "https://nyxt.atlas.engineer")
-    (description "Nyxt is a keyboard-oriented, extensible web-browser
+                               ":")))
+               (wrap-program bin
+                 `("GIO_EXTRA_MODULES" prefix
+                   (,(string-append #(this-package-input "glib-networking") "/lib/gio/modules")))
+                 `("GI_TYPELIB_PATH" prefix (,gi-path))
+                 `("LD_LIBRARY_PATH" ":" prefix (,path))
+                 `("XDG_DATA_DIRS" ":" prefix (,xdg-path)))
+               #t))))))
+   (native-inputs
+    (list sbcl))
+   (inputs
+    (list
+     ;; System deps
+     gcc-toolchain                      ; Needed for cl-iolib.
+     glib
+     glib-networking
+     gsettings-desktop-schemas
+     gtk+                          ; For the main loop.
+     webkitgtk                     ; Required when we use its typelib.
+     gobject-introspection))
+   (propagated-inputs
+    ;; For iolib, etc.
+    (list libfixposix))
+   (synopsis "Extensible web-browser in Common Lisp")
+   (home-page "https://nyxt.atlas.engineer")
+   (description "Nyxt is a keyboard-oriented, extensible web-browser
 designed for power users.  The application has familiar Emacs and VI
 key-bindings and is fully configurable and extensible in Common Lisp.")
-    (license license:bsd-3)))
+   (license license:bsd-3)))
 
 nyxt
