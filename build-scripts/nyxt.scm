@@ -117,127 +117,127 @@ loading, in particular user-centric files like configuration files.")
 
 (define-public nyxt
   (package
-    (name "nyxt")
-    (version (nyxt-git-version))
-    (source (local-file %source-dir #:recursive? #t #:select? (git-predicate %source-dir)))
-    (build-system gnu-build-system)     ; TODO: Use glib-or-gtk-build-system instead?
-    (arguments
-     (list
-      #:make-flags #~(list "nyxt" "NYXT_SUBMODULES=false"
-                           (string-append "DESTDIR=" #$output)
-                           "PREFIX=")
-      #:strip-binaries? #f             ; Stripping breaks SBCL binaries.
-      #:phases
-      #~(modify-phases %standard-phases
-          (delete 'configure)
-          (add-before 'build 'fix-common-lisp-cache-folder
-            (lambda _
-              (setenv "HOME" "/tmp")
-              #t))
-          (add-before 'check 'configure-tests
-            (lambda _
-              (setenv "NYXT_TESTS_NO_NETWORK" "1")
-              (setenv "NYXT_TESTS_ERROR_ON_FAIL" "1")
-              #t))
-          (add-after 'install 'wrap-program
-            (lambda _
-              (let* ((bin (string-append #$output "/bin/nyxt"))
-                     (libs (list #$(this-package-input "gsettings-desktop-schemas")))
-                     (path (string-join
-                            (map (lambda (lib)
-                                   (string-append lib "/lib"))
-                                 libs)
-                            ":"))
-                     (gi-path (getenv "GI_TYPELIB_PATH"))
-                     (xdg-path (string-join
-                                (map (lambda (lib)
-                                       (string-append lib "/share"))
-                                     libs)
-                                ":")))
-                (wrap-program bin
-                  `("GIO_EXTRA_MODULES" prefix
-                    (,(string-append #$(this-package-input "glib-networking") "/lib/gio/modules")))
-                  `("GI_TYPELIB_PATH" prefix (,gi-path))
-                  `("LD_LIBRARY_PATH" ":" prefix (,path))
-                  `("XDG_DATA_DIRS" ":" prefix (,xdg-path)))
-                #t))))))
-    ;; We use `cl-*' inputs and not `sbcl-*' ones so that CCL users can also use
-    ;; this Guix manifests.
-    ;;
-    ;; Another reason is to not fail when an input dependency is found in
-    ;; ~/common-lisp, which would trigger a rebuild of the SBCL input in the
-    ;; store, which is read-only and would thus fail.
-    ;;
-    ;; The official Guix package should use `sbcl-*' inputs though.
-    (native-inputs
-     (list cl-prove
-           sbcl
-           ;; Only for development, uneeded for the upstream Guix package:
-           cl-trivial-benchmark))
-    (inputs
-     (list cl-alexandria
-           cl-bordeaux-threads
-           cl-base64
-           cl-calispel
-           cl-containers
-           cl-css
-           cl-closer-mop
-           cl-clss
-           cl-cluffer
-           cl-custom-hash-table
-           cl-dexador
-           cl-enchant
-           cl-flexi-streams
-           cl-fset
-           cl-gopher
-           cl-html-diff
-           cl-hu.dwim.defclass-star
-           cl-iolib
-           cl-json
-           cl-local-time
-           cl-lparallel
-           cl-log4cl
-           cl-mk-string-metrics
-           cl-moptilities
-           cl-named-readtables
-           cl-nfiles
-           cl-nhooks
-           ;; cl-osicat ; Not needed for SBCL.
-           cl-parenscript
-           cl-phos
-           cl-plump
-           cl-ppcre
-           cl-prevalence
-           cl-qrencode
-           cl-quri
-           cl-serapeum
-           cl-spinneret
-           cl-str
-           cl-slime-swank
-           cl-tld
-           cl-trivia
-           cl-trivial-clipboard
-           cl-trivial-features
-           cl-trivial-garbage
-           cl-trivial-package-local-nicknames
-           cl-trivial-types
-           cl-unix-opts
-           ;; System deps
-           gcc-toolchain ; Needed for cl-iolib
-           cl-cffi-gtk
-           cl-webkit
-           glib-networking
-           gsettings-desktop-schemas
-           cl-gobject-introspection
-           gtk+ ; For the main loop
-           webkitgtk ; Required when we use its typelib
-           gobject-introspection
-           pkg-config))
-    (synopsis "Extensible web-browser in Common Lisp")
-    (home-page "https://nyxt.atlas.engineer")
-    (description "Nyxt is a keyboard-oriented, extensible web-browser
+   (name "nyxt")
+   (version (nyxt-git-version))
+   (source (local-file %source-dir #:recursive? #t #:select? (git-predicate %source-dir)))
+   (build-system gnu-build-system) ; TODO: Use glib-or-gtk-build-system instead?
+   (arguments
+    (list
+     #:make-flags #~(list "nyxt" "NYXT_SUBMODULES=false"
+                          (string-append "DESTDIR=" #$output)
+                          "PREFIX=")
+     #:strip-binaries? #f            ; Stripping breaks SBCL binaries.
+     #:phases
+     #~(modify-phases %standard-phases
+         (delete 'configure)
+         (add-before 'build 'fix-common-lisp-cache-folder
+           (lambda _
+             (setenv "HOME" "/tmp")
+             #t))
+         (add-before 'check 'configure-tests
+           (lambda _
+             (setenv "NYXT_TESTS_NO_NETWORK" "1")
+             (setenv "NYXT_TESTS_ERROR_ON_FAIL" "1")
+             #t))
+         (add-after 'install 'wrap-program
+           (lambda _
+             (let* ((bin (string-append #$output "/bin/nyxt"))
+                    (libs (list #$(this-package-input "gsettings-desktop-schemas")))
+                    (path (string-join
+                           (map (lambda (lib)
+                                  (string-append lib "/lib"))
+                                libs)
+                           ":"))
+                    (gi-path (getenv "GI_TYPELIB_PATH"))
+                    (xdg-path (string-join
+                               (map (lambda (lib)
+                                      (string-append lib "/share"))
+                                    libs)
+                               ":")))
+               (wrap-program bin
+                 `("GIO_EXTRA_MODULES" prefix
+                   (,(string-append #$(this-package-input "glib-networking") "/lib/gio/modules")))
+                 `("GI_TYPELIB_PATH" prefix (,gi-path))
+                 `("LD_LIBRARY_PATH" ":" prefix (,path))
+                 `("XDG_DATA_DIRS" ":" prefix (,xdg-path)))
+               #t))))))
+   ;; We use `cl-*' inputs and not `sbcl-*' ones so that CCL users can also use
+   ;; this Guix manifests.
+   ;;
+   ;; Another reason is to not fail when an input dependency is found in
+   ;; ~/common-lisp, which would trigger a rebuild of the SBCL input in the
+   ;; store, which is read-only and would thus fail.
+   ;;
+   ;; The official Guix package should use `sbcl-*' inputs though.
+   (native-inputs
+    (list cl-prove
+          sbcl
+          ;; Only for development, uneeded for the upstream Guix package:
+          cl-trivial-benchmark))
+   (inputs
+    (list cl-alexandria
+          cl-bordeaux-threads
+          cl-base64
+          cl-calispel
+          cl-containers
+          cl-css
+          cl-closer-mop
+          cl-clss
+          cl-cluffer
+          cl-custom-hash-table
+          cl-dexador
+          cl-enchant
+          cl-flexi-streams
+          cl-fset
+          cl-gopher
+          cl-html-diff
+          cl-hu.dwim.defclass-star
+          cl-iolib
+          cl-json
+          cl-local-time
+          cl-lparallel
+          cl-log4cl
+          cl-mk-string-metrics
+          cl-moptilities
+          cl-named-readtables
+          cl-nfiles
+          cl-nhooks
+          ;; cl-osicat ; Not needed for SBCL.
+          cl-parenscript
+          cl-phos
+          cl-plump
+          cl-ppcre
+          cl-prevalence
+          cl-qrencode
+          cl-quri
+          cl-serapeum
+          cl-spinneret
+          cl-str
+          cl-slime-swank
+          cl-tld
+          cl-trivia
+          cl-trivial-clipboard
+          cl-trivial-features
+          cl-trivial-garbage
+          cl-trivial-package-local-nicknames
+          cl-trivial-types
+          cl-unix-opts
+          ;; System deps
+          gcc-toolchain                 ; Needed for cl-iolib
+          cl-cffi-gtk
+          cl-webkit
+          glib-networking
+          gsettings-desktop-schemas
+          cl-gobject-introspection
+          gtk+                      ; For the main loop
+          webkitgtk                 ; Required when we use its typelib
+          gobject-introspection
+          pkg-config))
+   (synopsis "Extensible web-browser in Common Lisp")
+   (home-page "https://nyxt.atlas.engineer")
+   (description "Nyxt is a keyboard-oriented, extensible web-browser
 designed for power users.  The application has familiar Emacs and VI
 key-bindings and is fully configurable and extensible in Common Lisp.")
-    (license license:bsd-3)))
+   (license license:bsd-3)))
 
 nyxt
