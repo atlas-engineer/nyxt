@@ -275,6 +275,8 @@ rest in background buffers."
 
 (defmethod nfiles:serialize ((profile nyxt-profile) (file bookmarks-file) stream &key)
   (let ((content
+          ;; Sort the entries to make serialization reproducible.
+          ;; Particularly useful when bookmarks are under version control.
           (sort (nfiles:content file)
                 #'url< :key #'url)))
     (write-string "(" stream)
