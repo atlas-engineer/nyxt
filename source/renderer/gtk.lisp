@@ -1574,43 +1574,51 @@ local anyways, and it's better to refresh it if a load was queried."
       (webkit:webkit-user-content-manager-remove-style-sheet
        content-manager style-sheet))))
 
-(define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) javascript &key
-                                               world-name all-frames-p
-                                               at-document-start-p run-now-p
-                                               allow-list block-list)
+(defvar %user-scripts%
+  (make-hash-table :test 'equalp)
+  "The table mapping `nyxt/web-mode:user-script's to WebKit-specific UserScripts.")
+
+(define-class gtk-user-script (nyxt/web-mode:user-script)
+  ((gtk-object))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+(define-user-class nyxt/web-mode:user-script (gtk-user-script))
+
+(define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) (script gtk-user-script)
+                                               &key world-name)
   (let* ((content-manager
            (webkit:webkit-web-view-get-user-content-manager
             (gtk-object buffer)))
-         (frames (if all-frames-p
+         (frames (if (nyxt/web-mode:all-frames-p script)
                      :webkit-user-content-inject-all-frames
                      :webkit-user-content-inject-top-frame))
-         (inject-time (if at-document-start-p
+         (inject-time (if (eq :document-start (nyxt/web-mode:run-at script))
                           :webkit-user-script-inject-at-document-start
                           :webkit-user-script-inject-at-document-end))
-         (allow-list (if allow-list
-                         (list-of-string-to-foreign allow-list)
+         (allow-list (if (nyxt/web-mode:include script)
+                         (list-of-string-to-foreign (nyxt/web-mode:include script))
                          '("http://*/*" "https://*/*")))
-         (block-list (list-of-string-to-foreign block-list))
-         (script (if world-name
-                     (webkit:webkit-user-script-new-for-world
-                      javascript frames inject-time world-name allow-list block-list)
-                     (webkit:webkit-user-script-new
-                      javascript frames inject-time allow-list block-list))))
+         (block-list (if (nyxt/web-mode:exclude script)
+                         (list-of-string-to-foreign (nyxt/web-mode:exclude script))
+                         '("http://*/*" "https://*/*")))
+         (user-script (if world-name
+                          (webkit:webkit-user-script-new-for-world
+                           (nyxt/web-mode:code script) frames inject-time world-name allow-list block-list)
+                          (webkit:webkit-user-script-new
+                           (nyxt/web-mode:code script) frames inject-time allow-list block-list))))
+    (setf (gtk-object script) user-script)
     (webkit:webkit-user-content-manager-add-script
-     content-manager script)
-    (when (and run-now-p
-               (member (slot-value buffer 'status)
-                       '(:finished :failed)))
-      (reload-buffers (list buffer)))
+     content-manager user-script)
     script))
 
-(define-ffi-method ffi-buffer-remove-user-script ((buffer gtk-buffer) script)
+(define-ffi-method ffi-buffer-remove-user-script ((buffer gtk-buffer) (script gtk-user-script))
   (let ((content-manager
           (webkit:webkit-web-view-get-user-content-manager
            (gtk-object buffer))))
-    (when script
+    (when (and script (gtk-object script))
       (webkit:webkit-user-content-manager-remove-script
-       content-manager script))))
+       content-manager (gtk-object script)))))
 
 (define-ffi-method ffi-buffer-enable-javascript ((buffer gtk-buffer) value)
   (setf (webkit:webkit-settings-enable-javascript

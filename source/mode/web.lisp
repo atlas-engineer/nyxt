@@ -19,6 +19,12 @@
 ;; changes in special buffers should open a new one.
 ;; Or else we require that all special-buffer-generating commands open a new buffer.
 
+(defun inject-user-scripts (scripts buffer)
+  (mapcar (alex:rcurry #'ffi-buffer-add-user-script buffer) scripts))
+
+(defun inject-user-styles (styles buffer)
+  (mapcar (alex:rcurry #'ffi-buffer-add-user-style buffer) styles))
+
 (define-mode web-mode ()
   "Base mode for interacting with documents."
   ((rememberable-p nil)
@@ -75,6 +81,22 @@ and to index the top of the page.")
                    :documentation "Defines which elements are to be hinted. The
 hints-selector syntax is that of CLSS, and broadly, that of CSS. Use it to
 define which elements are picked up by element hinting.")
+   (user-scripts
+    nil
+    :reader user-scripts
+    :type list
+    :documentation "List of `user-script'-s to attach via renderer-specific mechanisms.")
+   (user-styles
+    nil
+    :reader user-styles
+    :type list
+    :documentation "List of `user-style'-s to attach via renderer-specific mechanisms.")
+   (constructor
+    (lambda (mode)
+      (inject-user-scripts (user-scripts mode) (buffer mode))))
+   (destructor
+    (lambda (mode)
+      (inject-user-styles (user-scripts mode) (buffer mode))))
    (keymap-scheme
     (define-scheme "web"
       scheme:cua
@@ -222,6 +244,14 @@ define which elements are picked up by element hinting.")
        "s-space" 'scroll-page-up
        "pageup" 'scroll-page-up
        "pagedown" 'scroll-page-down)))))
+
+(defmethod (setf user-scripts) (new-value (mode web-mode))
+  (inject-user-scripts new-value (buffer mode))
+  (setf (slot-value mode 'user-scripts) new-value))
+
+(defmethod (setf user-styles) (new-value (mode web-mode))
+  (inject-user-styles new-value (buffer mode))
+  (setf (slot-value mode 'user-styles) new-value))
 
 (sera:export-always '%clicked-in-input?)
 (defun %clicked-in-input? (&optional (buffer (current-buffer)))
