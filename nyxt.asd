@@ -226,6 +226,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "small-web")
                  (:file "style" :depends-on ("bookmarklets"))
                  (:file "tts")
+                 (:file "user-script")
                  (:file "visual")
                  (:file "watch"))))
   :in-order-to ((test-op (test-op "nyxt/tests")
