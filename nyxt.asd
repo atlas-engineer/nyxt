@@ -181,6 +181,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "scroll")
                  (:file "search-buffer")
                  (:file "spell-check")
+                 (:file "user-script")
                  (:file "zoom")))
                (:file "status" :depends-on ("Core"))
                (:file "start" :depends-on ("Core"))
