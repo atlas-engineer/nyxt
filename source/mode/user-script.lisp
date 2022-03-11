@@ -22,7 +22,7 @@
     t
     :type boolean
     :documentation "Whether to run on both top-level frame and all the subframes.
-If false, runs on the toplevel frame only. True by default.")
+If false, runs on the toplevel frame only.")
    (run-at
     :document-end
     :type (member :document-start :document-end :document-idle)
