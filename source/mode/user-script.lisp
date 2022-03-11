@@ -4,7 +4,7 @@
 (in-package :nyxt/web-mode)
 
 (define-class user-script ()
-  ((name (alex:required-argument 'name))
+  ((name :type (maybe string))
    (code :type string)
    (version "")
    (description "")
