@@ -1631,10 +1631,6 @@ local anyways, and it's better to refresh it if a load was queried."
       (webkit:webkit-user-content-manager-remove-style-sheet
        content-manager style-sheet))))
 
-(defvar %user-scripts%
-  (make-hash-table :test 'equalp)
-  "The table mapping `nyxt/web-mode:user-script's to WebKit-specific UserScripts.")
-
 (define-class gtk-user-script (nyxt/web-mode:user-script)
   ((gtk-object))
   (:export-class-name-p t)
