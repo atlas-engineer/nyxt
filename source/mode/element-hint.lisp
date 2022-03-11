@@ -407,7 +407,15 @@ visible nosave active buffer."
   (query-hints "Bookmark hint"
                (lambda (result)
                  (dolist (url (mapcar #'url result))
-                   (bookmark-url :url url)))
+                   (let ((tags (prompt
+                                :prompt "Tag(s)"
+                                :sources (list
+                                          (make-instance 'prompter:word-source
+                                                         :name "New tags"
+                                                         :multi-selection-p t)
+                                          (make-instance 'nyxt::tag-source
+                                                         :marks (url-bookmark-tags url))))))
+                     (bookmark-add url :tags tags :title (fetch-url-title url)))))
                :multi-selection-p t
                :selector "a, img"))
 
