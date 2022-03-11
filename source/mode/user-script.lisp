@@ -49,10 +49,10 @@
     nil
     :type (maybe hash-table))
    (include
-    nil
+    '()
     :type list-of-strings)
    (exclude
-    nil
+    '()
     :type list-of-strings)
    (all-frames-p
     t
