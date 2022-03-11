@@ -56,10 +56,7 @@ Possible values:
         (alex:read-file-into-string script))
        (t script)))))
 
-(in-package :nyxt)
-
-(export-always 'make-greasemonkey-script)
-(defun make-greasemonkey-script (greasemonkey-script)
+(defun nyxt:make-greasemonkey-script (greasemonkey-script)
   (sera:and-let* ((code (nyxt/web-mode::get-script-text greasemonkey-script))
                   (start-position (search "// ==UserScript==" code))
                   (end-position (search "// ==/UserScript==" code))
