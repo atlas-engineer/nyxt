@@ -33,7 +33,7 @@
     (list (nyxt/blocker-mode:make-hostlist
            :hosts (mapcar #'(lambda (y) (hostname y))
                           (nfiles:content (no-procrastinate-hosts-file (current-buffer)))))
-          *default-hostlist-no-procrastinate*)))) ; I still need to change this to *default-hostlist-no-procrastinate*
+          *default-hostlist-no-procrastinate*)))) 
 
 (defun group-no-procrastinate-hosts (buffer)
   (let ((no-procrastinate-hosts-table (make-hash-table :test #'equalp))
