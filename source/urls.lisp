@@ -52,6 +52,15 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
          (or (ignore-errors (ffi-display-url url))
              url))))
 
+(export-always 'fetch-url-title)
+(defun fetch-url-title (url)
+  "Return page's title. The URL is fetched, which could explain a possible
+bottleneck."
+  (let* ((html-source (dex:get url))
+         (html-parsed (plump:parse html-source))
+         (title (plump:text (aref (clss:select "title" html-parsed) 0))))
+    title))
+
 (defmacro defmemo (name params &body body) ; TODO: Replace with https://github.com/AccelerationNet/function-cache?
   (alex:with-gensyms (memo-table args result result?)
     `(let ((,memo-table (make-hash-table :test 'equal)))
