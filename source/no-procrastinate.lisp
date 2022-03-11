@@ -79,41 +79,6 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
    (prompter:multi-selection-p t)
    (prompter:active-attributes-keys '("URL" "Title" "Tags"))))
 
-(defun tag-suggestions ()
-  (let ((no-procrastinate-hosts-list (nfiles:content (no-procrastinate-hosts-file (current-buffer)))))
-    ;; Warning: `sort' is destructive and `append' does not copy the last list,
-    ;; so if we used `delete-duplicates' here it would have modified the last
-    ;; list.
-    (let ((tags (sort (remove-duplicates
-                       (apply #'append
-                              (mapcar #'tags no-procrastinate-hosts-list))
-                       :test #'string-equal)
-                      #'string-lessp)))
-      tags)))
-
-(define-class tag-source (prompter:source)
-  ((prompter:name "Tags")
-   (prompter:filter-preprocessor
-    (lambda (initial-suggestions-copy source input)
-      (prompter:delete-inexact-matches
-       initial-suggestions-copy
-       source
-       (last-word input))))
-   (prompter:filter
-    (lambda (suggestion source input)
-      (prompter:fuzzy-match suggestion source (last-word input))))
-   (prompter:multi-selection-p t)
-   (prompter:constructor (tag-suggestions)))
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-
-(define-class keyword-source (prompter:source)
-  ((prompter:name "Keywords")
-   (buffer :accessor buffer :initarg :buffer)
-   (prompter:multi-selection-p t)
-   (prompter:constructor (lambda (source)
-                           (mapcar #'car (keywords (buffer source))))))
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-
 (defun url-no-procrastinate-host-tags (url)
   "Return the list of tags of the host corresponding to URL."
   (let ((no-procrastinate-hosts-entry-list (nfiles:content (no-procrastinate-hosts-file (current-buffer)))))
