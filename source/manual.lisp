@@ -210,9 +210,11 @@ documentation.")
     (:p "See the " (:code "proxy-mode") " documentation.")
 
     (:h3 "Blocker mode")
-    (:p "This mode blocks access to websites related to especific hosts. By
-default, it blocks hosts listed on " (:a :href "https://github.com/StevenBlack/hosts" "Steve Black's list.")
-" To customize host blocking see " (:code "blocker-mode") " documentation.")
+    (:p "This mode blocks access to websites related to especific hosts. To see
+all hosts being blocked, execute command " (:code "describe-variable") ", choose variable "
+(:code "NYXT/BLOCKER-MODE:*DEFAULT-HOSTLIST*") ", and read data on "
+(:code "nyxt/blocker-mode:url-body") " slot." " To customize host blocking, read the "
+(:code "blocker-mode") " documentation.")
 
     (:h3 "Custom commands")
     (:p "Creating your own invokable commands is similar to creating a Common
