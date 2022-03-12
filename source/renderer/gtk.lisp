@@ -811,9 +811,9 @@ See `gtk-browser's `modifier-translator' slot."
                     (webkit:webkit-uri-scheme-request-get-uri request)
                     (find (webkit:webkit-uri-scheme-request-get-web-view request)
                           (delete nil
-                                  (append (list (status-buffer (current-window))
-                                                (active-prompt-buffers (current-window))
-                                                (panel-buffers (current-window)))
+                                  (append (list (status-buffer (current-window)))
+                                          (active-prompt-buffers (current-window))
+                                          (panel-buffers (current-window))
                                           (buffer-list))) :key #'gtk-object)))
         (or (error-callback scheme-object)
             (lambda (condition)
