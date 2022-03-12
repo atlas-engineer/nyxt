@@ -40,8 +40,8 @@
   (setf (slot-value mode 'user-styles) new-value))
 
 (define-class user-script ()
-  ((name :type (maybe string))
-   (code :type string)
+  ((name nil :type (maybe string))
+   (code "" :type string)
    (version "")
    (description "")
    (namespace "")
