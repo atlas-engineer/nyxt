@@ -4,8 +4,8 @@
 (in-package :nyxt/web-mode)
 
 (define-class user-script ()
-  ((name :type (maybe string))
-   (code :type string)
+  ((name nil :type (maybe string))
+   (code "" :type string)
    (version "")
    (description "")
    (namespace "")
