@@ -19,7 +19,7 @@ stdenv.mkDerivation {
   ];
 
   buildInputs = [
-    pkgs.gobjectIntrospection
+    pkgs.gobject-introspection
     pkgs.pkg-config
     pkgs.enchant.out
     pkgs.gsettings-desktop-schemas.out
@@ -58,7 +58,7 @@ stdenv.mkDerivation {
                                                    pkgs.enchant.out
                                                    pkgs.glib-networking.out
                                                    pkgs.webkitgtk
-                                                   pkgs.gobjectIntrospection
+                                                   pkgs.gobject-introspection
                                                    pkgs.pkg-config.out
                                                    pkgs.gtk3
                                                    pkgs.pango.out
