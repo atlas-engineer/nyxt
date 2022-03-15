@@ -113,13 +113,16 @@ Don't set this, it would lose its meaning.")
          (pushnew (intern string "KEYWORD") *features*)))
   (destructuring-bind (version &optional commits commit)
       (str:split "-" +version+)
-    (let ((commits (and commits (parse-integer commits))))
-      (alex:when-let* ((parsed-version (uiop:parse-version version))
-                       (major (first parsed-version))
-                       (minor (second parsed-version))
-                       (patch (third parsed-version)))
-        (push-feature (format nil "NYXT-~a" major))
-        (push-feature (format nil "NYXT-~a.~a" major minor))
+    (let* ((commits (and commits (parse-integer commits)))
+           (parsed-version (uiop:parse-version version))
+           (major (first parsed-version))
+           (minor (second parsed-version))
+           (patch (third parsed-version)))
+      (when major
+        (push-feature (format nil "NYXT-~a" major)))
+      (when minor
+        (push-feature (format nil "NYXT-~a.~a" major minor)))
+      (when patch
         (push-feature (format nil "NYXT-~a.~a.~a" major minor patch)))
       (when commit
         (push-feature (format nil "NYXT-~:@(~a~)" commit)))
