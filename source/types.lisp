@@ -89,3 +89,7 @@ Example:
 (export-always 'maybe)
 (deftype maybe (&rest types)
   `(or null ,@types))
+
+(export-always 'maybe*)
+(deftype maybe* (&rest types)
+  `(or null (array * (0)) ,@types))
