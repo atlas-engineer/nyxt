@@ -38,15 +38,16 @@ variable.")
 (export-always 'nyxt-init-file)
 (defun nyxt-init-file (&optional subpath)
   "Return SUBPATH relative to `*init-file*'.
-Return nil if `*init-file*' is nil.
+Return #p\"\" if `*init-file*' expands to #p\"\".
 
-Example:
-If for example, we want to load a define-command procedure that lives in ~/path/to/nyxt/config/dir/my-slink.lisp
-(load-after-system :slynk (nyxt-init-file \"my-slink.lisp\"))"
+The .lisp extension is automatically appended.
+
+For instance, if we want to load some Slynk configuration code that lives in
+/PATH/TO/NYXT/CONFIG/DIRECTORY/my-slink.lisp:
+
+  (load-after-system :slynk (nyxt-init-file \"my-slink\"))"
   (if subpath
-      (uiop:subpathname* (uiop:pathname-directory-pathname
-                          (nfiles:expand *init-file*))
-                         subpath)
+      (nfiles:expand (make-instance 'init-file :base-path subpath))
       (nfiles:expand *init-file*)))
 
 (defun handle-malformed-cli-arg (condition)
