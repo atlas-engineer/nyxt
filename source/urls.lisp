@@ -52,10 +52,11 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
          (or (ignore-errors (ffi-display-url url))
              url))))
 
-(defun render-host-&-scheme (url)
+(export-always 'render-host-and-scheme)
+(defun render-host-and-scheme (url)
   "Return decoded URL without path, if existent."
   (format nil "~a://~a" (quri:uri-scheme url)
-                      (quri:uri-host url)))
+          (quri:uri-host url)))
 
 (defmacro defmemo (name params &body body) ; TODO: Replace with https://github.com/AccelerationNet/function-cache?
   (alex:with-gensyms (memo-table args result result?)
