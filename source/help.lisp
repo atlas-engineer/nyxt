@@ -202,7 +202,13 @@ For generic functions, describe all the methods."
                    (:raw (resolve-backtick-quote-links (documentation method 't)
                                                        (mopu:method-name method)))
                    (:h2 "Argument list")
-                   (:p (write-to-string (closer-mop:method-lambda-list method)))
+                   (:p (:raw (str:join " " (mapcar (lambda (symbol)
+                                                     (if (subtypep symbol 'standard-object)
+                                                         (spinneret:with-html-string
+                                                           (:a :href (nyxt-url 'describe-class :class symbol)
+                                                               (write-to-string symbol)))
+                                                         (write-to-string symbol)))
+                                                   (closer-mop:method-lambda-list method)))))
                    (alex:when-let* ((definition (swank:find-definition-for-thing method))
                                     (not-error-p (null (getf definition :error)))
                                     (file (rest (getf definition :location)))
@@ -307,7 +313,14 @@ A command is a special kind of function that can be called with
         (when mention-class-p
           (:li (format nil "Class: ~s" class)))
         (when (getf props :type)
-          (:li (format nil "Type: ~s" (getf props :type))))
+          (:li
+           (:raw (format nil "Type: ~a"
+                         (if (and (subtypep (getf props :type) 'standard-object))
+                             (spinneret:with-html-string
+                               (:a :href (nyxt-url 'describe-class
+                                                   :class (getf props :type))
+                                   (getf props :type))
+                              (getf props :type)))))))
         (when (getf props :initform)
           (let* ((initform-string (let ((*print-case* :downcase))
                                     (write-to-string (getf props :initform))))
