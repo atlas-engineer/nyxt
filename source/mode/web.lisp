@@ -541,7 +541,7 @@ Otherwise go forward to the only child."
         (spinneret:with-html-string
           (:body (:h1 "History")
                  (:style (style output-buffer))
-                 (:style (style mode))
+                 (:style (:raw (style mode)))
                  (:div (:raw tree))))))))
 
 (define-internal-page-command-global list-history (&key (limit 100))

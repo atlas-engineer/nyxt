@@ -44,6 +44,7 @@ matching buffer `id's along with buffer history entries.")
        :position "absolute"
        :width "1px"
        :background-color theme:text
+       :color theme:background
        :top "5px"
        :bottom "-12px"
        :left "-10px")
@@ -57,6 +58,7 @@ matching buffer `id's along with buffer history entries.")
        :position "absolute"
        :width "1px"
        :background-color theme:text
+       :color theme:background
        :top "5px"
        :bottom "7px"
        :height "7px"
@@ -68,4 +70,5 @@ matching buffer `id's along with buffer history entries.")
        :width "10px"
        :height "1px"
        :background-color theme:text
+       :color theme:background
        :top "12px")))))
