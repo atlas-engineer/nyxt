@@ -148,7 +148,8 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
             'nyxt/help-mode:help-mode)
   "Inspect a package and show it in a help buffer."
   (let ((total-symbols (package-defined-symbols nil (list package)))
-        (external-symbols (package-defined-symbols (list package))))
+        (external-symbols (package-defined-symbols (list package)))
+        (*print-case* :downcase))
     (flet ((package-markup (package)
              (spinneret:with-html
                (:a :href (nyxt-url 'describe-package :package (package-name package))
@@ -179,12 +180,13 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
     (buffer (str:concat "*Help-" (symbol-name variable) "*")
             'nyxt/help-mode:help-mode)
   "Inspect a variable and show it in a help buffer."
-  (spinneret:with-html-string
-    (:style (style buffer))
-    (:h1 (format nil "~s" variable)) ; Use FORMAT to keep package prefix.
-    (:raw (resolve-backtick-quote-links (documentation variable 'variable) variable))
-    (:h2 "Current Value:")
-    (:p (:raw (value->html (symbol-value variable))))))
+  (let ((*print-case* :downcase))
+    (spinneret:with-html-string
+      (:style (style buffer))
+      (:h1 (format nil "~s" variable)) ; Use FORMAT to keep package prefix.
+      (:raw (resolve-backtick-quote-links (documentation variable 'variable) variable))
+      (:h2 "Current Value:")
+      (:p (:raw (value->html (symbol-value variable)))))))
 
 (define-internal-page-command-global describe-function
     (&key (function (prompt1
@@ -195,7 +197,8 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
   "Inspect a function and show it in a help buffer.
 For generic functions, describe all the methods."
   (if function
-      (let ((input function))
+      (let ((input function)
+            (*print-case* :downcase))
         (flet ((method-desc (method)
                  (spinneret:with-html-string
                    (:h1 (symbol-name input) " " (write-to-string (mopu:method-specializers method)))
@@ -265,7 +268,8 @@ A command is a special kind of function that can be called with
          (source-file
            (alex:when-let ((location (getf (swank:find-definition-for-thing (fn command))
                                            :location)))
-             (alex:last-elt location))))
+             (alex:last-elt location)))
+         (*print-case* :downcase))
     (spinneret:with-html-string
       (:style (style buffer))
       (:h1 (symbol-name (name command))
@@ -305,7 +309,8 @@ A command is a special kind of function that can be called with
   "Create the HTML that represents a slot."
   ;; TODO: Adapt HTML sections / lists to describe-slot and describe-class.
   ;; TODO: Parse docstrings and highlight code samples.
-  (let ((props (mopu:slot-properties (find-class class) slot)))
+  (let ((props (mopu:slot-properties (find-class class) slot))
+        (*print-case* :downcase))
     (spinneret:with-html-string
       (:ul
        (:li (symbol-name slot))
@@ -345,7 +350,8 @@ A command is a special kind of function that can be called with
             'nyxt/help-mode:help-mode)
   "Inspect a class and show it in a help buffer."
   (let* ((slots (class-public-slots class))
-         (slot-descs (apply #'str:concat (mapcar (alex:rcurry #'describe-slot* class) slots))))
+         (slot-descs (apply #'str:concat (mapcar (alex:rcurry #'describe-slot* class) slots)))
+         (*print-case* :downcase))
     (spinneret:with-html-string
       (:style (style buffer))
       (:h1 (symbol-name class))
