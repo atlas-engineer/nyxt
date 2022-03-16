@@ -201,17 +201,24 @@ For generic functions, describe all the methods."
             (*print-case* :downcase))
         (flet ((method-desc (method)
                  (spinneret:with-html-string
-                   (:h1 (symbol-name input) " " (write-to-string (mopu:method-specializers method)))
+                   (:h1 (format nil "~s" input) " "
+                        (:raw (format
+                               nil "(~{~a~^ ~})"
+                               (mapcar (lambda (class)
+                                         (cond
+                                           ((ignore-errors (mopu:subclassp class 'standard-object))
+                                            (spinneret:with-html-string
+                                              (:a :href (nyxt-url 'describe-class
+                                                                  :class (class-name class))
+                                                  (write-to-string (class-name class)))))
+                                           ((ignore-errors (eq t (class-name class)))
+                                            "t")
+                                           (t (nyxt::escaped-literal-print class))))
+                                       (mopu:method-specializers method)))))
                    (:raw (resolve-backtick-quote-links (documentation method 't)
                                                        (mopu:method-name method)))
                    (:h2 "Argument list")
-                   (:p (:raw (str:join " " (mapcar (lambda (symbol)
-                                                     (if (subtypep symbol 'standard-object)
-                                                         (spinneret:with-html-string
-                                                           (:a :href (nyxt-url 'describe-class :class symbol)
-                                                               (write-to-string symbol)))
-                                                         (write-to-string symbol)))
-                                                   (closer-mop:method-lambda-list method)))))
+                   (:p (write-to-string (closer-mop:method-lambda-list method)))
                    (alex:when-let* ((definition (swank:find-definition-for-thing method))
                                     (not-error-p (null (getf definition :error)))
                                     (file (rest (getf definition :location)))
