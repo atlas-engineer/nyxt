@@ -1223,26 +1223,31 @@ set of useful URLs or preparing a list to send to a someone else."
   (let ((buffers (prompt
                   :prompt "Reduce buffer(s)"
                   :sources (make-instance 'user-buffer-source
-                                          :actions '()
+                                          :constructor (remove-if #'internal-url-p (buffer-list)
+                                                                  :key #'url)
+                                          :actions '(identity)
                                           :multi-selection-p t))))
-    (spinneret:with-html-string
-      (:style (style reduced-buffer))
-      (:h1 "Reduced Buffers:")
-      (:div
-       (loop for buffer in buffers
-             collect
-             (with-current-buffer buffer
-               (:div
-                (:p (:b "Title: ") (title buffer))
-                (:p (:b "URL: ") (:a :href (render-url (url buffer))
-                                     (render-url (url buffer))))
-                (:p (:b "Automatically generated summary: ")
-                    (:ul
-                     (loop for summary-bullet in (analysis:summarize-text
-                                                  (document-get-paragraph-contents :limit 10000))
-                           collect (:li (str:collapse-whitespaces summary-bullet)))))
-                (:hr ""))))))
-    (when delete (mapcar #'buffer-delete buffers))))
+    (unwind-protect
+         (spinneret:with-html-string
+           (:style (style reduced-buffer))
+           (:h1 "Reduced Buffers:")
+           (:div
+            (if buffers
+                (loop for buffer in buffers
+                      collect
+                      (with-current-buffer buffer
+                        (:div
+                         (:p (:b "Title: ") (title buffer))
+                         (:p (:b "URL: ") (:a :href (render-url (url buffer))
+                                              (render-url (url buffer))))
+                         (:p (:b "Automatically generated summary: ")
+                             (:ul
+                              (loop for summary-bullet in (analysis:summarize-text
+                                                           (document-get-paragraph-contents :limit 10000))
+                                    collect (:li (str:collapse-whitespaces summary-bullet)))))
+                         (:hr ""))))
+                (:p "None chosen."))))
+      (when delete (mapcar #'buffer-delete buffers)))))
 
 (define-command delete-all-buffers (&key (confirmation-p t))
   "Delete all buffers, with confirmation."
