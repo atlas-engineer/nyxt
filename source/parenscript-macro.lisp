@@ -26,21 +26,34 @@
 (export-always 'insert-at)
 (defpsmacro insert-at (tag input-text)
   "Insert text at a tag."
-  `(let ((origin (chain ,tag selection-start))
-         (end (chain ,tag selection-end)))
-     (setf (chain ,tag value)
-           (+ (chain ,tag value (substring 0 origin))
-              ,input-text
-              (chain ,tag value
-                     (substring end
-                                (chain ,tag value length)))))
-     (if (= origin end)
-         (progn
-           (setf (chain ,tag selection-start) (+ origin (chain ,input-text length)))
-           (setf (chain ,tag selection-end) (chain ,tag selection-start)))
-         (progn
-           (setf (chain ,tag selection-start) origin)
-           (setf (chain ,tag selection-end) (+ origin (chain ,input-text length)))))))
+  `(let ((element ,tag)
+         (origin (chain element selection-start))
+         (end (chain element selection-end))
+         (tag-name (chain element tag-name)))
+     (cond
+      ((or (string= tag-name "INPUT")
+           (string= tag-name "TEXTAREA"))
+       (setf (chain element value)
+             (+ (chain element value (substring 0 origin))
+                ,input-text
+                (chain element value
+                       (substring end (chain element value length)))))
+       (if (= origin end)
+           (progn
+             (setf (chain element selection-start) (+ origin (chain ,input-text length)))
+             (setf (chain element selection-end) (chain element selection-start)))
+           (progn
+             (setf (chain element selection-start) origin)
+             (setf (chain element selection-end) (+ origin (chain ,input-text length))))))
+      ((chain element is-content-editable)
+       ;; TODO: Implement caret movement, as in
+       ;; https://stackoverflow.com/questions/6249095/how-to-set-the-caret-cursor-position-in-a-contenteditable-element-div
+       (setf (chain element inner-text)
+             (+ (chain element inner-text (substring 0 origin))
+                ,input-text
+                (chain element inner-text
+                       (substring end
+                                  (chain element inner-text length)))))))))
 
 (export-always 'element-editable-p)
 (defpsmacro element-editable-p (element)
