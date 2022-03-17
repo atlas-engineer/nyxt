@@ -194,6 +194,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
     (if (not (valid-url-p url))
         (echo "Invalid URL '~a'" url)
         (let* ((url (quri:uri url))
+               (title (fetch-url-title url))
                (tags (prompt
                       :prompt "Tag(s)"
                       :sources (list
@@ -202,7 +203,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                                :multi-selection-p t)
                                 (make-instance 'tag-source
                                                :marks (url-bookmark-tags url))))))
-          (bookmark-add url :tags tags)))))
+          (bookmark-add url :tags tags :title title)))))
 
 (define-command delete-bookmark (&optional urls-or-bookmark-entries)
   "Delete bookmark(s) matching URLS-OR-BOOKMARK-ENTRIES.
