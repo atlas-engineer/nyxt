@@ -57,7 +57,7 @@
   (nfiles:content (annotations-file (current-buffer))))
 
 (define-command annotate-current-url (&optional (buffer-id (id (current-buffer))))
-  "Create a annotation of the URL of buffer with BUFFER-ID."
+  "Create an annotation of the URL of buffer with BUFFER-ID."
   (let* ((buffer (buffers-get buffer-id))
          (data (prompt1
                     :prompt "Annotation"
@@ -78,7 +78,7 @@
     (annotation-add annotation)))
 
 (define-command annotate-highlighted-text (&optional (buffer (current-buffer)))
-  "Create a annotation for the highlighted text of BUFFER."
+  "Create an annotation for the highlighted text of BUFFER."
   (with-current-buffer buffer
     (let* ((snippet (%copy))
            (data (prompt1
