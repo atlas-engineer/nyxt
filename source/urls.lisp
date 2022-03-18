@@ -52,6 +52,12 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
          (or (ignore-errors (ffi-display-url url))
              url))))
 
+(export-always 'render-host-and-scheme)
+(defun render-host-and-scheme (url)
+  "Return decoded URL without path, if existent."
+  (format nil "~a://~a" (quri:uri-scheme url)
+          (quri:uri-host url)))
+
 (export-always 'fetch-url-title)
 (defun fetch-url-title (url)
   "Return page's title. The URL is fetched, which could explain a possible
