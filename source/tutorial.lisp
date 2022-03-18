@@ -179,6 +179,19 @@ Bookmarks can have the following settings:")
                                 bookmark-url nyxt/web-mode:bookmark-hint
                                 set-url-from-bookmark delete-bookmark
                                 nyxt/bookmark-mode:list-bookmarks)))
+   (:h3 "Annotations")
+   (:p "Annotations can have the following settings:")
+   (:ul
+    (:li (:code ":snippet") ": The snippet which was hilighted by the user.")
+    (:li (:code ":url") ": The URL of the annotation.")
+    (:li (:code ":title") ": The title of the annotation.")
+    (:li (:code ":annotation") ": The comment about the highlighted snippet or
+the URL.")
+    (:li (:code ":tags") ": A list of strings.  Useful to categorize and filter annotation."))
+   (:p "Annotate-related commands")
+   (:ul
+    (list-command-information '(annotate-current-url annotate-highlighted-text
+                                show-annotation show-annotations show-annotations-for-current-url)))
    (:h3 "Passthrough mode")
    (:p "The command " (:code "passthrough-mode") " forwards all keys to the
 renderer. For instance, using the default binding of Nyxt (" (:code "web-cua-map") ") the
