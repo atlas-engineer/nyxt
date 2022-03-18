@@ -135,6 +135,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "history")
                  (:file "autofill")
                  (:file "external-editor")
+                 (:file "no-procrastinate")
                  #+quicklisp
                  (:file "lisp-system")))
                (:module "Core modes"
@@ -210,6 +211,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "no-sound")
                  (:file "no-script")
                  (:file "no-webgl")
+                 (:file "no-procrastinate")
                  (:file "reduce-bandwidth")
                  (:file "force-https")
                  (:file "reduce-tracking")
