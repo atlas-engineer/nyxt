@@ -337,6 +337,11 @@ The file where the system will create/save the global history.")
     (make-instance 'bookmarks-file)
     :type bookmarks-file
     :documentation "The file where the system will create/save the bookmarks.")
+ (no-procrastinate-hosts-file
+    (make-instance 'no-procrastinate-hosts-file)
+    :type no-procrastinate-hosts-file
+    :documentation "The file where the system will create/save hosts associated
+to procrastination that should be blocked.")
    (annotations-file
     (make-instance 'annotations-file)
     :type annotations-file
