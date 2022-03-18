@@ -88,9 +88,11 @@ Example:
       (when (web-buffer-p (buffer mode))
         (hooks:remove-hook (request-resource-hook (buffer mode))
                            'request-resource-block))))
+   (load-hostlists-p t)
    (constructor
     (lambda (mode)
-      (load-hostlists mode)
+      (when (load-hostlists-p mode)
+        (load-hostlists mode))
       (when (web-buffer-p (buffer mode))
         (if (request-resource-hook (buffer mode))
             (hooks:add-hook (request-resource-hook (buffer mode))
