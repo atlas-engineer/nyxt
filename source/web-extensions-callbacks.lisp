@@ -290,15 +290,19 @@ the description of the mechanism that sends the results back."
                           :test #'string-equal)))
     (when (nyxt/web-extensions:tab-apis-enabled-p extension buffer-to-insert)
       (ffi-buffer-add-user-script
-       buffer-to-insert (if file
-                            (uiop:read-file-string
-                             (nyxt/web-extensions:merge-extension-path extension file))
-                            code)
-       :run-now-p t
-       :at-document-start-p (and (gethash "runAt" script-data)
-                                 (string= (gethash "runAt" script-data) "document_start"))
-       :all-frames-p (gethash "allFrames" script-data)
-       :world-name (name extension)))
+       buffer-to-insert
+       (make-instance
+        'nyxt/web-mode:user-script
+        :code (if file
+                  (uiop:read-file-string
+                   (nyxt/web-extensions:merge-extension-path extension file))
+                  code)
+        :run-at (if (and (gethash "runAt" script-data)
+                         (string= (gethash "runAt" script-data) "document_start"))
+                    :document-start
+                    :document-end)
+        :all-frames-p (gethash "allFrames" script-data)
+        :world-name (name extension))))
     "[]"))
 
 (-> storage-local-get (buffer string) (values string &optional))
