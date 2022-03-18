@@ -31,10 +31,12 @@
     (lambda (mode)
       (inject-user-styles (user-scripts mode) (buffer mode))))))
 
+(export-always 'user-scripts)
 (defmethod (setf user-scripts) (new-value (mode web-mode))
   (inject-user-scripts new-value (buffer mode))
   (setf (slot-value mode 'user-scripts) new-value))
 
+(export-always 'user-styles)
 (defmethod (setf user-styles) (new-value (mode web-mode))
   (inject-user-styles new-value (buffer mode))
   (setf (slot-value mode 'user-styles) new-value))
