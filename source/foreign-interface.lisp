@@ -131,8 +131,7 @@ the termination of the JavaScript execution."))
 (define-ffi-generic ffi-buffer-remove-user-style (buffer style-sheet)
   (:documentation "Remove the STYLE-SHEET installed with `ffi-buffer-add-user-style'."))
 
-(define-ffi-generic ffi-buffer-add-user-script (buffer javascript &key
-                                                       world-name)
+(define-ffi-generic ffi-buffer-add-user-script (buffer user-script)
   (:documentation "Install the JAVASCRIPT  into the BUFFER web view."))
 (define-ffi-generic ffi-buffer-remove-user-script (buffer script)
   (:documentation "Remove the SCRIPT installed with `ffi-buffer-add-user-script'."))

@@ -45,6 +45,10 @@
    (version "")
    (description "")
    (namespace "")
+   (world-name
+    nil
+    :type (maybe string)
+    :documentation "The JavaScript world to run the `code' in.")
    (requires
     nil
     :type (maybe hash-table))
