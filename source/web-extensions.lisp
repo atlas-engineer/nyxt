@@ -51,13 +51,13 @@ A list of objects. Does not necessarily have the same order as `files' of the sc
                                           :allow-list (match-patterns script))
               (user-styles script))
         (push
-         (ffi-buffer-add-user-script buffer (uiop:read-file-string
-                                             (merge-extension-path extension file))
-                                     :world-name (name extension)
-                                     :all-frames-p t
-                                     :run-now-p t
-                                     :at-document-start-p t
-                                     :allow-list (match-patterns script))
+         (ffi-buffer-add-user-script buffer (make-instance 'nyxt/web-mode:user-script
+                                                           :code (uiop:read-file-string
+                                                                  (merge-extension-path extension file))
+                                                           :all-frames-p t
+                                                           :world-name (name extension)
+                                                           :run-at :document-start
+                                                           :include (match-patterns script)))
          (user-scripts script)))))
 
 (defun make-content-script (json)
