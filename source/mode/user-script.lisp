@@ -77,7 +77,40 @@ Possible values:
   (:documentation "The Nyxt-internal representation of user scripts to bridge with the renderer."))
 (define-user-class user-script)
 
-(defun get-script-text (script)
+(sera:-> get-script-url
+         (string (maybe nyxt::url-designator pathname))
+         (values (maybe quri:uri) boolean))
+(defun get-script-url (script original-url)
+  "A helper to get the URL to a SCRIPT string.
+Returns:
+- A final URL.
+- A boolean for whether it's a file URL."
+  (cond
+    ((valid-url-p script)
+     (let ((script (quri:uri script)))
+       (if (quri:uri-file-p script)
+           (values script t)
+           (values script nil))))
+    ((and (uiop:file-pathname-p script)
+          (uiop:file-exists-p script)
+          (uiop:absolute-pathname-p script))
+     (values (quri.uri.file:make-uri-file :path script) t))
+    ((and (uiop:file-pathname-p script) original-url)
+     (let ((full-url (quri:merge-uris (quri:uri script)
+                                      (typecase original-url
+                                        (pathname (quri.uri.file:make-uri-file :path original-url))
+                                        (nyxt::url-designator (url original-url))))))
+       (if (and (quri:uri-file-p full-url)
+                (uiop:file-exists-p (quri:uri-path full-url)))
+           (values full-url t)
+           (values full-url nil))))
+    (t (values nil nil))))
+
+(sera:-> get-script-text
+         ((or string nyxt::url-designator pathname)
+          &optional (maybe nyxt::url-designator pathname))
+         (values string &optional))
+(defun get-script-text (script &optional original-url)
   (etypecase script
     (pathname
      (alex:read-file-into-string script))
@@ -86,15 +119,16 @@ Possible values:
          (alex:read-file-into-string (quri:uri-path script))
          (dex:get (quri:render-uri script))))
     (string
-     (cond
-       ((valid-url-p script)
-        (let ((script (quri:uri script)))
-          (if (quri:uri-file-p script)
-              (alex:read-file-into-string (quri:uri-path script))
-              (dex:get (quri:render-uri script)))))
-       ((uiop:file-pathname-p script)
-        (alex:read-file-into-string script))
-       (t script)))))
+     (multiple-value-bind (url file-p)
+         (get-script-url script original-url)
+       (cond
+         ((and url file-p)
+          (alex:read-file-into-string (quri:uri-path url)))
+         ((and url (not file-p))
+          (dex:get (quri:render-uri url)))
+         ;; No URL. No need to download anything.
+         ;; It's just code (hopefully).
+         (t script))))))
 
 (in-package :nyxt)
 
@@ -123,7 +157,11 @@ Possible values:
                      :namespace (first (getprop "namespace"))
                      :all-frames-p (not (first (getprop "noframes")))
                      :code (format nil "~{~a;~&~}~a"
-                                   (mapcar #'nyxt/web-mode::get-script-text (getprop "require"))
+                                   (mapcar (lambda (require)
+                                             (nyxt/web-mode::get-script-text
+                                              require (nyxt/web-mode::get-script-url
+                                                       greasemonkey-script nil)))
+                                           (getprop "require"))
                                    code)
                      :include (append (getprop "include") (getprop "match"))
                      :exclude (getprop "exclude")
