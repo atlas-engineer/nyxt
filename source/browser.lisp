@@ -711,7 +711,7 @@ sometimes yields the wrong result."
                                                       world-name all-frames-p inject-as-author-p
                                                       allow-list block-list))
 (define-ffi-generic ffi-buffer-remove-user-style (buffer style-sheet))
-(define-ffi-generic ffi-buffer-add-user-script (buffer javascript &key world-name))
+(define-ffi-generic ffi-buffer-add-user-script (buffer user-script))
 (define-ffi-generic ffi-buffer-remove-user-script (buffer script))
 (define-ffi-generic ffi-buffer-enable-javascript (buffer value))
 (define-ffi-generic ffi-buffer-enable-javascript-markup (buffer value))

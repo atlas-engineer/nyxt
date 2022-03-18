@@ -1585,8 +1585,7 @@ local anyways, and it's better to refresh it if a load was queried."
   (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-user-class nyxt/web-mode:user-script (gtk-user-script))
 
-(define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) (script gtk-user-script)
-                                               &key world-name)
+(define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) (script gtk-user-script))
   (let* ((content-manager
            (webkit:webkit-web-view-get-user-content-manager
             (gtk-object buffer)))
@@ -1602,9 +1601,10 @@ local anyways, and it's better to refresh it if a load was queried."
          (block-list (if (nyxt/web-mode:exclude script)
                          (list-of-string-to-foreign (nyxt/web-mode:exclude script))
                          '("http://*/*" "https://*/*")))
-         (user-script (if world-name
+         (user-script (if (nyxt/web-mode:world-name script)
                           (webkit:webkit-user-script-new-for-world
-                           (nyxt/web-mode:code script) frames inject-time world-name allow-list block-list)
+                           (nyxt/web-mode:code script) frames inject-time
+                           (nyxt/web-mode:world-name script) allow-list block-list)
                           (webkit:webkit-user-script-new
                            (nyxt/web-mode:code script) frames inject-time allow-list block-list))))
     (setf (gtk-object script) user-script)
