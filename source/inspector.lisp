@@ -39,7 +39,7 @@
        (return-from ensure-inspected-id id)))
    *inspected-values*)
   (sera:lret ((id (get-unique-identifier *browser*)))
-    (setf (gethash id *inspected-values*) value)))
+    (setf (inspected-value id) value)))
 
 (defun escaped-literal-print (value)
   (spinneret:with-html-string
