@@ -202,10 +202,14 @@ Scroll history with `evaluation-history-previous' and `evaluation-history-next'.
       (:body
        (:div :id "container"
              (:div :id "evaluation-history"
-                   (:ul (loop for (package input results) in (reverse (evaluation-history repl-mode))
-                              collect (:li (:b package "> " input)
-                                           (loop for result in results
-                                                 collect (:li (:raw (value->html result t))))))))
+                   (:ul (loop
+                          for (package input results) in (reverse (evaluation-history repl-mode))
+                          collect (:li (:b package "> " input)
+                                       (loop
+                                         for result in results
+                                         collect (:li (:raw
+                                                       (value->html
+                                                        result (typep result 'standard-object)))))))))
              (:div :id "input"
                    (:span :id "prompt"
                           (format nil "~a>" (package-short-name *package*)))
