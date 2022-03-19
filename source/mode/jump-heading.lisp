@@ -7,7 +7,8 @@
   ((inner-text "" :documentation "The inner text of the heading within the document.")
    (element nil :documentation "The header-representing element of `document-model'.")
    (buffer :documentation "The buffer to which this heading belongs.")
-   (keywords :documentation "Keywords associated with this heading."))
+   (keywords :documentation "Keywords associated with this heading.")
+   (scroll-position :documentation "The scroll position of the heading."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "A heading. The inner-text must not be modified, so that we
   can jump to the anchor of the same name."))
@@ -30,17 +31,31 @@
     ("Keywords" ,(format nil "~:{~a~^ ~}" (keywords heading)))))
 
 (defun get-headings (&key (buffer (current-buffer)))
-  (with-current-buffer buffer
-    (sort (map 'list
-               (lambda (e)
-                 (make-instance 'heading :inner-text (plump:text e)
-                                         :element e
-                                         :buffer buffer
-                                         :keywords (ignore-errors
-                                                    (analysis:extract-keywords
-                                                     (plump:text (plump:next-element e))))))
-               (clss:select "h1, h2, h3, h4, h5, h6" (document-model buffer)))
-          #'< :key (alex:compose #'parse-integer #'get-nyxt-id #'element))))
+  (pflet ((heading-scroll-position
+           (element)
+           (ps:chain (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element)))
+                     (get-bounding-client-rect) y)))
+    (with-current-buffer buffer
+      (sort (map 'list
+                 (lambda (e)
+                   (make-instance 'heading :inner-text (plump:text e)
+                                           :element e
+                                           :buffer buffer
+                                           :keywords (ignore-errors
+                                                      (analysis:extract-keywords
+                                                       (plump:text (plump:next-element e))))
+                                           :scroll-position (heading-scroll-position e)))
+                 (clss:select "h1, h2, h3, h4, h5, h6" (document-model buffer)))
+            #'< :key (alex:compose #'parse-integer #'get-nyxt-id #'element)))))
+
+(defun current-heading (&optional (buffer (current-buffer)))
+  (alex:when-let* ((scroll-position (document-scroll-position buffer))
+                   (vertical-scroll-position (second scroll-position))
+                   (headings (get-headings :buffer buffer)))
+    (first (sort headings
+                 (lambda (h1 h2)
+                   (< (abs (- (scroll-position h1) vertical-scroll-position))
+                      (abs (- (scroll-position h2) vertical-scroll-position))))))))
 
 (define-parenscript scroll-to-element (&key nyxt-identifier)
   (ps:chain (nyxt/ps:qs document (ps:lisp (format nil "[nyxt-identifier=\"~a\"]" nyxt-identifier)))
@@ -50,6 +65,18 @@
 (defun scroll-page-to-heading (heading)
   (set-current-buffer (buffer heading) :focus nil)
   (scroll-to-element :nyxt-identifier (get-nyxt-id (element heading))))
+
+(define-command next-heading (&optional (buffer (current-buffer)))
+  "Scroll to the next heading of the BUFFER."
+  (sera:and-let* ((headings (get-headings :buffer buffer))
+                  (current (current-heading buffer)))
+    (scroll-page-to-heading (elt headings (1+ (position (element current) headings :key #'element))))))
+
+(define-command previous-heading (&optional (buffer (current-buffer)))
+  "Scroll to the previous heading of the BUFFER."
+  (sera:and-let* ((headings (get-headings :buffer buffer))
+                  (current (current-heading buffer)))
+    (scroll-page-to-heading (elt headings (1- (position (element current) headings :key #'element))))))
 
 (define-class heading-source (prompter:source)
   ((prompter:name "Headings")
