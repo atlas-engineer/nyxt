@@ -186,6 +186,18 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
       (:h1 (format nil "~s" variable)) ; Use FORMAT to keep package prefix.
       (:raw (resolve-backtick-quote-links (documentation variable 'variable) variable))
       (:h2 "Current Value:")
+      (:button
+       :class "button"
+       :onclick (ps:ps (nyxt/ps:lisp-eval
+                        `(handler-case
+                             (setf ,variable
+                                   (first
+                                    (evaluate
+                                     (prompt1
+                                       :prompt (format nil "Set ~a to" (quote ,variable))
+                                       :sources (make-instance 'prompter:raw-source)))))
+                           (nyxt-prompt-buffer-canceled nil))))
+       "Change value")
       (:p (:raw (value->html (symbol-value variable)))))))
 
 (define-internal-page-command-global describe-function
