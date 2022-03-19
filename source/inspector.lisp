@@ -178,6 +178,28 @@ values in help buffers, REPL and elsewhere."))
             (:td (:raw (value->html (gethash key value) t)))))))
        (:raw (call-next-method))))))
 
+(defmethod value->html ((value pathname) &optional compact-p)
+  (let* ((namestring (uiop:native-namestring value))
+         (mime (mimes:mime namestring)))
+    (spinneret:with-html-string
+      (:a :href (quri.uri.file:make-uri-file :path namestring)
+          namestring
+          (:br)
+          (cond
+            ((and (str:starts-with-p "image/" mime)
+                  (not compact-p))
+             (:img :src (quri.uri.file:make-uri-file :path namestring)
+                   :alt namestring))
+            ((and (str:starts-with-p "audio/" mime)
+                  (not compact-p))
+             (:audio :src (quri.uri.file:make-uri-file :path namestring)
+                     :controls t))
+            ((and (str:starts-with-p "video/" mime)
+                  (not compact-p))
+             (:video :src (quri.uri.file:make-uri-file :path namestring)
+                     :controls t))
+            (t ""))))))
+
 (defun print-complex-object (value compact-p)
   (if compact-p
       (link-to value)
