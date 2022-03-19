@@ -209,7 +209,8 @@ Scroll history with `evaluation-history-previous' and `evaluation-history-next'.
                                          for result in results
                                          collect (:li (:raw
                                                        (value->html
-                                                        result (typep result 'standard-object)))))))))
+                                                        result (or (typep result 'standard-object)
+                                                                   (typep result 'structure-object))))))))))
              (:div :id "input"
                    (:span :id "prompt"
                           (format nil "~a>" (package-short-name *package*)))
