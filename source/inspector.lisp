@@ -32,20 +32,26 @@
 (defmethod (setf inspected-value) (new-value id)
   (setf (gethash id *inspected-values*) new-value))
 
+(defun ensure-inspected-id (value)
+  (maphash
+   (lambda (id object)
+     (when (equal value object)
+       (return-from ensure-inspected-id id)))
+   *inspected-values*)
+  (sera:lret ((id (get-unique-identifier *browser*)))
+    (setf (gethash id *inspected-values*) value)))
+
 (defun escaped-literal-print (value)
   (spinneret:with-html-string
     (:code (:raw (spinneret::escape-string (prin1-to-string value))))))
 
 (defun link-to (object)
-  (let ((id (get-unique-identifier *browser*)))
-    (if (scalar-p object)
-        (spinneret:with-html-string
-          (:raw (escaped-literal-print object)))
-        (progn
-          (setf (inspected-value id) object)
-          (spinneret:with-html-string
-            (:a :href (nyxt-url 'describe-value :id id)
-                (:raw (escaped-literal-print object))))))))
+  (if (scalar-p object)
+      (spinneret:with-html-string
+        (:raw (escaped-literal-print object)))
+      (spinneret:with-html-string
+        (:a :href (nyxt-url 'describe-value :id (ensure-inspected-id object))
+            (:raw (escaped-literal-print object))))))
 
 (export-always 'value->html)
 (defgeneric value->html (value &optional compact-p)
@@ -209,7 +215,21 @@ values in help buffers, REPL and elsewhere."))
           (:dl
            (dolist (slot-name slot-names)
              (:dt (prin1-to-string slot-name))
-             (:dd (:raw (value->html (slot-value value slot-name) t)))))
+             (:dd (:raw (value->html (slot-value value slot-name) t))
+                  (:button
+                   :class "button"
+                   :onclick (ps:ps (nyxt/ps:lisp-eval
+                                    `(handler-case
+                                         (setf (slot-value (inspected-value
+                                                            ,(ensure-inspected-id value))
+                                                           (quote ,slot-name))
+                                               (first
+                                                (evaluate
+                                                 (prompt1
+                                                   :prompt (format nil "Set ~a to" (quote ,slot-name))
+                                                   :sources (make-instance 'prompter:raw-source)))))
+                                       (nyxt-prompt-buffer-canceled nil))))
+                   "change "))))
           (:raw (escaped-literal-print value))))))
 
 (defmethod value->html ((value standard-object) &optional compact-p)
