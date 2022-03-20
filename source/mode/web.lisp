@@ -117,6 +117,8 @@ define which elements are picked up by element hinting.")
        "f3" 'search-buffer
        "M-f" 'remove-search-hints
        "C-." 'jump-to-heading
+       "M-{" 'previous-heading
+       "M-}" 'next-heading
        "end" 'maybe-scroll-to-bottom
        "home" 'maybe-scroll-to-top
        "C-down" 'scroll-to-bottom
@@ -203,6 +205,8 @@ define which elements are picked up by element hinting.")
        "z z" 'reset-page-zoom
        "g h" 'jump-to-heading
        "g H" 'jump-to-heading-buffers
+       "{" 'previous-heading
+       "}" 'next-heading
        "/" 'search-buffer
        "?" 'remove-search-hints
        "m f" 'bookmark-hint
