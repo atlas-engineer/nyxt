@@ -207,6 +207,8 @@ buffer.")
    (:p "It is possible to navigate using the structure in between the file: ")
    (:ul
     (list-command-information '(nyxt/web-mode:jump-to-heading
+                                nyxt/web-mode:previous-heading
+                                nyxt/web-mode:next-heading
                                 nyxt/web-mode:jump-to-heading-buffers)))
    (:p "And navigate to interconnected files: ")
    (:ul
