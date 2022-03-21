@@ -106,7 +106,7 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
   (sera:and-let* ((id id)
                   (value (inspected-value id)))
     (spinneret:with-html-string
-      (:h1 (princ-to-string value))
+      (:h1 (:raw (escaped-literal-print value)))
       (:p (:raw (value->html value))))))
 
 (defun has-attributes-method-p (object)
