@@ -41,9 +41,18 @@
   (sera:lret ((id (get-unique-identifier *browser*)))
     (setf (inspected-value id) value)))
 
+
+(export-always '*inspector-print-length*)
+(defvar *inspector-print-length* 50
+  "The size of the structure after which to collapse this structure into a link.
+
+Can cause a renderer to choke when set to a high value. Use with caution!")
+
 (defun escaped-literal-print (value)
   (spinneret:with-html-string
-    (:code (:raw (spinneret::escape-string (prin1-to-string value))))))
+    (:code (:raw (spinneret::escape-string
+                  (let ((*print-lines* 3))
+                    (prin1-to-string value)))))))
 
 (defun link-to (object)
   (if (scalar-p object)
@@ -100,6 +109,8 @@ values in help buffers, REPL and elsewhere."))
     (:div
      :style "overflow-x: auto"
      (cond
+       ((and compact-p (> (length value) *inspector-print-length*))
+        (:raw (link-to value)))
        ((trivial-types:property-list-p value)
         (:table
          (unless compact-p
@@ -132,57 +143,66 @@ values in help buffers, REPL and elsewhere."))
 
 (defmethod value->html ((value array) &optional compact-p)
   (spinneret:with-html-string
-    (if (uiop:emptyp value)
-        (:raw (call-next-method))
-        (:div
-         :style "overflow-x: auto"
-         (case (length (array-dimensions value))
-           (1 (:table
-               (unless compact-p
-                 (:caption "Array")
-                 (:thead
-                  (:th :colspan (alex:lastcar (array-dimensions value)) "Elements")))
-               (:tbody
-                (:tr
-                 (loop for e across value
-                       collect (:td (:raw (value->html e t))))))))
-           (2 (:table
-               (unless compact-p
-                 (:caption "Array")
-                 (:thead
-                  (:th :colspan (alex:lastcar (array-dimensions value)) "Elements")))
-               (:tbody
-                (loop with height = (array-dimension value 0)
-                      and width = (array-dimension value 1)
-                      for y below height
-                      collect (:tr (loop for x below width
-                                         collect (:td (:raw (value->html (aref value y x) t)))))))))
-           (otherwise (:raw (call-next-method))))))))
+    (cond
+      ((uiop:emptyp value)
+       (:raw (call-next-method)))
+      ((and compact-p (> (length value) *inspector-print-length*))
+       (:raw (link-to value)))
+      (t (:div
+          :style "overflow-x: auto"
+          (case (length (array-dimensions value))
+            (1 (:table
+                (unless compact-p
+                  (:caption "Array")
+                  (:thead
+                   (:th :colspan (alex:lastcar (array-dimensions value)) "Elements")))
+                (:tbody
+                 (:tr
+                  (loop for e across value
+                        collect (:td (:raw (value->html e t))))))))
+            (2 (:table
+                (unless compact-p
+                  (:caption "Array")
+                  (:thead
+                   (:th :colspan (alex:lastcar (array-dimensions value)) "Elements")))
+                (:tbody
+                 (loop with height = (array-dimension value 0)
+                       and width = (array-dimension value 1)
+                       for y below height
+                       collect (:tr (loop for x below width
+                                          collect (:td (:raw (value->html (aref value y x) t)))))))))
+            (otherwise (:raw (call-next-method)))))))))
 
 (defmethod value->html ((value sequence) &optional compact-p)
-  (declare (ignore compact-p))
   (spinneret:with-html-string
-    (if (uiop:emptyp value)
-        (:raw (escaped-literal-print value))
-        (:ul
-         (dotimes (i (length value))
-           (:li (:raw (value->html (elt value i) t))))))))
+    (cond
+      ((uiop:emptyp value)
+       (:raw (escaped-literal-print value)))
+      ((and compact-p (> (length value) *inspector-print-length*))
+       (:raw (link-to value)))
+      (t (:ul
+          (dotimes (i (length value))
+            (:li (:raw (value->html (elt value i) t)))))))))
 
 (defmethod value->html ((value hash-table) &optional compact-p)
   (spinneret:with-html-string
     (:div
      :style "overflow-x: auto"
-     (alex:if-let ((keys (alex:hash-table-keys value)))
-       (:table
-        (unless compact-p
-          (:caption "Hash-table"))
-        (:thead (dolist (key keys)
-                  (:th (:raw (escaped-literal-print key)))))
-        (:tbody
-         (:tr
-          (dolist (key keys)
-            (:td (:raw (value->html (gethash key value) t)))))))
-       (:raw (call-next-method))))))
+     (let ((keys (alex:hash-table-keys value)))
+       (cond
+         ((uiop:emptyp keys)
+          (:raw (call-next-method)))
+         ((and compact-p (> (hash-table-count value) *inspector-print-length*))
+          (:raw (link-to value)))
+         (t (:table
+             (unless compact-p
+               (:caption "Hash-table"))
+             (:thead (dolist (key keys)
+                       (:th (:raw (escaped-literal-print key)))))
+             (:tbody
+              (:tr
+               (dolist (key keys)
+                 (:td (:raw (value->html (gethash key value) t)))))))))))))
 
 (defmethod value->html ((value pathname) &optional compact-p)
   (let* ((namestring (uiop:native-namestring value))
