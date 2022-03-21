@@ -11,6 +11,8 @@
                 #:define-class)
   (:export
    #:theme
+   #:+light-theme+
+   #:+dark-theme+
    #:background
    #:text
    #:primary
