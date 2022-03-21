@@ -928,7 +928,7 @@ BUFFER's modes."
            (:buffer-class (or null symbol))
            &allow-other-keys)
     (or buffer t))
-(define-command make-buffer (&rest args &key (title "") modes (url (quri:uri "")) parent-buffer
+(define-command make-buffer (&rest args &key (title "") modes (url (default-new-buffer-url *browser*)) parent-buffer
                              no-history-p (load-url-p t) (buffer-class 'user-web-buffer)
                              &allow-other-keys)
   "Create a new buffer.
@@ -970,7 +970,7 @@ See `make-buffer' for a description of the arguments."
           (:parent-buffer (or null buffer))
           (:nosave-buffer-p boolean))
     *)
-(define-command make-buffer-focus (&key (url (quri:uri "")) parent-buffer nosave-buffer-p)
+(define-command make-buffer-focus (&key (url (default-new-buffer-url *browser*)) parent-buffer nosave-buffer-p)
   "Switch to a new buffer.
 See `make-buffer'."
   (let ((buffer (if nosave-buffer-p
