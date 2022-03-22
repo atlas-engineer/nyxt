@@ -81,10 +81,14 @@ Example:
 
 (export-always 'html-string-p)
 (defun html-string-p (string)
-  (and (stringp string)
-       (let ((html (ignore-errors (plump:parse string))))
-         (not (and (sera:single (plump:children html))
-                   (plump:text-node-p (elt (plump:children html) 0)))))))
+  (serapeum:and-let*
+      ((string string)
+       (-p (stringp string))
+       (trimmed (string-trim serapeum:whitespace string))
+       (html (ignore-errors (plump:parse trimmed)))
+       (single-child (sera:single (plump:children html)))
+       (child (elt (plump:children html) 0)))
+    (plump:element-p child)))
 
 (export-always 'maybe)
 (deftype maybe (&rest types)
