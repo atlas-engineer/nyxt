@@ -334,7 +334,9 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                   :class (when (prompter:marked-p source (prompter:value suggestion))
                                                            "marked")
                                                   (loop for (nil attribute) in (prompter:active-attributes suggestion :source source)
-                                                        collect (:td (:raw attribute)))))))))))
+                                                        collect (:td (if (html-string-p attribute)
+                                                                         (:raw attribute)
+                                                                         (spinneret::escape-string attribute))))))))))))
       (ffi-buffer-evaluate-javascript
        prompt-buffer
        (ps:ps
@@ -361,7 +363,9 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                 (:head (:style (style prompt-buffer)))
                 (:body
                  (:div :id (if vi-mode? "prompt-area-vi" "prompt-area")
-                       (:div :id "prompt" (:raw (prompter:prompt prompt-buffer)))
+                       (:div :id "prompt" (if (html-string-p (prompter:prompt prompt-buffer))
+                                              (:raw (prompter:prompt prompt-buffer))
+                                              (prompter:prompt prompt-buffer)))
                        (:div :id "prompt-extra" "[?/?]")
                        (when vi-mode?
                          (:div :id "vi-mode" ""))
