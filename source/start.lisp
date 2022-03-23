@@ -56,103 +56,103 @@ For instance, if we want to load some Slynk configuration code that lives in
   (uiop:quit))
 
 (sera:eval-always
-  (defun define-opts ()
-    "Define command line options.
+ (defun define-opts ()
+   "Define command line options.
 This must be called on startup so that code is executed in the user environment
 and not the build environment."
-    (opts:define-opts
-      (:name :help
-       :description "Print this help and exit."
-       :short #\h
-       :long "help")
-      (:name :verbose
-       :short #\v
-       :long "verbose"
-       :description "Print debugging information to stdout.")
-      (:name :version
-       :long "version"
-       :description "Print version and exit.")
-      (:name :system-information
-       :long "system-information"
-       :description "Print system information and exit.")
-      (:name :init
-       :short #\i
-       :long "init"
-       :arg-parser #'identity
-       :description (format nil "Set path to initialization file.
+   (opts:define-opts
+       (:name :help
+        :description "Print this help and exit."
+        :short #\h
+        :long "help")
+       (:name :verbose
+        :short #\v
+        :long "verbose"
+        :description "Print debugging information to stdout.")
+     (:name :version
+      :long "version"
+      :description "Print version and exit.")
+     (:name :system-information
+      :long "system-information"
+      :description "Print system information and exit.")
+     (:name :init
+      :short #\i
+      :long "init"
+      :arg-parser #'identity
+      :description (format nil "Set path to initialization file.
 Default: ~s" (nfiles:expand *init-file*)))
-      (:name :no-init
-       :short #\I
-       :long "no-init"
-       :description "Do not load the initialization file.")
-      (:name :auto-config
-       :short #\c
-       :long "auto-config"
-       :arg-parser #'identity
-       :description (format nil "Set path to auto-config file.
+     (:name :no-init
+      :short #\I
+      :long "no-init"
+      :description "Do not load the initialization file.")
+     (:name :auto-config
+      :short #\c
+      :long "auto-config"
+      :arg-parser #'identity
+      :description (format nil "Set path to auto-config file.
 Default: ~s" (nfiles:expand *auto-config-file*)))
-      (:name :no-auto-config
-       :short #\C
-       :long "no-auto-config"
-       :description "Do not load the user auto-config file.")
-      (:name :socket
-       :short #\s
-       :long "socket"
-       :arg-parser #'identity
-       :description "Set path to socket.
+     (:name :no-auto-config
+      :short #\C
+      :long "no-auto-config"
+      :description "Do not load the user auto-config file.")
+     (:name :socket
+      :short #\s
+      :long "socket"
+      :arg-parser #'identity
+      :description "Set path to socket.
 Unless evaluating remotely (see --remote), Nyxt starts in single-instance mode when a socket is set.
 The socket can also be set from the NYXT_SOCKET environment variable.")
-      (:name :no-socket
-       :short #\S
-       :long "no-socket"
-       :description "Do not use any socket.")
-      (:name :eval
-       :short #\e
-       :long "eval"
-       :arg-parser #'identity
-       :description "Eval the Lisp expressions.  Can be specified multiple times.
+     (:name :no-socket
+      :short #\S
+      :long "no-socket"
+      :description "Do not use any socket.")
+     (:name :eval
+      :short #\e
+      :long "eval"
+      :arg-parser #'identity
+      :description "Eval the Lisp expressions.  Can be specified multiple times.
 Without --quit or --remote, the evaluation is done after parsing the init file
 (if any) and before initializing the browser.")
-      (:name :load
-       :short #\l
-       :long "load"
-       :arg-parser #'identity
-       :description "Load the Lisp file.  Can be specified multiple times.
+     (:name :load
+      :short #\l
+      :long "load"
+      :arg-parser #'identity
+      :description "Load the Lisp file.  Can be specified multiple times.
 Without --quit or --remote, the loading is done after parsing the init file
 (if any) and before initializing the browser.")
-      (:name :quit
-       :short #\q
-       :long "quit"
-       :description "Quit after --load or --eval.")
-      (:name :script
-       :long "script"
-       :arg-parser #'identity
-       :description "Load the Lisp file (skip #! line if any), skip init file, then exit.
+     (:name :quit
+      :short #\q
+      :long "quit"
+      :description "Quit after --load or --eval.")
+     (:name :script
+      :long "script"
+      :arg-parser #'identity
+      :description "Load the Lisp file (skip #! line if any), skip init file, then exit.
 Set to '-' to read standard input instead.")
-      (:name :remote
-       :short #\r
-       :long "remote"
-       :description "Send the --eval and --load arguments to the running instance of Nyxt.
+     (:name :remote
+      :short #\r
+      :long "remote"
+      :description "Send the --eval and --load arguments to the running instance of Nyxt.
 Implies --quit.
 The remote instance must be listening on a socket which you can specify with --socket
 and have the `remote-execution-p' browser slot to non-nil.")
-      (:name :headless
-       :long "headless"
-       :description "Start Nyxt without showing any graphical element.
+     (:name :headless
+      :long "headless"
+      :description "Start Nyxt without showing any graphical element.
 This is useful to run scripts for instance.")
-      (:name :profile
-       :short #\p
-       :long "profile"
-       :arg-parser #'identity
-       :description "Use the given profile. ")
-      (:name :list-profiles
-       :long "list-profiles"
-       :description "List the known profiles and exit.
+     (:name :profile
+      :short #\p
+      :long "profile"
+      :arg-parser #'identity
+      :description "Use the given profile. ")
+     (:name :list-profiles
+      :long "list-profiles"
+      :description "List the known profiles and exit.
 Known profiles are found among subclasses of `nyxt-profile'.")
-      (:name :with-file
-       :long "with-file"
-       :arg-parser (lambda (arg) (str:split "=" arg :limit 2))
-       :description "Set path reference to the given path.
+     (:name :with-file
+      :long "with-file"
+      :arg-parser (lambda (arg) (str:split "=" arg :limit 2))
+      :description "Set path reference to the given path.
 Can be specified multiple times.  An empty path means it won't be used.
 Example: --with-file bookmarks=/path/to/bookmarks
          --with-file session="))))
@@ -210,7 +210,7 @@ before running this command."
             (file-position stream p)))))))
 
 (cffi:defcallback handle-interrupt
-    :void ((signum :int) (siginfo :pointer) (ptr :pointer))
+  :void ((signum :int) (siginfo :pointer) (ptr :pointer))
   (declare (ignore signum siginfo ptr))
   (quit))
 
@@ -414,7 +414,7 @@ Otherwise bind socket and return the listening thread."
        (log:info "Listening to socket ~s." socket-path)
        (uiop:delete-file-if-exists socket-path) ; Safe since socket-path is a :socket at this point.
        (run-thread "socket listener"
-         (listen-socket))))))
+                   (listen-socket))))))
 
 (defun remote-eval (expr)
   "If another Nyxt is listening on the socket, tell it to evaluate EXPR."
@@ -564,16 +564,16 @@ Finally, run the browser, load URL-STRINGS if any, then run
       (load-lisp (nfiles:expand *auto-config-file*) :package (find-package :nyxt-user))
       (match (multiple-value-list (load-lisp (nfiles:expand *init-file*)
                                              :package (find-package :nyxt-user)))
-             (nil nil)
-             ((list message full-message)
-              (setf startup-error-reporter
-                    (lambda ()
-                      (echo-warning "~a." message)
-                      (error-in-new-window "*Init file errors*" full-message)))))
+        (nil nil)
+        ((list message full-message)
+         (setf startup-error-reporter
+               (lambda ()
+                 (echo-warning "~a." message)
+                 (error-in-new-window "*Init file errors*" full-message)))))
       (load-or-eval :remote nil)
       (setf *browser* (make-instance (if *headless-p*
                                          'user-headless-browser
-                                       'user-browser)
+                                         'user-browser)
                                      :startup-error-reporter-function startup-error-reporter
                                      :startup-timestamp startup-timestamp
                                      :socket-thread thread))

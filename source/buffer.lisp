@@ -20,8 +20,8 @@ have an empty ID.")
    ;; TODO: Or maybe a dead-buffer should just be a buffer history?
    (profile
     (alex:if-let ((profile-class (find-profile-class (getf *options* :profile))))
-                 (make-instance profile-class)
-                 *global-profile*)
+      (make-instance profile-class)
+      *global-profile*)
     :type nyxt-profile
     :documentation "Buffer profiles are used to specialize the behaviour of
 various parts, such as the path of all data files.")
@@ -432,7 +432,7 @@ Return the created buffer."
   (unless no-history-p
     ;; Register buffer in global history:
     (nfiles:with-file-content (history (history-file buffer)
-                               :default (make-history-tree buffer))
+                                       :default (make-history-tree buffer))
       ;; Owner may already exist if history was just created with the above
       ;; default value.
       (unless (htree:owner history (id buffer))
@@ -546,41 +546,41 @@ inherited from the superclasses."))
 (define-class panel-buffer (user-web-buffer)
   ((width 250 :documentation "The width in pixels.")
    (style (theme:themed-css (theme *browser*)
-            (body
-             :background-color theme:background
-             :color theme:text
-             :margin "0"
-             :padding "10px"
-             :border-style "solid"
-             :border-width "0px 1px"
-             :border-color theme:tertiary)
-            ("h1,h2,h3,h4,h5,h6"
-             :font-family theme:font-family
-             :font-weight 500)
-            (a
-             :color theme:primary)
-            (button
-             :background "none"
-             :color "inherit"
-             :border "none"
-             :padding 0
-             :font "inherit"
-             :outline "inherit")
-            (.button
-             :display "inline-block"
-             :background-color "darkgray"
-             :color theme:background
-             :text-decoration "none"
-             :border-radius "2px"
-             :padding "6px"
-             :margin-left "2px"
-             :margin-right "2px")
-            (|.button:hover|
-             :color theme:text)
-            (|.button:visited|
-             :color theme:background)
-            (|.button:active|
-             :color theme:background))))
+                            (body
+                             :background-color theme:background
+                             :color theme:text
+                             :margin "0"
+                             :padding "10px"
+                             :border-style "solid"
+                             :border-width "0px 1px"
+                             :border-color theme:tertiary)
+                            ("h1,h2,h3,h4,h5,h6"
+                             :font-family theme:font-family
+                             :font-weight 500)
+                            (a
+                             :color theme:primary)
+                            (button
+                             :background "none"
+                             :color "inherit"
+                             :border "none"
+                             :padding 0
+                             :font "inherit"
+                             :outline "inherit")
+                            (.button
+                             :display "inline-block"
+                             :background-color "darkgray"
+                             :color theme:background
+                             :text-decoration "none"
+                             :border-radius "2px"
+                             :padding "6px"
+                             :margin-left "2px"
+                             :margin-right "2px")
+                            (|.button:hover|
+                             :color theme:text)
+                            (|.button:visited|
+                             :color theme:background)
+                            (|.button:active|
+                             :color theme:background))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
@@ -629,121 +629,121 @@ Delete it with `ffi-buffer-delete'"))
     :documentation "Display the modes as a list of glyphs.")
    (style
     (theme:themed-css (theme *browser*)
-      (body
-       :color theme:text
-       :background theme:tertiary
-       :font-size "14px"
-       :color theme:text
-       :padding 0
-       :margin 0
-       :line-height "20px")
-      (.loader
-       :border-width "2px"
-       :border-style "solid"
-       :border-color "transparent"
-       :border-top-color theme:accent
-       :border-left-color theme:accent
-       :border-radius "50%"
-       :display "inline-block"
-       :width "7px"
-       :height "7px"
-       :animation "spin 1s linear infinite")
-      ("@keyframes spin"
-       ("0%" :transform "rotate(0deg)")
-       ("100%" :transform "rotate(360deg)"))
-      (".arrow-right"
-       :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)"
-       :margin-right "-10px")
-      (".arrow-left"
-       :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0% 50%)"
-       :margin-left "-10px")
-      ("#container"
-       :display "grid"
-       ;; Columns: controls, url, tabs, modes
-       :grid-template-columns "90px minmax(auto, 30ch) 1fr 220px"
-       :overflow-y "hidden")
-      ("#container-vi"
-       :display "grid"
-       ;; Columns: controls, vi-status, url, tabs, modes
-       :grid-template-columns "90px 30px minmax(auto, 30ch) 1fr 220px"
-       :overflow-y "hidden")
-      ("#controls"
-       :font-size "16px"
-       :font-weight "700"
-       :background-color theme:primary
-       :color theme:background
-       :padding-left "5px"
-       :overflow "hidden"
-       :white-space "nowrap"
-       :z-index "4")
-      ("#vi-mode"
-       :padding-right "10px"
-       :padding-left "10px"
-       :text-align "center"
-       :z-index "3")
-      (".vi-normal-mode"
-       :color theme:background
-       :background-color theme:secondary)
-      (".vi-insert-mode"
-       :color theme:background
-       :background-color theme:accent)
-      ("#url"
-       :color theme:background
-       :background-color theme:secondary
-       :min-width "100px"
-       :text-overflow "ellipsis"
-       :overflow-x "hidden"
-       :white-space "nowrap"
-       :padding-right "10px"
-       :padding-left "15px"
-       :z-index "2")
-      ("#tabs"
-       :color theme:background
-       :background-color theme:tertiary
-       :min-width "100px"
-       :white-space "nowrap"
-       :overflow-x "scroll"
-       :text-align "left"
-       :padding-left "15px"
-       :padding-right "10px"
-       :z-index "1")
-      ("#tabs::-webkit-scrollbar"
-       :display "none")
-      (.tab
-       :color theme:background
-       :white-space "nowrap"
-       :text-decoration "none"
-       :padding-left "5px"
-       :padding-right "5px")
-      (".tab:hover"
-       :color theme:text)
-      ("#modes"
-       :background-color theme:secondary
-       :color theme:background
-       :text-align "right"
-       :padding-left "10px"
-       :padding-right "5px"
-       :overflow-x "scroll"
-       :white-space "nowrap"
-       :z-index "2")
-      ("#modes::-webkit-scrollbar"
-       :display "none")
-      (button
-       :background "none"
-       :color "inherit"
-       :border "none"
-       :padding 0
-       :font "inherit"
-       :outline "inherit")
-      (.button
-       :color theme:background
-       :text-decoration "none"
-       :padding-left "2px"
-       :padding-right "2px"
-       :margin-left "2px"
-       :margin-right "2px")
-      (|.button:hover|
-       :color theme:text))))
+                      (body
+                       :color theme:text
+                       :background theme:tertiary
+                       :font-size "14px"
+                       :color theme:text
+                       :padding 0
+                       :margin 0
+                       :line-height "20px")
+                      (.loader
+                       :border-width "2px"
+                       :border-style "solid"
+                       :border-color "transparent"
+                       :border-top-color theme:accent
+                       :border-left-color theme:accent
+                       :border-radius "50%"
+                       :display "inline-block"
+                       :width "7px"
+                       :height "7px"
+                       :animation "spin 1s linear infinite")
+                      ("@keyframes spin"
+                       ("0%" :transform "rotate(0deg)")
+                       ("100%" :transform "rotate(360deg)"))
+                      (".arrow-right"
+                       :clip-path "polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%)"
+                       :margin-right "-10px")
+                      (".arrow-left"
+                       :clip-path "polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0% 50%)"
+                       :margin-left "-10px")
+                      ("#container"
+                       :display "grid"
+                       ;; Columns: controls, url, tabs, modes
+                       :grid-template-columns "90px minmax(auto, 30ch) 1fr 220px"
+                       :overflow-y "hidden")
+                      ("#container-vi"
+                       :display "grid"
+                       ;; Columns: controls, vi-status, url, tabs, modes
+                       :grid-template-columns "90px 30px minmax(auto, 30ch) 1fr 220px"
+                       :overflow-y "hidden")
+                      ("#controls"
+                       :font-size "16px"
+                       :font-weight "700"
+                       :background-color theme:primary
+                       :color theme:background
+                       :padding-left "5px"
+                       :overflow "hidden"
+                       :white-space "nowrap"
+                       :z-index "4")
+                      ("#vi-mode"
+                       :padding-right "10px"
+                       :padding-left "10px"
+                       :text-align "center"
+                       :z-index "3")
+                      (".vi-normal-mode"
+                       :color theme:background
+                       :background-color theme:secondary)
+                      (".vi-insert-mode"
+                       :color theme:background
+                       :background-color theme:accent)
+                      ("#url"
+                       :color theme:background
+                       :background-color theme:secondary
+                       :min-width "100px"
+                       :text-overflow "ellipsis"
+                       :overflow-x "hidden"
+                       :white-space "nowrap"
+                       :padding-right "10px"
+                       :padding-left "15px"
+                       :z-index "2")
+                      ("#tabs"
+                       :color theme:background
+                       :background-color theme:tertiary
+                       :min-width "100px"
+                       :white-space "nowrap"
+                       :overflow-x "scroll"
+                       :text-align "left"
+                       :padding-left "15px"
+                       :padding-right "10px"
+                       :z-index "1")
+                      ("#tabs::-webkit-scrollbar"
+                       :display "none")
+                      (.tab
+                       :color theme:background
+                       :white-space "nowrap"
+                       :text-decoration "none"
+                       :padding-left "5px"
+                       :padding-right "5px")
+                      (".tab:hover"
+                       :color theme:text)
+                      ("#modes"
+                       :background-color theme:secondary
+                       :color theme:background
+                       :text-align "right"
+                       :padding-left "10px"
+                       :padding-right "5px"
+                       :overflow-x "scroll"
+                       :white-space "nowrap"
+                       :z-index "2")
+                      ("#modes::-webkit-scrollbar"
+                       :display "none")
+                      (button
+                       :background "none"
+                       :color "inherit"
+                       :border "none"
+                       :padding 0
+                       :font "inherit"
+                       :outline "inherit")
+                      (.button
+                       :color theme:background
+                       :text-decoration "none"
+                       :padding-left "2px"
+                       :padding-right "2px"
+                       :margin-left "2px"
+                       :margin-right "2px")
+                      (|.button:hover|
+                       :color theme:text))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -766,8 +766,8 @@ Delete it with `ffi-buffer-delete'"))
       nyxt-identifier-counter)
     (setf nyxt-identifier-counter (add-nyxt-identifiers (ps:chain document body)))))
   (alex:when-let ((body-json (nyxt/dom::get-document-body-json)))
-                 (setf (document-model buffer)
-                       (nyxt/dom::named-json-parse body-json))))
+    (setf (document-model buffer)
+          (nyxt/dom::named-json-parse body-json))))
 
 (defun dead-buffer-p (buffer) ; TODO: Use this wherever needed.
   (str:empty? (id buffer)))
@@ -936,8 +936,8 @@ BUFFER's modes."
            &allow-other-keys)
     (or buffer t))
 (define-command make-buffer (&rest args &key (title "") modes (url (default-new-buffer-url *browser*)) parent-buffer
-                             no-history-p (load-url-p t) (buffer-class 'user-web-buffer)
-                             &allow-other-keys)
+                                   no-history-p (load-url-p t) (buffer-class 'user-web-buffer)
+                                   &allow-other-keys)
   "Create a new buffer.
 MODES is a list of mode symbols.
 If URL is empty, the `default-new-buffer-url' browser slot is used instead.
@@ -1046,8 +1046,8 @@ If URL is `:default', use `default-new-buffer-url'."
     (sera:and-let* ((owner (htree:owner history (id buffer)))
                     (current (htree:current owner))
                     (data (htree:data current)))
-      (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer))
-      (htree:delete-owner history (id buffer))))
+                   (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer))
+                   (htree:delete-owner history (id buffer))))
   (ffi-buffer-delete buffer))
 
 (defun buffer-hide (buffer)
@@ -1145,8 +1145,8 @@ proceeding."
           (mapcar #'active-buffer (window-list)))
         (buffers (buffer-list)))
     (alex:when-let ((diff (set-difference buffers active-buffers)))
-                   ;; Display the most recent inactive buffer.
-                   (sort-by-time diff))))
+      ;; Display the most recent inactive buffer.
+      (sort-by-time diff))))
 
 (define-command copy-url ()
   "Save current URL to clipboard."
@@ -1228,7 +1228,7 @@ second latest buffer first."
                                :actions (list (make-mapped-command buffer-delete))))))
 
 (define-internal-page-command-global reduce-to-buffer (&key (delete t))
-    (reduced-buffer "*Reduced Buffers*" 'base-mode)
+  (reduced-buffer "*Reduced Buffers*" 'base-mode)
   "Query the buffer(s) to \"reduce \" by copying their titles/URLs to a
 single buffer, optionally delete them. This function is useful for archiving a
 set of useful URLs or preparing a list to send to a someone else."
@@ -1241,7 +1241,7 @@ set of useful URLs or preparing a list to send to a someone else."
                                           :multi-selection-p t))))
     (unwind-protect
          (spinneret:with-html-string
-           (:style (style reduced-buffer))
+             (:style (style reduced-buffer))
            (:h1 "Reduced Buffers:")
            (:div
             (if buffers
@@ -1448,11 +1448,11 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
                                 (engine (default-search-engine))
                                 (completion (completion-function engine))
                                 (all-terms (str:join " " terms)))
-                  (mapcar (alex:rcurry #'make-completion-query
-                                       :engine      engine
-                                       :check-dns-p check-dns-p)
-                          (with-protect ("Error while completing default search: ~a" :condition)
-                            (funcall (completion-function engine) all-terms))))))))
+                               (mapcar (alex:rcurry #'make-completion-query
+                                                    :engine      engine
+                                                    :check-dns-p check-dns-p)
+                                       (with-protect ("Error while completing default search: ~a" :condition)
+                                         (funcall (completion-function engine) all-terms))))))))
 
 (define-class new-url-or-search-source (prompter:source)
   ((prompter:name "New URL or search query")
@@ -1584,7 +1584,7 @@ HISTORY may be NIL for buffers without history."
            (sera:equals (id buffer))
            buffers
            :key (lambda (b) (alex:when-let ((owner (htree:owner history (id b))))
-                              (htree:creator-id owner))))
+                         (htree:creator-id owner))))
           #'string< :key #'id)))
 
 (defun buffer-siblings (&optional (buffer (current-buffer)))
@@ -1617,20 +1617,20 @@ The tree is browsed in a depth-first fashion.
 When there is no previous buffer, go to the last one so as to cycle."
   (labels ((buffer-last-child (&optional (buffer (current-buffer)))
              (alex:if-let ((next-siblings (second (buffer-siblings buffer))))
-                          (buffer-last-child (alex:last-elt next-siblings))
-                          (alex:if-let ((children (buffer-children buffer)))
-                                       (buffer-last-child (alex:last-elt children))
-                                       buffer)))
+               (buffer-last-child (alex:last-elt next-siblings))
+               (alex:if-let ((children (buffer-children buffer)))
+                 (buffer-last-child (alex:last-elt children))
+                 buffer)))
            (buffer-sibling-previous (&optional (buffer (current-buffer)))
              (alex:when-let ((previous-siblings (first (buffer-siblings buffer))))
-                            (alex:last-elt previous-siblings))))
+               (alex:last-elt previous-siblings))))
     (alex:when-let ((previous (or (alex:when-let ((previous-sibling (buffer-sibling-previous buffer)))
-                                                 (alex:if-let ((children (buffer-children previous-sibling)))
-                                                              (buffer-last-child (first children))
-                                                              previous-sibling))
+                                    (alex:if-let ((children (buffer-children previous-sibling)))
+                                      (buffer-last-child (first children))
+                                      previous-sibling))
                                   (buffer-parent buffer)
                                   (buffer-last-child buffer))))
-                   (set-current-buffer previous))))
+      (set-current-buffer previous))))
 
 (define-command switch-buffer-next (&optional (buffer (current-buffer)))
   "Switch to the next buffer in the buffer tree.
@@ -1638,20 +1638,20 @@ The tree is browsed in a depth-first fashion.
 When there is no next buffer, go to the first one so as to cycle."
   (labels ((buffer-first-root (buffer)
              (alex:if-let ((parent (buffer-parent buffer)))
-                          (buffer-first-root parent)
-                          (first (first (buffer-siblings buffer)))))
+               (buffer-first-root parent)
+               (first (first (buffer-siblings buffer)))))
            (buffer-next-parent-sibling (buffer)
              (alex:when-let ((parent (buffer-parent buffer)))
-                            (alex:if-let ((next-siblings (second (buffer-siblings parent))))
-                                         (first next-siblings)
-                                         (buffer-next-parent-sibling parent))))
+               (alex:if-let ((next-siblings (second (buffer-siblings parent))))
+                 (first next-siblings)
+                 (buffer-next-parent-sibling parent))))
            (buffer-sibling-next (&optional (buffer (current-buffer)))
              (first (second (buffer-siblings buffer)))))
     (alex:when-let ((next (or (first (buffer-children buffer))
                               (buffer-sibling-next buffer)
                               (buffer-next-parent-sibling buffer)
                               (buffer-first-root buffer))))
-                   (set-current-buffer next))))
+      (set-current-buffer next))))
 
 (define-command switch-buffer-last ()
   "Switch to the last showing buffer in the list of buffers.
@@ -1670,7 +1670,7 @@ If MODE does not exist, return nil."
      mode)
     ((symbolp mode)
      (alex:when-let ((command (mode-command mode)))
-                    (name command)))
+       (name command)))
     (t
      (mode-name (sera:class-name-of mode)))))
 
@@ -1705,7 +1705,7 @@ ARGS are passed to the mode command."
                              #'modes
                              (uiop:ensure-list (buffers source)))
                             :test (lambda (i y) (equal (mode-name i)
-                                                       (mode-name y)))))))
+                                                  (mode-name y)))))))
   (:export-class-name-p t))
 (define-user-class active-mode-source)
 

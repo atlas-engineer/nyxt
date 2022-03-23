@@ -410,27 +410,27 @@ Return the download object matching the download."
         (:lisp
          (alex:when-let* ((path (download-directory buffer))
                           (download-dir (nfiles:expand path)))
-           (when (eq proxy-url :auto)
-             (setf proxy-url (proxy-url buffer :downloads-only t)))
-           (let* ((download nil))
-             (with-protect ("Download error: ~a" :condition)
-               (nfiles:with-file-content (downloads path)
-                 (setf download
-                       (download-manager:resolve url
-                                                 :directory download-dir
-                                                 :cookies cookies
-                                                 :proxy proxy-url))
-                 (push download downloads)
-                 ;; Add a watcher / renderer for monitoring download
-                 (let ((download-render (make-instance 'user-download :url (render-url url))))
-                   (setf (destination-path download-render)
-                         (uiop:ensure-pathname
-                          (download-manager:filename download)))
-                   (push download-render (downloads *browser*))
-                   (run-thread
-                     "download watcher"
-                     (download-watch download-render download)))
-                 download)))))
+                         (when (eq proxy-url :auto)
+                           (setf proxy-url (proxy-url buffer :downloads-only t)))
+                         (let* ((download nil))
+                           (with-protect ("Download error: ~a" :condition)
+                             (nfiles:with-file-content (downloads path)
+                               (setf download
+                                     (download-manager:resolve url
+                                                               :directory download-dir
+                                                               :cookies cookies
+                                                               :proxy proxy-url))
+                               (push download downloads)
+                               ;; Add a watcher / renderer for monitoring download
+                               (let ((download-render (make-instance 'user-download :url (render-url url))))
+                                 (setf (destination-path download-render)
+                                       (uiop:ensure-pathname
+                                        (download-manager:filename download)))
+                                 (push download-render (downloads *browser*))
+                                 (run-thread
+                                  "download watcher"
+                                  (download-watch download-render download)))
+                               download)))))
         (:renderer
          (ffi-buffer-download buffer (render-url url))))
     (list-downloads)))
@@ -673,17 +673,17 @@ sometimes yields the wrong result."
   (let ((buffer (current-buffer)))
     (values
      (sera:and-let* ((path (nfiles:expand (standard-output-file buffer))))
-       (setf *standard-output*
-             (open path
-                   :direction :output
-                   :if-does-not-exist :create
-                   :if-exists :append)))
+                    (setf *standard-output*
+                          (open path
+                                :direction :output
+                                :if-does-not-exist :create
+                                :if-exists :append)))
      (sera:and-let* ((path (nfiles:expand (error-output-file buffer))))
-       (setf *error-output*
-             (open path
-                   :direction :output
-                   :if-does-not-exist :create
-                   :if-exists :append))))))
+                    (setf *error-output*
+                          (open path
+                                :direction :output
+                                :if-does-not-exist :create
+                                :if-exists :append))))))
 
 (defmacro define-ffi-generic (name arguments &body options)
   `(progn
@@ -749,8 +749,8 @@ sometimes yields the wrong result."
                   (ps:let ((style (ps:chain document body style)))
                     (setf (ps:@ style zoom)
                           (ps:lisp value)))))
-      (with-current-buffer buffer
-        (zoom)))))
+           (with-current-buffer buffer
+             (zoom)))))
 (define-ffi-generic ffi-buffer-get-document (buffer)
   (:method ((buffer buffer))
     (pflet ((get-html (start end)
@@ -758,11 +758,11 @@ sometimes yields the wrong result."
                                                                              (ps:lisp end))))
             (get-html-length ()
                              (ps:chain document document-element |innerHTML| length)))
-      (with-current-buffer buffer
-        (let ((slice-size 10000))
-          (reduce #'str:concat
-                  (loop for i from 0 to (truncate (get-html-length)) by slice-size
-                        collect (get-html i (+ i slice-size)))))))))
+           (with-current-buffer buffer
+             (let ((slice-size 10000))
+               (reduce #'str:concat
+                       (loop for i from 0 to (truncate (get-html-length)) by slice-size
+                             collect (get-html i (+ i slice-size)))))))))
 (define-ffi-generic ffi-generate-input-event (window event))
 (define-ffi-generic ffi-generated-input-event-p (window event))
 (define-ffi-generic ffi-within-renderer-thread (browser thunk)
