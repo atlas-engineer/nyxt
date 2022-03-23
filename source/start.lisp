@@ -575,13 +575,10 @@ Finally, run the browser, load URL-STRINGS if any, then run
                  (echo-warning "~a." message)
                  (error-in-new-window "*Init file errors*" full-message)))))
       (load-or-eval :remote nil)
-      (setf *browser* (make-instance
-                       (if *headless-p*
-                           'headless-user-browser
-                           'user-browser)
-                       :startup-error-reporter-function startup-error-reporter
-                       :startup-timestamp startup-timestamp
-                       :socket-thread thread))
+      (setf *browser* (make-instance 'user-browser
+                                     :startup-error-reporter-function startup-error-reporter
+                                     :startup-timestamp startup-timestamp
+                                     :socket-thread thread))
       ;; Defaulting to :nyxt-user is convenient when evaluating code (such as
       ;; remote execution or the integrated REPL).
       ;; This must be done in a separate thread because the calling thread may

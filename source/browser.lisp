@@ -238,12 +238,10 @@ windows.
 A typical Nyxt session encompasses a single instance of this class, but nothing
 prevents otherwise."))
 
-(define-class headless-browser (browser)
-  ())
 
 (define-user-class browser)
 
-(define-user-class headless-browser)
+;;;potential for a headless-browser
 
 (defmethod external-editor-program ((browser browser))
   (alex:ensure-list (slot-value browser 'external-editor-program)))
