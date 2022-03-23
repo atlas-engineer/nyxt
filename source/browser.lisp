@@ -299,24 +299,24 @@ prevents otherwise."))
    browser
    (lambda ()
      (run-thread "finalization"
-                 ;; Restart on init error, in case `*init-file*' broke the state.
-                 ;; We only `handler-case' when there is an init file, this way we avoid
-                 ;; looping indefinitely.
-                 (if (or (getf *options* :no-init)
-                         (not (uiop:file-exists-p (nfiles:expand *init-file*))))
-                     (startup browser urls)
-                     (catch 'startup-error
-                       (handler-bind ((error (lambda (c)
-                                               (log:error "Startup failed (probably due to a mistake in ~s):~&~a"
-                                                          (nfiles:expand *init-file*) c)
-                                               (throw 'startup-error
-                                                 (if *run-from-repl-p*
-                                                     (progn
-                                                       (quit)
-                                                       (reset-all-user-classes)
-                                                       (apply #'start (append *options* (list :urls urls :no-init t))))
-                                                     (restart-with-message c))))))
-                         (startup browser urls)))))))
+       ;; Restart on init error, in case `*init-file*' broke the state.
+       ;; We only `handler-case' when there is an init file, this way we avoid
+       ;; looping indefinitely.
+       (if (or (getf *options* :no-init)
+               (not (uiop:file-exists-p (nfiles:expand *init-file*))))
+           (startup browser urls)
+           (catch 'startup-error
+             (handler-bind ((error (lambda (c)
+                                     (log:error "Startup failed (probably due to a mistake in ~s):~&~a"
+                                                (nfiles:expand *init-file*) c)
+                                     (throw 'startup-error
+                                       (if *run-from-repl-p*
+                                           (progn
+                                             (quit)
+                                             (reset-all-user-classes)
+                                             (apply #'start (append *options* (list :urls urls :no-init t))))
+                                           (restart-with-message c))))))
+               (startup browser urls)))))))
   ;; Set `init-time' at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)
@@ -410,27 +410,28 @@ Return the download object matching the download."
         (:lisp
          (alex:when-let* ((path (download-directory buffer))
                           (download-dir (nfiles:expand path)))
-                         (when (eq proxy-url :auto)
-                           (setf proxy-url (proxy-url buffer :downloads-only t)))
-                         (let* ((download nil))
-                           (with-protect ("Download error: ~a" :condition)
-                             (nfiles:with-file-content (downloads path)
-                               (setf download
-                                     (download-manager:resolve url
-                                                               :directory download-dir
-                                                               :cookies cookies
-                                                               :proxy proxy-url))
-                               (push download downloads)
-                               ;; Add a watcher / renderer for monitoring download
-                               (let ((download-render (make-instance 'user-download :url (render-url url))))
-                                 (setf (destination-path download-render)
-                                       (uiop:ensure-pathname
-                                        (download-manager:filename download)))
-                                 (push download-render (downloads *browser*))
-                                 (run-thread
-                                  "download watcher"
-                                  (download-watch download-render download)))
-                               download)))))
+           (when (eq proxy-url :auto)
+             (setf proxy-url (proxy-url buffer :downloads-only t)))
+           (let* ((download nil))
+             (with-protect ("Download error: ~a" :condition)
+               (nfiles:with-file-content (downloads path)
+                 (setf download
+                       (download-manager:resolve url
+                                                 :directory download-dir
+                                                 :cookies cookies
+                                                 :proxy proxy-url))
+                 (push download downloads)
+                 ;; Add a watcher / renderer for monitoring download
+                 (let ((download-render (make-instance 'user-download
+                                                       :url (render-url url))))
+                   (setf (destination-path download-render)
+                         (uiop:ensure-pathname
+                          (download-manager:filename download)))
+                   (push download-render (downloads *browser*))
+                   (run-thread
+                       "download watcher"
+                     (download-watch download-render download)))
+                 download)))))
         (:renderer
          (ffi-buffer-download buffer (render-url url))))
     (list-downloads)))
@@ -673,17 +674,17 @@ sometimes yields the wrong result."
   (let ((buffer (current-buffer)))
     (values
      (sera:and-let* ((path (nfiles:expand (standard-output-file buffer))))
-                    (setf *standard-output*
-                          (open path
-                                :direction :output
-                                :if-does-not-exist :create
-                                :if-exists :append)))
+       (setf *standard-output*
+             (open path
+                   :direction :output
+                   :if-does-not-exist :create
+                   :if-exists :append)))
      (sera:and-let* ((path (nfiles:expand (error-output-file buffer))))
-                    (setf *error-output*
-                          (open path
-                                :direction :output
-                                :if-does-not-exist :create
-                                :if-exists :append))))))
+       (setf *error-output*
+             (open path
+                   :direction :output
+                   :if-does-not-exist :create
+                   :if-exists :append))))))
 
 (defmacro define-ffi-generic (name arguments &body options)
   `(progn
