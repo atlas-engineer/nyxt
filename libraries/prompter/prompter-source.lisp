@@ -266,7 +266,7 @@ attribute names are meant to be displayed or not.
 suggestion count is meant to be displayed or not.")
 
    (suggestion-maker #'make-suggestion
-                     :type (function (t &optional source string) suggestion)
+                     :type function
                      :documentation "Function that wraps an arbitrary
 object into a source `suggestion'.
 This is useful to set the suggestion slots such as `attributes' and `match-data'
@@ -278,15 +278,13 @@ Called on
 - (optional) current input.")
 
    (filter #'fuzzy-match
-           :type (or null
-                     (function (suggestion source string) (or null suggestion))
-                     function-symbol)
+           :type (or null function function-symbol)
            :documentation
            "Takes a `suggestion', the `source' and the `input' and return a new
 suggestion, or nil if the suggestion is discarded.")
 
    (filter-preprocessor #'delete-inexact-matches
-                        :type (or null (function (list source string) list) function-symbol)
+                        :type (or null function function-symbol)
                         :documentation
                         "Function called when
 input is modified, before filtering the suggestions.
@@ -296,7 +294,7 @@ It is passed the following arguments:
 - the input.")
 
    (filter-postprocessor nil
-                         :type (or null (function (list source string) list) function-symbol)
+                         :type (or null function function-symbol)
                          :documentation
                          "Function called when input is modified, after
 filtering the suggestions with `filter'.
@@ -377,7 +375,7 @@ If update calculation is aborted, nil is sent instead.")
                       "Whether multiple candidates can be marked.")
 
    (resumer nil
-            :type (or null (function (source)))
+            :type (or null function)
             :documentation
             "Function meant to be called with the source as argument when the
 prompter is resumed.
