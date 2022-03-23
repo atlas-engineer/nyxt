@@ -8,6 +8,9 @@
 (export-always '(hook-keymaps-buffer))
 (hooks:define-hook-type url->url (function (quri:uri) quri:uri))
 
+(define-condition no-current-buffer (nyxt-condition)
+  ())
+
 (define-class buffer ()
   ((id
     ""
@@ -17,8 +20,8 @@ have an empty ID.")
    ;; TODO: Or maybe a dead-buffer should just be a buffer history?
    (profile
     (alex:if-let ((profile-class (find-profile-class (getf *options* :profile))))
-      (make-instance profile-class)
-      *global-profile*)
+                 (make-instance profile-class)
+                 *global-profile*)
     :type nyxt-profile
     :documentation "Buffer profiles are used to specialize the behaviour of
 various parts, such as the path of all data files.")
@@ -86,7 +89,7 @@ Auto-completions come from the default search engine.")
                           #'(lambda (results)
                               (alex:when-let* ((results results)
                                                (results (decode-json results)))
-                                (mapcar #'list (second results) (fourth results))))))
+                                              (mapcar #'list (second results) (fourth results))))))
           (make-instance 'search-engine
                          :shortcut "ddg"
                          :search-url "https://duckduckgo.com/?q=~a"
@@ -110,7 +113,7 @@ The default search engine (as per `default-search-engine') is used when the
 query is not a valid URL, or the first keyword is not recognized.")
    (current-keymaps-hook
     (make-instance 'hook-keymaps-buffer
-     :combination #'hooks:combine-composed-hook)
+                   :combination #'hooks:combine-composed-hook)
     :type hook-keymaps-buffer
     :documentation "Hook run as a return value of `current-keymaps'.")
    (conservative-word-move
@@ -234,64 +237,64 @@ A value of 0.95 means that the bottom 5% will be the top 5% when scrolling
 down.")
    (style
     (theme:themed-css
-        (theme *browser*)
-      (body
-       :color theme:text
-       :background-color theme:background
-       :margin-left "20px"
-       :margin-top "20px")
-      ("h1,h2,h3,h4,h5,h6"
-       :color theme:primary
-       :font-family theme:font-family)
-      (hr
-       :height "3px"
-       :border-radius "2px"
-       :border-width "0"
-       :color theme:secondary
-       :background-color theme:secondary)
-      (button
-       :background "none"
-       :color "inherit"
-       :border "none"
-       :padding 0
-       :font "inherit"
-       :outline "inherit")
-      (.button
-       :display "inline-block"
-       :background-color theme:secondary
-       :color theme:background
-       :text-decoration "none"
-       :border-radius "2px"
-       :padding "6px"
-       :margin-left "2px"
-       :margin-right "2px")
-      (|.button:hover|
-       :color theme:text)
-      (|.button:visited|
-       :color theme:background)
-      (|.button:active|
-       :color theme:background)
-      (a
-       :color theme:primary)
-      (pre
-       :color theme:text
-       :background-color theme:quaternary
-       :border-radius "2px"
-       :padding-bottom "10px")
-      ("table, th, td"
-       :border-color theme:quaternary
-       :border-collapse "collapse"
-       :border-width "1px"
-       :border-style "solid"
-       :color theme:text
-       :background-color theme:background)
-      (th
-       :background-color theme:primary
-       :color theme:background
-       :text-align "left")))
+     (theme *browser*)
+     (body
+      :color theme:text
+      :background-color theme:background
+      :margin-left "20px"
+      :margin-top "20px")
+     ("h1,h2,h3,h4,h5,h6"
+      :color theme:primary
+      :font-family theme:font-family)
+     (hr
+      :height "3px"
+      :border-radius "2px"
+      :border-width "0"
+      :color theme:secondary
+      :background-color theme:secondary)
+     (button
+      :background "none"
+      :color "inherit"
+      :border "none"
+      :padding 0
+      :font "inherit"
+      :outline "inherit")
+     (.button
+      :display "inline-block"
+      :background-color theme:secondary
+      :color theme:background
+      :text-decoration "none"
+      :border-radius "2px"
+      :padding "6px"
+      :margin-left "2px"
+      :margin-right "2px")
+     (|.button:hover|
+      :color theme:text)
+     (|.button:visited|
+      :color theme:background)
+     (|.button:active|
+      :color theme:background)
+     (a
+      :color theme:primary)
+     (pre
+      :color theme:text
+      :background-color theme:quaternary
+      :border-radius "2px"
+      :padding-bottom "10px")
+     ("table, th, td"
+      :border-color theme:quaternary
+      :border-collapse "collapse"
+      :border-width "1px"
+      :border-style "solid"
+      :color theme:text
+      :background-color theme:background)
+     (th
+      :background-color theme:primary
+      :color theme:background
+      :text-align "left")))
    (buffer-load-hook
     (make-instance 'hook-url->url
-     :combination #'hooks:combine-composed-hook)
+                   :combination #'hooks:combine-composed-hook)
     :type hook-url->url
     :accessor nil
     :export nil
@@ -337,7 +340,7 @@ The file where the system will create/save the global history.")
     (make-instance 'bookmarks-file)
     :type bookmarks-file
     :documentation "The file where the system will create/save the bookmarks.")
- (no-procrastinate-hosts-file
+   (no-procrastinate-hosts-file
     (make-instance 'no-procrastinate-hosts-file)
     :type no-procrastinate-hosts-file
     :documentation "The file where the system will create/save hosts associated
@@ -376,6 +379,10 @@ Rendered URLs or the Nyxt's manual qualify as examples.  Buffers are fully
 separated from one another, so that each has its own behaviour and settings."))
 
 (define-user-class buffer)
+
+(defmethod (setf last-access) (new-value (obj null))
+  "Sometimes last-access is null in headless mode."
+  nil)
 
 (define-class background-buffer (user-web-buffer)
   ()

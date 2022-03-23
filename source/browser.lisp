@@ -240,6 +240,11 @@ prevents otherwise."))
 
 (define-user-class browser)
 
+(define-class headless-browser (browser)
+  ())
+
+(define-user-class headless-browser)
+
 (defmethod external-editor-program ((browser browser))
   (alex:ensure-list (slot-value browser 'external-editor-program)))
 
@@ -294,38 +299,49 @@ prevents otherwise."))
    browser
    (lambda ()
      (run-thread "finalization"
-       ;; Restart on init error, in case `*init-file*' broke the state.
-       ;; We only `handler-case' when there is an init file, this way we avoid
-       ;; looping indefinitely.
-       (if (or (getf *options* :no-init)
-               (not (uiop:file-exists-p (nfiles:expand *init-file*))))
-           (startup browser urls)
-           (catch 'startup-error
-             (handler-bind ((error (lambda (c)
-                                     (log:error "Startup failed (probably due to a mistake in ~s):~&~a"
-                                                (nfiles:expand *init-file*) c)
-                                     (throw 'startup-error
-                                       (if *run-from-repl-p*
-                                           (progn
-                                             (quit)
-                                             (reset-all-user-classes)
-                                             (apply #'start (append *options* (list :urls urls :no-init t))))
-                                           (restart-with-message c))))))
-               (startup browser urls)))))))
+                 ;; Restart on init error, in case `*init-file*' broke the state.
+                 ;; We only `handler-case' when there is an init file, this way we avoid
+                 ;; looping indefinitely.
+                 (if (or (getf *options* :no-init)
+                         (not (uiop:file-exists-p (nfiles:expand *init-file*))))
+                     (startup browser urls)
+                     (catch 'startup-error
+                       (handler-bind ((error (lambda (c)
+                                               (log:error "Startup failed (probably due to a mistake in ~s):~&~a"
+                                                          (nfiles:expand *init-file*) c)
+                                               (throw 'startup-error
+                                                 (if *run-from-repl-p*
+                                                     (progn
+                                                       (quit)
+                                                       (reset-all-user-classes)
+                                                       (apply #'start (append *options* (list :urls urls :no-init t))))
+                                                     (restart-with-message c))))))
+                         (startup browser urls)))))))
   ;; Set `init-time' at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)
         (local-time:timestamp-difference (local-time:now) startup-timestamp))
   (setf (slot-value *browser* 'ready-p) t))
 
+(defmethod startup ((browser headless-browser) urls)
+  "Startup the headless. Dont restore history but open URLs."
+  (open-urls (or urls (list (default-new-buffer-url browser))))
+  (hooks:run-hook *after-startup-hook*)
+  (funcall* (startup-error-reporter-function *browser*)))
+
 (defmethod startup ((browser browser) urls)
   (labels ((clear-history-owners (buffer)
              "Warning: We clear the previous owners here.
 After this, buffers from a previous session are permanently lost, they cannot be
 restored."
-             (nfiles:with-file-content (history (history-file buffer))
-               (when history
-                 (clrhash (htree:owners history)))))
+             (handler-case 
+                 (nfiles:with-file-content (history (history-file buffer))
+                   (when history
+                     (clrhash (htree:owners history))))
+               (no-applicable-method ()
+                 nil
+                 ;;hack because history file is sometimes nil
+                 )))
            (restore-session ()
              (let ((buffer (current-buffer)))
                (when (histories-list buffer)

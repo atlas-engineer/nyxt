@@ -66,9 +66,12 @@ This is set globally so that extensions can be loaded even if there is no
   (or %buffer
       (alex:if-let ((w (or window (current-window))))
         (active-buffer w)
-        (when *browser*
-             (log:debug "No active window, picking last active buffer.")
-             (last-active-buffer)))))
+        (if *browser*
+            (progn 
+              (log:debug "No active window, picking last active buffer.")
+              (or (last-active-buffer)
+                  (error 'no-current-buffer :message "No active buffer.")))
+            (error 'no-current-buffer :message "No active buffer. No *browser*")))))
 
 (export-always 'with-current-buffer)
 (defmacro with-current-buffer (buffer &body body)

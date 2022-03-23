@@ -564,14 +564,16 @@ Finally, run the browser, load URL-STRINGS if any, then run
       (load-lisp (nfiles:expand *auto-config-file*) :package (find-package :nyxt-user))
       (match (multiple-value-list (load-lisp (nfiles:expand *init-file*)
                                              :package (find-package :nyxt-user)))
-        (nil nil)
-        ((list message full-message)
-         (setf startup-error-reporter
-               (lambda ()
-                 (echo-warning "~a." message)
-                 (error-in-new-window "*Init file errors*" full-message)))))
+             (nil nil)
+             ((list message full-message)
+              (setf startup-error-reporter
+                    (lambda ()
+                      (echo-warning "~a." message)
+                      (error-in-new-window "*Init file errors*" full-message)))))
       (load-or-eval :remote nil)
-      (setf *browser* (make-instance 'user-browser
+      (setf *browser* (make-instance (if *headless-p*
+                                         'user-headless-browser
+                                       'user-browser)
                                      :startup-error-reporter-function startup-error-reporter
                                      :startup-timestamp startup-timestamp
                                      :socket-thread thread))
