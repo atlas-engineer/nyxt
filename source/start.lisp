@@ -290,8 +290,8 @@ Return the short error message and the full error message as second value."
    (make-instance 'nyxt/file-manager-mode:user-file-source
                   :extensions '("lisp")
                   :actions (list (make-command load-file* (files)
-                                               (dolist (file files)
-                                                 (load-lisp file)))))))
+                                   (dolist (file files)
+                                     (load-lisp file)))))))
 
 (define-command load-init-file (&key (init-file (nfiles:expand *init-file*)))
   "Load or reload the init file."
@@ -445,7 +445,7 @@ Otherwise bind socket and return the listening thread."
                                                        #'symbol-name
                                                        #'opts::name)
                                          opts::*options*))
-  (format nil "Parse command line or REPL options then start the browser.
+    (format nil "Parse command line or REPL options then start the browser.
 Load URLS if any (a list of strings).
 
 This functions focuses on OPTIONS parsing, see `start-browser' for the actual
@@ -465,9 +465,12 @@ Examples:
   (nyxt:start :urls '(\"https://nyxt.atlas.engineer\" \"https://en.wikipedia.org\")
               :verbose t
               :with-file '(\"history\" \"/tmp/nyxt/history.lisp\"))"
-          (with-output-to-string (s) (opts:describe :stream s)))
+            (with-output-to-string (s) (opts:describe :stream s)))
   ;; Extensions should be made accessible straight from the beginning,
   ;; e.g. before a script is run.
+  (unless +renderer+
+    (log:warn "No renderer set. I will not be able to render pages.~
+               Consider '(ql:quickload :nyxt/gi-gtk)."))
   (pushnew 'nyxt-source-registry asdf:*default-source-registries*)
   (asdf:clear-configuration)
 
@@ -476,54 +479,55 @@ Examples:
 
   ;; Options should be accessible anytime, even when run from the REPL.
   (setf *options* options)
+  (destructuring-bind (&key headless verbose 
+                         help version system-information
+                         list-profiles script
+                         load eval quit remote
+                       &allow-other-keys)
+      options 
+    (when headless 
+      (setf *headless-p* t))
+    
+    (if verbose 
+        (progn
+          (log:config :debug)
+          (format t "Arguments parsed: ~a and ~a~&" options urls))
+        (log:config :pattern "<%p> [%D{%H:%M:%S}] %m%n"))
 
-  (when (getf options :headless)
-    (setf *headless-p* t))
-
-  (if (getf options :verbose)
-      (progn
-        (log:config :debug)
-        (format t "Arguments parsed: ~a and ~a~&" options urls))
-      (log:config :pattern "<%p> [%D{%H:%M:%S}] %m%n"))
-
-  (cond
-    ((getf options :help)
-     (opts:describe :prefix "nyxt [options] [URLs]"))
-
-    ((getf options :version)
-     (format t "Nyxt version ~a~&" +version+))
-
-    ((getf options :system-information)
-     (princ (system-information)))
-
-    ((getf options :list-profiles)
-     (load-lisp (nfiles:expand *init-file*) :package (find-package :nyxt-user))
-     (mapcar (lambda (profile-class)
-               (format t "~a~10t~a~&"
-                       (profile-class-name profile-class)
-                       (indent (documentation profile-class t) 10)))
-             (list-profile-classes)))
-
-    ((getf options :script)
-     (flet ((run-script (stream)
-              (maybe-skip-shebang-line stream)
-              (load-lisp stream)))
-       (match (getf options :script)
-         ("-" (run-script *standard-input*))
-         (file (with-open-file (f file :element-type :default)
-                 (run-script f))))))
-
-    ((and (or (getf options :load)
-              (getf options :eval))
-          (or (getf options :quit)
-              (getf options :remote)))
-     (start-load-or-eval))
-
-    (t
-     (with-protect ("Error: ~a" :condition)
-       (start-browser urls))))
-
-  (unless *run-from-repl-p* (uiop:quit)))
+    (cond 
+      (help
+       (opts:describe :prefix "nyxt [options] [URLs]"))
+      
+      (version
+       (format t "Nyxt version ~a~&" +version+))
+      
+      (system-information
+       (princ (system-information)))
+      
+      (list-profiles
+       (load-lisp (nfiles:expand *init-file*) :package (find-package :nyxt-user))
+       (mapcar (lambda (profile-class)
+                 (format t "~a~10t~a~&"
+                         (profile-class-name profile-class)
+                         (indent (documentation profile-class t) 10)))
+               (list-profile-classes)))
+      
+      (script
+       (flet ((run-script (stream)
+                (maybe-skip-shebang-line stream)
+                (load-lisp stream)))
+         (match (getf options :script)
+           ("-" (run-script *standard-input*))
+           (file (with-open-file (f file :element-type :default)
+                   (run-script f))))))
+      
+      ((and (or load eval)
+            (or quit remote))
+       (start-load-or-eval))
+      (t
+       (with-protect ("Error: ~a" :condition)
+         (start-browser urls))))
+    (unless *run-from-repl-p* (uiop:quit))))
 
 (defun load-or-eval (&key remote)
   (loop for (opt value . nil) on *options*
