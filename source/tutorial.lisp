@@ -178,7 +178,9 @@ Bookmarks can have the following settings:")
     (list-command-information '(bookmark-current-url bookmark-buffer-url
                                 bookmark-url nyxt/web-mode:bookmark-hint
                                 set-url-from-bookmark delete-bookmark
-                                nyxt/bookmark-mode:list-bookmarks)))
+                                nyxt/bookmark-mode:list-bookmarks
+                                nyxt/bookmark-frequent-visits:bookmark-frequent-visits-mode
+                                import-bookmarks-from-html)))
    (:h3 "Annotations")
    (:p "Annotations can have the following settings:")
    (:ul
