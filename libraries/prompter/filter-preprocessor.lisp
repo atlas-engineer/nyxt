@@ -14,7 +14,7 @@ The substrings must be SUBSTRING-LENGTH characters long or more."
        (loop for match-datum in suggestion-match-data
              append (remove-if
                      (lambda (i)
-                       (not (search i match-datum)))
+                       (not (search i match-datum :test #'string-equal)))
                      input-strings))
        :test #'string=))))
 
@@ -38,7 +38,7 @@ Suitable as a `source' `filter-preprocessor'."
         (setf suggestions
               (delete-if (lambda (suggestion)
                            (not (loop for i in exactly-matching-substrings
-                                      always (search i (match-data suggestion)))))
+                                      always (search i (match-data suggestion) :test #'string-equal))))
                          suggestions)))))
   suggestions)
 
@@ -49,7 +49,8 @@ Suitable as a `source' `filter-preprocessor'."
       suggestions
       (let ((words (sera:words input)))
         (delete-if (lambda (suggestion)
-                     (notevery (lambda (sub) (search sub (ensure-match-data-string suggestion source)))
+                     (notevery (lambda (sub) (search sub (ensure-match-data-string suggestion source)
+                                                     :test #'string-equal))
                                words))
                    suggestions))))
 
