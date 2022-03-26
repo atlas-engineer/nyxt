@@ -284,7 +284,7 @@ FUNCTION is the action to perform on the selected elements."
   (echo "Unsupported operation for hint: can't open in new buffer."))
 
 (defmethod %follow-hint-new-buffer ((a nyxt/dom:a-element) &optional parent-buffer)
-  (make-buffer :url (url a) :parent-buffer parent-buffer))
+  (make-buffer :url (url a) :parent-buffer parent-buffer :load-url-p nil))
 
 (defmethod %follow-hint-new-buffer ((element plump:element) &optional parent-buffer)
   (declare (ignore parent-buffer))
