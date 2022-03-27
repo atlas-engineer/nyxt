@@ -101,6 +101,10 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
         (format nil "~s [~a]" no-code-specs (keymap:keys->keyspecs keys))
         (format nil "~s" no-code-specs))))
 
+(export-always 'dispatch-command)
+(defun dispatch-command (function)
+  (run-async function))
+
 (export-always 'dispatch-input-event)
 (defun dispatch-input-event (event buffer window printable-p)
   "Dispatch keys in WINDOW `key-stack'.
@@ -144,7 +148,7 @@ Return nil to forward to renderer or non-nil otherwise."
               ;; thread.
               (setf (last-key window) (first key-stack))
               (unwind-protect
-                   (run-async bound-function)
+                   (funcall (command-dispatcher window) bound-function)
                 ;; We must reset the key-stack on errors or else all subsequent
                 ;; keypresses will keep triggering the same erroring command.
                 (setf key-stack nil))
