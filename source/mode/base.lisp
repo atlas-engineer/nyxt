@@ -3,6 +3,13 @@
 
 (in-package :nyxt)
 
+(defmacro make-repeat (times)
+  (let ((name (gensym (format nil "repeat-~a-" times))))
+    `(make-command ,name ()
+       ,(format nil "Repeat the command associated to the pressed key ~R times." times)
+       ;; FIXME: A dirty hack.
+       (funcall (read-from-string "nyxt/repeat-mode:repeat-key") :times ,times))))
+
 (define-mode base-mode ()
   "Bind general-purpose commands defined by `define-command'.
 This mode is a good candidate to be passed to `make-buffer'."
@@ -89,6 +96,15 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-d" 'list-downloads
        "M-x" 'execute-command
        "C-M-x" 'execute-extended-command
+       "M-1" (make-repeat 1)
+       "M-2" (make-repeat 2)
+       "M-3" (make-repeat 3)
+       "M-4" (make-repeat 4)
+       "M-5" (make-repeat 5)
+       "M-6" (make-repeat 6)
+       "M-7" (make-repeat 7)
+       "M-8" (make-repeat 8)
+       "M-9" (make-repeat 9)
        "C-x r j" 'set-url-from-bookmark
        "C-x r M" 'bookmark-current-url
        "C-x r m" 'bookmark-buffer-url
@@ -133,6 +149,15 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-h k" 'describe-key
        "C-h b" 'describe-bindings
        ":" 'execute-command
+       "1" (make-repeat 1)
+       "2" (make-repeat 2)
+       "3" (make-repeat 3)
+       "4" (make-repeat 4)
+       "5" (make-repeat 5)
+       "6" (make-repeat 6)
+       "7" (make-repeat 7)
+       "8" (make-repeat 8)
+       "9" (make-repeat 9)
        "W" 'make-window
        "C-w C-w" 'make-window
        "C-w q" 'delete-current-window
