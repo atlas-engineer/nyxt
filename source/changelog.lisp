@@ -331,15 +331,21 @@ SLY install.")
    (:li "New prompt-buffer fuzzy matching algorithm, hopefully offering more
   relevant results.  (Thanks to @BlueFlo0d!)")
    (:li "Add support for the Gopher and Gemini protocols.")
+   (:li "Headless mode available through " (:code "--headless") " CLI switch."
+        "Initfile becomes the script to run in the headless instance on Nyxt.")
    (:li "New " (:code "save-input-data") ", " (:code "set-input-data-from-saved")
-        " and " (:code "set-input-data-from-saved-domain") " commands to record
-and restore input fields.")
+        " and " (:code "set-input-data-from-saved-domain")
+        " commands to record and restore input fields.")
+   (:li "Color-picker support when " (:code "native-dialogs") " are on.")
    (:li "Internal pages are now using the " (:code "nyxt") " URL scheme.  They support the "
         (:code "lisp") " protocol to allow evaluating arbitrary Lisp, for instance from a button click."
         "Internal pages also have a URL now, which means they have history support.")
-   (:li "New " (:code "define-internal-page-command") " helper to define internal pages.")
+   (:li "New " (:code "define-internal-page-command") "and"
+        (:code "define-internal-page-command-global") " helpers to define internal pages.")
    (:li "New " (:code "define-internal-scheme") " helper to define custom schemes.")
-   (:li (:code "jump-to-heading") " commands now sort and indent the headings in a natural fashion.")
+   (:li (:code "jump-to-heading") " command now sort and indent the headings in a natural fashion.")
+   (:li "New" (:code "next-heading") " and " (:code "previous-heading")
+        " commands to jump between neighboring headings.")
    (:li "New " (:code "match-port") " URL designator predicate for auto-mode rules.")
    (:li "New " (:code "toggle-message-buffer") " and " (:code "toggle-status-buffer") " commands.")
    (:li "New " (:code "bookmark-frequent-visits") " mode.")
@@ -353,8 +359,15 @@ and restore input fields.")
 
    (:h3 "Programming interface")
    (:ul
+    (:li "Nyxt-native debugger available via " (:code "toggle-debug-on-error") ".")
+    (:li "Better Lisp values inspection in " (:code "describe-*")
+         " commands and " (:code "lisp-repl") ", extensible through "
+         (:code "value->html") " method.")
+    (:li (:code "*after-startup-hook*") " to attach headless mode actions or configuration to.")
     (:li "Thread name is now mandatory in " (:code "run-thread") ".")
-    (:li "New " (:code "nyxt-unstable") " " (:code "*features*") " when built from source on an untagged commit.  A feature with the commit is also added.")
+    (:li "New " (:code "nyxt-unstable") " " (:code "*features*")
+         " when built from source on an untagged commit.  A feature with the commit is also added.")
     (:li "New " (:code "prompt1") " helper.")
     (:li "New " (:code "theme") " library.")
+    (:li (:code "on") " and " (:code "on-once") " helpers to shorten attaching to hooks.")
     (:li "Rename buffer slot " (:code "load-status") " to " (:code "status") "."))))
