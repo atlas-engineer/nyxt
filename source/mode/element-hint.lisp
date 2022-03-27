@@ -350,12 +350,13 @@ FUNCTION is the action to perform on the selected elements."
 buffer.
 
 Auto-follows hints by their ID, if `web-mode's `auto-follow-hints-p' is true."
-  (query-hints "Go to element"
-               (lambda (results)
-                 (%follow-hint (first results))
-                 (mapcar (alex:rcurry #'%follow-hint-new-buffer buffer)
-                         (rest results)))
-               :multi-selection-p t))
+  (let ((buffer (current-buffer)))
+    (query-hints "Go to element"
+                 (lambda (results)
+                   (%follow-hint (first results))
+                   (mapcar (alex:rcurry #'%follow-hint-new-buffer buffer)
+                           (rest results)))
+                 :multi-selection-p t)))
 
 (define-command follow-hint-new-buffer ()
   "Show a set of element hints, and open the user inputted one in a new
