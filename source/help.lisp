@@ -598,52 +598,23 @@ file, see the "
          " documentation."))
    buffer))
 
-(defun describe-key-dispatch-input (event buffer window printable-p)
-  "Display documentation of the value bound to the keys pressed by the user.
-Cancel with 'escape escape'.
-Input is not forwarded.
-This function can be used as a `window' `input-dispatcher'."
-  (declare (ignore event buffer printable-p))
-  (handler-case
-      (progn
-        (with-accessors ((key-stack key-stack)) window
-          (log:debug "Intercepted key ~a" (first (last key-stack)))
-          (let ((escape-key (keymap:make-key :value "escape"))
-                (bound-value (the (or symbol keymap:keymap null)
-                                  (keymap:lookup-key key-stack
-                                                     (current-keymaps (current-buffer))))))
-            (cond
-              ((and bound-value (not (keymap:keymap-p bound-value)))
-               ;; TODO: Highlight hit bindings and display translation if any.
-               ;; For this, we probably need to call `lookup-key' on key-stack.
-               (describe-command :command (name (function-command (symbol-function bound-value))))
-               (setf key-stack nil)
-               (setf (input-dispatcher window) #'dispatch-input-event))
-              ((not bound-value)
-               (echo "Unbound: ~a"
-                     (keyspecs-with-optional-keycode key-stack))
-               (setf key-stack nil)
-               (setf (input-dispatcher window) #'dispatch-input-event))
-              ((and (<= 2 (length key-stack))
-                    (every (lambda (key) (keymap:key= key escape-key))
-                           (last key-stack 2)))
-               (echo "Cancelled.")
-               (setf key-stack nil)
-               (setf (input-dispatcher window) #'dispatch-input-event))
-              (t
-               (echo "Press a key sequence to describe (cancel with 'escape escape'): ~a"
-                     (keyspecs-with-optional-keycode key-stack)))))))
-    (error (c)
-      (echo-warning "~a" c)
-      (setf (key-stack window) nil)
-      (setf (input-dispatcher window) #'dispatch-input-event)))
-  ;; Never forward events.
-  t)
+(defun describe-key-dispatch (command)
+  (unwind-protect
+       (describe-command :command (name (function-command (symbol-function command))))
+    (setf (command-dispatcher (current-window)) #'dispatch-command
+          (input-skip-dispatcher (current-window)) #'dispatch-input-skip)))
+
+(defun skip-describe-dispatch (keyspec)
+  (declare (ignore keyspec))
+  (echo "Cancelled describe-key.")
+  (setf (command-dispatcher (current-window)) #'dispatch-command
+        (input-skip-dispatcher (current-window)) #'dispatch-input-skip))
 
 (define-command describe-key ()
   "Display binding of user-inputted keys."
-  (setf (input-dispatcher (current-window)) #'describe-key-dispatch-input)
-  (echo "Press a key sequence to describe (cancel with 'escape escape'):"))
+  (setf (command-dispatcher (current-window)) #'describe-key-dispatch
+        (input-skip-dispatcher (current-window)) #'skip-describe-dispatch)
+  (echo "Press a key sequence to describe:"))
 
 (defun evaluate (string)
   "Evaluate all expressions in string and return the last result as a list of values.
