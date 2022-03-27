@@ -61,9 +61,15 @@ The channel is popped when a prompt buffer is hidden.")
     :documentation "The height of the prompt buffer when open.")
    (input-dispatcher
     #'dispatch-input-event
+    :type function
     :documentation "Function to process input events.
 It takes EVENT, BUFFER, WINDOW and PRINTABLE-P parameters.
 Cannot be null.")
+   (command-dispatcher
+    #'dispatch-command
+    :type function
+    :documentation "Function to process the command processed in `input-dispatcher'.
+Takes the function/command as the only argument.")
    (window-set-buffer-hook
     (make-instance 'hook-window-buffer)
     :type hook-window-buffer
