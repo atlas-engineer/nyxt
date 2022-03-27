@@ -37,6 +37,7 @@ Function taking a `repeat-mode' instance.")
    (constructor #'initialize)))
 
 (defmethod initialize ((mode repeat-mode))
+  ;; TODO: Cache prompt input now that we have prompt-buffer hooks.
   (unless (repeat-action mode)
     (let ((prompted-action
             (first
@@ -70,4 +71,33 @@ Function taking a `repeat-mode' instance.")
                               :sources (list (make-instance 'prompter:raw-source))))))))
     (when times
       (enable-modes 'repeat-mode (current-buffer)
-                    (list :repeat-count times :repeat-action function)))))
+                    (list :repeat-count times
+                          :repeat-action #'(lambda (mode)
+                                             (declare (ignore mode))
+                                             (nyxt::run-async function)))))))
+
+(defun make-repeat-command-dispatcher (times)
+  (lambda (command)
+    (unwind-protect
+         (repeat-times times (symbol-function command))
+      (setf (command-dispatcher (current-window)) #'dispatch-command
+            (input-skip-dispatcher (current-window)) #'dispatch-input-skip))))
+
+(defun skip-repeat-dispatch (keyspec)
+  (declare (ignore keyspec))
+  (echo "Cancelled repeat-key.")
+  (setf (command-dispatcher (current-window)) #'dispatch-command
+        (input-skip-dispatcher (current-window)) #'dispatch-input-skip))
+
+;; FIXME: This design does not allow for multi-digit TIMES. Maybe introduce some
+;; global variable, like Emacs does?
+(define-command-global repeat-key
+    (&key (times (ignore-errors
+                  (parse-integer
+                   (prompt1 :prompt "Repeat for X times"
+                     :input "4"
+                     :sources (list (make-instance 'prompter:raw-source)))))))
+  "Repeat the command bound to the user-pressed keybinding TIMES times."
+  (setf (command-dispatcher (current-window)) (make-repeat-command-dispatcher times)
+        (input-skip-dispatcher (current-window)) #'skip-repeat-dispatch)
+  (echo "Press a key sequence for command to repeat ~R times:" times))
