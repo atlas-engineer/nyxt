@@ -70,6 +70,12 @@ Cannot be null.")
     :type function
     :documentation "Function to process the command processed in `input-dispatcher'.
 Takes the function/command as the only argument.")
+   (input-skip-dispatcher
+    #'dispatch-input-skip
+    :type function
+    :documentation "Function to process the skipped input event.
+It runs when the pressed keybinding has no associated command.
+The only argument is a string representation of the pressed key.")
    (window-set-buffer-hook
     (make-instance 'hook-window-buffer)
     :type hook-window-buffer
