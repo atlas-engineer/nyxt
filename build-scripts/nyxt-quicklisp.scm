@@ -110,11 +110,11 @@
    (propagated-inputs
     ;; For iolib, etc.
     (list libfixposix))
-   (synopsis "Extensible web-browser in Common Lisp")
+   (synopsis "Extensible web browser in Common Lisp")
    (home-page "https://nyxt.atlas.engineer")
-   (description "Nyxt is a keyboard-oriented, extensible web-browser
+   (description "Nyxt is a keyboard-oriented, extensible web browser
 designed for power users.  The application has familiar Emacs and VI
-key-bindings and is fully configurable and extensible in Common Lisp.")
+keybindings and is fully configurable and extensible in Common Lisp.")
    (license license:bsd-3)))
 
 nyxt
