@@ -1,4 +1,4 @@
-#+TITLE: Nyxt Developer Readme
+#+TITLE: Nyxt Developer's Manual
 
 # If you edit this file, please make sure that you install the Emacs
 # package org-make-toc so that the table of contents below gets updated
@@ -9,10 +9,10 @@
 :TOC:      :include all :ignore this
 :END:
 :CONTENTS:
-- [[#developer-installation-with-guix][Developer installation with Guix]]
-- [[#developer-installation-with-nix][Developer installation with Nix]]
+- [[#developers-installation-with-guix][Developer's installation with Guix]]
+- [[#developers-installation-with-nix][Developer's installation with Nix]]
   - [[#building-for-local-development][Building for local development]]
-- [[#standard-developer-installation][Standard developer installation]]
+- [[#standard-developers-installation][Standard developer's installation]]
   - [[#installing-sbcl][Installing SBCL]]
   - [[#installing-quicklisp-optional][Installing Quicklisp (optional)]]
   - [[#gtk-dependencies][GTK dependencies]]
@@ -42,7 +42,7 @@
   - [[#contributing][Contributing]]
   - [[#irc-channel][IRC Channel]]
 :END:
-* Developer installation with Guix
+* Developer's installation with Guix
 
 First, clone the Nyxt repository.  It is most convenient to clone the
 Nyxt repository into =~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF
@@ -51,7 +51,7 @@ will find it]]).
 Second, install [[https://guix.gnu.org][Guix]] and follow the instructions in the
 [[../build-scripts/nyxt.scm]] file of the Nyxt repository.
 
-* Developer installation with Nix
+* Developer's installation with Nix
 ** Building for local development
 To use Nix for local development use the =shell.nix= file located in the
 build-scripts directory.
@@ -66,7 +66,7 @@ Then you can load Nyxt with
 (nyxt:start)=
 #+END_SRC
 
-* Standard developer installation
+* Standard developer's installation
 
 Nyxt is written in Common Lisp.  It should build with any standard Common
 Lisp implementation but currently, only [[http://www.sbcl.org/][SBCL]] support is tested.
