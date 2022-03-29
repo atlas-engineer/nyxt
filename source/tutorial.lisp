@@ -197,7 +197,7 @@ the URL.")
    (:h3 "Passthrough mode")
    (:p "The command " (:code "passthrough-mode") " forwards all keys to the
 renderer. For instance, using the default binding of Nyxt (" (:code "web-cua-map") ") the
-key-binding " (:code "C-i") " executes " (:code "autofill") ". Suppose
+keybinding " (:code "C-i") " executes " (:code "autofill") ". Suppose
 a user is using their email client which also uses " (:code "C-i") " for the italic command. Thus, after
 executing " (:code "passthrough-mode") " the " (:code "C-i") " binding is associated
 with the webpage's italic command instead of " (:code "autofill") ". Finally, the

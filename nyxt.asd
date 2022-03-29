@@ -35,7 +35,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
   :version "3"                          ; Development version.
   :author "Atlas Engineer LLC"
   :homepage "https://nyxt.atlas.engineer"
-  :description "Extensible web-browser in Common Lisp"
+  :description "Extensible web browser in Common Lisp"
   :license "BSD 3-Clause"
   :depends-on (alexandria
                bordeaux-threads
