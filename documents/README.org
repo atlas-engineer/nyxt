@@ -1,9 +1,5 @@
 #+TITLE: Nyxt Developer's Manual
 
-# If you edit this file, please make sure that you install the Emacs
-# package org-make-toc so that the table of contents below gets updated
-# automatically
-
 * Table of contents                                                     :TOC:
 :PROPERTIES:
 :TOC:      :include all :ignore this
@@ -35,7 +31,7 @@
     - [[#slyslynk][SLY/SLYNK]]
       - [[#quicklisp-setup][Quicklisp Setup]]
       - [[#non-quicklisp-setup][Non-Quicklisp Setup]]
-  - [[#adding-new-lisp-dependency][Adding new Lisp dependency]]
+  - [[#adding-a-new-lisp-dependency][Adding a new Lisp dependency]]
 - [[#help--community][Help & Community]]
   - [[#issue-tracker][Issue tracker]]
   - [[#learning-common-lisp][Learning Common Lisp]]
@@ -58,12 +54,12 @@ build-scripts directory.
 As an example, to run with SBCL, you could do the following: =nix-shell
 nyxt/build-scripts/shell.nix --run sbcl=
 
-Then you can load Nyxt with
+Then you can load Nyxt with:
 
-#+BEGIN_SRC lisp
+#+begin_src lisp
 (asdf:load-system :nyxt/gtk-application)
-(nyxt:start)=
-#+END_SRC
+(nyxt:start)
+#+end_src
 
 * Standard developer's installation
 
@@ -86,40 +82,39 @@ found here: [[http://www.sbcl.org/getting.html]].
 
 ** Installing Quicklisp (optional)
 
-If you wish to install it manually- system-wide- the official Quicklisp website
-can provide updated links to downloads, and instructions:
-https://www.quicklisp.org.
+If you wish to install it manually, system-wide, refer to the official [[https://www.quicklisp.org.][Quicklisp
+website]] for instructions.
 
 Then pass the ~NYXT_SUBMODULES=false~ option to all build commands, like this:
 
 #+begin_src sh
-  make NYXT_SUBMODULES=false ...
+make NYXT_SUBMODULES=false ...
 #+end_src
 
 Each time you build Nyxt, you'll have to make sure the Quicklisp distribution is
-up-to-date or else Nyxt might fail to build.  In a Lisp REPL:
+up-to-date, otherwise the build might fail.  In a Lisp REPL:
 
 #+begin_src lisp
-  (ql:update-dist "quicklisp")
+(ql:update-dist "quicklisp")
 #+end_src
 
 ** GTK dependencies
 *** Lisp dependencies
 
-Nyxt requires some Lisp libraries.  Some pinned at specific versions, some are
-forks, so you should not rely on Quicklisp.
+Nyxt requires some Lisp libraries and, since some are pinned at specific
+versions, relying on Quicklisp is discouraged.
 
-All Lisp dependencies are included as a submodule of this repository, so if you
-did not disable submodules (with ~NYXT_SUBMODULES=false~), there is nothing more
-to be done.
+All Lisp dependencies are included as a submodule of this repository, so unless
+the submodules are disabled (i.e. ~NYXT_SUBMODULES=false~), there is nothing
+more to be done.
 
 Otherwise clone the required repositories listed in =.gitmodules= into
 =~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF will find it]]).  For instance,
 to get the latest version of =cl-webkit=, you would typically run the following:
 
 #+begin_src sh
-  mkdir -p ~/common-lisp
-  git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit
+mkdir -p ~/common-lisp
+git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit
 #+end_src
 
 *** GNU/Linux, FreeBSD GTK dependencies
@@ -136,23 +131,23 @@ to get the latest version of =cl-webkit=, you would typically run the following:
 
 - Debian-based distributions:
   #+begin_src sh
-    sudo apt install sbcl libwebkit2gtk-4.0-dev gobject-introspection glib-networking gsettings-desktop-schemas libfixposix-dev pkg-config xclip enchant-2
+  sudo apt install sbcl libwebkit2gtk-4.0-dev gobject-introspection glib-networking gsettings-desktop-schemas libfixposix-dev pkg-config xclip enchant-2
   #+end_src
 
 - Arch Linux:
   #+begin_src sh
-    sudo pacman -S git sbcl cl-asdf webkit2gtk glib-networking gsettings-desktop-schemas enchant
+  sudo pacman -S git sbcl cl-asdf webkit2gtk glib-networking gsettings-desktop-schemas enchant
   #+end_src
-  The package libfixposix can be installed from the [[https://aur.archlinux.org/packages/libfixposix][AUR]], same fo ~pkg-config~.
+  The package libfixposix can be installed from the [[https://aur.archlinux.org/packages/libfixposix][AUR]], same for ~pkg-config~.
 
 - Fedora:
   #+begin_src sh
-    sudo dnf install sbcl webkit2gtk3-devel glib-networking gsettings-desktop-schemas libfixposix-devel xclip enchant pkgconf
+  sudo dnf install sbcl webkit2gtk3-devel glib-networking gsettings-desktop-schemas libfixposix-devel xclip enchant pkgconf
   #+end_src
 
 - FreeBSD and derivatives
   #+begin_src sh
-    pkg install sbcl webkit2-gtk3 glib-networking libfixposix xclip enchant rubygem-pkg-config
+  pkg install sbcl webkit2-gtk3 glib-networking libfixposix xclip enchant rubygem-pkg-config
   #+end_src
 
 If your distribution does not install libraries in an [[https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard][FHS]]-expected location, you
@@ -195,8 +190,8 @@ Notes:
    putting the following into your =~/.sbclrc=:
 
    #+begin_src lisp
-     (ql:quickload :cffi)
-     (pushnew "/opt/local/lib" cffi:*foreign-library-directories* :test #'equal)
+   (ql:quickload :cffi)
+   (pushnew "/opt/local/lib" cffi:*foreign-library-directories* :test #'equal)
    #+end_src
 
 2. To install the WebKitGTK+ dependency, you may want to install
@@ -217,8 +212,8 @@ cl-webengine repository into =~/common-lisp= (or [[https://www.common-lisp.net/p
 will find it]]):
 
 #+begin_src sh
-  mkdir -p ~/common-lisp
-  git clone https://github.com/atlas-engineer/cl-webengine.git ~/common-lisp/cl-webengine
+mkdir -p ~/common-lisp
+git clone https://github.com/atlas-engineer/cl-webengine.git ~/common-lisp/cl-webengine
 #+end_src
 
 Please follow the instructions in the cl-webengine repository for details about
@@ -258,18 +253,18 @@ application bundle which you can copy into your =/Applications= folder.
 
 - GNU/Linux:
   #+begin_src sh
-    make all
+  make all
   #+end_src
 
 - FreeBSD
   #+begin_src sh
-    gmake all
+  gmake all
   #+end_src
   
 - macOS:
   #+begin_src sh
-    make all
-    make app-bundle
+  make all
+  make app-bundle
   #+end_src
 
 Inside the Makefile you'll find many options you can specify.  You can specify
@@ -282,15 +277,15 @@ Start your Lisp and run the following commands:
 
 #+NAME: compile
 #+begin_src lisp
-  (asdf:make :nyxt/gtk-application)
+(asdf:make :nyxt/gtk-application)
 #+end_src
 
 or, alternatively for the QtWebEngine renderer:
 
 #+NAME: compile
-#+BEGIN_SRC lisp
-  (asdf:make :nyxt/qt-application)
-#+END_SRC
+#+begin_src lisp
+(asdf:make :nyxt/qt-application)
+#+end_src
 
 Your Lisp implementation must have produced an executable in the directory where
 the =.asd= file is located.
@@ -302,13 +297,13 @@ container on GNU/Linux.
 
 - With Guix:
   #+begin_src sh
-    guix shell --container --network --preserve='^DISPLAY$' --expose=/etc/ssl/certs nss-certs nyxt -- nyxt
+  guix shell --container --network --preserve='^DISPLAY$' --expose=/etc/ssl/certs nss-certs nyxt -- nyxt
   #+end_src
 
   If you want to load your configuration and use the data files:
 
   #+begin_src sh
-    guix shell --container --network --preserve='^DISPLAY$' --expose=/etc/ssl/certs --expose="$HOME/.config/nyxt/" --share="$HOME/.local/share/nyxt"="$HOME/.local/share/nyxt/" nss-certs nyxt -- nyxt
+  guix shell --container --network --preserve='^DISPLAY$' --expose=/etc/ssl/certs --expose="$HOME/.config/nyxt/" --share="$HOME/.local/share/nyxt"="$HOME/.local/share/nyxt/" nss-certs nyxt -- nyxt
   #+end_src
 
   If you get the following error:
@@ -395,8 +390,9 @@ be configured in the respective init files.
 #+NAME: nyxt/my-slynk.lisp
 #+begin_src lisp
 (define-command-global start-slynk (&optional (slynk-port *swank-port*))
-        "Start a Slynk server that can be connected to, for instance, in
-    Emacs via SLY.
+  "Start a Slynk server.
+   
+Waits for incoming connections, e.g. from SLY.
 
     Warning: This allows Nyxt to be controlled remotely, that is, to execute
     arbitrary code with the privileges of the user running Nyxt.  Make sure
@@ -450,8 +446,9 @@ server with the following steps.
 #+NAME: nyxt/my-slynk.lisp
 #+begin_src lisp
 (define-command-global start-slynk (&optional (slynk-port *swank-port*))
-        "Start a Slynk server that can be connected to, for instance, in
-    Emacs via SLY.
+  "Start a Slynk server.
+   
+Waits for incoming connections, e.g. from SLY.
 
     Warning: This allows Nyxt to be controlled remotely, that is, to execute
     arbitrary code with the privileges of the user running Nyxt.  Make sure
@@ -466,12 +463,13 @@ server with the following steps.
 4. Proceed as in the previous SLIME section by replacing ~slime-connect~ with
    ~sly-connect~. Remember to choose the correct port (in this case, 4008).
 
-** Adding new Lisp dependency
+** Adding a new Lisp dependency
 - Add and shallow clone upstream source as a Git submodule in [[../_build/]]
   directory.
 - Add dependency name to [[../nyxt.asd]] and [[SOURCES.org][documents/SOURCES.org]].
 - Add dependency to [[../build-scripts/nyxt.scm]], [[https://guix.gnu.org/en/packages/][checking]] to make sure Guix
   already has it packaged.
+
 * Help & Community
 
 There are several ways to ask for help from the community.
@@ -501,7 +499,6 @@ After you have found a TASK item that is available:
 
 #+html: You can find Nyxt on Libera IRC: <a href="https://kiwiirc.com/nextclient/irc.libera.chat/nyxt">#nyxt</a>
 
-# requires the org-make-toc emacs extension
 # Local Variables:
-# before-save-hook: org-make-toc
+# after-save-hook: (lambda () (if (fboundp 'org-make-toc) (org-make-toc) (message "Please install org-make-toc.")))
 # End:
