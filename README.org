@@ -2,7 +2,7 @@
 
 * Nyxt browser
 
-Nyxt is a keyboard-driven web browser designed for power users.
+*Nyxt* is a keyboard-driven web browser designed for power users.
 Inspired by Emacs and Vim, it has familiar keybindings ([[https://en.wikipedia.org/wiki/Emacs][Emacs]], [[https://en.wikipedia.org/wiki/Vim_(text_editor)][vi]], [[https://en.wikipedia.org/wiki/IBM_Common_User_Access][CUA]]),
 and is infinitely extensible in Lisp.
 
@@ -17,6 +17,10 @@ bugs, instabilities or feature wishes.
 #+html: <div align="center"> <a href="http://nyxt.atlas.engineer/">Homepage</a> | <a href="https://nyxt.atlas.engineer/download">Downloads</a> | <a href="https://nyxt.atlas.engineer/articles">Articles</a> | <a href="https://store.nyxt.atlas.engineer/">Store</a> | <a href="https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org">Developer's Manual</a> | <a href="https://discourse.atlas.engineer/">Forum</a> | <a href="https://kiwiirc.com/nextclient/irc.libera.chat/nyxt">Chat</a> </div>
 
 -----
+
+* Features
+For an exhaustive description of all of the features, please refer to
+the manual.
 
 ** Fast tab switching
 
@@ -58,8 +62,6 @@ makes sure you never lose track of where you've been.
 
 #+html: <img src="https://nyxt.atlas.engineer/static/image/history.png?" align="center"/>
 
-For a complete list of features, please see the manual.
-
 * Getting started
 ** Install Nyxt
 
@@ -72,8 +74,8 @@ Nyxt supports:
 Nyxt has engine support for WebKit and _experimental support_ for
 WebEngine/Blink.
 
-Please see the [[https://nyxt.atlas.engineer/download][downloads]] page for pre-built binaries.  Some operating
-systems provide packages for Nyxt:
+Please find pre-built binaries at [[https://nyxt.atlas.engineer/download][Nyxt's downloads page]].  Nyxt is
+available on the following platforms:
 
 - Alpine.
 - Debian and derivatives such as Ubuntu and Linux Mint.
@@ -84,14 +86,14 @@ systems provide packages for Nyxt:
 - [[https://guix.gnu.org][Guix]]: Install with =guix install nyxt=.
 - [[https://voidlinux.org/][Void]]: Install with =xbps-install nyxt=.
 
-To perform an installation from source, please refer to the [[file:documents/README.org][developer's
-manual]].
+To install from source, please refer to the [[file:documents/README.org][developer's manual]].
 
 ** Documentation & Customization
 
 For full documentation about Nyxt, how it works, and how to extend it
-please see the embedded help.  To get started, run the =help= command
-(press =control= + =space=, type =help= and confirm with =return=).
+please refer to the embedded manual.  To get started, run the =manual=
+command (press =control= + =space=, type =manual= and confirm with
+=return=).
 
 If you want to help with development, or build Nyxt from source, read
 the developer's documentation at [[file:documents/README.org][documents/README.org]].
@@ -99,7 +101,7 @@ the developer's documentation at [[file:documents/README.org][documents/README.o
 ** History of changes
 
 If you are running a recent version of Nyxt please run the =changelog=
-command. For older versions, please see the [[https://github.com/atlas-engineer/nyxt/blob/2.2.1/documents/CHANGELOG.org][CHANGELOG]].
+command.  For older versions, please refer to the [[https://github.com/atlas-engineer/nyxt/blob/2.2.1/documents/CHANGELOG.org][CHANGELOG]].
 
 # Local Variables:
 # fill-column: 72
