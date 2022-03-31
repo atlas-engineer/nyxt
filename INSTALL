@@ -4,7 +4,7 @@ Usage:
     make install             # Install Nyxt.
     make doc                 # Generate Nyxt documentation (as a fallback).
 
-Set DESTDIR to change the target destinatation.  It should be
+Set DESTDIR to change the target destination.  It should be
 an absolute path.
 
 Set LISP and LISP_FLAGS to accommodate to your Lisp compiler.
@@ -50,7 +50,7 @@ libraries pinned to a version that may not be the same as the one in the latest
 Quickdist.
 
 The documentation generation is mostly useful if you cannot consult the
-documention in Nyxt itself.  Since the manual is normally dynamically generated
-at runtime (for instance the paths and the bindings are printed according to the
-user configuration), the static doc generation can only display the default
-values.
+documentation in Nyxt itself.  Since the manual is normally dynamically
+generated at runtime (for instance the paths and the bindings are printed
+according to the user configuration), the static doc generation can only display
+the default values.
