@@ -3,6 +3,11 @@
 
 (in-package :prompter)
 
+(defun smart-case-test (string)
+  (if (some #'upper-case-p string)
+      #'string=
+      #'string-equal))
+
 (defun find-exactly-matching-substrings (input suggestion-match-data
                                          &key (substring-length 2))
   "Return the list of input substrings that match at least one suggestion.
@@ -14,7 +19,7 @@ The substrings must be SUBSTRING-LENGTH characters long or more."
        (loop for match-datum in suggestion-match-data
              append (remove-if
                      (lambda (i)
-                       (not (search i match-datum :test #'string-equal)))
+                       (not (search i match-datum :test (smart-case-test i))))
                      input-strings))
        :test #'string=))))
 
@@ -38,7 +43,8 @@ Suitable as a `source' `filter-preprocessor'."
         (setf suggestions
               (delete-if (lambda (suggestion)
                            (not (loop for i in exactly-matching-substrings
-                                      always (search i (match-data suggestion) :test #'string-equal))))
+                                      always (search i (match-data suggestion)
+                                                     :test (smart-case-test i)))))
                          suggestions)))))
   suggestions)
 
@@ -50,7 +56,7 @@ Suitable as a `source' `filter-preprocessor'."
       (let ((words (sera:words input)))
         (delete-if (lambda (suggestion)
                      (notevery (lambda (sub) (search sub (ensure-match-data-string suggestion source)
-                                                     :test #'string-equal))
+                                                     :test (smart-case-test sub)))
                                words))
                    suggestions))))
 
