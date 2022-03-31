@@ -479,31 +479,31 @@ Examples:
 
   ;; Options should be accessible anytime, even when run from the REPL.
   (setf *options* options)
-  (destructuring-bind (&key headless verbose 
+  (destructuring-bind (&key headless verbose
                          help version system-information
                          list-profiles script
                          load eval quit remote
                        &allow-other-keys)
-      options 
-    (when headless 
+      options
+    (when headless
       (setf *headless-p* t))
-    
-    (if verbose 
+
+    (if verbose
         (progn
           (log:config :debug)
           (format t "Arguments parsed: ~a and ~a~&" options urls))
         (log:config :pattern "<%p> [%D{%H:%M:%S}] %m%n"))
 
-    (cond 
+    (cond
       (help
        (opts:describe :prefix "nyxt [options] [URLs]"))
-      
+
       (version
        (format t "Nyxt version ~a~&" +version+))
-      
+
       (system-information
        (princ (system-information)))
-      
+
       (list-profiles
        (load-lisp (nfiles:expand *init-file*) :package (find-package :nyxt-user))
        (mapcar (lambda (profile-class)
@@ -511,7 +511,7 @@ Examples:
                          (profile-class-name profile-class)
                          (indent (documentation profile-class t) 10)))
                (list-profile-classes)))
-      
+
       (script
        (flet ((run-script (stream)
                 (maybe-skip-shebang-line stream)
@@ -520,7 +520,7 @@ Examples:
            ("-" (run-script *standard-input*))
            (file (with-open-file (f file :element-type :default)
                    (run-script f))))))
-      
+
       ((and (or load eval)
             (or quit remote))
        (start-load-or-eval))
