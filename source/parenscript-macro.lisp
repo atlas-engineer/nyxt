@@ -23,12 +23,47 @@
   "document.querySelector tailored for Nyxt IDs."
   `(chain ,context (query-selector (lisp (format nil "[nyxt-identifier=\"~a\"]" ,id)))))
 
+(defpsmacro get-caret ()
+  `(let* ((element (chain document active-element))
+          (tag-name (chain element tag-name)))
+     (cond
+       ((or (string= tag-name "INPUT") (string= tag-name "TEXTAREA"))
+        (list (chain element selection-start) (chain element selection-end)))
+       ((chain element is-content-editable)
+        (let ((range (chain window (get-selection) (get-range-at 0))))
+          (list (@ range start-offset) (@ range end-offset)))))))
+
+(defpsmacro set-caret (element &optional start end)
+  `(let* ((element ,element)
+          (tag-name (chain element tag-name))
+          (start ,start)
+          (end ,end))
+     (unless (chain document active-element)
+       (chain element (focus)))
+     (cond
+       ((or (string= tag-name "INPUT")
+            (string= tag-name "TEXTAREA"))
+        (setf (chain element selection-start) (or start nil)
+              (chain element selection-end) (or end start nil)))
+       ((chain element is-content-editable)
+        (let* ((selection (chain window (get-selection)))
+               (range (chain document (create-range))))
+          (when (and selection (chain selection (get-range-at 0)))
+            (chain selection (remove-all-ranges)))
+          (when start
+            (chain range (set-start element start))
+            (if end
+                (chain range (set-end element end))
+                (chain range (set-end element start)))
+            (chain window (get-selection) (add-range range))))))))
+
 (export-always 'insert-at)
 (defpsmacro insert-at (tag input-text)
   "Insert text at a tag."
   `(let* ((element ,tag)
-          (origin (chain element selection-start))
-          (end (chain element selection-end))
+          (caret (get-caret))
+          (origin (@ caret 0))
+          (end (or (@ caret 1) origin))
           (tag-name (chain element tag-name)))
      (cond
        ((or (string= tag-name "INPUT")
@@ -37,14 +72,7 @@
               (+ (chain element value (substring 0 origin))
                  ,input-text
                  (chain element value
-                        (substring end (chain element value length)))))
-        (if (= origin end)
-            (progn
-              (setf (chain element selection-start) (+ origin (chain ,input-text length)))
-              (setf (chain element selection-end) (chain element selection-start)))
-            (progn
-              (setf (chain element selection-start) origin)
-              (setf (chain element selection-end) (+ origin (chain ,input-text length))))))
+                        (substring end (chain element value length))))))
        ((chain element is-content-editable)
         ;; TODO: Implement caret movement, as in
         ;; https://stackoverflow.com/questions/6249095/how-to-set-the-caret-cursor-position-in-a-contenteditable-element-div
@@ -53,7 +81,12 @@
                  ,input-text
                  (chain element inner-text
                         (substring end
-                                   (chain element inner-text length)))))))))
+                                   (chain element inner-text length)))))))
+     (set-caret
+      (if (= origin end)
+          (+ origin (chain ,input-text length))
+          origin)
+      (+ origin (chain ,input-text length)))))
 
 (export-always 'element-editable-p)
 (defpsmacro element-editable-p (element)
