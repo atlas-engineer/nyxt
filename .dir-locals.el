@@ -1,4 +1,5 @@
 ((nil . ((fill-column . 80)))
+ (org-mode . ((org-edit-src-content-indentation 0)))
  (lisp-mode
   . ((eval . (cl-flet ((enhance-imenu-lisp
                         (&rest keywords)
