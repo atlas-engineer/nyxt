@@ -44,9 +44,8 @@
 :END:
 * Developer's installation with Guix
 
-First, clone the Nyxt repository.  It is most convenient to clone the
-Nyxt repository into =~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF
-will find it]]).
+First, clone the Nyxt repository.  It is most convenient to clone the Nyxt
+repository into =~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF will find it]]).
 
 Second, install [[https://guix.gnu.org][Guix]] and follow the instructions in the
 [[../build-scripts/nyxt.scm]] file of the Nyxt repository.
@@ -56,8 +55,8 @@ Second, install [[https://guix.gnu.org][Guix]] and follow the instructions in th
 To use Nix for local development use the =shell.nix= file located in the
 build-scripts directory.
 
-As an example, to run with SBCL, you could do the following:
-=nix-shell nyxt/build-scripts/shell.nix --run sbcl=
+As an example, to run with SBCL, you could do the following: =nix-shell
+nyxt/build-scripts/shell.nix --run sbcl=
 
 Then you can load Nyxt with
 
@@ -68,22 +67,22 @@ Then you can load Nyxt with
 
 * Standard developer's installation
 
-Nyxt is written in Common Lisp.  It should build with any standard Common
-Lisp implementation but currently, only [[http://www.sbcl.org/][SBCL]] support is tested.
+Nyxt is written in Common Lisp.  It should build with any standard Common Lisp
+implementation but currently, only [[http://www.sbcl.org/][SBCL]] support is tested.
 
-It is designed to be cross-platform, cross-engine compatible.  Nyxt is
-available in both WebKit and WebEngine (experimental) flavors.
+It is designed to be cross-platform, cross-engine compatible.  Nyxt is available
+in both WebKit and WebEngine (experimental) flavors.
 
 ** Installing SBCL
 
 You'll need SBCL ≥ 2.0.0 to compile Nyxt.
 
-You can obtain SBCL from your package manager or by downloading it
-directly from the SBCL repository.
+You can obtain SBCL from your package manager or by downloading it directly from
+the SBCL repository.
 
 To install SBCL from source, download SBCL:
-[[http://www.sbcl.org/platform-table.html]].  Full installation instructions
-can be found here: [[http://www.sbcl.org/getting.html]].
+[[http://www.sbcl.org/platform-table.html]].  Full installation instructions can be
+found here: [[http://www.sbcl.org/getting.html]].
 
 ** Installing Quicklisp (optional)
 
@@ -91,16 +90,14 @@ If you wish to install it manually- system-wide- the official Quicklisp website
 can provide updated links to downloads, and instructions:
 https://www.quicklisp.org.
 
-Then pass the ~NYXT_SUBMODULES=false~ option to all build
-commands, like this:
+Then pass the ~NYXT_SUBMODULES=false~ option to all build commands, like this:
 
 #+begin_src sh
   make NYXT_SUBMODULES=false ...
 #+end_src
 
-Each time you build Nyxt, you'll have to make sure the Quicklisp
-distribution is up-to-date or else Nyxt might fail to build.  In a Lisp
-REPL:
+Each time you build Nyxt, you'll have to make sure the Quicklisp distribution is
+up-to-date or else Nyxt might fail to build.  In a Lisp REPL:
 
 #+begin_src lisp
   (ql:update-dist "quicklisp")
@@ -109,17 +106,16 @@ REPL:
 ** GTK dependencies
 *** Lisp dependencies
 
-Nyxt requires some Lisp libraries.  Some pinned at specific versions,
-some are forks, so you should not rely on Quicklisp.
+Nyxt requires some Lisp libraries.  Some pinned at specific versions, some are
+forks, so you should not rely on Quicklisp.
 
-All Lisp dependencies are included as a submodule of this repository, so
-if you did not disable submodules (with ~NYXT_SUBMODULES=false~), there
-is nothing more to be done.
+All Lisp dependencies are included as a submodule of this repository, so if you
+did not disable submodules (with ~NYXT_SUBMODULES=false~), there is nothing more
+to be done.
 
 Otherwise clone the required repositories listed in =.gitmodules= into
-=~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF will find it]]).  For
-instance, to get the latest version of =cl-webkit=, you would typically
-run the following:
+=~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF will find it]]).  For instance,
+to get the latest version of =cl-webkit=, you would typically run the following:
 
 #+begin_src sh
   mkdir -p ~/common-lisp
@@ -128,8 +124,8 @@ run the following:
 
 *** GNU/Linux, FreeBSD GTK dependencies
 
-- WebKitGTK+ also known as webkit2gtk (make sure to use the most recent
-  version for security reasons)
+- WebKitGTK+ also known as webkit2gtk (make sure to use the most recent version
+  for security reasons)
 - gobject-introspection (for WebKitGTK+ bindings)
 - glib-networking (for WebKitGTK+)
 - gsettings-desktop-schemas (for WebKitGTK+)
@@ -177,12 +173,11 @@ compiler by adding the following snippet to =~/.sbclrc=:
 #+end_src
 
 #+begin_quote
-A note of caution about installing WebKit via your package
-manager: Your distribution supplied version of WebKit may not provide
-up-to-date versions of WebKit including the latest security
-patches.  WebKitGTK+ tries to do the best job possible with maintaining
-security patches upstream, but it is also up to the the
-distribution provider to update their packages to take advantage of
+A note of caution about installing WebKit via your package manager: Your
+distribution supplied version of WebKit may not provide up-to-date versions of
+WebKit including the latest security patches.  WebKitGTK+ tries to do the best
+job possible with maintaining security patches upstream, but it is also up to
+the the distribution provider to update their packages to take advantage of
 these fixes.
 #+end_quote
 
@@ -205,29 +200,29 @@ Notes:
    #+end_src
 
 2. To install the WebKitGTK+ dependency, you may want to install
-   `webkit2-gtk(-devel)` instead of `webkit-gtk3` via your favorite
-   package manager. If you are on a legacy version of macOS which is not
-   supported by HomeBrew, you may want to try install these via MacPorts.
+   `webkit2-gtk(-devel)` instead of `webkit-gtk3` via your favorite package
+   manager. If you are on a legacy version of macOS which is not supported by
+   HomeBrew, you may want to try install these via MacPorts.
   
 ** Qt dependencies
 
 Qt is only required if you want to build Nyxt over the WebEngine renderer.
 
-*Warning:*  It's highly experimental and may not build on =master=.
+*Warning:* It's highly experimental and may not build on =master=.
 
 *** Lisp dependencies
 
-Nyxt on Qt requires the latest version of the cl-webengine library.
-Clone the cl-webengine repository into =~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another
-directory where ASDF will find it]]):
+Nyxt on Qt requires the latest version of the cl-webengine library.  Clone the
+cl-webengine repository into =~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF
+will find it]]):
 
 #+begin_src sh
   mkdir -p ~/common-lisp
   git clone https://github.com/atlas-engineer/cl-webengine.git ~/common-lisp/cl-webengine
 #+end_src
 
-Please follow the instructions in the cl-webengine repository for
-details about how to install it on your system.
+Please follow the instructions in the cl-webengine repository for details about
+how to install it on your system.
 
 *** GNU/Linux, FreeBSD dependencies
 
@@ -247,8 +242,8 @@ details about how to install it on your system.
 
 ** Fetch the source code
 
-Clone the Nyxt repository into =~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory
-where ASDF will find it]]):
+Clone the Nyxt repository into =~/common-lisp= (or [[https://www.common-lisp.net/project/asdf/asdf.html#Configuring-ASDF-to-find-your-systems][another directory where ASDF
+will find it]]):
 
 #+begin_src sh
 mkdir -p ~/common-lisp
@@ -258,9 +253,8 @@ git clone https://github.com/atlas-engineer/nyxt ~/common-lisp/nyxt
 ** Compile
 *** Using the Makefile
 
-The following command will build the Lisp core.  On macOS this will
-produce an application bundle which you can copy into your
-=/Applications= folder.
+The following command will build the Lisp core.  On macOS this will produce an
+application bundle which you can copy into your =/Applications= folder.
 
 - GNU/Linux:
   #+begin_src sh
@@ -278,11 +272,9 @@ produce an application bundle which you can copy into your
     make app-bundle
   #+end_src
 
-Inside the Makefile you'll find many options you can specify.  You can
-specify to use your Lisp's init file or to use your installation of
-Quicklisp
-Run ~make~ to display some documentation.  Please
-see the Makefile for more details.
+Inside the Makefile you'll find many options you can specify.  You can specify
+to use your Lisp's init file or to use your installation of Quicklisp Run ~make~
+to display some documentation.  Please see the Makefile for more details.
 
 *** Using Lisp
 
@@ -300,13 +292,13 @@ or, alternatively for the QtWebEngine renderer:
   (asdf:make :nyxt/qt-application)
 #+END_SRC
 
-Your Lisp implementation must have produced an executable in the directory
-where the =.asd= file is located.
+Your Lisp implementation must have produced an executable in the directory where
+the =.asd= file is located.
 
 * Run Nyxt in a security sandbox
 
-For improved security while you browse the Internet, you can run Nyxt in
-a container on GNU/Linux.
+For improved security while you browse the Internet, you can run Nyxt in a
+container on GNU/Linux.
 
 - With Guix:
   #+begin_src sh
@@ -330,54 +322,54 @@ a container on GNU/Linux.
 * Hacking
 ** Run from source
 
-If you are developing Nyxt, you may prefer to run Nyxt directly from
-source so that you can skip the compilation step and iterate faster.
+If you are developing Nyxt, you may prefer to run Nyxt directly from source so
+that you can skip the compilation step and iterate faster.
 
-Make sure that Quicklisp is set up and up-to-date (see [[#update-local-lisp-libraries][Update local Lisp
-libraries]]) as explained in the Quicklisp section.
+Make sure that Quicklisp is set up and up-to-date (see
+[[#update-local-lisp-libraries][Update local Lisp libraries]]) as explained in
+the Quicklisp section.
 
 Then in a shell execute the following:
 
 1. ~$LISP~ to create a new Lisp REPL (replace ~$LISP~ with ~sbcl~ or any
    supported Common Lisp compiler).
 2. Execute ~(require :asdf)~ if ASDF is not already loaded.
-3. Execute ~(asdf:load-asd "/full/path/to/nyxt.asd")~ to load the Nyxt
-   system definition (you must use absolute pathnames).
-4. Execute ~(ql:quickload :nyxt/gi-gtk)~ to load the Nyxt system into your
-   Lisp image.
+3. Execute ~(asdf:load-asd "/full/path/to/nyxt.asd")~ to load the Nyxt system
+   definition (you must use absolute pathnames).
+4. Execute ~(ql:quickload :nyxt/gi-gtk)~ to load the Nyxt system into your Lisp
+   image.
 5. Execute ~(nyxt:start)~ to open your first Nyxt window.
 
 The above process is a bit cumbersome and you'll probably want a more
-comfortable workflow from within your favourite editor.  See the section
-about Emacs and SLIME, or see the [[https://lispcookbook.github.io/cl-cookbook/editor-support.html][Common Lisp Cookbook]] for a list of
-options for various editors.
+comfortable workflow from within your favourite editor.  See the section about
+Emacs and SLIME, or see the [[https://lispcookbook.github.io/cl-cookbook/editor-support.html][Common Lisp Cookbook]] for a list of options for
+various editors.
 
 ** Interacting with a compiled version of Nyxt
 *** SLIME
 
-=SLIME= provides a way of interacting with Nyxt, and with Lisp code in
-general (e.g. in a [[https://en.wikipedia.org/wiki/REPL][REPL]]).
+=SLIME= provides a way of interacting with Nyxt, and with Lisp code in general
+(e.g. in a [[https://en.wikipedia.org/wiki/REPL][REPL]]).
 
 From the SLIME manual:
 
 #+begin_quote
-SLIME extends Emacs with support for interactive programming in Common
-Lisp.  The features are centered around slime-mode, an Emacs minor-mode
-that complements the standard lisp-mode.  While lisp-mode supports
-editing Lisp source files, slime-mode adds support for interacting with
-a running Common Lisp process for compilation, debugging, documentation
-lookup, and so on.
+SLIME extends Emacs with support for interactive programming in Common Lisp.
+The features are centered around slime-mode, an Emacs minor-mode that
+complements the standard lisp-mode.  While lisp-mode supports editing Lisp
+source files, slime-mode adds support for interacting with a running Common Lisp
+process for compilation, debugging, documentation lookup, and so on.
 #+end_quote
 
 To interact with a running instance of the Nyxt browser run the command
-=start-swank=.  The minibuffer tells you the port where the server
-started (the default is 4006).  Then, in Emacs run ~M-x slime-connect
-RET 127.0.0.1 RET 4006~.
+=start-swank=.  The minibuffer tells you the port where the server started (the
+default is 4006).  Then, in Emacs run ~M-x slime-connect RET 127.0.0.1 RET
+4006~.
 
 Notice that the default value of the variable ~*swank-port*~ in Nyxt is
 different from its counterpart variable =slime-port= in Emacs to avoid
-collisions with an ~*inferior-lisp*~ process.  Both of these default
-values can be configured in the respective init files.
+collisions with an ~*inferior-lisp*~ process.  Both of these default values can
+be configured in the respective init files.
 
 *** SLY/SLYNK
 
@@ -386,7 +378,8 @@ values can be configured in the respective init files.
 **** Quicklisp Setup
 
 *Steps:*
-1. Add the following lines to your Nyxt init file. If your Quicklisp directory differs, change it accordingly:
+1. Add the following lines to your Nyxt init file. If your Quicklisp directory
+   differs, change it accordingly:
 
 #+NAME: nyxt/init.lisp
 #+begin_src lisp
@@ -396,7 +389,8 @@ values can be configured in the respective init files.
 (load-after-system :slynk (nyxt-init-file "my-slynk.lisp"))
 #+end_src
 
-2. Create a file called =my-slynk.lisp= where you will specify your =start-slynk= command:
+2. Create a file called =my-slynk.lisp= where you will specify your
+   =start-slynk= command:
 
 #+NAME: nyxt/my-slynk.lisp
 #+begin_src lisp
@@ -414,18 +408,25 @@ values can be configured in the respective init files.
 
 3. Run the command =start-slynk= in Nyxt.
 
-4. Proceed as in the previous SLIME section by replacing ~slime-connect~ with ~sly-connect~.
+4. Proceed as in the previous SLIME section by replacing ~slime-connect~ with
+   ~sly-connect~.
 
 **** Non-Quicklisp Setup
 
-If you aren't using Quicklisp, you can configure Nyxt to start a Sly/Slynk server with the following steps.
+If you aren't using Quicklisp, you can configure Nyxt to start a Sly/Slynk
+server with the following steps.
 
 *Steps:*
-1. Ensure you have the Sly Package installed for Emacs with =package-install=. You may also clone the repository from [[https://github.com/joaotavora/sly.git][here]]. Should you choose to clone the repository, see the appropriate section in step 2.
+1. Ensure you have the Sly Package installed for Emacs with
+   =package-install=. You may also clone the repository from [[https://github.com/joaotavora/sly.git][here]]. Should you
+   choose to clone the repository, see the appropriate section in step 2.
 
-2. Add the following lines to your Nyxt's init.lisp (the configuration file) depending on whether you are using the Emacs Sly package, or you cloned the repository:
+2. Add the following lines to your Nyxt's init.lisp (the configuration file)
+   depending on whether you are using the Emacs Sly package, or you cloned the
+   repository:
 
-   - If you have installed Sly with =package-install= (or similar method) in Emacs, add these lines to your =nyxt/init.lisp= :
+   - If you have installed Sly with =package-install= (or similar method) in
+     Emacs, add these lines to your =nyxt/init.lisp= :
 
 #+NAME: nyxt/init.lisp
 #+begin_src lisp
@@ -433,7 +434,8 @@ If you aren't using Quicklisp, you can configure Nyxt to start a Sly/Slynk serve
 (slynk:create-server :port 4008)
 #+end_src
 
-   - If you are cloning from git, it's the same as above but with an extra =push= expression:
+   - If you are cloning from git, it's the same as above but with an extra
+     =push= expression:
 
 #+NAME: nyxt/init.lisp
 #+begin_src lisp
@@ -442,7 +444,8 @@ If you aren't using Quicklisp, you can configure Nyxt to start a Sly/Slynk serve
 (slynk:create-server :port 4008)
 #+end_src
 
-2. Create a file called =my-slynk.lisp= in your Nyxt configuration directory (see =(nyxt-init-file)= where you will create a =start-slynk= command.
+2. Create a file called =my-slynk.lisp= in your Nyxt configuration directory
+   (see =(nyxt-init-file)= where you will create a =start-slynk= command.
 
 #+NAME: nyxt/my-slynk.lisp
 #+begin_src lisp
@@ -460,20 +463,23 @@ If you aren't using Quicklisp, you can configure Nyxt to start a Sly/Slynk serve
 
 3. Run the command =start-slynk= in Nyxt with =M-x start-slynk=.
 
-4. Proceed as in the previous SLIME section by replacing ~slime-connect~ with ~sly-connect~. Remember to choose the correct port (in this case, 4008).
+4. Proceed as in the previous SLIME section by replacing ~slime-connect~ with
+   ~sly-connect~. Remember to choose the correct port (in this case, 4008).
 
 ** Adding new Lisp dependency
-- Add and shallow clone upstream source as a Git submodule in [[../_build/]] directory.
+- Add and shallow clone upstream source as a Git submodule in [[../_build/]]
+  directory.
 - Add dependency name to [[../nyxt.asd]] and [[SOURCES.org][documents/SOURCES.org]].
-- Add dependency to [[../build-scripts/nyxt.scm]], [[https://guix.gnu.org/en/packages/][checking]] to make sure Guix already has it packaged.
+- Add dependency to [[../build-scripts/nyxt.scm]], [[https://guix.gnu.org/en/packages/][checking]] to make sure Guix
+  already has it packaged.
 * Help & Community
 
 There are several ways to ask for help from the community.
 
 ** Issue tracker
 
-The first and easiest one is to simply [[https://github.com/atlas-engineer/nyxt/issues][open up an issue]] with whatever
-problem or suggestion you wish to discuss.
+The first and easiest one is to simply [[https://github.com/atlas-engineer/nyxt/issues][open up an issue]] with whatever problem or
+suggestion you wish to discuss.
 
 ** Learning Common Lisp
 
@@ -481,10 +487,9 @@ See https://nyxt.atlas.engineer/learn-lisp for a few recommendations.
 
 ** Contributing
 
-To contribute, please find a task [[https://github.com/atlas-engineer/nyxt/issues?q=is%3Aissue+is%3Aopen+label%3Agood-first-issue][on our issue tracker]] or within
-[[file:CHANGELOG.org][CHANGELOG.org]] document that has a TASK label affixed.  Upon finding a
-task that you'd like to work on, ideally, ensure that it is not already
-being worked on.
+To contribute, please find a task [[https://github.com/atlas-engineer/nyxt/issues?q=is%3Aissue+is%3Aopen+label%3Agood-first-issue][on our issue tracker]] or within [[file:CHANGELOG.org][CHANGELOG.org]]
+document that has a TASK label affixed.  Upon finding a task that you'd like to
+work on, ideally, ensure that it is not already being worked on.
 
 After you have found a TASK item that is available:
 
@@ -499,5 +504,4 @@ After you have found a TASK item that is available:
 # requires the org-make-toc emacs extension
 # Local Variables:
 # before-save-hook: org-make-toc
-# fill-column: 72
 # End:
