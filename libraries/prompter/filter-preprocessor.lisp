@@ -4,9 +4,9 @@
 (in-package :prompter)
 
 (defun smart-case-test (string)
-  (if (some #'upper-case-p string)
-      #'string=
-      #'string-equal))
+  (if (str:downcasep string)
+      #'string-equal
+      #'string=))
 
 (defun find-exactly-matching-substrings (input suggestion-match-data
                                          &key (substring-length 2))
