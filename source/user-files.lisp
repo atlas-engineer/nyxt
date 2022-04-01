@@ -17,7 +17,7 @@ standard locations."))
 (defvar *global-profile* (make-instance 'nyxt-profile)
   "The profile to use in the absence of buffers and on browser-less variables.")
 
-(define-class nyxt-file (nfiles:file)
+(define-class nyxt-file (nfiles:gpg-file)
   ((nfiles:profile *global-profile*)
    (nfiles:on-external-modification 'nfiles:reload)
    (editable-p
@@ -48,7 +48,7 @@ If the file is modified externally, Nyxt automatically reloads it."))
    (uiop:merge-pathnames* (nfiles:name profile) (uiop:temporary-directory))
    :ensure-directory t))
 
-(define-class nyxt-lisp-file (nfiles:lisp-file nyxt-file)
+(define-class nyxt-lisp-file (nfiles:gpg-lisp-file nyxt-file)
   ()
   (:export-class-name-p t)
   (:export-accessor-names-p t)
