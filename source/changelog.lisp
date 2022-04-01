@@ -58,7 +58,8 @@ particular revision.")
         composition area.")
    (:li "Fixed crashes on click and scroll in prompt buffer.")
    (:li "Removed duplicates from prompt buffer history.")
-   (:li "Fixed some commands, like" (:code "describe-variable") " and " (:code "history-tree."))
+   (:li "Fixed some commands, like " (:code "describe-variable") "
+        and " (:code "history-tree."))
    (:li "Fixed " (:code "url-dispatching-handler") " when handler returns NIL.")
    (:li "Fixed loading of local HTML files when passed as command line argument.")))
 
