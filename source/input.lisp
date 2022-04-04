@@ -161,7 +161,6 @@ Return nil to forward to renderer or non-nil otherwise."
              ((or (and buffer (forward-input-events-p buffer))
                   (pointer-event-p (first (last key-stack))))
               (log:debug "Forward key ~s" (keyspecs key-stack))
-              (funcall (input-skip-dispatcher window) (keyspecs key-stack))
               (setf key-stack nil)
               nil)
 
