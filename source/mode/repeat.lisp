@@ -74,7 +74,7 @@ Function taking a `repeat-mode' instance.")
                     (list :repeat-count times
                           :repeat-action #'(lambda (mode)
                                              (declare (ignore mode))
-                                             (nyxt::run-async function)))))))
+                                             (nyxt::run function)))))))
 
 (defun make-repeat-command-dispatcher (times)
   (lambda (command)
