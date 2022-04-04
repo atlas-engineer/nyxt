@@ -830,7 +830,8 @@ The version number is stored in the clipboard."
                      :text-align "center"
                      :top 0)
                     (details
-                     :display "inline")
+                     :display "inline"
+                     :padding "1em")
                     (h1
                      :font-size "5em"
                      :margin "0.1em")
