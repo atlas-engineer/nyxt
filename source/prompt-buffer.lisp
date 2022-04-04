@@ -361,7 +361,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                 (:head (:style (style prompt-buffer)))
                 (:body
                  (:div :id (if vi-mode? "prompt-area-vi" "prompt-area")
-                       (:div :id "prompt" (:maybe-raw (prompter:prompt prompt-buffer)))
+                       (:div :id "prompt" (prompter:prompt prompt-buffer))
                        (:div :id "prompt-extra" "[?/?]")
                        (when vi-mode?
                          (:div :id "vi-mode" ""))
