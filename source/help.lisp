@@ -816,47 +816,64 @@ The version number is stored in the clipboard."
       (unless current-buffer
         (buffer-delete buffer)))))
 
-(define-internal-page-command-global help ()
-    (buffer "*Help*" 'nyxt/help-mode:help-mode)
+(define-internal-page-command-global new ()
+    (buffer "*New buffer*" 'nyxt/help-mode:help-mode)
   "Open up a small help buffer."
   (spinneret:with-html-string
     (:style (:raw (theme:themed-css (theme *browser*)
+                    (main
+                     :margin "10% auto"
+                     :text-align "center")
                     ("#documentation .button"
-                     :min-width "100px")
-                    ("table, th, td"
-                     :border-width "0"))))
-    (:h1 "Welcome to " (:a :href "https://nyxt.atlas.engineer/" "Nyxt") " :-)")
-    (:p "Explore the Internet with your new power browser:")
-    (:p (:button :class "button accent"
-                 :type "submit"
-                 :onclick (ps:ps (nyxt/ps:lisp-eval '(set-url :prefill-current-url-p nil)))
-                 "Start searching the Internet!"))
-    (:h2 "Documentation")
-    (:table :id "documentation"
-            (:tr (:td (:a :class "button" :href (nyxt-url 'tutorial) "Tutorial"))
-                 (:td "An introduction to Nyxt core concepts."))
-            (:tr (:td (:a :class "button" :href (nyxt-url 'manual) "Manual"))
-                 (:td "Full documentation about Nyxt, how it works and how to configure it."))
-            (:tr (:td (:a :class "button" :href (nyxt-url 'changelog) "Change Log"))
-                 (:td "Information about changes between Nyxt versions."))
-            (:tr (:td (:a :class "button" :href (nyxt-url 'describe-bindings) "List bindings"))
-                 (:td "List all bindings for the current buffer."))
-            (:tr (:td (:button :class "button"
-                               :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt::edit-user-file-with-external-editor)))
-                               "Edit user files"))
-                 (:td "Edit user configuration and other files in external text editor.")))
-    (:h2 "Configuration")
-    (:p (:a :class "button" :href (nyxt-url 'common-settings) "Settings")
-        " Switch between Emacs/vi/CUA key bindings, set home page URL, and zoom level.")
-    (:h2 "Useful links")
-    (:a :class "button" :href "https://github.com/atlas-engineer/nyxt/" "Source Code")
-    (:a :class "button" :href "https://nyxt.atlas.engineer/articles" "Articles")
-    (:a :class "button" :href "https://nyxt.atlas.engineer/applications" "Applications")
-    (:a :class "button" :href "https://store.nyxt.atlas.engineer/" "Store")
-    (:a :class "button" :href "https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org"
-        "Developer Manual")
-    (:a :class "button" :href "https://discourse.atlas.engineer/" "Forum")
-    (:a :class "button" :href "https://kiwiirc.com/nextclient/irc.libera.chat/nyxt" "Chat")))
+                     :min-width "100px"))))
+    (:main
+     (:h1 (:a :href "https://nyxt.atlas.engineer/" "Nyxt Browser"))
+     (:p (:button :class "button accent"
+                  :type "submit"
+                  :onclick (ps:ps (nyxt/ps:lisp-eval '(set-url :prefill-current-url-p nil)))
+                  "Start searching the Internet!"))
+     (:h2 "Understand Nyxt and make it yours")
+     (:a :class "button" :href (nyxt-url 'tutorial)
+         :title "An introduction to Nyxt core concepts."
+         "Tutorial")
+     (:a :class "button" :href (nyxt-url 'manual)
+         :title "Full documentation about Nyxt, how it works and how to configure it."
+         "Manual")
+     (:a :class "button" :href (nyxt-url 'changelog)
+         :title "Information about changes between Nyxt versions."
+         "Change Log")
+     (:a :class "button" :href (nyxt-url 'describe-bindings)
+         :title "List all bindings for the current buffer."
+         "List bindings")
+     (:button :class "button"
+              :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt::edit-user-file-with-external-editor)))
+              :title "Edit user configuration and other files in external text editor."
+              "Edit user files")
+     (:a :class "button" :href (nyxt-url 'common-settings)
+              :title "Switch between Emacs/vi/CUA key bindings, set home page URL, and zoom level."
+              "⚙ Settings")
+     (:h2 "Other useful links")
+     (:a :class "button" :href "https://github.com/atlas-engineer/nyxt/"
+         :title "Your contribution will be much appreciated :)"
+         "Source Code")
+     (:a :class "button" :href "https://nyxt.atlas.engineer/articles"
+         :title "Learn more about why's and how's behind Nyxt features."
+         "Articles")
+     (:a :class "button" :href "https://nyxt.atlas.engineer/applications"
+         :title "Check out the applications built on top of Nyxt!"
+         "Applications")
+     (:a :class "button" :href "https://store.nyxt.atlas.engineer/"
+         :title "Buy Nyxt merchandise and support the development!"
+         "Store")
+     (:a :class "button" :href "https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org"
+         :title "Helpful tips for Nyxt hacking and contributing."
+         "Developer Manual")
+     (:a :class "button" :href "https://discourse.atlas.engineer/"
+         :title "A forum for questions and ideas on Nyxt."
+         "Forum")
+     (:a :class "button" :href "https://kiwiirc.com/nextclient/irc.libera.chat/nyxt"
+         :title "Chat with developers and other Nyxt users."
+         "Chat"))))
 
 (define-internal-page-command-global manual ()
     (buffer "*Manual*" 'nyxt/help-mode:help-mode)
