@@ -825,61 +825,86 @@ The version number is stored in the clipboard."
                      :font-size "5em"
                      :margin "1vh")
                     (main
-                     :margin "10% auto"
+                     :min-height "70%"
+                     :padding "auto"
+                     :text-align "center"
+                     :display "flex"
+                     :flex-direction "column"
+                     :align-items "center"
+                     :justify-content "center")
+                    (.centered
                      :text-align "center")
-                    ("#documentation .button"
-                     :min-width "100px"))))
-    (:main
-     (:h1 "Nyxt")
-     (:button :class "button accent"
-              :type "submit"
-              :onclick (ps:ps (nyxt/ps:lisp-eval '(set-url :prefill-current-url-p nil)))
-              "Start searching!")
-     (:h2 "Understand Nyxt and make it yours")
-     (:a :class "button" :href (nyxt-url 'tutorial)
-         :title "An introduction to Nyxt core concepts."
-         "Tutorial")
-     (:a :class "button" :href (nyxt-url 'manual)
-         :title "Full documentation about Nyxt, how it works and how to configure it."
-         "Manual")
-     (:a :class "button" :href (nyxt-url 'changelog)
-         :title "Information about changes between Nyxt versions."
-         "Change Log")
-     (:a :class "button" :href (nyxt-url 'describe-bindings)
-         :title "List all bindings for the current buffer."
-         "List bindings")
-     (:button :class "button"
-              :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt::edit-user-file-with-external-editor)))
-              :title "Edit user configuration and other files in external text editor."
-              "Edit user files")
-     (:a :class "button" :href (nyxt-url 'common-settings)
-              :title "Switch between Emacs/vi/CUA key bindings, set home page URL, and zoom level."
-              "⚙ Settings")
-     (:h2 "Other useful links")
-     (:a :class "button" :href "https://github.com/atlas-engineer/nyxt/"
-         :title "Your contribution will be much appreciated :)"
-         "Source Code")
-     (:a :class "button" :href "https://www.youtube.com/channel/UC11mZYESUvaKFTaa3zZWHMQ"
-         :title "A channel with tips and tricks of Nyxt by one of the developers."
-         "Nyxt Academy")
-     (:a :class "button" :href "https://nyxt.atlas.engineer/articles"
-         :title "Learn more about why's and how's behind Nyxt features."
-         "Articles")
-     (:a :class "button" :href "https://nyxt.atlas.engineer/applications"
-         :title "Check out the applications built on top of Nyxt!"
-         "Applications")
-     (:a :class "button" :href "https://store.nyxt.atlas.engineer/"
-         :title "Buy Nyxt merchandise and support the development!"
-         "Store")
-     (:a :class "button" :href "https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org"
-         :title "Helpful tips for Nyxt hacking and contributing."
-         "Developer Manual")
-     (:a :class "button" :href "https://discourse.atlas.engineer/"
-         :title "A forum for questions and ideas on Nyxt."
-         "Forum")
-     (:a :class "button" :href "https://kiwiirc.com/nextclient/irc.libera.chat/nyxt"
-         :title "Chat with developers and other Nyxt users."
-         "Chat"))))
+                    (.button
+                     :min-width "100px")
+                    (.container
+                     :min-height "100%"
+                     :max-height "100%"
+                     :margin 0
+                     :padding 0)
+                    (footer
+                     :position "sticky"
+                     :text-align "center"
+                     :bottom 0)
+                    (nav
+                     :text-align "center"
+                     :top 0))))
+    (:div
+     :class "container"
+     (:nav
+      :class "centered"
+      (:a :class "button" :href (nyxt-url 'tutorial)
+          :title "An introduction to Nyxt core concepts."
+          "Tutorial")
+      (:a :class "button" :href (nyxt-url 'manual)
+          :title "Full documentation about Nyxt, how it works and how to configure it."
+          "Manual")
+      (:a :class "button" :href (nyxt-url 'changelog)
+          :title "Information about changes between Nyxt versions."
+          "Change Log")
+      (:a :class "button" :href (nyxt-url 'describe-bindings)
+          :title "List all bindings for the current buffer."
+          "List bindings")
+      (:button :class "button"
+               :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt::edit-user-file-with-external-editor)))
+               :title "Edit user configuration and other files in external text editor."
+               "Edit user files")
+      (:a :class "button" :href (nyxt-url 'common-settings)
+          :title "Switch between Emacs/vi/CUA key bindings, set home page URL, and zoom level."
+          "⚙ Settings"))
+     (:main
+      (:h1 "Nyxt")
+      (:button :class "button accent"
+               :type "submit"
+               :onclick (ps:ps (nyxt/ps:lisp-eval '(set-url :prefill-current-url-p nil)))
+               "Start searching!")
+      (:p (:i "Internet on your terms.")))
+     (:footer
+      :class "centered"
+      (:h2 "Other useful links")
+      (:a :class "button" :href "https://github.com/atlas-engineer/nyxt/"
+          :title "Your contribution will be much appreciated :)"
+          "Source Code")
+      (:a :class "button" :href "https://www.youtube.com/channel/UC11mZYESUvaKFTaa3zZWHMQ"
+          :title "A channel with tips and tricks of Nyxt by one of the developers."
+          "Nyxt Academy")
+      (:a :class "button" :href "https://nyxt.atlas.engineer/articles"
+          :title "Learn more about why's and how's behind Nyxt features."
+          "Articles")
+      (:a :class "button" :href "https://nyxt.atlas.engineer/applications"
+          :title "Check out the applications built on top of Nyxt!"
+          "Applications")
+      (:a :class "button" :href "https://store.nyxt.atlas.engineer/"
+          :title "Buy Nyxt merchandise and support the development!"
+          "Store")
+      (:a :class "button" :href "https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org"
+          :title "Helpful tips for Nyxt hacking and contributing."
+          "Developer Manual")
+      (:a :class "button" :href "https://discourse.atlas.engineer/"
+          :title "A forum for questions and ideas on Nyxt."
+          "Forum")
+      (:a :class "button" :href "https://kiwiirc.com/nextclient/irc.libera.chat/nyxt"
+          :title "Chat with developers and other Nyxt users."
+          "Chat")))))
 
 (define-internal-page-command-global manual ()
     (buffer "*Manual*" 'nyxt/help-mode:help-mode)
