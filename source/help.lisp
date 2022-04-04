@@ -581,7 +581,12 @@ CLASS is a class symbol."
              :onclick (ps:ps (nyxt/ps:lisp-eval
                               `(nyxt::append-configuration
                                 '(setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1"))))
-             "Disable compositing")))
+             "Disable compositing")
+    (:h2 "Edit configuration")
+    (:p "Edit user configuration and other files in external text editor.")
+    (:button :class "button"
+             :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt::edit-user-file-with-external-editor)))
+             "Edit user files"))))
 
 (define-internal-page-command-global describe-bindings ()
     (buffer "*Help-bindings*" 'base-mode)
