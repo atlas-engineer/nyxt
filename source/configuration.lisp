@@ -40,6 +40,18 @@
 (defvar *init-file* (make-instance 'init-file)
   "The initialization file.")
 
+(define-class nyxt-source-directory (nyxt-file)
+  ((nfiles:base-path (uiop:merge-pathnames* "nyxt/" asdf-user::*datadir*))
+   (nfiles:name "source"))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(export-always '*source-directory*)
+(defvar *source-directory* (make-instance 'nyxt-source-directory)
+  "The directory where the source code is stored.
+This is set globally so that it can be looked up if there is no
+`*browser*' instance.")
+
 (define-class extensions-directory (nfiles:data-file nyxt-file)
   ((nfiles:base-path #p"extensions/")
    (nfiles:name "extensions"))
@@ -56,6 +68,7 @@ This is set globally so that extensions can be loaded even if there is no
 (defun nyxt-source-registry ()
   `(:source-registry
     (:tree ,(nfiles:expand *extensions-directory*))
+    (:tree ,(nfiles:expand *source-directory*))
     :inherit-configuration))
 
 (defparameter %buffer nil)              ; TODO: Make a monad?
