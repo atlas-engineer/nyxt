@@ -289,7 +289,7 @@ the renderer thread, use `defmethod' instead."
 By default it is found in the source directory."))
 
 (defmethod nfiles:resolve ((profile nyxt-profile) (file gtk-extensions-directory))
-  (sera:path-join (asdf:system-source-directory :nyxt) "libraries/web-extensions/"))
+  (asdf:system-relative-pathname :nyxt "libraries/web-extensions/"))
 
 (define-class cookies-file (nfiles:data-file data-manager-file)
   ((nfiles:name "cookies"))
