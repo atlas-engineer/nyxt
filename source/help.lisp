@@ -826,33 +826,26 @@ The version number is stored in the clipboard."
   "Open up a buffer with useful links suitable for a `default-new-buffer-url'."
   (spinneret:with-html-string
     (:style (:raw (theme:themed-css (theme *browser*)
+                    (nav
+                     :text-align "center"
+                     :top 0)
+                    (details
+                     :display "inline")
                     (h1
                      :font-size "5em"
-                     :margin "1vh")
+                     :margin "0.1em")
                     (main
                      :min-height "70%"
-                     :padding "auto"
                      :text-align "center"
                      :display "flex"
                      :flex-direction "column"
-                     :align-items "center"
                      :justify-content "center")
                     (.centered
                      :text-align "center")
                     (.button
                      :min-width "100px")
                     (.container
-                     :min-height "100%"
-                     :max-height "100%"
-                     :margin 0
-                     :padding 0)
-                    (footer
-                     :position "sticky"
-                     :text-align "center"
-                     :bottom 0)
-                    (nav
-                     :text-align "center"
-                     :top 0))))
+                     :min-height "100%"))))
     (:div
      :class "container"
      (:nav
@@ -869,47 +862,42 @@ The version number is stored in the clipboard."
       (:a :class "button" :href (nyxt-url 'describe-bindings)
           :title "List all bindings for the current buffer."
           "List bindings")
-      (:button :class "button"
-               :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt::edit-user-file-with-external-editor)))
-               :title "Edit user configuration and other files in external text editor."
-               "Edit user files")
       (:a :class "button" :href (nyxt-url 'common-settings)
           :title "Switch between Emacs/vi/CUA key bindings, set home page URL, and zoom level."
-          "⚙ Settings"))
+          "⚙ Settings")
+      (:details
+       (:summary :class "button" "Other useful links")
+       (:a :class "button" :href "https://github.com/atlas-engineer/nyxt/"
+           :title "Your contribution will be much appreciated :)"
+           "Source Code")
+       (:a :class "button" :href "https://www.youtube.com/channel/UC11mZYESUvaKFTaa3zZWHMQ"
+           :title "A channel with tips and tricks of Nyxt by one of the developers."
+           "Nyxt Academy")
+       (:a :class "button" :href "https://nyxt.atlas.engineer/articles"
+           :title "Learn more about why's and how's behind Nyxt features."
+           "Articles")
+       (:a :class "button" :href "https://nyxt.atlas.engineer/applications"
+           :title "Check out the applications built on top of Nyxt!"
+           "Applications")
+       (:a :class "button" :href "https://store.nyxt.atlas.engineer/"
+           :title "Buy Nyxt merchandise and support the development!"
+           "Store")
+       (:a :class "button" :href "https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org"
+           :title "Helpful tips for Nyxt hacking and contributing."
+           "Developer Manual")
+       (:a :class "button" :href "https://discourse.atlas.engineer/"
+           :title "A forum for questions and ideas on Nyxt."
+           "Forum")
+       (:a :class "button" :href "https://kiwiirc.com/nextclient/irc.libera.chat/nyxt"
+           :title "Chat with developers and other Nyxt users."
+           "Chat")))
      (:main
       (:h1 "Nyxt")
-      (:button :class "button accent"
-               :type "submit"
-               :onclick (ps:ps (nyxt/ps:lisp-eval '(set-url :prefill-current-url-p nil)))
-               "Start searching!")
-      (:p (:i "Internet on your terms.")))
-     (:footer
-      :class "centered"
-      (:h2 "Other useful links")
-      (:a :class "button" :href "https://github.com/atlas-engineer/nyxt/"
-          :title "Your contribution will be much appreciated :)"
-          "Source Code")
-      (:a :class "button" :href "https://www.youtube.com/channel/UC11mZYESUvaKFTaa3zZWHMQ"
-          :title "A channel with tips and tricks of Nyxt by one of the developers."
-          "Nyxt Academy")
-      (:a :class "button" :href "https://nyxt.atlas.engineer/articles"
-          :title "Learn more about why's and how's behind Nyxt features."
-          "Articles")
-      (:a :class "button" :href "https://nyxt.atlas.engineer/applications"
-          :title "Check out the applications built on top of Nyxt!"
-          "Applications")
-      (:a :class "button" :href "https://store.nyxt.atlas.engineer/"
-          :title "Buy Nyxt merchandise and support the development!"
-          "Store")
-      (:a :class "button" :href "https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org"
-          :title "Helpful tips for Nyxt hacking and contributing."
-          "Developer Manual")
-      (:a :class "button" :href "https://discourse.atlas.engineer/"
-          :title "A forum for questions and ideas on Nyxt."
-          "Forum")
-      (:a :class "button" :href "https://kiwiirc.com/nextclient/irc.libera.chat/nyxt"
-          :title "Chat with developers and other Nyxt users."
-          "Chat")))))
+      (:i "Internet on your terms.")
+      (:p (:button :class "button accent"
+                   :type "submit"
+                   :onclick (ps:ps (nyxt/ps:lisp-eval '(set-url :prefill-current-url-p nil)))
+                   "Start searching!"))))))
 
 (define-internal-page-command-global manual ()
     (buffer "*Manual*" 'nyxt/help-mode:help-mode)
