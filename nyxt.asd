@@ -473,7 +473,28 @@ See `asdf::*immutable-systems*'."
                 (ensure-parent-exists binary-file)
                 (uiop:copy-file (system-relative-pathname c "nyxt") binary-file)
                 ;; TODO: Use iolib/os:file-permissions instead of chmod?  Too verbose?
-                (uiop:run-program (list "chmod" "+x" binary-file))))))
+                (uiop:run-program (list "chmod" "+x" binary-file)))
+              (let ((source-dir (uiop:ensure-directory-pathname (uiop:strcat *datadir* "/nyxt"))))
+                ;; TODO: Don't copy .fasls and .o?  Copy only the output of `git ls-files`, + libnyxt.so?
+                (flet ((copy-directory (source destination)
+                         "Copy the content (the file tree) of SOURCE to DESTINATION."
+                         (uiop:collect-sub*directories
+                          (uiop:ensure-directory-pathname source)
+                          (constantly t)
+                          t
+                          (lambda (subdirectory)
+                            (mapc (lambda (file)
+                                    (let ((destination-file
+                                            (uiop:merge-pathnames*
+                                             (uiop:subpathp file (uiop:ensure-directory-pathname source))
+                                             (uiop:ensure-pathname destination :truenamize t :ensure-directory t))))
+                                      (ensure-parent-exists destination-file)
+                                      (uiop:copy-file file destination-file)))
+                                  (uiop:directory-files subdirectory))))))
+                  (dolist (dir '("source" "libraries"))
+                    (copy-directory (uiop:merge-pathnames* dir (asdf:system-source-directory :nyxt))
+                                    (uiop:merge-pathnames* dir source-dir)))
+                  (uiop:copy-file (asdf:system-source-file :nyxt) (uiop:merge-pathnames* "nyxt.asd" source-dir)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Library subsystems:
