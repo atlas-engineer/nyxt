@@ -103,6 +103,7 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
 
 (export-always 'dispatch-command)
 (defun dispatch-command (function)
+  (echo-dismiss) ; Clean up message-view on command.
   (run-async function))
 
 (export-always 'dispatch-input-skip)
@@ -114,7 +115,6 @@ KEYCODE-LESS-DISPLAY (KEYCODE-DISPLAY)."
   "Dispatch keys in WINDOW `key-stack'.
 Return nil to forward to renderer or non-nil otherwise."
   (declare (ignore printable-p))
-  (echo-dismiss) ; Clean up message-view on keypress.
   (with-accessors ((key-stack key-stack)) window
     (labels ((keyspecs (key &optional translated-key)
                (if translated-key
