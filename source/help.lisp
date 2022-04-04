@@ -818,20 +818,23 @@ The version number is stored in the clipboard."
 
 (define-internal-page-command-global new ()
     (buffer "*New buffer*" 'nyxt/help-mode:help-mode)
-  "Open up a small help buffer."
+  "Open up a buffer with useful links suitable for a `default-new-buffer-url'."
   (spinneret:with-html-string
     (:style (:raw (theme:themed-css (theme *browser*)
+                    (h1
+                     :font-size "5em"
+                     :margin "1vh")
                     (main
                      :margin "10% auto"
                      :text-align "center")
                     ("#documentation .button"
                      :min-width "100px"))))
     (:main
-     (:h1 (:a :href "https://nyxt.atlas.engineer/" "Nyxt Browser"))
-     (:p (:button :class "button accent"
-                  :type "submit"
-                  :onclick (ps:ps (nyxt/ps:lisp-eval '(set-url :prefill-current-url-p nil)))
-                  "Start searching the Internet!"))
+     (:h1 "Nyxt")
+     (:button :class "button accent"
+              :type "submit"
+              :onclick (ps:ps (nyxt/ps:lisp-eval '(set-url :prefill-current-url-p nil)))
+              "Start searching!")
      (:h2 "Understand Nyxt and make it yours")
      (:a :class "button" :href (nyxt-url 'tutorial)
          :title "An introduction to Nyxt core concepts."
