@@ -281,15 +281,15 @@ the renderer thread, use `defmethod' instead."
    (call-next-method)
    (pathname (str:concat (context-name file) "-web-context/"))))
 
-(define-class gtk-extensions-directory (nfiles:data-file data-manager-file)
+(define-class gtk-extensions-directory (nyxt-file)
   ((nfiles:name "gtk-extensions"))
   (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:documentation "Directory where to load the 'libnyxt' library.
+By default it is found in the source directory."))
 
 (defmethod nfiles:resolve ((profile nyxt-profile) (file gtk-extensions-directory))
-  (sera:path-join
-   (call-next-method)
-   (pathname (str:concat (context-name file) "-gtk-extensions/"))))
+  (sera:path-join (asdf:system-source-directory :nyxt) "libraries/web-extensions/"))
 
 (define-class cookies-file (nfiles:data-file data-manager-file)
   ((nfiles:name "cookies"))
@@ -769,11 +769,12 @@ See `gtk-browser's `modifier-translator' slot."
                                                                      (nfiles:expand data-manager-data-directory))
                                                :base-cache-directory (uiop:native-namestring
                                                                       (nfiles:expand data-manager-cache-directory)))))))
-         (gtk-extensions-path (nfiles:expand (make-instance 'gtk-extensions-directory :context-name name)))
+         (gtk-extensions-path (nfiles:expand (make-instance 'gtk-extensions-directory)))
          (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
     (webkit:webkit-web-context-add-path-to-sandbox
      context (namestring (asdf:system-relative-pathname :nyxt "libraries/web-extensions/")) t)
     (unless (uiop:emptyp gtk-extensions-path)
+      (log:info "GTK extensions directory: ~s" gtk-extensions-path)
       ;; TODO: Should we also use `connect-signal' here?  Does this yield a memory leak?
       (gobject:g-signal-connect
        context "initialize-web-extensions"
