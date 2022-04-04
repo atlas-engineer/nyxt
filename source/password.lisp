@@ -86,7 +86,7 @@ for which the `executable' slot is non-nil."
         :do (setf (password::password-file password-interface)
                   (uiop:native-namestring
                    (prompt1
-                     :prompt "Password file"
+                     :prompt "Password database file"
                      :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
                      :sources (list (make-instance
                                      'nyxt/file-manager-mode:user-file-source
@@ -94,7 +94,7 @@ for which the `executable' slot is non-nil."
   (loop :until (password:password-correct-p password-interface)
         :do (setf (password::master-password password-interface)
                   (prompt1
-                    :prompt "File password"
+                    :prompt "Database password"
                     :sources (list (make-instance 'prompter:raw-source))
                     :invisible-input-p t))))
 
