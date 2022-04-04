@@ -856,6 +856,9 @@ The version number is stored in the clipboard."
      (:a :class "button" :href "https://github.com/atlas-engineer/nyxt/"
          :title "Your contribution will be much appreciated :)"
          "Source Code")
+     (:a :class "button" :href "https://www.youtube.com/channel/UC11mZYESUvaKFTaa3zZWHMQ"
+         :title "A channel with tips and tricks of Nyxt by one of the developers."
+         "Nyxt Academy")
      (:a :class "button" :href "https://nyxt.atlas.engineer/articles"
          :title "Learn more about why's and how's behind Nyxt features."
          "Articles")
