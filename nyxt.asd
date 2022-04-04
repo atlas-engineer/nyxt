@@ -6,8 +6,10 @@
   (sb-ext:assert-version->= 2 0 0)
   (require 'sb-bsd-sockets))
 
-(defvar *prefix* (format nil "~a/~a"
-                         (or (uiop:getenv "DESTDIR") "")
+(defvar *prefix* (format nil "~a~a"
+                         (if (uiop:getenv "DESTDIR")
+                             (uiop:strcat (uiop:getenv "DESTDIR") "/")
+                             "")
                          (or (uiop:getenv "PREFIX")
                              "/usr/local")))
 (defvar *datadir* (or (uiop:getenv "DATADIR")
