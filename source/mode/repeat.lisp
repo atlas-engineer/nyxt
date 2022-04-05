@@ -95,8 +95,6 @@ Function taking a `repeat-mode' instance.")
   (setf (command-dispatcher (current-window)) #'dispatch-command
         (input-skip-dispatcher (current-window)) #'dispatch-input-skip))
 
-;; FIXME: This design does not allow for multi-digit TIMES. Maybe introduce some
-;; global variable, like Emacs does?
 (define-command-global repeat-key
     (&key (times (or
                   (ignore-errors
