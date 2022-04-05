@@ -6,26 +6,26 @@
   (sb-ext:assert-version->= 2 0 0)
   (require 'sb-bsd-sockets))
 
-(defvar *prefix* (uiop:merge-pathnames* (if (uiop:getenv "PREFIX")
-                                            (uiop:relativize-pathname-directory (uiop:getenv "PREFIX"))
+(defvar *prefix* (merge-pathnames* (if (getenv "PREFIX")
+                                            (relativize-pathname-directory (getenv "PREFIX"))
                                             #p"usr/local/")
-                                        (if (uiop:getenv "DESTDIR")
-                                            (uiop:ensure-directory-pathname (uiop:getenv "DESTDIR"))
+                                        (if (getenv "DESTDIR")
+                                            (ensure-directory-pathname (getenv "DESTDIR"))
                                             #p"/")))
-(defvar *datadir* (if (uiop:getenv "DATADIR")
-                      (uiop:ensure-directory-pathname (uiop:getenv "DATADIR"))
-                      (uiop:merge-pathnames* "share/" *prefix*)))
-(defvar *bindir* (if (uiop:getenv "BINDIR")
-                     (uiop:ensure-directory-pathname (uiop:getenv "BINDIR"))
-                     (uiop:merge-pathnames* "bin/" *prefix*)))
+(defvar *datadir* (if (getenv "DATADIR")
+                      (ensure-directory-pathname (getenv "DATADIR"))
+                      (merge-pathnames* "share/" *prefix*)))
+(defvar *bindir* (if (getenv "BINDIR")
+                     (ensure-directory-pathname (getenv "BINDIR"))
+                     (merge-pathnames* "bin/" *prefix*)))
 
-(defvar *nyxt-renderer* (or (uiop:getenv "NYXT_RENDERER")
+(defvar *nyxt-renderer* (or (getenv "NYXT_RENDERER")
                             "gi-gtk"))
 
-(defvar *submodules-dir* (or (uiop:getenv "NYXT_SUBMODULES_DIR")
+(defvar *submodules-dir* (or (getenv "NYXT_SUBMODULES_DIR")
                              "_build"))
 
-(defvar *submodules-jobs* (or (uiop:getenv "NYXT_SUBMODULES_JOBS")
+(defvar *submodules-jobs* (or (getenv "NYXT_SUBMODULES_JOBS")
                               4)
   "Number of parallel 'git clone' jobs to fetch the Git submodules.
 A naive benchmark on a 16 Mpbs bandwidth gives us
@@ -249,7 +249,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
   ;; We must set this globally because the information would be lost within a
   ;; Lisp compiler subprocess (e.g. as used by linux-packaging).
   (flet ((ensure-absolute-path (path component)
-           (if (uiop:absolute-pathname-p path)
+           (if (absolute-pathname-p path)
                path
                (system-relative-pathname component path))))
     (setf (getenv "CL_SOURCE_REGISTRY")
@@ -265,27 +265,27 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
            (if (getenv "CL_SOURCE_REGISTRY")
                (strcat (inter-directory-separator) (getenv "CL_SOURCE_REGISTRY"))
                ;; End with an empty string to tell ASDF to inherit configuration.
-               (uiop:inter-directory-separator)))))
-  (asdf:clear-configuration)
-  (format t "; CL_SOURCE_REGISTRY: ~s~%" (uiop:getenv "CL_SOURCE_REGISTRY")))
+               (inter-directory-separator)))))
+  (clear-configuration)
+  (format t "; CL_SOURCE_REGISTRY: ~s~%" (getenv "CL_SOURCE_REGISTRY")))
 
 (defsystem "nyxt/submodules"
   :perform (compile-op (o c)
-                       (uiop:run-program `("git"
-                                           "-C" ,(namestring (system-relative-pathname c ""))
-                                           "submodule" "update" "--init" "--force"
-                                           "--jobs" ,(write-to-string *submodules-jobs*))
-                                         :ignore-error-status t
-                                         :output t)
+                       (run-program `("git"
+                                      "-C" ,(namestring (system-relative-pathname c ""))
+                                      "submodule" "update" "--init" "--force"
+                                      "--jobs" ,(write-to-string *submodules-jobs*))
+                                    :ignore-error-status t
+                                    :output t)
                        (register-submodules c)))
 
 (defun nyxt-run-test (c path &key network-needed-p)
   (and (or (not network-needed-p)
-           (not (uiop:getenv "NYXT_TESTS_NO_NETWORK")))
+           (not (getenv "NYXT_TESTS_NO_NETWORK")))
        (not (funcall (read-from-string "prove:run")
                      (system-relative-pathname c path)))
-       (uiop:getenv "NYXT_TESTS_ERROR_ON_FAIL")
-       (uiop:quit 18)))
+       (getenv "NYXT_TESTS_ERROR_ON_FAIL")
+       (quit 18)))
 
 ;; TODO: Test that Nyxt starts and that --help, --version work.
 (defsystem "nyxt/tests"
@@ -436,16 +436,16 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
 #+sb-core-compression
 (handler-bind ((warning #'muffle-warning))
   (defmethod perform ((o image-op) (c system))
-    (uiop:dump-image (output-file o c)
-                     :executable t
-                     :compression (when (uiop:getenv "NYXT_COMPRESS")
-                                    (parse-integer (uiop:getenv "NYXT_COMPRESS"))))))
+    (dump-image (output-file o c)
+                :executable t
+                :compression (when (getenv "NYXT_COMPRESS")
+                               (parse-integer (getenv "NYXT_COMPRESS"))))))
 
 (defmethod perform :before ((o image-op) (c system))
   "Register immutable systems to prevent compiled images of Nyxt from
 trying to recompile dependencies.
 See `asdf::*immutable-systems*'."
-  (map () 'asdf:register-immutable-system (asdf:already-loaded-systems)))
+  (map () 'register-immutable-system (already-loaded-systems)))
 
 (defsystem "nyxt/install"
   :depends-on (alexandria
@@ -455,71 +455,71 @@ See `asdf::*immutable-systems*'."
   :perform (compile-op
             (o c)
             (flet ((ensure-parent-exists (file)
-                     (uiop:ensure-all-directories-exist
+                     (ensure-all-directories-exist
                       (list (directory-namestring file)))))
-              (let ((desktop-file (uiop:merge-pathnames* "applications/nyxt.desktop" *datadir*)))
+              (let ((desktop-file (merge-pathnames* "applications/nyxt.desktop" *datadir*)))
                 (ensure-parent-exists desktop-file)
-                (uiop:copy-file (system-relative-pathname c "assets/nyxt.desktop")
+                (copy-file (system-relative-pathname c "assets/nyxt.desktop")
                                 desktop-file))
               (mapc (lambda (icon-size)
                       (let ((icon-file (format nil "~a/icons/hicolor/~ax~a/apps/nyxt.png"
                                                *datadir* icon-size icon-size)))
                         (ensure-parent-exists icon-file)
-                        (uiop:copy-file (system-relative-pathname
+                        (copy-file (system-relative-pathname
                                          c
                                          (format nil "assets/nyxt_~ax~a.png"
                                                  icon-size icon-size))
                                         icon-file)))
                     '(16 32 128 256 512))
-              (let ((binary-file (uiop:merge-pathnames* "nyxt" *bindir*)))
+              (let ((binary-file (merge-pathnames* "nyxt" *bindir*)))
                 (ensure-parent-exists binary-file)
-                (uiop:copy-file (system-relative-pathname c "nyxt") binary-file)
+                (copy-file (system-relative-pathname c "nyxt") binary-file)
                 ;; TODO: Use iolib/os:file-permissions instead of chmod?  Too verbose?
-                (uiop:run-program (list "chmod" "+x" (uiop:native-namestring binary-file))))
-              (let ((source-dir (uiop:merge-pathnames* "nyxt/" *datadir*)))
+                (run-program (list "chmod" "+x" (native-namestring binary-file))))
+              (let ((source-dir (merge-pathnames* "nyxt/" *datadir*)))
                 (flet ((copy-directory (source destination)
                          "Copy the content (the file tree) of SOURCE to DESTINATION."
-                         (uiop:collect-sub*directories
-                          (uiop:ensure-directory-pathname source)
+                         (collect-sub*directories
+                          (ensure-directory-pathname source)
                           (constantly t)
                           t
                           (lambda (subdirectory)
                             (mapc (lambda (file)
                                     (unless (member (pathname-type file) '("o" "fasl") :test 'equalp)
                                       (let ((destination-file
-                                              (uiop:merge-pathnames*
-                                               (uiop:subpathp file (uiop:ensure-directory-pathname source))
-                                               (uiop:ensure-pathname destination :truenamize t :ensure-directory t))))
+                                              (merge-pathnames*
+                                               (subpathp file (ensure-directory-pathname source))
+                                               (ensure-pathname destination :truenamize t :ensure-directory t))))
                                         (ensure-parent-exists destination-file)
-                                        (uiop:copy-file file destination-file))))
-                                  (uiop:directory-files subdirectory))))))
+                                        (copy-file file destination-file))))
+                                  (directory-files subdirectory))))))
                   (handler-case
                       (progn
                         (dolist (file (cons
                                        ;; Find `libnyxt' file regardless of its extension:
-                                       (uiop:subpathp (first (delete-if
-                                                              (complement (lambda (file)
-                                                                            (uiop:string-prefix-p "libnyxt" (pathname-name file))))
-                                                              (uiop:directory-files (asdf:system-relative-pathname
-                                                                                     :nyxt "libraries/web-extensions"))))
-                                                      (asdf:system-source-directory :nyxt))
+                                       (subpathp (first (delete-if
+                                                         (complement (lambda (file)
+                                                                       (string-prefix-p "libnyxt" (pathname-name file))))
+                                                         (directory-files (system-relative-pathname
+                                                                           :nyxt "libraries/web-extensions"))))
+                                                 (system-source-directory :nyxt))
                                        (mapcan (lambda (dir)
-                                                 (uiop:split-string
-                                                  (uiop:run-program `("git" "-C" ,(uiop:native-namestring
-                                                                                   (asdf:system-source-directory :nyxt))
-                                                                            "ls-files" ,dir)
-                                                                    :output '(:string :stripped t))
+                                                 (split-string
+                                                  (run-program `("git" "-C" ,(native-namestring
+                                                                              (system-source-directory :nyxt))
+                                                                       "ls-files" ,dir)
+                                                               :output '(:string :stripped t))
                                                   :separator '(#\newline #\return #\linefeed)))
                                                '("source" "libraries"))))
-                          (let ((dest (uiop:merge-pathnames* file source-dir)))
+                          (let ((dest (merge-pathnames* file source-dir)))
                             (ensure-parent-exists dest)
-                            (uiop:copy-file (asdf:system-relative-pathname :nyxt file)
-                                            dest))))
+                            (copy-file (system-relative-pathname :nyxt file)
+                                       dest))))
                     (t ()
                       (dolist (dir '("source" "libraries"))
-                        (copy-directory (asdf:system-relative-pathname :nyxt dir)
-                                        (uiop:merge-pathnames* dir source-dir)))))
-                  (uiop:copy-file (asdf:system-source-file :nyxt) (uiop:merge-pathnames* "nyxt.asd" source-dir)))))))
+                        (copy-directory (system-relative-pathname :nyxt dir)
+                                        (merge-pathnames* dir source-dir)))))
+                  (copy-file (system-source-file :nyxt) (merge-pathnames* "nyxt.asd" source-dir)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Library subsystems:
