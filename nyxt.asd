@@ -6,16 +6,18 @@
   (sb-ext:assert-version->= 2 0 0)
   (require 'sb-bsd-sockets))
 
-(defvar *prefix* (format nil "~a~a"
-                         (if (uiop:getenv "DESTDIR")
-                             (uiop:strcat (uiop:getenv "DESTDIR") "/")
-                             "")
-                         (or (uiop:getenv "PREFIX")
-                             "/usr/local")))
-(defvar *datadir* (or (uiop:getenv "DATADIR")
-                      (format nil "~a/share" *prefix*)))
-(defvar *bindir* (or (uiop:getenv "BINDIR")
-                     (format nil "~a/bin" *prefix*)))
+(defvar *prefix* (uiop:merge-pathnames* (if (uiop:getenv "PREFIX")
+                                            (uiop:relativize-pathname-directory (uiop:getenv "PREFIX"))
+                                            #p"usr/local/")
+                                        (if (uiop:getenv "DESTDIR")
+                                            (uiop:ensure-directory-pathname (uiop:getenv "DESTDIR"))
+                                            #p"/")))
+(defvar *datadir* (if (uiop:getenv "DATADIR")
+                      (uiop:ensure-directory-pathname (uiop:getenv "DATADIR"))
+                      (uiop:merge-pathnames* "share/" *prefix*)))
+(defvar *bindir* (if (uiop:getenv "BINDIR")
+                     (uiop:ensure-directory-pathname (uiop:getenv "BINDIR"))
+                     (uiop:merge-pathnames* "bin/" *prefix*)))
 
 (defvar *nyxt-renderer* (or (uiop:getenv "NYXT_RENDERER")
                             "gi-gtk"))
@@ -457,10 +459,10 @@ See `asdf::*immutable-systems*'."
             (flet ((ensure-parent-exists (file)
                      (uiop:ensure-all-directories-exist
                       (list (directory-namestring file)))))
-              (let ((desktop-file (format nil "~a/applications/nyxt.desktop" *datadir*)))
+              (let ((desktop-file (uiop:merge-pathnames* "applications/nyxt.desktop" *datadir*)))
                 (ensure-parent-exists desktop-file)
                 (uiop:copy-file (system-relative-pathname c "assets/nyxt.desktop")
-                                (format nil "~a/applications/nyxt.desktop" *datadir*)))
+                                desktop-file))
               (mapc (lambda (icon-size)
                       (let ((icon-file (format nil "~a/icons/hicolor/~ax~a/apps/nyxt.png"
                                                *datadir* icon-size icon-size)))
@@ -471,12 +473,12 @@ See `asdf::*immutable-systems*'."
                                                  icon-size icon-size))
                                         icon-file)))
                     '(16 32 128 256 512))
-              (let ((binary-file (format nil "~a/nyxt" *bindir*)))
+              (let ((binary-file (uiop:merge-pathnames* "nyxt" *bindir*)))
                 (ensure-parent-exists binary-file)
                 (uiop:copy-file (system-relative-pathname c "nyxt") binary-file)
                 ;; TODO: Use iolib/os:file-permissions instead of chmod?  Too verbose?
-                (uiop:run-program (list "chmod" "+x" binary-file)))
-              (let ((source-dir (uiop:ensure-directory-pathname (uiop:strcat *datadir* "/nyxt"))))
+                (uiop:run-program (list "chmod" "+x" (uiop:native-namestring binary-file))))
+              (let ((source-dir (uiop:merge-pathnames* "nyxt/" *datadir*)))
                 (flet ((copy-directory (source destination)
                          "Copy the content (the file tree) of SOURCE to DESTINATION."
                          (uiop:collect-sub*directories
