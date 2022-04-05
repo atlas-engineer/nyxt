@@ -477,7 +477,6 @@ See `asdf::*immutable-systems*'."
                 ;; TODO: Use iolib/os:file-permissions instead of chmod?  Too verbose?
                 (uiop:run-program (list "chmod" "+x" binary-file)))
               (let ((source-dir (uiop:ensure-directory-pathname (uiop:strcat *datadir* "/nyxt"))))
-                ;; TODO: Don't copy .fasls and .o?  Copy only the output of `git ls-files`, + libnyxt.so?
                 (flet ((copy-directory (source destination)
                          "Copy the content (the file tree) of SOURCE to DESTINATION."
                          (uiop:collect-sub*directories
@@ -486,16 +485,40 @@ See `asdf::*immutable-systems*'."
                           t
                           (lambda (subdirectory)
                             (mapc (lambda (file)
-                                    (let ((destination-file
-                                            (uiop:merge-pathnames*
-                                             (uiop:subpathp file (uiop:ensure-directory-pathname source))
-                                             (uiop:ensure-pathname destination :truenamize t :ensure-directory t))))
-                                      (ensure-parent-exists destination-file)
-                                      (uiop:copy-file file destination-file)))
+                                    (unless (member (pathname-type file) '("o" "fasl") :test 'equalp)
+                                      (let ((destination-file
+                                              (uiop:merge-pathnames*
+                                               (uiop:subpathp file (uiop:ensure-directory-pathname source))
+                                               (uiop:ensure-pathname destination :truenamize t :ensure-directory t))))
+                                        (ensure-parent-exists destination-file)
+                                        (uiop:copy-file file destination-file))))
                                   (uiop:directory-files subdirectory))))))
-                  (dolist (dir '("source" "libraries"))
-                    (copy-directory (uiop:merge-pathnames* dir (asdf:system-source-directory :nyxt))
-                                    (uiop:merge-pathnames* dir source-dir)))
+                  (handler-case
+                      (progn
+                        (dolist (file (cons
+                                       ;; Find `libnyxt' file regardless of its extension:
+                                       (uiop:subpathp (first (delete-if
+                                                              (complement (lambda (file)
+                                                                            (uiop:string-prefix-p "libnyxt" (pathname-name file))))
+                                                              (uiop:directory-files (asdf:system-relative-pathname
+                                                                                     :nyxt "libraries/web-extensions"))))
+                                                      (asdf:system-source-directory :nyxt))
+                                       (mapcan (lambda (dir)
+                                                 (uiop:split-string
+                                                  (uiop:run-program `("git" "-C" ,(uiop:native-namestring
+                                                                                   (asdf:system-source-directory :nyxt))
+                                                                            "ls-files" ,dir)
+                                                                    :output '(:string :stripped t))
+                                                  :separator '(#\newline #\return #\linefeed)))
+                                               '("source" "libraries"))))
+                          (let ((dest (uiop:merge-pathnames* file source-dir)))
+                            (ensure-parent-exists dest)
+                            (uiop:copy-file (asdf:system-relative-pathname :nyxt file)
+                                            dest))))
+                    (t ()
+                      (dolist (dir '("source" "libraries"))
+                        (copy-directory (asdf:system-relative-pathname :nyxt dir)
+                                        (uiop:merge-pathnames* dir source-dir)))))
                   (uiop:copy-file (asdf:system-source-file :nyxt) (uiop:merge-pathnames* "nyxt.asd" source-dir)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
