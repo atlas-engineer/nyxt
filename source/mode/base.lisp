@@ -130,17 +130,6 @@ This mode is a good candidate to be passed to `make-buffer'."
        "m l" 'list-bookmarks
        "y u" 'copy-url
        "y t" 'copy-title
-       "C-h C-h" 'help
-       "C-h h" 'help
-       "C-h t" 'tutorial
-       "C-h r" 'manual
-       "C-h v" 'describe-variable
-       "C-h f" 'describe-function
-       "C-h c" 'describe-command
-       "C-h C" 'describe-class
-       "C-h s" 'describe-slot
-       "C-h k" 'describe-key
-       "C-h b" 'describe-bindings
        ":" 'execute-command
        "1" (read-from-string "nyxt/repeat-mode:repeat-key")
        "2" (read-from-string "nyxt/repeat-mode:repeat-key")
