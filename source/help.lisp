@@ -898,7 +898,7 @@ The version number is stored in the clipboard."
            "Chat")))
      (:main
       (:h1 "Nyxt")
-      (:i "Internet on your terms.")
+      (:i "The Internet on your terms.")
       (:p (:button :class "button accent"
                    :type "submit"
                    :onclick (ps:ps (nyxt/ps:lisp-eval '(set-url :prefill-current-url-p nil)))
@@ -906,7 +906,7 @@ The version number is stored in the clipboard."
      (:p :class "copyright"
          (format nil "Nyxt/~a ~a" +renderer+ +version+)
          (:br)
-         (format nil "© Atlas Engineer LLC. ~a" (local-time:timestamp-year (local-time:now)))))))
+         (format nil "© Atlas Engineer LLC, ~a" (local-time:timestamp-year (local-time:now)))))))
 
 (define-internal-page-command-global manual ()
     (buffer "*Manual*" 'nyxt/help-mode:help-mode)
