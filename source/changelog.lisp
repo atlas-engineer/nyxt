@@ -364,6 +364,8 @@ SLY install.")
     (:li "Better Lisp values inspection in " (:code "describe-*")
          " commands and " (:code "lisp-repl") ", extensible through "
          (:code "value->html") " method.")
+    (:li "Universal describe-* commands describing things in any Nyxt-accessible package."
+         "Available via " (:code "C-h u") " key prefix.")
     (:li (:code "*after-startup-hook*") " to attach headless mode actions or configuration to.")
     (:li "Thread name is now mandatory in " (:code "run-thread") ".")
     (:li "New " (:code "nyxt-unstable") " " (:code "*features*")
