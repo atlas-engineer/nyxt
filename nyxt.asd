@@ -18,6 +18,9 @@
 (defvar *bindir* (if (getenv "BINDIR")
                      (ensure-directory-pathname (getenv "BINDIR"))
                      (merge-pathnames* "bin/" *prefix*)))
+(defvar *dest-source-dir* (if (getenv "NYXT_SOURCE_PATH")
+                              (ensure-directory-pathname (getenv "NYXT_SOURCE_PATH"))
+                              (merge-pathnames* "nyxt/" *datadir*)))
 
 (defvar *nyxt-renderer* (or (getenv "NYXT_RENDERER")
                             "gi-gtk"))
@@ -476,50 +479,49 @@ See `asdf::*immutable-systems*'."
                 (copy-file (system-relative-pathname c "nyxt") binary-file)
                 ;; TODO: Use iolib/os:file-permissions instead of chmod?  Too verbose?
                 (run-program (list "chmod" "+x" (native-namestring binary-file))))
-              (let ((source-dir (merge-pathnames* "nyxt/" *datadir*)))
-                (flet ((copy-directory (source destination)
-                         "Copy the content (the file tree) of SOURCE to DESTINATION."
-                         (collect-sub*directories
-                          (ensure-directory-pathname source)
-                          (constantly t)
-                          t
-                          (lambda (subdirectory)
-                            (mapc (lambda (file)
-                                    (unless (member (pathname-type file) '("o" "fasl") :test 'equalp)
-                                      (let ((destination-file
-                                              (merge-pathnames*
-                                               (subpathp file (ensure-directory-pathname source))
-                                               (ensure-pathname destination :truenamize t :ensure-directory t))))
-                                        (ensure-parent-exists destination-file)
-                                        (copy-file file destination-file))))
-                                  (directory-files subdirectory))))))
-                  (handler-case
-                      (progn
-                        (dolist (file (cons
-                                       ;; Find `libnyxt' file regardless of its extension:
-                                       (subpathp (first (delete-if
-                                                         (complement (lambda (file)
-                                                                       (string-prefix-p "libnyxt" (pathname-name file))))
-                                                         (directory-files (system-relative-pathname
-                                                                           :nyxt "libraries/web-extensions"))))
-                                                 (system-source-directory :nyxt))
-                                       (mapcan (lambda (dir)
-                                                 (split-string
-                                                  (run-program `("git" "-C" ,(native-namestring
-                                                                              (system-source-directory :nyxt))
-                                                                       "ls-files" ,dir)
-                                                               :output '(:string :stripped t))
-                                                  :separator '(#\newline #\return #\linefeed)))
-                                               '("source" "libraries"))))
-                          (let ((dest (merge-pathnames* file source-dir)))
-                            (ensure-parent-exists dest)
-                            (copy-file (system-relative-pathname :nyxt file)
-                                       dest))))
-                    (t ()
-                      (dolist (dir '("source" "libraries"))
-                        (copy-directory (system-relative-pathname :nyxt dir)
-                                        (merge-pathnames* dir source-dir)))))
-                  (copy-file (system-source-file :nyxt) (merge-pathnames* "nyxt.asd" source-dir)))))))
+              (flet ((copy-directory (source destination)
+                       "Copy the content (the file tree) of SOURCE to DESTINATION."
+                       (collect-sub*directories
+                        (ensure-directory-pathname source)
+                        (constantly t)
+                        t
+                        (lambda (subdirectory)
+                          (mapc (lambda (file)
+                                  (unless (member (pathname-type file) '("o" "fasl") :test 'equalp)
+                                    (let ((destination-file
+                                            (merge-pathnames*
+                                             (subpathp file (ensure-directory-pathname source))
+                                             (ensure-pathname destination :truenamize t :ensure-directory t))))
+                                      (ensure-parent-exists destination-file)
+                                      (copy-file file destination-file))))
+                                (directory-files subdirectory))))))
+                (handler-case
+                    (progn
+                      (dolist (file (cons
+                                     ;; Find `libnyxt' file regardless of its extension:
+                                     (subpathp (first (delete-if
+                                                       (complement (lambda (file)
+                                                                     (string-prefix-p "libnyxt" (pathname-name file))))
+                                                       (directory-files (system-relative-pathname
+                                                                         :nyxt "libraries/web-extensions"))))
+                                               (system-source-directory :nyxt))
+                                     (mapcan (lambda (dir)
+                                               (split-string
+                                                (run-program `("git" "-C" ,(native-namestring
+                                                                            (system-source-directory :nyxt))
+                                                                     "ls-files" ,dir)
+                                                             :output '(:string :stripped t))
+                                                :separator '(#\newline #\return #\linefeed)))
+                                             '("source" "libraries"))))
+                        (let ((dest (merge-pathnames* file *dest-source-dir*)))
+                          (ensure-parent-exists dest)
+                          (copy-file (system-relative-pathname :nyxt file)
+                                     dest))))
+                  (t ()
+                    (dolist (dir '("source" "libraries"))
+                      (copy-directory (system-relative-pathname :nyxt dir)
+                                      (merge-pathnames* dir *dest-source-dir*)))))
+                (copy-file (system-source-file :nyxt) (merge-pathnames* "nyxt.asd" *dest-source-dir*))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Library subsystems:

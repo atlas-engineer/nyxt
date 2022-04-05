@@ -41,7 +41,7 @@
   "The initialization file.")
 
 (define-class nyxt-source-directory (nyxt-file)
-  ((nfiles:base-path (uiop:merge-pathnames* "nyxt/" asdf-user::*datadir*))
+  ((nfiles:base-path asdf-user::*dest-source-dir*)
    (nfiles:name "source"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))

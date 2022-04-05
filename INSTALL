@@ -7,9 +7,14 @@ Usage:
 Set DESTDIR to change the target destination.  It should be
 an absolute path.
 
+Set NYXT_SOURCE_PATH to where the source files will be installed.
+By default the GTK renderer loads the `libnyxt' library (enabling WebExtension
+support) relatively to the nyxt.asd location.  You can also configure this at
+runtime through the `gtk-extensions-directory' `resolve' method.
+
 Set LISP and LISP_FLAGS to accommodate to your Lisp compiler.
 
-Set NYXT_RENDERER to the renderer of your choice, e.g. "gtk".
+Set NYXT_RENDERER to the renderer of your choice, for instance "gtk".
 
 Set NYXT_VERSION to force the version number instead of deriving it from Git.
 This is useful for build systems without access to the .git metadata.
