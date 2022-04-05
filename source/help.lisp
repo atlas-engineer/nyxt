@@ -4,8 +4,14 @@
 (in-package :nyxt)
 
 (define-class function-source (prompter:source)
-  ((prompter:name "Functions")
-   (prompter:constructor (package-functions))))
+  ((universal nil)
+   (prompter:name "Functions")
+   (prompter:constructor (lambda (source)
+                           (package-functions
+                            (when (universal source)
+                              (list-all-packages))))))
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defun first-line (string)
   "Return first non-empty line in STRING."
@@ -36,22 +42,40 @@
     ("Documentation" ,(or (first-line (documentation package t)) ""))))
 
 (define-class class-source (prompter:source)
-  ((prompter:name "Classes")
-   (prompter:constructor (package-classes))))
+  ((universal nil)
+   (prompter:name "Classes")
+   (prompter:constructor (lambda (source)
+                           (package-classes
+                            (when (universal source)
+                              (list-all-packages))))))
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class slot-source (prompter:source)
-  ((prompter:name "Slots")
-   (prompter:constructor (package-slots))))
+  ((universal nil)
+   (prompter:name "Slots")
+   (prompter:constructor (lambda (source)
+                           (package-slots
+                            (when (universal source)
+                              (list-all-packages))))))
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class variable-source (prompter:source)
-  ((prompter:name "Variables")
-   (prompter:constructor (package-variables))))
+  ((universal nil)
+   (prompter:name "Variables")
+   (prompter:constructor (lambda (source)
+                           (package-variables
+                            (when (universal source)
+                              (list-all-packages))))))
+  (:export-accessor-names-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class package-source (prompter:source)
   ((prompter:name "Packages")
    (prompter:constructor (mapcar (alex:compose #'intern #'package-name) (list-all-packages)))))
 
-(define-command describe-any (&optional input)
+(define-command describe-any (&optional input universal)
   "Inspect anything and show it in a help buffer.
 When INPUT  has a unique exact match in the sources, describe it
 directly without prompting.
@@ -62,24 +86,29 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
          (sources (list (make-instance 'variable-source
                                        :actions (list (make-command describe-variable* (variables)
                                                         (describe-variable :variable (first variables))))
-                                       :filter-preprocessor preprocessor)
+                                       :filter-preprocessor preprocessor
+                                       :universal universal)
                         (make-instance 'function-source
                                        :actions (list (make-command describe-function* (functions)
                                                         (describe-function :function (first functions))))
-                                       :filter-preprocessor preprocessor)
+                                       :filter-preprocessor preprocessor
+                                       :universal universal)
                         (make-instance 'user-command-source
                                        :actions (list (make-command describe-command* (commands)
                                                         (describe-command :command (name (first commands)))))
-                                       :filter-preprocessor preprocessor)
+                                       :filter-preprocessor preprocessor
+                                       :universal universal)
                         (make-instance 'class-source
                                        :actions (list (make-command describe-class* (classes)
                                                         (describe-class :class (first classes))))
-                                       :filter-preprocessor preprocessor)
+                                       :filter-preprocessor preprocessor
+                                       :universal universal)
                         (make-instance 'slot-source
                                        :actions (list (make-command describe-slot** (slots)
                                                         (describe-slot :class (class-sym (first slots))
                                                                        :name (name (first slots)))))
-                                       :filter-preprocessor preprocessor))))
+                                       :filter-preprocessor preprocessor
+                                       :universal universal))))
     (let ((suggestion+action-pairs
             (and input
                  (loop with result = '()
@@ -98,6 +127,10 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
             :prompt "Describe:"
             :input input
             :sources sources))))))
+
+(define-command-global universal-describe-any ()
+  "Inspect anything from any package and show it in a help buffer."
+  (describe-any nil t))
 
 (define-internal-page-command-global describe-value
     (&key id)
@@ -152,10 +185,10 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
         (*print-case* :downcase))
     (flet ((package-markup (package)
              (spinneret:with-html
-               (:a :href (nyxt-url 'describe-package :package (package-name package))
-                   (package-name package)))))
+                 (:a :href (nyxt-url 'describe-package :package (package-name package))
+                     (package-name package)))))
       (spinneret:with-html-string
-        (:style (style buffer))
+          (:style (style buffer))
         (:h1 (package-name package))
         (:raw (resolve-backtick-quote-links (documentation (find-package package) t) package))
         (:h2 "Symbols:")
@@ -173,10 +206,12 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
            (:li (package-markup use))))))))
 
 (define-internal-page-command-global describe-variable
-    (&key (variable
-           (prompt1
-             :prompt "Describe variable:"
-             :sources (make-instance 'variable-source))))
+    (&key
+     universal
+     (variable
+      (prompt1
+        :prompt "Describe variable:"
+        :sources (make-instance 'variable-source :universal universal))))
     (buffer (str:concat "*Help-" (symbol-name variable) "*")
             'nyxt/help-mode:help-mode)
   "Inspect a variable and show it in a help buffer."
@@ -200,10 +235,16 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
        "Change value")
       (:p (:raw (value->html (symbol-value variable)))))))
 
+(define-command-global universal-describe-variable ()
+  "Inspect a variable from any Nyxt-accessible package and show it in a help buffer."
+  (describe-variable :universal t))
+
 (define-internal-page-command-global describe-function
-    (&key (function (prompt1
-                      :prompt "Describe function"
-                      :sources (make-instance 'function-source))))
+    (&key
+     universal
+     (function (prompt1
+                 :prompt "Describe function"
+                 :sources (make-instance 'function-source :universal universal))))
     (buffer (str:concat "*Help-" (symbol-name function) "*")
             'nyxt/help-mode:help-mode)
   "Inspect a function and show it in a help buffer.
@@ -267,6 +308,10 @@ For generic functions, describe all the methods."
        :prompt "Describe function"
        :sources (make-instance 'function-source))))
 
+(define-command-global universal-describe-function ()
+  "Inspect a function from any Nyxt-accessible package and show it in a help buffer."
+  (describe-function :universal t))
+
 (define-internal-page-command-global describe-command
     (&key (command (name (prompt1
                            :prompt "Describe command"
@@ -311,18 +356,22 @@ A command is a special kind of function that can be called with
                      (write-to-string (sexp command))))))))
 
 (define-internal-page-command-global describe-slot
-    (&key class name)
+    (&key class name universal)
     (buffer (str:concat "*Help-" (symbol-name name) "*")
             'nyxt/help-mode:help-mode)
   "Inspect a slot and show it in a help buffer."
   (unless (and class name)
     (let ((slot (prompt1
                   :prompt "Describe slot"
-                  :sources (make-instance 'slot-source))))
+                  :sources (make-instance 'slot-source :universal universal))))
       (setf name (name slot)
             class (class-sym slot))
       ""))
   (describe-slot* name class :mention-class-p t))
+
+(define-command-global universal-describe-slot ()
+  "Inspect a Nyxt-accessible slot and show it in a help buffer."
+  (describe-slot :universal t))
 
 (defun describe-slot* (slot class &key mention-class-p)
   "Create the HTML that represents a slot."
@@ -362,9 +411,11 @@ A command is a special kind of function that can be called with
                         "Configure"))))))))
 
 (define-internal-page-command-global describe-class
-    (&key (class (prompt1
-                   :prompt "Describe class"
-                   :sources (make-instance 'class-source))))
+    (&key
+     universal
+     (class (prompt1
+              :prompt "Describe class"
+              :sources (make-instance 'class-source :universal universal))))
     (buffer (str:concat "*Help-" (symbol-name class) "*")
             'nyxt/help-mode:help-mode)
   "Inspect a class and show it in a help buffer."
@@ -390,6 +441,10 @@ A command is a special kind of function that can be called with
                                 #'listp (mapcar #'mopu:generic-function-name
                                                 (mopu:generic-functions class)))
                  collect (:li (:a :href (nyxt-url 'describe-function :function method) method)))))))
+
+(define-command-global universal-describe-class ()
+  "Inspect a Nyxt-accessible class and show it in a help buffer."
+  (describe-class :universal t))
 
 ;; FIXME: Arglist used to have prompt-buffer, but it's not URL-serializable.
 ;; Maybe have prompt-buffers have IDs so that we can identify those by IDs?

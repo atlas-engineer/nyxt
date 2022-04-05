@@ -248,7 +248,10 @@ deprecated and by what in the docstring."
                                   (user-package-designators '(:nyxt-user)))
   "Return the list of all external symbols interned in EXTERNAL-PACKAGE-DESIGNATORS
 and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
-  (let ((symbols))
+  (let ((external-package-designators
+          ;; This is for the case external-package-designators are passed nil.
+          (or external-package-designators (nyxt-packages)))
+        (symbols))
     (dolist (package (mapcar #'find-package external-package-designators))
       (do-external-symbols (s package symbols)
         (pushnew s symbols)))
@@ -258,22 +261,22 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
           (pushnew s symbols))))
     symbols))
 
-(defun package-variables ()
+(defun package-variables (&optional packages)
   "Return the list of variable symbols in Nyxt-related-packages."
-  (delete-if (complement #'boundp) (package-defined-symbols)))
+  (delete-if (complement #'boundp) (package-defined-symbols packages)))
 
-(defun package-functions ()
+(defun package-functions (&optional packages)
   "Return the list of function symbols in Nyxt-related packages."
-  (delete-if (complement #'fboundp) (package-defined-symbols)))
+  (delete-if (complement #'fboundp) (package-defined-symbols packages)))
 
-(defun package-classes ()
+(defun package-classes (&optional packages)
   "Return the list of class symbols in Nyxt-related-packages."
   (delete-if (lambda (sym)
                (not (and (find-class sym nil)
                          ;; Discard non-standard objects such as structures or
                          ;; conditions because they don't have public slots.
                          (mopu:subclassp (find-class sym) (find-class 'standard-object)))))
-             (package-defined-symbols)))
+             (package-defined-symbols packages)))
 
 (define-class slot ()
   ((name nil
@@ -297,17 +300,17 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
    (complement #'exported-p)
    (mopu:slot-names class-sym)))
 
-(defun package-slots ()
-  "Return the list of all slot symbols in `:nyxt' and `:nyxt-user'."
+(defun package-slots (&optional packages)
+  "Return the list of all slot symbols in `:nyxt' and `:nyxt-user' or other PACKAGES."
   (alex:mappend (lambda (class-sym)
                   (mapcar (lambda (slot) (make-instance 'slot
                                                         :name slot
                                                         :class-sym class-sym))
                           (class-public-slots class-sym)))
-                (package-classes)))
+                (package-classes packages)))
 
-(defun package-methods ()               ; TODO: Unused.  Remove?
-  (loop for sym in (package-defined-symbols)
+(defun package-methods (&optional packages) ; TODO: Unused.  Remove?
+  (loop for sym in (package-defined-symbols packages)
         append (ignore-errors
                 (closer-mop:generic-function-methods (symbol-function sym)))))
 
