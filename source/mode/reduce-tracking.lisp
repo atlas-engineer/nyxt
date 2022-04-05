@@ -31,8 +31,7 @@ still being less noticeable in the crowd.")
     :documentation "The User Agent the browser had before enabling this mode.")
    (destructor
     (lambda (mode)
-      (setf (old-user-agent mode) (ffi-buffer-user-agent (buffer mode)))
-      (ffi-buffer-user-agent (buffer mode) (preferred-user-agent mode))
+      (ffi-buffer-user-agent (buffer mode) (old-user-agent mode))
       (ffi-set-preferred-languages (buffer mode)
                                    (list (first
                                           (str:split
@@ -41,7 +40,8 @@ still being less noticeable in the crowd.")
       (ffi-set-tracking-prevention (buffer mode) nil)))
    (constructor
     (lambda (mode)
-      (ffi-buffer-user-agent (buffer mode) (old-user-agent mode))
+      (setf (old-user-agent mode) (ffi-buffer-user-agent (buffer mode)))
+      (ffi-buffer-user-agent (buffer mode) (preferred-user-agent mode))
       (ffi-set-preferred-languages (buffer mode)
                                    (preferred-languages mode))
       (ffi-set-tracking-prevention (buffer mode) t)))))
