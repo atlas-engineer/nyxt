@@ -76,12 +76,18 @@ Function taking a `repeat-mode' instance.")
                                              (declare (ignore mode))
                                              (nyxt::run function)))))))
 
+(defvar *repeat-times-stack* 0
+  "The current number of repetitions.")
+
 (defun make-repeat-command-dispatcher (times)
   (lambda (command)
-    (unwind-protect
-         (repeat-times times (symbol-function command))
-      (setf (command-dispatcher (current-window)) #'dispatch-command
-            (input-skip-dispatcher (current-window)) #'dispatch-input-skip))))
+    (if (eq 'repeat-key command)
+        (dispatch-command command)
+        (unwind-protect
+             (repeat-times times (symbol-function command))
+          (setf (command-dispatcher (current-window)) #'dispatch-command
+                (input-skip-dispatcher (current-window)) #'dispatch-input-skip
+                *repeat-times-stack* 0)))))
 
 (defun skip-repeat-dispatch (keyspec)
   (declare (ignore keyspec))
@@ -92,12 +98,17 @@ Function taking a `repeat-mode' instance.")
 ;; FIXME: This design does not allow for multi-digit TIMES. Maybe introduce some
 ;; global variable, like Emacs does?
 (define-command-global repeat-key
-    (&key (times (ignore-errors
-                  (parse-integer
-                   (prompt1 :prompt "Repeat for X times"
-                     :input "4"
-                     :sources (list (make-instance 'prompter:raw-source)))))))
+    (&key (times (or
+                  (ignore-errors
+                   (parse-integer
+                    (keymap:key-value (nyxt::last-key (current-window)))))
+                  (ignore-errors
+                   (parse-integer
+                    (prompt1 :prompt "Repeat for X times"
+                      :input "4"
+                      :sources (list (make-instance 'prompter:raw-source))))))))
   "Repeat the command bound to the user-pressed keybinding TIMES times."
-  (setf (command-dispatcher (current-window)) (make-repeat-command-dispatcher times)
+  (setf *repeat-times-stack* (+ times (* 10 *repeat-times-stack*))
+        (command-dispatcher (current-window)) (make-repeat-command-dispatcher *repeat-times-stack*)
         (input-skip-dispatcher (current-window)) #'skip-repeat-dispatch)
-  (echo "Press a key sequence for command to repeat ~R times:" times))
+  (echo "Press a key sequence for command to repeat ~R times:" *repeat-times-stack*))
