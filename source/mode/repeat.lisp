@@ -37,7 +37,7 @@ Function taking a `repeat-mode' instance.")
    (constructor #'initialize)))
 
 (defmethod initialize ((mode repeat-mode))
-  ;; TODO: Cache prompt input now that we have prompt-buffer hooks.
+  ;; TODO: Remember prompt input now that we have prompt-buffer hooks.
   (unless (repeat-action mode)
     (let ((prompted-action
             (first
