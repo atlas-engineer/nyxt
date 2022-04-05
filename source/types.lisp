@@ -85,6 +85,7 @@ Example:
       ((string string)
        (-p (stringp string))
        (trimmed (string-trim serapeum:whitespace string))
+       (has-closing-tag (ppcre:scan "</\\w+>$" trimmed))
        (html (ignore-errors (plump:parse trimmed)))
        (single-child (sera:single (plump:children html)))
        (child (elt (plump:children html) 0)))
