@@ -349,6 +349,7 @@ SLY install.")
    (:li "New " (:code "match-port") " URL designator predicate for auto-mode rules.")
    (:li "New " (:code "toggle-message-buffer") " and " (:code "toggle-status-buffer") " commands.")
    (:li "New " (:code "bookmark-frequent-visits") " mode.")
+   (:li "New " (:code "repeat-key") " command repeating the provided key as many times as you like.")
    (:li (:code "application-mode") " is now " (:code "passthrough-mode") ".")
 
    (:h3 "Bindings")
