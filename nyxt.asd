@@ -252,20 +252,18 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
            (if (uiop:absolute-pathname-p path)
                path
                (system-relative-pathname component path))))
-    (setf (uiop:getenv "CL_SOURCE_REGISTRY")
-          (uiop:strcat
-           (namestring
-            (uiop:truenamize
-             (uiop:ensure-directory-pathname
-              (ensure-absolute-path *submodules-dir* component))))
+    (setf (getenv "CL_SOURCE_REGISTRY")
+          (strcat
+           (native-namestring
+            (ensure-directory-pathname
+             (ensure-absolute-path *submodules-dir* component)))
            ;; Double-slash tells ASDF to traverse the tree recursively.
            "/"
            ;; Register this directory so that nyxt.asd is included, just in case.
-           (uiop:inter-directory-separator)
-           (namestring (uiop:truenamize (uiop:pathname-directory-pathname
-                                         (asdf:system-source-file component))))
-           (if (uiop:getenv "CL_SOURCE_REGISTRY")
-               (uiop:strcat (uiop:inter-directory-separator) (uiop:getenv "CL_SOURCE_REGISTRY"))
+           (inter-directory-separator)
+           (native-namestring (system-source-directory component))
+           (if (getenv "CL_SOURCE_REGISTRY")
+               (strcat (inter-directory-separator) (getenv "CL_SOURCE_REGISTRY"))
                ;; End with an empty string to tell ASDF to inherit configuration.
                (uiop:inter-directory-separator)))))
   (asdf:clear-configuration)
