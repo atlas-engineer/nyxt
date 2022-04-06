@@ -131,14 +131,6 @@ failures."))
 (defclass webkit-website-data-manager (webkit:webkit-website-data-manager) ()
   (:metaclass gobject:gobject-class))
 
-;; `gobject::create-gobject-from-class' directly reads the initargs to
-;; `make-instance', so this cannot be used to enforce ephemerality (or anything
-;; else that needs to happen in the CFFI constructor).
-(defmethod initialize-instance :after ((data-manager webkit-website-data-manager) &key)
-  #+webkit2-tracking
-  (webkit:webkit-website-data-manager-set-itp-enabled data-manager t)
-  data-manager)
-
 (defclass webkit-website-data-manager-ephemeral (webkit-website-data-manager) ()
   (:metaclass gobject:gobject-class))
 
