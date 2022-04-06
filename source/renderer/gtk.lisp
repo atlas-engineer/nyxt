@@ -1586,7 +1586,8 @@ local anyways, and it's better to refresh it if a load was queried."
 (define-user-class nyxt/web-mode:user-script (gtk-user-script))
 
 (define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) (script gtk-user-script))
-  (let* ((content-manager
+  (let* ((script (nfiles:content script))
+         (content-manager
            (webkit:webkit-web-view-get-user-content-manager
             (gtk-object buffer)))
          (frames (if (nyxt/web-mode:all-frames-p script)
