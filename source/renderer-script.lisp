@@ -127,7 +127,8 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
                                                 ,@args))
                                               (buffer-list) :key #'url
                                               :test #'quri:uri=)
-                                        (current-buffer))))
+                                        (current-buffer)))
+                       (*print-pretty* nil))
                    ;; We need to ignore those to avoid warnings, as the same arglist
                    ;; is used in both internal function and a command.
                    (declare (ignorable ,buffer-var))
