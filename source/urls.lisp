@@ -395,6 +395,7 @@ guarantee of the same result."
       (let ((url (quri:uri url)))
         (if (or (status-buffer-p buffer)
                 (panel-buffer-p buffer)
+                (prompt-buffer-p buffer)
                 (internal-url-p (url buffer)))
             (let* ((schemeless-url (schemeless-url url))
                    (code-raw (quri:url-decode schemeless-url :lenient t))
