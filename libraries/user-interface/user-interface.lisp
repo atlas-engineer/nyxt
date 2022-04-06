@@ -28,51 +28,49 @@
   (:documentation "Propagate changes to the buffer."))
 
 (defclass button (ui-element)
-  ((text :initform "" :initarg :text)
-   (action :initform ""  :initarg :action)))
+  ((text :initform "" :initarg :text :accessor text)
+   (alt-text :initform "" :initarg :alt-text :accessor alt-text)
+   (action :initform ""  :initarg :action :accessor action)))
 
-(defmethod (setf text) (text (button button))
-  (setf (slot-value button 'text) text)
+(defmethod (setf text) :after (text (button button))
+  (declare (ignorable text))
   (when (slot-boundp button 'buffer)
     (update button)))
 
-(defmethod (setf action) (action (button button))
-  (setf (slot-value button 'action) action)
+(defmethod (setf action) :after (action (button button))
+  (declare (ignorable action))
   (when (slot-boundp button 'buffer)
     (update button)))
 
-(defmethod text ((button button))
-  (slot-value button 'text))
-
-(defmethod action ((button button))
-  (slot-value button 'action))
+(defmethod (setf alt-text) :after (text (button button))
+  (declare (ignorable text))
+  (when (slot-boundp button 'buffer)
+    (update button)))
 
 (defmethod object-expression ((button button))
-  `(:button :id ,(id button) :class "button"
+  `(:button :id ,(id button)
+            :class "button"
+            :title ,(alt-text button)
             :onclick ,(action button)
             ,(text button)))
 
 (defclass paragraph (ui-element)
-  ((text :initform "" :initarg :text)))
+  ((text :initform "" :initarg :text :accessor text)))
 
-(defmethod (setf text) (text (paragraph paragraph))
-  (setf (slot-value paragraph 'text) text)
+(defmethod (setf text) :after (text (paragraph paragraph))
+  (declare (ignorable text))
   (when (slot-boundp paragraph 'buffer)
     (update paragraph)))
 
 (defmethod object-expression ((paragraph paragraph))
   `(:p :id ,(id paragraph) ,(text paragraph)))
 
-(defmethod text ((paragraph paragraph))
-  (slot-value paragraph 'text))
-
 (defclass progress-bar (ui-element)
-  ((percentage :initform 0 :initarg :percentage
+  ((percentage :initform 0
+               :initarg :percentage
+               :accessor percentage
                :documentation "The percentage the progress bar is
 filled up, use a number between 0 and 100.")))
-
-(defmethod percentage ((progress-bar progress-bar))
-  (slot-value progress-bar 'percentage))
 
 (defmethod object-expression ((progress-bar progress-bar))
   `(:div :class "progress-bar-base"
@@ -81,7 +79,7 @@ filled up, use a number between 0 and 100.")))
                ;; empty string to force markup to make closing :div tag
                "")))
 
-(defmethod (setf percentage) (percentage (progress-bar progress-bar))
-  (setf (slot-value progress-bar 'percentage) (format nil "~D%" (round percentage)))
+(defmethod (setf percentage) :around (percentage (progress-bar progress-bar))
+  (declare (ignorable percentage))
   (when (slot-boundp progress-bar 'buffer)
     (update progress-bar)))
