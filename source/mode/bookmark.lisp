@@ -21,7 +21,17 @@
              :width            "100%"
              :border           "none"
              :outline          "none"
-             :text-align       "left")))))
+             :text-align       "left")
+            ;; Taken from buffer.lisp to save space for big bookmark lists.
+            (button
+             :display "inline-block"
+             :background-color theme:secondary
+             :color theme:background
+             :text-decoration "none"
+             :border-radius "2px"
+             :padding "6px"
+             :margin-left "2px"
+             :margin-right "2px")))))
 
 (defun group-bookmarks (buffer)
   (let ((bookmarks-table (make-hash-table :test #'equalp))
@@ -42,31 +52,27 @@
     (spinneret:with-html-string
       (:style (style (find-mode bookmarks-buffer 'bookmark-mode)))
       (:h1 "Bookmarks")
-      (:body
-       (if (zerop (hash-table-count bookmarks))
-           (format nil "No bookmarks in ~s." (nfiles:expand (bookmarks-file bookmarks-buffer)))
-           (maphash
+      (cond
+        ((zerop (hash-table-count bookmarks))
+         (:p (format nil "No bookmarks in ~s." (nfiles:expand (bookmarks-file bookmarks-buffer)))))
+        (t (maphash
             (lambda (tag bookmarks)
               (:details
                (:summary (or tag "Unsorted"))
                (dolist (bookmark bookmarks)
-                 (let ((url-display (render-url (url bookmark)))
+                 (let ((uri-host (quri:uri-host (url bookmark)))
                        (url-href (render-url (url bookmark))))
-                   (:div :class "bookmark-entry"
-                         (:p (:b "Title: ") (title bookmark))
-                         (:p (:b "URL: ") (:a :href url-href
-                                              url-display))
-                         (:p (:b "Tags: ")
-                             (when (tags bookmark)
-                               (format nil " (~{~a~^, ~})" (tags bookmark))))
-                         (:p (:button :class "button"
-                                      :onclick
-                                      (ps:ps
-                                        (let ((section (ps:chain document active-element
-                                                                 (closest ".bookmark-entry"))))
-                                          (ps:chain section parent-node (remove-child section))
-                                          (nyxt/ps:lisp-eval
-                                           `(nyxt::delete-bookmark ,url-href))))
-                                      "Delete"))
-                         (:hr ""))))))
-            bookmarks))))))
+                   (:dl
+                    (:dt (:button :onclick (ps:ps (delbkm (ps:lisp url-href))) "✕")
+                         (serapeum:ellipsize (title bookmark) 80))
+                    (:dd (:a :href url-href uri-host))
+                    (when (tags bookmark)
+                      (:dt "Tags")
+                      (:dd (format nil " (~{~a~^, ~})" (tags bookmark)))))
+                   (:hr)))))
+            bookmarks)))
+      (:script
+       ;; Not exactly pretty, but saves a lot of space.
+       (:raw (ps:ps (defun delbkm (url)
+                      (fetch (+ "lisp://" (escape (+ "(nyxt:delete-bookmark \"" url "\")/")))
+                             (ps:create :mode "no-cors")))))))))
