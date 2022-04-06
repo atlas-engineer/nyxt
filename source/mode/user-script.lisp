@@ -41,9 +41,8 @@
   (inject-user-styles new-value (buffer mode))
   (setf (slot-value mode 'user-styles) new-value))
 
-(define-class user-script ()
-  ((name nil :type (maybe string))
-   (code "" :type string)
+(define-class user-script (nfiles:data-file nyxt-remote-file)
+  ((code "" :type string)
    (version "")
    (description "")
    (namespace "")
@@ -132,11 +131,14 @@ Returns:
          ;; It's just code (hopefully).
          (t script))))))
 
-(in-package :nyxt)
+(defmethod nfiles:write-file ((profile nyxt-profile) (script user-script) &key destination)
+  "Persist the script body if it has a URL and associated content."
+  (unless (uiop:emptyp (nfiles:url-content script))
+    (alex:write-string-into-file (nfiles:url-content script) destination :if-exists :supersede)))
 
-(export 'make-greasemonkey-script)
-(defun make-greasemonkey-script (greasemonkey-script)
-  (sera:and-let* ((code (nyxt/web-mode::get-script-text greasemonkey-script))
+(defmethod nfiles:deserialize ((profile nyxt-profile) (script user-script) raw-content &key)
+  ;; TODO: Parse the stream directly?
+  (sera:and-let* ((code (alex:read-stream-content-into-string raw-content))
                   (start-position (search "// ==UserScript==" code))
                   (end-position (search "// ==/UserScript==" code))
                   (meta (subseq code
@@ -146,29 +148,32 @@ Returns:
              (alex:when-let* ((regex (str:concat "// @" prop "\\s*(.*)"))
                               (raw-props (ppcre:all-matches-as-strings regex meta)))
                (mapcar (lambda (raw-prop)
-                         (multiple-value-bind (start end reg-starts reg-ends)
+                         (multiple-value-bind (begin end reg-starts reg-ends)
                              (ppcre:scan regex raw-prop)
                            (declare (ignore end))
-                           (when start
+                           (when begin
                              (subseq raw-prop (elt reg-starts 0) (elt reg-ends 0)))))
                        raw-props))))
-      (make-instance 'nyxt/web-mode:user-script
-                     :name (or (first (getprop "name")) (alex:required-argument 'name))
-                     :version (first (getprop "version"))
-                     :description (first (getprop "description"))
-                     :namespace (first (getprop "namespace"))
-                     :all-frames-p (not (first (getprop "noframes")))
-                     :code (format nil "~{~a;~&~}~a"
-                                   (mapcar (lambda (require)
-                                             (nyxt/web-mode::get-script-text
-                                              require (nyxt/web-mode::get-script-url
-                                                       greasemonkey-script nil)))
-                                           (getprop "require"))
-                                   code)
-                     :include (append (getprop "include") (getprop "match"))
-                     :exclude (getprop "exclude")
-                     :run-at (str:string-case (first (getprop "run-at"))
-                               ("document-start" :document-start)
-                               ("document-end" :document-end)
-                               ("document-idle" :document-idle)
-                               (otherwise :document-end))))))
+
+      (let ((code-with-requires (format nil "~{~a;~&~}~a"
+                                        (mapcar (lambda (require)
+                                                  (get-script-text
+                                                   require
+                                                   (get-script-url script nil)))
+                                                (getprop "require"))
+                                        code)))
+        (setf
+         (nfiles:name script) (or (first (getprop "name")) (alex:required-argument 'name))
+         (version script) (first (getprop "version"))
+         (description script) (first (getprop "description"))
+         (namespace script) (first (getprop "namespace"))
+         (all-frames-p script) (not (first (getprop "noframes")))
+         (code script) code-with-requires
+         (include script) (append (getprop "include") (getprop "match"))
+         (exclude script) (getprop "exclude")
+         (run-at script) (str:string-case (first (getprop "run-at"))
+                           ("document-start" :document-start)
+                           ("document-end" :document-end)
+                           ("document-idle" :document-idle)
+                           (otherwise :document-end)))
+        code-with-requires))))
