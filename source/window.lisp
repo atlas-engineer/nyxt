@@ -174,6 +174,7 @@ The handlers take the window as argument."))
                    (window-add-panel-buffer (current-window) ,buffer-var ,side)))
              ,buffer-var))))))
 
+(export-always 'define-panel)
 (defmacro define-panel (name (&rest arglist)
                         (buffer-var title &optional (side :left))
                         &body body)
@@ -192,6 +193,7 @@ Beware: the ARGLIST should have nothing but keyword arguments because it's
 mapped to query parameters."
   (%define-panel nil name arglist buffer-var title side body))
 
+(export-always 'define-panel-global)
 (defmacro define-panel-global (name (&rest arglist)
                                (buffer-var title &optional (side :left))
                                &body body)
