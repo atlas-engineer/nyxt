@@ -320,7 +320,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                "display:none;"
                                                "display:revert;")
                                     (loop for attribute-key in (prompter:active-attributes-keys source)
-                                          collect (:th (:maybe-raw attribute-key))))
+                                          collect (:th (:mayberaw attribute-key))))
                                (loop ;; TODO: Only print as many lines as fit the height.  But how can we know in advance?
                                      ;; Maybe first make the table, then add the element one by one _if_ there are into view.
                                      with max-suggestion-count = 10
@@ -349,7 +349,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                           '(prompter:return-selection
                                                             (nyxt::current-prompt-buffer))))
                                           (loop for (nil attribute) in (prompter:active-attributes suggestion :source source)
-                                                collect (:td (:maybe-raw attribute)))))))))))
+                                                collect (:td (:mayberaw attribute)))))))))))
       (ffi-buffer-evaluate-javascript
        prompt-buffer
        (ps:ps
@@ -376,7 +376,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                 (:head (:style (style prompt-buffer)))
                 (:body
                  (:div :id (if vi-mode? "prompt-area-vi" "prompt-area")
-                       (:div :id "prompt" (prompter:prompt prompt-buffer))
+                       (:div :id "prompt" (:mayberaw (prompter:prompt prompt-buffer)))
                        (:div :id "prompt-extra" "[?/?]")
                        (when vi-mode?
                          (:div :id "vi-mode" ""))
