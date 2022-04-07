@@ -342,6 +342,9 @@ SLY install.")
         "Internal pages also have a URL now, which means they have history support.")
    (:li "New " (:code "define-internal-page-command") "and"
         (:code "define-internal-page-command-global") " helpers to define internal pages.")
+   (:li (:code "define-panel") " and " (:code "define-panel-global")
+        " helpers to define new panels are exported now."
+        " You can freely use them in your config.")
    (:li "New " (:code "define-internal-scheme") " helper to define custom schemes.")
    (:li (:code "jump-to-heading") " command now sort and indent the headings in a natural fashion.")
    (:li "New" (:code "next-heading") " and " (:code "previous-heading")
