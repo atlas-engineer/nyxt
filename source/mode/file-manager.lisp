@@ -223,8 +223,11 @@ See `supported-media-types' of `file-mode'."
                    (uiop:launch-program (cons (uiop:native-namestring program) (mapcar #'uiop:native-namestring files))))))
          (slot-value source 'prompter:actions))))
 
-#+linux
-(defvar *xdg-open-program* "xdg-open")
+(declaim (type (or string null) *open-program*))
+(defvar *open-program*
+  #+darwin "open"
+  #+(or linux bsd) "xdg-open"
+  #-(or linux bsd darwin) nil)
 
 (export-always 'default-open-file-function)
 (defun default-open-file-function (filename &key supported-p new-buffer-p)
@@ -239,26 +242,26 @@ SUPPORTED-P says whether the file can be opened by Nyxt.
 
 Can be used as a `open-file-function'."
   (handler-case
-      (if supported-p
-          (let ((file-url (quri::make-uri-file :path filename)))
-            (if new-buffer-p
-                (make-buffer-focus :url file-url)
-                (buffer-load file-url)))
-          (let ((process (uiop:launch-program
-                          #+linux
-                          (list *xdg-open-program* (uiop:native-namestring filename))
-                          #+darwin
-                          (list "open" (uiop:native-namestring filename))
-                          :error-output :stream)))
-            (nyxt:echo "Opening ~s with ~s." filename *xdg-open-program*)
-            (run-thread "file opener"
-              (let ((status (uiop:wait-process process)))
-                (unless (= 0 status)
-                  (echo-warning "When opening file ~s with ~s : ~a"
-                                filename
-                                *xdg-open-program*
-                                (alex:read-stream-content-into-string
-                                 (uiop:process-info-error-output process))))))))
+      (cond
+        (supported-p
+         (let ((file-url (quri::make-uri-file :path filename)))
+           (if new-buffer-p
+               (make-buffer-focus :url file-url)
+               (buffer-load file-url))))
+        ((not (null *open-program*))
+         (let ((process (uiop:launch-program
+                         (list *open-program* (uiop:native-namestring filename))
+                         :error-output :stream)))
+           (nyxt:echo "Opening ~s with ~s." filename *open-program*)
+           (run-thread "file opener"
+             (let ((status (uiop:wait-process process)))
+               (unless (= 0 status)
+                 (echo-warning "When opening file ~s with ~s : ~a"
+                               filename
+                               *open-program*
+                               (alex:read-stream-content-into-string
+                                (uiop:process-info-error-output process))))))))
+        (t (nyxt:echo "Cannot open ~s with an external program." filename)))
     ;; We can probably signal something and display a notification.
     (error (c) (log:error "Opening ~a: ~a~&" filename c))))
 
