@@ -32,6 +32,15 @@ It's not always the case, take the socket for instance."))
 By default, a file that fails to be loaded is automatically backed up.
 If the file is modified externally, Nyxt automatically reloads it."))
 
+(define-class nyxt-remote-file (nyxt-file files:remote-file)
+  ()
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:documentation "A `files:remote-file' with specialized methods."))
+
+(defmethod files:fetch ((profile nyxt-profile) (file nyxt-remote-file) &key)
+  (dex:get (files:url file)))
+
 (define-class nyxt-data-directory (files:data-file nyxt-file)
   ((files:base-path #p""))
   (:export-class-name-p t)
