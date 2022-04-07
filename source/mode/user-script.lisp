@@ -45,9 +45,9 @@ Possible values:
          (values (maybe quri:uri) boolean))
 (defun get-script-url (script original-url)
   "A helper to get the URL to a SCRIPT string.
-Returns:
-- A final URL.
-- A boolean for whether it's a file URL."
+Return:
+- a final URL;
+- a boolean when it's a file URL."
   (cond
     ((valid-url-p script)
      (let ((script (quri:uri script)))
@@ -76,19 +76,20 @@ Returns:
 (defun get-script-text (script &optional original-url)
   (etypecase script
     (pathname
-     (alex:read-file-into-string script))
+     (nfiles:content (make-instance 'user-script :base-path script)))
     (quri:uri
-     (if (quri:uri-file-p script)
-         (alex:read-file-into-string (quri:uri-path script))
-         (dex:get (quri:render-uri script))))
+     (nfiles:content
+      (if (quri:uri-file-p script)
+          (make-instance 'user-script :base-path (quri:uri-path script))
+          (make-instance 'user-script :url script))))
     (string
      (multiple-value-bind (url file-p)
          (get-script-url script original-url)
        (cond
          ((and url file-p)
-          (alex:read-file-into-string (quri:uri-path url)))
+          (nfiles:content (make-instance 'user-script :base-path (quri:uri-path url))))
          ((and url (not file-p))
-          (dex:get (quri:render-uri url)))
+          (nfiles:content (make-instance 'user-script :url script)))
          ;; No URL. No need to download anything.
          ;; It's just code (hopefully).
          (t script))))))
