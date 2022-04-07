@@ -159,7 +159,7 @@ The handlers take the window as argument."))
                       (:title ,title)
                       (:style (style ,buffer-var)))
                      (:body
-                      (:raw ,@body))))))
+                      (:raw (progn ,@body)))))))
          (,(if global-p 'define-command-global 'define-command) ,name-panel (,@arglist)
            ,@(when documentation (list documentation))
            (let* ((url (quri:uri (nyxt-url (quote ,name-panel) ,@args)))
