@@ -124,7 +124,7 @@ query is not a valid URL, or the first keyword is not recognized.")
         "C-space" 'execute-command))
     :documentation "Keymap that overrides all other bindings.
 
-`override-map` takes priority over everything, including text insertion, and is
+`override-map' takes priority over everything, including text insertion, and is
 therefore better used with modifier-prefixed bindings.
 
 No libraries should ever touch the override-map, this is left for the user to
@@ -1182,7 +1182,7 @@ proceeding."
 
 (-> switch-buffer (&key (:id string) (:current-is-last-p boolean)) *)
 (define-command switch-buffer (&key id (current-is-last-p nil))
-  "Switch buffer using fuzzy completion to quickly find whatever buffer you are looking for.
+  "Switch buffer using fuzzy completion.
 Buffers are ordered by last access.
 With CURRENT-IS-LAST-P, the current buffer is listed last so as to list the
 second latest buffer first."
