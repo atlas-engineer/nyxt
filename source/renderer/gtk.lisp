@@ -788,13 +788,13 @@ See `gtk-browser's `modifier-translator' slot."
                                (when buffer
                                  (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))))
                          (encode-json
-                          (if (or (background-buffer-p buffer)
-                                  (panel-buffer-p buffer))
-                              (alex:when-let* ((extension
-                                                (or (find buffer extensions :key #'background-buffer)
-                                                    (find buffer extensions :key #'nyxt/web-extensions:popup-buffer))))
-                                (list (describe-extension extension :privileged-p t)))
-                              (mapcar #'describe-extension extensions)))))))))))
+                          (alex:if-let ((extension
+                                         (or (find buffer extensions :key #'background-buffer)
+                                             (find buffer extensions :key #'nyxt/web-extensions:popup-buffer)
+                                             (and (sera:single extensions) (panel-buffer-p buffer)
+                                                  (first extensions)))))
+                            (list (describe-extension extension :privileged-p t))
+                            (mapcar #'describe-extension extensions)))))))))))
     (maphash
      (lambda (scheme scheme-object)
        (webkit:webkit-web-context-register-uri-scheme-callback
