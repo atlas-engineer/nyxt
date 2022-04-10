@@ -159,6 +159,8 @@ run", -1),
                 }
         } else if (!strcmp("injectAPIs", name) && contents){
                 inject_apis((void *) contents, NULL, NULL);
+                WebKitUserMessage *reply = webkit_user_message_new(name, NULL);
+                webkit_user_message_send_reply(message, reply);
         } else {
                 WebKitUserMessage *reply = webkit_user_message_new(name, NULL);
                 webkit_user_message_send_reply(message, reply);
