@@ -420,7 +420,8 @@ Return the created buffer."
   ;; needed.
   (unless (or (typep buffer 'background-buffer)
               (typep buffer 'prompt-buffer)
-              (typep buffer 'status-buffer))
+              (typep buffer 'status-buffer)
+              (typep buffer 'panel-buffer))
     (buffers-set (id buffer) buffer))
   (unless no-history-p
     ;; Register buffer in global history:
