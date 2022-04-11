@@ -1505,9 +1505,9 @@ local anyways, and it's better to refresh it if a load was queried."
             (lambda (result jsc-result)
               (declare (ignore jsc-result))
               (calispel:! channel result))
-          (lambda (result jsc-result)
-            (declare (ignore jsc-result))
-            result))
+            (lambda (result jsc-result)
+              (declare (ignore jsc-result))
+              result))
         (lambda (condition)
           (javascript-error-handler condition)
           ;; Notify the listener that we are done.
