@@ -751,7 +751,7 @@ See `gtk-browser's `modifier-translator' slot."
                 (or (background-buffer-p (buffer extension))
                     (panel-buffer-p (buffer extension)))
                 (nyxt/web-extensions::extension-files extension)
-                (id buffer))))
+                (id (buffer extension)))))
 
 (defun make-context (name buffer &key ephemeral-p)
   (let* ((context
