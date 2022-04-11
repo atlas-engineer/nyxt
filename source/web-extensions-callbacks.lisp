@@ -398,8 +398,19 @@ there. `reply-user-mesage' takes care of sending the response back."
              ;; This is useful when conditional reader macro reads in some
              ;; superfluous items.
              (declare (ignore ignore))
-             (cons se1 se2)))
+             (cons se1 se2))
+           (extension->cons (extension)
+             (cons (nyxt/web-extensions::name extension)
+                   (vector (id extension)
+                           (nyxt/web-extensions::manifest extension)
+                           (or (background-buffer-p (buffer extension))
+                               (panel-buffer-p (buffer extension)))
+                           (nyxt/web-extensions::extension-files extension)
+                           (id (buffer extension))))))
       (str:string-case message-name
+        ("listExtensions"
+         (wrap-in-channel
+          (encode-json (mapcar #'extension->cons extensions))))
         ("management.getSelf"
          (wrap-in-channel
           (encode-json (extension->extension-info (find message-params extensions

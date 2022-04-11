@@ -744,15 +744,6 @@ See `gtk-browser's `modifier-translator' slot."
   (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-user-class scheme (gtk-scheme))
 
-(defmethod extension->cons ((extension nyxt/web-extensions:extension))
-  (cons (nyxt/web-extensions::name extension)
-        (vector (id extension)
-                (nyxt/web-extensions::manifest extension)
-                (or (background-buffer-p (buffer extension))
-                    (panel-buffer-p (buffer extension)))
-                (nyxt/web-extensions::extension-files extension)
-                (id (buffer extension)))))
-
 (defun make-context (name buffer &key ephemeral-p)
   (let* ((context
            (if ephemeral-p
