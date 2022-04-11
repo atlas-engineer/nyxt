@@ -744,6 +744,15 @@ See `gtk-browser's `modifier-translator' slot."
   (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-user-class scheme (gtk-scheme))
 
+(defmethod extension->cons ((extension nyxt/web-extensions:extension))
+  (cons (nyxt/web-extensions::name extension)
+        (vector (id extension)
+                (nyxt/web-extensions::manifest extension)
+                (or (background-buffer-p (buffer extension))
+                    (panel-buffer-p (buffer extension)))
+                (nyxt/web-extensions::extension-files extension)
+                (id buffer))))
+
 (defun make-context (name buffer &key ephemeral-p)
   (let* ((context
            (if ephemeral-p
@@ -777,24 +786,10 @@ See `gtk-browser's `modifier-translator' slot."
             (uiop:native-namestring gtk-extensions-path))
            (webkit:webkit-web-context-set-web-extensions-initialization-user-data
             context (glib:g-variant-new-string
-                     (flet ((describe-extension (extension &key privileged-p)
-                              (cons (nyxt/web-extensions::name extension)
-                                    (vector (id extension)
-                                            (nyxt/web-extensions::manifest extension)
-                                            (if privileged-p 1 0)
-                                            (nyxt/web-extensions::extension-files extension)
-                                            (id buffer)))))
-                       (let ((extensions
-                               (when buffer
-                                 (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))))
-                         (encode-json
-                          (alex:if-let ((extension
-                                         (or (find buffer extensions :key #'background-buffer)
-                                             (find buffer extensions :key #'nyxt/web-extensions:popup-buffer)
-                                             (and (sera:single extensions) (panel-buffer-p buffer)
-                                                  (first extensions)))))
-                            (list (describe-extension extension :privileged-p t))
-                            (mapcar #'describe-extension extensions)))))))))))
+                     (let ((extensions
+                             (when buffer
+                               (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))))
+                       (encode-json (map 'vector #'extension->cons extensions)))))))))
     (maphash
      (lambda (scheme scheme-object)
        (webkit:webkit-web-context-register-uri-scheme-callback
