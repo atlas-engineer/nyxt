@@ -783,13 +783,7 @@ See `gtk-browser's `modifier-translator' slot."
          (with-protect ("Error in signal thread: ~a" :condition)
            (webkit:webkit-web-context-set-web-extensions-directory
             context
-            (uiop:native-namestring gtk-extensions-path))
-           (webkit:webkit-web-context-set-web-extensions-initialization-user-data
-            context (glib:g-variant-new-string
-                     (let ((extensions
-                             (when buffer
-                               (sera:filter #'nyxt/web-extensions::extension-p (modes buffer)))))
-                       (encode-json (map 'vector #'extension->cons extensions)))))))))
+            (uiop:native-namestring gtk-extensions-path))))))
     (maphash
      (lambda (scheme scheme-object)
        (webkit:webkit-web-context-register-uri-scheme-callback
