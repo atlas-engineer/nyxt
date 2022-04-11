@@ -96,11 +96,15 @@ set_window_object_cleared (void *key, void *value, void *user_data)
         ExtensionData *data = (ExtensionData *) value;
         /* We only inject APIs for the privileged extension
          * (owning a default world), if there's one. */
-        if ((IS_PRIVILEGED && webkit_script_world_get_default() == data->world) ||
-            !IS_PRIVILEGED)
+        if (!data->is_injected &&
+            ((IS_PRIVILEGED &&
+              webkit_script_world_get_default() == data->world) ||
+             !IS_PRIVILEGED)) {
                 g_signal_connect (data->world, "window-object-cleared",
                                   G_CALLBACK(window_object_cleared_callback),
                                   key);
+                data->is_injected = 1;
+        }
 }
 
 /** user_message_received_callback

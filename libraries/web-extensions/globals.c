@@ -83,6 +83,8 @@ extensions_data_add_from_json(const char *json)
                         extension->manifest = manifest;
                         extension->files = files;
                         extension->extension_id = id;
+                        extension->is_injected = 0;
+                        extension->is_privileged = is_privileged;
                         extension->world = world;
                         extension->tab_id = tab_id;
                         g_hash_table_insert(EXTENSIONS_DATA, (void*) name, extension);
