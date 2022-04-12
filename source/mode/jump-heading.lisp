@@ -110,17 +110,36 @@ of buffers."
                              :name (format nil "Headings: ~a" (title buffer))
                              :buffer buffer)))))
 
-(nyxt::define-panel-global headings () (panel-buffer "*Headings panel*")
+(nyxt::define-panel-global headings ()
+    (panel-buffer "*Headings panel*")
   "Display a list of heading for jumping."
-  (flet ((buffer-markup (heading)
-           "Create the presentation for a buffer."
-           (spinneret:with-html
-             (:button :class "button"
-                      :onclick (ps:ps (nyxt/ps:lisp-eval
-                                       `(progn
-                                          (switch-buffer :id ,(id (buffer heading)))
-                                          (scroll-to-element :nyxt-identifier ,(get-nyxt-id (element heading))))))
-                      (title heading)))))
+  (labels ((get-level (heading)
+             (ignore-errors (parse-integer (subseq (plump:tag-name (element heading)) 1))))
+           (group-headings (headings)
+             (loop with min-level = (apply #'min (mapcar #'get-level headings))
+                   with current = (list)
+                   for heading in headings
+                   if (= (get-level heading) min-level)
+                     collect (nreverse current) into total
+                     and do (setf current (list heading))
+                   else
+                     do (push heading current)
+                   finally (return (delete nil (append total (list (nreverse current)))))))
+           (headings->html (groups)
+             (spinneret:with-html-string
+               (:ul
+                (dolist (group groups)
+                  (let ((heading (first group)))
+                    (:li (:a :onclick
+                             (ps:ps (nyxt/ps:lisp-eval
+                                     `(progn
+                                        (switch-buffer :id ,(id (buffer heading)))
+                                        (scroll-to-element :nyxt-identifier
+                                                           ,(get-nyxt-id (element heading))))))
+                             (title heading)))
+                    (when (rest group)
+                      (:raw (sera:mapconcat #'headings->html (list (group-headings (rest group))) "")))))))))
+    (ffi-window-set-panel-buffer-width (current-window) panel-buffer 400)
     (spinneret:with-html-string
       (:h1 "Headings")
-      (mapcar #'buffer-markup (get-headings)))))
+      (:raw (headings->html (group-headings (get-headings)))))))
