@@ -48,7 +48,7 @@ See also the `web-contexts' slot."))
 (alex:define-constant +internal+ "internal" :test 'equal)
 (alex:define-constant +default+ "default" :test 'equal)
 
-(defmethod get-context ((browser gtk-browser) name buffer &key ephemeral-p)
+(defmethod get-context ((browser gtk-browser) name &key ephemeral-p)
   (alexandria:ensure-gethash name
                              (if ephemeral-p
                                  (ephemeral-web-contexts browser)
