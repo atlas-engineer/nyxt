@@ -21,7 +21,7 @@
     (buffer "*Macro edit*" 'nyxt/macro-edit-mode:macro-edit-mode)
   "Edit a macro."
   (spinneret:with-html-string
-    (:nstyle (style buffer))
+    (:style (style buffer))
     (:h1 "Macro editor")
     (:p "Name")
     (:input :type "text" :id "macro-name")

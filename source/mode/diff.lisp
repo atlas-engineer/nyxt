@@ -41,7 +41,7 @@ the highest standard on accessibility.")))
   (let ((old-html (ffi-buffer-get-document (nyxt::buffers-get old-buffer-id)))
         (new-html (ffi-buffer-get-document (nyxt::buffers-get new-buffer-id))))
     (spinneret:with-html-string
-      (:nstyle (style (find-mode diff-buffer 'diff-mode)))
+      (:style (style (find-mode diff-buffer 'diff-mode)))
       (:raw
        (html-diff:html-diff
         old-html new-html

@@ -7,7 +7,7 @@
   (buffer "*About*" 'base-mode)
   "Show the list of contributors."
   (spinneret:with-html-string
-   (:nstyle (style buffer))
+   (:style (style buffer))
    (:h1 "Contributors")
    (:p "Let us know if you've contributed to the development of Nyxt and would
 like to be included on this list.")

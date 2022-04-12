@@ -51,34 +51,35 @@
   "List all hosts to avoid procrastination in a new buffer."
   (let ((no-procrastinate-hosts (group-no-procrastinate-hosts no-procrastinate-hosts-buffer)))
     (spinneret:with-html-string
-      (:nstyle (style (find-mode no-procrastinate-hosts-buffer 'no-procrastinate-mode)))
+      (:style (style (find-mode no-procrastinate-hosts-buffer 'no-procrastinate-mode)))
       (:h1 "Hosts to avoid procrastination")
-      (if (zerop (hash-table-count no-procrastinate-hosts))
-          (format nil "No hosts to avoid procrastination in ~s."
-                  (nfiles:expand (no-procrastinate-hosts-file no-procrastinate-hosts-buffer)))
-          (maphash
-           (lambda (tag no-procrastinate-hosts)
-             (:details
-              (:summary (or tag "Unsorted"))
-              (dolist (host no-procrastinate-hosts)
-                (let ((url-display (render-url (url host)))
-                      (url-href (render-url (url host))))
-                  (:div :class "host-entry"
-                        (:p (:b "Host: ") (hostname host))
-                        (:p (:b "Homepage's Title: ") (title host))
-                        (:p (:b "Homepage's URL: ") (:a :href url-href
-                                                        url-display))
-                        (:p (:b "Tags: ")
-                            (when (tags host)
-                              (format nil " (~{~a~^, ~})" (tags host))))
-                        (:p (:button :class "button"
-                                     :onclick
-                                     (ps:ps
-                                       (let ((section (ps:chain document active-element
-                                                                (closest ".host-entry"))))
-                                         (ps:chain section parent-node (remove-child section))
-                                         (nyxt/ps:lisp-eval
-                                          `(delete-no-procrastinate-host ,url-href))))
-                                     "Delete"))
-                        (:hr ""))))))
-           no-procrastinate-hosts)))))
+      (:body
+       (if (zerop (hash-table-count no-procrastinate-hosts))
+           (format nil "No hosts to avoid procrastination in ~s."
+                   (nfiles:expand (no-procrastinate-hosts-file no-procrastinate-hosts-buffer)))
+           (maphash
+            (lambda (tag no-procrastinate-hosts)
+              (:details
+               (:summary (or tag "Unsorted"))
+               (dolist (host no-procrastinate-hosts)
+                 (let ((url-display (render-url (url host)))
+                       (url-href (render-url (url host))))
+                   (:div :class "host-entry"
+                         (:p (:b "Host: ") (hostname host))
+                         (:p (:b "Homepage's Title: ") (title host))
+                         (:p (:b "Homepage's URL: ") (:a :href url-href
+                                              url-display))
+                         (:p (:b "Tags: ")
+                             (when (tags host)
+                               (format nil " (~{~a~^, ~})" (tags host))))
+                         (:p (:button :class "button"
+                                      :onclick
+                                      (ps:ps
+                                        (let ((section (ps:chain document active-element
+                                                                 (closest ".host-entry"))))
+                                          (ps:chain section parent-node (remove-child section))
+                                          (nyxt/ps:lisp-eval
+                                           `(delete-no-procrastinate-host ,url-href))))
+                                      "Delete"))
+                         (:hr ""))))))
+            no-procrastinate-hosts))))))

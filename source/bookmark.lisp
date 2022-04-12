@@ -119,24 +119,25 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
     (panel-buffer "*Bookmarks panel*")
   "Shows all the bookmarks in a compact panel-buffer layout."
   (spinneret:with-html-string
-    (:nstyle (cl-css:css
-              '((p
-                 :font-size "12px"
-                 :margin "0"
-                 :white-space "nowrap"
-                 :overflow-x "hidden"
-                 :text-overflow "ellipsis")
-                (div
-                 :padding-bottom "10px"))))
-    (:h1 "Bookmarks")
-    (or (let ((bookmarks (nfiles:content (bookmarks-file (current-buffer)))))
-          (loop for bookmark in bookmarks
-                collect
-                (let ((url-href (render-url (url bookmark))))
-                  (:div
-                   (:p (title bookmark))
-                   (:p (:a :href url-href url-href))))))
-        (format nil "No bookmarks in ~s." (nfiles:expand (nfiles:content (bookmarks-file (current-buffer))))))))
+    (:style (cl-css:css
+             '((p
+                :font-size "12px"
+                :margin "0"
+                :white-space "nowrap"
+                :overflow-x "hidden"
+                :text-overflow "ellipsis")
+               (div
+                :padding-bottom "10px"))))
+    (:body
+     (:h1 "Bookmarks")
+     (or (let ((bookmarks (nfiles:content (bookmarks-file (current-buffer)))))
+           (loop for bookmark in bookmarks
+                 collect
+                 (let ((url-href (render-url (url bookmark))))
+                   (:div
+                    (:p (title bookmark))
+                    (:p (:a :href url-href url-href))))))
+         (format nil "No bookmarks in ~s." (nfiles:expand (nfiles:content (bookmarks-file (current-buffer)))))))))
 
 (export-always 'url-bookmark-tags)
 (defun url-bookmark-tags (url)

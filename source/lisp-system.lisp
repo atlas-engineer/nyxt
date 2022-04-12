@@ -7,7 +7,7 @@
     (buffer "*Systems*" 'base-mode)
   "List systems available via Quicklisp."
   (spinneret:with-html-string
-    (:nstyle (style buffer))
+    (:style (style buffer))
     (:h1 "Systems")
     (:p "Listing of all available Quicklisp systems.")
     (:body

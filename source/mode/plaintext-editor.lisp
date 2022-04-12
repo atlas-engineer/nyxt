@@ -28,7 +28,7 @@
 
 (defmethod initialize-display ((editor plaintext-editor-mode))
   (let* ((content (spinneret:with-html-string
-                    (:head (:nstyle (style editor)))
+                    (:head (:style (style editor)))
                     (:body
                      (:textarea :id "editor" :name "editor" :autofocus t))))
          (insert-content (ps:ps (ps:chain document (write (ps:lisp content))))))

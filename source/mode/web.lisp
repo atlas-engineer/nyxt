@@ -513,7 +513,7 @@ Otherwise go forward to the only child."
                                                                                   (:ul (:raw (str:join "" b)))))))))))))
       (when tree
         (spinneret:with-html-string
-          (:nstyle (style mode))
+          (:style (style mode))
           (:div (:raw tree)))))))
 
 ;; TODO: Factor this with `buffer-history-tree'.
@@ -544,16 +544,16 @@ Otherwise go forward to the only child."
       (when tree
         (spinneret:with-html-string
           (:body (:h1 "History")
-                 (:nstyle (style output-buffer))
-                 (:nstyle (:raw (style mode)))
+                 (:style (style output-buffer))
+                 (:style (:raw (style mode)))
                  (:div (:raw tree))))))))
 
 (define-internal-page-command-global list-history (&key (limit 100))
   (buffer "*History list*" 'nyxt/list-history-mode:list-history-mode)
   "Print the user history as a list."
   (spinneret:with-html-string
-    (:nstyle (style buffer))
-    (:nstyle (style (find-submode buffer 'nyxt/list-history-mode:list-history-mode)))
+    (:style (style buffer))
+    (:style (style (find-submode buffer 'nyxt/list-history-mode:list-history-mode)))
     (:h1 "History")
     (:ul (:raw (nyxt::history-html-list :limit limit)))))
 

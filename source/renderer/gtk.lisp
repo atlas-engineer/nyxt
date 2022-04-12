@@ -1759,7 +1759,7 @@ custom (the specified proxy) and none."
 
 (define-ffi-method ffi-print-status ((window gtk-window) text)
   (let ((text (spinneret:with-html-string
-               (:head (:nstyle (style (status-buffer window))))
+               (:head (:style (style (status-buffer window))))
                (:body (:raw text)))))
     (with-slots (status-buffer) window
       (webkit2:webkit-web-view-evaluate-javascript
@@ -1769,7 +1769,7 @@ custom (the specified proxy) and none."
 
 (define-ffi-method ffi-print-message ((window gtk-window) text)
   (let ((text (spinneret:with-html-string
-               (:head (:nstyle (message-buffer-style window)))
+               (:head (:style (message-buffer-style window)))
                (:body (:raw text)))))
     (with-slots (message-view) window
       (webkit2:webkit-web-view-evaluate-javascript

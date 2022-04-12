@@ -29,10 +29,9 @@ get/set-content (which is necessary for operation)."
       (initialize-display mode))))
   (:documentation "This class is used to define a protocol for editors to implement."))
 
-;; TODO: Update in accordance with the internal pages change.
 (defmethod initialize-display ((editor editor-mode))
   (let* ((content (spinneret:with-html-string
-                   (:head (:nstyle (style (buffer editor))))
+                   (:head (:style (style (buffer editor))))
                    (:body (:p "Please configure an editor mode to use an editor buffer."))))
          (insert-content (ps:ps (ps:chain document (write (ps:lisp content))))))
     (ffi-buffer-evaluate-javascript-async (buffer editor) insert-content)))
