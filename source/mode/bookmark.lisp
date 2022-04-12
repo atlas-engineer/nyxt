@@ -71,8 +71,8 @@
                       (:dd (format nil " (~{~a~^, ~})" (tags bookmark)))))
                    (:hr)))))
             bookmarks)))
-      (:script
+      (:nscript
        ;; Not exactly pretty, but saves a lot of space.
-       (:raw (ps:ps (defun delbkm (url)
-                      (fetch (+ "lisp://" (escape (+ "(nyxt:delete-bookmark \"" url "\")/")))
-                             (ps:create :mode "no-cors")))))))))
+       (ps:ps (defun delbkm (url)
+                (fetch (+ "lisp://" (escape (+ "(nyxt:delete-bookmark \"" url "\")/")))
+                       (ps:create :mode "no-cors"))))))))
