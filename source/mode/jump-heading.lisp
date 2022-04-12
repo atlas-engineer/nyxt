@@ -122,6 +122,5 @@ of buffers."
                                           (scroll-to-element :nyxt-identifier ,(get-nyxt-id (element heading))))))
                       (title heading)))))
     (spinneret:with-html-string
-      (:body
-       (:h1 "Headings")
-       (mapcar #'buffer-markup (get-headings))))))
+      (:h1 "Headings")
+      (mapcar #'buffer-markup (get-headings)))))
