@@ -404,7 +404,7 @@ there. `reply-user-mesage' takes care of sending the response back."
                    (vector (id extension)
                            (nyxt/web-extensions::manifest extension)
                            (or (background-buffer-p (buffer extension))
-                               (panel-buffer-p (buffer extension)))
+                               (nyxt::panel-buffer-p (buffer extension)))
                            (nyxt/web-extensions::extension-files extension)
                            (id (buffer extension))))))
       (str:string-case message-name
