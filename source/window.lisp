@@ -157,7 +157,7 @@ The handlers take the window as argument."))
                    (spinneret:with-html-string
                      (:head
                       (:title ,title)
-                      (:style (style ,buffer-var)))
+                      (:nstyle (style ,buffer-var)))
                      (:body
                       (:raw (progn ,@body)))))))
          (,(if global-p 'define-command-global 'define-command) ,name-panel (,@arglist)

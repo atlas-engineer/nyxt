@@ -198,20 +198,19 @@ Scroll history with `evaluation-history-previous' and `evaluation-history-next'.
   "Show Lisp REPL."
   (let ((repl-mode (find-mode repl-buffer 'repl-mode)))
     (spinneret:with-html-string
-      (:head (:style (style repl-mode)))
-      (:body
-       (:div :id "container"
-             (:div :id "evaluation-history"
-                   (:ul (loop
-                          for (package input results) in (reverse (evaluation-history repl-mode))
-                          collect (:li (:b package "> " input)
-                                       (loop
-                                         for result in results
-                                         collect (:li (:raw
-                                                       (value->html
-                                                        result (or (typep result 'standard-object)
-                                                                   (typep result 'structure-object))))))))))
-             (:div :id "input"
-                   (:span :id "prompt"
-                          (format nil "~a>" (package-short-name *package*)))
-                   (:input :type "text" :id "input-buffer")))))))
+      (:nstyle (style repl-mode))
+      (:div :id "container"
+            (:div :id "evaluation-history"
+                  (:ul (loop
+                         for (package input results) in (reverse (evaluation-history repl-mode))
+                         collect (:li (:b package "> " input)
+                                      (loop
+                                        for result in results
+                                        collect (:li (:raw
+                                                      (value->html
+                                                       result (or (typep result 'standard-object)
+                                                                  (typep result 'structure-object))))))))))
+            (:div :id "input"
+                  (:span :id "prompt"
+                         (format nil "~a>" (package-short-name *package*)))
+                  (:input :type "text" :id "input-buffer"))))))

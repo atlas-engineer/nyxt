@@ -373,7 +373,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
   (let ((vi-mode? (or (find-submode prompt-buffer 'vi-normal-mode)
                       (find-submode prompt-buffer 'vi-insert-mode))))
     (html-set (spinneret:with-html-string
-                (:head (:style (style prompt-buffer)))
+                (:head (:nstyle (style prompt-buffer)))
                 (:body
                  (:div :id (if vi-mode? "prompt-area-vi" "prompt-area")
                        (:div :id "prompt" (:mayberaw (prompter:prompt prompt-buffer)))

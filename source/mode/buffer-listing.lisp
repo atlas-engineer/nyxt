@@ -69,7 +69,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                            when (internal-buffer-p buffer)
                              collect (buffer-markup buffer))))))
     (spinneret:with-html-string
-      (:style (style buffer))
+      (:nstyle (style buffer))
       (:h1 "Buffers")
       (:button :class "button"
                :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/buffer-listing-mode::list-buffers)))
@@ -102,24 +102,23 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                                            `(nyxt::switch-buffer :id ,(id buffer))))
                           (:span :title (title buffer) :class "title" (title buffer)))))))
     (spinneret:with-html-string
-      (:style (cl-css:css
-               '((".button"
-                  :white-space "nowrap"
-                  :overflow-x "hidden"
-                  :display "block"
-                  :text-overflow "ellipsis"))))
-      (:body
-       (:h1 "Buffers")
-       (:button :class "button"
-                :onclick (ps:ps (nyxt/ps:lisp-eval
-                                 `(reload-buffers
-                                   (list
-                                    (find
-                                     ,(render-url (url panel-buffer))
-                                     (panel-buffers (current-window))
-                                     :test #'string=
-                                     :key (alexandria:compose
-                                           #'render-url #'url))))))
-                "Update ↺")
-       (loop for buffer in (buffer-list)
-             collect (buffer-markup buffer))))))
+      (:nstyle (cl-css:css
+                '((".button"
+                   :white-space "nowrap"
+                   :overflow-x "hidden"
+                   :display "block"
+                   :text-overflow "ellipsis"))))
+      (:h1 "Buffers")
+      (:button :class "button"
+               :onclick (ps:ps (nyxt/ps:lisp-eval
+                                `(reload-buffers
+                                  (list
+                                   (find
+                                    ,(render-url (url panel-buffer))
+                                    (panel-buffers (current-window))
+                                    :test #'string=
+                                    :key (alexandria:compose
+                                          #'render-url #'url))))))
+               "Update ↺")
+      (loop for buffer in (buffer-list)
+            collect (buffer-markup buffer)))))

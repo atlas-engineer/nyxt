@@ -10,7 +10,7 @@
                   (clss:select "p" (document-model buffer)))
              " ")))
       (spinneret:with-html-string
-        (:style (style output))
+        (:nstyle (style output))
         (:h1 "Summary for: " (title buffer))
         (:ul
          (loop for point in (analysis:summarize-text contents :summary-length summary-length)

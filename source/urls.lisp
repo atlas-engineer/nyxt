@@ -87,7 +87,7 @@ bottleneck."
    (spinneret:with-html-string
      (:head
       (:title title)
-      (:style (style (current-buffer))))
+      (:nstyle (style (current-buffer))))
      (:body
       (:h1 title)
       (:pre text)))

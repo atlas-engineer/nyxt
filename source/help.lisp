@@ -188,7 +188,7 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
                  (:a :href (nyxt-url 'describe-package :package (package-name package))
                      (package-name package)))))
       (spinneret:with-html-string
-          (:style (style buffer))
+          (:nstyle (style buffer))
         (:h1 (package-name package))
         (:raw (resolve-backtick-quote-links (documentation (find-package package) t) package))
         (:h2 "Symbols:")
@@ -217,7 +217,7 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
   "Inspect a variable and show it in a help buffer."
   (let ((*print-case* :downcase))
     (spinneret:with-html-string
-      (:style (style buffer))
+      (:nstyle (style buffer))
       (:h1 (format nil "~s" variable)) ; Use FORMAT to keep package prefix.
       (:raw (resolve-backtick-quote-links (documentation variable 'variable) variable))
       (:h2 "Current Value:")
@@ -280,7 +280,7 @@ For generic functions, describe all the methods."
                      (:pre (first location))))))
           (if (typep (symbol-function input) 'generic-function)
               (spinneret:with-html-string
-                (:style (style buffer))
+                (:nstyle (style buffer))
                 (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
                      (when (macro-function input) " (macro)"))
                 (:raw (resolve-backtick-quote-links (documentation input 'function) input))
@@ -288,7 +288,7 @@ For generic functions, describe all the methods."
                                                   (mopu:generic-function-methods
                                                    (symbol-function input))))))
               (spinneret:with-html-string
-                (:style (style buffer))
+                (:nstyle (style buffer))
                 (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
                      (when (macro-function input) " (macro)"))
                 (:raw (resolve-backtick-quote-links (documentation input 'function) input))
@@ -335,7 +335,7 @@ A command is a special kind of function that can be called with
              (alex:last-elt location)))
          (*print-case* :downcase))
     (spinneret:with-html-string
-      (:style (style buffer))
+      (:nstyle (style buffer))
       (:h1 (symbol-name (name command))
            (unless (eq (find-package :nyxt)
                        (symbol-package (name command)))
@@ -423,7 +423,7 @@ A command is a special kind of function that can be called with
          (slot-descs (apply #'str:concat (mapcar (alex:rcurry #'describe-slot* class) slots)))
          (*print-case* :downcase))
     (spinneret:with-html-string
-      (:style (style buffer))
+      (:nstyle (style buffer))
       (:h1 (symbol-name class))
       (:p (:raw (resolve-backtick-quote-links (documentation class 'type) class)))
       (when (mopu:direct-superclasses class)
@@ -457,7 +457,7 @@ A command is a special kind of function that can be called with
          (modes (modes prompt-buffer))
          (sources (prompter:sources prompt-buffer)))
     (spinneret:with-html-string
-      (:style (style buffer))
+      (:nstyle (style buffer))
       (:h1 (prompter:prompt prompt-buffer))
       (:p (:raw (resolve-backtick-quote-links (documentation 'prompt-buffer 'type) 'prompt-buffer)))
       (:h2 "Modes:")
@@ -835,11 +835,11 @@ The version number is stored in the clipboard."
     (buffer "*Help*" 'nyxt/help-mode:help-mode)
   "Open up a small help buffer."
   (spinneret:with-html-string
-    (:style (:raw (theme:themed-css (theme *browser*)
-                    ("#documentation .button"
-                     :min-width "100px")
-                    ("table, th, td"
-                     :border-width "0"))))
+    (:nstyle (theme:themed-css (theme *browser*)
+               ("#documentation .button"
+                :min-width "100px")
+               ("table, th, td"
+                :border-width "0")))
     (:h1 "Welcome to Nyxt :-)")
     (:p (:a :href "https://nyxt.atlas.engineer" "https://nyxt.atlas.engineer"))
     (:h2 "Quick configuration")
@@ -863,18 +863,18 @@ The version number is stored in the clipboard."
 (define-internal-page-command-global manual ()
     (buffer "*Manual*" 'nyxt/help-mode:help-mode)
   "Show the manual."
-  (spinneret:with-html-string (:style (style buffer))
-    (:style (cl-css:css '(("body"
-                           :max-width "80ch"))))
+  (spinneret:with-html-string
+    (:nstyle (style buffer))
+    (:nstyle (cl-css:css '(("body"
+                            :max-width "80ch"))))
     (:raw (manual-content))))
 
 (define-internal-page-command-global tutorial ()
     (buffer "*Tutorial*" 'nyxt/help-mode:help-mode)
   "Show the tutorial."
   (spinneret:with-html-string
-    (:style (style buffer))
-    (:style (cl-css:css '(("body"
-                           :max-width "80ch"))))
+    (:nstyle (cl-css:css '(("body"
+                            :max-width "80ch"))))
     (:h1 "Nyxt tutorial")
     (:p "The following tutorial introduces core concepts and
 basic usage.  For more details, especially regarding configuration, see
@@ -966,7 +966,7 @@ System information is also saved into the clipboard."
                              ("ul"
                               :list-style-type "circle"))))
       (spinneret:with-html-string
-        (:style dashboard-style)
+        (:nstyle dashboard-style)
         (:div
          (:h1 :id "title" "Nyxt " (:span :id "subtitle" "browser ☺"))
          (:h3 (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+))
@@ -992,9 +992,9 @@ System information is also saved into the clipboard."
                          based features are currently unlisted.")
                      (:h1 "Commands")))
     (format f "~a" (spinneret:with-html-string
-                     (:style (cl-css:css
-                              '((".nyxt-source"
-                                 :overflow "auto"))))))
+                     (:nstyle (cl-css:css
+                               '((".nyxt-source"
+                                  :overflow "auto"))))))
     (format f "~{~a ~%~}"
             (loop for command in (list-commands)
                   collect (spinneret:with-html-string

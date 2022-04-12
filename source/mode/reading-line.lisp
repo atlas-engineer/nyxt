@@ -88,7 +88,7 @@ the screen as well."
 
 (defmethod initialize-display ((mode reading-line-mode))
   (let* ((content (spinneret:with-html-string
-                    (:style (style mode))
+                    (:nstyle (style mode))
                     (:span :id "reading-line-cursor" "")))
          (insert-content (ps:ps
                            (ps:chain document body (|insertAdjacentHTML| "afterbegin" (ps:lisp content)))
