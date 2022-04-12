@@ -117,20 +117,11 @@ of buffers."
            (spinneret:with-html
              (:button :class "button"
                       :onclick (ps:ps (nyxt/ps:lisp-eval
-                                       `(progn (switch-buffer :id ,(id (buffer heading)))
-                                               (scroll-to-element :nyxt-identifier ,(get-nyxt-id (element heading))))))
-                      (:span :title (title heading)
-                             :class "title" (title heading))))))
+                                       `(progn
+                                          (switch-buffer :id ,(id (buffer heading)))
+                                          (scroll-to-element :nyxt-identifier ,(get-nyxt-id (element heading))))))
+                      (title heading)))))
     (spinneret:with-html-string
-      (:style (theme:themed-css (theme *browser*)
-                (.button
-                 :margin-top "20px"
-                 :white-space "nowrap"
-                 :overflow-x "hidden"
-                 :display "block"
-                 :text-overflow "ellipsis"
-                 :background-color theme:secondary
-                 :color theme:background)))
       (:body
        (:h1 "Headings")
        (mapcar #'buffer-markup (get-headings))))))
