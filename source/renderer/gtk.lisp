@@ -53,7 +53,7 @@ See also the `web-contexts' slot."))
                              (if ephemeral-p
                                  (ephemeral-web-contexts browser)
                                  (web-contexts browser))
-                             (make-context name buffer :ephemeral-p ephemeral-p)))
+                             (make-context name :ephemeral-p ephemeral-p)))
 
 (define-class gtk-window ()
   ((gtk-object)
@@ -329,7 +329,6 @@ the same naming rules as above."
                        'webkit-web-view-ephemeral
                        'webkit:webkit-web-view)
                    :web-context (get-context *browser* (if internal-p +internal+ (context-name buffer))
-                                             buffer
                                              :ephemeral-p ephemeral-p))))
 
 (defun make-decide-policy-handler (buffer)
@@ -744,7 +743,7 @@ See `gtk-browser's `modifier-translator' slot."
   (:accessor-name-transformer (class*:make-name-transformer name)))
 (define-user-class scheme (gtk-scheme))
 
-(defun make-context (name buffer &key ephemeral-p)
+(defun make-context (name &key ephemeral-p)
   (let* ((context
            (if ephemeral-p
                ;; An ephemeral data-manager cannot be given any directories, even if they are set to nil.
