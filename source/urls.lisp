@@ -328,7 +328,9 @@ Example:
                          (mapcar (lambda (pair)
                                    (cons (param-name (first pair))
                                          ;; This is to safely parse the args afterwards
-                                         (prin1-to-string (rest pair))))
+                                         (if (stringp (rest pair))
+                                             (rest pair)
+                                             (str:concat +escape+ (prin1-to-string (rest pair))))))
                                  (alexandria:plist-alist args)))))
             (the (values string &optional)
                  (format nil "nyxt:~a~@[~*?~a~]"
@@ -362,7 +364,9 @@ guarantee of the same result."
         (values function
                 (alex:mappend (lambda (pair)
                                 (let ((key (intern (str:upcase (first pair)) :keyword))
-                                      (value (read-from-string (rest pair))))
+                                      (value (if (str:starts-with-p +escape+ (rest pair))
+                                                 (read-from-string (subseq (rest pair) 1))
+                                                 (rest pair))))
                                   ;; Symbols are safe (are they?)
                                   (if (or (symbolp value)
                                           (constantp value))

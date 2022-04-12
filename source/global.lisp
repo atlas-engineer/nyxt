@@ -64,6 +64,9 @@ execution of Nyxt.")
 (export-always '+newline+)
 (alex:define-constant +newline+ (string #\newline) :test #'equal)
 
+(export-always '+escape+)
+(alex:define-constant +escape+ (string #\escape) :test #'equal)
+
 (alex:define-constant +nyxt-critical-dependencies+
   '(:cl-cffi-gtk
     :cl-gobject-introspection
