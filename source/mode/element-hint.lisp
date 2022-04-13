@@ -153,7 +153,7 @@
 
 (serapeum:export-always 'query-hints)
 (defun query-hints (prompt function
-                    &key multi-selection-p
+                    &key (multi-selection-p t)
                          annotate-visible-only-p
                          (selector
                              (alex:if-let ((mode (find-submode 'web-mode)))
@@ -356,8 +356,7 @@ Auto-follows hints by their ID, if `web-mode's `auto-follow-hints-p' is true."
                  (lambda (results)
                    (%follow-hint (first results))
                    (mapcar (alex:rcurry #'%follow-hint-new-buffer buffer)
-                           (rest results)))
-                 :multi-selection-p t)))
+                           (rest results))))))
 
 (define-command follow-hint-new-buffer ()
   "Show a set of element hints, and open the user inputted one in a new
@@ -365,8 +364,7 @@ buffer (not set to visible active buffer)."
   (let ((buffer (current-buffer)))
     (query-hints "Open element in new buffer"
                  (lambda (result) (mapcar (alex:rcurry #'%follow-hint-new-buffer buffer)
-                                          result))
-                 :multi-selection-p t)))
+                                          result)))))
 
 (define-command follow-hint-new-buffer-focus ()
   "Show a set of element hints, and open the user inputted one in a new
@@ -376,15 +374,13 @@ visible active buffer."
                  (lambda (result)
                    (%follow-hint-new-buffer-focus (first result) buffer)
                    (mapcar (alex:rcurry #'%follow-hint-new-buffer buffer)
-                           (rest result)))
-                 :multi-selection-p t)))
+                           (rest result))))))
 
 (define-command follow-hint-nosave-buffer ()
   "Show a set of element hints, and open the user inputted one in a new
 nosave buffer (not set to visible active buffer)."
   (query-hints "Open element in new buffer"
-               (lambda (result) (mapcar #'%follow-hint-nosave-buffer result))
-               :multi-selection-p t))
+               (lambda (result) (mapcar #'%follow-hint-nosave-buffer result))))
 
 (define-command follow-hint-nosave-buffer-focus ()
   "Show a set of element hints, and open the user inputted one in a new
@@ -392,8 +388,7 @@ visible nosave active buffer."
   (query-hints "Go to element in new buffer"
                (lambda (result)
                  (%follow-hint-nosave-buffer-focus (first result))
-                 (mapcar #'%follow-hint-nosave-buffer (rest result)))
-               :multi-selection-p t))
+                 (mapcar #'%follow-hint-nosave-buffer (rest result)))))
 
 (define-command follow-hint-with-current-modes-new-buffer ()
   "Follow hint and open link in a new buffer with current modes."
@@ -401,12 +396,12 @@ visible nosave active buffer."
     (query-hints "Open element with current modes in new buffer"
                  (lambda (result)
                    (mapcar (alex:rcurry #'%follow-hint-with-current-modes-new-buffer buffer)
-                           result))
-                 :multi-selection-p t)))
+                           result)))))
 
 (define-command copy-hint-url ()
   "Show a set of element hints, and copy the URL of the user inputted one."
   (query-hints "Copy element URL" (lambda (result)  (%copy-hint-url (first result)))
+               :multi-selection-p nil
                :selector "a, img"))
 
 (define-command bookmark-hint ()
@@ -423,7 +418,6 @@ visible nosave active buffer."
                                           (make-instance 'nyxt::tag-source
                                                          :marks (url-bookmark-tags url))))))
                      (bookmark-add url :tags tags :title (fetch-url-title url)))))
-               :multi-selection-p t
                :selector "a, img"))
 
 (define-command download-hint-url ()
@@ -435,7 +429,6 @@ visible nosave active buffer."
                          ;; TODO: sleep should NOT be necessary to avoid breaking download
                          do (download buffer (url link))
                             (sleep 0.25)))
-                 :multi-selection-p t
                  :selector "a, img")))
 
 (uiop:define-package :nyxt/element-hint-mode
