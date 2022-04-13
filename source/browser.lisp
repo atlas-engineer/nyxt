@@ -491,6 +491,9 @@ If none is found, fall back to `scheme:cua'."
     nil
     :documentation "Whether the request takes place in a
 new window.")
+   (mime-type
+    nil
+    :documentation "The MIME type of the resource at the other end of the request.")
    (known-type-p
     nil
     :documentation "Whether the request is for content with

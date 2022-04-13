@@ -861,7 +861,8 @@ See `finalize-buffer'."
   (let ((is-new-window nil) (is-known-type t) (event-type :other)
         (navigation-action nil) (navigation-type nil)
         (mouse-button nil) (modifiers ())
-        (url nil) (request nil))
+        (url nil) (request nil)
+        mime-type)
     (match policy-decision-type-response
       (:webkit-policy-decision-type-navigation-action
        (setf navigation-type (webkit:webkit-navigation-policy-decision-navigation-type response-policy-decision)))
@@ -872,7 +873,8 @@ See `finalize-buffer'."
        (setf request (webkit:webkit-response-policy-decision-request response-policy-decision))
        (setf is-known-type
              (webkit:webkit-response-policy-decision-is-mime-type-supported
-              response-policy-decision))))
+              response-policy-decision))
+       (setf mime-type (webkit:webkit-uri-response-mime-type (webkit:webkit-response-policy-decision-response response-policy-decision)))))
     ;; Set Event-Type
     (setf event-type
           (match navigation-type
@@ -903,6 +905,7 @@ See `finalize-buffer'."
                                                        :modifiers modifiers)))
                                         :event-type event-type
                                         :new-window-p is-new-window
+                                        :mime-type mime-type
                                         :known-type-p is-known-type))))
       (if request-data
           (if (null (hooks:handlers (request-resource-hook buffer)))
