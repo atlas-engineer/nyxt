@@ -145,38 +145,34 @@
 (serapeum:export-always 'query-hints)
 (defun query-hints (prompt function
                     &key (multi-selection-p t)
-                         annotate-visible-only-p
                          (selector
                              (alex:if-let ((mode (find-submode 'web-mode)))
                                (hints-selector mode)
                                "a, button, input, textarea, details, select, img:not([alt=\"\"])")))
-  "Prompt to choose several elements out of those matching SELECTOR, hinting them visually.
-MULTI-SELECTION-P is whether several elements can be chosen.
-ANNOTATE-VISIBLE-ONLY-P is deprecated and has no influence on the function.
+  "Prompt for elements matching SELECTOR, hinting them visually.
+MULTI-SELECTION-P defines whether several elements can be chosen.
 PROMPT is a text to show while prompting for hinted elements.
 FUNCTION is the action to perform on the selected elements."
-  (declare (ignore annotate-visible-only-p))
-  (let* ((buffer (current-buffer)))
-    (let ((result (prompt
-                   :prompt prompt
-                   ;; TODO: No need to find the symbol if we move this code (and the rest) to the element-hint-mode package.
-                   :extra-modes (list (resolve-symbol :element-hint-mode :mode))
-                   :history nil
-                   :sources
-                   (make-instance
-                    'hint-source
-                    :multi-selection-p multi-selection-p
-                    :constructor (lambda (source)
-                                   (declare (ignore source))
-                                   (add-element-hints :selector selector)))
-                   :after-destructor
-                   (lambda ()
-                     (with-current-buffer buffer
-                       (remove-element-hints))))))
-      (when result
-        (funcall function result))
-      (with-current-buffer buffer
-        (remove-element-hints)))))
+  (let ((buffer (current-buffer)))
+    (alex:when-let
+        ((result (prompt
+                  :prompt prompt
+                  ;; TODO: No need to find the symbol if we move this code (and
+                  ;; the rest) to the element-hint-mode package.
+                  :extra-modes (list (resolve-symbol :element-hint-mode :mode))
+                  :auto-return-p (auto-follow-hints-p (find-submode 'web-mode))
+                  :history nil
+                  :sources
+                  (make-instance
+                   'hint-source
+                   :multi-selection-p multi-selection-p
+                   :constructor (lambda (source)
+                                  (declare (ignore source))
+                                  (add-element-hints :selector selector))))))
+      (funcall function result))
+    ;; remove-element-hints should go into (prompt :after-destructor) but it
+    ;; misbehaves
+    (with-current-buffer buffer (remove-element-hints))))
 
 (defmethod prompter:object-attributes :around ((element plump:element))
   `(,@(when (plump:get-attribute element "nyxt-hint")
