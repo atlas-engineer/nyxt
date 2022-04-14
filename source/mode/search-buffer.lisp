@@ -169,8 +169,8 @@
                           (remove-focus))))
   (:export-accessor-names-p t)
   (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-(define-user-class search-buffer-source)
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:metaclass user-class))
 
 (defmethod initialize-instance :after ((source search-buffer-source) &key)
   (setf (prompter:name source)
@@ -201,7 +201,7 @@ Example:
   "Search multiple buffers."
   (let ((buffers (prompt
                   :prompt "Search buffer(s)"
-                  :sources (list (make-instance 'user-buffer-source ; TODO: Define class?
+                  :sources (list (make-instance 'buffer-source ; TODO: Define class?
                                                 :actions '()
                                                 :multi-selection-p t)))))
     (prompt

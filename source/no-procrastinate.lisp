@@ -122,7 +122,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 page(s) in the active buffer."
   (prompt
    :prompt "Avoid procrastination on HOSTS from buffer(s)"
-   :sources (make-instance 'user-buffer-source
+   :sources (make-instance 'buffer-source
                            :multi-selection-p t
                            :actions (list (make-mapped-command no-procrastinate-current-host)))))
 

@@ -4,11 +4,11 @@
 (in-package :nyxt)
 
 (defun make-password-interface-user-classes ()
-  "Define user classes so that users may apply define-configuration
-macro to change slot values."
-  (loop for interface in password:*interfaces* do
-           (eval `(define-user-class ,(intern (symbol-name interface)
-                                              (package-name (symbol-package interface)))))))
+  "Define classes with the `user-class' metaclass so that users may use `customize-instance'."
+  (dolist (interface password:*interfaces*)
+    (closer-mop:ensure-class (intern (symbol-name interface))
+                             :direct-superclasses (list interface)
+                             :metaclass 'user-class)))
 
 (make-password-interface-user-classes)
 
@@ -16,7 +16,7 @@ macro to change slot values."
   "Return the instance of the first password interface among `password:*interfaces*'
 for which the `executable' slot is non-nil."
   (some (lambda (interface)
-          (let ((instance (make-instance (user-class-name interface))))
+          (let ((instance (make-instance interface)))
             (when (password:executable instance)
               instance)))
         password:*interfaces*))
@@ -89,7 +89,7 @@ for which the `executable' slot is non-nil."
                      :prompt "Password database file"
                      :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
                      :sources (list (make-instance
-                                     'nyxt/file-manager-mode:user-file-source
+                                     'nyxt/file-manager-mode:file-source
                                      :extensions '("kdbx")))))))
   (loop :until (password:password-correct-p password-interface)
         :do (setf (password::master-password password-interface)

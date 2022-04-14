@@ -31,10 +31,10 @@ the highest standard on accessibility.")))
 (export-always 'diff)
 (define-internal-page-command-global diff
     (&key (old-buffer-id (id (prompt1 :prompt "Old buffer"
-                                      :sources (make-instance 'user-buffer-source
+                                      :sources (make-instance 'buffer-source
                                                               :actions  nil))))
           (new-buffer-id (id (prompt1 :prompt "New buffer"
-                                      :sources (make-instance 'user-buffer-source
+                                      :sources (make-instance 'buffer-source
                                                               :actions  nil)))))
     (diff-buffer "*diff*" 'diff-mode)
   "Show difference between two buffers"

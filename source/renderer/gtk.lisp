@@ -42,8 +42,10 @@ See also the `ephemeral-web-contexts' slot.")
 See also the `web-contexts' slot."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-(define-user-class browser (gtk-browser))
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:metaclass user-class))
+
+(pushnew-direct-superclass 'gtk-browser 'browser)
 
 (alex:define-constant +internal+ "internal" :test 'equal)
 (alex:define-constant +default+ "default" :test 'equal)
@@ -74,9 +76,10 @@ See also the `web-contexts' slot."))
    (message-view)
    (key-string-buffer))
   (:export-class-name-p t)
-  (:export-accessor-names-p t)
+  (:export-accessor-names-p t)          ; TODO: Unexport?
   (:accessor-name-transformer (class*:make-name-transformer name)))
-(define-user-class window (gtk-window))
+
+(pushnew-direct-superclass 'gtk-window 'window)
 
 (define-class gtk-buffer ()
   ((gtk-object)
@@ -102,7 +105,8 @@ failures."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
-(define-user-class buffer (gtk-buffer))
+
+(pushnew-direct-superclass 'gtk-buffer 'buffer)
 
 (defclass webkit-web-context (webkit:webkit-web-context) ()
   (:metaclass gobject:gobject-class))
@@ -293,12 +297,13 @@ By default it is found in the source directory."))
    (call-next-method)
    (pathname (str:concat (context-name file) "-cookies"))))
 
-(define-class gtk-download (download)
+(define-class gtk-download ()
   ((gtk-object)
    (handler-ids
     :documentation "See `gtk-buffer' slot of the same name."))
   (:accessor-name-transformer (class*:make-name-transformer name)))
-(define-user-class download (gtk-download))
+
+(pushnew-direct-superclass 'gtk-download 'download)
 
 (defclass webkit-web-view-ephemeral (webkit:webkit-web-view) ()
   (:metaclass gobject:gobject-class))
@@ -741,7 +746,8 @@ See `gtk-browser's `modifier-translator' slot."
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
-(define-user-class scheme (gtk-scheme))
+
+(pushnew-direct-superclass 'gtk-scheme 'scheme)
 
 (defun make-context (name &key ephemeral-p)
   (let* ((context
@@ -1003,7 +1009,7 @@ See `finalize-buffer'."
 
 (define-ffi-method ffi-window-make ((browser gtk-browser))
   "Make a window."
-  (make-instance 'user-window))
+  (make-instance 'window))
 
 (define-ffi-method ffi-window-to-foreground ((window gtk-window))
   "Show window in foreground."
@@ -1109,7 +1115,7 @@ See `finalize-buffer'."
                                              file-chooser-request)))
                                           (uiop:native-namestring (uiop:getcwd)))
                                   :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
-                                  :sources (list (make-instance 'nyxt/file-manager-mode:user-file-source)))
+                                  :sources (list (make-instance 'nyxt/file-manager-mode:file-source)))
                         (nyxt-prompt-buffer-canceled ()
                           nil)))))
           (if files
@@ -1949,5 +1955,5 @@ See `make-buffer' for a description of the other arguments."
              :prompt "Choose context"
              :sources (list (make-instance 'prompter:raw-source :name "New context")
                             'context-source))))
-  (apply #'make-buffer (append (list :buffer-class 'user-buffer)
+  (apply #'make-buffer (append (list :buffer-class 'buffer)
                                args)))

@@ -128,8 +128,8 @@ Requires encryption or other means of security.")
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
-  (:documentation "Representation of Nyxt-specific internal schemes."))
-(define-user-class scheme)
+  (:documentation "Representation of Nyxt-specific internal schemes.")
+  (:metaclass user-class))
 
 (defmethod print-object ((scheme scheme) stream)
   (print-unreadable-object (scheme stream :type t :identity t)
@@ -156,7 +156,7 @@ CALLBACK is called with two arguments:
 For keyword arguments' meaning, see `scheme' slot documentation."
   (declare (ignorable local-p no-access-p secure-p cors-enabled-p))
   (setf (gethash scheme-name *schemes*)
-        (apply #'make-instance 'user-scheme
+        (apply #'make-instance 'scheme
                :name scheme-name
                :callback callback
                keys)))

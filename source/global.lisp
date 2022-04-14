@@ -27,7 +27,7 @@ This is convenient for testing purposes or to drive Nyxt programmatically.")
   "The entry-point object to a complete instance of Nyxt.
 It can be initialized with
 
-  (setf *browser* (make-instance 'user-browser))
+  (setf *browser* (make-instance 'browser))
 
 It's possible to run multiple interfaces of Nyxt at the same time.  You can
 let-bind *browser* to temporarily switch interface.")

@@ -41,7 +41,7 @@ To make this change permanent, you can customize
                      :sources (list
                                (make-instance 'prompter:raw-source
                                               :name "URL")
-                               (make-instance 'nyxt/web-mode::user-history-all-source
+                               (make-instance 'nyxt/web-mode::history-all-source
                                               :buffer buffer)))))
         (sera:and-let* ((url (if (stringp input)
                                  (quri:uri input)

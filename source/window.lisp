@@ -95,9 +95,8 @@ The handlers take the window as argument."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
-  (:documentation "A window is a view where buffers are displayed."))
-
-(define-user-class window)
+  (:documentation "A window is a view where buffers are displayed.")
+  (:metaclass user-class))
 
 (defmethod print-object ((window window) stream)
   (print-unreadable-object (window stream :type t :identity t)
