@@ -17,7 +17,7 @@ All ARGS are declared as `ignorable'."
        ,@body)))
 
 (sera:eval-always
-  (define-class prompt-buffer (user-internal-buffer prompter:prompter)
+  (define-class prompt-buffer (internal-buffer prompter:prompter)
     ((window nil
              :type (or null window)
              :export nil
@@ -486,7 +486,7 @@ See the documentation of `prompt-buffer' to know more about the options."
       (ffi-within-renderer-thread
        *browser*
        (lambda ()
-         (let ((prompt-buffer (apply #'make-instance 'user-prompt-buffer
+         (let ((prompt-buffer (apply #'make-instance 'prompt-buffer
                                      (append args
                                              (list
                                               :window (current-window)

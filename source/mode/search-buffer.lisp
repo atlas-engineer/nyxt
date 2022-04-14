@@ -190,7 +190,7 @@ Example:
   (prompt
    :prompt "Search text"
    :sources (list
-             (make-instance 'user-search-buffer-source
+             (make-instance 'search-buffer-source
                             :case-sensitive-p case-sensitive-p
                             :actions (list (lambda (search-match)
                                              (unless (keep-search-hints-p (current-buffer))
@@ -207,7 +207,7 @@ Example:
     (prompt
      :prompt "Search text"
      :sources (mapcar (lambda (buffer)
-                        (make-instance 'user-search-buffer-source
+                        (make-instance 'search-buffer-source
                                        :name (format nil "Search ~a" (if (url-empty-p (url buffer))
                                                                          (title buffer)
                                                                          (url buffer)))

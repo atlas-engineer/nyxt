@@ -311,7 +311,7 @@ If this popup does already exist, close it."
                              (mode-name
                               (prompt1
                                 :prompt "Extension to toggle the popup of"
-                                :sources (make-instance 'user-active-mode-source
+                                :sources (make-instance 'active-mode-source
                                                         :constructor (sera:filter
                                                                       #'nyxt/web-extensions::extension-p
                                                                       (modes buffer))))))))
@@ -326,7 +326,7 @@ If this popup does already exist, close it."
                              :key #'title
                              :test #'equal)))
           (nyxt::window-delete-panel-buffer (current-window) existing-popup)
-          (let ((popup (make-instance 'user-panel-buffer
+          (let ((popup (make-instance 'panel-buffer
                                       :title (default-title (browser-action extension))
                                       :id (nyxt::get-unique-identifier *browser*)
                                       :default-modes (list extension-class))))

@@ -191,7 +191,7 @@ Accepts the name of the file as the first argument and has two keyword arguments
   (:metaclass user-class))
 
 (defun supported-media-or-directory (filename
-                                     &optional (file-source (make-instance 'user-file-source)))
+                                     &optional (file-source (make-instance 'file-source)))
   "Return T if this filename's extension is a media that Nyxt can open (or a directory).
 See `supported-media-types' of `file-mode'."
   (or (and (uiop:directory-pathname-p filename)
@@ -219,7 +219,7 @@ See `supported-media-types' of `file-mode'."
                  "Open files with the selected program."
                  (let* ((program (prompt1
                                    :prompt "The program to open the selected files with"
-                                   :sources (list (make-instance 'user-program-source)))))
+                                   :sources (list (make-instance 'program-source)))))
                    (uiop:launch-program (cons (uiop:native-namestring program) (mapcar #'uiop:native-namestring files))))))
          (slot-value source 'prompter:actions))))
 
@@ -284,4 +284,4 @@ it. Every type in `supported-media-types' will be opened directly in Nyxt."
    :extra-modes '(file-manager-mode)
    :input (uiop:native-namestring default-directory)
    :prompt "Open file"
-   :sources (list (make-instance 'user-open-file-source))))
+   :sources (list (make-instance 'open-file-source))))
