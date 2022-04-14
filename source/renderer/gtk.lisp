@@ -34,10 +34,12 @@ want to change the behaviour of modifiers, for instance swap 'control' and
 \(define-configuration browser
   ((modifier-translator #'my-translate-modifiers)))")
    (web-contexts (make-hash-table :test 'equal)
+                 :export nil
                  :documentation "Persistent `nyxt::webkit-web-context's
 Keyed by strings as they must be backed to unique folders
 See also the `ephemeral-web-contexts' slot.")
    (ephemeral-web-contexts (make-hash-table :test 'equal)
+                           :export nil
                            :documentation "Ephemeral `nyxt::webkit-web-context's.
 See also the `web-contexts' slot."))
   (:export-class-name-p t)
