@@ -404,7 +404,7 @@ A command is a special kind of function that can be called with
         (when (getf props :documentation)
           (:li "Documentation: " (:raw (resolve-backtick-quote-links
                                         (getf props :documentation) slot))))
-        (unless (user-class-p class)
+        (when (user-class-p class)
           (:li (:button :class "button"
                         :onclick (ps:ps (nyxt/ps:lisp-eval
                                          `(nyxt::configure-slot ',slot ',class :type ',(getf props :type))))
