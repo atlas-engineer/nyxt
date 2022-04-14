@@ -12,8 +12,6 @@
       'base-mode)
   (is (mode-name 'nyxt/web-mode:web-mode)
       'nyxt/web-mode:web-mode)
-  (is (mode-name 'nyxt/web-mode:user-web-mode)
-      'nyxt/web-mode:web-mode)
   (is (mode-name 'web-mode)
       'nyxt/web-mode:web-mode)
   (is (mode-name 'user-web-mode)

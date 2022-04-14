@@ -14,7 +14,7 @@
   nil)
 
 (subtest "Global history"
-  (let* ((*browser* (make-instance 'user-browser)))
+  (let* ((*browser* (make-instance 'browser)))
     ;; Set profile to nosave to inhibit serialization / deserialization.
     ;; TODO: We should still test serialization and deserialization.
     (setf *global-profile* (make-instance 'test-profile))

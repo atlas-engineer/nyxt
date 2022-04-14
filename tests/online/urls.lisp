@@ -6,7 +6,7 @@
 (plan nil)
 
 (subtest "Parse URL"
-  (let* ((*browser* (make-instance 'user-browser)))
+  (let* ((*browser* (make-instance 'browser)))
     (is (url (make-instance 'nyxt:new-url-query :query "https://nyxt.atlas.engineer"))
         (quri:uri "https://nyxt.atlas.engineer")
         :test #'quri:uri=
