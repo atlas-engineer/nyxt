@@ -488,8 +488,7 @@ A command is a special kind of function that can be called with
 CLASS is a class symbol."
   (flet ((set-slot (slot class input)
            (echo "Update slot ~s to ~s. You might need to restart to experience the change." slot input)
-           (append-configuration `(define-configuration ,class
-                                    ((,slot ,input))))))
+           (append-configuration `(setf (slot-value ,class ,slot) ,input) :class class)))
     (if new-value-supplied-p
         (set-slot slot class value)
         (let ((accepted-input
@@ -506,18 +505,43 @@ CLASS is a class symbol."
                                 slot type (type-of input))
                                nil)))))))
           (set-slot slot class accepted-input)
-          (eval `(define-configuration ,class
-                   ((,slot ,accepted-input))))))))
+          (eval `(defmethod customize-instance ((,class ,class))
+                   (setf (slot-value ,class ,slot)) ,accepted-input))))))
 
-(defun append-configuration (form &key (format-directive "~&~s~%"))
+(defun append-configuration (form &key class
+                                    (format-directive "~&~s~%"))
+  "Append FORM to `*auto-config-file*'.
+If CLASS is specified (a class symbol), the FORM is appended to the "
   (let ((path (nfiles:expand *auto-config-file*)))
-    (with-open-file (file path
-                          :direction :output
-                          :if-exists :append
-                          :if-does-not-exist :create)
-      (let ((*print-case* :downcase))
-        (log:info "Appending to ~s:~&~s" path form)
-        (format file format-directive form)))))
+    (flet ((customize-form-p (form)
+             (and (eq (second form) 'customize-instance)
+                  (eq (second (first (find-if #'consp form)))
+                      class))))
+      (let ((forms (if class
+                       (let ((existing-form? nil))
+                         (append
+                          (with-open-file (file path :if-does-not-exist nil)
+                            (loop
+                              for object = (read file nil :eof)
+                              until (eq object :eof)
+                              collect (if (and (not existing-form?)
+                                               (customize-form-p class))
+                                          (progn
+                                            (setf existing-form? t)
+                                            (append object (list form)))
+                                          object)))
+                          (unless existing-form?
+                            `(defmethod customize-instance ((,class ,class))
+                               ,form))))
+                       (list form))))
+        (with-open-file (file path
+                              :direction :output
+                              :if-exists :append
+                              :if-does-not-exist :create)
+          (let ((*print-case* :downcase))
+            (log:info "Appending configuration to ~s" path)
+            (dolist (form forms)
+              (format file format-directive form))))))))
 
 (define-internal-page-command-global common-settings ()
     (buffer "*Settings*" 'nyxt/help-mode:help-mode)
@@ -822,7 +846,7 @@ The version number is stored in the clipboard."
   ;; no *browser*.
   (let* ((current-buffer (current-buffer))
          (buffer (or (current-buffer)
-                     (make-instance 'user-buffer)))
+                     (make-instance 'buffer)))
          (keymaps (cons (override-map buffer)
                         (delete nil (mapcar #'keymap modes)))))
     (unwind-protect

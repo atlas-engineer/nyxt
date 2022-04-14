@@ -68,7 +68,7 @@ get/set-content (which is necessary for operation)."
                 :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
                 :input (uiop:native-namestring (uiop:getcwd))
                 :sources
-                (list (make-instance 'nyxt/file-manager-mode:user-file-source
+                (list (make-instance 'nyxt/file-manager-mode:file-source
                                      :name "Absolute file path"
                                      :actions '(identity))
                       (make-instance 'prompter:raw-source

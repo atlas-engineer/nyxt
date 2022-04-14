@@ -44,15 +44,14 @@ Example:
                        ,direct-slots
                        (:export-class-name-p t)
                        (:export-accessor-names-p t)
-                       (:accessor-name-transformer (class*:make-name-transformer name))))
-         (configurable-class-name (user-class-name name)))
+                       (:accessor-name-transformer (class*:make-name-transformer name))
+                       (:metaclass user-class))))
     (when docstring
       (setf class-args (append class-args
                                `((:documentation ,docstring)))))
     (alex:with-gensyms (existing-instance new-mode)
       `(progn
          (define-class ,@class-args)
-         (define-user-class ,name)
          ;; TODO: Can we delete the last mode?  What does it mean to have no mode?
          ;; Should probably always have root-mode.
          ,(unless (eq name 'root-mode)
@@ -79,7 +78,7 @@ Example:
                  (if activate
                      (unless ,existing-instance
                        ;; TODO: Should we move mode to the front when it already exists?
-                       (let ((,new-mode (apply #'make-instance ',configurable-class-name
+                       (let ((,new-mode (apply #'make-instance ',name
                                                :buffer buffer
                                                args)))
                          (funcall* (constructor ,new-mode) ,new-mode)
@@ -171,7 +170,7 @@ can be 'web-mode as well as 'nyxt/web-mode:web-mode."
   (alex:when-let ((mode-full-symbol (mode-name mode-symbol)))
     (find mode-full-symbol
           (modes buffer)
-          :key (alex:compose #'class-name #'original-class))))
+          :key #'class-name)))
 
 (export-always 'find-submode)
 (defmethod find-submode ((buffer buffer) mode-symbol)
@@ -212,13 +211,6 @@ The \"-mode\" suffix is automatically appended to MODE-SYM if missing."
                                         "-MODE")))
              (mapcar #'name *command-list*)))
 
-(defun original-class (class-sym)
-  "When CLASS-SYM is a user class, return its original class."
-  ;; REVIEW: Is the original class always the last one?  What if the user
-  ;; decides to mix in another class, e.g. (defclass user-buffer
-  ;; (user-buffer buffer unrelated-class))?
-  (first (last (mopu:direct-superclasses class-sym))))
-
 (defun mode-command (mode-symbol)
   "Return the mode toggle command.
 We loop over `*command-list*' to find the mode command since a mode may be
@@ -231,7 +223,7 @@ toggle command (like a user class), return the toggle command of the parent."
               :key (lambda (command) (string (name command)))
               :test #'string=)
         (alex:when-let ((m (find-class mode-symbol nil)))
-          (mode-command (class-name (original-class m)))))))
+          (mode-command (class-name m))))))
 
 (defun make-mode (mode-symbol buffer)
   ;; (log:debug mode-symbol buffer (mode-command mode-symbol))

@@ -176,7 +176,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   "Bookmark the currently opened page(s) in the active buffer."
   (prompt
    :prompt "Bookmark URL from buffer(s)"
-   :sources (make-instance 'user-buffer-source
+   :sources (make-instance 'buffer-source
                            :multi-selection-p t
                            :actions (list (make-mapped-command bookmark-current-url)))))
 
@@ -310,7 +310,7 @@ rest in background buffers."
                          :input (uiop:native-namestring (uiop:getcwd))
                          :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
                          :sources (make-instance
-                                   'nyxt/file-manager-mode:user-file-source
+                                   'nyxt/file-manager-mode:file-source
                                    :extensions '("html"))))))
     (if (and (uiop:file-exists-p html-file)
              (equal (pathname-type html-file) "html"))

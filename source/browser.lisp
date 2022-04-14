@@ -236,9 +236,8 @@ the renderer, and lays the foundations to track and manipulate buffers and
 windows.
 
 A typical Nyxt session encompasses a single instance of this class, but nothing
-prevents otherwise."))
-
-(define-user-class browser)
+prevents otherwise.")
+  (:metaclass user-class))
 
 (defmethod external-editor-program ((browser browser))
   (alex:ensure-list (slot-value browser 'external-editor-program)))
@@ -308,7 +307,6 @@ prevents otherwise."))
                                        (if *run-from-repl-p*
                                            (progn
                                              (quit)
-                                             (reset-all-user-classes)
                                              (apply #'start (append *options* (list :urls urls :no-init t))))
                                            (restart-with-message c))))))
                (startup browser urls)))))))
@@ -406,7 +404,7 @@ Return the download object matching the download."
                                                  :proxy proxy-url))
                  (push download downloads)
                  ;; Add a watcher / renderer for monitoring download
-                 (let ((download-render (make-instance 'user-download :url (render-url url))))
+                 (let ((download-render (make-instance 'download :url (render-url url))))
                    (setf (destination-path download-render)
                          (uiop:ensure-pathname
                           (download-manager:filename download)))
@@ -569,26 +567,27 @@ The following example does a few things:
 - Open magnet links with Transmission.
 - Open local files (file:// URIs) with Emacs.
 
-\(define-configuration buffer
-    ((request-resource-hook (reduce #'hooks:add-hook
-                                    (list (url-dispatching-handler
-                                           'doi-link-dispatcher
-                                           (match-scheme \"doi\")
-                                           (lambda (url)
-                                             (quri:uri (format nil \"https://doi.org/~a\"
-                                                               (quri:uri-path url)))))
-                                          (url-dispatching-handler
-                                           'transmission-magnet-links
-                                           (match-scheme \"magnet\")
-                                           \"transmission-remote --add ~a\")
-                                          (url-dispatching-handler
-                                           'emacs-file
-                                           (match-scheme \"file\")
-                                           (lambda (url)
-                                             (uiop:launch-program
-                                              `(\"emacs\" ,(quri:uri-path url)))
-                                             nil)))
-                                    :initial-value %slot-default%))))"
+\(defmethod configure-instance ((buffer buffer))
+  (setf (request-resource-hook buffer)
+        (reduce #'hooks:add-hook
+                (list (url-dispatching-handler
+                       'doi-link-dispatcher
+                       (match-scheme \"doi\")
+                       (lambda (url)
+                         (quri:uri (format nil \"https://doi.org/~a\"
+                                           (quri:uri-path url)))))
+                      (url-dispatching-handler
+                       'transmission-magnet-links
+                       (match-scheme \"magnet\")
+                       \"transmission-remote --add ~a\")
+                      (url-dispatching-handler
+                       'emacs-file
+                       (match-scheme \"file\")
+                       (lambda (url)
+                         (uiop:launch-program
+                          `(\"emacs\" ,(quri:uri-path url)))
+                         nil)))
+                :initial-value (request-resource-hook buffer))))"
   (make-instance
    'hooks:handler
    :fn (lambda (request-data)
@@ -689,7 +688,7 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-window-make (browser)
   (:method (browser)
     (declare (ignore browser))
-    (make-instance 'user-window)))
+    (make-instance 'window)))
 (define-ffi-generic ffi-window-to-foreground (window)
   (:method (window)
     (setf (slot-value *browser* 'last-active-window) window)))

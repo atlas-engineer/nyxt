@@ -103,8 +103,8 @@ When the user is unspecified, take the current one."
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
-  (:documentation "Prompt source for user-accessible programs."))
-(define-user-class program-source)
+  (:documentation "Prompt source for user-accessible programs.")
+  (:metaclass user-class))
 
 (defmethod prompter:object-attributes ((path pathname))
   `(("Path" ,(uiop:native-namestring path))
@@ -184,11 +184,11 @@ Accepts the name of the file as the first argument and has two keyword arguments
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
-  (:documentation "Prompt source for file(s) on the disk."))
-(define-user-class file-source)
+  (:documentation "Prompt source for file(s) on the disk.")
+  (:metaclass user-class))
 
-(define-class open-file-source (user-file-source) ())
-(define-user-class open-file-source)
+(define-class open-file-source (file-source) ()
+  (:metaclass user-class))
 
 (defun supported-media-or-directory (filename
                                      &optional (file-source (make-instance 'user-file-source)))

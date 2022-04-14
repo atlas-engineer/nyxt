@@ -287,7 +287,7 @@ Return the short error message and the full error message as second value."
                  (uiop:getcwd))))
    :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
    :sources
-   (make-instance 'nyxt/file-manager-mode:user-file-source
+   (make-instance 'nyxt/file-manager-mode:file-source
                   :extensions '("lisp")
                   :actions (list (make-command load-file* (files)
                                    (dolist (file files)
@@ -575,7 +575,7 @@ Finally, run the browser, load URL-STRINGS if any, then run
                  (echo-warning "~a." message)
                  (error-in-new-window "*Init file errors*" full-message)))))
       (load-or-eval :remote nil)
-      (setf *browser* (make-instance 'user-browser
+      (setf *browser* (make-instance 'browser
                                      :startup-error-reporter-function startup-error-reporter
                                      :startup-timestamp startup-timestamp
                                      :socket-thread thread))

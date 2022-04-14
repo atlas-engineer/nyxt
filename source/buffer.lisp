@@ -132,7 +132,7 @@ customize to their needs.
 
 Example:
 
-\(define-configuration buffer
+\(defmethod customize-instance ((buffer buffer))
   ((override-map (let ((map (make-keymap \"override-map\")))
                              (define-key map
                                \"M-x\" 'execute-command
@@ -189,11 +189,11 @@ There's no more ability to pass the results to the renderer with :FORWARD.
 
 Example:
 
-\(define-configuration buffer
-  ((request-resource-hook
-    (reduce #'hooks:add-hook
-            '(old-reddit-handler auto-proxy-handler)
-            :initial-value %slot-default%))))")
+\(defmethod configure-instance ((buffer buffer))
+  (setf (request-resource-hook buffer)
+        (reduce #'hooks:add-hook
+                '(old-reddit-handler auto-proxy-handler)
+                :initial-value (request-resource-hook buffer))))")
    (scroll-distance
     50
     :type integer
@@ -315,10 +315,10 @@ The handlers take the buffer as argument.")
 See `password:*interfaces*' for the list of all currently registered interfaces.
 To use, say, KeepassXC, set this slot to
 
-  (make-instance 'password:user-keepassxc-interface)
+  (make-instance 'password:keepassxc-interface)
 
-Password interfaces may have user classes (that is, prefixed with 'user-' as in
-the above example), in which case you can use `define-configuration' on them.")
+Password interfaces may be user classes, in which case you can specialize the
+`customize-instance' method on them.")
    (download-directory
     (make-instance 'download-directory)
     :type download-directory
@@ -373,9 +373,8 @@ Buffers result from the computations of a web renderer, which generates a visual
 representation of HTML documents.
 
 Rendered URLs or the Nyxt's manual qualify as examples.  Buffers are fully
-separated from one another, so that each has its own behaviour and settings."))
-
-(define-user-class buffer)
+separated from one another, so that each has its own behaviour and settings.")
+  (:metaclass user-class))
 
 (define-class background-buffer (user-web-buffer)
   ()
@@ -390,9 +389,8 @@ Examples of the processes to run in background buffers are:
 - Anything else requiring a renderer running invisible to the user.
 
 These buffers are not referenced by `browser', so the only way to control these is to
-store them somewhere and `ffi-buffer-delete' them once done."))
-
-(define-user-class background-buffer)
+store them somewhere and `ffi-buffer-delete' them once done.")
+  (:metaclass user-class))
 
 (defmethod initialize-instance :after ((buffer buffer)
                                        &key (browser *browser*)
@@ -474,7 +472,7 @@ inherited from the superclasses."))
                      ;; Mode at the beginning of the list have higher priorities.
                      :from-end t))
 
-(define-class web-buffer (user-buffer)
+(define-class web-buffer (buffer)
   ((status
     :unloaded
     :type (member :loading
@@ -509,9 +507,8 @@ inherited from the superclasses."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-
-(define-user-class web-buffer)
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:metaclass user-class))
 
 (defmethod default-modes append ((buffer web-buffer))
   '(certificate-exception-mode))
@@ -521,21 +518,19 @@ inherited from the superclasses."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-
-(define-user-class nosave-buffer)
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:metaclass user-class))
 
 (defmethod default-modes append ((buffer nosave-buffer))
   '(certificate-exception-mode))
 
-(define-class internal-buffer (user-buffer)
+(define-class internal-buffer (buffer)
   ()
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-
-(define-user-class internal-buffer)
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:metaclass user-class))
 
 (define-class panel-buffer (user-web-buffer)
   ((width 250 :documentation "The width in pixels.")
@@ -577,9 +572,8 @@ inherited from the superclasses."))
              :color theme:background))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-
-(define-user-class panel-buffer)
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:metaclass user-class))
 
 (define-class editor-buffer (user-internal-buffer)
   ((file :documentation "The file being edited.")
@@ -590,15 +584,14 @@ inherited from the superclasses."))
   (:export-predicate-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Each editor buffer matches a file. Each editor buffer
-  contains an editor mode instance."))
+  contains an editor mode instance.")
+  (:metaclass user-class))
 
 (defmethod default-modes append ((buffer editor-buffer))
   '(plaintext-editor-mode))
 (defmethod default-modes :around ((buffer editor-buffer))
   ;; REVIEW: Really remove web-mode from editor-buffer?
   (remove 'web-mode (call-next-method)))
-
-(define-user-class editor-buffer)
 
 (define-class dummy-buffer (user-internal-buffer)
   ()
@@ -741,9 +734,8 @@ Delete it with `ffi-buffer-delete'"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-
-(define-user-class status-buffer)
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:metaclass user-class))
 
 (define-command update-document-model (&key (buffer (current-buffer)))
   "Update the buffer's `dom' with the page source augmented with Nyxt identifiers."
@@ -1177,8 +1169,8 @@ proceeding."
                             (unless (or (prompter:returned-p prompter)
                                         (eq buffer (current-buffer)))
                               (set-current-buffer buffer))))))
-  (:export-class-name-p t))
-(define-user-class buffer-source)
+  (:export-class-name-p t)
+  (:metaclass user-class))
 
 (-> switch-buffer (&key (:id string) (:current-is-last-p boolean)) *)
 (define-command switch-buffer (&key id (current-is-last-p nil))
@@ -1190,7 +1182,7 @@ second latest buffer first."
       (set-current-buffer (buffers-get id))
       (prompt
        :prompt "Switch to buffer"
-       :sources (list (make-instance 'user-buffer-source
+       :sources (list (make-instance 'buffer-source
                                      :constructor (buffer-initial-suggestions
                                                    :current-is-last-p current-is-last-p))))))
 
@@ -1199,7 +1191,7 @@ second latest buffer first."
   (let ((domain (or domain (quri:uri-domain (url buffer)))))
     (prompt
      :prompt "Switch to buffer in current domain:"
-     :sources (make-instance 'user-buffer-source
+     :sources (make-instance 'buffer-source
                              :constructor (sera:filter (match-domain domain)
                                                        (sort-by-time (buffer-list)))))))
 
@@ -1217,7 +1209,7 @@ second latest buffer first."
       (buffer-delete (gethash id (slot-value *browser* 'buffers)))
       (prompt
        :prompt "Delete buffer(s)"
-       :sources (make-instance 'user-buffer-source
+       :sources (make-instance 'buffer-source
                                :multi-selection-p t
                                :actions (list (make-mapped-command buffer-delete))))))
 
@@ -1228,7 +1220,7 @@ single buffer, optionally delete them. This function is useful for archiving a
 set of useful URLs or preparing a list to send to a someone else."
   (let ((buffers (prompt
                   :prompt "Reduce buffer(s)"
-                  :sources (make-instance 'user-buffer-source
+                  :sources (make-instance 'buffer-source
                                           :constructor (remove-if #'internal-url-p (buffer-list)
                                                                   :key #'url)
                                           :actions '(identity)
@@ -1310,8 +1302,8 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
    (prompter:multi-selection-p t)
    (prompter:filter-preprocessor nil)   ; Don't remove non-exact results.
    (prompter:actions '(buffer-load)))
-  (:export-class-name-p t))
-(define-user-class global-history-source)
+  (:export-class-name-p t)
+  (:metaclass user-class))
 
 (define-class new-url-query ()
   ((query ""
@@ -1477,8 +1469,8 @@ validity, nor does it return any search engine suggestions.  This guarantees
 that a good-enough default suggestion is showed instantaneously.
 (We really want this prompter source to be fast!)  The second pass checks the
 DNS to precisely validate domains and returns the search engines suggestions, if
-any."))
-(define-user-class new-url-or-search-source)
+any.")
+  (:metaclass user-class))
 
 (defun pushnew-url-history (history url)
   "URL is not pushed if empty."
@@ -1554,7 +1546,7 @@ any."))
       (mapcar (lambda (buffer) (buffer-load (url buffer) :buffer buffer)) buffers)
       (prompt
        :prompt "Reload buffer(s)"
-       :sources (make-instance 'user-buffer-source
+       :sources (make-instance 'buffer-source
                                :multi-selection-p t
                                :actions (list 'reload-buffers)))))
 
@@ -1700,8 +1692,8 @@ ARGS are passed to the mode command."
                              (uiop:ensure-list (buffers source)))
                             :test (lambda (i y) (equal (mode-name i)
                                                        (mode-name y)))))))
-  (:export-class-name-p t))
-(define-user-class active-mode-source)
+  (:export-class-name-p t)
+  (:metaclass user-class))
 
 (define-class inactive-mode-source (prompter:source)
   ((prompter:name "Inactive modes")
@@ -1714,14 +1706,14 @@ ARGS are passed to the mode command."
                                                      (mapcar #'mode-name (modes b)))
                                                    (uiop:ensure-list (buffers source))))))
                              (set-difference (mode-list) common-modes)))))
-  (:export-class-name-p t))
-(define-user-class inactive-mode-source)
+  (:export-class-name-p t)
+  (:metaclass user-class))
 
 (define-command disable-mode ()
   "Disable queried mode(s) for select buffer(s)."
   (let* ((buffers (prompt
                    :prompt "Disable mode(s) for buffer(s)"
-                   :sources (make-instance 'user-buffer-source
+                   :sources (make-instance 'buffer-source
                                            :multi-selection-p t
                                            :actions '())))
          (modes (prompt
@@ -1735,7 +1727,7 @@ ARGS are passed to the mode command."
   "Enable queried mode(s) for select buffer(s)."
   (let* ((buffers (prompt
                    :prompt "Enable mode(s) for buffer(s)"
-                   :sources (make-instance 'user-buffer-source
+                   :sources (make-instance 'buffer-source
                                            :multi-selection-p t
                                            :actions '())))
          (modes (prompt
@@ -1762,8 +1754,8 @@ ARGS are passed to the mode command."
    (prompter:multi-selection-p t)
    (prompter:constructor (sort (all-mode-names) #'string< :key #'symbol-name))
    (prompter:suggestion-maker 'make-mode-suggestion))
-  (:export-class-name-p t))
-(define-user-class mode-source)
+  (:export-class-name-p t)
+  (:metaclass user-class))
 
 (define-command toggle-modes (&key (buffer (current-buffer)))
   "Enable marked modes, disable unmarked modes for BUFFER."

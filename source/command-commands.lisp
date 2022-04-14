@@ -56,8 +56,8 @@
 Global commands are listed if `global-p' is non-nil.
 Mode commands of enabled modes are also listed.
 While disabled-mode commands are not listed, it's still possible to call them
-from a key binding."))
-(define-user-class command-source)
+from a key binding.")
+  (:metaclass user-class))
 
 (define-command execute-command ()
   "Execute a command by name."

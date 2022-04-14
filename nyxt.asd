@@ -120,6 +120,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "concurrency")
                  (:file "gpg")
                  (:file "user-files")
+                 (:file "user-classes")
                  (:file "configuration")
                  (:file "spinneret-tags")
                  (:file "parenscript-macro")

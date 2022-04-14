@@ -353,8 +353,8 @@ This saves the history to disk when BODY exits."
           (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
               (htree:all-contiguous-owned-parents history owner)
               (htree:all-parents history :owner owner)))))))
-  (:export-class-name-p t))
-(define-user-class history-backwards-source)
+  (:export-class-name-p t)
+  (:metaclass user-class))
 
 (defmethod prompter:object-attributes ((node history-tree:node))
   (let ((entry (htree:data (history-tree:entry node))))
@@ -383,8 +383,8 @@ This saves the history to disk when BODY exits."
             (htree:owned-children (htree:owner history (id (buffer source))))
             (htree:children (htree:owner-node history (id (buffer source)))))))))
   (:documentation "Direct children of the current history node.")
-  (:export-class-name-p t))
-(define-user-class direct-history-forwards-source)
+  (:export-class-name-p t)
+  (:metaclass user-class))
 
 (define-command history-forwards-direct-children (&optional (buffer (current-buffer)))
   "Query child URL to navigate to."
@@ -415,8 +415,8 @@ Otherwise go forward to the only child."
     (lambda (source)
       (with-history (history (buffer source))
         (htree:all-forward-children history (id (buffer source)))))))
-  (:export-class-name-p t))
-(define-user-class history-forwards-source)
+  (:export-class-name-p t)
+  (:metaclass user-class))
 
 (define-command history-forwards-query (&optional (buffer (current-buffer)))
   "Query forward-URL to navigate to."
@@ -443,8 +443,8 @@ Otherwise go forward to the only child."
           (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
               (htree:all-contiguous-owned-children history owner)
               (htree:all-children history :owner owner)))))))
-  (:export-class-name-p t))
-(define-user-class all-history-forwards-source)
+  (:export-class-name-p t)
+  (:metaclass user-class))
 
 (define-command history-forwards-all-query (&optional (buffer (current-buffer)))
   "Query URL to forward to, from all child branches."
@@ -468,8 +468,8 @@ Otherwise go forward to the only child."
                      #'htree:all-branch-nodes)
                  history
                  (htree:owner history (id (buffer source))))))))
-  (:export-class-name-p t))
-(define-user-class history-all-source)
+  (:export-class-name-p t)
+  (:metaclass user-class))
 
 (define-command history-all-query (&optional (buffer (current-buffer)))
   "Query URL to go to, from the whole history."
@@ -570,8 +570,8 @@ Otherwise go forward to the only child."
    (prompter:actions
     (list (make-command paste* (ring-items)
             (%paste :input-text (first ring-items))))))
-  (:export-class-name-p t))
-(define-user-class ring-source)
+  (:export-class-name-p t)
+  (:metaclass user-class))
 
 (define-command paste-from-clipboard-ring ()
   "Show `*browser*' clipboard ring and paste selected entry."
@@ -620,8 +620,8 @@ Otherwise go forward to the only child."
                      (%paste :input-text (autofill-fill selected-fill)))
                     ((functionp (autofill-fill selected-fill))
                      (%paste :input-text (funcall (autofill-fill selected-fill))))))))))
-  (:export-class-name-p t))
-(define-user-class autofill-source)
+  (:export-class-name-p t)
+  (:metaclass user-class))
 
 (define-command autofill ()
   "Fill in a field with a value from a saved list."

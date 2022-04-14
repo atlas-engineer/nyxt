@@ -151,9 +151,8 @@ See `buffer's `override-map' for more details."))
 Each prompt spawns a new object: this makes it possible to nest prompts, such as
 invoking `prompt-buffer:history'.
 
-See `prompt' for how to invoke prompts.")))
-
-(define-user-class prompt-buffer)
+See `prompt' for how to invoke prompts.")
+    (:metaclass user-class)))
 
 (defmethod default-modes append ((buffer prompt-buffer))
   '(prompt-buffer-mode))
