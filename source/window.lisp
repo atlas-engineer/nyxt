@@ -166,7 +166,7 @@ The handlers take the window as argument."))
                                      :test #'quri:uri= :key #'url)))
              (if ,buffer-var
                  (window-delete-panel-buffer (current-window) ,buffer-var)
-                 (let ((,buffer-var (make-instance 'user-panel-buffer
+                 (let ((,buffer-var (make-instance 'panel-buffer
                                                    :title ,title
                                                    :url url)))
                    (buffer-load url :buffer ,buffer-var)

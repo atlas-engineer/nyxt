@@ -105,7 +105,7 @@
           (first
            (prompt
             :prompt "Add command"
-            :sources (make-instance 'user-command-source)))))
+            :sources (make-instance 'command-source)))))
     (add-function macro-editor command)))
 
 (defmethod macro-form-valid-p ((macro-editor macro-edit-mode))

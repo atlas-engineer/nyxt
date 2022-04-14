@@ -451,7 +451,7 @@ response.  The BODY is wrapped with `with-protect'."
        (setf (gtk:gtk-widget-size-request message-container)
              (list -1 (message-buffer-height window)))
 
-       (setf status-buffer (make-instance 'user-status-buffer))
+       (setf status-buffer (make-instance 'status-buffer))
        (gtk:gtk-box-pack-end root-box-layout status-container :expand nil)
        (gtk:gtk-box-pack-start status-container (gtk-object status-buffer) :expand t)
        (setf (gtk:gtk-widget-size-request status-container)
@@ -1410,7 +1410,7 @@ See `finalize-buffer'."
     t)
   (connect-signal buffer "create" nil (web-view navigation-action)
     (declare (ignore web-view))
-    (let ((new-buffer (make-instance 'user-web-buffer :parent-buffer (current-buffer)))
+    (let ((new-buffer (make-instance 'web-buffer :parent-buffer (current-buffer)))
           (url (webkit:webkit-uri-request-uri
                 (webkit:webkit-navigation-action-get-request
                  (gobject:pointer navigation-action)))))
@@ -1635,7 +1635,7 @@ local anyways, and it's better to refresh it if a load was queried."
 
 (defmethod ffi-buffer-download ((buffer gtk-buffer) url)
   (let* ((webkit-download (webkit:webkit-web-view-download-uri (gtk-object buffer) url))
-         (download (make-instance 'user-download
+         (download (make-instance 'download
                                   :url url
                                   :gtk-object webkit-download)))
     (hooks:run-hook (before-download-hook *browser*) url)

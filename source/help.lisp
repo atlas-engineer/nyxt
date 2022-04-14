@@ -93,7 +93,7 @@ When INPUT does not have a unique match, prompt for the list of exact matches."
                                                         (describe-function :function (first functions))))
                                        :filter-preprocessor preprocessor
                                        :universal universal)
-                        (make-instance 'user-command-source
+                        (make-instance 'command-source
                                        :actions (list (make-command describe-command* (commands)
                                                         (describe-command :command (name (first commands)))))
                                        :filter-preprocessor preprocessor
@@ -315,7 +315,7 @@ For generic functions, describe all the methods."
 (define-internal-page-command-global describe-command
     (&key (command (name (prompt1
                            :prompt "Describe command"
-                           :sources (make-instance 'user-command-source)))))
+                           :sources (make-instance 'command-source)))))
     (buffer (str:concat "*Help-" (symbol-name command) "*")
             'nyxt/help-mode:help-mode)
   "Inspect a command and show it in a help buffer.
@@ -821,7 +821,7 @@ See `*debug-on-error*'."
     (echo "Nyxt-native debugging ~:[dis~;en~]abled." value)))
 
 (defun error-buffer (&optional (title "Unknown error") (text ""))
-  (sera:lret* ((error-buffer (make-instance 'user-web-buffer)))
+  (sera:lret* ((error-buffer (make-instance 'web-buffer)))
     (with-current-buffer error-buffer
       (html-set (error-help title text)
                 error-buffer))))

@@ -376,7 +376,7 @@ Rendered URLs or the Nyxt's manual qualify as examples.  Buffers are fully
 separated from one another, so that each has its own behaviour and settings.")
   (:metaclass user-class))
 
-(define-class background-buffer (user-web-buffer)
+(define-class background-buffer (web-buffer)
   ()
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -513,7 +513,7 @@ inherited from the superclasses."))
 (defmethod default-modes append ((buffer web-buffer))
   '(certificate-exception-mode))
 
-(define-class nosave-buffer (user-web-buffer)
+(define-class nosave-buffer (web-buffer)
   ((profile (make-instance 'nosave-profile)))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -532,7 +532,7 @@ inherited from the superclasses."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
-(define-class panel-buffer (user-web-buffer)
+(define-class panel-buffer (web-buffer)
   ((width 250 :documentation "The width in pixels.")
    (style (theme:themed-css (theme *browser*)
             (body
@@ -575,7 +575,7 @@ inherited from the superclasses."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
-(define-class editor-buffer (user-internal-buffer)
+(define-class editor-buffer (internal-buffer)
   ((file :documentation "The file being edited.")
    (url (quri:uri "editor-buffer"))
    (title "editor-buffer"))
@@ -593,7 +593,7 @@ inherited from the superclasses."))
   ;; REVIEW: Really remove web-mode from editor-buffer?
   (remove 'web-mode (call-next-method)))
 
-(define-class dummy-buffer (user-internal-buffer)
+(define-class dummy-buffer (internal-buffer)
   ()
   (:documentation "Internal buffers are lighter than full-blown buffers which can have a
 WebKit context, etc.
@@ -606,7 +606,7 @@ Delete it with `ffi-buffer-delete'"))
   ""
   '())
 
-(define-class status-buffer (user-internal-buffer)
+(define-class status-buffer (internal-buffer)
   ((height
     24
     :type integer
@@ -922,7 +922,7 @@ BUFFER's modes."
            &allow-other-keys)
     (or buffer t))
 (define-command make-buffer (&rest args &key (title "") modes (url (default-new-buffer-url *browser*)) parent-buffer
-                             no-history-p (load-url-p t) (buffer-class 'user-web-buffer)
+                             no-history-p (load-url-p t) (buffer-class 'web-buffer)
                              &allow-other-keys)
   "Create a new buffer.
 MODES is a list of mode symbols.
@@ -956,7 +956,7 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
   "Create a new buffer that won't save anything to the filesystem.
 See `make-buffer' for a description of the arguments."
   (declare (ignorable title modes url load-url-p))
-  (apply #'make-buffer (append (list :buffer-class 'user-nosave-buffer) args)))
+  (apply #'make-buffer (append (list :buffer-class 'nosave-buffer) args)))
 
 (-> make-buffer-focus
     (&key (:url quri:uri)
@@ -981,7 +981,7 @@ See `make-buffer'."
   "Create a new web-aware buffer that won't be registered by the `browser'.
 See `make-buffer' for a description of the arguments."
   (declare (ignorable title modes url))
-  (apply #'make-buffer (append (list :buffer-class 'user-background-buffer :no-history-p t) args)))
+  (apply #'make-buffer (append (list :buffer-class 'background-buffer :no-history-p t) args)))
 
 (define-command duplicate-buffer-with-current-modes (&key (modes nil) parent-buffer)
   "Duplicate current buffer in a new buffer with current modes as well."
@@ -1007,14 +1007,14 @@ If URL is `:default', use `default-new-buffer-url'."
   (make-buffer :title title
                :url url
                :extra-modes modes
-               :buffer-class 'user-internal-buffer
+               :buffer-class 'internal-buffer
                :no-history-p no-history-p))
 
 (define-command make-editor-buffer (&key (title "") modes)
   "Create a new editor buffer."
   (make-buffer :title title
                :extra-modes modes
-               :buffer-class 'user-editor-buffer))
+               :buffer-class 'editor-buffer))
 
 (-> add-to-recent-buffers (buffer) *)
 (defun add-to-recent-buffers (buffer)
@@ -1494,8 +1494,8 @@ any.")
      :input (if prefill-current-url-p
                 (render-url (url (current-buffer))) "")
      :history history
-     :sources (list (make-instance 'user-new-url-or-search-source :actions actions)
-                    (make-instance 'user-global-history-source :actions actions)
+     :sources (list (make-instance 'new-url-or-search-source :actions actions)
+                    (make-instance 'global-history-source :actions actions)
                     (make-instance 'bookmark-source :actions actions)
                     (make-instance 'search-engine-url-source :actions actions)))))
 
@@ -1513,8 +1513,8 @@ any.")
      :input (if prefill-current-url-p
                 (render-url (url (current-buffer))) "")
      :history history
-     :sources (list (make-instance 'user-new-url-or-search-source :actions actions)
-                    (make-instance 'user-global-history-source :actions actions)
+     :sources (list (make-instance 'new-url-or-search-source :actions actions)
+                    (make-instance 'global-history-source :actions actions)
                     (make-instance 'bookmark-source :actions actions)
                     (make-instance 'search-engine-url-source :actions actions)))))
 
@@ -1531,8 +1531,8 @@ any.")
      :prompt "Open URL in new nosave buffer"
      :input (if prefill-current-url-p
                 (render-url (url (current-buffer))) "")
-     :sources (list (make-instance 'user-new-url-or-search-source :actions actions)
-                    (make-instance 'user-global-history-source :actions actions)
+     :sources (list (make-instance 'new-url-or-search-source :actions actions)
+                    (make-instance 'global-history-source :actions actions)
                     (make-instance 'bookmark-source :actions actions)
                     (make-instance 'search-engine-url-source :actions actions)))))
 
@@ -1718,7 +1718,7 @@ ARGS are passed to the mode command."
                                            :actions '())))
          (modes (prompt
                  :prompt "Disable mode(s)"
-                 :sources (make-instance 'user-active-mode-source
+                 :sources (make-instance 'active-mode-source
                                          :buffers buffers))))
     (loop for buffer in buffers
           do (disable-modes (mapcar #'mode-name modes) buffer))))
@@ -1732,7 +1732,7 @@ ARGS are passed to the mode command."
                                            :actions '())))
          (modes (prompt
                  :prompt "Enable mode(s)"
-                 :sources (make-instance 'user-inactive-mode-source
+                 :sources (make-instance 'inactive-mode-source
                                          :buffers buffers))))
     (loop for buffer in buffers
           do (enable-modes (uiop:ensure-list modes) buffer))))
@@ -1761,7 +1761,7 @@ ARGS are passed to the mode command."
   "Enable marked modes, disable unmarked modes for BUFFER."
   (let* ((modes-to-enable (prompt
                            :prompt "Mark modes to enable, unmark to disable"
-                           :sources (make-instance 'user-mode-source
+                           :sources (make-instance 'mode-source
                                                    :actions (list 'identity
                                                                   (make-command force-disable-auto-mode (modes)
                                                                                 "Return selection but force disabling auto-mode.

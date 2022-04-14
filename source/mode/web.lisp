@@ -365,7 +365,7 @@ This saves the history to disk when BODY exits."
   "Query parent URL to navigate back to."
   (let ((input (prompt1
                  :prompt "Navigate backwards to"
-                 :sources (make-instance 'user-history-backwards-source
+                 :sources (make-instance 'history-backwards-source
                                          :buffer buffer))))
     (when input
       (with-history-access (history buffer)
@@ -390,7 +390,7 @@ This saves the history to disk when BODY exits."
   "Query child URL to navigate to."
   (let ((input (prompt1
                  :prompt "Navigate forwards to"
-                 :sources (make-instance 'user-direct-history-forwards-source
+                 :sources (make-instance 'direct-history-forwards-source
                                          :buffer buffer))))
     (when input
       (with-history-access (history buffer)
@@ -422,7 +422,7 @@ Otherwise go forward to the only child."
   "Query forward-URL to navigate to."
   (let ((input (prompt1
                  :prompt "Navigate forwards to"
-                 :sources (list (make-instance 'user-history-forwards-source
+                 :sources (list (make-instance 'history-forwards-source
                                                :buffer buffer)))))
     (when input
       (with-history-access (history buffer)
@@ -450,7 +450,7 @@ Otherwise go forward to the only child."
   "Query URL to forward to, from all child branches."
   (let ((input (prompt1
                  :prompt "Navigate forwards to (all branches)"
-                 :sources (list (make-instance 'user-all-history-forwards-source
+                 :sources (list (make-instance 'all-history-forwards-source
                                                :buffer buffer)))))
     (when input
       (with-history (history buffer)
@@ -475,7 +475,7 @@ Otherwise go forward to the only child."
   "Query URL to go to, from the whole history."
   (let ((input (prompt1
                  :prompt "Navigate to"
-                 :sources (list (make-instance 'user-history-all-source
+                 :sources (list (make-instance 'history-all-source
                                                :buffer buffer)))))
     (when input
       (with-history (history buffer)
@@ -577,7 +577,7 @@ Otherwise go forward to the only child."
   "Show `*browser*' clipboard ring and paste selected entry."
   (prompt
    :prompt "Paste from ring"
-   :sources (list (make-instance 'user-ring-source
+   :sources (list (make-instance 'ring-source
                                  :ring (nyxt::clipboard-ring *browser*)))))
 
 (define-command copy (&optional (buffer (current-buffer)))
@@ -627,7 +627,7 @@ Otherwise go forward to the only child."
   "Fill in a field with a value from a saved list."
   (prompt
    :prompt "Autofill"
-   :sources (make-instance 'user-autofill-source)))
+   :sources (make-instance 'autofill-source)))
 
 (export-always 'element-focused)
 (defgeneric element-focused (mode) ; TODO: Make hook instead?  Or use both, have the default method call hook.

@@ -151,7 +151,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
                                            (buffer-list))
                                   (funcall (symbol-function ,mode)
                                            :activate t
-                                           :buffer (make-instance 'user-web-buffer
+                                           :buffer (make-instance 'web-buffer
                                                                   :title ,title :url ,url)))))
             (buffer-load ,url :buffer ,buffer-var)
             (set-current-buffer ,buffer-var)
