@@ -376,9 +376,10 @@ Rendered URLs or the Nyxt's manual qualify as examples.  Buffers are fully
 separated from one another, so that each has its own behaviour and settings.")
   (:metaclass user-class))
 
-(define-class buffer (buffer-core)      ; TODO: Declare as mixin.
+(define-class buffer (buffer-core)
   ()
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:metaclass mixin-class))
 
 (define-class background-buffer (web-buffer)
   ()

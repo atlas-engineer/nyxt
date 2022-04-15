@@ -47,7 +47,8 @@ See also the `web-contexts' slot."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
-(defclass browser (gtk-browser) ())
+(defclass browser (gtk-browser) ()
+  (:metaclass mixin-class))
 
 (alex:define-constant +internal+ "internal" :test 'equal)
 (alex:define-constant +default+ "default" :test 'equal)
@@ -81,7 +82,8 @@ See also the `web-contexts' slot."))
   (:export-accessor-names-p t)          ; TODO: Unexport?
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defclass window (gtk-window window-core) ())
+(defclass window (gtk-window window-core) ()
+  (:metaclass mixin-class))
 
 (define-class gtk-buffer ()
   ((gtk-object)
@@ -108,7 +110,8 @@ failures."))
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defclass buffer (gtk-buffer buffer-core) ())
+(defclass buffer (gtk-buffer buffer-core) ()
+  (:metaclass mixin-class))
 
 (defclass webkit-web-context (webkit:webkit-web-context) ()
   (:metaclass gobject:gobject-class))
@@ -305,7 +308,8 @@ By default it is found in the source directory."))
     :documentation "See `gtk-buffer' slot of the same name."))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defclass download (gtk-download download-core) ())
+(defclass download (gtk-download download-core) ()
+  (:metaclass mixin-class))
 
 (defclass webkit-web-view-ephemeral (webkit:webkit-web-view) ()
   (:metaclass gobject:gobject-class))
@@ -749,7 +753,8 @@ See `gtk-browser's `modifier-translator' slot."
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defclass scheme (gtk-scheme scheme-core) ())
+(defclass scheme (gtk-scheme scheme-core) ()
+  (:metaclass mixin-class))
 
 (defun make-context (name &key ephemeral-p)
   (let* ((context

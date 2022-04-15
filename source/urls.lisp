@@ -131,9 +131,10 @@ Requires encryption or other means of security.")
   (:documentation "Representation of Nyxt-specific internal schemes.")
   (:metaclass user-class))
 
-(define-class scheme (scheme-core)      ; TODO: Declare as mixin.
+(define-class scheme (scheme-core)
   ()
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:metaclass mixin-class))
 
 (defmethod print-object ((scheme scheme) stream)
   (print-unreadable-object (scheme stream :type t :identity t)
