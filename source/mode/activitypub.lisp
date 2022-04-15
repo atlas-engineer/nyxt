@@ -31,16 +31,31 @@ Possibly contains additional Lisp-inaccessible properties."))
   "A map from ActivityStreams/ActivityPub type name to the Lisp-side class symbol.")
 
 (defgeneric fill-object (object json)
-  (:method ((object t) json))
+  (:method ((object t) json)
+    object)
   (:method ((object base) json)
-    (call-next-method)
     (when (hash-table-p json)
       (setf (id object) (gethash "id" json)
             (object-type object) (gethash "type" json)
-            (original-object object) json)))
+            (original-object object) json))
+    (call-next-method))
   (:documentation "Fill the OBJECT based on the information from JSON.
 
 Should always CALL-NEXT-METHOD, so that all the superclasses are filled too."))
+
+(defgeneric parse-object (object)
+  (:method ((object t))
+    object)
+  (:documentation "Parse the object from the provided JSON data.
+Possibly recurse to the nested sub-objects."))
+
+(defmethod parse-object ((object hash-table))
+  (alex:if-let ((type (gethash "type" object)))
+    (fill-object (make-instance (gethash type *classes*)) object)
+    object))
+
+(defmethod parse-object ((object sequence))
+  (map (serapeum:class-name-of object) #'parse-object object))
 
 (defmacro define-json-type (name type (&rest superclasses) &body names-and-slots)
   "Define a JSON-serializable ActivityPub type with a Lisp class mirroring it.
@@ -72,7 +87,6 @@ JSON-NAMEs as strings, where
          (:export-accessor-names-p t)
          (:accessor-name-transformer (class*:make-name-transformer name)))
        (defmethod fill-object ((object ,name ) processed-json)
-         (call-next-method)
          (when (hash-table-p processed-json)
            ,@(loop for (json-name lisp-name processor) in normalized-slots
                    collect `(when (gethash ,json-name processed-json)
@@ -80,7 +94,8 @@ JSON-NAMEs as strings, where
                               (setf (slot-value object (quote ,lisp-name))
                                     ,(if processor
                                          `(funcall ,processor (gethash ,json-name processed-json))
-                                         `(gethash ,json-name processed-json))))))))))
+                                         `(gethash ,json-name processed-json))))))
+         (call-next-method)))))
 
 
 (define-json-type object "Object" (base)
