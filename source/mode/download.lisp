@@ -3,7 +3,7 @@
 
 (in-package :nyxt)
 
-(define-class download ()
+(define-class download-core ()
   ((url (error "URL required.")
         :documentation "A string representation of a URL to be shown in the
 interface.")
@@ -53,6 +53,10 @@ within the button's URL when the destinaton path is set.")
   (:documentation "This class is used to represent a download within
 the *Downloads* buffer. The browser class contains a list of these
 download objects: `downloads'."))
+
+(define-class download (download-core)  ; TODO: Declare as mixin.
+  ()
+  (:export-class-name-p t))
 
 (defun cancel-download (url)
   "This function is called by the cancel-button with an argument of
