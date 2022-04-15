@@ -42,7 +42,12 @@ Without handler, return ARG.  This is an acceptable `combination' for
                  result)))
     (compose-handlers (mapcar #'hooks:fn (hooks:handlers hook)) arg)))
 
-(define-class browser-core ()
+(define-class renderer-browser ()
+  ()
+  (:export-class-name-p t)
+  (:metaclass mixin-class))
+
+(define-class browser (renderer-browser)
   ((remote-execution-p
     nil
     :type boolean
@@ -238,11 +243,6 @@ windows.
 A typical Nyxt session encompasses a single instance of this class, but nothing
 prevents otherwise.")
   (:metaclass user-class))
-
-(define-class browser (browser-core)
-  ()
-  (:export-class-name-p t)
-  (:metaclass mixin-class))
 
 (defmethod external-editor-program ((browser browser))
   (alex:ensure-list (slot-value browser 'external-editor-program)))
@@ -691,11 +691,11 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-buffer-url (buffer))
 (define-ffi-generic ffi-buffer-title (buffer))
 (define-ffi-generic ffi-window-make (browser)
-  (:method ((browser browser-core))
+  (:method ((browser t))
     (declare (ignore browser))
     (make-instance 'window)))
 (define-ffi-generic ffi-window-to-foreground (window)
-  (:method ((window window-core))
+  (:method ((window t))
     (setf (slot-value *browser* 'last-active-window) window)))
 (define-ffi-generic ffi-window-set-title (window title))
 (define-ffi-generic ffi-window-active (browser))
@@ -735,7 +735,7 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-buffer-get-proxy (buffer))
 (define-ffi-generic ffi-buffer-download (buffer url))
 (define-ffi-generic ffi-buffer-set-zoom-level (buffer value)
-  (:method ((buffer buffer-core) value)
+  (:method ((buffer t) value)
     (pflet ((zoom ()
                   (ps:let ((style (ps:chain document body style)))
                     (setf (ps:@ style zoom)
@@ -743,7 +743,7 @@ sometimes yields the wrong result."
       (with-current-buffer buffer
         (zoom)))))
 (define-ffi-generic ffi-buffer-get-document (buffer)
-  (:method ((buffer buffer-core))
+  (:method ((buffer t))
     (pflet ((get-html (start end)
                       (ps:chain document document-element |innerHTML| (slice (ps:lisp start)
                                                                              (ps:lisp end))))
@@ -757,12 +757,12 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-generate-input-event (window event))
 (define-ffi-generic ffi-generated-input-event-p (window event))
 (define-ffi-generic ffi-within-renderer-thread (browser thunk)
-  (:method ((browser browser-core) thunk)
+  (:method ((browser t) thunk)
     (declare (ignore browser))
     (funcall thunk)))
 (define-ffi-generic ffi-kill-browser (browser))
 (define-ffi-generic ffi-initialize (browser urls startup-timestamp)
-  (:method ((browser browser-core) urls startup-timestamp)
+  (:method ((browser t) urls startup-timestamp)
     (finalize browser urls startup-timestamp)))
 (define-ffi-generic ffi-inspector-show (buffer))
 (define-ffi-generic ffi-print-status (window text))
@@ -774,7 +774,7 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-focused-p (buffer))
 (define-ffi-generic ffi-set-tracking-prevention (buffer value))
 (define-ffi-generic ffi-buffer-copy (buffer)
-  (:method ((buffer buffer-core))
+  (:method ((buffer t))
     (with-current-buffer buffer
       ;; On some systems like Xorg, clipboard pasting happens just-in-time.  So if we
       ;; copy something from the context menu 'Copy' action, upon pasting we will
@@ -789,23 +789,23 @@ sometimes yields the wrong result."
         (copy-to-clipboard input)
         (echo "Text copied: ~s" input)))))
 (define-ffi-generic ffi-buffer-paste (buffer)
-  (:method ((buffer buffer-core))
+  (:method ((buffer t))
     (with-current-buffer buffer
       (%paste))))
 (define-ffi-generic ffi-buffer-cut (buffer)
-  (:method ((buffer buffer-core))
+  (:method ((buffer t))
     (with-current-buffer buffer
       (let ((input (%cut)))
         (when input
           (copy-to-clipboard input)
           (echo "Text cut: ~s" input))))))
 (define-ffi-generic ffi-buffer-select-all (buffer)
-  (:method ((buffer buffer-core))
+  (:method ((buffer t))
     (with-current-buffer buffer
       (%select-all))))
 (define-ffi-generic ffi-buffer-undo (buffer)
-  (:method ((buffer buffer-core))
+  (:method ((buffer t))
     (echo-warning "Undoing the edits is not yet implemented for this renderer.")))
 (define-ffi-generic ffi-buffer-redo (buffer)
-  (:method ((buffer buffer-core))
+  (:method ((buffer t))
     (echo-warning "Redoing the edits is not yet implemented for this renderer.")))

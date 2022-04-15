@@ -5,7 +5,7 @@
 
 (setf +renderer+ "GTK")
 
-(define-class gtk-browser (browser-core)
+(define-class gtk-browser ()
   (#+darwin
    (modifiers '()
               :documentation "On macOS some modifiers like Super and Meta are
@@ -47,7 +47,7 @@ See also the `web-contexts' slot."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
-(defclass browser (gtk-browser) ()
+(define-class renderer-browser (gtk-browser) ()
   (:metaclass mixin-class))
 
 (alex:define-constant +internal+ "internal" :test 'equal)
@@ -82,7 +82,7 @@ See also the `web-contexts' slot."))
   (:export-accessor-names-p t)          ; TODO: Unexport?
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defclass window (gtk-window window-core) ()
+(define-class renderer-window (gtk-window) ()
   (:metaclass mixin-class))
 
 (define-class gtk-buffer ()
@@ -110,7 +110,7 @@ failures."))
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defclass buffer (gtk-buffer buffer-core) ()
+(define-class renderer-buffer (gtk-buffer) ()
   (:metaclass mixin-class))
 
 (defclass webkit-web-context (webkit:webkit-web-context) ()
@@ -308,7 +308,7 @@ By default it is found in the source directory."))
     :documentation "See `gtk-buffer' slot of the same name."))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defclass download (gtk-download download-core) ()
+(define-class renderer-download (gtk-download) ()
   (:metaclass mixin-class))
 
 (defclass webkit-web-view-ephemeral (webkit:webkit-web-view) ()
@@ -753,7 +753,7 @@ See `gtk-browser's `modifier-translator' slot."
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defclass scheme (gtk-scheme scheme-core) ()
+(define-class renderer-scheme (gtk-scheme) ()
   (:metaclass mixin-class))
 
 (defun make-context (name &key ephemeral-p)

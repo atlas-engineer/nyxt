@@ -93,7 +93,12 @@ bottleneck."
       (:pre text)))
    "text/html;charset=utf8"))
 
-(define-class scheme-core ()
+(define-class renderer-scheme ()
+  ()
+  (:export-class-name-p t)
+  (:metaclass mixin-class))
+
+(define-class scheme (renderer-scheme)
   ((name (error "Scheme must have a name/scheme")
          :documentation "Scheme/name of the internal scheme.
 For instance, \"gopher\", \"irc\".")
@@ -130,11 +135,6 @@ Requires encryption or other means of security.")
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Representation of Nyxt-specific internal schemes.")
   (:metaclass user-class))
-
-(define-class scheme (scheme-core)
-  ()
-  (:export-class-name-p t)
-  (:metaclass mixin-class))
 
 (defmethod print-object ((scheme scheme) stream)
   (print-unreadable-object (scheme stream :type t :identity t)
