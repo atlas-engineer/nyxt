@@ -170,7 +170,7 @@ can be 'web-mode as well as 'nyxt/web-mode:web-mode."
   (alex:when-let ((mode-full-symbol (mode-name mode-symbol)))
     (find mode-full-symbol
           (modes buffer)
-          :key #'class-name)))
+          :key #'sera:class-name-of)))
 
 (export-always 'find-submode)
 (defmethod find-submode ((buffer buffer) mode-symbol)
