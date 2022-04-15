@@ -8,7 +8,12 @@
 (export-always '(hook-keymaps-buffer))
 (hooks:define-hook-type url->url (function (quri:uri) quri:uri))
 
-(define-class buffer-core ()
+(define-class renderer-buffer ()
+  ()
+  (:export-class-name-p t)
+  (:metaclass mixin-class))
+
+(define-class buffer (renderer-buffer)
   ((id
     ""
     :documentation "Unique identifier for a buffer.
@@ -375,11 +380,6 @@ representation of HTML documents.
 Rendered URLs or the Nyxt's manual qualify as examples.  Buffers are fully
 separated from one another, so that each has its own behaviour and settings.")
   (:metaclass user-class))
-
-(define-class buffer (buffer-core)
-  ()
-  (:export-class-name-p t)
-  (:metaclass mixin-class))
 
 (define-class background-buffer (web-buffer)
   ()

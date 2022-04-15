@@ -5,7 +5,12 @@
 
 (hooks:define-hook-type window-buffer (function (window buffer)))
 
-(define-class window-core ()
+(define-class renderer-window ()
+  ()
+  (:export-class-name-p t)
+  (:metaclass mixin-class))
+
+(define-class window (renderer-window)
   ((id "")
    (titler
     'window-default-title
@@ -97,11 +102,6 @@ The handlers take the window as argument."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "A window is a view where buffers are displayed.")
   (:metaclass user-class))
-
-(define-class window (window-core)
-  ()
-  (:export-class-name-p t)
-  (:metaclass mixin-class))
 
 (defmethod print-object ((window window) stream)
   (print-unreadable-object (window stream :type t :identity t)
