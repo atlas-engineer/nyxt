@@ -822,7 +822,7 @@ The version number is stored in the clipboard."
         (buffer-delete buffer)))))
 
 (define-internal-page-command-global new ()
-    (buffer "*New buffer*" 'nyxt/help-mode:help-mode)
+    (buffer "*New buffer*" 'base-mode)
   "Open up a buffer with useful links suitable for a `default-new-buffer-url'."
   (spinneret:with-html-string
     (:style (:raw (theme:themed-css (theme *browser*)
