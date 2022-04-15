@@ -52,11 +52,15 @@ below to create said file, if it's not created yet.")
                    "Create init file"))))
     (:p "Example:")
     (:pre (:code "
-\(define-configuration buffer
-  ((default-modes (append '(no-script-mode) %slot-default%))))"))
+\(defmethod customize-instance ((buffer buffer))
+  ((override-map (let ((map (make-keymap \"override-map\")))
+                             (define-key map
+                               \"M-x\" 'execute-command
+                               \"C-q\" 'quit)
+                   map))))"))
     (:p "The above turns on the 'no-script-mode' (disables JavaScript) by default for
 every buffer.")
-    (:p "The " (:code "define-configuration") " macro can be used to customize
+    (:p "The " (:code "customize-instance") " methods can be used to customize
 the slots of classes like the browser, buffers, windows, etc.  Refer to the
 class and slot documentation for the individual details.")
     (:p "To find out about all modes known to Nyxt,
@@ -98,34 +102,35 @@ add the following to your configuration:")
     (:ul
      (:li "vi bindings:"
           (:pre (:code "
-\(define-configuration buffer
-  ((default-modes (append '(vi-normal-mode) %slot-default%))))")))
+\(defmethod customize-instance ((buffer web-buffer))
+  (nyxt/vi-mode:vi-normal-mode :buffer buffer))")))
      (:li "Emacs bindings:"
           (:pre (:code "
-\(define-configuration buffer
-  ((default-modes (append '(emacs-mode) %slot-default%))))"))))
+\(defmethod customize-instance ((buffer web-buffer))
+  (nyxt/emacs-mode:emacs-mode :buffer buffer))"))))
     (:p "You can create new scheme names with " (:code "keymap:make-scheme-name")
         ".  Also see the " (:code "scheme-name") " class and the "
         (:code "define-scheme") " macro.")
     (:p "To extend the bindings of a specific mode, you can extend the mode with "
-        (:code "define-configuration") " and extend its binding scheme with "
+        (:code "customize-instance") " and extend its binding scheme with "
         (:code "define-scheme") ". For example:")
     (:pre (:code "
-\(define-configuration base-mode
-  ((keymap-scheme
-    (define-scheme (:name-prefix \"my-base\" :import %slot-default%)
-      scheme:vi-normal
-      (list \"g b\" (make-command switch-buffer* ()
-                    (switch-buffer :current-is-last-p t)))))))"))
+\(defmethod customize-instance ((mode base-mode))
+  (setf (keymap-scheme mode)
+        (define-scheme (:name-prefix \"my-base\" :import (keymap-scheme mode))
+          scheme:vi-normal
+          (list \"g b\" (make-command switch-buffer* ()
+                          (switch-buffer :current-is-last-p t))))))"))
     (:p "The " (:code "override-map") " is a keymap that has priority over
 all other keymaps.  By default, it has few bindings like the one
 for " (command-markup 'execute-command) ".  You can use it to set keys globally:")
     (:pre (:code "
-\(define-configuration buffer
+\(defmethod customize-instance ((buffer buffer))
   ((override-map (let ((map (make-keymap \"override-map\")))
-                   (define-key map
-                     \"M-x\" 'execute-command
-                     \"C-space\" 'nothing)))))"))
+                             (define-key map
+                               \"M-x\" 'execute-command
+                               \"C-q\" 'quit)
+                   map))))"))
     (:p "The " (:code "nothing") " command is useful to override bindings to do
 nothing. Note that it's possible to bind any command, including those of
 disabled modes that are not listed in " (command-markup 'execute-command) ".")
@@ -148,8 +153,8 @@ keymap.")
                    scheme:emacs *my-keymap*
                    scheme:vi-normal *my-keymap*))))
 
-\(define-configuration (buffer web-buffer)
-  ((default-modes (append '(my-mode) %slot-default%))))"))
+\(defmethod customize-instance ((buffer web-buffer))
+  (my-mode :buffer buffer))"))
 
     (:p "Bindings are subject to various translations as per "
         (:code "keymap:*translator*") ". "
@@ -178,10 +183,11 @@ Bookmarks can also be used as search engines, see the corresponding section.")
    '(\"doi\" \"https://dx.doi.org/~a\" \"https://dx.doi.org/\")\)
   \"List of search engines.\")
 
-(define-configuration buffer
-  ((search-engines (append (mapcar (lambda (engine) (apply 'make-search-engine engine))
-                                   *my-search-engines*)
-                           %slot-default%))))"))
+\(defmethod customize-instance ((buffer buffer))
+  (setf (search-engines buffer)
+        (append (mapcar (lambda (engine) (apply 'make-search-engine engine))
+                        *my-search-engines*)
+                (search-engines buffer))))"))
     (:p "Note that the last search engine is the default one. For example, in
 order to make python3 the default, the above code can be slightly modified as
 follows.")
@@ -191,10 +197,11 @@ follows.")
    '(\"doi\" \"https://dx.doi.org/~a\" \"https://dx.doi.org/\")
    '(\"python3\" \"https://docs.python.org/3/search.html?q=~a\" \"https://docs.python.org/3\")))
 
-(define-configuration buffer
-  ((search-engines (append %slot-default%
-                           (mapcar (lambda (engine) (apply 'make-search-engine engine))
-                                   *my-search-engines*)))))"))
+\(defmethod customize-instance ((buffer buffer))
+  (setf (search-engines buffer)
+        (append (search-engines buffer)
+                (mapcar (lambda (engine) (apply 'make-search-engine engine))
+                        *my-search-engines*))))"))
 
     (:h3 "URL-dispatchers")
     (:p "You can configure which actions to take depending on the URL to be
@@ -265,18 +272,18 @@ can set a hook like the following in your configuration file:")
               url)))
   request-data)
 
-\(define-configuration web-buffer
-  ((request-resource-hook
-    (hooks:add-hook %slot-default% 'old-reddit-handler))))"))
+\(defmethod customize-instance ((buffer web-buffer))
+  (setf (request-resource-hook buffer)
+        (hooks:add-hook (request-resource-hook buffer) 'old-reddit-handler)))"))
     (:p "(See " (:code "url-dispatching-handler")
         " for a simpler way to achieve the same result.)")
     (:p "Or, if you want to set multiple handlers at once,")
     (:pre (:code "
-\(define-configuration web-buffer
-  ((request-resource-hook
-    (reduce #'hooks:add-hook
-            '(old-reddit-handler auto-proxy-handler)
-            :initial-value %slot-default%))))"))
+\(defmethod customize-configuration ((buffer web-buffer))
+  (setf (request-resource-hook buffer)
+        (reduce #'hooks:add-hook
+                '(old-reddit-handler auto-proxy-handler)
+                :initial-value (request-resource-hook buffer))))"))
     (:p "Some hooks like the above example expect a return value, so it's
 important to make sure we return " (:code "request-data") " here.  See the
 documentation of the respective hooks for more details.")
@@ -323,10 +330,12 @@ say to develop Nyxt or extensions.")
   (nfiles:resolve *global-profile* file))
 
 ;; Make new profile the default:
-\(define-configuration buffer
-  ((profile (make-instance (or (find-profile-class (getf *options* :profile)) 'dev-profile)))
-   (bookmarks-file (make-instance 'bookmarks-file
-                                  :base-path \"~/personal/bookmarks/bookmarks.lisp.gpg\"))))"))
+\(defmethod customize-instance ((buffer buffer))
+  (setf (bookmarks-file buffer)
+        (make-instance 'bookmarks-file
+                       :base-path \"~/personal/bookmarks/bookmarks.lisp.gpg\"))
+  (setf (profile buffer)
+        (make-instance (or (find-profile-class (getf *options* :profile)) 'dev-profile))))"))
     (:p "Then you can start a separate instance of Nyxt using this profile
 with " (:code "nyxt --profile dev --socket /tmp/nyxt.socket") ".")
 
@@ -336,10 +345,9 @@ with " (:code "nyxt --profile dev --socket /tmp/nyxt.socket") ".")
         " and " (:a :href "https://www.passwordstore.org/" "Password Store") ". "
         "The supported installed password manager is automatically detected."
         "See the " (:code "password-interface") " buffer slot for customization.")
-    (:p "You may use the " (:code "define-configuration") " macro with
+    (:p "You may use the " (:code "customize-instance") " methods with
 any of the password interfaces to configure them. Please make sure to
-use the package prefixed class name/slot designators within
-the " (:code "define-configuration") " macro.")
+use the package prefixed class name/slot designators within " (:code "customize-instance") ".")
     (:ul
      (:li (command-markup 'save-new-password) ": Query for name and new password to persist in the database.")
      (:li (command-markup 'copy-password) ": " (command-docstring-first-sentence 'copy-password)))

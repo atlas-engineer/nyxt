@@ -61,8 +61,8 @@ To permanently bypass the \"Unacceptable TLS Certificate\" error:
 
 Example:
 
-\(define-configuration web-buffer
-  ((default-modes (append '(force-https-mode) %slot-default%))))"
+\(defmethod customize-instance ((buffer buffer))
+  (nyxt/force-https-mode:force-https-mode :buffer buffer)"
   ((previous-url (quri:uri ""))
    (destructor
     (lambda (mode)
