@@ -54,9 +54,10 @@ within the button's URL when the destinaton path is set.")
 the *Downloads* buffer. The browser class contains a list of these
 download objects: `downloads'."))
 
-(define-class download (download-core)  ; TODO: Declare as mixin.
+(define-class download (download-core)
   ()
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:metaclass mixin-class))
 
 (defun cancel-download (url)
   "This function is called by the cancel-button with an argument of

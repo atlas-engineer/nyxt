@@ -239,9 +239,10 @@ A typical Nyxt session encompasses a single instance of this class, but nothing
 prevents otherwise.")
   (:metaclass user-class))
 
-(define-class browser (browser-core) ; TODO: Declare as mixin.
+(define-class browser (browser-core)
   ()
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:metaclass mixin-class))
 
 (defmethod external-editor-program ((browser browser))
   (alex:ensure-list (slot-value browser 'external-editor-program)))

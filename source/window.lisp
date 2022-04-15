@@ -98,9 +98,10 @@ The handlers take the window as argument."))
   (:documentation "A window is a view where buffers are displayed.")
   (:metaclass user-class))
 
-(define-class window (window-core)      ; TODO: Declare as mixin.
+(define-class window (window-core)
   ()
-  (:export-class-name-p t))
+  (:export-class-name-p t)
+  (:metaclass mixin-class))
 
 (defmethod print-object ((window window) stream)
   (print-unreadable-object (window stream :type t :identity t)
