@@ -671,10 +671,10 @@ file, see the "
   (echo "Press a key sequence to describe:"))
 
 (defun evaluate (string)
-  "Evaluate all expressions in string and return the last result as a list of values.
+  "Evaluate all expressions in STRING and return the last result as a list of values.
 The list of values is useful when the last result is multi-valued, e.g. (values 'a 'b).
-You need not wrap multiple values in a PROGN, all top-level expression are
-evaluate in order."
+You need not wrap multiple values in a PROGN, all top-level expressions are
+evaluated in order."
   (let ((channel (make-channel 1)))
     (run-thread "evaluator"
       (calispel:!
