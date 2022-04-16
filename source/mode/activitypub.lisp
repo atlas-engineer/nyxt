@@ -18,6 +18,12 @@
   ""
   ((rememberable-p nil)
    (model nil :type (maybe base))
+   (style (theme:themed-css (theme *browser*)
+            (.card
+             :border-width "1px"
+             :border-color theme:primary
+             :border-style "solid"
+             :padding "1em")))
    (auth-token
     nil
     :type (maybe string)
