@@ -343,6 +343,7 @@ JSON-NAMEs as strings, where
 (defmethod object->html ((object collection) (format (eql :card)))
   (declare (ignorable format))
   (let* ((items (items object))
+         (total-items (total-items object))
          (ordered-items (ordered-items object))
          (items (or items ordered-items))
          (first-item (first-item object))
@@ -361,11 +362,13 @@ JSON-NAMEs as strings, where
           (loop for item = first-item then (next item)
                 collect (:raw (object->html (parse-object item) :link)))))
        (when (collection-page-p first-item)
-         (when (slot-value first-item 'prev)
+         (when (and (equal first-item (last-item object))
+                    (slot-value first-item 'prev))
            (:button :class "button"
                     "Previous"))
-         (:button :class "button"
-                  "Next"))))))
+         (when (equal first-item (last-item object))
+           (:button :class "button"
+                    "Next")))))))
 
 (defmethod object->html ((object actor) (format (eql :page)))
   (spinneret:with-html-string
