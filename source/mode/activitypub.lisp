@@ -148,6 +148,7 @@ JSON-NAMEs as strings, where
   "name"
   "nameMap"
   "attachment" ; nested
+  "attributedTo"
   "audience" ; nested
   "content"
   "contentMap"
