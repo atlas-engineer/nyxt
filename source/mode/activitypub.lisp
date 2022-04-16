@@ -219,7 +219,7 @@ JSON-NAMEs as strings, where
   )
 
 (define-json-type ordered-collection "OrderedCollection" (collection)
-  "ordererdItems" ; nested
+  "orderedItems" ; nested
   )
 
 (define-json-type collection-page "CollectionPage" (collection)
