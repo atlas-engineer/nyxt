@@ -64,12 +64,6 @@ Should always CALL-NEXT-METHOD, so that all the superclasses are filled too."))
     (fetch-object (quri:render-uri object)))
   (:documentation "Fetch the object from the provided URL."))
 
-(defvar *parsing-depth* 0 "The current parsing depth.")
-
-(export-always '*maximum-parsing-depth*)
-(defvar *maximum-parsing-depth* 5
-  "The maximum parsing depth possible. Does not resolve links and ")
-
 (defvar *classes* (make-hash-table :test 'equalp)
   "A map from ActivityStreams/ActivityPub type name to the Lisp-side class symbol.")
 
@@ -77,28 +71,17 @@ Should always CALL-NEXT-METHOD, so that all the superclasses are filled too."))
 (defgeneric parse-object (object)
   (:method ((object t))
     object)
-  (:method :around ((object t))
-    (if (> *parsing-depth* *maximum-parsing-depth*)
-        object
-        (call-next-method)))
   (:documentation "Parse the object from the provided JSON data.
 Possibly recurse to the nested sub-objects."))
 
 (defmethod parse-object ((object hash-table))
-  (alex:if-let ((type (gethash "type" object)))
-    (fill-object (make-instance (gethash type *classes*)) object)
-    object))
+  (or (sera:and-let* ((type (gethash "type" object))
+                      (class (gethash type *classes*)))
+        (fill-object (make-instance class) object))
+      object))
 
 (defmethod parse-object ((object sequence))
-  (let ((*parsing-depth* (1+ *parsing-depth*)))
-    (lpara:pmap (serapeum:class-name-of object) #'parse-object object)))
-
-(defmethod parse-object ((object string))
-  (or (sera:and-let* ((valid (valid-url-p object))
-                      (*parsing-depth* (1+ *parsing-depth*))
-                      (fetched (fetch-object object)))
-        (parse-object fetched))
-      object))
+  (lpara:pmap (serapeum:class-name-of object) #'parse-object object))
 
 (defmacro define-json-type (name type (&rest superclasses) &body names-and-slots)
   "Define a JSON-serializable ActivityPub type with a Lisp class mirroring it.
@@ -129,6 +112,13 @@ JSON-NAMEs as strings, where
          (:export-class-name-p t)
          (:export-accessor-names-p t)
          (:accessor-name-transformer (class*:make-name-transformer name)))
+       ,@(loop for (json-name lisp-name processor) in normalized-slots
+               collect `(defmethod ,lisp-name ((object ,name))
+                          (or (sera:and-let* ((value (slot-value object (quote ,lisp-name)))
+                                              (url-p (valid-url-p value))
+                                              (fetched (fetch-object value)))
+                                (parse-object fetched))
+                              (slot-value object (quote ,lisp-name)))))
        (defmethod fill-object ((object ,name ) processed-json)
          (when (hash-table-p processed-json)
            ,@(loop for (json-name lisp-name processor) in normalized-slots
