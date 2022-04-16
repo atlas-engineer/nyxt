@@ -409,7 +409,7 @@ JSON-NAMEs as strings, where
          (spinneret:with-html-string
            (:head
             (:style (style buffer))
-            (:style (current-mode 'activitypub)))
+            (:style (style (current-mode 'activitypub))))
            (:body
             (:raw (object->html object :page))))
          (error-help "Not an ActivityPub-enabled page"
