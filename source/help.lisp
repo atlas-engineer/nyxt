@@ -844,6 +844,18 @@ The version number is stored in the clipboard."
                 :list-style-type "none")
                ("ul"
                 :margin-top "0")
+               (".laser"
+                :background (format nil "linear-gradient(90deg, ~a, ~a, ~a, ~a)"
+                                    theme:primary
+                                    theme:accent
+                                    theme:accent
+                                    theme:primary)
+	        :background-size "400% 400%"
+	        :animation "gradient 10s ease infinite")
+               ("@keyframes gradient"
+                ("0%" :background-position "0% 50%")
+                ("50%" :background-position "100% 50%")
+                ("100%" :background-position "0% 50%"))
                (.copyright
                 :color "rgb(180, 180, 180)"
                 :position "absolute"
@@ -855,7 +867,7 @@ The version number is stored in the clipboard."
                       :id "logo"))
           (:div :class "primary-links"
                 (:ul
-                 (:li (:button :class "button accent"
+                 (:li (:button :class "button laser"
                                :type "submit"
                                :onclick (ps:ps (nyxt/ps:lisp-eval '(set-url :prefill-current-url-p nil)))
                                "Start searching!"))
