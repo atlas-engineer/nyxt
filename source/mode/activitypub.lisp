@@ -165,49 +165,6 @@ JSON-NAMEs as strings, where
   "shares" ; nested
   )
 
-;; (define-class object (base)
-;;   ((name "" :type string)
-;;    (name-map nil :type (maybe hash-table))
-;;    (attachment '() :type list-of-bases)
-;;    (attributed-to '() :type list-of-bases)
-;;    (audience '() :type list-of-bases)
-;;    (content "" :type string)
-;;    (content-map nil :type (maybe hash-table))
-;;    (source "" :type string)
-;;    (context "" :type string)
-;;    (start-time nil :type (maybe local-time:timestamp))
-;;    (end-time nil :type (maybe local-time:timestamp))
-;;    (published nil :type (maybe local-time:timestamp))
-;;    (updated nil :type (maybe local-time:timestamp))
-;;    (duration 0 :type integer
-;;                :documentation "Approximate duration of the object in seconds.")
-;;    (generator "" :type string
-;;                  :documentation "Entity that generated the object.")
-;;    (icon)
-;;    (image)
-;;    (location '() :type list-of-bases)
-;;    (preview '() :type list-of-bases)
-;;    (replies '() :type list-of-bases)
-;;    (summary "" :type string
-;;                :documentation "HTML summary for the object.")
-;;    (summary-map nil :type (maybe hash-table))
-;;    (tag '() :type list)
-;;    (in-reply-to '() :type list-of-bases)
-;;    (url '() :type list-of-bases)
-;;    (to '() :type list-of-bases)
-;;    (bto '() :type list-of-bases)
-;;    (cc '() :type list-of-bases)
-;;    (bcc '() :type list-of-bases)
-;;    (media-type "text/html" :type string
-;;                            :documentation "MIME type of the `content'.")
-;;    ;; ActivityPub-specific:
-;;    (likes nil :type (maybe collection))
-;;    (shares nil :type (maybe collection)))
-;;   (:export-class-name-p t)
-;;   (:export-accessor-names-p t)
-;;   (:accessor-name-transformer (class*:make-name-transformer name))
-;;   (:documentation "The Object is the primary base type for the Activity Streams."))
-
 (define-json-type link "Link" (base)
   ("href" href #'quri:uri)
   "rel"
@@ -219,20 +176,6 @@ JSON-NAMEs as strings, where
   "preview" ; nested
   )
 
-;; (define-class link (base)
-;;   ((href nil :type (maybe quri:uri))
-;;    (rel nil :type list-of-strings)
-;;    (media-type "text/html" :type string)
-;;    (name "" :type string)
-;;    (hreflang "" :type string)
-;;    (height 0 :type integer)
-;;    (width 0 :type integer)
-;;    (preview '() :type list))
-;;   (:export-class-name-p t)
-;;   (:export-accessor-names-p t)
-;;   (:accessor-name-transformer (class*:make-name-transformer name))
-;;   (:documentation "A Link describes a qualified, indirect reference to another resource."))
-
 (define-json-type base-activity "" (object)
   "actor" ; nested
   "target" ; nested
@@ -241,25 +184,11 @@ JSON-NAMEs as strings, where
   "instrument" ; nested
   )
 
-;; (define-class base-activity (object)
-;;   ((actor nil :type (or object link list))
-;;    (target nil :type (or object link list))
-;;    (result nil :type (maybe object link))
-;;    (origin nil :type (maybe object link))
-;;    (instrument nil :type (maybe object link))))
-
 (define-json-type activity "Activity" (base-activity)
   "object" ; nested
   )
 
 (define-json-type intransitive-activity "IntransitiveActivity" (base-activity))
-
-;; (define-class intransitive-activity (base-activity)
-;;   ()
-;;   (:export-class-name-p t)
-;;   (:export-accessor-names-p t)
-;;   (:accessor-name-transformer (class*:make-name-transformer name))
-;;   (:documentation "IntransitiveActivity objects represent intransitive actions."))
 
 (define-json-type actor "" (object)
   "inbox" ; nested
@@ -271,21 +200,6 @@ JSON-NAMEs as strings, where
   "preferredUsername"
   "endpoints" ; nested
   )
-
-;; (define-class actor (object)
-;;   (;; ActivityPub-specific. No harm in adding it, though...
-;;    (inbox nil :type (maybe ordered-collection))
-;;    (outbox nil :type (maybe ordered-collection))
-;;    (followind nil :type (maybe collection))
-;;    (followers nil :type (maybe collection))
-;;    (liked nil :type (maybe collection))
-;;    (steams)
-;;    (preferred-username "" :type string)
-;;    (endpoints))
-;;   (:export-class-name-p t)
-;;   (:export-accessor-names-p t)
-;;   (:accessor-name-transformer (class*:make-name-transformer name))
-;;   (:documentation "Actor objects are capable of carrying out an Activity."))
 
 (define-json-type base-collection "" (object)
   "totalItems"
@@ -304,23 +218,9 @@ JSON-NAMEs as strings, where
   "items" ; nested
   )
 
-;; (define-class collection (base-collection)
-;;   ((items '() :type list-of-bases))
-;;   (:export-class-name-p t)
-;;   (:export-accessor-names-p t)
-;;   (:accessor-name-transformer (class*:make-name-transformer name))
-;;   (:documentation "Collection objects are a specialization of the base Object that serve as a container for other Objects or Links."))
-
 (define-json-type ordered-collection "OrderedCollection" (collection)
   "ordererdItems" ; nested
   )
-
-;; (define-class ordered-collection (collection)
-;;   ((ordered-items '() :type list-of-bases))
-;;   (:export-class-name-p t)
-;;   (:export-accessor-names-p t)
-;;   (:accessor-name-transformer (class*:make-name-transformer name))
-;;   (:documentation "The OrderedCollection is a Collection whose items are always ordered."))
 
 (define-json-type collection-page "CollectionPage" (collection)
   "partOf" ; nested
@@ -328,24 +228,8 @@ JSON-NAMEs as strings, where
   "prev" ; nested
   )
 
-;; (define-class collection-page (collection)
-;;   ((part-of nil :type (maybe collection))
-;;    (next nil :type (maybe collection-page))
-;;    (prev nil :type (maybe collection-page)))
-;;   (:export-class-name-p t)
-;;   (:export-accessor-names-p t)
-;;   (:accessor-name-transformer (class*:make-name-transformer name))
-;;   (:documentation "A subset or \"page\" inside a big Collection."))
-
 (define-json-type ordered-collection-page "OrderedCollectionPage" (collection-page ordered-collection)
   "startIndex")
-
-;; (define-class ordered-collection-page (collection-page)
-;;   ((start-index 0 :type (maybe integer)))
-;;   (:export-class-name-p t)
-;;   (:export-accessor-names-p t)
-;;   (:accessor-name-transformer (class*:make-name-transformer name))
-;;   (:documentation "The OrderedCollectionPage identifies a page whose items are strictly ordered."))
 
 ;;; Activity Vocabulary Actor Types (https://www.w3.org/TR/activitystreams-vocabulary/#actor-types)
 
