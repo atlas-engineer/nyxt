@@ -838,10 +838,12 @@ The version number is stored in the clipboard."
                 :max-width "800px")
                ("li"
                 :background-color theme:quaternary
-                :margin-bottom "10px"
+                :margin-bottom "12px"
                 :padding "0"
                 :border-radius "3px"
                 :list-style-type "none")
+               (".button"
+                :margin "0")
                ("ul"
                 :margin-top "0")
                (".laser"
