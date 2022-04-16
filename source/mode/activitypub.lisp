@@ -320,11 +320,22 @@ JSON-NAMEs as strings, where
   (let ((url (quri:uri url)))
     (str:concat "ap:" (nyxt::schemeless-url url))))
 
+(defmethod name* ((object actor))
+  (if (uiop:emptyp (name object))
+      (preferred-username object)
+      (name object)))
+
+(defmethod name* ((object object))
+  (if (uiop:emptyp (name object))
+      (id object)
+      (name object)))
+
 (defgeneric object->html (object format)
   (:method ((object base) (format (eql :link)))
     (spinneret:with-html-string
       (:a :class "button"
-          :href (http->ap (id object)) (name object)))))
+          :href (http->ap (id object))
+          (name* object)))))
 
 (defmethod object->html ((object t) format)
   (spinneret:with-html-string
@@ -337,7 +348,7 @@ JSON-NAMEs as strings, where
       (spinneret:with-html-string
         (:a :class "button"
             :href object
-            (nyxt::schemeless-url (quri:uri object))))
+            (:b "[unsupported] ") (nyxt::schemeless-url (quri:uri object))))
       (call-next-method)))
 
 (defmethod object->html ((object collection) (format (eql :card)))
@@ -373,15 +384,19 @@ JSON-NAMEs as strings, where
 (defmethod object->html ((object actor) (format (eql :page)))
   (spinneret:with-html-string
     (:header
-     (:h1 (name object))
+     (:h1 (name* object))
      (:i (preferred-username object)))
     (:raw (summary object))
-    (:details
-     (:summary :class "button" "Following")
-     (:raw (object->html (following object) :card)))
-    (:details
-     (:summary :class "button" "Followers")
-     (:raw (object->html (followers object) :card)))
+    (when (and (following object)
+               (not (zerop (total-items (following object)))))
+      (:h2 "Following")
+      (:raw (object->html (following object) :card))
+      (:hr))
+    (when (and (followers object)
+               (not (zerop (total-items (followers object)))))
+      (:h2 "Followers")
+      (:raw (object->html (followers object) :card))
+      (:hr))
     (:raw (object->html (outbox object) :card))))
 
 (define-internal-scheme "ap"
