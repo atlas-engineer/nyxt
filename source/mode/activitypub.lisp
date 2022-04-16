@@ -90,6 +90,12 @@ Possibly recurse to the nested sub-objects."))
 (defmethod parse-object ((object sequence))
   (lpara:pmap (serapeum:class-name-of object) #'parse-object object))
 
+(defmethod parse-object ((object string))
+  (or (sera:and-let* ((valid (valid-url-p object))
+                      (fetched (fetch-object object)))
+        (fill-object (parse-object fetched) fetched))
+      object))
+
 (defmacro define-json-type (name type (&rest superclasses) &body names-and-slots)
   "Define a JSON-serializable ActivityPub type with a Lisp class mirroring it.
 
