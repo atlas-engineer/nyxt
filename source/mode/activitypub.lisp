@@ -316,8 +316,70 @@ JSON-NAMEs as strings, where
   "formerType" ; nested
   ("deleted" deleted #'local-time:parse-timestring))
 
-(defmethod object->html ((object t))
-  (value->html object))
+(defun http->ap (url)
+  (let ((url (quri:uri url)))
+    (str:concat "ap:" (nyxt::schemeless-url url))))
+
+(defgeneric object->html (object format)
+  (:method ((object base) (format (eql :link)))
+    (spinneret:with-html-string
+      (:a :class "button"
+          :href (http->ap (id object)) (name object)))))
+
+(defmethod object->html ((object t) format)
+  (spinneret:with-html-string
+    (:a :class "button"
+        :href object
+        (value->html object (eq :link format)))))
+
+(defmethod object->html ((object string) (format (eql :link)))
+  (if (valid-url-p object)
+      (spinneret:with-html-string
+        (:a :class "button"
+            :href object
+            (nyxt::schemeless-url (quri:uri object))))
+      (call-next-method)))
+
+(defmethod object->html ((object collection) (format (eql :card)))
+  (declare (ignorable format))
+  (let* ((items (items object))
+         (ordered-items (ordered-items object))
+         (items (or items ordered-items))
+         (first-item (first-item object))
+         (id (nyxt::get-unique-identifier *browser*)))
+    (spinneret:with-html-string
+      (:div
+       :id id
+       (cond
+         (items
+          (dolist (item items)
+            (:raw (object->html (parse-object item) :link))))
+         ((collection-page-p first-item)
+          (dolist (item (or (items first-item) (ordered-items first-item)))
+            (:raw (object->html (parse-object item) :link))))
+         ((base-p first-item)
+          (loop for item = first-item then (next item)
+                collect (:raw (object->html (parse-object item) :link)))))
+       (when (collection-page-p first-item)
+         (when (slot-value first-item 'prev)
+           (:button :class "button"
+                    "Previous"))
+         (:button :class "button"
+                  "Next"))))))
+
+(defmethod object->html ((object actor) (format (eql :page)))
+  (spinneret:with-html-string
+    (:header
+     (:h1 (name object))
+     (:i (preferred-username object)))
+    (:raw (summary object))
+    (:details
+     (:summary :class "button" "Following")
+     (:raw (object->html (following object) :card)))
+    (:details
+     (:summary :class "button" "Followers")
+     (:raw (object->html (followers object) :card)))
+    (:raw (object->html (outbox object) :card))))
 
 (define-internal-scheme "ap"
     (lambda (url buffer)
