@@ -78,7 +78,7 @@ the following platforms:
 - Alpine.
 - Debian and derivatives such as Ubuntu and Linux Mint.
 - [[https://github.com/atlas-engineer/ports][MacPorts]].
-- Arch Linux.
+- [[https://archlinux.org/][Arch Linux]]: Install with =pacman -Syu nyxt=.
 - [[https://nixos.org/nix/][Nix]]: Install with =nix-env --install nyxt=.
 - [[https://guix.gnu.org][Guix]]: Install with =guix install nyxt=.
 - [[https://voidlinux.org/][Void]]: Install with =xbps-install nyxt=.
