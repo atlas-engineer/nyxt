@@ -337,7 +337,7 @@ JSON-NAMEs as strings, where
 ;;   (:accessor-name-transformer (class*:make-name-transformer name))
 ;;   (:documentation "A subset or \"page\" inside a big Collection."))
 
-(define-json-type ordered-collection-page "OrderedCollectionPage" (collection-page)
+(define-json-type ordered-collection-page "OrderedCollectionPage" (collection-page ordered-collection)
   "startIndex")
 
 ;; (define-class ordered-collection-page (collection-page)
