@@ -206,6 +206,7 @@
                  (:file "repeat")
                  (:file "repl")
                  (:file "small-web")
+                 (:file "activitypub")
                  (:file "style" :depends-on ("bookmarklets"))
                  (:file "tts")
                  (:file "vi")

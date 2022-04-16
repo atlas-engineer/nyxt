@@ -5,7 +5,7 @@
   (:use :common-lisp :nyxt)
   (:import-from #:class-star #:define-class)
   (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:serapeum #:->)
+  (:import-from #:serapeum #:-> #:export-always)
   (:documentation "Mode for ActivityPub browsing."))
 (in-package :nyxt/activitypub-mode)
 (use-nyxt-package-nicknames)
@@ -14,8 +14,15 @@
 ;; TODO: Parsing JSON schemes automatically.
 ;; TODO: Parse @context.
 
-;;; ActivityStreams Core Classes
+(define-mode activitypub-mode ()
+  ""
+  ((model nil :type (maybe base))
+   (auth-token
+    nil
+    :type (maybe string)
+    :documentation "The authorization token for Nyxt to handle ActivityPub auth.")))
 
+(export-always 'base)
 (define-class base ()
   ((id nil :type (or string null))
    (object-type "Object" :type string)
@@ -27,9 +34,7 @@ Possibly contains additional Lisp-inaccessible properties."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "The base class for all the ActivityStreams types."))
 
-(defvar *classes* (make-hash-table :test 'equalp)
-  "A map from ActivityStreams/ActivityPub type name to the Lisp-side class symbol.")
-
+(export-always 'fill-object)
 (defgeneric fill-object (object json)
   (:method ((object t) json)
     object)
@@ -43,9 +48,38 @@ Possibly contains additional Lisp-inaccessible properties."))
 
 Should always CALL-NEXT-METHOD, so that all the superclasses are filled too."))
 
+(export-always 'fetch-object)
+(defgeneric fetch-object (object)
+  (:method ((object string))
+    (when (valid-url-p object)
+      (ignore-errors
+       (decode-json
+        (dex:get object :headers
+                 `(("Accept" . "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
+                   ,@(alex:when-let* ((mode (current-mode 'activitypub))
+                                      (auth (auth-token mode)))
+                       `(("Authorization" ,(str:concat "Bearer " auth))))))))))
+  (:method ((object quri:uri))
+    (fetch-object (quri:render-uri object)))
+  (:documentation "Fetch the object from the provided URL."))
+
+(defvar *parsing-depth* 0 "The current parsing depth.")
+
+(export-always '*maximum-parsing-depth*)
+(defvar *maximum-parsing-depth* 5
+  "The maximum parsing depth possible. Does not resolve links and ")
+
+(defvar *classes* (make-hash-table :test 'equalp)
+  "A map from ActivityStreams/ActivityPub type name to the Lisp-side class symbol.")
+
+(sera:export-always 'parse-object)
 (defgeneric parse-object (object)
   (:method ((object t))
     object)
+  (:method :around ((object t))
+    (if (> *parsing-depth* *maximum-parsing-depth*)
+        object
+        (call-next-method)))
   (:documentation "Parse the object from the provided JSON data.
 Possibly recurse to the nested sub-objects."))
 
@@ -55,7 +89,15 @@ Possibly recurse to the nested sub-objects."))
     object))
 
 (defmethod parse-object ((object sequence))
-  (map (serapeum:class-name-of object) #'parse-object object))
+  (let ((*parsing-depth* (1+ *parsing-depth*)))
+    (lpara:pmap (serapeum:class-name-of object) #'parse-object object)))
+
+(defmethod parse-object ((object string))
+  (or (sera:and-let* ((valid (valid-url-p object))
+                      (*parsing-depth* (1+ *parsing-depth*))
+                      (fetched (fetch-object object)))
+        (parse-object fetched))
+      object))
 
 (defmacro define-json-type (name type (&rest superclasses) &body names-and-slots)
   "Define a JSON-serializable ActivityPub type with a Lisp class mirroring it.
@@ -79,8 +121,8 @@ JSON-NAMEs as strings, where
                         (uiop:ensure-list slot)
                       (list json-name (or lisp-name (cffi:translate-camelcase-name json-name)) processor)))
                   names-and-slots)))
-    (setf (gethash type *classes*) name)
     `(progn
+       (setf (gethash ,type *classes*) (quote ,name))
        (define-class ,name (,@superclasses)
          (,@(mapcar #'second normalized-slots))
          (:export-class-name-p t)
@@ -386,4 +428,18 @@ JSON-NAMEs as strings, where
   "formerType" ; nested
   ("deleted" deleted #'local-time:parse-timestring))
 
-;;; ActivityPub extended classes.
+(defmethod object->html ((object t))
+  (value->html object))
+
+(define-internal-scheme "ap"
+    (lambda (url buffer)
+      (enable-modes '(activitypub-mode) buffer)
+      (alex:if-let ((object (ignore-errors
+                             (parse-object
+                              (fetch-object
+                               (str:concat "https://" (subseq url 3)))))))
+        (object->html object)
+        (error-help "Not an ActivityPub-enabled page"
+                    "This link does not provide ActivityPub representation for content.
+Try navigating to a different page.")))
+  :local-p t)
