@@ -16,7 +16,8 @@
 
 (define-mode activitypub-mode ()
   ""
-  ((model nil :type (maybe base))
+  ((rememberable-p nil)
+   (model nil :type (maybe base))
    (auth-token
     nil
     :type (maybe string)
