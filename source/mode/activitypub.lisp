@@ -342,13 +342,28 @@ JSON-NAMEs as strings, where
     (spinneret:with-html-string
       (:a :class "button"
           :href (http->ap (id object))
-          (name* object)))))
+          (name* object))))
+  (:method ((object t) format)
+    (spinneret:with-html-string
+      (:a :class "button"
+          :href object
+          (value->html object (eq :link format)))))
+  (:documentation "Produce a reasonable HTML representation of an OBJECT according to FORMAT.
+FORMAT can be one of
+- :LINK for condensed link to OBJECT.
+- :CARD for compact yet informative representation of OBJECT.
+- :PAGE for full-page OBJECT rendering (is usually linked to by :LINK format)."))
 
-(defmethod object->html ((object t) format)
+(defmethod object->html ((object note) (format (eql :card)))
   (spinneret:with-html-string
-    (:a :class "button"
-        :href object
-        (value->html object (eq :link format)))))
+    (:div
+     :class "card"
+     (:h2 :class "card-title" (name* (or (attributed-to object) (generator object))))
+     (:i (local-time:format-timestring nil (published object) :format local-time:+asctime-format+))
+     (:p (:raw (content object))))))
+
+(defmethod object->html ((object activity) (format (eql :card)))
+  (object->html (object object) :card))
 
 (defmethod object->html ((object string) (format (eql :link)))
   (if (valid-url-p object)
@@ -358,6 +373,9 @@ JSON-NAMEs as strings, where
             (:b "[unsupported] ") (nyxt::schemeless-url (quri:uri object))))
       (call-next-method)))
 
+;; FIXME: What is a "card view" for a collection? A card with condensed
+;; link-like content or a container for cards? It used to be the former, now
+;; it's the latter.
 (defmethod object->html ((object collection) (format (eql :card)))
   (declare (ignorable format))
   (let* ((items (items object))
@@ -385,19 +403,14 @@ JSON-NAMEs as strings, where
 (defmethod object->html ((object actor) (format (eql :page)))
   (spinneret:with-html-string
     (:header
-     (:h1 (name* object))
-     (:i (preferred-username object)))
+     (:h1 (format nil "~a (@~a)" (name* object) (preferred-username object))))
     (:raw (summary object))
     (when (and (following object)
                (not (zerop (total-items (following object)))))
-      (:h2 "Following")
-      (:raw (object->html (following object) :card))
-      (:hr))
+      (:raw (object->html (following object) :link)))
     (when (and (followers object)
                (not (zerop (total-items (followers object)))))
-      (:h2 "Followers")
-      (:raw (object->html (followers object) :card))
-      (:hr))
+      (:raw (object->html (followers object) :link)))
     (:raw (object->html (outbox object) :card))))
 
 (define-internal-scheme "ap"
