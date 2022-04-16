@@ -49,17 +49,24 @@ Possibly contains additional Lisp-inaccessible properties."))
 
 Should always CALL-NEXT-METHOD, so that all the superclasses are filled too."))
 
+(defvar *url->object* (make-hash-table :test 'equal)
+  "A memoization table from URL string to the fetched objects.")
+
 (export-always 'fetch-object)
 (defgeneric fetch-object (object)
   (:method ((object string))
     (when (valid-url-p object)
-      (ignore-errors
-       (decode-json
-        (dex:get object :headers
-                 `(("Accept" . "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
-                   ,@(alex:when-let* ((mode (current-mode 'activitypub))
-                                      (auth (auth-token mode)))
-                       `(("Authorization" ,(str:concat "Bearer " auth))))))))))
+      (log:debug "Fetching ~a." object)
+      (flet ((get-object ()
+               (ignore-errors
+                (decode-json
+                 (dex:get object :headers
+                          `(("Accept" . "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
+                            ,@(alex:when-let* ((mode (current-mode 'activitypub))
+                                               (auth (auth-token mode)))
+                                `(("Authorization" ,(str:concat "Bearer " auth))))))))))
+        (or (alex:ensure-gethash object *url->object* (get-object))
+            (get-object)))))
   (:method ((object quri:uri))
     (fetch-object (quri:render-uri object)))
   (:documentation "Fetch the object from the provided URL."))
