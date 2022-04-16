@@ -59,12 +59,13 @@ Should always CALL-NEXT-METHOD, so that all the superclasses are filled too."))
       (log:debug "Fetching ~a." object)
       (flet ((get-object ()
                (ignore-errors
-                (decode-json
-                 (dex:get object :headers
-                          `(("Accept" . "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
-                            ,@(alex:when-let* ((mode (current-mode 'activitypub))
-                                               (auth (auth-token mode)))
-                                `(("Authorization" ,(str:concat "Bearer " auth))))))))))
+                (parse-object
+                 (decode-json
+                  (dex:get object :headers
+                           `(("Accept" . "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
+                             ,@(alex:when-let* ((mode (current-mode 'activitypub))
+                                                (auth (auth-token mode)))
+                                 `(("Authorization" ,(str:concat "Bearer " auth)))))))))))
         (or (alex:ensure-gethash object *url->object* (get-object))
             (get-object)))))
   (:method ((object quri:uri))
@@ -127,11 +128,10 @@ JSON-NAMEs as strings, where
          (:accessor-name-transformer (class*:make-name-transformer name)))
        ,@(loop for (json-name lisp-name processor) in normalized-slots
                collect `(defmethod ,lisp-name ((object ,name))
-                          (or (sera:and-let* ((value (slot-value object (quote ,lisp-name)))
-                                              (url-p (valid-url-p value))
-                                              (fetched (fetch-object value)))
-                                (parse-object fetched))
-                              (slot-value object (quote ,lisp-name)))))
+                          (cond
+                            ((valid-url-p (slot-value object (quote ,lisp-name)))
+                             (fetch-object (slot-value object (quote ,lisp-name))))
+                            (t (parse-object (slot-value object (quote ,lisp-name)))))))
        (defmethod fill-object ((object ,name ) processed-json)
          (when (hash-table-p processed-json)
            ,@(loop for (json-name lisp-name processor) in normalized-slots
@@ -364,13 +364,13 @@ JSON-NAMEs as strings, where
        (cond
          (items
           (dolist (item items)
-            (:raw (object->html (parse-object item) :link))))
+            (:raw (object->html item :card))))
          ((collection-page-p first-item)
           (dolist (item (or (items first-item) (ordered-items first-item)))
-            (:raw (object->html (parse-object item) :link))))
+            (:raw (object->html item :card))))
          ((base-p first-item)
           (loop for item = first-item then (next item)
-                collect (:raw (object->html (parse-object item) :link)))))
+                collect (:raw (object->html item :card)))))
        (when (collection-page-p first-item)
          (when (and (equal first-item (last-item object))
                     (slot-value first-item 'prev))
@@ -403,9 +403,8 @@ JSON-NAMEs as strings, where
       (enable-modes '(activitypub-mode) buffer)
       (values
        (alex:if-let ((object (ignore-errors
-                              (parse-object
-                               (fetch-object
-                                (str:concat "https://" (subseq url 3)))))))
+                              (fetch-object
+                               (str:concat "https://" (subseq url 3))))))
          (spinneret:with-html-string
            (:head
             (:style (style buffer))
