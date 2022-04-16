@@ -837,7 +837,7 @@ The version number is stored in the clipboard."
                 :margin "50px"
                 :max-width "800px")
                ("li"
-                :background-color "rgb(240, 240, 240)"
+                :background-color theme:quaternary
                 :margin-bottom "10px"
                 :padding "0"
                 :border-radius "3px"
@@ -857,7 +857,7 @@ The version number is stored in the clipboard."
                 ("50%" :background-position "100% 50%")
                 ("100%" :background-position "0% 50%"))
                (.copyright
-                :color "rgb(180, 180, 180)"
+                :color theme:tertiary
                 :position "absolute"
                 :bottom "1em"
                 :right "1em"))))
