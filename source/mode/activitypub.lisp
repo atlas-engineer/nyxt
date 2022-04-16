@@ -372,13 +372,8 @@ JSON-NAMEs as strings, where
           (loop for item = first-item then (next item)
                 collect (:raw (object->html item :card)))))
        (when (collection-page-p first-item)
-         (when (and (equal first-item (last-item object))
-                    (slot-value first-item 'prev))
-           (:button :class "button"
-                    "Previous"))
-         (when (equal first-item (last-item object))
-           (:button :class "button"
-                    "Next")))))))
+         (unless (equal first-item (last-item object))
+           (:button :class "button" "More...")))))))
 
 (defmethod object->html ((object actor) (format (eql :page)))
   (spinneret:with-html-string
