@@ -132,7 +132,8 @@ JSON-NAMEs as strings, where
          (:export-class-name-p t)
          (:export-accessor-names-p t)
          (:accessor-name-transformer (class*:make-name-transformer name)))
-       ,@(loop for (json-name lisp-name processor) in normalized-slots
+       ,@(loop for slot in normalized-slots
+               for lisp-name = (second slot)
                collect `(defmethod ,lisp-name ((object ,name))
                           (cond
                             ((valid-url-p (slot-value object (quote ,lisp-name)))
