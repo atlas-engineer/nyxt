@@ -128,7 +128,7 @@ JSON-NAMEs as strings, where
     `(progn
        (setf (gethash ,type *classes*) (quote ,name))
        (define-class ,name (,@superclasses)
-         (,@(mapcar #'second normalized-slots))
+         (,@(mapcar (lambda (slot) `(,(second slot) :accessor nil)) normalized-slots))
          (:export-class-name-p t)
          (:export-accessor-names-p t)
          (:accessor-name-transformer (class*:make-name-transformer name)))
