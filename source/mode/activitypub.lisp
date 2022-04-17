@@ -418,18 +418,19 @@ FORMAT can be one of
 (define-internal-scheme "ap"
     (lambda (url buffer)
       (enable-modes '(activitypub-mode) buffer)
-      (values
-       (alex:if-let ((object (ignore-errors
-                              (fetch-object
-                               (str:concat "https://" (subseq url 3))))))
-         (spinneret:with-html-string
-           (:head
-            (:style (style buffer))
-            (:style (style (current-mode 'activitypub))))
-           (:body
-            (:raw (object->html object :page))))
-         (error-help "Not an ActivityPub-enabled page"
-                     "This link does not provide ActivityPub representation for content.
+      (let ((mode (current-mode 'activitypub)))
+        (values
+         (alex:if-let ((object (setf (model mode)
+                                     (ignore-errors
+                                      (fetch-object (str:concat "https://" (subseq url 3)))))))
+           (spinneret:with-html-string
+             (:head
+              (:style (style buffer))
+              (:style (style mode)))
+             (:body
+              (:raw (object->html object :page))))
+           (error-help "Not an ActivityPub-enabled page"
+                       "This link does not provide ActivityPub representation for content.
 Try navigating to a different page."))
-       "text/html;charset=utf8"))
+         "text/html;charset=utf8")))
   :local-p t)
