@@ -338,8 +338,7 @@ FUNCTION is the action to perform on the selected elements."
           (remove-focus)))))
 
 (define-command follow-hint ()
-  "Show a set of element hints, and go to the user inputted one in the current
-buffer.
+  "Prompt for element hints and open them in the current buffer."
   (let ((buffer (current-buffer)))
     (query-hints "Go to element"
                  (lambda (results)
@@ -348,16 +347,14 @@ buffer.
                            (rest results))))))
 
 (define-command follow-hint-new-buffer ()
-  "Show a set of element hints, and open the user inputted one in a new
-buffer (not set to visible active buffer)."
+  "Like `follow-hint', but open the selected hints in new buffers (no focus)."
   (let ((buffer (current-buffer)))
     (query-hints "Open element in new buffer"
                  (lambda (result) (mapcar (alex:rcurry #'%follow-hint-new-buffer buffer)
                                           result)))))
 
 (define-command follow-hint-new-buffer-focus ()
-  "Show a set of element hints, and open the user inputted one in a new
-visible active buffer."
+  "Like `follow-hint-new-buffer', but with focus."
   (let ((buffer (current-buffer)))
     (query-hints "Go to element in new buffer"
                  (lambda (result)
@@ -366,21 +363,21 @@ visible active buffer."
                            (rest result))))))
 
 (define-command follow-hint-nosave-buffer ()
-  "Show a set of element hints, and open the user inputted one in a new
-nosave buffer (not set to visible active buffer)."
+  "Like `follow-hint', but open the selected hints in new `nosave-buffer's (no
+focus)."
   (query-hints "Open element in new buffer"
                (lambda (result) (mapcar #'%follow-hint-nosave-buffer result))))
 
 (define-command follow-hint-nosave-buffer-focus ()
-  "Show a set of element hints, and open the user inputted one in a new
-visible nosave active buffer."
+  "Like `follow-hint-nosave-buffer', but with focus."
   (query-hints "Go to element in new buffer"
                (lambda (result)
                  (%follow-hint-nosave-buffer-focus (first result))
                  (mapcar #'%follow-hint-nosave-buffer (rest result)))))
 
 (define-command follow-hint-with-current-modes-new-buffer ()
-  "Follow hint and open link in a new buffer with current modes."
+  "Prompt for element hints and open them in a new buffer with current
+modes."
   (let ((buffer (current-buffer)))
     (query-hints "Open element with current modes in new buffer"
                  (lambda (result)
@@ -388,13 +385,13 @@ visible nosave active buffer."
                            result)))))
 
 (define-command copy-hint-url ()
-  "Show a set of element hints, and copy the URL of the user inputted one."
+  "Prompt for element hints and save to clipboard."
   (query-hints "Copy element URL" (lambda (result)  (%copy-hint-url (first result)))
                :multi-selection-p nil
                :selector "a, img"))
 
 (define-command bookmark-hint ()
-  "Show link hints on screen, and allow the user to bookmark one."
+  "Prompt for element hints and bookmark them."
   (query-hints "Bookmark hint"
                (lambda (result)
                  (dolist (url (mapcar #'url result))
@@ -410,7 +407,7 @@ visible nosave active buffer."
                :selector "a, img"))
 
 (define-command download-hint-url ()
-  "Download the file under the URL(s) hinted by the user."
+  "Prompt for element hints and download them."
   (let ((buffer (current-buffer)))
     (query-hints "Download link URL"
                  (lambda (selected-links)
