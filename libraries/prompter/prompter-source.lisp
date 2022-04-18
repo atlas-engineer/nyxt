@@ -657,7 +657,7 @@ non-nil."
 
 (defun make-channel (&optional size)
   "Return a channel of capacity SIZE.
-If SIZE is NIL, capicity is infinite."
+If SIZE is NIL, capacity is infinite."
   (cond
     ((null size)
      (make-instance 'calispel:channel
