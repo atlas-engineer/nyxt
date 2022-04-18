@@ -14,6 +14,7 @@
                                            (class user-class))
   t)
 
+(export-always 'customize-instance)
 (defgeneric customize-instance (object)
   (:method ((class t)) t)
   (:documentation "Specialize this method to customize the default values and
