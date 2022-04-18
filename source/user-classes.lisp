@@ -26,9 +26,8 @@ This is meant to be used by users only.  Don't use it in public code, prefer
 `initialize-instance :after' instead."))
 
 (defmethod make-instance :around ((class user-class) &key)
-  (let ((initialized-object (call-next-method)))
-    (customize-instance initialized-object)
-    initialized-object))
+  (sera:lret ((initialized-object (call-next-method)))
+    (customize-instance initialized-object)))
 
 (defun user-class-p (class-specifier)
   (let ((metaclass (cond
