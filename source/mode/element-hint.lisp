@@ -124,16 +124,7 @@
    (prompter:follow-mode-functions
     (lambda (suggestion)
       (highlight-selected-hint :element suggestion
-                               :scroll nil)
-      (sera:and-let* ((auto-follow (nyxt/web-mode:auto-follow-hints-p (find-submode 'web-mode)))
-                      (matches (string-equal
-                                (prompter:input (current-prompt-buffer))
-                                (plump:get-attribute  suggestion "nyxt-hint")))
-                      (input (prompter:input (current-prompt-buffer))))
-        (run-thread "hint auto-follow thread"
-          (sleep (nyxt/web-mode:auto-follow-timer (find-submode 'web-mode)))
-          (when (string= input (prompter:input (current-prompt-buffer)))
-            (prompter:return-selection (current-prompt-buffer)))))))
+                               :scroll nil)))
    (prompter:actions (list 'identity
                            (lambda-command click* (elements)
                              (dolist (element (rest elements))
@@ -349,8 +340,6 @@ FUNCTION is the action to perform on the selected elements."
 (define-command follow-hint ()
   "Show a set of element hints, and go to the user inputted one in the current
 buffer.
-
-Auto-follows hints by their ID, if `web-mode's `auto-follow-hints-p' is true."
   (let ((buffer (current-buffer)))
     (query-hints "Go to element"
                  (lambda (results)
