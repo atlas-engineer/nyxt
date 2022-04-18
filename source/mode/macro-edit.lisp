@@ -116,7 +116,7 @@
   "Save the macro to the `*auto-config-file*' file."
   (if (macro-form-valid-p macro-editor)
       (progn
-        (nyxt::append-configuration (generate-macro-form macro-editor))
+        (nyxt::auto-configure :form (generate-macro-form macro-editor))
         (echo "Saved macro to ~s." (nfiles:expand *auto-config-file*)))
       (echo "Macro form is invalid; check it has a title and functions.")))
 

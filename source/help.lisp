@@ -478,70 +478,25 @@ A command is a special kind of function that can be called with
                               (string (sera:class-name-of source)))))))))
 
 (defun configure-slot (slot class &key
-                                    (value nil new-value-supplied-p)
-                                    ;; SLOT may also be a method, as with
-                                    ;; `default-modes', in which case there is no type.
-                                    (type (ignore-errors
-                                           (getf (mopu:slot-properties (find-class class) slot)
-                                                 :type))))
-  "Set the value of a slot in a users auto-config.lisp.
+                                    (type (getf (mopu:slot-properties (find-class class) slot)
+                                                :type)))
+  "Set the value of a slot in `*auto-config-file*'.
 CLASS is a class symbol."
-  (flet ((set-slot (slot class input)
-           (echo "Update slot ~s to ~s. You might need to restart to experience the change." slot input)
-           (append-configuration `(setf (slot-value ,class ,slot) ,input) :class class)))
-    (if new-value-supplied-p
-        (set-slot slot class value)
-        (let ((accepted-input
-                (loop while t do
-                  (let ((input (read-from-string
-                                (prompt1
-                                  :prompt (format nil "Configure slot value ~a" slot)
-                                  :sources (make-instance 'prompter:raw-source)))))
-                    (cond ((not type) (return input))
-                          ((typep input type) (return input))
-                          (t (progn
-                               (echo-warning
-                                "There's a type mismatch: ~a should be a ~a, while you provided ~a"
-                                slot type (type-of input))
-                               nil)))))))
-          (set-slot slot class accepted-input)
-          (eval `(defmethod customize-instance ((,class ,class))
-                   (setf (slot-value ,class ,slot)) ,accepted-input))))))
-
-(defun append-configuration (form &key class
-                                    (format-directive "~&~s~%"))
-  "Append FORM to `*auto-config-file*'.
-If CLASS is specified (a class symbol), the FORM is appended to the "
-  (let ((path (nfiles:expand *auto-config-file*)))
-    (flet ((customize-form-p (form)
-             (and (eq (second form) 'customize-instance)
-                  (eq (second (first (find-if #'consp form)))
-                      class))))
-      (let ((forms (if class
-                       (let ((existing-form? nil))
-                         (append
-                          (with-open-file (file path :if-does-not-exist nil)
-                            (loop
-                              for object = (read file nil :eof)
-                              until (eq object :eof)
-                              collect (if (and (not existing-form?)
-                                               (customize-form-p class))
-                                          (progn
-                                            (setf existing-form? t)
-                                            (append object (list form)))
-                                          object)))
-                          (unless existing-form?
-                            `(defmethod customize-instance ((,class ,class))
-                               ,form))))
-                       (list form))))
-        (with-open-file (file path
-                              :direction :output
-                              :if-exists :append
-                              :if-does-not-exist :create)
-          (let ((*print-case* :downcase))
-            (log:info "Appending configuration to ~s" path)
-            (dolist (form forms)
-              (format file format-directive form))))))))
+  (let ((input
+          (loop while t do
+            (let ((input (read-from-string
+                          (prompt1
+                            :prompt (format nil "Configure slot value ~a" slot)
+                            :sources (make-instance 'prompter:raw-source)))))
+              (cond ((not type) (return input))
+                    ((typep input type) (return input))
+                    (t (progn
+                         (echo-warning
+                          "There's a type mismatch: ~a should be a ~a, while you provided ~a"
+                          slot type (type-of input))
+                         nil)))))))
+    (auto-configure :class-name class :slot slot :slot-value input)
+    (echo "Update slot ~s to ~s. You might need to restart to experience the change." slot input)))
 
 (define-internal-page-command-global common-settings ()
     (buffer "*Settings*" 'nyxt/help-mode:help-mode)
@@ -553,27 +508,33 @@ If CLASS is specified (a class symbol), the FORM is appended to the "
     (:h2 "Keybinding style")
     (:p (:button :class "button"
                  :onclick (ps:ps (nyxt/ps:lisp-eval
-                                  `(progn (nyxt::configure-slot
-                                           'default-modes 'buffer
-                                           :value '%slot-default%)
-                                          (nyxt/emacs-mode:emacs-mode :activate nil)
-                                          (nyxt/vi-mode:vi-normal-mode :activate nil))))
+                                  `(progn
+                                     (nyxt::auto-configure
+                                      :class 'buffer
+                                      :form (nyxt/emacs-mode:emacs-mode :activate nil))
+                                     (nyxt::auto-configure
+                                      :class 'buffer
+                                      :form (nyxt/vi-mode:vi-normal-mode :activate nil)))))
                  "Use default (CUA)"))
     (:p (:button :class "button"
                  :onclick (ps:ps (nyxt/ps:lisp-eval
-                                  `(progn (nyxt::configure-slot
-                                           'default-modes 'buffer
-                                           :value '(append '(emacs-mode) %slot-default%))
-                                          (nyxt/emacs-mode:emacs-mode :activate t)
-                                          (nyxt/vi-mode:vi-normal-mode :activate nil))))
+                                  `(progn
+                                     (nyxt::auto-configure
+                                      :class 'buffer
+                                      :form (nyxt/vi-mode:vi-normal-mode :activate nil))
+                                     (nyxt::auto-configure
+                                      :class 'buffer
+                                      :form (nyxt/emacs-mode:emacs-mode :activate t)))))
                  "Use Emacs"))
     (:p (:button :class "button"
                  :onclick (ps:ps (nyxt/ps:lisp-eval
-                                  `(progn (nyxt::configure-slot
-                                           'default-modes 'buffer
-                                           :value '(append '(vi-normal-mode) %slot-default%))
-                                          (nyxt/emacs-mode:emacs-mode :activate nil)
-                                          (nyxt/vi-mode:vi-normal-mode :activate t))))
+                                  `(progn
+                                     (nyxt::auto-configure
+                                      :class 'buffer
+                                      :form (nyxt/emacs-mode:emacs-mode :activate nil))
+                                     (nyxt::auto-configure
+                                      :class 'buffer
+                                      :form (nyxt/vi-mode:vi-normal-mode :activate t)))))
                  "Use vi"))
     (flet ((generate-colors (theme-symbol text)
              (spinneret:with-html-string
@@ -582,8 +543,10 @@ If CLASS is specified (a class symbol), the FORM is appended to the "
                                            (theme:primary-color (symbol-value theme-symbol))
                                            (theme:background-color (symbol-value theme-symbol)))
                             :onclick (ps:ps (nyxt/ps:lisp-eval
-                                             `(configure-slot 'theme 'browser
-                                                              :value ',theme-symbol)))
+                                             `(nyxt::auto-configure
+                                               :class 'browser
+                                               :slot 'theme
+                                               :slot-value ',theme-symbol)))
                             text))
                (:p "Colors:")
                (:dl
