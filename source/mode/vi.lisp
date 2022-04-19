@@ -15,7 +15,7 @@ in your configuration file.
 Example:
 
 \(defmethod customize-instance ((buffer buffer))
-  (nyxt/emacs-mode:emacs-mode :buffer buffer))
+  (nyxt/vi-mode:vi-normal-mode :buffer buffer))
 
 In `vi-insert-mode', CUA bindings are still available unless
 `passthrough-mode-p' is non-nil in `vi-insert-mode'.
