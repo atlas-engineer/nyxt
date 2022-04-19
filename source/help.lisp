@@ -786,7 +786,7 @@ the channel, wrapped alongside the condition and its restarts."))
     (declare (ignore channel))
     (debug->html condition-itself id restarts)))
 
-(define-command-global toggle-debug-on-error (&key (value nil value-provided-p))
+(define-command-global toggle-debug-on-error (&optional (value nil value-provided-p))
   "Toggle Nyxt-native debugging.
 
 See `*debug-on-error*'."
