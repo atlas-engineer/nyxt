@@ -345,6 +345,10 @@ JSON-NAMEs as strings, where
       (:a :class "button"
           :href (http->ap (id object))
           (name* object))))
+  (:method ((objects list) format)
+    (spinneret:with-html-string
+      (loop for object in objects
+            collect (:raw (object->html object format)))))
   (:method ((object t) format)
     (spinneret:with-html-string
       (:a :class "button"
