@@ -353,7 +353,7 @@ JSON-NAMEs as strings, where
     (spinneret:with-html-string
       (:a :class "button"
           :href object
-          (value->html object (eq :link format)))))
+          (:raw (value->html object (eq :link format))))))
   (:documentation "Produce a reasonable HTML representation of an OBJECT according to FORMAT.
 FORMAT can be one of
 - :LINK for condensed link to OBJECT.
