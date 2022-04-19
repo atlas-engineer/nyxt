@@ -329,6 +329,10 @@ JSON-NAMEs as strings, where
   (let ((url (quri:uri url)))
     (str:concat "ap:" (nyxt::schemeless-url url))))
 
+
+;; FIXME: This should not exists! Strong typing should be strong!
+(defmethod name* ((object t)) "")
+
 (defmethod name* ((object actor))
   (if (uiop:emptyp (name object))
       (preferred-username object)
