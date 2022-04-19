@@ -482,21 +482,19 @@ A command is a special kind of function that can be called with
                                                 :type)))
   "Set the value of a slot in `*auto-config-file*'.
 CLASS is a class symbol."
-  (let ((input
-          (loop while t do
-            (let ((input (read-from-string
-                          (prompt1
-                            :prompt (format nil "Configure slot value ~a" slot)
-                            :sources (make-instance 'prompter:raw-source)))))
-              (cond ((not type) (return input))
-                    ((typep input type) (return input))
-                    (t (progn
-                         (echo-warning
-                          "There's a type mismatch: ~a should be a ~a, while you provided ~a"
-                          slot type (type-of input))
-                         nil)))))))
-    (auto-configure :class-name class :slot slot :slot-value input)
-    (echo "Update slot ~s to ~s. You might need to restart to experience the change." slot input)))
+  (sera:nlet lp ()
+    (let ((input (read-from-string
+                  (prompt1
+                    :prompt (format nil "Configure slot value ~a" slot)
+                    :sources (make-instance 'prompter:raw-source)))))
+      (cond
+        ((and type (not (typep input type)))
+         (echo-warning "Type mismatch for ~a: got ~a, expected ~a."
+                       slot (type-of input) type)
+         (lp))
+        (t
+         (auto-configure :class-name class :slot slot :slot-value input)
+         (echo "Update slot ~s to ~s. You might need to restart to experience the change." slot input))))))
 
 (define-internal-page-command-global common-settings ()
     (buffer "*Settings*" 'nyxt/help-mode:help-mode)
