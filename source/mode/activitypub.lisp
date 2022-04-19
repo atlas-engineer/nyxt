@@ -383,7 +383,21 @@ FORMAT can be one of
   (spinneret:with-html-string
     (:div
      :class "card"
-     (:i (name* (actor object)) " created/posted:")
+     (:i (:a :href (id (actor object)) (name* (actor object))) " created/posted:")
+     (:raw (object->html (object object) :card)))))
+
+(defmethod object->html ((object announce-activity) (format (eql :card)))
+  (spinneret:with-html-string
+    (:div
+     :class "card"
+     (:i (:a :href (id (actor object)) (name* (actor object)))
+         " (originally by "
+         (let ((author (or (origin object)
+                           (and (object object)
+                                (or (attributed-to (object object))
+                                    (generator (object object)))))))
+           (:a :href (id author) (name* author)))
+         ") announces:")
      (:raw (object->html (object object) :card)))))
 
 (defmethod object->html ((object string) (format (eql :link)))
