@@ -62,50 +62,6 @@
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages webkit))
 
-(define-public sbcl-nfiles
-  (package
-   (name "sbcl-nfiles")
-   (version "0.2.0")
-   (source
-    (origin
-     (method git-fetch)
-     (uri (git-reference
-           (url "https://github.com/atlas-engineer/nfiles")
-           (commit version)))
-     (file-name (git-file-name "nfiles" version))
-     (sha256
-      (base32
-       "02diypc5i36sv3kwjs0lk1y3r2zjv1k8g65w22844rbc881znb2h"))))
-   (build-system asdf-build-system/sbcl)
-   (inputs
-    (list gnupg
-          sbcl-alexandria
-          sbcl-hu.dwim.defclass-star
-          sbcl-serapeum
-          sbcl-trivial-garbage
-          sbcl-trivial-package-local-nicknames
-          sbcl-trivial-types))
-   (native-inputs
-    (list sbcl-prove))
-   (arguments
-    (list #:phases
-          #~(modify-phases %standard-phases
-              (add-after 'unpack 'fix-paths
-                (lambda _
-                  (substitute* "gpg.lisp"
-                    (("\"gpg\"")
-                     (string-append "\""
-                                    #$(this-package-input "gnupg") "/bin/gpg\""))))))))
-   (home-page "https://github.com/atlas-engineer/nfiles")
-   (synopsis "Manage file persistence and loading in Common Lisp")
-   (description
-    "NFiles is a Common Lisp library to help manage file persistence and
-loading, in particular user-centric files like configuration files.")
-   (license license:bsd-3)))
-
-(define-public cl-nfiles                ; TODO: Add iolib for non-SBCL.
-  (sbcl-package->cl-source-package sbcl-nfiles))
-
 (define %source-dir (dirname (dirname (current-filename))))
 
 (define (nyxt-git-version)              ; Like Nyxt's `+version+'.
