@@ -379,13 +379,17 @@ FORMAT can be one of
     (when (attachment object)
       (:raw (object->html (attachment object) :card)))))
 
+(defmethod published* ((object object))
+  (if (published object)
+      (local-time:format-timestring nil (published object) :format local-time:+asctime-format+)
+      "sometime"))
+
 (defmethod object->html ((object create-activity) (format (eql :card)))
   (spinneret:with-html-string
     (:div
      :class "card"
      (:i (:a :href (id (actor object)) (name* (actor object)))
-         " created/posted on "
-         (local-time:format-timestring nil (published object) :format local-time:+asctime-format+))
+         " created/posted on " (published* object))
      (:raw (object->html (object object) :card)))))
 
 (defmethod object->html ((object announce-activity) (format (eql :card)))
@@ -393,14 +397,13 @@ FORMAT can be one of
     (:div
      :class "card"
      (:i (:a :href (id (actor object)) (name* (actor object)))
-         " (originally by "
          (let ((author (or (origin object)
                            (and (object object)
                                 (or (attributed-to (object object))
                                     (generator (object object)))))))
-           (:a :href (id author) (name* author)))
-         ") announced on "
-         (local-time:format-timestring nil (published object) :format local-time:+asctime-format+))
+           (when author
+             " (originally by " (:a :href (http->ap (or (id author) (url author))) (name* author)) ")"))
+         " announced on " (published* object))
      (:raw (object->html (object object) :card)))))
 
 (defmethod object->html ((object string) (format (eql :link)))
