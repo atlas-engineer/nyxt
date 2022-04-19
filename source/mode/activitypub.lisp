@@ -326,8 +326,10 @@ JSON-NAMEs as strings, where
   ("deleted" deleted #'local-time:parse-timestring))
 
 (defun http->ap (url)
-  (let ((url (quri:uri url)))
-    (str:concat "ap:" (nyxt::schemeless-url url))))
+  (or (alexandria:when-let* ((url url)
+                             (url (quri:uri url)))
+        (str:concat "ap:" (nyxt::schemeless-url url)))
+      ""))
 
 
 ;; FIXME: This should not exists! Strong typing should be strong!
