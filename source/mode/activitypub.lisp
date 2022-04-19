@@ -221,6 +221,7 @@ JSON-NAMEs as strings, where
   "streams" ; nested
   "preferredUsername"
   "endpoints" ; nested
+  "featured" ; Mastodon-specific
   )
 
 (define-json-type base-collection "" (object)
@@ -454,6 +455,9 @@ FORMAT can be one of
     (when (and (followers object)
                (not (zerop (total-items (followers object)))))
       (:raw (object->html (followers object) :link)))
+    (when (and (featured object)
+               (not (zerop (total-items (featured object)))))
+      (:raw (object->html (featured object) :link)))
     (:raw (object->html (outbox object) :card))))
 
 (define-internal-scheme "ap"
