@@ -404,7 +404,7 @@ FORMAT can be one of
                 collect (:raw (object->html item :card)))))
        (when (collection-page-p first-item)
          (unless (equal first-item (last-item object))
-           (:button :class "button" "More...")))))))
+           (:a :class "button" :href (http->ap (id object)) "More...")))))))
 
 (defmethod object->html ((object actor) (format (eql :page)))
   (spinneret:with-html-string
