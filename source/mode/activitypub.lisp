@@ -185,6 +185,8 @@ JSON-NAMEs as strings, where
   "mediaType"
   "likes" ; nested
   "shares" ; nested
+  "width" ;; Mastodon adds this
+  "height"  ;; Mastodon adds this
   )
 
 (define-json-type link "Link" (base)
