@@ -230,12 +230,6 @@ JSON-NAMEs as strings, where
   ("current" current-item) ; object
   )
 
-;; (define-class base-collection (object)
-;;   ((total-items 0 :type integer)
-;;    (first nil :type (maybe link collection-page))
-;;    (last nil :type (maybe link collection-page))
-;;    (current nil :type (maybe link collection-page))))
-
 (define-json-type collection "Collection" (base-collection)
   "items" ; nested
   )
