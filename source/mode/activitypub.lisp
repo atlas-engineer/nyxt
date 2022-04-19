@@ -143,7 +143,8 @@ JSON-NAMEs as strings, where
        (defmethod fill-object ((object ,name ) processed-json)
          (when (hash-table-p processed-json)
            ,@(loop for (json-name lisp-name processor) in normalized-slots
-                   collect `(when (gethash ,json-name processed-json)
+                   collect `(when (and (gethash ,json-name processed-json)
+                                       (not (eq :null (gethash ,json-name processed-json))))
                               ;; FIXME: Is there a better way to translate from CaMelCAsE?
                               (setf (slot-value object (quote ,lisp-name))
                                     ,(if processor
