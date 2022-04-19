@@ -402,7 +402,7 @@ FORMAT can be one of
                                 (or (attributed-to (object object))
                                     (generator (object object)))))))
            (when author
-             " (originally by " (:a :href (http->ap (or (id author) (url author))) (name* author)) ")"))
+             (:i " (originally by " (:a :href (http->ap (or (id author) (url author))) (name* author)) ")")))
          " announced on " (published* object))
      (:raw (object->html (object object) :card)))))
 
