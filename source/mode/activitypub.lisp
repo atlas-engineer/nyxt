@@ -417,6 +417,14 @@ FORMAT can be one of
          (unless (equal first-item (last-item object))
            (:a :class "button" :href (http->ap (id object)) "More...")))))))
 
+(defmethod object->html ((object actor) (format (eql :card)))
+  (spinneret:with-html-string
+    (:div
+     :class "card"
+     (:h2 (:a :href (http->ap (id object))
+              (format nil "~a (@~a)" (name* object) (preferred-username object))))
+     (:raw (summary object)))))
+
 (defmethod object->html ((object actor) (format (eql :page)))
   (spinneret:with-html-string
     (:header
