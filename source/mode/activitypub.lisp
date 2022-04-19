@@ -360,13 +360,24 @@ FORMAT can be one of
 - :CARD for compact yet informative representation of OBJECT.
 - :PAGE for full-page OBJECT rendering (is usually linked to by :LINK format)."))
 
+(defmethod object->html ((object document) (format (eql :card)))
+  (if (str:starts-with? "image" (media-type object))
+      (spinneret:with-html-string
+        (:img :src (slot-value object 'url)
+              :alt (when (and (name object)
+                              (not (eq :null (name object))))
+                     (name object))))
+      (object->html object :link)))
+
 (defmethod object->html ((object note) (format (eql :card)))
   (spinneret:with-html-string
     (:div
      :class "card"
      (:h2 :class "card-title" (name* (or (attributed-to object) (generator object))))
      (:i (local-time:format-timestring nil (published object) :format local-time:+asctime-format+))
-     (:p (:raw (content object))))))
+     (:p (:raw (content object)))
+     (when (attachment object)
+       (:raw (object->html (attachment object) :card))))))
 
 (defmethod object->html ((object activity) (format (eql :card)))
   (object->html (object object) :card))
