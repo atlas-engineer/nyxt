@@ -371,16 +371,16 @@ FORMAT can be one of
 
 (defmethod object->html ((object note) (format (eql :card)))
   (spinneret:with-html-string
+    (:p (:raw (content object)))
+    (when (attachment object)
+      (:raw (object->html (attachment object) :card)))))
+
+(defmethod object->html ((object create-activity) (format (eql :card)))
+  (spinneret:with-html-string
     (:div
      :class "card"
-     (:h2 :class "card-title" (name* (or (attributed-to object) (generator object))))
-     (:i (local-time:format-timestring nil (published object) :format local-time:+asctime-format+))
-     (:p (:raw (content object)))
-     (when (attachment object)
-       (:raw (object->html (attachment object) :card))))))
-
-(defmethod object->html ((object activity) (format (eql :card)))
-  (object->html (object object) :card))
+     (:i (name* (actor object)) " created/posted:")
+     (:raw (object->html (object object) :card)))))
 
 (defmethod object->html ((object string) (format (eql :link)))
   (if (valid-url-p object)
