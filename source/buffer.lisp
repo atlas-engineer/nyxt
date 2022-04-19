@@ -138,11 +138,12 @@ customize to their needs.
 Example:
 
 \(defmethod customize-instance ((buffer buffer))
-  ((override-map (let ((map (make-keymap \"override-map\")))
-                             (define-key map
-                               \"M-x\" 'execute-command
-                               \"C-q\" 'quit)
-                   map))))")
+  (setf (override-map buffer)
+        (let ((map (make-keymap \"override-map\")))
+          (define-key map
+            \"M-x\" 'execute-command
+            \"C-q\" 'quit)
+          map)))")
    (forward-input-events-p
     t
     :documentation "When non-nil, keyboard events are
@@ -195,10 +196,9 @@ There's no more ability to pass the results to the renderer with :FORWARD.
 Example:
 
 \(defmethod configure-instance ((buffer buffer))
-  (setf (request-resource-hook buffer)
-        (reduce #'hooks:add-hook
-                '(old-reddit-handler auto-proxy-handler)
-                :initial-value (request-resource-hook buffer))))")
+  (reduce #'hooks:add-hook
+          '(old-reddit-handler auto-proxy-handler)
+          :initial-value (request-resource-hook buffer)))")
    (scroll-distance
     50
     :type integer
@@ -322,8 +322,7 @@ To use, say, KeepassXC, set this slot to
 
   (make-instance 'password:keepassxc-interface)
 
-Password interfaces may be user classes, in which case you can specialize the
-`customize-instance' method on them.")
+Password interfaces are configurable through a `customize-instance' method.")
    (download-directory
     (make-instance 'download-directory)
     :type download-directory

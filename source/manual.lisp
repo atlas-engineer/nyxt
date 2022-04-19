@@ -53,11 +53,12 @@ below to create said file, if it's not created yet.")
     (:p "Example:")
     (:pre (:code "
 \(defmethod customize-instance ((buffer buffer))
-  ((override-map (let ((map (make-keymap \"override-map\")))
-                             (define-key map
-                               \"M-x\" 'execute-command
-                               \"C-q\" 'quit)
-                   map))))"))
+  (setf (override-map buffer)
+        (let ((map (make-keymap \"override-map\")))
+          (define-key map
+            \"M-x\" 'execute-command
+            \"C-q\" 'quit)
+          map)))"))
     (:p "The above turns on the 'no-script-mode' (disables JavaScript) by default for
 every buffer.")
     (:p "The " (:code "customize-instance") " methods can be used to customize
@@ -126,11 +127,12 @@ all other keymaps.  By default, it has few bindings like the one
 for " (command-markup 'execute-command) ".  You can use it to set keys globally:")
     (:pre (:code "
 \(defmethod customize-instance ((buffer buffer))
-  ((override-map (let ((map (make-keymap \"override-map\")))
-                             (define-key map
-                               \"M-x\" 'execute-command
-                               \"C-q\" 'quit)
-                   map))))"))
+  (setf (override-map buffer)
+        (let ((map (make-keymap \"override-map\")))
+          (define-key map
+            \"M-x\" 'execute-command
+            \"C-q\" 'quit)
+          map)))"))
     (:p "The " (:code "nothing") " command is useful to override bindings to do
 nothing. Note that it's possible to bind any command, including those of
 disabled modes that are not listed in " (command-markup 'execute-command) ".")
@@ -273,17 +275,15 @@ can set a hook like the following in your configuration file:")
   request-data)
 
 \(defmethod customize-instance ((buffer web-buffer))
-  (setf (request-resource-hook buffer)
-        (hooks:add-hook (request-resource-hook buffer) 'old-reddit-handler)))"))
+  (hooks:add-hook (request-resource-hook buffer) 'old-reddit-handler))"))
     (:p "(See " (:code "url-dispatching-handler")
         " for a simpler way to achieve the same result.)")
     (:p "Or, if you want to set multiple handlers at once,")
     (:pre (:code "
 \(defmethod customize-configuration ((buffer web-buffer))
-  (setf (request-resource-hook buffer)
-        (reduce #'hooks:add-hook
-                '(old-reddit-handler auto-proxy-handler)
-                :initial-value (request-resource-hook buffer))))"))
+  (reduce #'hooks:add-hook
+          '(old-reddit-handler auto-proxy-handler)
+          :initial-value (request-resource-hook buffer)))"))
     (:p "Some hooks like the above example expect a return value, so it's
 important to make sure we return " (:code "request-data") " here.  See the
 documentation of the respective hooks for more details.")

@@ -110,12 +110,14 @@ Return NIL if not a slot setting."
 - the class name
 - the list of forms, either `slot-form' or a raw s-exp.
 Return NIL if not a class form."
-  (alex:when-let ((class-name (when (eq (second form) 'customize-instance)
+  (alex:when-let ((class-name (when (and (eq (first form) 'defmethod)
+                                         (eq (second form) 'customize-instance))
                                 (second (first (find-if #'consp form))))))
-    (let ((body (sera:nlet lp ((sexp form))
-                  (if (consp (first sexp))
-                      (rest sexp)
-                      (lp (rest sexp))))))
+    (let ((body (alex:parse-body (sera:nlet lp ((sexp form))
+                                   (if (consp (first sexp))
+                                       (rest sexp)
+                                       (lp (rest sexp))))
+                                 :documentation t)))
       (values class-name
               (mapcar (lambda (sexp)
                         (multiple-value-bind (name value)
@@ -145,10 +147,8 @@ Return NIL if not a class form."
                                 :class-name name
                                 :forms forms)
                  form))))
-    (loop
-      for form = (read raw-content nil :eof)
-      until (eq form :eof)
-      collect (make-init-form form))))
+    (mapcar #'make-init-form
+            (uiop:slurp-stream-forms raw-content))))
 
 (defmethod nfiles:serialize ((profile nyxt-profile) (file auto-init-file) stream &key)
   (dolist (form (nfiles:content file))
@@ -157,7 +157,7 @@ Return NIL if not a class form."
          (write-init-form-class form)
          form)
      :stream stream)
-    (write-string +newline+ stream)))
+    (fresh-line stream)))
 
 (defmethod nfiles:write-file ((profile nyxt-profile) (file auto-init-file) &key)
   (let ((*print-case* :downcase)
