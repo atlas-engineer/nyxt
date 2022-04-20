@@ -15,7 +15,21 @@
 ;; TODO: Parse @context.
 
 (define-mode activitypub-mode ()
-  ""
+  "A mode for ActivityPub-enabled pages browsing.
+
+The `model' is usually the object that the current page was generated from. It's
+mostly there for introspection purposes.
+
+There is a number of helper functions to extract semantic data from ActivityPub
+objects: `name*', `author*', `published*'.
+
+Important methods to be avare of:
+- `object->html' method allows you to override the way ActivityPub entities are
+  rendered.
+- `parse-object' ensures that the data one gets from the page is a proper
+  `object', `link', `activity' etc.
+- `fetch-object' fetches the object from the HTTP(S) URL and parses it to
+  primitive Lisp form."
   ((rememberable-p nil)
    (model nil :type (maybe base))
    (style (theme:themed-css (theme *browser*)
@@ -28,7 +42,16 @@
    (auth-token
     nil
     :type (maybe string)
-    :documentation "The authorization token for Nyxt to handle ActivityPub auth.")))
+    :allocation :class
+    :documentation "The authorization token for Nyxt to handle ActivityPub auth.")
+   (nickname
+    nil
+    :type (maybe string)
+    :documentation "The nickname of the account currently logged in.")
+   (instance
+    nil
+    :type (maybe quri:uri)
+    :documentation "The URL of the home instance for the current account.")))
 
 (export-always 'base)
 (define-class base ()
