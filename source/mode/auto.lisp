@@ -42,17 +42,17 @@ Package prefix is optional.")
     mode)
   (:method ((mode nyxt:mode))
     (when (rememberable-p mode)
-      (make-instance 'mode-invocation :name (mode-name mode))))
+      (make-instance 'mode-invocation :name (mode-symbol mode))))
   (:method ((mode symbol))
-    (alex:if-let ((mode-full-symbol (mode-name mode)))
+    (alex:if-let ((mode-full-symbol (mode-symbol mode)))
       (alex:when-let ((rememberable-p (rememberable-p (make-instance mode-full-symbol))))
         (make-instance 'mode-invocation :name mode-full-symbol))
       (echo-warning "Auto-mode rule: unknown mode symbol ~s" mode)))
   (:method ((mode list))
     (check-type mode (cons symbol *))
-    (when (rememberable-p (make-instance (mode-name (first mode))))
+    (when (rememberable-p (make-instance (mode-symbol (first mode))))
       (make-instance 'mode-invocation
-                     :name (mode-name (first mode))
+                     :name (mode-symbol (first mode))
                      :arguments (rest mode)))))
 
 (defun mode-invocations (mode-list)
@@ -374,7 +374,7 @@ Auto-mode is re-enabled once the page is reloaded."
                            :prompt "Mark modes to enable, unmark to disable"
                            :sources (make-instance 'mode-source
                                                    :marks (remove 'nyxt/auto-mode:auto-mode
-                                                                  (mapcar #'mode-name (modes (current-buffer)))))))
+                                                                  (mapcar #'mode-symbol (modes (current-buffer)))))))
          (modes-to-disable (cons 'nyxt/auto-mode:auto-mode
                                  (set-difference (nyxt::all-mode-names) modes-to-enable
                                                  :test #'string=))))

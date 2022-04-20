@@ -1000,7 +1000,7 @@ See `make-buffer' for a description of the arguments."
          (buffer (make-buffer :title (title curr-buffer)
                               :url (url curr-buffer)
                               :modes (or modes
-                                         (mapcar #'mode-name
+                                         (mapcar #'mode-symbol
                                                  (modes curr-buffer)))
                               :parent-buffer parent-buffer)))
     (set-current-buffer buffer)
@@ -1660,14 +1660,14 @@ That is, the one with the most recent access time."
 (export-always 'disable-modes)
 (defun disable-modes (modes &optional (buffer (current-buffer)))
   "Disable MODES for BUFFER.
-MODES should be a list symbols, each possibly returned by `mode-name'."
+MODES should be a list (possibly namespace-less) symbols."
   (mapcar #'disable (delete nil (mapcar (lambda (mode) (find-mode buffer mode))
                                         (uiop:ensure-list modes)))))
 
 (export-always 'enable-modes)
 (defun enable-modes (modes &optional (buffer (current-buffer)) args)
   "Enable MODES for BUFFER.
-MODES should be a list of symbols, each possibly returned by `mode-name'.
+MODES should be a list (possibly namespace-less) symbols.
 ARGS are passed to the mode `enable' method."
   (mapcar (lambda (mode-sym)
             (apply #'enable (or (find-mode buffer mode-sym)
@@ -1684,8 +1684,8 @@ ARGS are passed to the mode `enable' method."
                             (alex:mappend
                              #'modes
                              (uiop:ensure-list (buffers source)))
-                            :test (lambda (i y) (equal (mode-name i)
-                                                       (mode-name y)))))))
+                            :test (lambda (i y) (equal (mode-symbol i)
+                                                       (mode-symbol y)))))))
   (:export-class-name-p t)
   (:metaclass user-class))
 
@@ -1697,9 +1697,9 @@ ARGS are passed to the mode `enable' method."
                            (let ((common-modes
                                    (reduce #'intersection
                                            (mapcar (lambda (b)
-                                                     (mapcar #'mode-name (modes b)))
+                                                     (mapcar #'mode-symbol (modes b)))
                                                    (uiop:ensure-list (buffers source))))))
-                             (set-difference (mode-list) common-modes)))))
+                             (set-difference (all-modes) common-modes)))))
   (:export-class-name-p t)
   (:metaclass user-class))
 
@@ -1715,7 +1715,7 @@ ARGS are passed to the mode `enable' method."
                  :sources (make-instance 'active-mode-source
                                          :buffers buffers))))
     (loop for buffer in buffers
-          do (disable-modes (mapcar #'mode-name modes) buffer))))
+          do (disable-modes (mapcar #'mode-symbol modes) buffer))))
 
 (define-command enable-mode ()
   "Enable queried mode(s) for select buffer(s)."
@@ -1730,9 +1730,6 @@ ARGS are passed to the mode `enable' method."
                                          :buffers buffers))))
     (loop for buffer in buffers
           do (enable-modes (uiop:ensure-list modes) buffer))))
-
-(defun all-mode-names ()
-  (mapcar #'name (sera:filter #'mode-toggler-p (list-commands))))
 
 (defun make-mode-suggestion (mode &optional source input)
   "Return a `suggestion' wrapping around ATTRIBUTE. "
@@ -1763,7 +1760,7 @@ This is convenient when you use auto-mode by default and you want to toggle a
 mode permanently for this buffer."
                                                                                 (delete (read-from-string "nyxt/auto-mode:auto-mode" )
                                                                                         modes)))
-                                                   :marks (mapcar #'mode-name (modes buffer)))))
+                                                   :marks (mapcar #'mode-symbol (modes buffer)))))
          (modes-to-disable (set-difference (all-mode-names) modes-to-enable
                                            :test #'string=)))
     (disable-modes (uiop:ensure-list modes-to-disable) buffer)
