@@ -380,11 +380,10 @@ FORMAT can be one of
       (:raw (object->html (attachment object) :card)))))
 
 (defmethod published* ((object object))
-  (local-time:format-timestring
-   nil
-   (some (lambda (x) (and x (not (eq :null x)) x))
-         (list (published object) (updated object) (start-time object) "sometime"))
-   :format local-time:+asctime-format+))
+  (alex:if-let ((time (some (lambda (x) (and x (not (eq :null x)) x))
+                            (list (published object) (updated object) (start-time object)))))
+    (local-time:format-timestring nil time :format local-time:+asctime-format+)
+    "sometime"))
 
 (defmethod object->html ((object create-activity) (format (eql :card)))
   (spinneret:with-html-string
