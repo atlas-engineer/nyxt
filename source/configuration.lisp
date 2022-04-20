@@ -3,7 +3,15 @@
 
 (in-package :nyxt)
 
-(define-class init-file (nfiles:config-file nyxt-lisp-file nfiles:virtual-file)
+(define-class init-directory-file (nfiles:config-file nyxt-lisp-file)
+  ((nfiles:base-path #p"")
+   (command-line-option :init
+                        :accessor nil
+                        :type keyword))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(define-class init-file (init-directory-file nfiles:virtual-file)
   ((nfiles:base-path #p"init")
    (command-line-option :init
                         :accessor nil
@@ -27,15 +35,15 @@
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class auto-init-file (nfiles:config-file nyxt-lisp-file) ; TODO: Be consistent here for 3.0!
+(define-class auto-init-file (init-directory-file) ; TODO: Be consistent here for 3.0!
   ((nfiles:base-path #p"auto-config")
-   (command-line-option :auto-init
+   (command-line-option :auto-config
                         :accessor nil
                         :type keyword))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod nfiles:resolve ((profile nyxt-profile) (init-file init-file))
+(defmethod nfiles:resolve ((profile nyxt-profile) (init-file init-directory-file))
   (let* ((option (slot-value init-file 'command-line-option))
          (no-option (alex:make-keyword
                      (uiop:strcat "NO-" (symbol-name option)))))
