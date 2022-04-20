@@ -49,7 +49,7 @@
                            (sort-by-time
                             (list-commands
                              :global-p (global-p source)
-                             :mode-symbols (mapcar #'mode-name (modes (buffer source))))))))
+                             :mode-symbols (mapcar #'mode-symbol (modes (buffer source))))))))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompter source to execute commands.

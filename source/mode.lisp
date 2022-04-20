@@ -86,15 +86,34 @@ It is run before the destructor.")
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass mode-class))
 
+(defun find-mode-class (designator)
+  "If DESIGNATOR is a mode symbol or mode class or mode instance, return the class.
+The package prefix may be omitted."
+  (or (and (typep designator 'mode)
+           (class-of designator))
+      (and (closer-mop:classp designator)
+           (closer-mop:subclassp designator (find-class 'mode))
+           designator)
+      (and (symbolp designator)
+           (find (symbol-name designator) (all-modes)
+                 :key (alex:compose #'symbol-name #'class-name)
+                 :test #'string=))))
+
+(export-always 'mode-symbol)
+(defun mode-symbol (mode)
+  "Return the full MODE symbol (with package prefix).
+See also `mode-name'.
+If MODE does not exist, return nil."
+  (alex:when-let ((class (find-mode-class mode)))
+    (class-name class)))
+
 (export-always 'mode-name)
 (defun mode-name (mode)
-  "Return the full MODE symbol (with package prefix).
+  "Return the MODE name as a string (without package prefix).
+See also `mode-symbol'.
 If MODE does not exist, return nil."
-  (when (or (mode-p mode)
-            (and (find-class mode)
-                 (closer-mop:subclassp (find-class mode)
-                                       (find-class 'mode))))
-    (sera:class-name-of mode)))
+  (alex:when-let ((sym (mode-symbol mode)))
+    (symbol-name sym)))
 
 (defmethod initialize-instance :after ((mode mode) &key)
   (when (eq 'mode (type-of mode))
@@ -140,7 +159,7 @@ The pre-defined `:after' method handles further cleanup."))
                  buffer))
         (prompt-render-prompt buffer)
         (print-status)))
-  (log:debug "~a disabled." (mode-name name)))
+  (log:debug "~a disabled." (mode-name mode)))
 
 (export-always 'define-mode)
 (defmacro define-mode (name direct-superclasses &body body)
@@ -190,7 +209,7 @@ The `mode' superclass is automatically added if not present."
   "Return the mode corresponding to MODE-SYMBOL in active in BUFFER.
 Return nil if mode is not found.  MODE-SYMBOL does not have to be namespaced, it
 can be 'web-mode as well as 'nyxt/web-mode:web-mode."
-  (alex:when-let ((mode-full-symbol (mode-name mode-symbol)))
+  (alex:when-let ((mode-full-symbol (mode-symbol mode-symbol)))
     (find mode-full-symbol
           (modes buffer)
           :key #'sera:class-name-of)))
@@ -199,7 +218,7 @@ can be 'web-mode as well as 'nyxt/web-mode:web-mode."
 (defmethod find-submode ((buffer buffer) mode-symbol)
   "Like `find-mode' but return the first mode in BUFFER that is a sub-mode of MODE-SYMBOL.
 It may be MODE-SYMBOL itself."
-  (alex:when-let ((mode-full-symbol (mode-name mode-symbol)))
+  (alex:when-let ((mode-full-symbol (mode-symbol mode-symbol)))
     (find-if (lambda (m)
                (closer-mop:subclassp (class-of m)
                                      (find-class mode-full-symbol)))
@@ -217,16 +236,20 @@ The \"-mode\" suffix is automatically appended to MODE-SYM if missing."
                       (intern (str:concat name "-MODE")
                               (symbol-package mode-sym))))))
 
-(defun mode-list ()
+(defun all-modes ()
   "Return the list of all namespaced mode symbols."
   (mopu:subclasses 'mode))
 
-(defun make-mode (mode-symbol buffer)
-  ""
-  (if (mode-name mode-symbol)
-      (enable (or (find-mode buffer mode-symbol)
-                  (make-instance mode-symbol :buffer buffer)))
-      (log:warn "Mode command ~a not found." mode-symbol)))
+(defun all-mode-names ()
+  "Return the list of namespace-less mode names."
+  (mapcar #'mode-name (all-modes)))
+
+(defun make-mode (mode-symbol buffer)   ; TODO: Compare to enable-modes.
+  "TODO: Still useful?"
+  (alex:if-let ((full-mode-name (mode-symbol mode-symbol)))
+    (enable (or (find-mode buffer full-mode-name)
+                (make-instance full-mode-name :buffer buffer)))
+    (log:warn "Mode ~a not found." mode-symbol)))
 
 (export-always 'find-buffer)
 (defun find-buffer (mode-symbol)

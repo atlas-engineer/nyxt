@@ -304,7 +304,7 @@ FUNCTION is the action to perform on the selected elements."
 
 (defmethod %follow-hint-with-current-modes-new-buffer ((a nyxt/dom:a-element) &optional parent-buffer)
   (make-buffer :url (url a)
-               :modes (mapcar #'mode-name (modes (current-buffer)))
+               :modes (mapcar #'mode-symbol (modes (current-buffer)))
                :parent-buffer parent-buffer))
 
 (defmethod %follow-hint-with-current-modes-new-buffer ((element plump:element) &optional parent-buffer)
