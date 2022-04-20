@@ -354,6 +354,15 @@ JSON-NAMEs as strings, where
     ((json-true-p (slot-value object 'href)) (quri:render-uri (slot-value object 'href)))
     (t (slot-value object 'id))))
 
+(defmethod author* ((object object))
+  (or (attributed-to object)
+      (generator object)))
+
+(defmethod author* ((object activity))
+  (or (origin object)
+      (and (object object)
+           (author* (object object)))))
+
 (defgeneric object->html (object format)
   (:method ((object base) (format (eql :link)))
     (spinneret:with-html-string
@@ -404,10 +413,17 @@ FORMAT can be one of
     (when (slot-value object 'name)
       (:h2 (:a :href (http->ap (slot-value object 'id))
                (slot-value object 'name))))
-    (when (content object)
-      (:p (:raw (content object))))
     (when (attachment object)
       (:p (:raw (object->html (attachment object) :link))))))
+
+(defmethod object->html ((object page) (format (eql :page)))
+  (spinneret:with-html-string
+    (when (slot-value object 'name)
+      (:h1 (slot-value object 'name)))
+    (:i "by " (when (author* object)
+                (:a :href (slot-value (author* object) 'id) (name* (author* object)))))
+    (when (content object)
+      (:p (:raw (content object))))))
 
 (defmethod published* ((object object))
   (alex:if-let ((time (some (lambda (x) (and x (not (eq :null x)) x))
@@ -428,12 +444,8 @@ FORMAT can be one of
     (:div
      :class "card"
      (:i (:a :href (id (actor object)) (name* (actor object)))
-         (let ((author (or (origin object)
-                           (and (object object)
-                                (or (attributed-to (object object))
-                                    (generator (object object)))))))
-           (when author
-             (:i " (originally by " (:a :href (http->ap (or (id author) (url author))) (name* author)) ")")))
+         (alex:when-let ((author (author* object)))
+           (:i " (originally by " (:a :href (http->ap (or (id author) (url author))) (name* author)) ")"))
          " announced on " (published* object))
      (:raw (object->html (object object) :card)))))
 
