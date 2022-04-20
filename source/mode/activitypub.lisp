@@ -403,7 +403,8 @@ FORMAT can be one of
 (defmethod object->html ((object page) (format (eql :card)))
   (spinneret:with-html-string
     (when (slot-value object 'name)
-      (:h2 (slot-value object 'name)))
+      (:h2 (:a :href (http->ap (slot-value object 'id))
+               (slot-value object 'name))))
     (when (content object)
       (:p (:raw (content object))))
     (when (attachment object)
