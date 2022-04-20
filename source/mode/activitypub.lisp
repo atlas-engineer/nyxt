@@ -508,7 +508,9 @@ FORMAT can be one of
     (when (and (featured object)
                (not (zerop (total-items (featured object)))))
       (:raw (object->html (featured object) :link)))
-    (:raw (object->html (outbox object) :card))))
+    (when (and (outbox object)
+               (not (zerop (total-items (outbox object)))))
+      (:raw (object->html (outbox object) :card)))))
 
 (define-internal-scheme "ap"
     (lambda (url buffer)
