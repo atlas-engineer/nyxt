@@ -330,14 +330,13 @@ JSON-NAMEs as strings, where
         (str:concat "ap:" (nyxt::schemeless-url url)))
       url))
 
-
-;; FIXME: This should not exists! Strong typing should be strong!
-(defmethod name* ((object t)) "")
-
 (defgeneric json-true-p (object)
   (:method ((object t)) object)
   (:method ((object string)) (not (uiop:emptyp object)))
   (:method ((object symbol)) (not (member object '(:null nil)))))
+
+;; FIXME: This should not exists! Strong typing should be strong!
+(defmethod name* ((object t)) "")
 
 (defmethod name* ((object actor))
   (if (json-true-p (name object))
