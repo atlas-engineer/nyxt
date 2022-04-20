@@ -1651,24 +1651,6 @@ That is, the one with the most recent access time."
     (when (second buffers)
       (set-current-buffer (second buffers)))))
 
-(export-always 'disable-modes)
-(defun disable-modes (modes &optional (buffer (current-buffer)))
-  "Disable MODES for BUFFER.
-MODES should be a list (possibly namespace-less) symbols."
-  (mapcar #'disable (delete nil (mapcar (lambda (mode) (find-mode buffer mode))
-                                        (uiop:ensure-list modes)))))
-
-(export-always 'enable-modes)
-(defun enable-modes (modes &optional (buffer (current-buffer)) args)
-  "Enable MODES for BUFFER.
-MODES should be a list (possibly namespace-less) symbols.
-ARGS are passed to the mode `enable' method."
-  (mapcar (lambda (mode-sym)
-            (apply #'enable (or (find-mode buffer mode-sym)
-                                (make-instance mode-sym))
-                   args))
-          (uiop:ensure-list modes)))
-
 (define-class active-mode-source (prompter:source)
   ((prompter:name "Active modes")
    (buffers :initarg :buffers :accessor buffers :initform nil)
