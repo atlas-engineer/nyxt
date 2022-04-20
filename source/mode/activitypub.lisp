@@ -325,9 +325,10 @@ JSON-NAMEs as strings, where
 
 (defun http->ap (url)
   (or (alexandria:when-let* ((url url)
+                             (valid (valid-url-p url))
                              (url (quri:uri url)))
         (str:concat "ap:" (nyxt::schemeless-url url)))
-      ""))
+      url))
 
 
 ;; FIXME: This should not exists! Strong typing should be strong!
