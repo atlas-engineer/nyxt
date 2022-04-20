@@ -137,7 +137,7 @@ customize to their needs.
 
 Example:
 
-\(defmethod customize-instance ((buffer buffer))
+\(defmethod customize-instance ((buffer buffer) &key)
   (setf (override-map buffer)
         (let ((map (make-keymap \"override-map\")))
           (define-key map

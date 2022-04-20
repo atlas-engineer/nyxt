@@ -52,7 +52,7 @@ below to create said file, if it's not created yet.")
                    "Create init file"))))
     (:p "Example:")
     (:pre (:code "
-\(defmethod customize-instance ((buffer buffer))
+\(defmethod customize-instance ((buffer buffer) &key)
   (setf (override-map buffer)
         (let ((map (make-keymap \"override-map\")))
           (define-key map
@@ -103,11 +103,11 @@ add the following to your configuration:")
     (:ul
      (:li "vi bindings:"
           (:pre (:code "
-\(defmethod customize-instance ((buffer web-buffer))
+\(defmethod customize-instance ((buffer web-buffer) &key)
   (nyxt/vi-mode:vi-normal-mode :buffer buffer))")))
      (:li "Emacs bindings:"
           (:pre (:code "
-\(defmethod customize-instance ((buffer web-buffer))
+\(defmethod customize-instance ((buffer web-buffer) &key)
   (nyxt/emacs-mode:emacs-mode :buffer buffer))"))))
     (:p "You can create new scheme names with " (:code "keymap:make-scheme-name")
         ".  Also see the " (:code "scheme-name") " class and the "
@@ -116,7 +116,7 @@ add the following to your configuration:")
         (:code "customize-instance") " and extend its binding scheme with "
         (:code "define-scheme") ". For example:")
     (:pre (:code "
-\(defmethod customize-instance ((mode base-mode))
+\(defmethod customize-instance ((mode base-mode) &key)
   (setf (keymap-scheme mode)
         (define-scheme (:name-prefix \"my-base\" :import (keymap-scheme mode))
           scheme:vi-normal
@@ -126,7 +126,7 @@ add the following to your configuration:")
 all other keymaps.  By default, it has few bindings like the one
 for " (command-markup 'execute-command) ".  You can use it to set keys globally:")
     (:pre (:code "
-\(defmethod customize-instance ((buffer buffer))
+\(defmethod customize-instance ((buffer buffer) &key)
   (setf (override-map buffer)
         (let ((map (make-keymap \"override-map\")))
           (define-key map
@@ -155,7 +155,7 @@ keymap.")
                    scheme:emacs *my-keymap*
                    scheme:vi-normal *my-keymap*))))
 
-\(defmethod customize-instance ((buffer web-buffer))
+\(defmethod customize-instance ((buffer web-buffer) &key)
   (my-mode :buffer buffer))"))
 
     (:p "Bindings are subject to various translations as per "
@@ -185,7 +185,7 @@ Bookmarks can also be used as search engines, see the corresponding section.")
    '(\"doi\" \"https://dx.doi.org/~a\" \"https://dx.doi.org/\")\)
   \"List of search engines.\")
 
-\(defmethod customize-instance ((buffer buffer))
+\(defmethod customize-instance ((buffer buffer) &key)
   (setf (search-engines buffer)
         (append (mapcar (lambda (engine) (apply 'make-search-engine engine))
                         *my-search-engines*)
@@ -199,7 +199,7 @@ follows.")
    '(\"doi\" \"https://dx.doi.org/~a\" \"https://dx.doi.org/\")
    '(\"python3\" \"https://docs.python.org/3/search.html?q=~a\" \"https://docs.python.org/3\")))
 
-\(defmethod customize-instance ((buffer buffer))
+\(defmethod customize-instance ((buffer buffer) &key)
   (setf (search-engines buffer)
         (append (search-engines buffer)
                 (mapcar (lambda (engine) (apply 'make-search-engine engine))
@@ -274,13 +274,13 @@ can set a hook like the following in your configuration file:")
               url)))
   request-data)
 
-\(defmethod customize-instance ((buffer web-buffer))
+\(defmethod customize-instance ((buffer web-buffer) &key)
   (hooks:add-hook (request-resource-hook buffer) 'old-reddit-handler))"))
     (:p "(See " (:code "url-dispatching-handler")
         " for a simpler way to achieve the same result.)")
     (:p "Or, if you want to set multiple handlers at once,")
     (:pre (:code "
-\(defmethod customize-configuration ((buffer web-buffer))
+\(defmethod customize-instance ((buffer web-buffer) &key)
   (reduce #'hooks:add-hook
           '(old-reddit-handler auto-proxy-handler)
           :initial-value (request-resource-hook buffer)))"))
@@ -330,7 +330,7 @@ say to develop Nyxt or extensions.")
   (nfiles:resolve *global-profile* file))
 
 ;; Make new profile the default:
-\(defmethod customize-instance ((buffer buffer))
+\(defmethod customize-instance ((buffer buffer) &key)
   (setf (bookmarks-file buffer)
         (make-instance 'bookmarks-file
                        :base-path \"~/personal/bookmarks/bookmarks.lisp.gpg\"))

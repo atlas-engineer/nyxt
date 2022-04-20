@@ -14,7 +14,7 @@ in your configuration file.
 
 Example:
 
-\(defmethod customize-instance ((buffer buffer))
+\(defmethod customize-instance ((buffer buffer) &key)
   (nyxt/vi-mode:vi-normal-mode :buffer buffer))
 
 In `vi-insert-mode', CUA bindings are still available unless

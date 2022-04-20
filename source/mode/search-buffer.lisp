@@ -185,7 +185,7 @@ prompt, Set BUFFER's `keep-search-hints-p' slot to nil.
 
 Example:
 
-  (defmethod customize-instance ((buffer buffer))
+  (defmethod customize-instance ((buffer buffer) &key)
     (setf (keep-search-hints-p buffer) nil))"
   (prompt
    :prompt "Search text"

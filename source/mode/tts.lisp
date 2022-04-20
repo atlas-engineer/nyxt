@@ -19,7 +19,7 @@ can be configured by changing the `selector` slot.
 
 Example:
 
-\(defmethod customize-instance ((mode nyxt/tts-mode:tts-mode))
+\(defmethod customize-instance ((mode nyxt/tts-mode:tts-mode) &key)
    (setf (nyxt/tts-mode:executable mode) \"espeak\")
    (setf (nyxt/tts-mode:selector mode) \"p, h1, h2, h3, h4, h5, h6\"))"
   ((executable nil

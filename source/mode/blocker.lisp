@@ -76,7 +76,7 @@ Example:
   \"Blocker mode with custom hosts from `*my-blocked-hosts*'.\"
   ((nyxt/blocker-mode:hostlists (list *my-blocked-hosts* nyxt/blocker-mode:*default-hostlist*))))
 
-\(defmethod customize-instance ((buffer buffer))
+\(defmethod customize-instance ((buffer buffer) &key)
   (my-blocker-mode :buffer buffer))"
   ((hostlists (list *default-hostlist*))
    (blocked-hosts
