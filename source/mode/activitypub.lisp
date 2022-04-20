@@ -526,8 +526,6 @@ FORMAT can be one of
               (:style (style mode)))
              (:body
               (:raw (object->html object :page))))
-           (error-help "Not an ActivityPub-enabled page"
-                       "This link does not provide ActivityPub representation for content.
-Try navigating to a different page."))
+           nil)
          "text/html;charset=utf8")))
   :local-p t)
