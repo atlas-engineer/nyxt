@@ -319,7 +319,7 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
 A mode toggler is a command of the same name as its associated mode."
   (ignore-errors
    (closer-mop:subclassp (find-class (name command) nil)
-                         (find-class 'root-mode))))
+                         (find-class 'mode))))
 
 (defun list-commands (&key global-p mode-symbols)
   "List commands.
@@ -337,8 +337,7 @@ With MODE-SYMBOLS and GLOBAL-P, include global commands."
               (notany
                (lambda (mode-symbol)
                  (eq (symbol-package (name command))
-                     (alex:when-let ((mode-command (mode-command mode-symbol)))
-                       (symbol-package (name mode-command)))))
+                     (symbol-package (mode-name mode-symbol))))
                mode-symbols)))
        *command-list*)
       *command-list*))

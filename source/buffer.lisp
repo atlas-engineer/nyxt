@@ -1657,40 +1657,23 @@ That is, the one with the most recent access time."
     (when (second buffers)
       (set-current-buffer (second buffers)))))
 
-(export-always 'mode-name)
-(defun mode-name (mode)
-  "Return the full MODE symbol (with package prefix).
-For user modes, return the parent mode.
-If MODE does not exist, return nil."
-  (cond
-    ((eq mode 'root-mode)
-     mode)
-    ((symbolp mode)
-     (alex:when-let ((command (mode-command mode)))
-                    (name command)))
-    (t
-     (mode-name (sera:class-name-of mode)))))
-
 (export-always 'disable-modes)
 (defun disable-modes (modes &optional (buffer (current-buffer)))
   "Disable MODES for BUFFER.
 MODES should be a list symbols, each possibly returned by `mode-name'."
-  (dolist (mode (uiop:ensure-list modes))
-    (let ((command (mode-command mode)))
-      (if command
-          (funcall command :buffer buffer :activate nil)
-          (log:warn "Mode command ~a not found." mode)))))
+  (mapcar #'disable (delete nil (mapcar (lambda (mode) (find-mode buffer mode))
+                                        (uiop:ensure-list modes)))))
 
 (export-always 'enable-modes)
 (defun enable-modes (modes &optional (buffer (current-buffer)) args)
   "Enable MODES for BUFFER.
 MODES should be a list of symbols, each possibly returned by `mode-name'.
-ARGS are passed to the mode command."
-  (dolist (mode (uiop:ensure-list modes))
-    (let ((command (mode-command mode)))
-      (if command
-          (apply #'funcall command :buffer buffer :activate t args)
-          (log:warn "Mode command ~a not found." mode)))))
+ARGS are passed to the mode `enable' method."
+  (mapcar (lambda (mode-sym)
+            (apply #'enable (or (find-mode buffer mode-sym)
+                                (make-instance mode-sym))
+                   args))
+          (uiop:ensure-list modes)))
 
 (define-class active-mode-source (prompter:source)
   ((prompter:name "Active modes")
