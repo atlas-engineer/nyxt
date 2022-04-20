@@ -14,7 +14,7 @@ in your configuration file.
 
 Example:
 
-\(defmethod customize-instance ((buffer buffer))
+\(defmethod customize-instance ((buffer buffer) &key)
   (nyxt/emacs-mode:emacs-mode :buffer buffer))"
   ((glyph "ε")
    (rememberable-p nil)

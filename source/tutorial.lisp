@@ -309,7 +309,7 @@ overriding any mode keybinding. If you want to toggle mark with C-space,
 you'll need to set your own override-map such that C-space is not bound.
 An example:")
    (:pre (:code "
-\(defmethod customize-instance ((buffer buffer))
+\(defmethod customize-instance ((buffer buffer) &key)
   (setf (override-map buffer)
         (let ((map (make-keymap \"override-map\")))
           (define-key map
