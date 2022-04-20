@@ -367,8 +367,12 @@ JSON-NAMEs as strings, where
           (name* object))))
   (:method ((objects list) format)
     (spinneret:with-html-string
-      (loop for object in objects
-            collect (:raw (object->html object format)))))
+      (:raw
+       (apply #'str:concat
+              (lpara:pmapcar
+               (lambda (object)
+                 (spinneret:with-html-string (:raw (object->html object format))))
+               objects)))))
   (:method ((object t) format)
     (spinneret:with-html-string
       (:a :class "button"
