@@ -51,7 +51,7 @@ Created from the page code with the help of `plump:parse'. See `update-document-
     '()
     :documentation "The list of mode instances.
 Modes are instantiated over the result of the `default-modes' method, with
-`initialize-modes' and not in the initform so that the instantiation form can
+`finalize-buffer' and not in the initform so that the instantiation form can
 access the initialized buffer.")
    (enable-mode-hook
     (make-instance 'hook-mode)
@@ -453,8 +453,9 @@ This method should be called by the renderer after instantiating the web view
 of BUFFER."
   (unless no-hook-p
     (hooks:run-hook (buffer-make-hook browser) buffer))
-  (initialize-modes buffer)
-  (mapc (alex:rcurry #'make-mode buffer) extra-modes)
+  (enable-modes (append (reverse (default-modes buffer))
+                        extra-modes)
+                :buffer buffer)
   (unless no-hook-p
     (hooks:run-hook (buffer-after-make-hook browser) buffer)))
 
@@ -839,13 +840,6 @@ when `proxied-downloads-p' is true."
     (when (or (and (not downloads-only) proxy)
               proxied-downloads)
       (url proxy))))
-
-(defmethod initialize-modes ((buffer buffer))
-  "Initialize BUFFER modes.
-This is called after BUFFER has been created by the renderer.
-See `buffer's `customize-instance' `:after' method."
-  (dolist (mode-symbol (reverse (default-modes buffer)))
-    (make-mode mode-symbol buffer)))
 
 (defun load-failed-p (buffer)
   "Only web-buffer loads can fail."

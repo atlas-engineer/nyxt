@@ -168,7 +168,7 @@ The handlers take the window as argument.")
     :type hook-buffer
     :documentation "Hook run after `buffer' initialization and before the URL is
 loaded.
-It is run before `initialize-modes' so that the default mode list can still be
+It is run before mode initialization so that the default mode list can still be
 altered from the hooks.
 The handlers take the buffer as argument.")
    (buffer-before-make-hook
