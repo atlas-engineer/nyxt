@@ -396,18 +396,20 @@ These buffers are not referenced by `browser', so the only way to control these 
 store them somewhere and `ffi-buffer-delete' them once done.")
   (:metaclass user-class))
 
-(defmethod initialize-instance :after ((buffer buffer)
-                                       &key (browser *browser*)
-                                         parent-buffer no-history-p
-                                         no-hook-p
-                                       &allow-other-keys)
-  "Make buffer.
-
-When NO-HOOK-P is nil, run `*browser*'s `buffer-before-make-hook', initialize
-the modes, then run `buffer-make-hook' over the created buffer.
-
-Return the created buffer."
+(defmethod initialize-instance :after ((buffer buffer) &key (browser *browser*)
+                                                         &allow-other-keys)
+  "Set buffer ID and return buffer."
   (setf (id buffer) (get-unique-identifier browser))
+  buffer)
+
+(defmethod customize-instance :after ((buffer buffer)
+                                      &key (browser *browser*)
+                                        parent-buffer no-history-p
+                                        no-hook-p
+                                      &allow-other-keys)
+  "Finalize buffer.
+When NO-HOOK-P is nil, run `*browser*'s `buffer-before-make-hook'.
+Return the created buffer."
   (let ((file-slot-names (remove-if (lambda (slot-name)
                                       (not (typep (slot-value buffer slot-name)
                                                   'nyxt-file)))
@@ -441,7 +443,10 @@ Return the created buffer."
 
 (defmethod finalize-buffer (buffer &key (browser *browser*) no-hook-p extra-modes)
   "Finalize instantiation of BUFFER.
-In particular, initialize the default modes plus EXTRA-MODES, and run the last hooks.
+In particular,
+- run `buffer-make-hook';
+- initialize the default modes plus EXTRA-MODES,
+- run `buffer-after-make-hook'.
 This method should be called by the renderer after instantiating the web view
 of BUFFER."
   (unless no-hook-p
@@ -836,7 +841,7 @@ when `proxied-downloads-p' is true."
 (defmethod initialize-modes ((buffer buffer))
   "Initialize BUFFER modes.
 This is called after BUFFER has been created by the renderer.
-See `buffer's `initialize-instance' `:after' method."
+See `buffer's `customize-instance' `:after' method."
   (dolist (mode-symbol (reverse (default-modes buffer)))
     (make-mode mode-symbol buffer)))
 

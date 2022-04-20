@@ -116,7 +116,7 @@ failures."))
 (defclass webkit-web-context (webkit:webkit-web-context) ()
   (:metaclass gobject:gobject-class))
 
-(defmethod initialize-instance :after ((web-context webkit-web-context) &key)
+(defmethod customize-instance :after ((web-context webkit-web-context) &key)
   #+webkit2-sandboxing
   (webkit:webkit-web-context-set-sandbox-enabled web-context t)
   web-context)
@@ -389,7 +389,7 @@ response.  The BODY is wrapped with `with-protect'."
                                   ,@forms))))))
        (push handler-id (handler-ids ,object)))))
 
-(defmethod initialize-instance :after ((buffer status-buffer) &key)
+(defmethod customize-instance :after ((buffer status-buffer) &key)
   (%within-renderer-thread-async
    (lambda ()
      (with-slots (gtk-object) buffer
@@ -398,7 +398,7 @@ response.  The BODY is wrapped with `with-protect'."
         buffer "decide-policy"
         (make-decide-policy-handler buffer))))))
 
-(defmethod initialize-instance :after ((window gtk-window) &key)
+(defmethod customize-instance :after ((window gtk-window) &key)
   (%within-renderer-thread-async
    (lambda ()
      (with-slots (gtk-object root-box-layout horizontal-box-layout
@@ -839,9 +839,9 @@ See `gtk-browser's `modifier-translator' slot."
 (defun internal-context-p (name)
   (equal name +internal+))
 
-(defmethod initialize-instance :after ((buffer gtk-buffer) &key extra-modes
-                                                             no-hook-p
-                                       &allow-other-keys)
+(defmethod customize-instance :after ((buffer gtk-buffer) &key extra-modes
+                                                            no-hook-p
+                                      &allow-other-keys)
   "Make BUFFER with EXTRA-MODES.
 See `finalize-buffer'."
   (ffi-buffer-make buffer)

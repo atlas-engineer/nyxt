@@ -159,7 +159,8 @@ See `prompt' for how to invoke prompts.")
 (defmethod default-modes :around ((buffer prompt-buffer))
   (set-difference (call-next-method) '(web-mode base-mode)))
 
-(defmethod initialize-instance :after ((prompt-buffer prompt-buffer) &key extra-modes)
+(defmethod customize-instance :after ((prompt-buffer prompt-buffer)
+                                      &key extra-modes &allow-other-keys)
   (hooks:run-hook (prompt-buffer-make-hook *browser*) prompt-buffer)
   (initialize-modes prompt-buffer)
   (mapc (alex:rcurry #'make-mode prompt-buffer) extra-modes))
@@ -469,7 +470,7 @@ See `update-prompt-input' to update the changes visually."
                                      (append
                                       (public-initargs 'prompt-buffer)
                                       (public-initargs 'prompter:prompter)
-                                      ;; `initialize-instance' :after arguments:
+                                      ;; `customize-instance' `:after' arguments:
                                       '(extra-modes)))))
       "Open the prompt buffer, ready for user input.
 PROMPTER and PROMPT-BUFFER are plists of keyword arguments passed to the

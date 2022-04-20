@@ -130,7 +130,7 @@ Return NIL if not a class form."
                       body)))))
 
 (defun write-init-form-class (class-form)
-  `(defmethod customize-instance ((,(class-name class-form) ,(class-name class-form)))
+  `(defmethod customize-instance ((,(class-name class-form) ,(class-name class-form)) &key)
      ,@(mapcar (lambda (form)
                  (if (slot-form-p form)
                      (write-init-form-slot (class-name class-form) form)
