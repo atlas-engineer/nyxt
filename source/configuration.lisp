@@ -98,7 +98,7 @@ Return NIL if not a slot setting."
              (eq (first sexp) 'setf)
              (eq (first (second sexp)) 'slot-value)
              (eq (second (second sexp)) class-name))
-    (let ((slot-name (third (second sexp)))
+    (let ((slot-name (second (third (second sexp))))
           (slot-value (third sexp)))
       (values slot-name slot-value))))
 
