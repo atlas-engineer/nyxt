@@ -410,16 +410,16 @@ FORMAT can be one of
 
 (defmethod object->html ((object page) (format (eql :card)))
   (spinneret:with-html-string
-    (when (slot-value object 'name)
+    (when (name* object)
       (:h2 (:a :href (http->ap (slot-value object 'id))
-               (slot-value object 'name))))
+               (name* object))))
     (when (attachment object)
       (:p (:raw (object->html (attachment object) :link))))))
 
 (defmethod object->html ((object page) (format (eql :page)))
   (spinneret:with-html-string
-    (when (slot-value object 'name)
-      (:h1 (slot-value object 'name)))
+    (when (name* object)
+      (:h1 (name* object)))
     (:i "by " (when (author* object)
                 (:a :href (slot-value (author* object) 'id) (name* (author* object)))))
     (when (content object)
