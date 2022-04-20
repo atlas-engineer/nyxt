@@ -34,25 +34,25 @@ vi-normal-mode.")
       scheme:vi-normal
       (list
         "i" 'vi-insert-mode
-        "button1" 'vi-button1)))
-   (destructor
-    (lambda (mode)
-      (setf (keymap-scheme-name (buffer mode))
-            (previous-keymap-scheme-name mode))
-      (setf (forward-input-events-p (buffer mode)) t)))
-   (constructor
-    (lambda (mode)
-      (with-accessors ((buffer buffer)) mode
-        (let ((vi-insert (find-submode buffer 'vi-insert-mode)))
-          (setf (previous-keymap-scheme-name mode)
-                (if vi-insert
-                    (previous-keymap-scheme-name vi-insert)
-                    (keymap-scheme-name buffer))))
-        ;; Destroy vi-normal mode after setting previous-keymap-scheme-name, or
-        ;; else we can't save the previous keymap scheme.
-        (vi-insert-mode :activate nil :buffer buffer)
-        (setf (keymap-scheme-name buffer) scheme:vi-normal)
-        (setf (forward-input-events-p buffer) nil))))))
+        "button1" 'vi-button1)))))
+
+(defmethod enable ((mode vi-normal-mode) &key)
+  (with-accessors ((buffer buffer)) mode
+    (let ((vi-insert (find-submode buffer 'vi-insert-mode)))
+      (setf (previous-keymap-scheme-name mode)
+            (if vi-insert
+                (previous-keymap-scheme-name vi-insert)
+                (keymap-scheme-name buffer))))
+    ;; Destroy vi-normal mode after setting previous-keymap-scheme-name, or
+    ;; else we can't save the previous keymap scheme.
+    (disable vi-insert)
+    (setf (keymap-scheme-name buffer) scheme:vi-normal)
+    (setf (forward-input-events-p buffer) nil)))
+
+(defmethod disable ((mode vi-normal-mode) &key)
+  (setf (keymap-scheme-name (buffer mode))
+        (previous-keymap-scheme-name mode))
+  (setf (forward-input-events-p (buffer mode)) t))
 
 (define-command switch-to-vi-normal-mode (&optional (mode (find-submode (or (current-prompt-buffer) (current-buffer))
                                                                         'vi-insert-mode)))
@@ -89,25 +89,25 @@ vi-normal-mode.")
    (passthrough-mode-p nil
                        :type boolean
                        :documentation "Whether to default to `passthrough-mode'
-                       when entering `vi-insert-mode'.")
-   (destructor
-    (lambda (mode)
-      (setf (keymap-scheme-name (buffer mode))
-            (previous-keymap-scheme-name mode))))
-   (constructor
-    (lambda (mode)
-      (with-accessors ((buffer buffer)) mode
-        (let ((vi-normal (find-submode buffer 'vi-normal-mode)))
-          (setf (previous-keymap-scheme-name mode)
-                (if vi-normal
-                    (previous-keymap-scheme-name vi-normal)
-                    (keymap-scheme-name buffer))
-                (previous-vi-normal-mode mode)
-                vi-normal))
-        (vi-normal-mode :activate nil :buffer buffer)
-        (setf (keymap-scheme-name buffer) scheme:vi-insert)
-        (when (passthrough-mode-p mode)
-          (nyxt/passthrough-mode:passthrough-mode :activate t)))))))
+                       when entering `vi-insert-mode'.")))
+
+(defmethod enable ((mode vi-insert-mode) &key)
+  (with-accessors ((buffer buffer)) mode
+    (let ((vi-normal (find-submode buffer 'vi-normal-mode)))
+      (setf (previous-keymap-scheme-name mode)
+            (if vi-normal
+                (previous-keymap-scheme-name vi-normal)
+                (keymap-scheme-name buffer))
+            (previous-vi-normal-mode mode)
+            vi-normal))
+    (disable vi-normal)
+    (setf (keymap-scheme-name buffer) scheme:vi-insert)
+    (when (passthrough-mode-p mode)
+      (enable-modes '(nyxt/passthrough-mode:passthrough-mode)))))
+
+(defmethod disable ((mode vi-insert-mode) &key)
+  (setf (keymap-scheme-name (buffer mode))
+        (previous-keymap-scheme-name mode)))
 
 (define-command vi-button1 (&optional (buffer (or (current-prompt-buffer)
                                                   (current-buffer))))
@@ -120,10 +120,10 @@ See also `vi-normal-mode' and `vi-insert-mode'."
     (cond
       ((and (nyxt/web-mode:input-tag-p response)
             (find-submode buffer 'vi-normal-mode))
-       (vi-insert-mode))
+       (enable-modes '(vi-insert-mode)))
       ((and (not (nyxt/web-mode:input-tag-p response))
             (find-submode buffer 'vi-insert-mode))
-       (vi-normal-mode)))))
+       (enable-modes '(vi-normal-mode))))))
 
 (defmethod on-signal-load-finished ((mode vi-insert-mode) url)
   (declare (ignore url))

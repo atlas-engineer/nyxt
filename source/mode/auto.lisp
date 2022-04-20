@@ -211,29 +211,6 @@ The rules are:
                                 (remove invocation (last-active-modes auto-mode)
                                         :test #'equals))))))))
 
-(defun initialize-auto-mode (mode)
-  (unless (last-active-modes mode)
-    (setf (last-active-modes mode)
-          (mode-invocations (default-modes (buffer mode)))))
-  (when (prompt-on-mode-toggle mode)
-    (hooks:add-hook (enable-mode-hook (buffer mode))
-                    (make-instance 'hooks:handler
-                                   :fn (make-mode-toggle-prompting-handler t mode)
-                                   :name 'enable-mode-auto-mode-handler))
-    (hooks:add-hook (disable-mode-hook (buffer mode))
-                    (make-instance 'hooks:handler
-                                   :fn (make-mode-toggle-prompting-handler nil mode)
-                                   :name 'disable-mode-auto-mode-handler)))
-  (hooks:add-hook (pre-request-hook (buffer mode)) 'auto-mode-handler))
-
-(defun clean-up-auto-mode (mode)
-  (hooks:remove-hook (pre-request-hook (buffer mode))
-                     'auto-mode-handler)
-  (hooks:remove-hook (enable-mode-hook (buffer mode))
-                     'enable-mode-auto-mode-handler)
-  (hooks:remove-hook (disable-mode-hook (buffer mode))
-                     'disable-mode-auto-mode-handler))
-
 (define-mode auto-mode ()
   "Remember the modes setup for given domain/host/URL and store it in an editable form.
 These modes will then be activated on every visit to this domain/host/URL."
@@ -278,10 +255,30 @@ rule-less and ruled pages.  Example browse sequence:
 
 In the above, when browsing from nyxt.atlas.engineer to en.wikipedia.org, the
 modes that were in place before the nyxt.atlas.engineer rule was applied are
-restored.")
-   (destructor #'clean-up-auto-mode)
-   (constructor #'initialize-auto-mode)))
+restored.")))
 
+(defmethod enable ((mode auto-mode) &key)
+  (unless (last-active-modes mode)
+    (setf (last-active-modes mode)
+          (mode-invocations (default-modes (buffer mode)))))
+  (when (prompt-on-mode-toggle mode)
+    (hooks:add-hook (enable-mode-hook (buffer mode))
+                    (make-instance 'hooks:handler
+                                   :fn (make-mode-toggle-prompting-handler t mode)
+                                   :name 'enable-mode-auto-mode-handler))
+    (hooks:add-hook (disable-mode-hook (buffer mode))
+                    (make-instance 'hooks:handler
+                                   :fn (make-mode-toggle-prompting-handler nil mode)
+                                   :name 'disable-mode-auto-mode-handler)))
+  (hooks:add-hook (pre-request-hook (buffer mode)) 'auto-mode-handler))
+
+(defmethod disable ((mode auto-mode) &key)
+  (hooks:remove-hook (pre-request-hook (buffer mode))
+                     'auto-mode-handler)
+  (hooks:remove-hook (enable-mode-hook (buffer mode))
+                     'enable-mode-auto-mode-handler)
+  (hooks:remove-hook (disable-mode-hook (buffer mode))
+                     'disable-mode-auto-mode-handler))
 
 (-> mode-covered-by-auto-mode-p
     (mode auto-mode boolean)
@@ -385,7 +382,7 @@ Auto-mode is re-enabled once the page is reloaded."
                     (make-instance
                      'hooks:handler
                      :fn (lambda (request-data)
-                           (auto-mode :activate t)
+                           (enable-modes '(auto-mode))
                            (hooks:remove-hook (request-resource-hook buffer)
                                               'auto-mode-reenable)
                            request-data)

@@ -74,20 +74,20 @@
        "0" 'beginning-line
        "v" 'toggle-mark
        "C-c" 'visual-mode)))
-   (mark-set nil)
-   (destructor
-    (lambda (mode)
-      (make-page-uneditable)
-      (unlock-page-keypresses)
-      (setf (mark-set mode) nil)))
-   (constructor
-    (lambda (mode)
-      (make-page-editable)
-      (block-page-keypresses)
-      (select-paragraph)
-      ;; imitating visual mode in vim
-      (if (equal (keymap-scheme-name (buffer mode)) scheme:vi-normal)
-          (setf (mark-set mode) t))))))
+   (mark-set nil)))
+
+(defmethod enable ((mode visual-mode) &key)
+  (make-page-editable)
+  (block-page-keypresses)
+  (select-paragraph)
+  ;; imitating visual mode in vim
+  (when (equal (keymap-scheme-name (buffer mode)) scheme:vi-normal)
+    (setf (mark-set mode) t)))
+
+(defmethod disable ((mode visual-mode) &key)
+  (make-page-uneditable)
+  (unlock-page-keypresses)
+  (setf (mark-set mode) nil))
 
 (defmethod prompter:object-attributes ((element nyxt/dom:text-element))
   `(("Hint" ,(plump:get-attribute element "nyxt-hint"))

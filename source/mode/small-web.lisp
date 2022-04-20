@@ -74,27 +74,27 @@ Gemini support is a bit more chaotic, but you can override `line->html' for
             (.error
              :background-color theme:accent
              :color theme:background
-             :padding "1em 0")))
-   (destructor
-    (lambda (mode)
-      (hooks:remove-hook
-       (pre-request-hook (buffer mode))
-       'small-web-mode-disable)))
-   (constructor
-    (lambda (mode)
-      (update mode)
-      (hooks:add-hook
-       (pre-request-hook (buffer mode))
-       (make-instance
-        'hooks:handler
-        :fn (lambda (request-data)
-              (when (nyxt/auto-mode::new-page-request-p request-data)
-                (if (str:s-member '("gopher" "gemini")
-                                  (quri:uri-scheme (url request-data)))
-                    (update mode)
-                    (disable-modes '(small-web-mode) (buffer mode))))
-              request-data)
-        :name 'small-web-mode-disable))))))
+             :padding "1em 0")))))
+
+(defmethod enable ((mode small-web-mode) &key)
+  (update mode)
+  (hooks:add-hook
+   (pre-request-hook (buffer mode))
+   (make-instance
+    'hooks:handler
+    :fn (lambda (request-data)
+          (when (nyxt/auto-mode::new-page-request-p request-data)
+            (if (str:s-member '("gopher" "gemini")
+                              (quri:uri-scheme (url request-data)))
+                (update mode)
+                (disable-modes '(small-web-mode) (buffer mode))))
+          request-data)
+    :name 'small-web-mode-disable)))
+
+(defmethod disable ((mode small-web-mode) &key)
+  (hooks:remove-hook
+   (pre-request-hook (buffer mode))
+   'small-web-mode-disable))
 
 ;;; Gopher rendering.
 

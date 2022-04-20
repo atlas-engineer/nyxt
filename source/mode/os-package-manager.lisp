@@ -122,9 +122,8 @@
 
 (defun %describe-os-package (packages)
   (let* ((buffer (or (find-buffer 'os-package-manager-mode)
-                     (nyxt/os-package-manager-mode:os-package-manager-mode
-                      :activate t
-                      :buffer (make-internal-buffer :title "*OS packages*")))))
+                     (enable (make-instance 'nyxt/os-package-manager-mode:os-package-manager-mode
+                                            :buffer (make-internal-buffer :title "*OS packages*"))))))
     (flet ((format-inputs (inputs)
              (spinneret:with-html
                (dolist (input inputs)
@@ -218,9 +217,8 @@
                                    :sources '(os-package-source)
                                    :prompt "List files of OS package(s)")))
          (buffer (or (find-buffer 'os-package-manager-mode)
-                     (nyxt/os-package-manager-mode:os-package-manager-mode
-                      :activate t
-                      :buffer (make-internal-buffer :title "*OS packages*")))))
+                     (enable (make-instance 'nyxt/os-package-manager-mode:os-package-manager-mode
+                                            :buffer (make-internal-buffer :title "*OS packages*"))))))
     (echo "Computing file list...")
     (nyxt::html-set
      (spinneret:with-html-string
@@ -251,9 +249,8 @@
   "Run COMMAND over OBJECTS in PROFILE.
 OBJECTS can be a list of packages, a generation, etc."
   (let* ((buffer (or (find-buffer 'os-package-manager-mode)
-                     (nyxt/os-package-manager-mode:os-package-manager-mode
-                      :activate t
-                      :buffer (make-internal-buffer :title "*OS packages*")))))
+                     (enable (make-instance 'nyxt/os-package-manager-mode:os-package-manager-mode
+                                            :buffer (make-internal-buffer :title "*OS packages*"))))))
     (if (sera:and-let* ((process-info (nyxt/os-package-manager-mode:current-process-info
                                        (find-submode buffer 'os-package-manager-mode))))
           (uiop:process-alive-p process-info))
@@ -353,9 +350,8 @@ OBJECTS can be a list of packages, a generation, etc."
                                                      :profile profile))
                        :prompt "Generation")))
          (buffer (or (find-buffer 'os-package-manager-mode)
-                     (nyxt/os-package-manager-mode:os-package-manager-mode
-                      :activate t
-                      :buffer (make-internal-buffer :title "*OS packages*")))))
+                     (enable-modes '(nyxt/os-package-manager-mode:os-package-manager-mode)
+                                   :buffer (make-internal-buffer :title "*OS packages*")))))
     (echo "Loading package database...")
     (nyxt::html-set
      (spinneret:with-html-string

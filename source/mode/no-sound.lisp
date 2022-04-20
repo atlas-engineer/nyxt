@@ -8,9 +8,10 @@
 
 (define-mode no-sound-mode ()
   "Disable sound in current buffer."
-  ((destructor
-    (lambda (mode)
-      (ffi-buffer-enable-sound (buffer mode) t)))
-   (constructor
-    (lambda (mode)
-      (ffi-buffer-enable-sound (buffer mode) nil)))))
+  ())
+
+(defmethod enable ((mode no-sound-mode) &key)
+  (ffi-buffer-enable-sound (buffer mode) nil))
+
+(defmethod disable ((mode no-sound-mode) &key)
+  (ffi-buffer-enable-sound (buffer mode) t))

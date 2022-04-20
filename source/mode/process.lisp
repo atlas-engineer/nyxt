@@ -37,11 +37,9 @@ Accepts the path to the acted-on document and `process-mode' instance.")
            :export nil
            :documentation "The thread that `action' happen in.")
    (thread-terminated-p nil
-                        :documentation "Has the thread been terminated?")
-   (constructor #'initialize)
-   (destructor #'destroy)))
+                        :documentation "Has the thread been terminated?")))
 
-(defmethod initialize ((mode process-mode))
+(defmethod enable ((mode process-mode) &key)
   (setf (path-url mode) (or (path-url mode) (url (current-buffer)))
         (thread mode) (unless (thread-terminated-p mode)
                         (run-thread "process"
@@ -61,7 +59,7 @@ Accepts the path to the acted-on document and `process-mode' instance.")
                                          (when (action mode)
                                            (funcall (action mode) (path-url mode) mode))))))))
 
-(defmethod destroy ((mode process-mode))
+(defmethod disable ((mode process-mode) &key)
   (and (cleanup mode)
        (funcall (cleanup mode) (path-url mode) mode))
   (unless (thread-terminated-p mode)

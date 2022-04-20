@@ -63,14 +63,13 @@ Example:
 
 \(defmethod customize-instance ((buffer buffer) &key)
   (nyxt/force-https-mode:force-https-mode :buffer buffer)"
-  ((previous-url (quri:uri ""))
-   (destructor
-    (lambda (mode)
-      (hooks:remove-hook (request-resource-hook (buffer mode))
-                         'force-https-handler)))
-   (constructor
-    (lambda (mode)
-      (hooks:add-hook (request-resource-hook (buffer mode)) 'force-https-handler)))))
+  ((previous-url (quri:uri ""))))
+
+(defmethod enable ((mode force-https-mode) &key)
+  (hooks:add-hook (request-resource-hook (buffer mode)) 'force-https-handler))
+
+(defmethod disable ((mode force-https-mode) &key)
+  (hooks:add-hook (request-resource-hook (buffer mode)) 'force-https-handler))
 
 (defmethod on-signal-load-finished ((mode force-https-mode) url)
   (declare (ignore url))

@@ -15,7 +15,8 @@
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-mode style-mode ()
-  "A mode for styling documents."
+  "A mode for styling documents.
+Style can be set by one of the `style', `style-file' or `style-url' slots."
   ((css-cache-directory (make-instance 'css-cache-directory))
    (style-url nil
               :type (or null string quri:uri)
@@ -30,14 +31,9 @@ Otherwise, look for CSS in `style-url'.")
    (style nil
           :type (or null string)
           :documentation "Style as CSS.
-If nil, look for CSS in `style-file' or `style-url'.")
-   (constructor
-    (lambda (mode)
-      (initialize mode))))
-  :documentation
-  "Style can be set by one of the `style', `style-file' or `style-url' slots.")
+If nil, look for CSS in `style-file' or `style-url'.")))
 
-(defmethod initialize ((mode style-mode))
+(defmethod enable ((mode style-mode) &key)
   (ensure-directories-exist (nfiles:expand (css-cache-directory mode)))
   (unless (style mode)
     (setf (style mode)

@@ -30,10 +30,7 @@ Example:
        :documentation "CSS selector that describes which elements' text to speak.")
    (executable-process-info nil
                             :type (or uiop/launch-program::process-info null)
-                            :documentation "Holds the process-info object of the running process")
-   (destructor
-    (lambda (mode)
-      (if-process-then-terminate mode)))))
+                            :documentation "Holds the process-info object of the running process")))
 
 (defmethod process-document ((mode tts-mode))
   "Fetch the text in buffer that matches `selector` and send it off to the TTS."
@@ -64,16 +61,16 @@ argument."
     (progn
       (log:info "tts-mode: starting TTS.")
       ;; make sure that a running process is stopped before starting a new one
-      (if-process-then-terminate mode)
+      (disable mode)
       (setf (executable-process-info mode)
             (uiop:launch-program program-string
                                  :output *standard-output*
                                  :error-output *standard-output*))
-      (if (not (zerop (uiop:wait-process (executable-process-info mode))))
-          (log:info "tts-mode: TTS done."))
-      (if-process-then-terminate mode))))
+      (when (not (zerop (uiop:wait-process (executable-process-info mode))))
+        (log:info "tts-mode: TTS done."))
+      (disable mode))))
 
-(defmethod if-process-then-terminate ((mode tts-mode))
+(defmethod disable ((mode tts-mode) &key)
   "If there is a running process, terminate it."
   (when (and (executable-process-info mode)
              (uiop:process-alive-p (executable-process-info mode)))
@@ -87,4 +84,4 @@ argument."
 
 (define-command stop-tts ()
   "Stop running TTS process if there is one."
-  (if-process-then-terminate (current-mode 'tts-mode)))
+  (disable (current-mode 'tts-mode)))

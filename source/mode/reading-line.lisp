@@ -41,18 +41,12 @@ mode."
              :z-index #.(1- (expt 2 31)) ; 32 bit signed integer max
              :opacity "15%"
              :height "20px"))
-          :documentation "The CSS applied to the reading line.")
-   (constructor
-    (lambda (mode)
-      (initialize-display mode)))
-   (destructor
-    (lambda (mode)
-      (destroy-display mode)))))
+          :documentation "The CSS applied to the reading line.")))
 
 (define-command jump-to-reading-line-cursor (&key (buffer (current-buffer)))
   "Move the view port to show the reading line cursor."
   (pflet ((jump-to-cursor ()
-    (ps:chain (ps:chain document (query-selector "#reading-line-cursor")) (scroll-into-view-if-needed))))
+                          (ps:chain (ps:chain document (query-selector "#reading-line-cursor")) (scroll-into-view-if-needed))))
     (with-current-buffer buffer
       (jump-to-cursor))))
 
@@ -84,9 +78,9 @@ the screen as well."
 
 (defmethod on-signal-load-finished ((mode reading-line-mode) url)
   (declare (ignore url))
-  (initialize-display mode))
+  (enable mode))
 
-(defmethod initialize-display ((mode reading-line-mode))
+(defmethod enable ((mode reading-line-mode) &key)
   (let* ((content (spinneret:with-html-string
                     (:style (style mode))
                     (:span :id "reading-line-cursor" "")))
@@ -95,6 +89,6 @@ the screen as well."
                            (setf (ps:@ (ps:chain document (query-selector "#reading-line-cursor")) style top) "10px"))))
     (ffi-buffer-evaluate-javascript-async (buffer mode) insert-content)))
 
-(defmethod destroy-display ((mode reading-line-mode))
+(defmethod disable ((mode reading-line-mode) &key)
   (let ((destroy-content (ps:ps (setf (ps:chain document (query-selector "#reading-line-cursor") |outerHTML|) ""))))
     (ffi-buffer-evaluate-javascript-async (buffer mode) destroy-content)))
