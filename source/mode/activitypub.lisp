@@ -360,6 +360,11 @@ JSON-NAMEs as strings, where
       (:a :class "button"
           :href (http->ap (id object))
           (name* object))))
+  (:method ((object link) (format (eql :link)))
+    (spinneret:with-html-string
+      (:a :class "button"
+          :href (http->ap (slot-value object 'href))
+          (name* object))))
   (:method ((objects list) format)
     (spinneret:with-html-string
       (loop for object in objects
@@ -389,6 +394,13 @@ FORMAT can be one of
     (:p (:raw (content object)))
     (when (attachment object)
       (:raw (object->html (attachment object) :card)))))
+
+(defmethod object->html ((object page) (format (eql :card)))
+  (spinneret:with-html-string
+    (when (content object)
+      (:p (:raw (content object))))
+    (when (attachment object)
+      (:p (:raw (object->html (attachment object) :link))))))
 
 (defmethod published* ((object object))
   (alex:if-let ((time (some (lambda (x) (and x (not (eq :null x)) x))
