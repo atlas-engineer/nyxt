@@ -4,7 +4,6 @@
 (in-package :nyxt)
 
 ;; TODO: Leverage `activate'.
-;; TODO: What to do of `make-mode'?  Shall we enable modes on instantiation?
 
 (defclass mode-class (user-class)
   ((toggler-command-p
@@ -244,12 +243,24 @@ The \"-mode\" suffix is automatically appended to MODE-SYM if missing."
   "Return the list of namespace-less mode names."
   (mapcar #'mode-name (all-modes)))
 
-(defun make-mode (mode-symbol buffer)   ; TODO: Compare to enable-modes.
-  "TODO: Still useful?"
-  (alex:if-let ((full-mode-name (mode-symbol mode-symbol)))
-    (enable (or (find-mode buffer full-mode-name)
-                (make-instance full-mode-name :buffer buffer)))
-    (log:warn "Mode ~a not found." mode-symbol)))
+(export-always 'disable-modes)
+(defun disable-modes (modes &optional (buffer (current-buffer)))
+  "Disable MODES for BUFFER.
+MODES should be a list (possibly namespace-less) symbols."
+  (mapcar #'disable (delete nil (mapcar (lambda (mode) (find-mode buffer mode))
+                                        (uiop:ensure-list modes)))))
+
+(export-always 'enable-modes)
+(defun enable-modes (modes &optional (buffer (current-buffer)) args)
+  "Enable MODES for BUFFER.
+MODES should be a list (possibly namespace-less) symbols.
+ARGS are passed to the mode `enable' method."
+  ;; TODO: Report if mode is not found.
+  (mapcar (lambda (mode-sym)
+            (apply #'enable (or (find-mode buffer mode-sym)
+                                (make-instance mode-sym))
+                   args))
+          (uiop:ensure-list modes)))
 
 (export-always 'find-buffer)
 (defun find-buffer (mode-symbol)
