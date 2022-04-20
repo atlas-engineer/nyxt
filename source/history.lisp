@@ -96,7 +96,7 @@ The `implicit-visits' count is incremented."
                                      :default (make-history-tree))
     (unless (or (url-empty-p url)
                 ;; If buffer was not registered in the global history, don't
-                ;; proceed.  See `buffer's `initialize-instance' `:after' method..
+                ;; proceed.  See `buffer's `customize-instance' `:after' method..
                 (not (htree:owner history (id buffer))))
       (htree:add-child (make-instance 'history-entry
                                       :url url

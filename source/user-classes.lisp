@@ -15,20 +15,23 @@
   t)
 
 (export-always 'customize-instance)
-(defgeneric customize-instance (object)
-  (:method ((class t)) t)
+(defgeneric customize-instance (object &key &allow-other-keys)
+  (:method ((class t) &key) t)
   (:documentation "Specialize this method to customize the default values and
 behaviour of some CLASS instance.
 
 This method is run after the instance has been initialized (in particular, after
 the `initialize-instance' :after method).
 
-This is meant to be used by users only.  Don't use it in public code, prefer
-`initialize-instance :after' instead."))
+The standard method is meant to be used by users only.
 
-(defmethod make-instance :around ((class user-class) &key)
+Don't use it in public code, prefer `initialize-instance :after' instead to
+initialize slots, and `customize-instance :after' for code that relies on
+finalized slot values.."))
+
+(defmethod make-instance :around ((class user-class) &rest initargs &key &allow-other-keys)
   (sera:lret ((initialized-object (call-next-method)))
-    (customize-instance initialized-object)))
+    (apply #'customize-instance initialized-object initargs)))
 
 (defun user-class-p (class-specifier)
   (let ((metaclass (cond
