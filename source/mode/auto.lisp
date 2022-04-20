@@ -40,7 +40,7 @@ Package prefix is optional.")
 (defgeneric mode-invocation (mode)
   (:method ((mode mode-invocation))
     mode)
-  (:method ((mode nyxt:root-mode))
+  (:method ((mode nyxt:mode))
     (when (rememberable-p mode)
       (make-instance 'mode-invocation :name (mode-name mode))))
   (:method ((mode symbol))
@@ -65,7 +65,7 @@ If the mode specifier is not known, it's omitted from the results."
                          (arguments mode-invocation))))
 
 (-> rememberable-of
-    ((or (cons (or mode-invocation root-mode) *) null))
+    ((or (cons (or mode-invocation mode) *) null))
     (values (or (cons mode-invocation *) null) &optional))
 (defun rememberable-of (modes)
   "Filter MODES based on `rememberable-p'."
@@ -189,7 +189,7 @@ The rules are:
             `(match-host ,(quri:uri-host url)))
         `(match-url ,(render-url url)))))
 
-(-> make-mode-toggle-prompting-handler (boolean t) (function (root-mode)))
+(-> make-mode-toggle-prompting-handler (boolean t) (function (mode)))
 (defun make-mode-toggle-prompting-handler (enable-p auto-mode)
   #'(lambda (mode)
       (alex:when-let* ((invocation (mode-invocation mode)))
@@ -284,7 +284,7 @@ restored.")
 
 
 (-> mode-covered-by-auto-mode-p
-    (root-mode auto-mode boolean)
+    (mode auto-mode boolean)
     (values (or list boolean) &optional))
 (defun mode-covered-by-auto-mode-p (mode auto-mode enable-p)
   "Says whether AUTO-MODE already knows what to do with MODE.

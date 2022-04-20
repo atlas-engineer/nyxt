@@ -3,158 +3,184 @@
 
 (in-package :nyxt)
 
-(export-always 'define-mode)
-(defmacro define-mode (name direct-superclasses &body body)
-  "Define mode NAME.
-When DIRECT-SUPERCLASSES is T, then the mode has no parents.
-Otherwise, the mode's parents are ROOT-MODE and DIRECT-SUPERCLASSES.
+;; TODO: Leverage `activate'.
+;; TODO: What to do of `make-mode'?  Shall we enable modes on instantiation?
 
-As a third argument, a documentation-string can be provided.
-The last argument (third if no doc-string provided, fourth if one is)
-is the direct-slots list.
+(defclass mode-class (user-class)
+  ((toggler-command-p
+    :initform t
+    :initarg :toggler-command-p
+    :type boolean
+    :documentation "Whether to define a toggler command for the defined mode.")))
+(export-always 'mode-class)
 
-A mode toggler command is also defined as NAME.
-Its arguments are passed to the class instantiation.
-Two key arguments have a special meaning beside the slot value of the mode:
-- :BUFFER is used to enable or disable the mode in the corresponding buffer.
-  This should always be specified in Lisp code since the active buffer, if any,
-  might not be the right buffer.
-- :ACTIVATE is used to choose whether to enable or disable the mode.
-If :ACTIVATE is omitted, the mode is toggled.
-The buffer is returned so that mode toggles can be chained.
+(defmethod closer-mop:validate-superclass ((class mode-class)
+                                           (superclass user-class))
+  t)
 
-Example:
+;; (defmethod initialize-instance :after ((class mode-class) &key)
+;;   (when (toggler-command-p class)
+;;     (define-command-global NAME (&rest args
+;;                                  &key
+;;                                  ;; TODO: Shall we have a function that
+;;                                  ;; returns the focused buffer?
+;;                                  ;; `focused-buffer'?  `current-buffer*'?
+;;                                  ;; Rename `current-buffer' to
+;;                                  ;; `current-view-buffer' and add
+;;                                  ;; `current-buffer' for this task?
+;;                                  (buffer (or (current-prompt-buffer) (current-buffer)))
+;;                                  (activate t explicit?)
+;;                                  &allow-other-keys)
+;;       (let ((,existing-instance (find-mode buffer ',NAME)))
+;;         (unless explicit?
+;;           (setf activate (not ,existing-instance)))
+;;         (if activate
+;;             (unless ,existing-instance
+;;               (enable
+;;                (apply #'make-instance ',name
+;;                       :buffer buffer
+;;                       args)))
+;;             (when ,existing-instance
+;;               (disable ,existing-instance)))))))
 
-\(define-mode my-mode ()
-  \"Dummy mode for the custom key bindings in `*my-keymap*'.\"
-  ((keymap-schemes (keymap:make-scheme
-                    scheme:emacs *my-keymap*
-                    scheme:vi-normal *my-keymap*))))"
-  (let* ((docstring (if (stringp (first body))
-                        (first body)
-                        (progn
-                          (log:warn "The define-mode definition for ~a doesn't have a documentation string." name)
-                          nil)))
-         (direct-slots (if (stringp (first body))
-                           (cadr body)
-                           (first body)))
-         (class-args `(,name
-                       ,(unless (eq (first direct-superclasses) t)
-                          (append direct-superclasses '(root-mode)))
-                       ,direct-slots
-                       (:export-class-name-p t)
-                       (:export-accessor-names-p t)
-                       (:accessor-name-transformer (class*:make-name-transformer name))
-                       (:metaclass user-class))))
-    (when docstring
-      (setf class-args (append class-args
-                               `((:documentation ,docstring)))))
-    (alex:with-gensyms (existing-instance new-mode)
-      `(progn
-         (define-class ,@class-args)
-         ;; TODO: Can we delete the last mode?  What does it mean to have no mode?
-         ;; Should probably always have root-mode.
-         ,(unless (eq name 'root-mode)
-            `(define-command-global ,name (&rest args
-                                           &key
-                                           ;; TODO: Shall we have a function that
-                                           ;; returns the focused buffer?
-                                           ;; `focused-buffer'?  `current-buffer*'?
-                                           ;; Rename `current-buffer' to
-                                           ;; `current-view-buffer' and add
-                                           ;; `current-buffer' for this task?
-                                           (buffer (or (current-prompt-buffer) (current-buffer)))
-                                           (activate t explicit?)
-                                           &allow-other-keys)
-               ,docstring
-               (unless (buffer-p buffer)
-                 (error ,(format nil "Mode command ~a called on non-buffer" name)))
-               (let ((,existing-instance (find-mode buffer ',name)))
-                 (unless explicit?
-                   (setf activate (not ,existing-instance)))
-                 (if activate
-                     (unless ,existing-instance
-                       ;; TODO: Should we move mode to the front when it already exists?
-                       (let ((,new-mode (apply #'make-instance ',name
-                                               :buffer buffer
-                                               args)))
-                         (funcall* (constructor ,new-mode) ,new-mode)
-                         (push ,new-mode (modes buffer))
-                         (hooks:run-hook (enable-hook ,new-mode) ,new-mode)
-                         (hooks:run-hook (enable-mode-hook buffer) ,new-mode))
-                       (if (and (prompt-buffer-p buffer)
-                                (eq (first (active-prompt-buffers (window buffer)))
-                                    buffer))
-                           (prompt-render-prompt buffer)
-                           (print-status))
-                       (log:debug "~a enabled." ',name))
-                     (when ,existing-instance
-                       (hooks:run-hook (disable-hook ,existing-instance) ,existing-instance)
-                       (hooks:run-hook (disable-mode-hook buffer) ,existing-instance)
-                       (funcall* (destructor ,existing-instance) ,existing-instance)
-                       (setf (modes buffer) (delete ,existing-instance
-                                                    (modes buffer)))
-                       (if (and (prompt-buffer-p buffer)
-                                (eq (first (active-prompt-buffers (window buffer)))
-                                    buffer))
-                           (prompt-render-prompt buffer)
-                           (print-status))
-                       (log:debug "~a disabled." ',name))))
-               buffer))))))
-
-(hooks:define-hook-type mode (function (root-mode)))
-
-(define-mode root-mode (t)
-  "All modes inherit from `root-mode'."
-  ((buffer nil
-           :type (or buffer null))
-   (glyph nil :type (or string null)
-              :accessor nil
-              :documentation "A glyph used to represent this mode, if unset, it
-              will be dynamically calculated as the first letters of the mode
-              name.")
+(define-class mode ()
+  ((buffer
+    (current-buffer)                    ; TODO: Is this reasonable?
+    :type buffer)
+   (glyph
+    nil
+    :type (maybe string)
+    :accessor nil
+    :documentation "A glyph used to represent this mode, if unset, it will
+be dynamically calculated as the first letters of the mode name.")
    (visible-in-status-p
     t
     :documentation "Whether the mode is visible in the status line.")
-   (rememberable-p t
-                   :documentation "Whether this mode is visible to `auto-mode'.")
-   (activate :accessor activate :initarg :activate) ; TODO: This can be used in the future to temporarily turn off modes without destroying the object.
-   (constructor nil ; TODO: Make constructor / destructor methods?  Then we can use initialize-instance, etc.
-                :type (or function null)
-                :documentation
-                "A lambda function which initializes the mode upon activation.
-It takes the mode as argument.")
-   (destructor nil ; TODO: Better name?
-               :type (or function null)
-               :documentation
-               "A lambda function which tears down the mode upon deactivation.
-It takes the mode as argument.")
-   (enable-hook (make-instance 'hook-mode)
-                :type hook-mode
-                :documentation "This hook is run when enabling the mode.
+   (rememberable-p
+    t
+    :documentation "Whether this mode is visible to `auto-mode'.")
+   ;; (activate :accessor activate :initarg :activate)
+                                        ; TODO: This can be used in the future to temporarily turn off modes without destroying the object.
+   (enabled-p
+    nil
+    :accessor nil
+    :documentation "Whether the mode is enabled in `buffer'.")
+   (enable-hook
+    (make-instance 'hook-mode)
+    :type hook-mode
+    :documentation "This hook is run when enabling the mode.
 It takes the mode as argument
 It is run before the destructor.")
-   (disable-hook (make-instance 'hook-mode)
-                 :type hook-mode
-                 :documentation "This hook is run when disabling the mode.
+   (disable-hook
+    (make-instance 'hook-mode)
+    :type hook-mode
+    :documentation "This hook is run when disabling the mode.
 It takes the mode as argument.
 It is run before the destructor.")
-   (keymap-scheme (make-hash-table :size 0)
-                  :type keymap:scheme)))
+   (keymap-scheme
+    (make-hash-table :size 0)
+    :type keymap:scheme))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:export-predicate-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:metaclass mode-class))
 
-(defmethod prompter:object-attributes ((mode root-mode))
+(export-always 'mode-name)
+(defun mode-name (mode)
+  "Return the full MODE symbol (with package prefix).
+If MODE does not exist, return nil."
+  (when (or (mode-p mode)
+            (and (find-class mode)
+                 (closer-mop:subclassp (find-class mode)
+                                       (find-class 'mode))))
+    (sera:class-name-of mode)))
+
+(defmethod initialize-instance :after ((mode mode) &key)
+  (when (eq 'mode (type-of mode))
+    (error "Cannot initialize `mode', you must subclass it.")))
+
+(defmethod customize-instance :after ((mode mode) &key)
+  ;; TODO: Should we move mode to the front when it already exists?
+  (push mode (modes (buffer mode))))
+
+(export-always 'enable)
+(defgeneric enable (mode &key &allow-other-keys)
+  (:method ((mode mode) &key)
+    nil)
+  (:documentation "Run when enabling a mode.
+The pre-defined `:after' method handles further setup."))
+
+(defmethod enable :after ((mode mode) &key)
+  (hooks:run-hook (enable-hook mode) mode)
+  (let ((buffer (buffer mode)))
+    (hooks:run-hook (enable-mode-hook buffer) mode)
+    (if (and (prompt-buffer-p buffer)
+             (eq (first (active-prompt-buffers (window buffer)))
+                 buffer))
+        (prompt-render-prompt buffer)
+        (print-status)))
+  (log:debug "~a enabled." (mode-name mode)))
+
+(export-always 'disable)
+(defgeneric disable (mode &key &allow-other-keys)
+  (:method ((mode mode) &key)
+    nil)
+  (:documentation "Run when disabling a mode.
+The pre-defined `:after' method handles further cleanup."))
+
+(defmethod disable :after ((mode mode) &key)
+  (hooks:run-hook (disable-hook mode) mode)
+  (let ((buffer (buffer mode)))
+    (hooks:run-hook (disable-mode-hook (buffer mode)) mode)
+    ;; TODO: Remove from list or not?
+    ;; (setf (modes buffer) (delete ,existing-instance (modes buffer)))
+    (if (and (prompt-buffer-p buffer)
+             (eq (first (active-prompt-buffers (window buffer)))
+                 buffer))
+        (prompt-render-prompt buffer)
+        (print-status)))
+  (log:debug "~a disabled." (mode-name name)))
+
+(export-always 'define-mode)
+(defmacro define-mode (name direct-superclasses &body body)
+  "Shorthand to define a mode.  It has the same syntax as `define-class' but
+optionally accepts a docstring after the superclass declaration.
+The `mode' superclass is automatically added if not present."
+  (let* ((docstring (when (stringp (first body))
+                      (first body)))
+         (body (if docstring
+                   (rest body)
+                   body))
+         (direct-slots (first body))
+         (options (rest body)))
+    `(define-class ,name (,@(append direct-superclasses
+                                    (unless (find 'mode direct-superclasses) '(mode))))
+       ,direct-slots
+       ,@(append options
+                 (when docstring
+                   `((:documentation ,docstring)))
+                 `((:export-class-name-p t)
+                   (:export-accessor-names-p t)
+                   (:export-predicate-name-p t)
+                   (:accessor-name-transformer (class*:make-name-transformer name))
+                   (:metaclass mode-class))))))
+
+(hooks:define-hook-type mode (function (mode)))
+
+(defmethod prompter:object-attributes ((mode mode))
   `(("Name" ,(princ-to-string (mode-name mode)))))
 
 (export-always 'glyph)
-(defmethod glyph ((mode root-mode))
+(defmethod glyph ((mode mode))
   "Return the glyph for a mode, or if unset, return a standard formatted mode."
   (or (slot-value mode 'glyph)
       (format-mode mode)))
 
-(defmethod (setf glyph) (glyph (mode root-mode))
+(defmethod (setf glyph) (glyph (mode mode))
   (setf (slot-value mode 'glyph) glyph))
 
-(defmethod format-mode ((mode root-mode))
+(defmethod format-mode ((mode mode))
   "Produce a string representation of a mode suitable for use in a status
   buffer."
   (str:replace-all "-mode" "" (str:downcase (mode-name mode))))
@@ -191,44 +217,16 @@ The \"-mode\" suffix is automatically appended to MODE-SYM if missing."
                       (intern (str:concat name "-MODE")
                               (symbol-package mode-sym))))))
 
-;; TODO: Find a better way to uniquely identify commands from mode methods.
-;; What about symbol properties?  We could use:
-;;
-;; (setf (get name 'commandp) t)
-;;
-;; But that doesn't seem to work properly, some commands need to be evaluated
-;; twice before they appear in the list.  We could use a class (we used to have
-;; a COMMAND class) or intern the symbol into a special package (see `intern'
-;; documentation).
-
 (defun mode-list ()
   "Return the list of all namespaced mode symbols."
-  (delete-if (complement (lambda (m)
-                           (str:suffixp (list (symbol-name m) "-MODE")
-                                        "-MODE")))
-             (mapcar #'name *command-list*)))
-
-(defun mode-command (mode-symbol)
-  "Return the mode toggle command.
-We loop over `*command-list*' to find the mode command since a mode may be
-defined in any package and is unique.
-
-If MODE-SYMBOL is a mode that inherits from another without defining its own
-toggle command (like a user class), return the toggle command of the parent."
-  (unless (eq mode-symbol 'root-mode)   ; `root-mode' has not command.
-    (or (find (string mode-symbol) *command-list*
-              :key (lambda (command) (string (name command)))
-              :test #'string=)
-        (alex:when-let ((m (find-class mode-symbol nil)))
-          (mode-command (class-name m))))))
+  (mopu:subclasses 'mode))
 
 (defun make-mode (mode-symbol buffer)
-  ;; (log:debug mode-symbol buffer (mode-command mode-symbol))
-  (alex:if-let ((c (mode-command mode-symbol)))
-    ;; ":activate t" should not be necessary here since (modes buffer) should be
-    ;; empty.
-    (funcall (name c) :buffer buffer :activate t)
-    (log:warn "Mode command ~a not found." mode-symbol)))
+  ""
+  (if (mode-name mode-symbol)
+      (enable (or (find-mode buffer mode-symbol)
+                  (make-instance mode-symbol :buffer buffer)))
+      (log:warn "Mode command ~a not found." mode-symbol)))
 
 (export-always 'find-buffer)
 (defun find-buffer (mode-symbol)
@@ -238,7 +236,7 @@ toggle command (like a user class), return the toggle command of the parent."
            (buffer-list)))
 
 (export-always 'keymap)
-(defmethod keymap ((mode root-mode))
+(defmethod keymap ((mode mode))
   "Return the keymap of MODE according to its buffer keymap scheme.
 If there is no corresponding keymap, return nil."
   (keymap:get-keymap (if (buffer mode)
@@ -246,28 +244,28 @@ If there is no corresponding keymap, return nil."
                          scheme:cua)
                      (keymap-scheme mode)))
 
-(defmethod on-signal-notify-uri ((mode root-mode) url)
+(defmethod on-signal-notify-uri ((mode mode) url)
   (set-window-title)
   (print-status)
   url)
 
-(defmethod on-signal-notify-title ((mode root-mode) title)
+(defmethod on-signal-notify-title ((mode mode) title)
   (on-signal-notify-uri mode (url (buffer mode)))
   title)
 
-(defmethod on-signal-load-started ((mode root-mode) url)
+(defmethod on-signal-load-started ((mode mode) url)
   url)
 
-(defmethod on-signal-load-redirected ((mode root-mode) url)
+(defmethod on-signal-load-redirected ((mode mode) url)
   url)
 
-(defmethod on-signal-load-committed ((mode root-mode) url)
+(defmethod on-signal-load-committed ((mode mode) url)
   url)
 
-(defmethod on-signal-load-finished ((mode root-mode) url)
+(defmethod on-signal-load-finished ((mode mode) url)
   url)
 
-(defmethod s-serialization:serializable-slots ((object root-mode))
+(defmethod s-serialization:serializable-slots ((object mode))
   "Discard keymaps which can be quite verbose."
   (delete 'keymap-scheme
           (mapcar #'closer-mop:slot-definition-name
