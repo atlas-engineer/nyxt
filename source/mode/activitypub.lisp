@@ -23,7 +23,8 @@
              :border-width "1px"
              :border-color theme:primary
              :border-style "solid"
-             :padding "1em")))
+             :padding "1em"
+             :margin "1em")))
    (auth-token
     nil
     :type (maybe string)
