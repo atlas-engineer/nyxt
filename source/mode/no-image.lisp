@@ -8,9 +8,10 @@
 
 (define-mode no-image-mode ()
   "Disable images in current buffer."
-  ((destructor
-    (lambda (mode)
-      (ffi-buffer-auto-load-image (buffer mode) t)))
-   (constructor
-    (lambda (mode)
-      (ffi-buffer-auto-load-image (buffer mode) nil)))))
+  ())
+
+(defmethod enable ((mode no-image-mode) &key)
+  (ffi-buffer-auto-load-image (buffer mode) nil))
+
+(defmethod disable ((mode no-image-mode) &key)
+  (ffi-buffer-auto-load-image (buffer mode) t))

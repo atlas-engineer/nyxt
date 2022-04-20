@@ -33,10 +33,9 @@ Defaults to one second.")
    (repeat-action nil
                   :type (or null (function (repeat-mode)))
                   :documentation "The action to repeat.
-Function taking a `repeat-mode' instance.")
-   (constructor #'initialize)))
+Function taking a `repeat-mode' instance.")))
 
-(defmethod initialize ((mode repeat-mode))
+(defmethod enable ((mode repeat-mode) &key)
   ;; TODO: Remember prompt input now that we have prompt-buffer hooks.
   (unless (repeat-action mode)
     (let ((prompted-action
@@ -47,7 +46,7 @@ Function taking a `repeat-mode' instance.")
             #'(lambda (mode)
                 (declare (ignore mode))
                 (funcall prompted-action)))))
-  (nyxt/process-mode::initialize mode))
+  (call-next-method))
 
 (define-command-global repeat-every (&optional seconds function)
   "Prompt for FUNCTION to be run every SECONDS."

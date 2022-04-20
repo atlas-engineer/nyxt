@@ -83,23 +83,21 @@ Example:
     (make-hash-table :test 'equal)
     :export nil
     :documentation "The set of host names to block.")
-   (destructor
-    (lambda (mode)
-      (when (web-buffer-p (buffer mode))
-        (hooks:remove-hook (request-resource-hook (buffer mode))
-                           'request-resource-block))))
-   (load-hostlists-p t)
-   (constructor
-    (lambda (mode)
-      (when (load-hostlists-p mode)
-        (load-hostlists mode))
-      (when (web-buffer-p (buffer mode))
-        (if (request-resource-hook (buffer mode))
-            (hooks:add-hook (request-resource-hook (buffer mode))
-                            'request-resource-block)
-            (make-instance 'hook-resource
-             :combination #'combine-composed-hook-until-nil
-             :handlers '(request-resource-block))))))))
+   (load-hostlists-p t)))
+
+(defmethod enable ((mode blocker-mode) &key)
+  (when (web-buffer-p (buffer mode))
+    (if (request-resource-hook (buffer mode))
+        (hooks:add-hook (request-resource-hook (buffer mode))
+                        'request-resource-block)
+        (make-instance 'hook-resource
+                       :combination #'combine-composed-hook-until-nil
+                       :handlers '(request-resource-block)))))
+
+(defmethod disable ((mode blocker-mode) &key)
+  (when (web-buffer-p (buffer mode))
+    (hooks:remove-hook (request-resource-hook (buffer mode))
+                       'request-resource-block)))
 
 (defmethod nfiles:write-file ((profile nyxt-profile) (hostlist hostlist) &key &allow-other-keys)
   "Download the hostlist file if it has a URL."

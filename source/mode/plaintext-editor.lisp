@@ -21,12 +21,9 @@
              :padding "5px"
              :autofocus "true"
              :background-color theme:background
-             :color theme:text)))
-   (constructor
-    (lambda (mode)
-      (initialize-display mode)))))
+             :color theme:text)))))
 
-(defmethod initialize-display ((editor plaintext-editor-mode))
+(defmethod enable ((editor plaintext-editor-mode) &key)
   (let* ((content (spinneret:with-html-string
                     (:head (:style (style editor)))
                     (:body

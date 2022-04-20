@@ -20,16 +20,16 @@ See the mode `keymap-scheme' for special bindings."
     (define-scheme "application"
       scheme:cua
       (list
-       "C-z" 'passthrough-mode)))
-   (destructor
-    (lambda (mode)
-      (hooks:remove-hook (current-keymaps-hook (buffer mode))
-                         'keep-override-map)
-      (echo "passthrough-mode disabled.")))
-   (constructor
-    (lambda (mode)
-      (hooks:add-hook (current-keymaps-hook (buffer mode)) 'keep-override-map)
-      (echo "passthrough-mode enabled.")))))
+       "C-z" 'passthrough-mode)))))
+
+(defmethod enable ((mode passthrough-mode) &key)
+  (hooks:add-hook (current-keymaps-hook (buffer mode)) 'keep-override-map)
+  (echo "passthrough-mode enabled."))
+
+(defmethod disable ((mode passthrough-mode) &key)
+  (hooks:remove-hook (current-keymaps-hook (buffer mode))
+                     'keep-override-map)
+  (echo "passthrough-mode disabled."))
 
 (-> keep-override-map (list-of-keymaps buffer) (values list-of-keymaps buffer))
 (defun keep-override-map (keymaps buffer)

@@ -54,5 +54,5 @@
                      (nyxt/web-mode::frame-element-clear))))))
          (urls (mapcar #'quri:uri urls))
          (buffer (make-buffer :title "" :url (first urls))))
-    (expedition-mode :urls urls :buffer buffer)
+    (enable (make-instance 'expedition-mode :urls urls :buffer buffer))
     (set-current-buffer buffer)))

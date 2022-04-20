@@ -28,20 +28,20 @@ still being less noticeable in the crowd.")
     nil
     :type (or null string)
     :export nil
-    :documentation "The User Agent the browser had before enabling this mode.")
-   (destructor
-    (lambda (mode)
-      (ffi-buffer-user-agent (buffer mode) (old-user-agent mode))
-      (ffi-set-preferred-languages (buffer mode)
-                                   (list (first
-                                          (str:split
-                                           "."
-                                           (or (uiop:getenv "LANG") "")))))
-      (ffi-set-tracking-prevention (buffer mode) nil)))
-   (constructor
-    (lambda (mode)
-      (setf (old-user-agent mode) (ffi-buffer-user-agent (buffer mode)))
-      (ffi-buffer-user-agent (buffer mode) (preferred-user-agent mode))
-      (ffi-set-preferred-languages (buffer mode)
-                                   (preferred-languages mode))
-      (ffi-set-tracking-prevention (buffer mode) t)))))
+    :documentation "The User Agent the browser had before enabling this mode.")))
+
+(defmethod enable ((mode reduce-tracking-mode) &key)
+  (setf (old-user-agent mode) (ffi-buffer-user-agent (buffer mode)))
+  (ffi-buffer-user-agent (buffer mode) (preferred-user-agent mode))
+  (ffi-set-preferred-languages (buffer mode)
+                               (preferred-languages mode))
+  (ffi-set-tracking-prevention (buffer mode) t))
+
+(defmethod disable ((mode reduce-tracking-mode) &key)
+  (ffi-buffer-user-agent (buffer mode) (old-user-agent mode))
+  (ffi-set-preferred-languages (buffer mode)
+                               (list (first
+                                      (str:split
+                                       "."
+                                       (or (uiop:getenv "LANG") "")))))
+  (ffi-set-tracking-prevention (buffer mode) nil))

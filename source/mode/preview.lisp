@@ -37,4 +37,4 @@ watch and refresh it."
                                          :input (quri:uri-path (url (current-buffer)))
                                          :sources (list (make-instance 'file-source))))))
     (buffer-load (quri.uri.file:make-uri-file :path file) :buffer buffer)
-    (nyxt/preview-mode:preview-mode)))
+    (enable (make-instance 'nyxt/preview-mode:preview-mode :buffer buffer))))

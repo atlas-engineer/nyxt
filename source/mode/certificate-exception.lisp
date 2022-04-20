@@ -17,13 +17,13 @@ See the `add-domain-to-certificate-exceptions' command.")
 This can apply to specific buffers.
 See the `add-domain-to-certificate-exceptions' command."
   ((certificate-exceptions *default-certificate-exceptions*
-                           :type list-of-strings)
-   (destructor
-    (lambda (mode)
-      (setf (certificate-exceptions (buffer mode)) nil)))
-   (constructor
-    (lambda (mode)
-      (setf (certificate-exceptions (buffer mode)) (certificate-exceptions mode))))))
+                           :type list-of-strings)))
+
+(defmethod enable ((mode certificate-exception-mode) &key)
+  (setf (certificate-exceptions (buffer mode)) (certificate-exceptions mode)))
+
+(defmethod disable ((mode certificate-exception-mode) &key)
+  (setf (certificate-exceptions (buffer mode)) nil))
 
 (define-command add-domain-to-certificate-exceptions (&optional (buffer (current-buffer)))
   "Add the current hostname to the buffer's certificate exception list.
