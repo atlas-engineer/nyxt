@@ -333,15 +333,26 @@ JSON-NAMEs as strings, where
 ;; FIXME: This should not exists! Strong typing should be strong!
 (defmethod name* ((object t)) "")
 
+(defgeneric json-true-p (object)
+  (:method ((object t)) object)
+  (:method ((object string)) (not (uiop:emptyp object)))
+  (:method ((object symbol)) (not (member object '(:null nil)))))
+
 (defmethod name* ((object actor))
-  (if (uiop:emptyp (name object))
-      (preferred-username object)
-      (name object)))
+  (if (json-true-p (name object))
+      (name object)
+      (preferred-username object)))
 
 (defmethod name* ((object object))
-  (if (uiop:emptyp (name object))
-      (id object)
-      (name object)))
+  (if (json-true-p (name object))
+      (name object)
+      (id object)))
+
+(defmethod name* ((object link))
+  (cond
+    ((json-true-p (name object)) (name object))
+    ((json-true-p (slot-value object 'href)) (quri:render-uri (slot-value object 'href)))
+    (t (slot-value object 'id))))
 
 (defgeneric object->html (object format)
   (:method ((object base) (format (eql :link)))
