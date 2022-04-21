@@ -151,9 +151,12 @@ JSON-NAMEs as strings, where
   (let ((normalized-slots
           (mapcar (lambda (slot)
                     (destructuring-bind
-                        (json-name &optional lisp-name processor)
+                        (json-name
+                         ;; FIXME: Is there a better way to translate from CaMelCAsE?
+                         &key (lisp-name (cffi:translate-camelcase-name json-name))
+                           processor (literal-p (sera:true processor)))
                         (uiop:ensure-list slot)
-                      (list json-name (or lisp-name (cffi:translate-camelcase-name json-name)) processor)))
+                      (list json-name lisp-name processor literal-p)))
                   names-and-slots)))
     `(progn
        (setf (gethash ,type *classes*) (quote ,name))
@@ -164,17 +167,16 @@ JSON-NAMEs as strings, where
          (:accessor-name-transformer (class*:make-name-transformer name)))
        ,@(loop for slot in normalized-slots
                for lisp-name = (second slot)
+               for literal-p = (fourth slot)
                collect `(defmethod ,lisp-name ((object ,name))
-                          (cond
-                            ((valid-url-p (slot-value object (quote ,lisp-name)))
-                             (fetch-object (slot-value object (quote ,lisp-name))))
-                            (t (parse-object (slot-value object (quote ,lisp-name)))))))
-       (defmethod fill-object ((object ,name ) processed-json)
+                          ,(if literal-p
+                               `(slot-value object (quote ,lisp-name))
+                               `(when (slot-value object (quote ,lisp-name))
+                                  (parse-object (slot-value object (quote ,lisp-name)))))))
+       (defmethod fill-object ((object ,name) processed-json)
          (when (hash-table-p processed-json)
-           ,@(loop for (json-name lisp-name processor) in normalized-slots
-                   collect `(when (and (gethash ,json-name processed-json)
-                                       (not (eq :null (gethash ,json-name processed-json))))
-                              ;; FIXME: Is there a better way to translate from CaMelCAsE?
+           ,@(loop for (json-name lisp-name processor literal-p) in normalized-slots
+                   collect `(when (json-true-p (gethash ,json-name processed-json))
                               (setf (slot-value object (quote ,lisp-name))
                                     ,(if processor
                                          `(funcall ,processor (gethash ,json-name processed-json))
@@ -183,28 +185,28 @@ JSON-NAMEs as strings, where
 
 
 (define-json-type object "Object" (base)
-  "name"
-  "nameMap"
+  ("name" :literal-p t)
+  ("nameMap" :literal-p t)
   "attachment" ; nested
-  "attributedTo"
+  "attributedTo" ; nested
   "audience" ; nested
-  "content"
-  "contentMap"
-  "source"
-  "context"
-  ("startTime" start-time #'local-time:parse-timestring)
-  ("endTime" end-time #'local-time:parse-timestring)
-  ("published" published #'local-time:parse-timestring)
-  ("updated" updated #'local-time:parse-timestring)
-  "duration" ; time period
+  ("content" :literal-p t)
+  ("contentMap" :literal-p t)
+  ("source" :literal-p t)
+  ("context" :literal-p t)
+  ("startTime" :processor #'local-time:parse-timestring)
+  ("endTime" :processor #'local-time:parse-timestring)
+  ("published" :processor #'local-time:parse-timestring)
+  ("updated" :processor #'local-time:parse-timestring)
+  ("duration" :literal-p t) ; time period
   "generator" ; nested
   "icon" ; nested
   "image" ; nested
   "location" ; nested
   "preview" ; nested
   "replies" ; nested
-  "summary"
-  "summaryMap"
+  ("summary" :literal-p t)
+  ("summaryMap" :literal-p t)
   "tag" ; nested
   "inReplyTo" ; nested
   "url" ; nested
@@ -215,18 +217,18 @@ JSON-NAMEs as strings, where
   "mediaType"
   "likes" ; nested
   "shares" ; nested
-  "width" ;; Mastodon adds this
-  "height"  ;; Mastodon adds this
+  ("width" :literal-p t) ;; Mastodon adds this
+  ("height" :literal-p t)  ;; Mastodon adds this
   )
 
 (define-json-type link "Link" (base)
-  ("href" href #'quri:uri)
-  "rel"
-  "mediaType"
-  "name"
-  "hreflang"
-  "height"
-  "width"
+  ("href" :processor #'quri:uri)
+  ("rel" :literal-p t)
+  ("mediaType" :literal-p t)
+  ("name" :literal-p t)
+  ("hreflang" :literal-p t)
+  ("height" :literal-p t)
+  ("width" :literal-p t)
   "preview" ; nested
   )
 
@@ -251,16 +253,16 @@ JSON-NAMEs as strings, where
   "followers" ; nested
   "liked" ; nested
   "streams" ; nested
-  "preferredUsername"
+  ("preferredUsername" :literal-p t)
   "endpoints" ; nested
   "featured" ; Mastodon-specific
   )
 
 (define-json-type base-collection "" (object)
-  "totalItems"
-  ("first" first-item) ; object
-  ("last" last-item) ; object
-  ("current" current-item) ; object
+  ("totalItems" :literal-p t)
+  ("first" :lisp-name first-item) ; object
+  ("last" :lisp-name last-item) ; object
+  ("current" :lisp-name current-item) ; object
   )
 
 (define-json-type collection "Collection" (base-collection)
@@ -278,7 +280,7 @@ JSON-NAMEs as strings, where
   )
 
 (define-json-type ordered-collection-page "OrderedCollectionPage" (collection-page ordered-collection)
-  "startIndex")
+  ("startIndex" :literal-p t))
 
 ;;; Activity Vocabulary Actor Types (https://www.w3.org/TR/activitystreams-vocabulary/#actor-types)
 
@@ -320,7 +322,7 @@ JSON-NAMEs as strings, where
 (define-json-type question-activity "Question" (intransitive-activity)
   "oneOf" ; nested
   "anyOf" ; nested
-  ("closed" closed #'local-time:parse-timestring))
+  ("closed" :processor #'local-time:parse-timestring))
 
 ;;; Activity Vocabulary Activity Types (https://www.w3.org/TR/activitystreams-vocabulary/#object-types)
 
@@ -338,19 +340,19 @@ JSON-NAMEs as strings, where
 (define-json-type page "Page" (document))
 (define-json-type event "Event" (object))
 (define-json-type place "Place" (object)
-  ("accuracy" accuracy #'serapeum:parse-float)
-  ("altitude" altitude #'serapeum:parse-float)
-  ("latitude" latitude #'serapeum:parse-float)
-  ("longitude" longitude #'serapeum:parse-float)
-  ("radius" radius #'serapeum:parse-float)
-  "units")
+  ("accuracy" :processor #'serapeum:parse-float)
+  ("altitude" :processor #'serapeum:parse-float)
+  ("latitude" :processor #'serapeum:parse-float)
+  ("longitude" :processor #'serapeum:parse-float)
+  ("radius" :processor #'serapeum:parse-float)
+  ("units" :literal-p t))
 (define-json-type mention "Mention" (link))
 (define-json-type profile "Profile" (object)
   "describes" ; nested
   )
 (define-json-type tombstone "Tombstone" (object)
   "formerType" ; nested
-  ("deleted" deleted #'local-time:parse-timestring))
+  ("deleted" :processor #'local-time:parse-timestring))
 
 (defun http->ap (url)
   (or (alex:when-let* ((url url)
