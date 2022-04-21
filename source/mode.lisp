@@ -17,30 +17,33 @@
                                            (superclass user-class))
   t)
 
-;; (defmethod initialize-instance :after ((class mode-class) &key)
-;;   (when (toggler-command-p class)
-;;     (define-command-global NAME (&rest args
-;;                                  &key
-;;                                  ;; TODO: Shall we have a function that
-;;                                  ;; returns the focused buffer?
-;;                                  ;; `focused-buffer'?  `current-buffer*'?
-;;                                  ;; Rename `current-buffer' to
-;;                                  ;; `current-view-buffer' and add
-;;                                  ;; `current-buffer' for this task?
-;;                                  (buffer (or (current-prompt-buffer) (current-buffer)))
-;;                                  (activate t explicit?)
-;;                                  &allow-other-keys)
-;;       (let ((,existing-instance (find-mode buffer ',NAME)))
-;;         (unless explicit?
-;;           (setf activate (not ,existing-instance)))
-;;         (if activate
-;;             (unless ,existing-instance
-;;               (enable
-;;                (apply #'make-instance ',name
-;;                       :buffer buffer
-;;                       args)))
-;;             (when ,existing-instance
-;;               (disable ,existing-instance)))))))
+(defmethod make-instance :around ((class mode-class) &key)
+  (sera:lret ((initialized-object (call-next-method)))
+    (when (slot-value class 'toggler-command-p)
+      (let ((name (name initialized-object)))
+        (make-instance
+         'command
+         :name name
+         :visibility :global
+         :fn (lambda (&rest args
+                      &key
+                        ;; TODO: Shall we have a function that returns the focused
+                        ;; buffer?  `focused-buffer'?  `current-buffer*'?  Rename
+                        ;; `current-buffer' to `current-view-buffer' and add
+                        ;; `current-buffer' for this task?
+                        (buffer (or (current-prompt-buffer) (current-buffer)))
+                        (activate t explicit?)
+                      &allow-other-keys)
+               (let ((existing-instance (find-mode buffer name)))
+                 (unless explicit?
+                   (setf activate (not existing-instance)))
+                 (if activate
+                     (unless existing-instance
+                       (enable (apply #'make-instance name
+                                      :buffer buffer
+                                      args)))
+                     (when existing-instance
+                       (disable existing-instance))))))))))
 
 (define-class mode ()
   ((buffer
