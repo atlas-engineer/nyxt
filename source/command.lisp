@@ -194,7 +194,18 @@ of arguments."
        ,(documentation function-symbol 'function)
        (,function-symbol (first arg-list)))))
 
-;; TODO: Factor the following macros.
+(sera:eval-always
+  (defun define-command-preamble (name arglist body setup)
+    `(progn (sera:eval-always
+              (export ',name (symbol-package ',name))
+              ;; HACK: This seemingly redundant `defun' is used to avoid style
+              ;; warnings when calling (FOO ...) in the rest of the file where
+              ;; it's defined.  Same with `defparameter' for the hooks.
+              (defun ,name (,@arglist) ,@body)
+              (defparameter ,(before-hook-name name) nil)
+              (defparameter ,(after-hook-name name) nil))
+            ,setup)))
+
 (export-always 'define-command)
 (defmacro define-command (name (&rest arglist) &body body)
   "Define new command NAME.
@@ -208,16 +219,8 @@ Example:
 \(define-command play-video-in-current-page (&optional (buffer (current-buffer)))
   \"Play video in the currently open buffer.\"
   (uiop:run-program (list \"mpv\" (render-url (url buffer)))))"
-  `(progn
-     (sera:eval-always
-       (export ',name (symbol-package ',name))
-       ;; HACK: This seemingly redundant `defun' is used to avoid style
-       ;; warnings when calling (FOO ...) in the rest of the file where
-       ;; it's defined.  Same with `defparameter' for the hooks.
-       (defun ,name (,@arglist) ,@body)
-       (defparameter ,(before-hook-name name) nil)
-       (defparameter ,(after-hook-name name) nil))
-     (make-instance 'command :name ',name :visibility :mode :fn (lambda (,@arglist) ,@body))))
+  (define-command-preamble name arglist body
+      `(make-instance 'command :name ',name :visibility :mode :fn (lambda (,@arglist) ,@body))))
 
 (export-always 'define-command-global)
 (defmacro define-command-global (name (&rest arglist) &body body)
@@ -225,12 +228,8 @@ Example:
 This means it will be listed in `command-source' when the global option is on.
 This is mostly useful for third-party packages to define globally-accessible
 commands without polluting Nyxt packages."
-  `(sera:eval-always
-     (export ',name (symbol-package ',name))
-     (defun ,name (,@arglist) ,@body)   ; See note in `define-command'.
-     (defparameter ,(before-hook-name name) nil)
-     (defparameter ,(after-hook-name name) nil)
-     (make-instance 'command :name ',name :visibility :global :fn (lambda (,@arglist) ,@body))))
+  (define-command-preamble name arglist body
+    `(make-instance 'command :name ',name :visibility :global :fn (lambda (,@arglist) ,@body))))
 
 (export-always 'delete-command)
 (defun delete-command (name)
@@ -244,12 +243,8 @@ regardless of whether NAME is defined as a command."
   "Define NAME, a deprecated command.
 This is just like a command.  It's recommended to explain why the function is
 deprecated and by what in the docstring."
-  `(sera:eval-always
-     (export ',name (symbol-package ',name))
-     (defun ,name (,@arglist) ,@body)   ; See note in `define-command'.
-     (defparameter ,(before-hook-name name) nil)
-     (defparameter ,(after-hook-name name) nil)
-     (make-instance 'command :name ',name :deprecated t :visibility :mode
+  (define-command-preamble name arglist body
+    `(make-instance 'command :name ',name :deprecated t :visibility :mode
                              :fn (lambda (,@arglist) ,@body))))
 
 (defun nyxt-packages ()                 ; TODO: Export a customizable *nyxt-packages* instead?
