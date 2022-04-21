@@ -525,7 +525,8 @@ FORMAT can be one of
   (spinneret:with-html-string
     (:header
      (:h1 (format nil "~a (@~a)" (name* object) (preferred-username object))))
-    (:raw (summary object))
+    (when (summary object)
+      (:raw (summary object)))
     (:br)
     (when (and (following object)
                (not (zerop (total-items (following object)))))
