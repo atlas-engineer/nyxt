@@ -414,12 +414,19 @@ JSON-NAMEs as strings, where
 (defmethod url* ((object sequence))
   (lpara:pmap (serapeum:class-name-of object) #'url* object))
 
+(defmethod url* ((object string))
+  object)
+
+(defmethod url* ((object hash-table))
+  (url* (or (gethash "href" object)
+            (gethash "url" object))))
+
 (defmethod url* ((object link))
   (slot-value object 'href))
 
 (defmethod url* ((object object))
   (if (json-true-p (slot-value object 'url))
-      (slot-value object 'url)
+      (url* (slot-value object 'url))
       (slot-value object 'id)))
 
 (defgeneric object->html (object format)
