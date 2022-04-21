@@ -454,16 +454,26 @@ FORMAT can be one of
 
 (defun render-image-card (object)
   (spinneret:with-html-string
-    (:img :src (slot-value object 'url)
+    (:img :src (url* object)
           :alt (name* object))))
+
+(defun render-video-card (object)
+  (spinneret:with-html-string
+    (:video :src (url* object) :controls t)))
 
 (defmethod object->html ((object image) (format (eql :card)))
   (render-image-card object))
 
+(defmethod object->html ((object video) (format (eql :card)))
+  (render-video-card object))
+
 (defmethod object->html ((object document) (format (eql :card)))
-  (if (str:starts-with? "image" (media-type object))
-      (render-image-card object)
-      (object->html object :link)))
+  (cond
+    ((str:starts-with? "image/" (media-type object))
+     (render-image-card object))
+    ((str:starts-with? "video/" (media-type object))
+     (render-video-card object))
+    (t (object->html object :link))))
 
 (defmethod object->html ((object note) (format (eql :card)))
   (spinneret:with-html-string
@@ -498,19 +508,15 @@ FORMAT can be one of
   (spinneret:with-html-string
     (:div
      :class "card"
-     (:i (:a :href (id (actor object)) (name* (actor object)))
-         " created/posted on " (published* object))
+     (:i (:a :href (http->ap (url* (actor object))) (name* (actor object))) " created/posted")
      (:raw (object->html (object object) :card)))))
 
 (defmethod object->html ((object announce-activity) (format (eql :card)))
   (spinneret:with-html-string
     (:div
      :class "card"
-     (:i (:a :href (id (actor object)) (name* (actor object)))
-         (alex:when-let ((author (author* object)))
-           (:i " (originally by " (:a :href (http->ap (or (id author) (url author))) (name* author)) ")"))
-         " announced on " (published* object))
-     (:raw (object->html (object object) :card)))))
+     (:i (:a :href (id (actor object)) (name* (actor object))) " announced")
+     (:div (:raw (object->html (object object) :card))))))
 
 (defmethod object->html ((object string) (format (eql :link)))
   (if (valid-url-p object)
