@@ -167,7 +167,7 @@ Return NIL if not a class form."
      :stream stream)
     (fresh-line stream)))
 
-(defmethod nfiles:write-file ((profile nyxt-profile) (file auto-init-file) &key)
+(defmethod nfiles:write-file ((profile nyxt-profile) (file auto-init-file) &key &allow-other-keys)
   (let ((*print-case* :downcase)
         (*package* (find-package :nyxt-user)))
     (log:info "Writing auto configuration to ~s." (nfiles:expand file))

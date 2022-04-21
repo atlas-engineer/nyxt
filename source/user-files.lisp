@@ -96,7 +96,7 @@ Example: when passed command line option --with-file foo=bar,
                     nil))
                 nil)))))))
 
-(defmethod nfiles:write-file :around ((profile nyxt-profile) (file nyxt-file) &key)
+(defmethod nfiles:write-file :around ((profile nyxt-profile) (file nyxt-file) &key &allow-other-keys)
   (if *run-from-repl-p*
       (call-next-method)
       (handler-case (call-next-method)

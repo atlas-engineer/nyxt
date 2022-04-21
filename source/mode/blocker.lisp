@@ -101,7 +101,7 @@ Example:
              :combination #'combine-composed-hook-until-nil
              :handlers '(request-resource-block))))))))
 
-(defmethod nfiles:write-file ((profile nyxt-profile) (hostlist hostlist) &key)
+(defmethod nfiles:write-file ((profile nyxt-profile) (hostlist hostlist) &key &allow-other-keys)
   "Download the hostlist file if it has a URL."
   (when (url-body hostlist)
     (let ((path (nfiles:expand hostlist)))
