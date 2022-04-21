@@ -175,7 +175,7 @@ JSON-NAMEs as strings, where
                                   (parse-object (slot-value object (quote ,lisp-name)))))))
        (defmethod fill-object ((object ,name) processed-json)
          (when (hash-table-p processed-json)
-           ,@(loop for (json-name lisp-name processor literal-p) in normalized-slots
+           ,@(loop for (json-name lisp-name processor) in normalized-slots
                    collect `(when (json-true-p (gethash ,json-name processed-json))
                               (setf (slot-value object (quote ,lisp-name))
                                     ,(if processor
