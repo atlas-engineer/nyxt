@@ -363,21 +363,36 @@ JSON-NAMEs as strings, where
 ;; FIXME: This should not exists! Strong typing should be strong!
 (defmethod name* ((object t)) "")
 
+(defmethod name* :around ((object t))
+  (first (uiop:ensure-list (call-next-method))))
+
+(defmethod name* ((object sequence))
+  (lpara:pmap (serapeum:class-name-of object) #'name* object))
+
 (defmethod name* ((object actor))
-  (if (json-true-p (slot-value object 'name))
-      (slot-value object 'name)
-      (preferred-username object)))
+  (cond
+    ((json-true-p (slot-value object 'name))
+     (slot-value object 'name))
+    ((json-true-p (slot-value object 'preferred-username))
+     (slot-value object 'preferred-username))
+    (t (slot-value object 'id))))
 
 (defmethod name* ((object object))
   (if (json-true-p (slot-value object 'name))
       (slot-value object 'name)
-      (id object)))
+      (slot-value object 'id)))
 
 (defmethod name* ((object link))
   (cond
     ((json-true-p (slot-value object 'name)) (name object))
     ((json-true-p (slot-value object 'href)) (quri:render-uri (slot-value object 'href)))
     (t (slot-value object 'id))))
+
+(defmethod author* :around ((object t))
+  (first (uiop:ensure-list (call-next-method))))
+
+(defmethod author* ((object sequence))
+  (lpara:pmap (serapeum:class-name-of object) #'author* object))
 
 (defmethod author* ((object object))
   (or (attributed-to object)
