@@ -67,10 +67,7 @@ Example:
                                            (activate t explicit?)
                                            &allow-other-keys)
                ,docstring
-               (unless (find 'buffer (mopu:superclasses buffer) :key #'class-name)
-                 ;; Warning: (typep buffer 'buffer) would not work for prompt-buffers
-                 ;; if the BUFFER class was reassigned after the PROMPT-BUFFER class
-                 ;; declaration.
+               (unless (buffer-p buffer)
                  (error ,(format nil "Mode command ~a called on non-buffer" name)))
                (let ((,existing-instance (find-mode buffer ',name)))
                  (unless explicit?
