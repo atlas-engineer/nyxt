@@ -86,6 +86,8 @@ Should always CALL-NEXT-METHOD, so that all the superclasses are filled too."))
 
 (export-always 'fetch-object)
 (defgeneric fetch-object (object)
+  (:method ((object list))
+    (lpara:pmapcar #'fetch-object object))
   (:method ((object string))
     (when (valid-url-p object)
       (log:debug "Fetching ~a." object)
@@ -111,6 +113,8 @@ Should always CALL-NEXT-METHOD, so that all the superclasses are filled too."))
 (defgeneric parse-object (object)
   (:method ((object t))
     object)
+  (:method ((object list))
+    (lpara:pmapcar #'parse-object object))
   (:documentation "Parse the object from the provided JSON data.
 Possibly recurse to the nested sub-objects."))
 
