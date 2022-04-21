@@ -418,13 +418,17 @@ FORMAT can be one of
 - :CARD for compact yet informative representation of OBJECT.
 - :PAGE for full-page OBJECT rendering (is usually linked to by :LINK format)."))
 
+(defun render-image-card (object)
+  (spinneret:with-html-string
+    (:img :src (slot-value object 'url)
+          :alt (name* object))))
+
+(defmethod object->html ((object image) (format (eql :card)))
+  (render-image-card object))
+
 (defmethod object->html ((object document) (format (eql :card)))
   (if (str:starts-with? "image" (media-type object))
-      (spinneret:with-html-string
-        (:img :src (slot-value object 'url)
-              :alt (when (and (name object)
-                              (not (eq :null (name object))))
-                     (name object))))
+      (render-image-card object)
       (object->html object :link)))
 
 (defmethod object->html ((object note) (format (eql :card)))
