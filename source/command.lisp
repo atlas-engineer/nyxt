@@ -18,15 +18,31 @@ This is useful to build commands out of anonymous functions.")
    (fn (error "Function required.")
      :type function
      :documentation "Function wrapped by the command.")
-   (sexp nil
+   (before-hook (make-instance 'hooks:hook-void)
+                :type hooks:hook-void
+                :documentation "Hook run before executing the command.")
+   (after-hook (make-instance 'hooks:hook-void)
+               :type hooks:hook-void
+               :documentation "Hook run after executing the command.")
+   (sexp nil ; TODO: Set with `function-lambda-expression' or use `swank' instead?
          :type t
          :documentation "S-expression of the definition of top-level commands or
 commands wrapping over lambdas.
 This is nil for local commands that wrap over named functions.")
-   (global-p nil
-             :type boolean
-             :documentation "If non-nil, this command can be run from anywhere.
-Otherwise the command can only be run if its corresponding package mode is enabled.")
+   (visibility :mode
+               :type (member :global :mode :anonymous)
+               :documentation "
+- `:global'  means it will be listed in `command-source' when the global option is on.
+This is mostly useful for third-party packages to define globally-accessible
+commands without polluting Nyxt packages.
+
+- `:mode' means the command is only listed in `command-source' when the corresponding mode is active.
+
+- `:anonymous' means the command is never listed in `command-source'.")
+   (deprecated-p nil
+                 :type boolean
+                 :documentation "If non-nil, report a warning before executing
+the command.")
    (last-access (local-time:now)
                 :type local-time:timestamp
                 :documentation "Last time this command was called from prompt buffer.
@@ -47,13 +63,56 @@ We need a `command' class for multiple reasons:
 - Last access: This is useful to sort command by the time they were last
   called.  The only way to do this is to persist the command instances."))
 
+(sera:eval-always
+  (defun before-hook-name (command-name)
+    (intern (format nil "~a-BEFORE-HOOK" command-name)
+            (symbol-package command-name)))
+  (defun after-hook-name (command-name)
+    (intern (format nil "~a-AFTER-HOOK" command-name)
+            (symbol-package command-name))))
+
 (defmethod initialize-instance :after ((command command) &key)
-  (closer-mop:set-funcallable-instance-function command
-                                                (lambda (&rest args)
-                                                  (apply (fn command)
-                                                         (or args
-                                                             (mapcar #'prompt-argument
-                                                                     (parse-function-lambda-list-types (fn command))))))))
+  (setf (fn command)
+        (lambda (&rest args)
+          (when (deprecated-p command)
+            ;; TODO: Should `define-deprecated-command' report the version
+            ;; number of deprecation?  Maybe OK to just remove all deprecated
+            ;; commands on major releases.
+            (echo-warning "~a is deprecated." (name command)))
+          (handler-case
+              (progn
+                (hooks:run-hook (before-hook command))
+                ;; (log:debug "Calling command ~a." ',name)
+                ;; TODO: How can we print the arglist as well?
+                ;; (log:debug "Calling command (~a ~a)." ',name (list ,@arglist))
+                (prog1 (apply (fn command)
+                              (or args
+                                  ;; The following is not defined yet.
+                                  (mapcar 'prompt-argument
+                                          (funcall 'parse-function-lambda-list-types (fn command)))))
+                  (hooks:run-hook (after-hook command))))
+            (nyxt-condition (c)
+              (log:warn "~a" c)))))
+  (unless (eq :anonymous (visibility command))
+    (setf (fdefinition (name command)) (fn command))
+    (setf (documentation (name command) 'function) (docstring command))
+    (export-always (name command) (symbol-package (name command)))
+    ;; From `defparameter' CLHS documentation:
+    (eval-when (:compile-toplevel :load-toplevel :execute)
+      (let ((before-hook-sym (before-hook-name (name command)))
+            (after-hook-sym (after-hook-name (name command))))
+        (setf (symbol-value before-hook-sym) (before-hook command)
+              (symbol-value after-hook-sym) (after-hook command))
+        (export (list before-hook-sym after-hook-sym) (symbol-package (name command)))))
+    (unless (deprecated-p command)
+      ;; Overwrite previous command:
+      (setf *command-list* (delete (name command) *command-list* :key #'name))
+      (push command *command-list*)))
+  ;; (funcall <COMMAND ...>) should work:
+  (closer-mop:set-funcallable-instance-function
+   command
+   (lambda (&rest args)
+     (apply (fn command) args))))
 
 (defmethod print-object ((command command) stream)
   (print-unreadable-object (command stream :type t :identity t)
@@ -84,7 +143,10 @@ With BODY, the command binds ARGLIST and executes the body.
 The first string in the body is used to fill the `help' slot.
 
 Without BODY, NAME must be a function symbol and the command wraps over it
-against ARGLIST, if specified."
+against ARGLIST, if specified.
+
+This is a convenience wrapper.  If you want full control over a command
+instantiation, use `make-instance command' instead."
   (check-type name symbol)
   (let ((documentation (or (nth-value 2 (alex:parse-body body :documentation t))
                            ""))
@@ -110,6 +172,7 @@ against ARGLIST, if specified."
            (t (error "Either NAME must be a function symbol, or ARGLIST and BODY must be set properly.")))
          (make-instance 'command
                         :name ',name
+                        :visibility :anonymous
                         :docstring ,documentation
                         :fn ,fn
                         :sexp ,sexp)))))
@@ -117,7 +180,7 @@ against ARGLIST, if specified."
 (export-always 'make-mapped-command)
 (defmacro make-mapped-command (function-symbol)
   "Define a command which `mapcar's FUNCTION-SYMBOL over a list of arguments."
-  (let ((name (intern (str:concat (string FUNCTION-SYMBOL) "-*"))))
+  (let ((name (intern (str:concat (string function-symbol) "-*"))))
     `(make-command ,name (arg-list)
        ,(documentation function-symbol 'function)
        (mapcar ',function-symbol arg-list))))
@@ -126,15 +189,14 @@ against ARGLIST, if specified."
 (defmacro make-unmapped-command (function-symbol)
   "Define a command which calls FUNCTION-SYMBOL over the first element of a list
 of arguments."
-  (let ((name (intern (str:concat (string FUNCTION-SYMBOL) "-1"))))
+  (let ((name (intern (str:concat (string function-symbol) "-1"))))
     `(make-command ,name (arg-list)
        ,(documentation function-symbol 'function)
        (,function-symbol (first arg-list)))))
 
-(defmacro %define-command (name (&key deprecated-p
-                                   pre-form
-                                   global-p)
-                           (&rest arglist) &body body)
+;; TODO: Factor the following macros.
+(export-always 'define-command)
+(defmacro define-command (name (&rest arglist) &body body)
   "Define new command NAME.
 `define-command' has a syntax similar to `defun'.
 ARGLIST must be a list of optional arguments or key arguments.
@@ -146,58 +208,16 @@ Example:
 \(define-command play-video-in-current-page (&optional (buffer (current-buffer)))
   \"Play video in the currently open buffer.\"
   (uiop:run-program (list \"mpv\" (render-url (url buffer)))))"
-  (multiple-value-bind (forms declares documentation)
-      (alex:parse-body body :documentation t)
-    (unless documentation
-      (warn (make-condition 'command-documentation-style-warning
-                            :name name)))
-    (let ((before-hook (intern (str:concat (symbol-name name) "-BEFORE-HOOK")
-                               (symbol-package name)))
-          (after-hook (intern (str:concat (symbol-name name) "-AFTER-HOOK")
-                              (symbol-package name))))
-      `(progn
-         (export-always ',before-hook (symbol-package ',name))
-         (defparameter ,before-hook (make-instance 'hooks:hook-void))
-         (export-always ',after-hook (symbol-package ',name))
-         (defparameter ,after-hook (make-instance 'hooks:hook-void))
-         (export-always ',name (symbol-package ',name))
-         ;; We define the function at compile-time so that macros from the same
-         ;; file can find the symbol function.
-         (eval-when (:compile-toplevel :load-toplevel :execute)
-           ;; We use defun to define the command instead of storing a lambda because we want
-           ;; to be able to call the foo command from Lisp with (FOO ...).
-           (defun ,name ,arglist
-             ,@(sera:unsplice documentation)
-             ,@declares
-             ,pre-form
-             (handler-case
-                 (progn
-                   (hooks:run-hook ,before-hook)
-                   ;; (log:debug "Calling command ~a." ',name)
-                   ;; TODO: How can we print the arglist as well?
-                   ;; (log:debug "Calling command (~a ~a)." ',name (list ,@arglist))
-                   (prog1
-                       (progn
-                         ,@forms)
-                     (hooks:run-hook ,after-hook)))
-               (nyxt-condition (c)
-                 (format t "~s" c)))))
-         (let ((new-command (make-instance 'command
-                                           :name ',name
-                                           :docstring ,documentation
-                                           :fn (symbol-function ',name)
-                                           :sexp '(define-command ,name (,@arglist) ,@body)
-                                           :global-p ,global-p)))
-           (unless ,deprecated-p
-             ;; Overwrite previous command:
-             (setf *command-list* (delete ',name *command-list* :key #'name))
-             (push new-command
-                   *command-list*))
-           new-command)))))
-
-(export-always 'define-command)
-(defmacro define-command (name (&rest arglist) &body body)
-  `(%define-command ,name () (,@arglist) ,@body))
+  `(progn
+     (sera:eval-always
+       (export ',name (symbol-package ',name))
+       ;; HACK: This seemingly redundant `defun' is used to avoid style
+       ;; warnings when calling (FOO ...) in the rest of the file where
+       ;; it's defined.  Same with `defparameter' for the hooks.
+       (defun ,name (,@arglist) ,@body)
+       (defparameter ,(before-hook-name name) nil)
+       (defparameter ,(after-hook-name name) nil))
+     (make-instance 'command :name ',name :visibility :mode :fn (lambda (,@arglist) ,@body))))
 
 (export-always 'define-command-global)
 (defmacro define-command-global (name (&rest arglist) &body body)
@@ -205,7 +225,12 @@ Example:
 This means it will be listed in `command-source' when the global option is on.
 This is mostly useful for third-party packages to define globally-accessible
 commands without polluting Nyxt packages."
-  `(%define-command ,name (:global-p t) (,@arglist) ,@body))
+  `(sera:eval-always
+     (export ',name (symbol-package ',name))
+     (defun ,name (,@arglist) ,@body)   ; See note in `define-command'.
+     (defparameter ,(before-hook-name name) nil)
+     (defparameter ,(after-hook-name name) nil)
+     (make-instance 'command :name ',name :visibility :global :fn (lambda (,@arglist) ,@body))))
 
 (export-always 'delete-command)
 (defun delete-command (name)
@@ -215,17 +240,17 @@ regardless of whether NAME is defined as a command."
   (setf *command-list* (delete name *command-list* :key #'name))
   (fmakunbound name))
 
-;; TODO: Should `define-deprecated-command' report the version number of deprecation?
-;; Maybe OK to just remove all deprecated commands on major releases.
 (defmacro define-deprecated-command (name (&rest arglist) &body body)
   "Define NAME, a deprecated command.
 This is just like a command.  It's recommended to explain why the function is
 deprecated and by what in the docstring."
-  `(%define-command ,name (:deprecated-p t
-                           ;; TODO: Implement `warn'.
-                           :pre-form (echo-warning "~a is deprecated." ',name))
-       (,@arglist)
-     ,@body))
+  `(sera:eval-always
+     (export ',name (symbol-package ',name))
+     (defun ,name (,@arglist) ,@body)   ; See note in `define-command'.
+     (defparameter ,(before-hook-name name) nil)
+     (defparameter ,(after-hook-name name) nil)
+     (make-instance 'command :name ',name :deprecated t :visibility :mode
+                             :fn (lambda (,@arglist) ,@body))))
 
 (defun nyxt-packages ()                 ; TODO: Export a customizable *nyxt-packages* instead?
   "Return all package designators that start with 'nyxt' plus Nyxt own libraries."
@@ -333,7 +358,7 @@ With MODE-SYMBOLS and GLOBAL-P, include global commands."
       (lpara:premove-if
        (lambda (command)
          (and (or (not global-p)
-                  (not (global-p command)))
+                  (not (eq :global (visibility command))))
               (notany
                (lambda (mode-symbol)
                  (eq (symbol-package (name command))
