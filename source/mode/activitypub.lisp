@@ -58,7 +58,7 @@ Important methods to be avare of:
   ((id nil :type (or string null))
    (object-type "Object" :type string)
    (original-object nil :type (maybe hash-table)
-                    :documentation "The de-serialized JSON object this one was created from.
+                        :documentation "The de-serialized JSON object this one was created from.
 Possibly contains additional Lisp-inaccessible properties."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -80,6 +80,7 @@ Possibly contains additional Lisp-inaccessible properties."))
 
 Should always CALL-NEXT-METHOD, so that all the superclasses are filled too."))
 
+;; TODO: Wipe/clean it periodically to allow feed updates?
 (defvar *url->object* (make-hash-table :test 'equal)
   "A memoization table from URL string to the fetched objects.")
 
@@ -348,9 +349,9 @@ JSON-NAMEs as strings, where
   ("deleted" deleted #'local-time:parse-timestring))
 
 (defun http->ap (url)
-  (or (alexandria:when-let* ((url url)
-                             (valid (valid-url-p url))
-                             (url (quri:uri url)))
+  (or (alex:when-let* ((url url)
+                       (valid (valid-url-p url))
+                       (url (quri:uri url)))
         (str:concat "ap:" (nyxt::schemeless-url url)))
       url))
 
