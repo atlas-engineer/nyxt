@@ -403,6 +403,25 @@ JSON-NAMEs as strings, where
       (and (object object)
            (author* (object object)))))
 
+(defmethod url* :around ((object t))
+  (let* ((urls (uiop:ensure-list (call-next-method)))
+         (suitable-url (or (find #'quri:uri-https-p urls)
+                           (find #'quri:uri-http-p urls)
+                           (first urls))))
+    (when (json-true-p suitable-url)
+      (quri:render-uri (quri:uri suitable-url)))))
+
+(defmethod url* ((object sequence))
+  (lpara:pmap (serapeum:class-name-of object) #'url* object))
+
+(defmethod url* ((object link))
+  (slot-value object 'href))
+
+(defmethod url* ((object object))
+  (if (json-true-p (slot-value object 'url))
+      (slot-value object 'url)
+      (slot-value object 'id)))
+
 (defgeneric object->html (object format)
   (:method ((object base) (format (eql :link)))
     (spinneret:with-html-string
