@@ -93,9 +93,9 @@ bottleneck."
       (:pre text)))
    "text/html;charset=utf8"))
 
-(define-class renderer-scheme ()
+(export-always 'renderer-scheme)
+(defclass renderer-scheme ()
   ()
-  (:export-class-name-p t)
   (:metaclass mixin-class))
 
 (define-class scheme (renderer-scheme)

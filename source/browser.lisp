@@ -42,9 +42,9 @@ Without handler, return ARG.  This is an acceptable `combination' for
                  result)))
     (compose-handlers (mapcar #'hooks:fn (hooks:handlers hook)) arg)))
 
-(define-class renderer-browser ()
+(export-always 'renderer-browser)
+(defclass renderer-browser ()
   ()
-  (:export-class-name-p t)
   (:metaclass mixin-class))
 
 (define-class browser (renderer-browser)

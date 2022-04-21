@@ -3,9 +3,9 @@
 
 (in-package :nyxt)
 
-(define-class renderer-download ()
+(export-always 'renderer-download)
+(defclass renderer-download ()
   ()
-  (:export-class-name-p t)
   (:metaclass mixin-class))
 
 (define-class download (renderer-download)

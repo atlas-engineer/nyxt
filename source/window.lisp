@@ -5,9 +5,9 @@
 
 (hooks:define-hook-type window-buffer (function (window buffer)))
 
-(define-class renderer-window ()
+(export-always 'renderer-window)
+(defclass renderer-window ()
   ()
-  (:export-class-name-p t)
   (:metaclass mixin-class))
 
 (define-class window (renderer-window)

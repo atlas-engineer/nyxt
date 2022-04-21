@@ -8,9 +8,9 @@
 (export-always '(hook-keymaps-buffer))
 (hooks:define-hook-type url->url (function (quri:uri) quri:uri))
 
-(define-class renderer-buffer ()
+(export-always 'renderer-buffer)
+(defclass renderer-buffer ()
   ()
-  (:export-class-name-p t)
   (:metaclass mixin-class))
 
 (define-class buffer (renderer-buffer)
