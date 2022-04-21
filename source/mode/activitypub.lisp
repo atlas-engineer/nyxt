@@ -364,18 +364,18 @@ JSON-NAMEs as strings, where
 (defmethod name* ((object t)) "")
 
 (defmethod name* ((object actor))
-  (if (json-true-p (name object))
-      (name object)
+  (if (json-true-p (slot-value object 'name))
+      (slot-value object 'name)
       (preferred-username object)))
 
 (defmethod name* ((object object))
-  (if (json-true-p (name object))
-      (name object)
+  (if (json-true-p (slot-value object 'name))
+      (slot-value object 'name)
       (id object)))
 
 (defmethod name* ((object link))
   (cond
-    ((json-true-p (name object)) (name object))
+    ((json-true-p (slot-value object 'name)) (name object))
     ((json-true-p (slot-value object 'href)) (quri:render-uri (slot-value object 'href)))
     (t (slot-value object 'id))))
 
