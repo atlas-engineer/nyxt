@@ -122,7 +122,7 @@ is the child to go forward to for the bound owner.")
 owner."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "The relationship between an owner and one of its nodes.
-In particular, it encodes the forward child nad the date of last access to the
+In particular, it encodes the forward child and the date of last access to the
 node for a given owner."))
 
 (export-always 'last-access)
