@@ -181,7 +181,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                            :actions (list (make-mapped-command bookmark-current-url)))))
 
 (define-command bookmark-url (&key url)
-  "Allow the user to bookmark a URL via minibuffer input."
+  "Prompt for a URL to bookmark."
   (let ((url (or url
                  (ignore-errors
                   (quri:uri
@@ -303,7 +303,7 @@ rest in background buffers."
             entries)))
 
 (define-command import-bookmarks-from-html (&key (html-file nil))
-  "Import bookmarks from an HTML file."
+  "Import bookmarks from an HTML-FILE."
   (let ((html-file (or html-file
                        (prompt1
                          ;; TODO: Is there a more intuitive directory for bookmarks?
