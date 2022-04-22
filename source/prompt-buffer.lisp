@@ -164,7 +164,7 @@ See `prompt' for how to invoke prompts.")
   (hooks:run-hook (prompt-buffer-make-hook *browser*) prompt-buffer)
   (enable-modes (append (reverse (default-modes prompt-buffer))
                         extra-modes)
-                :buffer prompt-buffer))
+                prompt-buffer))
 
 (export-always 'current-source)
 (defun current-source (&optional (prompt-buffer (current-prompt-buffer)))

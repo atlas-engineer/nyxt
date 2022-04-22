@@ -455,7 +455,7 @@ of BUFFER."
     (hooks:run-hook (buffer-make-hook browser) buffer))
   (enable-modes (append (reverse (default-modes buffer))
                         extra-modes)
-                :buffer buffer)
+                buffer)
   (unless no-hook-p
     (hooks:run-hook (buffer-after-make-hook browser) buffer)))
 

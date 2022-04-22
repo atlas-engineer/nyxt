@@ -351,7 +351,7 @@ OBJECTS can be a list of packages, a generation, etc."
                        :prompt "Generation")))
          (buffer (or (find-buffer 'os-package-manager-mode)
                      (enable-modes '(nyxt/os-package-manager-mode:os-package-manager-mode)
-                                   :buffer (make-internal-buffer :title "*OS packages*")))))
+                                   (make-internal-buffer :title "*OS packages*")))))
     (echo "Loading package database...")
     (nyxt::html-set
      (spinneret:with-html-string
