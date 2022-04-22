@@ -20,7 +20,7 @@
 (defmethod make-instance :around ((class mode-class) &key)
   (sera:lret ((initialized-object (call-next-method)))
     (when (slot-value class 'toggler-command-p)
-      (let ((name (name initialized-object)))
+      (let ((name (mode-symbol initialized-object)))
         (make-instance
          'command
          :name name
@@ -121,10 +121,6 @@ If MODE does not exist, return nil."
   (when (eq 'mode (type-of mode))
     (error "Cannot initialize `mode', you must subclass it.")))
 
-(defmethod customize-instance :after ((mode mode) &key)
-  ;; TODO: Should we move mode to the front when it already exists?
-  (push mode (modes (buffer mode))))
-
 (export-always 'enable)
 (defgeneric enable (mode &key &allow-other-keys)
   (:method ((mode mode) &key)
@@ -140,7 +136,9 @@ The pre-defined `:after' method handles further setup."))
              (eq (first (active-prompt-buffers (window buffer)))
                  buffer))
         (prompt-render-prompt buffer)
-        (print-status)))
+        (print-status))
+    ;; TODO: Should we move mode to the front when it already exists?
+    (push mode (modes (buffer mode))))
   (log:debug "~a enabled." (mode-name mode)))
 
 (export-always 'disable)
@@ -259,9 +257,9 @@ MODES should be a list (possibly namespace-less) symbols."
 MODES should be a list (possibly namespace-less) symbols.
 ARGS are passed to the mode `enable' method."
   ;; TODO: Report if mode is not found.
-  (mapcar (lambda (mode-sym)
-            (apply #'enable (or (find-mode buffer mode-sym)
-                                (make-instance mode-sym))
+  (mapcar (lambda (mode-name)
+            (apply #'enable (or (find-mode buffer mode-name)
+                                (make-instance (mode-symbol mode-name) :buffer buffer))
                    args))
           (uiop:ensure-list modes)))
 
