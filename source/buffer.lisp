@@ -748,7 +748,7 @@ Delete it with `ffi-buffer-delete'"))
   (:metaclass user-class))
 
 (define-command update-document-model (&key (buffer (current-buffer)))
-  "Update the buffer's `dom' with the page source augmented with Nyxt identifiers."
+  "Update BUFFER's `nyxt/dom' with the page source augmented with Nyxt identifiers."
   (ffi-buffer-evaluate-javascript
    buffer
    (ps:ps
@@ -1551,7 +1551,7 @@ any.")
   (reload-buffers (list (current-buffer))))
 
 (define-command reload-buffers (&optional buffers)
-  "Reload queried buffer(s)."
+  "Prompt for BUFFERS to be reloaded."
   (if buffers
       (mapcar (lambda (buffer) (buffer-load (url buffer) :buffer buffer)) buffers)
       (prompt
@@ -1650,8 +1650,8 @@ When there is no next buffer, go to the first one so as to cycle."
                    (set-current-buffer next))))
 
 (define-command switch-buffer-last ()
-  "Switch to the last showing buffer in the list of buffers.
-That is to say, the one with the most recent access time after the current buffer."
+  "Switch to the last visited buffer.
+I.e., the one with the most recent access time."
   (let* ((buffers (sort-by-time (buffer-list))))
     (when (second buffers)
       (set-current-buffer (second buffers)))))
@@ -1786,7 +1786,7 @@ mode permanently for this buffer."
     (enable-modes (uiop:ensure-list modes-to-enable) buffer)))
 
 (define-command open-inspector ()
-  "Open the inspector, a graphical tool to inspect and change the content of the buffer."
+  "Open the inspector, a graphical tool to inspect and change the buffer's content."
   (ffi-inspector-show (current-buffer)))
 
 (export-always 'print-buffer)
