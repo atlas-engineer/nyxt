@@ -221,7 +221,6 @@ URLS is either a list or a single element."
                :test #'equals)))
       (let ((entries (prompt
                       :prompt "Delete bookmark(s)"
-                      ;; :default-modes '(minibuffer-tag-mode minibuffer-mode)
                       :sources (make-instance 'bookmark-source
                                               :multi-selection-p t))))
         (delete-bookmark entries))))
