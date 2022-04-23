@@ -50,7 +50,7 @@ Function taking a `repeat-mode' instance.")
   (nyxt/process-mode::initialize mode))
 
 (define-command-global repeat-every (&optional seconds function)
-  "Repeat a FUNCTION every SECONDS (prompts if SECONDS and/or FUNCTION are not provided)."
+  "Prompt for FUNCTION to be run every SECONDS."
   (let ((seconds (or seconds
                      (ignore-errors
                       (parse-integer
@@ -62,7 +62,7 @@ Function taking a `repeat-mode' instance.")
                     (list :repeat-interval seconds :repeat-action function)))))
 
 (define-command-global repeat-times (&optional times function)
-  "Repeat a FUNCTION TIMES times (prompts if FUNCTION and/or TIMES is not provided)."
+  "Prompt for FUNCTION to be run a number of TIMES."
   (let ((times (or times
                    (ignore-errors
                     (parse-integer
