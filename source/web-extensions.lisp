@@ -306,7 +306,7 @@ slash. WebExtensions require this :/"
 
 (define-command-global toggle-extension-popup (&optional extension-class (buffer (current-buffer)))
   "Open the popup of the extension of EXTENSION-CLASS.
-If this popup does already exist, close it."
+If the popup already exists, close it."
   (let ((extension-class (or extension-class
                              (mode-name
                               (prompt1
