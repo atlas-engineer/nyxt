@@ -116,7 +116,7 @@
   ((prompter:name "Packages")
    (profile (error "Profile required."))
    (prompter:constructor
-    (lambda (source) 
+    (lambda (source)
       (ospm:list-generations (profile source)))))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
@@ -193,7 +193,7 @@
       (error message))))
 
 (define-command-global describe-os-package ()
-  "Show description of select packages."
+  "Show description of selected packages."
   (assert-package-manager)
   (let* ((packages (prompt
                     :sources '(os-package-source)
@@ -208,7 +208,7 @@
 
 ;; TODO: open in editor, with select program, leverage file-manager
 (define-command-global list-os-package-files ()
-  "List files of select packages."
+  "List files of selected packages."
   (assert-package-manager)
   (let* ((packages-or-outputs (if (typep (ospm:manager) 'ospm:guix-manager)
                                   (prompt
@@ -291,7 +291,7 @@ OBJECTS can be a list of packages, a generation, etc."
           buffer))))
 
 (define-command-global install-os-package ()
-  "Install select packages."
+  "Install selected packages."
   (assert-package-manager)
   ;; TODO: Allow profile creation.  Need multi-source support for that?
   (let* ((profile (first
@@ -304,7 +304,7 @@ OBJECTS can be a list of packages, a generation, etc."
     (operate-os-package "Installing packages..." #'ospm:install profile packages)))
 
 (define-command-global uninstall-os-package ()
-  "Uninstall select packages."
+  "Uninstall selected packages."
   (assert-package-manager)
   (let* ((profile (first
                    (prompt
@@ -317,7 +317,7 @@ OBJECTS can be a list of packages, a generation, etc."
     (operate-os-package "Uninstalling packages..." #'ospm:uninstall profile packages)))
 
 (define-command-global install-package-manifest ()
-  "Install select manifest to a profile."
+  "Install selected manifests to a profile."
   (assert-package-manager)
   (let* ((profile (first
                    (prompt
@@ -330,7 +330,7 @@ OBJECTS can be a list of packages, a generation, etc."
     (operate-os-package "Installing package manifest..." #'ospm:install-manifest profile manifest)))
 
 (define-command-global edit-package-manifest ()
-  "Edit select manifest."
+  "Edit selected manifests."
   (assert-package-manager)
   (let ((manifest (first
                    (prompt
@@ -381,7 +381,7 @@ OBJECTS can be a list of packages, a generation, etc."
     buffer))
 
 (define-command-global switch-os-generation ()
-  "Switch generation of selected profile."
+  "Switch generation of selected profiles."
   (assert-package-manager)
   (let* ((profile (first
                    (prompt
@@ -397,7 +397,7 @@ OBJECTS can be a list of packages, a generation, etc."
                         profile generation)))
 
 (define-command-global delete-os-generations ()
-  "Delete generations of selected profile."
+  "Delete generations of selected profiles."
   (assert-package-manager)
   (let* ((profile (first
                    (prompt
