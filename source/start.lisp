@@ -294,7 +294,7 @@ Return the short error message and the full error message as second value."
                                      (load-lisp file)))))))
 
 (define-command load-init-file (&key (init-file (nfiles:expand *init-file*)))
-  "Load or reload the init file."
+  "Load or reload the INIT-FILE."
   (load-lisp init-file :package (find-package :nyxt-user)))
 
 (defun eval-expr (expr)
