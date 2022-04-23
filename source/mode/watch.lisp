@@ -42,6 +42,6 @@
         (buffer-load (nyxt/process-mode:path-url mode) :buffer (buffer mode))))))
 
 (define-command-global watch-buffer (&optional (buffer (current-buffer)))
-  "Reload BUFFER at a prompted interval, instead of default 5 minutes."
+  "Reload BUFFER at a prompted interval"
   (let ((interval (seconds-from-user-input)))
     (enable-modes 'watch-mode buffer (list :repeat-interval interval))))
