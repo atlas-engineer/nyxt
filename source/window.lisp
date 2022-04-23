@@ -127,7 +127,7 @@ The handlers take the window as argument."))
                            (panel-buffers (window source))))))
 
 (define-command-global delete-panel-buffer (&key (window (current-window)) panels)
-  "Prompt the user to delete a panel buffer."
+  "Prompt for a panel buffer to be deleted."
   (let ((panels (or panels
                     (prompt
                      :prompt "Delete a panel buffer:"
