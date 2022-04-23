@@ -108,7 +108,7 @@ from a key binding.")
           (prompt-argument prompt type input)))))
 
 (define-command execute-extended-command (&optional command)
-  "Query the user for the arguments to pass to a given COMMAND.
+  "Prompt for arguments to pass to a given COMMAND.
 User input is evaluated Lisp."
   ;; TODO: Add support for &rest arguments.
   (let* ((command (or command
