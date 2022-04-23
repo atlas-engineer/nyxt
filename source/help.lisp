@@ -77,9 +77,8 @@
 
 (define-command describe-any (&optional input universal)
   "Inspect anything and show it in a help buffer.
-When INPUT  has a unique exact match in the sources, describe it
-directly without prompting.
-When INPUT does not have a unique match, prompt for the list of exact matches."
+When INPUT matches a single item in the sources, describe it.  Otherwise prompt
+for matches."
   (let* ((preprocessor (if (uiop:emptyp input)
                            'prompter:delete-inexact-matches
                            'prompter:filter-exact-match))
