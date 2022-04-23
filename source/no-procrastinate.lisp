@@ -174,7 +174,6 @@ URLS is either a list or a single element."
                :test #'equals)))
       (let ((entries (prompt
                       :prompt "Delete host(s)"
-                      ;; :default-modes '(minibuffer-tag-mode minibuffer-mode)
                       :sources (make-instance 'no-procrastinate-source
                                               :multi-selection-p t))))
         (delete-no-procrastinate-host entries))))
@@ -234,4 +233,3 @@ URLS is either a list or a single element."
               (apply #'make-instance 'no-procrastinate-entry
                      entry))
             entries)))
-
