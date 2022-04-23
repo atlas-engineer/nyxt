@@ -1958,7 +1958,7 @@ As a second value, return the current buffer index starting from 0."
                                           &key title modes url load-url-p
                                           context-name)
   "Create a new buffer with a given context.
-See the `context-name' documention.
+See the `context-name' documentation.
 See `make-buffer' for a description of the other arguments."
   (declare (ignorable title modes url load-url-p))
   (setf (getf args :context-name)
