@@ -517,18 +517,12 @@ FORMAT can be one of
     (local-time:format-timestring nil time :format local-time:+asctime-format+)
     "sometime"))
 
-(defmethod object->html ((object create-activity) (format (eql :card)))
+(defmethod object->html ((object activity) (format (eql :card)))
   (spinneret:with-html-string
     (:div
      :class "card"
-     (:i (:a :href (http->ap (url* (actor object))) (name* (actor object))) " created/posted")
-     (:raw (object->html (object object) :card)))))
-
-(defmethod object->html ((object announce-activity) (format (eql :card)))
-  (spinneret:with-html-string
-    (:div
-     :class "card"
-     (:i (:a :href (id (actor object)) (name* (actor object))) " announced")
+     (:i (:a :href (http->ap (url* (actor object))) (name* (actor object)))
+         (format nil " ~(~a~)-ed" (object-type object)))
      (:div (:raw (object->html (object object) :card))))))
 
 (defmethod object->html ((object string) (format (eql :link)))
