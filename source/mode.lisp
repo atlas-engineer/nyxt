@@ -17,10 +17,10 @@
                                            (superclass user-class))
   t)
 
-(defmethod make-instance :around ((class mode-class) &key)
-  (sera:lret ((initialized-object (call-next-method)))
-    (when (slot-value class 'toggler-command-p)
-      (let ((name (mode-symbol initialized-object)))
+(defun define-or-undefine-command-for-mode (class)
+  (let ((name (class-name class)))
+    ;; FIXME: SBCL `slot-value' returns a list, while CCL returns the boolean.  Why?
+    (if (alex:ensure-car (slot-value class 'toggler-command-p))
         (make-instance
          'command
          :name name
@@ -43,7 +43,14 @@
                                       :buffer buffer
                                       args)))
                      (when existing-instance
-                       (disable existing-instance))))))))))
+                       (disable existing-instance))))))
+        (delete-command name))))
+
+(defmethod initialize-instance :after ((class mode-class) &key)
+  (define-or-undefine-command-for-mode class))
+
+(defmethod reinitialize-instance :after ((class mode-class) &key)
+  (define-or-undefine-command-for-mode class))
 
 (define-class mode ()
   ((buffer
