@@ -201,15 +201,19 @@ The `mode' superclass is automatically added if not present."
 (defmethod glyph ((mode mode))
   "Return the glyph for a mode, or if unset, return a standard formatted mode."
   (or (slot-value mode 'glyph)
-      (format-mode mode)))
+      (princ-to-string mode)))
 
 (defmethod (setf glyph) (glyph (mode mode))
   (setf (slot-value mode 'glyph) glyph))
 
-(defmethod format-mode ((mode mode))
-  "Produce a string representation of a mode suitable for use in a status
-  buffer."
-  (str:replace-all "-mode" "" (str:downcase (mode-name mode))))
+(defmethod print-object ((mode mode) stream)
+  (if *print-escape*
+      (print-unreadable-object (mode stream :type t :identity t))
+      (let ((name (symbol-name (sera:class-name-of mode)))
+            (suffix "-MODE"))
+        (format stream "~(~a~)" (sera:string-replace
+                                 suffix name ""
+                                 :start (- (length name ) (length suffix)))))))
 
 (export-always 'find-mode)
 (defmethod find-mode ((buffer buffer) mode-symbol)
