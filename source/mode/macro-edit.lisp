@@ -15,7 +15,8 @@
     :documentation "The name used for the macro.")
    (functions
     '()
-    :documentation "Functions the user has added to their macro.")))
+    :documentation "Functions the user has added to their macro."))
+  (:toggler-command-p nil))
 
 (define-internal-page-command-global edit-macro ()
     (buffer "*Macro edit*" 'nyxt/macro-edit-mode:macro-edit-mode)

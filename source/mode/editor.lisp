@@ -23,7 +23,8 @@ get/set-content (which is necessary for operation)."
                     scheme:vi-normal
                     (list
                      "C-o" 'editor-open-file))
-                  :type keymap:scheme)))
+                  :type keymap:scheme))
+  (:toggler-command-p nil))
 
 (defmethod enable ((editor editor-mode) &key)
   (let* ((content (spinneret:with-html-string

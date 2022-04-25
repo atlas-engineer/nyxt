@@ -21,7 +21,8 @@
              :padding "5px"
              :autofocus "true"
              :background-color theme:background
-             :color theme:text)))))
+             :color theme:text))))
+  (:toggler-command-p nil))
 
 (defmethod enable ((editor plaintext-editor-mode) &key)
   (let* ((content (spinneret:with-html-string

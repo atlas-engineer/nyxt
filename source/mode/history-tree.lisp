@@ -71,4 +71,5 @@ matching buffer `id's along with buffer history entries.")
        :height "1px"
        :background-color theme:text
        :color theme:background
-       :top "12px")))))
+       :top "12px"))))
+  (:toggler-command-p nil))

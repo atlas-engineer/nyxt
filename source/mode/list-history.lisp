@@ -14,4 +14,5 @@
       (a
        :color theme:text)
       ("a:hover"
-       :color theme:primary)))))
+       :color theme:primary))))
+  (:toggler-command-p nil))

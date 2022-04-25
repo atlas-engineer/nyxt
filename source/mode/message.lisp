@@ -8,7 +8,8 @@
 
 (define-mode message-mode ()
   "Mode for log and message listing."
-  ((rememberable-p nil)))
+  ((rememberable-p nil))
+  (:toggler-command-p nil))
 
 (define-command clear-messages ()
   "Clear the *Messages* buffer."

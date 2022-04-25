@@ -74,7 +74,8 @@ Gemini support is a bit more chaotic, but you can override `line->html' for
             (.error
              :background-color theme:accent
              :color theme:background
-             :padding "1em 0")))))
+             :padding "1em 0"))))
+  (:toggler-command-p nil))
 
 (defmethod enable ((mode small-web-mode) &key)
   (update mode)
