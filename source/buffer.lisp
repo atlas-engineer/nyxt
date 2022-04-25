@@ -268,8 +268,7 @@ down.")
        :text-decoration "none"
        :border-radius "2px"
        :padding "6px"
-       :margin-left "2px"
-       :margin-right "2px")
+       :margin "2px")
       (.accent
        :background-color theme:accent)
       (|.button:hover|
