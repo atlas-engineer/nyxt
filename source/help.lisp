@@ -825,82 +825,84 @@ The version number is stored in the clipboard."
     (buffer "*New buffer*" 'base-mode)
   "Open up a buffer with useful links suitable for a `default-new-buffer-url'."
   (spinneret:with-html-string
-    (:style (:raw 
-             (theme:themed-css (theme *browser*)
-               ("#logo"
-                :width "256px"
-                :height "256px")
-               (.container
-                :display "grid"
-                :grid-template-columns "256px 1fr 1fr"
-                :grid-gap "10px"
-                :margin "50px"
-                :max-width "800px")
-               ("li"
-                :background-color "rgb(240, 240, 240)"
-                :margin-bottom "10px"
-                :padding "0"
-                :border-radius "3px"
-                :list-style-type "none")
-               ("ul"
-                :margin-top "0")
-               (.copyright
-                :color "rgb(180, 180, 180)"
-                :position "absolute"
-                :bottom "1em"
-                :right "1em"))))
-    (:div :class "container"
-          (:div :class "logo"
-                (:img :src "data:image/png;base64,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"
-                      :id "logo"))
-          (:div :class "primary-links"
-                (:ul
-                 (:li (:button :class "button accent"
-                               :type "submit"
-                               :onclick (ps:ps (nyxt/ps:lisp-eval '(set-url :prefill-current-url-p nil)))
-                               "Start searching!"))
-                 (:li (:a :class "button" :href (nyxt-url 'tutorial)
-                          :title "An introduction to Nyxt core concepts."
-                          "Tutorial"))
-                 (:li (:a :class "button" :href (nyxt-url 'manual)
-                          :title "Full documentation about Nyxt, how it works and how to configure it."
-                          "Manual"))
-                 (:li (:a :class "button" :href (nyxt-url 'changelog)
-                          :title "Information about changes between Nyxt versions."
-                          "Change Log"))
-                 (:li (:a :class "button" :href (nyxt-url 'describe-bindings)
-                          :title "List all bindings for the current buffer."
-                          "List bindings"))
-                 (:li (:a :class "button" :href (nyxt-url 'common-settings)
-                          :title "Switch between Emacs/vi/CUA key bindings, set home page URL, and zoom level."
-                          "⚙ Settings"))))
-          (:div :class "secondary-links"
-                (:ul
-                 (:li (:a :class "button" :href "https://github.com/atlas-engineer/nyxt/"
-                          :title "Your contribution will be much appreciated :)"
-                          "Source Code"))
-                 (:li (:a :class "button" :href "https://www.youtube.com/channel/UC11mZYESUvaKFTaa3zZWHMQ"
-                          :title "A channel with tips and tricks of Nyxt by one of the developers."
-                          "Nyxt Academy"))
-                 (:li (:a :class "button" :href "https://nyxt.atlas.engineer/articles"
-                          :title "Learn more about why's and how's behind Nyxt features."
-                          "Articles"))
-                 (:li (:a :class "button" :href "https://nyxt.atlas.engineer/applications"
-                          :title "Check out the applications built on top of Nyxt!"
-                          "Applications"))
-                 (:li (:a :class "button" :href "https://store.nyxt.atlas.engineer/"
-                          :title "Buy Nyxt merchandise and support the development!"
-                          "Store"))
-                 (:li (:a :class "button" :href "https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org"
-                          :title "Helpful tips for Nyxt hacking and contributing."
-                          "Developer Manual"))
-                 (:li (:a :class "button" :href "https://discourse.atlas.engineer/"
-                          :title "A forum for questions and ideas on Nyxt."
-                          "Forum"))
-                 (:li (:a :class "button" :href "https://kiwiirc.com/nextclient/irc.libera.chat/nyxt"
-                          :title "Chat with developers and other Nyxt users."
-                          "Chat"))))
-     
+    (:style (:raw (theme:themed-css (theme *browser*)
+                    (nav
+                     :text-align "center"
+                     :top 0)
+                    (details
+                     :display "inline"
+                     :padding "1em")
+                    (h1
+                     :font-size "5em"
+                     :margin "0.1em")
+                    (main
+                     :min-height "70%"
+                     :text-align "center"
+                     :display "flex"
+                     :flex-direction "column"
+                     :justify-content "center")
+                    (.centered
+                     :text-align "center")
+                    (.button
+                     :min-width "100px")
+                    (.container
+                     :min-height "100%")
+                    (.copyright
+                     :position "absolute"
+                     :bottom "1em"
+                     :right "1em"))))
+    (:div
+     :class "container"
+     (:nav
+      :class "centered"
+      (:a :class "button" :href (nyxt-url 'tutorial)
+          :title "An introduction to Nyxt core concepts."
+          "Tutorial")
+      (:a :class "button" :href (nyxt-url 'manual)
+          :title "Full documentation about Nyxt, how it works and how to configure it."
+          "Manual")
+      (:a :class "button" :href (nyxt-url 'changelog)
+          :title "Information about changes between Nyxt versions."
+          "Change Log")
+      (:a :class "button" :href (nyxt-url 'describe-bindings)
+          :title "List all bindings for the current buffer."
+          "List bindings")
+      (:a :class "button" :href (nyxt-url 'common-settings)
+          :title "Switch between Emacs/vi/CUA key bindings, set home page URL, and zoom level."
+          "⚙ Settings")
+      (:details
+       (:summary :class "button" "Other useful links")
+       (:a :class "button" :href "https://github.com/atlas-engineer/nyxt/"
+           :title "Your contribution will be much appreciated :)"
+           "Source Code")
+       (:a :class "button" :href "https://www.youtube.com/channel/UC11mZYESUvaKFTaa3zZWHMQ"
+           :title "A channel with tips and tricks of Nyxt by one of the developers."
+           "Nyxt Academy")
+       (:a :class "button" :href "https://nyxt.atlas.engineer/articles"
+           :title "Learn more about why's and how's behind Nyxt features."
+           "Articles")
+       (:a :class "button" :href "https://nyxt.atlas.engineer/applications"
+           :title "Check out the applications built on top of Nyxt!"
+           "Applications")
+       (:a :class "button" :href "https://store.nyxt.atlas.engineer/"
+           :title "Buy Nyxt merchandise and support the development!"
+           "Store")
+       (:a :class "button" :href "https://github.com/atlas-engineer/nyxt/blob/master/documents/README.org"
+           :title "Helpful tips for Nyxt hacking and contributing."
+           "Developer Manual")
+       (:a :class "button" :href "https://discourse.atlas.engineer/"
+           :title "A forum for questions and ideas on Nyxt."
+           "Forum")
+       (:a :class "button" :href "https://kiwiirc.com/nextclient/irc.libera.chat/nyxt"
+           :title "Chat with developers and other Nyxt users."
+           "Chat")))
+     (:main
+      (:h1 "Nyxt")
+      (:i "The Internet on your terms.")
+      (:p (:button :class "button accent"
+                   :type "submit"
+                   :onclick (ps:ps (nyxt/ps:lisp-eval '(set-url :prefill-current-url-p nil)))
+                   "Start searching!")))
      (:p :class "copyright"
          (format nil "Nyxt/~a ~a" +renderer+ +version+)
          (:br)
