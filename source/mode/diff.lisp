@@ -26,7 +26,8 @@
              :background-color "#efcbcf"))
           :documentation "Diff colours for its visual representation.
 They're based on the modus-operandi theme by Protesilaos Stavrou, which follows
-the highest standard on accessibility.")))
+the highest standard on accessibility."))
+  (:toggler-command-p nil))
 
 (export-always 'diff)
 (define-internal-page-command-global diff

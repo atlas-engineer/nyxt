@@ -37,7 +37,8 @@ Accepts the path to the acted-on document and `process-mode' instance.")
            :export nil
            :documentation "The thread that `action' happen in.")
    (thread-terminated-p nil
-                        :documentation "Has the thread been terminated?")))
+                        :documentation "Has the thread been terminated?"))
+  (:toggler-command-p nil))
 
 (defmethod enable ((mode process-mode) &key)
   (setf (path-url mode) (or (path-url mode) (url (current-buffer)))

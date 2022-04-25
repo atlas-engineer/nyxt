@@ -42,7 +42,7 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "C-return" 'run-follow-mode-function
        "f1 b" 'run-prompt-buffer-command
        "f1 m" 'describe-prompt-buffer
-       "C-c C-f" 'toggle-follow         ; TODO: This is the Emacs Helm binding.  Better?
+       "C-c C-f" 'toggle-follow ; TODO: This is the Emacs Helm binding.  Better?
        "C-]" 'toggle-attributes-display ; TODO: This is the Emacs Helm binding.  Better?
        "C-space" 'toggle-mark
        "shift-space" 'toggle-mark-backwards
@@ -121,7 +121,8 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "C-J" 'select-next-source
        "C-K" 'select-previous-source
        "C-f" 'select-next-page
-       "C-b" 'select-previous-page)))))
+       "C-b" 'select-previous-page))))
+  (:toggler-command-p nil))
 
 (defmacro define-command-prompt (name (prompt-buffer &rest arglist) &body body)
   "Like `define-command' but the first argument is special:

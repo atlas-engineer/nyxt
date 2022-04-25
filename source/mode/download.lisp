@@ -135,7 +135,8 @@ appearance in the buffer when they are setf'd."
           :background-color theme:secondary)
          (".progress-bar-fill"
           :height "100%"
-          :background-color theme:tertiary)))))
+          :background-color theme:tertiary))))
+  (:toggler-command-p nil))
 
 
 (define-internal-page-command-global list-downloads ()

@@ -28,7 +28,8 @@
        "C-d" 'cancel-package-operation)
       scheme:vi-normal
       (list
-       "C-d" 'cancel-package-operation)))))
+       "C-d" 'cancel-package-operation))))
+  (:toggler-command-p nil))
 
 (define-command cancel-package-operation ()
   "Terminate the package manager process in the current buffer."

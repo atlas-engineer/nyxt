@@ -85,7 +85,8 @@ INPUT is a string and RESULTS is a list of Lisp values.")
     :type (or null integer)
     :documentation "Current element of history being edited in the REPL prompt.
 
-Scroll history with `evaluation-history-previous' and `evaluation-history-next'.")))
+Scroll history with `evaluation-history-previous' and `evaluation-history-next'."))
+  (:toggler-command-p nil))
 
 (defun package-short-name (package)
   (first (sort (append (package-nicknames package)
