@@ -849,8 +849,6 @@ The version number is stored in the clipboard."
                 ("0%" :background-position "0% 50%")
                 ("50%" :background-position "100% 50%")
                 ("100%" :background-position "0% 50%"))
-               ("#secondary-links"
-                :opacity "40%")
                (.copyright
                 :color theme:tertiary
                 :position "absolute"
@@ -862,10 +860,10 @@ The version number is stored in the clipboard."
                       :id "logo"))
           (:div :id "primary-links"
                 (:ul
-                 (:li (:a :class "button accent"
-                          :href "#"
-                          :onclick (ps:ps (nyxt/ps:lisp-eval '(set-url :prefill-current-url-p nil)))
-                          "Start searching!"))
+                 (:li (:button :class "button accent"
+                               :type "submit"
+                               :onclick (ps:ps (nyxt/ps:lisp-eval '(set-url :prefill-current-url-p nil)))
+                               "Start searching!"))
                  (:li (:a :class "button" :href (nyxt-url 'tutorial)
                           :title "An introduction to Nyxt core concepts."
                           "Tutorial"))
