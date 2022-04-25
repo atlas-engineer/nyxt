@@ -346,3 +346,34 @@ See `on'."
                                    (hooks:remove-hook ,hook (quote ,handler-name))
                                    ,@body)
                              :name (quote ,handler-name))))))
+
+(defun function-lambda-string (fun)
+  "Like `function-lambda-expression' for the first value, but return a string.
+On failure, fall back to other means of finding the source.
+Return the lambda s-expression as a second value, if possible."
+  (alex:if-let ((expression (function-lambda-expression fun)))
+    (values (let ((*print-case* :downcase)
+                  (*print-pretty* t))
+              (write-to-string expression))
+            expression)
+    (sera:and-let* ((definition (rest (swank:find-definition-for-thing fun)))
+                    (*package* (symbol-package (swank-backend:function-name fun)))
+                    (file-content (alexandria:read-file-into-string (first (alexandria:assoc-value definition :file))))
+                    (start-position (first (alexandria:assoc-value definition :position))))
+      (restart-case
+          (handler-bind ((reader-error (lambda (c)
+                                         (declare (ignore c))
+                                         (invoke-restart 'use-value
+                                                         (str:trim-right
+                                                          (subseq file-content
+                                                                  (1- start-position)
+                                                                  (search (uiop:strcat +newline+ "(") file-content :start2 start-position)))))))
+            (let ((*read-eval* nil))
+              (let ((expression (read-from-string file-content t nil
+                                                  :start (1- start-position))))
+                (values (let ((*print-case* :downcase)
+                              (*print-pretty* t))
+                          (write-to-string expression))
+                        expression))))
+        (use-value (arg)
+          arg)))))
