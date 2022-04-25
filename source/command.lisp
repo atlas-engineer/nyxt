@@ -386,11 +386,6 @@ With MODE-SYMBOLS and GLOBAL-P, include global commands."
        *command-list*)
       *command-list*))
 
-(-> function-command (function) (or null command))
-(defun function-command (function)
-  "Return the command associated to FUNCTION, if any."
-  (find-if (sera:eqs function) (list-commands) :key #'fn))
-
 (defun run (command &rest args)
   "Run COMMAND over ARGS and return its result.
 This is blocking, see `run-async' for an asynchronous way to run commands."
