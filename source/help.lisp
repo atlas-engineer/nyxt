@@ -830,7 +830,7 @@ The version number is stored in the clipboard."
                ("#logo"
                 :width "256px"
                 :height "256px"
-                :border (format nil  "2px solid ~a" theme:primary)
+                :border "2px solid white"
                 :border-radius "4px")
                (.container
                 :display "grid"
