@@ -358,13 +358,6 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
         append (ignore-errors
                 (closer-mop:generic-function-methods (symbol-function sym)))))
 
-(defmethod mode-toggler-p ((command command))
-  "Return non-nil if COMMAND is a mode toggler.
-A mode toggler is a command of the same name as its associated mode."
-  (ignore-errors
-   (closer-mop:subclassp (find-class (name command) nil)
-                         (find-class 'mode))))
-
 (defun list-commands (&key global-p mode-symbols)
   "List commands.
 Commands are instances of the `command' class.
