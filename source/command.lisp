@@ -72,27 +72,28 @@ We need a `command' class for multiple reasons:
             (symbol-package command-name))))
 
 (defmethod initialize-instance :after ((command command) &key)
-  (setf (fn command)
-        (lambda (&rest args)
-          (when (deprecated-p command)
-            ;; TODO: Should `define-deprecated-command' report the version
-            ;; number of deprecation?  Maybe OK to just remove all deprecated
-            ;; commands on major releases.
-            (echo-warning "~a is deprecated." (name command)))
-          (handler-case
-              (progn
-                (hooks:run-hook (before-hook command))
-                ;; (log:debug "Calling command ~a." ',name)
-                ;; TODO: How can we print the arglist as well?
-                ;; (log:debug "Calling command (~a ~a)." ',name (list ,@arglist))
-                (prog1 (apply (fn command)
-                              (or args
-                                  ;; The following is not defined yet.
-                                  (mapcar 'prompt-argument
-                                          (funcall 'parse-function-lambda-list-types (fn command)))))
-                  (hooks:run-hook (after-hook command))))
-            (nyxt-condition (c)
-              (log:warn "~a" c)))))
+  (let ((original-lambda (fn command)))
+    (setf (fn command)
+          (lambda (&rest args)          ; TODO: Declare arguments properly.
+            (when (deprecated-p command)
+              ;; TODO: Should `define-deprecated-command' report the version
+              ;; number of deprecation?  Maybe OK to just remove all deprecated
+              ;; commands on major releases.
+              (echo-warning "~a is deprecated." (name command)))
+            (handler-case
+                (progn
+                  (hooks:run-hook (before-hook command))
+                  ;; (log:debug "Calling command ~a." ',name)
+                  ;; TODO: How can we print the arglist as well?
+                  ;; (log:debug "Calling command (~a ~a)." ',name (list ,@arglist))
+                  (prog1 (apply original-lambda
+                                (or args
+                                    ;; The following is not defined yet.
+                                    (mapcar 'prompt-argument
+                                            (funcall 'parse-function-lambda-list-types original-lambda))))
+                    (hooks:run-hook (after-hook command))))
+              (nyxt-condition (c)
+                (log:warn "~a" c))))))
   (unless (eq :anonymous (visibility command))
     (setf (fdefinition (name command)) (fn command))
     (setf (documentation (name command) 'function) (docstring command))
@@ -110,9 +111,7 @@ We need a `command' class for multiple reasons:
       (push command *command-list*)))
   ;; (funcall <COMMAND ...>) should work:
   (closer-mop:set-funcallable-instance-function
-   command
-   (lambda (&rest args)
-     (apply (fn command) args))))
+   command (fn command)))
 
 (defmethod print-object ((command command) stream)
   (print-unreadable-object (command stream :type t :identity t)
