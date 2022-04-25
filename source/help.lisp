@@ -273,10 +273,9 @@ For generic functions, describe all the methods."
                    (:p (write-to-string (closer-mop:method-lambda-list method)))
                    (alex:when-let* ((definition (swank:find-definition-for-thing method))
                                     (not-error-p (null (getf definition :error)))
-                                    (file (rest (getf definition :location)))
-                                    (location (alex:assoc-value (rest definition) :snippet)))
+                                    (file (rest (getf definition :location))))
                      (:h2 (format nil "Source ~a" file))
-                     (:pre (first location))))))
+                     (:pre (function-lambda-string method))))))
           (if (typep (symbol-function input) 'generic-function)
               (spinneret:with-html-string
                 (:style (style buffer))
@@ -299,10 +298,9 @@ For generic functions, describe all the methods."
                   (:p (format nil "~s" (sb-introspect:function-type input))))
                 (alex:when-let* ((definition (swank:find-definition-for-thing (symbol-function input)))
                                  (not-error-p (null (getf definition :error)))
-                                 (file (rest (getf definition :location)))
-                                 (location (alex:assoc-value (rest definition) :snippet)))
+                                 (file (rest (getf definition :location))))
                   (:h2 (format nil "Source ~a" file))
-                  (:pre (first location)))))))
+                  (:pre (function-lambda-string (symbol-function input))))))))
       (prompt
        :prompt "Describe function"
        :sources (make-instance 'function-source))))
@@ -352,7 +350,7 @@ A command is a special kind of function that can be called with
                                         (format nil " (~a)" source-file)
                                         "")))
       (:pre (:code (let ((*print-case* :downcase))
-                     (write-to-string (sexp command))))))))
+                     (write-to-string (function-lambda-expression (fn command)))))))))
 
 (define-internal-page-command-global describe-slot
     (&key class name universal)
@@ -1051,5 +1049,4 @@ System information is also saved into the clipboard."
                             (:details
                              (:summary (format nil "~(~a~)" (symbol-name (name command))))
                              (:p (:pre (documentation (fn command) t)))
-                             (:pre :class "nyxt-source" (:code (let ((*print-case* :downcase))
-                                                                 (write-to-string (sexp command)))))))))))
+                             (:pre :class "nyxt-source" (:code (function-lambda-string command)))))))))

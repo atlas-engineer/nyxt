@@ -24,11 +24,6 @@ This is useful to build commands out of anonymous functions.")
    (after-hook (make-instance 'hooks:hook-void)
                :type hooks:hook-void
                :documentation "Hook run after executing the command.")
-   (sexp nil ; TODO: Set with `function-lambda-expression' or use `swank' instead?
-         :type t
-         :documentation "S-expression of the definition of top-level commands or
-commands wrapping over lambdas.
-This is nil for local commands that wrap over named functions.")
    (visibility :mode
                :type (member :global :mode :anonymous)
                :documentation "
@@ -181,16 +176,13 @@ instantiation, use `make-instance command' instead."
                          (alex:mappend #'first keyword-arguments)
                          (when rest
                            (list rest)))))))
-    (alex:with-gensyms (fn sexp)
-      `(let ((,fn nil)
-             (,sexp nil))
+    (alex:with-gensyms (fn)
+      `(let ((,fn nil))
          (cond
            (',body
-            (setf ,fn (lambda (,@arglist) ,@body)
-                  ,sexp '(lambda (,@arglist) ,@body)))
+            (setf ,fn (lambda (,@arglist) ,@body)))
            ((and ',arglist (typep ',name 'function-symbol))
-            (setf ,fn (lambda (,@arglist) (funcall ',name ,@args))
-                  ,sexp '(lambda (,@arglist) (funcall ,name ,@args))))
+            (setf ,fn (lambda (,@arglist) (funcall ',name ,@args))))
            ((and (null ',arglist) (typep ',name 'function-symbol))
             (setf ,fn (symbol-function ',name)))
            (t (error "Either NAME must be a function symbol, or ARGLIST and BODY must be set properly.")))
@@ -198,8 +190,7 @@ instantiation, use `make-instance command' instead."
                         :name ',name
                         :visibility :anonymous
                         :docstring ,documentation
-                        :fn ,fn
-                        :sexp ,sexp)))))
+                        :fn ,fn)))))
 
 (export-always 'make-mapped-command)
 (defmacro make-mapped-command (function-symbol)
