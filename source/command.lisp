@@ -87,10 +87,19 @@ We need a `command' class for multiple reasons:
                                                (values required optional (or rest rest-arg) keywords aok? aux key?))))))))))
              (multiple-value-match (alex:parse-ordinary-lambda-list arglist)
                ((required optional _ keywords)
+                ;; We use `compile' instead of
+                ;;
+                ;;   (lambda (&rest args) ... (apply original-lambda args))
+                ;;
+                ;; so that we can generate the argument list, thus letting the
+                ;; Lisp implementation derive the proper function type from the
+                ;; arguments.
                 (compile
                  (if (eq :anonymous (visibility command)) nil (name command))
                  `(lambda ,arglist
-                    (declare (ignorable ,@(mapcar (alex:compose #'second #'first) keywords)))
+                    (declare (ignorable ,@(mapcar (alex:compose #'second #'first) keywords)
+                                        ,@(delete nil (mapcar #'third keywords))
+                                        ,@(delete nil (mapcar #'third optional))))
                     ,(when (deprecated-p command)
                        ;; TODO: Should `define-deprecated-command' report the version
                        ;; number of deprecation?  Maybe OK to just remove all deprecated
