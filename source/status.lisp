@@ -3,8 +3,13 @@
 
 (in-package :nyxt)
 
+(defmethod mode-status ((mode mode))
+  (princ-to-string mode))
+
 (export-always 'format-status-modes)
 (defun format-status-modes (buffer window)
+  "Format the modes for the status area.
+This leverages `mode-status' which can be specialized for individual modes."
   (spinneret:with-html-string
     (when (nosave-buffer-p buffer) (:span "⚠ nosave"))
     (:button :type "button"
@@ -13,7 +18,7 @@
     (loop for mode in (sera:filter #'visible-in-status-p (modes buffer))
           collect (let* ((formatted-mode (if (glyph-mode-presentation-p (status-buffer window))
                                              (glyph mode)
-                                             (format-mode mode))))
+                                             (mode-status mode))))
                     (if (html-string-p formatted-mode)
                         (:raw formatted-mode)
                         (:button :class "button"
@@ -23,7 +28,7 @@
                                  formatted-mode))))))
 
 (defun list-modes (buffer)
-  (format nil "~{~a~^ ~}" (mapcar #'format-mode (modes buffer))))
+  (format nil "~{~a~^ ~}" (mapcar #'princ-to-string (modes buffer))))
 
 (export-always 'format-status-buttons)
 (defun format-status-buttons ()

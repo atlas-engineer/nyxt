@@ -284,8 +284,8 @@ See also `show-prompt-buffer'."
            (setf (ps:chain vi-indicator class-name) (ps:lisp vi-class))))
        (setf (ps:chain document (get-element-by-id "prompt-modes") |innerHTML|)
              (ps:lisp
-              (format nil "~{~a~^ ~}" (delete "prompt-buffer"
-                                              (mapcar #'format-mode
+              (format nil "~{~a~^ ~}" (delete "prompt-buffer-mode"
+                                              (mapcar #'princ-to-string
                                                       (modes prompt-buffer))
                                               :test #'string=))))))))
 

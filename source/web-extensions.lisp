@@ -297,7 +297,9 @@ slash. WebExtensions require this :/"
   (uiop:merge-pathnames* (string-left-trim "/" (namestring path))
                          (extension-directory extension)))
 
-(defmethod nyxt::format-mode ((extension extension))
+;; TODO: This is not the right point where to hook into the status bar, since it
+;; won't work if glyphs are on.
+(defmethod nyxt::mode-status ((extension extension))
   (spinneret:with-html-string
     (:button :class "button"
              :onclick (ps:ps (nyxt/ps:lisp-eval `(toggle-extension-popup ',(mode-name extension))))
