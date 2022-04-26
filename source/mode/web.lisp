@@ -747,3 +747,5 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
                      (ffi-buffer-get-document buffer))))
       (when (background-buffer-p buffer)
         (ffi-buffer-delete buffer)))))
+
+(pushnew 'web-mode nyxt::%default-modes)

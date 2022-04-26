@@ -463,7 +463,7 @@ of BUFFER."
   (print-unreadable-object (buffer stream :type t :identity t)
     (format stream "~a" (id buffer))))
 
-(defvar %default-modes '(nyxt/web-mode:web-mode base-mode)
+(defvar %default-modes '(base-mode)
   "The default modes for unspecialized buffers.
 This is useful when there is no current buffer.")
 
