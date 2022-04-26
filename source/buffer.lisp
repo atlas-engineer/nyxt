@@ -748,7 +748,7 @@ Delete it with `ffi-buffer-delete'"))
   (:metaclass user-class))
 
 (define-command update-document-model (&key (buffer (current-buffer)))
-  "Update BUFFER's `nyxt/dom' with the page source augmented with Nyxt identifiers."
+  "Update BUFFER's `document-model' with the page source augmented with Nyxt identifiers."
   (ffi-buffer-evaluate-javascript
    buffer
    (ps:ps
@@ -1588,7 +1588,7 @@ HISTORY may be NIL for buffers without history."
          (buffers (buffers-with-history history)))
     (flet ((existing-creator-id (owner)
              "If owner's creator does not exist anymore
-(i.e. parent has been deleted), return NIL so has mimick top-level owners."
+(that is, parent has been deleted), return NIL so has mimick top-level owners."
              (if (htree:owner history (htree:creator-id owner))
                  (htree:creator-id owner)
                  nil)))
@@ -1651,7 +1651,7 @@ When there is no next buffer, go to the first one so as to cycle."
 
 (define-command switch-buffer-last ()
   "Switch to the last visited buffer.
-I.e., the one with the most recent access time."
+That is, the one with the most recent access time."
   (let* ((buffers (sort-by-time (buffer-list))))
     (when (second buffers)
       (set-current-buffer (second buffers)))))

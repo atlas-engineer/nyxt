@@ -381,7 +381,7 @@ OBJECTS can be a list of packages, a generation, etc."
     buffer))
 
 (define-command-global switch-os-generation ()
-  "Switch generation of selected profiles."
+  "Switch generation of selected profile."
   (assert-package-manager)
   (let* ((profile (first
                    (prompt
@@ -397,7 +397,7 @@ OBJECTS can be a list of packages, a generation, etc."
                         profile generation)))
 
 (define-command-global delete-os-generations ()
-  "Delete generations of selected profiles."
+  "Delete generations of selected profile."
   (assert-package-manager)
   (let* ((profile (first
                    (prompt
