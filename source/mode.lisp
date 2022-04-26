@@ -272,13 +272,9 @@ For production code, see `find-submode' instead."
     (find-submode (resolve-symbol mode-designator :mode)
                   buffer)))
 
-(defun all-modes ()
-  "Return the list of all namespaced mode symbols."
-  (mopu:subclasses 'mode))
-
 (defun all-mode-symbols ()
   "Return the list of mode symbols."
-  (mapcar #'class-name (all-modes)))
+  (mapcar #'class-name (mopu:subclasses 'mode)))
 
 (defun make-mode-suggestion (mode &optional source input)
   "Return a `suggestion' wrapping around ATTRIBUTE. "
@@ -321,7 +317,7 @@ For production code, see `find-submode' instead."
                                            (mapcar (lambda (b)
                                                      (mapcar #'sera:class-name-of (modes b)))
                                                    (uiop:ensure-list (buffers source))))))
-                             (set-difference (mapcar #'class-name (all-modes)) common-modes)))))
+                             (set-difference (all-mode-symbols) common-modes)))))
   (:export-class-name-p t)
   (:metaclass user-class))
 
