@@ -209,12 +209,13 @@ A sub-package has a name that starts with that of PACKAGE followed by a '/' sepa
 
 ;; TODO: Should allow search all packages, e.g. when PACKAGES is NIL.
 (-> resolve-symbol ((or keyword string) (member :function :variable :class :mode :slot :command) &optional (cons *)) symbol)
+(export-always 'resolve-symbol)
 (defun resolve-symbol (designator type &optional (packages (list :nyxt :nyxt-user)))
   "Find the symbol (of TYPE) designated by DESIGNATOR in PACKAGE.
 PACKAGES should be a list of package designators."
   (sera:and-let* ((designator (string designator))
                   (subpackages (append
-                                packages
+                                (mapcar #'find-package packages)
                                 (sera:filter
                                  (apply #'alex:disjoin
                                         (mapcar (lambda (pkg)
@@ -222,11 +223,11 @@ PACKAGES should be a list of package designators."
                                                 packages))
                                  (list-all-packages))))
                   (symbols (case type
-                             (:function (package-functions (list subpackages)))
-                             (:variable (package-variables (list subpackages)))
-                             (:class (package-classes (list subpackages)))
-                             (:mode (package-modes (list subpackages)))
-                             (:slot (mapcar #'name (package-slots (list subpackages))))
+                             (:function (package-functions subpackages))
+                             (:variable (package-variables subpackages))
+                             (:class (package-classes subpackages))
+                             (:mode (package-modes subpackages))
+                             (:slot (mapcar #'name (package-slots subpackages)))
                              (:command (mapcar #'name (list-commands))))))
     (let ((results (delete designator symbols :key #'symbol-name :test #'string/=)))
       (unless (sera:single results)
