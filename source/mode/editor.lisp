@@ -34,7 +34,7 @@ get/set-content (which is necessary for operation)."
     (ffi-buffer-evaluate-javascript-async (buffer editor) insert-content)))
 
 (defmethod editor ((editor-buffer editor-buffer))
-  (find-submode editor-buffer 'editor-mode))
+  (find-submode 'editor-mode editor-buffer))
 
 ;; IMPORTANT: Implement this method specializing on your class extending editor-mode.
 (defgeneric get-content (editor)

@@ -156,7 +156,7 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"))
 
 (define-command toggle-mark ()
   "Toggle the mark."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (if (collapsed-p)
         (progn
           (setf (mark-set mode) (not (mark-set mode)))
@@ -169,7 +169,7 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"))
 
 (define-command clear-selection ()
   "Clear the selection and unset the mark."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (unless (collapsed-p) (collapse-to-focus))
     (setf (mark-set mode) nil)
     (echo "Mark deactivated")))
@@ -185,98 +185,98 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"))
 
 (define-command forward-char ()
   "Move caret forward by a character."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :forward
                 :scale :character)))
 
 (define-command backward-char ()
   "Move caret backward by a character."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :backward
                 :scale :character)))
 
 (define-command forward-word ()
   "Move caret forward by a word."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :forward
                 :scale :word)))
 
 (define-command backward-word ()
   "Move caret backward by a word."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :backward
                 :scale :word)))
 
 (define-command forward-line ()
   "Move caret forward by a line."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :forward
                 :scale :line)))
 
 (define-command backward-line ()
   "Move caret backward by a line."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :backward
                 :scale :line)))
 
 (define-command beginning-line ()
   "Move caret to the beginning of the line."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :backward
                 :scale :lineboundary)))
 
 (define-command end-line ()
   "Move caret to the end of the line."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :forward
                 :scale :lineboundary)))
 
 (define-command forward-sentence ()
   "Move caret forward to next end of sentence."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :forward
                 :scale :sentence)))
 
 (define-command backward-sentence ()
   "Move caret backward to start of sentence."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :backward
                 :scale :sentence)))
 
 (define-command forward-paragraph ()
   "Move caret forward by a paragraph."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :forward
                 :scale :paragraph)))
 
 (define-command backward-paragraph ()
   "Move caret backward by a paragraph."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :backward
                 :scale :paragraph)))
 
 (define-command forward-document ()
   "Move caret forward to the end of the document."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :forward
                 :scale :documentboundary)))
 
 (define-command backward-document ()
   "Move caret backward to the beginning of the document."
-  (let ((mode (find-submode (current-buffer) 'visual-mode)))
+  (let ((mode (find-submode 'visual-mode)))
     (caret-move :action (caret-action mode)
                 :direction :backward
                 :scale :documentboundary)))
@@ -288,7 +288,7 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"))
       (alex:parse-body body :documentation t)
         `(define-command ,name ()
            ,@decls ,@(sera:unsplice doc)
-           (let ((,mode (find-submode (current-buffer) 'visual-mode)))
+           (let ((,mode (find-submode 'visual-mode)))
              (setf (mark-set ,mode) t)
              ,@body)))))
 

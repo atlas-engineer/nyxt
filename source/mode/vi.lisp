@@ -95,7 +95,7 @@ vi-normal-mode.")
 
 (defmethod enable ((mode vi-insert-mode) &key)
   (with-accessors ((buffer buffer)) mode
-    (let ((vi-normal (find-submode buffer 'vi-normal-mode)))
+    (let ((vi-normal (find-submode 'vi-normal-mode buffer)))
       (setf (previous-keymap-scheme-name mode)
             (if vi-normal
                 (previous-keymap-scheme-name vi-normal)
@@ -123,10 +123,10 @@ See also `vi-normal-mode' and `vi-insert-mode'."
   (let ((response (nyxt/web-mode:%clicked-in-input? buffer)))
     (cond
       ((and (nyxt/web-mode:input-tag-p response)
-            (find-submode buffer 'vi-normal-mode))
+            (find-submode 'vi-normal-mode buffer))
        (enable-modes '(vi-insert-mode) buffer))
       ((and (not (nyxt/web-mode:input-tag-p response))
-            (find-submode buffer 'vi-insert-mode))
+            (find-submode 'nyxt/vi-mode:vi-insert-mode buffer))
        (enable-modes '(vi-normal-mode) buffer)))))
 
 (defmethod on-signal-load-finished ((mode vi-insert-mode) url)

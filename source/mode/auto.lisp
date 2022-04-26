@@ -156,22 +156,6 @@ URL in the buffer slot when we need to load a new page, while, for
 non-new-page requests, buffer URL is not altered."
   (quri:uri= (url request-data) (url (buffer request-data))))
 
-(-> auto-mode-handler (request-data) request-data)
-(defun auto-mode-handler (request-data)
-  (let* ((auto-mode (find-submode (buffer request-data) 'auto-mode))
-         (rule (matching-auto-mode-rule (url request-data) (buffer request-data)))
-         (previous-url (previous-url auto-mode))
-         (previous-rule (when previous-url (matching-auto-mode-rule previous-url (buffer request-data)))))
-    (when (and rule previous-url (not previous-rule))
-      (save-last-active-modes auto-mode previous-url))
-    (cond
-      ((and (not rule) (new-page-request-p request-data))
-       (reapply-last-active-modes auto-mode))
-      ((and rule (not (eq rule previous-rule)))
-       (enable-matching-modes (url request-data) (buffer request-data))))
-    (setf (previous-url auto-mode) (url request-data)))
-  request-data)
-
 (-> url-infer-match (string) list)
 (defun url-infer-match (url)
   "Infer the best `test' for `auto-mode-rule', based on the form of URL.
@@ -256,6 +240,22 @@ rule-less and ruled pages.  Example browse sequence:
 In the above, when browsing from nyxt.atlas.engineer to en.wikipedia.org, the
 modes that were in place before the nyxt.atlas.engineer rule was applied are
 restored.")))
+
+(-> auto-mode-handler (request-data) request-data)
+(defun auto-mode-handler (request-data)
+  (let* ((auto-mode (find-submode 'auto-mode (buffer request-data)))
+         (rule (matching-auto-mode-rule (url request-data) (buffer request-data)))
+         (previous-url (previous-url auto-mode))
+         (previous-rule (when previous-url (matching-auto-mode-rule previous-url (buffer request-data)))))
+    (when (and rule previous-url (not previous-rule))
+      (save-last-active-modes auto-mode previous-url))
+    (cond
+      ((and (not rule) (new-page-request-p request-data))
+       (reapply-last-active-modes auto-mode))
+      ((and rule (not (eq rule previous-rule)))
+       (enable-matching-modes (url request-data) (buffer request-data))))
+    (setf (previous-url auto-mode) (url request-data)))
+  request-data)
 
 (defmethod enable ((mode auto-mode) &key)
   (unless (last-active-modes mode)

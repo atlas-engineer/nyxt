@@ -48,12 +48,12 @@ This leverages `mode-status' which can be specialized for individual modes."
 
 (defun format-status-vi-mode (&optional (buffer (current-buffer)))
   (spinneret:with-html-string
-    (cond ((find-submode buffer 'vi-normal-mode)
+    (cond ((find-submode 'nyxt/vi-mode:vi-normal-mode buffer)
            (:div
             (:button :type "button"
                      :title "vi-normal-mode"
                      :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/vi-mode:vi-insert-mode))) "N")))
-          ((find-submode buffer 'vi-insert-mode)
+          ((find-submode 'nyxt/vi-mode:vi-insert-mode buffer)
            (:div
             (:button :type "button"
                      :title "vi-insert-mode"
@@ -90,9 +90,9 @@ This leverages `mode-status' which can be specialized for individual modes."
 
 (defun format-status (window)
   (let* ((buffer (current-buffer window))
-         (vi-class (cond ((find-submode buffer 'vi-normal-mode)
+         (vi-class (cond ((find-submode 'nyxt/vi-mode:vi-normal-mode buffer)
                           "vi-normal-mode")
-                         ((find-submode buffer 'vi-insert-mode)
+                         ((find-submode 'nyxt/vi-mode:vi-insert-mode buffer)
                           "vi-insert-mode"))))
     (spinneret:with-html-string
       (:div :id (if vi-class "container-vi" "container")

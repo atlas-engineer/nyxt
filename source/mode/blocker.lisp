@@ -182,7 +182,7 @@ Return nil if MODE's hostlist cannot be parsed."
 (defun request-resource-block (request-data)
   "Block resource queries from blocklisted hosts.
 This is an acceptable handler for `request-resource-hook'."
-  (let ((mode (find-submode (buffer request-data) 'blocker-mode)))
+  (let ((mode (find-submode 'blocker-mode (buffer request-data))))
     (if (and mode
              (blocklisted-host-p
               mode

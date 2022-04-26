@@ -36,5 +36,5 @@ See the mode `keymap-scheme' for special bindings."
   (if (nyxt::active-prompt-buffers (current-window))
       (values keymaps buffer)
       (values (list (override-map buffer)
-                    (keymap (find-submode buffer 'passthrough-mode)))
+                    (keymap (find-submode 'passthrough-mode buffer)))
               buffer)))

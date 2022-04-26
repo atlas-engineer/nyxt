@@ -34,7 +34,7 @@ To make this change permanent, you can customize
 
 \(setf nyxt/certificate-exception-mode:*default-certificate-exceptions*
       '(\"nyxt.atlas.engineer\" \"example.org\"))"
-  (if (find-submode buffer 'certificate-exception-mode)
+  (if (find-submode 'certificate-exception-mode buffer)
       (let ((input (prompt1
                      :prompt "URL host to add to exception list:"
                      :input (render-url (url buffer))

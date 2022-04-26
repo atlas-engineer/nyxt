@@ -327,7 +327,7 @@ This saves the history to disk when BODY exits."
   "Go to parent URL in history."
   (let ((new-node
           (with-history-access (history buffer)
-            (if (conservative-history-movement-p (find-submode 'nyxt/web-mode:web-mode buffer))
+            (if (conservative-history-movement-p (find-submode 'web-mode buffer))
                 (htree:backward-owned-parents history (id buffer))
                 (htree:backward history (id buffer)))
             (htree:owner-node history (id buffer)))))
@@ -494,7 +494,7 @@ Otherwise go forward to the only child."
                  'nyxt/history-tree-mode:history-tree-mode)
   "Open a new buffer displaying the whole history tree of a buffer."
   (with-history (history (nyxt::buffers-get id))
-    (let ((mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
+    (let ((mode (find-submode 'nyxt/history-tree-mode:history-tree-mode output-buffer))
           (tree (spinneret:with-html-string
                   (:ul (:raw (htree:map-owned-tree
                               #'(lambda (node)
@@ -522,7 +522,7 @@ Otherwise go forward to the only child."
                    'nyxt/history-tree-mode:history-tree-mode)
   "Open a new buffer displaying the whole history branch the current buffer is on."
   (with-history (history (nyxt::buffers-get current-buffer-id))
-    (let ((mode (find-submode output-buffer 'nyxt/history-tree-mode:history-tree-mode))
+    (let ((mode (find-submode 'nyxt/history-tree-mode:history-tree-mode output-buffer))
           (tree (spinneret:with-html-string
                   (:ul (:raw (htree:map-tree
                               #'(lambda (node)
@@ -553,7 +553,7 @@ Otherwise go forward to the only child."
   "Print the user history as a list."
   (spinneret:with-html-string
     (:style (style buffer))
-    (:style (style (find-submode buffer 'nyxt/list-history-mode:list-history-mode)))
+    (:style (style (find-submode 'nyxt/list-history-mode:list-history-mode buffer)))
     (:h1 "History")
     (:ul (:raw (nyxt::history-html-list :limit limit)))))
 
