@@ -326,8 +326,8 @@ For production code, see `find-submode' instead."
 
 (define-command enable-modes (&optional modes buffers args)
   "Enable MODES for BUFFERS.
-MODES should be a list (possibly namespace-less) symbols.
-BUFFERS is automatically coerced into a list.
+MODES should be a list of mode symbols.
+BUFFERS and MODES are automatically coerced into a list.
 ARGS are passed to the mode `enable' method."
   ;; TODO: Report if mode is not found.
   (let* ((buffers (if buffers
@@ -353,8 +353,8 @@ ARGS are passed to the mode `enable' method."
 
 (define-command disable-modes (&optional modes buffers)
   "Disable MODES for BUFFERS.
-MODES should be a list (possibly namespace-less) symbols.
-BUFFERS is automatically coerced into a list."
+MODES should be a list of mode symbols.
+BUFFERS and MODES are automatically coerced into a list."
   ;; TODO: Report if mode is not found.
   (let* ((buffers (if buffers
                       (uiop:ensure-list buffers)
