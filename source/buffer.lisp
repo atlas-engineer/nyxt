@@ -522,9 +522,6 @@ inherited from the superclasses."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
-(defmethod default-modes append ((buffer web-buffer))
-  '(certificate-exception-mode))
-
 (define-class nosave-buffer (web-buffer)
   ((profile (make-instance 'nosave-profile)))
   (:export-class-name-p t)
@@ -532,9 +529,6 @@ inherited from the superclasses."))
   (:export-predicate-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
-
-(defmethod default-modes append ((buffer nosave-buffer))
-  '(certificate-exception-mode))
 
 (define-class internal-buffer (buffer)
   ()
@@ -598,12 +592,6 @@ inherited from the superclasses."))
   (:documentation "Each editor buffer matches a file. Each editor buffer
   contains an editor mode instance.")
   (:metaclass user-class))
-
-(defmethod default-modes append ((buffer editor-buffer))
-  '(plaintext-editor-mode))
-(defmethod default-modes :around ((buffer editor-buffer))
-  ;; REVIEW: Really remove web-mode from editor-buffer?
-  (remove 'web-mode (call-next-method)))
 
 (define-class dummy-buffer (internal-buffer)
   ()
