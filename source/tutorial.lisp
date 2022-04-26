@@ -363,7 +363,7 @@ creatively tailor-made by users to automate their own use of Nyxt.")
 classes, slots, variables, functions and bindings can be inspected for
 definition and documentation.")
    (:ul
-    (list-command-information '(help tutorial describe-key describe-bindings
+    (list-command-information '(tutorial describe-key describe-bindings
                                 describe-command describe-function
                                 describe-variable describe-class
                                 describe-slot describe-any)))
