@@ -21,7 +21,7 @@ The `model' is usually the object that the current page was generated from. It's
 mostly there for introspection purposes.
 
 There is a number of helper functions to extract semantic data from ActivityPub
-objects: `name*', `author*', `published*'.
+objects: `name*', `url*', `author*', `published*'.
 
 Important methods to be avare of:
 - `object->html' method allows you to override the way ActivityPub entities are
@@ -366,39 +366,39 @@ JSON-NAMEs as strings, where
   (:method ((object string)) (not (uiop:emptyp object)))
   (:method ((object symbol)) (not (member object '(:null nil)))))
 
-;; FIXME: This should not exists! Strong typing should be strong!
-(defmethod name* ((object t)) "")
-
-(defmethod name* :around ((object t))
-  (first (uiop:ensure-list (call-next-method))))
-
-(defmethod name* ((object sequence))
-  (lpara:pmap (serapeum:class-name-of object) #'name* object))
+(defgeneric name* (object)
+  ;; FIXME: This should not exists! Strong typing should be strong!
+  (:mehtod ((object t)) "")
+  (:method :around ((object t))
+    (first (uiop:ensure-list (call-next-method))))
+  (:method ((object sequence))
+    (lpara:pmap (serapeum:class-name-of object) #'name* object))
+  (:documentation "Return a human-readable name for the object.
+Try to guess it from all the data available."))
 
 (defmethod name* ((object actor))
   (cond
-    ((json-true-p (slot-value object 'name))
-     (slot-value object 'name))
-    ((json-true-p (slot-value object 'preferred-username))
-     (slot-value object 'preferred-username))
+    ((json-true-p (name object)) (name object))
+    ((json-true-p (preferred-username object)) (preferred-username object))
     (t (slot-value object 'id))))
 
 (defmethod name* ((object object))
-  (if (json-true-p (slot-value object 'name))
-      (slot-value object 'name)
-      (slot-value object 'id)))
+  (if (json-true-p (name object))
+      (name object)
+      (id object)))
 
 (defmethod name* ((object link))
   (cond
-    ((json-true-p (slot-value object 'name)) (name object))
-    ((json-true-p (slot-value object 'href)) (quri:render-uri (slot-value object 'href)))
+    ((json-true-p (name object)) (name object))
+    ((json-true-p (href object)) (quri:render-uri (href object)))
     (t (slot-value object 'id))))
 
-(defmethod author* :around ((object t))
-  (first (uiop:ensure-list (call-next-method))))
-
-(defmethod author* ((object sequence))
-  (lpara:pmap (serapeum:class-name-of object) #'author* object))
+(defgeneric author* (object)
+  (:method :around ((object t))
+    (first (uiop:ensure-list (call-next-method))))
+  (:method ((object sequence))
+    (lpara:pmap (serapeum:class-name-of object) #'author* object))
+  (:documentation "Return the supposed original author of the OBJECT."))
 
 (defmethod author* ((object object))
   (or (attributed-to object)
@@ -409,23 +409,21 @@ JSON-NAMEs as strings, where
       (and (object object)
            (author* (object object)))))
 
-(defmethod url* :around ((object t))
-  (let* ((urls (uiop:ensure-list (call-next-method)))
-         (suitable-url (or (find #'quri:uri-https-p urls)
-                           (find #'quri:uri-http-p urls)
-                           (first urls))))
-    (when (json-true-p suitable-url)
-      (quri:render-uri (quri:uri suitable-url)))))
-
-(defmethod url* ((object sequence))
-  (lpara:pmap (serapeum:class-name-of object) #'url* object))
-
-(defmethod url* ((object string))
-  object)
-
-(defmethod url* ((object hash-table))
-  (url* (or (gethash "href" object)
-            (gethash "url" object))))
+(defgeneric url* (object)
+  (:method ((object string)) object)
+  (:method :around ((object t))
+    (let* ((urls (uiop:ensure-list (call-next-method)))
+           (suitable-url (or (find #'quri:uri-https-p urls)
+                             (find #'quri:uri-http-p urls)
+                             (first urls))))
+      (when (json-true-p suitable-url)
+        (quri:render-uri (quri:uri suitable-url)))))
+  (:method ((object sequence))
+    (lpara:pmap (serapeum:class-name-of object) #'url* object))
+  (:method ((object hash-table))
+    (url* (or (gethash "href" object)
+              (gethash "url" object))))
+  (:document "Get the URL to the OBJECT that it can be referred to by."))
 
 (defmethod url* ((object link))
   (slot-value object 'href))
