@@ -386,7 +386,7 @@ This is convenient when you use auto-mode by default and you want to toggle a
 mode permanently for this buffer."
                                                                                 (delete (read-from-string "nyxt/auto-mode:auto-mode" )
                                                                                         modes)))
-                                                   :marks (mapcar #'class-name-of (modes buffer)))))
+                                                   :marks (mapcar #'sera:class-name-of (modes buffer)))))
          (modes-to-disable (set-difference (all-mode-symbols) modes-to-enable
                                            :test #'string=)))
     (disable-modes (uiop:ensure-list modes-to-disable) buffer)
