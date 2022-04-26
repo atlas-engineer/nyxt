@@ -54,3 +54,9 @@ To make this change permanent, you can customize
 
 ;; TODO: Implement command remove-domain-from-certificate-exceptions.
 ;;       Currently it is not possible due to WebKit limitations.
+
+(defmethod nyxt:default-modes append ((buffer web-buffer))
+  '(certificate-exception-mode))
+
+(defmethod nyxt:default-modes append ((buffer nosave-buffer))
+  '(certificate-exception-mode))

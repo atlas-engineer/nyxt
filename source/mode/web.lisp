@@ -749,3 +749,7 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
         (ffi-buffer-delete buffer)))))
 
 (pushnew 'web-mode nyxt::%default-modes)
+
+(defmethod nyxt:default-modes :around ((buffer editor-buffer))
+  ;; REVIEW: Really remove web-mode from editor-buffer?
+  (remove 'web-mode (call-next-method)))

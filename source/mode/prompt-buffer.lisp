@@ -455,3 +455,10 @@ Only available if `multi-selection-p' is non-nil."
     (pflet ((scroll-down ()
             (ps:chain window (scroll-by 0 (ps:lisp scroll-distance)))))
     (scroll-down))))
+
+(defmethod default-modes append ((buffer prompt-buffer))
+  '(prompt-buffer-mode))
+(defmethod default-modes :around ((buffer prompt-buffer))
+  ;; TODO: `prompt-buffer' should not be a web-buffer.
+  (set-difference (call-next-method) (list (resolve-symbol :web-mode :mode)
+                                           (resolve-symbol :base-mode :mode))))

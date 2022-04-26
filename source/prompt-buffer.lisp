@@ -154,11 +154,6 @@ invoking `prompt-buffer:history'.
 See `prompt' for how to invoke prompts.")
     (:metaclass user-class)))
 
-(defmethod default-modes append ((buffer prompt-buffer))
-  '(prompt-buffer-mode))
-(defmethod default-modes :around ((buffer prompt-buffer))
-  (set-difference (call-next-method) '(web-mode base-mode)))
-
 (defmethod customize-instance :after ((prompt-buffer prompt-buffer)
                                       &key extra-modes &allow-other-keys)
   (hooks:run-hook (prompt-buffer-make-hook *browser*) prompt-buffer)
