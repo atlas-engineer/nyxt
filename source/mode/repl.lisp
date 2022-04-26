@@ -122,7 +122,7 @@ Scroll history with `evaluation-history-previous' and `evaluation-history-next'.
     (with-current-buffer (buffer mode)
       (selection-start new-position))))
 
-(define-command return-input (&optional (repl (current-mode 'repl)))
+(define-command return-input (&optional (repl (find-submode 'repl-mode)))
   "Return inputted text."
   (let ((input (input repl)))
     (add-object-to-evaluation-history repl
@@ -136,7 +136,7 @@ Scroll history with `evaluation-history-previous' and `evaluation-history-next'.
 (defmethod add-object-to-evaluation-history ((repl repl-mode) item)
   (push item (evaluation-history repl)))
 
-(define-command paren (&optional (repl (current-mode 'repl)))
+(define-command paren (&optional (repl (find-submode 'repl-mode)))
   ;; FIXME: Not an intuitive behavior? What does Emacs do?
   "Inserts the closing paren after the opening one is inputted."
   (let ((input (input repl))
@@ -144,7 +144,7 @@ Scroll history with `evaluation-history-previous' and `evaluation-history-next'.
     (setf (input repl) (str:insert "()" cursor input)
           (cursor repl) (1+ cursor))))
 
-(define-command closing-paren (&optional (repl (current-mode 'repl)))
+(define-command closing-paren (&optional (repl (find-submode 'repl-mode)))
   "Automatically closes all the open parens before the cursor."
   (let* ((input (input repl))
          (cursor (cursor repl))
@@ -155,7 +155,7 @@ Scroll history with `evaluation-history-previous' and `evaluation-history-next'.
     (alexandria:when-let ((cursor (ignore-errors (1+ (position #\) (input repl) :start cursor)))))
       (setf (cursor repl) cursor))))
 
-(define-command tab-complete-symbol (&optional (repl (current-mode 'repl)))
+(define-command tab-complete-symbol (&optional (repl (find-submode 'repl-mode)))
   "Complete the current symbol and insert the completion into the REPL prompt."
   (let* ((input (input repl))
          (cursor (cursor repl))
@@ -177,7 +177,7 @@ Scroll history with `evaluation-history-previous' and `evaluation-history-next'.
                                      completion (subseq input cursor))
             (cursor repl) (+ cursor (- (length completion) (- cursor previous-delimiter)))))))
 
-(define-command evaluation-history-previous (&optional (repl (current-mode 'repl)))
+(define-command evaluation-history-previous (&optional (repl (find-submode 'repl-mode)))
   "Fill REPL input with the value of the previous REPL history element."
   (let* ((current (1+ (or (current-evaluation-history-element repl) -1)))
          (elt (when (> (length (evaluation-history repl)) current)
@@ -187,7 +187,7 @@ Scroll history with `evaluation-history-previous' and `evaluation-history-next'.
               (current-evaluation-history-element repl) current)
         (echo-warning "No more elements in evaluation history"))))
 
-(define-command evaluation-history-next (&optional (repl (current-mode 'repl)))
+(define-command evaluation-history-next (&optional (repl (find-submode 'repl-mode)))
   "Fill REPL input with the value of the next REPL history element."
   (if (and (current-evaluation-history-element repl)
            (not (zerop (current-evaluation-history-element repl))))
@@ -197,7 +197,7 @@ Scroll history with `evaluation-history-previous' and `evaluation-history-next'.
 (define-internal-page-command-global lisp-repl ()
     (repl-buffer "*Lisp REPL*" 'repl-mode)
   "Show Lisp REPL."
-  (let ((repl-mode (find-mode repl-buffer 'repl-mode)))
+  (let ((repl-mode (find-submode 'nyxt/repl-mode:repl-mode repl-buffer)))
     (spinneret:with-html-string
       (:head (:style (style repl-mode)))
       (:body

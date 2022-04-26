@@ -310,16 +310,15 @@ slash. WebExtensions require this :/"
   "Open the popup of the extension of EXTENSION-CLASS.
 If the popup already exists, close it."
   (let ((extension-class (or extension-class
-                             (mode-name
-                              (prompt1
-                                :prompt "Extension to toggle the popup of"
-                                :sources (make-instance 'active-mode-source
-                                                        :constructor (sera:filter
-                                                                      #'nyxt/web-extensions::extension-p
-                                                                      (modes buffer))))))))
+                             (prompt1
+                               :prompt "Extension to toggle the popup of"
+                               :sources (make-instance 'active-mode-source
+                                                       :constructor (sera:filter
+                                                                     #'nyxt/web-extensions::extension-p
+                                                                     (modes buffer)))))))
     (with-current-buffer buffer
       ;;TODO: Send click message to background script if there's no popup.
-      (sera:and-let* ((extension (nyxt:find-submode (nyxt:current-buffer) extension-class))
+      (sera:and-let* ((extension (nyxt:find-submode extension-class (nyxt:current-buffer)))
                       (browser-action (browser-action extension))
                       (default-popup (default-popup browser-action)))
         (alex:if-let ((existing-popup

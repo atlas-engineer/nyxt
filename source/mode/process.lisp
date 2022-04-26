@@ -6,6 +6,7 @@
   (:import-from #:class-star #:define-class)
   (:documentation "Act on file/directory based on a certain condition."))
 (in-package :nyxt/process-mode)
+(use-nyxt-package-nicknames)
 
 (define-mode process-mode ()
   "Conditional execution a file/directory-related actions in a separate thread.

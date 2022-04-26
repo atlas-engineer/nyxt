@@ -147,7 +147,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
                          ,@args)))
                  (,buffer-var (or (find-if (lambda (b)
                                              (and (string= (title b) ,title)
-                                                  (find-mode b ,mode)))
+                                                  (find-submode ,mode b)))
                                            (buffer-list))
                                   (funcall (symbol-function ,mode)
                                            :activate t

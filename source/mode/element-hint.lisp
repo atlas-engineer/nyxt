@@ -10,8 +10,8 @@
   (unless (nyxt/ps:qs document "#nyxt-stylesheet")
     (ps:try
      (ps:let* ((style-element (ps:chain document (create-element "style")))
-               (box-style (ps:lisp (box-style (current-mode 'web))))
-               (highlighted-style (ps:lisp (highlighted-box-style (current-mode 'web)))))
+               (box-style (ps:lisp (box-style (find-submode 'web-mode))))
+               (highlighted-style (ps:lisp (highlighted-box-style (find-submode 'web-mode)))))
        (setf (ps:@ style-element id) "nyxt-stylesheet")
        (ps:chain document head (append-child style-element))
        (ps:chain style-element sheet (insert-rule box-style 0))
@@ -60,7 +60,7 @@
 (-> generate-hints (integer) list-of-strings)
 (defun generate-hints (length)
   (unless (zerop length)
-    (let* ((alphabet (hints-alphabet (current-mode 'web)))
+    (let* ((alphabet (hints-alphabet (find-submode 'web-mode)))
            (char-length (ceiling (log length (length alphabet)))))
       (loop for i below length collect (select-from-alphabet i char-length alphabet)))))
 
@@ -125,13 +125,13 @@
     (lambda (suggestion)
       (highlight-selected-hint :element suggestion
                                :scroll nil)
-      (sera:and-let* ((auto-follow (nyxt/web-mode:auto-follow-hints-p (current-mode 'web)))
+      (sera:and-let* ((auto-follow (nyxt/web-mode:auto-follow-hints-p (find-submode 'web-mode)))
                       (matches (string-equal
                                 (prompter:input (current-prompt-buffer))
                                 (plump:get-attribute  suggestion "nyxt-hint")))
                       (input (prompter:input (current-prompt-buffer))))
         (run-thread "hint auto-follow thread"
-          (sleep (nyxt/web-mode:auto-follow-timer (current-mode 'web)))
+          (sleep (nyxt/web-mode:auto-follow-timer (find-submode 'web-mode)))
           (when (string= input (prompter:input (current-prompt-buffer)))
             (prompter:return-selection (current-prompt-buffer)))))))
    (prompter:actions (list 'identity
@@ -156,9 +156,9 @@
                     &key multi-selection-p
                          annotate-visible-only-p
                          (selector
-                             (if (current-mode 'web)
-                                 (hints-selector (current-mode 'web))
-                                 "a, button, input, textarea, details, select, img:not([alt=\"\"])")))
+                             (alex:if-let ((mode (find-submode 'web-mode)))
+                               (hints-selector mode)
+                               "a, button, input, textarea, details, select, img:not([alt=\"\"])")))
   "Prompt to choose several elements out of those matching SELECTOR, hinting them visually.
 MULTI-SELECTION-P is whether several elements can be chosen.
 ANNOTATE-VISIBLE-ONLY-P is deprecated and has no influence on the function.

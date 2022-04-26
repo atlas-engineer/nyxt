@@ -34,7 +34,7 @@
                         (buffer (or (current-prompt-buffer) (current-buffer)))
                         (activate t explicit?)
                       &allow-other-keys)
-               (let ((existing-instance (find-mode buffer name)))
+               (let ((existing-instance (find-submode name buffer)))
                  (unless explicit?
                    (setf activate (not existing-instance)))
                  (if activate
@@ -229,17 +229,17 @@ PACKAGES should be a list of package designators."
                              (:command (mapcar #'name (list-commands))))))
     (let ((results (delete designator symbols :key #'symbol-name :test #'string/=)))
       (unless (sera:single results)
-        (log:warn "Multiple results found: ~a" results))
+        (log:warn "Multiple ~a modes found in buffer ~a: ~a" designator buffer results))
       (values (first results)
               results))))
 
-(export-always 'find-mode)
+(export-always 'find-submode)
 (-> find-submode (symbol &optional buffer) (maybe mode))
 (defun find-submode (mode-symbol &optional (buffer (current-buffer)) )
   "Return the first submode instance of MODE-SYMBOL in BUFFER.
 As a second value, return all matching submode instances.
 Return nil if mode is not found."
-  (alex:when-let ((class (mode-class mode-symbol)))
+  (alex:if-let ((class (mode-class mode-symbol)))
     (let ((results (delete-if
                     (alex:rcurry #'closer-mop:subclassp class)
                     (modes buffer)
@@ -247,7 +247,8 @@ Return nil if mode is not found."
       (unless (sera:single results)
         (log:warn "Found multiple matching modes."))
       (values (first results)
-              results))))
+              results))
+    (error "Mode ~a does not exist" mode-symbol)))
 
 (-> current-mode ((or keyword string) &optional buffer) (maybe mode))
 (export-always 'current-mode)
@@ -338,7 +339,7 @@ ARGS are passed to the mode `enable' method."
                                              :buffers buffers)))))
     (mapcar (lambda (buffer)
               (mapcar (lambda (mode-sym)
-                        (apply #'enable (or (find-mode buffer mode-sym)
+                        (apply #'enable (or (find-submode mode-sym buffer)
                                             (make-instance mode-sym :buffer buffer))
                                args))
                       (uiop:ensure-list modes)))
@@ -363,7 +364,7 @@ BUFFERS is automatically coerced into a list."
                      :sources (make-instance 'inactive-mode-source
                                              :buffers buffers)))))
     (mapcar (lambda (buffer)
-              (mapcar #'disable (delete nil (mapcar (lambda (mode) (find-mode buffer mode))
+              (mapcar #'disable (delete nil (mapcar (lambda (mode) (find-submode mode buffer))
                                                     (uiop:ensure-list modes)))))
             buffers)))
 
@@ -389,7 +390,7 @@ mode permanently for this buffer."
 (defun find-buffer (mode-symbol)
   "Return first buffer matching MODE-SYMBOL."
   (find-if (lambda (b)
-             (find-mode b mode-symbol))
+             (find-submode mode-symbol b))
            (buffer-list)))
 
 (export-always 'keymap)

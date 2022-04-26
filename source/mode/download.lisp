@@ -145,7 +145,7 @@ appearance in the buffer when they are setf'd."
 We iterate through the browser's downloads to draw every single
 download."
   (spinneret:with-html-string
-    (:style (style (current-mode 'download)))
+    (:style (style (find-submode 'download-mode)))
     (:h1 "Downloads")
     (:hr)
     (:div
