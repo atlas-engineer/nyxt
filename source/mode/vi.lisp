@@ -37,34 +37,6 @@ vi-normal-mode.")
         "i" 'vi-insert-mode
         "button1" 'vi-button1)))))
 
-(defmethod enable ((mode vi-normal-mode) &key)
-  (with-accessors ((buffer buffer)) mode
-    (let ((vi-insert (find-submode buffer 'vi-insert-mode)))
-      (setf (previous-keymap-scheme-name mode)
-            (if vi-insert
-                (previous-keymap-scheme-name vi-insert)
-                (keymap-scheme-name buffer)))
-      (when vi-insert
-        ;; Destroy vi-normal mode after setting previous-keymap-scheme-name, or
-        ;; else we can't save the previous keymap scheme.
-        (disable vi-insert)))
-    (setf (keymap-scheme-name buffer) scheme:vi-normal)
-    (setf (forward-input-events-p buffer) nil)))
-
-(defmethod disable ((mode vi-normal-mode) &key)
-  (setf (keymap-scheme-name (buffer mode))
-        (previous-keymap-scheme-name mode))
-  (setf (forward-input-events-p (buffer mode)) t))
-
-(define-command switch-to-vi-normal-mode (&optional (mode (find-submode (or (current-prompt-buffer) (current-buffer))
-                                                                        'vi-insert-mode)))
-  "Switch to the mode remembered to be the matching VI-normal one for this MODE.
-See also `vi-normal-mode' and `vi-insert-mode'."
-  (when mode
-    (enable-modes (list (or (and (previous-vi-normal-mode mode)
-                                 (sera:class-name-of (previous-vi-normal-mode mode)))
-                            'vi-normal-mode))
-                  (buffer mode))))
 
 ;; TODO: Move ESCAPE binding to the override map?
 (define-mode vi-insert-mode ()
@@ -92,6 +64,35 @@ vi-normal-mode.")
                        :type boolean
                        :documentation "Whether to default to `passthrough-mode'
                        when entering `vi-insert-mode'.")))
+
+(defmethod enable ((mode vi-normal-mode) &key)
+  (with-accessors ((buffer buffer)) mode
+    (let ((vi-insert (find-submode 'vi-insert-mode buffer)))
+      (setf (previous-keymap-scheme-name mode)
+            (if vi-insert
+                (previous-keymap-scheme-name vi-insert)
+                (keymap-scheme-name buffer)))
+      (when vi-insert
+        ;; Destroy vi-normal mode after setting previous-keymap-scheme-name, or
+        ;; else we can't save the previous keymap scheme.
+        (disable vi-insert)))
+    (setf (keymap-scheme-name buffer) scheme:vi-normal)
+    (setf (forward-input-events-p buffer) nil)))
+
+(defmethod disable ((mode vi-normal-mode) &key)
+  (setf (keymap-scheme-name (buffer mode))
+        (previous-keymap-scheme-name mode))
+  (setf (forward-input-events-p (buffer mode)) t))
+
+(define-command switch-to-vi-normal-mode (&optional (mode (find-submode 'vi-insert-mode
+                                                              (or (current-prompt-buffer) (current-buffer)))))
+  "Switch to the mode remembered to be the matching VI-normal one for this MODE.
+See also `vi-normal-mode' and `vi-insert-mode'."
+  (when mode
+    (enable-modes (list (or (and (previous-vi-normal-mode mode)
+                                 (sera:class-name-of (previous-vi-normal-mode mode)))
+                            'vi-normal-mode))
+                  (buffer mode))))
 
 (defmethod enable ((mode vi-insert-mode) &key)
   (with-accessors ((buffer buffer)) mode
