@@ -151,17 +151,18 @@ The `mode' superclass is automatically added if not present."
                    body))
          (direct-slots (first body))
          (options (rest body)))
-    `(define-class ,name (,@(append direct-superclasses
-                                    (unless (find 'mode direct-superclasses) '(mode))))
-       ,direct-slots
-       ,@(append options
-                 (when docstring
-                   `((:documentation ,docstring)))
-                 `((:export-class-name-p t)
-                   (:export-accessor-names-p t)
-                   (:export-predicate-name-p t)
-                   (:accessor-name-transformer (class*:make-name-transformer name))
-                   (:metaclass mode-class))))))
+    `(sera:eval-always ; Important so that classes can be found from the same file at compile-time.
+       (define-class ,name (,@(append direct-superclasses
+                                      (unless (find 'mode direct-superclasses) '(mode))))
+         ,direct-slots
+         ,@(append options
+                   (when docstring
+                     `((:documentation ,docstring)))
+                   `((:export-class-name-p t)
+                     (:export-accessor-names-p t)
+                     (:export-predicate-name-p t)
+                     (:accessor-name-transformer (class*:make-name-transformer name))
+                     (:metaclass mode-class)))))))
 
 (hooks:define-hook-type mode (function (mode)))
 
@@ -229,13 +230,16 @@ PACKAGES should be a list of package designators."
                              (:command (mapcar #'name (list-commands))))))
     (let ((results (delete designator symbols :key #'symbol-name :test #'string/=)))
       (unless (sera:single results)
-        (log:warn "Multiple ~a modes found in buffer ~a: ~a" designator buffer results))
+        (log:warn "Multiple ~a modes found: ~a" designator results))
       (values (first results)
               results))))
 
+(deftype mode-symbol ()
+  `(satisfies mode-class))
+
+(-> find-submode (mode-symbol &optional buffer) (maybe mode))
 (export-always 'find-submode)
-(-> find-submode (symbol &optional buffer) (maybe mode))
-(defun find-submode (mode-symbol &optional (buffer (current-buffer)) )
+(defun find-submode (mode-symbol &optional (buffer (current-buffer)))
   "Return the first submode instance of MODE-SYMBOL in BUFFER.
 As a second value, return all matching submode instances.
 Return nil if mode is not found."
@@ -244,10 +248,12 @@ Return nil if mode is not found."
                     (alex:rcurry #'closer-mop:subclassp class)
                     (modes buffer)
                     :key #'class-of)))
-      (unless (sera:single results)
+      (when (< 1 (length results))
         (log:warn "Found multiple matching modes."))
       (values (first results)
               results))
+    ;; CCL catches the error at compile time but not all implementations do,
+    ;; hence the redundant error report here.
     (error "Mode ~a does not exist" mode-symbol)))
 
 (-> current-mode ((or keyword string) &optional buffer) (maybe mode))
