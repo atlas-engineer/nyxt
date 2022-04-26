@@ -558,7 +558,12 @@ FORMAT can be one of
          (unless (equal first-item (last-item object))
            (:a :class "button" :href (http->ap (id object)) "More...")))))))
 
+(defmethod object->html ((object collection) (format (eql :page)))
+  (declare (ignorable format))
+  (object->html object :card))
+
 (defmethod object->html ((object actor) (format (eql :card)))
+  (declare (ignorable format))
   (spinneret:with-html-string
     (:div
      :class "card"
