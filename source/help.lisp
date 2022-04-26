@@ -711,15 +711,16 @@ Stored in the format given by `compute-restarts'.")
 Made so that `debugger-hook' can wait for the condition to be resolved based on
 the channel, wrapped alongside the condition and its restarts."))
 
+(defvar *old-debugger-hook* nil
+  "The debugger to fall back to in case Nyxt debugger fails.")
+
 (defvar *debug-conditions* (make-hash-table)
   "A hash-table from numeric condition ID to the `condition-handler' lists.")
 
 (defun debugger-hook (condition hook)
-  ;; FIXME: It handles recursive errors, but has no way to fall back to the
-  ;; default debugger, like SLY.
   (declare (ignore hook))
   (when *debug-on-error*
-    (let* ((*debugger-hook* #'debugger-hook)
+    (let* ((*debugger-hook* *old-debugger-hook*)
            (id (parse-integer (get-unique-identifier *browser*)))
            (restarts (compute-restarts condition))
            (channel (make-channel 1))
@@ -781,8 +782,10 @@ the channel, wrapped alongside the condition and its restarts."))
 See `*debug-on-error*'."
   (let ((value (if value-provided-p value (not *debug-on-error*))))
     (setf *debug-on-error* value)
+    (when (and value (not *debug-on-error*))
+      (setf *old-debugger-hook* *debugger-hook*))
     ;; FIXME: This messes up SLIME/SLY debugging in REPL, as they set this too.
-    (swank-backend:install-debugger-globally (when value #'debugger-hook))
+    (swank-backend:install-debugger-globally (if value #'debugger-hook *old-debugger-hook*))
     (echo "Nyxt-native debugging ~:[dis~;en~]abled." value)))
 
 (defun error-buffer (&optional (title "Unknown error") (text ""))
