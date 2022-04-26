@@ -196,6 +196,21 @@ Return NIL if not a class form."
                 (alex:appendf (forms class-form) (list form)))))
         (alex:appendf config (list form)))))
 
+(export-always 'define-configuration)
+(defmacro define-configuration (classes (&body slots-and-values))
+  (sera:and-let* ((classes (uiop:ensure-list classes)))
+    `(progn
+       ,@(loop for class in classes
+               collect `(defmethod customize-instance ,(intern (symbol-name class) :keyword) ,(gensym)
+                          ((object ,class) &key)
+                          ,@(loop for slot-and-value in slots-and-values
+                                  for slot = (first slot-and-value)
+                                  for value = (second slot-and-value)
+                                  unless (eq slot 'default-modes)
+                                    collect `(setf (slot-value object (quote ,slot))
+                                                   (let ((nyxt-user::%slot-default% (slot-value object (quote ,slot))))
+                                                     (declare (ignorable nyxt-user::%slot-default%))
+                                                     ,value))))))))
 
 
 (defparameter %buffer nil)              ; TODO: Make a monad?
