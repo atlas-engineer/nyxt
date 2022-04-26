@@ -255,24 +255,118 @@ The \"-mode\" suffix is automatically appended to MODE-SYM if missing."
   "Return the list of namespace-less mode names."
   (mapcar #'mode-name (all-modes)))
 
-(export-always 'disable-modes)
-(defun disable-modes (modes &optional (buffer (current-buffer)))
-  "Disable MODES for BUFFER.
-MODES should be a list (possibly namespace-less) symbols."
-  (mapcar #'disable (delete nil (mapcar (lambda (mode) (find-mode buffer mode))
-                                        (uiop:ensure-list modes)))))
+(defun make-mode-suggestion (mode &optional source input)
+  "Return a `suggestion' wrapping around ATTRIBUTE. "
+  (declare (ignore source input))
+  (make-instance 'prompter:suggestion
+                 :value mode
+                 :attributes `(("Mode" ,(string-downcase (symbol-name mode)))
+                               ("Documentation" ,(or (first (sera:lines (documentation mode 'function)))
+                                                     "")))))
 
-(export-always 'enable-modes)
-(defun enable-modes (modes &optional (buffer (current-buffer)) args)
-  "Enable MODES for BUFFER.
+(define-class mode-source (prompter:source)
+  ((prompter:name "Modes")
+   (prompter:multi-selection-p t)
+   (prompter:constructor (sort (all-mode-names) #'string< :key #'symbol-name))
+   (prompter:suggestion-maker 'make-mode-suggestion))
+  (:export-class-name-p t)
+  (:metaclass user-class))
+
+(define-class active-mode-source (prompter:source)
+  ((prompter:name "Active modes")
+   (buffers :initarg :buffers :accessor buffers :initform nil)
+   (prompter:multi-selection-p t)
+   (prompter:constructor (lambda (source)
+                           (delete-duplicates
+                            (alex:mappend
+                             #'modes
+                             (uiop:ensure-list (buffers source)))
+                            :test (lambda (i y) (equal (mode-symbol i)
+                                                       (mode-symbol y)))))))
+  (:export-class-name-p t)
+  (:metaclass user-class))
+
+(define-class inactive-mode-source (prompter:source)
+  ((prompter:name "Inactive modes")
+   (buffers :initarg :buffers :accessor buffers :initform nil)
+   (prompter:multi-selection-p t)
+   (prompter:constructor (lambda (source)
+                           (let ((common-modes
+                                   (reduce #'intersection
+                                           (mapcar (lambda (b)
+                                                     (mapcar #'mode-symbol (modes b)))
+                                                   (uiop:ensure-list (buffers source))))))
+                             (set-difference (mapcar #'class-name (all-modes)) common-modes)))))
+  (:export-class-name-p t)
+  (:metaclass user-class))
+
+(define-command enable-modes (&optional modes buffers args)
+  "Enable MODES for BUFFERS.
 MODES should be a list (possibly namespace-less) symbols.
+BUFFERS is automatically coerced into a list.
 ARGS are passed to the mode `enable' method."
   ;; TODO: Report if mode is not found.
-  (mapcar (lambda (mode-name)
-            (apply #'enable (or (find-mode buffer mode-name)
-                                (make-instance (mode-symbol mode-name) :buffer buffer))
-                   args))
-          (uiop:ensure-list modes)))
+  (let* ((buffers (if buffers
+                      (uiop:ensure-list buffers)
+                      (prompt
+                       :prompt "Enable mode(s) for buffer(s)"
+                       :sources (make-instance 'buffer-source
+                                               :multi-selection-p t
+                                               :actions '()))))
+         (modes (if modes
+                    (uiop:ensure-list modes)
+                    (prompt
+                     :prompt "Enable mode(s)"
+                     :sources (make-instance 'inactive-mode-source
+                                             :buffers buffers)))))
+    (mapcar (lambda (buffer)
+              (mapcar (lambda (mode-name)
+                        (apply #'enable (or (find-mode buffer mode-name)
+                                            (make-instance (mode-symbol mode-name) :buffer buffer))
+                               args))
+                      (uiop:ensure-list modes)))
+            buffers)))
+
+(define-command disable-modes (&optional modes buffers)
+  "Disable MODES for BUFFERS.
+MODES should be a list (possibly namespace-less) symbols.
+BUFFERS is automatically coerced into a list."
+  ;; TODO: Report if mode is not found.
+  (let* ((buffers (if buffers
+                      (uiop:ensure-list buffers)
+                      (prompt
+                       :prompt "Enable mode(s) for buffer(s)"
+                       :sources (make-instance 'buffer-source
+                                               :multi-selection-p t
+                                               :actions '()))))
+         (modes (if modes
+                    (uiop:ensure-list modes)
+                    (prompt
+                     :prompt "Enable mode(s)"
+                     :sources (make-instance 'inactive-mode-source
+                                             :buffers buffers)))))
+    (mapcar (lambda (buffer)
+              (mapcar #'disable (delete nil (mapcar (lambda (mode) (find-mode buffer mode))
+                                                    (uiop:ensure-list modes)))))
+            buffers)))
+
+(define-command toggle-modes (&key (buffer (current-buffer)))
+  "Enable marked modes, disable unmarked modes for BUFFER."
+  (let* ((modes-to-enable (prompt
+                           :prompt "Mark modes to enable, unmark to disable"
+                           :sources (make-instance 'mode-source
+                                                   :actions (list 'identity
+                                                                  (make-command force-disable-auto-mode (modes)
+                                                                                "Return selection but force disabling auto-mode.
+This is convenient when you use auto-mode by default and you want to toggle a
+mode permanently for this buffer."
+                                                                                (delete (read-from-string "nyxt/auto-mode:auto-mode" )
+                                                                                        modes)))
+                                                   :marks (mapcar #'mode-symbol (modes buffer)))))
+         (modes-to-disable (set-difference (all-mode-names) modes-to-enable
+                                           :test #'string=)))
+    (disable-modes (uiop:ensure-list modes-to-disable) buffer)
+    (enable-modes (uiop:ensure-list modes-to-enable) buffer)))
 
 (export-always 'find-buffer)
 (defun find-buffer (mode-symbol)
