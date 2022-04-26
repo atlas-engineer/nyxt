@@ -368,7 +368,7 @@ JSON-NAMEs as strings, where
 
 (defgeneric name* (object)
   ;; FIXME: This should not exists! Strong typing should be strong!
-  (:mehtod ((object t)) "")
+  (:method ((object t)) "")
   (:method :around ((object t))
     (first (uiop:ensure-list (call-next-method))))
   (:method ((object sequence))
@@ -423,7 +423,7 @@ Try to guess it from all the data available."))
   (:method ((object hash-table))
     (url* (or (gethash "href" object)
               (gethash "url" object))))
-  (:document "Get the URL to the OBJECT that it can be referred to by."))
+  (:documentation "Get the URL to the OBJECT that it can be referred to by."))
 
 (defmethod url* ((object link))
   (slot-value object 'href))
