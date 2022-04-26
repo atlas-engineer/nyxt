@@ -245,12 +245,12 @@ PACKAGES should be a list of package designators."
 As a second value, return all matching submode instances.
 Return nil if mode is not found."
   (alex:if-let ((class (mode-class mode-symbol)))
-    (let ((results (delete-if
+    (let ((results (sera:filter
                     (alex:rcurry #'closer-mop:subclassp class)
                     (modes buffer)
                     :key #'class-of)))
       (when (< 1 (length results))
-        (log:warn "Found multiple matching modes."))
+        (log:warn "Found multiple matching modes: ~a" results))
       (values (first results)
               results))
     ;; CCL catches the error at compile time but not all implementations do,
@@ -349,7 +349,7 @@ ARGS are passed to the mode `enable' method."
                         (apply #'enable (or (find-submode mode-sym buffer)
                                             (make-instance mode-sym :buffer buffer))
                                args))
-                      (uiop:ensure-list modes)))
+                      modes))
             buffers)))
 
 (define-command disable-modes (&optional modes buffers)
