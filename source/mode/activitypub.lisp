@@ -440,6 +440,10 @@ Try to guess it from all the data available."))
       (:a :class "button"
           :href (http->ap (id object))
           (name* object))))
+  (:method ((object base) (format (eql :page)))
+    (spinneret:with-html-string
+      (:h1 (name* object))
+      (:raw (object->html object :card))))
   (:method ((object link) (format (eql :link)))
     (spinneret:with-html-string
       (:a :class "button"
