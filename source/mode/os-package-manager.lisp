@@ -34,7 +34,7 @@
 (define-command cancel-package-operation ()
   "Terminate the package manager process in the current buffer."
   (serapeum:and-let* ((process-info (current-process-info
-                                     (find-submode (current-buffer) 'os-package-manager-mode))))
+                                     (find-submode 'os-package-manager-mode))))
     (uiop:terminate-process process-info)
     (ffi-buffer-evaluate-javascript-async
      (current-buffer)
@@ -253,13 +253,13 @@ OBJECTS can be a list of packages, a generation, etc."
                      (enable (make-instance 'nyxt/os-package-manager-mode:os-package-manager-mode
                                             :buffer (make-internal-buffer :title "*OS packages*"))))))
     (if (sera:and-let* ((process-info (nyxt/os-package-manager-mode:current-process-info
-                                       (find-submode buffer 'os-package-manager-mode))))
+                                       (find-submode 'os-package-manager-mode buffer))))
           (uiop:process-alive-p process-info))
         (echo "An package operation is already running.  You can cancel it with `cancel-package-operation'.")
         (progn
           (run-thread "OS package manager"
             (let ((process-info (funcall command objects profile))
-                  (mode (find-submode buffer 'os-package-manager-mode)))
+                  (mode (find-submode 'os-package-manager-mode buffer)))
               (setf (nyxt/os-package-manager-mode:current-process-info mode) process-info)
               (nyxt::html-set "" buffer) ; Reset content between operations.
               (nyxt::html-write

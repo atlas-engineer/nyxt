@@ -261,9 +261,10 @@ See also `show-prompt-buffer'."
 (defun prompt-render-prompt (prompt-buffer)
   (let* ((suggestions (prompter:all-suggestions prompt-buffer))
          (marks (prompter:all-marks prompt-buffer))
-         (vi-class (cond ((find-submode prompt-buffer 'vi-normal-mode)
+         ;; TODO: Should make this part mode-extensible instead of hard-coding VI behaviour.
+         (vi-class (cond ((find-submode (resolve-symbol :vi-normal-mode :mode) prompt-buffer)
                           "vi-normal-mode")
-                         ((find-submode prompt-buffer 'vi-insert-mode)
+                         ((find-submode (resolve-symbol :vi-insert-mode :mode) prompt-buffer)
                           "vi-insert-mode")))
          (vi-letter (match vi-class
                       ("vi-normal-mode" "N")
@@ -371,8 +372,9 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
 
 (defun prompt-render-skeleton (prompt-buffer)
   (erase-document prompt-buffer)
-  (let ((vi-mode? (or (find-submode prompt-buffer 'vi-normal-mode)
-                      (find-submode prompt-buffer 'vi-insert-mode))))
+  ;; TODO: Should make this part mode-extensible instead of hard-coding VI behaviour.
+  (let ((vi-mode? (or (find-submode (resolve-symbol :vi-normal-mode :mode) prompt-buffer)
+                      (find-submode (resolve-symbol :vi-insert-mode :mode) prompt-buffer))))
     (html-set (spinneret:with-html-string
                 (:head (:style (style prompt-buffer)))
                 (:body

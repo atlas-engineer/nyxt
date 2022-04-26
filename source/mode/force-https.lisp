@@ -30,7 +30,7 @@ help on how to proceed."
 (defun force-https-handler (request-data)
   "Impose HTTPS on any link with HTTP scheme."
   (let ((url (url request-data))
-        (mode (find-submode (buffer request-data) 'force-https-mode)))
+        (mode (find-submode 'force-https-mode (buffer request-data))))
     (cond
       ((string/= (quri:uri-scheme url) "http")
        request-data)
