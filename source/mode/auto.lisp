@@ -42,17 +42,17 @@ Package prefix is optional.")
     mode)
   (:method ((mode nyxt:mode))
     (when (rememberable-p mode)
-      (make-instance 'mode-invocation :name (mode-symbol mode))))
+      (make-instance 'mode-invocation :name (sera:class-name-of mode))))
   (:method ((mode symbol))
-    (alex:if-let ((mode-full-symbol (mode-symbol mode)))
-      (alex:when-let ((rememberable-p (rememberable-p (make-instance mode-full-symbol))))
-        (make-instance 'mode-invocation :name mode-full-symbol))
+    (alex:if-let ((mode-symbol (sera:class-name-of mode)))
+      (alex:when-let ((rememberable-p (rememberable-p (make-instance mode-symbol))))
+        (make-instance 'mode-invocation :name mode-symbol))
       (echo-warning "Auto-mode rule: unknown mode symbol ~s" mode)))
   (:method ((mode list))
     (check-type mode (cons symbol *))
-    (when (rememberable-p (make-instance (mode-symbol (first mode))))
+    (when (rememberable-p (make-instance (class-of (first mode))))
       (make-instance 'mode-invocation
-                     :name (mode-symbol (first mode))
+                     :name (sera:class-name-of (first mode))
                      :arguments (rest mode)))))
 
 (defun mode-invocations (mode-list)
@@ -195,7 +195,7 @@ The rules are:
       (alex:when-let* ((invocation (mode-invocation mode)))
         (when (not (mode-covered-by-auto-mode-p mode auto-mode enable-p))
           (if-confirm ("Permanently ~:[disable~;enable~] ~a for this URL?"
-                       enable-p (mode-name mode))
+                       enable-p (sera:class-name-of mode))
                       (let ((url (prompt1
                                    :prompt "URL:"
                                    :input (render-url (url (buffer mode)))
@@ -374,9 +374,9 @@ Auto-mode is re-enabled once the page is reloaded."
                            :prompt "Mark modes to enable, unmark to disable"
                            :sources (make-instance 'mode-source
                                                    :marks (remove 'nyxt/auto-mode:auto-mode
-                                                                  (mapcar #'mode-symbol (modes (current-buffer)))))))
+                                                                  (mapcar #'sera:class-name-of (modes (current-buffer)))))))
          (modes-to-disable (cons 'nyxt/auto-mode:auto-mode
-                                 (set-difference (nyxt::all-mode-names) modes-to-enable
+                                 (set-difference (nyxt::all-mode-symbols) modes-to-enable
                                                  :test #'string=))))
     (hooks:add-hook (request-resource-hook buffer)
                     (make-instance

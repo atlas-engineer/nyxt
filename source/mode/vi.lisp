@@ -6,6 +6,7 @@
   (:import-from #:keymap #:define-key #:define-scheme)
   (:documentation "VI-style bindings."))
 (in-package :nyxt/vi-mode)
+(use-nyxt-package-nicknames)
 
 (define-mode vi-normal-mode ()
   "Enable VI-style modal bindings (normal mode).
@@ -61,7 +62,7 @@ vi-normal-mode.")
 See also `vi-normal-mode' and `vi-insert-mode'."
   (when mode
     (enable-modes (list (or (and (previous-vi-normal-mode mode)
-                                 (mode-symbol (previous-vi-normal-mode mode)))
+                                 (sera:class-name-of (previous-vi-normal-mode mode)))
                             'vi-normal-mode))
                   (buffer mode))))
 

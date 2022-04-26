@@ -95,35 +95,6 @@ It is run before the destructor.")
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass mode-class))
 
-(defun find-mode-class (designator)
-  "If DESIGNATOR is a mode symbol or mode class or mode instance, return the class.
-The package prefix may be omitted."
-  (or (and (typep designator 'mode)
-           (class-of designator))
-      (and (closer-mop:classp designator)
-           (closer-mop:subclassp designator (find-class 'mode))
-           designator)
-      (and (symbolp designator)
-           (find (symbol-name designator) (all-modes)
-                 :key (alex:compose #'symbol-name #'class-name)
-                 :test #'string=))))
-
-(export-always 'mode-symbol)
-(defun mode-symbol (mode)
-  "Return the full MODE symbol (with package prefix).
-See also `mode-name'.
-If MODE does not exist, return nil."
-  (alex:when-let ((class (find-mode-class mode)))
-    (class-name class)))
-
-(export-always 'mode-name)
-(defun mode-name (mode)
-  "Return the MODE name as a string (without package prefix).
-See also `mode-symbol'.
-If MODE does not exist, return nil."
-  (alex:when-let ((sym (mode-symbol mode)))
-    (symbol-name sym)))
-
 (defmethod initialize-instance :after ((mode mode) &key)
   (when (eq 'mode (type-of mode))
     (error "Cannot initialize `mode', you must subclass it.")))
@@ -146,7 +117,7 @@ The pre-defined `:after' method handles further setup."))
         (print-status))
     ;; TODO: Should we move mode to the front when it already exists?
     (push mode (modes (buffer mode))))
-  (log:debug "~a enabled." (mode-name mode)))
+  (log:debug "~a enabled." mode))
 
 (export-always 'disable)
 (defgeneric disable (mode &key &allow-other-keys)
@@ -166,7 +137,7 @@ The pre-defined `:after' method handles further cleanup."))
                  buffer))
         (prompt-render-prompt buffer)
         (print-status)))
-  (log:debug "~a disabled." (mode-name mode)))
+  (log:debug "~a disabled." mode))
 
 (export-always 'define-mode)
 (defmacro define-mode (name direct-superclasses &body body)
@@ -195,7 +166,7 @@ The `mode' superclass is automatically added if not present."
 (hooks:define-hook-type mode (function (mode)))
 
 (defmethod prompter:object-attributes ((mode mode))
-  `(("Name" ,(princ-to-string (mode-name mode)))))
+  `(("Name" ,(princ-to-string mode))))
 
 (export-always 'glyph)
 (defmethod glyph ((mode mode))
@@ -215,45 +186,91 @@ The `mode' superclass is automatically added if not present."
                                  suffix name ""
                                  :start (- (length name ) (length suffix)))))))
 
+(-> mode-class (symbol) (maybe class))
+(defun mode-class (symbol)
+  "Return the mode class associated to SYMBOL.
+Return NIL if it's not a mode."
+  (alex:when-let ((class (find-class symbol nil)))
+    (when (mopu:subclassp class (find-class 'mode))
+      class)))
+
+(defun package-modes (&optional packages)
+  "Return the list of mode symbols in Nyxt-related-packages."
+  (delete-if (complement #'mode-class)
+             (package-defined-symbols packages)))
+
+(-> subpackage-p (package package) boolean)
+(defun subpackage-p (subpackage package)
+  "Return non-nil if SUBPACKAGE is a sub-package of PACKAGE.
+A sub-package has a name that starts with that of PACKAGE followed by a '/' separator."
+  (sera:string-prefix-p (uiop:strcat (package-name package) "/")
+                        (package-name subpackage)))
+
+;; TODO: Should allow search all packages, e.g. when PACKAGES is NIL.
+(-> resolve-symbol ((or keyword string) (member :function :variable :class :mode :slot :command) &optional (cons *)) symbol)
+(defun resolve-symbol (designator type &optional (packages (list :nyxt :nyxt-user)))
+  "Find the symbol (of TYPE) designated by DESIGNATOR in PACKAGE.
+PACKAGES should be a list of package designators."
+  (sera:and-let* ((designator (string designator))
+                  (subpackages (append
+                                packages
+                                (sera:filter
+                                 (apply #'alex:disjoin
+                                        (mapcar (lambda (pkg)
+                                                  (alex:rcurry #'subpackage-p (find-package pkg)))
+                                                packages))
+                                 (list-all-packages))))
+                  (symbols (case type
+                             (:function (package-functions (list subpackages)))
+                             (:variable (package-variables (list subpackages)))
+                             (:class (package-classes (list subpackages)))
+                             (:mode (package-modes (list subpackages)))
+                             (:slot (mapcar #'name (package-slots (list subpackages))))
+                             (:command (mapcar #'name (list-commands))))))
+    (let ((results (delete designator symbols :key #'symbol-name :test #'string/=)))
+      (unless (sera:single results)
+        (log:warn "Multiple results found: ~a" results))
+      (values (first results)
+              results))))
+
 (export-always 'find-mode)
-(defmethod find-mode ((buffer buffer) mode-symbol)
-  "Return the mode corresponding to MODE-SYMBOL in active in BUFFER.
-Return nil if mode is not found.  MODE-SYMBOL does not have to be namespaced, it
-can be 'web-mode as well as 'nyxt/web-mode:web-mode."
-  (alex:when-let ((mode-full-symbol (mode-symbol mode-symbol)))
-    (find mode-full-symbol
-          (modes buffer)
-          :key #'sera:class-name-of)))
+(-> find-submode (symbol &optional buffer) (maybe mode))
+(defun find-submode (mode-symbol &optional (buffer (current-buffer)) )
+  "Return the first submode instance of MODE-SYMBOL in BUFFER.
+As a second value, return all matching submode instances.
+Return nil if mode is not found."
+  (alex:when-let ((class (mode-class mode-symbol)))
+    (let ((results (delete-if
+                    (alex:rcurry #'closer-mop:subclassp class)
+                    (modes buffer)
+                    :key #'class-of)))
+      (unless (sera:single results)
+        (log:warn "Found multiple matching modes."))
+      (values (first results)
+              results))))
 
-(export-always 'find-submode)
-(defmethod find-submode ((buffer buffer) mode-symbol)
-  "Like `find-mode' but return the first mode in BUFFER that is a sub-mode of MODE-SYMBOL.
-It may be MODE-SYMBOL itself."
-  (alex:when-let ((mode-full-symbol (mode-symbol mode-symbol)))
-    (find-if (lambda (m)
-               (closer-mop:subclassp (class-of m)
-                                     (find-class mode-full-symbol)))
-             (modes buffer))))
-
+(-> current-mode ((or keyword string) &optional buffer) (maybe mode))
 (export-always 'current-mode)
-(defun current-mode (mode-sym)
-  "Return mode instance of MODE-SYM in current buffer.
+(defun current-mode (mode-designator &optional (buffer (current-buffer)))
+  "Return mode instance of MODE-DESIGNATOR in BUFFER.
 Return NIL if none.
-The \"-mode\" suffix is automatically appended to MODE-SYM if missing."
-  (find-submode (current-buffer)
-                (let ((name (string mode-sym)))
-                  (if (str:ends-with-p "-mode" name :ignore-case t)
-                      mode-sym
-                      (intern (str:concat name "-MODE")
-                              (symbol-package mode-sym))))))
+The \"-mode\" suffix is automatically appended to MODE-KEYWORD if missing.
+This is convenience function for interactive use.
+For production code, see `find-submode' instead."
+  (let* ((mode-designator (string mode-designator))
+         (mode-designator (if (str:ends-with-p "-MODE" mode-designator)
+                              mode-designator
+                              (str:concat mode-designator "-MODE"))))
+    (find-submode (resolve-symbol mode-designator :mode)
+                  buffer)))
 
 (defun all-modes ()
   "Return the list of all namespaced mode symbols."
   (mopu:subclasses 'mode))
 
-(defun all-mode-names ()
-  "Return the list of namespace-less mode names."
-  (mapcar #'mode-name (all-modes)))
+(defun all-mode-symbols ()
+  "Return the list of mode symbols."
+  (mapcar #'class-name (all-modes)))
 
 (defun make-mode-suggestion (mode &optional source input)
   "Return a `suggestion' wrapping around ATTRIBUTE. "
@@ -267,7 +284,7 @@ The \"-mode\" suffix is automatically appended to MODE-SYM if missing."
 (define-class mode-source (prompter:source)
   ((prompter:name "Modes")
    (prompter:multi-selection-p t)
-   (prompter:constructor (sort (all-mode-names) #'string< :key #'symbol-name))
+   (prompter:constructor (sort (all-mode-symbols) #'string< :key #'symbol-name))
    (prompter:suggestion-maker 'make-mode-suggestion))
   (:export-class-name-p t)
   (:metaclass user-class))
@@ -281,8 +298,8 @@ The \"-mode\" suffix is automatically appended to MODE-SYM if missing."
                             (alex:mappend
                              #'modes
                              (uiop:ensure-list (buffers source)))
-                            :test (lambda (i y) (equal (mode-symbol i)
-                                                       (mode-symbol y)))))))
+                            :test (lambda (i y) (eq (sera:class-name-of i)
+                                                    (sera:class-name-of y)))))))
   (:export-class-name-p t)
   (:metaclass user-class))
 
@@ -294,7 +311,7 @@ The \"-mode\" suffix is automatically appended to MODE-SYM if missing."
                            (let ((common-modes
                                    (reduce #'intersection
                                            (mapcar (lambda (b)
-                                                     (mapcar #'mode-symbol (modes b)))
+                                                     (mapcar #'sera:class-name-of (modes b)))
                                                    (uiop:ensure-list (buffers source))))))
                              (set-difference (mapcar #'class-name (all-modes)) common-modes)))))
   (:export-class-name-p t)
@@ -320,9 +337,9 @@ ARGS are passed to the mode `enable' method."
                      :sources (make-instance 'inactive-mode-source
                                              :buffers buffers)))))
     (mapcar (lambda (buffer)
-              (mapcar (lambda (mode-name)
-                        (apply #'enable (or (find-mode buffer mode-name)
-                                            (make-instance (mode-symbol mode-name) :buffer buffer))
+              (mapcar (lambda (mode-sym)
+                        (apply #'enable (or (find-mode buffer mode-sym)
+                                            (make-instance mode-sym :buffer buffer))
                                args))
                       (uiop:ensure-list modes)))
             buffers)))
@@ -362,8 +379,8 @@ This is convenient when you use auto-mode by default and you want to toggle a
 mode permanently for this buffer."
                                                                                 (delete (read-from-string "nyxt/auto-mode:auto-mode" )
                                                                                         modes)))
-                                                   :marks (mapcar #'mode-symbol (modes buffer)))))
-         (modes-to-disable (set-difference (all-mode-names) modes-to-enable
+                                                   :marks (mapcar #'class-name-of (modes buffer)))))
+         (modes-to-disable (set-difference (all-mode-symbols) modes-to-enable
                                            :test #'string=)))
     (disable-modes (uiop:ensure-list modes-to-disable) buffer)
     (enable-modes (uiop:ensure-list modes-to-enable) buffer)))
