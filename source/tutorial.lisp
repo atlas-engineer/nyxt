@@ -203,10 +203,10 @@ executing " (:code "passthrough-mode") " the " (:code "C-i") " binding is associ
 with the webpage's italic command instead of " (:code "autofill") ". Finally, the
 user can return to their configuration just by executing " (:code "passthrough-mode") " again.")
    (:h3 "Enable, disable, and toggle multiple modes")
-   (:p "The command " (command-markup 'enable-mode) " allows the user to apply multiple
+   (:p "The command " (command-markup 'enable-modes) " allows the user to apply multiple
 modes (such as " (:code "nosound-mode") " and " (:code "dark-mode") ") to
 multiple buffers at once. Conversely, it is possible to revert this action by
-executing " (command-markup 'disable-mode) " while choosing exactly the same buffers and
+executing " (command-markup 'disable-modes) " while choosing exactly the same buffers and
 modes previously selected. Finally, " (:code "toggle-mode") " also allows
 activation and deactivation of multiple modes, but only for the current
 buffer.")
