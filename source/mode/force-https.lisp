@@ -27,6 +27,21 @@ help on how to proceed."
               (:code "save-exact-modes-for-future-visits") "."))))
    buffer))
 
+(define-mode force-https-mode ()
+  "Impose HTTPS on every queried URL.
+Use at your own risk -- it can break websites whose certificates are not known
+and websites that still don't have HTTPS version (shame on them!).
+
+To permanently bypass the \"Unacceptable TLS Certificate\" error:
+\(setf nyxt/certificate-exception-mode:*default-certificate-exceptions*
+       '(\"your.unacceptable.cert.website\"))
+
+Example:
+
+\(defmethod customize-instance ((buffer buffer) &key)
+  (nyxt/force-https-mode:force-https-mode :buffer buffer)"
+  ((previous-url (quri:uri ""))))
+
 (defun force-https-handler (request-data)
   "Impose HTTPS on any link with HTTP scheme."
   (let ((url (url request-data))
@@ -49,21 +64,6 @@ help on how to proceed."
              (quri:uri-port url) (quri.port:scheme-default-port "https")
              (url request-data) url)
        request-data))))
-
-(define-mode force-https-mode ()
-  "Impose HTTPS on every queried URL.
-Use at your own risk -- it can break websites whose certificates are not known
-and websites that still don't have HTTPS version (shame on them!).
-
-To permanently bypass the \"Unacceptable TLS Certificate\" error:
-\(setf nyxt/certificate-exception-mode:*default-certificate-exceptions*
-       '(\"your.unacceptable.cert.website\"))
-
-Example:
-
-\(defmethod customize-instance ((buffer buffer) &key)
-  (nyxt/force-https-mode:force-https-mode :buffer buffer)"
-  ((previous-url (quri:uri ""))))
 
 (defmethod enable ((mode force-https-mode) &key)
   (hooks:add-hook (request-resource-hook (buffer mode)) 'force-https-handler))
