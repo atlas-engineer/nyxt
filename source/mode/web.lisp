@@ -327,7 +327,7 @@ This saves the history to disk when BODY exits."
   "Go to parent URL in history."
   (let ((new-node
           (with-history-access (history buffer)
-            (if (conservative-history-movement-p (find-mode buffer 'web-mode))
+            (if (conservative-history-movement-p (find-submode 'nyxt/web-mode:web-mode buffer))
                 (htree:backward-owned-parents history (id buffer))
                 (htree:backward history (id buffer)))
             (htree:owner-node history (id buffer)))))
@@ -350,7 +350,7 @@ This saves the history to disk when BODY exits."
     (lambda (source)
       (with-history (history (buffer source))
         (let ((owner (htree:owner history (id (buffer source)))))
-          (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
+          (if (conservative-history-movement-p (find-submode 'nyxt/web-mode:web-mode (buffer source)))
               (htree:all-contiguous-owned-parents history owner)
               (htree:all-parents history :owner owner)))))))
   (:export-class-name-p t)
@@ -379,7 +379,7 @@ This saves the history to disk when BODY exits."
    (prompter:constructor
     (lambda (source)
       (with-history (history (buffer source))
-        (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
+        (if (conservative-history-movement-p (find-submode 'nyxt/web-mode:web-mode (buffer source)))
             (htree:owned-children (htree:owner history (id (buffer source))))
             (htree:children (htree:owner-node history (id (buffer source)))))))))
   (:documentation "Direct children of the current history node.")
@@ -402,7 +402,7 @@ This saves the history to disk when BODY exits."
 Otherwise go forward to the only child."
   (with-history (history buffer)
     (if (<= 2 (length
-               (if (conservative-history-movement-p (find-mode buffer 'web-mode))
+               (if (conservative-history-movement-p (find-submode 'nyxt/web-mode:web-mode buffer))
                    (htree:owned-children (htree:owner history (id buffer)))
                    (htree:children (htree:owner-node history (id buffer))))))
         (history-forwards-direct-children)
@@ -440,7 +440,7 @@ Otherwise go forward to the only child."
     (lambda (source)
       (with-history (history (buffer source))
         (let ((owner (htree:owner history (id (buffer source)))))
-          (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
+          (if (conservative-history-movement-p (find-submode 'nyxt/web-mode:web-mode (buffer source)))
               (htree:all-contiguous-owned-children history owner)
               (htree:all-children history :owner owner)))))))
   (:export-class-name-p t)
@@ -463,7 +463,7 @@ Otherwise go forward to the only child."
    (prompter:constructor
     (lambda (source)
       (with-history (history (buffer source))
-        (funcall (if (conservative-history-movement-p (find-mode (buffer source) 'web-mode))
+        (funcall (if (conservative-history-movement-p (find-submode 'nyxt/web-mode:web-mode (buffer source)))
                      #'htree:all-owner-nodes
                      #'htree:all-branch-nodes)
                  history

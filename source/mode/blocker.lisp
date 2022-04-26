@@ -202,7 +202,7 @@ This is an acceptable handler for `request-resource-hook'."
           (mapcar #'closer-mop:slot-definition-name
                   (closer-mop:class-slots (class-of object)))))
 
-(define-command update-hostlists (&optional (blocker-mode (find-mode (current-buffer) 'blocker-mode)))
+(define-command update-hostlists (&optional (blocker-mode (find-submode 'nyxt/blocker-mode:blocker-mode (current-buffer))))
   "Forces update for all the hostlists of `blocker-mode'."
   (load-hostlists blocker-mode :force-update-p t)
   (echo "Hostlists updating..."))

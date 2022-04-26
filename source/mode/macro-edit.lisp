@@ -49,13 +49,13 @@
                     collect (:tr (:td (:button :class "button"
                                                :onclick (ps:ps (nyxt/ps:lisp-eval
                                                                 `(nyxt/macro-edit-mode::remove-function
-                                                                  (current-mode 'macro-edit-mode)
+                                                                  (find-submode 'macro-edit-mode)
                                                                   ,index)))
                                                "✕"))
                                  (:td (:button :class "button"
                                                :onclick (ps:ps (nyxt/ps:lisp-eval
                                                                 `(nyxt/macro-edit-mode::command-help
-                                                                  (current-mode 'macro-edit-mode)
+                                                                  (find-submode 'macro-edit-mode)
                                                                   ,index)))
                                                "ℹ"))
                                  (:td (let ((name (symbol-name (name function))))
@@ -100,7 +100,7 @@
                    (functions macro-editor))))
     `(define-command-global ,name () "User generated macro form." ,@commands)))
 
-(define-command add-command (&optional (macro-editor (current-mode 'macro-edit-mode)))
+(define-command add-command (&optional (macro-editor (find-submode 'macro-edit-mode)))
   "Add a command to the macro."
   (let ((command 
           (first
@@ -113,7 +113,7 @@
   (and (name macro-editor)
        (functions macro-editor)))
 
-(define-command save-macro (&optional (macro-editor (current-mode 'macro-edit-mode)))
+(define-command save-macro (&optional (macro-editor (find-submode 'macro-edit-mode)))
   "Save the macro to the `*auto-config-file*' file."
   (if (macro-form-valid-p macro-editor)
       (progn
@@ -121,7 +121,7 @@
         (echo "Saved macro to ~s." (nfiles:expand *auto-config-file*)))
       (echo "Macro form is invalid; check it has a title and functions.")))
 
-(define-command evaluate-macro (&optional (macro-editor (current-mode 'macro-edit-mode)))
+(define-command evaluate-macro (&optional (macro-editor (find-submode 'macro-edit-mode)))
   "Evaluate the macro for testing."
   (if (macro-form-valid-p macro-editor)
       (progn (eval (generate-macro-form macro-editor))

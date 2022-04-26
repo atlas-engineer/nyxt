@@ -1683,7 +1683,7 @@ local anyways, and it's better to refresh it if a load was queried."
       (reload-buffers (list (find-if
                              (lambda (b)
                                (and (string= (title b) "*Downloads*")
-                                    (find-mode b 'download-mode)))
+                                    (find-submode 'nyxt:download-mode b)))
                              (buffer-list)))))
     (connect-signal download "failed" nil (webkit-download error)
       (declare (ignore error))

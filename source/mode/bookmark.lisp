@@ -52,7 +52,7 @@
   "List all bookmarks in a new buffer."
   (let ((bookmarks (group-bookmarks bookmarks-buffer)))
     (spinneret:with-html-string
-      (:style (style (find-mode bookmarks-buffer 'bookmark-mode)))
+      (:style (style (find-submode 'nyxt/bookmark-mode:bookmark-mode bookmarks-buffer)))
       (:h1 "Bookmarks")
       (cond
         ((zerop (hash-table-count bookmarks))

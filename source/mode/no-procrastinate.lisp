@@ -51,7 +51,8 @@
   "List all hosts to avoid procrastination in a new buffer."
   (let ((no-procrastinate-hosts (group-no-procrastinate-hosts no-procrastinate-hosts-buffer)))
     (spinneret:with-html-string
-      (:style (style (find-mode no-procrastinate-hosts-buffer 'no-procrastinate-mode)))
+      (:style (style (find-submode 'nyxt/no-procrastinate-mode:no-procrastinate-mode
+                                   no-procrastinate-hosts-buffer)))
       (:h1 "Hosts to avoid procrastination")
       (:body
        (if (zerop (hash-table-count no-procrastinate-hosts))

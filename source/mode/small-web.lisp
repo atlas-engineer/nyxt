@@ -190,8 +190,8 @@ Second return value should be the MIME-type of the content."))
         (spinneret:*html-style* :tree))
     (values (spinneret:with-html-string
               (:style (style (current-buffer)))
-              (:style (when (current-mode 'small-web)
-                        (style (current-mode 'small-web))))
+              (:style (when (find-submode 'small-web-mode)
+                        (style (find-submode 'small-web-mode))))
               (loop for line in (cl-gopher:lines contents)
                     collect (:raw (line->html line))))
             "text/html;charset=utf8")))
@@ -309,7 +309,7 @@ Please, check URL correctness and try again.")))
             ;; FIXME: This better become a default auto-mode rule.
             (enable-modes '(small-web-mode) buffer)
             (unless (member status '(:redirect :permanent-redirect))
-              (setf (nyxt/small-web-mode:redirections (current-mode 'small-web)) nil))
+              (setf (nyxt/small-web-mode:redirections (find-submode 'small-web-mode)) nil))
             (case status
               ((:input :sensitive-input)
                (let ((text (quri:url-encode
@@ -321,7 +321,7 @@ Please, check URL correctness and try again.")))
                  (buffer-load (str:concat url "?" text) :buffer buffer)))
               (:success
                (if (str:starts-with-p "text/gemini" meta)
-                   (let ((mode (current-mode 'small-web))
+                   (let ((mode (find-submode 'small-web-mode))
                          (elements (phos/gemtext:parse-string body))
                          (spinneret::*html-style* :tree))
                      (values (spinneret:with-html-string
@@ -332,16 +332,16 @@ Please, check URL correctness and try again.")))
                              "text/html;charset=utf8"))
                    (values body meta)))
               ((:redirect :permanent-redirect)
-               (push url (nyxt/small-web-mode:redirections (current-mode 'small-web)))
-               (if (< (length (nyxt/small-web-mode:redirections (current-mode 'small-web)))
-                      (nyxt/small-web-mode:allowed-redirections-count (current-mode 'small-web)))
+               (push url (nyxt/small-web-mode:redirections (find-submode 'small-web-mode)))
+               (if (< (length (nyxt/small-web-mode:redirections (find-submode 'small-web-mode)))
+                      (nyxt/small-web-mode:allowed-redirections-count (find-submode 'small-web-mode)))
                    (buffer-load (quri:merge-uris (quri:uri meta) (quri:uri url)) :buffer buffer)
                    (error-help
                     "Error"
                     (format nil "The server has caused too many (~a+) redirections.~& ~a~{ -> ~a~}"
-                            (nyxt/small-web-mode:allowed-redirections-count (current-mode 'small-web))
-                            (alex:lastcar (nyxt/small-web-mode:redirections (current-mode 'small-web)))
-                            (butlast (nyxt/small-web-mode:redirections (current-mode 'small-web)))))))
+                            (nyxt/small-web-mode:allowed-redirections-count (find-submode 'small-web-mode))
+                            (alex:lastcar (nyxt/small-web-mode:redirections (find-submode 'small-web-mode)))
+                            (butlast (nyxt/small-web-mode:redirections (find-submode 'small-web-mode)))))))
               ((:temporary-failure :server-unavailable :cgi-error :proxy-error
                 :permanent-failure :not-found :gone :proxy-request-refused :bad-request)
                (error-help "Error" meta))

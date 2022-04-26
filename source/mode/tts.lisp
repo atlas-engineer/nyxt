@@ -80,8 +80,8 @@ argument."
 
 (define-command start-tts ()
   "Start TTS on the content of the current buffer matching the selector."
-  (process-document (current-mode 'tts-mode)))
+  (process-document (find-submode 'tts-mode)))
 
 (define-command stop-tts ()
   "Stop running TTS process if there is one."
-  (disable (current-mode 'tts-mode)))
+  (disable (find-submode 'tts-mode)))
