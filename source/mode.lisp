@@ -6,10 +6,10 @@
 ;; TODO: Leverage `activate'.
 
 (defclass mode-class (user-class)
-  ((toggler-command-p
-    :initform t
+  ((toggler-command-p                   ; TODO: Rename to `togglable-p'?
+    :initform (list t)
     :initarg :toggler-command-p
-    :type boolean
+    :type (cons boolean null)
     :documentation "Whether to define a toggler command for the defined mode.")))
 (export-always 'mode-class)
 
