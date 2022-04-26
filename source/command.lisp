@@ -66,11 +66,27 @@ We need a `command' class for multiple reasons:
     (intern (format nil "~a-AFTER-HOOK" command-name)
             (symbol-package command-name))))
 
+(defun arglist (fn)
+  "Like `swank-backend:arglist' but normalized the result for `alex:parse-ordinary-lambda-list'."
+  #-ccl
+  (swank-backend:arglist fn)
+  #+ccl
+  (let ((package (alex:if-let ((name (swank-backend:function-name fn)))
+                   (symbol-package (if (listp name)
+                                       ;; Closures are named '(:internal NAME)
+                                       (second name)
+                                       name))
+                   *package*)))
+    (delete 'ccl::&lexpr
+            (mapcar (lambda (s)
+                      (if (keywordp s) (intern (string s) package) s))
+                    (swank-backend:arglist fn)))))
+
 (defmethod initialize-instance :after ((command command) &key)
   (let ((original-lambda (fn command)))
     (setf (fn command)
           (uiop:ensure-function
-           (let* ((arglist (swank-backend:arglist (fn command)))
+           (let* ((arglist (arglist (fn command)))
                   (parsed-arglist (multiple-value-list (alex:parse-ordinary-lambda-list arglist)))
                   (rest-arg (or (third parsed-arglist)
                                 (when (fourth parsed-arglist)

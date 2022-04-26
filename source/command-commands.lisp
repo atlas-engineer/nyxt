@@ -116,7 +116,7 @@ User input is evaluated Lisp."
                         :prompt "Execute extended command"
                         :sources (make-instance 'command-source)
                         :hide-suggestion-count-p t)))
-         (lambda-list (swank-backend:arglist (fn command))))
+         (lambda-list (arglist (fn command))))
     (multiple-value-match (alex:parse-ordinary-lambda-list lambda-list)
       ((required-arguments optional-arguments _ keyword-arguments)
        (multiple-value-match (parse-function-lambda-list-types (fn command))
