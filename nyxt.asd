@@ -143,9 +143,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "history")
                  (:file "autofill")
                  (:file "external-editor")
-                 (:file "no-procrastinate")
-                 #+quicklisp
-                 (:file "lisp-system")))
+                 (:file "no-procrastinate")))
                (:module "Core modes"
                 :pathname "mode"
                 :depends-on ("Core")
@@ -192,6 +190,8 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "spell-check")
                  (:file "zoom")))
                (:file "annotate" :depends-on ("Core modes"))
+               #+quicklisp
+               (:file "lisp-system" :depends-on ("Core modes"))
                (:file "status" :depends-on ("Core"))
                (:file "start" :depends-on ("Core"))
                (:module "Editor modes"
