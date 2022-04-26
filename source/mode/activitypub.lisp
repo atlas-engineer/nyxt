@@ -577,7 +577,8 @@ FORMAT can be one of
      :class "card"
      (:h2 (:a :href (http->ap (id object))
               (format nil "~a (@~a)" (name* object) (preferred-username object))))
-     (:raw (summary object)))))
+     (when (summary object)
+       (:raw (summary object))))))
 
 (defmethod object->html ((object actor) (format (eql :page)))
   (spinneret:with-html-string
