@@ -443,7 +443,7 @@ Try to guess it from all the data available."))
   (:method ((object link) (format (eql :link)))
     (spinneret:with-html-string
       (:a :class "button"
-          :href (http->ap (slot-value object 'href))
+          :href (http->ap (href object))
           (name* object))))
   (:method ((objects list) format)
     (spinneret:with-html-string
