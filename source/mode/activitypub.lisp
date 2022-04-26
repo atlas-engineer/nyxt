@@ -38,7 +38,8 @@ Important methods to be avare of:
              :border-color theme:primary
              :border-style "solid"
              :padding "1em"
-             :margin "1em")))
+             :margin-top "1em"
+             :margin-bottom "1em")))
    (auth-token
     nil
     :type (maybe string)
