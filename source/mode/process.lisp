@@ -52,7 +52,7 @@ Accepts the path to the acted-on document and `process-mode' instance.")
                                 when (eq condition-value :return)
                                   do (progn
                                        (setf (thread-terminated-p mode) t)
-                                       (disable-modes (list (mode-symbol mode)) (buffer mode))
+                                       (disable-modes (sera:class-name-of mode) (buffer mode))
                                        (return))
                                 else
                                   when condition-value

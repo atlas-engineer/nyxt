@@ -381,7 +381,7 @@ With MODE-SYMBOLS and GLOBAL-P, include global commands."
               (notany
                (lambda (mode-symbol)
                  (eq (symbol-package (name command))
-                     (symbol-package (mode-symbol mode-symbol))))
+                     (symbol-package mode-symbol)))
                mode-symbols)))
        *command-list*)
       *command-list*))

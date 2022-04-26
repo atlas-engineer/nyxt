@@ -463,7 +463,7 @@ of BUFFER."
   (print-unreadable-object (buffer stream :type t :identity t)
     (format stream "~a" (id buffer))))
 
-(defvar %default-modes '(web-mode base-mode)
+(defvar %default-modes '(nyxt/web-mode:web-mode base-mode)
   "The default modes for unspecialized buffers.
 This is useful when there is no current buffer.")
 
@@ -994,7 +994,7 @@ See `make-buffer' for a description of the arguments."
          (buffer (make-buffer :title (title curr-buffer)
                               :url (url curr-buffer)
                               :modes (or modes
-                                         (mapcar #'mode-symbol
+                                         (mapcar #'sera:class-name-of
                                                  (modes curr-buffer)))
                               :parent-buffer parent-buffer)))
     (set-current-buffer buffer)

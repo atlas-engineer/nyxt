@@ -24,7 +24,7 @@ This leverages `mode-status' which can be specialized for individual modes."
                         (:button :class "button"
                                  :onclick (ps:ps (nyxt/ps:lisp-eval
                                                   `(describe-class :class `,(mode-name mode))))
-                                 :title (format nil "Describe ~a" (mode-name mode))
+                                 :title (format nil "Describe ~a" mode)
                                  formatted-mode))))))
 
 (defun list-modes (buffer)
