@@ -12,6 +12,7 @@
 (define-class annotation ()
   ((data
     ""
+    :export nil
     :documentation "The annotation data.")
    (tags
     '()

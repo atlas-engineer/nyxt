@@ -140,7 +140,6 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "prompt-buffer")
                  (:file "command-commands")
                  (:file "recent-buffers")
-                 (:file "annotate")
                  (:file "history")
                  (:file "autofill")
                  (:file "external-editor")
@@ -192,6 +191,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "search-buffer")
                  (:file "spell-check")
                  (:file "zoom")))
+               (:file "annotate" :depends-on ("Core modes"))
                (:file "status" :depends-on ("Core"))
                (:file "start" :depends-on ("Core"))
                (:module "Editor modes"
