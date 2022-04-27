@@ -116,7 +116,7 @@ The pre-defined `:after' method handles further setup."))
         (prompt-render-prompt buffer)
         (print-status))
     ;; TODO: Should we move mode to the front when it already exists?
-    (push mode (modes (buffer mode))))
+    (pushnew mode (modes (buffer mode))))
   (setf (slot-value mode 'enabled-p) t)
   (log:debug "~a enabled." mode))
 
