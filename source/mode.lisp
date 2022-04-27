@@ -35,7 +35,7 @@
                (let ((existing-instance (find-submode name buffer)))
                  (unless explicit?
                    (setf activate (or (not existing-instance)
-                                      (not (slot-value existing-instance 'enabled-p)))))
+                                      (not (enabled-p existing-instance)))))
                  (if activate
                      ;; TODO: Shall we pass args to `make-instance' or `enable'?  Have 2 args parameters?
                      (enable (or existing-instance
@@ -73,6 +73,7 @@ be dynamically calculated as the first letters of the mode name.")
    (enabled-p
     nil
     :accessor nil
+    :reader t
     :documentation "Whether the mode is enabled in `buffer'.")
    (enable-hook
     (make-instance 'hook-mode)
