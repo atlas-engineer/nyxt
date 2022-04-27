@@ -168,7 +168,8 @@ FUNCTION is the action to perform on the selected elements."
   (let* ((buffer (current-buffer)))
     (let ((result (prompt
                    :prompt prompt
-                   :extra-modes '(element-hint-mode)
+                   ;; TODO: No need to find the symbol if we move this code (and the rest) to the element-hint-mode package.
+                   :extra-modes (list (resolve-symbol :element-hint-mode :mode))
                    :history nil
                    :sources
                    (make-instance
