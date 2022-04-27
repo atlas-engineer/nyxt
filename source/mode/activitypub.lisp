@@ -520,13 +520,75 @@ FORMAT can be one of
     (local-time:format-timestring nil time :format local-time:+asctime-format+)
     "sometime"))
 
+(defmacro with-card (&body body)
+  `(spinneret:with-html-string
+     (:div :class "card" ,@body)))
+
 (defmethod object->html ((object activity) (format (eql :card)))
-  (spinneret:with-html-string
-    (:div
-     :class "card"
-     (:i (:a :href (http->ap (url* (actor object))) (name* (actor object)))
-         (format nil " ~(~a~)-ed" (object-type object)))
-     (:div (:raw (object->html (object object) :card))))))
+  (with-card
+    (:i (:a :href (http->ap (url* (actor object))) (name* (actor object)))
+        (format nil " ~(~a~)-ed" (object-type object)))
+    (:div (:raw (object->html (object object) :card)))))
+
+(defmethod object->html ((object add-activity) (format (eql :card)))
+  (with-card
+    (:i (:a :href (http->ap (url* (actor object))) (name* (actor object)))
+        " added " (when (target object)
+                    (:span "into " (:a :href (http->ap (url* (target object)))
+                                       (name* (target object))))))
+    (:div (:raw (object->html (object object) :card)))))
+
+(defmethod object->html ((object delete-activity) (format (eql :card)))
+  (with-card
+    (:i (:a :href (http->ap (url* (actor object))) (name* (actor object)))
+        " deleted " (when (origin object)
+                      (:span "from " (:a :href (http->ap (url* (origin object)))
+                                         (name* (origin object))))))
+    (:div (:raw (object->html (object object) :card)))))
+
+(defmethod object->html ((object invite-activity) (format (eql :card)))
+  (with-card
+    (:i (:a :href (http->ap (url* (actor object))) (name* (actor object)))
+        " invited " (:a :href (http->ap (url* (object object))) (name* (object object)))
+        (when (target object)
+          (:span " into " (:a :href (http->ap (url* (target object))) (name* (target object))))))))
+
+(defmethod object->html ((object offer-activity) (format (eql :card)))
+  (with-card
+    (:i (:a :href (http->ap (url* (actor object))) (name* (actor object)))
+        " offered " (:a :href (http->ap (url* (object object))) (name* (object object)))
+        (when (target object)
+          (:span " to " (:a :href (http->ap (url* (target object))) (name* (target object))))))))
+
+(defmethod object->html ((object remove-activity) (format (eql :card)))
+  (with-card
+    (:i (:a :href (http->ap (url* (actor object))) (name* (actor object)))
+        " removed " (:a :href (http->ap (url* (object object))) (name* (object object)))
+        (when (origin object)
+          (:span " from " (:a :href (http->ap (url* (origin object))) (name* (origin object))))))))
+
+(defmethod object->html ((object travel-activity) (format (eql :card)))
+  (with-card
+    (:i (:a :href (http->ap (url* (actor object))) (name* (actor object)))
+        " travelled "
+        (when (origin object)
+          (:span " from " (:a :href (http->ap (url* (origin object))) (name* (origin object)))))
+        (when (target object)
+          (:span " to " (:a :href (http->ap (url* (target object))) (name* (target object))))))))
+
+(defmethod object->html ((object question-activity) (format (eql :card)))
+  (with-card
+    (:i (:a :href (http->ap (url* (actor object))) (name* (actor object))) " asks")
+    (:h2 (name* object))
+    (cond
+      ((closed object)
+       (:p "closed"))
+      ((one-of object)
+       (dolist (option (one-of object))
+         (:raw (object->html option :card))))
+      ((any-of object)
+       (dolist (option (any-of object))
+         (:raw (object->html option :card)))))))
 
 (defmethod object->html ((object string) (format (eql :link)))
   (if (valid-url-p object)
@@ -576,13 +638,11 @@ FORMAT can be one of
 
 (defmethod object->html ((object actor) (format (eql :card)))
   (declare (ignorable format))
-  (spinneret:with-html-string
-    (:div
-     :class "card"
-     (:h2 (:a :href (http->ap (id object))
-              (format nil "~a (@~a)" (name* object) (preferred-username object))))
-     (when (summary object)
-       (:raw (summary object))))))
+  (with-card
+    (:h2 (:a :href (http->ap (id object))
+             (format nil "~a (@~a)" (name* object) (preferred-username object))))
+    (when (summary object)
+      (:raw (summary object)))))
 
 (defmethod object->html ((object actor) (format (eql :page)))
   (spinneret:with-html-string
