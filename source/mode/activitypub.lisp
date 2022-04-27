@@ -461,11 +461,16 @@ Try to guess it from all the data available."))
                (lambda (object)
                  (spinneret:with-html-string (:raw (object->html object format))))
                objects)))))
+  (:method ((object string) (format (eql :link)))
+    (if (valid-url-p object)
+        (spinneret:with-html-string
+          (:a :class "button"
+              :href object
+              (:b "[unsupported] ") (nyxt::schemeless-url (quri:uri object))))
+        (call-next-method)))
   (:method ((object t) format)
     (spinneret:with-html-string
-      (:a :class "button"
-          :href object
-          (:raw (value->html object (eq :link format))))))
+      (:raw (value->html object (eq :link format)))))
   (:documentation "Produce a reasonable HTML representation of an OBJECT according to FORMAT.
 FORMAT can be one of
 - :LINK for condensed link to OBJECT.
@@ -594,14 +599,6 @@ FORMAT can be one of
       ((any-of object)
        (dolist (option (any-of object))
          (:raw (object->html option :card)))))))
-
-(defmethod object->html ((object string) (format (eql :link)))
-  (if (valid-url-p object)
-      (spinneret:with-html-string
-        (:a :class "button"
-            :href object
-            (:b "[unsupported] ") (nyxt::schemeless-url (quri:uri object))))
-      (call-next-method)))
 
 ;; FIXME: What is a "card view" for a collection? A card with condensed
 ;; link-like content or a container for cards? It used to be the former, now
