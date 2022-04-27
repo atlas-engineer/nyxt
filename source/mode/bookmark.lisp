@@ -19,6 +19,7 @@
              :padding "16px"
              :margin "6px"
              :border "none"
+             :border-radius "2px"
              :outline "none"
              :text-align "left")
             ;; Taken from buffer.lisp to save space for big bookmark lists.
