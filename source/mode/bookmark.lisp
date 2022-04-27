@@ -18,7 +18,6 @@
              :font-size        "14px"
              :padding          "16px"
              :margin           "6px"
-             :width            "100%"
              :border           "none"
              :outline          "none"
              :text-align       "left")
