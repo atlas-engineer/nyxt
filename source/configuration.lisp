@@ -196,6 +196,9 @@ Return NIL if not a class form."
                 (alex:appendf (forms class-form) (list form)))))
         (alex:appendf config (list form)))))
 
+(export-always '%slot-value%)
+(defvar %slot-value% nil)
+
 (export-always 'define-configuration)
 (defmacro define-configuration (classes (&body slots-and-values))
   (sera:and-let* ((classes (uiop:ensure-list classes)))
@@ -208,10 +211,8 @@ Return NIL if not a class form."
              ,@(loop for ((slot value)) on slots-and-values
                      unless (eq slot 'default-modes)
                        collect `(setf (slot-value object (quote ,slot))
-                                      (let ((%slot-value% (slot-value object (quote ,slot)))
-                                            (%slot-default% ,(getf (mopu:slot-properties class slot)
-                                                                   :initform)))
-                                        (declare (ignorable %slot-default% %slot-value%))
+                                      (let ((%slot-value% (slot-value object (quote ,slot))))
+                                        (declare (ignorable %slot-value%))
                                         ,value))))))))
 
 
