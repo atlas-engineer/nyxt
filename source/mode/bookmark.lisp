@@ -16,12 +16,14 @@
              :background-color theme:secondary
              :color theme:background
              :font-size "14px"
-             :padding "16px"
+             :padding "12px"
              :margin "6px"
              :border "none"
              :border-radius "2px"
              :outline "none"
              :text-align "left")
+            ("dl"
+             :margin-left "8px")
             ;; Taken from buffer.lisp to save space for big bookmark lists.
             (button
              :display "inline-block"
@@ -67,7 +69,6 @@
                          (serapeum:ellipsize (title bookmark) 80))
                     (:dd (:a :href url-href uri-host))
                     (when (tags bookmark)
-                      (:dt "Tags")
                       (:dd (format nil " (~{~a~^, ~})" (tags bookmark)))))
                    (:hr)))))
             bookmarks)))
