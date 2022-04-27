@@ -926,9 +926,10 @@ See `finalize-buffer'."
                                         :mime-type mime-type
                                         :known-type-p is-known-type))))
       (if request-data
-          (if (null (hooks:handlers (request-resource-hook buffer)))
+          (if (and (null (hooks:handlers (request-resource-hook buffer)))
+                   (null (hooks:handlers (pre-request-hook buffer))))
               (progn
-                (log:debug "Forward to ~s's renderer (no request-resource-hook handlers)."
+                (log:debug "Forward to ~s's renderer (no pre-request-hook nor request-resource-hook handlers)."
                            buffer)
                 (webkit:webkit-policy-decision-use response-policy-decision))
               (let ((request-data
