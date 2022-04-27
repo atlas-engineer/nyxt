@@ -53,6 +53,7 @@
            (mapcar #'(lambda (method)
                        `(call-method ,method))
                    methods)))
+    (clrhash *groups*)
     (let ((form `(prog1
                      (progn
                        ,@(call-methods
