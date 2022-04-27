@@ -26,7 +26,7 @@ get/set-content (which is necessary for operation)."
                   :type keymap:scheme))
   (:toggler-command-p nil))
 
-(defmethod enable ((editor editor-mode) &key)
+(defmethod enable ((editor editor-mode) &key) ; TODO: Use an internal page instead of this HTML injection?
   (let* ((content (spinneret:with-html-string
                     (:head (:style (style (buffer editor))))
                     (:body (:p "Please configure an editor mode to use an editor buffer."))))

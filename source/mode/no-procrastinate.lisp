@@ -17,7 +17,6 @@
 (define-mode no-procrastinate-mode (nyxt/blocker-mode:blocker-mode)
   "Mode to block access to hosts associated to procrastination."
   ((rememberable-p nil)
-   (load-hostlists-p t)
    (style (theme:themed-css (theme *browser*)
             ("summary"
              :background-color theme:secondary

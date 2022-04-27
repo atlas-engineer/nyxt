@@ -82,8 +82,7 @@ Example:
    (blocked-hosts
     (make-hash-table :test 'equal)
     :export nil
-    :documentation "The set of host names to block.")
-   (load-hostlists-p t)))
+    :documentation "The set of host names to block.")))
 
 (defmethod enable ((mode blocker-mode) &key)
   (when (web-buffer-p (buffer mode))
