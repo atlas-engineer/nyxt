@@ -141,14 +141,18 @@ NAME is an unquoted symbol naming the Lisp-side class.
 TYPE is a string with a ActivityPub object type.
 SUPERCLASSES are Lisp superclasses to fill slots from in addition to the direct ones.
 
-NAMES-AND-SLOTS is a list of (JSON-NAME &optional NAME PROCESSOR) forms or just
+NAMES-AND-SLOTS is a list of (JSON-NAME &key LISP-NAME PROCESSOR LITERAL-P) forms or just
 JSON-NAMEs as strings, where
 - JSON-NAME is the string matching the JSON name of the property to fill the
   slot from.
-- NAME is the (unquoted) symbol for the Lisp-side slot storing the information.
+- LISP-NAME is the (unquoted) symbol for the Lisp-side slot storing the information.
 - PROCESSOR is a form evaluating to a function object. The function designated
   by this object should take the raw string value of a JSON-NAMEd property and
-  produce a Lisp value matching it."
+  produce a Lisp value matching it.
+
+- LITERAL-P denotes whether the object is in its final form when accessed. If
+  LITERAL-P is false (it is by default), slot accessor might try to fetch the
+  object from the remote URL and/or parse the slot value."
   (let ((normalized-slots
           (mapcar (lambda (slot)
                     (destructuring-bind
