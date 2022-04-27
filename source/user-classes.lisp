@@ -47,18 +47,12 @@
                    methods)))
     (let ((form `(prog1
                      (progn
-                       ,@(call-methods before)
-                       ,@(call-methods group-0)
-                       ,@(call-methods group-1)
-                       ,@(call-methods group-2)
-                       ,@(call-methods group-3)
-                       ,@(call-methods group-4)
-                       ,@(call-methods group-5)
-                       ,@(call-methods group-6)
-                       ,@(call-methods group-7)
-                       ,@(call-methods group-8)
-                       ,@(call-methods group-9)
-                       ,@(call-methods primary))
+                       ,@(call-methods
+                          (append
+                           before
+                           group-0 group-1 group-2 group-3 group-4
+                           group-5 group-6 group-7 group-8 group-9
+                           primary)))
                    ,@(call-methods (reverse after)))))
       (if around
           `(call-method ,(first around)
