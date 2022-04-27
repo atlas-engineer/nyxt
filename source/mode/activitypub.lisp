@@ -472,6 +472,10 @@ FORMAT can be one of
 - :CARD for compact yet informative representation of OBJECT.
 - :PAGE for full-page OBJECT rendering (is usually linked to by :LINK format)."))
 
+(defun anchor (object)
+  (spinneret:with-html-string
+    (:a :href (http->ap (url* object)) (name* object))))
+
 (defun render-image-card (object)
   (spinneret:with-html-string
     (:img :src (url* object)
@@ -513,8 +517,7 @@ FORMAT can be one of
   (spinneret:with-html-string
     (when (name* object)
       (:h1 (name* object)))
-    (:i "by " (when (author* object)
-                (:a :href (slot-value (author* object) 'id) (name* (author* object)))))
+    (:i "by " (when (author* object) (:raw (anchor (author* object)))))
     (when (content object)
       (:p (:raw (content object))))))
 
@@ -530,13 +533,12 @@ FORMAT can be one of
 
 (defmethod object->html ((object activity) (format (eql :card)))
   (with-card
-    (:i (:a :href (http->ap (url* (actor object))) (name* (actor object)))
-        (format nil " ~(~a~)-ed" (object-type object)))
+    (:i (:raw (anchor (actor object))) (format nil " ~(~a~)-ed" (object-type object)))
     (:div (:raw (object->html (object object) :card)))))
 
 (defmethod object->html ((object add-activity) (format (eql :card)))
   (with-card
-    (:i (:a :href (http->ap (url* (actor object))) (name* (actor object)))
+    (:i (:raw (anchor (actor object)))
         " added " (when (target object)
                     (:span "into " (:a :href (http->ap (url* (target object)))
                                        (name* (target object))))))
@@ -546,43 +548,42 @@ FORMAT can be one of
   (with-card
     (:i (:a :href (http->ap (url* (actor object))) (name* (actor object)))
         " deleted " (when (origin object)
-                      (:span "from " (:a :href (http->ap (url* (origin object)))
-                                         (name* (origin object))))))
+                      (:span "from " (:raw (anchor (origin object))))))
     (:div (:raw (object->html (object object) :card)))))
 
 (defmethod object->html ((object invite-activity) (format (eql :card)))
   (with-card
-    (:i (:a :href (http->ap (url* (actor object))) (name* (actor object)))
-        " invited " (:a :href (http->ap (url* (object object))) (name* (object object)))
+    (:i (:raw (anchor (actor object)))
+        " invited " (:raw (anchor (object object)))
         (when (target object)
-          (:span " into " (:a :href (http->ap (url* (target object))) (name* (target object))))))))
+          (:span " into " (:raw (anchor (target object))))))))
 
 (defmethod object->html ((object offer-activity) (format (eql :card)))
   (with-card
-    (:i (:a :href (http->ap (url* (actor object))) (name* (actor object)))
-        " offered " (:a :href (http->ap (url* (object object))) (name* (object object)))
+    (:i (:raw (anchor (actor object)))
+        " offered " (:raw (anchor (object object)))
         (when (target object)
-          (:span " to " (:a :href (http->ap (url* (target object))) (name* (target object))))))))
+          (:span " to " (:raw (anchor (target object))))))))
 
 (defmethod object->html ((object remove-activity) (format (eql :card)))
   (with-card
-    (:i (:a :href (http->ap (url* (actor object))) (name* (actor object)))
-        " removed " (:a :href (http->ap (url* (object object))) (name* (object object)))
+    (:i (:raw (anchor (actor object)))
+        " removed " (:raw (anchor (object object)))
         (when (origin object)
-          (:span " from " (:a :href (http->ap (url* (origin object))) (name* (origin object))))))))
+          (:span " from " (:raw (anchor (origin object))))))))
 
 (defmethod object->html ((object travel-activity) (format (eql :card)))
   (with-card
-    (:i (:a :href (http->ap (url* (actor object))) (name* (actor object)))
+    (:i (:raw (anchor (actor object)))
         " travelled "
         (when (origin object)
-          (:span " from " (:a :href (http->ap (url* (origin object))) (name* (origin object)))))
+          (:span " from " (:raw (anchor (origin object)))))
         (when (target object)
-          (:span " to " (:a :href (http->ap (url* (target object))) (name* (target object))))))))
+          (:span " to " (:raw (anchor (target object))))))))
 
 (defmethod object->html ((object question-activity) (format (eql :card)))
   (with-card
-    (:i (:a :href (http->ap (url* (actor object))) (name* (actor object))) " asks")
+    (:i (:raw (anchor (actor object))) " asks: ")
     (:h2 (name* object))
     (cond
       ((closed object)
@@ -632,7 +633,7 @@ FORMAT can be one of
 (defmethod object->html ((object collection-page) (format (eql :page)))
   (declare (ignorable format))
   (spinneret:with-html-string
-    (:h1 "Page of " (name* (part-of object)))
+    (:h1 "Page of " (:raw (anchor (part-of object))))
     (dolist (item (or (items object) (ordered-items object)))
       (:raw (object->html item :card)))
     (when (prev object)
