@@ -197,7 +197,8 @@ Return NIL if not a class form."
         (alex:appendf config (list form)))))
 
 (export-always '%slot-value%)
-(defvar %slot-value% nil)
+(defvar %slot-value% nil
+  "Holds the value of the slot being configured when in `define-configuration'.")
 
 (export-always 'define-configuration)
 (defmacro define-configuration (classes (&body slots-and-values))
@@ -213,7 +214,12 @@ Return NIL if not a class form."
                         collect `(setf (slot-value object (quote ,slot))
                                        (let ((%slot-value% (slot-value object (quote ,slot))))
                                          (declare (ignorable %slot-value%))
-                                         ,value))
+                                         (symbol-macrolet ((nyxt-user::%slot-default%
+                                                             (progn
+                                                               (echo-warning
+                                                                "%slot-default% is deprecated. Use %slot-value% instead.")
+                                                               %slot-value%)))
+                                           ,value)))
                       else
                         collect `(defmethod ,slot :around ((object ,class))
                                    (let ((%slot-value% (call-next-method)))
