@@ -3,8 +3,6 @@
 
 (in-package :nyxt)
 
-;; TODO: Leverage `activate'.
-
 (defclass mode-class (user-class)
   ((toggler-command-p                   ; TODO: Rename to `togglable-p'?
     :initform (list t)
@@ -36,12 +34,14 @@
                       &allow-other-keys)
                (let ((existing-instance (find-submode name buffer)))
                  (unless explicit?
-                   (setf activate (not existing-instance)))
+                   (setf activate (or (not existing-instance)
+                                      (not (slot-value existing-instance 'enabled-p)))))
                  (if activate
-                     (unless existing-instance
-                       (enable (apply #'make-instance name
-                                      :buffer buffer
-                                      args)))
+                     ;; TODO: Shall we pass args to `make-instance' or `enable'?  Have 2 args parameters?
+                     (enable (or existing-instance
+                                 (apply #'make-instance name
+                                        :buffer buffer
+                                        args)))
                      (when existing-instance
                        (disable existing-instance))))))
         (delete-command name))))
@@ -117,6 +117,7 @@ The pre-defined `:after' method handles further setup."))
         (print-status))
     ;; TODO: Should we move mode to the front when it already exists?
     (push mode (modes (buffer mode))))
+  (setf (slot-value mode 'enabled-p) t)
   (log:debug "~a enabled." mode))
 
 (export-always 'disable)
@@ -137,6 +138,7 @@ The pre-defined `:after' method handles further cleanup."))
                  buffer))
         (prompt-render-prompt buffer)
         (print-status)))
+  (setf (slot-value mode 'enabled-p) nil)
   (log:debug "~a disabled." mode))
 
 (export-always 'define-mode)
