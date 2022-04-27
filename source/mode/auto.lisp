@@ -91,6 +91,10 @@ If the mode specifier is not known, it's omitted from the results."
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
+(defmethod print-object ((rule auto-mode-rule) stream)
+  (print-unreadable-object (rule stream :type t :identity t)
+    (format stream "~a" (second (test rule)))))
+
 (-> matching-auto-mode-rule (quri:uri buffer) (or auto-mode-rule null))
 (defun matching-auto-mode-rule (url buffer)
   (let ((rules (nfiles:content (auto-mode-rules-file buffer))))
