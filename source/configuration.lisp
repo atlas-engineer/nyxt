@@ -201,19 +201,23 @@ Return NIL if not a class form."
 
 (export-always 'define-configuration)
 (defmacro define-configuration (classes (&body slots-and-values))
-  (sera:and-let* ((classes (uiop:ensure-list classes)))
+  (alex:when-let ((classes (uiop:ensure-list classes)))
     `(progn
        ,@(loop
-          for class in classes
-          collect
-          `(defmethod customize-instance ,(intern (symbol-name class) :keyword) ,(gensym)
-             ((object ,class) &key)
-             ,@(loop for ((slot value)) on slots-and-values
-                     unless (eq slot 'default-modes)
-                       collect `(setf (slot-value object (quote ,slot))
-                                      (let ((%slot-value% (slot-value object (quote ,slot))))
-                                        (declare (ignorable %slot-value%))
-                                        ,value))))))))
+           for class in classes
+           collect
+           `(defmethod customize-instance ,(intern (symbol-name class) :keyword) ,(gensym)
+              ((object ,class) &key)
+              ,@(loop for ((slot value)) on slots-and-values
+                      when (find slot (mopu:slot-names class))
+                        collect `(setf (slot-value object (quote ,slot))
+                                       (let ((%slot-value% (slot-value object (quote ,slot))))
+                                         (declare (ignorable %slot-value%))
+                                         ,value))
+                      else
+                        collect `(defmethod ,slot :around ((object ,class))
+                                   (let ((%slot-value% (call-next-method)))
+                                     ,value))))))))
 
 
 (defparameter %buffer nil)              ; TODO: Make a monad?
