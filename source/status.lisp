@@ -15,7 +15,7 @@ This leverages `mode-status' which can be specialized for individual modes."
     (:button :type "button"
              :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:toggle-modes)))
              :title (str:concat "Enabled modes: " (list-modes buffer)) "✚")
-    (loop for mode in (sera:filter #'visible-in-status-p (modes buffer))
+    (loop for mode in (sera:filter (alex:conjoin (alex:rcurry #'slot-value 'enabled-p) #'visible-in-status-p) (modes buffer))
           collect (let* ((formatted-mode (if (glyph-mode-presentation-p (status-buffer window))
                                              (glyph mode)
                                              (mode-status mode))))
