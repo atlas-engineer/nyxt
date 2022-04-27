@@ -205,16 +205,14 @@ Return NIL if not a class form."
           collect
           `(defmethod customize-instance ,(intern (symbol-name class) :keyword) ,(gensym)
              ((object ,class) &key)
-             ,@(loop for slot-and-value in slots-and-values
-                     for slot = (first slot-and-value)
-                     for value = (second slot-and-value)
+             ,@(loop for ((slot value)) on slots-and-values
                      unless (eq slot 'default-modes)
-                     collect `(setf (slot-value object (quote ,slot))
-                                    (let ((%slot-value% (slot-value object (quote ,slot)))
-                                          (%slot-default% ,(getf (mopu:slot-properties class slot)
-                                                                 :initform)))
-                                      (declare (ignorable %slot-default% %slot-value%))
-                                      ,value))))))))
+                       collect `(setf (slot-value object (quote ,slot))
+                                      (let ((%slot-value% (slot-value object (quote ,slot)))
+                                            (%slot-default% ,(getf (mopu:slot-properties class slot)
+                                                                   :initform)))
+                                        (declare (ignorable %slot-default% %slot-value%))
+                                        ,value))))))))
 
 
 (defparameter %buffer nil)              ; TODO: Make a monad?
