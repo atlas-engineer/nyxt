@@ -20,7 +20,6 @@
              (let ((function-name (intern (format nil "MATCH-INTO-GROUP-~d" number))))
                `(defun ,function-name (qualifier)
                   (unless (member (first qualifier) (gethash ,number *groups*) :test #'equal)
-                    (format t "Pushing ~s into group ~d~&" (first qualifier) ,number)
                     (push (first qualifier) (gethash ,number *groups*))
                     t)))))
   (define-group-predicate 0)
