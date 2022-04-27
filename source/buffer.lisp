@@ -280,10 +280,11 @@ down.")
       (a
        :color theme:primary)
       (pre
+       :overflow "auto"
        :color theme:text
        :background-color theme:quaternary
        :border-radius "2px"
-       :padding-bottom "10px")
+       :padding "5px")
       ("table, th, td"
        :border-color theme:quaternary
        :border-collapse "collapse"
