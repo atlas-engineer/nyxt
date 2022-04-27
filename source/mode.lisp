@@ -54,8 +54,8 @@
 
 (define-class mode ()
   ((buffer
-    (current-buffer)                    ; TODO: Is this reasonable?
-    :type buffer)
+    nil
+    :type (maybe null buffer))
    (glyph
     nil
     :type (maybe string)
@@ -68,8 +68,6 @@ be dynamically calculated as the first letters of the mode name.")
    (rememberable-p
     t
     :documentation "Whether this mode is visible to `auto-mode'.")
-   ;; (activate :accessor activate :initarg :activate)
-                                        ; TODO: This can be used in the future to temporarily turn off modes without destroying the object.
    (enabled-p
     nil
     :accessor nil
