@@ -116,10 +116,10 @@ User input is evaluated Lisp."
                         :prompt "Execute extended command"
                         :sources (make-instance 'command-source)
                         :hide-suggestion-count-p t)))
-         (lambda-list (arglist (fn command))))
+         (lambda-list (arglist (slot-value command 'fn))))
     (multiple-value-match (alex:parse-ordinary-lambda-list lambda-list)
       ((required-arguments optional-arguments _ keyword-arguments)
-       (multiple-value-match (parse-function-lambda-list-types (fn command))
+       (multiple-value-match (parse-function-lambda-list-types (slot-value command 'fn))
          ((required-types optional-types _ keyword-types)
           (flet ((parse-args (params)
                    (alex:mappend
