@@ -342,7 +342,7 @@ A command is a special kind of function that can be called with
            ;; TODO: This only displays the first method,
            ;; i.e. the first command of one of the modes.
            ;; Ask for modes instead?
-           (resolve-backtick-quote-links (documentation (slot-value command 'fn) t)
+           (resolve-backtick-quote-links (documentation command t)
                                          (swank-backend:function-name (slot-value command 'fn)))))
       (:h2 "Bindings")
       (:p (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
