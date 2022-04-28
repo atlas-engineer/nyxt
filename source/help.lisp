@@ -610,7 +610,7 @@ optimizing the use of space."
          :font-weight 500)
      (tr :font-size "7px")
      (div :display inline-block))
-   (nyxt:describe-bindings))
+   (describe-bindings))
   (print-buffer))
 
 (defun tls-help (buffer url)
