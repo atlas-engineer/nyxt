@@ -14,6 +14,8 @@
 This is useful to build commands out of anonymous functions.")
    (docstring ""
               :type string
+              :export nil
+              :accessor nil
               :documentation "Documentation of the command.")
    (fn (error "Function required.")
      :type function
@@ -140,7 +142,7 @@ We need a `command' class for multiple reasons:
                         (log:warn "~a" c)))))))))))
   (unless (eq :anonymous (visibility command))
     (setf (fdefinition (name command)) (slot-value command 'fn))
-    (setf (documentation (name command) 'function) (docstring command))
+    (setf (documentation (name command) 'function) (slot-value command 'docstring))
     (export-always (name command) (symbol-package (name command)))
     ;; From `defparameter' CLHS documentation:
     (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -160,6 +162,10 @@ We need a `command' class for multiple reasons:
 (defmethod print-object ((command command) stream)
   (print-unreadable-object (command stream :type t :identity t)
     (format stream "~a" (name command))))
+
+(defmethod documentation ((command command) (doc-type (eql 't)))
+  (declare (ignore doc-type))
+  (slot-value command 'docstring))
 
 (define-condition documentation-style-warning (style-warning)
   ((name :initarg :name :reader name)
@@ -258,8 +264,11 @@ Example:
 \(define-command play-video-in-current-page (&optional (buffer (current-buffer)))
   \"Play video in the currently open buffer.\"
   (uiop:run-program (list \"mpv\" (render-url (url buffer)))))"
-  (define-command-preamble name arglist body
-      `(make-instance 'command :name ',name :visibility :mode :fn (lambda (,@arglist) ,@body))))
+  (let ((doc (or (nth-value 2 (alex:parse-body body :documentation t)) "")))
+    (define-command-preamble name arglist body
+      `(make-instance 'command :name ',name :visibility :mode
+                               :docstring ,doc
+                               :fn (lambda (,@arglist) ,@body)))))
 
 (export-always 'define-command-global)
 (defmacro define-command-global (name (&rest arglist) &body body)
@@ -267,8 +276,11 @@ Example:
 This means it will be listed in `command-source' when the global option is on.
 This is mostly useful for third-party packages to define globally-accessible
 commands without polluting Nyxt packages."
-  (define-command-preamble name arglist body
-    `(make-instance 'command :name ',name :visibility :global :fn (lambda (,@arglist) ,@body))))
+  (let ((doc (or (nth-value 2 (alex:parse-body body :documentation t)) "")))
+    (define-command-preamble name arglist body
+      `(make-instance 'command :name ',name :visibility :global
+                               :docstring ,doc
+                               :fn (lambda (,@arglist) ,@body)))))
 
 (export-always 'delete-command)
 (defun delete-command (name)
@@ -282,9 +294,11 @@ regardless of whether NAME is defined as a command."
   "Define NAME, a deprecated command.
 This is just like a command.  It's recommended to explain why the function is
 deprecated and by what in the docstring."
-  (define-command-preamble name arglist body
-    `(make-instance 'command :name ',name :deprecated t :visibility :mode
-                             :fn (lambda (,@arglist) ,@body))))
+  (let ((doc (or (nth-value 2 (alex:parse-body body :documentation t)) "")))
+    (define-command-preamble name arglist body
+      `(make-instance 'command :name ',name :deprecated t :visibility :mode
+                               :docstring ,doc
+                               :fn (lambda (,@arglist) ,@body)))))
 
 (defun nyxt-packages ()                 ; TODO: Export a customizable *nyxt-packages* instead?
   "Return all package designators that start with 'nyxt' plus Nyxt own libraries."

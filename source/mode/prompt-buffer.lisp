@@ -306,7 +306,7 @@ current unmarked selection."
                                          (t action))))
                  ("Documentation" ,(or (first (sera:lines
                                                (typecase action
-                                                 (command (nyxt::docstring action))
+                                                 (command (documentation action t))
                                                  (t (documentation action 'function)))))
                                        "")))))
 
