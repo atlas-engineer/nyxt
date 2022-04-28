@@ -17,6 +17,8 @@ This is useful to build commands out of anonymous functions.")
               :documentation "Documentation of the command.")
    (fn (error "Function required.")
      :type function
+     :export nil
+     :accessor nil
      :documentation "Function wrapped by the command.")
    (before-hook (make-instance 'hooks:hook-void)
                 :type hooks:hook-void
@@ -89,10 +91,10 @@ We need a `command' class for multiple reasons:
                     (swank-backend:arglist fn)))))
 
 (defmethod initialize-instance :after ((command command) &key)
-  (let ((original-lambda (fn command)))
-    (setf (fn command)
+  (let ((original-lambda (slot-value command 'fn)))
+    (setf (slot-value command 'fn)
           (uiop:ensure-function
-           (let* ((arglist (arglist (fn command)))
+           (let* ((arglist (arglist (slot-value command 'fn)))
                   (parsed-arglist (multiple-value-list (alex:parse-ordinary-lambda-list arglist)))
                   (rest-arg (or (third parsed-arglist)
                                 (when (fourth parsed-arglist)
@@ -137,7 +139,7 @@ We need a `command' class for multiple reasons:
                       (nyxt-condition (c)
                         (log:warn "~a" c)))))))))))
   (unless (eq :anonymous (visibility command))
-    (setf (fdefinition (name command)) (fn command))
+    (setf (fdefinition (name command)) (slot-value command 'fn))
     (setf (documentation (name command) 'function) (docstring command))
     (export-always (name command) (symbol-package (name command)))
     ;; From `defparameter' CLHS documentation:
@@ -153,7 +155,7 @@ We need a `command' class for multiple reasons:
       (push command *command-list*)))
   ;; (funcall <COMMAND ...>) should work:
   (closer-mop:set-funcallable-instance-function
-   command (fn command)))
+   command (slot-value command 'fn)))
 
 (defmethod print-object ((command command) stream)
   (print-unreadable-object (command stream :type t :identity t)

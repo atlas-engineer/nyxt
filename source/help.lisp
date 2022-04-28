@@ -327,7 +327,7 @@ A command is a special kind of function that can be called with
                                                (keymap:name (second pair))))
                                        key-keymap-pairs))
          (source-file
-           (alex:when-let ((location (getf (swank:find-definition-for-thing (fn command))
+           (alex:when-let ((location (getf (swank:find-definition-for-thing (slot-value command 'fn))
                                            :location)))
              (alex:last-elt location)))
          (*print-case* :downcase))
@@ -342,15 +342,14 @@ A command is a special kind of function that can be called with
            ;; TODO: This only displays the first method,
            ;; i.e. the first command of one of the modes.
            ;; Ask for modes instead?
-           (resolve-backtick-quote-links (documentation (fn command) t)
-                                         (swank-backend:function-name (fn command)))))
+           (resolve-backtick-quote-links (documentation (slot-value command 'fn) t)
+                                         (swank-backend:function-name (slot-value command 'fn)))))
       (:h2 "Bindings")
       (:p (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
       (:h2 (format nil "Source~a: " (if source-file
                                         (format nil " (~a)" source-file)
                                         "")))
-      (:pre (:code (let ((*print-case* :downcase))
-                     (write-to-string (function-lambda-expression (fn command)))))))))
+      (:pre (:code (function-lambda-expression (slot-value command 'fn)))))))
 
 (define-internal-page-command-global describe-slot
     (&key class name universal)
@@ -1048,5 +1047,5 @@ System information is also saved into the clipboard."
                   collect (spinneret:with-html-string
                             (:details
                              (:summary (format nil "~(~a~)" (symbol-name (name command))))
-                             (:p (:pre (documentation (fn command) t)))
+                             (:p (:pre (documentation (slot-value command 'fn) t)))
                              (:pre :class "nyxt-source" (:code (function-lambda-string command)))))))))
