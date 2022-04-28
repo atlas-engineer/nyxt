@@ -8,7 +8,6 @@
 
 (define-class command ()
   ((name (error "Command name required.")
-         :export t
          :type symbol
          :documentation "Name of the command.
 This is useful to build commands out of anonymous functions.")
@@ -55,6 +54,7 @@ Useful to sort the commands by most recent use."))
   (:metaclass closer-mop:funcallable-standard-class)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:export-class-name-p t)
+  (:export-accessor-names-p t)
   (:documentation "Commands are interactive functions.
 (As in Emacs.)
 
