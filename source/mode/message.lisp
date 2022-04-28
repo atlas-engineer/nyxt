@@ -27,7 +27,7 @@
     (:p
      (:button :class "button"
               :onclick (ps:ps (nyxt/ps:lisp-eval `(progn
-                                                        (nyxt/message-mode:clear-messages)
+                                                        (clear-messages)
                                                         (nyxt::reload-buffers
                                                          (nyxt::buffers-get ,(id buffer))))))
               "Clear"))

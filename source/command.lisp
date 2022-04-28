@@ -6,28 +6,8 @@
 (defvar *command-list* '()
   "The list of known commands, for internal use only.")
 
-(define-class command ()
-  ((name (error "Command name required.")
-         :type symbol
-         :documentation "Name of the command.
-This is useful to build commands out of anonymous functions.")
-   (docstring ""
-              :type string
-              :export nil
-              :accessor nil
-              :documentation "Documentation of the command.")
-   (fn (error "Function required.")
-     :type function
-     :export nil
-     :accessor nil
-     :documentation "Function wrapped by the command.")
-   (before-hook (make-instance 'hooks:hook-void)
-                :type hooks:hook-void
-                :documentation "Hook run before executing the command.")
-   (after-hook (make-instance 'hooks:hook-void)
-               :type hooks:hook-void
-               :documentation "Hook run after executing the command.")
-   (visibility :mode
+(define-class command (standard-generic-function)
+  ((visibility :mode
                :type (member :global :mode :anonymous)
                :reader t
                :writer nil
@@ -68,15 +48,18 @@ We need a `command' class for multiple reasons:
 - Last access: This is useful to sort command by the time they were last
   called.  The only way to do this is to persist the command instances."))
 
-(sera:eval-always
-  (defun before-hook-name (command-name)
-    (intern (format nil "~a-BEFORE-HOOK" command-name)
-            (symbol-package command-name)))
-  (defun after-hook-name (command-name)
-    (intern (format nil "~a-AFTER-HOOK" command-name)
-            (symbol-package command-name))))
+(defmethod name ((command command))
+  "A useful shortcut."
+  (closer-mop:generic-function-name command))
 
-(defun arglist (fn)
+(defmethod closer-mop:compute-effective-method :around ((command command) combin applicable)
+  ;; TODO: Should `define-deprecated-command' report the version
+  ;; number of deprecation?  Maybe OK to just remove all deprecated
+  ;; commands on major releases.
+  `(echo-warning "~a is deprecated." ,(name command))
+  (call-next-method))
+
+(defun arglist (fn)                     ; TODO: Move where it's used.
   "Like `swank-backend:arglist' but normalized the result for `alex:parse-ordinary-lambda-list'."
   #-ccl
   (swank-backend:arglist fn)
@@ -93,99 +76,20 @@ We need a `command' class for multiple reasons:
                     (swank-backend:arglist fn)))))
 
 (defmethod initialize-instance :after ((command command) &key)
-  (let ((original-lambda (slot-value command 'fn)))
-    (setf (slot-value command 'fn)
-          (uiop:ensure-function
-           (let* ((arglist (arglist (slot-value command 'fn)))
-                  (parsed-arglist (multiple-value-list (alex:parse-ordinary-lambda-list arglist)))
-                  (rest-arg (or (third parsed-arglist)
-                                (when (fourth parsed-arglist)
-                                  (sera:lret ((rest-arg 'rest))
-                                    (setf arglist
-                                          (multiple-value-call #'sera:unparse-ordinary-lambda-list
-                                            (match parsed-arglist
-                                              ((list required optional rest keywords aok? aux key?)
-                                               (values required optional (or rest rest-arg) keywords aok? aux key?))))))))))
-             (multiple-value-match (alex:parse-ordinary-lambda-list arglist)
-               ((required optional _ keywords)
-                ;; We use `compile' instead of
-                ;;
-                ;;   (lambda (&rest args) ... (apply original-lambda args))
-                ;;
-                ;; so that we can generate the argument list, thus letting the
-                ;; Lisp implementation derive the proper function type from the
-                ;; arguments.
-                (compile
-                 (if (eq :anonymous (visibility command)) nil (name command))
-                 `(lambda ,arglist
-                    (declare (ignorable ,@(mapcar #'cadar keywords)
-                                        ,@(delete nil (mapcar #'third keywords))
-                                        ,@(delete nil (mapcar #'third optional))))
-                    ,(when (deprecated-p command)
-                       ;; TODO: Should `define-deprecated-command' report the version
-                       ;; number of deprecation?  Maybe OK to just remove all deprecated
-                       ;; commands on major releases.
-                       `(echo-warning "~a is deprecated." ,(name command)))
-                    (handler-case
-                        (progn
-                          (hooks:run-hook ,(before-hook command))
-                          ;; (log:debug "Calling command ~a." ',name)
-                          ;; TODO: How can we print the arglist as well?
-                          ;; (log:debug "Calling command (~a ~a)." ',name (list ,@arglist))
-                          (prog1
-                              (apply ,original-lambda
-                                     ,@required
-                                     ,@(mapcar (lambda (opt) `(or ,(first opt) ,(second opt))) optional)
-                                     ,rest-arg)
-                            (hooks:run-hook ,(after-hook command))))
-                      (nyxt-condition (c)
-                        (log:warn "~a" c)))))))))))
-  (unless (eq :anonymous (visibility command))
-    (setf (fdefinition (name command)) (slot-value command 'fn))
-    (setf (documentation (name command) 'function) (slot-value command 'docstring))
-    (export-always (name command) (symbol-package (name command)))
-    ;; From `defparameter' CLHS documentation:
-    (eval-when (:compile-toplevel :load-toplevel :execute)
-      (let ((before-hook-sym (before-hook-name (name command)))
-            (after-hook-sym (after-hook-name (name command))))
-        (setf (symbol-value before-hook-sym) (before-hook command)
-              (symbol-value after-hook-sym) (after-hook command))
-        (export (list before-hook-sym after-hook-sym) (symbol-package (name command)))))
-    (unless (deprecated-p command)
-      ;; Overwrite previous command:
-      (setf *command-list* (delete (name command) *command-list* :key #'name))
-      (push command *command-list*)))
-  ;; (funcall <COMMAND ...>) should work:
-  (closer-mop:set-funcallable-instance-function
-   command (slot-value command 'fn)))
-
-(defmethod print-object ((command command) stream)
-  (print-unreadable-object (command stream :type t :identity t)
-    (format stream "~a" (name command))))
-
-(defmethod documentation ((command command) (doc-type (eql 't)))
-  (declare (ignore doc-type))
-  (slot-value command 'docstring))
-
-(define-condition documentation-style-warning (style-warning)
-  ((name :initarg :name :reader name)
-   (subject-type :initarg :subject-type :reader subject-type))
-  (:report
-   (lambda (condition stream)
-     (format stream
-             "~:(~A~) ~A doesn't have a documentation string"
-             (subject-type condition)
-             (name condition)))))
-
-(define-condition command-documentation-style-warning  ; TODO: Remove and force docstring instead.
-    (documentation-style-warning)
-  ((subject-type :initform 'command)))
+  (when (and (uiop:emptyp (documentation command 'function))
+             (not (eq :anonymous (visibility command))))
+    (error "Commands require documentation."))
+  (unless (or (eq :anonymous (visibility command))
+              (deprecated-p command))
+    ;; Overwrite previous command:
+    (setf *command-list* (delete (closer-mop:generic-function-name command) *command-list* :key #'closer-mop:generic-function-name))
+    (push command *command-list*)))
 
 (defun find-command (name)
   (find name *command-list* :key #'name))
 
 (export-always 'make-command)
-(defmacro make-command (name arglist &body body)
+(defmacro make-command (name arglist &body body) ; TODO: Update?
   "Return a new local `command' named NAME.
 
 With BODY, the command binds ARGLIST and executes the body.
@@ -195,7 +99,7 @@ Without BODY, NAME must be a function symbol and the command wraps over it
 against ARGLIST, if specified.
 
 This is a convenience wrapper.  If you want full control over a command
-instantiation, use `make-instance command' instead."
+instantiation, use (MAKE-INSTANCE 'COMMAND ...) instead."
   (check-type name symbol)
   (let ((documentation (or (nth-value 2 (alex:parse-body body :documentation t))
                            ""))
@@ -210,20 +114,21 @@ instantiation, use `make-instance command' instead."
       `(let ((,fn nil))
          (cond
            (',body
-            (setf ,fn (lambda (,@arglist) ,@body)))
+            (setf ,fn '(lambda (,@arglist) ,@body)))
            ((and ',arglist (typep ',name 'function-symbol))
-            (setf ,fn (lambda (,@arglist) (funcall ',name ,@args))))
+            (setf ,fn '(lambda (,@arglist) (funcall ',name ,@args))))
            ((and (null ',arglist) (typep ',name 'function-symbol))
-            (setf ,fn (symbol-function ',name)))
+            (setf ,fn '(lambda () (funcall ',name))))
            (t (error "Either NAME must be a function symbol, or ARGLIST and BODY must be set properly.")))
-         (make-instance 'command
-                        :name ',name
-                        :visibility :anonymous
-                        :docstring ,documentation
-                        :fn ,fn)))))
+         (let ((command (make-instance 'command
+                                       :name ',name
+                                       :documentation ,documentation
+                                       :visibility :anonymous)))
+
+           (closer-mop:ensure-method command ,fn))))))
 
 (export-always 'make-mapped-command)
-(defmacro make-mapped-command (function-symbol)
+(defmacro make-mapped-command (function-symbol) ; TODO: Update
   "Define a command which `mapcar's FUNCTION-SYMBOL over a list of arguments."
   (let ((name (intern (str:concat (string function-symbol) "-*"))))
     `(make-command ,name (arg-list)
@@ -231,7 +136,7 @@ instantiation, use `make-instance command' instead."
        (mapcar ',function-symbol arg-list))))
 
 (export-always 'make-unmapped-command)
-(defmacro make-unmapped-command (function-symbol)
+(defmacro make-unmapped-command (function-symbol) ; TODO: Update
   "Define a command which calls FUNCTION-SYMBOL over the first element of a list
 of arguments."
   (let ((name (intern (str:concat (string function-symbol) "-1"))))
@@ -240,24 +145,19 @@ of arguments."
        (,function-symbol (first arg-list)))))
 
 (sera:eval-always
-  (defun define-command-preamble (name arglist body setup)
-    `(progn (sera:eval-always
-              (export ',name (symbol-package ',name))
-              ;; HACK: This seemingly redundant `defun' is used to avoid style
-              ;; warnings when calling (FOO ...) in the rest of the file where
-              ;; it's defined.  Same with `defparameter' for the hooks.
-              (defun ,name (,@arglist) ,@body)
-              (defparameter ,(before-hook-name name) nil)
-              (defparameter ,(after-hook-name name) nil))
-            ,setup)))
+  (defun generalize-lambda-list (lambda-list)
+    "Return a lambda-list compatible with generic-function definitions.
+Generic function lambda lists differ from ordinary lambda list in some ways;
+see HyperSpec '3.4.2 Generic Function Lambda Lists'."
+    (multiple-value-bind (required optional rest keywords aok? aux key?)
+        (alex:parse-ordinary-lambda-list lambda-list)
+      (declare (ignore aux))
+      (sera:unparse-ordinary-lambda-list required (mapcar #'first optional) rest (mapcar #'cadar keywords) aok? nil key?))))
 
 (export-always 'define-command)
 (defmacro define-command (name (&rest arglist) &body body)
   "Define new command NAME.
-`define-command' has a syntax similar to `defun'.
-ARGLIST must be a list of optional arguments or key arguments.
-This macro also defines two hooks, NAME-before-hook and NAME-after-hook.
-When run, the command always returns the last expression of BODY.
+`define-command' syntax is similar to `defmethod'.
 
 Example:
 
@@ -265,10 +165,13 @@ Example:
   \"Play video in the currently open buffer.\"
   (uiop:run-program (list \"mpv\" (render-url (url buffer)))))"
   (let ((doc (or (nth-value 2 (alex:parse-body body :documentation t)) "")))
-    (define-command-preamble name arglist body
-      `(make-instance 'command :name ',name :visibility :mode
-                               :docstring ,doc
-                               :fn (lambda (,@arglist) ,@body)))))
+    `(progn
+       (export-always ',name (symbol-package ',name))
+       (prog1 (defgeneric ,name (,@(generalize-lambda-list arglist))
+                (:documentation ,doc)
+                (:method (,@arglist) ,@body)
+                (:generic-function-class command))
+         (setf (slot-value #',name 'visibility) :mode)))))
 
 (export-always 'define-command-global)
 (defmacro define-command-global (name (&rest arglist) &body body)
@@ -276,11 +179,8 @@ Example:
 This means it will be listed in `command-source' when the global option is on.
 This is mostly useful for third-party packages to define globally-accessible
 commands without polluting Nyxt packages."
-  (let ((doc (or (nth-value 2 (alex:parse-body body :documentation t)) "")))
-    (define-command-preamble name arglist body
-      `(make-instance 'command :name ',name :visibility :global
-                               :docstring ,doc
-                               :fn (lambda (,@arglist) ,@body)))))
+  `(prog1 (define-command ,name (,@arglist) ,@body)
+     (setf (slot-value #',name 'visibility) :global)))
 
 (export-always 'delete-command)
 (defun delete-command (name)
@@ -290,15 +190,13 @@ regardless of whether NAME is defined as a command."
   (setf *command-list* (delete name *command-list* :key #'name))
   (fmakunbound name))
 
-(defmacro define-deprecated-command (name (&rest arglist) &body body)
+(defmacro define-deprecated-command (name (&rest arglist) &body body) ; TODO: Do we even need this?
   "Define NAME, a deprecated command.
 This is just like a command.  It's recommended to explain why the function is
 deprecated and by what in the docstring."
-  (let ((doc (or (nth-value 2 (alex:parse-body body :documentation t)) "")))
-    (define-command-preamble name arglist body
-      `(make-instance 'command :name ',name :deprecated t :visibility :mode
-                               :docstring ,doc
-                               :fn (lambda (,@arglist) ,@body)))))
+  `(prog1 (define-command ,name (,@arglist) ,@body)
+     (setf (slot-value #',name 'visibility) :mode
+           (slot-value #'name 'deprecated-p) t)))
 
 (defun nyxt-packages ()                 ; TODO: Export a customizable *nyxt-packages* instead?
   "Return all package designators that start with 'nyxt' plus Nyxt own libraries."

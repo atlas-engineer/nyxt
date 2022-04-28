@@ -903,17 +903,6 @@ BUFFER's modes."
     ("Title" ,(title buffer))
     ("Keywords" ,(lambda (buffer) (format nil "~:{~a~^ ~}" (keywords buffer))))))
 
-(-> make-buffer
-    (&rest t
-           &key (:title string)
-           (:modes (or null (cons symbol *)))
-           (:url quri:uri)
-           (:parent-buffer (or null buffer))
-           (:no-history-p boolean)
-           (:load-url-p boolean)
-           (:buffer-class (or null symbol))
-           &allow-other-keys)
-    (or buffer t))
 (define-command make-buffer (&rest args &key (title "") modes (url (default-new-buffer-url *browser*)) parent-buffer
                              no-history-p (load-url-p t) (buffer-class 'web-buffer)
                              &allow-other-keys)
@@ -938,12 +927,6 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
       (buffer-load url :buffer buffer))
     buffer))
 
-(-> make-nosave-buffer
-    (&key (:title string)
-          (:modes (or null (cons symbol *)))
-          (:url quri:uri)
-          (:load-url-p boolean))
-    *)
 (define-command make-nosave-buffer (&rest args
                                           &key title modes url load-url-p)
   "Create a new buffer that won't save anything to the filesystem.
@@ -951,11 +934,6 @@ See `make-buffer' for a description of the arguments."
   (declare (ignorable title modes url load-url-p))
   (apply #'make-buffer (append (list :buffer-class 'nosave-buffer) args)))
 
-(-> make-buffer-focus
-    (&key (:url quri:uri)
-          (:parent-buffer (or null buffer))
-          (:nosave-buffer-p boolean))
-    *)
 (define-command make-buffer-focus (&key (url (default-new-buffer-url *browser*)) parent-buffer nosave-buffer-p)
   "Switch to a new buffer.
 See `make-buffer'."
@@ -1165,7 +1143,6 @@ proceeding."
   (:export-class-name-p t)
   (:metaclass user-class))
 
-(-> switch-buffer (&key (:id string) (:current-is-last-p boolean)) *)
 (define-command switch-buffer (&key id (current-is-last-p nil))
   "Switch buffer using fuzzy completion.
 Buffers are ordered by last access.

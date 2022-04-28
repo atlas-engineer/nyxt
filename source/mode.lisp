@@ -19,31 +19,37 @@
   (let ((name (class-name class)))
     ;; FIXME: SBCL `slot-value' returns a list, while CCL returns the boolean.  Why?
     (if (alex:ensure-car (slot-value class 'toggler-command-p))
-        (make-instance
-         'command
-         :name name
-         :visibility :global
-         :fn (lambda (&rest args
-                      &key
-                        ;; TODO: Shall we have a function that returns the focused
-                        ;; buffer?  `focused-buffer'?  `current-buffer*'?  Rename
-                        ;; `current-buffer' to `current-view-buffer' and add
-                        ;; `current-buffer' for this task?
-                        (buffer (or (current-prompt-buffer) (current-buffer)))
-                        (activate t explicit?)
-                      &allow-other-keys)
-               (let ((existing-instance (find-submode name buffer)))
-                 (unless explicit?
-                   (setf activate (or (not existing-instance)
-                                      (not (enabled-p existing-instance)))))
-                 (if activate
-                     ;; TODO: Shall we pass args to `make-instance' or `enable'?  Have 2 args parameters?
-                     (enable (or existing-instance
-                                 (apply #'make-instance name
-                                        :buffer buffer
-                                        args)))
-                     (when existing-instance
-                       (disable existing-instance))))))
+        (sera:lret ((toggler (make-instance
+                              'command
+                              :name name
+                              :lambda-list '(&rest args &key buffer activate &allow-other-keys)
+                              :documentation (format nil "Toggle ~a." name)
+                              :visibility :global)))
+          ;; (export-always name (symbol-package name)) ; TODO: Unnecessary?
+          (closer-mop:ensure-method
+           toggler
+           `(lambda (&rest args
+                     &key
+                       ;; TODO: Shall we have a function that returns the focused
+                       ;; buffer?  `focused-buffer'?  `current-buffer*'?  Rename
+                       ;; `current-buffer' to `current-view-buffer' and add
+                       ;; `current-buffer' for this task?
+                       (buffer (or (current-prompt-buffer) (current-buffer)))
+                       (activate t explicit?)
+                     &allow-other-keys)
+              (let ((existing-instance (find-submode ',name buffer)))
+                (unless explicit?
+                  (setf activate (or (not existing-instance)
+                                     (not (enabled-p existing-instance)))))
+                (if activate
+                    ;; TODO: Shall we pass args to `make-instance' or `enable'?  Have 2 args parameters?
+                    (enable (or existing-instance
+                                (apply #'make-instance ',name
+                                       :buffer buffer
+                                       args)))
+                    (when existing-instance
+                      (disable existing-instance)))))))
+
         (delete-command name))))
 
 (defmethod initialize-instance :after ((class mode-class) &key)
