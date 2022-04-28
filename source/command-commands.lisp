@@ -28,7 +28,7 @@
                                     (modes buffer))))))
     `(("Name" ,(string-downcase (name command)))
       ("Bindings" ,(format nil "~{~a~^, ~}" bindings))
-      ("Docstring" ,(or (first (sera::lines (nyxt::docstring command)))
+      ("Docstring" ,(or (first (sera::lines (documentation command t)))
                         ""))
       ("Mode" ,(let ((package-name (str:downcase (uiop:symbol-package-name (name command)))))
                  (if (sera:in package-name "nyxt" "nyxt-user")
