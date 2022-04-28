@@ -114,7 +114,7 @@ We need a `command' class for multiple reasons:
                 (compile
                  (if (eq :anonymous (visibility command)) nil (name command))
                  `(lambda ,arglist
-                    (declare (ignorable ,@(mapcar (alex:compose #'second #'first) keywords)
+                    (declare (ignorable ,@(mapcar #'cadar keywords)
                                         ,@(delete nil (mapcar #'third keywords))
                                         ,@(delete nil (mapcar #'third optional))))
                     ,(when (deprecated-p command)
