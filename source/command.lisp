@@ -26,22 +26,28 @@ This is useful to build commands out of anonymous functions.")
                :documentation "Hook run after executing the command.")
    (visibility :mode
                :type (member :global :mode :anonymous)
+               :reader t
+               :writer nil
                :documentation "
 - `:global'  means it will be listed in `command-source' when the global option is on.
 This is mostly useful for third-party packages to define globally-accessible
-commands without polluting Nyxt packages.
+commands without polluting the official Nyxt packages.
 
-- `:mode' means the command is only listed in `command-source' when the corresponding mode is active.
+- `:mode' means the command is only listed in `command-source' when the
+corresponding mode is active.
 
-- `:anonymous' means the command is never listed in `command-source'.")
+- `:anonymous' is for local definitions; the command is never listed in
+`command-source'. ")
    (deprecated-p nil
                  :type boolean
-                 :documentation "If non-nil, report a warning before executing
-the command.")
+                 :reader t
+                 :writer nil
+                 :documentation "Mark the command as superseded by something else.
+If non-nil, report a warning before executing the command.")
    (last-access (local-time:now)
                 :type local-time:timestamp
                 :documentation "Last time this command was called from prompt buffer.
-This can be used to order the commands."))
+Useful to sort the commands by most recent use."))
   (:metaclass closer-mop:funcallable-standard-class)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:export-class-name-p t)
