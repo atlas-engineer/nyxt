@@ -295,6 +295,9 @@ Return the short error message and the full error message as second value."
 
 (define-command load-init-file (&key (init-file (nfiles:expand *init-file*)))
   "Load or reload the INIT-FILE."
+  (dolist (method (mopu:generic-function-methods #'customize-instance))
+    (unless (member (first (method-qualifiers method)) '(:before :after :around))
+      (remove-method #'customize-instance method)))
   (load-lisp init-file :package (find-package :nyxt-user)))
 
 (defun eval-expr (expr)
