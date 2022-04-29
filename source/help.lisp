@@ -83,27 +83,27 @@ for matches."
                            'prompter:delete-inexact-matches
                            'prompter:filter-exact-match))
          (sources (list (make-instance 'variable-source
-                                       :actions (list (make-command describe-variable* (variables)
+                                       :actions (list (lambda-command describe-variable* (variables)
                                                         (describe-variable :variable (first variables))))
                                        :filter-preprocessor preprocessor
                                        :universal universal)
                         (make-instance 'function-source
-                                       :actions (list (make-command describe-function* (functions)
+                                       :actions (list (lambda-command describe-function* (functions)
                                                         (describe-function :function (first functions))))
                                        :filter-preprocessor preprocessor
                                        :universal universal)
                         (make-instance 'command-source
-                                       :actions (list (make-command describe-command* (commands)
+                                       :actions (list (lambda-command describe-command* (commands)
                                                         (describe-command :command (name (first commands)))))
                                        :filter-preprocessor preprocessor
                                        :universal universal)
                         (make-instance 'class-source
-                                       :actions (list (make-command describe-class* (classes)
+                                       :actions (list (lambda-command describe-class* (classes)
                                                         (describe-class :class (first classes))))
                                        :filter-preprocessor preprocessor
                                        :universal universal)
                         (make-instance 'slot-source
-                                       :actions (list (make-command describe-slot** (slots)
+                                       :actions (list (lambda-command describe-slot** (slots)
                                                         (describe-slot :class (class-sym (first slots))
                                                                        :name (name (first slots)))))
                                        :filter-preprocessor preprocessor

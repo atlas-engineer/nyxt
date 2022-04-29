@@ -178,7 +178,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
    :prompt "Bookmark URL from buffer(s)"
    :sources (make-instance 'buffer-source
                            :multi-selection-p t
-                           :actions (list (make-mapped-command bookmark-current-url)))))
+                           :actions (list (lambda-mapped-command bookmark-current-url)))))
 
 (define-command bookmark-url (&key url)
   "Prompt for a URL to bookmark."
@@ -226,11 +226,11 @@ URLS is either a list or a single element."
         (delete-bookmark entries))))
 
 (define-command set-url-from-bookmark
-    (&key (actions (list (make-command buffer-load* (suggestion-values)
+    (&key (actions (list (lambda-command buffer-load* (suggestion-values)
                            "Load first selected bookmark in current buffer and the rest in new buffer(s)."
                            (mapc (lambda (url) (make-buffer :url (url url))) (rest suggestion-values))
                            (buffer-load (url (first suggestion-values))))
-                         (make-command new-buffer-load (suggestion-values)
+                         (lambda-command new-buffer-load (suggestion-values)
                            "Load bookmark(s) in new buffer(s)."
                            (mapc (lambda (url) (make-buffer :url (url url))) (rest suggestion-values))
                            (make-buffer-focus :url (url (first suggestion-values)))))))

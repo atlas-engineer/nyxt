@@ -203,7 +203,7 @@ See `supported-media-types' of `file-mode'."
 (defmethod initialize-instance :after ((source open-file-source) &key)
   (setf (slot-value source 'prompter:actions)
         (append
-         (list (make-command open-file* (files)
+         (list (lambda-command open-file* (files)
                  "Open files with `open-file-function' (a sensible default)."
                  (let* ((new-buffer-p (open-file-in-new-buffer-p source)))
                    ;; Open first file according to `open-file-in-new-buffer-p'
@@ -215,7 +215,7 @@ See `supported-media-types' of `file-mode'."
                      (funcall (open-file-function source) file
                               :new-buffer-p t
                               :supported-p (supported-media-or-directory file source)))))
-               (make-command open-with* (files)
+               (lambda-command open-with* (files)
                  "Open files with the selected program."
                  (let* ((program (prompt1
                                    :prompt "The program to open the selected files with"

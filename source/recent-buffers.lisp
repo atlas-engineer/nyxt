@@ -22,12 +22,12 @@
    (prompter:constructor
     (containers:container->list (recent-buffers *browser*)))
    (prompter:actions (list
-                      (make-command reopen-dead-buffer-focus (buffer-list)
+                      (lambda-command reopen-dead-buffer-focus (buffer-list)
                         "Reopen BUFFER and switch to it."
                         (mapc #'reopen-dead-buffer buffer-list)
                         (set-current-buffer (or (first (prompter:marks (current-source)))
                                                 (current-suggestion-value (current-prompt-buffer)))))
-                      (make-mapped-command reopen-dead-buffer)))))
+                      (lambda-mapped-command reopen-dead-buffer)))))
 
 (define-command reopen-buffer ()
   "Reopen queried deleted buffer(s)."

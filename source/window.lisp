@@ -247,7 +247,7 @@ See `define-panel' for the description of the arguments."
   ((prompter:name "Windows")
    (prompter:multi-selection-p t)
    (prompter:constructor (window-list))
-   (prompter:actions (list (make-mapped-command window-delete)))))
+   (prompter:actions (list (lambda-mapped-command window-delete)))))
 
 (define-command delete-window ()
   "Delete the queried window(s)."

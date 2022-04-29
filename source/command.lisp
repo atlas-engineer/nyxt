@@ -77,8 +77,8 @@ These specializations are reserved to the user."))
   (find name *command-list* :key #'name))
 
 ;; TODO: Can we use `alex:named-lambda'?  How do we get the name then?
-(export-always '%make-command)
-(defun %make-command (name lambda-expression &optional (visibility :anonymous))
+(export-always 'make-command)
+(defun make-command (name lambda-expression &optional (visibility :anonymous))
   "Return an non-globally defined command named NAME."
   (let ((arglist (second lambda-expression))
         (doc (nth-value 2 (alex:parse-body (rest (rest lambda-expression)) :documentation t))))
@@ -90,24 +90,24 @@ These specializations are reserved to the user."))
                           :visibility visibility)))
       (closer-mop:ensure-method command lambda-expression))))
 
-(export-always 'make-command)
-(defmacro make-command (name arglist &body body)
-  `(%make-command ',name '(lambda ,arglist ,@body)))
+(export-always 'lambda-command)
+(defmacro lambda-command (name arglist &body body)
+  `(make-command ',name '(lambda ,arglist ,@body)))
 
-(export-always 'make-mapped-command)
-(defmacro make-mapped-command (function-symbol)
+(export-always 'lambda-mapped-command)
+(defmacro lambda-mapped-command (function-symbol)
   "Define a command which `mapcar's FUNCTION-SYMBOL over a list of arguments."
   (let ((name (intern (str:concat (string function-symbol) "-*"))))
-    `(make-command ,name (arg-list)
+    `(lambda-command ,name (arg-list)
        ,(documentation function-symbol 'function)
        (mapcar ',function-symbol arg-list))))
 
-(export-always 'make-unmapped-command)
-(defmacro make-unmapped-command (function-symbol)
+(export-always 'lambda-unmapped-command)
+(defmacro lambda-unmapped-command (function-symbol)
   "Define a command which calls FUNCTION-SYMBOL over the first element of a list
 of arguments."
   (let ((name (intern (str:concat (string function-symbol) "-1"))))
-    `(make-command ,name (arg-list)
+    `(lambda-command ,name (arg-list)
        ,(documentation function-symbol 'function)
        (,function-symbol (first arg-list)))))
 

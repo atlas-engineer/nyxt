@@ -1128,8 +1128,8 @@ proceeding."
   ((prompter:name "Buffer list")
    (prompter:constructor (buffer-initial-suggestions :current-is-last-p nil))
    (prompter:multi-selection-p t)
-   (prompter:actions (list (make-unmapped-command set-current-buffer)
-                           (make-mapped-command buffer-delete)))
+   (prompter:actions (list (lambda-unmapped-command set-current-buffer)
+                           (lambda-mapped-command buffer-delete)))
    (prompter:follow-p t)
    (prompter:follow-delay 0.1)
    (prompter:follow-mode-functions #'(lambda (buffer)
@@ -1181,7 +1181,7 @@ second latest buffer first."
        :prompt "Delete buffer(s)"
        :sources (make-instance 'buffer-source
                                :multi-selection-p t
-                               :actions (list (make-mapped-command buffer-delete))))))
+                               :actions (list (lambda-mapped-command buffer-delete))))))
 
 (define-internal-page-command-global reduce-to-buffer (&key (delete t))
     (reduced-buffer "*Reduced Buffers*" 'base-mode)
@@ -1450,11 +1450,11 @@ any.")
 (define-command set-url (&key (prefill-current-url-p t))
   "Set the URL for the current buffer, completing with history."
   (let ((history (set-url-history *browser*))
-        (actions (list (make-command buffer-load* (suggestion-values)
+        (actions (list (lambda-command buffer-load* (suggestion-values)
                                      "Load first selected URL in current buffer and the rest in new buffer(s)."
                                      (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
                                      (buffer-load (url (first suggestion-values))))
-                       (make-command new-buffer-load (suggestion-values)
+                       (lambda-command new-buffer-load (suggestion-values)
                                      "Load URL(s) in new buffer(s)."
                                      (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
                                      (make-buffer-focus :url (url (first suggestion-values)))))))
@@ -1472,7 +1472,7 @@ any.")
 (define-command set-url-new-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused buffer."
   (let ((history (set-url-history *browser*))
-        (actions (list (make-command new-buffer-load (suggestion-values)
+        (actions (list (lambda-command new-buffer-load (suggestion-values)
                                      "Load URL(s) in new buffer(s)"
                                      (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
                                            (rest suggestion-values))
@@ -1491,7 +1491,7 @@ any.")
 (define-command set-url-new-nosave-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused nosave buffer."
   (let ((actions
-          (list (make-command new-nosave-buffer-load (suggestion-values)
+          (list (lambda-command new-nosave-buffer-load (suggestion-values)
                               "Load URL(s) in new nosave buffer(s)"
                               (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion)))
                                     (rest suggestion-values))

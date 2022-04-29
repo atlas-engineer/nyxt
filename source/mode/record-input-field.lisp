@@ -110,7 +110,7 @@
                                         (nfiles:content (inputs-file (current-buffer)))))))
 
 (define-command set-input-data-from-saved 
-    (&key (actions (list (make-command set-input-data* (suggestion-values)
+    (&key (actions (list (lambda-command set-input-data* (suggestion-values)
                            "Load selected input-entry in current buffer's input fields."
                            (ps-write-input-data (input-data (first suggestion-values)))))))
   "Set the input data from a list of saved data into the current buffer."
@@ -120,7 +120,7 @@
                            :actions actions)))
 
 (define-command set-input-data-from-saved-domain
-    (&key (actions (list (make-command buffer-load* (suggestion-values)
+    (&key (actions (list (lambda-command buffer-load* (suggestion-values)
                            "Load selected input-entry in current buffer's input fields."
                            (ps-write-input-data (input-data (first suggestion-values)))))))
   "Set the input data from a list of saved data filtered by current domain into
