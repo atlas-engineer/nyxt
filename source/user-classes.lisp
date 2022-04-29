@@ -14,15 +14,19 @@
                                            (class user-class))
   t)
 
-(defvar *groups* (make-hash-table))
+(defvar *groups* (make-hash-table :test 'equal))
 
 (macrolet ((define-group-predicate (number)
              (flet ((match-name (number)
                       (intern (format nil "MATCH-INTO-GROUP-~d" number))))
                `(defun ,(match-name number) (qualifier)
-                  (unless (member (first qualifier) (gethash ,number *groups*) :test #'equal)
-                    (push (first qualifier) (gethash ,number *groups*))
-                    t))))
+                  (let* ((group-label (gethash ,number *groups*)))
+                    (cond
+                      ((and group-label (equal group-label qualifier))
+                       t)
+                      ((null group-label)
+                       (setf (gethash ,number *groups*) qualifier))
+                      (t nil))))))
            (defcombination (amount &body body)
              (flet ((match-name (number)
                       (intern (format nil "MATCH-INTO-GROUP-~d" number)))
@@ -40,14 +44,14 @@
              (flet ((group-name (number)
                       (intern (format nil "GROUP-~d" number))))
                `(make-body before after around primary
-                          ,@(loop for i below amount collect (group-name i)))))
+                           ,@(loop for i below amount collect (group-name i)))))
            (def (amount)
              "A macro-hack to inject the literal iteration number into `define-group-predicate'."
              `(progn
                 ,@(loop for i below amount
                         collect `(define-group-predicate ,i))
                 (defcombination ,amount
-                  (make-body-wrapper ,amount)))))
+                    (make-body-wrapper ,amount)))))
   (flet ((make-body (before after around primary &rest other-methods)
            (flet ((call-methods (methods)
                     (mapcar #'(lambda (method)
@@ -65,7 +69,12 @@
                                  (,@(rest around)
                                   (make-method ,form)))
                    form)))))
-    (def 10)))
+    ;; FIXME: 300 is a magic number of groups that is significantly less than
+    ;; 1000 (compiling 1000 groups exhaust all 4GB of RAM on aartaka's laptop),
+    ;; while still big enough to fit most configs:
+    ;;
+    ;; 300 * 5 lines of average define-configuration = 1500 lines of config
+    (def 300)))
 
 (export-always 'customize-instance)
 (defgeneric customize-instance (object &key &allow-other-keys)

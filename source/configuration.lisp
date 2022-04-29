@@ -213,8 +213,8 @@ Use `%slot-value%' instead!")
        ,@(loop
            for class in classes
            collect
-           `(defmethod customize-instance ,(intern (symbol-name class) :keyword) ,(gensym)
-              ((object ,class) &key)
+           ;; Random symbol for the method to always stay by itself when computing effective method.
+           `(defmethod customize-instance ,(gensym) ((object ,class) &key)
               ,@(loop for ((slot value)) on slots-and-values
                       do (when (member '%slot-default% (alex:flatten value))
                            (echo-warning
