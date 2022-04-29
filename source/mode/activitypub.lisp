@@ -517,6 +517,11 @@ FORMAT can be one of
      (render-audio-card object))
     (t (object->html object :link))))
 
+(defmethod object->html ((object tombstone) (format (eql :card)))
+  (spinneret:with-html-string
+    (:h2 (or (name* object) "Ooops..."))
+    (:p "There used to be " (former-type object) ", but it's no longer there.")))
+
 (defmethod object->html ((object note) (format (eql :card)))
   (spinneret:with-html-string
     (:p (:raw (content object)))
