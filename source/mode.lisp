@@ -104,6 +104,9 @@ It is run before the destructor.")
   (when (eq 'mode (type-of mode))
     (error "Cannot initialize `mode', you must subclass it.")))
 
+(defmethod name ((mode mode))
+  (sera:class-name-of mode))
+
 (export-always 'enable)
 (defgeneric enable (mode &key &allow-other-keys)
   (:method ((mode mode) &key)
