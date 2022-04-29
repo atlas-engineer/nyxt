@@ -22,12 +22,12 @@ for which the `executable' slot is non-nil."
         password:*interfaces*))
 
 (defvar password-source-actions
-  (list (make-command clip-password (password-name)
+  (list (lambda-command clip-password (password-name)
           (let ((buffer (buffer (current-source)))
                 (password-name (first password-name)))
             (password:clip-password (password-interface buffer) :password-name password-name)
             (echo "Password saved to clipboard for ~a seconds." (password:sleep-timer (password-interface buffer)))))
-        (make-command clip-username (password-name)
+        (lambda-command clip-username (password-name)
           (let ((buffer (buffer (current-source)))
                 (password-name (first password-name)))
             (if (password:clip-username (password-interface buffer) :password-name password-name)

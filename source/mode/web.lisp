@@ -568,7 +568,7 @@ Otherwise go forward to the only child."
     (lambda (source)
       (containers:container->list (ring source))))
    (prompter:actions
-    (list (make-command paste* (ring-items)
+    (list (lambda-command paste* (ring-items)
             (%paste :input-text (first ring-items))))))
   (:export-class-name-p t)
   (:metaclass user-class))
@@ -614,7 +614,7 @@ Otherwise go forward to the only child."
   ((prompter:name "Autofills")
    (prompter:constructor (autofills *browser*))
    (prompter:actions
-    (list (make-command autofill* (autofills)
+    (list (lambda-command autofill* (autofills)
             (let ((selected-fill (first autofills)))
               (cond ((stringp (autofill-fill selected-fill))
                      (%paste :input-text (autofill-fill selected-fill)))

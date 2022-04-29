@@ -172,7 +172,7 @@
    :sources (list (make-instance 'frame-source
                                  :buffer buffer
                                  :multi-selection-p t
-                                 :actions (list (make-command open-new-buffers (urls)
+                                 :actions (list (lambda-command open-new-buffers (urls)
                                                               (mapcar (lambda (i) (make-buffer :url (quri:uri i))) urls)))))
    :after-destructor
    (lambda ()

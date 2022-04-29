@@ -19,7 +19,7 @@
   (let ((name (class-name class)))
     ;; FIXME: SBCL `slot-value' returns a list, while CCL returns the boolean.  Why?
     (if (alex:ensure-car (slot-value class 'toggler-command-p))
-        (sera:lret ((command (%make-command
+        (sera:lret ((command (make-command
                               name
                               `(lambda (&rest args
                                         &key
@@ -380,7 +380,7 @@ BUFFERS and MODES are automatically coerced into a list."
                            :prompt "Mark modes to enable, unmark to disable"
                            :sources (make-instance 'mode-source
                                                    :actions (list 'identity
-                                                                  (make-command force-disable-auto-mode (modes)
+                                                                  (lambda-command force-disable-auto-mode (modes)
                                                                                 "Return selection but force disabling auto-mode.
 This is convenient when you use auto-mode by default and you want to toggle a
 mode permanently for this buffer."

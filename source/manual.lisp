@@ -120,7 +120,7 @@ add the following to your configuration:")
   (setf (keymap-scheme mode)
         (define-scheme (:name-prefix \"my-base\" :import (keymap-scheme mode))
           scheme:vi-normal
-          (list \"g b\" (make-command switch-buffer* ()
+          (list \"g b\" (lambda-command switch-buffer* ()
                           (switch-buffer :current-is-last-p t))))))"))
     (:p "The " (:code "override-map") " is a keymap that has priority over
 all other keymaps.  By default, it has few bindings like the one
