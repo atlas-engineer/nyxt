@@ -200,6 +200,12 @@ Return NIL if not a class form."
 (defvar %slot-value% nil
   "Holds the value of the slot being configured when in `define-configuration'.")
 
+(export-always '%slot-default%)
+(defvar %slot-default% nil
+  "A deprecated variable that used to store the slot default value.
+
+Use `%slot-value%' instead!")
+
 (export-always 'define-configuration)
 (defmacro define-configuration (classes (&body slots-and-values))
   (alex:when-let ((classes (uiop:ensure-list classes)))
@@ -210,19 +216,20 @@ Return NIL if not a class form."
            `(defmethod customize-instance ,(intern (symbol-name class) :keyword) ,(gensym)
               ((object ,class) &key)
               ,@(loop for ((slot value)) on slots-and-values
+                      do (when (member '%slot-default% (alex:flatten value))
+                           (echo-warning
+                            "(define-configuration ~a) %slot-default% is deprecated, use %slot-value% instead"
+                            class))
                       when (find slot (mopu:slot-names class))
                         collect `(setf (slot-value object (quote ,slot))
-                                       (let ((%slot-value% (slot-value object (quote ,slot))))
-                                         (declare (ignorable %slot-value%))
-                                         (symbol-macrolet ((nyxt-user::%slot-default%
-                                                             (progn
-                                                               (echo-warning
-                                                                "%slot-default% is deprecated. Use %slot-value% instead.")
-                                                               %slot-value%)))
-                                           ,value)))
+                                       (let* ((%slot-value% (slot-value object (quote ,slot)))
+                                              (%slot-default% %slot-value%))
+                                         (declare (ignorable %slot-value% %slot-default%))
+                                         ,value))
                       else
                         collect `(defmethod ,slot :around ((object ,class))
-                                   (let ((%slot-value% (call-next-method)))
+                                   (let* ((%slot-value% (call-next-method))
+                                          (%slot-default% %slot-value%))
                                      ,value))))))))
 
 
