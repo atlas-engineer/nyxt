@@ -371,6 +371,15 @@ JSON-NAMEs as strings, where
   (:method ((object string)) (not (uiop:emptyp object)))
   (:method ((object symbol)) (not (member object '(:null nil)))))
 
+(defmacro jwhen (condition &body body)
+  `(when (json-true-p ,condition)
+     ,@body))
+
+(defmacro jor (&rest args)
+  `(or ,@(loop for arg in (butlast args)
+               collecting `(jwhen ,arg ,arg))
+       ,(alex:lastcar args)))
+
 (defgeneric name* (object)
   ;; FIXME: This should not exists! Strong typing should be strong!
   (:method ((object t)) "")
@@ -382,21 +391,13 @@ JSON-NAMEs as strings, where
 Try to guess it from all the data available."))
 
 (defmethod name* ((object actor))
-  (cond
-    ((json-true-p (name object)) (name object))
-    ((json-true-p (preferred-username object)) (preferred-username object))
-    (t (slot-value object 'id))))
+  (jor (name object) (preferred-username object) (id object)))
 
 (defmethod name* ((object object))
-  (if (json-true-p (name object))
-      (name object)
-      (id object)))
+  (jor (name object) (id object)))
 
 (defmethod name* ((object link))
-  (cond
-    ((json-true-p (name object)) (name object))
-    ((json-true-p (href object)) (quri:render-uri (href object)))
-    (t (slot-value object 'id))))
+  (jor (name object) (id object) (render-url (href object))))
 
 (defgeneric author* (object)
   (:method :around ((object t))
@@ -406,13 +407,13 @@ Try to guess it from all the data available."))
   (:documentation "Return the supposed original author of the OBJECT."))
 
 (defmethod author* ((object object))
-  (or (attributed-to object)
-      (generator object)))
+  (jor (attributed-to object)
+           (generator object)))
 
 (defmethod author* ((object activity))
-  (or (origin object)
-      (and (object object)
-           (author* (object object)))))
+  (jor (origin object)
+           (and (object object)
+                (author* (object object)))))
 
 (defgeneric url* (object)
   (:method ((object string)) object)
@@ -421,7 +422,7 @@ Try to guess it from all the data available."))
            (suitable-url (or (find #'quri:uri-https-p urls)
                              (find #'quri:uri-http-p urls)
                              (first urls))))
-      (when (json-true-p suitable-url)
+      (jwhen suitable-url
         (quri:render-uri (quri:uri suitable-url)))))
   (:method ((object sequence))
     (lpara:pmap (serapeum:class-name-of object) #'url* object))
@@ -434,13 +435,10 @@ Try to guess it from all the data available."))
   (slot-value object 'href))
 
 (defmethod url* ((object object))
-  (if (json-true-p (slot-value object 'url))
-      (url* (slot-value object 'url))
-      (slot-value object 'id)))
+  (jor (url object) (id object)))
 
 (defmethod published* ((object object))
-  (alex:if-let ((time (some #'json-true-p
-                            (list (published object) (updated object) (start-time object)))))
+  (alex:if-let ((time (jor (published object) (updated object) (start-time object))))
     (local-time:format-timestring nil time :format local-time:+asctime-format+)
     "sometime"))
 
@@ -531,23 +529,23 @@ FORMAT can be one of
 (defmethod object->html ((object note) (format (eql :card)))
   (spinneret:with-html-string
     (:p (:raw (content object)))
-    (when (attachment object)
+    (jwhen (attachment object)
       (:raw (object->html (attachment object) :card)))))
 
 (defmethod object->html ((object page) (format (eql :card)))
   (spinneret:with-html-string
     (:h2 (:raw (anchor object)))
-    (when (content object)
+    (jwhen (content object)
       (:pre (sera:ellipsize (string-trim sera:whitespace (plump:text (plump:parse (content object)))) 300)))
-    (when (url* object)
+    (jwhen (url* object)
       (:raw (anchor object)))))
 
 (defun render-html-page (object)
   (spinneret:with-html-string
-    (when (name* object)
+    (jwhen (name* object)
       (:h1 (name* object)))
-    (:i "by " (when (author* object) (:raw (anchor (author* object)))))
-    (when (content object)
+    (:i "by " (jwhen (author* object) (:raw (anchor (author* object)))))
+    (jwhen (content object)
       (:p (:raw (content object))))))
 
 (defmethod object->html ((object page) (format (eql :page)))
@@ -566,7 +564,7 @@ FORMAT can be one of
 (defmethod object->html ((object add-activity) (format (eql :card)))
   (with-card
     (:i (:raw (anchor (actor object)))
-        " added " (when (target object)
+        " added " (jwhen (target object)
                     (:span "into " (:a :href (http->ap (url* (target object)))
                                        (name* (target object))))))
     (:div (:raw (object->html (object object) :card)))))
@@ -574,7 +572,7 @@ FORMAT can be one of
 (defmethod object->html ((object delete-activity) (format (eql :card)))
   (with-card
     (:i (:a :href (http->ap (url* (actor object))) (name* (actor object)))
-        " deleted " (when (origin object)
+        " deleted " (jwhen (origin object)
                       (:span "from " (:raw (anchor (origin object))))))
     (:div (:raw (object->html (object object) :card)))))
 
@@ -582,30 +580,30 @@ FORMAT can be one of
   (with-card
     (:i (:raw (anchor (actor object)))
         " invited " (:raw (anchor (object object)))
-        (when (target object)
+        (jwhen (target object)
           (:span " into " (:raw (anchor (target object))))))))
 
 (defmethod object->html ((object offer-activity) (format (eql :card)))
   (with-card
     (:i (:raw (anchor (actor object)))
         " offered " (:raw (anchor (object object)))
-        (when (target object)
+        (jwhen (target object)
           (:span " to " (:raw (anchor (target object))))))))
 
 (defmethod object->html ((object remove-activity) (format (eql :card)))
   (with-card
     (:i (:raw (anchor (actor object)))
         " removed " (:raw (anchor (object object)))
-        (when (origin object)
+        (jwhen (origin object)
           (:span " from " (:raw (anchor (origin object))))))))
 
 (defmethod object->html ((object travel-activity) (format (eql :card)))
   (with-card
     (:i (:raw (anchor (actor object)))
         " travelled "
-        (when (origin object)
+        (jwhen (origin object)
           (:span " from " (:raw (anchor (origin object)))))
-        (when (target object)
+        (jwhen (target object)
           (:span " to " (:raw (anchor (target object))))))))
 
 (defmethod object->html ((object question-activity) (format (eql :card)))
@@ -613,16 +611,13 @@ FORMAT can be one of
     (:i (:raw (anchor (actor object))) " asks: ")
     (:h2 (name* object))
     (cond
-      ((closed object)
+      ((json-true-p (closed object))
        (:p "closed"))
-      ((one-of object)
-       (dolist (option (one-of object))
-         (:raw (object->html option :card))))
-      ((any-of object)
-       (dolist (option (any-of object))
+      ((jor (one-of object) (any-of object))
+       (dolist (option (jor (one-of object) (any-of object)))
          (:raw (object->html option :card)))))))
 
-;;; Everything else card rending
+;;; Everything else card rendering
 
 ;; FIXME: What is a "card view" for a collection? A card with condensed
 ;; link-like content or a container for cards? It used to be the former, now
@@ -638,7 +633,7 @@ FORMAT can be one of
       (:div
        :id id
        (cond
-         (items
+         ((json-true-p items)
           (dolist (item items)
             (:raw (object->html item :card))))
          ((collection-page-p first-item)
@@ -657,9 +652,9 @@ FORMAT can be one of
     (:h1 "Page of " (:raw (anchor (part-of object))))
     (dolist (item (or (items object) (ordered-items object)))
       (:raw (object->html item :card)))
-    (when (prev object)
+    (jwhen (prev object)
       (:a :class "button" :href (http->ap (url* (prev object))) "Previous page"))
-    (when (next object)
+    (jwhen (next object)
       (:a :class "button" :href (http->ap (url* (next object))) "Next page"))))
 
 (defmethod object->html ((object actor) (format (eql :card)))
@@ -667,14 +662,14 @@ FORMAT can be one of
   (with-card
     (:h2 (:a :href (http->ap (id object))
              (format nil "~a (@~a)" (name* object) (preferred-username object))))
-    (when (summary object)
+    (jwhen (summary object)
       (:raw (summary object)))))
 
 (defmethod object->html ((object actor) (format (eql :page)))
   (spinneret:with-html-string
     (:header
      (:h1 (format nil "~a (@~a)" (name* object) (preferred-username object))))
-    (when (summary object)
+    (jwhen (summary object)
       (:raw (summary object)))
     (:br)
     (when (and (following object)
