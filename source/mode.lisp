@@ -94,6 +94,7 @@ It is run before the destructor.")
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
+  (:toggler-command-p nil)
   (:metaclass mode-class))
 
 (defmethod initialize-instance :after ((mode mode) &key)
