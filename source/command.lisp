@@ -59,22 +59,6 @@ We need a `command' class for multiple reasons:
   `(echo-warning "~a is deprecated." ,(name command))
   (call-next-method))
 
-(defun arglist (fn)                     ; TODO: Move where it's used.
-  "Like `swank-backend:arglist' but normalized the result for `alex:parse-ordinary-lambda-list'."
-  #-ccl
-  (swank-backend:arglist fn)
-  #+ccl
-  (let ((package (alex:if-let ((name (swank-backend:function-name fn)))
-                   (symbol-package (if (listp name)
-                                       ;; Closures are named '(:internal NAME)
-                                       (second name)
-                                       name))
-                   *package*)))
-    (delete 'ccl::&lexpr
-            (mapcar (lambda (s)
-                      (if (keywordp s) (intern (string s) package) s))
-                    (swank-backend:arglist fn)))))
-
 (defmethod initialize-instance :after ((command command) &key)
   (when (and (uiop:emptyp (documentation command 'function))
              (not (eq :anonymous (visibility command))))
