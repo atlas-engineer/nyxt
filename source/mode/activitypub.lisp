@@ -545,10 +545,10 @@ FORMAT can be one of
       (:p (:raw (content object))))))
 
 (defmethod object->html ((object page) (format (eql :page)))
-  (render-html-page))
+  (render-html-page object))
 
 (defmethod object->html ((object article) (format (eql :page)))
-  (render-html-page))
+  (render-html-page object))
 
 (defmethod published* ((object object))
   (alex:if-let ((time (some (lambda (x) (and x (not (eq :null x)) x))
