@@ -438,6 +438,12 @@ Try to guess it from all the data available."))
       (url* (slot-value object 'url))
       (slot-value object 'id)))
 
+(defmethod published* ((object object))
+  (alex:if-let ((time (some #'json-true-p
+                            (list (published object) (updated object) (start-time object)))))
+    (local-time:format-timestring nil time :format local-time:+asctime-format+)
+    "sometime"))
+
 (defgeneric object->html (object format)
   (:method ((object base) (format (eql :link)))
     (spinneret:with-html-string
@@ -549,12 +555,6 @@ FORMAT can be one of
 
 (defmethod object->html ((object article) (format (eql :page)))
   (render-html-page object))
-
-(defmethod published* ((object object))
-  (alex:if-let ((time (some (lambda (x) (and x (not (eq :null x)) x))
-                            (list (published object) (updated object) (start-time object)))))
-    (local-time:format-timestring nil time :format local-time:+asctime-format+)
-    "sometime"))
 
 ;; Activity card rendering
 
