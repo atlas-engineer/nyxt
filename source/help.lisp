@@ -907,13 +907,14 @@ The version number is stored in the clipboard."
          (:br)
          (format nil "Atlas Engineer LLC, 2018-~a" (local-time:timestamp-year (local-time:now)))))))
 
-(define-internal-page-command-global manual ()
-    (buffer "*Manual*" 'nyxt/help-mode:help-mode)
-  "Show the manual."
-  (spinneret:with-html-string (:style (style buffer))
-    (:style (cl-css:css '(("body"
-                           :max-width "80ch"))))
-    (:raw (manual-content))))
+(sera:eval-always ; To satisfy `fboundp' of `manual' at compile-time (e.g. CCL).
+  (define-internal-page-command-global manual ()
+      (buffer "*Manual*" 'nyxt/help-mode:help-mode)
+    "Show the manual."
+    (spinneret:with-html-string (:style (style buffer))
+      (:style (cl-css:css '(("body"
+                             :max-width "80ch"))))
+      (:raw (manual-content)))))
 
 (define-internal-page-command-global tutorial ()
     (buffer "*Tutorial*" 'nyxt/help-mode:help-mode)
