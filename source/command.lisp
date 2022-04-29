@@ -76,47 +76,26 @@ These specializations are reserved to the user."))
 (defun find-command (name)
   (find name *command-list* :key #'name))
 
+;; TODO: Can we use `alex:named-lambda'?  How do we get the name then?
+(export-always '%make-command)
+(defun %make-command (name lambda-expression &optional (visibility :anonymous))
+  "Return an non-globally defined command named NAME."
+  (let ((arglist (second lambda-expression))
+        (doc (nth-value 2 (alex:parse-body (rest (rest lambda-expression)) :documentation t))))
+    (sera:lret ((command (make-instance
+                          'command
+                          :name name
+                          :lambda-list (generalize-lambda-list arglist)
+                          :documentation doc
+                          :visibility visibility)))
+      (closer-mop:ensure-method command lambda-expression))))
+
 (export-always 'make-command)
-(defmacro make-command (name arglist &body body) ; TODO: Update?
-  "Return a new local `command' named NAME.
-
-With BODY, the command binds ARGLIST and executes the body.
-The first string in the body is used to fill the `help' slot.
-
-Without BODY, NAME must be a function symbol and the command wraps over it
-against ARGLIST, if specified.
-
-This is a convenience wrapper.  If you want full control over a command
-instantiation, use (MAKE-INSTANCE 'COMMAND ...) instead."
-  (check-type name symbol)
-  (let ((documentation (or (nth-value 2 (alex:parse-body body :documentation t))
-                           ""))
-        (args (multiple-value-match (alex:parse-ordinary-lambda-list arglist)
-                ((required-arguments optional-arguments rest keyword-arguments)
-                 (append required-arguments
-                         optional-arguments
-                         (alex:mappend #'first keyword-arguments)
-                         (when rest
-                           (list rest)))))))
-    (alex:with-gensyms (fn)
-      `(let ((,fn nil))
-         (cond
-           (',body
-            (setf ,fn '(lambda (,@arglist) ,@body)))
-           ((and ',arglist (typep ',name 'function-symbol))
-            (setf ,fn '(lambda (,@arglist) (funcall ',name ,@args))))
-           ((and (null ',arglist) (typep ',name 'function-symbol))
-            (setf ,fn '(lambda () (funcall ',name))))
-           (t (error "Either NAME must be a function symbol, or ARGLIST and BODY must be set properly.")))
-         (let ((command (make-instance 'command
-                                       :name ',name
-                                       :documentation ,documentation
-                                       :visibility :anonymous)))
-
-           (closer-mop:ensure-method command ,fn))))))
+(defmacro make-command (name arglist &body body)
+  `(%make-command ',name '(lambda ,arglist ,@body)))
 
 (export-always 'make-mapped-command)
-(defmacro make-mapped-command (function-symbol) ; TODO: Update
+(defmacro make-mapped-command (function-symbol)
   "Define a command which `mapcar's FUNCTION-SYMBOL over a list of arguments."
   (let ((name (intern (str:concat (string function-symbol) "-*"))))
     `(make-command ,name (arg-list)
@@ -124,7 +103,7 @@ instantiation, use (MAKE-INSTANCE 'COMMAND ...) instead."
        (mapcar ',function-symbol arg-list))))
 
 (export-always 'make-unmapped-command)
-(defmacro make-unmapped-command (function-symbol) ; TODO: Update
+(defmacro make-unmapped-command (function-symbol)
   "Define a command which calls FUNCTION-SYMBOL over the first element of a list
 of arguments."
   (let ((name (intern (str:concat (string function-symbol) "-1"))))
