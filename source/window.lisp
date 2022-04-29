@@ -270,11 +270,17 @@ See `define-panel' for the description of the arguments."
     (window-set-buffer window buffer)
     (values window buffer)))
 
-(define-command toggle-fullscreen (&optional (window (current-window)))
-  "Fullscreen WINDOW, or the current window, when omitted."
-  (if (fullscreen-p window)
-      (ffi-window-unfullscreen window)
-      (ffi-window-fullscreen window)))
+(define-command toggle-fullscreen (&key (window (current-window))
+                                   skip-renderer-resize)
+  "Fullscreen WINDOW, or the current window, when omitted.
+When `skip-renderer-resize' is non-nil, don't ask the renderer to "
+  (let ((fullscreen (fullscreen-p window)))
+    (unless skip-renderer-resize
+      (if fullscreen
+          (ffi-window-unfullscreen window)
+          (ffi-window-fullscreen window)))
+    (toggle-status-buffer :show-p (not fullscreen))
+    (toggle-message-buffer :show-p (not fullscreen))))
 
 (defun enable-status-buffer (&optional (window (current-window)))
   (ffi-window-set-status-buffer-height window (height (status-buffer window))))
