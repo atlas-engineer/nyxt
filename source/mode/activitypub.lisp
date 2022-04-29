@@ -525,13 +525,13 @@ FORMAT can be one of
 
 (defmethod object->html ((object page) (format (eql :card)))
   (spinneret:with-html-string
-    (when (name* object)
-      (:h2 (:a :href (http->ap (slot-value object 'id))
-               (name* object))))
-    (when (attachment object)
-      (:p (:raw (object->html (attachment object) :link))))))
+    (:h2 (:raw (anchor object)))
+    (when (content object)
+      (:pre (sera:ellipsize (string-trim sera:whitespace (plump:text (plump:parse (content object)))) 300)))
+    (when (url* object)
+      (:raw (anchor object)))))
 
-(defmethod object->html ((object page) (format (eql :page)))
+(defun render-html-page (object)
   (spinneret:with-html-string
     (when (name* object)
       (:h1 (name* object)))
@@ -539,15 +539,19 @@ FORMAT can be one of
     (when (content object)
       (:p (:raw (content object))))))
 
+(defmethod object->html ((object page) (format (eql :page)))
+  (render-html-page))
+
+(defmethod object->html ((object article) (format (eql :page)))
+  (render-html-page))
+
 (defmethod published* ((object object))
   (alex:if-let ((time (some (lambda (x) (and x (not (eq :null x)) x))
                             (list (published object) (updated object) (start-time object)))))
     (local-time:format-timestring nil time :format local-time:+asctime-format+)
     "sometime"))
 
-(defmacro with-card (&body body)
-  `(spinneret:with-html-string
-     (:div :class "card" ,@body)))
+;; Activity card rendering
 
 (defmethod object->html ((object activity) (format (eql :card)))
   (with-card
@@ -612,6 +616,8 @@ FORMAT can be one of
       ((any-of object)
        (dolist (option (any-of object))
          (:raw (object->html option :card)))))))
+
+;;; Everything else card rending
 
 ;; FIXME: What is a "card view" for a collection? A card with condensed
 ;; link-like content or a container for cards? It used to be the former, now
@@ -682,6 +688,8 @@ FORMAT can be one of
                (or (null (total-items (followers object)))
                    (not (zerop (total-items (outbox object))))))
       (:raw (object->html (outbox object) :card)))))
+
+;;; The internal scheme definition
 
 (define-internal-scheme "ap"
     (lambda (url buffer)
