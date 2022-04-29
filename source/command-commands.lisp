@@ -107,6 +107,22 @@ from a key binding.")
                 value (type-of value) type)
           (prompt-argument prompt type input)))))
 
+(defun arglist (fn)
+  "Like `swank-backend:arglist' but normalized the result for `alex:parse-ordinary-lambda-list'."
+  #-ccl
+  (swank-backend:arglist fn)
+  #+ccl
+  (let ((package (alex:if-let ((name (swank-backend:function-name fn)))
+                   (symbol-package (if (listp name)
+                                       ;; Closures are named '(:internal NAME)
+                                       (second name)
+                                       name))
+                   *package*)))
+    (delete 'ccl::&lexpr
+            (mapcar (lambda (s)
+                      (if (keywordp s) (intern (string s) package) s))
+                    (swank-backend:arglist fn)))))
+
 (define-command execute-extended-command (&optional command)
   "Prompt for arguments to pass to a given COMMAND.
 User input is evaluated Lisp."
