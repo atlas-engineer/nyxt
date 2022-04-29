@@ -46,7 +46,11 @@ We need a `command' class for multiple reasons:
 - Customize prompt buffer display value with properties.
 
 - Last access: This is useful to sort command by the time they were last
-  called.  The only way to do this is to persist the command instances."))
+  called.  The only way to do this is to persist the command instances.
+
+Since they are generic functions, they can be specialize with `:before',
+`:after' and `:around' qualifiers, effectively acting as hooks.
+These specializations are reserved to the user."))
 
 (defmethod name ((command command))
   "A useful shortcut."
