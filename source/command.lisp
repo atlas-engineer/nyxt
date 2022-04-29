@@ -57,6 +57,7 @@ These specializations are reserved to the user."))
   (closer-mop:generic-function-name command))
 
 (defmethod closer-mop:compute-effective-method :around ((command command) combin applicable)
+  (declare (ignorable applicable combin))
   ;; TODO: Should `define-deprecated-command' report the version
   ;; number of deprecation?  Maybe OK to just remove all deprecated
   ;; commands on major releases.
