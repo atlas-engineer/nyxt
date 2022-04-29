@@ -524,7 +524,7 @@ FORMAT can be one of
 (defmethod object->html ((object tombstone) (format (eql :card)))
   (spinneret:with-html-string
     (:h2 (or (name* object) "Ooops..."))
-    (:p "There used to be " (former-type object) ", but it's no longer there.")))
+    (:p (former-type object) " used to be there, but it no longer is.")))
 
 (defmethod object->html ((object profile) (format (eql :card)))
   (object->html (describes object) :card))
