@@ -338,11 +338,8 @@ automate the reading experience:")
 macros: ")
    (:ul
     (list-command-information '(nyxt/macro-edit-mode:edit-macro)))
-   (:p "Lastly, the command " (:code 'nyxt/process-mode:process-mode) " must be
-highlighted: ")
-   (:ul
-    (list-command-information '(nyxt/process-mode:process-mode)))
-   (:p (:code 'nyxt/process-mode:process-mode) " is actually a building block
+   (:p "Lastly, the  " (:code "nyxt/process-mode:process-mode") " must be highlighted: ")
+   (:p (:code "nyxt/process-mode:process-mode") " is actually a building block
 for other modes previously mentioned, such as " (:code
 'nyxt/repeat-mode:repeat-mode) ". The extension relationship goes further, since
 " (:code 'nyxt/cruise-control-mode:cruise-control-mode) " is in its turn an
