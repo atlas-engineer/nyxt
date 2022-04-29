@@ -490,11 +490,22 @@ FORMAT can be one of
   (spinneret:with-html-string
     (:video :src (url* object) :controls t)))
 
+(defun render-audio-card (object)
+  (spinneret:with-html-string
+    (:audio :src (url* object) :controls t :preload t)))
+
+(defmacro with-card (&body body)
+  `(spinneret:with-html-string
+    (:div :class "card" ,@body)))
+
 (defmethod object->html ((object image) (format (eql :card)))
   (render-image-card object))
 
 (defmethod object->html ((object video) (format (eql :card)))
   (render-video-card object))
+
+(defmethod object->html ((object audio) (format (eql :card)))
+  (render-audio-card object))
 
 (defmethod object->html ((object document) (format (eql :card)))
   (cond
@@ -502,6 +513,8 @@ FORMAT can be one of
      (render-image-card object))
     ((str:starts-with? "video/" (media-type object))
      (render-video-card object))
+    ((str:starts-with? "audio/" (media-type object))
+     (render-audio-card object))
     (t (object->html object :link))))
 
 (defmethod object->html ((object note) (format (eql :card)))
