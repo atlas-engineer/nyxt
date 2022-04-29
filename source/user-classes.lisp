@@ -17,56 +17,55 @@
 (defvar *groups* (make-hash-table))
 
 (macrolet ((define-group-predicate (number)
-             (let ((function-name (intern (format nil "MATCH-INTO-GROUP-~d" number))))
-               `(defun ,function-name (qualifier)
+             (flet ((match-name (number)
+                      (intern (format nil "MATCH-INTO-GROUP-~d" number))))
+               `(defun ,(match-name number) (qualifier)
                   (unless (member (first qualifier) (gethash ,number *groups*) :test #'equal)
                     (push (first qualifier) (gethash ,number *groups*))
-                    t)))))
-  (define-group-predicate 0)
-  (define-group-predicate 1)
-  (define-group-predicate 2)
-  (define-group-predicate 3)
-  (define-group-predicate 4)
-  (define-group-predicate 5)
-  (define-group-predicate 6)
-  (define-group-predicate 7)
-  (define-group-predicate 8)
-  (define-group-predicate 9))
-
-(define-method-combination hookable ()
-  ((before (:before))
-   (around (:around))
-   (after (:after))
-   (primary ())
-   (group-0 match-into-group-0)
-   (group-1 match-into-group-1)
-   (group-2 match-into-group-2)
-   (group-3 match-into-group-3)
-   (group-4 match-into-group-4)
-   (group-5 match-into-group-5)
-   (group-6 match-into-group-6)
-   (group-7 match-into-group-7)
-   (group-8 match-into-group-8)
-   (group-9 match-into-group-9))
-  (flet ((call-methods (methods)
-           (mapcar #'(lambda (method)
-                       `(call-method ,method))
-                   methods)))
-    (clrhash *groups*)
-    (let ((form `(prog1
-                     (progn
-                       ,@(call-methods
-                          (append
-                           before
-                           group-0 group-1 group-2 group-3 group-4
-                           group-5 group-6 group-7 group-8 group-9
-                           primary)))
-                   ,@(call-methods (reverse after)))))
-      (if around
-          `(call-method ,(first around)
-                        (,@(rest around)
-                         (make-method ,form)))
-          form))))
+                    t))))
+           (defcombination (amount &body body)
+             (flet ((match-name (number)
+                      (intern (format nil "MATCH-INTO-GROUP-~d" number)))
+                    (group-name (number)
+                      (intern (format nil "GROUP-~d" number))))
+               `(define-method-combination hookable ()
+                  ((before (:before))
+                   (around (:around))
+                   (after (:after))
+                   (primary ())
+                   ,@(loop for i below amount
+                           collect `(,(group-name i) ,(match-name i))))
+                  ,@body)))
+           (make-body-wrapper (amount)
+             (flet ((group-name (number)
+                      (intern (format nil "GROUP-~d" number))))
+               `(make-body before after around primary
+                          ,@(loop for i below amount collect (group-name i)))))
+           (def (amount)
+             "A macro-hack to inject the literal iteration number into `define-group-predicate'."
+             `(progn
+                ,@(loop for i below amount
+                        collect `(define-group-predicate ,i))
+                (defcombination ,amount
+                  (make-body-wrapper ,amount)))))
+  (flet ((make-body (before after around primary &rest other-methods)
+           (flet ((call-methods (methods)
+                    (mapcar #'(lambda (method)
+                                `(call-method ,method))
+                            methods)))
+             (clrhash *groups*)
+             (let ((form `(prog1
+                              (progn
+                                ,@(call-methods before)
+                                ,@(alex:mappend #'call-methods other-methods)
+                                ,@(call-methods primary))
+                            ,@(call-methods (reverse after)))))
+               (if around
+                   `(call-method ,(first around)
+                                 (,@(rest around)
+                                  (make-method ,form)))
+                   form)))))
+    (def 10)))
 
 (export-always 'customize-instance)
 (defgeneric customize-instance (object &key &allow-other-keys)
