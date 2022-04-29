@@ -202,35 +202,35 @@ Return NIL if not a class form."
 
 (export-always '%slot-default%)
 (defvar %slot-default% nil
-  "A deprecated variable that used to store the slot default value.
-
-Use `%slot-value%' instead!")
+  "Holds the default value of the slot being configured when in `define-configuration'.")
 
 (export-always 'define-configuration)
 (defmacro define-configuration (classes (&body slots-and-values))
-  (alex:when-let ((classes (uiop:ensure-list classes)))
-    `(progn
-       ,@(loop
-           for class in classes
-           collect
-           ;; Random symbol for the method to always stay by itself when computing effective method.
-           `(defmethod customize-instance ,(gensym) ((object ,class) &key)
-              ,@(loop for ((slot value)) on slots-and-values
-                      do (when (member '%slot-default% (alex:flatten value))
-                           (echo-warning
-                            "(define-configuration ~a) %slot-default% is deprecated, use %slot-value% instead"
-                            class))
-                      when (find slot (mopu:slot-names class))
-                        collect `(setf (slot-value object (quote ,slot))
-                                       (let* ((%slot-value% (slot-value object (quote ,slot)))
-                                              (%slot-default% %slot-value%))
-                                         (declare (ignorable %slot-value% %slot-default%))
-                                         ,value))
-                      else
-                        collect `(defmethod ,slot :around ((object ,class))
-                                   (let* ((%slot-value% (call-next-method))
-                                          (%slot-default% %slot-value%))
-                                     ,value))))))))
+  `(progn
+     ,@(loop
+         for class in (uiop:ensure-list classes)
+         collect
+         ;; Random symbol for the method to always stay by itself when computing effective method.
+         `(defmethod customize-instance ,(gensym) ((object ,class) &key)
+            ,@(loop for ((slot value)) on slots-and-values
+                    when (find slot (mopu:slot-names class))
+                      collect `(setf (slot-value object (quote ,slot))
+                                     (let* ((%slot-value% (slot-value object (quote ,slot)))
+                                            (%slot-default%
+                                              ,(if (c2mop:class-finalized-p (find-class class))
+                                                   (getf (mopu:slot-properties class slot) :initform)
+                                                   (progn
+                                                     (echo-warning
+                                                      "%SLOT-DEFAULT% not found for ~a of ~a, falling back to %SLOT-VALUE%"
+                                                      slot class)
+                                                     '%slot-value%))))
+                                       (declare (ignorable %slot-value% %slot-default%))
+                                       ,value))
+                    else
+                      collect `(defmethod ,slot :around ((object ,class))
+                                 (let* ((%slot-value% (call-next-method))
+                                        (%slot-default% %slot-value%))
+                                   ,value)))))))
 
 
 (defparameter %buffer nil)              ; TODO: Make a monad?
