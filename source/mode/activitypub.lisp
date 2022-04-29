@@ -526,6 +526,9 @@ FORMAT can be one of
     (:h2 (or (name* object) "Ooops..."))
     (:p "There used to be " (former-type object) ", but it's no longer there.")))
 
+(defmethod object->html ((object profile) (format (eql :card)))
+  (object->html (describes object) :card))
+
 (defmethod object->html ((object note) (format (eql :card)))
   (spinneret:with-html-string
     (:p (:raw (content object)))
