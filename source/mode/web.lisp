@@ -712,12 +712,6 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
   (add-url-to-history url (buffer mode) mode)
   (reset-page-zoom :buffer (buffer mode)
                    :ratio (current-zoom-ratio (buffer mode)))
-  (with-history (history (buffer mode))
-    (sera:and-let* ((owner (htree:owner history (id (buffer mode))))
-                    (node (htree:current owner))
-                    (data (htree:data node))
-                    (scroll-position (nyxt::scroll-position data)))
-      (setf (nyxt:document-scroll-position (buffer mode)) scroll-position)))
   url)
 
 ;; REVIEW: Shorten the name to e.g., `show-url-qr'? It's no longer current URL only.
