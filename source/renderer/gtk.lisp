@@ -1357,6 +1357,7 @@ See `finalize-buffer'."
   ;; TLS certificate handling
   (connect-signal buffer "load-failed-with-tls-errors" nil (web-view failing-url certificate errors)
     (declare (ignore web-view errors))
+    (on-signal-load-failed buffer (quri:uri failing-url))
     (on-signal-load-failed-with-tls-errors buffer certificate (quri:uri failing-url)))
   (connect-signal buffer "notify::uri" nil (web-view param-spec)
     (declare (ignore param-spec))
@@ -1393,31 +1394,36 @@ See `finalize-buffer'."
     ;; TODO: WebKitGTK sometimes (when?) triggers "load-failed" when loading a
     ;; page from the webkit-history cache.  Upstream bug?  Anyways, we should
     ;; ignore these.
-    (if (loading-webkit-history-p buffer)
-        (setf (loading-webkit-history-p buffer) nil)
-        (unless (or (member (slot-value buffer 'status) '(:finished :failed))
-                    ;; WebKitGTK emits the WEBKIT_PLUGIN_ERROR_WILL_HANDLE_LOAD
-                    ;; (204) if the plugin will handle loading content of the
-                    ;; URL. This often happens with videos. The only thing we
-                    ;; can do is ignore it.
-                    ;;
-                    ;; TODO: Use cl-webkit provided error types. How
-                    ;; do we use it, actually?
-                    (= 204 (webkit::g-error-code error))
-                    (= 302 (webkit::g-error-code error)))
-          (echo "Failed to load URL ~a in buffer ~a." failing-url (id buffer))
-          (setf (slot-value buffer 'status) :failed)
-          (html-set
-           (spinneret:with-html-string
-             (:h1 "Page could not be loaded.")
-             (:h2 "URL: " failing-url)
-             (:ul
-              (:li "Try again in a moment, maybe the site will be available again.")
-              (:li "If the problem persists for every site, check your Internet connection.")
-              (:li "Make sure the URL is valid."
-                   (when (quri:uri-https-p (quri:uri failing-url))
-                     "If this site does not support HTTPS, try with HTTP (insecure)."))))
-           buffer)))
+    (on-signal-load-failed buffer (quri:uri failing-url))
+    (cond
+      ((loading-webkit-history-p buffer)
+       (setf (loading-webkit-history-p buffer) nil))
+      ((= 302 (webkit::g-error-code error))
+       (on-signal-load-canceled buffer (quri:uri failing-url)))
+      ((or (member (slot-value buffer 'status) '(:finished :failed))
+           ;; WebKitGTK emits the WEBKIT_PLUGIN_ERROR_WILL_HANDLE_LOAD
+           ;; (204) if the plugin will handle loading content of the
+           ;; URL. This often happens with videos. The only thing we
+           ;; can do is ignore it.
+           ;;
+           ;; TODO: Use cl-webkit provided error types. How
+           ;; do we use it, actually?
+           (= 204 (webkit::g-error-code error)))
+       nil)
+      (t
+       (echo "Failed to load URL ~a in buffer ~a." failing-url (id buffer))
+       (setf (slot-value buffer 'status) :failed)
+       (html-set
+        (spinneret:with-html-string
+          (:h1 "Page could not be loaded.")
+          (:h2 "URL: " failing-url)
+          (:ul
+           (:li "Try again in a moment, maybe the site will be available again.")
+           (:li "If the problem persists for every site, check your Internet connection.")
+           (:li "Make sure the URL is valid."
+                (when (quri:uri-https-p (quri:uri failing-url))
+                  "If this site does not support HTTPS, try with HTTP (insecure)."))))
+        buffer)))
     t)
   (connect-signal buffer "create" nil (web-view navigation-action)
     (declare (ignore web-view))

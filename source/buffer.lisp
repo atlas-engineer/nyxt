@@ -880,6 +880,11 @@ BUFFER's modes."
   (dolist (mode (modes buffer))
     (on-signal-load-redirected mode url)))
 
+(export-always 'on-signal-load-canceled)
+(defmethod on-signal-load-canceled ((buffer buffer) url)
+  (dolist (mode (modes buffer))
+    (on-signal-load-redirected mode url)))
+
 (export-always 'on-signal-load-committed)
 (defmethod on-signal-load-committed ((buffer buffer) url)
   (dolist (mode (modes buffer))
@@ -891,6 +896,11 @@ BUFFER's modes."
   (dolist (mode (modes buffer))
     (on-signal-load-finished mode url))
   (run-thread "buffer-loaded-hook" (hooks:run-hook (buffer-loaded-hook buffer) buffer)))
+
+(export-always 'on-signal-load-failed)
+(defmethod on-signal-load-failed ((buffer buffer) url)
+  (dolist (mode (modes buffer))
+    (on-signal-load-failed mode url)))
 
 (hooks:define-hook-type buffer (function (buffer)))
 

@@ -421,10 +421,16 @@ If there is no corresponding keymap, return nil."
 (defmethod on-signal-load-redirected ((mode mode) url)
   url)
 
+(defmethod on-signal-load-canceled ((mode mode) url)
+  url)
+
 (defmethod on-signal-load-committed ((mode mode) url)
   url)
 
 (defmethod on-signal-load-finished ((mode mode) url)
+  url)
+
+(defmethod on-signal-load-failed ((mode mode) url)
   url)
 
 (defmethod s-serialization:serializable-slots ((object mode))
