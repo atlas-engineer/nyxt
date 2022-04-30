@@ -425,3 +425,7 @@ internally, but this display is clearer and more navigable."
 (defmethod nyxt:on-signal-load-finished ((mode history-mode) url)
   (add-url-to-history url (buffer mode) mode)
   url)
+
+(defmethod nyxt:on-signal-load-canceled ((mode history-mode) url)
+  (add-url-to-history url (buffer mode) mode)
+  url)
