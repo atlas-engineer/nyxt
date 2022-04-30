@@ -53,6 +53,15 @@
                             (append files included-directories)
                             files))))
 
+(-> pathname-basename ((or pathname string)) (values string &optional))
+(export-always 'pathname-basename)
+(defun pathname-basename (pathname)
+  "Return file basename (name plus the type) of PATHNAME."
+  (let ((pathname (typecase pathname
+                    (string (uiop:parse-native-namestring pathname))
+                    (pathname pathname))))
+    (str:concat (pathname-name pathname) "." (pathname-type pathname))))
+
 (defun current-user ()
   #+sbcl
   (sb-posix:passwd-name (sb-posix:getpwuid (sb-posix:getuid)))
@@ -215,6 +224,18 @@ See `supported-media-types' of `file-mode'."
                      (funcall (open-file-function source) file
                               :new-buffer-p t
                               :supported-p (supported-media-or-directory file source)))))
+               (make-command delete-file* (files)
+                 "Deletes the chosen files."
+                 (mapcar #'delete-file files))
+               (make-command rename-file* (files)
+                 "Rename the first chosen file."
+                 (let* ((file (first files))
+                        (name (pathname-basename file)))
+                   (rename-file file (prompt1
+                                       :prompt (format nil "New name for ~a" name)
+                                       :sources (list (make-instance 'prompter:raw-source))
+                                       :input name))))
+               ;; TODO: File/directory copying.
                (make-command open-with* (files)
                  "Open files with the selected program."
                  (let* ((program (prompt1
