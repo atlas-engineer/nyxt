@@ -299,7 +299,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                      (:div :class "source-name"
                            :style (if (and (hide-single-source-header-p prompt-buffer)
                                            (sera:single sources))
-                                      "dislay:none;"
+                                      "display:none;"
                                       "display:revert")
                            (:span :class "source-glyph" "⛯")
                            (prompter:name source)
