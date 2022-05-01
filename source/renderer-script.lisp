@@ -149,9 +149,9 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
                                              (and (string= (title b) ,title)
                                                   (find-submode ,mode b)))
                                            (buffer-list))
-                                  (enable-modes (symbol-function ,mode)
-                                                (make-instance 'web-buffer
-                                                               :title ,title :url ,url)))))
+                                  (sera:lret ((buffer (make-instance 'web-buffer
+                                                                     :title ,title :url ,url)))
+                                    (enable-modes ,mode buffer)))))
             (buffer-load ,url :buffer ,buffer-var)
             (set-current-buffer ,buffer-var)
             ,buffer-var))))))
