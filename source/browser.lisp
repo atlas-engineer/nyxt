@@ -119,6 +119,15 @@ be reported by this function.")
     nil
     :documentation "Whether to open links issued by an external program or
 issued by Control+<button1> in a new window.")
+   (download-directory
+    (make-instance 'download-directory)
+    :type download-directory
+    :documentation "Directory where downloads will be stored.")
+   (download-engine
+    :renderer
+    :type symbol
+    :documentation "Select a download engine to use,
+such as :lisp or :renderer.")
    (downloads
     :documentation "List of downloads. Used for rendering by the download manager.")
    (startup-timestamp
@@ -393,9 +402,9 @@ current buffer.
 Return the download object matching the download."
   (hooks:run-hook (before-download-hook *browser*) url) ; TODO: Set URL to download-hook result?
   (prog1
-      (match (download-engine buffer)
+      (match (download-engine *browser*)
         (:lisp
-         (alex:when-let* ((path (download-directory buffer))
+         (alex:when-let* ((path (download-directory *browser*))
                           (download-dir (nfiles:expand path)))
            (when (eq proxy-url :auto)
              (setf proxy-url (proxy-url buffer :downloads-only t)))
