@@ -227,6 +227,9 @@ forms list or just JSON-NAMEs as strings, where
                                          `(gethash ,json-name processed-json))))))
          (call-next-method)))))
 
+(defun unparse-timestring (timestamp)
+  (when timestamp
+    (local-time:format-timestring nil timestamp :format local-time:+rfc3339-format+)))
 
 (define-json-type object "Object" (base)
   ("name" :literal-p t)
@@ -238,10 +241,10 @@ forms list or just JSON-NAMEs as strings, where
   ("contentMap" :literal-p t)
   ("source" :literal-p t)
   ("context" :literal-p t)
-  ("startTime" :processor #'local-time:parse-timestring)
-  ("endTime" :processor #'local-time:parse-timestring)
-  ("published" :processor #'local-time:parse-timestring)
-  ("updated" :processor #'local-time:parse-timestring)
+  ("startTime" :processor #'local-time:parse-timestring :deprocessor #'unparse-timestring)
+  ("endTime" :processor #'local-time:parse-timestring :deprocessor #'unparse-timestring)
+  ("published" :processor #'local-time:parse-timestring :deprocessor #'unparse-timestring)
+  ("updated" :processor #'local-time:parse-timestring :deprocessor #'unparse-timestring)
   ("duration" :literal-p t) ; time period
   "generator" ; nested
   "icon" ; nested
@@ -266,7 +269,7 @@ forms list or just JSON-NAMEs as strings, where
   )
 
 (define-json-type link "Link" (base)
-  ("href" :processor #'quri:uri)
+  ("href" :processor #'quri:uri :deprocessor #'quri:render-uri)
   ("rel" :literal-p t)
   ("mediaType" :literal-p t)
   ("name" :literal-p t)
@@ -396,7 +399,7 @@ forms list or just JSON-NAMEs as strings, where
   )
 (define-json-type tombstone "Tombstone" (object)
   "formerType" ; nested
-  ("deleted" :processor #'local-time:parse-timestring))
+  ("deleted" :processor #'local-time:parse-timestring :deprocessor #'unparse-timestring))
 
 (defun http->ap (url)
   (or (alex:when-let* ((url url)
