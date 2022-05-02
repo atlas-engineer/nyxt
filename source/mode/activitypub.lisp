@@ -716,8 +716,7 @@ FORMAT can be one of
 
 (defmethod object->html ((object actor) (format (eql :page)))
   (spinneret:with-html-string
-    (:header
-     (:h1 (format nil "~a (@~a)" (name* object) (preferred-username object))))
+    (:h1 (format nil "~a (@~a)" (name* object) (preferred-username object)))
     (jwhen (summary object)
       (:raw (summary object)))
     (:br)
