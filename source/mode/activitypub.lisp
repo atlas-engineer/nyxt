@@ -561,7 +561,7 @@ FORMAT can be one of
     (t (object->html object :link))))
 
 (defmethod object->html ((object tombstone) (format (eql :card)))
-  (spinneret:with-html-string
+  (with-card
     (:h2 (or (name* object) "Ooops..."))
     (:p (former-type object) " used to be there, but it no longer is.")))
 
@@ -569,7 +569,8 @@ FORMAT can be one of
   (object->html (describes object) :card))
 
 (defmethod object->html ((object note) (format (eql :card)))
-  (spinneret:with-html-string
+  (with-card
+    (:h2 (:raw (anchor (author* object))))
     (:p (:raw (content object)))
     (jwhen (attachment object)
       (:raw (object->html (attachment object) :card)))))
@@ -602,6 +603,9 @@ FORMAT can be one of
   (with-card
     (:i (:raw (anchor (actor object))) (format nil " ~(~a~)-ed" (object-type object)))
     (:div (:raw (object->html (object object) :card)))))
+
+(defmethod object->html ((object create-activity) (format (eql :card)))
+  (object->html (object object) :card))
 
 (defmethod object->html ((object add-activity) (format (eql :card)))
   (with-card
