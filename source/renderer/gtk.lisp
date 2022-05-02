@@ -1668,7 +1668,7 @@ local anyways, and it's better to refresh it if a load was queried."
       (setf (completion-percentage download)
             (* 100 (webkit:webkit-download-estimated-progress webkit-download))))
     (connect-signal download "decide-destination" nil (webkit-download suggested-file-name)
-      (alex:when-let* ((download-dir (download-directory *browser*))
+      (alex:when-let* ((download-dir (download-directory buffer))
                        (download-directory (nfiles:expand download-dir))
                        (native-download-directory (unless (nfiles:nil-pathname-p download-directory)
                                                     (uiop:native-namestring download-directory)))

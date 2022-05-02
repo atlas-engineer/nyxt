@@ -325,6 +325,15 @@ To use, say, KeepassXC, set this slot to
   (make-instance 'password:keepassxc-interface)
 
 Password interfaces are configurable through a `customize-instance' method.")
+   (download-directory
+    (make-instance 'download-directory)
+    :type download-directory
+    :documentation "Directory where downloads will be stored.")
+   (download-engine
+    :initform :renderer
+    :type symbol
+    :documentation "Select a download engine to use,
+such as :lisp or :renderer.")
    (history-file
     (make-instance 'history-file)
     :type history-file
