@@ -52,10 +52,12 @@ Important methods to be avare of:
    (nickname
     nil
     :type (maybe string)
+    :allocation :class
     :documentation "The nickname of the account currently logged in.")
    (instance
     nil
     :type (maybe quri:uri)
+    :allocation :class
     :documentation "The URL of the home instance for the current account.")))
 
 (export-always 'base)
