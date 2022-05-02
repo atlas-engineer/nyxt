@@ -66,19 +66,6 @@ Possibly contains additional Lisp-inaccessible properties."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "The base class for all the ActivityStreams types."))
 
-(defgeneric fill-object (object json)
-  (:method ((object t) json)
-    (declare (ignore json))
-    object)
-  (:method ((object base) json)
-    (when (hash-table-p json)
-      (setf (id object) (gethash "id" json)
-            (original-object object) json))
-    (call-next-method))
-  (:documentation "Fill the OBJECT based on the information from JSON.
-
-Should always CALL-NEXT-METHOD, so that all the superclasses are filled too."))
-
 ;; TODO: Wipe/clean it periodically to allow feed updates?
 (defvar *url->object* (make-hash-table :test 'equal)
   "A memoization table from URL string to the fetched objects.")
@@ -108,15 +95,19 @@ Should always CALL-NEXT-METHOD, so that all the superclasses are filled too."))
 (defvar *classes* (make-hash-table :test 'equalp)
   "A map from ActivityStreams/ActivityPub type name to the Lisp-side class symbol.")
 
-(defmethod initialize-instance :after ((object base) &key)
+(defmethod initialize-instance :after ((object base) &key original-object)
   (let ((class-name (sera:class-name-of object)))
     (setf (object-type object)
-          (or (block find-type
+          (or (when (hash-table-p original-object)
+                (gethash "type" original-object))
+              (block find-type
                 (maphash (lambda (type class)
                            (when (eq class class-name)
                              (return-from find-type type)))
                          *classes*))
-              "Object"))))
+              "Object"))
+    (when (hash-table-p original-object)
+      (setf (id object) (gethash "id" original-object)))))
 
 (sera:export-always 'parse-object)
 (defgeneric parse-object (object)
@@ -130,7 +121,7 @@ Possibly recurse to the nested sub-objects."))
 (defmethod parse-object ((object hash-table))
   (or (sera:and-let* ((type (gethash "type" object))
                       (class (gethash type *classes*)))
-        (fill-object (make-instance class) object))
+        (make-instance class :original-object object))
       object))
 
 (defmethod parse-object ((object sequence))
@@ -139,7 +130,7 @@ Possibly recurse to the nested sub-objects."))
 (defmethod parse-object ((object string))
   (or (sera:and-let* ((valid (valid-url-p object))
                       (fetched (fetch-object object)))
-        (fill-object (parse-object fetched) fetched))
+        (parse-object fetched))
       object))
 
 (sera:export-always 'unparse-object)
@@ -216,15 +207,14 @@ forms list or just JSON-NAMEs as strings, where
                                        `(funcall ,deprocessor (slot-value object (quote ,lisp-name)))
                                        `(slot-value object (quote ,lisp-name))))))
          (call-next-method object hash))
-       (defmethod fill-object ((object ,name) processed-json)
-         (when (hash-table-p processed-json)
+       (defmethod initialize-instance :after ((object ,name) &key original-object)
+         (when (hash-table-p original-object)
            ,@(loop for (json-name lisp-name processor) in normalized-slots
-                   collect `(when (json-true-p (gethash ,json-name processed-json))
+                   collect `(when (json-true-p (gethash ,json-name original-object))
                               (setf (slot-value object (quote ,lisp-name))
                                     ,(if processor
-                                         `(funcall ,processor (gethash ,json-name processed-json))
-                                         `(gethash ,json-name processed-json))))))
-         (call-next-method)))))
+                                         `(funcall ,processor (gethash ,json-name original-object))
+                                         `(gethash ,json-name original-object))))))))))
 
 (defun unparse-timestring (timestamp)
   (when timestamp
