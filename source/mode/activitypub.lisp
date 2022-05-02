@@ -74,7 +74,6 @@ Possibly contains additional Lisp-inaccessible properties."))
   (:method ((object base) json)
     (when (hash-table-p json)
       (setf (id object) (gethash "id" json)
-            (object-type object) (gethash "type" json)
             (original-object object) json))
     (call-next-method))
   (:documentation "Fill the OBJECT based on the information from JSON.
@@ -109,6 +108,16 @@ Should always CALL-NEXT-METHOD, so that all the superclasses are filled too."))
 
 (defvar *classes* (make-hash-table :test 'equalp)
   "A map from ActivityStreams/ActivityPub type name to the Lisp-side class symbol.")
+
+(defmethod initialize-instance :after ((object base) &key)
+  (let ((class-name (sera:class-name-of object)))
+    (setf (object-type object)
+          (or (block find-type
+                (maphash (lambda (type class)
+                           (when (eq class class-name)
+                             (return-from find-type type)))
+                         *classes*))
+              "Object"))))
 
 (sera:export-always 'parse-object)
 (defgeneric parse-object (object)
