@@ -11,7 +11,7 @@
 (use-nyxt-package-nicknames)
 
 ;; TODO: Compact URLs
-;; TODO: Parsing JSON schemes automatically.
+;; TODO: Parse JSON schemes automatically.
 ;; TODO: Parse @context.
 
 (define-mode activitypub-mode ()
