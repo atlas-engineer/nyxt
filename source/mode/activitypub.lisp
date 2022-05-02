@@ -418,9 +418,8 @@ forms list or just JSON-NAMEs as strings, where
      ,@body))
 
 (defmacro jor (&rest args)
-  `(or ,@(loop for arg in (butlast args)
-               collecting `(jwhen ,arg ,arg))
-       ,(alex:lastcar args)))
+  `(or ,@(loop for arg in args
+               collecting `(jwhen ,arg ,arg))))
 
 (defgeneric name* (object)
   ;; FIXME: This should not exists! Strong typing should be strong!
