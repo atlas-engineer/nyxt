@@ -28,6 +28,7 @@ Important methods to be avare of:
   rendered.
 - `parse-object' ensures that the data one gets from the page is a proper
   `object', `link', `activity' etc.
+- `unparse-object' serializes the object to the ActivityPub-friendly JSON.
 - `fetch-object' fetches the object from the HTTP(S) URL and parses it to
   primitive Lisp form."
   ((rememberable-p nil)
