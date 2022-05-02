@@ -66,7 +66,6 @@ Possibly contains additional Lisp-inaccessible properties."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "The base class for all the ActivityStreams types."))
 
-(export-always 'fill-object)
 (defgeneric fill-object (object json)
   (:method ((object t) json)
     (declare (ignore json))
