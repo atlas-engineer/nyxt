@@ -143,6 +143,22 @@ Possibly recurse to the nested sub-objects."))
         (fill-object (parse-object fetched) fetched))
       object))
 
+(sera:export-always 'unparse-object)
+(defgeneric unparse-object (object &optional hash)
+  (:method :around (object &optional hash)
+    (call-next-method object (or hash (make-hash-table :test 'equal))))
+  (:method ((object t) &optional hash)
+    hash)
+  (:method ((object base) &optional (hash (make-hash-table :test 'equal)))
+    (encode-json (or (original-object object)
+                     (sera:lret ((hash hash))
+                       (when (id object)
+                         (setf (gethash "id" hash) (id object)))
+                       (setf (gethash "type" hash) (object-type object))
+                       (setf (gethash "@context" hash) "https://www.w3.org/ns/activitystreams")))))
+  (:documentation "Produce the JSON for the OBJECT.
+Should always CALL-NEXT-METHOD with the half-filled HASH so that superclass methods fill it too."))
+
 (defmacro define-json-type (name type (&rest superclasses) &body names-and-slots)
   "Define a JSON-serializable ActivityPub type with a Lisp class mirroring it.
 
@@ -150,27 +166,32 @@ NAME is an unquoted symbol naming the Lisp-side class.
 TYPE is a string with a ActivityPub object type.
 SUPERCLASSES are Lisp superclasses to fill slots from in addition to the direct ones.
 
-NAMES-AND-SLOTS is a list of (JSON-NAME &key LISP-NAME PROCESSOR LITERAL-P) forms or just
-JSON-NAMEs as strings, where
+NAMES-AND-SLOTS is (JSON-NAME &key LISP-NAME PROCESSOR DEPROCESSOR LITERAL-P)
+forms list or just JSON-NAMEs as strings, where
+
 - JSON-NAME is the string matching the JSON name of the property to fill the
   slot from.
 - LISP-NAME is the (unquoted) symbol for the Lisp-side slot storing the information.
 - PROCESSOR is a form evaluating to a function object. The function designated
   by this object should take the raw string value of a JSON-NAMEd property and
   produce a Lisp value matching it.
-
+- DEPROCESSOR is a form evaluating to a function object. The resulting function
+  takes a non-nil object and encodes it to a valid Lisp value serializable to
+  JSON. DEPROCESSOR should ideally perfectly reverse the effect of the
+  PROCESSOR.
 - LITERAL-P denotes whether the object is in its final form when accessed. If
-  LITERAL-P is false (it is by default), slot accessor might try to fetch the
-  object from the remote URL and/or parse the slot value."
+  LITERAL-P is false (it is by default, unless PROCESSOR is set), slot accessor
+  might try to fetch the object from the remote URL and/or parse the slot
+  value."
   (let ((normalized-slots
           (mapcar (lambda (slot)
                     (destructuring-bind
                         (json-name
                          ;; FIXME: Is there a better way to translate from CaMelCAsE?
                          &key (lisp-name (cffi:translate-camelcase-name json-name))
-                           processor (literal-p (sera:true processor)))
+                           processor deprocessor (literal-p (sera:true processor)))
                         (uiop:ensure-list slot)
-                      (list json-name lisp-name processor literal-p)))
+                      (list json-name lisp-name processor deprocessor literal-p)))
                   names-and-slots)))
     `(progn
        (setf (gethash ,type *classes*) (quote ,name))
@@ -187,6 +208,15 @@ JSON-NAMEs as strings, where
                                `(slot-value object (quote ,lisp-name))
                                `(when (slot-value object (quote ,lisp-name))
                                   (parse-object (slot-value object (quote ,lisp-name)))))))
+       (defmethod unparse-object ((object ,name) &optional hash)
+         ,@(loop for (json-name lisp-name . rest) in normalized-slots
+                 for deprocessor = (second rest)
+                 collect `(when (json-true-p (slot-value object (quote ,lisp-name)))
+                            (setf (gethash ,json-name hash)
+                                  ,(if deprocessor
+                                       `(funcall ,deprocessor (slot-value object (quote ,lisp-name)))
+                                       `(slot-value object (quote ,lisp-name))))))
+         (call-next-method object hash))
        (defmethod fill-object ((object ,name) processed-json)
          (when (hash-table-p processed-json)
            ,@(loop for (json-name lisp-name processor) in normalized-slots
