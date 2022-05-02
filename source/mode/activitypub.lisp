@@ -39,7 +39,10 @@ Important methods to be avare of:
              :border-style "solid"
              :padding "1em"
              :margin-top "1em"
-             :margin-bottom "1em")))
+             :margin-bottom "1em")
+            ("img, video"
+             :max-height "80vh"
+             :max-width "80vw")))
    (auth-token
     nil
     :type (maybe string)
