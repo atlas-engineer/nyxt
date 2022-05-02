@@ -195,7 +195,7 @@ Signal destruction by sending a value to PROMPTER's `interrupt-channel'."
     (funcall action (value suggestion))))
 
 (defun select (prompter steps &key wrap-over-p)
-  "Select suggestion by jumping STEPS forward.
+  "Select `suggestion' by jumping STEPS forward.
 If STEPS is 0, do nothing.
 If STEPS is negative, go backward.
 If the currently selected suggestion is the last one of the current source, go
