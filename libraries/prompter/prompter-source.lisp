@@ -243,7 +243,7 @@ list.")
 Marking is only allowed when `multi-selection-p' is non-nil.
 When suggestions are marked, the subsequent action is run over all marked suggestions.
 
-We store the values instead of the `suggestion' because `suggestion's objects are
+We store the values instead of the `suggestion' because `suggestion' objects are
 reinstantiated between each input processing.")
 
    (active-attributes-keys '()
