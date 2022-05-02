@@ -462,10 +462,16 @@ Try to guess it from all the data available."))
   (:documentation "Get the URL to the OBJECT that it can be referred to by."))
 
 (defmethod url* ((object link))
-  (slot-value object 'href))
+  (href object))
 
 (defmethod url* ((object object))
-  (jor (url object) (id object)))
+  (cond
+    ((stringp (slot-value object 'url)) (slot-value object 'url))
+    ((json-true-p (url object))
+     (if (link-p (first (uiop:ensure-list (url object))))
+         (url* (url object))
+         (slot-value object 'url)))
+    (t (id object))))
 
 (defmethod published* ((object object))
   (alex:if-let ((time (jor (published object) (updated object) (start-time object))))
