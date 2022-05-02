@@ -1166,7 +1166,7 @@ proceeding."
   (:export-class-name-p t)
   (:metaclass user-class))
 
-(-> switch-buffer (&key (:id string) (:current-is-last-p boolean)) *)
+(-> switch-buffer (&key (:id (maybe string)) (:current-is-last-p boolean)) *)
 (define-command switch-buffer (&key id (current-is-last-p nil))
   "Switch buffer using fuzzy completion.
 Buffers are ordered by last access.
