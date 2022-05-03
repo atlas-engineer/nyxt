@@ -154,16 +154,6 @@ If the mode specifier is not known, it's omitted from the results."
                                                  :test #'equals))))
     (enable-modes modes (buffer auto-mode))))
 
-(-> new-page-request-p (request-data) (values boolean &optional))
-(defun new-page-request-p (request-data)
-  "Whether the REQUEST-DATA is a request for a new page load.
-Resource/font/ads/anchor loads are safely ignored.
-
-It relies on the fact that, due to the WebKit limitations, we store the loaded
-URL in the buffer slot when we need to load a new page, while, for
-non-new-page requests, buffer URL is not altered."
-  (quri:uri= (url request-data) (url (buffer request-data))))
-
 (-> url-infer-match (string) list)
 (defun url-infer-match (url)
   "Infer the best `test' for `auto-mode-rule', based on the form of URL.

@@ -509,6 +509,17 @@ view.")
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
+(export-always 'new-page-request-p)
+(-> new-page-request-p (request-data) (values boolean &optional))
+(defun new-page-request-p (request-data)
+  "Whether the REQUEST-DATA is a request for a new page load.
+Resource/font/ads/anchor loads are safely ignored.
+
+It relies on the fact that, due to the WebKit limitations, we store the loaded
+URL in the buffer slot when we need to load a new page, while, for
+non-new-page requests, buffer URL is not altered."
+  (quri:uri= (url request-data) (url (buffer request-data))))
+
 (defun preprocess-request (request-data)
   "Deal with REQUEST-DATA with the following rules:
 - If a binding matches KEYS in `request-resource-scheme', run the bound function.
