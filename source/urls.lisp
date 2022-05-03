@@ -183,11 +183,8 @@ For keyword arguments' meaning, see `scheme' slot documentation."
 Public Suffix list, T otherwise."
   (sera:true (cl:ignore-errors (cl-tld:get-tld hostname))))
 
-(export-always 'valid-url-p)
-(defun valid-url-p (url &key (check-dns-p t))
-  "Return non-nil when URL is a valid URL.
-The domain name existence is verified only if CHECK-DNS-P is T. Domain
-name validation may take significant time since it looks up the DNS."
+(export-always 'valid-scheme-p)
+(defun valid-scheme-p (scheme)
   (let* ((nyxt-schemes (cons "javascript" (alex:hash-table-keys *schemes*)))
          ;; List of URI schemes: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
          ;; Last updated 2020-08-26.
@@ -206,11 +203,16 @@ name validation may take significant time since it looks up the DNS."
          ;; TODO: Remove when https://github.com/lu4nx/cl-tld/issues/2 is fixed.
          (special-use-schemes
            '("example" "invalid" "local" "localhost" "onion" "test"))
-         (valid-schemes (append nyxt-schemes iana-schemes special-use-schemes))
-         (url (ignore-errors (quri:uri url))))
-    (flet ((valid-scheme-p (scheme)
-             (find scheme valid-schemes :test #'string=))
-           (http-p (scheme)
+         (valid-schemes (append nyxt-schemes iana-schemes special-use-schemes)))
+    (sera:true (find scheme valid-schemes :test #'string=))))
+
+(export-always 'valid-url-p)
+(defun valid-url-p (url &key (check-dns-p t))
+  "Return non-nil when URL is a valid URL.
+The domain name existence is verified only if CHECK-DNS-P is T. Domain
+name validation may take significant time since it looks up the DNS."
+  (let ((url (ignore-errors (quri:uri url))))
+    (flet ((http-p (scheme)
              (find scheme '("http" "https") :test #'string=)))
       (and url
            (quri:uri-p url)

@@ -521,6 +521,8 @@ view.")
                                 (keymap:lookup-key keys keymap))))
       (declare (type quri:uri url))
       (cond
+        ((not (valid-scheme-p (quri:uri-scheme url)))
+         (uiop:launch-program (list *open-program* (quri:render-uri url))))
         ((and (internal-buffer-p buffer) (not (internal-url-p url)))
          (log:debug "Load URL from internal buffer in new buffer: ~a" (render-url url))
          (make-buffer-focus :url url)
