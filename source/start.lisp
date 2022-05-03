@@ -305,7 +305,7 @@ method qualifiers, like :around, :before, and :after."
 
 (define-command load-init-file (&key (init-file (nfiles:expand *init-file*)))
   "Load or reload the INIT-FILE."
-  (clean-user-configuration)
+  (clean-configuration)
   (load-lisp init-file :package (find-package :nyxt-user)))
 
 (defun eval-expr (expr)
