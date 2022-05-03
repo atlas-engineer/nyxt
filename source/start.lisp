@@ -294,6 +294,10 @@ Return the short error message and the full error message as second value."
                                      (load-lisp file)))))))
 
 (define-command clean-configuration ()
+  "Clean all the user configuration created with `define-configuration' or `customize-instance'.
+
+Deletes all the non-standard `customize-instance' methods. Preserves standard
+method qualifiers, like :around, :before, and :after."
   (dolist (method (mopu:generic-function-methods #'customize-instance))
     (match (method-qualifiers method)
       ((or (list :before) (list :after) (list :around)) nil)
