@@ -111,20 +111,10 @@ values in help buffers, REPL and elsewhere."))
      (cond
        ((and compact-p (> (length value) *inspector-print-length*))
         (:raw (link-to value)))
-       ((trivial-types:property-list-p value)
-        (:table
-         (unless compact-p
-           (:caption "Property list"))
-         (:thead (loop for key in value by #'cddr
-                       collect (:th (:raw (escaped-literal-print key)))))
-         (:tbody
-          (:tr
-           (loop for val in (rest value) by #'cddr
-                 collect (:td (:raw (value->html val t))))))))
        ((trivial-types:association-list-p value)
         (:table
          (unless compact-p
-           (:caption "Property list")
+           (:caption "Association list")
            (:thead (:th "Property") (:th "Value")))
          (:thead
           (dolist (e value)
