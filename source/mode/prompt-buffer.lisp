@@ -12,8 +12,8 @@ the user types.
 Many prompter-buffer-specific commands are available; you can list them with
 `run-prompt-buffer-command', bound to \"f1 b\" by default.
 
-The prompt buffer can have multiple 'sources' of suggestions.  Each source has
-its own properties, such as the ability to mark multiple suggestions.
+The prompt buffer can have multiple `prompter:source's of suggestions.  Each
+source has its own properties, such as the ability to mark multiple suggestions.
 A same source can be used by different prompt buffers.
 
 Each source offers a set of 'actions' for its selection(s).
