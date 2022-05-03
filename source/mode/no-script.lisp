@@ -9,8 +9,7 @@
 (define-mode no-script-mode ()
   "Disable Javascript in current buffer.
 If the current URL is an internal one (for instance 'nyxt://...'), JavaScript is enabled.
-It's automatically disabled when loading a non-internal URL."
-  ())
+It's automatically disabled when loading a non-internal URL.")
 
 (defmethod enable ((mode no-script-mode) &key)
   (echo "Reload the buffer for no-script-mode to take effect."))

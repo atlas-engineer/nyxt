@@ -7,8 +7,7 @@
 (in-package :nyxt/no-image-mode)
 
 (define-mode no-image-mode ()
-  "Disable images in current buffer."
-  ())
+  "Disable images in current buffer.")
 
 (defmethod enable ((mode no-image-mode) &key)
   (ffi-buffer-auto-load-image (buffer mode) nil))

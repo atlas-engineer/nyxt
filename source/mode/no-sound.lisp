@@ -7,8 +7,7 @@
 (in-package :nyxt/no-sound-mode)
 
 (define-mode no-sound-mode ()
-  "Disable sound in current buffer."
-  ())
+  "Disable sound in current buffer.")
 
 (defmethod enable ((mode no-sound-mode) &key)
   (ffi-buffer-enable-sound (buffer mode) nil))

@@ -8,8 +8,7 @@
 
 (define-mode reduce-bandwidth-mode ()
   "Reduce bandwidth enabling `no-image-mode', `no-script-mode', and
-`no-webgl-mode'."
-  ())
+`no-webgl-mode'.")
 
 (defmethod enable ((mode reduce-bandwidth-mode) &key)
   (enable-modes '(no-image-mode no-script-mode no-webgl-mode)))
