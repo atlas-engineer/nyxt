@@ -128,13 +128,8 @@
 
 (define-command remove-search-hints ()
   "Remove all search hints."
-  (pflet ((remove-search-hints ()
-            (defun remove-search-nodes ()
-              "Removes all the search elements"
-              (ps:dolist (node (nyxt/ps:qsa document ".nyxt-search-node"))
-                (ps:chain node (replace-with (aref *nodes* (ps:@ node id))))))
-            (remove-search-nodes)))
-    (remove-search-hints)))
+  (peval (ps:dolist (node (nyxt/ps:qsa document ".nyxt-search-node"))
+             (ps:chain node (replace-with (aref *nodes* (ps:@ node id)))))))
 
 (define-class search-buffer-source (prompter:source)
   ((case-sensitive-p nil)

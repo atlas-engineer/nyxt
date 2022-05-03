@@ -45,35 +45,31 @@ mode."
 
 (define-command jump-to-reading-line-cursor (&key (buffer (current-buffer)))
   "Move the view port to show the reading line cursor."
-  (pflet ((jump-to-cursor ()
-                          (ps:chain (ps:chain document (query-selector "#reading-line-cursor")) (scroll-into-view-if-needed))))
-    (with-current-buffer buffer
-      (jump-to-cursor))))
+  (with-current-buffer buffer
+    (peval (ps:chain
+              (ps:chain document (query-selector "#reading-line-cursor"))
+              (scroll-into-view-if-needed)))))
 
 (define-command reading-line-cursor-up (&key (step-size 20) (buffer (current-buffer)))
   "Move the reading line cursor up. If scrolling off screen, move the
 screen as well."
-  (pflet ((cursor-up ()
-    (let ((original-position
-            (ps:chain (parse-int
-                       (ps:@ (ps:chain document (query-selector "#reading-line-cursor")) style top) 10))))
-      (setf (ps:@ (ps:chain document (query-selector "#reading-line-cursor")) style top)
-            (+ (- original-position (ps:lisp step-size)) "px")))))
-    (with-current-buffer buffer
-      (cursor-up)))
+  (with-current-buffer buffer
+    (peval
+      (let ((original-position
+              (ps:chain (parse-int
+                         (ps:@ (ps:chain document (query-selector "#reading-line-cursor")) style top) 10))))
+        (setf (ps:@ (ps:chain document (query-selector "#reading-line-cursor")) style top)
+              (+ (- original-position (ps:lisp step-size)) "px")))))
   (jump-to-reading-line-cursor :buffer buffer))
 
 (define-command reading-line-cursor-down (&key (step-size 20) (buffer (current-buffer)))
-  "Move the reading line cursor down. If scrolling off screen, move
-the screen as well."
-  (pflet ((cursor-down ()
-    (let ((original-position
-            (ps:chain (parse-int
-                       (ps:@ (ps:chain document (query-selector "#reading-line-cursor")) style top) 10))))
-      (setf (ps:@ (ps:chain document (query-selector "#reading-line-cursor")) style top)
-            (+ (+ original-position (ps:lisp step-size)) "px")))))
-    (with-current-buffer buffer
-      (cursor-down)))
+  "Move the reading line cursor down. If scrolling off screen, move the screen as well."
+  (with-current-buffer buffer
+    (peval (let ((original-position
+                     (ps:chain (parse-int
+                                (ps:@ (ps:chain document (query-selector "#reading-line-cursor")) style top) 10))))
+               (setf (ps:@ (ps:chain document (query-selector "#reading-line-cursor")) style top)
+                     (+ (+ original-position (ps:lisp step-size)) "px")))))
   (jump-to-reading-line-cursor :buffer buffer))
 
 (defmethod on-signal-load-finished ((mode reading-line-mode) url)

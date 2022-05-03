@@ -149,10 +149,9 @@
 
 (defun frame-element-clear ()
   "Clear the selection frame created by the user."
-  (pflet ((remove-overlay ()
-            (ps:chain document (get-element-by-id "nyxt-rectangle-selection") (remove))
-            (ps:chain document (get-element-by-id "nyxt-overlay") (remove))))
-    (remove-overlay)))
+  (peval
+    (ps:chain document (get-element-by-id "nyxt-rectangle-selection") (remove))
+    (ps:chain document (get-element-by-id "nyxt-overlay") (remove))))
 
 (define-class frame-source (prompter:source)
   ((prompter:name "Selection Frame")

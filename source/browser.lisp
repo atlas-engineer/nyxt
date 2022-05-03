@@ -749,12 +749,10 @@ sometimes yields the wrong result."
 (define-ffi-generic ffi-buffer-download (buffer url))
 (define-ffi-generic ffi-buffer-set-zoom-level (buffer value)
   (:method ((buffer t) value)
-    (pflet ((zoom ()
-                  (ps:let ((style (ps:chain document body style)))
+    (with-current-buffer buffer
+      (peval (ps:let ((style (ps:chain document body style)))
                     (setf (ps:@ style zoom)
-                          (ps:lisp value)))))
-      (with-current-buffer buffer
-        (zoom)))))
+                          (ps:lisp value)))))))
 (define-ffi-generic ffi-buffer-get-document (buffer)
   (:method ((buffer t))
     (pflet ((get-html (start end)

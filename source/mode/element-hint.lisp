@@ -446,14 +446,12 @@ visible nosave active buffer."
 
 (define-command toggle-hints-transparency (&key (buffer (current-buffer)))
   "Toggle the on-screen element hints transparency."
-  (pflet ((toggle-transparent ()
-            (ps:dolist (element (nyxt/ps:qsa document ".nyxt-hint"))
-              (if (or (= (ps:chain element style opacity) "1")
-                      (= (ps:chain element style opacity) ""))
-                  (setf (ps:chain element style opacity) "0.2")
-                  (setf (ps:chain element style opacity) "1.0")))))
-    (with-current-buffer buffer
-      (toggle-transparent))))
+  (with-current-buffer buffer
+    (peval (ps:dolist (element (nyxt/ps:qsa document ".nyxt-hint"))
+               (if (or (= (ps:chain element style opacity) "1")
+                       (= (ps:chain element style opacity) ""))
+                   (setf (ps:chain element style opacity) "0.2")
+                   (setf (ps:chain element style opacity) "1.0"))))))
 
 (define-command scroll-to-hint (&key (buffer (current-buffer)))
   "Show the selected hint on screen."

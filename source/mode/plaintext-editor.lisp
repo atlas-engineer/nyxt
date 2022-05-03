@@ -41,8 +41,7 @@
 
 (defmethod get-content ((editor plaintext-editor-mode))
   (with-current-buffer (buffer editor)
-    (pflet ((get-content () (ps:chain document (query-selector "#editor") value)))
-      (get-content))))
+    (peval (ps:chain document (query-selector "#editor") value))))
 
 (defmethod nyxt:default-modes append ((buffer editor-buffer))
   '(plaintext-editor-mode))

@@ -94,10 +94,8 @@ Scroll history with `evaluation-history-previous' and `evaluation-history-next'.
                #'string<)))
 
 (defmethod input ((mode repl-mode))
-  (pflet ((input-text ()
-           (ps:@ (nyxt/ps:qs document "#input-buffer") value)))
-    (with-current-buffer (buffer mode)
-      (input-text))))
+  (with-current-buffer (buffer mode)
+    (peval (ps:@ (nyxt/ps:qs document "#input-buffer") value))))
 
 (defmethod (setf input) (new-text (mode repl-mode))
   (pflet ((set-input-text (text)
@@ -106,13 +104,12 @@ Scroll history with `evaluation-history-previous' and `evaluation-history-next'.
       (set-input-text new-text))))
 
 (defmethod cursor ((mode repl-mode))
-  (pflet ((selection-start ()
-           (ps:chain (nyxt/ps:qs document "#input-buffer") selection-start)))
-    (with-current-buffer (buffer mode)
-      (let ((cursor (selection-start)))
-        (if (numberp cursor)
-            cursor
-            0)))))
+  (with-current-buffer (buffer mode)
+    (let ((cursor (peval
+                    (ps:chain (nyxt/ps:qs document "#input-buffer") selection-start))))
+      (if (numberp cursor)
+          cursor
+          0))))
 
 (defmethod (setf cursor) (new-position (mode repl-mode))
   (pflet ((selection-start (position)

@@ -24,6 +24,10 @@ The function can be passed ARGS."
                   collect (transform-definition name lambda-list body))
        ,@body)))
 
+(export-always 'peval)
+(defmacro peval (&body body)
+  `(ffi-buffer-evaluate-javascript (current-buffer) (ps:ps ,@body)))
+
 (define-parenscript %document-scroll-position (&optional (y 0 y-provided-p) (x 0 x-provided-p))
   (let ((x (ps:lisp x))
         (y (ps:lisp y)))

@@ -775,17 +775,17 @@ Delete it with `ffi-buffer-delete'"))
              dom-counter)
            (setf dom-counter 0)
            (count-dom-elements (nyxt/ps:qs document "html"))))
-         (if (dead-buffer-p buffer)
-             (slot-value buffer 'document-model)
-             (with-current-buffer buffer
-               (let ((value (slot-value buffer 'document-model))
-                     (element-count (%count-dom-elements)))
-                 (if (and value element-count
-                          ;; Check whether the difference in element count is significant.
-                          (< (abs (- (length (clss:select "*" value)) (truncate element-count)))
-                             (document-model-delta-threshold buffer)))
-                     value
-                     (update-document-model :buffer buffer)))))))
+    (if (dead-buffer-p buffer)
+        (slot-value buffer 'document-model)
+        (with-current-buffer buffer
+          (let ((value (slot-value buffer 'document-model))
+                (element-count (%count-dom-elements)))
+            (if (and value element-count
+                     ;; Check whether the difference in element count is significant.
+                     (< (abs (- (length (clss:select "*" value)) (truncate element-count)))
+                        (document-model-delta-threshold buffer)))
+                value
+                (update-document-model :buffer buffer)))))))
 
 (export-always 'get-nyxt-id)
 (defmethod get-nyxt-id ((element plump:element))
@@ -1635,5 +1635,4 @@ That is, the one with the most recent access time."
 (export-always 'print-buffer)
 (define-command print-buffer ()
   "Print the current buffer."
-  (pflet ((print-buffer () (print)))
-         (print-buffer)))
+  (peval (print)))
