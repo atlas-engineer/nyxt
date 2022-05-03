@@ -28,18 +28,20 @@
     (intern (format nil "GROUP-BEFORE-~d" number)))
   (defun group-after-name (number)
     (intern (format nil "GROUP-AFTER-~d" number)))
-  (defun make-body (before after around primary &rest other-methods)
+  (defun make-body (before after around primary before-qualified after-qualified)
     (flet ((call-methods (methods)
              (mapcar #'(lambda (method)
                          `(call-method ,method))
                      methods)))
-      (clrhash *groups*)
+      (clrhash *before-groups*)
+      (clrhash *after-groups*)
       (let ((form `(prog1
                        (progn
                          ,@(call-methods before)
-                         ,@(alex:mappend #'call-methods other-methods)
+                         ,@(alex:mappend #'call-methods before-qualified)
                          ,@(call-methods primary))
-                     ,@(call-methods (reverse after)))))
+                     ,@(call-methods (reverse after))
+                     ,@(alex:mappend #'call-methods after-qualified))))
         (if around
             `(call-method ,(first around)
                           (,@(rest around)
@@ -79,8 +81,8 @@
                 ,@body))
            (make-body-wrapper (amount)
              `(make-body before after around primary
-                         ,@(loop for i below amount collect (group-before-name i))
-                         ,@(loop for i below amount collect (group-after-name i))))
+                         (list ,@(loop for i below amount collect (group-before-name i)))
+                         (list ,@(loop for i below amount collect (group-after-name i)))))
            (def (amount)
              "A macro-hack to inject the literal iteration number into `define-group-predicate'."
              `(progn
