@@ -255,11 +255,11 @@ define which elements are picked up by element hinting.")
 
 (define-command go-next ()
   "Navigate to the next element according to the HTML 'rel' attribute."
-  (peval (ps:chain document (query-selector-all "[rel=next]") 0 (click))))
+  (peval (ps:chain (nyxt/ps:qsa document "rel=next") 0 (click))))
 
 (define-command go-previous ()
   "Navigate to the previous element according to the HTML 'rel' attribute."
-  (peval (ps:chain document (query-selector-all "[rel=prev]") 0 (click))))
+  (peval (ps:chain (nyxt/ps:qsa document "rel=prev") 0 (click))))
 
 (define-command go-to-homepage ()
   "Navigate to the homepage."
@@ -582,7 +582,7 @@ Otherwise go forward to the only child."
 
 (define-command copy-placeholder ()
   "Copy placeholder text to clipboard."
-  (let ((current-value (peval (ps:chain document active-element placeholder))))
+  (let ((current-value (peval (ps:@ document active-element placeholder))))
     (if (eq current-value :undefined)
         (echo "No active selected placeholder.")
         (progn (copy-to-clipboard current-value)
