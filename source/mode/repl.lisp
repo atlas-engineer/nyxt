@@ -85,7 +85,13 @@ INPUT is a string and RESULTS is a list of Lisp values.")
     :type (or null integer)
     :documentation "Current element of history being edited in the REPL prompt.
 
-Scroll history with `evaluation-history-previous' and `evaluation-history-next'."))
+Scroll history with `evaluation-history-previous' and `evaluation-history-next'.")
+   (verbatim-p
+    nil
+    :type boolean
+    :documentation "If NIL results of evaluation will be
+pretty-printed with VALUE->HTML. Printed representations of most
+objects cannot be read back in this case. If T, use PRIN1-TO-STRING."))
   (:toggler-command-p nil))
 
 (defun package-short-name (package)
@@ -207,11 +213,15 @@ Scroll history with `evaluation-history-previous' and `evaluation-history-next'.
                           for (package input results) in (reverse (evaluation-history repl-mode))
                           collect (:li (:b package "> " input)
                                        (loop
-                                         for result in results
-                                         collect (:li (:raw
-                                                       (value->html
-                                                        result (or (typep result 'standard-object)
-                                                                   (typep result 'structure-object))))))))))
+                                         for result in results collect
+                                             (:li
+                                              (if (verbatim-p repl-mode)
+                                                  (prin1-to-string result)
+                                                  (:raw
+                                                   (value->html
+                                                    result
+                                                    (or (typep result 'standard-object)
+                                                        (typep result 'structure-object)))))))))))
              (:div :id "input"
                    (:span :id "prompt"
                           (format nil "~a>" (package-short-name *package*)))
