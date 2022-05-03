@@ -16,30 +16,38 @@
 
 (defvar *before-groups* (make-hash-table :test 'equal)
   "Method groups for :BEFORE FOO qualified methods in `hookable' method combination.")
+(defvar *primary-groups* (make-hash-table :test 'equal)
+  "Method groups for FOO qualified methods in `hookable' method combination.")
 (defvar *after-groups* (make-hash-table :test 'equal)
   "Method groups for :AFTER FOO qualified methods in `hookable' method combination.")
 
 (sera:eval-always
   (defun match-after-name (number)
     (intern (format nil "MATCH-INTO-AFTER-GROUP-~d" number)))
+  (defun match-primary-name (number)
+    (intern (format nil "MATCH-INTO-PRIMARY-GROUP-~d" number)))
   (defun match-before-name (number)
     (intern (format nil "MATCH-INTO-BEFORE-GROUP-~d" number)))
   (defun group-before-name (number)
     (intern (format nil "GROUP-BEFORE-~d" number)))
+  (defun group-primary-name (number)
+    (intern (format nil "GROUP-PRIMARY-~d" number)))
   (defun group-after-name (number)
     (intern (format nil "GROUP-AFTER-~d" number)))
-  (defun make-body (before after around primary before-qualified after-qualified)
+  (defun make-body (before after around primary before-qualified primary-qualified after-qualified)
     (flet ((call-methods (methods)
              (mapcar #'(lambda (method)
                          `(call-method ,method))
                      methods)))
       (clrhash *before-groups*)
       (clrhash *after-groups*)
+      (clrhash *primary-groups*)
       (let ((form `(prog1
                        (progn
                          ,@(call-methods before)
                          ,@(alex:mappend #'call-methods before-qualified)
                          ,@(call-methods primary))
+                     ,@(alex:mappend #'call-methods primary-qualified)
                      ,@(call-methods (reverse after))
                      ,@(alex:mappend #'call-methods after-qualified))))
         (if around
@@ -59,6 +67,16 @@
                         ((null group-label)
                          (setf (gethash ,number *before-groups*) (second qualifier)))
                         (t nil)))))
+                (defun ,(match-primary-name number) (qualifier)
+                  (let* ((group-label (gethash ,number *primary-groups*)))
+                    ;; NOTE: Not checking for nil, :around & friends, because
+                    ;; these groups are matched last.
+                    (cond
+                      ((and group-label (equal group-label qualifier))
+                       t)
+                      ((null group-label)
+                       (setf (gethash ,number *primary-groups*) qualifier))
+                      (t nil))))
                 (defun ,(match-after-name number) (qualifier)
                   (let* ((group-label (gethash ,number *after-groups*)))
                     (when (eq (first qualifier) :after)
@@ -77,11 +95,14 @@
                  (after (:after))
                  ,@(loop for i below amount
                          collect `(,(group-after-name i) ,(match-after-name i)))
-                 (primary ()))
+                 (primary ())
+                 ,@(loop for i below amount
+                         collect `(,(group-primary-name i) ,(match-primary-name i))))
                 ,@body))
            (make-body-wrapper (amount)
              `(make-body before after around primary
                          (list ,@(loop for i below amount collect (group-before-name i)))
+                         (list ,@(loop for i below amount collect (group-primary-name i)))
                          (list ,@(loop for i below amount collect (group-after-name i)))))
            (def (amount)
              "A macro-hack to inject the literal iteration number into `define-group-predicate'."
@@ -90,12 +111,10 @@
                         collect `(define-group-predicate ,i))
                 (defcombination ,amount
                     (make-body-wrapper ,amount)))))
-    ;; FIXME: 300 is a magic number of groups that is significantly less than
-    ;; 1000 (compiling 1000 groups exhaust all 4GB of RAM on aartaka's laptop),
-    ;; while still big enough to fit most configs:
-    ;;
-    ;; 300 * 5 lines of average define-configuration = 1500 lines of config
-  (def 300))
+  ;; FIXME: 150 * 3 (:before, :after, primary) is a magic number of groups that
+  ;; is significantly less than 1000 -- compiling ~1000 groups exhaust all 4GB
+  ;; of RAM on aartaka's laptop -- while still big enough to fit most configs.
+  (def 150))
 
 (export-always 'customize-instance)
 (defgeneric customize-instance (object &key &allow-other-keys)
