@@ -442,9 +442,7 @@ Only available if `multi-selection-p' is non-nil."
   "Scroll the buffer behind the prompt up."
   (with-current-buffer (current-buffer)
     ;; FIXME: Copy-paste from scroll.lisp. Move it somewhere prompt-buffer.lisp can reach it?
-    (pflet ((scroll-up ()
-            (ps:chain window (scroll-by 0 (ps:lisp (- scroll-distance))))))
-    (scroll-up))))
+    (peval (ps:chain window (scroll-by 0 (ps:lisp (- scroll-distance)))))))
 
 (define-command-prompt scroll-other-buffer-down (prompt-buffer
                                                  &key (scroll-distance
@@ -452,9 +450,7 @@ Only available if `multi-selection-p' is non-nil."
   "Scroll the buffer behind the prompt down."
   (with-current-buffer (current-buffer)
     ;; FIXME: Copy-paste from scroll.lisp. Move it somewhere prompt-buffer.lisp can reach it?
-    (pflet ((scroll-down ()
-            (ps:chain window (scroll-by 0 (ps:lisp scroll-distance)))))
-    (scroll-down))))
+    (peval (ps:chain window (scroll-by 0 (ps:lisp scroll-distance))))))
 
 (defmethod default-modes append ((buffer prompt-buffer))
   '(prompt-buffer-mode))

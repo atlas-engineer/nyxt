@@ -255,15 +255,11 @@ define which elements are picked up by element hinting.")
 
 (define-command go-next ()
   "Navigate to the next element according to the HTML 'rel' attribute."
-  (pflet ((go-next ()
-            (ps:chain document (query-selector-all "[rel=next]") 0 (click))))
-    (go-next)))
+  (peval (ps:chain document (query-selector-all "[rel=next]") 0 (click))))
 
 (define-command go-previous ()
   "Navigate to the previous element according to the HTML 'rel' attribute."
-  (pflet ((go-previous ()
-            (ps:chain document (query-selector-all "[rel=prev]") 0 (click))))
-    (go-previous)))
+  (peval (ps:chain document (query-selector-all "[rel=prev]") 0 (click))))
 
 (define-command go-to-homepage ()
   "Navigate to the homepage."
@@ -586,13 +582,11 @@ Otherwise go forward to the only child."
 
 (define-command copy-placeholder ()
   "Copy placeholder text to clipboard."
-  (pflet ((copy-placeholder ()
-            (ps:chain document active-element placeholder)))
-    (let ((current-value (copy-placeholder)))
-      (if (eq current-value :undefined)
-          (echo "No active selected placeholder.")
-          (progn (copy-to-clipboard current-value)
-                 (echo "Placeholder copied."))))))
+  (let ((current-value (peval (ps:chain document active-element placeholder))))
+    (if (eq current-value :undefined)
+        (echo "No active selected placeholder.")
+        (progn (copy-to-clipboard current-value)
+               (echo "Placeholder copied.")))))
 
 (define-command cut (&optional (buffer (current-buffer)))
   "Cut the selected text in BUFFER."
