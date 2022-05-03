@@ -235,12 +235,6 @@ See `supported-media-types' of `file-mode'."
                    (uiop:launch-program (cons (uiop:native-namestring program) (mapcar #'uiop:native-namestring files))))))
          (slot-value source 'prompter:actions))))
 
-(declaim (type (or string null) *open-program*))
-(defvar *open-program*
-  #+darwin "open"
-  #+(or linux bsd) "xdg-open"
-  #-(or linux bsd darwin) nil)
-
 (export-always 'default-open-file-function)
 (defun default-open-file-function (filename &key supported-p new-buffer-p)
   "Open FILENAME in Nyxt if supported, or externally otherwise.

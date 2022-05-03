@@ -18,6 +18,13 @@ close the connection.")
   "Whether the Nyxt-internal debugger pops up when an error happens.
 Allows the user to fix immediate errors in runtime, given enough understanding.")
 
+(export-always '*open-program*)
+(declaim (type (or string null) *open-program*))
+(defvar *open-program*
+  #+darwin "open"
+  #+(or linux bsd) "xdg-open"
+  #-(or linux bsd darwin) nil)
+
 (defvar *headless-p* nil
   "If non-nil, don't display anything.
 This is convenient for testing purposes or to drive Nyxt programmatically.")
