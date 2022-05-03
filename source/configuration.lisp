@@ -211,7 +211,7 @@ Return NIL if not a class form."
          for class in (uiop:ensure-list classes)
          collect
          ;; Random symbol for the method to always stay by itself when computing effective method.
-         `(defmethod customize-instance ,(gensym) ((object ,class) &key)
+         `(defmethod customize-instance :before ,(gensym) ((object ,class) &key)
             ,@(loop for ((slot value)) on slots-and-values
                     when (find slot (mopu:slot-names class))
                       collect `(setf (slot-value object (quote ,slot))

@@ -14,37 +14,73 @@
                                            (class user-class))
   t)
 
-(defvar *groups* (make-hash-table :test 'equal))
+(defvar *before-groups* (make-hash-table :test 'equal)
+  "Method groups for :BEFORE FOO qualified methods in `hookable' method combination.")
+(defvar *after-groups* (make-hash-table :test 'equal)
+  "Method groups for :AFTER FOO qualified methods in `hookable' method combination.")
+
+(sera:eval-always
+  (defun match-after-name (number)
+    (intern (format nil "MATCH-INTO-AFTER-GROUP-~d" number)))
+  (defun match-before-name (number)
+    (intern (format nil "MATCH-INTO-BEFORE-GROUP-~d" number)))
+  (defun group-before-name (number)
+    (intern (format nil "GROUP-BEFORE-~d" number)))
+  (defun group-after-name (number)
+    (intern (format nil "GROUP-AFTER-~d" number)))
+  (defun make-body (before after around primary &rest other-methods)
+    (flet ((call-methods (methods)
+             (mapcar #'(lambda (method)
+                         `(call-method ,method))
+                     methods)))
+      (clrhash *groups*)
+      (let ((form `(prog1
+                       (progn
+                         ,@(call-methods before)
+                         ,@(alex:mappend #'call-methods other-methods)
+                         ,@(call-methods primary))
+                     ,@(call-methods (reverse after)))))
+        (if around
+            `(call-method ,(first around)
+                          (,@(rest around)
+                           (make-method ,form)))
+            form)))))
 
 (macrolet ((define-group-predicate (number)
-             (flet ((match-name (number)
-                      (intern (format nil "MATCH-INTO-GROUP-~d" number))))
-               `(defun ,(match-name number) (qualifier)
-                  (let* ((group-label (gethash ,number *groups*)))
-                    (cond
-                      ((and group-label (equal group-label qualifier))
-                       t)
-                      ((null group-label)
-                       (setf (gethash ,number *groups*) qualifier))
-                      (t nil))))))
+             `(progn
+                (defun ,(match-before-name number) (qualifier)
+                  (let* ((group-label (gethash ,number *before-groups*)))
+                    (when (eq (first qualifier) :before)
+                      (cond
+                        ((and group-label (equal group-label (second qualifier)))
+                         t)
+                        ((null group-label)
+                         (setf (gethash ,number *before-groups*) (second qualifier)))
+                        (t nil)))))
+                (defun ,(match-after-name number) (qualifier)
+                  (let* ((group-label (gethash ,number *after-groups*)))
+                    (when (eq (first qualifier) :after)
+                      (cond
+                        ((and group-label (equal group-label (second qualifier)))
+                         t)
+                        ((null group-label)
+                         (setf (gethash ,number *after-groups*) (second qualifier)))
+                        (t nil)))))))
            (defcombination (amount &body body)
-             (flet ((match-name (number)
-                      (intern (format nil "MATCH-INTO-GROUP-~d" number)))
-                    (group-name (number)
-                      (intern (format nil "GROUP-~d" number))))
-               `(define-method-combination hookable ()
-                  ((before (:before))
-                   (around (:around))
-                   (after (:after))
-                   (primary ())
-                   ,@(loop for i below amount
-                           collect `(,(group-name i) ,(match-name i))))
-                  ,@body)))
+             `(define-method-combination hookable ()
+                ((before (:before))
+                 ,@(loop for i below amount
+                         collect `(,(group-before-name i) ,(match-before-name i)))
+                 (around (:around))
+                 (after (:after))
+                 ,@(loop for i below amount
+                         collect `(,(group-after-name i) ,(match-after-name i)))
+                 (primary ()))
+                ,@body))
            (make-body-wrapper (amount)
-             (flet ((group-name (number)
-                      (intern (format nil "GROUP-~d" number))))
-               `(make-body before after around primary
-                           ,@(loop for i below amount collect (group-name i)))))
+             `(make-body before after around primary
+                         ,@(loop for i below amount collect (group-before-name i))
+                         ,@(loop for i below amount collect (group-after-name i))))
            (def (amount)
              "A macro-hack to inject the literal iteration number into `define-group-predicate'."
              `(progn
@@ -52,29 +88,12 @@
                         collect `(define-group-predicate ,i))
                 (defcombination ,amount
                     (make-body-wrapper ,amount)))))
-  (flet ((make-body (before after around primary &rest other-methods)
-           (flet ((call-methods (methods)
-                    (mapcar #'(lambda (method)
-                                `(call-method ,method))
-                            methods)))
-             (clrhash *groups*)
-             (let ((form `(prog1
-                              (progn
-                                ,@(call-methods before)
-                                ,@(alex:mappend #'call-methods other-methods)
-                                ,@(call-methods primary))
-                            ,@(call-methods (reverse after)))))
-               (if around
-                   `(call-method ,(first around)
-                                 (,@(rest around)
-                                  (make-method ,form)))
-                   form)))))
     ;; FIXME: 300 is a magic number of groups that is significantly less than
     ;; 1000 (compiling 1000 groups exhaust all 4GB of RAM on aartaka's laptop),
     ;; while still big enough to fit most configs:
     ;;
     ;; 300 * 5 lines of average define-configuration = 1500 lines of config
-    (def 300)))
+  (def 300))
 
 (export-always 'customize-instance)
 (defgeneric customize-instance (object &key &allow-other-keys)
