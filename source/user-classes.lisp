@@ -21,6 +21,7 @@
 (defvar *after-groups* (make-hash-table :test 'equal)
   "Method groups for :AFTER FOO qualified methods in `hookable' method combination.")
 
+;; This is to make these functions available to the macrolet below.
 (sera:eval-always
   (defun match-after-name (number)
     (intern (format nil "MATCH-INTO-AFTER-GROUP-~d" number)))
@@ -34,6 +35,17 @@
     (intern (format nil "GROUP-PRIMARY-~d" number)))
   (defun group-after-name (number)
     (intern (format nil "GROUP-AFTER-~d" number)))
+  (defun match-qualifier (qualifier groups number &optional prefix)
+    (let* ((group-label (gethash number groups))
+           (part (if prefix (rest qualifier) qualifier)))
+      (when (or (null prefix)
+                (and prefix (eq (first qualifier) prefix)))
+        (cond
+          ((and group-label (equalp group-label part))
+           t)
+          ((null group-label)
+           (setf (gethash number groups) part))
+          (t nil)))))
   (defun make-body (before after around primary before-qualified primary-qualified after-qualified)
     (flet ((call-methods (methods)
              (mapcar #'(lambda (method)
@@ -59,33 +71,11 @@
 (macrolet ((define-group-predicate (number)
              `(progn
                 (defun ,(match-before-name number) (qualifier)
-                  (let* ((group-label (gethash ,number *before-groups*)))
-                    (when (eq (first qualifier) :before)
-                      (cond
-                        ((and group-label (equal group-label (second qualifier)))
-                         t)
-                        ((null group-label)
-                         (setf (gethash ,number *before-groups*) (second qualifier)))
-                        (t nil)))))
+                  (match-qualifier qualifier *before-groups* ,number :before))
                 (defun ,(match-primary-name number) (qualifier)
-                  (let* ((group-label (gethash ,number *primary-groups*)))
-                    ;; NOTE: Not checking for nil, :around & friends, because
-                    ;; these groups are matched last.
-                    (cond
-                      ((and group-label (equal group-label qualifier))
-                       t)
-                      ((null group-label)
-                       (setf (gethash ,number *primary-groups*) qualifier))
-                      (t nil))))
+                  (match-qualifier qualifier *primary-groups* ,number))
                 (defun ,(match-after-name number) (qualifier)
-                  (let* ((group-label (gethash ,number *after-groups*)))
-                    (when (eq (first qualifier) :after)
-                      (cond
-                        ((and group-label (equal group-label (second qualifier)))
-                         t)
-                        ((null group-label)
-                         (setf (gethash ,number *after-groups*) (second qualifier)))
-                        (t nil)))))))
+                  (match-qualifier qualifier *after-groups* ,number :after))))
            (defcombination (amount &body body)
              `(define-method-combination hookable ()
                 ((before (:before))
