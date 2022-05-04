@@ -114,8 +114,7 @@ values in help buffers, REPL and elsewhere."))
        ((trivial-types:association-list-p value)
         (:table
          (unless compact-p
-           (:caption "Association list")
-           (:thead (:th "Property") (:th "Value")))
+           (:caption "Association list"))
          (:thead
           (dolist (e value)
             (:th (:raw (escaped-literal-print (car e))))))
