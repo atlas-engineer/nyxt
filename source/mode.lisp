@@ -254,18 +254,19 @@ PACKAGES should be a list of package designators."
   "Return the first submode instance of MODE-SYMBOL in BUFFER.
 As a second value, return all matching submode instances.
 Return nil if mode is not found."
-  (alex:if-let ((class (mode-class mode-symbol)))
-    (let ((results (sera:filter
-                    (alex:rcurry #'closer-mop:subclassp class)
-                    (modes buffer)
-                    :key #'class-of)))
-      (when (< 1 (length results))
-        (log:warn "Found multiple matching modes: ~a" results))
-      (values (first results)
-              results))
-    ;; CCL catches the error at compile time but not all implementations do,
-    ;; hence the redundant error report here.
-    (error "Mode ~a does not exist" mode-symbol)))
+  (when (modable-buffer-p buffer)
+    (alex:if-let ((class (mode-class mode-symbol)))
+      (let ((results (sera:filter
+                      (alex:rcurry #'closer-mop:subclassp class)
+                      (modes buffer)
+                      :key #'class-of)))
+        (when (< 1 (length results))
+          (log:warn "Found multiple matching modes: ~a" results))
+        (values (first results)
+                results))
+      ;; CCL catches the error at compile time but not all implementations do,
+      ;; hence the redundant error report here.
+      (error "Mode ~a does not exist" mode-symbol))))
 
 (-> current-mode ((or keyword string) &optional buffer) (maybe mode))
 (export-always 'current-mode)

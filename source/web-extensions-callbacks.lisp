@@ -69,6 +69,7 @@
 
 (defun all-extensions (&key (buffers (buffer-list)))
   (loop for buffer in buffers
+        when (modable-buffer-p buffer)
         append (sera:filter #'nyxt/web-extensions::extension-p (modes buffer))))
 
 (defmacro fire-extension-event (extension object event &rest args)

@@ -17,7 +17,7 @@ All ARGS are declared as `ignorable'."
        ,@body)))
 
 (sera:eval-always
-  (define-class prompt-buffer (internal-buffer prompter:prompter)
+  (define-class prompt-buffer (internal-buffer network-buffer input-buffer modable-buffer navigable-buffer prompter:prompter)
     ((window nil
              :type (or null window)
              :export nil

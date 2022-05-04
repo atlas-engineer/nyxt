@@ -1327,9 +1327,10 @@ See `finalize-buffer'."
   "Initialize BUFFER's GTK web view."
   (unless (gtk-object buffer) ; Buffer may already have a view, e.g. the prompt-buffer.
     (setf (gtk-object buffer) (make-web-view :buffer buffer)))
-  (if (smooth-scrolling buffer)
-      (ffi-buffer-enable-smooth-scrolling buffer t)
-      (ffi-buffer-enable-smooth-scrolling buffer nil))
+  (when (navigable-buffer-p buffer)
+    (if (smooth-scrolling buffer)
+        (ffi-buffer-enable-smooth-scrolling buffer t)
+        (ffi-buffer-enable-smooth-scrolling buffer nil)))
   (connect-signal-function buffer "decide-policy" (make-decide-policy-handler buffer))
   (connect-signal buffer "load-changed" t (web-view load-event)
     (declare (ignore web-view))
@@ -1453,18 +1454,19 @@ See `finalize-buffer'."
     (declare (ignore web-view))
     (toggle-fullscreen :skip-renderer-resize t)
     nil)
-  (connect-signal buffer "user-message-received" nil (view message)
-    (declare (ignorable view))
-    (g:g-object-ref (g:pointer message))
-    (run-thread
-      "Process user messsage"
-      (nyxt/web-extensions:process-user-message buffer message))
-    (sleep 0.01)
-    (run-thread
-      "Reply user message"
-      (nyxt/web-extensions:reply-user-message buffer message))
-    t)
-  (nyxt/web-extensions::tabs-on-created buffer)
+  (when (focus-buffer-p buffer)
+    (connect-signal buffer "user-message-received" nil (view message)
+      (declare (ignorable view))
+      (g:g-object-ref (g:pointer message))
+      (run-thread
+          "Process user messsage"
+        (nyxt/web-extensions:process-user-message buffer message))
+      (sleep 0.01)
+      (run-thread
+          "Reply user message"
+        (nyxt/web-extensions:reply-user-message buffer message))
+      t)
+    (nyxt/web-extensions::tabs-on-created buffer))
   buffer)
 
 (define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
