@@ -174,6 +174,22 @@
        (focus ".input-buffer[data-repl-id=\"\"]"))
       (t (focus (format nil ".input-buffer[data-repl-id=\"~a\"]" (1+ id)))))))
 
+(define-command move-cell-up (&key (repl (find-submode 'repl-mode)) (id (current-cell-id repl)))
+  "Move the current code cell up, swapping it with the one above."
+  (when (and id (not (zerop id)))
+    (let* ((evals (evaluations repl)))
+      (psetf (elt evals (1- id)) (elt evals id)
+             (elt evals id) (elt evals (1- id))))
+    (reload-buffers (list (buffer repl)))))
+
+(define-command move-cell-down (&key (repl (find-submode 'repl-mode)) (id (current-cell-id repl)))
+  "Move the current code cell down, swapping it with the one below."
+  (when (and id (< id (1- (length (evaluations repl)))))
+    (let* ((evals (evaluations repl)))
+      (psetf (elt evals (1+ id)) (elt evals id)
+             (elt evals id) (elt evals (1+ id))))
+    (reload-buffers (list (buffer repl)))))
+
 (define-command paren (&optional (repl (find-submode 'repl-mode)))
   ;; FIXME: Not an intuitive behavior? What does Emacs do?
   "Inserts the closing paren after the opening one is inputted."
