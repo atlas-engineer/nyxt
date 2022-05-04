@@ -117,7 +117,7 @@ values in help buffers, REPL and elsewhere."))
            (:caption "Association list"))
          (:thead
           (dolist (e value)
-            (:th (:raw (escaped-literal-print (car e))))))
+            (:th (:raw (value->html (car e) t)))))
          (:tbody
           (:tr
            (dolist (e value)
