@@ -36,6 +36,9 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "C-down" 'select-last
        "C-pagedown" 'select-next-source
        "C-pageup" 'select-previous-source
+       ;; scroll-page-{down|up}-other-buffer aren't bound on VI. ideas?
+       "shift-pagedown" 'scroll-page-down-other-buffer
+       "shift-pageup" 'scroll-page-up-other-buffer
        "tab" 'insert-selection
        "return" 'return-selection
        "M-return" 'return-selection-over-action
@@ -65,9 +68,8 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "M-<" 'select-first
        "M-]" 'select-next-source        ; Emacs Helm binding.
        "M-[" 'select-previous-source    ; Emacs Helm binding.
-       ;; Those two are only bound in Emacs mode. CUA, VI?
-       "C-M-n" 'scroll-other-buffer-down
-       "C-M-p" 'scroll-other-buffer-up
+       "C-M-n" 'scroll-page-down-other-buffer
+       "C-M-p" 'scroll-page-up-other-buffer
        "C-j" 'run-follow-mode-function
        "C-g" 'cancel-input
        "C-h b" 'run-prompt-buffer-command
