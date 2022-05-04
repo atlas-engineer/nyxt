@@ -32,7 +32,9 @@ various parts, such as the path of all data files.")
 
    (style
     (theme:themed-css
-        (theme *browser*)
+        (if *browser*
+            (theme *browser*)
+            (make-instance 'theme:theme))
       (body
        :color theme:text
        :background-color theme:background
@@ -226,9 +228,10 @@ down."))
   (:documentation "Buffers in which the user can navigate the view, zoom, etc."))
 
 (defmethod initialize-instance :after ((buffer buffer) &key (browser *browser*)
-                                                         &allow-other-keys)
+                                       &allow-other-keys)
   "Set buffer ID and return buffer."
-  (setf (id buffer) (get-unique-identifier browser))
+  (when browser
+    (setf (id buffer) (get-unique-identifier browser)))
   buffer)
 
 (defmethod finalize-buffer ((buffer buffer) &key (browser *browser*) &allow-other-keys)
@@ -766,7 +769,8 @@ Return the created buffer."
     (dolist (file-slot-name file-slot-names)
       (setf (nfiles:profile (slot-value buffer file-slot-name))
             (profile buffer))))
-  (unless no-hook-p
+  (unless (or no-hook-p
+              (not browser))
     (hooks:run-hook (buffer-before-make-hook browser) buffer))
   ;; Background buffers are invisible to the browser.
   (when (and (focus-buffer-p buffer)
@@ -1094,7 +1098,8 @@ associated to the buffer is already killed."
   (gethash id (slot-value *browser* 'buffers)))
 
 (defun buffers-set (id buffer)
-  (setf (gethash id (slot-value *browser* 'buffers)) buffer)
+  (when *browser*
+    (setf (gethash id (slot-value *browser* 'buffers)) buffer))
   (print-status))
 
 (defun buffers-delete (id)
