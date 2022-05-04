@@ -10,27 +10,30 @@
 (defun format-status-modes (buffer window)
   "Format the modes for the status area.
 This leverages `mode-status' which can be specialized for individual modes."
-  (spinneret:with-html-string
-    (when (nosave-buffer-p buffer) (:span "⚠ nosave"))
-    (:button :type "button"
-             :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:toggle-modes)))
-             :title (str:concat "Enabled modes: " (list-modes buffer)) "✚")
-    (loop for mode in (sera:filter (alex:conjoin #'enabled-p #'visible-in-status-p)
-                                   (modes buffer))
-          collect (let* ((formatted-mode (if (glyph-mode-presentation-p (status-buffer window))
-                                             (glyph mode)
-                                             (mode-status mode))))
-                    (if (html-string-p formatted-mode)
-                        (:raw formatted-mode)
-                        (:button :class "button"
-                                 :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                  `(describe-class :class `,(mode-name mode))))
-                                 :title (format nil "Describe ~a" mode)
-                                 formatted-mode))))))
+  (if (modable-buffer-p buffer)
+      (spinneret:with-html-string
+        (when (nosave-buffer-p buffer) (:span "⚠ nosave"))
+        (:button :type "button"
+                 :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:toggle-modes)))
+                 :title (str:concat "Enabled modes: " (modes-string buffer)) "✚")
+        (loop for mode in (sera:filter (alex:conjoin #'enabled-p #'visible-in-status-p)
+                                       (modes buffer))
+              collect (let* ((formatted-mode (if (glyph-mode-presentation-p (status-buffer window))
+                                                 (glyph mode)
+                                                 (mode-status mode))))
+                        (if (html-string-p formatted-mode)
+                            (:raw formatted-mode)
+                            (:button :class "button"
+                                     :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                      `(describe-class :class `,(mode-name mode))))
+                                     :title (format nil "Describe ~a" mode)
+                                     formatted-mode)))))
+      ""))
 
-(defun list-modes (buffer)
-  (format nil "~{~a~^ ~}" (mapcar #'princ-to-string
-                                  (sera:filter #'enabled-p (modes buffer)))))
+(defun modes-string (buffer)
+  (when (modable-buffer-p buffer)
+    (format nil "~{~a~^ ~}" (mapcar #'princ-to-string
+                                    (sera:filter #'enabled-p (modes buffer))))))
 
 (export-always 'format-status-buttons)
 (defun format-status-buttons ()
@@ -111,6 +114,6 @@ This leverages `mode-status' which can be specialized for individual modes."
                   (:raw
                    (format-status-tabs)))
             (:div :id "modes" :class "arrow-left"
-                  :title (list-modes buffer)
+                  :title (modes-string buffer)
                   (:raw
                    (format-status-modes buffer window)))))))

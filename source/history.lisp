@@ -368,7 +368,8 @@ Finally go through all the owners and update their creator."
              nil))))))
 
 (defun histories-directory (&optional (buffer (current-buffer)))
-  (nfiles:parent (nfiles:expand (history-file buffer))))
+  (when (focus-buffer-p buffer)
+    (nfiles:parent (nfiles:expand (history-file buffer)))))
 
 (defun histories-list (&optional (buffer (current-buffer)))
   (alex:when-let ((dir (histories-directory buffer)))
