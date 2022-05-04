@@ -327,7 +327,7 @@ A command is a special kind of function that can be called with
                                                (keymap:name (second pair))))
                                        key-keymap-pairs))
          (source-file
-           (alex:when-let ((location (getf (swank:find-definition-for-thing (slot-value command 'fn))
+           (alex:when-let ((location (getf (swank:find-definition-for-thing command)
                                            :location)))
              (alex:last-elt location)))
          (*print-case* :downcase))
@@ -343,13 +343,13 @@ A command is a special kind of function that can be called with
            ;; i.e. the first command of one of the modes.
            ;; Ask for modes instead?
            (resolve-backtick-quote-links (documentation command t)
-                                         (swank-backend:function-name (slot-value command 'fn)))))
+                                         (name command))))
       (:h2 "Bindings")
       (:p (format nil "~:{ ~S (~a)~:^, ~}" key-keymapname-pairs))
       (:h2 (format nil "Source~a: " (if source-file
                                         (format nil " (~a)" source-file)
                                         "")))
-      (:pre (:code (function-lambda-expression (slot-value command 'fn)))))))
+      (:pre (:code (function-lambda-string command))))))
 
 (define-internal-page-command-global describe-slot
     (&key class name universal)
@@ -1048,5 +1048,5 @@ System information is also saved into the clipboard."
                   collect (spinneret:with-html-string
                             (:details
                              (:summary (format nil "~(~a~)" (symbol-name (name command))))
-                             (:p (:pre (documentation (slot-value command 'fn) t)))
+                             (:p (:pre (documentation command t)))
                              (:pre :class "nyxt-source" (:code (function-lambda-string command)))))))))
