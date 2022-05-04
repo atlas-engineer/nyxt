@@ -349,26 +349,26 @@ select next."
 
 (define-command-prompt toggle-mark-backwards (prompt-buffer)
   "Mark selection.
-Only available if pomrpt-buffer `multi-selection-p' is non-nil.  DIRECTION can be
+Only available if `prompter:multi-selection-p' is non-nil.  DIRECTION can be
 `:forward' or `:backward' and specifies which suggestion to select next."
   (toggle-mark :prompt-buffer prompt-buffer
                :direction :backward))
 
 (define-command-prompt mark-all (prompt-buffer)
   "Mark all visible suggestions in current source.
-Only available if `multi-selection-p' is non-nil."
+Only available if `prompter:multi-selection-p' is non-nil."
   (prompter:mark-all prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
 (define-command-prompt unmark-all (prompt-buffer)
   "Unmark all visible suggestions in current source.
-Only available if `multi-selection-p' is non-nil."
+Only available if `prompter:multi-selection-p' is non-nil."
   (prompter:unmark-all prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
 (define-command-prompt toggle-mark-all (prompt-buffer)
   "Toggle the mark over all visible suggestions in current source.
-Only available if `multi-selection-p' is non-nil."
+Only available if `prompter:multi-selection-p' is non-nil."
   (prompter:toggle-mark-all prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
