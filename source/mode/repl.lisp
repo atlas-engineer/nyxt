@@ -243,20 +243,32 @@
              (:div :id "evaluations"
                    (loop
                      for evaluation in (evaluations repl-mode)
-                     for order from 0 by 1
+                     for order from 0
                      collect (:div :class "input"
-                                   (:span :class "prompt" (package-short-name (eval-package evaluation)) "> ")
+                                   (:span :class "prompt"
+                                          (:button
+                                           :onclick (ps:ps (nyxt/ps:lisp-eval `(move-cell-up :id ,order)))
+                                           :title "Move this cell up."
+                                           "↑")
+                                          (:button
+                                           :onclick (ps:ps (nyxt/ps:lisp-eval `(move-cell-down :id ,order)))
+                                           :title "Move this cell down."
+                                           "↓") "> ")
                                    (:input :class "input-buffer" :data-repl-id order :type "text"
                                            :value (input evaluation)))
                      collect (loop
                                for result in (results evaluation)
-                               collect (:raw
-                                        (value->html
-                                         result (or (typep result 'standard-object)
-                                                    (typep result 'structure-object))))
+                               for sub-order from 0
+                               for name = (if (serapeum:single (results evaluation))
+                                              (intern (format nil "V~d" order))
+                                              (intern (format nil "V~d.~d" order sub-order)))
+                               do (setf (symbol-value name) result)
+                               collect (:span (format nil "~(~a~) = " name)
+                                              (:raw (value->html result (or (typep result 'standard-object)
+                                                                            (typep result 'structure-object)))))
                                collect (:br)))
                    (:div :class "input"
-                         (:span :class "prompt" (package-short-name *package*) "> ")
+                         (:span :class "prompt" ">")
                          (:input :class "input-buffer"
                                  :data-repl-id ""
                                  :type "text" :value ""
