@@ -49,6 +49,7 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "C-]" 'toggle-attributes-display ; TODO: This is the Emacs Helm binding.  Better?
        "C-space" 'toggle-mark
        "shift-space" 'toggle-mark-backwards
+       "M-shift-space" 'toggle-mark-backwards
        "M-space" 'toggle-mark
        "M-a" 'mark-all
        "M-u" 'unmark-all
