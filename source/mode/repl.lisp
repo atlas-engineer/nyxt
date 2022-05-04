@@ -253,7 +253,7 @@
                                           (:button
                                            :onclick (ps:ps (nyxt/ps:lisp-eval `(move-cell-down :id ,order)))
                                            :title "Move this cell down."
-                                           "↓") "> ")
+                                           "↓"))
                                    (:input :class "input-buffer" :data-repl-id order :type "text"
                                            :value (input evaluation)))
                      collect (loop
