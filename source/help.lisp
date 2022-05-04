@@ -640,7 +640,7 @@ file, see the "
 
 (defun describe-key-dispatch (command)
   (unwind-protect
-       (describe-command :command (name command))
+       (describe-command :command command)
     (setf (command-dispatcher (current-window)) #'dispatch-command
           (input-skip-dispatcher (current-window)) #'dispatch-input-skip)))
 
