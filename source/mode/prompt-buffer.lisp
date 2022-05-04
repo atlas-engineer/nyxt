@@ -438,21 +438,16 @@ Only available if `prompter:multi-selection-p' is non-nil."
   "Select all the text in the prompt input."
   (ffi-buffer-select-all prompt-buffer))
 
-(define-command-prompt scroll-other-buffer-up (prompt-buffer
-                                               &key (scroll-distance
-                                                     (scroll-distance (current-buffer))))
-  "Scroll the buffer behind the prompt up."
-  (with-current-buffer (current-buffer)
-    ;; FIXME: Copy-paste from scroll.lisp. Move it somewhere prompt-buffer.lisp can reach it?
-    (peval (ps:chain window (scroll-by 0 (ps:lisp (- scroll-distance)))))))
+;; FIXME: Move scroll.lisp from web-mode so that prompt-buffer.lisp can reach
+;; it.  Ideas, other than copying from scroll.lisp?
 
-(define-command-prompt scroll-other-buffer-down (prompt-buffer
-                                                 &key (scroll-distance
-                                                       (scroll-distance (current-buffer))))
-  "Scroll the buffer behind the prompt down."
-  (with-current-buffer (current-buffer)
-    ;; FIXME: Copy-paste from scroll.lisp. Move it somewhere prompt-buffer.lisp can reach it?
-    (peval (ps:chain window (scroll-by 0 (ps:lisp scroll-distance))))))
+;; (define-command-prompt scroll-page-up-other-buffer (prompt-buffer)
+;;   "Scroll up the buffer behind the prompt by one page."
+;;   (with-current-buffer (current-buffer) (nyxt/web-mode:scroll-page-up)))
+
+;; (define-command-prompt scroll-page-down-other-buffer (prompt-buffer)
+;;   "Scroll down the buffer behind the prompt by one page."
+;;   (with-current-buffer (current-buffer) (nyxt/web-mode:scroll-page-down)))
 
 (defmethod default-modes append ((buffer prompt-buffer))
   '(prompt-buffer-mode))
