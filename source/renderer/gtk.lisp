@@ -1574,12 +1574,15 @@ local anyways, and it's better to refresh it if a load was queried."
       (webkit:webkit-user-content-manager-remove-style-sheet
        content-manager style-sheet))))
 
-(define-class gtk-user-script (nyxt/web-mode:user-script)
+(define-class gtk-user-script ()
   ((gtk-object))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
-(define-user-class nyxt/web-mode:user-script (gtk-user-script))
+
+(defclass renderer-user-script (gtk-user-script)
+  ()
+  (:metaclass mixin-class))
 
 (define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) (script gtk-user-script))
   (let* ((script (nfiles:content script))

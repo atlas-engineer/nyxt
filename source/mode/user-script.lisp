@@ -3,7 +3,12 @@
 
 (in-package :nyxt/web-mode)
 
-(define-class user-script (nfiles:data-file nyxt-remote-file)
+(export-always 'renderer-user-script)
+(defclass renderer-user-script ()
+  ()
+  (:metaclass mixin-class))
+
+(define-class user-script (renderer-user-script nfiles:data-file nyxt-remote-file)
   ((code "" :type string)
    (version "")
    (description "")
@@ -37,8 +42,8 @@ Possible values:
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
-  (:documentation "The Nyxt-internal representation of user scripts to bridge with the renderer."))
-(define-user-class user-script)
+  (:documentation "The Nyxt-internal representation of user scripts to bridge with the renderer.")
+  (:metaclass user-class))
 
 (sera:-> get-script-url
          (string (maybe nyxt::url-designator pathname))
