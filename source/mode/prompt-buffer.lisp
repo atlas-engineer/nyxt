@@ -227,7 +227,7 @@ If STEPS is negative, go to next pages instead."
   (prompter:return-selection prompt-buffer))
 
 (defun make-attribute-suggestion (attribute &optional source input)
-  "Return a `suggestion' wrapping around ATTRIBUTE. "
+  "Return a `suggestion' wrapping around ATTRIBUTE."
   (declare (ignore source input))
   (make-instance 'prompter:suggestion
                  :value attribute
