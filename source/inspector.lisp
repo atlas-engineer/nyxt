@@ -122,6 +122,28 @@ values in help buffers, REPL and elsewhere."))
           (:tr
            (dolist (e value)
              (:td (:raw (value->html (cdr e) t))))))))
+       ((and (trivial-types:property-list-p value)
+             ;; Stricter understanding of property lists:
+             ;; -- Even length.
+             ;; -- Keys are strictly keywords.
+             ;; -- At least one value should be a non-keyword.
+             (evenp (length value))
+             (loop with all-values-keywords? = t
+                   for (key val) on value by #'cddr
+                   unless (keywordp key)
+                     do (return nil)
+                   unless (keywordp val)
+                     do (setf all-values-keywords? nil)
+                   finally (return (not all-values-keywords?))))
+        (:table
+         (unless compact-p
+           (:caption "Property list"))
+         (:thead (loop for key in value by #'cddr
+                       collect (:th (:raw (escaped-literal-print key)))))
+         (:tbody
+          (:tr
+           (loop for val in (rest value) by #'cddr
+                 collect (:td (:raw (value->html val t))))))))
        ((and (trivial-types:proper-list-p value)
              (not (alexandria:circular-list-p value))
              (not (alexandria:circular-tree-p value)))
