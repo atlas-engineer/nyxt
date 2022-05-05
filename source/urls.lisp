@@ -3,6 +3,10 @@
 
 (in-package :nyxt)
 
+(defparameter +extensions-without-links+
+  '(".mp3" ".png" ".jpg" ".jpeg" ".pdf")
+  "TODO")
+
 (export-always 'url)
 (defmethod url ((url quri:uri))
   url)
@@ -435,12 +439,35 @@ TITLE is purely informative."
   :cors-enabled-p t
   :error-callback (lambda (c) (log:debug "Error when evaluating lisp URL: ~a" c)))
 
+;; useless?
 (-> path= (quri:uri quri:uri) boolean)
 (defun path= (url1 url2)
   "Return non-nil when URL1 and URL2 have the same path."
-  ;; See https://github.com/fukamachi/quri/issues/48.
-  (equalp (string-right-trim "/" (or (quri:uri-path url1) ""))
-          (string-right-trim "/" (or (quri:uri-path url2) ""))))
+  (flet ((normalize-path (path)
+           "TODO"
+           (if (or (null path) (equal path ""))
+               "/"
+               path)))
+    (equal (normalize-path (quri:uri-path url1))
+           (normalize-path (quri:uri-path url2)))))
+
+(-> distinct-document-p (quri:uri quri:uri) boolean)
+(defun distinct-document-p (url1 url2)
+  "Return non-nil when URL1 and URL2 refer to distinct documents."
+  (let ((path-match-p (path= url1 url2))
+        (query-p (or (quri:uri-query url1) (quri:uri-query url2))))
+    (cond ((and path-match-p query-p)
+           t)
+          ((and path-match-p (null query-p))
+           nil)
+          (t t))))
+
+(-> links-p (quri:uri) boolean)
+(defun links-p (url)
+  "Return non-nil when URL has links."
+  (loop for extension in +extensions-without-links+
+        ;; wrapped in null so that it returns a boolean
+        always (null (search extension (quri:uri-path url) :from-end t))))
 
 (-> scheme= (quri:uri quri:uri) boolean)
 (defun scheme= (url1 url2)
@@ -546,10 +573,180 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
   ;; forms, unlike the solution below.
   (every (lambda (fn) (funcall fn url1 url2)) eq-fn-list))
 
-(-> distinct-url-path-p (quri:uri quri:uri) boolean)
-(defun distinct-url-path-p (url1 url2)
-  "Return non-nil when URL1 and URL2 have distinct paths."
-  ;; See https://github.com/fukamachi/quri/issues/48.
-  (not (equalp (string-right-trim "/" (or (quri:uri-path url1) ""))
-               (string-right-trim "/" (or (quri:uri-path url2) "")))))
+;; this doesn't check for repeated links, but I think it's correct!
+(defun renderer-get-links (&optional (buffer (current-buffer))
+                              (filtering-rules (list #'scheme=
+                                                     #'host=
+                                                     #'distinct-document-p)))
+  "Return a list of links from BUFFER.
+FILTERING-RULES is a list of functions that take two URLs and return a boolean.
+A link is collected when, for all elements of FILTERING-RULES, the return value
+is non-nil."
+  (with-current-buffer buffer
+    ;; using below doesn't work, why?
+    (loop for i from 0 to (1- (peval (ps:@ document links length)))
+          with url = (url buffer) ; computed once
+          for link = (quri:uri (peval (ps:chain document links (item (ps:lisp i)) href)))
+          when (and (links-p link)
+                    (eq-uri-p url link filtering-rules))
+            collect link)))
 
+;; TODO How to pass the optional arg to fetch-links?
+;; shouldn't this be together with fetch-links at renderer-script.lisp?
+;; I think this is useless...
+;; (-> renderer-fetch-links (quri:uri) list)
+(defun renderer-fetch-links (url)
+  "Return a list of links from URL.
+If there is a buffer corresponding to URL, then fetch the links from it.
+Otherwise, create a new buffer to fetch the links."
+  (alex:if-let ((bufferp (find url (buffer-list) :test #'quri:uri= :key #'url)))
+    (renderer-get-links bufferp)
+    ;; Use background buffers
+    ;; Buffers should be made as light as possible (no images, CSS, etc).
+    (let ((channel (make-channel)))
+      (once-on (buffer-loaded-hook (make-nosave-buffer :url url)) buffer
+        (calispel:! channel (renderer-get-links buffer)))
+      (calispel:? channel))))
+
+;; FIXME Manage urls that download stuff or can't be reached
+;; (handler-bind ((dex:http-request-failed #'dex:ignore-and-continue))
+;;   (dex:get url))
+;; SEE https://github.com/fukamachi/dexador/issues/127
+(defun client-get-links (url)
+  (let ((all-links))
+    (dolist (elem (plump:get-elements-by-tag-name
+                   (plump:parse (handler-bind
+                                    ((dex:http-request-failed #'dex:ignore-and-continue))
+                                  (dex:get url)))
+                   "a")
+                  all-links)
+      (when (plump:attribute elem "href")
+        (push (quri:merge-uris (quri:uri (plump:attribute elem "href")) url)
+              all-links)))))
+
+;; Shouldn't the responsibility of deleting duplicated links be delegated to
+;; recursive-links alone?
+;; (-> http-fetch-links (&optional quri:uri function) list)
+(defun http-fetch-links (&optional (url (url (current-buffer)))
+                                   (equiv-relation #'uri-equivalence-for-fetch-links))
+  "Return a list of links from URL."
+  (loop for link in (client-get-links url)
+        ;; links-p should be passed optionally
+        when (and (links-p link)
+                  (funcall equiv-relation url link)
+                  (not (find link all-links :test #'uri-link-equivalence)))
+          collect link into all-links
+        finally (return all-links)))
+
+(-> uri-equivalence-for-fetch-links (quri:uri quri:uri) boolean)
+(defun uri-equivalence-for-fetch-links (uri1 uri2)
+  (flet ((%path (path) "Normalizes PATH." (if (or (null path)
+                                                  (equal path ""))
+                                              "/"
+                                              path)))
+    (and ;; guarantees that http and https belong to the same equivalence class
+         (quri:uri-http-p uri1)
+         (quri:uri-http-p uri2)
+         (equal (quri:uri-host uri1)
+                (quri:uri-host uri2))
+         (not (equal (%path (quri:uri-path uri1))
+                     (%path (quri:uri-path uri2))))
+         (or (and (null (quri:uri-query uri1))
+                  (null (quri:uri-query uri2)))
+             (not (equal (quri:uri-query uri1)
+                         (quri:uri-query uri2)))))))
+
+(-> uri-link-equivalence (quri:uri quri:uri) boolean)
+(defun uri-link-equivalence (uri1 uri2)
+  (flet ((%path (path) (string-right-trim "/" (or path ""))))
+    (and (or (eq (type-of uri1) (type-of uri2))
+             (and (quri:uri-http-p uri1)
+                  (quri:uri-http-p uri2)))
+         (equal (quri:uri-host uri1)
+                (quri:uri-host uri2))
+         (equal (%path (quri:uri-path uri1))
+                (%path (quri:uri-path uri2)))
+         (equal (quri:uri-query uri1)
+                (quri:uri-query uri2)))))
+
+(-> recursive-links (integer
+                     list
+                     &optional (or compiled-function symbol)
+                     (or compiled-function symbol))
+    list)
+(defun recursive-links (depth url-list
+                        &optional
+                          (fetch-links-fn #'http-fetch-links)
+                          (filter-links-fn #'identity))
+  "Return a list of length DEPTH.
+
+Each element is a list of URLs at distance 0..DEPTH from URL-LIST.
+
+DEPTH is the minimum distance between 2 URLs, i.e. how many URLs need to be
+visited to get from one to the other via their links.
+
+URL-LIST is list of URLs of type QURI.URI.
+
+FILTER-LINKS-FN is a function that takes a list of URLs and returns another.
+
+FETCH-LINKS-FN is a function that takes a URL and returns its corresponding
+links.
+
+Example: Take URL-LIST to be a list of one element, url U, and DEPTH to be 2.
+The links of U are collected in a list, (list (\"links-of\" U)).  With that list
+as the new starting point, the same method is called with depth 1, and finally
+with depth 0.  Find below the stack of calls.
+
+(recursive-links 2 (list U))
+(recursive-links 1 (\"links-of\" U))
+(recursive-links 0 (\"links-of\" (\"links-of\" U)))
+
+-> ((list U)                         ; DEPTH 0
+    (\"links-of\" U)                 ; DEPTH 1
+    (\"links-of\" (\"links-of\" U))) ; DEPTH 2"
+  (labels ((nth-power-function (n arg fn)
+             "Apply FN on ARG at most N times, as long as ARG is non-nil."
+             (if (or (zerop n) (null arg))
+                 arg
+                 (nth-power-function (decf n) (funcall fn arg) fn)))
+           (url-in-list-p (url list)
+             "Return non-nil when URL is a member of LIST."
+             ;; position, find or member?
+             (find url list :test #'uri-link-equivalence)))
+    ;; why do I need (when url-list) and not just (list url-list)?
+    (let ((url-list-all-depth (when url-list (list url-list)))
+          ;; Unless `filter-links-fn' is the identity function, VISITED-URL-LIST
+          ;; doesn't replace URL-LIST-ALL-DEPTH.
+          (visited-url-list (when url-list url-list)))
+      (nth-power-function
+       depth
+       url-list
+       (lambda (url-list)
+         ;; Guarantee that the links of any URL are fetched once and only once;
+         ;; and that LINK-LIST is a set, i.e. a list without duplicated
+         ;; elements.
+         (let ((link-list))
+           (dolist (url url-list)
+             (loop for link in (funcall fetch-links-fn url)
+                   unless (or (url-in-list-p link link-list)
+                              (url-in-list-p link visited-url-list))
+                     do (progn (push link link-list)
+                               (push link visited-url-list))))
+           (push (funcall filter-links-fn link-list) url-list-all-depth)
+           link-list)))
+      (nreverse url-list-all-depth))))
+
+(defun interactive-recursive-links (depth url-list
+                                    &optional (fetch-links-fn #'http-fetch-links))
+  "Return the same as `recursive-links'.
+At each DEPTH, a subset of URLs is selected with `prompt-buffer'."
+  ;; TODO How to exit a prompt without choosing any URL?
+  (recursive-links
+   depth
+   url-list
+   fetch-links-fn
+   (lambda (url-list) (prompt :prompt "Choose URLs"
+                         :sources (make-instance 'prompter:source
+                                                 :constructor url-list
+                                                 :name "URL"
+                                                 :multi-selection-p t)))))
