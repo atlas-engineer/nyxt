@@ -12,8 +12,8 @@ the user types.
 Many prompter-buffer-specific commands are available; you can list them with
 `run-prompt-buffer-command', bound to \"f1 b\" by default.
 
-The prompt buffer can have multiple 'sources' of suggestions.  Each source has
-its own properties, such as the ability to mark multiple suggestions.
+The prompt buffer can have multiple `prompter:source's of suggestions.  Each
+source has its own properties, such as the ability to mark multiple suggestions.
 A same source can be used by different prompt buffers.
 
 Each source offers a set of 'actions' for its selection(s).
@@ -36,6 +36,9 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "C-down" 'select-last
        "C-pagedown" 'select-next-source
        "C-pageup" 'select-previous-source
+       ;; scroll-page-{down|up}-other-buffer aren't bound on VI. ideas?
+       "shift-pagedown" 'scroll-page-down-other-buffer
+       "shift-pageup" 'scroll-page-up-other-buffer
        "tab" 'insert-selection
        "return" 'return-selection
        "M-return" 'return-selection-over-action
@@ -46,6 +49,7 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "C-]" 'toggle-attributes-display ; TODO: This is the Emacs Helm binding.  Better?
        "C-space" 'toggle-mark
        "shift-space" 'toggle-mark-backwards
+       "M-shift-space" 'toggle-mark-backwards
        "M-space" 'toggle-mark
        "M-a" 'mark-all
        "M-u" 'unmark-all
@@ -65,9 +69,8 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "M-<" 'select-first
        "M-]" 'select-next-source        ; Emacs Helm binding.
        "M-[" 'select-previous-source    ; Emacs Helm binding.
-       ;; Those two are only bound in Emacs mode. CUA, VI?
-       "C-M-n" 'scroll-other-buffer-down
-       "C-M-p" 'scroll-other-buffer-up
+       "C-M-n" 'scroll-page-down-other-buffer
+       "C-M-p" 'scroll-page-up-other-buffer
        "C-j" 'run-follow-mode-function
        "C-g" 'cancel-input
        "C-h b" 'run-prompt-buffer-command
@@ -225,7 +228,7 @@ If STEPS is negative, go to next pages instead."
   (prompter:return-selection prompt-buffer))
 
 (defun make-attribute-suggestion (attribute &optional source input)
-  "Return a `suggestion' wrapping around ATTRIBUTE. "
+  "Return a `suggestion' wrapping around ATTRIBUTE."
   (declare (ignore source input))
   (make-instance 'prompter:suggestion
                  :value attribute
@@ -347,26 +350,26 @@ select next."
 
 (define-command-prompt toggle-mark-backwards (prompt-buffer)
   "Mark selection.
-Only available if pomrpt-buffer `multi-selection-p' is non-nil.  DIRECTION can be
+Only available if `prompter:multi-selection-p' is non-nil.  DIRECTION can be
 `:forward' or `:backward' and specifies which suggestion to select next."
   (toggle-mark :prompt-buffer prompt-buffer
                :direction :backward))
 
 (define-command-prompt mark-all (prompt-buffer)
   "Mark all visible suggestions in current source.
-Only available if `multi-selection-p' is non-nil."
+Only available if `prompter:multi-selection-p' is non-nil."
   (prompter:mark-all prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
 (define-command-prompt unmark-all (prompt-buffer)
   "Unmark all visible suggestions in current source.
-Only available if `multi-selection-p' is non-nil."
+Only available if `prompter:multi-selection-p' is non-nil."
   (prompter:unmark-all prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
 (define-command-prompt toggle-mark-all (prompt-buffer)
   "Toggle the mark over all visible suggestions in current source.
-Only available if `multi-selection-p' is non-nil."
+Only available if `prompter:multi-selection-p' is non-nil."
   (prompter:toggle-mark-all prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
@@ -436,21 +439,16 @@ Only available if `multi-selection-p' is non-nil."
   "Select all the text in the prompt input."
   (ffi-buffer-select-all prompt-buffer))
 
-(define-command-prompt scroll-other-buffer-up (prompt-buffer
-                                               &key (scroll-distance
-                                                     (scroll-distance (current-buffer))))
-  "Scroll the buffer behind the prompt up."
-  (with-current-buffer (current-buffer)
-    ;; FIXME: Copy-paste from scroll.lisp. Move it somewhere prompt-buffer.lisp can reach it?
-    (peval (ps:chain window (scroll-by 0 (ps:lisp (- scroll-distance)))))))
+;; FIXME: Move scroll.lisp from web-mode so that prompt-buffer.lisp can reach
+;; it.  Ideas, other than copying from scroll.lisp?
 
-(define-command-prompt scroll-other-buffer-down (prompt-buffer
-                                                 &key (scroll-distance
-                                                       (scroll-distance (current-buffer))))
-  "Scroll the buffer behind the prompt down."
-  (with-current-buffer (current-buffer)
-    ;; FIXME: Copy-paste from scroll.lisp. Move it somewhere prompt-buffer.lisp can reach it?
-    (peval (ps:chain window (scroll-by 0 (ps:lisp scroll-distance))))))
+;; (define-command-prompt scroll-page-up-other-buffer (prompt-buffer)
+;;   "Scroll up the buffer behind the prompt by one page."
+;;   (with-current-buffer (current-buffer) (nyxt/web-mode:scroll-page-up)))
+
+;; (define-command-prompt scroll-page-down-other-buffer (prompt-buffer)
+;;   "Scroll down the buffer behind the prompt by one page."
+;;   (with-current-buffer (current-buffer) (nyxt/web-mode:scroll-page-down)))
 
 (defmethod default-modes append ((buffer prompt-buffer))
   '(prompt-buffer-mode))
