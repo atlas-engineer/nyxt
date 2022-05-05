@@ -458,7 +458,7 @@ HTTP and HTTPS belong to the same equivalence class."
 (defun host= (url1 url2)
   "Return non-nil when URL1 and URL2 have the same host.
 This is a more restrictive requirement than `domain='."
-  (equalp (quri:uri-host url1) (quri:uri-host url2)))
+  (equal (quri:uri-host url1) (quri:uri-host url2)))
 
 (-> url-eqs (quri:uri quri:uri list) boolean)
 (defun url-eqs (url1 url2 eq-fn-list)
@@ -534,3 +534,22 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
         (some (alex:rcurry #'string= (render-url (url url-designator)))
               (mapcar (lambda (u) (quri:url-decode u :lenient t))
                       (cons one-url other-urls))))))
+
+(-> eq-uri-p (quri:uri quri:uri list) boolean)
+(defun eq-uri-p (url1 url2 eq-fn-list)
+  "Return non-nil when URL1 and URL2 are \"equal\" as dictated by EQ-FN-LIST.
+
+EQ-FN-LIST is a list of functions that take URL1 and URL2 as arguments and
+return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
+`quri:uri=', `host=' and `scheme=' are examples of equivalence relations."
+  ;; (and (fn1 url1 url2) (fn2 url1 url2) ...) returns without evaluating all
+  ;; forms, unlike the solution below.
+  (every (lambda (fn) (funcall fn url1 url2)) eq-fn-list))
+
+(-> distinct-url-path-p (quri:uri quri:uri) boolean)
+(defun distinct-url-path-p (url1 url2)
+  "Return non-nil when URL1 and URL2 have distinct paths."
+  ;; See https://github.com/fukamachi/quri/issues/48.
+  (not (equalp (string-right-trim "/" (or (quri:uri-path url1) ""))
+               (string-right-trim "/" (or (quri:uri-path url2) "")))))
+
