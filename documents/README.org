@@ -131,7 +131,7 @@ git clone https://github.com/joachifm/cl-webkit ~/common-lisp/cl-webkit
 
 - Debian-based distributions:
   #+begin_src sh
-  sudo apt install sbcl libwebkit2gtk-4.0-dev gobject-introspection glib-networking gsettings-desktop-schemas libfixposix-dev pkg-config xclip enchant-2
+  sudo apt install sbcl libwebkit2gtk-4.0-dev gobject-introspection glib-networking gsettings-desktop-schemas libfixposix-dev pkg-config xclip enchant-2 libssl-dev
   #+end_src
 
 - Arch Linux:
