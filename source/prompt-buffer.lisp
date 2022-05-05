@@ -478,8 +478,7 @@ Example use:
 
 \(prompt
   :prompt \"Test prompt\"
-  :sources (list (make-instance 'prompter:source :name \"Test\"
-                                                 :constructor '(\"foo\" \"bar\"))))
+  :sources (list (make-instance 'prompter:source :filter #'my-suggestion-filter)))
 
 See the documentation of `prompt-buffer' to know more about the options."
     (let ((prompt-object-channel (make-channel 1)))

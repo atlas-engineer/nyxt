@@ -36,9 +36,9 @@ The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
 (define-command scroll-page-down ()
   "Scroll down by one page height."
   (peval (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio (current-buffer)))
-                                          (ps:@ window inner-height))))))
+                                              (ps:@ window inner-height))))))
 
 (define-command scroll-page-up ()
   "Scroll up by one page height."
-  (peval (ps:chain window (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio (current-buffer)))
-                                             (ps:@ window inner-height)))))))
+  (peval (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio (current-buffer)))
+                                            (- (ps:@ window inner-height)))))))

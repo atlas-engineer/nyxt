@@ -124,7 +124,16 @@
    (prompter:follow-mode-functions
     (lambda (suggestion)
       (highlight-selected-hint :element suggestion
-                               :scroll nil)))
+                               :scroll nil)
+      (sera:and-let* ((auto-follow (nyxt/web-mode:auto-follow-hints-p (find-submode 'web-mode)))
+                      (matches (string-equal
+                                (prompter:input (current-prompt-buffer))
+                                (plump:get-attribute  suggestion "nyxt-hint")))
+                      (input (prompter:input (current-prompt-buffer))))
+        (run-thread "hint auto-follow thread"
+          (sleep (nyxt/web-mode:auto-follow-timer (find-submode 'web-mode)))
+          (when (string= input (prompter:input (current-prompt-buffer)))
+            (prompter:return-selection (current-prompt-buffer)))))))
    (prompter:actions (list 'identity
                            (lambda-command click* (elements)
                              (dolist (element (rest elements))
@@ -144,35 +153,39 @@
 
 (serapeum:export-always 'query-hints)
 (defun query-hints (prompt function
-                    &key (multi-selection-p t)
+                    &key multi-selection-p
+                         annotate-visible-only-p
                          (selector
                              (alex:if-let ((mode (find-submode 'web-mode)))
                                (hints-selector mode)
                                "a, button, input, textarea, details, select, img:not([alt=\"\"])")))
-  "Prompt for elements matching SELECTOR, hinting them visually.
-MULTI-SELECTION-P defines whether several elements can be chosen.
+  "Prompt to choose several elements out of those matching SELECTOR, hinting them visually.
+MULTI-SELECTION-P is whether several elements can be chosen.
+ANNOTATE-VISIBLE-ONLY-P is deprecated and has no influence on the function.
 PROMPT is a text to show while prompting for hinted elements.
 FUNCTION is the action to perform on the selected elements."
-  (let ((buffer (current-buffer)))
-    (alex:when-let
-        ((result (prompt
-                  :prompt prompt
-                  ;; TODO: No need to find the symbol if we move this code (and
-                  ;; the rest) to the element-hint-mode package.
-                  :extra-modes (list (resolve-symbol :element-hint-mode :mode))
-                  :auto-return-p (auto-follow-hints-p (find-submode 'web-mode))
-                  :history nil
-                  :sources
-                  (make-instance
-                   'hint-source
-                   :multi-selection-p multi-selection-p
-                   :constructor (lambda (source)
-                                  (declare (ignore source))
-                                  (add-element-hints :selector selector))))))
-      (funcall function result))
-    ;; remove-element-hints should go into (prompt :after-destructor) but it
-    ;; misbehaves
-    (with-current-buffer buffer (remove-element-hints))))
+  (declare (ignore annotate-visible-only-p))
+  (let* ((buffer (current-buffer)))
+    (let ((result (prompt
+                   :prompt prompt
+                   ;; TODO: No need to find the symbol if we move this code (and the rest) to the element-hint-mode package.
+                   :extra-modes (list (resolve-symbol :element-hint-mode :mode))
+                   :history nil
+                   :sources
+                   (make-instance
+                    'hint-source
+                    :multi-selection-p multi-selection-p
+                    :constructor (lambda (source)
+                                   (declare (ignore source))
+                                   (add-element-hints :selector selector)))
+                   :after-destructor
+                   (lambda ()
+                     (with-current-buffer buffer
+                       (remove-element-hints))))))
+      (when result
+        (funcall function result))
+      (with-current-buffer buffer
+        (remove-element-hints)))))
 
 (defmethod prompter:object-attributes :around ((element plump:element))
   `(,@(when (plump:get-attribute element "nyxt-hint")
@@ -334,60 +347,70 @@ FUNCTION is the action to perform on the selected elements."
           (remove-focus)))))
 
 (define-command follow-hint ()
-  "Prompt for element hints and open them in the current buffer."
+  "Show a set of element hints, and go to the user inputted one in the current
+buffer.
+
+Auto-follows hints by their ID, if `web-mode's `auto-follow-hints-p' is true."
   (let ((buffer (current-buffer)))
     (query-hints "Go to element"
                  (lambda (results)
                    (%follow-hint (first results))
                    (mapcar (alex:rcurry #'%follow-hint-new-buffer buffer)
-                           (rest results))))))
+                           (rest results)))
+                 :multi-selection-p t)))
 
 (define-command follow-hint-new-buffer ()
-  "Like `follow-hint', but open the selected hints in new buffers (no focus)."
+  "Show a set of element hints, and open the user inputted one in a new
+buffer (not set to visible active buffer)."
   (let ((buffer (current-buffer)))
     (query-hints "Open element in new buffer"
                  (lambda (result) (mapcar (alex:rcurry #'%follow-hint-new-buffer buffer)
-                                          result)))))
+                                          result))
+                 :multi-selection-p t)))
 
 (define-command follow-hint-new-buffer-focus ()
-  "Like `follow-hint-new-buffer', but with focus."
+  "Show a set of element hints, and open the user inputted one in a new
+visible active buffer."
   (let ((buffer (current-buffer)))
     (query-hints "Go to element in new buffer"
                  (lambda (result)
                    (%follow-hint-new-buffer-focus (first result) buffer)
                    (mapcar (alex:rcurry #'%follow-hint-new-buffer buffer)
-                           (rest result))))))
+                           (rest result)))
+                 :multi-selection-p t)))
 
 (define-command follow-hint-nosave-buffer ()
-  "Like `follow-hint', but open the selected hints in new `nosave-buffer's (no
-focus)."
+  "Show a set of element hints, and open the user inputted one in a new
+nosave buffer (not set to visible active buffer)."
   (query-hints "Open element in new buffer"
-               (lambda (result) (mapcar #'%follow-hint-nosave-buffer result))))
+               (lambda (result) (mapcar #'%follow-hint-nosave-buffer result))
+               :multi-selection-p t))
 
 (define-command follow-hint-nosave-buffer-focus ()
-  "Like `follow-hint-nosave-buffer', but with focus."
+  "Show a set of element hints, and open the user inputted one in a new
+visible nosave active buffer."
   (query-hints "Go to element in new buffer"
                (lambda (result)
                  (%follow-hint-nosave-buffer-focus (first result))
-                 (mapcar #'%follow-hint-nosave-buffer (rest result)))))
+                 (mapcar #'%follow-hint-nosave-buffer (rest result)))
+               :multi-selection-p t))
 
 (define-command follow-hint-with-current-modes-new-buffer ()
-  "Prompt for element hints and open them in a new buffer with current
-modes."
+  "Follow hint and open link in a new buffer with current modes."
   (let ((buffer (current-buffer)))
     (query-hints "Open element with current modes in new buffer"
                  (lambda (result)
                    (mapcar (alex:rcurry #'%follow-hint-with-current-modes-new-buffer buffer)
-                           result)))))
+                           result))
+                 :multi-selection-p t)))
 
 (define-command copy-hint-url ()
-  "Prompt for element hints and save to clipboard."
+  "Show a set of element hints, and copy the URL of the user inputted one."
   (query-hints "Copy element URL" (lambda (result)  (%copy-hint-url (first result)))
-               :multi-selection-p nil
                :selector "a, img"))
 
 (define-command bookmark-hint ()
-  "Prompt for element hints and bookmark them."
+  "Show link hints on screen, and allow the user to bookmark one."
   (query-hints "Bookmark hint"
                (lambda (result)
                  (dolist (url (mapcar #'url result))
@@ -400,10 +423,11 @@ modes."
                                           (make-instance 'nyxt::tag-source
                                                          :marks (url-bookmark-tags url))))))
                      (bookmark-add url :tags tags :title (fetch-url-title url)))))
+               :multi-selection-p t
                :selector "a, img"))
 
 (define-command download-hint-url ()
-  "Prompt for element hints and download them."
+  "Download the file under the URL(s) hinted by the user."
   (let ((buffer (current-buffer)))
     (query-hints "Download link URL"
                  (lambda (selected-links)
@@ -411,6 +435,7 @@ modes."
                          ;; TODO: sleep should NOT be necessary to avoid breaking download
                          do (download buffer (url link))
                             (sleep 0.25)))
+                 :multi-selection-p t
                  :selector "a, img")))
 
 (uiop:define-package :nyxt/element-hint-mode
