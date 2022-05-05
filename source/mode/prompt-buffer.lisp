@@ -36,9 +36,6 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "C-down" 'select-last
        "C-pagedown" 'select-next-source
        "C-pageup" 'select-previous-source
-       ;; scroll-page-{down|up}-other-buffer aren't bound on VI. ideas?
-       "shift-pagedown" 'scroll-page-down-other-buffer
-       "shift-pageup" 'scroll-page-up-other-buffer
        "tab" 'insert-selection
        "return" 'return-selection
        "M-return" 'return-selection-over-action
@@ -69,8 +66,10 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "M-<" 'select-first
        "M-]" 'select-next-source        ; Emacs Helm binding.
        "M-[" 'select-previous-source    ; Emacs Helm binding.
-       "C-M-n" 'scroll-page-down-other-buffer
-       "C-M-p" 'scroll-page-up-other-buffer
+       "C-M-n" 'scroll-other-buffer-down
+       "C-M-p" 'scroll-other-buffer-up
+       "C-M-v" 'scroll-page-down-other-buffer
+       "shift-C-M-v" 'scroll-page-up-other-buffer
        "C-j" 'run-follow-mode-function
        "C-g" 'cancel-input
        "C-h b" 'run-prompt-buffer-command
@@ -109,6 +108,10 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "p" 'paste
        "$" 'move-end-of-input
        "^" 'move-start-of-input
+       "M-j" 'scroll-other-buffer-down
+       "M-k" 'scroll-other-buffer-up
+       "C-M-j" 'scroll-page-down-other-buffer
+       "C-M-k" 'scroll-page-up-other-buffer
        "l" 'nyxt/input-edit-mode:cursor-forwards
        "h" 'nyxt/input-edit-mode:cursor-backwards
        "w" 'nyxt/input-edit-mode:cursor-forwards-word
@@ -440,15 +443,33 @@ Only available if `prompter:multi-selection-p' is non-nil."
   (ffi-buffer-select-all prompt-buffer))
 
 ;; FIXME: Move scroll.lisp from web-mode so that prompt-buffer.lisp can reach
-;; it.  Ideas, other than copying from scroll.lisp?
+;; it.  Ideas?
 
-;; (define-command-prompt scroll-page-up-other-buffer (prompt-buffer)
-;;   "Scroll up the buffer behind the prompt by one page."
-;;   (with-current-buffer (current-buffer) (nyxt/web-mode:scroll-page-up)))
+(define-command-prompt scroll-other-buffer-up (prompt-buffer
+                                               &key (scroll-distance
+                                                     (scroll-distance (current-buffer))))
+  "Scroll up the buffer behind the prompt."
+  (with-current-buffer (current-buffer)
+    (peval (ps:chain window (scroll-by 0 (ps:lisp (- scroll-distance)))))))
 
-;; (define-command-prompt scroll-page-down-other-buffer (prompt-buffer)
-;;   "Scroll down the buffer behind the prompt by one page."
-;;   (with-current-buffer (current-buffer) (nyxt/web-mode:scroll-page-down)))
+(define-command-prompt scroll-other-buffer-down (prompt-buffer
+                                                 &key (scroll-distance
+                                                       (scroll-distance (current-buffer))))
+  "Scroll down the buffer behind the prompt."
+  (with-current-buffer (current-buffer)
+    (peval (ps:chain window (scroll-by 0 (ps:lisp scroll-distance))))))
+
+(define-command-prompt scroll-page-up-other-buffer (prompt-buffer)
+  "Scroll up the buffer behind the prompt by one page."
+  (with-current-buffer (current-buffer)
+    (peval (ps:chain window (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio (current-buffer)))
+                                               (ps:@ window inner-height))))))))
+
+(define-command-prompt scroll-page-down-other-buffer (prompt-buffer)
+  "Scroll down the buffer behind the prompt by one page."
+  (with-current-buffer (current-buffer)
+    (peval (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio (current-buffer)))
+                                            (ps:@ window inner-height)))))))
 
 (defmethod default-modes append ((buffer prompt-buffer))
   '(prompt-buffer-mode))
