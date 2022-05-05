@@ -146,5 +146,4 @@ necessary."
        "M-b" 'cursor-backwards-word
        "C-d" 'delete-forwards
        "M-backspace" 'delete-backwards-word
-       "M-d" 'delete-forwards-word))))
-  (:toggler-command-p nil))
+       "M-d" 'delete-forwards-word)))))
