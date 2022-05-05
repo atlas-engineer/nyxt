@@ -196,6 +196,48 @@ Return NIL if not a class form."
                 (alex:appendf (forms class-form) (list form)))))
         (alex:appendf config (list form)))))
 
+(export-always '%slot-value%)
+(defvar %slot-value% nil
+  "Holds the value of the slot being configured when in `define-configuration'.")
+
+(export-always '%slot-default%)
+(defvar %slot-default% nil
+  "Holds the default value of the slot being configured when in `define-configuration'.")
+
+(export-always 'define-configuration)
+(defmacro define-configuration (classes (&body slots-and-values))
+  `(progn
+     ,@(loop
+         for class in (uiop:ensure-list classes)
+         for handler-name = (gensym "DEFINE-CONFIGURATION")
+         collect
+         ;; Random symbol for the method to always stay by itself when computing effective method.
+         `(hooks:add-hook
+           (slot-value (find-class (quote ,class)) 'nyxt::customize-hook)
+           (make-instance
+            'hooks:handler
+            :fn (lambda (object)
+                  (declare (ignorable object))
+                  ,@(loop for ((slot value)) on slots-and-values
+                          when (find slot (mopu:slot-names class))
+                            collect `(setf (slot-value object (quote ,slot))
+                                           (let* ((%slot-value% (slot-value object (quote ,slot)))
+                                                  (%slot-default%
+                                                    ,(if (c2mop:class-finalized-p (find-class class))
+                                                         (getf (mopu:slot-properties class slot) :initform)
+                                                         (progn
+                                                           (echo-warning
+                                                            "%SLOT-DEFAULT% not found for ~a of ~a, falling back to %SLOT-VALUE%"
+                                                            slot class)
+                                                           '%slot-value%))))
+                                             (declare (ignorable %slot-value% %slot-default%))
+                                             ,value))
+                          else
+                            collect `(defmethod ,slot :around ((object ,class))
+                                       (let* ((%slot-value% (call-next-method))
+                                              (%slot-default% %slot-value%))
+                                         ,value))))
+            :name (quote ,handler-name))))))
 
 
 (defparameter %buffer nil)              ; TODO: Make a monad?

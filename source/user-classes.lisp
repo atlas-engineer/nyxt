@@ -3,7 +3,8 @@
 
 (in-package :nyxt)
 
-(defclass user-class (standard-class) ())
+(defclass user-class (standard-class)
+  ((customize-hook :initform (make-instance 'hooks:hook-any))))
 (export-always 'user-class)
 
 (defmethod closer-mop:validate-superclass ((class user-class)
@@ -31,6 +32,7 @@ finalized slot values.."))
 
 (defmethod make-instance :around ((class user-class) &rest initargs &key &allow-other-keys)
   (sera:lret ((initialized-object (call-next-method)))
+    (hooks:run-hook (slot-value class 'customize-hook) initialized-object)
     (apply #'customize-instance initialized-object initargs)))
 
 (defun user-class-p (class-specifier)
