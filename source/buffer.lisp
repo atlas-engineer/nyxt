@@ -545,15 +545,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:metaclass user-class)
   (:documentation "Like `web-buffer', but don't persist data to disk."))
 
-(define-class internal-buffer (focusable-buffer) ; TODO: Remove?
-  ()
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
-  (:metaclass user-class))
-
-(define-class panel-buffer (internal-buffer focusable-buffer input-buffer modable-buffer navigable-buffer)
+(define-class panel-buffer (focusable-buffer input-buffer modable-buffer navigable-buffer)
   ((width 250 :documentation "The width in pixels.")
    (style (theme:themed-css (theme *browser*)
             (body
@@ -597,7 +589,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
-(define-class editor-buffer (internal-buffer input-buffer modable-buffer navigable-buffer)
+(define-class editor-buffer (web-buffer)
   ((file :documentation "The file being edited.")
    (url (quri:uri "editor-buffer"))
    (title "editor-buffer"))
@@ -896,16 +888,6 @@ BUFFER's modes."
     (on-signal-notify-uri mode (url buffer)))
   (url buffer))
 
-(defmethod on-signal-notify-uri ((buffer internal-buffer) no-url)
-  "Internal buffers don't load external resources and as such don't need URL
-change notifications.
-In particular, we don't want to register a URL in the history via the `web-mode'
-notification."
-  ;; TODO: We should not ignore this notification since it may be used by modes.
-  ;; In particular, we receive a legit notify::uri when clicking on an anchor URL.
-  (declare (ignore no-url))
-  (url buffer))
-
 (export-always 'on-signal-notify-title)
 (defmethod on-signal-notify-title ((buffer buffer) no-title)
   "Set BUFFER's `title' slot, then dispatch `on-signal-notify-title' over the
@@ -1027,16 +1009,6 @@ See `make-buffer' for a description of the arguments."
   "Duplicate current buffer in a new buffer."
   (duplicate-buffer-with-current-modes :modes '(web-mode base-mode)
                                        :parent-buffer parent-buffer))
-
-(define-command make-internal-buffer (&key (url (quri:uri "")) (title "") modes no-history-p)
-  "Create a new buffer.
-MODES is a list of mode symbols.
-If URL is `:default', use `default-new-buffer-url'."
-  (make-buffer :title title
-               :url url
-               :extra-modes modes
-               :buffer-class 'internal-buffer
-               :no-history-p no-history-p))
 
 (define-command make-editor-buffer (&key (title "") modes)
   "Create a new editor buffer."
