@@ -1454,7 +1454,7 @@ See `finalize-buffer'."
     (declare (ignore web-view))
     (toggle-fullscreen :skip-renderer-resize t)
     nil)
-  (when (focus-buffer-p buffer)
+  (when (focusable-buffer-p buffer)
     (connect-signal buffer "user-message-received" nil (view message)
       (declare (ignorable view))
       (g:g-object-ref (g:pointer message))
