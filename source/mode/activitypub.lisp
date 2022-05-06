@@ -95,7 +95,7 @@ Possibly contains additional Lisp-inaccessible properties."))
                  (decode-json
                   (dex:get object :headers
                            `(("Accept" . "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
-                             ,@(alex:when-let* ((mode (current-mode 'activitypub))
+                             ,@(alex:when-let* ((mode (find-submode (current-buffer) 'nyxt/activitypub-mode:activitypub-mode))
                                                 (auth (auth-token mode)))
                                  `(("Authorization" . ,(str:concat "Bearer " auth)))))))))))
         (or (alex:ensure-gethash object *url->object* (get-object))
