@@ -341,7 +341,9 @@ Example:
 
 (export-always 'internal-url-p)
 (defun internal-url-p (url)
-  (string= "nyxt" (quri:uri-scheme (url url))))
+  ;; FIXME: Any other way to have Lispy actions for ActivityPub?
+  ;; Maybe implement those in JavaScript? Gotta be painful...
+  (str:s-member (list "nyxt" "ap") (quri:uri-scheme (url url))))
 
 (-> query-params->arglist ((trivial-types:association-list string string)) (values list &optional))
 (defun query-params->arglist (params)
