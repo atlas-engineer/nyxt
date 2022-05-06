@@ -30,7 +30,9 @@ Important methods to be avare of:
   `object', `link', `activity' etc.
 - `unparse-object' serializes the object to the ActivityPub-friendly JSON.
 - `fetch-object' fetches the object from the HTTP(S) URL and parses it to
-  primitive Lisp form."
+  primitive Lisp form.
+- `send-object' sends the objects to the account outbox (given you are logged
+  in)."
   ((rememberable-p nil)
    (model nil :type (maybe base))
    (style (theme:themed-css (theme *browser*)
