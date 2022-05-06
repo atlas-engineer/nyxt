@@ -610,18 +610,6 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:documentation "Each editor buffer matches a file. Each editor buffer
   contains an editor mode instance."))
 
-(define-class dummy-buffer (buffer)     ; TODO: Equivalent to `buffer', remove?  Replace `dummy-buffer-p` by (eq (type-of buffer) 'buffer).
-  ()
-  (:documentation "Light, mostly useless buffer.
-Delete it with `ffi-buffer-delete'"))
-
-(defmethod initialize-instance :around ((buffer dummy-buffer) &key) ; TODO: This could be remove if we specialized `customize-instance BUFFER' against `focusable-buffer'.
-  (call-next-method buffer :no-hook-p t :no-history-p t))
-
-(defmethod default-modes :around ((buffer dummy-buffer))
-  ""
-  '())
-
 (define-class status-buffer (buffer)
   ((height
     24
@@ -1116,6 +1104,9 @@ associated to the buffer is already killed."
 (defun window-list ()
   (alex:hash-table-values (windows *browser*)))
 
+(defun dummy-buffer-p (buffer)
+  (eq 'buffer (type-of buffer)))
+
 (export-always 'window-set-buffer)
 (defun window-set-buffer (window buffer &key (focus t))
   "Set BROWSER's WINDOW buffer to BUFFER.
@@ -1140,7 +1131,7 @@ proceeding."
       (let ((window-with-same-buffer (find buffer (delete window (window-list))
                                            :key #'active-buffer)))
         (if window-with-same-buffer ;; if visible on screen perform swap, otherwise just show
-            (let ((temp-buffer (make-instance 'dummy-buffer))
+            (let ((temp-buffer (make-instance 'buffer))
                   (old-buffer (active-buffer window)))
               (log:debug "Swapping old buffer ~a with other window ~a to switch to ~a"
                          (render-url (url old-buffer))
