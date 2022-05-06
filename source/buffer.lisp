@@ -554,7 +554,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
-(define-class panel-buffer (internal-buffer focusable-buffer input-buffer navigable-buffer) ; TODO: Modable-buffer?
+(define-class panel-buffer (internal-buffer focusable-buffer input-buffer modable-buffer navigable-buffer)
   ((width 250 :documentation "The width in pixels.")
    (style (theme:themed-css (theme *browser*)
             (body
