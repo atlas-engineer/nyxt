@@ -268,6 +268,8 @@ This is useful when there is no current buffer.")
 (defgeneric default-modes (buffer)
   (:method-combination append)
   (:method append ((buffer buffer))
+    '())
+  (:method append ((buffer navigable-buffer))
     %default-modes)
   (:documentation "The symbols of the modes to instantiate on buffer creation.
 The mode instances are stored in the `modes' BUFFER slot.
