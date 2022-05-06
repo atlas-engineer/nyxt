@@ -58,7 +58,13 @@ Important methods to be avare of:
     nil
     :type (maybe quri:uri)
     :allocation :class
-    :documentation "The URL of the home instance for the current account.")))
+    :documentation "The URL of the home instance for the current account.")
+   (instance-type
+    :mastodon
+    :type (maybe keyword)
+    :allocation :class
+    :documentation "The type of the instance -- Mastodon (implied by default), Plume, Lemmy, etc.
+Rendering may be different for different types.")))
 
 (export-always 'base)
 (define-class base ()
