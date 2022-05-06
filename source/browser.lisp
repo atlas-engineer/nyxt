@@ -534,10 +534,6 @@ non-new-page requests, buffer URL is not altered."
       (cond
         ((not (valid-scheme-p (quri:uri-scheme url)))
          (uiop:launch-program (list *open-program* (quri:render-uri url))))
-        ((and (internal-buffer-p buffer) (not (internal-url-p url)))
-         (log:debug "Load URL from internal buffer in new buffer: ~a" (render-url url))
-         (make-buffer-focus :url url)
-         nil)
         (bound-function
          (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode keys))
          (funcall bound-function :url url :buffer buffer)

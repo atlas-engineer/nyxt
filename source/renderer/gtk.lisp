@@ -327,16 +327,14 @@ By default it is found in the source directory."))
   "Return a web view instance.
 
 If passed a context-name, a `nyxt:webkit-web-context' with that name is used for
-the `webkit:webkit-web-view'.  If :buffer is an internal-buffer or is
-not set, the browser's `+internal+' `nyxt:webkit-web-context' is
-used.  Otherwise (such as an external web buffer), the `+default+'
-webkit-web-context is used.
+the `webkit:webkit-web-view'.  If :buffer is not set, the browser's `+internal+'
+`nyxt:webkit-web-context' is used.  Otherwise (such as an external web buffer),
+the `+default+' webkit-web-context is used.
 
 If ephemeral-p is set, the buffer is a nosave-buffer, or the current
 `protife' is a `nosave-profile', then an ephemeral context is used, with
 the same naming rules as above."
-  (let ((internal-p (or (not buffer)
-                        (internal-buffer-p buffer)))
+  (let ((internal-p (not buffer))
         (ephemeral-p (or ephemeral-p
                          (when buffer (typep (profile buffer) 'nosave-profile))
                          (typep buffer 'nosave-buffer))))

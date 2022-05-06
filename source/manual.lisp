@@ -86,13 +86,16 @@ addition, other similar approaches of customization can be applied to slots
 such as " (:code "spell-check-language") ", which can be expanded to do the
 spelling-check of other languages besides English.")
     (:h3 "Web buffers and internal buffers")
-    (:p "A `internal-buffer' is used for Nyxt-specific, internal pages such as the
-tutorial and the description pages.  A `web-buffer' is used for web pages.  Both
-the `web-buffer' and the `internal-buffer' classes inherit from the `buffer'
-class.")
-    (:p "You can configure a `buffer' slot and it will cascade down as a new
-default for both the `internal-buffer' and `web-buffer' classes- unless this slot
-is specialized by these child classes.")
+    (:p "There are multiple buffer classes, such as `navigable-buffer' (for
+structured documents) and `input-buffer' (for buffers that can receive user
+input).  A `web-buffer' class is used for web pages, `prompt-buffer' for, well,
+the prompt buffer.  Some buffer classes may inherit from multiple other classes.
+For instance `web-buffer' and `prompt-buffer' both inherit from
+`input-buffer'.")
+    (:p "You can configure one of the parent `buffer' classes slots and the new
+values will automatically cascade down as a new default for all child classes.
+For instance if you configure the `override-map' slot in `input-buffer', both
+`panel-buffer' and `web-buffer' classes will inherit from the new value.")
 
     (:h3 "Keybinding configuration")
     (:p "Nyxt supports multiple " (:i "bindings schemes") " such as CUA (the

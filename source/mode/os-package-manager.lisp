@@ -121,10 +121,15 @@
       (ospm:list-generations (profile source)))))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
+(defun make-os-package-buffer ()
+  (make-buffer :no-history-p t
+               :load-url-p nil
+               :title "*OS packages*"))
+
 (defun %describe-os-package (packages)
   (let* ((buffer (or (find-buffer 'os-package-manager-mode)
                      (enable (make-instance 'nyxt/os-package-manager-mode:os-package-manager-mode
-                                            :buffer (make-internal-buffer :title "*OS packages*"))))))
+                                            :buffer (make-os-package-buffer))))))
     (flet ((format-inputs (inputs)
              (spinneret:with-html
                (dolist (input inputs)
@@ -135,21 +140,21 @@
            (format-outputs (outputs)
              (spinneret:with-html
                (:div
-                 (:table
-                  (dolist (output outputs)
-                    (:tr
-                     (:td (ospm:name output))
-                     (when (ospm:expanded-output-p output)
-                       (:td
-                        (sera:format-file-size-human-readable
-                         nil
-                         (ospm:size output)))
-                       (:td (ospm:path output))))))
-                 (when (and (<= 2 (length outputs))
-                            (ospm:expanded-output-p (first outputs)))
-                   (:li "Total size: " (sera:format-file-size-human-readable
-                                        nil
-                                        (reduce #'+ (mapcar #'ospm:size outputs)))))))))
+                (:table
+                 (dolist (output outputs)
+                   (:tr
+                    (:td (ospm:name output))
+                    (when (ospm:expanded-output-p output)
+                      (:td
+                       (sera:format-file-size-human-readable
+                        nil
+                        (ospm:size output)))
+                      (:td (ospm:path output))))))
+                (when (and (<= 2 (length outputs))
+                           (ospm:expanded-output-p (first outputs)))
+                  (:li "Total size: " (sera:format-file-size-human-readable
+                                       nil
+                                       (reduce #'+ (mapcar #'ospm:size outputs)))))))))
       (nyxt::html-set
        (spinneret:with-html-string
          (:style (style buffer))
@@ -219,7 +224,7 @@
                                    :prompt "List files of OS package(s)")))
          (buffer (or (find-buffer 'os-package-manager-mode)
                      (enable (make-instance 'nyxt/os-package-manager-mode:os-package-manager-mode
-                                            :buffer (make-internal-buffer :title "*OS packages*"))))))
+                                            :buffer (make-os-package-buffer))))))
     (echo "Computing file list...")
     (nyxt::html-set
      (spinneret:with-html-string
@@ -251,7 +256,7 @@
 OBJECTS can be a list of packages, a generation, etc."
   (let* ((buffer (or (find-buffer 'os-package-manager-mode)
                      (enable (make-instance 'nyxt/os-package-manager-mode:os-package-manager-mode
-                                            :buffer (make-internal-buffer :title "*OS packages*"))))))
+                                            :buffer (make-os-package-buffer))))))
     (if (sera:and-let* ((process-info (nyxt/os-package-manager-mode:current-process-info
                                        (find-submode 'os-package-manager-mode buffer))))
           (uiop:process-alive-p process-info))
@@ -352,7 +357,7 @@ OBJECTS can be a list of packages, a generation, etc."
                        :prompt "Generation")))
          (buffer (or (find-buffer 'os-package-manager-mode)
                      (enable-modes '(nyxt/os-package-manager-mode:os-package-manager-mode)
-                                   (make-internal-buffer :title "*OS packages*")))))
+                                   (make-os-package-buffer)))))
     (echo "Loading package database...")
     (nyxt::html-set
      (spinneret:with-html-string
