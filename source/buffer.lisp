@@ -167,7 +167,12 @@ Example:
             \"M-x\" 'execute-command
             \"C-q\" 'quit)
           map)))")
-
+   (forward-input-events-p
+    t
+    :documentation "When non-nil, keyboard events are
+forwarded to the renderer when no binding is found.  Pointer
+events (e.g. mouse events) are not affected by this, they are always
+forwarded when no binding is found.")
    (last-event
     nil
     :type t
@@ -349,12 +354,6 @@ FALLBACK-URL is empty, SEARCH-URL is used on an empty search.
 
 The default search engine (as per `default-search-engine') is used when the
 query is not a valid URL, or the first keyword is not recognized.")
-   (forward-input-events-p
-    t
-    :documentation "When non-nil, keyboard events are
-forwarded to the renderer when no binding is found.  Pointer
-events (e.g. mouse events) are not affected by this, they are always
-forwarded when no binding is found.")
    (password-interface
     (make-password-interface)
     :type (or null password::password-interface)
