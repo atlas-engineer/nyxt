@@ -25,7 +25,7 @@ Example to use Tor as a proxy both for browsing and downloading:
                        :proxied-downloads-p t)))
 
 \(defmethod customize-instance ((buffer buffer) &key)
-  (nyxt/proxy-mode:proxy-mode :buffer buffer)"
+  (nyxt/proxy-mode:proxy-mode :buffer buffer))"
   ((proxy (make-instance 'nyxt:proxy
                          :url (quri:uri "socks5://localhost:9050")
                          :allowlist '("localhost" "localhost:8080")
