@@ -241,7 +241,7 @@ will find it]]):
 
 #+begin_src sh
 mkdir -p ~/common-lisp
-git clone https://github.com/atlas-engineer/nyxt ~/common-lisp/nyxt
+git clone --recurse-submodules https://github.com/atlas-engineer/nyxt ~/common-lisp/nyxt
 #+end_src
 
 ** Compile
