@@ -281,7 +281,7 @@ inherited from the superclasses."))
                      ;; Mode at the beginning of the list have higher priorities.
                      :from-end t))
 
-(define-class focus-buffer (buffer)     ; TODO: Name it `main-buffer'?
+(define-class focusable-buffer (buffer)     ; TODO: Name it `main-buffer'?
   ((document-model-delta-threshold
     10
     :documentation "Update the document model when the amount of elements on the
@@ -503,7 +503,7 @@ Example:
   (:metaclass user-class)
   (:documentation "Buffers that must interact with resources over the network."))
 
-(define-class web-buffer (focus-buffer network-buffer modable-buffer navigable-buffer input-buffer)
+(define-class web-buffer (focusable-buffer network-buffer modable-buffer navigable-buffer input-buffer)
   ((keywords
     nil
     :accessor nil
@@ -544,7 +544,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:metaclass user-class)
   (:documentation "Like `web-buffer', but don't persist data to disk."))
 
-(define-class internal-buffer (focus-buffer) ; TODO: Remove?
+(define-class internal-buffer (focusable-buffer) ; TODO: Remove?
   ()
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -552,7 +552,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
-(define-class panel-buffer (internal-buffer focus-buffer input-buffer navigable-buffer) ; TODO: Modable-buffer?
+(define-class panel-buffer (internal-buffer focusable-buffer input-buffer navigable-buffer) ; TODO: Modable-buffer?
   ((width 250 :documentation "The width in pixels.")
    (style (theme:themed-css (theme *browser*)
             (body
@@ -613,7 +613,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:documentation "Light, mostly useless buffer.
 Delete it with `ffi-buffer-delete'"))
 
-(defmethod initialize-instance :around ((buffer dummy-buffer) &key) ; TODO: This could be remove if we specialized `customize-instance BUFFER' against `focus-buffer'.
+(defmethod initialize-instance :around ((buffer dummy-buffer) &key) ; TODO: This could be remove if we specialized `customize-instance BUFFER' against `focusable-buffer'.
   (call-next-method buffer :no-hook-p t :no-history-p t))
 
 (defmethod default-modes :around ((buffer dummy-buffer))
@@ -751,7 +751,7 @@ Delete it with `ffi-buffer-delete'"))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
-;; TODO: Split this function to a specialization against `focus-buffer'?
+;; TODO: Split this function to a specialization against `focusable-buffer'?
 (defmethod customize-instance :after ((buffer buffer)
                                       &key (browser *browser*)
                                         parent-buffer no-history-p
@@ -1061,7 +1061,7 @@ If URL is `:default', use `default-new-buffer-url'."
 (defun buffer-delete (buffer)
   "For dummy buffers, use `ffi-buffer-delete' instead."
   (hooks:run-hook (buffer-delete-hook buffer) buffer)
-  (when (focus-buffer-p buffer)
+  (when (focusable-buffer-p buffer)
     (files:with-file-content (history (history-file buffer))
       (sera:and-let* ((owner (htree:owner history (id buffer)))
                       (current (htree:current owner))
@@ -1117,7 +1117,7 @@ proceeding."
   ;; When not focusing, that is, when previewing we don't update the
   ;; `last-access' so as to not disturb the ordering.
   (when (and focus
-             (focus-buffer-p (active-buffer window)))
+             (focusable-buffer-p (active-buffer window)))
     ;; The current buffer last-access time is set to now to ensure it becomes the
     ;; second newest buffer.  If we didn't update the access time, the buffer
     ;; last-access time could be older than, say, buffers opened in the
@@ -1147,7 +1147,7 @@ proceeding."
               (ffi-window-set-buffer window buffer :focus focus)
               (setf (active-buffer window) buffer)))))
   (when (and focus
-             (focus-buffer-p buffer))
+             (focusable-buffer-p buffer))
     (setf (last-access buffer) (local-time:now)))
   ;; So that `current-buffer' returns the new value if buffer was
   ;; switched inside a `with-current-buffer':
