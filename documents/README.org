@@ -244,6 +244,15 @@ mkdir -p ~/common-lisp
 git clone --recurse-submodules https://github.com/atlas-engineer/nyxt ~/common-lisp/nyxt
 #+end_src
 
+*** Observation
+
+    Quicklisp contains stable releases of Nyxt. If you are reading this, you
+    probably want to run cutting edge under development master branch of Nyxt
+    (not the last stable release). Via Quicklisp, some users end up installing a
+    stable release instead of running the frontier of Nyxt's live GitHub
+    repository. Thus, to access master branch do the git clone of Nyxt in
+    =~/quicklisp/local-projects=.
+
 ** Compile
 *** Using the Makefile
 
