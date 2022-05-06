@@ -754,7 +754,6 @@ Delete it with `ffi-buffer-delete'"))
 ;; TODO: Split this function to a specialization against `focusable-buffer'?
 (defmethod customize-instance :after ((buffer buffer)
                                       &key (browser *browser*)
-                                        parent-buffer no-history-p
                                         no-hook-p
                                       &allow-other-keys)
   "Finalize buffer.
@@ -771,11 +770,18 @@ Return the created buffer."
               (not browser))
     (hooks:run-hook (buffer-before-make-hook browser) buffer))
   ;; Background buffers are invisible to the browser.
-  (when (and (focus-buffer-p buffer)
-             (not (background-buffer-p buffer)))
+  buffer)
+
+(defmethod customize-instance :after ((buffer focusable-buffer)
+                                      &key parent-buffer no-history-p
+                                      &allow-other-keys)
+  "Finalize buffer.
+PARENT-BUFFER can we used to specify the parent in the history.
+Return the created buffer."
+  ;; Background buffers are invisible to the browser.
+  (unless (background-buffer-p buffer)
     (buffers-set (id buffer) buffer))
-  (unless (or no-history-p
-              (not (focus-buffer-p buffer)))
+  (unless no-history-p
     ;; Register buffer in global history:
     (files:with-file-content (history (history-file buffer)
                                :default (make-history-tree buffer))
