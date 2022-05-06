@@ -28,6 +28,7 @@ have an empty ID.")
     :documentation "Buffer profiles are used to specialize the behaviour of
 various parts, such as the path of all data files.")
    (url (quri:uri ""))
+   (url-at-point (quri:uri ""))
    (title "")
 
    (style
@@ -302,7 +303,6 @@ inherited from the superclasses."))
     :type (or null plump:node)
     :documentation "A parsed representation of the page currently opened.
 Created from the page code with the help of `plump:parse'. See `update-document-model'.")
-   (url-at-point (quri:uri ""))
    (last-access
     (local-time:now)
     :export nil
