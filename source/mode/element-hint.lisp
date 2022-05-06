@@ -128,7 +128,7 @@
       (sera:and-let* ((auto-follow (nyxt/web-mode:auto-follow-hints-p (find-submode 'web-mode)))
                       (matches (string-equal
                                 (prompter:input (current-prompt-buffer))
-                                (plump:get-attribute  suggestion "nyxt-hint")))
+                                (plump:get-attribute suggestion "nyxt-hint")))
                       (input (prompter:input (current-prompt-buffer))))
         (run-thread "hint auto-follow thread"
           (sleep (nyxt/web-mode:auto-follow-timer (find-submode 'web-mode)))
