@@ -16,7 +16,7 @@
   (:export #:use-nyxt-package-nicknames)
   (:documentation "The core package of Nyxt, the infinitely extensible browser.
 
-This package is should not be modified by the users.
+This package should not be modified by the users.
 
 It's recommended to use the `nyxt-user' package instead to create new functions,
 modes, commands, etc."))
