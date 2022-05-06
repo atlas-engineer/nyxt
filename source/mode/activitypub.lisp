@@ -64,7 +64,35 @@ Important methods to be avare of:
     :type (maybe keyword)
     :allocation :class
     :documentation "The type of the instance -- Mastodon (implied by default), Plume, Lemmy, etc.
-Rendering may be different for different types.")))
+Rendering may be different for different types.")
+   (profile
+    nil
+    :type (maybe actor)
+    :allocation :class
+    :documentation "The object for user profile as an `actor' object.")))
+
+(define-command activitypub-login (&key
+                                   (mode (find-submode (current-buffer)
+                                                       'nyxt/activitypub-mode:activitypub-mode))
+                                   (nickname (prompt
+                                              :prompt "Username"
+                                              :sources (list (make-instance 'prompter:raw-source))))
+                                   (instance (prompt
+                                              :prompt "Instance you're registered at"
+                                              :sources (list (make-instance 'prompter:raw-source))))
+                                   (auth-token (prompt
+                                                :prompt (format nil "Your authorization token for ~a" instance)
+                                                :invisible-input-p t
+                                                :sources (list (make-instance 'prompter:raw-source)))))
+  "Log into the ActivityPub on a chosen instance under a chosen nickname."
+  (setf (auth-token mode) auth-token
+        (nickname mode) nickname
+        (instance mode) instance
+        (profile mode) (fetch-object (sera:lret ((url (quri:uri instance)))
+                                       (setf (quri:uri-path url)
+                                             (if (str:starts-with-p "@" nickname)
+                                                 nickname
+                                                 (str:concat "@" nickname)))))))
 
 (export-always 'base)
 (define-class base ()
