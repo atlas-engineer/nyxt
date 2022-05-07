@@ -3,7 +3,8 @@
 
 (uiop:define-package nyxt/diff-mode
   (:use #:cl #:nyxt)
-  (:import-from #:serapeum #:export-always))
+  (:import-from #:serapeum #:export-always)
+  (:documentation "Mode for viewing diffs between two buffers."))
 
 (in-package :nyxt/diff-mode)
 
