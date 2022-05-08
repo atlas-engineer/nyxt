@@ -211,7 +211,6 @@ Return NIL if not a class form."
          for class in (uiop:ensure-list classes)
          for handler-name = (gensym "DEFINE-CONFIGURATION")
          collect
-         ;; Random symbol for the method to always stay by itself when computing effective method.
          `(hooks:add-hook
            (slot-value (find-class (quote ,class)) 'nyxt::customize-hook)
            (make-instance
