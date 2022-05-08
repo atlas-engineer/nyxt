@@ -1637,7 +1637,7 @@ local anyways, and it's better to refresh it if a load was queried."
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defclass renderer-user-script (gtk-user-script)
+(defclass nyxt/web-mode:renderer-user-script (gtk-user-script)
   ()
   (:metaclass mixin-class))
 
