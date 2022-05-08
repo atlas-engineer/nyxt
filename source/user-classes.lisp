@@ -4,7 +4,12 @@
 (in-package :nyxt)
 
 (defclass user-class (standard-class)
-  ((customize-hook :initform (make-instance 'hooks:hook-any))))
+  ((customize-hook :initform (make-instance 'hooks:hook-any)
+                   :documentation "An internal hook to add customization handlers to.
+
+Is made for `define-configuration'.
+
+Prefer `define-configuration' and `customize-instance' instead.")))
 (export-always 'user-class)
 
 (defmethod closer-mop:validate-superclass ((class user-class)
