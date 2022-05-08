@@ -6,7 +6,7 @@
 (in-package :nyxt/user-script-mode)
 
 (defun inject-user-scripts (scripts buffer)
-  (mapcar (alex:rcurry #'ffi-buffer-add-user-script buffer) scripts))
+  (mapcar (lambda (script) (ffi-buffer-add-user-script buffer script)) scripts))
 
 (defun inject-user-styles (styles buffer)
   (mapcar (alex:rcurry #'ffi-buffer-add-user-style buffer) styles))
@@ -23,13 +23,11 @@
     nil
     :reader user-styles
     :type list
-    :documentation "List of `user-style'-s to attach via renderer-specific mechanisms.")
-   (constructor
-    (lambda (mode)
-      (inject-user-scripts (user-scripts mode) (buffer mode))))
-   (destructor
-    (lambda (mode)
-      (inject-user-styles (user-scripts mode) (buffer mode))))))
+    :documentation "List of `user-style'-s to attach via renderer-specific mechanisms.")))
+
+(defmethod enable ((mode web-mode) &key)
+  (inject-user-scripts (user-scripts mode) (buffer mode))
+  (inject-user-styles (user-scripts mode) (buffer mode)))
 
 (export-always 'user-scripts)
 (defmethod (setf user-scripts) (new-value (mode web-mode))
