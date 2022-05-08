@@ -293,8 +293,19 @@ Return the short error message and the full error message as second value."
                                    (dolist (file files)
                                      (load-lisp file)))))))
 
+(define-command clean-configuration ()
+  "Clean all the user configuration created with `define-configuration' or `customize-instance'."
+  (dolist (class (sera:filter (lambda (class) (user-class-p (find-class class)))
+                              (package-classes)))
+    (setf (hooks:handlers-alist (slot-value class 'customize-hook)) nil))
+  (dolist (method (mopu:generic-function-methods #'customize-instance))
+    (match (method-qualifiers method)
+      ((or (list :before) (list :after) (list :around)) nil)
+      (_ (remove-method #'customize-instance method)))))
+
 (define-command load-init-file (&key (init-file (nfiles:expand *init-file*)))
   "Load or reload the INIT-FILE."
+  (clean-configuration)
   (load-lisp init-file :package (find-package :nyxt-user)))
 
 (defun eval-expr (expr)
