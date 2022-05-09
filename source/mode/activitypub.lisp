@@ -547,24 +547,6 @@ Try to guess it from all the data available."))
     (local-time:format-timestring nil time :format local-time:+asctime-format+)
     "sometime"))
 
-;;; Actions
-
-(export-always 'follow)
-(defgeneric follow (actor)
-  (:method ((actor string))
-    (let ((maybe-actor (fetch-object actor)))
-      (when (actor-p maybe-actor)
-        (follow maybe-actor))))
-  (:method ((actor actor))
-    (let ((mode (find-submode (current-buffer) 'nyxt/activitypub-mode:activitypub-mode)))
-      (send-object
-       (make-instance
-        'follow-activity
-        :actor (id (profile mode))
-        :object (id actor)
-        :cc (id (followers (profile mode))))))))
-
-
 ;;; Object rendering
 
 (defgeneric object->html (object format)
@@ -803,14 +785,6 @@ FORMAT can be one of
     (jwhen (summary object)
       (:raw (summary object)))
     (:br)
-    (let ((mode (find-submode (current-buffer) 'nyxt/activitypub-mode:activitypub-mode)))
-      (cond
-        ((equal (id object) (and (profile mode) (id (profile mode))))
-         nil)
-        (t (:button
-            :class "button"
-            :onclick (ps:ps (nyxt/ps:lisp-eval `(follow ,(id object))))
-            (format nil "Follow ~a" (preferred-username object))))))
     (when (and (following object)
                (or (null (total-items (following object)))
                    (not (zerop (total-items (following object))))))
