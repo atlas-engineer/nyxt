@@ -94,7 +94,12 @@
           :documentation "The CSS applied to a REPL when it is set-up.")
    (evaluations
     (list)
-    :documentation "A list of `evaluation's representing the current state of the REPL."))
+    :documentation "A list of `evaluation's representing the current state of the REPL.")
+   (current-evaluation
+    nil
+    :type (maybe integer)
+    :reader t
+    :documentation "Index of the evaluation currently being focused."))
   (:toggler-command-p nil))
 
 (defun package-short-name (package)
@@ -128,6 +133,15 @@
     (with-current-buffer (buffer mode)
       (selection-start new-position))))
 
+(define-parenscript focus (selector)
+  (ps:chain (nyxt/ps:qs document (ps:lisp selector)) (focus)))
+
+(defmethod (setf current-evaluation) (new-index (mode repl-mode))
+  (if new-index
+      (focus (format nil ".input-buffer[data-repl-id=\"~a\"]" new-index))
+      (focus ".input-buffer[data-repl-id=\"\"]"))
+  (setf (slot-value mode 'current-evaluation) new-index))
+
 (defmethod current-cell-id ((mode repl-mode))
   (pflet ((get-id ()
            (ps:chain document active-element (get-attribute "data-repl-id"))))
@@ -137,57 +151,55 @@
 (define-command evaluate-cell (&optional (repl (find-submode 'repl-mode)))
   "Evaluate the currently focused input cell."
   (let* ((input (input repl))
-         (id (current-cell-id repl))
+         (id (current-evaluation repl))
          (evaluation (make-instance 'evaluation
                                     :input input
                                     :results (nyxt::evaluate input))))
     (if id
-        (setf (elt (evaluations repl) id) evaluation)
-        (setf (evaluations repl) (append (evaluations repl) (list evaluation))))
-    ;; Reset history counter, as it doesn't make sense with new input.
+        (setf (elt (evaluations repl) id) evaluation
+              (current-evaluation repl) id)
+        (setf (current-evaluation repl) (length (evaluations repl))
+              (evaluations repl) (append (evaluations repl) (list evaluation))))
     (reload-buffers (list (buffer repl)))))
-
-(define-parenscript focus (selector)
-  (ps:chain (nyxt/ps:qs document (ps:lisp selector)) (focus))
-  (when (functionp (ps:chain (nyxt/ps:qs document (ps:lisp selector)) select))
-    (ps:chain (nyxt/ps:qs document (ps:lisp selector)) (select))))
 
 (define-command previous-cell (&optional (repl (find-submode 'repl-mode)))
   "Move to the previous input cell."
-  (let ((id (current-cell-id repl))
+  (let ((id (current-evaluation repl))
         (len (length (evaluations repl))))
     (cond
       ((zerop len)
-       (focus ".input-buffer[data-repl-id=\"\"]"))
+       (setf (current-evaluation repl) nil))
       ((or (null id) (zerop id))
-       (focus (format nil ".input-buffer[data-repl-id=\"~a\"]" (1- len))))
-      (t (focus (format nil ".input-buffer[data-repl-id=\"~a\"]" (1- id)))))))
+       (setf (current-evaluation repl) (1- len)))
+      (t (setf (current-evaluation repl) (1- id))))))
 
 (define-command next-cell (&optional (repl (find-submode 'repl-mode)))
   "Move to the next input cell."
-  (let ((id (current-cell-id repl))
+  (let ((id (current-evaluation repl))
         (len (length (evaluations repl))))
     (cond
       ((or (zerop len)
            (null id)
            (= id (1- len)))
-       (focus ".input-buffer[data-repl-id=\"\"]"))
-      (t (focus (format nil ".input-buffer[data-repl-id=\"~a\"]" (1+ id)))))))
+       (setf (current-evaluation repl) nil))
+      (t (setf (current-evaluation repl) (1+ id))))))
 
-(define-command move-cell-up (&key (repl (find-submode 'repl-mode)) (id (current-cell-id repl)))
+(define-command move-cell-up (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
   "Move the current code cell up, swapping it with the one above."
   (when (and id (not (zerop id)))
     (let* ((evals (evaluations repl)))
       (psetf (elt evals (1- id)) (elt evals id)
-             (elt evals id) (elt evals (1- id))))
+             (elt evals id) (elt evals (1- id))
+             (current-evaluation repl) (1- id)))
     (reload-buffers (list (buffer repl)))))
 
-(define-command move-cell-down (&key (repl (find-submode 'repl-mode)) (id (current-cell-id repl)))
+(define-command move-cell-down (&key (repl (find-submode 'repl-mode)) (id (current-evaluation repl)))
   "Move the current code cell down, swapping it with the one below."
   (when (and id (< id (1- (length (evaluations repl)))))
     (let* ((evals (evaluations repl)))
       (psetf (elt evals (1+ id)) (elt evals id)
-             (elt evals id) (elt evals (1+ id))))
+             (elt evals id) (elt evals (1+ id))
+             (current-evaluation repl) (1+ id)))
     (reload-buffers (list (buffer repl)))))
 
 (define-command paren (&optional (repl (find-submode 'repl-mode)))
@@ -255,6 +267,11 @@
                                            :title "Move this cell down."
                                            "↓"))
                                    (:input :class "input-buffer" :data-repl-id order :type "text"
+                                           :onfocus
+                                           (ps:ps (nyxt/ps:lisp-eval
+                                                   `(setf (slot-value (nyxt:current-mode :repl)
+                                                                      'current-evaluation)
+                                                          ,order)))
                                            :value (input evaluation)))
                      collect (loop
                                for result in (results evaluation)
