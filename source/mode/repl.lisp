@@ -160,7 +160,7 @@
       ((zerop len)
        (focus ".input-buffer[data-repl-id=\"\"]"))
       ((or (null id) (zerop id))
-       (focus ".input-buffer[data-repl-id=\"0\"]"))
+       (focus (format nil ".input-buffer[data-repl-id=\"~a\"]" (1- len))))
       (t (focus (format nil ".input-buffer[data-repl-id=\"~a\"]" (1- id)))))))
 
 (define-command next-cell (&optional (repl (find-submode 'repl-mode)))
