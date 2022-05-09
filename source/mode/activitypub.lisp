@@ -90,8 +90,8 @@ Rendering may be different for different types.")
   "Log into the ActivityPub on a chosen instance under a chosen nickname."
   (let ((instance-url (nyxt::ensure-url
                        ;; Do we have any helper functions for this?
-                       (if (or (str:starts-with "https://" instance)
-                               (str:starts-with "http://" instance))
+                       (if (or (str:starts-with-p "https://" instance)
+                               (str:starts-with-p "http://" instance))
                            instance
                            (str:concat "https://" instance)))))
     (setf (auth-token mode) auth-token
