@@ -88,11 +88,17 @@ Rendering may be different for different types.")
                 :invisible-input-p t
                 :sources (list (make-instance 'prompter:raw-source)))))
   "Log into the ActivityPub on a chosen instance under a chosen nickname."
-  (setf (auth-token mode) auth-token
-        (nickname mode) nickname
-        (instance mode) instance
-        (profile mode) (fetch-object (sera:lret ((url (quri:uri instance)))
-                                       (setf (quri:uri-path url) (str:concat "@" nickname))))))
+  (let ((instance-url (nyxt::ensure-url
+                       ;; Do we have any helper functions for this?
+                       (if (or (str:starts-with "https://" instance)
+                               (str:starts-with "http://" instance))
+                           instance
+                           (str:concat "https://" instance)))))
+    (setf (auth-token mode) auth-token
+          (nickname mode) nickname
+          (instance mode) instance-url
+          (profile mode) (fetch-object (sera:lret ((url (quri:copy-uri instance-url)))
+                                         (setf (quri:uri-path url) (str:concat "/users/" nickname)))))))
 
 (export-always 'base)
 (define-class base ()
