@@ -226,7 +226,7 @@ Return NIL if not a class form."
                                                          (getf (mopu:slot-properties class slot) :initform)
                                                          (progn
                                                            (echo-warning
-                                                            "Slot default not found for slot ~a of class ~a, fall back to it's current value"
+                                                            "Slot default not found for slot ~a of class ~a, falling back to its current value"
                                                             slot class)
                                                            '%slot-value%))))
                                              (declare (ignorable %slot-value% %slot-default%))
