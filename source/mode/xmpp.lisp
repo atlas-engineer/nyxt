@@ -13,6 +13,14 @@
 (define-mode xmpp-mode ()
   "A mode for XMPP chats management."
   ((rememberable-p nil)
+   (keymap-scheme
+    (define-scheme "repl"
+      scheme:cua
+      (list
+       "C-return" 'send-message)
+      scheme:emacs
+      (list
+       "C-c C-c" 'send-message)))
    (style (theme:themed-css (theme *browser*)
             (* :font-family "monospace,monospace")
             (body
@@ -55,6 +63,12 @@
     :type list
     :documentation "The history of all the incoming and outbound messages associated with the current `connection'."))
   (:toggler-command-p nil))
+
+(define-command send-message ()
+  "Send the inputted message to the person the chat happens with."
+  (let ((mode (find-submode 'xmpp-mode))
+        (message-body (peval (ps:@ (nyxt/ps:qs document "input") value))))
+    (xmpp:message (connection mode) (recipient mode) message-body)))
 
 (define-command xmpp-connect (&optional (mode (find-submode 'xmpp-mode)))
   "Connect to the chosen XMPP server."
