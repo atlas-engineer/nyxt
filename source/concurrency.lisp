@@ -5,7 +5,7 @@
 
 (defun initialize-lparallel-kernel (&key (worker-count (sera:count-cpus)))
   "Initialize the lparallel kernel with WORKER-COUNT, if not supplied set it to
-the amount of CPU cores.."
+the amount of CPU cores."
   (unless lpara:*kernel*
     (setf lpara:*kernel* (lpara:make-kernel worker-count))))
 
@@ -44,7 +44,7 @@ raised condition."
 
 (defun make-channel (&optional size)
   "Return a channel of capacity SIZE.
-If SIZE is NIL, capicity is infinite."
+If SIZE is NIL, capacity is infinite."
   (cond
     ((null size)
      (make-instance 'calispel:channel
