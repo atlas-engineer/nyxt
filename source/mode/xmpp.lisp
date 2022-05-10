@@ -17,7 +17,7 @@
             (* :font-family "monospace,monospace")
             (body
              :background-color theme:background)
-            (input
+            (textarea
              :border-width "4px"
              :border-color theme:primary
              :border-style "solid"
@@ -113,6 +113,5 @@
                                 "outbound"
                                 "incoming")
                      (xmpp:body message))))
-            (:input :type "text"
-                    :placeholder (format nil "Put your message to ~a here" (recipient mode)))))
+            (:textarea :placeholder (format nil "Put your message to ~a here" (recipient mode)))))
          "text/html;charset=utf8"))))
