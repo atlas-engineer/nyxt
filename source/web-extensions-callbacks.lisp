@@ -211,13 +211,8 @@ the description of the mechanism that sends the results back."
                   (calispel:! channel nil)))))
         (if (not (member (slot-value buffer 'nyxt::status) '(:finished :failed)))
             (let ((channel (nyxt::make-channel 1)))
-              (hooks:add-hook (buffer-loaded-hook buffer)
-                              (make-instance
-                               'nyxt::handler-buffer
-                               :fn (lambda (buffer)
-                                     (calispel:! channel (send-message result-channel))
-                                     (hooks:remove-hook (buffer-loaded-hook buffer) 'send-message-when-loaded))
-                               :name 'send-message-when-loaded))
+               (once-on (buffer-loaded-hook buffer) _
+                (calispel:! channel (send-message result-channel)))
               (calispel:? channel))
             (send-message result-channel))))
     (setf (gethash (cffi:pointer-address (g:pointer original-message)) %message-channels%)
