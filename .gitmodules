@@ -584,5 +584,5 @@
 	shallow = true
 [submodule "_build/cl-xmpp"]
 	path = _build/cl-xmpp
-	url = https://github.com/j4yk/cl-xmpp
+	url = https://gitlab.common-lisp.net/cl-xmpp/cl-xmpp
   	shallow = true
