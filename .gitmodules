@@ -582,3 +582,7 @@
 	path = _build/ospm
 	url = https://github.com/atlas-engineer/ospm
 	shallow = true
+[submodule "_build/cl-xmpp"]
+	path = _build/cl-xmpp
+	url = https://github.com/j4yk/cl-xmpp
+  	shallow = true
