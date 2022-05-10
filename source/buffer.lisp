@@ -351,13 +351,11 @@ to procrastination that should be blocked.")
    (annotations-file
     (make-instance 'annotations-file)
     :type annotations-file
-    :documentation "
-The file where the system will create/save annotations.")
+    :documentation "The file where the system will create/save annotations.")
    (inputs-file
     (make-instance 'inputs-file)
     :type inputs-file
-    :documentation "
-The file where the system will create/save the input data.")
+    :documentation "The file where the system will create/save the input data.")
    (auto-mode-rules-file
     (make-instance 'auto-mode-rules-file)
     :type auto-mode-rules-file
