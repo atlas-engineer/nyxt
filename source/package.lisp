@@ -36,10 +36,9 @@ modes, commands, etc."))
   (:use #:common-lisp #:nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:import-from #:class-star #:define-class)
-  (:documentation "
-Package left for the user to fiddle with.
-If the configuration file package is left unspecified, it default to this.
-It's not recommended to use `nyxt' itself to avoid clobbering internal symbols.
+  (:documentation "Package left for the user to fiddle with.  If the
+configuration file package is left unspecified, it defaults to this.  It's not
+recommended to use `nyxt' itself to avoid clobbering internal symbols.
 
 By default, the `:nyxt' and `:common-lisp' packages are `:use'd.
 
