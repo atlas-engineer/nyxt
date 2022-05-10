@@ -586,3 +586,7 @@
 	path = _build/cl-xmpp
 	url = https://gitlab.common-lisp.net/cl-xmpp/cl-xmpp
   	shallow = true
+[submodule "_build/cxml"]
+	path = _build/cxml
+	url = https://gitlab.common-lisp.net/cxml/cxml
+  	shallow = true
