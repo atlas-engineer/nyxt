@@ -7,7 +7,7 @@
   ((customize-hook :initform (make-instance 'hooks:hook-any)
                    :documentation "An internal hook to add customization handlers to.
 
-Is made for `define-configuration'.
+Reserved for `define-configuration'.
 
 Prefer `define-configuration' and `customize-instance' instead.")))
 (export-always 'user-class)
