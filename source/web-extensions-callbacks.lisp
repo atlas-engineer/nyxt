@@ -403,9 +403,12 @@ there. `reply-user-mesage' takes care of sending the response back."
                            (nyxt/web-extensions::extension-files extension)
                            (id (buffer extension))))))
       (str:string-case message-name
-        ("listExtensions"
-         (wrap-in-channel
-          (encode-json (mapcar #'extension->cons extensions))))
+        ("ready"
+         (webkit:webkit-web-view-send-message-to-page
+          (nyxt::gtk-object buffer)
+          (webkit:webkit-user-message-new
+           "injectAPIs" (glib:g-variant-new-string
+                         (encode-json (mapcar #'extension->cons extensions))))))
         ("management.getSelf"
          (wrap-in-channel
           (encode-json (extension->extension-info (find message-params extensions
