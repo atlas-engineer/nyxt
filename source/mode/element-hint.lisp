@@ -153,26 +153,24 @@
 MULTI-SELECTION-P defines whether several elements can be chosen.
 PROMPT is a text to show while prompting for hinted elements.
 FUNCTION is the action to perform on the selected elements."
-  (alex:when-let
-      ((result (prompt
-                :prompt prompt
-                ;; TODO: No need to find the symbol if we move this code (and
-                ;; the rest) to the element-hint-mode package.
-                :extra-modes (list (resolve-symbol :element-hint-mode :mode))
-                :auto-return-p (auto-follow-hints-p (find-submode 'web-mode))
-                :history nil
-                :sources
-                (make-instance
-                 'hint-source
-                 :multi-selection-p multi-selection-p
-                 :constructor (lambda (source)
-                                (declare (ignore source))
-                                (add-element-hints :selector selector)))))
-       (buffer (current-buffer)))
-    (funcall function result)
-    ;; remove-element-hints should go into (prompt :after-destructor) but it
-    ;; misbehaves
-    (with-current-buffer buffer (remove-element-hints))))
+  (alex:when-let* ((buffer (current-buffer))
+                   (result (prompt
+                            :prompt prompt
+                            ;; TODO: No need to find the symbol if we move this code (and
+                            ;; the rest) to the element-hint-mode package.
+                            :extra-modes (list (resolve-symbol :element-hint-mode :mode))
+                            :auto-return-p (auto-follow-hints-p (find-submode 'web-mode))
+                            :history nil
+                            :sources
+                            (make-instance
+                             'hint-source
+                             :multi-selection-p multi-selection-p
+                             :constructor (lambda (source)
+                                            (declare (ignore source))
+                                            (add-element-hints :selector selector)))
+                            :after-destructor (lambda () (with-current-buffer buffer
+                                                      (remove-element-hints))))))
+    (funcall function result)))
 
 (defmethod prompter:object-attributes :around ((element plump:element))
   `(,@(when (plump:get-attribute element "nyxt-hint")
