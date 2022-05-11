@@ -92,8 +92,29 @@ These specializations are reserved to the user."))
       (closer-mop:ensure-method command lambda-expression))))
 
 (export-always 'lambda-command)
-(defmacro lambda-command (name arglist &body body)
-  `(make-command ',name '(lambda ,arglist ,@body)))
+(defmacro lambda-command (name args &body body)
+  "ARGS may only be a list of required arguments (optional and keyword argument
+not allowed).
+
+Example:
+
+\(let ((source (make-my-source)))
+  (lambda-command open-file* (files)
+    \"Open files in some way.\"
+    ;; Note that `source' is captured in the closure.
+    (mapc (opener source) files)))"
+  (alex:with-gensyms (closed-over-body)
+    ;; Warning: `make-command' takes a lambda-expression as an unevaluated list,
+    ;; thus the BODY environment is not that of the lexical environment
+    ;; (closures would thus fail to close over).  To avoid this problem, we capture
+    ;; the lexical environment in a lambda.
+    ;;
+    ;; Note that this relies on the assumption that ARGS is just a list of
+    ;; _required arguments_, which is a same assumption for prompt buffer actions.
+    ;; We could remove this limitation with some argument parsing.
+    `(let ((,closed-over-body (lambda ,args ,@body)))
+       (make-command ',name
+                     (list 'lambda ',args (list 'apply ,closed-over-body  '(list ,@args)))))))
 
 (export-always 'lambda-mapped-command)
 (defmacro lambda-mapped-command (function-symbol)
