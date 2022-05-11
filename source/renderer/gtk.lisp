@@ -1587,9 +1587,8 @@ local anyways, and it's better to refresh it if a load was queried."
          (inject-time (if at-document-start-p
                           :webkit-user-script-inject-at-document-start
                           :webkit-user-script-inject-at-document-end))
-         (allow-list (if allow-list
-                         (list-of-string-to-foreign allow-list)
-                         '("http://*/*" "https://*/*")))
+         (allow-list (list-of-string-to-foreign
+                      (or allow-list '("http://*/*" "https://*/*"))))
          (block-list (list-of-string-to-foreign block-list))
          (script (if world-name
                      (webkit:webkit-user-script-new-for-world
