@@ -352,7 +352,7 @@ ARGS are passed to the mode `enable' method."
                                              :buffers buffers)))))
     (mapcar (lambda (buffer)
               (mapcar (lambda (mode-sym)
-                        (apply #'enable (or (find-submode mode-sym buffer)
+                        (apply #'enable (or (find mode-sym (modes buffer) :key #'name)
                                             (make-instance mode-sym :buffer buffer))
                                args))
                       modes))
@@ -377,7 +377,7 @@ BUFFERS and MODES are automatically coerced into a list."
                      :sources (make-instance 'inactive-mode-source
                                              :buffers buffers)))))
     (mapcar (lambda (buffer)
-              (mapcar #'disable (delete nil (mapcar (lambda (mode) (find-submode mode buffer))
+              (mapcar #'disable (delete nil (mapcar (lambda (mode) (find mode (modes buffer) :key #'name))
                                                     (uiop:ensure-list modes)))))
             buffers)))
 
