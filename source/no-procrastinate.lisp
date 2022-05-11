@@ -15,9 +15,9 @@
 ;;; - Un-explicitly-set class slots are exported if they have an initform;
 ;;;   removing the initform forces us to put lots of (slot-boundp ...).
 
-(define-class no-procrastinate-hosts-file (nfiles:data-file nyxt-lisp-file)
-  ((nfiles:base-path #p"no-procrastinate-hosts")
-   (nfiles:name "no-procrastinate-hosts"))
+(define-class no-procrastinate-hosts-file (files:data-file nyxt-lisp-file)
+  ((files:base-path #p"no-procrastinate-hosts")
+   (files:name "no-procrastinate-hosts"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
@@ -52,7 +52,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                    (:hostname string))
     t)
 (defun no-procrastinate-add  (url &key date title tags hostname)
-  (nfiles:with-file-content (no-procrastinate-hosts-list (no-procrastinate-hosts-file (current-buffer)))
+  (files:with-file-content (no-procrastinate-hosts-list (no-procrastinate-hosts-file (current-buffer)))
     (unless (or (url-empty-p url)
                 (string= "about:blank" (render-url url)))
       (multiple-value-bind (entries no-procrastinate-hosts-without-url)
@@ -75,13 +75,13 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 
 (define-class no-procrastinate-source (prompter:source)
   ((prompter:name "Hosts to avoid procrastination")
-   (prompter:constructor (nfiles:content (no-procrastinate-hosts-file (current-buffer))))
+   (prompter:constructor (files:content (no-procrastinate-hosts-file (current-buffer))))
    (prompter:multi-selection-p t)
    (prompter:active-attributes-keys '("URL" "Title" "Tags"))))
 
 (defun url-no-procrastinate-host-tags (url)
   "Return the list of tags of the host corresponding to URL."
-  (let ((no-procrastinate-hosts-entry-list (nfiles:content (no-procrastinate-hosts-file (current-buffer)))))
+  (let ((no-procrastinate-hosts-entry-list (files:content (no-procrastinate-hosts-file (current-buffer)))))
     (alex:when-let ((existing (find url no-procrastinate-hosts-entry-list :key #'url :test #'url-equal)))
       (tags existing))))
 
@@ -162,7 +162,7 @@ page(s) in the active buffer."
   "Delete host(s) matching URLS-OR-NO-PROCRASTINATE-HOST-ENTRIES
 URLS is either a list or a single element."
   (if urls-or-no-procrastinate-host-entries
-      (nfiles:with-file-content (no-procrastinate-hosts (no-procrastinate-hosts-file (current-buffer)))
+      (files:with-file-content (no-procrastinate-hosts (no-procrastinate-hosts-file (current-buffer)))
         (setf no-procrastinate-hosts
               (set-difference
                no-procrastinate-hosts
@@ -209,9 +209,9 @@ URLS is either a list or a single element."
           (write-string ")"))
         (write-string ")")))))
 
-(defmethod nfiles:serialize ((profile nyxt-profile) (file no-procrastinate-hosts-file) stream &key)
+(defmethod files:serialize ((profile nyxt-profile) (file no-procrastinate-hosts-file) stream &key)
   (let ((content
-          (nfiles:content file)))
+          (files:content file)))
     (write-string "(" stream)
     (dolist (entry content)
       (write-string +newline+ stream)
@@ -219,9 +219,9 @@ URLS is either a list or a single element."
     (format stream "~%)~%")
     (echo "Saved ~a host to avoid procrastination to ~s."
           (length content)
-          (nfiles:expand file))))
+          (files:expand file))))
 
-(defmethod nfiles:deserialize ((profile nyxt-profile) (path no-procrastinate-hosts-file) raw-content &key)
+(defmethod files:deserialize ((profile nyxt-profile) (path no-procrastinate-hosts-file) raw-content &key)
   (let ((entries (read raw-content)))
     (mapcar (lambda (entry)
               (when (getf entry :url)

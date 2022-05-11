@@ -10,9 +10,9 @@
 (in-package :nyxt/auto-mode)
 (use-nyxt-package-nicknames)
 
-(define-class auto-mode-rules-file (nfiles:data-file nyxt-lisp-file)
-  ((nfiles:base-path #p"auto-mode-rules")
-   (nfiles:name "auto-mode-rules"))
+(define-class auto-mode-rules-file (files:data-file nyxt-lisp-file)
+  ((files:base-path #p"auto-mode-rules")
+   (files:name "auto-mode-rules"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
@@ -103,7 +103,7 @@ If the mode specifier is not known, it's omitted from the results."
 
 (-> matching-auto-mode-rule (quri:uri buffer) (or auto-mode-rule null))
 (defun matching-auto-mode-rule (url buffer)
-  (let ((rules (nfiles:content (auto-mode-rules-file buffer))))
+  (let ((rules (files:content (auto-mode-rules-file buffer))))
     (flet ((priority (test1 test2)
              (let ((priority-list '(match-regex match-url match-host match-domain)))
                (< (or (position (first test1) priority-list) 4)
@@ -400,7 +400,7 @@ Auto-mode is re-enabled once the page is reloaded."
     (values list &optional))
 (sera:export-always 'add-modes-to-auto-mode-rules)
 (defun add-modes-to-auto-mode-rules (test &key (append-p nil) exclude include (exact-p nil))
-  (let ((rules (nfiles:content (auto-mode-rules-file (current-buffer)))))
+  (let ((rules (files:content (auto-mode-rules-file (current-buffer)))))
     (let* ((rule (or (find test rules
                            :key #'test :test #'equal)
                      (make-instance 'auto-mode-rule :test test)))
@@ -449,8 +449,8 @@ Auto-mode is re-enabled once the page is reloaded."
       (write-if-present 'exact-p)
       (write-string ")" stream))))
 
-(defmethod nfiles:serialize ((profile nyxt-profile) (file auto-mode-rules-file) stream &key)
-  (let ((rules (nfiles:content file)))
+(defmethod files:serialize ((profile nyxt-profile) (file auto-mode-rules-file) stream &key)
+  (let ((rules (files:content file)))
     (let ((*standard-output* stream)
           (*package* (find-package :nyxt/auto-mode)))
       (write-string ";; List of auto-mode rules.
@@ -490,9 +490,9 @@ Auto-mode is re-enabled once the page is reloaded."
         (write-char #\newline)
         (serialize-object rule))
       (format t "~%)~%"))
-    (echo "Saved ~a auto-mode rules to ~s." (length rules) (nfiles:expand file))))
+    (echo "Saved ~a auto-mode rules to ~s." (length rules) (files:expand file))))
 
-(defmethod nfiles:deserialize ((profile nyxt-profile) (file auto-mode-rules-file) raw-content &key)
+(defmethod files:deserialize ((profile nyxt-profile) (file auto-mode-rules-file) raw-content &key)
   (let ((rules (read raw-content)))
     (mapcar #'(lambda (rule)
                 (let ((rule (append '(:test) rule)))

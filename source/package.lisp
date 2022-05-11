@@ -25,7 +25,8 @@ modes, commands, etc."))
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum :nyxt)
   (trivial-package-local-nicknames:add-package-local-nickname :lpara :lparallel :nyxt)
   (trivial-package-local-nicknames:add-package-local-nickname :class* :hu.dwim.defclass-star :nyxt)
-  (trivial-package-local-nicknames:add-package-local-nickname :hooks :nhooks :nyxt))
+  (trivial-package-local-nicknames:add-package-local-nickname :hooks :nhooks :nyxt)
+  (trivial-package-local-nicknames:add-package-local-nickname :files :nfiles :nyxt))
 
 (defmacro nyxt::use-nyxt-package-nicknames ()
   `(eval-when (:compile-toplevel :load-toplevel :execute)
@@ -57,6 +58,7 @@ and `serapeum:':
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum :nyxt-user)"))
 
 (trivial-package-local-nicknames:add-package-local-nickname :hooks :nhooks :nyxt-user)
+(trivial-package-local-nicknames:add-package-local-nickname :files :nfiles :nyxt-user)
 
 ;; Unlike other modes, nyxt/prompt-buffer-mode is declared here because
 ;; certain files depend upon its existence being declared beforehand

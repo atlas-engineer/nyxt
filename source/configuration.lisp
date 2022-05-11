@@ -3,16 +3,16 @@
 
 (in-package :nyxt)
 
-(define-class init-directory-file (nfiles:config-file nyxt-lisp-file)
-  ((nfiles:base-path #p"")
+(define-class init-directory-file (files:config-file nyxt-lisp-file)
+  ((files:base-path #p"")
    (command-line-option :init
                         :accessor nil
                         :type keyword))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class init-file (init-directory-file nfiles:virtual-file)
-  ((nfiles:base-path #p"init")
+(define-class init-file (init-directory-file files:virtual-file)
+  ((files:base-path #p"init")
    (command-line-option :init
                         :accessor nil
                         :type keyword))
@@ -36,14 +36,14 @@
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class auto-init-file (init-directory-file) ; TODO: Be consistent here for 3.0!
-  ((nfiles:base-path #p"auto-config")
+  ((files:base-path #p"auto-config")
    (command-line-option :auto-config
                         :accessor nil
                         :type keyword))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod nfiles:resolve ((profile nyxt-profile) (init-file init-directory-file))
+(defmethod files:resolve ((profile nyxt-profile) (init-file init-directory-file))
   (let* ((option (slot-value init-file 'command-line-option))
          (no-option (alex:make-keyword
                      (uiop:strcat "NO-" (symbol-name option)))))
@@ -65,8 +65,8 @@
   "The initialization file.")
 
 (define-class nyxt-source-directory (nyxt-file)
-  ((nfiles:base-path asdf-user::*dest-source-dir*)
-   (nfiles:name "source"))
+  ((files:base-path asdf-user::*dest-source-dir*)
+   (files:name "source"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
@@ -76,9 +76,9 @@
 This is set globally so that it can be looked up if there is no
 `*browser*' instance.")
 
-(define-class extensions-directory (nfiles:data-file nyxt-file)
-  ((nfiles:base-path #p"extensions/")
-   (nfiles:name "extensions"))
+(define-class extensions-directory (files:data-file nyxt-file)
+  ((files:base-path #p"extensions/")
+   (files:name "extensions"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
@@ -91,8 +91,8 @@ This is set globally so that extensions can be loaded even if there is no
 (export-always 'nyxt-source-registry)
 (defun nyxt-source-registry ()
   `(:source-registry
-    (:tree ,(nfiles:expand *extensions-directory*))
-    (:tree ,(nfiles:expand *source-directory*))
+    (:tree ,(files:expand *extensions-directory*))
+    (:tree ,(files:expand *source-directory*))
     :inherit-configuration))
 
 
@@ -146,7 +146,7 @@ Return NIL if not a class form."
                (forms class-form))))
 
 ;; TODO: Instantiate directly in read-init-*?
-(defmethod nfiles:deserialize ((profile nyxt-profile) (file auto-init-file) raw-content &key)
+(defmethod files:deserialize ((profile nyxt-profile) (file auto-init-file) raw-content &key)
   (flet ((make-init-form (form)
            (multiple-value-bind (name forms)
                (read-init-form-class form)
@@ -158,8 +158,8 @@ Return NIL if not a class form."
     (mapcar #'make-init-form
             (uiop:slurp-stream-forms raw-content))))
 
-(defmethod nfiles:serialize ((profile nyxt-profile) (file auto-init-file) stream &key)
-  (dolist (form (nfiles:content file))
+(defmethod files:serialize ((profile nyxt-profile) (file auto-init-file) stream &key)
+  (dolist (form (files:content file))
     (write
      (if (class-form-p form)
          (write-init-form-class form)
@@ -167,14 +167,14 @@ Return NIL if not a class form."
      :stream stream)
     (fresh-line stream)))
 
-(defmethod nfiles:write-file ((profile nyxt-profile) (file auto-init-file) &key &allow-other-keys)
+(defmethod files:write-file ((profile nyxt-profile) (file auto-init-file) &key &allow-other-keys)
   (let ((*print-case* :downcase)
         (*package* (find-package :nyxt-user)))
-    (log:info "Writing auto configuration to ~s." (nfiles:expand file))
+    (log:info "Writing auto configuration to ~s." (files:expand file))
     (call-next-method)))
 
 (defun auto-configure (&key form class-name slot (slot-value nil slot-value-p))
-  (nfiles:with-file-content (config *auto-config-file*)
+  (files:with-file-content (config *auto-config-file*)
     (if class-name
         (flet ((ensure-class-form (class-name)
                  (or (when config

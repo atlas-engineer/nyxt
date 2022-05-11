@@ -31,12 +31,12 @@
    (nyxt/blocker-mode:hostlists
     (list (nyxt/blocker-mode:make-hostlist
            :hosts (mapcar #'(lambda (y) (hostname y))
-                          (nfiles:content (no-procrastinate-hosts-file (current-buffer)))))
+                          (files:content (no-procrastinate-hosts-file (current-buffer)))))
           *default-hostlist-no-procrastinate*))))
 
 (defun group-no-procrastinate-hosts (buffer)
   (let ((no-procrastinate-hosts-table (make-hash-table :test #'equalp))
-        (no-procrastinate-hosts (nfiles:content (no-procrastinate-hosts-file buffer))))
+        (no-procrastinate-hosts (files:content (no-procrastinate-hosts-file buffer))))
     (dolist (no-procrastinate-host no-procrastinate-hosts)
       (let ((tags (tags no-procrastinate-host)))
         (if tags
@@ -56,7 +56,7 @@
       (:body
        (if (zerop (hash-table-count no-procrastinate-hosts))
            (format nil "No hosts to avoid procrastination in ~s."
-                   (nfiles:expand (no-procrastinate-hosts-file no-procrastinate-hosts-buffer)))
+                   (files:expand (no-procrastinate-hosts-file no-procrastinate-hosts-buffer)))
            (maphash
             (lambda (tag no-procrastinate-hosts)
               (:details

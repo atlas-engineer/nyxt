@@ -6,6 +6,7 @@
   (:import-from #:serapeum #:export-always)
   (:documentation "Bookmark buffer mode and command"))
 (in-package :nyxt/bookmark-mode)
+(use-nyxt-package-nicknames)
 
 (export-always 'bookmark-mode)
 (define-mode bookmark-mode ()
@@ -37,7 +38,7 @@
 
 (defun group-bookmarks (buffer)
   (let ((bookmarks-table (make-hash-table :test #'equalp))
-        (bookmarks (nfiles:content (bookmarks-file buffer))))
+        (bookmarks (files:content (bookmarks-file buffer))))
     (dolist (bookmark bookmarks)
       (let ((tags (tags bookmark)))
         (if tags
@@ -56,7 +57,7 @@
       (:h1 "Bookmarks")
       (cond
         ((zerop (hash-table-count bookmarks))
-         (:p (format nil "No bookmarks in ~s." (nfiles:expand (bookmarks-file bookmarks-buffer)))))
+         (:p (format nil "No bookmarks in ~s." (files:expand (bookmarks-file bookmarks-buffer)))))
         (t (maphash
             (lambda (tag bookmarks)
               (:details

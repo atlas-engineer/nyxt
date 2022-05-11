@@ -11,7 +11,7 @@
 
 ;; TODO: Add convenient interface to block hosts depending on the current URL.
 
-(define-class hostlist (nfiles:data-file nyxt-file)
+(define-class hostlist (files:data-file nyxt-file)
   ((url
     (quri:uri "")
     :type quri:uri
@@ -98,19 +98,19 @@ Example:
     (hooks:remove-hook (request-resource-hook (buffer mode))
                        'request-resource-block)))
 
-(defmethod nfiles:write-file ((profile nyxt-profile) (hostlist hostlist) &key &allow-other-keys)
+(defmethod files:write-file ((profile nyxt-profile) (hostlist hostlist) &key &allow-other-keys)
   "Download the hostlist file if it has a URL."
   (when (url-body hostlist)
-    (let ((path (nfiles:expand hostlist)))
+    (let ((path (files:expand hostlist)))
       (uiop:with-staging-pathname (destination path)
         (alex:write-string-into-file (url-body hostlist) destination :if-exists :supersede)))))
 
-(defmethod nfiles:read-file :around ((profile nyxt-profile) (hostlist hostlist) &key)
-  ;; Must be an `:around' method so that the `nfiles:file' specialization which
+(defmethod files:read-file :around ((profile nyxt-profile) (hostlist hostlist) &key)
+  ;; Must be an `:around' method so that the `files:file' specialization which
   ;; does file existence check is not called.
   "Fetch HOSTLIST file from its `url' and save it on disk.
 If file is already on disk and younger then `update-interval', load it instead of fetching online."
-  (let ((path (nfiles:expand hostlist)))
+  (let ((path (files:expand hostlist)))
     (cond
       ((and (not (url-empty-p (url hostlist)))
             (or (force-update-p hostlist)
@@ -137,9 +137,9 @@ If file is already on disk and younger then `update-interval', load it instead o
        (setf (last-update hostlist) (get-universal-time))))
     (unless (uiop:emptyp (url-body hostlist))
       (with-input-from-string (s (url-body hostlist))
-        (nfiles:deserialize profile hostlist s)))))
+        (files:deserialize profile hostlist s)))))
 
-(defmethod nfiles:deserialize ((profile nyxt-profile) (hostlist hostlist) raw-content &key)
+(defmethod files:deserialize ((profile nyxt-profile) (hostlist hostlist) raw-content &key)
   (flet ((empty-line? (line)
            (< (length line) 2))
          (comment? (line)
@@ -164,14 +164,14 @@ If file is already on disk and younger then `update-interval', load it instead o
            (progn
              (setf (force-update-p hostlist) force-update-p)
              (dolist (host (or (hosts hostlist)
-                               (nfiles:content hostlist
+                               (files:content hostlist
                                                :force-read force-update-p)))
                (setf (gethash host (blocked-hosts blocker-mode)) host)))
         (setf (force-update-p hostlist) nil))
       ;;  We write the file here because we are not setting the content
       ;;  anytime after this point.
       (unless (hosts hostlist)
-        (nfiles:write-file (nfiles:profile hostlist) hostlist)))))
+        (files:write-file (files:profile hostlist) hostlist)))))
 
 (defmethod blocklisted-host-p ((mode blocker-mode) host)
   "Return non-nil of HOST if found in the hostlists of MODE.

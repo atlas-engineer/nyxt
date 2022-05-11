@@ -306,7 +306,7 @@ the description of the mechanism that sends the results back."
                           :key #'id
                           :test #'string-equal))
          (keys (gethash "keys" json)))
-    (let ((data (or (nfiles:content (nyxt/web-extensions:storage-path extension))
+    (let ((data (or (files:content (nyxt/web-extensions:storage-path extension))
                     (make-hash-table))))
       (if (uiop:emptyp keys)
           "{}"
@@ -332,7 +332,7 @@ the description of the mechanism that sends the results back."
                           :key #'id
                           :test #'string-equal))
          (keys (gethash "keys" json)))
-    (let ((data (or (nfiles:content (nyxt/web-extensions:storage-path extension))
+    (let ((data (or (files:content (nyxt/web-extensions:storage-path extension))
                     (make-hash-table))))
       (unless (uiop:emptyp keys)
         (dolist (key-value keys)
@@ -349,7 +349,7 @@ the description of the mechanism that sends the results back."
                           :key #'id
                           :test #'string-equal))
          (keys (uiop:ensure-list (gethash "keys" json))))
-    (let ((data (or (nfiles:content (nyxt/web-extensions:storage-path extension))
+    (let ((data (or (files:content (nyxt/web-extensions:storage-path extension))
                     (make-hash-table))))
       (unless (uiop:emptyp keys)
         (dolist (key keys)
@@ -362,7 +362,7 @@ the description of the mechanism that sends the results back."
                           (sera:filter #'nyxt/web-extensions::extension-p
                                        (modes buffer))
                           :key #'id)))
-    (let ((data (or (nfiles:content (nyxt/web-extensions:storage-path extension))
+    (let ((data (or (files:content (nyxt/web-extensions:storage-path extension))
                     (make-hash-table))))
       (clrhash data)))
   "")

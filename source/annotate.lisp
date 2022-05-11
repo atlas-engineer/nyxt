@@ -3,9 +3,9 @@
 
 (in-package :nyxt)
 
-(define-class annotations-file (nfiles:data-file nyxt-lisp-file)
-  ((nfiles:base-path #p"annotations")
-   (nfiles:name "annotations"))
+(define-class annotations-file (files:data-file nyxt-lisp-file)
+  ((files:base-path #p"annotations")
+   (files:name "annotations"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
@@ -51,11 +51,11 @@
     (:p (:b "Tags: ") (format nil "~{~a ~}" (tags annotation)))))
 
 (defun annotation-add (annotation)
-  (nfiles:with-file-content (annotations (annotations-file (current-buffer)))
+  (files:with-file-content (annotations (annotations-file (current-buffer)))
     (push annotation annotations)))
 
 (defun annotations ()
-  (nfiles:content (annotations-file (current-buffer))))
+  (files:content (annotations-file (current-buffer))))
 
 (define-command annotate-current-url (&optional (buffer-id (id (current-buffer))))
   "Create an annotation of the URL of buffer with BUFFER-ID."
@@ -112,7 +112,7 @@
     (&key (source-buffer-id (id (current-buffer))))
     (buffer "*Annotations*" 'base-mode)
   "Create a new buffer with the annotations of the current URL of BUFFER."
-  (let ((annotations (nfiles:content (annotations-file buffer))))
+  (let ((annotations (files:content (annotations-file buffer))))
     (let ((filtered-annotations (remove-if-not (lambda (i)
                                                  (url-equal (quri:uri (url i)) (url (buffers-get source-buffer-id))))
                                                annotations)))
@@ -120,7 +120,7 @@
 
 (define-class annotation-source (prompter:source)
   ((prompter:name "Annotations")
-   (prompter:constructor (nfiles:content (annotations-file (current-buffer))))
+   (prompter:constructor (files:content (annotations-file (current-buffer))))
    (prompter:multi-selection-p t)))
 
 (define-class annotation-tag-source (prompter:source)
@@ -136,7 +136,7 @@
       (prompter:fuzzy-match suggestion source (last-word input))))
    (prompter:multi-selection-p t)
    (prompter:constructor
-    (let ((annotations (nfiles:content (annotations-file (current-buffer)))))
+    (let ((annotations (files:content (annotations-file (current-buffer)))))
       (sort (remove-duplicates
              (apply #'append (mapcar #'tags annotations))
              :test #'string-equal)
@@ -156,5 +156,5 @@
 (define-internal-page-command-global show-annotations ()
     (buffer "*Annotations*" 'base-mode)
   "Show all annotations"
-  (let ((annotations (nfiles:content (annotations-file buffer))))
+  (let ((annotations (files:content (annotations-file buffer))))
     (render-annotations :annotations annotations)))

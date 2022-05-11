@@ -30,16 +30,16 @@ change the value of a setting. The settings will be applied immediately and
 saved for future sessions. Please note that these settings will not alter
 existing object instances.")
    (:p "Settings created by Nyxt are stored in "
-       (:code (nfiles:expand *auto-config-file*)) ".")
+       (:code (files:expand *auto-config-file*)) ".")
    (:p "Any settings can be overridden manually by "
-       (:code (nfiles:expand *init-file*)) ".")
+       (:code (files:expand *init-file*)) ".")
    (:p "The following section assumes knowledge of basic Common Lisp or a
 similar programming language.")
    (:p "The user needs to manually create the Nyxt configuration file "
-       (:code (nfiles:expand *init-file*))
+       (:code (files:expand *init-file*))
        ", and the parent folders if necessary. You can also press the button
 below to create said file, if it's not created yet.")
-   (let ((init-file-path (nfiles:expand *init-file*)))
+   (let ((init-file-path (files:expand *init-file*)))
      (:p (if (uiop:file-exists-p init-file-path)
              (:a :class "button"
                  :href (ps:ps (nyxt/ps:lisp-eval `(echo "Init file exists")))
@@ -310,18 +310,18 @@ say to develop Nyxt or extensions.")
        (:code "/tmp/nyxt") " and stores bookmark in an encrypted file:")
    (:pre (:code "
 \(define-class dev-profile (nyxt-profile)
-   ((nfiles:name :initform \"nyxt-dev\"))
+   ((files:name :initform \"nyxt-dev\"))
    (:documentation \"Development profile.\"))
 
 
-\(defmethod nfiles:resolve ((profile dev-profile) (path nyxt-file))
+\(defmethod files:resolve ((profile dev-profile) (path nyxt-file))
   \"Expand all data paths inside a temporary directory.\"
-  (serapeum:path-join (nfiles:expand (make-instance 'nyxt-temporary-directory))
+  (serapeum:path-join (files:expand (make-instance 'nyxt-temporary-directory))
                       (uiop:relativize-pathname-directory (call-next-method))))
 
 \(defmethod nyxt:resolve ((profile dev-profile) (file history-file))
   \"Persist history to default location.\"
-  (nfiles:resolve *global-profile* file))
+  (files:resolve *global-profile* file))
 
 ;; Make new profile the default:
 \(define-configuration buffer

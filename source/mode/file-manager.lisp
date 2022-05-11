@@ -109,10 +109,10 @@ When the user is unspecified, take the current one."
 (defmethod prompter:object-attributes ((path pathname))
   `(("Path" ,(uiop:native-namestring path))
     ("Name" ,(if (uiop:directory-pathname-p path)
-                 (enough-namestring path (nfiles:parent path))
+                 (enough-namestring path (files:parent path))
                  (pathname-name path)))
-    ("Extension" ,(or (nfiles:pathname-type* path) ""))
-    ("Directory" ,(uiop:native-namestring (nfiles:parent path)))))
+    ("Extension" ,(or (files:pathname-type* path) ""))
+    ("Directory" ,(uiop:native-namestring (files:parent path)))))
 
 (defun match-extension (ext)
   (lambda (pathname)
@@ -221,7 +221,7 @@ See `supported-media-types' of `file-mode'."
                (lambda-command rename-file* (files)
                  "Rename the first chosen file."
                  (let* ((file (first files))
-                        (name (nfiles:basename file)))
+                        (name (files:basename file)))
                    (rename-file file (prompt1
                                        :prompt (format nil "New name for ~a" name)
                                        :sources (list (make-instance 'prompter:raw-source))

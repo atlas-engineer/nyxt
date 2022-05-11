@@ -257,50 +257,50 @@ the renderer thread, use `defmethod' instead."
 
 (define-class data-manager-file (nyxt-file)
   ((context-name (error "Context name required."))
-   (nfiles:name "web-context"))
+   (files:name "web-context"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod nfiles:resolve :around ((profile nosave-profile) (file data-manager-file))
+(defmethod files:resolve :around ((profile nosave-profile) (file data-manager-file))
   "We shouldn't store any `data-manager' data for `nosave-profile'."
   #p"")
 
-(define-class data-manager-data-directory (nfiles:data-file data-manager-file)
+(define-class data-manager-data-directory (files:data-file data-manager-file)
   ()
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod nfiles:resolve ((profile nyxt-profile) (file data-manager-data-directory))
+(defmethod files:resolve ((profile nyxt-profile) (file data-manager-data-directory))
   (sera:path-join
    (call-next-method)
    (pathname (str:concat (context-name file) "-web-context/"))))
 
-(define-class data-manager-cache-directory (nfiles:cache-file data-manager-file)
+(define-class data-manager-cache-directory (files:cache-file data-manager-file)
   ()
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod nfiles:resolve ((profile nyxt-profile) (file data-manager-cache-directory))
+(defmethod files:resolve ((profile nyxt-profile) (file data-manager-cache-directory))
   (sera:path-join
    (call-next-method)
    (pathname (str:concat (context-name file) "-web-context/"))))
 
 (define-class gtk-extensions-directory (nyxt-file)
-  ((nfiles:name "gtk-extensions"))
+  ((files:name "gtk-extensions"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Directory where to load the 'libnyxt' library.
 By default it is found in the source directory."))
 
-(defmethod nfiles:resolve ((profile nyxt-profile) (file gtk-extensions-directory))
+(defmethod files:resolve ((profile nyxt-profile) (file gtk-extensions-directory))
   (asdf:system-relative-pathname :nyxt "libraries/web-extensions/"))
 
-(define-class cookies-file (nfiles:data-file data-manager-file)
-  ((nfiles:name "cookies"))
+(define-class cookies-file (files:data-file data-manager-file)
+  ((files:name "cookies"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod nfiles:resolve ((profile nyxt-profile) (file cookies-file))
+(defmethod files:resolve ((profile nyxt-profile) (file cookies-file))
   (sera:path-join
    (call-next-method)
    (pathname (str:concat (context-name file) "-cookies"))))
@@ -775,10 +775,10 @@ See `gtk-browser's `modifier-translator' slot."
                                 :website-data-manager
                                 (make-instance 'webkit-website-data-manager
                                                :base-data-directory (uiop:native-namestring
-                                                                     (nfiles:expand data-manager-data-directory))
+                                                                     (files:expand data-manager-data-directory))
                                                :base-cache-directory (uiop:native-namestring
-                                                                      (nfiles:expand data-manager-cache-directory)))))))
-         (gtk-extensions-path (nfiles:expand (make-instance 'gtk-extensions-directory)))
+                                                                      (files:expand data-manager-cache-directory)))))))
+         (gtk-extensions-path (files:expand (make-instance 'gtk-extensions-directory)))
          (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
     (webkit:webkit-web-context-add-path-to-sandbox
      context (namestring (asdf:system-relative-pathname :nyxt "libraries/web-extensions/")) t)
@@ -833,7 +833,7 @@ See `gtk-browser's `modifier-translator' slot."
      nyxt::*schemes*)
     (unless (or ephemeral-p
                 (internal-context-p name))
-      (let ((cookies-path (nfiles:expand (make-instance 'cookies-file :context-name name))))
+      (let ((cookies-path (files:expand (make-instance 'cookies-file :context-name name))))
         (webkit:webkit-cookie-manager-set-persistent-storage
          cookie-manager
          (uiop:native-namestring cookies-path)
@@ -1662,8 +1662,8 @@ local anyways, and it's better to refresh it if a load was queried."
             (* 100 (webkit:webkit-download-estimated-progress webkit-download))))
     (connect-signal download "decide-destination" nil (webkit-download suggested-file-name)
       (alex:when-let* ((download-dir (download-directory buffer))
-                       (download-directory (nfiles:expand download-dir))
-                       (native-download-directory (unless (nfiles:nil-pathname-p download-directory)
+                       (download-directory (files:expand download-dir))
+                       (native-download-directory (unless (files:nil-pathname-p download-directory)
                                                     (uiop:native-namestring download-directory)))
                        (path (str:concat native-download-directory suggested-file-name))
                        (unique-path (download-manager::ensure-unique-file path))

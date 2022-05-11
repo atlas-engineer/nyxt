@@ -3,9 +3,9 @@
 
 (in-package :nyxt)
 
-(define-class inputs-file (nfiles:data-file nyxt-lisp-file)
-  ((nfiles:base-path #p"inputs")
-   (nfiles:name "inputs"))
+(define-class inputs-file (files:data-file nyxt-lisp-file)
+  ((files:base-path #p"inputs")
+   (files:name "inputs"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
@@ -65,7 +65,7 @@
                                  collect (convert-string-to-keyword key)
                                  collect value)))
            (input-field-add (input-field) 
-             (nfiles:with-file-content (input-fields (inputs-file (current-buffer)))
+             (files:with-file-content (input-fields (inputs-file (current-buffer)))
                (push (make-instance 'input-entry :url (url (current-buffer))
                                                  :title (title (current-buffer))
                                                  :date (local-time:now)
@@ -100,14 +100,14 @@
 
 (define-class input-data-source (prompter:source)
   ((prompter:name "Inputs")
-   (prompter:constructor (nfiles:content (inputs-file (current-buffer))))))
+   (prompter:constructor (files:content (inputs-file (current-buffer))))))
 
 (define-class filtered-domain-input-data-source (prompter:source)
   ((prompter:name "Inputs")
    (prompter:constructor (remove-if-not #'(lambda (input-entry)
                                             (equal (quri:uri-domain (quri:uri (url input-entry)))
                                                    (quri:uri-domain (url (current-buffer)))))
-                                        (nfiles:content (inputs-file (current-buffer)))))))
+                                        (files:content (inputs-file (current-buffer)))))))
 
 (define-command set-input-data-from-saved 
     (&key (actions (list (lambda-command set-input-data* (suggestion-values)
@@ -132,4 +132,4 @@ the current buffer."
 
 (defun input-fields ()
   "List all input entries objects saved in the local file."
-  (nfiles:content (inputs-file (current-buffer))))
+  (files:content (inputs-file (current-buffer))))

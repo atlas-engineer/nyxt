@@ -268,7 +268,7 @@ prevents otherwise.")
     (let* ((message (princ-to-string condition))
            (full-message (format nil "Startup error: ~a.~%~&Restarted Nyxt without init file ~s."
                                  message
-                                 (nfiles:expand *init-file*)))
+                                 (files:expand *init-file*)))
            (new-command-line (append (uiop:raw-command-line-arguments)
                                      `("--no-init"
                                        "--eval"
@@ -302,12 +302,12 @@ prevents otherwise.")
        ;; We only `handler-case' when there is an init file, this way we avoid
        ;; looping indefinitely.
        (if (or (getf *options* :no-init)
-               (not (uiop:file-exists-p (nfiles:expand *init-file*))))
+               (not (uiop:file-exists-p (files:expand *init-file*))))
            (startup browser urls)
            (catch 'startup-error
              (handler-bind ((error (lambda (c)
                                      (log:error "Startup failed (probably due to a mistake in ~s):~&~a"
-                                                (nfiles:expand *init-file*) c)
+                                                (files:expand *init-file*) c)
                                      (throw 'startup-error
                                        (if *run-from-repl-p*
                                            (progn
@@ -326,7 +326,7 @@ prevents otherwise.")
              "Warning: We clear the previous owners here.
 After this, buffers from a previous session are permanently lost, they cannot be
 restored."
-             (nfiles:with-file-content (history (history-file buffer))
+             (files:with-file-content (history (history-file buffer))
                (when history
                  (clrhash (htree:owners history)))))
            (restore-session ()
@@ -396,12 +396,12 @@ Return the download object matching the download."
       (match (download-engine buffer)
         (:lisp
          (alex:when-let* ((path (download-directory buffer))
-                          (download-dir (nfiles:expand path)))
+                          (download-dir (files:expand path)))
            (when (eq proxy-url :auto)
              (setf proxy-url (proxy-url buffer :downloads-only t)))
            (let* ((download nil))
              (with-protect ("Download error: ~a" :condition)
-               (nfiles:with-file-content (downloads path)
+               (files:with-file-content (downloads path)
                  (setf download
                        (download-manager:resolve url
                                                  :directory download-dir
@@ -676,13 +676,13 @@ sometimes yields the wrong result."
   "Set the *standard-output* and *error-output* to write to a log file."
   (let ((buffer (current-buffer)))
     (values
-     (sera:and-let* ((path (nfiles:expand (standard-output-file buffer))))
+     (sera:and-let* ((path (files:expand (standard-output-file buffer))))
        (setf *standard-output*
              (open path
                    :direction :output
                    :if-does-not-exist :create
                    :if-exists :append)))
-     (sera:and-let* ((path (nfiles:expand (error-output-file buffer))))
+     (sera:and-let* ((path (files:expand (error-output-file buffer))))
        (setf *error-output*
              (open path
                    :direction :output

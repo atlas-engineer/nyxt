@@ -415,7 +415,7 @@ Return the created buffer."
                                                   'nyxt-file)))
                                     (mopu:slot-names 'buffer))))
     (dolist (file-slot-name file-slot-names)
-      (setf (nfiles:profile (slot-value buffer file-slot-name))
+      (setf (files:profile (slot-value buffer file-slot-name))
             (profile buffer))))
   (unless no-hook-p
     (hooks:run-hook (buffer-before-make-hook browser) buffer))
@@ -429,7 +429,7 @@ Return the created buffer."
     (buffers-set (id buffer) buffer))
   (unless no-history-p
     ;; Register buffer in global history:
-    (nfiles:with-file-content (history (history-file buffer)
+    (files:with-file-content (history (history-file buffer)
                                :default (make-history-tree buffer))
       ;; Owner may already exist if history was just created with the above
       ;; default value.
@@ -1007,7 +1007,7 @@ If URL is `:default', use `default-new-buffer-url'."
 (defun buffer-delete (buffer)
   "For dummy buffers, use `ffi-buffer-delete' instead."
   (hooks:run-hook (buffer-delete-hook buffer) buffer)
-  (nfiles:with-file-content (history (history-file buffer))
+  (files:with-file-content (history (history-file buffer))
     (sera:and-let* ((owner (htree:owner history (id buffer)))
                     (current (htree:current owner))
                     (data (htree:data current)))

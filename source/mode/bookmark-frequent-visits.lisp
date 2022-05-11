@@ -22,7 +22,7 @@ bookmarks. If this is the case, prompt the user about bookmarking it."
              already bookmarked or not."
              (let ((bookmark-url-strings
                      (mapcar #'(lambda (e) (render-url (url e)))
-                             (nfiles:content (bookmarks-file (current-buffer))))))
+                             (files:content (bookmarks-file (current-buffer))))))
                (find url-address bookmark-url-strings :test #'string=))))
     (sera:and-let* ((history-entries (let ((history (buffer-history)))
                                        (mapcar #'htree:data (alex:hash-table-keys (htree:entries history)))))

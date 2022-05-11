@@ -301,7 +301,7 @@ This does not save the history to disk."
 (defmacro with-history-access ((history-sym buffer) &body body)
   "Run body if BUFFER has history entries, that is, if it owns some nodes.
 This saves the history to disk when BODY exits."
-  `(nfiles:with-file-content (,history-sym (history-file (or ,buffer (current-buffer))))
+  `(files:with-file-content (,history-sym (history-file (or ,buffer (current-buffer))))
      (if (and ,history-sym
               (or (not ,buffer)
                   (htree:owner ,history-sym (id ,buffer))))

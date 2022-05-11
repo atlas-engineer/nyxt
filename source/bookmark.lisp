@@ -15,9 +15,9 @@
 ;;; - Un-explicitly-set class slots are exported if they have an initform;
 ;;;   removing the initform forces us to put lots of (slot-boundp ...).
 
-(define-class bookmarks-file (nfiles:data-file nyxt-lisp-file)
-  ((nfiles:base-path #p"bookmarks")
-   (nfiles:name "bookmarks"))
+(define-class bookmarks-file (files:data-file nyxt-lisp-file)
+  ((files:base-path #p"bookmarks")
+   (files:name "bookmarks"))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
@@ -50,7 +50,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
     t)
 (export-always 'bookmark-add)
 (defun bookmark-add (url &key date title tags)
-  (nfiles:with-file-content (bookmarks (bookmarks-file (current-buffer)))
+  (files:with-file-content (bookmarks (bookmarks-file (current-buffer)))
     (unless (or (url-empty-p url)
                 (string= "about:blank" (render-url url)))
       (multiple-value-bind (entries bookmarks-without-url)
@@ -71,12 +71,12 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 
 (define-class bookmark-source (prompter:source)
   ((prompter:name "Bookmarks")
-   (prompter:constructor (nfiles:content (bookmarks-file (current-buffer))))
+   (prompter:constructor (files:content (bookmarks-file (current-buffer))))
    (prompter:multi-selection-p t)
    (prompter:active-attributes-keys '("URL" "Title" "Tags"))))
 
 (defun tag-suggestions ()
-  (let ((bookmarks (nfiles:content (bookmarks-file (current-buffer)))))
+  (let ((bookmarks (files:content (bookmarks-file (current-buffer)))))
     ;; Warning: `sort' is destructive and `append' does not copy the last list,
     ;; so if we used `delete-duplicates' here it would have modified the last
     ;; list.
@@ -130,19 +130,19 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                 :padding-bottom "10px"))))
     (:body
      (:h1 "Bookmarks")
-     (or (let ((bookmarks (nfiles:content (bookmarks-file (current-buffer)))))
+     (or (let ((bookmarks (files:content (bookmarks-file (current-buffer)))))
            (loop for bookmark in bookmarks
                  collect
                  (let ((url-href (render-url (url bookmark))))
                    (:div
                     (:p (title bookmark))
                     (:p (:a :href url-href url-href))))))
-         (format nil "No bookmarks in ~s." (nfiles:expand (nfiles:content (bookmarks-file (current-buffer)))))))))
+         (format nil "No bookmarks in ~s." (files:expand (files:content (bookmarks-file (current-buffer)))))))))
 
 (export-always 'url-bookmark-tags)
 (defun url-bookmark-tags (url)
   "Return the list of tags of the bookmark corresponding to URL."
-  (let ((bookmarks (nfiles:content (bookmarks-file (current-buffer)))))
+  (let ((bookmarks (files:content (bookmarks-file (current-buffer)))))
     (alex:when-let ((existing (find url bookmarks :key #'url :test #'url-equal)))
       (tags existing))))
 
@@ -209,7 +209,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   "Delete bookmark(s) matching URLS-OR-BOOKMARK-ENTRIES.
 URLS is either a list or a single element."
   (if urls-or-bookmark-entries
-      (nfiles:with-file-content (bookmarks (bookmarks-file (current-buffer)))
+      (files:with-file-content (bookmarks (bookmarks-file (current-buffer)))
         (setf bookmarks
               (set-difference
                bookmarks
@@ -273,11 +273,11 @@ rest in background buffers."
           (write-string ")"))
         (write-string ")")))))
 
-(defmethod nfiles:serialize ((profile nyxt-profile) (file bookmarks-file) stream &key)
+(defmethod files:serialize ((profile nyxt-profile) (file bookmarks-file) stream &key)
   (let ((content
           ;; Sort the entries to make serialization reproducible.
           ;; Particularly useful when bookmarks are under version control.
-          (sort (nfiles:content file)
+          (sort (files:content file)
                 #'url< :key #'url)))
     (write-string "(" stream)
     (dolist (entry content)
@@ -286,9 +286,9 @@ rest in background buffers."
     (format stream "~%)~%")
     (echo "Saved ~a bookmarks to ~s."
           (length content)
-          (nfiles:expand file))))
+          (files:expand file))))
 
-(defmethod nfiles:deserialize ((profile nyxt-profile) (path bookmarks-file) raw-content &key)
+(defmethod files:deserialize ((profile nyxt-profile) (path bookmarks-file) raw-content &key)
   (let ((entries (read raw-content)))
     (mapcar (lambda (entry)
               (when (getf entry :url)

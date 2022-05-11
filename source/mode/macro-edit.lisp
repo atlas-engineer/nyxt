@@ -118,7 +118,7 @@
   (if (macro-form-valid-p macro-editor)
       (progn
         (nyxt::auto-configure :form (generate-macro-form macro-editor))
-        (echo "Saved macro to ~s." (nfiles:expand *auto-config-file*)))
+        (echo "Saved macro to ~s." (files:expand *auto-config-file*)))
       (echo "Macro form is invalid; check it has a title and functions.")))
 
 (define-command evaluate-macro (&optional (macro-editor (find-submode 'macro-edit-mode)))
