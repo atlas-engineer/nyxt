@@ -14,8 +14,8 @@ in your configuration file.
 
 Example:
 
-\(defmethod customize-instance ((buffer buffer) &key)
-  (nyxt/emacs-mode:emacs-mode :buffer buffer))"
+\(define-configuration buffer
+  ((default-modes (append '(emacs-mode) %slot-default%))))"
   ((glyph "ε")
    (rememberable-p nil)
    (previous-keymap-scheme-name nil

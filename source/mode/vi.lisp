@@ -15,8 +15,8 @@ in your configuration file.
 
 Example:
 
-\(defmethod customize-instance ((buffer buffer) &key)
-  (nyxt/vi-mode:vi-normal-mode :buffer buffer))
+\(define-configuration buffer
+  ((default-modes (append '(vi-normal-mode) %slot-default%))))
 
 In `vi-insert-mode', CUA bindings are still available unless
 `passthrough-mode-p' is non-nil in `vi-insert-mode'.
