@@ -349,7 +349,8 @@ A command is a special kind of function that can be called with
       (:h2 (format nil "Source~a: " (if source-file
                                         (format nil " (~a)" source-file)
                                         "")))
-      (:pre (:code (function-lambda-string command))))))
+      (alex:when-let ((code (ignore-errors (function-lambda-string command))))
+        (:pre (:code code))))))
 
 (define-internal-page-command-global describe-slot
     (&key class name universal)
