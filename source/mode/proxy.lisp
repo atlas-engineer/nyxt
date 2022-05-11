@@ -17,15 +17,14 @@ a proxy for all buffers, add it to the list of default modes.
 
 Example to use Tor as a proxy both for browsing and downloading:
 
-\(defmethod customize-instance ((mode nyxt/proxy-mode:proxy-mode) &key)
-  (setf (nyxt/proxy-mode:proxy mode)
-        (make-instance 'proxy
-                       :url (quri:uri \"socks5://localhost:9050\")
-                       :allowlist '(\"localhost\" \"localhost:8080\")
-                       :proxied-downloads-p t)))
+\(define-configuration nyxt/proxy-mode:proxy-mode
+  ((nyxt/proxy-mode:proxy (make-instance 'proxy
+                                         :url (quri:uri \"socks5://localhost:9050\")
+                                         :allowlist '(\"localhost\" \"localhost:8080\")
+                                         :proxied-downloads-p t))))
 
-\(defmethod customize-instance ((buffer buffer) &key)
-  (nyxt/proxy-mode:proxy-mode :buffer buffer))"
+\(define-configuration web-buffer
+  ((default-modes (append '(proxy-mode) %slot-default%))))"
   ((proxy (make-instance 'nyxt:proxy
                          :url (quri:uri "socks5://localhost:9050")
                          :allowlist '("localhost" "localhost:8080")

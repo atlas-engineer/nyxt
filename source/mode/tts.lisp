@@ -19,9 +19,9 @@ can be configured by changing the `selector` slot.
 
 Example:
 
-\(defmethod customize-instance ((mode nyxt/tts-mode:tts-mode) &key)
-   (setf (nyxt/tts-mode:executable mode) \"espeak\")
-   (setf (nyxt/tts-mode:selector mode) \"p, h1, h2, h3, h4, h5, h6\"))"
+\(define-configuration nyxt/tts-mode:tts-mode
+   ((nyxt/tts-mode:executable \"espeak\")
+    (nyxt/tts-mode:selector \"p, h1, h2, h3, h4, h5, h6\")))"
   ((executable nil
                :type (or string null)
                :documentation "The executable command to run.")
