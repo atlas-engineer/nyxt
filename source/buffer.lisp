@@ -589,9 +589,9 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
-(define-class editor-buffer (web-buffer)
-  ((file :documentation "The file being edited.")
-   (url (quri:uri "editor-buffer"))
+(define-class editor-buffer (focusable-buffer modable-buffer navigable-buffer input-buffer)
+  ((file :documentation "The file being edited.") ; TODO: Use `url' only?
+   (url (quri:uri ""))
    (title "editor-buffer"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
