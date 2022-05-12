@@ -1585,34 +1585,35 @@ local anyways, and it's better to refresh it if a load was queried."
   (:metaclass mixin-class))
 
 (define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) (script gtk-user-script))
-  (let* ((code (nfiles:content script))
-         (content-manager
-           (webkit:webkit-web-view-get-user-content-manager
-            (gtk-object buffer)))
-         (frames (if (nyxt/web-mode:all-frames-p script)
-                     :webkit-user-content-inject-all-frames
-                     :webkit-user-content-inject-top-frame))
-         (inject-time (if (eq :document-start (nyxt/web-mode:run-at script))
-                          :webkit-user-script-inject-at-document-start
-                          :webkit-user-script-inject-at-document-end))
-         (allow-list (list-of-string-to-foreign
-                      (if (nyxt/web-mode:include script)
-                          (nyxt/web-mode:include script)
-                          '("http://*/*" "https://*/*"))))
-         (block-list (list-of-string-to-foreign
-                      (if (nyxt/web-mode:exclude script)
-                          (nyxt/web-mode:exclude script)
-                          '("http://*/*" "https://*/*"))))
-         (user-script (if (nyxt/web-mode:world-name script)
-                          (webkit:webkit-user-script-new-for-world
-                           code frames inject-time
-                           (nyxt/web-mode:world-name script) allow-list block-list)
-                          (webkit:webkit-user-script-new
-                           code frames inject-time allow-list block-list))))
-    (setf (gtk-object script) user-script)
-    (webkit:webkit-user-content-manager-add-script
-     content-manager user-script)
-    script))
+  (alex:if-let ((code (nfiles:content script)))
+    (let* ((content-manager
+             (webkit:webkit-web-view-get-user-content-manager
+              (gtk-object buffer)))
+           (frames (if (nyxt/web-mode:all-frames-p script)
+                       :webkit-user-content-inject-all-frames
+                       :webkit-user-content-inject-top-frame))
+           (inject-time (if (eq :document-start (nyxt/web-mode:run-at script))
+                            :webkit-user-script-inject-at-document-start
+                            :webkit-user-script-inject-at-document-end))
+           (allow-list (list-of-string-to-foreign
+                        (if (nyxt/web-mode:include script)
+                            (nyxt/web-mode:include script)
+                            '("http://*/*" "https://*/*"))))
+           (block-list (list-of-string-to-foreign
+                        (if (nyxt/web-mode:exclude script)
+                            (nyxt/web-mode:exclude script)
+                            '("http://*/*" "https://*/*"))))
+           (user-script (if (nyxt/web-mode:world-name script)
+                            (webkit:webkit-user-script-new-for-world
+                             code frames inject-time
+                             (nyxt/web-mode:world-name script) allow-list block-list)
+                            (webkit:webkit-user-script-new
+                             code frames inject-time allow-list block-list))))
+      (setf (gtk-object script) user-script)
+      (webkit:webkit-user-content-manager-add-script
+       content-manager user-script)
+      script)
+    (echo-warning "User script ~a is empty." script)))
 
 (define-ffi-method ffi-buffer-remove-user-script ((buffer gtk-buffer) (script gtk-user-script))
   (let ((content-manager
