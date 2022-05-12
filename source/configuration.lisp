@@ -392,13 +392,16 @@ See `on'."
   "Like `function-lambda-expression' for the first value, but return a string.
 On failure, fall back to other means of finding the source.
 Return the lambda s-expression as a second value, if possible."
-  (alex:if-let ((expression (function-lambda-expression fun)))
+  (alex:if-let ((expression (when (functionp fun) (function-lambda-expression fun))))
     (values (let ((*print-case* :downcase)
                   (*print-pretty* t))
               (write-to-string expression))
             expression)
     (sera:and-let* ((definition (rest (swank:find-definition-for-thing fun)))
-                    (*package* (symbol-package (swank-backend:function-name fun)))
+                    (*package* (symbol-package (swank-backend:function-name
+                                                (if (functionp fun)
+                                                    fun
+                                                    (closer-mop:method-generic-function fun)))))
                     (file-content (alexandria:read-file-into-string (first (alexandria:assoc-value definition :file))))
                     (start-position (first (alexandria:assoc-value definition :position))))
       (restart-case
