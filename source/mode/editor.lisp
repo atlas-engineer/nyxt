@@ -56,7 +56,7 @@ get/set-content (which is necessary for operation)."
     (if (uiop:file-exists-p file)
         (set-content editor (uiop:read-file-string file))
         (set-content editor ""))
-    (echo "Editor buffer cannot open file without configured editor mode.")))
+    (echo "Editor buffer cannot open file without configured `editor-mode'.")))
 
 (define-command editor-open-file (&key (buffer (current-buffer)))
   "Open a file in the internal editor."
@@ -70,11 +70,11 @@ get/set-content (which is necessary for operation)."
                                      :actions '(identity))
                       (make-instance 'prompter:raw-source
                                      :name "New file")))))
-    (open-file-with-editor buffer file)
     ;; TODO: Maybe make `editor-mode' and `editor-buffer' pathname-friendly?
-    (setf (file buffer) (uiop:native-namestring file))
-    (setf (title buffer) (uiop:native-namestring file))
-    (setf (url buffer) (quri::make-uri-file :path (uiop:native-namestring file)))))
+    (let ((native-path (uiop:native-namestring file)))
+      (setf (title buffer) native-path)
+      (setf (url buffer) (quri::make-uri-file :path native-path)))
+    (open-file-with-editor buffer file)))
 
 (define-command editor-write-file (&key (buffer (current-buffer)) (if-exists :error))
   "Write the FILE of the BUFFER to storage."
