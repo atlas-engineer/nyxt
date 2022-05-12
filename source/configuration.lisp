@@ -3,7 +3,7 @@
 
 (in-package :nyxt)
 
-(define-class init-directory-file (nfiles:config-file nyxt-lisp-file)
+(define-class init-directory-file (nfiles:config-file nyxt-file)
   ((nfiles:base-path #p"")
    (command-line-option :init
                         :accessor nil
@@ -11,7 +11,7 @@
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class init-file (init-directory-file nfiles:virtual-file)
+(define-class init-file (init-directory-file nfiles:virtual-file nyxt-lisp-file)
   ((nfiles:base-path #p"init")
    (command-line-option :init
                         :accessor nil
@@ -35,7 +35,7 @@
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class auto-init-file (init-directory-file) ; TODO: Be consistent here for 3.0!
+(define-class auto-init-file (init-directory-file nyxt-lisp-file) ; TODO: Be consistent here for 3.0!
   ((nfiles:base-path #p"auto-config")
    (command-line-option :auto-config
                         :accessor nil
