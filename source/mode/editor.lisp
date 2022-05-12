@@ -88,6 +88,6 @@ get/set-content (which is necessary for operation)."
 
 (define-command-global open-new-editor-with-file ()
   "Open a new editor and query a file."
-  (let ((buffer (make-editor-buffer)))
+  (let ((buffer (make-instance 'editor-buffer :title "*Editor*")))
     (set-current-buffer buffer)
     (editor-open-file :buffer buffer)))
