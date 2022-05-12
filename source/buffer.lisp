@@ -1460,13 +1460,16 @@ any.")
   "Set the URL for the current buffer, completing with history."
   (let ((history (set-url-history *browser*))
         (actions (list (lambda-command buffer-load* (suggestion-values)
-                                     "Load first selected URL in current buffer and the rest in new buffer(s)."
-                                     (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
-                                     (buffer-load (url (first suggestion-values))))
-                       (lambda-command new-buffer-load (suggestion-values)
-                                     "Load URL(s) in new buffer(s)."
-                                     (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
-                                     (make-buffer-focus :url (url (first suggestion-values)))))))
+                         "Load first selected URL in current buffer and the rest in new buffer(s)."
+                         (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
+                         (buffer-load (url (first suggestion-values))))
+                       (lambda-command new-buffer-load* (suggestion-values)
+                         "Load URL(s) in new buffer(s)."
+                         (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
+                         (make-buffer-focus :url (url (first suggestion-values))))
+                       (lambda-command copy-url* (suggestions)
+                         "Copy the URL of the chosen suggestion."
+                         (trivial-clipboard:text (render-url (url (first suggestions))))))))
     (pushnew-url-history history (url (current-buffer)))
     (prompt
      :prompt "Open URL"
