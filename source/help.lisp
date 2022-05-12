@@ -421,7 +421,7 @@ A command is a special kind of function that can be called with
          (*print-case* :downcase))
     (spinneret:with-html-string
       (:style (style buffer))
-      (:h1 (symbol-name class))
+      (:h1 (symbol-name class) " (" (sera:class-name-of (find-class class)) ")")
       (:p (:raw (resolve-backtick-quote-links (documentation class 'type) class)))
       (when (mopu:direct-superclasses class)
         (:h2 "Direct superclasses:")
