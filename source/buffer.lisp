@@ -1012,12 +1012,6 @@ See `make-buffer' for a description of the arguments."
   (duplicate-buffer-with-current-modes :modes '(web-mode base-mode)
                                        :parent-buffer parent-buffer))
 
-(define-command make-editor-buffer (&key (title "") modes)
-  "Create a new editor buffer."
-  (make-buffer :title title
-               :extra-modes modes
-               :buffer-class 'editor-buffer))
-
 (-> add-to-recent-buffers (buffer) *)
 (defun add-to-recent-buffers (buffer)
   "Create a recent-buffer from given buffer and add it to `recent-buffers'."
