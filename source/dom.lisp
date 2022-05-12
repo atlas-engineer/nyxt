@@ -188,7 +188,7 @@ Relies (in the order of importance) on:
 FIXME: If none of those provides the unique selector, returns the most specific
 selector calculated."
   (let* ((tag-name (plump:tag-name element))
-         (id (plump:get-attribute element "id"))
+         (identifier (plump:get-attribute element "id"))
          (raw-classes (plump:get-attribute element "class"))
          (classes (when raw-classes (str:split " " raw-classes)))
          (parents (parents element))
@@ -202,7 +202,7 @@ selector calculated."
            (selreturn ()
              (return-from get-unique-selector selector)))
       ;; Id should be globally unique, so we check it first.
-      (when (and id (sera:single (clss:select (selconcat :sel "#" id)  root)))
+      (when (and identifier (sera:single (clss:select (selconcat :sel "#" identifier)  root)))
         (selreturn))
       ;; selconcat hack doesn't look nice here, but should work for cases of
       ;; both empty selector and ID selector.
