@@ -591,21 +591,6 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
-(define-class editor-buffer (focusable-buffer modable-buffer navigable-buffer input-buffer)
-  ((url (quri:uri ""))
-   (title "*Editor*"))
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:export-predicate-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name))
-  (:metaclass user-class)
-  (:documentation "Each editor buffer matches a file. Each editor buffer
-contains an `nyxt/editor-mode:editor-mode' instance (or a subclass thereof)."))
-
-(export-always 'file)
-(defmethod file ((buffer editor-buffer))
-  (uiop:parse-native-namestring (quri:uri-path (url buffer))))
-
 (define-class status-buffer (buffer)
   ((height
     24
