@@ -2,8 +2,9 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/editor-mode
-    (:use :common-lisp :nyxt)
+  (:use :common-lisp :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
+  (:import-from #:class-star #:define-class)
   (:documentation "Mode for editors."))
 (in-package :nyxt/editor-mode)
 
@@ -32,6 +33,24 @@ get/set-content (which is necessary for operation)."
                     (:body (:p "Please configure an editor mode to use an editor buffer."))))
          (insert-content (ps:ps (ps:chain document (write (ps:lisp content))))))
     (ffi-buffer-evaluate-javascript-async (buffer editor) insert-content)))
+
+(define-class editor-buffer (focusable-buffer modable-buffer navigable-buffer input-buffer)
+  ((nyxt:url (quri:uri ""))
+   (nyxt:title "*Editor*"))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
+  (:export-predicate-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:metaclass user-class)
+  (:documentation "Each editor buffer matches a file. Each editor buffer
+contains an `nyxt/editor-mode:editor-mode' instance (or a subclass thereof)."))
+
+(defmethod file ((buffer editor-buffer))
+  (uiop:parse-native-namestring (quri:uri-path (url buffer))))
+
+(defmethod nyxt:default-modes :around ((buffer editor-buffer))
+  ;; REVIEW: Really remove web-mode from editor-buffer?
+  (remove 'web-mode (call-next-method)))
 
 (defmethod editor ((editor-buffer editor-buffer))
   (find-submode 'editor-mode editor-buffer))
