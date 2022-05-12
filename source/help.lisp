@@ -251,7 +251,21 @@ For generic functions, describe all the methods."
   (if function
       (let ((input function)
             (*print-case* :downcase))
-        (flet ((method-desc (method)
+        (flet ((fun-desc (input)
+                 (spinneret:with-html-string
+                   (:raw (resolve-backtick-quote-links (documentation input 'function) input))
+                   (:h2 "Argument list")
+                   (:p (write-to-string (mopu:function-arglist input)))
+                   #+sbcl
+                   (unless (macro-function input)
+                     (:h2 "Type")
+                     (:p (format nil "~s" (sb-introspect:function-type input))))
+                   (alex:when-let* ((definition (swank:find-definition-for-thing (symbol-function input)))
+                                    (not-error-p (null (getf definition :error)))
+                                    (file (rest (getf definition :location))))
+                     (:h2 (format nil "Source ~a" file))
+                     (:pre (function-lambda-string (symbol-function input))))))
+               (method-desc (method)
                  (spinneret:with-html-string
                    (:h1 (format nil "~s" input) " "
                         (:raw (format
@@ -281,26 +295,16 @@ For generic functions, describe all the methods."
                 (:style (style buffer))
                 (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
                      (when (macro-function input) " (macro)"))
-                (:raw (resolve-backtick-quote-links (documentation input 'function) input))
-                (:raw (apply #'str:concat (mapcar #'method-desc
-                                                  (mopu:generic-function-methods
-                                                   (symbol-function input))))))
+                (:raw (apply #'str:concat
+                             (cons (fun-desc input)
+                                   (mapcar #'method-desc
+                                           (mopu:generic-function-methods
+                                            (symbol-function input)))))))
               (spinneret:with-html-string
                 (:style (style buffer))
                 (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
                      (when (macro-function input) " (macro)"))
-                (:raw (resolve-backtick-quote-links (documentation input 'function) input))
-                (:h2 "Argument list")
-                (:p (write-to-string (mopu:function-arglist input)))
-                #+sbcl
-                (unless (macro-function input)
-                  (:h2 "Type")
-                  (:p (format nil "~s" (sb-introspect:function-type input))))
-                (alex:when-let* ((definition (swank:find-definition-for-thing (symbol-function input)))
-                                 (not-error-p (null (getf definition :error)))
-                                 (file (rest (getf definition :location))))
-                  (:h2 (format nil "Source ~a" file))
-                  (:pre (function-lambda-string (symbol-function input))))))))
+                (:raw (fun-desc input))))))
       (prompt
        :prompt "Describe function"
        :sources (make-instance 'function-source))))
