@@ -267,39 +267,43 @@ For generic functions, describe all the methods."
                      (:pre (function-lambda-string (symbol-function input))))))
                (method-desc (method)
                  (spinneret:with-html-string
-                   (:h1 (format nil "~s" input) " "
-                        (:raw (format
-                               nil "(~{~a~^ ~})"
-                               (mapcar (lambda (class)
-                                         (cond
-                                           ((ignore-errors (mopu:subclassp class 'standard-object))
-                                            (spinneret:with-html-string
-                                              (:a :href (nyxt-url 'describe-class
-                                                                  :class (class-name class))
-                                                  (write-to-string (class-name class)))))
-                                           ((ignore-errors (eq t (class-name class)))
-                                            "t")
-                                           (t (nyxt::escaped-literal-print class))))
-                                       (mopu:method-specializers method)))))
-                   (:raw (resolve-backtick-quote-links (documentation method 't)
-                                                       (mopu:method-name method)))
-                   (:h2 "Argument list")
-                   (:p (write-to-string (closer-mop:method-lambda-list method)))
-                   (alex:when-let* ((definition (swank:find-definition-for-thing method))
-                                    (not-error-p (null (getf definition :error)))
-                                    (file (rest (getf definition :location))))
-                     (:h2 (format nil "Source ~a" file))
-                     (:pre (function-lambda-string method))))))
+                   (:details
+                    (:summary
+                     (:h3 :style "display: inline"
+                      (format nil "~s" input) " "
+                          (:raw (format
+                                 nil "(~{~a~^ ~})"
+                                 (mapcar (lambda (class)
+                                           (cond
+                                             ((ignore-errors (mopu:subclassp class 'standard-object))
+                                              (spinneret:with-html-string
+                                                (:a :href (nyxt-url 'describe-class
+                                                                    :class (class-name class))
+                                                    (write-to-string (class-name class)))))
+                                             ((ignore-errors (eq t (class-name class)))
+                                              "t")
+                                             (t (nyxt::escaped-literal-print class))))
+                                         (mopu:method-specializers method))))))
+                    (:raw (resolve-backtick-quote-links (documentation method 't)
+                                                        (mopu:method-name method)))
+                    (:h4 "Argument list")
+                    (:p (write-to-string (closer-mop:method-lambda-list method)))
+                    (alex:when-let* ((definition (swank:find-definition-for-thing method))
+                                     (not-error-p (null (getf definition :error)))
+                                     (file (rest (getf definition :location))))
+                      (:h2 (format nil "Source ~a" file))
+                      (:pre (function-lambda-string method)))))))
           (if (typep (symbol-function input) 'generic-function)
               (spinneret:with-html-string
                 (:style (style buffer))
                 (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
                      (when (macro-function input) " (macro)"))
+                (:raw (fun-desc input))
+                (:h2 "Methods")
                 (:raw (apply #'str:concat
-                             (cons (fun-desc input)
-                                   (mapcar #'method-desc
-                                           (mopu:generic-function-methods
-                                            (symbol-function input)))))))
+                             (mapcar #'method-desc
+                                     (mopu:generic-function-methods
+                                      (symbol-function input))))))
               (spinneret:with-html-string
                 (:style (style buffer))
                 (:h1 (format nil "~s" input) ; Use FORMAT to keep package prefix.
