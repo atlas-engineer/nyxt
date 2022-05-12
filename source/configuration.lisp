@@ -3,7 +3,7 @@
 
 (in-package :nyxt)
 
-(define-class config-directory-file (files:config-file nyxt-lisp-file)
+(define-class config-directory-file (files:config-file nyxt-file)
   ((files:base-path #p"")
    (command-line-option :config
                         :accessor nil
@@ -11,7 +11,7 @@
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class config-file (config-directory-file files:virtual-file)
+(define-class config-file (config-directory-file files:virtual-file nyxt-lisp-file)
   ((files:base-path #p"config")
    (command-line-option :config
                         :accessor nil
@@ -35,7 +35,7 @@
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class auto-config-file (config-directory-file)
+(define-class auto-config-file (config-directory-file nyxt-lisp-file)
   ((files:base-path #p"auto-config")
    (command-line-option :auto-config
                         :accessor nil
