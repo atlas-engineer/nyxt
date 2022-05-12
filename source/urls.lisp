@@ -185,7 +185,7 @@ Public Suffix list, T otherwise."
 
 (export-always 'valid-scheme-p)
 (defun valid-scheme-p (scheme)
-  (let* ((nyxt-schemes (cons "javascript" (alex:hash-table-keys *schemes*)))
+  (let* ((nyxt-schemes (cons "blob" "javascript" (alex:hash-table-keys *schemes*)))
          ;; List of URI schemes: https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
          ;; Last updated 2020-08-26.
          (iana-schemes
