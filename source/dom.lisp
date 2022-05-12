@@ -167,6 +167,63 @@ JSON should have the format like what `get-document-body-json' produces:
       (json-to-plump json root)
       (name-dom-elements root))))
 
+(export-always 'parents)
+(defgeneric parents (node)
+  (:method ((node plump:node)) nil)
+  (:method ((node plump:child-node))
+    (let ((parent (plump:parent node)))
+      (cons parent (parents parent))))
+  (:documentation "Get the recursive parents of the NODE.
+The closest parent goes first, the furthest one goes last."))
+
+(export-always 'get-unique-selector)
+(defmethod get-unique-selector ((element plump:element))
+  "Find the shortest selector that uniquely identifies the element on a page.
+Relies (in the order of importance) on:
+- ID.
+- Tag name.
+- CSS Classes.
+- Parent node selectors (recursively).
+
+FIXME: If none of those provides the unique selector, returns the most specific
+selector calculated."
+  (let* ((tag-name (plump:tag-name element))
+         (id (plump:get-attribute element "id"))
+         (raw-classes (plump:get-attribute element "class"))
+         (classes (when raw-classes (str:split " " raw-classes)))
+         (parents (parents element))
+         ;; Is it guaranteed that the topmost ancestor of a node is
+         ;; `plump:root'? Anyway, it should work even if there's a single
+         ;; `plump:element' as a root.
+         (root (alex:lastcar parents))
+         (selector ""))
+    (flet ((selconcat (&rest strings)
+             (setf selector (apply #'str:concat (subst selector :sel strings))))
+           (selreturn ()
+             (return-from get-unique-selector selector)))
+      ;; Id should be globally unique, so we check it first.
+      (when (and id (sera:single (clss:select (selconcat :sel "#" id)  root)))
+        (selreturn))
+      ;; selconcat hack doesn't look nice here, but should work for cases of
+      ;; both empty selector and ID selector.
+      (when (sera:single (clss:select (selconcat tag-name :sel) root))
+        (selreturn))
+      (when classes
+        (some (lambda (class)
+                (when (sera:single (clss:select (selconcat :sel "." class) root))
+                  (selreturn)))
+              classes))
+      (when (and parents
+                 (sera:single
+                  (clss:select
+                      (selconcat (get-unique-selector (first parents)) " > " :sel) root)))
+        (selreturn))
+      ;; FIXME: What if the parents are globally unique and the node is not
+      ;; unique at all?
+      ;;
+      ;; TODO: Need to check the siblings, attributes and children of the node.
+      (selreturn))))
+
 (defmethod url :around ((element plump:element))
   (alex:when-let* ((result (call-next-method))
                    (url (nyxt::ensure-url result)))
