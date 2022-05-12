@@ -9,7 +9,10 @@
 
 Reserved for `define-configuration'.
 
-Prefer `define-configuration' and `customize-instance' instead.")))
+Prefer `define-configuration' and `customize-instance' instead."))
+  (:documentation "Classes using this metaclass will call `customize-instance'
+on instantiation.
+This is useful to expose a class configuration knob to the user."))
 (export-always 'user-class)
 
 (defmethod closer-mop:validate-superclass ((class user-class)
