@@ -869,8 +869,8 @@ when `proxied-downloads-p' is true."
       (url proxy))))
 
 (defun load-failed-p (buffer)
-  "Only web-buffer loads can fail."
-  (and (web-buffer-p buffer)
+  "Only `network-buffer' loads can fail."
+  (and (network-buffer-p buffer)
        (eq (slot-value buffer 'status) :failed)))
 
 (export-always 'on-signal-notify-uri)
@@ -1124,7 +1124,7 @@ proceeding."
   (setf %buffer nil)
   (set-window-title window)
   (print-status nil window)
-  (when (and (web-buffer-p buffer)
+  (when (and (network-buffer-p buffer)
              (eq (slot-value buffer 'status) :unloaded))
     (reload-buffers (list buffer))))
 
