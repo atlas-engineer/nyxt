@@ -29,11 +29,11 @@ behaviour of some CLASS instance.
 This method is run after the instance has been initialized (in particular, after
 the `initialize-instance' :after method).
 
-The standard method is meant to be used by users only.
+The standard method is reserved for user configuration.
 
-Don't use it in public code, prefer `initialize-instance :after' instead to
-initialize slots, and `customize-instance :after' for code that relies on
-finalized slot values.."))
+Do not specialize the standard method in public code, prefer
+`initialize-instance :after' instead to initialize slots, and
+`customize-instance :after' for code that relies on finalized slot values."))
 
 (defmethod make-instance :around ((class user-class) &rest initargs &key &allow-other-keys)
   (sera:lret ((initialized-object (call-next-method)))
