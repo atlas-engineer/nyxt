@@ -350,6 +350,20 @@ the " (:code "define-configuration") " macro.")
 class slots for 'style'.  To customize the status area, see
 the " (:code "status-formatter") " window slot.")
 
+   (:h3 "Advanced configuration")
+   (:p "While " (:code "define-configuration") " is convenient, it is mostly
+restricted to class slot configuration.  If you want to do anything else on
+class instantiation, you'll have to specialize the
+lower-level " (:code "customize-instance") " generic function.  Example:"
+        (:pre (:code "
+\(defmethod customize-instance ((buffer buffer) &key)
+  (echo \"Buffer ~a created.\" buffer))")))
+   (:p "All classes with metaclass " (:code "user-class") " call "
+        (:code "customize-instance") " on instantiation,
+after " (:code "initialize-instance :after") ".  The primary method is reserved
+to the user, however the " (:code ":after") " method is reserved to the Nyxt
+core to finalize the instance.")
+
    (:h3 "Scripting")
    (:p "You can evaluate code from the command line with "
        (:code "--eval") " and " (:code "--load") ".  From a shell:")
