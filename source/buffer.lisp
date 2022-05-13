@@ -92,7 +92,7 @@ various parts, such as the path of all data files.")
        :background-color theme:primary
        :color theme:background
        :text-align "left")))
-   (buffer-delete-hook
+   (buffer-delete-hook                  ; TODO: Should we move this to `context-buffer'?
     (make-instance 'hook-buffer)
     :type hook-buffer
     :documentation "Hook run before `buffer-delete' takes effect.
@@ -1022,18 +1022,19 @@ See `make-buffer' for a description of the arguments."
   (containers:delete-item-if (recent-buffers *browser*) (buffer-match-predicate buffer))
   (containers:insert-item (recent-buffers *browser*) buffer))
 
-(-> buffer-delete (buffer) *)
-(defun buffer-delete (buffer)
-  "For dummy buffers, use `ffi-buffer-delete' instead."
+
+(defmethod buffer-delete ((buffer buffer))
   (hooks:run-hook (buffer-delete-hook buffer) buffer)
-  (when (context-buffer-p buffer)
-    (nfiles:with-file-content (history (history-file buffer))
-      (sera:and-let* ((owner (htree:owner history (id buffer)))
-                      (current (htree:current owner))
-                      (data (htree:data current)))
-        (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer))
-        (htree:delete-owner history (id buffer)))))
   (ffi-buffer-delete buffer))
+
+(defmethod buffer-delete ((buffer context-buffer))
+  (nfiles:with-file-content (history (history-file buffer))
+    (sera:and-let* ((owner (htree:owner history (id buffer)))
+                    (current (htree:current owner))
+                    (data (htree:data current)))
+      (setf (nyxt::scroll-position data) (nyxt:document-scroll-position buffer))
+      (htree:delete-owner history (id buffer))))
+  (call-next-method))
 
 (defun buffer-hide (buffer)
   "Stop showing the buffer in Nyxt.
