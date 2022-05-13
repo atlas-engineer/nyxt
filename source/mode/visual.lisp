@@ -8,9 +8,14 @@
 (in-package :nyxt/visual-mode)
 (use-nyxt-package-nicknames)
 
-(define-mode visual-mode ()
+(define-mode visual-mode (nyxt/element-hint-mode:element-hint-mode)
   "Visual mode. For documentation on commands and keybindings, see the manual."
   ((rememberable-p nil)
+   (nyxt/element-hint-mode:hints-selector
+    "a, b, p, del, h1, h2, h3, h4, h5, h6, i, option,
+strong, sub, sup, listing, xmp, plaintext, basefont, big, blink, center, font,
+marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
+    :type string)
    (keymap-scheme
     (define-scheme "visual"
       scheme:cua
@@ -135,9 +140,8 @@
   "Add hints to text elements on the page and query them."
   (nyxt/element-hint-mode:query-hints "Set caret on element"
                (lambda (results) (%follow-hint (first results)))
-               :selector "a, b, p, del, h1, h2, h3, h4, h5, h6, i, option,
-strong, sub, sup, listing, xmp, plaintext, basefont, big, blink, center, font,
-marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"))
+               :selector (nyxt/element-hint-mode:hints-selector
+                          (find-submode 'visual-mode))))
 
 (define-parenscript collapsed-p ()
   "Return T if mark's start and end are the same value, nil otherwise."
