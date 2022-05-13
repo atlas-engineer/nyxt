@@ -1,7 +1,35 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt/web-mode)
+(uiop:define-package :nyxt/search-buffer-mode
+  (:use :common-lisp :nyxt)
+  (:import-from #:keymap #:define-key #:define-scheme)
+  (:import-from #:class-star #:define-class)
+  (:import-from #:serapeum
+                #:export-always
+                #:->)
+  (:documentation "Mode for element hints."))
+(in-package :nyxt/search-buffer-mode)
+
+(define-mode search-buffer-mode (nyxt/element-hint-mode:element-hint-mode)
+  "Mode for searching text withing."
+  ((rememberable-p nil)
+   (keymap-scheme
+    (define-scheme "web"
+      scheme:cua
+      (list
+       "C-f" 'search-buffer
+       "f3" 'search-buffer
+       "M-f" 'remove-search-hints)
+      scheme:emacs
+      (list
+       "C-s s" 'search-buffer
+       "C-s k" 'remove-search-hints)
+
+      scheme:vi-normal
+      (list
+       "/" 'search-buffer
+       "?" 'remove-search-hints)))))
 
 (define-parenscript query-buffer (&key query (case-sensitive-p nil))
   (defvar *identifier* 0)
@@ -13,8 +41,8 @@
     (unless (nyxt/ps:qs document "#nyxt-stylesheet")
       (ps:try
        (ps:let* ((style-element (ps:chain document (create-element "style")))
-                 (box-style (ps:lisp (box-style (find-submode 'web-mode))))
-                 (highlighted-style (ps:lisp (highlighted-box-style (find-submode 'web-mode)))))
+                 (box-style (ps:lisp (nyxt/element-hint-mode:box-style (find-submode 'search-buffer-mode))))
+                 (highlighted-style (ps:lisp (nyxt/element-hint-mode:highlighted-box-style (find-submode 'search-buffer-mode)))))
          (setf (ps:@ style-element id) "nyxt-stylesheet")
          (ps:chain document head (append-child style-element))
          (ps:chain style-element sheet (insert-rule box-style 0))
@@ -35,9 +63,9 @@
     "Return the substring and preceding/trailing text for a given
      index."
     (let* ((character-preview-count 40))
-           (ps:chain string
-                     (substring (- index character-preview-count)
-                                (+ index (length query) character-preview-count)))))
+      (ps:chain string
+                (substring (- index character-preview-count)
+                           (+ index (length query) character-preview-count)))))
 
   (defun get-substring-indices (query string)
     "Get the indices of all matching substrings."
