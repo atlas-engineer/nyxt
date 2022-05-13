@@ -290,7 +290,7 @@ inherited from the superclasses."))
                      ;; Mode at the beginning of the list have higher priorities.
                      :from-end t))
 
-(define-class focusable-buffer (buffer)     ; TODO: Name it `main-buffer'?
+(define-class context-buffer (buffer)
   ((document-model-delta-threshold
     10
     :documentation "Update the document model when the amount of elements on the
@@ -413,8 +413,15 @@ to procrastination that should be blocked.")
   (:export-predicate-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class)
-  (:documentation "A buffer that can be focused and which focus can influence
-the behaviour of the window."))
+  (:documentation "A buffer which focus sets the current context, that is, the
+buffer-specific values of various settings like the various file paths, promp
+options, download options, etc.
+
+Every setting that can be buffer-specific should be stored here; settings that
+only make sense globally should be stored in `browser' instead.
+
+It's similar to the \"private window\" in popular browser, but the scope here is
+the buffer (which gives us more flexibility)."))
 
 (define-class network-buffer (buffer)
   ((status
@@ -505,7 +512,7 @@ Example:
   (:metaclass user-class)
   (:documentation "Buffers that must interact with resources over the network."))
 
-(define-class web-buffer (focusable-buffer network-buffer modable-buffer document-buffer input-buffer)
+(define-class web-buffer (context-buffer network-buffer modable-buffer document-buffer input-buffer)
   ((keywords
     nil
     :accessor nil
@@ -546,7 +553,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:metaclass user-class)
   (:documentation "Like `web-buffer', but don't persist data to disk."))
 
-(define-class panel-buffer (focusable-buffer input-buffer modable-buffer document-buffer)
+(define-class panel-buffer (context-buffer input-buffer modable-buffer document-buffer)
   ((width 250 :documentation "The width in pixels.")
    (style (theme:themed-css (theme *browser*)
             (body
@@ -721,7 +728,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
-;; TODO: Split this function to a specialization against `focusable-buffer'?
+;; TODO: Split this function to a specialization against `context-buffer'?
 (defmethod customize-instance :after ((buffer buffer)
                                       &key (browser *browser*)
                                         no-hook-p
@@ -742,7 +749,7 @@ Return the created buffer."
   ;; Background buffers are invisible to the browser.
   buffer)
 
-(defmethod customize-instance :after ((buffer focusable-buffer)
+(defmethod customize-instance :after ((buffer context-buffer)
                                       &key parent-buffer no-history-p
                                       &allow-other-keys)
   "Finalize buffer.
@@ -1011,7 +1018,7 @@ See `make-buffer' for a description of the arguments."
 (defun buffer-delete (buffer)
   "For dummy buffers, use `ffi-buffer-delete' instead."
   (hooks:run-hook (buffer-delete-hook buffer) buffer)
-  (when (focusable-buffer-p buffer)
+  (when (context-buffer-p buffer)
     (files:with-file-content (history (history-file buffer))
       (sera:and-let* ((owner (htree:owner history (id buffer)))
                       (current (htree:current owner))
@@ -1070,7 +1077,7 @@ proceeding."
   ;; When not focusing, that is, when previewing we don't update the
   ;; `last-access' so as to not disturb the ordering.
   (when (and focus
-             (focusable-buffer-p (active-buffer window)))
+             (context-buffer-p (active-buffer window)))
     ;; The current buffer last-access time is set to now to ensure it becomes the
     ;; second newest buffer.  If we didn't update the access time, the buffer
     ;; last-access time could be older than, say, buffers opened in the
@@ -1100,7 +1107,7 @@ proceeding."
               (ffi-window-set-buffer window buffer :focus focus)
               (setf (active-buffer window) buffer)))))
   (when (and focus
-             (focusable-buffer-p buffer))
+             (context-buffer-p buffer))
     (setf (last-access buffer) (local-time:now)))
   ;; So that `current-buffer' returns the new value if buffer was
   ;; switched inside a `with-current-buffer':

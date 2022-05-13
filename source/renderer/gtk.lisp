@@ -330,7 +330,7 @@ By default it is found in the source directory."))
                  :web-context (get-context *browser* +internal+
                                            :ephemeral-p t)))
 
-(defmethod make-web-view ((profile nyxt-profile) (buffer focusable-buffer))
+(defmethod make-web-view ((profile nyxt-profile) (buffer context-buffer))
   "Return a regular web view instance for buffers with context."
   (declare (ignorable profile))
   (make-instance 'webkit:webkit-web-view
@@ -1459,7 +1459,7 @@ See `finalize-buffer'."
     (declare (ignore web-view))
     (toggle-fullscreen :skip-renderer-resize t)
     nil)
-  (when (focusable-buffer-p buffer)
+  (when (context-buffer-p buffer)
     (connect-signal buffer "user-message-received" nil (view message)
       (declare (ignorable view))
       (g:g-object-ref (g:pointer message))
