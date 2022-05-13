@@ -188,7 +188,33 @@ forwarded when no binding is found.")
   (:documentation "A buffer in which the user can input."))
 
 (define-class document-buffer (buffer)
-  ((scroll-distance
+  ((document-model-delta-threshold
+    10
+    :documentation "Update the document model when the amount of elements on the
+    page change greater than this amount."
+    :export nil)
+   (document-model
+    nil
+    :reader nil                         ; We use a custom reader.
+    :writer t
+    :export t
+    :type (or null plump:node)
+    :documentation "A parsed representation of the page currently opened.
+Created from the page code with the help of `plump:parse'. See `update-document-model'.")
+   (search-auto-complete-p
+    t
+    :type boolean
+    :documentation "Whether search suggestions are requested and displayed.")
+   (search-always-auto-complete-p
+    t
+    :type boolean
+    :documentation "Whether auto-completion works even for non-prefixed search.
+Auto-completions come from the default search engine.")
+   (keep-search-hints-p
+    t
+    :type boolean
+    :documentation "Whether to keep search hints when the search prompt for the `search-buffer' command is closed.")
+   (scroll-distance
     50
     :type integer
     :documentation "The distance scroll-down or scroll-up will scroll.")
@@ -291,36 +317,10 @@ inherited from the superclasses."))
                      :from-end t))
 
 (define-class context-buffer (buffer)
-  ((document-model-delta-threshold
-    10
-    :documentation "Update the document model when the amount of elements on the
-    page change greater than this amount."
-    :export nil)
-   (document-model
-    nil
-    :reader nil                         ; We use a custom reader.
-    :writer t
-    :export t
-    :type (or null plump:node)
-    :documentation "A parsed representation of the page currently opened.
-Created from the page code with the help of `plump:parse'. See `update-document-model'.")
-   (last-access
+  ((last-access
     (local-time:now)
     :export nil
     :documentation "Timestamp when the buffer was last switched to.")
-   (search-auto-complete-p
-    t
-    :type boolean
-    :documentation "Whether search suggestions are requested and displayed.")
-   (search-always-auto-complete-p
-    t
-    :type boolean
-    :documentation "Whether auto-completion works even for non-prefixed search.
-Auto-completions come from the default search engine.")
-   (keep-search-hints-p
-    t
-    :type boolean
-    :documentation "Whether to keep search hints when the search prompt for the `search-buffer' command is closed.")
    (search-engines
     (list (make-instance 'search-engine
                          :shortcut "wiki"
