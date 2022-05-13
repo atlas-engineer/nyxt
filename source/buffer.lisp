@@ -133,6 +133,12 @@ after the mode-specific hook."))
   (:metaclass user-class)
   (:documentation "A buffer which behaviour can be modified with `mode's."))
 
+(defmethod modes ((buffer buffer))
+  "Non-modable buffers never have modes.
+This specialization is useful to be able to call the method regardless of the
+buffer, with a meaningful result."
+  '())
+
 (define-class input-buffer (buffer)
   ((keymap-scheme-name
     scheme:cua
