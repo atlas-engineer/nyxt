@@ -218,10 +218,7 @@ define which elements are picked up by element hinting.")
 (serapeum:export-always 'query-hints)
 (defun query-hints (prompt function
                     &key (multi-selection-p t)
-                         (selector
-                             (alex:if-let ((mode (find-submode 'element-hint-mode)))
-                               (hints-selector mode)
-                               "a, button, input, textarea, details, select, img:not([alt=\"\"])")))
+                      (selector (hints-selector (find-submode 'element-hint-mode))))
   "Prompt for elements matching SELECTOR, hinting them visually.
 MULTI-SELECTION-P defines whether several elements can be chosen.
 PROMPT is a text to show while prompting for hinted elements.
