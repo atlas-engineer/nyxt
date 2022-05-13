@@ -313,7 +313,8 @@ This is useful when there is no current buffer.")
      (list
       ;; TODO: No need for `resolve-symbol' if we move `document-buffer' declaration in a separate file, loaded after modes.
       (resolve-symbol :history-mode :mode)
-      (resolve-symbol :element-hint-mode :mode))
+      (resolve-symbol :element-hint-mode :mode)
+      (resolve-symbol :search-buffer-mode :mode))
      %default-modes))
   (:documentation "The symbols of the modes to instantiate on buffer creation.
 The mode instances are stored in the `modes' BUFFER slot.

@@ -19,6 +19,22 @@
     nil
     :type boolean
     :documentation "Whether the hints are automatically followed when matching user input.")
+   (box-style (theme:themed-css (theme *browser*)
+                (".nyxt-hint"
+                 :background-color theme:primary
+                 :opacity 0.8
+                 :color "white"
+                 :font-weight "bold"
+                 :padding "0px 3px 0px 3px"
+                 :border-radius "2px"
+                 :z-index #.(1- (expt 2 31))))
+              :documentation "The style of the boxes, e.g. link hints.")
+   (highlighted-box-style (theme:themed-css (theme *browser*)
+                            (".nyxt-hint.nyxt-highlight-hint"
+                             :background-color theme:accent
+                             :color theme:background))
+                          :documentation "The style of highlighted boxes, e.g. link hints.")
+
    (hints-alphabet "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                    :type string
                    :documentation "The alphabet (charset) to use for hints.
@@ -64,8 +80,8 @@ define which elements are picked up by element hinting.")
   (unless (nyxt/ps:qs document "#nyxt-stylesheet")
     (ps:try
      (ps:let* ((style-element (ps:chain document (create-element "style")))
-               (box-style (ps:lisp (nyxt/web-mode:box-style (find-submode 'nyxt/web-mode:web-mode))))
-               (highlighted-style (ps:lisp (nyxt/web-mode:highlighted-box-style (find-submode 'nyxt/web-mode:web-mode)))))
+               (box-style (ps:lisp (box-style (find-submode 'nyxt/element-hint-mode:element-hint-mode))))
+               (highlighted-style (ps:lisp (highlighted-box-style (find-submode 'nyxt/element-hint-mode:element-hint-mode)))))
        (setf (ps:@ style-element id) "nyxt-stylesheet")
        (ps:chain document head (append-child style-element))
        (ps:chain style-element sheet (insert-rule box-style 0))

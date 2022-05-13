@@ -22,21 +22,6 @@
 (define-mode web-mode ()
   "Base mode for interacting with documents."
   ((rememberable-p nil)
-   (box-style (theme:themed-css (theme *browser*)
-                (".nyxt-hint"
-                 :background-color theme:primary
-                 :opacity 0.8
-                 :color "white"
-                 :font-weight "bold"
-                 :padding "0px 3px 0px 3px"
-                 :border-radius "2px"
-                 :z-index #.(1- (expt 2 31))))
-              :documentation "The style of the boxes, e.g. link hints.")
-   (highlighted-box-style (theme:themed-css (theme *browser*)
-                            (".nyxt-hint.nyxt-highlight-hint"
-                             :background-color theme:accent
-                             :color theme:background))
-                          :documentation "The style of highlighted boxes, e.g. link hints.")
    (keymap-scheme
     (define-scheme "web"
       scheme:cua
@@ -56,9 +41,6 @@
        "C-button4" 'zoom-page
        "C-button5" 'unzoom-page
        "C-M-c" 'open-inspector
-       "C-f" 'search-buffer
-       "f3" 'search-buffer
-       "M-f" 'remove-search-hints
        "C-." 'jump-to-heading
        "M-{" 'previous-heading
        "M-}" 'next-heading
@@ -95,8 +77,6 @@
        "C-x C-=" 'zoom-page ; Because + shifted = on QWERTY.
        "C-x C-hyphen" 'unzoom-page
        "C-x C-0" 'reset-page-zoom
-       "C-s s" 'search-buffer
-       "C-s k" 'remove-search-hints
        "C-." 'jump-to-heading
        "M->" 'scroll-to-bottom
        "M-<" 'scroll-to-top
@@ -121,8 +101,6 @@
        "g H" 'jump-to-heading-buffers
        "{" 'previous-heading
        "}" 'next-heading
-       "/" 'search-buffer
-       "?" 'remove-search-hints
        "h" 'scroll-left
        "j" 'scroll-down
        "k" 'scroll-up
