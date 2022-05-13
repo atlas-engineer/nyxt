@@ -323,26 +323,33 @@ By default it is found in the source directory."))
     (error 'nyxt-web-context-condition :context web-context
                                        :message "Tried to make an ephemeral web-view in a non-ephemeral context")))
 
-(defun make-web-view (&key buffer ephemeral-p)
-  "Return a web view instance.
+(defmethod make-web-view ((profile nyxt-profile) (buffer t))
+  "Return an ephemeral web view instance for basic buffers."
+  (declare (ignorable profile buffer))
+  (make-instance 'webkit-web-view-ephemeral
+                 :web-context (get-context *browser* +internal+
+                                           :ephemeral-p t)))
 
-If passed a context-name, a `nyxt:webkit-web-context' with that name is used for
-the `webkit:webkit-web-view'.  If :buffer is not set, the browser's `+internal+'
-`nyxt:webkit-web-context' is used.  Otherwise (such as an external web buffer),
-the `+default+' webkit-web-context is used.
+(defmethod make-web-view ((profile nyxt-profile) (buffer focusable-buffer))
+  "Return a regular web view instance for buffers with context."
+  (declare (ignorable profile))
+  (make-instance 'webkit:webkit-web-view
+                 :web-context (get-context *browser* (context-name buffer)
+                                           :ephemeral-p nil)))
 
-If ephemeral-p is set, the buffer is a nosave-buffer, or the current
-`protife' is a `nosave-profile', then an ephemeral context is used, with
-the same naming rules as above."
-  (let ((internal-p (not buffer))
-        (ephemeral-p (or ephemeral-p
-                         (when buffer (typep (profile buffer) 'nosave-profile))
-                         (typep buffer 'nosave-buffer))))
-    (make-instance (if ephemeral-p
-                       'webkit-web-view-ephemeral
-                       'webkit:webkit-web-view)
-                   :web-context (get-context *browser* (if internal-p +internal+ (context-name buffer))
-                                             :ephemeral-p ephemeral-p))))
+(defmethod make-web-view ((profile nyxt-profile) (buffer nosave-buffer))
+  "Return an ephemeral web view instance for nosave buffers."
+  (declare (ignorable profile))
+  (make-instance 'webkit-web-view-ephemeral
+                 :web-context (get-context *browser* (context-name buffer)
+                                           :ephemeral-p t)))
+
+(defmethod make-web-view ((profile nosave-profile) (buffer buffer))
+  "Return an ephemeral web view instance for nosave profiles."
+  (declare (ignorable profile))
+  (make-instance 'webkit-web-view-ephemeral
+                 :web-context (get-context *browser* (context-name buffer)
+                                           :ephemeral-p t)))
 
 (defun make-decide-policy-handler (buffer)
   (lambda (web-view response-policy-decision policy-decision-type-response)
@@ -395,7 +402,7 @@ response.  The BODY is wrapped with `with-protect'."
   (%within-renderer-thread-async
    (lambda ()
      (with-slots (gtk-object) buffer
-       (setf gtk-object (make-web-view :buffer buffer))
+       (setf gtk-object (make-web-view (profile buffer) buffer))
        (connect-signal-function
         buffer "decide-policy"
         (make-decide-policy-handler buffer))))))
@@ -451,7 +458,7 @@ response.  The BODY is wrapped with `with-protect'."
        (gtk:gtk-box-pack-start horizontal-box-layout panel-buffer-container-right :expand nil)
        (gtk:gtk-box-pack-start root-box-layout horizontal-box-layout :expand t :fill t)
 
-       (setf message-view (make-web-view))
+       (setf message-view (make-web-view *global-profile* nil))
        (gtk:gtk-box-pack-end root-box-layout message-container :expand nil)
        (gtk:gtk-box-pack-start message-container message-view :expand t)
        (setf (gtk:gtk-widget-size-request message-container)
@@ -463,7 +470,7 @@ response.  The BODY is wrapped with `with-protect'."
        (setf (gtk:gtk-widget-size-request status-container)
              (list -1 (height status-buffer)))
 
-       (setf prompt-buffer-view (make-web-view))
+       (setf prompt-buffer-view (make-web-view *global-profile* nil))
        (gtk:gtk-box-pack-end root-box-layout prompt-buffer-container :expand nil)
        (gtk:gtk-box-pack-start prompt-buffer-container prompt-buffer-view :expand t)
        (setf (gtk:gtk-widget-size-request prompt-buffer-container)
@@ -1324,7 +1331,7 @@ See `finalize-buffer'."
 (define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
   (unless (gtk-object buffer) ; Buffer may already have a view, e.g. the prompt-buffer.
-    (setf (gtk-object buffer) (make-web-view :buffer buffer)))
+    (setf (gtk-object buffer) (make-web-view (profile buffer) buffer)))
   (when (navigable-buffer-p buffer)
     (if (smooth-scrolling buffer)
         (ffi-buffer-enable-smooth-scrolling buffer t)
