@@ -48,7 +48,6 @@
        "home" 'maybe-scroll-to-top
        "C-down" 'scroll-to-bottom
        "C-up" 'scroll-to-top
-       "C-i" 'autofill
        "C-u C-o" 'edit-with-external-editor
        ;; Leave SPACE and arrow keys unbound so that the renderer decides whether to
        ;; navigate textboxes (arrows), insert or scroll (space).
@@ -223,25 +222,6 @@
 (define-command select-all (&optional (buffer (current-buffer)))
   "Select all the text in the text field."
   (ffi-buffer-select-all buffer))
-
-(define-class autofill-source (prompter:source)
-  ((prompter:name "Autofills")
-   (prompter:constructor (autofills *browser*))
-   (prompter:actions
-    (list (lambda-command autofill* (autofills)
-            (let ((selected-fill (first autofills)))
-              (cond ((stringp (autofill-fill selected-fill))
-                     (%paste :input-text (autofill-fill selected-fill)))
-                    ((functionp (autofill-fill selected-fill))
-                     (%paste :input-text (funcall (autofill-fill selected-fill))))))))))
-  (:export-class-name-p t)
-  (:metaclass user-class))
-
-(define-command autofill ()
-  "Fill in a field with a value from a saved list."
-  (prompt
-   :prompt "Autofill"
-   :sources (make-instance 'autofill-source)))
 
 (export-always 'element-focused)
 (defgeneric element-focused (mode) ; TODO: Make hook instead?  Or use both, have the default method call hook.
