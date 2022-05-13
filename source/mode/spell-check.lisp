@@ -1,7 +1,30 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt/web-mode)
+(uiop:define-package :nyxt/spell-check-mode
+  (:use :common-lisp :nyxt)
+  (:import-from #:keymap #:define-key #:define-scheme)
+  (:import-from #:class-star #:define-class)
+  (:documentation "Mode to spell-check text in buffers."))
+(in-package :nyxt/spell-check-mode)
+
+(define-mode spell-check-mode ()
+  ""
+  ((rememberable-p t)
+   (spell-check-language
+    "en_US"
+    :documentation "Spell check language used by Nyxt. For
+a list of more languages available, see `enchant:broker-list-dicts'.")
+   (keymap-scheme
+    (define-scheme "visual"
+      scheme:cua
+      (list)                            ; TODO: Add CUA bindings!
+      scheme:emacs
+      (list
+       "M-$" 'spell-check-word)
+      scheme:vi-normal
+      (list
+       "z =" 'spell-check-word)))))
 
 (define-command spell-check-word (&key (word nil word-supplied-p))
   "Spell check a word."
