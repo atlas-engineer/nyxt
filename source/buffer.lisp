@@ -1666,6 +1666,6 @@ That is, the one with the most recent access time."
   (ffi-inspector-show (current-buffer)))
 
 (export-always 'print-buffer)
-(define-command print-buffer ()
+(define-command print-buffer ()         ; TODO: Move to `web-mode'?
   "Print the current buffer."
   (peval (print)))
