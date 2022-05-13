@@ -187,7 +187,7 @@ forwarded when no binding is found.")
   (:metaclass user-class)
   (:documentation "A buffer in which the user can input."))
 
-(define-class navigable-buffer (buffer)
+(define-class document-buffer (buffer)
   ((scroll-distance
     50
     :type integer
@@ -231,7 +231,8 @@ down."))
   (:export-predicate-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class)
-  (:documentation "Buffers in which the user can navigate the view, zoom, etc."))
+  (:documentation "Buffers in which hold structured documents.
+The user can scroll them, zoom, etc."))
 
 (defmethod initialize-instance :after ((buffer buffer) &key (browser *browser*)
                                        &allow-other-keys)
@@ -275,7 +276,7 @@ This is useful when there is no current buffer.")
   (:method-combination append)
   (:method append ((buffer buffer))
     '())
-  (:method append ((buffer navigable-buffer))
+  (:method append ((buffer document-buffer))
     %default-modes)
   (:documentation "The symbols of the modes to instantiate on buffer creation.
 The mode instances are stored in the `modes' BUFFER slot.
@@ -504,7 +505,7 @@ Example:
   (:metaclass user-class)
   (:documentation "Buffers that must interact with resources over the network."))
 
-(define-class web-buffer (focusable-buffer network-buffer modable-buffer navigable-buffer input-buffer)
+(define-class web-buffer (focusable-buffer network-buffer modable-buffer document-buffer input-buffer)
   ((keywords
     nil
     :accessor nil
@@ -545,7 +546,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:metaclass user-class)
   (:documentation "Like `web-buffer', but don't persist data to disk."))
 
-(define-class panel-buffer (focusable-buffer input-buffer modable-buffer navigable-buffer)
+(define-class panel-buffer (focusable-buffer input-buffer modable-buffer document-buffer)
   ((width 250 :documentation "The width in pixels.")
    (style (theme:themed-css (theme *browser*)
             (body

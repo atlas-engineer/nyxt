@@ -1332,7 +1332,7 @@ See `finalize-buffer'."
   "Initialize BUFFER's GTK web view."
   (unless (gtk-object buffer) ; Buffer may already have a view, e.g. the prompt-buffer.
     (setf (gtk-object buffer) (make-web-view (profile buffer) buffer)))
-  (when (navigable-buffer-p buffer)
+  (when (document-buffer-p buffer)
     (if (smooth-scrolling buffer)
         (ffi-buffer-enable-smooth-scrolling buffer t)
         (ffi-buffer-enable-smooth-scrolling buffer nil)))
