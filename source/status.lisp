@@ -40,13 +40,13 @@ This leverages `mode-status' which can be specialized for individual modes."
   (spinneret:with-html-string
     (:button :type "button" :class "button"
              :title "Backwards"
-             :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/web-mode:history-backwards))) "«")
+             :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/history-mode:history-backwards))) "«")
     (:button :type "button" :class "button"
              :title "Reload"
              :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:reload-current-buffer))) "↺")
     (:button :type "button" :class "button"
              :title "Forwards"
-             :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/web-mode:history-forwards))) "»")
+             :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/history-mode:history-forwards))) "»")
     (:button :type "button" :class "button"
              :title "Execute"
              :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:execute-command))) "≡")))

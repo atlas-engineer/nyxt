@@ -143,8 +143,8 @@ keymap.")
    (:pre (:code "
 \(defvar *my-keymap* (make-keymap \"my-map\"))
 \(define-key *my-keymap*
-  \"C-f\" 'nyxt/web-mode:history-forwards
-  \"C-b\" 'nyxt/web-mode:history-backwards)
+  \"C-f\" 'nyxt/history-mode:history-forwards
+  \"C-b\" 'nyxt/history-mode:history-backwards)
 
 \(define-mode my-mode ()
   \"Dummy mode for the custom key bindings in `*my-keymap*'.\"

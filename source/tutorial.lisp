@@ -29,8 +29,8 @@ Multiple key presses can be chained: in 'C-x C-s', you would have to press
     (list-command-information '(set-url reload-current-buffer
                                 set-url-new-buffer
                                 switch-buffer-previous
-                                nyxt/web-mode:history-backwards
-                                nyxt/web-mode:history-forwards
+                                nyxt/history-mode:history-backwards
+                                nyxt/history-mode:history-forwards
                                 nyxt/web-mode:follow-hint
                                 nyxt/web-mode:follow-hint-new-buffer
                                 quit execute-command describe-bindings)))
@@ -146,12 +146,12 @@ in history, then follow a new URL, it effectively creates a new branch without
 deleting the old path. The tree makes sure you never lose track of where you've
 been.")
    (:ul
-    (list-command-information '(nyxt/web-mode:history-forwards
-                                nyxt/web-mode:history-backwards
-                                nyxt/web-mode:history-forwards-query
-                                nyxt/web-mode:history-backwards-query
-                                nyxt/web-mode:history-forwards-all-query
-                                nyxt/web-mode:history-all-query)))
+    (list-command-information '(nyxt/history-mode:history-forwards
+                                nyxt/history-mode:history-backwards
+                                nyxt/history-mode:history-forwards-query
+                                nyxt/history-mode:history-backwards-query
+                                nyxt/history-mode:history-forwards-all-query
+                                nyxt/history-mode:history-all-query)))
    (:p "You can also view a full tree of the history for a given buffer by
 invoking the command 'buffer-history-tree'.")
    (:h3 "Searching")
