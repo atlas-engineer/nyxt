@@ -185,7 +185,6 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "element-hint")
                  (:file "element-frame")
                  (:file "jump-heading")
-                 (:file "summarize")
                  (:file "search-buffer" :depends-on ("element-hint"))
                  (:file "spell-check")))
                (:file "annotate" :depends-on ("Core modes"))
