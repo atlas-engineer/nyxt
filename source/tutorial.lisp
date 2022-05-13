@@ -164,7 +164,7 @@ place rather than having to jump around in a buffer (or multiple buffers).")
                                 nyxt/web-mode:remove-search-hints)))
    (:h3 "Bookmarks")
    (:p "The bookmark file "
-       (:code (let ((buffer (make-instance 'focusable-buffer)))
+       (:code (let ((buffer (make-instance 'context-buffer)))
                 (unwind-protect (nfiles:expand (bookmarks-file buffer))
                   (buffer-delete buffer))))
        " is made to be human readable and editable.
