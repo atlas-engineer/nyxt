@@ -399,10 +399,10 @@ instead."
     (setf action #'identity))
   (setf (returned-p prompter) t)
   (add-input-to-history prompter)
-  (alex:when-let ((selection-values (resolve-selection prompter)))
+  (alex:if-let ((selection-values (resolve-selection prompter)))
     (let ((action-result (funcall action selection-values)))
-      (calispel:! (result-channel prompter) action-result)))
-  (destroy prompter))
+      (calispel:! (result-channel prompter) action-result))
+    (destroy prompter)))
 
 (export-always 'toggle-follow)
 (defun toggle-follow (prompter &optional (source (selected-source prompter)))
