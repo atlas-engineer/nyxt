@@ -196,7 +196,7 @@ web_page_created_callback (WebKitWebExtension *extension,
                           NULL);
         PAGE = web_page;
         webkit_web_page_send_message_to_view(
-                PAGE, webkit_user_message_new("ready", NULL), NULL, NULL, NULL);
+                PAGE, webkit_user_message_new("ready", g_variant_new("ms", "")), NULL, NULL, NULL);
 }
 
 /** webkit_web_extension_initialize_with_user_data
