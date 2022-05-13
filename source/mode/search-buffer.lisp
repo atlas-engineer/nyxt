@@ -113,6 +113,9 @@
    (buffer))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
+(defmethod nyxt/element-hint-mode:identifier ((match search-match))
+  (identifier match))
+
 (defmethod prompter:object-attributes ((match search-match))
   `(("Default" ,(body match))
     ("ID" ,(princ-to-string (identifier match)))
@@ -130,6 +133,31 @@
   "Remove all search hints."
   (peval (ps:dolist (node (nyxt/ps:qsa document ".nyxt-search-node"))
              (ps:chain node (replace-with (aref *nodes* (ps:@ node id)))))))
+
+(defun prompt-buffer-selection-highlight-hint (&key suggestions scroll follow
+                                                 (prompt-buffer (current-prompt-buffer))
+                                                 (buffer (current-buffer)))
+  (let ((hint (flet ((hintp (hint-suggestion)
+                       (if (typep hint-suggestion '(or plump:element search-match))
+                           hint-suggestion
+                           nil)))
+                (if suggestions
+                    (hintp (prompter:value (first suggestions)))
+                    (when prompt-buffer
+                      (hintp (current-suggestion-value)))))))
+    (when hint
+      (when (and follow
+                 (slot-exists-p hint 'buffer)
+                 (not (equal (buffer hint) buffer)))
+        (set-current-buffer (buffer hint))
+        (setf buffer (buffer hint)))
+      (if (or
+           (not (slot-exists-p hint 'buffer))
+           (and (slot-exists-p hint 'buffer)
+                (equal (buffer hint) buffer)))
+          (with-current-buffer buffer
+            (nyxt/element-hint-mode::highlight-selected-hint :element hint :scroll scroll))
+          (nyxt/element-hint-mode:remove-focus)))))
 
 (define-class search-buffer-source (prompter:source)
   ((case-sensitive-p nil)
@@ -161,7 +189,7 @@
                           (declare (ignore prompter source))
                           (unless (keep-search-hints-p (current-buffer))
                             (remove-search-hints))
-                          (remove-focus))))
+                          (nyxt/element-hint-mode:remove-focus))))
   (:export-accessor-names-p t)
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))

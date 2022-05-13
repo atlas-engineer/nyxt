@@ -22,47 +22,27 @@
 (define-mode web-mode ()
   "Base mode for interacting with documents."
   ((rememberable-p nil)
-   (auto-follow-hints-p
-    nil
-    :type boolean
-    :documentation "Whether the hints are automatically followed when matching user input.")
    (box-style (theme:themed-css (theme *browser*)
-                  (".nyxt-hint"
-                   :background-color theme:primary
-                   :opacity 0.8
-                   :color "white"
-                   :font-weight "bold"
-                   :padding "0px 3px 0px 3px"
-                   :border-radius "2px"
-                   :z-index #.(1- (expt 2 31))))
+                (".nyxt-hint"
+                 :background-color theme:primary
+                 :opacity 0.8
+                 :color "white"
+                 :font-weight "bold"
+                 :padding "0px 3px 0px 3px"
+                 :border-radius "2px"
+                 :z-index #.(1- (expt 2 31))))
               :documentation "The style of the boxes, e.g. link hints.")
    (highlighted-box-style (theme:themed-css (theme *browser*)
-                           (".nyxt-hint.nyxt-highlight-hint"
-                            :background-color theme:accent
-                            :color theme:background))
+                            (".nyxt-hint.nyxt-highlight-hint"
+                             :background-color theme:accent
+                             :color theme:background))
                           :documentation "The style of highlighted boxes, e.g. link hints.")
-   (hints-alphabet "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                   :type string
-                   :documentation "The alphabet (charset) to use for hints.
-Order matters -- the ones that go first are more likely to appear more often
-and to index the top of the page.")
-   (hints-selector "a, button, input, textarea, details, select, img:not([alt=\"\"])"
-                   :type string
-                   :documentation "Defines which elements are to be hinted. The
-hints-selector syntax is that of CLSS, and broadly, that of CSS. Use it to
-define which elements are picked up by element hinting.")
    (keymap-scheme
     (define-scheme "web"
       scheme:cua
       (list
        "C-M-Z" 'nyxt/passthrough-mode:passthrough-mode
        "M-i" 'focus-first-input-field
-       "C-j" 'follow-hint
-       "C-u C-j" 'follow-hint-new-buffer-focus
-       "C-J" 'follow-hint-new-buffer
-       "C-M-j" 'follow-hint-nosave-buffer-focus
-       "C-u C-M-j" 'follow-hint-nosave-buffer
-       "M-c h" 'copy-hint-url
        "C-c" 'copy
        "C-v" 'paste
        "C-x" 'cut
@@ -76,7 +56,6 @@ define which elements are picked up by element hinting.")
        "C-button4" 'zoom-page
        "C-button5" 'unzoom-page
        "C-M-c" 'open-inspector
-       "C-m g" 'bookmark-hint
        "C-f" 'search-buffer
        "f3" 'search-buffer
        "M-f" 'remove-search-hints
@@ -104,13 +83,6 @@ define which elements are picked up by element hinting.")
       scheme:emacs
       (list
        "C-g" 'nothing              ; Emacs users may hit C-g out of habit.
-       "M-g M-g" 'follow-hint              ; Corresponds to Emacs' `goto-line'.
-       "M-g g" 'follow-hint-new-buffer-focus
-       "C-u M-g M-g" 'follow-hint-new-buffer
-       "C-u M-g g" 'follow-hint-new-buffer
-       "C-M-g C-M-g" 'follow-hint-nosave-buffer-focus
-       "C-M-g g" 'follow-hint-nosave-buffer
-       "C-x C-w" 'copy-hint-url
        "C-y" 'paste
        "M-w" 'copy
        "C-/" 'undo
@@ -123,7 +95,6 @@ define which elements are picked up by element hinting.")
        "C-x C-=" 'zoom-page ; Because + shifted = on QWERTY.
        "C-x C-hyphen" 'unzoom-page
        "C-x C-0" 'reset-page-zoom
-       "C-m g" 'bookmark-hint
        "C-s s" 'search-buffer
        "C-s k" 'remove-search-hints
        "C-." 'jump-to-heading
@@ -140,11 +111,6 @@ define which elements are picked up by element hinting.")
        "d d" 'cut
        "u" 'undo
        "C-r" 'redo
-       "f" 'follow-hint
-       "F" 'follow-hint-new-buffer-focus
-       "; f" 'follow-hint-new-buffer
-       "g f" 'follow-hint-nosave-buffer
-       "g F" 'follow-hint-nosave-buffer-focus
        "+" 'zoom-page
        "hyphen" 'unzoom-page
        "0" 'reset-page-zoom
@@ -157,7 +123,6 @@ define which elements are picked up by element hinting.")
        "}" 'next-heading
        "/" 'search-buffer
        "?" 'remove-search-hints
-       "m f" 'bookmark-hint
        "h" 'scroll-left
        "j" 'scroll-down
        "k" 'scroll-up
