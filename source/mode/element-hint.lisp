@@ -1,17 +1,71 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
-;;;; SPDX-License-Identifier: BSD-3-Clause
+(uiop:define-package :nyxt/element-hint-mode ; TODO: Rename to `hint-mode'?
+  (:use :common-lisp :nyxt)
+  (:import-from #:keymap #:define-key #:define-scheme)
+  (:import-from #:class-star #:define-class)
+  (:import-from #:serapeum
+                #:export-always
+                #:->)
+  (:documentation "Mode for element hints."))
+(in-package :nyxt/element-hint-mode)
+(use-nyxt-package-nicknames)
 
-(in-package :nyxt/web-mode)
+(define-mode element-hint-mode ()
+  "Mode to interact with links using keyword only."
+  ((rememberable-p nil)
+   (auto-follow-hints-p
+    nil
+    :type boolean
+    :documentation "Whether the hints are automatically followed when matching user input.")
+   (hints-alphabet "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                   :type string
+                   :documentation "The alphabet (charset) to use for hints.
+Order matters -- the ones that go first are more likely to appear more often
+and to index the top of the page.")
+   (hints-selector "a, button, input, textarea, details, select, img:not([alt=\"\"])"
+                   :type string
+                   :documentation "Defines which elements are to be hinted. The
+hints-selector syntax is that of CLSS, and broadly, that of CSS. Use it to
+define which elements are picked up by element hinting.")
+   (keymap-scheme
+    (define-scheme "web"
+      scheme:cua
+      (list
+       "C-j" 'follow-hint
+       "C-u C-j" 'follow-hint-new-buffer-focus
+       "C-J" 'follow-hint-new-buffer
+       "C-M-j" 'follow-hint-nosave-buffer-focus
+       "C-u C-M-j" 'follow-hint-nosave-buffer
+       "M-c h" 'copy-hint-url
+       "C-m g" 'bookmark-hint)
+      scheme:emacs
+      (list
+       "M-g M-g" 'follow-hint           ; Corresponds to Emacs' `goto-line'.
+       "M-g g" 'follow-hint-new-buffer-focus
+       "C-u M-g M-g" 'follow-hint-new-buffer
+       "C-u M-g g" 'follow-hint-new-buffer
+       "C-M-g C-M-g" 'follow-hint-nosave-buffer-focus
+       "C-M-g g" 'follow-hint-nosave-buffer
+       "C-x C-w" 'copy-hint-url
+       "C-m g" 'bookmark-hint)
+
+      scheme:vi-normal
+      (list
+       "f" 'follow-hint
+       "F" 'follow-hint-new-buffer-focus
+       "; f" 'follow-hint-new-buffer
+       "g f" 'follow-hint-nosave-buffer
+       "g F" 'follow-hint-nosave-buffer-focus
+       "m f" 'bookmark-hint)))))
 
 (define-parenscript add-stylesheet ()
   (unless (nyxt/ps:qs document "#nyxt-stylesheet")
     (ps:try
      (ps:let* ((style-element (ps:chain document (create-element "style")))
-               (box-style (ps:lisp (box-style (find-submode 'web-mode))))
-               (highlighted-style (ps:lisp (highlighted-box-style (find-submode 'web-mode)))))
+               (box-style (ps:lisp (nyxt/web-mode:box-style (find-submode 'nyxt/web-mode:web-mode))))
+               (highlighted-style (ps:lisp (nyxt/web-mode:highlighted-box-style (find-submode 'nyxt/web-mode:web-mode)))))
        (setf (ps:@ style-element id) "nyxt-stylesheet")
        (ps:chain document head (append-child style-element))
        (ps:chain style-element sheet (insert-rule box-style 0))
@@ -60,7 +114,7 @@
 (-> generate-hints (integer) list-of-strings)
 (defun generate-hints (length)
   (unless (zerop length)
-    (let* ((alphabet (hints-alphabet (find-submode 'web-mode)))
+    (let* ((alphabet (hints-alphabet (find-submode 'element-hint-mode)))
            (char-length (ceiling (log length (length alphabet)))))
       (loop for i below length collect (select-from-alphabet i char-length alphabet)))))
 
@@ -84,14 +138,16 @@
       (ps:chain element (remove))))
   (hints-remove-all))
 
+(export-always 'identifier)
+(defmethod identifier ((element plump:element))
+  (plump:get-attribute element "nyxt-hint"))
+
 (define-parenscript highlight-selected-hint (&key element scroll)
   (defun update-hints ()
     (ps:let* ((new-element (nyxt/ps:qs document
                                        (ps:lisp (format
                                                  nil "#nyxt-hint-~a"
-                                                 (typecase element
-                                                   (plump:element (plump:get-attribute element "nyxt-hint"))
-                                                   (search-match (identifier element))))))))
+                                                 (identifier element))))))
       (when new-element
         (unless ((ps:@ new-element class-list contains) "nyxt-highlight-hint")
           (ps:let ((old-elements (nyxt/ps:qsa document ".nyxt-highlight-hint")))
@@ -103,6 +159,7 @@
 
   (update-hints))
 
+(export-always 'remove-focus)
 (define-parenscript remove-focus ()
   (ps:let ((old-elements (nyxt/ps:qsa document ".nyxt-highlight-hint")))
     (ps:dolist (e old-elements)
@@ -146,7 +203,7 @@
 (defun query-hints (prompt function
                     &key (multi-selection-p t)
                          (selector
-                             (alex:if-let ((mode (find-submode 'web-mode)))
+                             (alex:if-let ((mode (find-submode 'element-hint-mode)))
                                (hints-selector mode)
                                "a, button, input, textarea, details, select, img:not([alt=\"\"])")))
   "Prompt for elements matching SELECTOR, hinting them visually.
@@ -158,8 +215,8 @@ FUNCTION is the action to perform on the selected elements."
                             :prompt prompt
                             ;; TODO: No need to find the symbol if we move this code (and
                             ;; the rest) to the element-hint-mode package.
-                            :extra-modes (list (resolve-symbol :element-hint-mode :mode))
-                            :auto-return-p (auto-follow-hints-p (find-submode 'web-mode))
+                            :extra-modes (list (resolve-symbol :element-hint-prompt-buffer-mode :mode))
+                            :auto-return-p (auto-follow-hints-p (find-submode 'element-hint-mode))
                             :history nil
                             :sources
                             (make-instance
@@ -306,31 +363,6 @@ FUNCTION is the action to perform on the selected elements."
 (defmethod %copy-hint-url ((element plump:element))
   (echo "Unsupported operation for hint: can't copy URL."))
 
-(defun prompt-buffer-selection-highlight-hint (&key suggestions scroll follow
-                                                 (prompt-buffer (current-prompt-buffer))
-                                                 (buffer (current-buffer)))
-  (let ((hint (flet ((hintp (hint-suggestion)
-                       (if (typep hint-suggestion '(or plump:element search-match))
-                           hint-suggestion
-                           nil)))
-                (if suggestions
-                    (hintp (prompter:value (first suggestions)))
-                    (when prompt-buffer
-                      (hintp (current-suggestion-value)))))))
-    (when hint
-      (when (and follow
-                 (slot-exists-p hint 'buffer)
-                 (not (equal (buffer hint) buffer)))
-        (set-current-buffer (buffer hint))
-        (setf buffer (buffer hint)))
-      (if (or
-           (not (slot-exists-p hint 'buffer))
-           (and (slot-exists-p hint 'buffer)
-                (equal (buffer hint) buffer)))
-          (with-current-buffer buffer
-            (highlight-selected-hint :element hint :scroll scroll))
-          (remove-focus)))))
-
 (define-command follow-hint ()
   "Prompt for element hints and open them in the current buffer."
   (let ((buffer (current-buffer)))
@@ -411,11 +443,11 @@ modes."
                             (sleep 0.25)))
                  :selector "a, img")))
 
-(uiop:define-package :nyxt/element-hint-mode
+(uiop:define-package :nyxt/element-hint-prompt-buffer-mode ; TODO: Move to separate file.
   (:use :common-lisp :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
-  (:documentation "Mode for element hint prompt buffer"))
-(in-package :nyxt/element-hint-mode)
+  (:documentation "Prompt-buffer mode for element hints."))
+(in-package :nyxt/element-hint-prompt-buffer-mode)
 
 (define-command toggle-hints-transparency (&key (buffer (current-buffer)))
   "Toggle the on-screen element hints transparency."
@@ -429,9 +461,9 @@ modes."
 (define-command scroll-to-hint (&key (buffer (current-buffer)))
   "Show the selected hint on screen."
   (with-current-buffer buffer
-    (nyxt/web-mode::highlight-selected-hint :element (current-suggestion-value) :scroll t)))
+    (nyxt/element-hint-mode::highlight-selected-hint :element (current-suggestion-value) :scroll t)))
 
-(define-mode element-hint-mode (nyxt/prompt-buffer-mode:prompt-buffer-mode)
+(define-mode element-hint-prompt-buffer-mode (nyxt/prompt-buffer-mode:prompt-buffer-mode)
   "Prompt buffer mode for element hinting."
   ((keymap-scheme
     (define-scheme "element-hint"

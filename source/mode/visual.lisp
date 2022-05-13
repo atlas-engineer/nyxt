@@ -4,7 +4,6 @@
 (uiop:define-package :nyxt/visual-mode
   (:use :common-lisp :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:nyxt/web-mode #:query-hints #:get-nyxt-id)
   (:documentation "Visual mode."))
 (in-package :nyxt/visual-mode)
 (use-nyxt-package-nicknames)
@@ -134,7 +133,7 @@
 
 (define-command select-paragraph ()
   "Add hints to text elements on the page and query them."
-  (query-hints "Set caret on element"
+  (nyxt/element-hint-mode:query-hints "Set caret on element"
                (lambda (results) (%follow-hint (first results)))
                :selector "a, b, p, del, h1, h2, h3, h4, h5, h6, i, option,
 strong, sub, sup, listing, xmp, plaintext, basefont, big, blink, center, font,
