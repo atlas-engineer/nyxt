@@ -172,7 +172,7 @@ Bookmarks can also be used as search engines, see the corresponding section.")
        (:code (format nil "~{~a~^, ~}"
                       (mapcar (lambda (engine)
                                 (quri:uri-host (quri:uri (getf engine :search-url))))
-                              (rest (getf (mopu:slot-properties 'buffer 'search-engines)
+                              (rest (getf (mopu:slot-properties 'context-buffer 'search-engines)
                                           :initform)))))
        ". "
        "The following example shows one way to add new search engines.")
