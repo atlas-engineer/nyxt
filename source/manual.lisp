@@ -86,7 +86,7 @@ addition, other similar approaches of customization can be applied to slots
 such as " (:code "spell-check-language") ", which can be expanded to do the
 spelling-check of other languages besides English.")
     (:h3 "Web buffers and internal buffers")
-    (:p "There are multiple buffer classes, such as `navigable-buffer' (for
+    (:p "There are multiple buffer classes, such as `document-buffer' (for
 structured documents) and `input-buffer' (for buffers that can receive user
 input).  A `web-buffer' class is used for web pages, `prompt-buffer' for, well,
 the prompt buffer.  Some buffer classes may inherit from multiple other classes.
