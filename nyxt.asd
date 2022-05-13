@@ -186,7 +186,6 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "element-frame")
                  (:file "jump-heading")
                  (:file "summarize")
-                 (:file "scroll")
                  (:file "search-buffer" :depends-on ("element-hint"))
                  (:file "spell-check")
                  (:file "zoom")))
