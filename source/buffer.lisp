@@ -309,7 +309,11 @@ This is useful when there is no current buffer.")
   (:method append ((buffer buffer))
     '())
   (:method append ((buffer document-buffer))
-    %default-modes)
+    (append
+     (list
+      ;; TODO: No need for `resolve-symbol' if we move `document-buffer' declaration in a separate file, loaded after modes.
+      (resolve-symbol :history-mode :mode))
+     %default-modes))
   (:documentation "The symbols of the modes to instantiate on buffer creation.
 The mode instances are stored in the `modes' BUFFER slot.
 
