@@ -12,7 +12,7 @@
 This leverages `mode-status' which can be specialized for individual modes."
   (spinneret:with-html-string
     (when (nosave-buffer-p buffer) (:span "⚠ nosave"))
-    (:button :type "button"
+    (:button :type "button" :class "button"
              :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:toggle-modes)))
              :title (str:concat "Enabled modes: " (list-modes buffer)) "✚")
     (loop for mode in (sera:filter (alex:conjoin #'enabled-p #'visible-in-status-p)
@@ -35,16 +35,16 @@ This leverages `mode-status' which can be specialized for individual modes."
 (export-always 'format-status-buttons)
 (defun format-status-buttons ()
   (spinneret:with-html-string
-    (:button :type "button"
+    (:button :type "button" :class "button"
              :title "Backwards"
              :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/web-mode:history-backwards))) "«")
-    (:button :type "button"
+    (:button :type "button" :class "button"
              :title "Reload"
              :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:reload-current-buffer))) "↺")
-    (:button :type "button"
+    (:button :type "button" :class "button"
              :title "Forwards"
              :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/web-mode:history-forwards))) "»")
-    (:button :type "button"
+    (:button :type "button" :class "button"
              :title "Execute"
              :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:execute-command))) "≡")))
 
@@ -72,7 +72,7 @@ This leverages `mode-status' which can be specialized for individual modes."
 (export-always 'format-status-url)
 (defun format-status-url (buffer)
   (spinneret:with-html-string
-    (:button :type "button"
+    (:button :type "button" :class "button"
              :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:set-url)))
              (format nil " ~a — ~a"
                      (render-url (url buffer))
@@ -85,7 +85,7 @@ This leverages `mode-status' which can be specialized for individual modes."
                          (sera:filter-map #'quri:uri-domain
                                           (mapcar #'url (sort-by-time (buffer-list))))
                          :test #'equal)
-          collect (:button :type "tab"
+          collect (:button :type "tab" :class "button"
                            :onclick (ps:ps (nyxt/ps:lisp-eval
                                             `(nyxt::switch-buffer-or-query-domain ,domain)))
                            domain))))
