@@ -141,7 +141,6 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "command-commands")
                  (:file "recent-buffers")
                  (:file "history")
-                 (:file "autofill")
                  (:file "external-editor")
                  (:file "no-procrastinate")))
                (:module "Core modes"
@@ -211,7 +210,8 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                 :pathname "mode"
                 :depends-on ("Core modes")
                 :components
-                ((:file "repl")
+                ((:file "autofill")
+                 (:file "repl")
                  (:file "small-web")
                  (:file "reading-line")
                  (:file "no-image")
