@@ -109,6 +109,19 @@ representation of HTML documents.
 Rendered URLs or the Nyxt's manual qualify as examples.  Buffers are fully
 separated from one another, so that each has its own behaviour and settings."))
 
+(defmethod initialize-instance :after ((buffer buffer) &key (browser *browser*)
+                                       &allow-other-keys)
+  "Set buffer ID and return buffer."
+  (when browser
+    (setf (id buffer) (get-unique-identifier browser)))
+  buffer)
+
+(defmethod finalize-buffer ((buffer buffer) &key (browser *browser*) &allow-other-keys)
+  "Finalize instantiation of BUFFER.
+Nothing to do for the simplest `buffer' type."
+  (declare (ignore browser))
+  t)
+
 (define-class modable-buffer (buffer)
   ((modes
     '()
@@ -132,6 +145,22 @@ after the mode-specific hook."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class)
   (:documentation "A buffer which behaviour can be modified with `mode's."))
+
+(defmethod finalize-buffer ((buffer modable-buffer) &key (browser *browser*) no-hook-p extra-modes)
+  "Finalize instantiation of modable BUFFER.
+In particular,
+- run `buffer-make-hook';
+- initialize the default modes plus EXTRA-MODES,
+- run `buffer-after-make-hook'.
+This method should be called by the renderer after instantiating the web view
+of BUFFER."
+  (unless no-hook-p
+    (hooks:run-hook (buffer-make-hook browser) buffer))
+  (enable-modes (append (reverse (default-modes buffer))
+                        extra-modes)
+                buffer)
+  (unless no-hook-p
+    (hooks:run-hook (buffer-after-make-hook browser) buffer)))
 
 (defmethod modes ((buffer buffer))
   "Non-modable buffers never have modes.
@@ -266,79 +295,6 @@ down."))
   (:documentation "Buffers in which hold structured documents.
 The user can scroll them, zoom, etc."))
 
-(defmethod initialize-instance :after ((buffer buffer) &key (browser *browser*)
-                                       &allow-other-keys)
-  "Set buffer ID and return buffer."
-  (when browser
-    (setf (id buffer) (get-unique-identifier browser)))
-  buffer)
-
-(defmethod finalize-buffer ((buffer buffer) &key (browser *browser*) &allow-other-keys)
-  "Finalize instantiation of BUFFER.
-Nothing to do for the simplest `buffer' type."
-  (declare (ignore browser))
-  t)
-
-(defmethod finalize-buffer ((buffer modable-buffer) &key (browser *browser*) no-hook-p extra-modes)
-  "Finalize instantiation of modable BUFFER.
-In particular,
-- run `buffer-make-hook';
-- initialize the default modes plus EXTRA-MODES,
-- run `buffer-after-make-hook'.
-This method should be called by the renderer after instantiating the web view
-of BUFFER."
-  (unless no-hook-p
-    (hooks:run-hook (buffer-make-hook browser) buffer))
-  (enable-modes (append (reverse (default-modes buffer))
-                        extra-modes)
-                buffer)
-  (unless no-hook-p
-    (hooks:run-hook (buffer-after-make-hook browser) buffer)))
-
-(defmethod print-object ((buffer buffer) stream)
-  (print-unreadable-object (buffer stream :type t :identity t)
-    (format stream "~a" (id buffer))))
-
-(defvar %default-modes '(base-mode)
-  "The default modes for unspecialized buffers.
-This is useful when there is no current buffer.")
-
-(export-always 'default-modes)
-(defgeneric default-modes (buffer)
-  (:method-combination append)
-  (:method append ((buffer buffer))
-    '())
-  (:method append ((buffer context-buffer))
-    (append
-     (list
-      ;; TODO: No need for `resolve-symbol' if we move `context-buffer'
-      ;; declaration in a separate file, loaded after modes.
-      (resolve-symbol :annotate-mode :mode)
-      (resolve-symbol :history-mode :mode)
-      (resolve-symbol :password-mode :mode))
-     %default-modes))
-  (:method append ((buffer document-buffer))
-    (append
-     (list
-      ;; TODO: No need for `resolve-symbol' if we move `document-buffer'
-      ;; declaration in a separate file, loaded after modes.
-      (resolve-symbol :element-hint-mode :mode)
-      (resolve-symbol :search-buffer-mode :mode)
-      (resolve-symbol :autofill-mode :mode) ; TODO: Remove from default?
-      (resolve-symbol :spell-check-mode :mode))
-     %default-modes))
-  (:documentation "The symbols of the modes to instantiate on buffer creation.
-The mode instances are stored in the `modes' BUFFER slot.
-
-The default modes returned by this method are appended to the default modes
-inherited from the superclasses."))
-
-(defmethod default-modes :around ((buffer buffer))
-  "Remove the duplicates from the `default-modes'."
-  (remove-duplicates (call-next-method)
-                     ;; Mode at the beginning of the list have higher priorities.
-                     :from-end t))
-
 (define-class context-buffer (buffer)
   ((last-access
     (local-time:now)
@@ -431,6 +387,50 @@ only make sense globally should be stored in `browser' instead.
 
 It's similar to the \"private window\" in popular browser, but the scope here is
 the buffer (which gives us more flexibility)."))
+
+(defmethod print-object ((buffer buffer) stream)
+  (print-unreadable-object (buffer stream :type t :identity t)
+    (format stream "~a" (id buffer))))
+
+(defvar %default-modes '(base-mode)
+  "The default modes for unspecialized buffers.
+This is useful when there is no current buffer.")
+
+(export-always 'default-modes)
+(defgeneric default-modes (buffer)
+  (:method-combination append)
+  (:method append ((buffer buffer))
+    '())
+  (:method append ((buffer context-buffer))
+    (append
+     (list
+      ;; TODO: No need for `resolve-symbol' if we move `context-buffer'
+      ;; declaration in a separate file, loaded after modes.
+      (resolve-symbol :annotate-mode :mode)
+      (resolve-symbol :history-mode :mode)
+      (resolve-symbol :password-mode :mode))
+     %default-modes))
+  (:method append ((buffer document-buffer))
+    (append
+     (list
+      ;; TODO: No need for `resolve-symbol' if we move `document-buffer'
+      ;; declaration in a separate file, loaded after modes.
+      (resolve-symbol :element-hint-mode :mode)
+      (resolve-symbol :search-buffer-mode :mode)
+      (resolve-symbol :autofill-mode :mode) ; TODO: Remove from default?
+      (resolve-symbol :spell-check-mode :mode))
+     %default-modes))
+  (:documentation "The symbols of the modes to instantiate on buffer creation.
+The mode instances are stored in the `modes' BUFFER slot.
+
+The default modes returned by this method are appended to the default modes
+inherited from the superclasses."))
+
+(defmethod default-modes :around ((buffer buffer))
+  "Remove the duplicates from the `default-modes'."
+  (remove-duplicates (call-next-method)
+                     ;; Mode at the beginning of the list have higher priorities.
+                     :from-end t))
 
 (define-class network-buffer (buffer)
   ((status
