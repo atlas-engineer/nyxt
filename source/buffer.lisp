@@ -316,7 +316,8 @@ This is useful when there is no current buffer.")
       (resolve-symbol :element-hint-mode :mode)
       (resolve-symbol :search-buffer-mode :mode)
       (resolve-symbol :autofill-mode :mode) ; TODO: Remove from default?
-      (resolve-symbol :spell-check-mode :mode))
+      (resolve-symbol :spell-check-mode :mode)
+      (resolve-symbol :password-mode :mode))
      %default-modes))
   (:documentation "The symbols of the modes to instantiate on buffer creation.
 The mode instances are stored in the `modes' BUFFER slot.
@@ -369,16 +370,6 @@ FALLBACK-URL is empty, SEARCH-URL is used on an empty search.
 
 The default search engine (as per `default-search-engine') is used when the
 query is not a valid URL, or the first keyword is not recognized.")
-   (password-interface
-    (make-password-interface)
-    :type (or null password::password-interface)
-    :documentation "The current password interface.
-See `password:*interfaces*' for the list of all currently registered interfaces.
-To use, say, KeepassXC, set this slot to
-
-  (make-instance 'password:keepassxc-interface)
-
-Password interfaces are configurable through a `customize-instance' method.")
    (download-directory
     (make-instance 'download-directory)
     :type download-directory

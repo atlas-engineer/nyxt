@@ -172,7 +172,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                 :pathname ""
                 :depends-on ("Core modes")
                 :components
-                ((:file "password")
+                ((:file "mode/password")
                  (:file "bookmark")
                  (:file "mode/bookmark-frequent-visits" :depends-on ("bookmark"))
                  (:file "mode/bookmark" :depends-on ("bookmark"))))
