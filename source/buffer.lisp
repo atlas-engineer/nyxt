@@ -510,7 +510,7 @@ If nil is returned, stop the hook and cancel the resource load.
 
 The current buffer URL should not be relied upon.  With WebKitGTK, it is the same
 as (url REQUEST-DATA).
-If you need to access the URL before this request, inspect the web-mode history.
+If you need to access the URL before this request, inspect the document-mode history.
 
 There's no more ability to pass the results to the renderer with :FORWARD.
 
@@ -1027,7 +1027,7 @@ See `make-buffer' for a description of the arguments."
 
 (define-command duplicate-buffer (&key parent-buffer)
   "Duplicate current buffer in a new buffer."
-  (duplicate-buffer-with-current-modes :modes '(web-mode base-mode)
+  (duplicate-buffer-with-current-modes :modes '(document-mode base-mode)
                                        :parent-buffer parent-buffer))
 
 (-> add-to-recent-buffers (buffer) *)
@@ -1677,6 +1677,6 @@ That is, the one with the most recent access time."
   (ffi-inspector-show (current-buffer)))
 
 (export-always 'print-buffer)
-(define-command print-buffer ()         ; TODO: Move to `web-mode'?
+(define-command print-buffer ()         ; TODO: Move to `document-mode'?
   "Print the current buffer."
   (peval (print)))

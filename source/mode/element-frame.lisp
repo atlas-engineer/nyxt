@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt/web-mode)
+(in-package :nyxt/document-mode)
 
 (define-class html-element ()
   ((body ""))

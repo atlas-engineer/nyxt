@@ -121,12 +121,12 @@ See also `vi-normal-mode' and `vi-insert-mode'."
   ;; First we generate a button1 event so that the web view element is clicked
   ;; (e.g. a text field gets focus).
   (forward-to-renderer :window (current-window) :buffer buffer)
-  (let ((response (nyxt/web-mode:%clicked-in-input? buffer)))
+  (let ((response (nyxt/document-mode:%clicked-in-input? buffer)))
     (cond
-      ((and (nyxt/web-mode:input-tag-p response)
+      ((and (nyxt/document-mode:input-tag-p response)
             (find-submode 'vi-normal-mode buffer))
        (enable-modes '(vi-insert-mode) buffer))
-      ((and (not (nyxt/web-mode:input-tag-p response))
+      ((and (not (nyxt/document-mode:input-tag-p response))
             (find-submode 'nyxt/vi-mode:vi-insert-mode buffer))
        (enable-modes '(vi-normal-mode) buffer)))))
 
@@ -134,5 +134,5 @@ See also `vi-normal-mode' and `vi-insert-mode'."
   (declare (ignore url))
   (enable-modes '(vi-normal-mode)))
 
-(defmethod nyxt/web-mode:element-focused ((mode vi-normal-mode))
+(defmethod nyxt/document-mode:element-focused ((mode vi-normal-mode))
   (enable-modes '(vi-insert-mode)))

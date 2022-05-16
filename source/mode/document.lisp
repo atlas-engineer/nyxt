@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/web-mode
+(uiop:define-package :nyxt/document-mode
   (:use :common-lisp :nyxt)
   (:shadow #:focus-first-input-field)
   (:import-from #:keymap #:define-key #:define-scheme)
@@ -10,16 +10,16 @@
                 #:export-always
                 #:->)
   (:documentation "Mode for web pages"))
-(in-package :nyxt/web-mode)
+(in-package :nyxt/document-mode)
 (use-nyxt-package-nicknames)
 
-;; TODO: Remove web-mode from special buffers (e.g. help).
+;; TODO: Remove document-mode from special buffers (e.g. help).
 ;; This is required because special buffers cannot be part of a history (and it breaks it).
 ;; Bind C-l to set-url-new-buffer?  Wait: What if we click on a link?  url
 ;; changes in special buffers should open a new one.
 ;; Or else we require that all special-buffer-generating commands open a new buffer.
 
-(define-mode web-mode ()
+(define-mode document-mode ()
   "Base mode for interacting with documents."
   ((rememberable-p nil)
    (keymap-scheme
@@ -268,11 +268,11 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
           (when item
             item))))))
 
-(defmethod nyxt:on-signal-load-committed ((mode web-mode) url)
+(defmethod nyxt:on-signal-load-committed ((mode document-mode) url)
   (declare (ignore mode url))
   nil)
 
-(defmethod nyxt:on-signal-load-finished ((mode web-mode) url)
+(defmethod nyxt:on-signal-load-finished ((mode document-mode) url)
   (reset-page-zoom :buffer (buffer mode)
                    :ratio (current-zoom-ratio (buffer mode)))
   url)
@@ -524,4 +524,4 @@ of buffers."
       (:h1 "Headings")
       (:raw (headings->html (group-headings (get-headings)))))))
 
-(pushnew 'web-mode nyxt::%default-modes)
+(pushnew 'document-mode nyxt::%default-modes)

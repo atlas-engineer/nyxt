@@ -83,4 +83,4 @@ effectively disable `dark-mode' you must also reload the buffer."
 (defmethod apply-style ((mode dark-mode))
   (if (style mode)
       (nyxt::html-set-style (style mode) (buffer mode))
-      (nyxt/web-mode::darken (buffer mode))))
+      (nyxt/document-mode::darken (buffer mode))))

@@ -101,12 +101,12 @@ active modes, the URL, and the title of the current buffer.")
    (:h3 "Moving within a buffer")
    (:p "To move within a buffer, several commands are provided:")
    (:ul
-    (list-command-information '(nyxt/web-mode:scroll-down
-                                nyxt/web-mode:scroll-up
-                                nyxt/web-mode:scroll-page-down
-                                nyxt/web-mode:scroll-page-up
-                                nyxt/web-mode:scroll-to-bottom
-                                nyxt/web-mode:scroll-to-top)))
+    (list-command-information '(nyxt/document-mode:scroll-down
+                                nyxt/document-mode:scroll-up
+                                nyxt/document-mode:scroll-page-down
+                                nyxt/document-mode:scroll-page-up
+                                nyxt/document-mode:scroll-to-bottom
+                                nyxt/document-mode:scroll-to-top)))
    (:h3 "Setting the URL")
    (:p "When ambiguous URLs are inputted, Nyxt will attempt the best guess it
 can. If you do not supply a protocol in a URL, HTTPS will be assumed. To
@@ -121,16 +121,16 @@ full URL including the 'http://' prefix.")
    (:p "Unlike other web browsers, Nyxt provides powerful ways of copying
    and pasting content via different commands. Starting from:")
    (:ul
-    (list-command-information '(nyxt/web-mode:copy nyxt/web-mode:paste)))
+    (list-command-information '(nyxt/document-mode:copy nyxt/document-mode:paste)))
    (:p "Passing through webpage's data:")
    (:ul
-    (list-command-information '(copy-url copy-title nyxt/web-mode:copy-placeholder nyxt/hint-mode:copy-hint-url)))
+    (list-command-information '(copy-url copy-title nyxt/document-mode:copy-placeholder nyxt/hint-mode:copy-hint-url)))
    (:p "Leveraging password managers: ")
    (:ul
     (list-command-information '(nyxt/password-mode:copy-username nyxt/password-mode:copy-password nyxt/password-mode:copy-password-prompt-details)))
    (:p "And more: ")
    (:ul
-    (list-command-information '(nyxt/web-mode:paste-from-clipboard-ring show-system-information)))
+    (list-command-information '(nyxt/document-mode:paste-from-clipboard-ring show-system-information)))
    (:h3 "Link navigation")
    (:p "Link-hinting allows you to visit URLs on a page without using the mouse.
 Invoke one of the commands below: several hints will appear on screen and all
@@ -220,16 +220,16 @@ buffer.")
    (:h3 "Structural navigation")
    (:p "It is possible to navigate using the structure in between the file: ")
    (:ul
-    (list-command-information '(nyxt/web-mode:jump-to-heading
-                                nyxt/web-mode:previous-heading
-                                nyxt/web-mode:next-heading
-                                nyxt/web-mode:jump-to-heading-buffers)))
+    (list-command-information '(nyxt/document-mode:jump-to-heading
+                                nyxt/document-mode:previous-heading
+                                nyxt/document-mode:next-heading
+                                nyxt/document-mode:jump-to-heading-buffers)))
    (:p "And navigate to interconnected files: ")
    (:ul
-    (list-command-information '(nyxt/web-mode:go-next
-                                nyxt/web-mode:go-previous
-                                nyxt/web-mode:go-up
-                                nyxt/web-mode:go-to-homepage)))
+    (list-command-information '(nyxt/document-mode:go-next
+                                nyxt/document-mode:go-previous
+                                nyxt/document-mode:go-up
+                                nyxt/document-mode:go-to-homepage)))
    (:h3 "Spelling check")
    (:p "Several commands are provided to spell check words. The default is
 English but it is possible to change the slot for other languages:")
@@ -321,7 +321,7 @@ automate the reading experience:")
    (:p "Symmetrically, it is possible to automate the filling of forms: ")
    (:ul
     (list-command-information '(nyxt/autofill-mode:autofill
-                                nyxt/web-mode::toggle-checkboxes)))
+                                nyxt/document-mode::toggle-checkboxes)))
    (:p "In addition, it is possible to automate actions over time: "
    (:ul
     (list-command-information '(nyxt/watch-mode:watch-mode))
@@ -342,13 +342,13 @@ for other modes previously mentioned, such as " (:code
 'nyxt/repeat-mode:repeat-mode) ". The extension relationship goes further, since
 " (:code 'nyxt/cruise-control-mode:cruise-control-mode) " is in its turn an
 extension and a composition of " (:code 'nyxt/repeat-mode:repeat-mode) " and "
-(:code 'nyxt/web-mode:scroll-down) ". Further extensions and compositions can be
+(:code 'nyxt/document-mode:scroll-down) ". Further extensions and compositions can be
 creatively tailor-made by users to automate their own use of Nyxt.")
    (:h3 "Miscellaneous")
    (:ul
-    (list-command-information '(nyxt/web-mode:zoom-page
-                                nyxt/web-mode:unzoom-page
-                                nyxt/web-mode:reset-page-zoom
+    (list-command-information '(nyxt/document-mode:zoom-page
+                                nyxt/document-mode:unzoom-page
+                                nyxt/document-mode:reset-page-zoom
                                 nyxt/autofill-mode::autofill
                                 download-open-file
                                 edit-with-external-editor)))

@@ -74,7 +74,7 @@ For instance, keyboard layouts vary across the world. The slot "
    (:ol
     (:li "Execute command " (command-markup 'describe-slot) ";")
     (:li "Type " (:code 'hints-alphabet)";")
-    (:li "Select " (:code "hints-alphabet") " (" (:code "user-web-mode") " class option);")
+    (:li "Select " (:code "hints-alphabet") " (" (:code "hint-mode") " class option);")
     (:li "Press the button " (:code "Configure") ", and;")
     (:li "Insert the string \"asfdghjkl\"") ".")
    (:p "This will make link-hinting more comfortable for this user. In

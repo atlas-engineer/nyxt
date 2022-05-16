@@ -445,7 +445,7 @@ Only available if `prompter:multi-selection-p' is non-nil."
   "Select all the text in the prompt input."
   (ffi-buffer-select-all prompt-buffer))
 
-;; FIXME: Move scroll.lisp from web-mode so that prompt-buffer.lisp can reach
+;; FIXME: Move scroll.lisp from document-mode so that prompt-buffer.lisp can reach
 ;; it.  Ideas?
 
 (define-command-prompt scroll-other-buffer-up (prompt-buffer
@@ -478,5 +478,5 @@ Only available if `prompter:multi-selection-p' is non-nil."
   '(prompt-buffer-mode))
 (defmethod default-modes :around ((buffer prompt-buffer))
   ;; TODO: `prompt-buffer' should not be a web-buffer.
-  (set-difference (call-next-method) (list (resolve-symbol :web-mode :mode)
+  (set-difference (call-next-method) (list (resolve-symbol :document-mode :mode)
                                            (resolve-symbol :base-mode :mode))))
