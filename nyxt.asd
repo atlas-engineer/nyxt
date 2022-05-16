@@ -165,7 +165,6 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "vi")
                  (:file "blocker")
                  (:file "proxy")
-                 (:file "download")
                  (:file "process")))
                (:module "web-mode commands"
                 :pathname "mode"
@@ -179,6 +178,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "spell-check")))
                #+quicklisp
                (:file "lisp-system" :depends-on ("Core modes"))
+               (:file "download" :depends-on ("Core modes"))
                (:file "status" :depends-on ("Core"))
                (:file "start" :depends-on ("Core"))
                (:module "Editor modes"
