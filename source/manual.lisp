@@ -329,9 +329,7 @@ say to develop Nyxt or extensions.")
 
 ;; Make new profile the default:
 \(define-configuration buffer
-  ((profile (make-instance (or (find-profile-class (getf *options* :profile)) 'dev-profile)))
-   (bookmarks-file (make-instance 'bookmarks-file
-                                  :base-path \"~/personal/bookmarks/bookmarks.lisp.gpg\"))))"))
+  ((profile (make-instance (or (find-profile-class (getf *options* :profile)) 'dev-profile)))))"))
    (:p "Then you can start a separate instance of Nyxt using this profile
 with " (:code "nyxt --profile dev --socket /tmp/nyxt.socket") ".")
 
