@@ -132,7 +132,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
   "Create a new buffer with the annotations of the current URL of BUFFER."
   (let ((annotations (files:content (annotations-file buffer))))
     (let ((filtered-annotations (remove-if-not (lambda (i)
-                                                 (nyxt::url-equal (quri:uri (url i)) (url source-buffer)))
+                                                 (url-equal (quri:uri (url i)) (url source-buffer)))
                                                annotations)))
       (render-annotations :annotations filtered-annotations))))
 
