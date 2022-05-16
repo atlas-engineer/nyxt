@@ -429,22 +429,6 @@ modes."
                :multi-selection-p nil
                :selector "a, img"))
 
-(define-command bookmark-hint ()
-  "Prompt for element hints and bookmark them."
-  (query-hints "Bookmark hint"
-               (lambda (result)
-                 (dolist (url (mapcar #'url result))
-                   (let ((tags (prompt
-                                :prompt "Tag(s)"
-                                :sources (list
-                                          (make-instance 'prompter:word-source
-                                                         :name "New tags"
-                                                         :multi-selection-p t)
-                                          (make-instance 'nyxt::tag-source
-                                                         :marks (url-bookmark-tags url))))))
-                     (bookmark-add url :tags tags :title (fetch-url-title url)))))
-               :selector "a, img"))
-
 (define-command download-hint-url ()
   "Prompt for element hints and download them."
   (let ((buffer (current-buffer)))

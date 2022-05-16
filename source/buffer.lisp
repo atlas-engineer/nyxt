@@ -348,10 +348,6 @@ such as :lisp or :renderer.")
     :type history-file
     :documentation "
 The file where the system will create/save the global history.")
-   (bookmarks-file
-    (make-instance 'bookmarks-file)
-    :type bookmarks-file
-    :documentation "The file where the system will create/save the bookmarks.")
    (no-procrastinate-hosts-file
     (make-instance 'no-procrastinate-hosts-file)
     :type no-procrastinate-hosts-file
@@ -407,6 +403,7 @@ This is useful when there is no current buffer.")
       ;; TODO: No need for `resolve-symbol' if we move `context-buffer'
       ;; declaration in a separate file, loaded after modes.
       (resolve-symbol :annotate-mode :mode)
+      (resolve-symbol :bookmark-mode :mode)
       (resolve-symbol :history-mode :mode)
       (resolve-symbol :password-mode :mode))
      %default-modes))

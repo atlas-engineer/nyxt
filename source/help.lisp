@@ -998,12 +998,13 @@ System information is also saved into the clipboard."
   "Print a dashboard."
   (flet ((list-bookmarks (&key (separator " → "))
            (spinneret:with-html-string
-             (or (let ((bookmarks (files:content (bookmarks-file (current-buffer)))))
-                   (loop for bookmark in bookmarks
-                         collect (:li (title bookmark) separator
-                                      (:a :href (render-url (url bookmark))
-                                          (render-url (url bookmark))))))
-                 (:p (format nil "No bookmarks in ~s." (files:expand (bookmarks-file (current-buffer)))))))))
+             (let ((mode (make-instance 'nyxt/bookmark-mode:bookmark-mode)))
+               (or (let ((bookmarks (files:content (nyxt/bookmark-mode:bookmarks-file mode ))))
+                     (loop for bookmark in bookmarks
+                           collect (:li (title bookmark) separator
+                                        (:a :href (render-url (url bookmark))
+                                            (render-url (url bookmark))))))
+                   (:p (format nil "No bookmarks in ~s." (files:expand (nyxt/bookmark-mode:bookmarks-file mode)))))))))
     (let ((dashboard-style (theme:themed-css (theme *browser*)
                              (body
                               :color theme:text

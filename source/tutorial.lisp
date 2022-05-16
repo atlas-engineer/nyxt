@@ -164,9 +164,8 @@ place rather than having to jump around in a buffer (or multiple buffers).")
                                 nyxt/search-buffer-mode:remove-search-hints)))
    (:h3 "Bookmarks")
    (:p "The bookmark file "
-       (:code (let ((buffer (make-instance 'context-buffer)))
-                (unwind-protect (files:expand (bookmarks-file buffer))
-                  (buffer-delete buffer))))
+       (:code (let ((mode (make-instance 'nyxt/bookmark-mode:bookmark-mode)))
+                (files:expand (nyxt/bookmark-mode:bookmarks-file mode))))
        " is made to be human readable and editable.
 Bookmarks can have the following settings:")
    (:ul
@@ -175,12 +174,12 @@ Bookmarks can have the following settings:")
     (:li (:code ":tags") ": A list of strings.  Useful to categorize and filter bookmarks."))
    (:p "Bookmark-related commands")
    (:ul
-    (list-command-information '(bookmark-current-url bookmark-buffer-url
-                                bookmark-url nyxt/element-hint-mode:bookmark-hint
-                                set-url-from-bookmark delete-bookmark
+    (list-command-information '(nyxt/bookmark-mode:bookmark-current-url nyxt/bookmark-mode:bookmark-buffer-url
+                                nyxt/bookmark-mode:bookmark-url nyxt/bookmark-mode:bookmark-hint
+                                nyxt/bookmark-mode:set-url-from-bookmark nyxt/bookmark-mode:delete-bookmark
                                 nyxt/bookmark-mode:list-bookmarks
-                                nyxt/bookmark-frequent-visits:bookmark-frequent-visits-mode
-                                import-bookmarks-from-html)))
+                                nyxt/bookmark-mode:import-bookmarks-from-html
+                                nyxt/bookmark-frequent-visits:bookmark-frequent-visits-mode)))
    (:h3 "Annotations")
    (:p "Annotations can have the following settings:")
    (:ul

@@ -28,14 +28,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "f5" 'reload-current-buffer
        "C-r" 'reload-current-buffer
        "C-R" 'reload-buffers
-       "C-m o" 'set-url-from-bookmark
-       "C-m s" 'bookmark-current-url
-       "C-d" 'bookmark-current-url
-       "C-m C-s" 'bookmark-buffer-url
-       "C-m k" 'delete-bookmark
        "C-t" 'make-buffer-focus
-       "C-m l" 'bookmark-url
-       "C-b" 'list-bookmarks
        "M-c l" 'copy-url
        "M-c t" 'copy-title
        "f1 f1" 'help
@@ -102,11 +95,6 @@ This mode is a good candidate to be passed to `make-buffer'."
        "M-7" (read-from-string "nyxt/repeat-mode:repeat-key")
        "M-8" (read-from-string "nyxt/repeat-mode:repeat-key")
        "M-9" (read-from-string "nyxt/repeat-mode:repeat-key")
-       "C-x r j" 'set-url-from-bookmark
-       "C-x r M" 'bookmark-current-url
-       "C-x r m" 'bookmark-buffer-url
-       "C-x r k" 'delete-bookmark
-       "C-x r l" 'bookmark-url
        "C-x 5 2" 'make-window
        "C-x 5 0" 'delete-current-window
        "C-x 5 1" 'delete-window
@@ -124,14 +112,8 @@ This mode is a good candidate to be passed to `make-buffer'."
        "o" 'set-url
        "O" 'set-url-new-buffer
        "g o" 'set-url-new-nosave-buffer
-       "m u" 'bookmark-url
-       "m d" 'delete-bookmark
        "R" 'reload-current-buffer
        "r" 'reload-buffers
-       "m o" 'set-url-from-bookmark
-       "m m" 'bookmark-buffer-url
-       "m M" 'bookmark-current-url
-       "m l" 'list-bookmarks
        "y u" 'copy-url
        "y t" 'copy-title
        ":" 'execute-command

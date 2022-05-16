@@ -168,16 +168,9 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "proxy")
                  (:file "download")
                  (:file "process")))
-               (:module "file-manager-mode deps"
-                :pathname ""
-                :depends-on ("Core modes")
-                :components
-                ((:file "bookmark")
-                 (:file "mode/bookmark-frequent-visits" :depends-on ("bookmark"))
-                 (:file "mode/bookmark" :depends-on ("bookmark"))))
                (:module "web-mode commands"
                 :pathname "mode"
-                :depends-on ("Core modes" "file-manager-mode deps")
+                :depends-on ("Core modes")
                 :components
                 ((:file "bookmarklets")
                  (:file "element-hint")
@@ -211,6 +204,8 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                 :components
                 ((:file "annotate")
                  (:file "autofill")
+                 (:file "bookmark")
+                 (:file "bookmark-frequent-visits" :depends-on ("bookmark"))
                  (:file "password")
                  (:file "repl")
                  (:file "small-web")
