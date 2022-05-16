@@ -11,7 +11,7 @@
   (:documentation "Mode for element hints."))
 (in-package :nyxt/search-buffer-mode)
 
-(define-mode search-buffer-mode (nyxt/element-hint-mode:element-hint-mode)
+(define-mode search-buffer-mode (nyxt/hint-mode:hint-mode)
   "Mode for searching text withing."
   ((rememberable-p nil)
    (keymap-scheme
@@ -41,8 +41,8 @@
     (unless (nyxt/ps:qs document "#nyxt-stylesheet")
       (ps:try
        (ps:let* ((style-element (ps:chain document (create-element "style")))
-                 (box-style (ps:lisp (nyxt/element-hint-mode:box-style (find-submode 'search-buffer-mode))))
-                 (highlighted-style (ps:lisp (nyxt/element-hint-mode:highlighted-box-style (find-submode 'search-buffer-mode)))))
+                 (box-style (ps:lisp (nyxt/hint-mode:box-style (find-submode 'search-buffer-mode))))
+                 (highlighted-style (ps:lisp (nyxt/hint-mode:highlighted-box-style (find-submode 'search-buffer-mode)))))
          (setf (ps:@ style-element id) "nyxt-stylesheet")
          (ps:chain document head (append-child style-element))
          (ps:chain style-element sheet (insert-rule box-style 0))
@@ -141,7 +141,7 @@
    (buffer))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod nyxt/element-hint-mode:identifier ((match search-match))
+(defmethod nyxt/hint-mode:identifier ((match search-match))
   (identifier match))
 
 (defmethod prompter:object-attributes ((match search-match))
@@ -184,8 +184,8 @@
            (and (slot-exists-p hint 'buffer)
                 (equal (buffer hint) buffer)))
           (with-current-buffer buffer
-            (nyxt/element-hint-mode::highlight-selected-hint :element hint :scroll scroll))
-          (nyxt/element-hint-mode:remove-focus)))))
+            (nyxt/hint-mode::highlight-selected-hint :element hint :scroll scroll))
+          (nyxt/hint-mode:remove-focus)))))
 
 (define-class search-buffer-source (prompter:source)
   ((case-sensitive-p nil)
@@ -217,7 +217,7 @@
                           (declare (ignore prompter source))
                           (unless (keep-search-hints-p (current-buffer))
                             (remove-search-hints))
-                          (nyxt/element-hint-mode:remove-focus))))
+                          (nyxt/hint-mode:remove-focus))))
   (:export-accessor-names-p t)
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))

@@ -441,7 +441,7 @@ rest in background buffers."
 
 (define-command bookmark-hint ()
   "Prompt for element hints and bookmark them."
-  (nyxt/element-hint-mode:query-hints
+  (nyxt/hint-mode:query-hints
    "Bookmark hint"
    (lambda (result)
      (dolist (url (mapcar #'url result))

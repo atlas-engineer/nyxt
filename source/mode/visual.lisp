@@ -8,10 +8,10 @@
 (in-package :nyxt/visual-mode)
 (use-nyxt-package-nicknames)
 
-(define-mode visual-mode (nyxt/element-hint-mode:element-hint-mode)
+(define-mode visual-mode (nyxt/hint-mode:hint-mode)
   "Visual mode. For documentation on commands and keybindings, see the manual."
   ((rememberable-p nil)
-   (nyxt/element-hint-mode:hints-selector
+   (nyxt/hint-mode:hints-selector
     "a, b, p, del, h1, h2, h3, h4, h5, h6, i, option,
 strong, sub, sup, listing, xmp, plaintext, basefont, big, blink, center, font,
 marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
@@ -138,9 +138,9 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
 
 (define-command select-paragraph ()
   "Add hints to text elements on the page and query them."
-  (nyxt/element-hint-mode:query-hints "Set caret on element"
+  (nyxt/hint-mode:query-hints "Set caret on element"
                (lambda (results) (%follow-hint (first results)))
-               :selector (nyxt/element-hint-mode:hints-selector
+               :selector (nyxt/hint-mode:hints-selector
                           (find-submode 'visual-mode))))
 
 (define-parenscript collapsed-p ()
