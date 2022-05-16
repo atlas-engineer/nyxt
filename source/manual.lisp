@@ -346,8 +346,8 @@ any of the password interfaces to configure them. Please make sure to
 use the package prefixed class name/slot designators within
 the " (:code "define-configuration") " macro.")
    (:ul
-    (:li (command-markup 'save-new-password) ": Query for name and new password to persist in the database.")
-    (:li (command-markup 'copy-password) ": " (command-docstring-first-sentence 'copy-password)))
+    (:li (command-markup 'nyxt/password-mode:save-new-password) ": Query for name and new password to persist in the database.")
+    (:li (command-markup 'nyxt/password-mode:copy-password) ": " (command-docstring-first-sentence 'nyxt/password-mode:copy-password)))
 
    (:h3 "Appearance")
    (:p "Much of the visual style can be configured by the user.  Search the
