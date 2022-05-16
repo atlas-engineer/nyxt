@@ -127,7 +127,7 @@ full URL including the 'http://' prefix.")
     (list-command-information '(copy-url copy-title nyxt/web-mode:copy-placeholder nyxt/element-hint-mode:copy-hint-url)))
    (:p "Leveraging password managers: ")
    (:ul
-    (list-command-information '(copy-username copy-password copy-password-prompt-details)))
+    (list-command-information '(nyxt/password-mode:copy-username nyxt/password-mode:copy-password nyxt/password-mode:copy-password-prompt-details)))
    (:p "And more: ")
    (:ul
     (list-command-information '(nyxt/web-mode:paste-from-clipboard-ring show-system-information)))
@@ -321,7 +321,7 @@ automate the reading experience:")
     (list-command-information '(nyxt/cruise-control-mode:cruise-control-mode)))
    (:p "Symmetrically, it is possible to automate the filling of forms: ")
    (:ul
-    (list-command-information '(autofill
+    (list-command-information '(nyxt/autofill-mode:autofill
                                 nyxt/web-mode::toggle-checkboxes)))
    (:p "In addition, it is possible to automate actions over time: "
    (:ul
@@ -350,7 +350,7 @@ creatively tailor-made by users to automate their own use of Nyxt.")
     (list-command-information '(nyxt/web-mode:zoom-page
                                 nyxt/web-mode:unzoom-page
                                 nyxt/web-mode:reset-page-zoom
-                                nyxt/web-mode::autofill
+                                nyxt/autofill-mode::autofill
                                 download-open-file
                                 edit-with-external-editor)))
 
