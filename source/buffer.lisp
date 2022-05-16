@@ -348,11 +348,6 @@ such as :lisp or :renderer.")
     :type history-file
     :documentation "
 The file where the system will create/save the global history.")
-   (no-procrastinate-hosts-file
-    (make-instance 'no-procrastinate-hosts-file)
-    :type no-procrastinate-hosts-file
-    :documentation "The file where the system will create/save hosts associated
-to procrastination that should be blocked.")
    (inputs-file
     (make-instance 'inputs-file)
     :type inputs-file
