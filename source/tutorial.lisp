@@ -192,8 +192,8 @@ the URL.")
     (:li (:code ":tags") ": A list of strings.  Useful to categorize and filter annotations."))
    (:p "Annotate-related commands")
    (:ul
-    (list-command-information '(annotate-current-url annotate-highlighted-text
-                                show-annotation show-annotations show-annotations-for-current-url)))
+    (list-command-information '(nyxt/annotate-mode:annotate-current-url nyxt/annotate-mode:annotate-highlighted-text
+                                nyxt/annotate-mode:show-annotation nyxt/annotate-mode:show-annotations nyxt/annotate-mode:show-annotations-for-current-url)))
    (:h3 "Passthrough mode")
    (:p "The command " (:code "passthrough-mode") " forwards all keys to the
 renderer. For instance, using the default binding of Nyxt (" (:code "web-cua-map") ") the

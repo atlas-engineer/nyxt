@@ -113,7 +113,8 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
    (prompter:multi-selection-p t)
    (prompter:constructor (lambda (source)
                            (mapcar #'car (keywords (buffer source))))))
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:export-class-name-p t))
 
 (define-panel-global bookmarks ()
     (panel-buffer "*Bookmarks panel*")

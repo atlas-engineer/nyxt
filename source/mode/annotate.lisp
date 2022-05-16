@@ -1,7 +1,26 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt)
+(uiop:define-package :nyxt/annotate-mode
+  (:use :common-lisp :nyxt)
+  (:import-from #:class-star #:define-class)
+  (:import-from #:keymap #:define-key #:define-scheme)
+  (:import-from #:serapeum #:->)
+  (:documentation "Mode to annotate documents.
+Annotations are persisted to disk."))
+(in-package :nyxt/annotate-mode)
+(use-nyxt-package-nicknames)
+
+(define-mode annotate-mode ()
+  "Annotate document with arbitrary comments.
+Annotations are persisted to disk, see the `annotations-file' mode slot."
+  ((annotations-file
+    (make-instance 'annotations-file)
+    :type annotations-file
+    :documentation "The file where to save annotations.")))
+
+(defmethod annotations-file ((buffer buffer))
+  (annotations-file (find-submode 'annotate-mode buffer)))
 
 (define-class annotations-file (files:data-file nyxt-lisp-file)
   ((files:base-path #p"annotations")
@@ -57,19 +76,18 @@
 (defun annotations ()
   (files:content (annotations-file (current-buffer))))
 
-(define-command annotate-current-url (&optional (buffer-id (id (current-buffer))))
-  "Create an annotation of the URL of buffer with BUFFER-ID."
-  (let* ((buffer (buffers-get buffer-id))
-         (data (prompt1
-                    :prompt "Annotation"
-                    :sources (list (make-instance 'prompter:raw-source
-                                                  :name "Note"))))
+(define-command annotate-current-url (&optional (buffer (current-buffer)))
+  "Create an annotation of the URL of BUFFER."
+  (let* ((data (prompt1
+                 :prompt "Annotation"
+                 :sources (list (make-instance 'prompter:raw-source
+                                               :name "Note"))))
          (tags (prompt
                 :prompt "Tag(s)"
                 :sources (list (make-instance 'prompter:word-source
                                               :name "New tags"
                                               :multi-selection-p t)
-                               (make-instance 'keyword-source :buffer buffer)
+                               (make-instance 'nyxt::keyword-source :buffer buffer)
                                (make-instance 'annotation-tag-source))))
          (annotation (make-instance 'url-annotation
                                     :url (url buffer)
@@ -109,12 +127,12 @@
                         (:hr)))))
 
 (define-internal-page-command-global show-annotations-for-current-url
-    (&key (source-buffer-id (id (current-buffer))))
+    (&key (source-buffer (current-buffer)))
     (buffer "*Annotations*" 'base-mode)
   "Create a new buffer with the annotations of the current URL of BUFFER."
   (let ((annotations (files:content (annotations-file buffer))))
     (let ((filtered-annotations (remove-if-not (lambda (i)
-                                                 (url-equal (quri:uri (url i)) (url (buffers-get source-buffer-id))))
+                                                 (nyxt::url-equal (quri:uri (url i)) (url source-buffer)))
                                                annotations)))
       (render-annotations :annotations filtered-annotations))))
 
@@ -130,10 +148,10 @@
       (prompter:delete-inexact-matches
        initial-suggestions-copy
        source
-       (last-word input))))
+       (nyxt::last-word input))))
    (prompter:filter
     (lambda (suggestion source input)
-      (prompter:fuzzy-match suggestion source (last-word input))))
+      (prompter:fuzzy-match suggestion source (nyxt::last-word input))))
    (prompter:multi-selection-p t)
    (prompter:constructor
     (let ((annotations (files:content (annotations-file (current-buffer)))))
