@@ -172,7 +172,7 @@ Bookmarks can also be used as search engines, see the corresponding section.")
        (:code (format nil "~{~a~^, ~}"
                       (mapcar (lambda (engine)
                                 (quri:uri-host (quri:uri (getf engine :search-url))))
-                              (rest (getf (mopu:slot-properties 'buffer 'search-engines)
+                              (rest (getf (mopu:slot-properties 'context-buffer 'search-engines)
                                           :initform)))))
        ". "
        "The following example shows one way to add new search engines.")
@@ -346,8 +346,8 @@ any of the password interfaces to configure them. Please make sure to
 use the package prefixed class name/slot designators within
 the " (:code "define-configuration") " macro.")
    (:ul
-    (:li (command-markup 'save-new-password) ": Query for name and new password to persist in the database.")
-    (:li (command-markup 'copy-password) ": " (command-docstring-first-sentence 'copy-password)))
+    (:li (command-markup 'nyxt/password-mode:save-new-password) ": Query for name and new password to persist in the database.")
+    (:li (command-markup 'nyxt/password-mode:copy-password) ": " (command-docstring-first-sentence 'nyxt/password-mode:copy-password)))
 
    (:h3 "Appearance")
    (:p "Much of the visual style can be configured by the user.  Search the
