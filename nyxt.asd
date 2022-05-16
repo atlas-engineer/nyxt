@@ -172,8 +172,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                 :pathname ""
                 :depends-on ("Core modes")
                 :components
-                ((:file "mode/password")
-                 (:file "bookmark")
+                ((:file "bookmark")
                  (:file "mode/bookmark-frequent-visits" :depends-on ("bookmark"))
                  (:file "mode/bookmark" :depends-on ("bookmark"))))
                (:module "web-mode commands"
@@ -187,7 +186,6 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "jump-heading")
                  (:file "search-buffer" :depends-on ("element-hint"))
                  (:file "spell-check")))
-               (:file "annotate" :depends-on ("Core modes"))
                #+quicklisp
                (:file "lisp-system" :depends-on ("Core modes"))
                (:file "status" :depends-on ("Core"))
@@ -211,7 +209,9 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                 :pathname "mode"
                 :depends-on ("Core modes")
                 :components
-                ((:file "autofill")
+                ((:file "annotate")
+                 (:file "autofill")
+                 (:file "password")
                  (:file "repl")
                  (:file "small-web")
                  (:file "reading-line")

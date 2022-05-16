@@ -311,14 +311,17 @@ This is useful when there is no current buffer.")
   (:method append ((buffer context-buffer))
     (append
      (list
-      ;; TODO: No need for `resolve-symbol' if we move `context-buffer' declaration in a separate file, loaded after modes.
-      (resolve-symbol :history-mode :mode) ; TODO: Maybe add to context-buffer instead?
+      ;; TODO: No need for `resolve-symbol' if we move `context-buffer'
+      ;; declaration in a separate file, loaded after modes.
+      (resolve-symbol :annotate-mode :mode)
+      (resolve-symbol :history-mode :mode)
       (resolve-symbol :password-mode :mode))
      %default-modes))
   (:method append ((buffer document-buffer))
     (append
      (list
-      ;; TODO: No need for `resolve-symbol' if we move `document-buffer' declaration in a separate file, loaded after modes.
+      ;; TODO: No need for `resolve-symbol' if we move `document-buffer'
+      ;; declaration in a separate file, loaded after modes.
       (resolve-symbol :element-hint-mode :mode)
       (resolve-symbol :search-buffer-mode :mode)
       (resolve-symbol :autofill-mode :mode) ; TODO: Remove from default?
@@ -398,10 +401,6 @@ The file where the system will create/save the global history.")
     :type no-procrastinate-hosts-file
     :documentation "The file where the system will create/save hosts associated
 to procrastination that should be blocked.")
-   (annotations-file
-    (make-instance 'annotations-file)
-    :type annotations-file
-    :documentation "The file where the system will create/save annotations.")
    (inputs-file
     (make-instance 'inputs-file)
     :type inputs-file
