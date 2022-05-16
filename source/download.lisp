@@ -105,47 +105,13 @@ appearance in the buffer when they are setf'd."
   (user-interface:connect (cancel-button download) buffer)
   (user-interface:connect (progress download) buffer))
 
-;; TODO: Move to separate package
-(define-mode download-mode ()
-  "Display list of downloads."
-  ((rememberable-p nil)
-   (style
-       (theme:themed-css (theme *browser*)
-         (".download"
-          :margin-top "10px"
-          :padding-left "5px"
-          :background-color theme:background
-          :color theme:text
-          :brightness "80%"
-          :border-radius "3px")
-         (".download-url"
-          :overflow "auto"
-          :white-space "nowrap")
-         (".download-url a"
-          :font-size "small"
-          :color theme:text)
-         (".status p"
-          :display "inline-block"
-          :margin-right "10px")
-         (".progress-bar-container"
-          :height "20px"
-          :width "100%")
-         (".progress-bar-base"
-          :height "100%"
-          :background-color theme:secondary)
-         (".progress-bar-fill"
-          :height "100%"
-          :background-color theme:tertiary))))
-  (:toggler-command-p nil))
-
-
 (define-internal-page-command-global list-downloads ()
-    (buffer "*Downloads*" 'download-mode)
+    (buffer "*Downloads*" 'base-mode)
   "Display a buffer listing all downloads.
 We iterate through the browser's downloads to draw every single
 download."
   (spinneret:with-html-string
-    (:style (style (find-submode 'download-mode)))
+    (:style (style (download-style buffer)))
     (:h1 "Downloads")
     (:hr)
     (:div

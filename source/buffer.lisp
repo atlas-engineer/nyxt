@@ -343,6 +343,33 @@ query is not a valid URL, or the first keyword is not recognized.")
     :type symbol
     :documentation "Select a download engine to use,
 such as :lisp or :renderer.")
+   (download-style
+    (theme:themed-css (theme *browser*)
+      (".download"
+       :margin-top "10px"
+       :padding-left "5px"
+       :background-color theme:background
+       :color theme:text
+       :brightness "80%"
+       :border-radius "3px")
+      (".download-url"
+       :overflow "auto"
+       :white-space "nowrap")
+      (".download-url a"
+       :font-size "small"
+       :color theme:text)
+      (".status p"
+       :display "inline-block"
+       :margin-right "10px")
+      (".progress-bar-container"
+       :height "20px"
+       :width "100%")
+      (".progress-bar-base"
+       :height "100%"
+       :background-color theme:secondary)
+      (".progress-bar-fill"
+       :height "100%"
+       :background-color theme:tertiary)))
    (history-file
     (make-instance 'history-file)
     :type history-file
