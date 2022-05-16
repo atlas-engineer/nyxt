@@ -308,16 +308,21 @@ This is useful when there is no current buffer.")
   (:method-combination append)
   (:method append ((buffer buffer))
     '())
+  (:method append ((buffer context-buffer))
+    (append
+     (list
+      ;; TODO: No need for `resolve-symbol' if we move `context-buffer' declaration in a separate file, loaded after modes.
+      (resolve-symbol :history-mode :mode) ; TODO: Maybe add to context-buffer instead?
+      (resolve-symbol :password-mode :mode))
+     %default-modes))
   (:method append ((buffer document-buffer))
     (append
      (list
       ;; TODO: No need for `resolve-symbol' if we move `document-buffer' declaration in a separate file, loaded after modes.
-      (resolve-symbol :history-mode :mode) ; TODO: Maybe add to context-buffer instead?
       (resolve-symbol :element-hint-mode :mode)
       (resolve-symbol :search-buffer-mode :mode)
       (resolve-symbol :autofill-mode :mode) ; TODO: Remove from default?
-      (resolve-symbol :spell-check-mode :mode)
-      (resolve-symbol :password-mode :mode))
+      (resolve-symbol :spell-check-mode :mode))
      %default-modes))
   (:documentation "The symbols of the modes to instantiate on buffer creation.
 The mode instances are stored in the `modes' BUFFER slot.
