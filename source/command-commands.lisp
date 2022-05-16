@@ -49,7 +49,7 @@
                            (sort-by-time
                             (list-commands
                              :global-p (global-p source)
-                             :mode-symbols (mapcar #'sera:class-name-of (modes (buffer source))))))))
+                             :mode-symbols (mapcar #'sera:class-name-of (sera:filter #'enabled-p (modes (buffer source)))))))))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "Prompter source to execute commands.
