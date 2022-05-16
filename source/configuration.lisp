@@ -324,6 +324,12 @@ Example:
   "Return a new ring buffer."
   (containers:make-ring-buffer size :last-in-first-out))
 
+(export-always 'last-word)
+(defun last-word (s)
+  (if (uiop:emptyp s)
+      ""
+      (alex:last-elt (sera:words s))))
+
 (export-always 'trim-list)
 (defun trim-list (list &optional (limit 100))
   (handler-case

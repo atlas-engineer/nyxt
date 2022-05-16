@@ -148,10 +148,10 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
       (prompter:delete-inexact-matches
        initial-suggestions-copy
        source
-       (nyxt::last-word input))))
+       (last-word input))))
    (prompter:filter
     (lambda (suggestion source input)
-      (prompter:fuzzy-match suggestion source (nyxt::last-word input))))
+      (prompter:fuzzy-match suggestion source (last-word input))))
    (prompter:multi-selection-p t)
    (prompter:constructor
     (let ((annotations (files:content (annotations-file (current-buffer)))))
