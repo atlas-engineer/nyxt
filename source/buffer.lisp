@@ -430,7 +430,7 @@ This is useful when there is no current buffer.")
      (list
       ;; TODO: No need for `resolve-symbol' if we move `document-buffer'
       ;; declaration in a separate file, loaded after modes.
-      (resolve-symbol :element-hint-mode :mode)
+      (resolve-symbol :hint-mode :mode)
       (resolve-symbol :search-buffer-mode :mode)
       (resolve-symbol :autofill-mode :mode) ; TODO: Remove from default?
       (resolve-symbol :spell-check-mode :mode))

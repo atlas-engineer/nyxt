@@ -22,7 +22,7 @@
 (define-mode file-manager-mode (nyxt/prompt-buffer-mode:prompt-buffer-mode)
   "Prompt buffer mode for file choosing."
   ((keymap-scheme
-    (define-scheme "element-hint"
+    (define-scheme "hint"
       scheme:cua
       (list
        "C-backspace" 'directory-up)

@@ -31,8 +31,8 @@ Multiple key presses can be chained: in 'C-x C-s', you would have to press
                                 switch-buffer-previous
                                 nyxt/history-mode:history-backwards
                                 nyxt/history-mode:history-forwards
-                                nyxt/element-hint-mode:follow-hint
-                                nyxt/element-hint-mode:follow-hint-new-buffer
+                                nyxt/hint-mode:follow-hint
+                                nyxt/hint-mode:follow-hint-new-buffer
                                 quit execute-command describe-bindings)))
 
    (:h3 "Buffers")
@@ -124,7 +124,7 @@ full URL including the 'http://' prefix.")
     (list-command-information '(nyxt/web-mode:copy nyxt/web-mode:paste)))
    (:p "Passing through webpage's data:")
    (:ul
-    (list-command-information '(copy-url copy-title nyxt/web-mode:copy-placeholder nyxt/element-hint-mode:copy-hint-url)))
+    (list-command-information '(copy-url copy-title nyxt/web-mode:copy-placeholder nyxt/hint-mode:copy-hint-url)))
    (:p "Leveraging password managers: ")
    (:ul
     (list-command-information '(nyxt/password-mode:copy-username nyxt/password-mode:copy-password nyxt/password-mode:copy-password-prompt-details)))
@@ -137,9 +137,9 @@ Invoke one of the commands below: several hints will appear on screen and all
 links on the page will be listed in the prompt buffer.  You can select the hints
 by matching against the hint, the URL or the title.")
    (:ul
-    (list-command-information '(nyxt/element-hint-mode:follow-hint
-                                nyxt/element-hint-mode:follow-hint-new-buffer-focus
-                                nyxt/element-hint-mode:follow-hint-new-buffer)))
+    (list-command-information '(nyxt/hint-mode:follow-hint
+                                nyxt/hint-mode:follow-hint-new-buffer-focus
+                                nyxt/hint-mode:follow-hint-new-buffer)))
    (:h3 "Using the buffer history")
    (:p "History is represented as a tree that you can traverse: when you go back
 in history, then follow a new URL, it effectively creates a new branch without

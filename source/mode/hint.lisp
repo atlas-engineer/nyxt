@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/element-hint-mode ; TODO: Rename to `hint-mode'?
+(uiop:define-package :nyxt/hint-mode ; TODO: Rename to `hint-mode'?
   (:use :common-lisp :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:import-from #:class-star #:define-class)
@@ -9,10 +9,10 @@
                 #:export-always
                 #:->)
   (:documentation "Mode for element hints."))
-(in-package :nyxt/element-hint-mode)
+(in-package :nyxt/hint-mode)
 (use-nyxt-package-nicknames)
 
-(define-mode element-hint-mode ()
+(define-mode hint-mode ()
   "Mode to interact with links using keyword only."
   ((rememberable-p nil)
    (auto-follow-hints-p
@@ -80,8 +80,8 @@ define which elements are picked up by element hinting.")
   (unless (nyxt/ps:qs document "#nyxt-stylesheet")
     (ps:try
      (ps:let* ((style-element (ps:chain document (create-element "style")))
-               (box-style (ps:lisp (box-style (find-submode 'nyxt/element-hint-mode:element-hint-mode))))
-               (highlighted-style (ps:lisp (highlighted-box-style (find-submode 'nyxt/element-hint-mode:element-hint-mode)))))
+               (box-style (ps:lisp (box-style (find-submode 'nyxt/hint-mode:hint-mode))))
+               (highlighted-style (ps:lisp (highlighted-box-style (find-submode 'nyxt/hint-mode:hint-mode)))))
        (setf (ps:@ style-element id) "nyxt-stylesheet")
        (ps:chain document head (append-child style-element))
        (ps:chain style-element sheet (insert-rule box-style 0))
@@ -130,11 +130,11 @@ define which elements are picked up by element hinting.")
 (-> generate-hints (integer) list-of-strings)
 (defun generate-hints (length)
   (unless (zerop length)
-    (let* ((alphabet (hints-alphabet (find-submode 'element-hint-mode)))
+    (let* ((alphabet (hints-alphabet (find-submode 'hint-mode)))
            (char-length (ceiling (log length (length alphabet)))))
       (loop for i below length collect (select-from-alphabet i char-length alphabet)))))
 
-(defun add-element-hints (&key selector)
+(defun add-hints (&key selector)
   (let* ((dom (document-model (current-buffer)))
          (hintable-elements (clss:select selector dom))
          (hints (generate-hints (length hintable-elements))))
@@ -147,7 +147,7 @@ define which elements are picked up by element hinting.")
           do (plump:set-attribute elem "nyxt-hint" hint)
           collect elem)))
 
-(define-parenscript remove-element-hints ()
+(define-parenscript remove-hints ()
   (defun hints-remove-all ()
     "Removes all the elements"
     (ps:dolist (element (nyxt/ps:qsa document ":not(.nyxt-search-node) > .nyxt-hint"))
@@ -218,7 +218,7 @@ define which elements are picked up by element hinting.")
 (serapeum:export-always 'query-hints)
 (defun query-hints (prompt function
                     &key (multi-selection-p t)
-                      (selector (hints-selector (find-submode 'element-hint-mode))))
+                      (selector (hints-selector (find-submode 'hint-mode))))
   "Prompt for elements matching SELECTOR, hinting them visually.
 MULTI-SELECTION-P defines whether several elements can be chosen.
 PROMPT is a text to show while prompting for hinted elements.
@@ -227,9 +227,9 @@ FUNCTION is the action to perform on the selected elements."
                    (result (prompt
                             :prompt prompt
                             ;; TODO: No need to find the symbol if we move this code (and
-                            ;; the rest) to the element-hint-mode package.
-                            :extra-modes (list (resolve-symbol :element-hint-prompt-buffer-mode :mode))
-                            :auto-return-p (auto-follow-hints-p (find-submode 'element-hint-mode))
+                            ;; the rest) to the hint-mode package.
+                            :extra-modes (list (resolve-symbol :hint-prompt-buffer-mode :mode))
+                            :auto-return-p (auto-follow-hints-p (find-submode 'hint-mode))
                             :history nil
                             :sources
                             (make-instance
@@ -237,9 +237,9 @@ FUNCTION is the action to perform on the selected elements."
                              :multi-selection-p multi-selection-p
                              :constructor (lambda (source)
                                             (declare (ignore source))
-                                            (add-element-hints :selector selector)))
+                                            (add-hints :selector selector)))
                             :after-destructor (lambda () (with-current-buffer buffer
-                                                      (remove-element-hints))))))
+                                                      (remove-hints))))))
     (funcall function result)))
 
 (defmethod prompter:object-attributes :around ((element plump:element))

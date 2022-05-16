@@ -171,10 +171,10 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                 :depends-on ("Core modes")
                 :components
                 ((:file "bookmarklets")
-                 (:file "element-hint")
-                 (:file "element-hint-prompt-buffer" :depends-on ("element-hint"))
+                 (:file "hint")
+                 (:file "hint-prompt-buffer" :depends-on ("hint"))
                  (:file "element-frame")
-                 (:file "search-buffer" :depends-on ("element-hint"))
+                 (:file "search-buffer" :depends-on ("hint"))
                  (:file "spell-check")))
                #+quicklisp
                (:file "lisp-system" :depends-on ("Core modes"))
