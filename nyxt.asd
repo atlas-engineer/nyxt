@@ -141,8 +141,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "command-commands")
                  (:file "recent-buffers")
                  (:file "history")
-                 (:file "external-editor")
-                 (:file "no-procrastinate")))
+                 (:file "external-editor")))
                (:module "Core modes"
                 :pathname "mode"
                 :depends-on ("Core")
