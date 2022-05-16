@@ -348,10 +348,6 @@ such as :lisp or :renderer.")
     :type history-file
     :documentation "
 The file where the system will create/save the global history.")
-   (inputs-file
-    (make-instance 'inputs-file)
-    :type inputs-file
-    :documentation "The file where the system will create/save the input data.")
    (auto-mode-rules-file
     (make-instance 'auto-mode-rules-file)
     :type auto-mode-rules-file
