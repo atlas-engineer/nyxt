@@ -49,8 +49,8 @@ contains an `nyxt/editor-mode:editor-mode' instance (or a subclass thereof)."))
   (uiop:parse-native-namestring (quri:uri-path (url buffer))))
 
 (defmethod nyxt:default-modes :around ((buffer editor-buffer))
-  ;; REVIEW: Really remove web-mode from editor-buffer?
-  (remove 'web-mode (call-next-method)))
+  ;; REVIEW: Really remove document-mode from editor-buffer?
+  (remove 'document-mode (call-next-method)))
 
 (defmethod editor ((editor-buffer editor-buffer))
   (find-submode 'editor-mode editor-buffer))

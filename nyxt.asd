@@ -157,7 +157,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "passthrough")
                  (:file "history-tree")
                  (:file "list-history")
-                 (:file "web")
+                 (:file "document")
                  (:file "history" :depends-on ("history-tree" "list-history"))
                  (:file "style")
                  (:file "certificate-exception")
@@ -166,7 +166,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "blocker")
                  (:file "proxy")
                  (:file "process")))
-               (:module "web-mode commands"
+               (:module "document-mode commands"
                 :pathname "mode"
                 :depends-on ("Core modes")
                 :components

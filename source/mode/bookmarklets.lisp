@@ -7,7 +7,7 @@
 ;;;; are released into the public domain, per the license available
 ;;;; here: https://www.squarefree.com/bookmarklets/copyright.html
 
-(in-package :nyxt/web-mode)
+(in-package :nyxt/document-mode)
 
 (defmacro nyxt::define-bookmarklet-command (name documentation source)
   "Define a bookmarklet command, the source can either be a JavaScript string to

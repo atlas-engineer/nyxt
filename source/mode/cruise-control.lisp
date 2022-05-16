@@ -35,7 +35,7 @@
     (lambda (mode)
       (unless (zerop (velocity mode))
         (with-current-buffer (buffer mode)
-          (nyxt/web-mode::scroll-down
+          (nyxt/document-mode::scroll-down
            :scroll-distance (velocity mode))))))))
 
 (define-command velocity-incf (&key (cruise-control (find-submode 'cruise-control-mode)))

@@ -45,13 +45,13 @@
   (let* ((urls (reverse
                 (prompt
                  :prompt "Start expedition with the following links:"
-                 :sources (list (make-instance 'nyxt/web-mode::frame-source
+                 :sources (list (make-instance 'nyxt/document-mode::frame-source
                                                :buffer buffer
                                                :multi-selection-p t))
                  :after-destructor
                  (lambda ()
                    (with-current-buffer buffer
-                     (nyxt/web-mode::frame-element-clear))))))
+                     (nyxt/document-mode::frame-element-clear))))))
          (urls (mapcar #'quri:uri urls))
          (buffer (make-buffer :title "" :url (first urls))))
     (enable (make-instance 'expedition-mode :urls urls :buffer buffer))
