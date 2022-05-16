@@ -1,7 +1,32 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt)
+(uiop:define-package :nyxt/password-mode
+  (:use :common-lisp :nyxt)
+  (:import-from #:class-star #:define-class)
+  (:import-from #:serapeum #:->)
+  (:documentation "Interface with third-party password managers."))
+(in-package :nyxt/password-mode)
+(use-nyxt-package-nicknames)
+
+(define-mode password-mode ()
+  "Enable interface with third-party password managers.
+You can customize the default interface with the mode slot `password-interface'.
+To interact with the password manager, see commands like `copy-password' or
+`save-new-password'."
+  ((password-interface
+    (make-password-interface)
+    :type (or null password::password-interface)
+    :documentation "The current password interface.
+See `password:*interfaces*' for the list of all currently registered interfaces.
+To use, say, KeepassXC, set this slot to
+
+  (make-instance 'password:keepassxc-interface)
+
+Password interfaces are configurable through a `customize-instance' method.")))
+
+(defmethod password-interface ((buffer buffer))
+  (password-interface (find-submode 'password-mode buffer)))
 
 (defun make-password-interface-user-classes ()
   "Define classes with the `user-class' metaclass so that users may use `customize-instance'."
@@ -55,8 +80,8 @@ for which the `executable' slot is non-nil."
   (password-debug-info)
   (cond
     ((and (password-interface buffer)
-          (has-method-p (password-interface buffer)
-                        #'password:save-password))
+          (nyxt::has-method-p (password-interface (find-submode 'password-mode buffer))
+                              #'password:save-password))
      (let* ((password-name (prompt1
                              :prompt "Name for new password"
                              :input (or (quri:uri-domain (url (current-buffer))) "")
@@ -124,7 +149,8 @@ for which the `executable' slot is non-nil."
       (echo-warning "No password manager found.")))
 
 (define-command copy-password (&optional (buffer (current-buffer)))
-  "Query password and copy to clipboard."
+  "Query password and copy to clipboard.
+See also `copy-password-prompt-details'."
   (password-debug-info)
   (if (password-interface buffer)
       (with-password (password-interface buffer)
