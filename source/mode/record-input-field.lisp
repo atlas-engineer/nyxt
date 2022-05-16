@@ -1,7 +1,25 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt)
+(uiop:define-package :nyxt/record-input-field-mode
+  (:use :common-lisp :nyxt)
+  (:import-from #:class-star #:define-class)
+  (:import-from #:keymap #:define-key #:define-scheme)
+  (:import-from #:serapeum #:export-always #:->)
+  (:documentation "Record input fields to be refilled later."))
+(in-package :nyxt/record-input-field-mode)
+(use-nyxt-package-nicknames)
+
+(define-mode record-input-field-mode ()
+  "Record input fields to be refilled later.
+See `save-input-data' and `set-input-data-from-saved'."
+  ((inputs-file
+    (make-instance 'inputs-file)
+    :type inputs-file
+    :documentation "The file where the system will create/save the input data.")))
+
+(defmethod inputs-file ((buffer buffer))
+  (inputs-file (find-submode 'record-input-field-mode buffer)))
 
 (define-class inputs-file (files:data-file nyxt-lisp-file)
   ((files:base-path #p"inputs")
@@ -113,7 +131,8 @@
     (&key (actions (list (lambda-command set-input-data* (suggestion-values)
                            "Load selected input-entry in current buffer's input fields."
                            (ps-write-input-data (input-data (first suggestion-values)))))))
-  "Set the input data from a list of saved data into the current buffer."
+  "Set the input data from a list of saved data into the current buffer.
+See also `set-input-data-from-saved-domain'."
   (prompt
    :prompt "Write input data from:"
    :sources (make-instance 'input-data-source
@@ -124,7 +143,9 @@
                            "Load selected input-entry in current buffer's input fields."
                            (ps-write-input-data (input-data (first suggestion-values)))))))
   "Set the input data from a list of saved data filtered by current domain into
-the current buffer."
+the current buffer.
+
+See alsy `set-input-data-from-saved'."
   (prompt
    :prompt "Write input data from:"
    :sources (make-instance 'filtered-domain-input-data-source
