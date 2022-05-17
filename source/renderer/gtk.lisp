@@ -1041,8 +1041,9 @@ See `finalize-buffer'."
     (gtk:gtk-window-present (gtk-object window)))
   (setf (slot-value *browser* 'last-active-window) window))
 
-(define-ffi-method ffi-window-set-title ((window gtk-window) title)
-  "Set the title for a window."
+(define-ffi-method ffi-window-title ((window gtk-window))
+  (gtk:gtk-window-title (gtk-object window)))
+(define-ffi-method (setf ffi-window-title) (title (window gtk-window))
   (setf (gtk:gtk-window-title (gtk-object window)) title))
 
 (define-ffi-method ffi-window-active ((browser gtk-browser))

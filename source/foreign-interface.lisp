@@ -29,7 +29,12 @@ provided."
 (define-ffi-generic ffi-window-to-foreground (window)
   (:method ((window t))
     (setf (slot-value *browser* 'last-active-window) window)))
-(define-ffi-generic ffi-window-set-title (window title))
+
+(define-ffi-generic ffi-window-title (window)
+  (:documentation "Return as a string the title of the window.
+It is the title that's often used by the window manager to decorate the window.
+Setf-able."))
+
 (define-ffi-generic ffi-window-active (browser))
 (define-ffi-generic ffi-window-set-buffer (window buffer &key focus))
 (define-ffi-generic ffi-window-add-panel-buffer (window buffer side))
