@@ -127,8 +127,14 @@ Setf-able."))
 (define-ffi-generic ffi-print-message (window message)
   (:documentation "Print MESSAGE which is an HTML string."))
 (define-ffi-generic ffi-display-url (text))
-(define-ffi-generic ffi-buffer-cookie-policy (buffer value))
-(define-ffi-generic ffi-set-preferred-languages (buffer value))
+
+(define-ffi-generic ffi-buffer-cookie-policy (buffer value)) ; TODO: Rewrite.
+
+(define-ffi-generic ffi-preferred-languages (buffer)
+  (:documentation "Set the list of preferred languages in the HTTP header \"Accept-Language:\".
+Setf-able, where the languages value is a list of strings like '(\"en_US\"
+\"fr_FR\")."))
+
 (define-ffi-generic ffi-focused-p (buffer))
 
 (define-ffi-generic ffi-tracking-prevention (buffer)
