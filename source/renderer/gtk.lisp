@@ -119,7 +119,7 @@ failures."))
 (defclass webkit-web-context (webkit:webkit-web-context) ()
   (:metaclass gobject:gobject-class))
 
-(defmethod customize-instance :after ((web-context webkit-web-context) &key)
+(defmethod initialize-instance :after ((web-context webkit-web-context) &key)
   #+webkit2-sandboxing
   (webkit:webkit-web-context-set-sandbox-enabled web-context t)
   web-context)
