@@ -354,17 +354,17 @@ The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
 (define-command zoom-page (&key (buffer (current-buffer)))
   "Zoom in the current page."
   (ensure-zoom-ratio-range #'+ buffer)
-  (ffi-buffer-set-zoom-level buffer (current-zoom-ratio buffer)))
+  (setf (ffi-buffer-zoom-level buffer) (current-zoom-ratio buffer)))
 
 (define-command unzoom-page (&key (buffer (current-buffer)))
   "Zoom out the current page."
   (ensure-zoom-ratio-range #'- buffer)
-  (ffi-buffer-set-zoom-level buffer (current-zoom-ratio buffer)))
+  (setf (ffi-buffer-zoom-level buffer) (current-zoom-ratio buffer)))
 
 (define-command reset-page-zoom (&key (buffer (current-buffer))
                                       (ratio (zoom-ratio-default buffer)))
   "Reset the page zoom to the zoom-ratio-default."
-  (ffi-buffer-set-zoom-level buffer (setf (current-zoom-ratio buffer) ratio)))
+  (setf (ffi-buffer-zoom-level buffer) (setf (current-zoom-ratio buffer) ratio)))
 
 (define-internal-page-command-global summarize-buffer (&key (summary-length 5) (id (id (current-buffer))))
   (output (format nil "*Summary ~a*" (title (nyxt::buffers-get id))) 'base-mode)
