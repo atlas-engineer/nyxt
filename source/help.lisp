@@ -834,17 +834,19 @@ The version number is stored in the clipboard."
   "Open up a buffer with useful links suitable for a `default-new-buffer-url'."
   (spinneret:with-html-string
     (:style (:raw (theme:themed-css (theme *browser*)
+                    (body
+                     :min-height "100vh")
                     (nav
                      :text-align "center"
                      :top 0)
                     (details
                      :display "inline"
-                     :padding "1em")
+                     :margin "1em")
                     (h1
                      :font-size "5em"
                      :margin "0.1em")
                     (main
-                     :min-height "70%"
+                     :padding "10%"
                      :text-align "center"
                      :display "flex"
                      :flex-direction "column"
