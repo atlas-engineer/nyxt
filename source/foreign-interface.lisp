@@ -74,8 +74,13 @@ Setf-able."))
   (:documentation "Return the user agent as a string.
 Setf-able."))
 
-(define-ffi-generic ffi-buffer-set-proxy (buffer &optional proxy-url ignore-hosts)) ; TODO: Rewrite.
-(define-ffi-generic ffi-buffer-get-proxy (buffer))
+(define-ffi-generic ffi-buffer-proxy (buffer)
+  (:documentation "Return the proxy URL as a `quri:uri'.
+Return the list of ignored hosts (list of strings) as a second value.
+
+Setf-able.  The value is either a PROXY-URL or a pair of (PROXY-URL IGNORE-HOSTS).
+PROXY-URL is a `quri:uri' and IGNORE-HOSTS a list of strings."))
+
 (define-ffi-generic ffi-buffer-download (buffer url))
 (define-ffi-generic ffi-buffer-set-zoom-level (buffer value)
   (:method ((buffer t) value)
