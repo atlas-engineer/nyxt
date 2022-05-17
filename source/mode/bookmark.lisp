@@ -187,7 +187,8 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   ((prompter:name "Bookmarks")
    (prompter:constructor (files:content (bookmarks-file (current-buffer))))
    (prompter:multi-selection-p t)
-   (prompter:active-attributes-keys '("URL" "Title" "Tags"))))
+   (prompter:active-attributes-keys '("URL" "Title" "Tags")))
+  (:export-class-name-p t))
 
 (defun tag-suggestions ()
   (let ((bookmarks (files:content (bookmarks-file (current-buffer)))))

@@ -1530,7 +1530,7 @@ any.")
      :history history
      :sources (list (make-instance 'new-url-or-search-source :actions actions)
                     (make-instance 'global-history-source :actions actions)
-                    (make-instance 'bookmark-source :actions actions)
+                    (make-instance (resolve-symbol :bookmark-source :class) :actions actions)
                     (make-instance 'search-engine-url-source :actions actions)))))
 
 (define-command set-url-new-buffer (&key (prefill-current-url-p t))
@@ -1549,7 +1549,7 @@ any.")
      :history history
      :sources (list (make-instance 'new-url-or-search-source :actions actions)
                     (make-instance 'global-history-source :actions actions)
-                    (make-instance 'bookmark-source :actions actions)
+                    (make-instance (resolve-symbol :bookmark-source :class) :actions actions)
                     (make-instance 'search-engine-url-source :actions actions)))))
 
 (define-command set-url-new-nosave-buffer (&key (prefill-current-url-p t))
@@ -1567,7 +1567,7 @@ any.")
                 (render-url (url (current-buffer))) "")
      :sources (list (make-instance 'new-url-or-search-source :actions actions)
                     (make-instance 'global-history-source :actions actions)
-                    (make-instance 'bookmark-source :actions actions)
+                    (make-instance (resolve-symbol :bookmark-source :class) :actions actions)
                     (make-instance 'search-engine-url-source :actions actions)))))
 
 (define-command reload-current-buffer ()
