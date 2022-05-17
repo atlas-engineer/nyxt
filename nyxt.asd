@@ -135,6 +135,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "mode")
                  (:file "search-engine")
                  (:file "browser")
+                 (:file "foreign-interface")
                  (:file "clipboard")
                  (:file "input")
                  (:file "prompt-buffer")
