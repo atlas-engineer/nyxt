@@ -877,6 +877,15 @@ Return the created buffer."
                (analysis:extract-keywords contents)))
        (slot-value buffer 'keywords))))
 
+(define-class keyword-source (prompter:source)
+  ((prompter:name "Keywords")
+   (buffer :accessor buffer :initarg :buffer)
+   (prompter:multi-selection-p t)
+   (prompter:constructor (lambda (source)
+                           (mapcar #'car (nyxt::keywords (buffer source))))))
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:export-class-name-p t))
+
 (-> proxy-adress (buffer &key (:downloads-only boolean)) *)
 (defun proxy-url (buffer &key (downloads-only nil))
   "Return the proxy address, nil if not set.

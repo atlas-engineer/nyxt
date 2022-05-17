@@ -216,15 +216,6 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
    (prompter:constructor (tag-suggestions)))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class keyword-source (prompter:source)
-  ((prompter:name "Keywords")
-   (buffer :accessor buffer :initarg :buffer)
-   (prompter:multi-selection-p t)
-   (prompter:constructor (lambda (source)
-                           (mapcar #'car (nyxt::keywords (buffer source))))))
-  (:accessor-name-transformer (class*:make-name-transformer name))
-  (:export-class-name-p t))
-
 (define-panel-global bookmarks ()
     (panel-buffer "*Bookmarks panel*")
   "Shows all the bookmarks in a compact panel-buffer layout."
