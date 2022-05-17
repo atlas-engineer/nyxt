@@ -16,7 +16,7 @@ evaluate, or a `cl:pathname' to a JavaScript source file."
      ,documentation
      (let* ((source ,source)
             (source (etypecase source
-                      (pathname (uiop:read-file-string source))
+                      (pathname (nfiles:content (make-instance 'nfiles:file :base-path source)))
                       (string source))))
        (ffi-buffer-evaluate-javascript-async buffer source))))
 (sera:export-always 'nyxt::define-bookmarklet-command :nyxt)
