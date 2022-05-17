@@ -133,7 +133,7 @@ for matches."
 
 (define-internal-page-command-global describe-value
     (&key id)
-    (buffer "*Help-value*" 'nyxt/help-mode:help-mode)
+    (buffer "*Help-value*" 'base-mode)
   "Inspect value under ID and show it in a help buffer."
   (sera:and-let* ((id id)
                   (value (inspected-value id)))
@@ -177,7 +177,7 @@ for matches."
              :prompt "Describe package:"
              :sources (make-instance 'package-source))))
     (buffer (str:concat "*Help-" (package-name package) "*")
-            'nyxt/help-mode:help-mode)
+            'base-mode)
   "Inspect a package and show it in a help buffer."
   (let ((total-symbols (package-defined-symbols nil (list package)))
         (external-symbols (package-defined-symbols (list package)))
@@ -212,7 +212,7 @@ for matches."
         :prompt "Describe variable:"
         :sources (make-instance 'variable-source :universal universal))))
     (buffer (str:concat "*Help-" (symbol-name variable) "*")
-            'nyxt/help-mode:help-mode)
+            'base-mode)
   "Inspect a variable and show it in a help buffer."
   (let ((*print-case* :downcase))
     (spinneret:with-html-string
@@ -245,7 +245,7 @@ for matches."
                  :prompt "Describe function"
                  :sources (make-instance 'function-source :universal universal))))
     (buffer (str:concat "*Help-" (symbol-name function) "*")
-            'nyxt/help-mode:help-mode)
+            'base-mode)
   "Inspect a function and show it in a help buffer.
 For generic functions, describe all the methods."
   (if function
@@ -322,7 +322,7 @@ For generic functions, describe all the methods."
                            :prompt "Describe command"
                            :sources (make-instance 'command-source)))))
     (buffer (str:concat "*Help-" (symbol-name command) "*")
-            'nyxt/help-mode:help-mode)
+            'base-mode)
   "Inspect a command and show it in a help buffer.
 A command is a special kind of function that can be called with
 `execute-command' and can be bound to a key."
@@ -363,7 +363,7 @@ A command is a special kind of function that can be called with
 (define-internal-page-command-global describe-slot
     (&key class name universal)
     (buffer (str:concat "*Help-" (symbol-name name) "*")
-            'nyxt/help-mode:help-mode)
+            'base-mode)
   "Inspect a slot and show it in a help buffer."
   (unless (and class name)
     (let ((slot (prompt1
@@ -422,7 +422,7 @@ A command is a special kind of function that can be called with
               :prompt "Describe class"
               :sources (make-instance 'class-source :universal universal))))
     (buffer (str:concat "*Help-" (symbol-name class) "*")
-            'nyxt/help-mode:help-mode)
+            'base-mode)
   "Inspect a class and show it in a help buffer."
   (let* ((slots (class-public-slots class))
          (slot-descs (apply #'str:concat (mapcar (alex:rcurry #'describe-slot* class) slots)))
@@ -456,7 +456,7 @@ A command is a special kind of function that can be called with
 ;; How do we actually identify prompt-buffers?
 (define-internal-page-command nyxt/prompt-buffer-mode::describe-prompt-buffer ()
     (buffer (str:concat "*Help-" (prompter:prompt (current-prompt-buffer)) "-prompter*")
-            'nyxt/help-mode:help-mode)
+            'base-mode)
   "Describe a prompt buffer instance."
   (let* ((prompt-buffer (current-prompt-buffer))
          (modes (modes prompt-buffer))
@@ -502,7 +502,7 @@ CLASS is a class symbol."
          (echo "Update slot ~s to ~s. You might need to restart to experience the change." slot input))))))
 
 (define-internal-page-command-global common-settings ()
-    (buffer "*Settings*" 'nyxt/help-mode:help-mode)
+    (buffer "*Settings*" 'base-mode)
   "Configure a set of frequently used settings."
   (spinneret:with-html-string
     (:h1 "Common Settings")
@@ -920,7 +920,7 @@ The version number is stored in the clipboard."
 
 (sera:eval-always ; To satisfy `fboundp' of `manual' at compile-time (e.g. CCL).
   (define-internal-page-command-global manual ()
-      (buffer "*Manual*" 'nyxt/help-mode:help-mode)
+      (buffer "*Manual*" 'base-mode)
     "Show the manual."
     (spinneret:with-html-string (:style (style buffer))
       (:style (cl-css:css '(("body"
@@ -928,7 +928,7 @@ The version number is stored in the clipboard."
       (:raw (manual-content)))))
 
 (define-internal-page-command-global tutorial ()
-    (buffer "*Tutorial*" 'nyxt/help-mode:help-mode)
+    (buffer "*Tutorial*" 'base-mode)
   "Show the tutorial."
   (spinneret:with-html-string
     (:style (style buffer))

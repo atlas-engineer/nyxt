@@ -152,7 +152,6 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "file-manager")
                  (:file "buffer-listing")
                  (:file "base" :depends-on ("buffer-listing" "file-manager"))
-                 (:file "help")
                  (:file "message")
                  (:file "passthrough")
                  (:file "history-tree")
