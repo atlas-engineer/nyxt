@@ -32,13 +32,13 @@ still being less noticeable in the crowd.")
 
 (defmethod enable ((mode reduce-tracking-mode) &key)
   (setf (old-user-agent mode) (ffi-buffer-user-agent (buffer mode)))
-  (ffi-buffer-user-agent (buffer mode) (preferred-user-agent mode))
+  (setf (ffi-buffer-user-agent (buffer mode)) (preferred-user-agent mode))
   (ffi-set-preferred-languages (buffer mode)
                                (preferred-languages mode))
   (ffi-set-tracking-prevention (buffer mode) t))
 
 (defmethod disable ((mode reduce-tracking-mode) &key)
-  (ffi-buffer-user-agent (buffer mode) (old-user-agent mode))
+  (setf (ffi-buffer-user-agent (buffer mode)) (old-user-agent mode))
   (ffi-set-preferred-languages (buffer mode)
                                (list (first
                                       (str:split
