@@ -11,15 +11,15 @@
 
 (define-command zoom-page (&key (buffer (current-buffer)))
   "Zoom in the current page."
-  (ensure-zoom-ratio-range #'+ (current-buffer))
-  (ffi-buffer-set-zoom-level buffer (current-zoom-ratio (current-buffer))))
+  (ensure-zoom-ratio-range #'+ buffer)
+  (ffi-buffer-set-zoom-level buffer (current-zoom-ratio buffer)))
 
 (define-command unzoom-page (&key (buffer (current-buffer)))
   "Zoom out the current page."
-  (ensure-zoom-ratio-range #'- (current-buffer))
-  (ffi-buffer-set-zoom-level buffer (current-zoom-ratio (current-buffer))))
+  (ensure-zoom-ratio-range #'- buffer)
+  (ffi-buffer-set-zoom-level buffer (current-zoom-ratio buffer)))
 
 (define-command reset-page-zoom (&key (buffer (current-buffer))
-                                      (ratio (zoom-ratio-default (current-buffer))))
+                                      (ratio (zoom-ratio-default buffer)))
   "Reset the page zoom to the zoom-ratio-default."
-  (ffi-buffer-set-zoom-level buffer (setf (current-zoom-ratio (current-buffer)) ratio)))
+  (ffi-buffer-set-zoom-level buffer (setf (current-zoom-ratio buffer) ratio)))
