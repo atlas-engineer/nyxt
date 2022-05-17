@@ -402,10 +402,11 @@ response.  The BODY is wrapped with `with-protect'."
   (%within-renderer-thread-async
    (lambda ()
      (with-slots (gtk-object) buffer
-       (setf gtk-object (make-web-view (profile buffer) buffer))
-       (connect-signal-function
-        buffer "decide-policy"
-        (make-decide-policy-handler buffer))))))
+       (unless gtk-object
+         (setf gtk-object (make-web-view (profile buffer) buffer))
+         (connect-signal-function
+          buffer "decide-policy"
+          (make-decide-policy-handler buffer)))))))
 
 (defmethod customize-instance :after ((window gtk-window) &key)
   (%within-renderer-thread-async
@@ -419,85 +420,87 @@ response.  The BODY is wrapped with `with-protect'."
                   status-buffer status-container
                   message-container message-view
                   key-string-buffer) window
-       (setf gtk-object (make-instance 'gtk:gtk-window
-                                       :type :toplevel
-                                       :default-width 1024
-                                       :default-height 768))
-       (setf root-box-layout (make-instance 'gtk:gtk-box
-                                            :orientation :vertical
-                                            :spacing 0))
-       (setf horizontal-box-layout (make-instance 'gtk:gtk-box
-                                                  :orientation :horizontal
-                                                  :spacing 0))
-       (setf panel-buffer-container-left (make-instance 'gtk:gtk-box
-                                                        :orientation :horizontal
-                                                        :spacing 0))
-       (setf panel-buffer-container-right (make-instance 'gtk:gtk-box
-                                                         :orientation :horizontal
-                                                         :spacing 0))
-       (setf main-buffer-container (make-instance 'gtk:gtk-box
-                                                  :orientation :vertical
-                                                  :spacing 0))
-       (setf prompt-buffer-container (make-instance 'gtk:gtk-box
-                                                    :orientation :vertical
-                                                    :spacing 0))
-       (setf message-container (make-instance 'gtk:gtk-box
+       (unless gtk-object
+         (setf gtk-object (make-instance 'gtk:gtk-window
+                                         :type :toplevel
+                                         :default-width 1024
+                                         :default-height 768))
+         (setf root-box-layout (make-instance 'gtk:gtk-box
                                               :orientation :vertical
                                               :spacing 0))
-       (setf status-container (make-instance 'gtk:gtk-box
-                                             :orientation :vertical
-                                             :spacing 0))
-       (setf key-string-buffer (make-instance 'gtk:gtk-entry))
-       (setf active-buffer (make-instance 'buffer))
+         (setf horizontal-box-layout (make-instance 'gtk:gtk-box
+                                                    :orientation :horizontal
+                                                    :spacing 0))
+         (setf panel-buffer-container-left (make-instance 'gtk:gtk-box
+                                                          :orientation :horizontal
+                                                          :spacing 0))
+         (setf panel-buffer-container-right (make-instance 'gtk:gtk-box
+                                                           :orientation :horizontal
+                                                           :spacing 0))
+         (setf main-buffer-container (make-instance 'gtk:gtk-box
+                                                    :orientation :vertical
+                                                    :spacing 0))
+         (setf prompt-buffer-container (make-instance 'gtk:gtk-box
+                                                      :orientation :vertical
+                                                      :spacing 0))
+         (setf message-container (make-instance 'gtk:gtk-box
+                                                :orientation :vertical
+                                                :spacing 0))
+         (setf status-container (make-instance 'gtk:gtk-box
+                                               :orientation :vertical
+                                               :spacing 0))
+         (setf key-string-buffer (make-instance 'gtk:gtk-entry))
+         (setf active-buffer (make-instance 'buffer))
 
-       ;; Add the views to the box layout and to the window
-       (gtk:gtk-box-pack-start main-buffer-container (gtk-object active-buffer) :expand t :fill t)
-       (gtk:gtk-box-pack-start horizontal-box-layout panel-buffer-container-left :expand nil)
-       (gtk:gtk-box-pack-start horizontal-box-layout main-buffer-container :expand t :fill t)
-       (gtk:gtk-box-pack-start horizontal-box-layout panel-buffer-container-right :expand nil)
-       (gtk:gtk-box-pack-start root-box-layout horizontal-box-layout :expand t :fill t)
+         ;; Add the views to the box layout and to the window
+         (gtk:gtk-box-pack-start main-buffer-container (gtk-object active-buffer) :expand t :fill t)
+         (gtk:gtk-box-pack-start horizontal-box-layout panel-buffer-container-left :expand nil)
+         (gtk:gtk-box-pack-start horizontal-box-layout main-buffer-container :expand t :fill t)
+         (gtk:gtk-box-pack-start horizontal-box-layout panel-buffer-container-right :expand nil)
+         (gtk:gtk-box-pack-start root-box-layout horizontal-box-layout :expand t :fill t)
 
-       (setf message-view (make-web-view *global-profile* nil))
-       (gtk:gtk-box-pack-end root-box-layout message-container :expand nil)
-       (gtk:gtk-box-pack-start message-container message-view :expand t)
-       (setf (gtk:gtk-widget-size-request message-container)
-             (list -1 (message-buffer-height window)))
+         (setf message-view (make-web-view *global-profile* nil))
+         (gtk:gtk-box-pack-end root-box-layout message-container :expand nil)
+         (gtk:gtk-box-pack-start message-container message-view :expand t)
+         (setf (gtk:gtk-widget-size-request message-container)
+               (list -1 (message-buffer-height window)))
 
-       (setf status-buffer (make-instance 'status-buffer))
-       (gtk:gtk-box-pack-end root-box-layout status-container :expand nil)
-       (gtk:gtk-box-pack-start status-container (gtk-object status-buffer) :expand t)
-       (setf (gtk:gtk-widget-size-request status-container)
-             (list -1 (height status-buffer)))
+         (setf status-buffer (make-instance 'status-buffer))
+         (gtk:gtk-box-pack-end root-box-layout status-container :expand nil)
+         (gtk:gtk-box-pack-start status-container (gtk-object status-buffer) :expand t)
+         (setf (gtk:gtk-widget-size-request status-container)
+               (list -1 (height status-buffer)))
 
-       (setf prompt-buffer-view (make-web-view *global-profile* nil))
-       (gtk:gtk-box-pack-end root-box-layout prompt-buffer-container :expand nil)
-       (gtk:gtk-box-pack-start prompt-buffer-container prompt-buffer-view :expand t)
-       (setf (gtk:gtk-widget-size-request prompt-buffer-container)
-             (list -1 0))
+         (setf prompt-buffer-view (make-web-view *global-profile* nil))
+         (gtk:gtk-box-pack-end root-box-layout prompt-buffer-container :expand nil)
+         (gtk:gtk-box-pack-start prompt-buffer-container prompt-buffer-view :expand t)
+         (setf (gtk:gtk-widget-size-request prompt-buffer-container)
+               (list -1 0))
 
-       (gtk:gtk-container-add gtk-object root-box-layout)
-       (setf (slot-value *browser* 'last-active-window) window)
+         (gtk:gtk-container-add gtk-object root-box-layout)
+
+         (connect-signal window "key_press_event" nil (widget event)
+           (declare (ignore widget))
+           #+darwin
+           (push-modifier *browser* event)
+           (on-signal-key-press-event window event))
+         (connect-signal window "key_release_event" nil (widget event)
+           (declare (ignore widget))
+           #+darwin
+           (pop-modifier *browser* event)
+           (on-signal-key-release-event window event))
+         (connect-signal window "destroy" nil (widget)
+           (declare (ignore widget))
+           (on-signal-destroy window))
+         (connect-signal window "window-state-event" nil (widget event)
+           (declare (ignore widget))
+           (setf (fullscreen-p window)
+                 (find :fullscreen
+                       (gdk:gdk-event-window-state-new-window-state event)))
+           nil))
+
        (unless *headless-p*
-         (gtk:gtk-widget-show-all gtk-object))
-       (connect-signal window "key_press_event" nil (widget event)
-         (declare (ignore widget))
-         #+darwin
-         (push-modifier *browser* event)
-         (on-signal-key-press-event window event))
-       (connect-signal window "key_release_event" nil (widget event)
-         (declare (ignore widget))
-         #+darwin
-         (pop-modifier *browser* event)
-         (on-signal-key-release-event window event))
-       (connect-signal window "destroy" nil (widget)
-         (declare (ignore widget))
-         (on-signal-destroy window))
-       (connect-signal window "window-state-event" nil (widget event)
-         (declare (ignore widget))
-         (setf (fullscreen-p window)
-               (find :fullscreen
-                     (gdk:gdk-event-window-state-new-window-state event)))
-         nil)))))
+         (gtk:gtk-widget-show-all gtk-object))))))
 
 (define-ffi-method on-signal-destroy ((window gtk-window))
   ;; remove buffer from window to avoid corruption of buffer

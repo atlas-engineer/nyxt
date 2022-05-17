@@ -107,7 +107,8 @@ The handlers take the window as argument."))
                                        &allow-other-keys)
   "Set ID."
   (when browser
-    (setf (id window) (get-unique-identifier browser)))
+    (setf (id window) (get-unique-identifier browser))
+    (setf (slot-value browser 'last-active-window) window))
   window)
 
 (defmethod print-object ((window window) stream)
