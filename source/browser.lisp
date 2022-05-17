@@ -348,6 +348,13 @@ restored."
                     (clear-history-owners buffer))))))
            (load-start-urls (urls)
              (open-urls (or urls (list (default-new-buffer-url browser))))))
+    ;; Remove existing windows.  This may happen if we invoked this function,
+    ;; possibly with a different renderer.  To avoid mixing windows with
+    ;; different renderers.  REVIEW: A better option would be to have
+    ;; `update-instance-for-redefined-class' call `customize-instance', but this
+    ;; is tricky to get right, in particular `ffi-buffer-make' seems to hang on
+    ;; `web-buffer's.
+    (mapcar #'window-delete (window-list))
     (window-make browser)
     ;; Restore session before opening command line URLs, otherwise it will
     ;; reset the session with the new URLs.
