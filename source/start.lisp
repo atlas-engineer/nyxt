@@ -480,8 +480,12 @@ Examples:
   ;; Extensions should be made accessible straight from the beginning,
   ;; e.g. before a script is run.
   (unless +renderer+
-    (log:warn "No renderer set. I will not be able to render pages.~
-               Consider '(ql:quickload :nyxt/gi-gtk)."))
+    (log:warn "No renderer set, Nyxt will not be able to render pages.  Try:
+
+\(progn
+ (asdf:load-system :nyxt/gi-gtk)
+ (nyxt:ffi-initialize nyxt:*browser* '() (local-time:now)))
+"))
   (pushnew 'nyxt-source-registry asdf:*default-source-registries*)
   (asdf:clear-configuration)
 
