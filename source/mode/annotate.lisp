@@ -87,7 +87,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
                 :sources (list (make-instance 'prompter:word-source
                                               :name "New tags"
                                               :multi-selection-p t)
-                               (make-instance 'nyxt::keyword-source :buffer buffer)
+                               (make-instance 'keyword-source :buffer buffer)
                                (make-instance 'annotation-tag-source))))
          (annotation (make-instance 'url-annotation
                                     :url (url buffer)
