@@ -4,13 +4,18 @@
 (in-package :nyxt)
 
 (defmacro define-ffi-generic (name arguments &body options)
-  `(progn
-     (export-always ',name)
-     (defgeneric ,name (,@arguments)
-       ,@(if options
-             options
-             `((:method (,@arguments)
-                 (declare (ignore ,@(set-difference arguments lambda-list-keywords)))))))))
+  "Like `defgeneric' but export NAME and define default dummy method if none is
+provided."
+  (let* ((methods (sera:filter (sera:eqs :method) options :key #'first))
+         (options-sans-methods (set-difference options methods :key #'first)))
+    `(progn
+       (export-always ',name)
+       (defgeneric ,name (,@arguments)
+         ,@(if methods
+               methods
+               `((:method (,@arguments)
+                   (declare (ignore ,@(set-difference arguments lambda-list-keywords))))))
+         ,@options-sans-methods))))
 
 (define-ffi-generic ffi-window-delete (window))
 (define-ffi-generic ffi-window-fullscreen (window))
