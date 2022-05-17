@@ -1766,7 +1766,9 @@ custom (the specified proxy) and none."
       (webkit:webkit-web-context-set-network-proxy-settings
        context mode settings))))
 
-(define-ffi-method ffi-buffer-set-zoom-level ((buffer gtk-buffer) value)
+(define-ffi-method ffi-buffer-zoom-level ((buffer gtk-buffer))
+  (webkit:webkit-web-view-zoom-level (gtk-object buffer)))
+(define-ffi-method (setf ffi-buffer-zoom-level) (value (buffer gtk-buffer))
   (when (and (floatp value) (>= value 0))
     (setf (webkit:webkit-web-view-zoom-level (gtk-object buffer)) value)))
 

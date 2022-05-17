@@ -82,12 +82,19 @@ Setf-able.  The value is either a PROXY-URL or a pair of (PROXY-URL IGNORE-HOSTS
 PROXY-URL is a `quri:uri' and IGNORE-HOSTS a list of strings."))
 
 (define-ffi-generic ffi-buffer-download (buffer url))
-(define-ffi-generic ffi-buffer-set-zoom-level (buffer value)
-  (:method ((buffer t) value)
+
+(define-ffi-generic ffi-buffer-zoom-level (buffer)
+  (:method ((buffer t))
     (with-current-buffer buffer
+      (peval (ps:chain document body style zoom))))
+  (:documentation "Return the zoom level of the document.
+Setf-able."))
+(defmethod (setf ffi-buffer-zoom-level) (value (buffer buffer))
+  (with-current-buffer buffer
       (peval (ps:let ((style (ps:chain document body style)))
-                    (setf (ps:@ style zoom)
-                          (ps:lisp value)))))))
+               (setf (ps:@ style zoom)
+                     (ps:lisp value))))))
+
 (define-ffi-generic ffi-buffer-get-document (buffer)
   (:method ((buffer t))
     (pflet ((get-html (start end)
