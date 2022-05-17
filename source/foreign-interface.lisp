@@ -125,7 +125,11 @@ Setf-able."))
 (define-ffi-generic ffi-buffer-cookie-policy (buffer value))
 (define-ffi-generic ffi-set-preferred-languages (buffer value))
 (define-ffi-generic ffi-focused-p (buffer))
-(define-ffi-generic ffi-set-tracking-prevention (buffer value))
+
+(define-ffi-generic ffi-tracking-prevention (buffer)
+  (:documentation "Return if Intelligent Tracking Prevention (ITP) is enabled.
+Setf-able."))
+
 (define-ffi-generic ffi-buffer-copy (buffer)
   (:method ((buffer t))
     (with-current-buffer buffer

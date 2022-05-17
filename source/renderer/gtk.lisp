@@ -1903,7 +1903,12 @@ As a second value, return the current buffer index starting from 0."
   (gtk:gtk-clipboard-wait-for-text
    (gtk:gtk-clipboard-get "CLIPBOARD")))
 
-(define-ffi-method ffi-set-tracking-prevention ((buffer gtk-buffer) value)
+(define-ffi-method ffi-tracking-prevention ((buffer gtk-buffer))
+  #+webkit2-tracking
+  (webkit:webkit-website-data-manager-get-itp-enabled
+   (webkit:webkit-web-context-website-data-manager
+    (webkit:webkit-web-view-web-context (gtk-object buffer)))))
+(define-ffi-method (setf ffi-tracking-prevention) (value (buffer gtk-buffer))
   #+webkit2-tracking
   (webkit:webkit-website-data-manager-set-itp-enabled
    (webkit:webkit-web-context-website-data-manager
