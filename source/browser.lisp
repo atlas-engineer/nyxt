@@ -361,7 +361,7 @@ restored."
 (defun set-window-title (&optional (window (current-window)) (buffer (current-buffer)))
   "Set current window title to the return value of (titler window). "
   (declare (ignore buffer)) ; TODO: BUFFER is kept for backward compatibility.  Remove with 3.0.
-  (ffi-window-set-title window (funcall (titler window) window)))
+  (setf (ffi-window-title window) (funcall (titler window) window)))
 
 (-> window-default-title (window) string)
 (export-always 'window-default-title)
