@@ -66,14 +66,28 @@ Setf-able."))
                                                        world-name all-frames-p at-document-start-p
                                                        run-now-p allow-list block-list))
 (define-ffi-generic ffi-buffer-remove-user-script (buffer script))
-(define-ffi-generic ffi-buffer-enable-javascript (buffer value))
-(define-ffi-generic ffi-buffer-enable-javascript-markup (buffer value))
-(define-ffi-generic ffi-buffer-enable-smooth-scrolling (buffer value))
-(define-ffi-generic ffi-buffer-enable-media (buffer value))
-(define-ffi-generic ffi-buffer-webgl-enabled-p (buffer))
-(define-ffi-generic ffi-buffer-enable-webgl (buffer value))
-(define-ffi-generic ffi-buffer-auto-load-image (buffer value))
-(define-ffi-generic ffi-buffer-enable-sound (buffer value))
+
+(define-ffi-generic ffi-buffer-javascript-enabled-p (buffer)
+  (:documentation "Return setting as boolean.
+Setf-able."))
+(define-ffi-generic ffi-buffer-javascript-markup-enabled-p (buffer)
+  (:documentation "Return setting as boolean.
+Setf-able."))
+(define-ffi-generic ffi-buffer-smooth-scrolling-enabled-p (buffer)
+  (:documentation "Return setting as boolean.
+Setf-able."))
+(define-ffi-generic ffi-buffer-media-enabled-p (buffer)
+  (:documentation "Return setting as boolean.
+Setf-able."))
+(define-ffi-generic ffi-buffer-webgl-enabled-p (buffer)
+  (:documentation "Return setting as boolean.
+Setf-able."))
+(define-ffi-generic ffi-buffer-auto-load-image-enabled-p (buffer)
+  (:documentation "Return setting as boolean.
+Setf-able."))
+(define-ffi-generic ffi-buffer-sound-enabled-p (buffer)
+  (:documentation "Return setting as boolean.
+Setf-able."))
 
 (define-ffi-generic ffi-buffer-user-agent (buffer)
   (:documentation "Return the user agent as a string.

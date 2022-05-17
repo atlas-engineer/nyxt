@@ -1338,9 +1338,7 @@ See `finalize-buffer'."
   (unless (gtk-object buffer) ; Buffer may already have a view, e.g. the prompt-buffer.
     (setf (gtk-object buffer) (make-web-view (profile buffer) buffer)))
   (when (document-buffer-p buffer)
-    (if (smooth-scrolling buffer)
-        (ffi-buffer-enable-smooth-scrolling buffer t)
-        (ffi-buffer-enable-smooth-scrolling buffer nil)))
+    (setf (ffi-buffer-smooth-scrolling-enabled-p buffer) (smooth-scrolling buffer)))
   (connect-signal-function buffer "decide-policy" (make-decide-policy-handler buffer))
   (connect-signal buffer "load-changed" t (web-view load-event)
     (declare (ignore web-view))
@@ -1623,34 +1621,31 @@ local anyways, and it's better to refresh it if a load was queried."
       (webkit:webkit-user-content-manager-remove-script
        content-manager script))))
 
-(define-ffi-method ffi-buffer-enable-javascript ((buffer gtk-buffer) value)
-  (setf (webkit:webkit-settings-enable-javascript
-         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
-        value))
+(defmacro define-ffi-settings-accessor (setting-name webkit-setting)
+  (let ((full-name (intern (format nil "FFI-BUFFER-~a" setting-name))))
+    (symbol-function full-name)
+    `(progn
+       (define-ffi-method ,full-name ((buffer gtk-buffer))
+         (,webkit-setting
+          (webkit:webkit-web-view-get-settings (gtk-object buffer))))
+       (define-ffi-method (setf ,full-name) (value (buffer gtk-buffer))
+         (setf (,webkit-setting
+                (webkit:webkit-web-view-get-settings (gtk-object buffer)))
+               value)))))
 
-(define-ffi-method ffi-buffer-enable-javascript-markup ((buffer gtk-buffer) value)
-  (setf (webkit:webkit-settings-enable-javascript-markup
-         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
-        value))
-
-(define-ffi-method ffi-buffer-enable-smooth-scrolling ((buffer gtk-buffer) value)
-  (setf (webkit:webkit-settings-enable-smooth-scrolling
-         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
-        value))
-
+(define-ffi-settings-accessor javascript-enabled-p webkit:webkit-settings-enable-javascript)
+(define-ffi-settings-accessor javascript-markup-enabled-p webkit:webkit-settings-enable-javascript-markup)
+(define-ffi-settings-accessor smooth-scrolling-enabled-p webkit:webkit-settings-enable-smooth-scrolling)
 #+webkit2-media
-(define-ffi-method ffi-buffer-enable-media ((buffer gtk-buffer) value)
-  (setf (webkit:webkit-settings-enable-media
-         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
-        value))
-
-(define-ffi-method ffi-buffer-auto-load-image ((buffer gtk-buffer) value)
-  (setf (webkit:webkit-settings-auto-load-images
-         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
-        value))
+(define-ffi-settings-accessor media-enabled-p webkit:webkit-settings-enable-media)
+(define-ffi-settings-accessor webgl-enabled-p webkit:webkit-settings-enable-webgl)
+(define-ffi-settings-accessor auto-load-image-enabled-p webkit:webkit-settings-auto-load-images)
 
 #+webkit2-mute
-(defmethod ffi-buffer-enable-sound ((buffer gtk-buffer) value)
+(defmethod ffi-buffer-sound-enabled-p ((buffer gtk-buffer))
+  (not (webkit:webkit-web-view-get-is-muted (gtk-object buffer))))
+#+webkit2-mute
+(defmethod (setf ffi-buffer-sound-enabled-p) (value (buffer gtk-buffer))
   (nyxt/web-extensions::tabs-on-updated
    buffer (alex:alist-hash-table `(("audible" . ,value))))
   (webkit:webkit-web-view-set-is-muted (gtk-object buffer) (not value)))
@@ -1716,15 +1711,6 @@ local anyways, and it's better to refresh it if a load was queried."
 (define-ffi-method (setf ffi-buffer-user-agent) (value (buffer gtk-buffer))
   (alex:when-let ((settings (webkit:webkit-web-view-get-settings (gtk-object buffer))))
     (setf (webkit:webkit-settings-user-agent settings) value)))
-
-(define-ffi-method ffi-buffer-webgl-enabled-p ((buffer gtk-buffer))
-  (webkit:webkit-settings-enable-webgl
-   (webkit:webkit-web-view-get-settings (gtk-object buffer))))
-
-(define-ffi-method ffi-buffer-enable-webgl ((buffer gtk-buffer) value)
-  (setf (webkit:webkit-settings-enable-webgl
-         (webkit:webkit-web-view-get-settings (gtk-object buffer)))
-        value))
 
 (define-ffi-method ffi-buffer-proxy ((buffer gtk-buffer))
   "Return the proxy URL and list of ignored hosts (a list of strings) as second value."

@@ -14,7 +14,7 @@ no-webgl-mode was enabled.")))
 
 (defmethod enable ((mode no-webgl-mode) &key)
   (setf (previous-webgl-setting mode) (ffi-buffer-webgl-enabled-p (buffer mode)))
-  (ffi-buffer-enable-webgl (buffer mode) nil))
+  (setf (ffi-buffer-webgl-enabled-p (buffer mode)) nil))
 
 (defmethod disable ((mode no-webgl-mode) &key)
-  (ffi-buffer-enable-webgl (buffer mode) (previous-webgl-setting mode)))
+  (setf (ffi-buffer-webgl-enabled-p (buffer mode)) (previous-webgl-setting mode)))
