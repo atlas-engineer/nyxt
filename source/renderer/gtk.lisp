@@ -1079,8 +1079,9 @@ See `finalize-buffer'."
   (unless *headless-p*
     (gtk:gtk-widget-show (gtk-object buffer))))
 
-(define-ffi-method ffi-window-set-panel-buffer-width ((window gtk-window) (buffer panel-buffer) width)
-  "Set the width of a panel buffer."
+(define-ffi-method ffi-window-panel-buffer-width ((window gtk-window) (buffer panel-buffer))
+  (nth-value 1 (gtk:gtk-widget-size-request (gtk-object buffer))))
+(define-ffi-method (setf ffi-window-panel-buffer-width) (width (window gtk-window) (buffer panel-buffer))
   (setf (gtk:gtk-widget-size-request (gtk-object buffer))
         (list width -1)))
 
@@ -1093,27 +1094,24 @@ See `finalize-buffer'."
          (setf (panel-buffers-right window) (remove buffer (panel-buffers-right window)))
          (gtk:gtk-container-remove (panel-buffer-container-right window) (gtk-object buffer)))))
 
-(define-ffi-method ffi-window-set-prompt-buffer-height ((window gtk-window) height)
+(define-ffi-method ffi-window-prompt-buffer-height ((window gtk-window))
+  (nth-value 1 (gtk:gtk-widget-size-request (prompt-buffer-container window))))
+(define-ffi-method (setf ffi-window-prompt-buffer-height) (height (window gtk-window))
   (setf (gtk:gtk-widget-size-request (prompt-buffer-container window))
         (list -1 height))
   (if (eql 0 height)
       (gtk:gtk-widget-grab-focus (gtk-object (active-buffer window)))
       (gtk:gtk-widget-grab-focus (prompt-buffer-view window))))
 
-(define-ffi-method ffi-window-get-prompt-buffer-height ((window gtk-window))
-  (nth-value 1 (gtk:gtk-widget-size-request (prompt-buffer-container window))))
-
-(define-ffi-method ffi-window-get-status-buffer-height ((window gtk-window))
+(define-ffi-method ffi-window-status-buffer-height ((window gtk-window))
   (nth-value 1 (gtk:gtk-widget-size-request (status-container window))))
-
-(define-ffi-method ffi-window-set-status-buffer-height ((window gtk-window) height)
+(define-ffi-method (setf ffi-window-status-buffer-height) (height (window gtk-window))
   (setf (gtk:gtk-widget-size-request (status-container window))
         (list -1 height)))
 
-(define-ffi-method ffi-window-get-message-buffer-height ((window gtk-window))
+(define-ffi-method ffi-window-message-buffer-height ((window gtk-window))
   (nth-value 1 (gtk:gtk-widget-size-request (message-container window))))
-
-(define-ffi-method ffi-window-set-message-buffer-height ((window gtk-window) height)
+(define-ffi-method (setf ffi-window-message-buffer-height) (height (window gtk-window))
   (setf (gtk:gtk-widget-size-request (message-container window))
         (list -1 height)))
 

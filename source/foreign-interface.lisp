@@ -34,13 +34,20 @@ provided."
 (define-ffi-generic ffi-window-set-buffer (window buffer &key focus))
 (define-ffi-generic ffi-window-add-panel-buffer (window buffer side))
 (define-ffi-generic ffi-window-delete-panel-buffer (window buffer))
-(define-ffi-generic ffi-window-set-panel-buffer-width (window buffer width))
-(define-ffi-generic ffi-window-set-prompt-buffer-height (window height))
-(define-ffi-generic ffi-window-set-status-buffer-height (window height))
-(define-ffi-generic ffi-window-set-message-buffer-height (window height))
-(define-ffi-generic ffi-window-get-status-buffer-height (window))
-(define-ffi-generic ffi-window-get-message-buffer-height (window))
-(define-ffi-generic ffi-window-get-prompt-buffer-height (window))
+
+(define-ffi-generic ffi-window-panel-buffer-width (window buffer)
+  (:documentation "Return the panel BUFFER width as a number.
+Setf-able."))
+(define-ffi-generic ffi-window-prompt-buffer-height (window)
+  (:documentation "Return the WINDOW prompt buffer height as a number.
+Setf-able."))
+(define-ffi-generic ffi-window-status-buffer-height (window)
+  (:documentation "Return the WINDOW status buffer height as a number.
+Setf-able."))
+(define-ffi-generic ffi-window-message-buffer-height (window)
+  (:documentation "Return the WINDOW message buffer height as a number.
+Setf-able."))
+
 (define-ffi-generic ffi-buffer-make (buffer))
 (define-ffi-generic ffi-buffer-delete (buffer))
 (define-ffi-generic ffi-buffer-load (buffer url))
