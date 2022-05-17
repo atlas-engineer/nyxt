@@ -829,12 +829,11 @@ Return the created buffer."
 (defmethod (setf proxy) (proxy (buffer buffer))
   (setf (slot-value buffer 'proxy) proxy)
   (if proxy
-      (ffi-buffer-set-proxy buffer
-                            (url proxy)
-                            (allowlist proxy))
-      (ffi-buffer-set-proxy buffer
-                            (quri:uri "")
-                            nil)))
+      (setf (ffi-buffer-proxy buffer)
+            (list (url proxy)
+                  (allowlist proxy)))
+      (setf (ffi-buffer-proxy buffer)
+            (quri:uri ""))))
 
 (defmethod keywords ((buffer web-buffer))
   "Calculate the keywords for a given buffer."
