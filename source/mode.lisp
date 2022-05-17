@@ -20,34 +20,15 @@
     ;; FIXME: SBCL `slot-value' returns a list, while CCL returns the boolean.  Why?
     (if (alex:ensure-car (slot-value class 'toggler-command-p))
         (sera:lret ((command (make-command
-                                 name
-                                 `(lambda (&rest args
-                                           &key
-                                             ;; TODO: Shall we have a function that returns the focused
-                                             ;; buffer?  `focused-buffer'?  `current-buffer*'?  Rename
-                                             ;; `current-buffer' to `current-view-buffer' and add
-                                             ;; `current-buffer' for this task?
-                                             (buffer (or (current-prompt-buffer) (current-buffer)))
-                                             (activate t explicit?)
-                                           &allow-other-keys)
-                                    ,(format nil "Toggle ~a." name)
-                                    ;; On CCL `find-submode' would trigger a
-                                    ;; warning because the class is not findable
-                                    ;; when toggler is defined.
-                                    (let ((existing-instance (find ',name (modes buffer) :key #'sera:class-name-of)))
-                                      (unless explicit?
-                                        (setf activate (or (not existing-instance)
-                                                           (not (enabled-p existing-instance)))))
-                                      (if activate
-                                          ;; TODO: Shall we pass args to `make-instance' or `enable'?
-                                          ;; Have 2 args parameters?
-                                          (enable (or existing-instance
-                                                      (apply #'make-instance ',name
-                                                             :buffer buffer
-                                                             args)))
-                                          (when existing-instance
-                                            (disable existing-instance)))))
-                               :global)))
+                              name
+                              `(lambda (&rest args
+                                        &key (buffer (or (current-prompt-buffer) (current-buffer)))
+                                          (activate t explicit?)
+                                        &allow-other-keys)
+                                 ,(format nil "Toggle ~a." name)
+                                 (declare (ignorable buffer activate explicit?))
+                                 (apply #'toggle-mode ',name args))
+                              :global)))
           (setf (fdefinition name) command))
         (delete-command name))))
 
@@ -381,6 +362,30 @@ BUFFERS and MODES are automatically coerced into a list."
               (mapcar #'disable (delete nil (mapcar (lambda (mode) (find mode (modes buffer) :key #'name))
                                                     (uiop:ensure-list modes)))))
             buffers)))
+
+;; TODO: Factor `toggle-mode' and `toggle-modes' somehow?
+;; TODO: Shall we have a function that returns the focused buffer?
+;; `focused-buffer'?  `current-buffer*'?  Rename `current-buffer' to
+;; `current-view-buffer' and add `current-buffer' for this task?
+(defun toggle-mode (mode-sym
+                    &rest args
+                    &key (buffer (or (current-prompt-buffer) (current-buffer)))
+                      (activate t explicit?)
+                    &allow-other-keys)
+  "Enable MODE-SYM if not already enabled, disable it otherwise."
+  (let ((existing-instance (find mode-sym (modes buffer) :key #'sera:class-name-of)))
+    (unless explicit?
+      (setf activate (or (not existing-instance)
+                         (not (enabled-p existing-instance)))))
+    (if activate
+        ;; TODO: Shall we pass args to `make-instance' or `enable'?
+        ;; Have 2 args parameters?
+        (enable (or existing-instance
+                    (apply #'make-instance mode-sym
+                           :buffer buffer
+                           args)))
+        (when existing-instance
+          (disable existing-instance)))))
 
 (define-command toggle-modes (&key (buffer (current-buffer)))
   "Enable marked modes, disable unmarked modes for BUFFER."
