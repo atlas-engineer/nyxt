@@ -502,6 +502,10 @@ response.  The BODY is wrapped with `with-protect'."
        (unless *headless-p*
          (gtk:gtk-widget-show-all gtk-object))))))
 
+(defmethod update-instance-for-redefined-class :after ((window window) added deleted plist &key)
+  (declare (ignore added deleted plist))
+  (customize-instance window))
+
 (define-ffi-method on-signal-destroy ((window gtk-window))
   ;; remove buffer from window to avoid corruption of buffer
   (gtk:gtk-container-remove (root-box-layout window) (gtk-object (active-buffer window)))
