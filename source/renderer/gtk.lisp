@@ -849,7 +849,7 @@ See `gtk-browser's `modifier-translator' slot."
          cookie-manager
          (uiop:native-namestring cookies-path)
          :webkit-cookie-persistent-storage-text))
-      (set-cookie-policy cookie-manager (default-cookie-policy *browser*)))
+      (setf (ffi-buffer-cookie-policy cookie-manager) (default-cookie-policy *browser*)))
     context))
 
 (defun internal-context-p (name)
@@ -1817,21 +1817,43 @@ custom (the specified proxy) and none."
 (defmethod ffi-display-url (text)
   (webkit:webkit-uri-for-display text))
 
-(-> set-cookie-policy (webkit:webkit-cookie-manager cookie-policy) *)
-(defun set-cookie-policy (cookie-manager cookie-policy)
+(defmethod ffi-buffer-cookie-policy ((buffer gtk-buffer))
+  (if (renderer-thread-p)
+      (progn
+        (log:warn "Querying cookie policy in WebKitGTK is only supported from a non-renderer thread.")
+        nil)
+      (let ((result-channel (make-channel 1)))
+        (run-thread "WebKitGTK cookie-policy"
+          (within-gtk-thread
+            (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
+                   (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
+              ;; TODO: Update upstream to export and fix `with-g-async-ready-callback'.
+              (webkit::with-g-async-ready-callback (callback
+                                                     (declare (ignorable webkit::user-data webkit::source-object))
+                                                     (calispel:! result-channel
+                                                                 (webkit:webkit-cookie-manager-get-accept-policy-finish
+                                                                  cookie-manager
+                                                                  webkit::result)))
+                (webkit:webkit-cookie-manager-get-accept-policy
+                 cookie-manager
+                 (cffi:null-pointer)
+                 callback
+                 (cffi:null-pointer))))))
+        (calispel:? result-channel))))
+(defmethod (setf ffi-buffer-cookie-policy) (cookie-policy (buffer gtk-buffer))
+  "VALUE is one of`:always', `:never' or `:no-third-party'."
+  (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
+         (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
+    (setf (ffi-buffer-cookie-policy cookie-manager) cookie-policy)
+    buffer))
+(defmethod (setf ffi-buffer-cookie-policy) (cookie-policy (cookie-manager webkit:webkit-cookie-manager))
+  "VALUE is one of`:always', `:never' or `:no-third-party'."
   (webkit:webkit-cookie-manager-set-accept-policy
    cookie-manager
    (match cookie-policy
      (:accept :webkit-cookie-policy-accept-always)
      (:never :webkit-cookie-policy-accept-never)
      (:no-third-party :webkit-cookie-policy-accept-no-third-party))))
-
-(define-ffi-method ffi-buffer-cookie-policy ((buffer gtk-buffer) value)
-  "VALUE is one of`:always', `:never' or `:no-third-party'."
-  (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
-         (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
-    (set-cookie-policy cookie-manager value)
-    buffer))
 
 (defmethod ffi-preferred-languages ((buffer gtk-buffer))
   "Not supported by WebKitGTK.
