@@ -35,7 +35,21 @@ provided."
 It is the title that's often used by the window manager to decorate the window.
 Setf-able."))
 
-(define-ffi-generic ffi-window-active (browser))
+(define-ffi-generic ffi-window-active (browser)
+  (:method ((browser t))
+    (or (slot-value browser 'last-active-window)
+        (first (window-list))))
+  (:method :around ((browser t))
+    (setf (slot-value browser 'last-active-window)
+          (call-next-method)))
+  (:documentation "The primary method returns the focused window as per the
+renderer.
+
+The `:around' method automatically ensures that the result is set to
+`last-active-window'.
+
+The specialized method may call `call-next-method' to return a sensible fallback window."))
+
 (define-ffi-generic ffi-window-set-buffer (window buffer &key focus))
 (define-ffi-generic ffi-window-add-panel-buffer (window buffer side))
 (define-ffi-generic ffi-window-delete-panel-buffer (window buffer))

@@ -1047,11 +1047,9 @@ See `finalize-buffer'."
   (setf (gtk:gtk-window-title (gtk-object window)) title))
 
 (define-ffi-method ffi-window-active ((browser gtk-browser))
-  "Return the window object for the current window."
-  (setf (slot-value browser 'last-active-window)
-        (or (find-if #'gtk:gtk-window-is-active (window-list) :key #'gtk-object)
-            (slot-value browser 'last-active-window)
-            (first (window-list)))))
+  "Return the focused window."
+  (or (find-if #'gtk:gtk-window-is-active (window-list) :key #'gtk-object)
+      (call-next-method)))
 
 (define-ffi-method ffi-window-set-buffer ((window gtk-window) (buffer gtk-buffer) &key (focus t))
   "Set BROWSER's WINDOW buffer to BUFFER."
