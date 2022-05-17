@@ -7,15 +7,21 @@
   "Like `defgeneric' but export NAME and define default dummy method if none is
 provided."
   (let* ((methods (sera:filter (sera:eqs :method) options :key #'first))
-         (options-sans-methods (set-difference options methods :key #'first)))
+         (setter? (alex:assoc-value options :setter-p))
+         (normalized-options (set-difference options methods :key #'first))
+         (normalized-options (setf (alex:assoc-value normalized-options :setter-p) nil)))
     `(progn
        (export-always ',name)
-       (defgeneric ,name (,@arguments)
-         ,@(if methods
-               methods
-               `((:method (,@arguments)
-                   (declare (ignore ,@(set-difference arguments lambda-list-keywords))))))
-         ,@options-sans-methods))))
+       (prog1
+           (defgeneric ,name (,@arguments)
+             ,@(if methods
+                   methods
+                   `((:method (,@arguments)
+                       (declare (ignore ,@(set-difference arguments lambda-list-keywords))))))
+             ,@normalized-options)
+         ,(when setter?
+            `(defmethod (setf ,name) (value ,@arguments)
+               (declare (ignore value ,@arguments))))))))
 
 (define-ffi-generic ffi-window-delete (window)
   (:documentation "Delete WINDOW, possibly freeing the associated widgets.
@@ -46,6 +52,7 @@ The specialized method may call `call-next-method' to set
 WINDOW as the `last-active-window'."))
 
 (define-ffi-generic ffi-window-title (window)
+  (:setter-p t)
   (:documentation "Return as a string the title of the window.
 It is the title that's often used by the window manager to decorate the window.
 Setf-able."))
@@ -76,15 +83,19 @@ SIDE is one of `:left' or `:right'."))
   (:documentation "Unbind the pannel BUFFER widget from WINDOW."))
 
 (define-ffi-generic ffi-window-panel-buffer-width (window buffer)
+  (:setter-p t)
   (:documentation "Return the panel BUFFER width as a number.
 Setf-able."))
 (define-ffi-generic ffi-window-prompt-buffer-height (window)
+  (:setter-p t)
   (:documentation "Return the WINDOW prompt buffer height as a number.
 Setf-able."))
 (define-ffi-generic ffi-window-status-buffer-height (window)
+  (:setter-p t)
   (:documentation "Return the WINDOW status buffer height as a number.
 Setf-able."))
 (define-ffi-generic ffi-window-message-buffer-height (window)
+  (:setter-p t)
   (:documentation "Return the WINDOW message buffer height as a number.
 Setf-able."))
 
@@ -120,32 +131,41 @@ the termination of the JavaScript execution."))
   (:documentation "Remove the SCRIPT installed with `ffi-buffer-add-user-script'."))
 
 (define-ffi-generic ffi-buffer-javascript-enabled-p (buffer)
+  (:setter-p t)
   (:documentation "Return setting as boolean.
 Setf-able."))
 (define-ffi-generic ffi-buffer-javascript-markup-enabled-p (buffer)
+  (:setter-p t)
   (:documentation "Return setting as boolean.
 Setf-able."))
 (define-ffi-generic ffi-buffer-smooth-scrolling-enabled-p (buffer)
+  (:setter-p t)
   (:documentation "Return setting as boolean.
 Setf-able."))
 (define-ffi-generic ffi-buffer-media-enabled-p (buffer)
+  (:setter-p t)
   (:documentation "Return setting as boolean.
 Setf-able."))
 (define-ffi-generic ffi-buffer-webgl-enabled-p (buffer)
+  (:setter-p t)
   (:documentation "Return setting as boolean.
 Setf-able."))
 (define-ffi-generic ffi-buffer-auto-load-image-enabled-p (buffer)
+  (:setter-p t)
   (:documentation "Return setting as boolean.
 Setf-able."))
 (define-ffi-generic ffi-buffer-sound-enabled-p (buffer)
+  (:setter-p t)
   (:documentation "Return setting as boolean.
 Setf-able."))
 
 (define-ffi-generic ffi-buffer-user-agent (buffer)
+  (:setter-p t)
   (:documentation "Return the user agent as a string.
 Setf-able."))
 
 (define-ffi-generic ffi-buffer-proxy (buffer)
+  (:setter-p t)
   (:documentation "Return the proxy URL as a `quri:uri'.
 Return the list of ignored hosts (list of strings) as a second value.
 
@@ -159,6 +179,7 @@ PROXY-URL is a `quri:uri' and IGNORE-HOSTS a list of strings."))
   (:method ((buffer t))
     (with-current-buffer buffer
       (peval (ps:chain document body style zoom))))
+  (:setter-p t)
   (:documentation "Return the zoom level of the document.
 Setf-able."))
 (defmethod (setf ffi-buffer-zoom-level) (value (buffer buffer))
@@ -224,12 +245,14 @@ When done, call `call-next-method' to finalize the startup."))
 In particular, this should understand Punycode."))
 
 (define-ffi-generic ffi-buffer-cookie-policy (buffer)
+  (:setter-p t)
   (:documentation "Return the cookie 'accept' policy, one of of`:always',
 `:never' or `:no-third-party'.
 
 Setf-able with the same aforementioned values."))
 
 (define-ffi-generic ffi-preferred-languages (buffer)
+  (:setter-p t)
   (:documentation "Set the list of preferred languages in the HTTP header \"Accept-Language:\".
 Setf-able, where the languages value is a list of strings like '(\"en_US\"
 \"fr_FR\")."))
@@ -238,6 +261,7 @@ Setf-able, where the languages value is a list of strings like '(\"en_US\"
   (:documentation "Return non-nil if the BUFFER widget is the one with focus."))
 
 (define-ffi-generic ffi-tracking-prevention (buffer)
+  (:setter-p t)
   (:documentation "Return if Intelligent Tracking Prevention (ITP) is enabled.
 Setf-able."))
 
