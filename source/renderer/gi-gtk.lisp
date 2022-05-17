@@ -34,7 +34,7 @@ interface. On Darwin, we must run the GTK thread on the main thread."
                  #+GTK-3-4
                  (gdk:gdk-set-program-class "Nyxt")
                  (gir:invoke ((gir:ffi "Gtk" "3.0") 'main)))))
-        (finalize browser urls startup-timestamp)
+        (call-next-method)
         #-darwin
         (let ((main-thread (bt:make-thread #'main-func :name renderer-thread-name)))
           (unless *run-from-repl-p*
