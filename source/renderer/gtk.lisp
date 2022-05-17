@@ -1837,10 +1837,13 @@ custom (the specified proxy) and none."
     (set-cookie-policy cookie-manager value)
     buffer))
 
-(defmethod ffi-set-preferred-languages ((buffer gtk-buffer)
-                                        language-list)
-  "Set the list of preferred languages in the HTTP header \"Accept-Language:\".
-LANGUAGE is a list of strings like '(\"en_US\" \"fr_FR\")."
+(defmethod ffi-preferred-languages ((buffer gtk-buffer))
+  "Not supported by WebKitGTK.
+Only the setf method is."
+  nil)
+(defmethod (setf ffi-preferred-languages) (language-list
+                                           (buffer gtk-buffer))
+  "LANGUAGE-LIST is a list of strings like '(\"en_US\" \"fr_FR\")."
   (let ((langs (cffi:foreign-alloc :string
                                    :initial-contents language-list
                                    :null-terminated-p t)))
