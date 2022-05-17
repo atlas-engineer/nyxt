@@ -1039,7 +1039,7 @@ See `finalize-buffer'."
   "Show window in foreground."
   (unless *headless-p*
     (gtk:gtk-window-present (gtk-object window)))
-  (setf (slot-value *browser* 'last-active-window) window))
+  (call-next-method))
 
 (define-ffi-method ffi-window-title ((window gtk-window))
   (gtk:gtk-window-title (gtk-object window)))
