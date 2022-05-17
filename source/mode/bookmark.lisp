@@ -190,6 +190,9 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
    (prompter:active-attributes-keys '("URL" "Title" "Tags")))
   (:export-class-name-p t))
 
+(defmethod url-sources ((mode bookmark-mode) actions)
+  (make-instance 'bookmark-source :actions actions))
+
 (defun tag-suggestions ()
   (let ((bookmarks (files:content (bookmarks-file (current-buffer)))))
     ;; Warning: `sort' is destructive and `append' does not copy the last list,

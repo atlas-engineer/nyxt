@@ -448,6 +448,14 @@ If there is no corresponding keymap, return nil."
 (defmethod on-signal-load-failed ((mode mode) url)
   url)
 
+(defmethod url-sources ((mode mode) actions)
+  (declare (ignore actions))
+  nil)
+
+(defmethod url-sources :around ((mode mode) actions)
+  (declare (ignore actions))
+  (alex:ensure-list (call-next-method)))
+
 (defmethod s-serialization:serializable-slots ((object mode))
   "Discard keymaps which can be quite verbose."
   (delete 'keymap-scheme

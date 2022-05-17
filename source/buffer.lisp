@@ -1508,6 +1508,14 @@ any.")
   (when (and history (not (url-empty-p url)))
     (prompter::history-pushnew history (render-url url))))
 
+(export-always 'url-sources)
+(defmethod url-sources ((buffer buffer) actions)
+  (append
+   (list (make-instance 'new-url-or-search-source :actions actions)
+         (make-instance 'global-history-source :actions actions)
+         (make-instance 'search-engine-url-source :actions actions))
+   (alex:mappend (alex:rcurry #'url-sources actions) (modes buffer))))
+
 (define-command set-url (&key (prefill-current-url-p t))
   "Set the URL for the current buffer, completing with history."
   (let ((history (set-url-history *browser*))
@@ -1528,10 +1536,7 @@ any.")
      :input (if prefill-current-url-p
                 (render-url (url (current-buffer))) "")
      :history history
-     :sources (list (make-instance 'new-url-or-search-source :actions actions)
-                    (make-instance 'global-history-source :actions actions)
-                    (make-instance (resolve-symbol :bookmark-source :class) :actions actions)
-                    (make-instance 'search-engine-url-source :actions actions)))))
+     :sources (url-sources (current-buffer) actions))))
 
 (define-command set-url-new-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused buffer."
@@ -1547,10 +1552,7 @@ any.")
      :input (if prefill-current-url-p
                 (render-url (url (current-buffer))) "")
      :history history
-     :sources (list (make-instance 'new-url-or-search-source :actions actions)
-                    (make-instance 'global-history-source :actions actions)
-                    (make-instance (resolve-symbol :bookmark-source :class) :actions actions)
-                    (make-instance 'search-engine-url-source :actions actions)))))
+     :sources (url-sources (current-buffer) actions))))
 
 (define-command set-url-new-nosave-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused nosave buffer."
@@ -1565,10 +1567,7 @@ any.")
      :prompt "Open URL in new nosave buffer"
      :input (if prefill-current-url-p
                 (render-url (url (current-buffer))) "")
-     :sources (list (make-instance 'new-url-or-search-source :actions actions)
-                    (make-instance 'global-history-source :actions actions)
-                    (make-instance (resolve-symbol :bookmark-source :class) :actions actions)
-                    (make-instance 'search-engine-url-source :actions actions)))))
+     :sources (url-sources (current-buffer) actions))))
 
 (define-command reload-current-buffer ()
   "Reload current buffer."
