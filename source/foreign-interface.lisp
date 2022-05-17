@@ -62,8 +62,12 @@ provided."
 (define-ffi-generic ffi-buffer-enable-webgl (buffer value))
 (define-ffi-generic ffi-buffer-auto-load-image (buffer value))
 (define-ffi-generic ffi-buffer-enable-sound (buffer value))
-(define-ffi-generic ffi-buffer-user-agent (buffer &optional value))
-(define-ffi-generic ffi-buffer-set-proxy (buffer &optional proxy-url ignore-hosts))
+
+(define-ffi-generic ffi-buffer-user-agent (buffer)
+  (:documentation "Return the user agent as a string.
+Setf-able."))
+
+(define-ffi-generic ffi-buffer-set-proxy (buffer &optional proxy-url ignore-hosts)) ; TODO: Rewrite.
 (define-ffi-generic ffi-buffer-get-proxy (buffer))
 (define-ffi-generic ffi-buffer-download (buffer url))
 (define-ffi-generic ffi-buffer-set-zoom-level (buffer value)

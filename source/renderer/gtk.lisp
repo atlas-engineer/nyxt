@@ -1710,11 +1710,13 @@ local anyways, and it's better to refresh it if a load was queried."
         (hooks:run-hook (after-download-hook *browser*) download)))
     download))
 
-(define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer) &optional value)
+(define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer))
   (alex:when-let ((settings (webkit:webkit-web-view-get-settings (gtk-object buffer))))
-    (if value
-        (setf (webkit:webkit-settings-user-agent settings) value)
-        (webkit:webkit-settings-user-agent settings))))
+    (webkit:webkit-settings-user-agent settings)))
+
+(define-ffi-method (setf ffi-buffer-user-agent) (value (buffer gtk-buffer))
+  (alex:when-let ((settings (webkit:webkit-web-view-get-settings (gtk-object buffer))))
+    (setf (webkit:webkit-settings-user-agent settings) value)))
 
 (define-ffi-method ffi-buffer-webgl-enabled-p ((buffer gtk-buffer))
   (webkit:webkit-settings-enable-webgl
