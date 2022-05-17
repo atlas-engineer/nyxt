@@ -323,11 +323,14 @@ current unmarked selection."
 
 (define-command-prompt return-selection-over-action (prompt-buffer)
   "Prompt for an action to run over PROMPT-BUFFER selection."
-  (let ((action (prompt1
-                 :prompt "Action to run on selection"
-                 :sources (list (make-instance 'action-source)))))
-    (when action
-      (prompter:return-selection prompt-buffer action))))
+  (if (equal (mapcar #'type-of (prompter:sources (current-prompt-buffer)))
+             '(action-source))
+      (echo "Already displaying actions of previous prompt buffer.")
+      (let ((action (prompt1
+                      :prompt "Action to run on selection"
+                      :sources (list (make-instance 'action-source)))))
+        (when action
+          (prompter:return-selection prompt-buffer action)))))
 
 (define-command-prompt run-follow-mode-function (prompt-buffer)
   "Run follow-mode function over selected suggestion without closing PROMPT-BUFFER."
