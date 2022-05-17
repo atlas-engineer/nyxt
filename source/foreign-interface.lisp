@@ -17,15 +17,27 @@ provided."
                    (declare (ignore ,@(set-difference arguments lambda-list-keywords))))))
          ,@options-sans-methods))))
 
-(define-ffi-generic ffi-window-delete (window))
+(define-ffi-generic ffi-window-delete (window)
+  (:documentation "Delete WINDOW, possibly freeing the associated widgets.
+After this call, the window should not be displayed."))
+
 (define-ffi-generic ffi-window-fullscreen (window))
 (define-ffi-generic ffi-window-unfullscreen (window))
-(define-ffi-generic ffi-buffer-url (buffer))
-(define-ffi-generic ffi-buffer-title (buffer))
+
+(define-ffi-generic ffi-buffer-url (buffer)
+  (:documentation "Return the `quri:uri' associated with the BUFFER.
+This is used to set the `buffer' `url' slot."))
+(define-ffi-generic ffi-buffer-title (buffer)
+  (:documentation "Return as a string the title of the document (or web page)
+showing in BUFFER."))
+
 (define-ffi-generic ffi-window-make (browser)
   (:method ((browser t))
     (declare (ignore browser))
-    (make-instance 'window)))
+    (make-instance 'window))
+  (:documentation "Return a `window' object, ready for display.
+The renderer specialization must handle the widget initialization."))
+
 (define-ffi-generic ffi-window-to-foreground (window)
   (:method ((window t))
     (setf (slot-value *browser* 'last-active-window) window))
@@ -53,9 +65,15 @@ The `:around' method automatically ensures that the result is set to
 
 The specialized method may call `call-next-method' to return a sensible fallback window."))
 
-(define-ffi-generic ffi-window-set-buffer (window buffer &key focus))
-(define-ffi-generic ffi-window-add-panel-buffer (window buffer side))
-(define-ffi-generic ffi-window-delete-panel-buffer (window buffer))
+(define-ffi-generic ffi-window-set-buffer (window buffer &key focus)
+  (:documentation "Set the BUFFER's widget to display in WINDOW.
+If FOCUS is non-nil, "))
+
+(define-ffi-generic ffi-window-add-panel-buffer (window buffer side)
+  (:documentation "Make widget for pannel BUFFER and add it to the WINDOW widget.
+SIDE is one of `:left' or `:right'."))
+(define-ffi-generic ffi-window-delete-panel-buffer (window buffer)
+  (:documentation "Unbind the pannel BUFFER widget from WINDOW."))
 
 (define-ffi-generic ffi-window-panel-buffer-width (window buffer)
   (:documentation "Return the panel BUFFER width as a number.
@@ -70,19 +88,36 @@ Setf-able."))
   (:documentation "Return the WINDOW message buffer height as a number.
 Setf-able."))
 
-(define-ffi-generic ffi-buffer-make (buffer))
-(define-ffi-generic ffi-buffer-delete (buffer))
-(define-ffi-generic ffi-buffer-load (buffer url))
-(define-ffi-generic ffi-buffer-evaluate-javascript (buffer javascript &optional world-name))
-(define-ffi-generic ffi-buffer-evaluate-javascript-async (buffer javascript &optional world-name))
+(define-ffi-generic ffi-buffer-make (buffer)
+  (:documentation "Make BUFFER widget."))
+(define-ffi-generic ffi-buffer-delete (buffer)
+  (:documentation "Delete BUFFER widget."))
+
+(define-ffi-generic ffi-buffer-load (buffer url)
+  (:documentation "Load URL into BUFFER through the renderer."))
+
+(define-ffi-generic ffi-buffer-evaluate-javascript (buffer javascript &optional world-name)
+  (:documentation "Evaluate JAVASCRIPT in the BUFFER web view.
+See also `ffi-buffer-evaluate-javascript-async'."))
+(define-ffi-generic ffi-buffer-evaluate-javascript-async (buffer javascript &optional world-name)
+  (:documentation "Same as `ffi-buffer-evaluate-javascript' but don't wait for
+the termination of the JavaScript execution."))
+
 (define-ffi-generic ffi-buffer-add-user-style (buffer css &key
                                                       world-name all-frames-p inject-as-author-p
-                                                      allow-list block-list))
-(define-ffi-generic ffi-buffer-remove-user-style (buffer style-sheet))
+                                                      allow-list block-list)
+  ;; TODO: Document the options!
+  (:documentation "Apply the CSS style to the BUFFER web view."))
+(define-ffi-generic ffi-buffer-remove-user-style (buffer style-sheet)
+  (:documentation "Remove the STYLE-SHEET installed with `ffi-buffer-add-user-style'."))
+
 (define-ffi-generic ffi-buffer-add-user-script (buffer javascript &key
                                                        world-name all-frames-p at-document-start-p
-                                                       run-now-p allow-list block-list))
-(define-ffi-generic ffi-buffer-remove-user-script (buffer script))
+                                                       run-now-p allow-list block-list)
+  ;; TODO: Document the options!
+  (:documentation "Install the JAVASCRIPT  into the BUFFER web view."))
+(define-ffi-generic ffi-buffer-remove-user-script (buffer script)
+  (:documentation "Remove the SCRIPT installed with `ffi-buffer-add-user-script'."))
 
 (define-ffi-generic ffi-buffer-javascript-enabled-p (buffer)
   (:documentation "Return setting as boolean.
@@ -117,7 +152,8 @@ Return the list of ignored hosts (list of strings) as a second value.
 Setf-able.  The value is either a PROXY-URL or a pair of (PROXY-URL IGNORE-HOSTS).
 PROXY-URL is a `quri:uri' and IGNORE-HOSTS a list of strings."))
 
-(define-ffi-generic ffi-buffer-download (buffer url))
+(define-ffi-generic ffi-buffer-download (buffer url)
+  (:documentation "Download URL using the BUFFER web view."))
 
 (define-ffi-generic ffi-buffer-zoom-level (buffer)
   (:method ((buffer t))
@@ -142,22 +178,50 @@ Setf-able."))
         (let ((slice-size 10000))
           (reduce #'str:concat
                   (loop for i from 0 to (truncate (get-html-length)) by slice-size
-                        collect (get-html i (+ i slice-size)))))))))
-(define-ffi-generic ffi-generate-input-event (window event))
-(define-ffi-generic ffi-generated-input-event-p (window event))
+                        collect (get-html i (+ i slice-size))))))))
+  (:documentation "Return the BUFFER raw HTML as a string."))
+
+(define-ffi-generic ffi-generate-input-event (window event)
+  (:documentation "Send input EVENT to renderer for WINDOW.
+This allows to programmatically generate events on demand.
+EVENT are renderer-specific objects.
+
+The resulting should somehow be marked as generated, to allow Nyxt to tell
+spontaneous events from programmed ones.
+See also `ffi-generated-input-event-p'."))
+
+(define-ffi-generic ffi-generated-input-event-p (window event)
+  (:documentation "Return non-nil if EVENT was generated by `ffi-generated-input-event'."))
+
 (define-ffi-generic ffi-within-renderer-thread (browser thunk)
   (:method ((browser t) thunk)
     (declare (ignore browser))
-    (funcall thunk)))
-(define-ffi-generic ffi-kill-browser (browser))
+    (funcall thunk))
+  (:documentation "Run THUNK (a lambda of no argument) from the renderer's thread.
+This is useful in particular for renderer-specific functions that cannot be run on random threads."))
+
+(define-ffi-generic ffi-kill-browser (browser)
+  (:documentation "Terminate the renderer.
+This often translates in the termination of the \"main loop\" associated to the widget engine."))
+
 (define-ffi-generic ffi-initialize (browser urls startup-timestamp)
   (:method ((browser t) urls startup-timestamp)
-    (finalize browser urls startup-timestamp)))
-(define-ffi-generic ffi-inspector-show (buffer))
-(define-ffi-generic ffi-print-status (window text))
+    (finalize browser urls startup-timestamp))
+  (:documentation "Renderer-specific initialization.
+When done, call `call-next-method' to finalize the startup."))
+
+(define-ffi-generic ffi-inspector-show (buffer)
+  (:documentation "Show the renderer built-in inspector."))
+
+(define-ffi-generic ffi-print-status (window text)
+  (:documentation "Display TEST in the WINDOW status buffer."))
+
 (define-ffi-generic ffi-print-message (window message)
-  (:documentation "Print MESSAGE which is an HTML string."))
-(define-ffi-generic ffi-display-url (text))
+  (:documentation "Print MESSAGE (an HTML string) in the WINDOW message buffer."))
+
+(define-ffi-generic ffi-display-url (url)
+  (:documentation "Return URL as a human-readable string.
+In particular, this should understand Punycode."))
 
 (define-ffi-generic ffi-buffer-cookie-policy (buffer)
   (:documentation "Return the cookie 'accept' policy, one of of`:always',
@@ -170,7 +234,8 @@ Setf-able with the same aforementioned values."))
 Setf-able, where the languages value is a list of strings like '(\"en_US\"
 \"fr_FR\")."))
 
-(define-ffi-generic ffi-focused-p (buffer))
+(define-ffi-generic ffi-focused-p (buffer)
+  (:documentation "Return non-nil if the BUFFER widget is the one with focus."))
 
 (define-ffi-generic ffi-tracking-prevention (buffer)
   (:documentation "Return if Intelligent Tracking Prevention (ITP) is enabled.
@@ -190,25 +255,36 @@ Setf-able."))
       ;; (trivial-clipboard:text (trivial-clipboard:text))
       (let ((input (%copy)))
         (copy-to-clipboard input)
-        (echo "Text copied: ~s" input)))))
+        (echo "Text copied: ~s" input))))
+  (:documentation "Copy selected text in BUFFER to the system clipboard."))
+
 (define-ffi-generic ffi-buffer-paste (buffer)
   (:method ((buffer t))
     (with-current-buffer buffer
-      (%paste))))
+      (%paste)))
+  (:documentation "Paste the last clipboard entry into BUFFER."))
+
 (define-ffi-generic ffi-buffer-cut (buffer)
   (:method ((buffer t))
     (with-current-buffer buffer
       (let ((input (%cut)))
         (when input
           (copy-to-clipboard input)
-          (echo "Text cut: ~s" input))))))
+          (echo "Text cut: ~s" input)))))
+  (:documentation "Cut selected text in BUFFER to the system clipboard."))
+
 (define-ffi-generic ffi-buffer-select-all (buffer)
   (:method ((buffer t))
     (with-current-buffer buffer
-      (%select-all))))
+      (%select-all)))
+  (:documentation "Select all text in BUFFER web view."))
+
 (define-ffi-generic ffi-buffer-undo (buffer)
   (:method ((buffer t))
-    (echo-warning "Undoing the edits is not yet implemented for this renderer.")))
+    (echo-warning "Undoing edits is not yet implemented for this renderer."))
+  (:documentation "Undo the last text edit performed in BUFFER's web view."))
+
 (define-ffi-generic ffi-buffer-redo (buffer)
   (:method ((buffer t))
-    (echo-warning "Redoing the edits is not yet implemented for this renderer.")))
+    (echo-warning "Redoing edits is not yet implemented for this renderer."))
+  (:documentation "Redo the last undone text edit performed in BUFFER's web view."))
