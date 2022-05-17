@@ -103,6 +103,13 @@ The handlers take the window as argument."))
   (:documentation "A window is a view where buffers are displayed.")
   (:metaclass user-class))
 
+(defmethod initialize-instance :after ((window window) &key (browser *browser*)
+                                       &allow-other-keys)
+  "Set ID."
+  (when browser
+    (setf (id window) (get-unique-identifier browser)))
+  window)
+
 (defmethod print-object ((window window) stream)
   (print-unreadable-object (window stream :type t :identity t)
     (format stream "~a" (id window))))

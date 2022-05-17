@@ -418,8 +418,7 @@ response.  The BODY is wrapped with `with-protect'."
                   prompt-buffer-view
                   status-buffer status-container
                   message-container message-view
-                  id key-string-buffer) window
-       (setf id (get-unique-identifier *browser*))
+                  key-string-buffer) window
        (setf gtk-object (make-instance 'gtk:gtk-window
                                        :type :toplevel
                                        :default-width 1024
