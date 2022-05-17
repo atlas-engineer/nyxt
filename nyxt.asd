@@ -158,7 +158,8 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "list-history")
                  (:file "document")
                  (:file "history" :depends-on ("history-tree" "list-history"))
-                 (:file "style")
+                 (:file "bookmarklets")
+                 (:file "style" :depends-on ("bookmarklets"))
                  (:file "certificate-exception")
                  (:file "emacs")
                  (:file "vi")
@@ -169,8 +170,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                 :pathname "mode"
                 :depends-on ("Core modes")
                 :components
-                ((:file "bookmarklets")
-                 (:file "hint")
+                ((:file "hint")
                  (:file "hint-prompt-buffer" :depends-on ("hint"))
                  (:file "element-frame")
                  (:file "search-buffer" :depends-on ("hint"))
