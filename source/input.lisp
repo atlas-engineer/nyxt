@@ -63,10 +63,10 @@ Example:
   "Return the list of `keymap' for the current buffer, ordered by priority.
 If non-empty, return the result of BUFFER's `current-keymaps-hook' instead."
   (let ((keymaps
-          (when buffer
+          (when (input-buffer-p buffer)
             (cons (override-map buffer)
                   (delete nil (mapcar #'keymap (modes buffer)))))))
-    (if (current-keymaps-hook buffer)
+    (if (and (input-buffer-p buffer) (current-keymaps-hook buffer))
         (hooks:run-hook (current-keymaps-hook buffer) keymaps buffer)
         keymaps)))
 
@@ -126,7 +126,7 @@ Return nil to forward to renderer or non-nil otherwise."
                                  translated-specs
                                  specs)))
                    (keyspecs-with-optional-keycode key))))
-      (when buffer
+      (when (input-buffer-p buffer)
         (setf (last-event buffer) event))
       (cond
         ((ffi-generated-input-event-p window event)
@@ -158,13 +158,13 @@ Return nil to forward to renderer or non-nil otherwise."
                 (setf key-stack nil))
               t)
 
-             ((or (and buffer (forward-input-events-p buffer))
+             ((or (and (input-buffer-p buffer) (forward-input-events-p buffer))
                   (pointer-event-p (first (last key-stack))))
               (log:debug "Forward key ~s" (keyspecs key-stack))
               (setf key-stack nil)
               nil)
 
-             ((and buffer (not (forward-input-events-p buffer)))
+             ((and (input-buffer-p buffer) (not (forward-input-events-p buffer)))
               ;; After checking `pointer-event-p', otherwise pointer events
               ;; might not be forwarded.
               (funcall (input-skip-dispatcher window) (keyspecs key-stack))
