@@ -28,7 +28,10 @@ provided."
     (make-instance 'window)))
 (define-ffi-generic ffi-window-to-foreground (window)
   (:method ((window t))
-    (setf (slot-value *browser* 'last-active-window) window)))
+    (setf (slot-value *browser* 'last-active-window) window))
+  (:documentation "Show WINDOW in the foreground.
+The specialized method may call `call-next-method' to set
+WINDOW as the `last-active-window'."))
 
 (define-ffi-generic ffi-window-title (window)
   (:documentation "Return as a string the title of the window.
