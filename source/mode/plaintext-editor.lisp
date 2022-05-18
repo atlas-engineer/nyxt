@@ -30,7 +30,7 @@
                     (:body
                      (:textarea :id "editor" :name "editor" :autofocus t))))
          (insert-content (ps:ps (ps:chain document (write (ps:lisp content))))))
-    (ffi-buffer-evaluate-javascript-async (buffer editor) insert-content)))
+    (nyxt/ffi:buffer-evaluate-javascript-async (buffer editor) insert-content)))
 
 (defmethod set-content ((editor plaintext-editor-mode) content)
   (with-current-buffer (buffer editor)

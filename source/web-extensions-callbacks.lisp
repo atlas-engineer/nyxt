@@ -74,11 +74,11 @@
 
 (defmacro fire-extension-event (extension object event &rest args)
   (alex:once-only (extension)
-    `(if (ffi-buffer-evaluate-javascript
+    `(if (nyxt/ffi:buffer-evaluate-javascript
           (buffer ,extension)
           (ps:ps (ps:instanceof (ps:chain browser ,object ,event) *Object))
           (name ,extension))
-         (ffi-buffer-evaluate-javascript
+         (nyxt/ffi:buffer-evaluate-javascript
           (buffer ,extension)
           (ps:ps (ps:chain browser ,object ,event
                            (run ,@args)))
@@ -241,7 +241,7 @@ the description of the mechanism that sends the results back."
                                (or (find (format nil "~d" tab-id) (buffer-list) :key #'id)
                                    (current-buffer))))
          (style-sheet (when (nyxt/web-extensions:tab-apis-enabled-p extension buffer-to-insert)
-                        (ffi-buffer-add-user-style
+                        (nyxt/ffi:buffer-add-user-style
                          buffer-to-insert
                          (if file
                              (uiop:read-file-string (uiop:merge-pathnames*
@@ -265,7 +265,7 @@ the description of the mechanism that sends the results back."
                                (or (find (format nil "~d" tab-id) (buffer-list) :key #'id)
                                    (current-buffer))))
          (style-sheet (gethash message-params %style-sheets%)))
-    (ffi-buffer-remove-user-style buffer-to-remove style-sheet)
+    (nyxt/ffi:buffer-remove-user-style buffer-to-remove style-sheet)
     (remhash message-params %style-sheets%)
     "null"))
 
@@ -286,7 +286,7 @@ the description of the mechanism that sends the results back."
                           :key #'id
                           :test #'string-equal)))
     (when (nyxt/web-extensions:tab-apis-enabled-p extension buffer-to-insert)
-      (ffi-buffer-add-user-script
+      (nyxt/ffi:buffer-add-user-script
        buffer-to-insert (if file
                             (uiop:read-file-string
                              (nyxt/web-extensions:merge-extension-path extension file))

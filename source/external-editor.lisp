@@ -87,7 +87,7 @@ Create a temporary file. The editor runs synchronously so invoke on a
 separate thread when possible."
   (let ((page-source (if (web-buffer-p (current-buffer))
                          (plump:serialize (document-model (current-buffer)) nil)
-                         (ffi-buffer-get-document (current-buffer)))))
+                         (nyxt/ffi:buffer-get-document (current-buffer)))))
     (uiop:with-temporary-file (:directory (files:expand (make-instance 'nyxt-data-directory))
                                :pathname p)
       (if (> (length page-source) 0)

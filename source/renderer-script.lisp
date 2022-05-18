@@ -12,21 +12,21 @@ Any Lisp expression must be wrapped in (PS:LISP ...).
 The returned function sends the compiled Javascript to the current buffer webview.
 The function can be passed ARGS."
   `(defun ,script-name ,args
-     (ffi-buffer-evaluate-javascript (current-buffer)
+     (nyxt/ffi:buffer-evaluate-javascript (current-buffer)
                                      (ps:ps ,@script-body))))
 
 (export-always 'pflet)
 (defmacro pflet (functions &body body)
   (flet ((transform-definition (name args body)
            `(,name ,args
-                   (ffi-buffer-evaluate-javascript (current-buffer) (ps:ps . ,body)))))
+                   (nyxt/ffi:buffer-evaluate-javascript (current-buffer) (ps:ps . ,body)))))
     `(flet ,(loop for (name lambda-list . body) in functions
                   collect (transform-definition name lambda-list body))
        ,@body)))
 
 (export-always 'peval)
 (defmacro peval (&body body)
-  `(ffi-buffer-evaluate-javascript (current-buffer) (ps:ps ,@body)))
+  `(nyxt/ffi:buffer-evaluate-javascript (current-buffer) (ps:ps ,@body)))
 
 (define-parenscript %document-scroll-position (&optional (y 0 y-provided-p) (x 0 x-provided-p))
   (let ((x (ps:lisp x))
@@ -88,20 +88,20 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
       (ps:chain active-element (set-selection-range 0 (ps:@ active-element value length))))))
 
 (defun html-write (content &optional (buffer (current-buffer)))
-  (ffi-buffer-evaluate-javascript-async
+  (nyxt/ffi:buffer-evaluate-javascript-async
    buffer
    (ps:ps (ps:chain document
                     (write (ps:lisp content))))))
 
 (defun html-set (content &optional (buffer (current-buffer)))
-  (ffi-buffer-evaluate-javascript-async
+  (nyxt/ffi:buffer-evaluate-javascript-async
    buffer
    (ps:ps (setf (ps:@ document body |innerHTML|)
                 (ps:lisp content)))))
 
 (defun html-set-style (style-string &optional (buffer (current-buffer)))
   (let ((style (spinneret:with-html-string (:style style-string))))
-    (ffi-buffer-evaluate-javascript-async
+    (nyxt/ffi:buffer-evaluate-javascript-async
      buffer
      (ps:ps (ps:chain document body
                       (|insertAdjacentHTML| "afterbegin"

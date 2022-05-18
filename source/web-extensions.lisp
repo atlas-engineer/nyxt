@@ -35,16 +35,16 @@ A list of objects. Does not necessarily have the same order as `files' of the sc
 (defmethod remove-content-script ((buffer buffer) extension (script content-script))
   (declare (ignore extension))
   (dolist (s (user-scripts script))
-    (ffi-buffer-remove-user-script buffer s))
+    (nyxt/ffi:buffer-remove-user-script buffer s))
   (dolist (s (user-styles script))
-    (ffi-buffer-remove-user-style buffer s)))
+    (nyxt/ffi:buffer-remove-user-style buffer s)))
 
 (defmethod inject-content-script ((buffer buffer) extension (script content-script))
   "Inject scripts/style-sheets of a SCRIPT into where they belong."
   (remove-content-script buffer extension script)
   (dolist (file (files script))
     (if (equal (pathname-type file) "css")
-        (push (ffi-buffer-add-user-style buffer (uiop:read-file-string
+        (push (nyxt/ffi:buffer-add-user-style buffer (uiop:read-file-string
                                                   (merge-extension-path extension file))
                                           :inject-as-author-p t
                                           :all-frames-p t
@@ -52,7 +52,7 @@ A list of objects. Does not necessarily have the same order as `files' of the sc
                                           :allow-list (match-patterns script))
               (user-styles script))
         (push
-         (ffi-buffer-add-user-script buffer (uiop:read-file-string
+         (nyxt/ffi:buffer-add-user-script buffer (uiop:read-file-string
                                              (merge-extension-path extension file))
                                      :world-name (name extension)
                                      :all-frames-p t

@@ -252,7 +252,7 @@ Return the download object matching the download."
                      (download-watch download-render download)))
                  download)))))
         (:renderer
-         (ffi-buffer-download buffer (render-url url))))
+         (nyxt/ffi:buffer-download buffer (render-url url))))
     (list-downloads)))
 
 (define-command-global download-url ()

@@ -30,7 +30,7 @@ evaluate, or a `cl:pathname' to a JavaScript source file."
             (source (etypecase source
                       (pathname (nfiles:content (make-instance 'nfiles:file :base-path source)))
                       (string source))))
-       (ffi-buffer-evaluate-javascript-async buffer source))))
+       (nyxt/ffi:buffer-evaluate-javascript-async buffer source))))
 (sera:export-always 'nyxt::define-bookmarklet-command :nyxt)
 
 (define-bookmarklet-command color-internal-external-links
