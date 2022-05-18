@@ -1693,7 +1693,11 @@ local anyways, and it's better to refresh it if a load was queried."
                              (webkit:webkit-download-destination webkit-download)))))
       ;; TODO: We should not have to update the buffer, button actions should be
       ;; dynamic.  Bug in `user-interface'?
-      (list-downloads))
+      (reload-buffers (list (find-if
+                             (lambda (b)
+                               (and (string= (title b) "*Downloads*")
+                                    (find-submode 'nyxt:download-mode b)))
+                             (buffer-list)))))
     (connect-signal download "failed" nil (webkit-download error)
       (declare (ignore error))
       (unless (eq (status download) :canceled)
