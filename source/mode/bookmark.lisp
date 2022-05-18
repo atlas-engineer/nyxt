@@ -406,33 +406,32 @@ rest in background buffers."
                      entry))
             entries)))
 
-(define-command import-bookmarks-from-html (&key (html-file nil))
+(define-command import-bookmarks-from-html
+    (&key (html-file (prompt1
+                       ;; TODO: Is there a more intuitive directory for bookmarks?
+                       :input (uiop:native-namestring (uiop:getcwd))
+                       :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
+                       :sources (make-instance
+                                 'nyxt/file-manager-mode:file-source
+                                 :extensions '("html")))))
   "Import bookmarks from an HTML-FILE."
-  (let ((html-file (or html-file
-                       (prompt1
-                         ;; TODO: Is there a more intuitive directory for bookmarks?
-                         :input (uiop:native-namestring (uiop:getcwd))
-                         :extra-modes '(nyxt/file-manager-mode:file-manager-mode)
-                         :sources (make-instance
-                                   'nyxt/file-manager-mode:file-source
-                                   :extensions '("html"))))))
-    (if (and (uiop:file-exists-p html-file)
-             (equal (pathname-type html-file) "html"))
-        (with-open-file (in-html html-file :external-format :utf-8)
-          (let ((a-tags (plump:get-elements-by-tag-name (plump:parse in-html) "a")))
-            (dolist (a-tag a-tags)
-              (let* ((url (plump:attribute a-tag "href"))
-                     (title (plump:render-text a-tag))
-                     (date (plump:attribute a-tag "add_date"))
-                     (tags (plump:attribute a-tag "tags"))
-                     (url-uri (quri:uri url)))
-                (when (str:starts-with? "http" (quri:uri-scheme url-uri))
-                  (bookmark-add url-uri
-                                :title title
-                                :date (ignore-errors (local-time:unix-to-timestamp (parse-integer date)))
-                                :tags (when tags
-                                        (str:split "," tags))))))))
-        (echo "The file doesn't exist or is not an HTML file."))))
+  (if (and (uiop:file-exists-p html-file)
+           (equal (pathname-type html-file) "html"))
+      (with-open-file (in-html html-file :external-format :utf-8)
+        (let ((a-tags (plump:get-elements-by-tag-name (plump:parse in-html) "a")))
+          (dolist (a-tag a-tags)
+            (let* ((url (plump:attribute a-tag "href"))
+                   (title (plump:render-text a-tag))
+                   (date (plump:attribute a-tag "add_date"))
+                   (tags (plump:attribute a-tag "tags"))
+                   (url-uri (quri:uri url)))
+              (when (str:starts-with? "http" (quri:uri-scheme url-uri))
+                (bookmark-add url-uri
+                              :title title
+                              :date (ignore-errors (local-time:unix-to-timestamp (parse-integer date)))
+                              :tags (when tags
+                                      (str:split "," tags))))))))
+      (echo "The file doesn't exist or is not an HTML file.")))
 
 (define-command bookmark-hint ()
   "Prompt for element hints and bookmark them."
