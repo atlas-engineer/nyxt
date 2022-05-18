@@ -175,9 +175,11 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                                         :url url))))
           (unless (str:emptyp title)
             (setf (title entry) title))
-          (setf tags (delete "" tags :test #'string=))
-          (setf tags (delete-duplicates tags :test #'string=))
-          (setf (tags entry) (sort tags #'string<))
+          (setf (tags entry)
+                (sort (delete-duplicates
+                       (remove "" tags :test #'string=)
+                       :test #'string=)
+                      #'string<))
           (when date
             (setf (date entry) date))
           (push entry bookmarks-without-url)
@@ -261,7 +263,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                              (make-instance 'prompter:word-source
                                             :name "New tags"
                                             ;; On no input, suggest the empty tag which effectively acts as "no tag".
-                                            ;; Without it, we would be force to specify a tag.
+                                            ;; Without it, we would be forced to specify a tag.
                                             :filter-postprocessor
                                             (lambda (suggestions source input)
                                               (declare (ignore source input))
