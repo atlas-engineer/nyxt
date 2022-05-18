@@ -1656,16 +1656,16 @@ local anyways, and it's better to refresh it if a load was queried."
                                   :url url
                                   :gtk-object webkit-download)))
     (hooks:run-hook (before-download-hook *browser*) url)
-    (setf (cancel-function download)
+    (setf (nyxt/download-mode::cancel-function download)
           #'(lambda ()
-              (setf (status download) :canceled)
+              (setf (nyxt/download-mode:status download) :canceled)
               (webkit:webkit-download-cancel webkit-download)))
     (push download (downloads *browser*))
     (connect-signal download "received-data" nil (webkit-download data-length)
       (declare (ignore data-length))
-      (setf (bytes-downloaded download)
+      (setf (nyxt/download-mode:bytes-downloaded download)
             (webkit:webkit-download-get-received-data-length webkit-download))
-      (setf (completion-percentage download)
+      (setf (nyxt/download-mode:completion-percentage download)
             (* 100 (webkit:webkit-download-estimated-progress webkit-download))))
     (connect-signal download "decide-destination" nil (webkit-download suggested-file-name)
       (alex:when-let* ((download-dir (download-directory buffer))
@@ -1681,26 +1681,26 @@ local anyways, and it's better to refresh it if a load was queried."
         (webkit:webkit-download-set-destination webkit-download file-path)))
     (connect-signal download "created-destination" nil (webkit-download destination)
       (declare (ignore destination))
-      (setf (destination-path download)
+      (setf (nyxt/download-mode:destination-path download)
             (uiop:ensure-pathname
              (quri:uri-path (quri:uri
                              (webkit:webkit-download-destination webkit-download)))))
       ;; TODO: We should not have to update the buffer, button actions should be
       ;; dynamic.  Bug in `user-interface'?
-      (list-downloads))
+      (nyxt/download-mode:list-downloads))
     (connect-signal download "failed" nil (webkit-download error)
       (declare (ignore error))
-      (unless (eq (status download) :canceled)
-        (setf (status download) :failed))
+      (unless (eq (nyxt/download-mode:status download) :canceled)
+        (setf (nyxt/download-mode:status download) :failed))
       (echo "Download failed for ~s."
             (webkit:webkit-uri-request-uri
              (webkit:webkit-download-get-request webkit-download))))
     (connect-signal download "finished" nil (webkit-download)
       (declare (ignore webkit-download))
-      (unless (member (status download) '(:canceled :failed))
-        (setf (status download) :finished)
+      (unless (member (nyxt/download-mode:status download) '(:canceled :failed))
+        (setf (nyxt/download-mode:status download) :finished)
         ;; If download was too small, it may not have been updated.
-        (setf (completion-percentage download) 100)
+        (setf (nyxt/download-mode:completion-percentage download) 100)
         (hooks:run-hook (after-download-hook *browser*) download)))
     download))
 

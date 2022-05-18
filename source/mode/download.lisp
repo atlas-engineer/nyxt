@@ -1,7 +1,14 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :nyxt)
+(uiop:define-package :nyxt/download-mode
+  (:use :common-lisp :nyxt)
+  (:import-from #:class-star #:define-class)
+  (:import-from #:keymap #:define-key #:define-scheme)
+  (:import-from #:serapeum #:-> #:export-always)
+  (:documentation "Mode for Gopher/Gemini page interaction."))
+(in-package :nyxt/download-mode)
+(use-nyxt-package-nicknames)
 
 (export-always 'renderer-download)
 (defclass renderer-download ()
@@ -13,6 +20,7 @@
         :documentation "A string representation of a URL to be shown in the
 interface.")
    (status :unloaded
+           :export t
            :reader status
            :type (member :unloaded
                          :loading
@@ -20,41 +28,54 @@ interface.")
                          :failed
                          :canceled)
            :documentation "Status of the download.")
-   (status-text (make-instance 'user-interface:paragraph))
+   (status-text (make-instance 'user-interface:paragraph)
+                :export nil)
    (completion-percentage 0.0
                           :reader t
+                          :export t
                           :type float
                           :documentation "A number between 0 and 100
 showing the percentage a download is complete.")
    (bytes-downloaded "-"
                      :reader t
+                     :export t
                      :documentation "The number of bytes downloaded.")
-   (bytes-text (make-instance 'user-interface:paragraph) :documentation "The
-   interface element showing how many bytes have been downloaded.")
+   (bytes-text (make-instance 'user-interface:paragraph)
+               :export nil
+               :documentation "The interface element showing how many bytes have
+been downloaded.")
    (destination-path #p""
                      :reader t
+                     :export t
                      :type pathname
-                     :documentation "Where the file will be downloaded to on
+                     :documentation "Where the file will be downloaded to
 disk.")
    (cancel-function nil
                     :reader t
+                    :export t
                     :type (or null function)
                     :documentation "The function to call when
 cancelling a download. This can be set by the download engine.")
    (cancel-button (make-instance 'user-interface:button
                                  :text "✕"
                                  :action (ps:ps (nyxt/ps:lisp-eval '(echo "Can't cancel download."))))
+                  :export nil
                   :documentation "The download is referenced by its
 URL. The URL for this button is therefore encoded as a funcall to
 cancel-download with an argument of the URL to cancel.")
    (open-button (make-instance 'user-interface:button
                                :text "🗁"
                                :action (ps:ps (nyxt/ps:lisp-eval '(echo "Can't open file, file path unknown."))))
+                :export nil
                 :documentation "The file name to open is encoded
 within the button's URL when the destinaton path is set.")
-   (progress-text (make-instance 'user-interface:paragraph))
-   (progress (make-instance 'user-interface:progress-bar)))
+   (progress-text (make-instance 'user-interface:paragraph)
+                  :export nil)
+   (progress (make-instance 'user-interface:progress-bar)
+             :export nil))
   (:accessor-name-transformer (class*:make-name-transformer name))
+  (:export-accessor-names-p t)
+  (:export-class-name-p t)
   (:documentation "This class is used to represent a download within
 the *Downloads* buffer. The browser class contains a list of these
 download objects: `downloads'."))
@@ -171,11 +192,3 @@ download."
                        (:raw (user-interface:object-string progress-text))
                        (:raw (user-interface:object-string bytes-text))
                        (:raw (user-interface:object-string status-text))))))))
-
-(define-command download-url ()
-  "Download the page or file of the current buffer."
-  (download (current-buffer) (url (current-buffer))))
-
-(define-command download-open-file ()
-  "Open file in Nyxt or externally."
-  (nyxt/file-manager-mode:open-file :default-directory (files:expand (download-directory (current-buffer)))))
