@@ -191,7 +191,7 @@ Actions can be listed and run with `return-selection-over-action' (bound to
 If STEPS is negative, go to previous pages instead."
   (unless (= 0 steps)
     (let ((step-page-index              ; TODO: Add multi-source support.
-            (ffi-buffer-evaluate-javascript
+            (nyxt/ffi:buffer-evaluate-javascript
              prompt-buffer
              (ps:ps
                (defun step-row (row)
@@ -394,7 +394,7 @@ Only available if `prompter:multi-selection-p' is non-nil."
 
 (define-command-prompt paste (prompt-buffer)
   "Paste clipboard text to input."
-  (ffi-buffer-paste prompt-buffer)
+  (nyxt/ffi:buffer-paste prompt-buffer)
   (nyxt::update-prompt-input prompt-buffer))
 
 (defun history-entries (&optional (window (current-window)))
@@ -425,7 +425,7 @@ Only available if `prompter:multi-selection-p' is non-nil."
 
 (define-command-prompt move-start-of-input (prompt-buffer)
   "Move to the beginning of PROMPT-BUFFER input."
-  (ffi-buffer-evaluate-javascript
+  (nyxt/ffi:buffer-evaluate-javascript
    prompt-buffer
    (ps:ps
      (let ((input (ps:chain document (get-element-by-id "input"))))
@@ -434,7 +434,7 @@ Only available if `prompter:multi-selection-p' is non-nil."
 
 (define-command-prompt move-end-of-input (prompt-buffer)
   "Move to the end of PROMPT-BUFFER input."
-  (ffi-buffer-evaluate-javascript
+  (nyxt/ffi:buffer-evaluate-javascript
    prompt-buffer
    (ps:ps
      (let ((input (ps:chain document (get-element-by-id "input"))))
@@ -443,7 +443,7 @@ Only available if `prompter:multi-selection-p' is non-nil."
 
 (define-command-prompt select-all (prompt-buffer)
   "Select all the text in the prompt input."
-  (ffi-buffer-select-all prompt-buffer))
+  (nyxt/ffi:buffer-select-all prompt-buffer))
 
 ;; FIXME: Move scroll.lisp from web-mode so that prompt-buffer.lisp can reach
 ;; it.  Ideas?

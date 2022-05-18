@@ -18,7 +18,7 @@ evaluate, or a `cl:pathname' to a JavaScript source file."
             (source (etypecase source
                       (pathname (uiop:read-file-string source))
                       (string source))))
-       (ffi-buffer-evaluate-javascript-async buffer source))))
+       (nyxt/ffi:buffer-evaluate-javascript-async buffer source))))
 (sera:export-always 'nyxt::define-bookmarklet-command :nyxt)
 
 (define-bookmarklet-command color-internal-external-links

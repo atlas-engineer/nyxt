@@ -153,7 +153,7 @@ failures."))
 
 (defvar gtk-running-p nil
   "Non-nil if the GTK main loop is running.
-See `ffi-initialize' and `ffi-kill-browser'.
+See `nyxt/ffi:initialize' and `nyxt/ffi:kill-browser'.
 
 Restarting GTK within the same Lisp image breaks WebKitGTK.
 As a workaround, we never leave the GTK main loop when running from a REPL.
@@ -172,7 +172,7 @@ See https://github.com/atlas-engineer/nyxt/issues/740")
      (with-protect ("Error on GTK thread: ~a" :condition)
        ,@body)))
 
-(defmethod ffi-within-renderer-thread ((browser gtk-browser) thunk)
+(defmethod nyxt/ffi:within-renderer-thread ((browser gtk-browser) thunk)
   (declare (ignore browser))
   (within-gtk-thread
     (funcall thunk)))
@@ -219,7 +219,7 @@ the renderer thread, use `defmethod' instead."
                   ,@forms)))
              (calispel:? channel))))))
 
-(defmethod ffi-initialize ((browser gtk-browser) urls startup-timestamp)
+(defmethod nyxt/ffi:initialize ((browser gtk-browser) urls startup-timestamp)
   "gtk:within-main-loop handles all the GTK initialization. On
    GNU/Linux, Nyxt could hang after 10 minutes if it's not
    used. Conversely, on Darwin, if gtk:within-main-loop is used, no
@@ -249,7 +249,7 @@ the renderer thread, use `defmethod' instead."
         (finalize browser urls startup-timestamp)
         (gtk:gtk-main))))
 
-(define-ffi-method ffi-kill-browser ((browser gtk-browser))
+(define-ffi-method nyxt/ffi:kill-browser ((browser gtk-browser))
   ;; TODO: Terminating the GTK thread from the REPL seems to prevent Nyxt from
   ;; starting again.
   (unless *run-from-repl-p*
@@ -511,13 +511,13 @@ response.  The BODY is wrapped with `with-protect'."
   (gtk:gtk-container-remove (root-box-layout window) (gtk-object (active-buffer window)))
   (window-delete window))
 
-(define-ffi-method ffi-window-delete ((window gtk-window))
+(define-ffi-method nyxt/ffi:window-delete ((window gtk-window))
   (gtk:gtk-widget-destroy (gtk-object window)))
 
-(define-ffi-method ffi-window-fullscreen ((window gtk-window))
+(define-ffi-method nyxt/ffi:window-fullscreen ((window gtk-window))
   (gtk:gtk-window-fullscreen (gtk-object window)))
 
-(define-ffi-method ffi-window-unfullscreen ((window gtk-window))
+(define-ffi-method nyxt/ffi:window-unfullscreen ((window gtk-window))
   (gtk:gtk-window-unfullscreen (gtk-object window)))
 
 (defun derive-key-string (keyval character)
@@ -849,7 +849,7 @@ See `gtk-browser's `modifier-translator' slot."
          cookie-manager
          (uiop:native-namestring cookies-path)
          :webkit-cookie-persistent-storage-text))
-      (setf (ffi-buffer-cookie-policy cookie-manager) (default-cookie-policy *browser*)))
+      (setf (nyxt/ffi:buffer-cookie-policy cookie-manager) (default-cookie-policy *browser*)))
     context))
 
 (defun internal-context-p (name)
@@ -860,13 +860,13 @@ See `gtk-browser's `modifier-translator' slot."
                                       &allow-other-keys)
   "Make BUFFER with EXTRA-MODES.
 See `finalize-buffer'."
-  (ffi-buffer-make buffer)
+  (nyxt/ffi:buffer-make buffer)
   (finalize-buffer buffer :extra-modes extra-modes :no-hook-p no-hook-p))
 
-(define-ffi-method ffi-buffer-url ((buffer gtk-buffer))
+(define-ffi-method nyxt/ffi:buffer-url ((buffer gtk-buffer))
   (quri:uri (webkit:webkit-web-view-uri (gtk-object buffer))))
 
-(define-ffi-method ffi-buffer-title ((buffer gtk-buffer))
+(define-ffi-method nyxt/ffi:buffer-title ((buffer gtk-buffer))
   (or (webkit:webkit-web-view-title (gtk-object buffer)) ""))
 
 (define-ffi-method on-signal-load-failed-with-tls-errors ((buffer gtk-buffer) certificate url)
@@ -1031,27 +1031,27 @@ See `finalize-buffer'."
       (print-message "")
       (setf (url-at-point buffer) (quri:uri "")))))
 
-(define-ffi-method ffi-window-make ((browser gtk-browser))
+(define-ffi-method nyxt/ffi:window-make ((browser gtk-browser))
   "Make a window."
   (make-instance 'window))
 
-(define-ffi-method ffi-window-to-foreground ((window gtk-window))
+(define-ffi-method nyxt/ffi:window-to-foreground ((window gtk-window))
   "Show window in foreground."
   (unless *headless-p*
     (gtk:gtk-window-present (gtk-object window)))
   (call-next-method))
 
-(define-ffi-method ffi-window-title ((window gtk-window))
+(define-ffi-method nyxt/ffi:window-title ((window gtk-window))
   (gtk:gtk-window-title (gtk-object window)))
-(define-ffi-method (setf ffi-window-title) (title (window gtk-window))
+(define-ffi-method (setf nyxt/ffi:window-title) (title (window gtk-window))
   (setf (gtk:gtk-window-title (gtk-object window)) title))
 
-(define-ffi-method ffi-window-active ((browser gtk-browser))
+(define-ffi-method nyxt/ffi:window-active ((browser gtk-browser))
   "Return the focused window."
   (or (find-if #'gtk:gtk-window-is-active (window-list) :key #'gtk-object)
       (call-next-method)))
 
-(define-ffi-method ffi-window-set-buffer ((window gtk-window) (buffer gtk-buffer) &key (focus t))
+(define-ffi-method nyxt/ffi:window-set-buffer ((window gtk-window) (buffer gtk-buffer) &key (focus t))
   "Set BROWSER's WINDOW buffer to BUFFER."
   (let ((old-buffer (active-buffer window)))
     (gtk:gtk-container-remove (main-buffer-container window) (gtk-object old-buffer))
@@ -1066,7 +1066,7 @@ See `finalize-buffer'."
      old-buffer (alex:alist-hash-table `(("attention" . nil))))
     buffer))
 
-(define-ffi-method ffi-window-add-panel-buffer ((window gtk-window) (buffer panel-buffer) side)
+(define-ffi-method nyxt/ffi:window-add-panel-buffer ((window gtk-window) (buffer panel-buffer) side)
   "Add a panel buffer to a window."
   (match side
     (:left (gtk:gtk-box-pack-start (panel-buffer-container-left window) (gtk-object buffer))
@@ -1078,13 +1078,13 @@ See `finalize-buffer'."
   (unless *headless-p*
     (gtk:gtk-widget-show (gtk-object buffer))))
 
-(define-ffi-method ffi-window-panel-buffer-width ((window gtk-window) (buffer panel-buffer))
+(define-ffi-method nyxt/ffi:window-panel-buffer-width ((window gtk-window) (buffer panel-buffer))
   (nth-value 1 (gtk:gtk-widget-size-request (gtk-object buffer))))
-(define-ffi-method (setf ffi-window-panel-buffer-width) (width (window gtk-window) (buffer panel-buffer))
+(define-ffi-method (setf nyxt/ffi:window-panel-buffer-width) (width (window gtk-window) (buffer panel-buffer))
   (setf (gtk:gtk-widget-size-request (gtk-object buffer))
         (list width -1)))
 
-(define-ffi-method ffi-window-delete-panel-buffer ((window gtk-window) (buffer panel-buffer))
+(define-ffi-method nyxt/ffi:window-delete-panel-buffer ((window gtk-window) (buffer panel-buffer))
   "Remove a panel buffer from a window."
   (cond ((find buffer (panel-buffers-left window))
          (setf (panel-buffers-left window) (remove buffer (panel-buffers-left window)))
@@ -1093,24 +1093,24 @@ See `finalize-buffer'."
          (setf (panel-buffers-right window) (remove buffer (panel-buffers-right window)))
          (gtk:gtk-container-remove (panel-buffer-container-right window) (gtk-object buffer)))))
 
-(define-ffi-method ffi-window-prompt-buffer-height ((window gtk-window))
+(define-ffi-method nyxt/ffi:window-prompt-buffer-height ((window gtk-window))
   (nth-value 1 (gtk:gtk-widget-size-request (prompt-buffer-container window))))
-(define-ffi-method (setf ffi-window-prompt-buffer-height) (height (window gtk-window))
+(define-ffi-method (setf nyxt/ffi:window-prompt-buffer-height) (height (window gtk-window))
   (setf (gtk:gtk-widget-size-request (prompt-buffer-container window))
         (list -1 height))
   (if (eql 0 height)
       (gtk:gtk-widget-grab-focus (gtk-object (active-buffer window)))
       (gtk:gtk-widget-grab-focus (prompt-buffer-view window))))
 
-(define-ffi-method ffi-window-status-buffer-height ((window gtk-window))
+(define-ffi-method nyxt/ffi:window-status-buffer-height ((window gtk-window))
   (nth-value 1 (gtk:gtk-widget-size-request (status-container window))))
-(define-ffi-method (setf ffi-window-status-buffer-height) (height (window gtk-window))
+(define-ffi-method (setf nyxt/ffi:window-status-buffer-height) (height (window gtk-window))
   (setf (gtk:gtk-widget-size-request (status-container window))
         (list -1 height)))
 
-(define-ffi-method ffi-window-message-buffer-height ((window gtk-window))
+(define-ffi-method nyxt/ffi:window-message-buffer-height ((window gtk-window))
   (nth-value 1 (gtk:gtk-widget-size-request (message-container window))))
-(define-ffi-method (setf ffi-window-message-buffer-height) (height (window gtk-window))
+(define-ffi-method (setf nyxt/ffi:window-message-buffer-height) (height (window gtk-window))
   (setf (gtk:gtk-widget-size-request (message-container window))
         (list -1 height)))
 
@@ -1331,7 +1331,7 @@ See `finalize-buffer'."
       (echo "[~a] ~a: ~a" (webkit:webkit-web-view-uri web-view) title body)
       t)))
 
-(define-ffi-method ffi-buffer-make ((buffer gtk-buffer))
+(define-ffi-method nyxt/ffi:buffer-make ((buffer gtk-buffer))
   "Initialize BUFFER's GTK web view."
   (unless (gtk-object buffer) ; Buffer may already have a view, e.g. the prompt-buffer.
     (setf (gtk-object buffer) (make-web-view (profile buffer) buffer)))
@@ -1344,7 +1344,7 @@ See `finalize-buffer'."
   (connect-signal buffer "focus-out-event" t (web-view event)
     (declare (ignore web-view event))
     (when (fullscreen-p (current-window))
-      (ffi-window-unfullscreen (current-window)))
+      (nyxt/ffi:window-unfullscreen (current-window)))
     nil)
   (connect-signal buffer "mouse-target-changed" nil (web-view hit-test-result modifiers)
     (declare (ignore web-view))
@@ -1438,7 +1438,7 @@ See `finalize-buffer'."
           (url (webkit:webkit-uri-request-uri
                 (webkit:webkit-navigation-action-get-request
                  (gobject:pointer navigation-action)))))
-      (ffi-buffer-load new-buffer (quri:uri url))
+      (nyxt/ffi:buffer-load new-buffer (quri:uri url))
       (window-set-buffer (current-window) new-buffer)
       (gtk-object new-buffer)))
   ;; Remove "download to disk" from the right click context menu because it
@@ -1475,12 +1475,12 @@ See `finalize-buffer'."
     (nyxt/web-extensions::tabs-on-created buffer))
   buffer)
 
-(define-ffi-method ffi-buffer-delete ((buffer gtk-buffer))
+(define-ffi-method nyxt/ffi:buffer-delete ((buffer gtk-buffer))
   (if (slot-value buffer 'gtk-object) ; Not all buffers have their own web view, e.g. prompt buffers.
       (webkit:webkit-web-view-try-close (gtk-object buffer))
       (buffer-hide buffer)))
 
-(define-ffi-method ffi-buffer-load ((buffer gtk-buffer) url)
+(define-ffi-method nyxt/ffi:buffer-load ((buffer gtk-buffer) url)
   "Load URL in BUFFER.
 An optimization technique is to make use of the renderer history cache.
 For WebKit, if the URL matches an entry in the webkit-history then we fetch the
@@ -1508,7 +1508,7 @@ local anyways, and it's better to refresh it if a load was queried."
           (load-webkit-history-entry buffer entry))
         (webkit:webkit-web-view-load-uri (gtk-object buffer) (quri:render-uri url)))))
 
-(defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript &optional world-name)
+(defmethod nyxt/ffi:buffer-evaluate-javascript ((buffer gtk-buffer) javascript &optional world-name)
   (%within-renderer-thread
    (lambda (&optional channel)
      (when (gtk-object buffer)
@@ -1529,7 +1529,7 @@ local anyways, and it's better to refresh it if a load was queried."
             (calispel:! channel nil)))
         world-name)))))
 
-(defmethod ffi-buffer-evaluate-javascript-async ((buffer gtk-buffer) javascript &optional world-name)
+(defmethod nyxt/ffi:buffer-evaluate-javascript-async ((buffer gtk-buffer) javascript &optional world-name)
   (%within-renderer-thread-async
    (lambda ()
      (when (gtk-object buffer)
@@ -1548,7 +1548,7 @@ local anyways, and it's better to refresh it if a load was queried."
                           :null-terminated-p t)
       (cffi:null-pointer)))
 
-(define-ffi-method ffi-buffer-add-user-style ((buffer gtk-buffer) css &key
+(define-ffi-method nyxt/ffi:buffer-add-user-style ((buffer gtk-buffer) css &key
                                               world-name all-frames-p inject-as-author-p
                                               allow-list block-list)
   (let* ((content-manager
@@ -1574,7 +1574,7 @@ local anyways, and it's better to refresh it if a load was queried."
      content-manager style-sheet)
     style-sheet))
 
-(define-ffi-method ffi-buffer-remove-user-style ((buffer gtk-buffer) style-sheet)
+(define-ffi-method nyxt/ffi:buffer-remove-user-style ((buffer gtk-buffer) style-sheet)
   (let ((content-manager
           (webkit:webkit-web-view-get-user-content-manager
            (gtk-object buffer))))
@@ -1582,7 +1582,7 @@ local anyways, and it's better to refresh it if a load was queried."
       (webkit:webkit-user-content-manager-remove-style-sheet
        content-manager style-sheet))))
 
-(define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) javascript &key
+(define-ffi-method nyxt/ffi:buffer-add-user-script ((buffer gtk-buffer) javascript &key
                                                world-name all-frames-p
                                                at-document-start-p run-now-p
                                                allow-list block-list)
@@ -1611,7 +1611,7 @@ local anyways, and it's better to refresh it if a load was queried."
       (reload-buffers (list buffer)))
     script))
 
-(define-ffi-method ffi-buffer-remove-user-script ((buffer gtk-buffer) script)
+(define-ffi-method nyxt/ffi:buffer-remove-user-script ((buffer gtk-buffer) script)
   (let ((content-manager
           (webkit:webkit-web-view-get-user-content-manager
            (gtk-object buffer))))
@@ -1620,7 +1620,7 @@ local anyways, and it's better to refresh it if a load was queried."
        content-manager script))))
 
 (defmacro define-ffi-settings-accessor (setting-name webkit-setting)
-  (let ((full-name (intern (format nil "FFI-BUFFER-~a" setting-name))))
+  (let ((full-name (intern (format nil "NYXT/FFI:BUFFER-~a" setting-name))))
     (symbol-function full-name)
     `(progn
        (define-ffi-method ,full-name ((buffer gtk-buffer))
@@ -1640,15 +1640,15 @@ local anyways, and it's better to refresh it if a load was queried."
 (define-ffi-settings-accessor auto-load-image-enabled-p webkit:webkit-settings-auto-load-images)
 
 #+webkit2-mute
-(defmethod ffi-buffer-sound-enabled-p ((buffer gtk-buffer))
+(defmethod nyxt/ffi:buffer-sound-enabled-p ((buffer gtk-buffer))
   (not (webkit:webkit-web-view-get-is-muted (gtk-object buffer))))
 #+webkit2-mute
-(defmethod (setf ffi-buffer-sound-enabled-p) (value (buffer gtk-buffer))
+(defmethod (setf nyxt/ffi:buffer-sound-enabled-p) (value (buffer gtk-buffer))
   (nyxt/web-extensions::tabs-on-updated
    buffer (alex:alist-hash-table `(("audible" . ,value))))
   (webkit:webkit-web-view-set-is-muted (gtk-object buffer) (not value)))
 
-(defmethod ffi-buffer-download ((buffer gtk-buffer) url)
+(defmethod nyxt/ffi:buffer-download ((buffer gtk-buffer) url)
   (let* ((webkit-download (webkit:webkit-web-view-download-uri (gtk-object buffer) url))
          (download (make-instance 'download
                                   :url url
@@ -1706,20 +1706,20 @@ local anyways, and it's better to refresh it if a load was queried."
         (hooks:run-hook (after-download-hook *browser*) download)))
     download))
 
-(define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer))
+(define-ffi-method nyxt/ffi:buffer-user-agent ((buffer gtk-buffer))
   (alex:when-let ((settings (webkit:webkit-web-view-get-settings (gtk-object buffer))))
     (webkit:webkit-settings-user-agent settings)))
 
-(define-ffi-method (setf ffi-buffer-user-agent) (value (buffer gtk-buffer))
+(define-ffi-method (setf nyxt/ffi:buffer-user-agent) (value (buffer gtk-buffer))
   (alex:when-let ((settings (webkit:webkit-web-view-get-settings (gtk-object buffer))))
     (setf (webkit:webkit-settings-user-agent settings) value)))
 
-(define-ffi-method ffi-buffer-proxy ((buffer gtk-buffer))
+(define-ffi-method nyxt/ffi:buffer-proxy ((buffer gtk-buffer))
   "Return the proxy URL and list of ignored hosts (a list of strings) as second value."
   (the (values (or quri:uri null) list-of-strings)
        (values (gtk-proxy-url buffer)
                (proxy-ignored-hosts buffer))))
-(define-ffi-method (setf ffi-buffer-proxy) (proxy-specifier
+(define-ffi-method (setf nyxt/ffi:buffer-proxy) (proxy-specifier
                                             (buffer gtk-buffer))
   "Redirect network connections of BUFFER to proxy server PROXY-URL.
 Hosts in IGNORE-HOSTS (a list of strings) ignore the proxy.
@@ -1751,13 +1751,13 @@ custom (the specified proxy) and none."
       (webkit:webkit-web-context-set-network-proxy-settings
        context mode settings))))
 
-(define-ffi-method ffi-buffer-zoom-level ((buffer gtk-buffer))
+(define-ffi-method nyxt/ffi:buffer-zoom-level ((buffer gtk-buffer))
   (webkit:webkit-web-view-zoom-level (gtk-object buffer)))
-(define-ffi-method (setf ffi-buffer-zoom-level) (value (buffer gtk-buffer))
+(define-ffi-method (setf nyxt/ffi:buffer-zoom-level) (value (buffer gtk-buffer))
   (when (and (floatp value) (>= value 0))
     (setf (webkit:webkit-web-view-zoom-level (gtk-object buffer)) value)))
 
-(define-ffi-method ffi-generate-input-event ((window gtk-window) event)
+(define-ffi-method nyxt/ffi:generate-input-event ((window gtk-window) event)
   (when event
     ;; The "send_event" field is used to mark the event as an "unconsumed"
     ;; keypress.  The distinction allows us to avoid looping indefinitely.
@@ -1770,17 +1770,17 @@ custom (the specified proxy) and none."
        (setf (gdk:gdk-event-scroll-send-event event) t)))
     (gtk:gtk-main-do-event event)))
 
-(define-ffi-method ffi-generated-input-event-p ((window gtk-window) event)
+(define-ffi-method nyxt/ffi:generated-input-event-p ((window gtk-window) event)
   (gdk:gdk-event-send-event event))
 
-(define-ffi-method ffi-inspector-show ((buffer gtk-buffer))
+(define-ffi-method nyxt/ffi:inspector-show ((buffer gtk-buffer))
   (setf (webkit:webkit-settings-enable-developer-extras
          (webkit:webkit-web-view-get-settings (gtk-object buffer)))
         t)
   (webkit:webkit-web-inspector-show
    (webkit:webkit-web-view-get-inspector (gtk-object buffer))))
 
-(define-ffi-method ffi-print-status ((window gtk-window) text)
+(define-ffi-method nyxt/ffi:print-status ((window gtk-window) text)
   (let ((text (spinneret:with-html-string
                (:head (:style (style (status-buffer window))))
                (:body (:raw text)))))
@@ -1790,7 +1790,7 @@ custom (the specified proxy) and none."
        (ps:ps (setf (ps:@ document body |innerHTML|)
                     (ps:lisp text)))))))
 
-(define-ffi-method ffi-print-message ((window gtk-window) text)
+(define-ffi-method nyxt/ffi:print-message ((window gtk-window) text)
   (let ((text (spinneret:with-html-string
                (:head (:style (message-buffer-style window)))
                (:body (:raw text)))))
@@ -1802,10 +1802,10 @@ custom (the specified proxy) and none."
 
 ;; This method does not need a renderer, so no need to use `define-ffi-method'
 ;; which is prone to race conditions.
-(defmethod ffi-display-url (text)
+(defmethod nyxt/ffi:display-url (text)
   (webkit:webkit-uri-for-display text))
 
-(defmethod ffi-buffer-cookie-policy ((buffer gtk-buffer))
+(defmethod nyxt/ffi:buffer-cookie-policy ((buffer gtk-buffer))
   (if (renderer-thread-p)
       (progn
         (log:warn "Querying cookie policy in WebKitGTK is only supported from a non-renderer thread.")
@@ -1828,13 +1828,13 @@ custom (the specified proxy) and none."
                  callback
                  (cffi:null-pointer))))))
         (calispel:? result-channel))))
-(defmethod (setf ffi-buffer-cookie-policy) (cookie-policy (buffer gtk-buffer))
+(defmethod (setf nyxt/ffi:buffer-cookie-policy) (cookie-policy (buffer gtk-buffer))
   "VALUE is one of`:always', `:never' or `:no-third-party'."
   (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
          (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
-    (setf (ffi-buffer-cookie-policy cookie-manager) cookie-policy)
+    (setf (nyxt/ffi:buffer-cookie-policy cookie-manager) cookie-policy)
     buffer))
-(defmethod (setf ffi-buffer-cookie-policy) (cookie-policy (cookie-manager webkit:webkit-cookie-manager))
+(defmethod (setf nyxt/ffi:buffer-cookie-policy) (cookie-policy (cookie-manager webkit:webkit-cookie-manager))
   "VALUE is one of`:always', `:never' or `:no-third-party'."
   (webkit:webkit-cookie-manager-set-accept-policy
    cookie-manager
@@ -1843,11 +1843,11 @@ custom (the specified proxy) and none."
      (:never :webkit-cookie-policy-accept-never)
      (:no-third-party :webkit-cookie-policy-accept-no-third-party))))
 
-(defmethod ffi-preferred-languages ((buffer gtk-buffer))
+(defmethod nyxt/ffi:preferred-languages ((buffer gtk-buffer))
   "Not supported by WebKitGTK.
 Only the setf method is."
   nil)
-(defmethod (setf ffi-preferred-languages) (language-list
+(defmethod (setf nyxt/ffi:preferred-languages) (language-list
                                            (buffer gtk-buffer))
   "LANGUAGE-LIST is a list of strings like '(\"en_US\" \"fr_FR\")."
   (let ((langs (cffi:foreign-alloc :string
@@ -1869,7 +1869,7 @@ Oldest entries come last.
 
 This represents the history as remembered by WebKit.  Note that it is linear so
 it does not map 1:1 with Nyxt's history tree.  Nonetheless it allows us to make
-use of the WebKit history case for the current branch.  See `ffi-buffer-load'.
+use of the WebKit history case for the current branch.  See `nyxt/ffi:buffer-load'.
 
 As a second value, return the current buffer index starting from 0."
   (let* ((bf-list (webkit:webkit-web-view-get-back-forward-list (gtk-object buffer)))
@@ -1900,7 +1900,7 @@ As a second value, return the current buffer index starting from 0."
    (gtk-object buffer)
    (webkit-history-entry-gtk-object history-entry)))
 
-(define-ffi-method ffi-focused-p ((buffer gtk-buffer))
+(define-ffi-method nyxt/ffi:focused-p ((buffer gtk-buffer))
   (gtk:gtk-widget-is-focus (gtk-object buffer)))
 
 ;; Working with clipboard
@@ -1913,19 +1913,19 @@ As a second value, return the current buffer index starting from 0."
   (gtk:gtk-clipboard-wait-for-text
    (gtk:gtk-clipboard-get "CLIPBOARD")))
 
-(define-ffi-method ffi-tracking-prevention ((buffer gtk-buffer))
+(define-ffi-method nyxt/ffi:tracking-prevention ((buffer gtk-buffer))
   #+webkit2-tracking
   (webkit:webkit-website-data-manager-get-itp-enabled
    (webkit:webkit-web-context-website-data-manager
     (webkit:webkit-web-view-web-context (gtk-object buffer)))))
-(define-ffi-method (setf ffi-tracking-prevention) (value (buffer gtk-buffer))
+(define-ffi-method (setf nyxt/ffi:tracking-prevention) (value (buffer gtk-buffer))
   #+webkit2-tracking
   (webkit:webkit-website-data-manager-set-itp-enabled
    (webkit:webkit-web-context-website-data-manager
     (webkit:webkit-web-view-web-context (gtk-object buffer)))
    value))
 
-(defmethod ffi-buffer-copy ((gtk-buffer gtk-buffer))
+(defmethod nyxt/ffi:buffer-copy ((gtk-buffer gtk-buffer))
   (webkit:webkit-web-view-can-execute-editing-command
    (gtk-object gtk-buffer) webkit2:+webkit-editing-command-copy+
    (lambda (can-execute?)
@@ -1934,7 +1934,7 @@ As a second value, return the current buffer index starting from 0."
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-copy+)))
    (lambda (e) (echo-warning "Cannot copy: ~a" e))))
 
-(defmethod ffi-buffer-paste ((gtk-buffer gtk-buffer))
+(defmethod nyxt/ffi:buffer-paste ((gtk-buffer gtk-buffer))
   (webkit:webkit-web-view-can-execute-editing-command
    (gtk-object gtk-buffer) webkit2:+webkit-editing-command-paste+
    (lambda (can-execute?)
@@ -1943,7 +1943,7 @@ As a second value, return the current buffer index starting from 0."
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-paste+)))
    (lambda (e) (echo-warning "Cannot paste: ~a" e))))
 
-(defmethod ffi-buffer-cut ((gtk-buffer gtk-buffer))
+(defmethod nyxt/ffi:buffer-cut ((gtk-buffer gtk-buffer))
   (webkit:webkit-web-view-can-execute-editing-command
    (gtk-object gtk-buffer) webkit2:+webkit-editing-command-cut+
    (lambda (can-execute?)
@@ -1952,7 +1952,7 @@ As a second value, return the current buffer index starting from 0."
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-cut+)))
    (lambda (e) (echo-warning "Cannot cut: ~a" e))))
 
-(defmethod ffi-buffer-select-all ((gtk-buffer gtk-buffer))
+(defmethod nyxt/ffi:buffer-select-all ((gtk-buffer gtk-buffer))
   (webkit:webkit-web-view-can-execute-editing-command
    (gtk-object gtk-buffer) webkit2:+webkit-editing-command-select-all+
    (lambda (can-execute?)
@@ -1961,7 +1961,7 @@ As a second value, return the current buffer index starting from 0."
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-select-all+)))
    (lambda (e) (echo-warning "Cannot select all: ~a" e))))
 
-(defmethod ffi-buffer-undo ((gtk-buffer gtk-buffer))
+(defmethod nyxt/ffi:buffer-undo ((gtk-buffer gtk-buffer))
   (webkit:webkit-web-view-can-execute-editing-command
    (gtk-object gtk-buffer) webkit2:+webkit-editing-command-undo+
    (lambda (can-execute?)
@@ -1970,7 +1970,7 @@ As a second value, return the current buffer index starting from 0."
         (gtk-object gtk-buffer) webkit2:+webkit-editing-command-undo+)))
    (lambda (e) (echo-warning "Cannot undo: ~a" e))))
 
-(defmethod ffi-buffer-redo ((gtk-buffer gtk-buffer))
+(defmethod nyxt/ffi:buffer-redo ((gtk-buffer gtk-buffer))
   (webkit:webkit-web-view-can-execute-editing-command
    (gtk-object gtk-buffer) webkit2:+webkit-editing-command-redo+
    (lambda (can-execute?)

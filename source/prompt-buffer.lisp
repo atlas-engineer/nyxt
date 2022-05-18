@@ -183,7 +183,7 @@ See also `hide-prompt-buffer'."
     (push prompt-buffer (active-prompt-buffers (window prompt-buffer)))
     (calispel:! (prompt-buffer-channel (window prompt-buffer)) prompt-buffer)
     (prompt-render prompt-buffer)
-    (setf (ffi-window-prompt-buffer-height (window prompt-buffer))
+    (setf (nyxt/ffi:window-prompt-buffer-height (window prompt-buffer))
           (or height
               (prompt-buffer-open-height (window prompt-buffer))))
     (run-thread "Show prompt watcher"
@@ -211,17 +211,17 @@ See also `show-prompt-buffer'."
           (mapc (lambda (old-prompt)
                   (when (and (prompter= old-prompt prompt-buffer)
                              (not (eq old-prompt prompt-buffer)))
-                    (ffi-buffer-delete old-prompt)))
+                    (nyxt/ffi:buffer-delete old-prompt)))
                 (old-prompt-buffers *browser*))
           (alex:deletef (old-prompt-buffers *browser*)
                         prompt-buffer
                         :test #'prompter=)
           (push prompt-buffer (old-prompt-buffers *browser*)))
-        (ffi-buffer-delete prompt-buffer))
+        (nyxt/ffi:buffer-delete prompt-buffer))
     (if (active-prompt-buffers window)
         (let ((next-prompt-buffer (first (active-prompt-buffers window))))
           (show-prompt-buffer next-prompt-buffer))
-        (setf (ffi-window-prompt-buffer-height window) 0))))
+        (setf (nyxt/ffi:window-prompt-buffer-height window) 0))))
 
 (defun suggestion-and-mark-count (prompt-buffer suggestions marks
                                   &key multi-selection-p pad-p)
@@ -263,7 +263,7 @@ See also `show-prompt-buffer'."
          (vi-letter (match vi-class
                       ("vi-normal-mode" "N")
                       ("vi-insert-mode" "I"))))
-    (ffi-buffer-evaluate-javascript-async
+    (nyxt/ffi:buffer-evaluate-javascript-async
      prompt-buffer
      (ps:ps
        (setf (ps:chain document (get-element-by-id "prompt-extra") |innerHTML|)
@@ -346,7 +346,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                             (nyxt::current-prompt-buffer))))
                                           (loop for (nil attribute) in (prompter:active-attributes suggestion :source source)
                                                 collect (:td (:mayberaw attribute)))))))))))
-      (ffi-buffer-evaluate-javascript
+      (nyxt/ffi:buffer-evaluate-javascript
        prompt-buffer
        (ps:ps
          (setf (ps:chain document (get-element-by-id "suggestions") |innerHTML|)
@@ -358,7 +358,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
     (prompt-render-prompt prompt-buffer)))
 
 (defun erase-document (prompt-buffer)
-  (ffi-buffer-evaluate-javascript-async
+  (nyxt/ffi:buffer-evaluate-javascript-async
    prompt-buffer
    (ps:ps
      (ps:chain document (open))
@@ -390,7 +390,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
               prompt-buffer)))
 
 (defun prompt-render-focus (prompt-buffer)
-  (ffi-buffer-evaluate-javascript-async
+  (nyxt/ffi:buffer-evaluate-javascript-async
    prompt-buffer
    (ps:ps (ps:chain document
                     (get-element-by-id "input")
@@ -407,7 +407,7 @@ INPUT is an implementation detail, don't rely on it.
 If you want to set the input, see `set-prompt-buffer-input'."
   ;; TODO: This function is not thread-safe, add a lock?
   (let ((input (or input
-                   (ffi-buffer-evaluate-javascript
+                   (nyxt/ffi:buffer-evaluate-javascript
                     prompt-buffer
                     (ps:ps (ps:chain document (get-element-by-id "input")
                                      value))))))
@@ -423,7 +423,7 @@ If you want to set the input, see `set-prompt-buffer-input'."
                     ;; buffer and its HTML input, causing the latter to not be in sync with
                     ;; what was send as input to the prompter sources.  Thus when we are done
                     ;; watching, check if we are in sync; if not, try again.
-                    (let ((input (ffi-buffer-evaluate-javascript
+                    (let ((input (nyxt/ffi:buffer-evaluate-javascript
                                   prompt-buffer
                                   (ps:ps (ps:chain document (get-element-by-id "input")
                                                    value)))))
@@ -440,7 +440,7 @@ If you want to set the input, see `set-prompt-buffer-input'."
 (defun set-prompt-buffer-input (input &optional (prompt-buffer (current-prompt-buffer)))
   "Set HTML INPUT in PROMPT-BUFFER.
 See `update-prompt-input' to update the changes visually."
-  (ffi-buffer-evaluate-javascript
+  (nyxt/ffi:buffer-evaluate-javascript
    prompt-buffer
    (ps:ps
      (setf (ps:chain document (get-element-by-id "input") value)
@@ -482,7 +482,7 @@ Example use:
 
 See the documentation of `prompt-buffer' to know more about the options."
     (let ((prompt-object-channel (make-channel 1)))
-      (ffi-within-renderer-thread
+      (nyxt/ffi:within-renderer-thread
        *browser*
        (lambda ()
          (let ((prompt-buffer (apply #'make-instance 'prompt-buffer

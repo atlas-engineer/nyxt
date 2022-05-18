@@ -548,7 +548,7 @@ Examples of the processes to run in background buffers are:
 - Anything else requiring a renderer running invisible to the user.
 
 These buffers are not referenced by `browser', so the only way to control these is to
-store them somewhere and `ffi-buffer-delete' them once done."))
+store them somewhere and `nyxt/ffi:buffer-delete' them once done."))
 
 (define-class nosave-buffer (web-buffer)
   ((profile (make-instance 'nosave-profile)))
@@ -780,7 +780,7 @@ Return the created buffer."
 
 (define-command update-document-model (&key (buffer (current-buffer)))
   "Update BUFFER's `document-model' with the page source augmented with Nyxt identifiers."
-  (ffi-buffer-evaluate-javascript
+  (nyxt/ffi:buffer-evaluate-javascript
    buffer
    (ps:ps
     (defvar nyxt-identifier-counter 0)
@@ -802,7 +802,7 @@ Return the created buffer."
 (-> resurrect-buffer (buffer &key (:browser browser)) (values &optional buffer))
 (defun resurrect-buffer (dead-buffer &key (browser *browser*))
   (setf (id dead-buffer) (get-unique-identifier browser))
-  (ffi-buffer-make dead-buffer)
+  (nyxt/ffi:buffer-make dead-buffer)
   dead-buffer)
 
 (defmethod document-model ((buffer buffer))
@@ -838,10 +838,10 @@ Return the created buffer."
 (defmethod (setf proxy) (proxy (buffer buffer))
   (setf (slot-value buffer 'proxy) proxy)
   (if proxy
-      (setf (ffi-buffer-proxy buffer)
+      (setf (nyxt/ffi:buffer-proxy buffer)
             (list (url proxy)
                   (allowlist proxy)))
-      (setf (ffi-buffer-proxy buffer)
+      (setf (nyxt/ffi:buffer-proxy buffer)
             (quri:uri ""))))
 
 (defmethod keywords ((buffer web-buffer))
@@ -879,12 +879,12 @@ when `proxied-downloads-p' is true."
   "Set BUFFER's `url' slot, then dispatch `on-signal-notify-uri' over the
 BUFFER's modes."
   (declare (ignore no-url))
-  (let ((view-url (ffi-buffer-url buffer)))
+  (let ((view-url (nyxt/ffi:buffer-url buffer)))
     (unless (or (load-failed-p buffer)
                 (url-empty-p view-url))
-      ;; When a buffer fails to load and `ffi-buffer-url' returns an empty
+      ;; When a buffer fails to load and `nyxt/ffi:buffer-url' returns an empty
       ;; URL, we don't set (url buffer) to keep access to the old value.
-      (setf (url buffer) (ffi-buffer-url buffer))))
+      (setf (url buffer) (nyxt/ffi:buffer-url buffer))))
   (dolist (mode (modes buffer))
     (on-signal-notify-uri mode (url buffer)))
   (url buffer))
@@ -894,7 +894,7 @@ BUFFER's modes."
   "Set BUFFER's `title' slot, then dispatch `on-signal-notify-title' over the
 BUFFER's modes."
   (declare (ignore no-title))
-  (setf (title buffer) (ffi-buffer-title buffer))
+  (setf (title buffer) (nyxt/ffi:buffer-title buffer))
   (dolist (mode (modes buffer))
     (on-signal-notify-title mode (url buffer)))
   (title buffer))
@@ -1022,7 +1022,7 @@ See `make-buffer' for a description of the arguments."
 
 (defmethod buffer-delete ((buffer buffer))
   (hooks:run-hook (buffer-delete-hook buffer) buffer)
-  (ffi-buffer-delete buffer))
+  (nyxt/ffi:buffer-delete buffer))
 
 (defmethod buffer-delete ((buffer context-buffer))
   (files:with-file-content (history (history-file buffer))
@@ -1035,7 +1035,7 @@ See `make-buffer' for a description of the arguments."
 
 (defun buffer-hide (buffer)
   "Stop showing the buffer in Nyxt.
-Should be called from/instead of `ffi-buffer-delete' when the renderer view
+Should be called from/instead of `nyxt/ffi:buffer-delete' when the renderer view
 associated to the buffer is already killed."
   (let ((parent-window (find buffer (window-list) :key 'active-buffer)))
     (when parent-window
@@ -1091,9 +1091,9 @@ proceeding."
     (setf (last-access (active-buffer window)) (local-time:now)))
   (if (dummy-buffer-p (active-buffer window))
       (let ((dummy (active-buffer window)))
-        (ffi-window-set-buffer window buffer :focus focus)
+        (nyxt/ffi:window-set-buffer window buffer :focus focus)
         (setf (active-buffer window) buffer)
-        (ffi-buffer-delete dummy))
+        (nyxt/ffi:buffer-delete dummy))
 
       (let ((window-with-same-buffer (find buffer (delete window (window-list))
                                            :key #'active-buffer)))
@@ -1104,13 +1104,13 @@ proceeding."
                          (render-url (url old-buffer))
                          (render-url (url (active-buffer window-with-same-buffer)))
                          (render-url (url buffer)))
-              (ffi-window-set-buffer window-with-same-buffer temp-buffer)
-              (ffi-window-set-buffer window buffer :focus focus)
+              (nyxt/ffi:window-set-buffer window-with-same-buffer temp-buffer)
+              (nyxt/ffi:window-set-buffer window buffer :focus focus)
               (setf (active-buffer window) buffer)
               (window-set-buffer window-with-same-buffer old-buffer)
-              (ffi-buffer-delete temp-buffer))
+              (nyxt/ffi:buffer-delete temp-buffer))
             (progn
-              (ffi-window-set-buffer window buffer :focus focus)
+              (nyxt/ffi:window-set-buffer window buffer :focus focus)
               (setf (active-buffer window) buffer)))))
   (when (and focus
              (context-buffer-p buffer))
@@ -1291,8 +1291,8 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
       ;; out?
       (cond
         ((equal "javascript" (quri:uri-scheme url))
-         (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url))))
-        (t (ffi-buffer-load buffer url))))))
+         (nyxt/ffi:buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url))))
+        (t (nyxt/ffi:buffer-load buffer url))))))
 
 (define-class global-history-source (prompter:source)
   ((prompter:name "Global history")
@@ -1655,7 +1655,7 @@ That is, the one with the most recent access time."
 
 (define-command open-inspector ()
   "Open the inspector, a graphical tool to inspect and change the buffer's content."
-  (ffi-inspector-show (current-buffer)))
+  (nyxt/ffi:inspector-show (current-buffer)))
 
 (export-always 'print-buffer)
 (define-command print-buffer ()

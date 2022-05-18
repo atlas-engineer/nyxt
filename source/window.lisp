@@ -95,7 +95,7 @@ Cannot be null.")
    (window-delete-hook
     (make-instance 'hook-window)
     :type hook-window
-    :documentation "Hook run after `ffi-window-delete' takes effect.
+    :documentation "Hook run after `nyxt/ffi:window-delete' takes effect.
 The handlers take the window as argument."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -118,14 +118,14 @@ The handlers take the window as argument."))
 (defmethod window-add-panel-buffer ((window window) (buffer panel-buffer) side)
   "Add a panel buffer to a window. Side can either be :right or :left."
   (pushnew buffer (panel-buffers window))
-  (ffi-window-add-panel-buffer window buffer side)
+  (nyxt/ffi:window-add-panel-buffer window buffer side)
   buffer)
 
 (defmethod window-delete-panel-buffer ((window window) (buffer panel-buffer))
   "Remove a panel buffer from a window."
   (setf (panel-buffers window)
         (remove buffer (panel-buffers window)))
-  (ffi-window-delete-panel-buffer window buffer))
+  (nyxt/ffi:window-delete-panel-buffer window buffer))
 
 (define-class panel-buffer-source (prompter:source)
   ((prompter:name "Panel buffers")
@@ -221,7 +221,7 @@ See `define-panel' for the description of the arguments."
 (defun print-status (&optional status window)
   (let ((window (or window (current-window))))
     (when (and window (status-buffer window))
-      (ffi-print-status
+      (nyxt/ffi:print-status
        window
        (or status
            (funcall (status-formatter window) window))))))
@@ -231,7 +231,7 @@ See `define-panel' for the description of the arguments."
 (-> window-make (browser) *)
 (export-always 'window-make)
 (defun window-make (browser)
-  (let* ((window (ffi-window-make browser)))
+  (let* ((window (nyxt/ffi:window-make browser)))
     (setf (gethash (id window) (windows browser)) window)
     (unless (slot-value browser 'last-active-window)
       (setf (slot-value browser 'last-active-window) window))
@@ -241,7 +241,7 @@ See `define-panel' for the description of the arguments."
 (-> window-delete (window) *)
 (defun window-delete (window)
   "This function must be called by the renderer when a window is deleted."
-  (ffi-window-delete window)
+  (nyxt/ffi:window-delete window)
   (hooks:run-hook (window-delete-hook window) window)
   (remhash (id window) (windows *browser*))
   (when (zerop (hash-table-count (windows *browser*)))
@@ -267,7 +267,7 @@ See `define-panel' for the description of the arguments."
   "Delete WINDOW, or the current window, when omitted."
   (let ((window-count (hash-table-count (windows *browser*))))
     (cond ((and window (> window-count 1))
-           (ffi-window-delete window))
+           (nyxt/ffi:window-delete window))
           (window
            (echo "Can't delete sole window.")))))
 
@@ -285,22 +285,22 @@ When `skip-renderer-resize' is non-nil, don't ask the renderer to "
   (let ((fullscreen (fullscreen-p window)))
     (unless skip-renderer-resize
       (if fullscreen
-          (ffi-window-unfullscreen window)
-          (ffi-window-fullscreen window)))
+          (nyxt/ffi:window-unfullscreen window)
+          (nyxt/ffi:window-fullscreen window)))
     (toggle-status-buffer :show-p (not fullscreen))
     (toggle-message-buffer :show-p (not fullscreen))))
 
 (defun enable-status-buffer (&optional (window (current-window)))
-  (setf (ffi-window-status-buffer-height window) (height (status-buffer window))))
+  (setf (nyxt/ffi:window-status-buffer-height window) (height (status-buffer window))))
 
 (defun disable-status-buffer (&optional (window (current-window)))
-  (setf (ffi-window-status-buffer-height window) 0))
+  (setf (nyxt/ffi:window-status-buffer-height window) 0))
 
 (defun enable-message-buffer (&optional (window (current-window)))
-  (setf (ffi-window-message-buffer-height window) (message-buffer-height window)))
+  (setf (nyxt/ffi:window-message-buffer-height window) (message-buffer-height window)))
 
 (defun disable-message-buffer (&optional (window (current-window)))
-  (setf (ffi-window-message-buffer-height window) 0))
+  (setf (nyxt/ffi:window-message-buffer-height window) 0))
 
 (define-command toggle-toolbars (&optional (window (current-window)))
   "Toggle the visibility of the message and status buffer areas."
@@ -317,7 +317,7 @@ If SHOW-P is provided:
   (cond ((and show-provided-p show-p)
          (enable-status-buffer window))
         ((and (not show-provided-p)
-              (zerop (ffi-window-status-buffer-height window)))
+              (zerop (nyxt/ffi:window-status-buffer-height window)))
          (enable-status-buffer window))
         (t (disable-status-buffer window))))
 
@@ -331,6 +331,6 @@ If SHOW-P is provided:
   (cond ((and show-provided-p show-p)
          (enable-message-buffer window))
         ((and (not show-provided-p)
-              (zerop (ffi-window-message-buffer-height window)))
+              (zerop (nyxt/ffi:window-message-buffer-height window)))
          (enable-message-buffer window))
         (t (disable-message-buffer window))))

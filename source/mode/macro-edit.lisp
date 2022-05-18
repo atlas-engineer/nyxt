@@ -62,7 +62,7 @@
                                         (if (str:upcase? name)
                                             (string-downcase name)
                                             name)))))))))
-    (ffi-buffer-evaluate-javascript-async
+    (nyxt/ffi:buffer-evaluate-javascript-async
      (buffer macro-editor)
      (ps:ps
        (setf (ps:chain document (get-element-by-id "commands") |innerHTML|)
@@ -85,7 +85,7 @@
   (render-functions macro-editor))
 
 (defmethod name ((macro-editor macro-edit-mode))
-  (let ((name (ffi-buffer-evaluate-javascript
+  (let ((name (nyxt/ffi:buffer-evaluate-javascript
                (buffer macro-editor)
                (ps:ps
                  (ps:chain document (get-element-by-id "macro-name") value)))))

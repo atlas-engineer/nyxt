@@ -216,7 +216,7 @@ define which elements are picked up by element hinting.")
 (defun %clicked-in-input? (&optional (buffer (current-buffer)))
   ;; We don't use define-parenscript because we need to control over which
   ;; buffer we query.
-  (ffi-buffer-evaluate-javascript buffer
+  (nyxt/ffi:buffer-evaluate-javascript buffer
                                   (ps:ps
                                     (ps:chain document active-element
                                               tag-name))))
@@ -544,7 +544,7 @@ Otherwise go forward to the only child."
 
 (define-command paste (&optional (buffer (current-buffer)))
   "Paste from clipboard into active element."
-  (ffi-buffer-paste buffer))
+  (nyxt/ffi:buffer-paste buffer))
 
 (define-class ring-source (prompter:source)
   ((prompter:name "Clipboard ring")
@@ -567,7 +567,7 @@ Otherwise go forward to the only child."
 
 (define-command copy (&optional (buffer (current-buffer)))
   "Copy selected text to clipboard."
-  (ffi-buffer-copy buffer))
+  (nyxt/ffi:buffer-copy buffer))
 
 (define-command copy-placeholder ()
   "Copy placeholder text to clipboard."
@@ -579,19 +579,19 @@ Otherwise go forward to the only child."
 
 (define-command cut (&optional (buffer (current-buffer)))
   "Cut the selected text in BUFFER."
-  (ffi-buffer-cut buffer))
+  (nyxt/ffi:buffer-cut buffer))
 
 (define-command undo (&optional (buffer (current-buffer)))
   "Undo the last editing action."
-  (ffi-buffer-undo buffer))
+  (nyxt/ffi:buffer-undo buffer))
 
 (define-command redo (&optional (buffer (current-buffer)))
   "Redo the last editing action."
-  (ffi-buffer-redo buffer))
+  (nyxt/ffi:buffer-redo buffer))
 
 (define-command select-all (&optional (buffer (current-buffer)))
   "Select all the text in the text field."
-  (ffi-buffer-select-all buffer))
+  (nyxt/ffi:buffer-select-all buffer))
 
 (define-class autofill-source (prompter:source)
   ((prompter:name "Autofills")
@@ -624,7 +624,7 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
   (alex:with-gensyms (element)
     (alex:once-only (buffer)
       `(progn
-         (ffi-buffer-evaluate-javascript ,buffer
+         (nyxt/ffi:buffer-evaluate-javascript ,buffer
                                          (ps:ps (let ((,element (progn ,@element-script)))
                                                   (ps:chain ,element (focus))
                                                   (ps:chain ,element (select)))))
@@ -721,8 +721,8 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
          (spinneret:with-html-string
            (:pre (if (web-buffer-p buffer)
                      (plump:serialize (document-model buffer) nil)
-                     (ffi-buffer-get-document buffer))))
+                     (nyxt/ffi:buffer-get-document buffer))))
       (when (background-buffer-p buffer)
-        (ffi-buffer-delete buffer)))))
+        (nyxt/ffi:buffer-delete buffer)))))
 
 (pushnew 'web-mode nyxt::%default-modes)

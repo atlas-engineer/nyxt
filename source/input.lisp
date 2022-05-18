@@ -57,7 +57,7 @@ Example:
 
 (export-always 'current-keymaps)
 (defun current-keymaps (&optional (buffer (let ((prompt-buffer (current-prompt-buffer)))
-                                            (if (and prompt-buffer (ffi-focused-p prompt-buffer))
+                                            (if (and prompt-buffer (nyxt/ffi:focused-p prompt-buffer))
                                                 prompt-buffer
                                                 (current-buffer)))))
   "Return the list of `keymap' for the current buffer, ordered by priority.
@@ -129,7 +129,7 @@ Return nil to forward to renderer or non-nil otherwise."
       (when (input-buffer-p buffer)
         (setf (last-event buffer) event))
       (cond
-        ((ffi-generated-input-event-p window event)
+        ((nyxt/ffi:generated-input-event-p window event)
          (log:debug "Forward generated event ~a" (keyspecs key-stack))
          (setf key-stack nil)
          nil)
