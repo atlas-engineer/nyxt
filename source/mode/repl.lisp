@@ -109,7 +109,7 @@
 
 (defmethod input ((mode repl-mode))
   (with-current-buffer (buffer mode)
-    (peval (ps:@ (nyxt/ps:qs document "#input-buffer") value))))
+    (peval (ps:@ document active-element value))))
 
 (defmethod (setf input) (new-text (mode repl-mode))
   (pflet ((set-input-text (text)
