@@ -277,8 +277,7 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
                    :ratio (current-zoom-ratio (buffer mode)))
   url)
 
-;; REVIEW: Shorten the name to e.g., `show-url-qr'? It's no longer current URL only.
-(define-internal-page-command-global show-qrcode-of-current-url
+(define-internal-page-command-global show-url-qrcode
     (&key (buffer-id (id (current-buffer)))
      (url (quri:render-uri (url (nyxt::buffers-get buffer-id)))))
     (buffer (format nil "*Buffer ~a (~a) QRcode*" buffer-id url) 'base-mode)
