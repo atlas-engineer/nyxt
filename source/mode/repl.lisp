@@ -34,7 +34,6 @@
       (list
        "C-return" 'evaluate-cell
        "(" 'paren
-       ")" 'closing-paren
        "tab" 'tab-complete-symbol
        ;; TODO: Check out the Jupyter notebook bindings.
        )
