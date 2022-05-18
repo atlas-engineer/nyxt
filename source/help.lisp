@@ -620,7 +620,7 @@ optimizing the use of space."
      (tr :font-size "7px")
      (div :display inline-block))
    (describe-bindings))
-  (print-buffer))
+  (nyxt/document-mode:print-buffer))
 
 (defun tls-help (buffer url)
   "This function is invoked upon TLS certificate errors to give users

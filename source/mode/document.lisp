@@ -60,7 +60,8 @@
        "keypadhome" 'scroll-to-top
        "keypadnext" 'scroll-page-down
        "keypadpageup" 'scroll-page-up
-       "keypadprior" 'scroll-page-up)
+       "keypadprior" 'scroll-page-up
+       "C-p" 'print-buffer)
       scheme:emacs
       (list
        "C-g" 'nothing              ; Emacs users may hit C-g out of habit.
@@ -522,5 +523,10 @@ of buffers."
     (spinneret:with-html-string
       (:h1 "Headings")
       (:raw (headings->html (group-headings (get-headings)))))))
+
+(export-always 'print-buffer)
+(define-command print-buffer ()
+  "Print the current buffer."
+  (peval (print)))
 
 (pushnew 'document-mode nyxt::%default-modes)
