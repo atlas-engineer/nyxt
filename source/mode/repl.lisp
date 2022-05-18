@@ -151,16 +151,17 @@
 (define-command evaluate-cell (&optional (repl (find-submode 'repl-mode)))
   "Evaluate the currently focused input cell."
   (let* ((input (input repl))
-         (id (current-evaluation repl))
+         (id (current-cell-id repl))
          (evaluation (make-instance 'evaluation
                                     :input input
                                     :results (nyxt::evaluate input))))
-    (if id
-        (setf (elt (evaluations repl) id) evaluation
-              (current-evaluation repl) id)
-        (setf (current-evaluation repl) (length (evaluations repl))
-              (evaluations repl) (append (evaluations repl) (list evaluation))))
-    (reload-buffers (list (buffer repl)))))
+    (unless (uiop:emptyp input)
+      (if id
+          (setf (elt (evaluations repl) id) evaluation
+                (current-evaluation repl) id)
+          (setf (current-evaluation repl) (length (evaluations repl))
+                (evaluations repl) (append (evaluations repl) (list evaluation))))
+      (reload-buffers (list (buffer repl))))))
 
 (define-command previous-cell (&optional (repl (find-submode 'repl-mode)))
   "Move to the previous input cell."
