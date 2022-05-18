@@ -285,30 +285,29 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                            :multi-selection-p t
                            :actions (list (lambda-mapped-command bookmark-current-url)))))
 
-(define-command bookmark-url (&key url)
+(define-command bookmark-url
+    (&key (url (ignore-errors
+                (quri:uri
+                 (first
+                  (prompt
+                   :prompt "Bookmark URL"
+                   :sources (list
+                             (make-instance 'prompter:raw-source
+                                            :name "New URL"))))))))
   "Prompt for a URL to bookmark."
-  (let ((url (or url
-                 (ignore-errors
-                  (quri:uri
-                   (first
-                    (prompt
-                     :prompt "Bookmark URL"
-                     :sources (list
-                               (make-instance 'prompter:raw-source
-                                              :name "New URL")))))))))
-    (if (not (valid-url-p url))
-        (echo "Invalid URL '~a'" url)
-        (let* ((url (quri:uri url))
-               (title (fetch-url-title url))
-               (tags (prompt
-                      :prompt "Tag(s)"
-                      :sources (list
-                                (make-instance 'prompter:word-source
-                                               :name "New tags"
-                                               :multi-selection-p t)
-                                (make-instance 'tag-source
-                                               :marks (url-bookmark-tags url))))))
-          (bookmark-add url :tags tags :title title)))))
+  (if (not (valid-url-p url))
+      (echo "Invalid URL '~a'" url)
+      (let* ((url (quri:uri url))
+             (title (fetch-url-title url))
+             (tags (prompt
+                    :prompt "Tag(s)"
+                    :sources (list
+                              (make-instance 'prompter:word-source
+                                             :name "New tags"
+                                             :multi-selection-p t)
+                              (make-instance 'tag-source
+                                             :marks (url-bookmark-tags url))))))
+        (bookmark-add url :tags tags :title title))))
 
 (define-command delete-bookmark (&optional urls-or-bookmark-entries)
   "Delete bookmark(s) matching URLS-OR-BOOKMARK-ENTRIES.
