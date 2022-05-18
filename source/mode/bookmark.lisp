@@ -338,7 +338,11 @@ URLS is either a list or a single element."
                          (lambda-command new-buffer-load (suggestion-values)
                            "Load bookmark(s) in new buffer(s)."
                            (mapc (lambda (url) (make-buffer :url (url url))) (rest suggestion-values))
-                           (make-buffer-focus :url (url (first suggestion-values)))))))
+                           (make-buffer-focus :url (url (first suggestion-values))))
+                         (lambda-command copy-url* (suggestions)
+                           "Copy bookmark URL."
+                           (trivial-clipboard:text (render-url (url (first suggestions)))))
+                         'delete-bookmark)))
   "Set the URL for the current buffer from a bookmark.
 With multiple selections, open the first bookmark in the current buffer, the
 rest in background buffers."
