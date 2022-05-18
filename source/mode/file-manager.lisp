@@ -291,3 +291,7 @@ it. Every type in `supported-media-types' will be opened directly in Nyxt."
    :input (uiop:native-namestring default-directory)
    :prompt "Open file"
    :sources (list (make-instance 'open-file-source))))
+
+(define-command-global download-open-file ()
+  "Open file in Nyxt or externally."
+  (open-file :default-directory (files:expand (download-directory (current-buffer)))))

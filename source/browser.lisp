@@ -353,67 +353,6 @@ restored."
   (when (null browser)
     (error "There is no current *browser*. Is Nyxt started?")))
 
-
-(defun download-watch (download-render download-object)
-  "Update the *Downloads* buffer.
-This function is meant to be run in the background. There is a
-potential thread starvation issue if one thread consumes all
-messages. If in practice this becomes a problem, we should poll on
-each thread until the completion percentage is 100 OR a timeout is
-reached (during which no new progress has been made)."
-  (when download-manager:*notifications*
-    (loop for d = (calispel:? download-manager:*notifications*)
-          while d
-          when (download-manager:finished-p d)
-            do (hooks:run-hook (after-download-hook *browser*) download-render)
-          do (sleep 0.1) ; avoid excessive polling
-             (setf (bytes-downloaded download-render)
-                   (download-manager:bytes-fetched download-object))
-             (setf (completion-percentage download-render)
-                   (* 100 (/ (download-manager:bytes-fetched download-object)
-                             (max 1 (download-manager:bytes-total download-object))))))))
-
-;; TODO: To download any URL at any moment and not just in resource-query, we
-;; need to query the cookies for URL.  Thus we need to add an IPC endpoint to
-;; query cookies.
-(export-always 'download)
-(defmethod download ((buffer buffer) url &key cookies (proxy-url :auto))
-  "Download URL.
-When PROXY-URL is :AUTO (the default), the proxy address is guessed from the
-current buffer.
-
-Return the download object matching the download."
-  (hooks:run-hook (before-download-hook *browser*) url) ; TODO: Set URL to download-hook result?
-  (prog1
-      (match (download-engine buffer)
-        (:lisp
-         (alex:when-let* ((path (download-directory buffer))
-                          (download-dir (files:expand path)))
-           (when (eq proxy-url :auto)
-             (setf proxy-url (proxy-url buffer :downloads-only t)))
-           (let* ((download nil))
-             (with-protect ("Download error: ~a" :condition)
-               (files:with-file-content (downloads path)
-                 (setf download
-                       (download-manager:resolve url
-                                                 :directory download-dir
-                                                 :cookies cookies
-                                                 :proxy proxy-url))
-                 (push download downloads)
-                 ;; Add a watcher / renderer for monitoring download
-                 (let ((download-render (make-instance 'download :url (render-url url))))
-                   (setf (destination-path download-render)
-                         (uiop:ensure-pathname
-                          (download-manager:filename download)))
-                   (push download-render (downloads *browser*))
-                   (run-thread
-                     "download watcher"
-                     (download-watch download-render download)))
-                 download)))))
-        (:renderer
-         (ffi-buffer-download buffer (render-url url))))
-    (list-downloads)))
-
 (defmethod get-unique-identifier ((browser browser))
   (symbol-name (gensym "")))
 
@@ -537,9 +476,10 @@ non-new-page requests, buffer URL is not altered."
         ((and (not (known-type-p request-data))
               (new-page-request-p request-data))
          (log:debug "Buffer ~a initiated download of ~s." (id buffer) (render-url url))
-         (download buffer url
-                   :proxy-url (proxy-url buffer :downloads-only t)
-                   :cookies "")
+         (funcall (resolve-symbol :download :function)
+                  buffer url
+                  :proxy-url (proxy-url buffer :downloads-only t)
+                  :cookies "")
          ;; TODO: WebKitGTK emits "load-failed" if we call
          ;; webkit-policy-decision-ignore on a download requestion.
          ;; To work around this, we set the `status' to a value other than
