@@ -3,7 +3,7 @@
 
 (in-package :nyxt)
 
-(defvar *inspected-values* (tg:make-weak-hash-table :test 'equal))
+(defvar *inspected-values* (tg:make-weak-hash-table :test 'equal :weakness :value))
 
 (export-always 'sequence-p)
 (defun sequence-p (object)
