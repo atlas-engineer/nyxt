@@ -83,6 +83,11 @@ jobs:
       run: |
         ros -e '(asdf:load-system :nyxt/submodules)' -e '(handler-case (asdf:load-system :nyxt/documentation) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17)))'
 
+    - name: Unbound exports
+      shell: bash
+      run: |
+        ros -e '(asdf:load-system :nyxt/submodules)' -e '(load "build-scripts/report-unbound-exports.lisp")' -e '(unbound-exports :nyxt)'
+
   guix-test:
     name: Guix test
     runs-on: ubuntu-latest
