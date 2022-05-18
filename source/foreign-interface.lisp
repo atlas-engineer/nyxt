@@ -13,7 +13,8 @@
 
 (defmacro define-ffi-generic (name arguments &body options)
   "Like `defgeneric' but export NAME and define default dummy method if none is
-provided."
+provided.
+If the `:setter-p' option is non-nil, then a dummy setf method is defined."
   (let* ((methods (sera:filter (sera:eqs :method) options :key #'first))
          (setter? (alex:assoc-value options :setter-p))
          (normalized-options (set-difference options methods :key #'first))
