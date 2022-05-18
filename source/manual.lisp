@@ -208,7 +208,7 @@ magnet links.  See the" (:code "url-dispatching-handler") " function
 documentation.")
 
    (:h3 "Downloads")
-   (:p "See the " (command-markup 'list-downloads) " command and the "
+   (:p "See the " (command-markup 'nyxt/download-mode:list-downloads) " command and the "
        (:code "download-path") " buffer slot documentation.")
 
    (:h3 "Proxy and Tor")

@@ -1655,7 +1655,3 @@ That is, the one with the most recent access time."
 (define-command open-inspector ()
   "Open the inspector, a graphical tool to inspect and change the buffer's content."
   (ffi-inspector-show (current-buffer)))
-
-(define-command download-url ()
-  "Download the page or file of the current buffer."
-  (download (current-buffer) (url (current-buffer))))

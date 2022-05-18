@@ -254,3 +254,7 @@ Return the download object matching the download."
         (:renderer
          (ffi-buffer-download buffer (render-url url))))
     (list-downloads)))
+
+(define-command-global download-url ()
+  "Download the page or file of the current buffer."
+  (download (current-buffer) (url (current-buffer))))
