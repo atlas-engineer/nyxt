@@ -172,7 +172,6 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                 :components
                 ((:file "hint")
                  (:file "hint-prompt-buffer" :depends-on ("hint"))
-                 (:file "element-frame")
                  (:file "search-buffer" :depends-on ("hint"))
                  (:file "spell-check")))
                #+quicklisp
