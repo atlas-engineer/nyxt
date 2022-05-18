@@ -2,10 +2,14 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/ffi
-  (:use :common-lisp :nyxt)
+  (:use :common-lisp)
+  (:import-from #:nyxt)
+  (:import-from #:serapeum
+                #:export-always
+                #:->)
   (:documentation "Foreign function interface (FFI) for Nyxt."))
 (in-package :nyxt/ffi)
-(use-nyxt-package-nicknames)
+(nyxt::use-nyxt-package-nicknames)
 
 (defmacro define-ffi-generic (name arguments &body options)
   "Like `defgeneric' but export NAME and define default dummy method if none is
@@ -50,7 +54,7 @@ The renderer specialization must handle the widget initialization."))
 
 (define-ffi-generic window-to-foreground (window)
   (:method ((window t))
-    (setf (slot-value *browser* 'last-active-window) window))
+    (setf (slot-value nyxt:*browser* 'nyxt::last-active-window) window))
   (:documentation "Show WINDOW in the foreground.
 The specialized method may call `call-next-method' to set
 WINDOW as the `last-active-window'."))
@@ -63,10 +67,10 @@ Setf-able."))
 
 (define-ffi-generic window-active (browser)
   (:method ((browser t))
-    (or (slot-value browser 'last-active-window)
-        (first (window-list))))
+    (or (slot-value browser 'nyxt::last-active-window)
+        (first (nyxt::window-list))))
   (:method :around ((browser t))
-    (setf (slot-value browser 'last-active-window)
+    (setf (slot-value browser 'nyxt::last-active-window)
           (call-next-method)))
   (:documentation "The primary method returns the focused window as per the
 renderer.
@@ -181,29 +185,34 @@ PROXY-URL is a `quri:uri' and IGNORE-HOSTS a list of strings."))
 
 (define-ffi-generic buffer-zoom-level (buffer)
   (:method ((buffer t))
-    (with-current-buffer buffer
-      (peval (ps:chain document body style zoom))))
+    (buffer-evaluate-javascript buffer (ps:ps (ps:chain document body style zoom))))
   (:setter-p t)
   (:documentation "Return the zoom level of the document.
 Setf-able."))
-(defmethod (setf buffer-zoom-level) (value (buffer buffer))
-  (with-current-buffer buffer
-      (peval (ps:let ((style (ps:chain document body style)))
-               (setf (ps:@ style zoom)
-                     (ps:lisp value))))))
+(defmethod (setf buffer-zoom-level) (value buffer)
+  (buffer-evaluate-javascript
+   buffer (ps:ps
+            (ps:let ((style (ps:chain document body style)))
+              (setf (ps:@ style zoom)
+                    (ps:lisp value))))))
 
 (define-ffi-generic buffer-get-document (buffer)
   (:method ((buffer t))
-    (pflet ((get-html (start end)
-                      (ps:chain document document-element |innerHTML| (slice (ps:lisp start)
-                                                                             (ps:lisp end))))
-            (get-html-length ()
-                             (ps:chain document document-element |innerHTML| length)))
-      (with-current-buffer buffer
-        (let ((slice-size 10000))
-          (reduce #'str:concat
-                  (loop for i from 0 to (truncate (get-html-length)) by slice-size
-                        collect (get-html i (+ i slice-size))))))))
+    (flet ((get-html (start end)
+             (buffer-evaluate-javascript
+              buffer
+              (ps:ps
+                (ps:chain document document-element |innerHTML| (slice (ps:lisp start)
+                                                                       (ps:lisp end))))))
+           (get-html-length ()
+             (buffer-evaluate-javascript
+              buffer
+              (ps:ps
+                (ps:chain document document-element |innerHTML| length)))))
+      (let ((slice-size 10000))
+        (reduce #'str:concat
+                (loop for i from 0 to (truncate (get-html-length)) by slice-size
+                      collect (get-html i (+ i slice-size)))))))
   (:documentation "Return the BUFFER raw HTML as a string."))
 
 (define-ffi-generic generate-input-event (window event)
@@ -231,7 +240,7 @@ This often translates in the termination of the \"main loop\" associated to the 
 
 (define-ffi-generic initialize (browser urls startup-timestamp)
   (:method ((browser t) urls startup-timestamp)
-    (finalize browser urls startup-timestamp))
+    (nyxt::finalize browser urls startup-timestamp))
   (:documentation "Renderer-specific initialization.
 When done, call `call-next-method' to finalize the startup."))
 
@@ -271,7 +280,7 @@ Setf-able."))
 
 (define-ffi-generic buffer-copy (buffer)
   (:method ((buffer t))
-    (with-current-buffer buffer
+    (nyxt::with-current-buffer buffer
       ;; On some systems like Xorg, clipboard pasting happens just-in-time.  So if we
       ;; copy something from the context menu 'Copy' action, upon pasting we will
       ;; retrieve the text from the GTK thread.  This is prone to create
@@ -281,38 +290,38 @@ Setf-able."))
       ;; is present the clipboard and need not be retrieved from the GTK thread.
       ;; TODO: Do we still need to flush now that we have multiple threads?
       ;; (trivial-clipboard:text (trivial-clipboard:text))
-      (let ((input (%copy)))
-        (copy-to-clipboard input)
-        (echo "Text copied: ~s" input))))
+      (let ((input (nyxt::%copy)))
+        (nyxt::copy-to-clipboard input)
+        (nyxt::echo "Text copied: ~s" input))))
   (:documentation "Copy selected text in BUFFER to the system clipboard."))
 
 (define-ffi-generic buffer-paste (buffer)
   (:method ((buffer t))
-    (with-current-buffer buffer
-      (%paste)))
+    (nyxt::with-current-buffer buffer
+      (nyxt::%paste)))
   (:documentation "Paste the last clipboard entry into BUFFER."))
 
 (define-ffi-generic buffer-cut (buffer)
   (:method ((buffer t))
-    (with-current-buffer buffer
-      (let ((input (%cut)))
+    (nyxt::with-current-buffer buffer
+      (let ((input (nyxt::%cut)))
         (when input
-          (copy-to-clipboard input)
-          (echo "Text cut: ~s" input)))))
+          (nyxt::copy-to-clipboard input)
+          (nyxt::echo "Text cut: ~s" input)))))
   (:documentation "Cut selected text in BUFFER to the system clipboard."))
 
 (define-ffi-generic buffer-select-all (buffer)
   (:method ((buffer t))
-    (with-current-buffer buffer
-      (%select-all)))
+    (nyxt::with-current-buffer buffer
+      (nyxt::%select-all)))
   (:documentation "Select all text in BUFFER web view."))
 
 (define-ffi-generic buffer-undo (buffer)
   (:method ((buffer t))
-    (echo-warning "Undoing edits is not yet implemented for this renderer."))
+    (nyxt::echo-warning "Undoing edits is not yet implemented for this renderer."))
   (:documentation "Undo the last text edit performed in BUFFER's web view."))
 
 (define-ffi-generic buffer-redo (buffer)
   (:method ((buffer t))
-    (echo-warning "Redoing edits is not yet implemented for this renderer."))
+    (nyxt::echo-warning "Redoing edits is not yet implemented for this renderer."))
   (:documentation "Redo the last undone text edit performed in BUFFER's web view."))

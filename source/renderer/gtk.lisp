@@ -1336,7 +1336,7 @@ See `finalize-buffer'."
   (unless (gtk-object buffer) ; Buffer may already have a view, e.g. the prompt-buffer.
     (setf (gtk-object buffer) (make-web-view (profile buffer) buffer)))
   (when (document-buffer-p buffer)
-    (setf (ffi-buffer-smooth-scrolling-enabled-p buffer) (smooth-scrolling buffer)))
+    (setf (nyxt/ffi:buffer-smooth-scrolling-enabled-p buffer) (smooth-scrolling buffer)))
   (connect-signal-function buffer "decide-policy" (make-decide-policy-handler buffer))
   (connect-signal buffer "load-changed" t (web-view load-event)
     (declare (ignore web-view))
@@ -1620,7 +1620,8 @@ local anyways, and it's better to refresh it if a load was queried."
        content-manager script))))
 
 (defmacro define-ffi-settings-accessor (setting-name webkit-setting)
-  (let ((full-name (intern (format nil "NYXT/FFI:BUFFER-~a" setting-name))))
+  (let ((full-name (intern (format nil "BUFFER-~a" setting-name)
+                           (find-package :nyxt/ffi))))
     (symbol-function full-name)
     `(progn
        (define-ffi-method ,full-name ((buffer gtk-buffer))
