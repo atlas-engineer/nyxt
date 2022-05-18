@@ -479,7 +479,7 @@ there. `reply-user-mesage' takes care of sending the response back."
          (wrap-in-channel
           (encode-json (buffer->tab-description buffer))))
         ("tabs.print"
-         (wrap-in-channel (print-buffer)))
+         (wrap-in-channel (nyxt/document-mode:print-buffer)))
         ("tabs.get"
          (wrap-in-channel
           (encode-json (buffer->tab-description (nyxt::buffers-get message-params)))))

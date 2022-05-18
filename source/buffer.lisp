@@ -1679,12 +1679,6 @@ That is, the one with the most recent access time."
     (when (second buffers)
       (set-current-buffer (second buffers)))))
 
-
 (define-command open-inspector ()
   "Open the inspector, a graphical tool to inspect and change the buffer's content."
   (ffi-inspector-show (current-buffer)))
-
-(export-always 'print-buffer)
-(define-command print-buffer ()         ; TODO: Move to `document-mode'?
-  "Print the current buffer."
-  (peval (print)))

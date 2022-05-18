@@ -54,7 +54,6 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-/" 'reopen-buffer
        "C-shift-t" 'reopen-buffer
        "C-T" 'reopen-buffer
-       "C-p" 'print-buffer
        "C-o" 'nyxt/file-manager-mode:open-file)
 
       scheme:emacs
