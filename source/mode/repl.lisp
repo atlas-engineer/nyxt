@@ -34,9 +34,7 @@
       (list
        "C-return" 'evaluate-cell
        "(" 'paren
-       "tab" 'tab-complete-symbol
-       ;; TODO: Check out the Jupyter notebook bindings.
-       )
+       "tab" 'tab-complete-symbol)
       scheme:emacs
       (list
        "C-f" 'nyxt/input-edit-mode:cursor-forwards
@@ -47,6 +45,9 @@
        "M-backspace" 'nyxt/input-edit-mode:delete-backwards-word
        "M-d" 'nyxt/input-edit-mode:delete-forwards-word
        "C-M-x" 'evaluate-cell
+       ;; FIXME: Org uses C-c C-_ and C-c C-^, but those are shadowed by C-c in Nyxt.
+       "C-_" 'move-cell-down
+       "C-^" 'move-cell-up
        "M-p" 'previous-cell
        "M-n" 'next-cell)
       scheme:vi-normal
@@ -54,13 +55,15 @@
        ;; TODO: deleting chars/words
        "l" 'nyxt/input-edit-mode:cursor-forwards
        "h" 'nyxt/input-edit-mode:cursor-backwards
+       "k" 'previous-cell
+       "j" 'next-cell
+       "K" 'move-cell-down
+       "J" 'move-cell-up
        "w" 'nyxt/input-edit-mode:cursor-forwards-word
        "b" 'nyxt/input-edit-mode:cursor-backwards-word
        "x" 'nyxt/input-edit-mode:delete-forwards
        "d b" 'nyxt/input-edit-mode:delete-backwards-word
-       "d w" 'nyxt/input-edit-mode:delete-forwards-word
-       ;; TODO: Check out the VI bindings for such cases.
-       )))
+       "d w" 'nyxt/input-edit-mode:delete-forwards-word)))
    (style (theme:themed-css (theme *browser*)
             (* :font-family "monospace,monospace")
             (body :margin-right "0")
