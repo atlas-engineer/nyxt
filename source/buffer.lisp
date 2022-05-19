@@ -33,9 +33,8 @@ various parts, such as the path of all data files.")
 
    (style
     (theme:themed-css
-        (if *browser*
-            (theme *browser*)
-            (make-instance 'theme:theme))
+        (theme *browser*)
+
       (body
        :color theme:text
        :background-color theme:background

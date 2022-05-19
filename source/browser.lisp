@@ -229,6 +229,11 @@ A typical Nyxt session encompasses a single instance of this class, but nothing
 prevents otherwise.")
   (:metaclass user-class))
 
+(defmethod theme ((ignored (eql nil)))
+  "Fallback theme in case there `*browser*' is NIL."
+  (declare (ignore ignored))
+  (make-instance 'theme:theme))
+
 (defmethod external-editor-program ((browser browser))
   (alex:ensure-list (slot-value browser 'external-editor-program)))
 
