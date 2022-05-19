@@ -86,7 +86,7 @@ Return:
      (nfiles:content
       (if (quri:uri-file-p script)
           (make-instance 'user-script :base-path (quri:uri-path script))
-          (make-instance 'user-script :url script))))
+          (make-instance 'user-script :url script :base-path #p""))))
     (string
      (multiple-value-bind (url file-p)
          (get-script-url script original-url)
@@ -94,7 +94,7 @@ Return:
          ((and url file-p)
           (nfiles:content (make-instance 'user-script :base-path (quri:uri-path url))))
          ((and url (not file-p))
-          (nfiles:content (make-instance 'user-script :url script)))
+          (nfiles:content (make-instance 'user-script :url (quri:uri script) :base-path #p"")))
          ;; No URL. No need to download anything.
          ;; It's just code (hopefully).
          (t script))))))
@@ -105,6 +105,8 @@ Return:
     (alex:write-string-into-file (nfiles:url-content script) destination :if-exists :supersede)))
 
 (defmethod nfiles:deserialize ((profile nyxt-profile) (script user-script) raw-content &key)
+  "If the script is not in the UserScript format, the raw content is used as is
+and only the `code' slot is set."
   ;; TODO: Parse the stream directly?
   (let ((code  (alex:read-stream-content-into-string raw-content)))
     (or
