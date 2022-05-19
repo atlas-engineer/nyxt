@@ -820,7 +820,7 @@ The version number is stored in the clipboard."
   ;; no *browser*.
   (let* ((current-buffer (current-buffer))
          (buffer (or (current-buffer)
-                     (make-instance 'buffer)))
+                     (make-instance 'input-buffer)))
          (keymaps (cons (override-map buffer)
                         (delete nil (mapcar #'keymap modes)))))
     (unwind-protect
