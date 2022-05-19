@@ -160,7 +160,7 @@ appearance in the buffer when they are setf'd."
           :background-color theme:tertiary))))
   (:toggler-command-p nil))
 
-
+(export-always 'list-downloads)
 (define-internal-page-command-global list-downloads ()
     (buffer "*Downloads*" 'download-mode)
   "Display a buffer listing all downloads.
