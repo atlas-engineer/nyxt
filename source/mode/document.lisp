@@ -9,7 +9,9 @@
   (:import-from #:serapeum
                 #:export-always
                 #:->)
-  (:documentation "Mode for web pages"))
+  (:documentation "Mode to interact with structured documents.
+This is typically for HTML pages, but other format may be supported at some point.
+It does not assume being online."))
 (in-package :nyxt/document-mode)
 (use-nyxt-package-nicknames)
 
