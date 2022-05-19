@@ -113,7 +113,7 @@ Return:
 (sera:-> get-script-text
          ((or string nyxt::url-designator pathname)
           &optional (maybe nyxt::url-designator pathname))
-         (values string &optional))
+         (values (maybe string) &optional))
 (defun get-script-text (script &optional original-url)
   (etypecase script
     (pathname
