@@ -127,7 +127,7 @@ Return:
                                         (mapcar (lambda (require)
                                                   (get-script-text
                                                    require
-                                                   (get-script-url script nil)))
+                                                   (get-script-url require nil)))
                                                 (getprop "require"))
                                         code)))
         (setf
