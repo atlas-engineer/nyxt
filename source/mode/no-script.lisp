@@ -15,7 +15,7 @@ It's automatically disabled when loading a non-internal URL.")
   (echo "Reload the buffer for no-script-mode to take effect."))
 
 (defmethod disable ((mode no-script-mode) &key)
-  (setf (nyxt/ffi:buffer-javascript-markup-enabled-p (buffer mode)) t))
+  (setf (ffi-buffer-javascript-markup-enabled-p (buffer mode)) t))
 
 (defmethod nyxt:on-signal-load-started ((mode no-script-mode) url)
-  (setf (nyxt/ffi:buffer-javascript-markup-enabled-p (buffer mode)) (internal-url-p url)))
+  (setf (ffi-buffer-javascript-markup-enabled-p (buffer mode)) (internal-url-p url)))

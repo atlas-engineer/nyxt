@@ -102,7 +102,7 @@ This can be used to resume former buffers.")
     :type (or window null)
     :export nil
     :documentation "Records the last active window.  This is
-useful when no Nyxt window is focused and we still want `nyxt/ffi:window-active' to
+useful when no Nyxt window is focused and we still want `ffi-window-active' to
 return something.
 See `current-window' for the user-facing function.")
    (buffers
@@ -274,12 +274,12 @@ prevents otherwise.")
    (handler-bind ((error (lambda (c) (log:error "In *after-init-hook*: ~a" c))))
      (hooks:run-hook *after-init-hook*))) ; TODO: Run outside the main loop?
   ;; `startup' must be run _after_ this function returns;
-  ;; `nyxt/ffi:within-renderer-thread' runs its body on the renderer thread when it's
+  ;; `ffi-within-renderer-thread' runs its body on the renderer thread when it's
   ;; idle, so it should do the job.  It's not enough since the
   ;; `startup' may invoke the prompt buffer, which cannot be invoked from
   ;; the renderer thread: this is why we run the `startup' in a new
   ;; thread from there.
-  (nyxt/ffi:within-renderer-thread
+  (ffi-within-renderer-thread
    browser
    (lambda ()
      (run-thread "finalization"
@@ -337,7 +337,7 @@ restored."
     ;; possibly with a different renderer.  To avoid mixing windows with
     ;; different renderers.  REVIEW: A better option would be to have
     ;; `update-instance-for-redefined-class' call `customize-instance', but this
-    ;; is tricky to get right, in particular `nyxt/ffi:buffer-make' seems to hang on
+    ;; is tricky to get right, in particular `ffi-buffer-make' seems to hang on
     ;; `web-buffer's.
     (mapcar #'window-delete (window-list))
     (window-make browser)
@@ -361,7 +361,7 @@ restored."
 (defun set-window-title (&optional (window (current-window)) (buffer (current-buffer)))
   "Set current window title to the return value of (titler window). "
   (declare (ignore buffer)) ; TODO: BUFFER is kept for backward compatibility.  Remove with 3.0.
-  (setf (nyxt/ffi:window-title window) (funcall (titler window) window)))
+  (setf (ffi-window-title window) (funcall (titler window) window)))
 
 (-> window-default-title (window) string)
 (export-always 'window-default-title)
@@ -567,7 +567,7 @@ The following example does a few things:
 (defun print-message (message &optional window)
   (let ((window (or window (current-window))))
     (when window
-      (nyxt/ffi:print-message window message))))
+      (ffi-print-message window message))))
 
 (export-always 'current-window)
 (defun current-window (&optional no-rescan)
@@ -583,8 +583,8 @@ sometimes yields the wrong result."
   (when *browser*
     (if (and no-rescan (slot-value *browser* 'last-active-window))
         (slot-value *browser* 'last-active-window)
-        ;; No window when browser is not started or does not implement `nyxt/ffi:window-active'.
-        (ignore-errors (nyxt/ffi:window-active *browser*)))))
+        ;; No window when browser is not started or does not implement `ffi-window-active'.
+        (ignore-errors (ffi-window-active *browser*)))))
 
 (export-always 'set-current-buffer)
 (defun set-current-buffer (buffer &key (focus t))

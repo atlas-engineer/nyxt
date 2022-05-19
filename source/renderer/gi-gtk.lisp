@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 ;;;; This file produces two warnings due to redefinitions of
-;;;; renderer-thread-p and nyxt/ffi:initialize.
+;;;; renderer-thread-p and ffi-initialize.
 ;;;;
 ;;;; This is necessary to modify the behavior of renderer-gtk to use
 ;;;; gobject to launch/manage the main GTK thread. When/if this
@@ -42,6 +42,6 @@ interface. On Darwin, we must run the GTK thread on the main thread."
         #+darwin
         (main-func)))
 
-    (define-ffi-method nyxt/ffi:kill-browser ((browser gtk-browser))
+    (define-ffi-method ffi-kill-browser ((browser gtk-browser))
       (unless *run-from-repl-p*
         (gir:invoke ((gir:ffi "Gtk" "3.0") 'main-quit))))))

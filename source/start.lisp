@@ -164,8 +164,8 @@ Example: --with-file bookmarks=/path/to/bookmarks
   "Quit Nyxt."
   (hooks:run-hook (before-exit-hook *browser*))
   (loop for window in (window-list)
-        do (nyxt/ffi:window-delete window))
-  (nyxt/ffi:kill-browser *browser*)
+        do (ffi-window-delete window))
+  (ffi-kill-browser *browser*)
   (setf (slot-value *browser* 'ready-p) nil)
   (when (socket-thread *browser*)
     (destroy-thread* (socket-thread *browser*))
@@ -343,7 +343,7 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
     (if urls
         (log:info "Externally requested URL(s): ~{~a~^, ~}" urls)
         (log:info "Externally pinged."))
-    (nyxt/ffi:within-renderer-thread
+    (ffi-within-renderer-thread
      *browser*
      (lambda () (open-urls urls)))
     urls))
@@ -374,7 +374,7 @@ It takes URL-STRINGS so that the URL argument can be `cl-read' in case
                            (parse-urls expr))))
                    ;; If we get pinged too early, we do not have a current-window yet.
                    (when (current-window)
-                     (nyxt/ffi:window-to-foreground (current-window)))))))
+                     (ffi-window-to-foreground (current-window)))))))
     (log:info "Listening on socket ~s" socket-path)))
 
 (defun listening-socket-p ()
@@ -484,7 +484,7 @@ Examples:
 
 \(progn
  (asdf:load-system :nyxt/gi-gtk)
- (nyxt/ffi:initialize nyxt:*browser* '() (local-time:now)))
+ (nyxt:ffi-initialize nyxt:*browser* '() (local-time:now)))
 "))
   (pushnew 'nyxt-source-registry asdf:*default-source-registries*)
   (asdf:clear-configuration)
@@ -601,7 +601,7 @@ Finally, run the browser, load URL-STRINGS if any, then run
       ;; is the case with the SLY mrepl thread.
       (bt:make-thread (lambda ()
                         (in-package :nyxt-user)))
-      (nyxt/ffi:initialize *browser* urls startup-timestamp))))
+      (ffi-initialize *browser* urls startup-timestamp))))
 
 (define-command nyxt-init-time ()
   "Return the duration of Nyxt initialization."

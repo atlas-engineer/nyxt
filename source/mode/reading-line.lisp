@@ -81,8 +81,8 @@ screen as well."
          (insert-content (ps:ps
                            (ps:chain document body (|insertAdjacentHTML| "afterbegin" (ps:lisp content)))
                            (setf (ps:@ (nyxt/ps:qs document "#reading-line-cursor") style top) "10px"))))
-    (nyxt/ffi:buffer-evaluate-javascript-async (buffer mode) insert-content)))
+    (ffi-buffer-evaluate-javascript-async (buffer mode) insert-content)))
 
 (defmethod disable ((mode reading-line-mode) &key)
   (let ((destroy-content (ps:ps (setf (ps:chain (nyxt/ps:qs document "#reading-line-cursor") |outerHTML|) ""))))
-    (nyxt/ffi:buffer-evaluate-javascript-async (buffer mode) destroy-content)))
+    (ffi-buffer-evaluate-javascript-async (buffer mode) destroy-content)))

@@ -118,7 +118,7 @@
 (defun %clicked-in-input? (&optional (buffer (current-buffer)))
   ;; We don't use define-parenscript because we need to control over which
   ;; buffer we query.
-  (nyxt/ffi:buffer-evaluate-javascript buffer
+  (ffi-buffer-evaluate-javascript buffer
                                   (ps:ps
                                     (ps:chain document active-element
                                               tag-name))))
@@ -175,7 +175,7 @@
 
 (define-command paste (&optional (buffer (current-buffer)))
   "Paste from clipboard into active element."
-  (nyxt/ffi:buffer-paste buffer))
+  (ffi-buffer-paste buffer))
 
 (define-class ring-source (prompter:source)
   ((prompter:name "Clipboard ring")
@@ -198,7 +198,7 @@
 
 (define-command copy (&optional (buffer (current-buffer)))
   "Copy selected text to clipboard."
-  (nyxt/ffi:buffer-copy buffer))
+  (ffi-buffer-copy buffer))
 
 (define-command copy-placeholder ()
   "Copy placeholder text to clipboard."
@@ -210,19 +210,19 @@
 
 (define-command cut (&optional (buffer (current-buffer)))
   "Cut the selected text in BUFFER."
-  (nyxt/ffi:buffer-cut buffer))
+  (ffi-buffer-cut buffer))
 
 (define-command undo (&optional (buffer (current-buffer)))
   "Undo the last editing action."
-  (nyxt/ffi:buffer-undo buffer))
+  (ffi-buffer-undo buffer))
 
 (define-command redo (&optional (buffer (current-buffer)))
   "Redo the last editing action."
-  (nyxt/ffi:buffer-redo buffer))
+  (ffi-buffer-redo buffer))
 
 (define-command select-all (&optional (buffer (current-buffer)))
   "Select all the text in the text field."
-  (nyxt/ffi:buffer-select-all buffer))
+  (ffi-buffer-select-all buffer))
 
 (export-always 'element-focused)
 (defgeneric element-focused (mode) ; TODO: Make hook instead?  Or use both, have the default method call hook.
@@ -236,7 +236,7 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
   (alex:with-gensyms (element)
     (alex:once-only (buffer)
       `(progn
-         (nyxt/ffi:buffer-evaluate-javascript ,buffer
+         (ffi-buffer-evaluate-javascript ,buffer
                                          (ps:ps (let ((,element (progn ,@element-script)))
                                                   (ps:chain ,element (focus))
                                                   (ps:chain ,element (select)))))
@@ -301,9 +301,9 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
          (spinneret:with-html-string
            (:pre (if (web-buffer-p buffer)
                      (plump:serialize (document-model buffer) nil)
-                     (nyxt/ffi:buffer-get-document buffer))))
+                     (ffi-buffer-get-document buffer))))
       (when (background-buffer-p buffer)
-        (nyxt/ffi:buffer-delete buffer)))))
+        (ffi-buffer-delete buffer)))))
 
 (define-command scroll-to-top ()
   "Scroll to the top of the current page."
@@ -354,17 +354,17 @@ The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
 (define-command zoom-page (&key (buffer (current-buffer)))
   "Zoom in the current page."
   (ensure-zoom-ratio-range #'+ buffer)
-  (setf (nyxt/ffi:buffer-zoom-level buffer) (current-zoom-ratio buffer)))
+  (setf (ffi-buffer-zoom-level buffer) (current-zoom-ratio buffer)))
 
 (define-command unzoom-page (&key (buffer (current-buffer)))
   "Zoom out the current page."
   (ensure-zoom-ratio-range #'- buffer)
-  (setf (nyxt/ffi:buffer-zoom-level buffer) (current-zoom-ratio buffer)))
+  (setf (ffi-buffer-zoom-level buffer) (current-zoom-ratio buffer)))
 
 (define-command reset-page-zoom (&key (buffer (current-buffer))
                                       (ratio (zoom-ratio-default buffer)))
   "Reset the page zoom to the zoom-ratio-default."
-  (setf (nyxt/ffi:buffer-zoom-level buffer) (setf (current-zoom-ratio buffer) ratio)))
+  (setf (ffi-buffer-zoom-level buffer) (setf (current-zoom-ratio buffer) ratio)))
 
 (define-internal-page-command-global summarize-buffer (&key (summary-length 5) (id (id (current-buffer))))
   (output (format nil "*Summary ~a*" (title (nyxt::buffers-get id))) 'base-mode)
@@ -519,7 +519,7 @@ of buffers."
                              (title heading)))
                     (when (rest group)
                       (:raw (sera:mapconcat #'headings->html (list (group-headings (rest group))) "")))))))))
-    (setf (nyxt/ffi:window-panel-buffer-width (current-window) panel-buffer) 400)
+    (setf (ffi-window-panel-buffer-width (current-window) panel-buffer) 400)
     (spinneret:with-html-string
       (:h1 "Headings")
       (:raw (headings->html (group-headings (get-headings)))))))

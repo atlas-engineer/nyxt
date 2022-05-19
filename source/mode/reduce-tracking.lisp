@@ -31,17 +31,17 @@ still being less noticeable in the crowd.")
     :documentation "The User Agent the browser had before enabling this mode.")))
 
 (defmethod enable ((mode reduce-tracking-mode) &key)
-  (setf (old-user-agent mode) (nyxt/ffi:buffer-user-agent (buffer mode)))
-  (setf (nyxt/ffi:buffer-user-agent (buffer mode)) (preferred-user-agent mode))
-  (setf (nyxt/ffi:preferred-languages (buffer mode))
+  (setf (old-user-agent mode) (ffi-buffer-user-agent (buffer mode)))
+  (setf (ffi-buffer-user-agent (buffer mode)) (preferred-user-agent mode))
+  (setf (ffi-preferred-languages (buffer mode))
         (preferred-languages mode))
-  (setf (nyxt/ffi:tracking-prevention (buffer mode)) t))
+  (setf (ffi-tracking-prevention (buffer mode)) t))
 
 (defmethod disable ((mode reduce-tracking-mode) &key)
-  (setf (nyxt/ffi:buffer-user-agent (buffer mode)) (old-user-agent mode))
-  (setf (nyxt/ffi:preferred-languages (buffer mode))
+  (setf (ffi-buffer-user-agent (buffer mode)) (old-user-agent mode))
+  (setf (ffi-preferred-languages (buffer mode))
         (list (first
                (str:split
                 "."
                 (or (uiop:getenv "LANG") "")))))
-  (setf (nyxt/ffi:tracking-prevention (buffer mode)) nil))
+  (setf (ffi-tracking-prevention (buffer mode)) nil))

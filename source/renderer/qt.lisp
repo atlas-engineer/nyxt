@@ -8,7 +8,7 @@
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod nyxt/ffi:initialize ((browser qt-browser) urls startup-timestamp)
+(defmethod ffi-initialize ((browser qt-browser) urls startup-timestamp)
   (log:debug "Initializing Qt Interface")
   (flet ((initialize ()
            (setf (application browser)
@@ -24,7 +24,7 @@
     #-sbcl
     (initialize)))
 
-(defmethod nyxt/ffi:kill-browser ((browser qt-browser))
+(defmethod ffi-kill-browser ((browser qt-browser))
   (qt:application-quit (application browser)))
 
 (define-class qt-window ()
@@ -54,7 +54,7 @@
     (qt:layout-add-widget box-layout minibuffer-view)
     (qt:layout-set-contents-margins box-layout 0 0 0 0)
     (qt:layout-set-spacing box-layout 0)
-    (nyxt/ffi:window-set-prompt-buffer-height window 16)
+    (ffi-window-set-prompt-buffer-height window 16)
     (qt:widget-resize qt-object 1024 768)
     (qt:widget-install-key-press-filter
      (qt-object window)
@@ -83,13 +83,13 @@
 (defmethod on-signal-destroy ((window qt-window))
   (window-delete window))
 
-(defmethod nyxt/ffi:window-delete ((window qt-window))
+(defmethod ffi-window-delete ((window qt-window))
   "Delete a window object and remove it from the hash of windows.")
 
-(defmethod nyxt/ffi:window-fullscreen ((window qt-window))
+(defmethod ffi-window-fullscreen ((window qt-window))
   (qt:widget-show-full-screen (qt-object window)))
 
-(defmethod nyxt/ffi:window-unfullscreen ((window qt-window))
+(defmethod ffi-window-unfullscreen ((window qt-window))
   (qt:widget-show-normal (qt-object window)))
 
 (defmethod initialize-instance :after ((buffer qt-buffer) &key)
@@ -105,54 +105,54 @@
    (lambda ()
      (on-signal-load-finished buffer (quri:uri (qt:web-engine-view-url (qt-object buffer)))))))
 
-(defmethod nyxt/ffi:window-make ((browser qt-browser))
+(defmethod ffi-window-make ((browser qt-browser))
   "Make a window."
   (make-instance 'window))
 
-(defmethod nyxt/ffi:window-to-foreground ((window qt-window))
+(defmethod ffi-window-to-foreground ((window qt-window))
   "Show window in foreground."
   (qt:widget-present (qt-object window)))
 
-(defmethod nyxt/ffi:window-set-title ((window qt-window) title)
+(defmethod ffi-window-set-title ((window qt-window) title)
   "Set the title for a window."
   (qt:widget-set-window-title (qt-object window) title)
   title)
 
-(defmethod nyxt/ffi:window-active ((browser qt-browser))
+(defmethod ffi-window-active ((browser qt-browser))
   "Return the window object for the current window."
   (setf (slot-value browser 'last-active-window)
         (or (find-if #'qt:widget-is-active-window (window-list) :key #'qt-object)
             (slot-value browser 'last-active-window))))
 
-(defmethod nyxt/ffi:window-set-buffer ((window qt-window) (buffer qt-buffer))
+(defmethod ffi-window-set-buffer ((window qt-window) (buffer qt-buffer))
   "Set BROWSER's WINDOW buffer to BUFFER."
   (qt:widget-set-parent (qt-object (active-buffer window)) (cffi:null-pointer))
   (qt:layout-insert-widget (box-layout window) 0 (qt-object buffer))
   (qt:widget-show (qt-object buffer))
   (setf (active-buffer window) buffer))
 
-(defmethod nyxt/ffi:window-set-prompt-buffer-height ((window qt-window) height)
+(defmethod ffi-window-set-prompt-buffer-height ((window qt-window) height)
   (qt:widget-set-fixed-height (minibuffer-view window) height))
 
-(defmethod nyxt/ffi:buffer-make ((browser qt-browser))
+(defmethod ffi-buffer-make ((browser qt-browser))
   (make-instance 'buffer))
 
-(defmethod nyxt/ffi:buffer-delete ((buffer qt-buffer)))
+(defmethod ffi-buffer-delete ((buffer qt-buffer)))
 
-(defmethod nyxt/ffi:buffer-load ((buffer qt-buffer) url)
+(defmethod ffi-buffer-load ((buffer qt-buffer) url)
   (qt:web-engine-view-load (qt-object buffer) (quri:render-uri url)))
 
-(defmethod nyxt/ffi:buffer-evaluate-javascript-async ((buffer qt-buffer) javascript)
+(defmethod ffi-buffer-evaluate-javascript-async ((buffer qt-buffer) javascript)
   (qt:web-engine-page-run-javascript (qt:web-engine-view-page (qt-object buffer)) javascript %callback))
 
-(defmethod nyxt/ffi:prompt-buffer-evaluate-javascript-async ((window qt-window) javascript)
+(defmethod ffi-prompt-buffer-evaluate-javascript-async ((window qt-window) javascript)
   (qt:web-engine-page-run-javascript (qt:web-engine-view-page (minibuffer-view window)) javascript %callback))
 
-(defmethod nyxt/ffi:generate-input-event ((window qt-window) event))
+(defmethod ffi-generate-input-event ((window qt-window) event))
 
-(defmethod nyxt/ffi:generated-input-event-p ((window qt-window) event))
+(defmethod ffi-generated-input-event-p ((window qt-window) event))
 
-(defmethod nyxt/ffi:within-renderer-thread ((browser qt-browser) thunk)
+(defmethod ffi-within-renderer-thread ((browser qt-browser) thunk)
   (declare (ignore browser))
   ;; TODO: Test this!
   (funcall thunk))

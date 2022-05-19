@@ -40,8 +40,8 @@ the highest standard on accessibility."))
                                                               :actions  nil)))))
     (diff-buffer "*diff*" 'diff-mode)
   "Show difference between two buffers"
-  (let ((old-html (nyxt/ffi:buffer-get-document (nyxt::buffers-get old-buffer-id)))
-        (new-html (nyxt/ffi:buffer-get-document (nyxt::buffers-get new-buffer-id))))
+  (let ((old-html (ffi-buffer-get-document (nyxt::buffers-get old-buffer-id)))
+        (new-html (ffi-buffer-get-document (nyxt::buffers-get new-buffer-id))))
     (spinneret:with-html-string
       (:style (style (find-submode 'nyxt/diff-mode:diff-mode diff-buffer)))
       (:raw

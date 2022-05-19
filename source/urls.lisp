@@ -49,7 +49,7 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
                  url
                  (quri:render-uri url))))
     (the (values (or string null) &optional)
-         (or (ignore-errors (nyxt/ffi:display-url url))
+         (or (ignore-errors (ffi-display-url url))
              url))))
 
 (export-always 'render-host-and-scheme)

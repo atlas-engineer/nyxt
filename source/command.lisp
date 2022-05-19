@@ -331,7 +331,7 @@ result."
                                      (buffer (current-buffer)))
   "A command that forwards the last key press to the renderer.
 This is useful to override bindings to be forwarded to the renderer."
-  (nyxt/ffi:generate-input-event window (last-event buffer)))
+  (ffi-generate-input-event window (last-event buffer)))
 
 (define-command nothing ()                 ; TODO: Replace with ESCAPE special command that allows dispatched to cancel current key stack.
   "A command that does nothing.

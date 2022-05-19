@@ -109,7 +109,8 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                 ((:file "time")
                  (:file "types")
                  (:file "conditions")
-                 (:file "debug")))
+                 (:file "debug")
+                 (:file "user-interface")))
                (:module "Core"
                 :pathname ""
                 :serial t
@@ -125,8 +126,6 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "parenscript-macro")
                  (:file "inspector")
                  (:file "message")
-                 (:file "foreign-interface")
-                 (:file "user-interface")
                  (:file "command")
                  (:file "urls")
                  (:file "renderer-script")
@@ -136,6 +135,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "mode")
                  (:file "search-engine")
                  (:file "browser")
+                 (:file "foreign-interface")
                  (:file "clipboard")
                  (:file "input")
                  (:file "prompt-buffer")

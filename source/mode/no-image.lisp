@@ -10,7 +10,7 @@
   "Disable images in current buffer.")
 
 (defmethod enable ((mode no-image-mode) &key)
-  (setf (nyxt/ffi:buffer-auto-load-image-enabled-p (buffer mode)) nil))
+  (setf (ffi-buffer-auto-load-image-enabled-p (buffer mode)) nil))
 
 (defmethod disable ((mode no-image-mode) &key)
-  (setf (nyxt/ffi:buffer-auto-load-image-enabled-p (buffer mode)) t))
+  (setf (ffi-buffer-auto-load-image-enabled-p (buffer mode)) t))

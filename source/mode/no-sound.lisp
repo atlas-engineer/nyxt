@@ -10,7 +10,7 @@
   "Disable sound in current buffer.")
 
 (defmethod enable ((mode no-sound-mode) &key)
-  (setf (nyxt/ffi:buffer-sound-enabled-p (buffer mode)) nil))
+  (setf (ffi-buffer-sound-enabled-p (buffer mode)) nil))
 
 (defmethod disable ((mode no-sound-mode) &key)
-  (setf (nyxt/ffi:buffer-sound-enabled-p (buffer mode)) t))
+  (setf (ffi-buffer-sound-enabled-p (buffer mode)) t))

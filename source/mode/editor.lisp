@@ -32,7 +32,7 @@ get/set-content (which is necessary for operation)."
                     (:head (:style (style (buffer editor))))
                     (:body (:p "Please configure an editor mode to use an editor buffer."))))
          (insert-content (ps:ps (ps:chain document (write (ps:lisp content))))))
-    (nyxt/ffi:buffer-evaluate-javascript-async (buffer editor) insert-content)))
+    (ffi-buffer-evaluate-javascript-async (buffer editor) insert-content)))
 
 (define-class editor-buffer (context-buffer modable-buffer document-buffer input-buffer)
   ((nyxt:url (quri:uri ""))
