@@ -321,7 +321,7 @@ automate the reading experience:")
    (:p "Symmetrically, it is possible to automate the filling of forms: ")
    (:ul
     (list-command-information '(nyxt/autofill-mode:autofill
-                                nyxt/document-mode::toggle-checkboxes)))
+                                nyxt/bookmarklets-mode::toggle-checkboxes)))
    (:p "In addition, it is possible to automate actions over time: "
    (:ul
     (list-command-information '(nyxt/watch-mode:watch-mode))
@@ -350,7 +350,7 @@ creatively tailor-made by users to automate their own use of Nyxt.")
                                 nyxt/document-mode:unzoom-page
                                 nyxt/document-mode:reset-page-zoom
                                 nyxt/autofill-mode::autofill
-                                download-open-file
+                                nyxt/file-manager-mode:download-open-file
                                 edit-with-external-editor)))
 
    (:h2 "The Nyxt help system")
