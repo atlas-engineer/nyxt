@@ -311,7 +311,7 @@ By default it is found in the source directory."))
     :documentation "See `gtk-buffer' slot of the same name."))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defclass renderer-download (gtk-download)
+(defclass nyxt/download-mode:renderer-download (gtk-download)
   ()
   (:metaclass mixin-class))
 
