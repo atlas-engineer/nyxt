@@ -99,8 +99,7 @@ for matches."
                   'command-source
                   :return-actions (list (lambda-command describe-command* (commands)
                                           (describe-command :command (name (first commands)))))
-                  :filter-preprocessor preprocessor
-                  :universal universal)
+                  :filter-preprocessor preprocessor)
                  (make-instance
                   'class-source
                   :return-actions (list (lambda-command describe-class* (classes)
