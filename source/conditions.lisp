@@ -3,9 +3,7 @@
 
 (in-package :nyxt)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (export '(nyxt-condition)))
-
+(export-always 'nyxt-condition)
 (define-condition nyxt-condition (error)
   ((message :initarg :message :accessor nyxt-condition-message))
   (:report (lambda (c stream)
