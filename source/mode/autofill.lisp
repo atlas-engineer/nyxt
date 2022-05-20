@@ -69,7 +69,7 @@ it will be in conflict with common-lisp:fill."))
 (define-class autofill-source (prompter:source)
   ((prompter:name "Autofills")
    (prompter:constructor (autofills (find-submode 'autofill-mode)))
-   (prompter:actions
+   (prompter:return-actions
     (list (lambda-command autofill* (autofills)
             (let ((selected-fill (first autofills)))
               (cond ((stringp (autofill-fill selected-fill))

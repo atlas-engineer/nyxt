@@ -1192,8 +1192,8 @@ See `finalize-buffer'."
                              :value input-color
                              :attributes (prompter:object-attributes input-color))
               suggestions))))
-   (prompter:follow-p t)
-   (prompter:follow-mode-functions
+   (prompter:selection-actions-enabled-p t)
+   (prompter:selection-actions
     (lambda (color)
       (pflet ((color-input-area
                (color)

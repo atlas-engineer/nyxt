@@ -86,7 +86,7 @@ contains an `nyxt/editor-mode:editor-mode' instance (or a subclass thereof)."))
                 :sources
                 (list (make-instance 'nyxt/file-manager-mode:file-source
                                      :name "Absolute file path"
-                                     :actions '(identity))
+                                     :return-actions '(identity))
                       (make-instance 'prompter:raw-source
                                      :name "New file")))))
     ;; TODO: Maybe make `editor-mode' and `editor-buffer' pathname-friendly?

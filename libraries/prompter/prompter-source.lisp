@@ -240,8 +240,8 @@ list.")
    (marks '()
           :documentation
           "The list of `suggestion' values which have been marked by the user.
-Marking is only allowed when `multi-selection-p' is non-nil.
-When suggestions are marked, the subsequent action is run over all marked suggestions.
+Marking is only allowed when `multi-selection-p' is non-nil.  When suggestions
+are marked, subsequent `return-actions' run over all marked suggestions.
 
 We store the values instead of the `suggestion' because `suggestion' objects are
 reinstantiated between each input processing.")
@@ -323,14 +323,13 @@ and to know if we have to recompute the match-data for instance.")
                    :documentation "A predicate used to sort the `suggestion's once
 filtered.  The predicate works the same as the `sort' predicate.")
 
-   (actions '(identity)
-            :type list
-            :accessor nil
-            :export nil
-            :documentation "List of funcallables that can be run on `suggestion's
-of this source.
-This is the low-level implementation, see the `actions' function for the public
-interface.")
+   (return-actions '(identity)
+                   :type list
+                   :accessor nil
+                   :export nil
+                   :documentation "List of funcallables that can be run on
+`suggestion's of this source.  This is the low-level implementation, see the
+`return-actions' function for the public interface.")
 
    (update-notifier (make-channel)
                     :type calispel:channel
@@ -383,33 +382,32 @@ If update calculation is aborted, nil is sent instead.")
 prompter is resumed.
 See `resume-sources'.")
 
-   (follow-mode-functions '()
-                          :type (or null
-                                    (or function function-symbol)
-                                    (cons (or function function-symbol) *))
-                          :documentation
-                          "The first function of this list is called
-automatically on the selection when it's changed.  It does not interrupt or
-return the prompter.
-For convenience, it may be initialized with a single function, in which case it
-will be automatically turned into a list.")
+   (selection-actions '()
+                      :type (or null
+                                (or function function-symbol)
+                                (cons (or function function-symbol) *))
+                      :documentation
+                      "The first function of this list is called automatically
+on the selection when it's changed.  It does not interrupt or return the
+prompter.  For convenience, it may be initialized with a single function, in
+which case it will be automatically turned into a list.")
 
-   (follow-p nil
-             :type boolean
-             :documentation
-             "Whether the first `follow-mode-functions' is automatically
-executed.  Also see `follow-delay'.")
+   (selection-actions-enabled-p nil
+                                :type boolean
+                                :documentation
+                                "Whether the first of `selection-actions' is
+automatically executed.  Also see `selection-actions-delay'.")
 
-   (follow-delay 0.0
-                 :documentation
-                 "Execute the first `follow-mode-functions' after this delay
-when `follow-p' is non-nil."))
+   (selection-actions-delay 0.0
+                            :documentation
+                            "Execute the first of `selection-actions' after this
+delay when `selection-actions-enabled-p' is non-nil."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:documentation "A prompter source instance is meant to be used by a
 `prompter' object.  See its `sources' slot.  A source is a consistent collection
-of suggestions, filters, actions.
+of suggestions, filters, return-actions.
 
 When a `prompter' `input' is set, the `update' function is called over all
 sources.  This function pipelines `initial-suggestions' through
@@ -421,8 +419,8 @@ suggestions; they only set the `suggestion's once they are done.  Conversely,
 `filter' is passed one `suggestion' at a time and it updates `suggestion's on each
 call."))
 
-(defmethod default-action ((source source))
-  (first (slot-value source 'actions)))
+(defmethod default-return-action ((source source))
+  (first (slot-value source 'return-actions)))
 
 (define-class yes-no-source (source)
   ((name "Confirm")
@@ -538,8 +536,8 @@ This is a \"safe\" wrapper around `bt:make-thread'."
         (calispel:! wait-channel t)))
     ;; Wait until above thread has acquired the `initial-suggestions-lock'.
     (calispel:? wait-channel))
-  (setf (follow-mode-functions source)
-        (uiop:ensure-list (follow-mode-functions source)))
+  (setf (selection-actions source)
+        (uiop:ensure-list (selection-actions source)))
   source)
 
 (export-always 'attributes-keys-non-default)

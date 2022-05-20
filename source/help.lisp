@@ -82,32 +82,38 @@ for matches."
   (let* ((preprocessor (if (uiop:emptyp input)
                            'prompter:delete-inexact-matches
                            'prompter:filter-exact-match))
-         (sources (list (make-instance 'variable-source
-                                       :actions (list (lambda-command describe-variable* (variables)
-                                                        (describe-variable :variable (first variables))))
-                                       :filter-preprocessor preprocessor
-                                       :universal universal)
-                        (make-instance 'function-source
-                                       :actions (list (lambda-command describe-function* (functions)
-                                                        (describe-function :function (first functions))))
-                                       :filter-preprocessor preprocessor
-                                       :universal universal)
-                        (make-instance 'command-source
-                                       :actions (list (lambda-command describe-command* (commands)
-                                                        (describe-command :command (name (first commands)))))
-                                       :filter-preprocessor preprocessor
-                                       :universal universal)
-                        (make-instance 'class-source
-                                       :actions (list (lambda-command describe-class* (classes)
-                                                        (describe-class :class (first classes))))
-                                       :filter-preprocessor preprocessor
-                                       :universal universal)
-                        (make-instance 'slot-source
-                                       :actions (list (lambda-command describe-slot** (slots)
-                                                        (describe-slot :class (class-sym (first slots))
-                                                                       :name (name (first slots)))))
-                                       :filter-preprocessor preprocessor
-                                       :universal universal))))
+         (sources
+           (list (make-instance
+                  'variable-source
+                  :return-actions (list (lambda-command describe-variable* (variables)
+                                          (describe-variable :variable (first variables))))
+                  :filter-preprocessor preprocessor
+                  :universal universal)
+                 (make-instance
+                  'function-source
+                  :return-actions (list (lambda-command describe-function* (functions)
+                                          (describe-function :function (first functions))))
+                  :filter-preprocessor preprocessor
+                  :universal universal)
+                 (make-instance
+                  'command-source
+                  :return-actions (list (lambda-command describe-command* (commands)
+                                          (describe-command :command (name (first commands)))))
+                  :filter-preprocessor preprocessor
+                  :universal universal)
+                 (make-instance
+                  'class-source
+                  :return-actions (list (lambda-command describe-class* (classes)
+                                          (describe-class :class (first classes))))
+                  :filter-preprocessor preprocessor
+                  :universal universal)
+                 (make-instance
+                  'slot-source
+                  :return-actions (list (lambda-command describe-slot** (slots)
+                                          (describe-slot :class (class-sym (first slots))
+                                                         :name (name (first slots)))))
+                  :filter-preprocessor preprocessor
+                  :universal universal))))
     (let ((suggestion+action-pairs
             (and input
                  (loop with result = '()
@@ -116,7 +122,7 @@ for matches."
                                 while (< (length result) 2)
                                 when (string-equal input (prompter:attributes-default suggestion))
                                   do (push (list (prompter:value suggestion)
-                                                 (prompter:default-action source))
+                                                 (prompter:default-return-action source))
                                            result))
                        return result))))
       (match suggestion+action-pairs

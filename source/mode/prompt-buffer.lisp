@@ -16,8 +16,8 @@ The prompt buffer can have multiple `prompter:source's of suggestions.  Each
 source has its own properties, such as the ability to mark multiple suggestions.
 A same source can be used by different prompt buffers.
 
-Each source offers a set of 'actions' for its selection(s).
-Actions can be listed and run with `return-selection-over-action' (bound to
+Each source offers a set of 'return-actions' for its selection(s).
+Return-actions can be listed and run with `return-selection-over-action' (bound to
 \"M-return\" by default)."
   ((keymap-scheme
     (define-scheme "prompt-buffer"
@@ -39,10 +39,10 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "tab" 'insert-selection
        "return" 'return-selection
        "M-return" 'return-selection-over-action
-       "C-return" 'run-follow-mode-function
+       "C-return" 'run-selection-action
        "f1 b" 'run-prompt-buffer-command
        "f1 m" 'describe-prompt-buffer
-       "C-c C-f" 'toggle-follow ; TODO: This is the Emacs Helm binding.  Better?
+       "C-c C-f" 'toggle-selection-actions-enabled ; TODO: This is the Emacs Helm binding.  Better?
        "C-]" 'toggle-attributes-display ; TODO: This is the Emacs Helm binding.  Better?
        "C-space" 'toggle-mark
        "shift-space" 'toggle-mark-backwards
@@ -70,7 +70,7 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        "C-M-p" 'scroll-other-buffer-up
        "C-M-v" 'scroll-page-down-other-buffer
        "shift-C-M-v" 'scroll-page-up-other-buffer
-       "C-j" 'run-follow-mode-function
+       "C-j" 'run-selection-action
        "C-g" 'cancel-input
        "C-h b" 'run-prompt-buffer-command
        "C-e" 'move-end-of-input
@@ -102,7 +102,7 @@ Actions can be listed and run with `return-selection-over-action' (bound to
        ;; Same as with C-j.
        "C-J" 'select-next-source
        "C-K" 'select-previous-source
-       "z f" 'toggle-follow
+       "z f" 'toggle-selection-actions-enabled
        "z a" 'toggle-attributes-display
        "y" 'copy-selection
        "p" 'paste
@@ -241,7 +241,7 @@ If STEPS is negative, go to next pages instead."
   ((prompter:name "List of prompter attributes")
    (prompter:multi-selection-p t)
    (prompter:suggestion-maker 'make-attribute-suggestion)
-   (prompter:actions '(return-marks-only))))
+   (prompter:return-actions '(return-marks-only))))
 
 (defun return-marks-only (suggestion-values)
   "Return marked suggestions only.
@@ -295,11 +295,11 @@ current unmarked selection."
                                                  :parent-prompt-buffer prompt-buffer)))))
     (funcall* command)))
 
-(defun prompt-buffer-actions (&optional (window (current-window)))
+(defun prompt-buffer-return-actions (&optional (window (current-window)))
   (sera:and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
-    (prompter:actions first-prompt-buffer)))
+    (prompter:return-actions first-prompt-buffer)))
 
-;; TODO: Should actions be commands?  For now, they can be either commands or symbols.
+;; TODO: Should return-actions be commands?  For now, they can be either commands or symbols.
 (defun make-action-suggestion (action &optional source input)
   "Return a `suggestion' wrapping around ACTION."
   (declare (ignore source input))
@@ -317,32 +317,32 @@ current unmarked selection."
                                        "")))))
 
 (define-class action-source (prompter:source)
-  ((prompter:name "List of actions")
-   (prompter:constructor (prompt-buffer-actions))
+  ((prompter:name "List of return-actions")
+   (prompter:constructor (prompt-buffer-return-actions))
    (prompter:suggestion-maker 'make-action-suggestion)))
 
 (define-command-prompt return-selection-over-action (prompt-buffer)
   "Prompt for an action to run over PROMPT-BUFFER selection."
   (if (equal (mapcar #'type-of (prompter:sources (current-prompt-buffer)))
              '(action-source))
-      (echo "Already displaying actions of previous prompt buffer.")
+      (echo "Already displaying return-actions of previous prompt buffer.")
       (let ((action (prompt1
                       :prompt "Action to run on selection"
                       :sources (list (make-instance 'action-source)))))
         (when action
           (prompter:return-selection prompt-buffer action)))))
 
-(define-command-prompt run-follow-mode-function (prompt-buffer)
+(define-command-prompt run-selection-action (prompt-buffer)
   "Run follow-mode function over selected suggestion without closing PROMPT-BUFFER."
-  (prompter:call-follow-mode-function prompt-buffer))
+  (prompter:call-selection-action prompt-buffer))
 
 (define-command-prompt cancel-input (prompt-buffer) ; TODO: Rename.
   "Close the prompt-buffer without further action."
   (prompter:destroy prompt-buffer))
 
-(define-command-prompt toggle-follow (prompt-buffer)
+(define-command-prompt toggle-selection-actions-enabled (prompt-buffer)
   "Close the prompt-buffer without further action."
-  (prompter:toggle-follow prompt-buffer))
+  (prompter:toggle-selection-actions-enabled prompt-buffer))
 
 (define-command-prompt toggle-mark (prompt-buffer &key (direction :forward))
   "Mark selection.

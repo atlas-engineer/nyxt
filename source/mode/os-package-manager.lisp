@@ -416,4 +416,4 @@ OBJECTS can be a list of packages, a generation, etc."
 
 ;; TODO: Parse Texinfo for Guix descriptions.
 ;; TODO: Add commands:
-;; - show-deps, show-reverse-deps (when prompt-buffer has actions)
+;; - show-deps, show-reverse-deps (when prompt-buffer has return-actions)

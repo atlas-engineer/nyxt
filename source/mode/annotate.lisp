@@ -168,7 +168,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
           (prompt
            :prompt "Show annotation(s)"
            :sources (make-instance 'annotation-source
-                                   :actions nil))))
+                                   :return-actions nil))))
     (render-annotations :annotations selected-annotations)))
 
 (define-internal-page-command-global show-annotations ()

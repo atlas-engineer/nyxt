@@ -183,7 +183,7 @@ define which elements are picked up by element hinting.")
 
 (define-class hint-source (prompter:source)
   ((prompter:name "Hints")
-   (prompter:follow-p t)
+   (prompter:selection-actions-enabled-p t)
    (prompter:filter-postprocessor
     (lambda (suggestions source input)
       (declare (ignore source))
@@ -194,11 +194,11 @@ define which elements are picked up by element hinting.")
            suggestions
            :key #'prompter:value)
         (append matching-hints other-hints))))
-   (prompter:follow-mode-functions
+   (prompter:selection-actions
     (lambda (suggestion)
       (highlight-selected-hint :element suggestion
                                :scroll nil)))
-   (prompter:actions (list 'identity
+   (prompter:return-actions (list 'identity
                            (lambda-command click* (elements)
                              (dolist (element (rest elements))
                                (nyxt/dom:click-element :nyxt-identifier (get-nyxt-id element)))
