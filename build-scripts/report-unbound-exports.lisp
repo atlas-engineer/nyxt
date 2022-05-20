@@ -26,6 +26,10 @@ A sub-package has a name that starts with that of PACKAGE followed by a '/' sepa
 
 (defun unbound-exports (package)
   "Report unbound exported symbols for PACKAGE and all its subpackages."
+  ;; TODO: Only SBCL is supported for now.
+  #-sbcl
+  nil
+  #+sbcl
   (let* ((package (find-package package))
          (report (delete nil
                          (mapcar (lambda (package)
