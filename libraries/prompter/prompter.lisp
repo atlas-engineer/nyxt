@@ -98,7 +98,7 @@ If nil, no history is used.")
                      :type calispel:channel
                      :documentation
                      "Channel to which the selection is sent on exit.
-Caller should also listen to `interrupt-channel' to know if the prompter was canceled.")
+Caller should also listen to `interrupt-channel' to know if the prompter was cancelled.")
 
      (interrupt-channel (make-channel 1)
                         :type calispel:channel

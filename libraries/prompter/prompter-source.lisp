@@ -282,7 +282,7 @@ Called on
            :type (or null function function-symbol)
            :documentation
            "Takes a `suggestion', the `source' and the `input' and return a new
-'suggestion', or nil if the `suggestion' is discarded.")
+`suggestion', or nil if the `suggestion' is discarded.")
 
    (filter-preprocessor #'delete-inexact-matches
                         :type (or null function function-symbol)
