@@ -43,7 +43,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "f1 b" 'describe-bindings
        "f11" 'toggle-fullscreen
        "C-O" 'load-file
-       "C-j" 'list-downloads
+       "C-j" 'nyxt/download-mode:list-downloads
        "C-space" 'execute-command
        "C-M-space" 'execute-extended-command
        "M-space" 'resume-prompt
@@ -82,7 +82,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-h u s" 'universal-describe-slot
        "C-h k" 'describe-key
        "C-h b" 'describe-bindings
-       "C-d" 'list-downloads
+       "C-d" 'nyxt/download-mode:list-downloads
        "M-x" 'execute-command
        "C-M-x" 'execute-extended-command
        "M-1" (read-from-string "nyxt/repeat-mode:repeat-key")
