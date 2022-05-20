@@ -72,6 +72,7 @@ with `make-instance'.")
                         "First function called with no parameters when calling the
 `destroy' function over this prompter.
 It's called before the sources are cleaned up.")
+
      (after-destructor nil
                        :type (or null function)
                        :documentation
@@ -98,6 +99,7 @@ If nil, no history is used.")
                      :documentation
                      "Channel to which the selection is sent on exit.
 Caller should also listen to `interrupt-channel' to know if the prompter was canceled.")
+
      (interrupt-channel (make-channel 1)
                         :type calispel:channel
                         :documentation
