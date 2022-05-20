@@ -32,24 +32,24 @@ existing object instances.")
    (:p "Settings created by Nyxt are stored in "
        (:code (files:expand *auto-config-file*)) ".")
    (:p "Any settings can be overridden manually by "
-       (:code (files:expand *init-file*)) ".")
+       (:code (files:expand *config-file*)) ".")
    (:p "The following section assumes knowledge of basic Common Lisp or a
 similar programming language.")
    (:p "The user needs to manually create the Nyxt configuration file "
-       (:code (files:expand *init-file*))
+       (:code (files:expand *config-file*))
        ", and the parent folders if necessary. You can also press the button
 below to create said file, if it's not created yet.")
-   (let ((init-file-path (files:expand *init-file*)))
-     (:p (if (uiop:file-exists-p init-file-path)
+   (let ((config-file-path (files:expand *config-file*)))
+     (:p (if (uiop:file-exists-p config-file-path)
              (:a :class "button"
-                 :href (ps:ps (nyxt/ps:lisp-eval `(echo "Init file exists")))
-                 "Init file exists")
+                 :href (ps:ps (nyxt/ps:lisp-eval `(echo "Configuration file exists")))
+                 "Configuration file exists")
            (:a :class "button"
                :href (ps:ps (nyxt/ps:lisp-eval
-                             `(progn (ensure-directories-exist ,init-file-path)
-                                     (ensure-file-exists ,init-file-path)
-                                     (echo "Init file created at ~a."
-                                           ,init-file-path))))
+                             `(progn (ensure-directories-exist ,config-file-path)
+                                     (ensure-file-exists ,config-file-path)
+                                     (echo "Configuration file created at ~a."
+                                           ,config-file-path))))
                "Create init file"))))
    (:p "Example:")
    (:pre (:code "
@@ -375,7 +375,7 @@ core to finalize the instance.")
 executed in the order they appear.")
    (:p "You can also evaluate a Lisp file from the Nyxt interface with
 the " (command-markup 'load-file) " command.  For
-convenience, " (command-markup 'load-init-file) " (re)loads your initialization file.")
+convenience, " (command-markup 'load-config-file) " (re)loads your initialization file.")
    (:p "You can even make scripts.  Here is an example foo.lisp:")
    (:pre (:code "#!nyxt --script
 \(format t \"~a~&\" +version+)"))

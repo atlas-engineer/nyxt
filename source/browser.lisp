@@ -258,7 +258,7 @@ prevents otherwise.")
     (let* ((message (princ-to-string condition))
            (full-message (format nil "Startup error: ~a.~%~&Restarted Nyxt without init file ~s."
                                  message
-                                 (files:expand *init-file*)))
+                                 (files:expand *config-file*)))
            (new-command-line (append (uiop:raw-command-line-arguments)
                                      `("--no-init"
                                        "--eval"
@@ -288,16 +288,16 @@ prevents otherwise.")
    browser
    (lambda ()
      (run-thread "finalization"
-       ;; Restart on init error, in case `*init-file*' broke the state.
+       ;; Restart on init error, in case `*config-file*' broke the state.
        ;; We only `handler-case' when there is an init file, this way we avoid
        ;; looping indefinitely.
        (if (or (getf *options* :no-init)
-               (not (uiop:file-exists-p (files:expand *init-file*))))
+               (not (uiop:file-exists-p (files:expand *config-file*))))
            (startup browser urls)
            (catch 'startup-error
              (handler-bind ((error (lambda (c)
                                      (log:error "Startup failed (probably due to a mistake in ~s):~&~a"
-                                                (files:expand *init-file*) c)
+                                                (files:expand *config-file*) c)
                                      (throw 'startup-error
                                        (if *run-from-repl-p*
                                            (progn
