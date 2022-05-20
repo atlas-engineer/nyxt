@@ -201,7 +201,7 @@ See `supported-media-types' of `file-mode'."
         (find extension extensions :test #'string-equal))))
 
 (defmethod initialize-instance :after ((source open-file-source) &key)
-  (setf (slot-value source 'prompter:actions)
+  (setf (slot-value source 'prompter:return-actions)
         (append
          (list (lambda-command open-file* (files)
                  "Open files with `open-file-function' (a sensible default)."
@@ -233,7 +233,7 @@ See `supported-media-types' of `file-mode'."
                                    :prompt "The program to open the selected files with"
                                    :sources (list (make-instance 'program-source)))))
                    (uiop:launch-program (cons (uiop:native-namestring program) (mapcar #'uiop:native-namestring files))))))
-         (slot-value source 'prompter:actions))))
+         (slot-value source 'prompter:return-actions))))
 
 (export-always 'default-open-file-function)
 (defun default-open-file-function (filename &key supported-p new-buffer-p)

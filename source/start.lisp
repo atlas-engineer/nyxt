@@ -289,7 +289,7 @@ Return the short error message and the full error message as second value."
    :sources
    (make-instance 'nyxt/file-manager-mode:file-source
                   :extensions '("lisp")
-                  :actions (list (lambda-command load-file* (files)
+                  :return-actions (list (lambda-command load-file* (files)
                                    (dolist (file files)
                                      (load-lisp file)))))))
 

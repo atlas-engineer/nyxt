@@ -127,7 +127,7 @@ then become available for deletion with `delete-history-entry'."
                      (prompt
                       :prompt "Reset histories of buffer(s)"
                       :sources (list (make-instance 'buffer-source
-                                                    :actions '()))))))
+                                                    :return-actions '()))))))
     (files:with-file-content (history (history-file (current-buffer)))
       (dolist (buffer buffers)
         (htree:reset-owner history (id buffer))))))

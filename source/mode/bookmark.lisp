@@ -192,8 +192,8 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
    (prompter:active-attributes-keys '("URL" "Title" "Tags")))
   (:export-class-name-p t))
 
-(defmethod url-sources ((mode bookmark-mode) actions)
-  (make-instance 'bookmark-source :actions actions))
+(defmethod url-sources ((mode bookmark-mode) return-actions)
+  (make-instance 'bookmark-source :return-actions return-actions))
 
 (defun tag-suggestions ()
   (let ((bookmarks (files:content (bookmarks-file (current-buffer)))))
@@ -285,7 +285,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
    :prompt "Bookmark URL from buffer(s)"
    :sources (make-instance 'buffer-source
                            :multi-selection-p t
-                           :actions (list (lambda-mapped-command bookmark-current-url)))))
+                           :return-actions (list (lambda-mapped-command bookmark-current-url)))))
 
 (define-command bookmark-url
     (&key (url (ignore-errors
@@ -332,7 +332,7 @@ URLS is either a list or a single element."
         (delete-bookmark entries))))
 
 (define-command set-url-from-bookmark
-    (&key (actions (list (lambda-command buffer-load* (suggestion-values)
+    (&key (return-actions (list (lambda-command buffer-load* (suggestion-values)
                            "Load first selected bookmark in current buffer and the rest in new buffer(s)."
                            (mapc (lambda (url) (make-buffer :url (url url))) (rest suggestion-values))
                            (buffer-load (url (first suggestion-values))))
@@ -350,7 +350,7 @@ rest in background buffers."
   (prompt
    :prompt "Open bookmark(s)"
    :sources (make-instance 'bookmark-source
-                           :actions actions)))
+                           :return-actions return-actions)))
 
 (defmethod serialize-object ((entry bookmark-entry) stream)
   (unless (url-empty-p (url entry))

@@ -185,7 +185,7 @@ It does not assume being online."))
    (prompter:constructor
     (lambda (source)
       (containers:container->list (ring source))))
-   (prompter:actions
+   (prompter:return-actions
     (list (lambda-command paste* (ring-items)
             (%paste :input-text (first ring-items))))))
   (:export-class-name-p t)
@@ -463,11 +463,11 @@ The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
 (define-class heading-source (prompter:source)
   ((prompter:name "Headings")
    (buffer :accessor buffer :initarg :buffer)
-   (prompter:follow-p t)
-   (prompter:follow-mode-functions #'scroll-page-to-heading)
+   (prompter:selection-actions-enabled-p t)
+   (prompter:selection-actions #'scroll-page-to-heading)
    (prompter:constructor (lambda (source)
                            (get-headings :buffer (buffer source))))
-   (prompter:actions (list (lambda-unmapped-command scroll-page-to-heading)))))
+   (prompter:return-actions (list (lambda-unmapped-command scroll-page-to-heading)))))
 
 (define-command jump-to-heading (&key (buffer (current-buffer)))
   "Jump to a particular heading, of type h1, h2, h3, h4, h5, or h6."
@@ -483,7 +483,7 @@ of buffers."
                   :prompt "Select headings from buffers:"
                   :sources (make-instance 'buffer-source
                                           :multi-selection-p t
-                                          :actions nil))))
+                                          :return-actions nil))))
     (prompt
      :prompt "Jump to heading:"
      :sources (loop for buffer in buffers
@@ -701,11 +701,13 @@ of buffers."
   "Select a frame and open the links in new buffers."
   (prompt
    :prompt "Open selected links in new buffers:"
-   :sources (list (make-instance 'frame-source
-                                 :buffer buffer
-                                 :multi-selection-p t
-                                 :actions (list (lambda-command open-new-buffers (urls)
-                                                              (mapcar (lambda (i) (make-buffer :url (quri:uri i))) urls)))))
+   :sources (list
+             (make-instance
+              'frame-source
+              :buffer buffer
+              :multi-selection-p t
+              :return-actions (list (lambda-command open-new-buffers (urls)
+                                      (mapcar (lambda (i) (make-buffer :url (quri:uri i))) urls)))))
    :after-destructor
    (lambda ()
      (with-current-buffer buffer

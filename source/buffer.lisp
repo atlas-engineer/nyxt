@@ -1159,13 +1159,13 @@ proceeding."
   ((prompter:name "Buffer list")
    (prompter:constructor (buffer-initial-suggestions :current-is-last-p nil))
    (prompter:multi-selection-p t)
-   (prompter:actions (list (lambda-unmapped-command set-current-buffer)
-                           (lambda-mapped-command buffer-delete)
-                           'reload-buffers))
-   (prompter:follow-p t)
-   (prompter:follow-delay 0.1)
-   (prompter:follow-mode-functions #'(lambda (buffer)
-                                       (set-current-buffer buffer :focus nil)))
+   (prompter:return-actions (list (lambda-unmapped-command set-current-buffer)
+                                  (lambda-mapped-command buffer-delete)
+                                  'reload-buffers))
+   (prompter:selection-actions-enabled-p t)
+   (prompter:selection-actions-delay 0.1)
+   (prompter:selection-actions #'(lambda (buffer)
+                                   (set-current-buffer buffer :focus nil)))
    (prompter:destructor (let ((buffer (current-buffer)))
                           (lambda (prompter source)
                             (declare (ignore source))
@@ -1213,7 +1213,7 @@ second latest buffer first."
        :prompt "Delete buffer(s)"
        :sources (make-instance 'buffer-source
                                :multi-selection-p t
-                               :actions (list (lambda-mapped-command buffer-delete))))))
+                               :return-actions (list (lambda-mapped-command buffer-delete))))))
 
 (define-internal-page-command-global reduce-to-buffer (&key (delete t))
     (reduced-buffer "*Reduced Buffers*" 'base-mode)
@@ -1225,7 +1225,7 @@ set of useful URLs or preparing a list to send to a someone else."
                   :sources (make-instance 'buffer-source
                                           :constructor (remove-if #'internal-url-p (buffer-list)
                                                                   :key #'url)
-                                          :actions '(identity)
+                                          :return-actions '(identity)
                                           :multi-selection-p t))))
     (unwind-protect
          (spinneret:with-html-string
@@ -1303,7 +1303,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
                            (history-initial-suggestions)))
    (prompter:multi-selection-p t)
    (prompter:filter-preprocessor nil)   ; Don't remove non-exact results.
-   (prompter:actions '(buffer-load)))
+   (prompter:return-actions '(buffer-load)))
   (:export-class-name-p t)
   (:metaclass user-class))
 
@@ -1457,7 +1457,7 @@ Finally, if nothing else, set the `engine' to the `default-search-engine'."))
       (input->queries input
                       :check-dns-p t
                       :engine-completion-p t)))
-   (prompter:actions '(buffer-load)))
+   (prompter:return-actions '(buffer-load)))
   (:export-class-name-p t)
   (:documentation "This prompter source tries to \"do the right thing\" to
 generate a new URL query from user input.
@@ -1480,39 +1480,40 @@ any.")
     (prompter::history-pushnew history (render-url url))))
 
 (export-always 'url-sources)
-(defmethod url-sources ((buffer buffer) actions)
+(defmethod url-sources ((buffer buffer) return-actions)
   (append
-   (list (make-instance 'new-url-or-search-source :actions actions)
-         (make-instance 'global-history-source :actions actions)
-         (make-instance 'search-engine-url-source :actions actions))
-   (alex:mappend (alex:rcurry #'url-sources actions) (modes buffer))))
+   (list (make-instance 'new-url-or-search-source :return-actions return-actions)
+         (make-instance 'global-history-source :return-actions return-actions)
+         (make-instance 'search-engine-url-source :return-actions return-actions))
+   (alex:mappend (alex:rcurry #'url-sources return-actions) (modes buffer))))
 
 (define-command set-url (&key (prefill-current-url-p t))
   "Set the URL for the current buffer, completing with history."
   (let ((history (set-url-history *browser*))
-        (actions (list (lambda-command buffer-load* (suggestion-values)
-                         "Load first selected URL in current buffer and the rest in new buffer(s)."
-                         (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
-                         (buffer-load (url (first suggestion-values))))
-                       (lambda-command new-buffer-load* (suggestion-values)
-                         "Load URL(s) in new buffer(s)."
-                         (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
-                         (make-buffer-focus :url (url (first suggestion-values))))
-                       (lambda-command copy-url* (suggestions)
-                         "Copy the URL of the chosen suggestion."
-                         (trivial-clipboard:text (render-url (url (first suggestions))))))))
+        (return-actions
+          (list (lambda-command buffer-load* (suggestion-values)
+                  "Load first selected URL in current buffer and the rest in new buffer(s)."
+                  (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
+                  (buffer-load (url (first suggestion-values))))
+                (lambda-command new-buffer-load* (suggestion-values)
+                  "Load URL(s) in new buffer(s)."
+                  (mapc (lambda (suggestion) (make-buffer :url (url suggestion))) (rest suggestion-values))
+                  (make-buffer-focus :url (url (first suggestion-values))))
+                (lambda-command copy-url* (suggestions)
+                  "Copy the URL of the chosen suggestion."
+                  (trivial-clipboard:text (render-url (url (first suggestions))))))))
     (pushnew-url-history history (url (current-buffer)))
     (prompt
      :prompt "Open URL"
      :input (if prefill-current-url-p
                 (render-url (url (current-buffer))) "")
      :history history
-     :sources (url-sources (current-buffer) actions))))
+     :sources (url-sources (current-buffer) return-actions))))
 
 (define-command set-url-new-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused buffer."
   (let ((history (set-url-history *browser*))
-        (actions (list (lambda-command new-buffer-load (suggestion-values)
+        (return-actions (list (lambda-command new-buffer-load (suggestion-values)
                                      "Load URL(s) in new buffer(s)"
                                      (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
                                            (rest suggestion-values))
@@ -1523,11 +1524,11 @@ any.")
      :input (if prefill-current-url-p
                 (render-url (url (current-buffer))) "")
      :history history
-     :sources (url-sources (current-buffer) actions))))
+     :sources (url-sources (current-buffer) return-actions))))
 
 (define-command set-url-new-nosave-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused nosave buffer."
-  (let ((actions
+  (let ((return-actions
           (list (lambda-command new-nosave-buffer-load (suggestion-values)
                               "Load URL(s) in new nosave buffer(s)"
                               (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion)))
@@ -1538,7 +1539,7 @@ any.")
      :prompt "Open URL in new nosave buffer"
      :input (if prefill-current-url-p
                 (render-url (url (current-buffer))) "")
-     :sources (url-sources (current-buffer) actions))))
+     :sources (url-sources (current-buffer) return-actions))))
 
 (define-command reload-current-buffer ()
   "Reload current buffer."
@@ -1552,7 +1553,7 @@ any.")
        :prompt "Reload buffer(s)"
        :sources (make-instance 'buffer-source
                                :multi-selection-p t
-                               :actions (list 'reload-buffers)))))
+                               :return-actions (list 'reload-buffers)))))
 
 (defun buffer-parent (&optional (buffer (current-buffer)))
   (let ((history (buffer-history buffer)))
