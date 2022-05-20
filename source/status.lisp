@@ -25,7 +25,7 @@ This leverages `mode-status' which can be specialized for individual modes."
                             (:raw formatted-mode)
                             (:button :class "button"
                                      :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                      `(describe-class :class ',(name mode))))
+                                                      `(describe-class :class (quote ,(name mode)))))
                                      :title (format nil "Describe ~a" mode)
                                      formatted-mode)))))
       ""))
