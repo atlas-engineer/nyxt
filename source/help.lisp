@@ -238,6 +238,30 @@ for matches."
   "Inspect a variable from any Nyxt-accessible package and show it in a help buffer."
   (describe-variable :universal t))
 
+(defun format-arglist (arglist)
+  (multiple-value-bind (required optional rest keywords aok? aux key?)
+      (alex:parse-ordinary-lambda-list arglist
+                                       :normalize-optional nil
+                                       :normalize-keyword nil)
+    (declare (ignore aux aok? key?))
+    (with-output-to-string (s)
+      (when required
+        (format s "~{~a~^ ~}~&" required))
+      (when optional
+        (format s "&optional ~{~s~^ ~}~&"
+                optional))
+      (when rest
+        (format s "&rest ~a~&" rest))
+      (when keywords
+        (format s "&key ~{~s~^ ~}~&" keywords)))))
+
+(defun format-function-type (function-type)
+  (match function-type
+    ((list 'function argument-types return-types)
+     (with-output-to-string (s)
+       (format s "Argument types: ~s~&" argument-types)
+       (format s "Return types: ~s~&" return-types)))))
+
 (define-internal-page-command-global describe-function
     (&key
      universal
@@ -255,11 +279,12 @@ For generic functions, describe all the methods."
                  (spinneret:with-html-string
                    (:raw (resolve-backtick-quote-links (documentation input 'function) input))
                    (:h2 "Argument list")
-                   (:p (write-to-string (mopu:function-arglist input)))
+                   (:p (:pre (let ((*package* (symbol-package input)))
+                               (format-arglist (mopu:function-arglist input)))))
                    #+sbcl
                    (unless (macro-function input)
                      (:h2 "Type")
-                     (:p (format nil "~s" (sb-introspect:function-type input))))
+                     (:p (:pre (format-function-type (sb-introspect:function-type input)))))
                    (alex:when-let* ((definition (swank:find-definition-for-thing (symbol-function input)))
                                     (not-error-p (null (getf definition :error)))
                                     (file (rest (getf definition :location))))
@@ -287,7 +312,9 @@ For generic functions, describe all the methods."
                     (:raw (resolve-backtick-quote-links (documentation method 't)
                                                         (mopu:method-name method)))
                     (:h4 "Argument list")
-                    (:p (write-to-string (closer-mop:method-lambda-list method)))
+                    (:p (:pre
+                         (let ((*package* (symbol-package input)))
+                           (format-arglist (closer-mop:method-lambda-list method)))))
                     (alex:when-let* ((definition (swank:find-definition-for-thing method))
                                      (not-error-p (null (getf definition :error)))
                                      (file (rest (getf definition :location))))
