@@ -1811,13 +1811,12 @@ custom (the specified proxy) and none."
           (within-gtk-thread
             (let* ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
                    (cookie-manager (webkit:webkit-web-context-get-cookie-manager context)))
-              ;; TODO: Update upstream to export and fix `with-g-async-ready-callback'.
-              (webkit::with-g-async-ready-callback (callback
-                                                     (declare (ignorable webkit::user-data webkit::source-object))
-                                                     (calispel:! result-channel
-                                                                 (webkit:webkit-cookie-manager-get-accept-policy-finish
-                                                                  cookie-manager
-                                                                  webkit::result)))
+              (webkit:with-g-async-ready-callback (callback (lambda (source result user-data)
+                                                              (declare (ignore source user-data))
+                                                              (calispel:! result-channel
+                                                                          (webkit:webkit-cookie-manager-get-accept-policy-finish
+                                                                           cookie-manager
+                                                                           result))))
                 (webkit:webkit-cookie-manager-get-accept-policy
                  cookie-manager
                  (cffi:null-pointer)
