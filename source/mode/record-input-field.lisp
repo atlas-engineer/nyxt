@@ -134,7 +134,7 @@ See `save-input-data' and `set-input-data-from-saved'."
   "Set the input data from a list of saved data into the current buffer.
 See also `set-input-data-from-saved-domain'."
   (prompt
-   :prompt "Write input data from:"
+   :prompt "Write input data from"
    :sources (make-instance 'input-data-source
                            :return-actions return-actions)))
 
@@ -147,7 +147,7 @@ the current buffer.
 
 See alsy `set-input-data-from-saved'."
   (prompt
-   :prompt "Write input data from:"
+   :prompt "Write input data from"
    :sources (make-instance 'filtered-domain-input-data-source
                            :return-actions return-actions)))
 

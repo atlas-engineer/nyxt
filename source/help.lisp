@@ -128,7 +128,7 @@ for matches."
         ((list (list suggestion action))
          (funcall action (list suggestion)))
         (_ (prompt
-            :prompt "Describe:"
+            :prompt "Describe"
             :input input
             :sources sources))))))
 
@@ -179,7 +179,7 @@ for matches."
 (define-internal-page-command-global describe-package
     (&key (package
            (prompt1
-             :prompt "Describe package:"
+             :prompt "Describe package"
              :sources (make-instance 'package-source))))
     (buffer (str:concat "*Help-" (package-name package) "*")
             'base-mode)
@@ -214,7 +214,7 @@ for matches."
      universal
      (variable
       (prompt1
-        :prompt "Describe variable:"
+        :prompt "Describe variable"
         :sources (make-instance 'variable-source :universal universal))))
     (buffer (str:concat "*Help-" (symbol-name variable) "*")
             'base-mode)

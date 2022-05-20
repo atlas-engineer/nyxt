@@ -472,7 +472,7 @@ The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
 (define-command jump-to-heading (&key (buffer (current-buffer)))
   "Jump to a particular heading, of type h1, h2, h3, h4, h5, or h6."
   (prompt
-   :prompt "Jump to heading:"
+   :prompt "Jump to heading"
    :sources (list (make-instance 'heading-source
                                  :buffer buffer))))
 
@@ -480,12 +480,12 @@ The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
   "Jump to a particular heading, of type h1, h2, h3, h4, h5, or h6 across a set
 of buffers."
   (let ((buffers (prompt
-                  :prompt "Select headings from buffers:"
+                  :prompt "Select headings from buffers"
                   :sources (make-instance 'buffer-source
                                           :multi-selection-p t
                                           :return-actions nil))))
     (prompt
-     :prompt "Jump to heading:"
+     :prompt "Jump to heading"
      :sources (loop for buffer in buffers
                     collect (make-instance
                              'heading-source
@@ -700,7 +700,7 @@ of buffers."
 (define-command select-frame-new-buffer (&key (buffer (current-buffer)))
   "Select a frame and open the links in new buffers."
   (prompt
-   :prompt "Open selected links in new buffers:"
+   :prompt "Open selected links in new buffers"
    :sources (list
              (make-instance
               'frame-source

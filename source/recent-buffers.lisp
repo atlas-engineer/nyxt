@@ -33,7 +33,7 @@
 (define-command reopen-buffer ()
   "Reopen queried deleted buffer(s)."
   (prompt
-   :prompt "Reopen buffer(s):"
+   :prompt "Reopen buffer(s)"
    :sources (make-instance 'recent-buffer-source)))
 
 (define-command reopen-last-buffer ()

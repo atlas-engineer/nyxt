@@ -179,7 +179,7 @@ The rules are:
           (if-confirm ("Permanently ~:[disable~;enable~] ~a for this URL?"
                        enable-p (sera:class-name-of mode))
                       (let ((url (prompt1
-                                   :prompt "URL:"
+                                   :prompt "URL"
                                    :input (render-url (url (buffer mode)))
                                    :sources (make-instance 'prompter:raw-source))))
                         (add-modes-to-auto-mode-rules (url-infer-match url)
@@ -321,7 +321,7 @@ save a particular mode, configure it to be `rememberable-p' in your initfile.
 
 For the storage format see the comment in the head of your `auto-mode-rules-file'."
   (let ((url (prompt1
-              :prompt "URL:"
+              :prompt "URL"
               :input (render-url (url (current-buffer)))
               :sources (list
                         (make-instance 'prompter:raw-source
@@ -351,7 +351,7 @@ For the storage format see the comment in the head of your `auto-mode-rules-file
   ;; TODO: Should it prompt for modes to save?
   ;; One may want to adjust the modes before persisting them as :exact-p rule.
   (let ((url (prompt1
-              :prompt "URL:"
+              :prompt "URL"
               :input (render-url (url (current-buffer)))
               :sources (list
                         (make-instance 'prompter:raw-source

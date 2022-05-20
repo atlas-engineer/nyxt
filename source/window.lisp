@@ -138,7 +138,7 @@ The handlers take the window as argument."))
   "Prompt for a panel buffer to be deleted."
   (let ((panels (or panels
                     (prompt
-                     :prompt "Delete a panel buffer:"
+                     :prompt "Delete a panel buffer"
                      :sources (make-instance 'panel-buffer-source
                                              :window window)))))
     (mapc (lambda (i) (window-delete-panel-buffer window i)) panels)))
@@ -260,7 +260,7 @@ See `define-panel' for the description of the arguments."
 (define-command delete-window ()
   "Delete the queried window(s)."
   (prompt
-   :prompt "Delete window(s):"
+   :prompt "Delete window(s)"
    :sources (make-instance 'window-source)))
 
 (define-command delete-current-window (&optional (window (current-window)))

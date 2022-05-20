@@ -1192,7 +1192,7 @@ second latest buffer first."
   "Switch the active buffer in the current window from the current domain."
   (let ((domain (or domain (quri:uri-domain (url buffer)))))
     (prompt
-     :prompt "Switch to buffer in current domain:"
+     :prompt "Switch to buffer in current domain"
      :sources (make-instance 'buffer-source
                              :constructor (sera:filter (match-domain domain)
                                                        (sort-by-time (buffer-list)))))))
