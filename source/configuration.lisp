@@ -3,17 +3,17 @@
 
 (in-package :nyxt)
 
-(define-class init-directory-file (files:config-file nyxt-lisp-file)
+(define-class config-directory-file (files:config-file nyxt-lisp-file)
   ((files:base-path #p"")
-   (command-line-option :init
+   (command-line-option :config
                         :accessor nil
                         :type keyword))
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class init-file (init-directory-file files:virtual-file)
-  ((files:base-path #p"init")
-   (command-line-option :init
+(define-class config-file (config-directory-file files:virtual-file)
+  ((files:base-path #p"config")
+   (command-line-option :config
                         :accessor nil
                         :type keyword))
   (:export-class-name-p t)
@@ -35,7 +35,7 @@
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class auto-init-file (init-directory-file) ; TODO: Be consistent here for 3.0!
+(define-class auto-config-file (config-directory-file)
   ((files:base-path #p"auto-config")
    (command-line-option :auto-config
                         :accessor nil
@@ -43,8 +43,8 @@
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod files:resolve ((profile nyxt-profile) (init-file init-directory-file))
-  (let* ((option (slot-value init-file 'command-line-option))
+(defmethod files:resolve ((profile nyxt-profile) (config-file config-directory-file))
+  (let* ((option (slot-value config-file 'command-line-option))
          (no-option (alex:make-keyword
                      (uiop:strcat "NO-" (symbol-name option)))))
     (if (getf *options* no-option)
@@ -57,12 +57,12 @@
             path)))))
 
 (export-always '*auto-config-file*)
-(defvar *auto-config-file* (make-instance 'auto-init-file)
+(defvar *auto-config-file* (make-instance 'auto-config-file)
   "The generated configuration file.")
 
-(export-always '*init-file*)
-(defvar *init-file* (make-instance 'init-file)
-  "The initialization file.")
+(export-always '*config-file*)
+(defvar *config-file* (make-instance 'config-file)
+  "The configuration file entry point.")
 
 (define-class nyxt-source-directory (nyxt-file)
   ((files:base-path asdf-user::*dest-source-dir*)
@@ -146,7 +146,7 @@ Return NIL if not a class form."
                (forms class-form))))
 
 ;; TODO: Instantiate directly in read-init-*?
-(defmethod files:deserialize ((profile nyxt-profile) (file auto-init-file) raw-content &key)
+(defmethod files:deserialize ((profile nyxt-profile) (file auto-config-file) raw-content &key)
   (flet ((make-init-form (form)
            (multiple-value-bind (name forms)
                (read-init-form-class form)
@@ -158,7 +158,7 @@ Return NIL if not a class form."
     (mapcar #'make-init-form
             (uiop:slurp-stream-forms raw-content))))
 
-(defmethod files:serialize ((profile nyxt-profile) (file auto-init-file) stream &key)
+(defmethod files:serialize ((profile nyxt-profile) (file auto-config-file) stream &key)
   (dolist (form (files:content file))
     (write
      (if (class-form-p form)
@@ -167,7 +167,7 @@ Return NIL if not a class form."
      :stream stream)
     (fresh-line stream)))
 
-(defmethod files:write-file ((profile nyxt-profile) (file auto-init-file) &key &allow-other-keys)
+(defmethod files:write-file ((profile nyxt-profile) (file auto-config-file) &key &allow-other-keys)
   (let ((*print-case* :downcase)
         (*package* (find-package :nyxt-user)))
     (log:info "Writing auto configuration to ~s." (files:expand file))
