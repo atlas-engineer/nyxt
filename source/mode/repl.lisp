@@ -156,8 +156,10 @@ Scroll history with `evaluation-history-previous' and `evaluation-history-next'.
   "Complete the current symbol and insert the completion into the REPL prompt."
   (let* ((input (input repl))
          (cursor (cursor repl))
-         (previous-delimiter (position-if (lambda (c) (member c '(#\( #\) #\space))) input
-                                          :end (1- cursor) :from-end t))
+         (empty-input (= cursor 0))
+         (previous-delimiter (unless empty-input
+                               (position-if (lambda (c) (member c '(#\( #\) #\space))) input
+                                           :end (1- cursor) :from-end t)))
          (previous-delimiter (if previous-delimiter (1+ previous-delimiter) 0))
          (symbol-to-complete (subseq input previous-delimiter cursor))
          (completion (handler-case
@@ -212,4 +214,5 @@ Scroll history with `evaluation-history-previous' and `evaluation-history-next'.
              (:div :id "input"
                    (:span :id "prompt"
                           (format nil "~a>" (package-short-name *package*)))
-                   (:input :type "text" :id "input-buffer")))))))
+                   (:input :type "text" :id "input-buffer"
+                           :autofocus "autofocus")))))))
