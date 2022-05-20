@@ -481,6 +481,10 @@ Example use:
                                                  :constructor '(\"foo\" \"bar\"))))
 
 See the documentation of `prompt-buffer' to know more about the options."
+    (alex:when-let ((prompt-text (getf args :prompt)))
+      (when (str:ends-with-p ":" prompt-text)
+        (log:warn "Prompt text ~s should not end with a ':'." prompt-text)
+        (setf (getf args :prompt) (string-right-trim (uiop:strcat ":" serapeum:whitespace) prompt-text))))
     (let ((prompt-object-channel (make-channel 1)))
       (ffi-within-renderer-thread
        *browser*
