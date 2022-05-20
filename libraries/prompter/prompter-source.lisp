@@ -383,17 +383,6 @@ If update calculation is aborted, nil is sent instead.")
 prompter is resumed.
 See `resume-sources'.")
 
-   (follow-p nil
-             :type boolean
-             :documentation
-             "Whether the first `follow-mode-functions' is automatically
-executed.  Also see `follow-delay'.")
-
-   (follow-delay 0.0
-                 :documentation
-                 "Execute the first `follow-mode-functions' after this delay
-when `follow-p' is non-nil.")
-
    (follow-mode-functions '()
                           :type (or null
                                     (or function function-symbol)
@@ -403,7 +392,18 @@ when `follow-p' is non-nil.")
 automatically on the selection when it's changed.  It does not interrupt or
 return the prompter.
 For convenience, it may be initialized with a single function, in which case it
-will be automatically turned into a list."))
+will be automatically turned into a list.")
+
+   (follow-p nil
+             :type boolean
+             :documentation
+             "Whether the first `follow-mode-functions' is automatically
+executed.  Also see `follow-delay'.")
+
+   (follow-delay 0.0
+                 :documentation
+                 "Execute the first `follow-mode-functions' after this delay
+when `follow-p' is non-nil."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name))
