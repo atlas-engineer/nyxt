@@ -95,8 +95,9 @@ This can be used to resume former buffers.")
     :export nil
     :documentation "A ring that keeps track of deleted buffers.")
    (windows
-    (make-hash-table :test #'equal)
-    :export nil)
+    (make-hash-table)
+    :export nil
+    :documentation "Table of all windows, indexed by their `id'.")
    (last-active-window
     nil
     :type (or window null)
@@ -106,8 +107,8 @@ useful when no Nyxt window is focused and we still want `ffi-window-active' to
 return something.
 See `current-window' for the user-facing function.")
    (buffers
-    :initform (make-hash-table :test #'equal)
-    :documentation "To manipulate the list of buffers,
+    :initform (make-hash-table)
+    :documentation "Table of all live buffers, indexed by their `id'.
 see `buffer-list', `buffers-get', `buffers-set' and `buffers-delete'.")
    (startup-error-reporter-function
     nil
@@ -358,8 +359,8 @@ restored."
   (when (null browser)
     (error "There is no current *browser*. Is Nyxt started?")))
 
-(defmethod get-unique-identifier ((browser browser))
-  (symbol-name (gensym "")))
+(defun new-id ()
+  (gensym ""))
 
 (-> set-window-title (&optional window buffer) *)
 (export-always 'set-window-title)

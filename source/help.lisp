@@ -727,7 +727,7 @@ the channel, wrapped alongside the condition and its restarts."))
   (declare (ignore hook))
   (when *debug-on-error*
     (let* ((*debugger-hook* *old-debugger-hook*)
-           (id (parse-integer (get-unique-identifier *browser*)))
+           (id (parse-integer (symbol-name (new-id))))
            (restarts (compute-restarts condition))
            (channel (make-channel 1))
            (handler (make-instance 'condition-handler

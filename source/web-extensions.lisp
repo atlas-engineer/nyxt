@@ -329,7 +329,7 @@ If the popup already exists, close it."
           (nyxt::window-delete-panel-buffer (current-window) existing-popup)
           (let ((popup (make-instance 'panel-buffer
                                       :title (default-title (browser-action extension))
-                                      :id (nyxt::get-unique-identifier *browser*)
+                                      :id (nyxt::new-id)
                                       :default-modes (list extension-class))))
             (setf (popup-buffer extension) popup)
             (nyxt::window-add-panel-buffer

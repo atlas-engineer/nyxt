@@ -123,7 +123,7 @@
 
 (defmethod tabs-on-removed ((buffer buffer))
   (flet ((integer-id (object)
-           (or (ignore-errors (parse-integer (id object)))
+           (or (ignore-errors (parse-integer (symbol-name (id object))))
                0)))
     (dolist (extension (all-extensions))
       (fire-extension-event
