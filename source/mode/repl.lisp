@@ -156,8 +156,7 @@ Scroll history with `evaluation-history-previous' and `evaluation-history-next'.
   "Complete the current symbol and insert the completion into the REPL prompt."
   (let* ((input (input repl))
          (cursor (cursor repl))
-         (empty-input (= cursor 0))
-         (previous-delimiter (unless empty-input
+         (previous-delimiter (unless (= cursor 0)
                                (position-if (lambda (c) (member c '(#\( #\) #\space))) input
                                            :end (1- cursor) :from-end t)))
          (previous-delimiter (if previous-delimiter (1+ previous-delimiter) 0))
