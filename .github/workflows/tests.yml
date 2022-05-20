@@ -86,7 +86,7 @@ jobs:
     - name: Unbound exports
       shell: bash
       run: |
-        ros -e '(asdf:load-system :nyxt/submodules)' -e '(load "build-scripts/report-unbound-exports.lisp")' -e '(unbound-exports :nyxt)'
+        ros -e '(asdf:load-system :nyxt/submodules)' -e '(asdf:load-system :nyxt)' -e '(load "build-scripts/report-unbound-exports.lisp")' -e '(unbound-exports :nyxt)'
 
   guix-test:
     name: Guix test
