@@ -11,7 +11,10 @@
   (:metaclass mixin-class))
 
 (define-class window (renderer-window)
-  ((id "")
+  ((id
+    (new-id)
+    :type symbol
+    :documentation "Unique identifier for a window.")
    (titler
     'window-default-title
     :type (or function function-symbol)
@@ -107,7 +110,7 @@ The handlers take the window as argument."))
                                        &allow-other-keys)
   "Set ID."
   (when browser
-    (setf (id window) (get-unique-identifier browser))
+    (setf (id window) (new-id))
     (setf (slot-value browser 'last-active-window) window))
   window)
 

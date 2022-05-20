@@ -15,10 +15,9 @@
 
 (define-class buffer (renderer-buffer)
   ((id
-    ""
-    :documentation "Unique identifier for a buffer.
-Dead buffers or placeholder buffers (i.e. those not associated with a web view)
-have an empty ID.")
+    (new-id)
+    :type symbol
+    :documentation "Unique identifier for a buffer.")
    ;; TODO: Or maybe a dead-buffer should just be a buffer history?
    (profile
     (alex:if-let ((profile-class (find-profile-class (getf *options* :profile))))
@@ -108,11 +107,9 @@ representation of HTML documents.
 Rendered URLs or the Nyxt's manual qualify as examples.  Buffers are fully
 separated from one another, so that each has its own behaviour and settings."))
 
-(defmethod initialize-instance :after ((buffer buffer) &key (browser *browser*)
+(defmethod initialize-instance :after ((buffer buffer) &key
                                        &allow-other-keys)
-  "Set buffer ID and return buffer."
-  (when browser
-    (setf (id buffer) (get-unique-identifier browser)))
+  "Dummy method to allow forwarding other key arguments."
   buffer)
 
 (defmethod finalize-buffer ((buffer buffer) &key (browser *browser*) &allow-other-keys)
@@ -778,12 +775,12 @@ Return the created buffer."
     (setf (document-model buffer)
           (nyxt/dom::named-json-parse body-json))))
 
-(defun dead-buffer-p (buffer) ; TODO: Use this wherever needed.
-  (str:empty? (id buffer)))
+(defun dead-buffer-p (buffer)           ; TODO: Use this wherever needed.
+  (buffers-get (id buffer)))
 
-(-> resurrect-buffer (buffer &key (:browser browser)) (values &optional buffer))
-(defun resurrect-buffer (dead-buffer &key (browser *browser*))
-  (setf (id dead-buffer) (get-unique-identifier browser))
+(-> resurrect-buffer (buffer) (values &optional buffer))
+(defun resurrect-buffer (dead-buffer)
+  ;; (setf (id dead-buffer) (new-id))      ; TODO: Shall we reset the ID?
   (ffi-buffer-make dead-buffer)
   dead-buffer)
 
@@ -1005,8 +1002,6 @@ See `make-buffer' for a description of the arguments."
 (-> add-to-recent-buffers (buffer) *)
 (defun add-to-recent-buffers (buffer)
   "Create a recent-buffer from given buffer and add it to `recent-buffers'."
-  ;; Make sure it's a dead buffer:
-  (setf (id buffer) "")
   (containers:delete-item-if (recent-buffers *browser*) (buffer-match-predicate buffer))
   (containers:insert-item (recent-buffers *browser*) buffer))
 
@@ -1035,7 +1030,6 @@ associated to the buffer is already killed."
                                                  :url (quri:uri "about:blank")))))
         (window-set-buffer parent-window replacement-buffer)))
     (buffers-delete (id buffer))
-    ;; (setf (id buffer) "") ; TODO: Reset ID?
     (add-to-recent-buffers buffer)))
 
 (export-always 'buffer-list)
@@ -1572,7 +1566,7 @@ HISTORY may be NIL for buffers without history."
   (let* ((history (buffer-history buffer))
          (buffers (buffers-with-history history)))
     (sort (sera:filter
-           (sera:equals (id buffer))
+           (sera:eqs (id buffer))
            buffers
            :key (lambda (b) (alex:when-let ((owner (htree:owner history (id b))))
                               (htree:creator-id owner))))
@@ -1598,7 +1592,7 @@ HISTORY may be NIL for buffers without history."
                          (existing-creator-id owner)))))
              (common-parent-buffers
                (sort common-parent-buffers #'string< :key #'id)))
-        (sera:split-sequence-if (sera:equals (id buffer))
+        (sera:split-sequence-if (sera:eqs (id buffer))
                                 common-parent-buffers
                                 :key #'id)))))
 

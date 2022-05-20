@@ -38,7 +38,7 @@
      (when (equal value object)
        (return-from ensure-inspected-id id)))
    *inspected-values*)
-  (sera:lret ((id (get-unique-identifier *browser*)))
+  (sera:lret ((id (new-id)))
     (setf (inspected-value id) value)))
 
 
