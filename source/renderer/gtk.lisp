@@ -1656,8 +1656,8 @@ local anyways, and it's better to refresh it if a load was queried."
                         (or (nyxt/web-mode:include script)
                             '("http://*/*" "https://*/*"))))
            (block-list (list-of-string-to-foreign
-                        (or (nyxt/web-mode:exclude script)
-                            '("http://*/*" "https://*/*"))))
+                        (when (nyxt/web-mode:exclude script)
+                          (nyxt/web-mode:exclude script))))
            (user-script (if (nyxt/web-mode:world-name script)
                             (webkit:webkit-user-script-new-for-world
                              code frames inject-time
