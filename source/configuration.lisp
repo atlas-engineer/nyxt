@@ -394,6 +394,11 @@ See `on'."
                                    ,@body)
                              :name (quote ,handler-name))))))
 
+(defun guess-external-format (filename)
+  (or (swank-backend:guess-external-format filename)
+      (swank-backend:find-external-format "latin-1")
+      :default))
+
 (defun function-lambda-string (fun)
   "Like `function-lambda-expression' for the first value, but return a string.
 On failure, fall back to other means of finding the source.
@@ -409,7 +414,9 @@ Return the lambda s-expression as a second value, if possible."
                                                     fun
                                                     (closer-mop:method-generic-function fun)))))
                     (file (first (alexandria:assoc-value definition :file)))
-                    (file-content (alexandria:read-file-into-string file))
+                    (file-content (alexandria:read-file-into-string
+                                   file
+                                   :external-format (guess-external-format file)))
                     (start-position (first (alexandria:assoc-value definition :position))))
       (restart-case
           (handler-bind ((reader-error (lambda (c)
