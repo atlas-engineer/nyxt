@@ -408,7 +408,8 @@ Return the lambda s-expression as a second value, if possible."
                                                 (if (functionp fun)
                                                     fun
                                                     (closer-mop:method-generic-function fun)))))
-                    (file-content (alexandria:read-file-into-string (first (alexandria:assoc-value definition :file))))
+                    (file (first (alexandria:assoc-value definition :file)))
+                    (file-content (alexandria:read-file-into-string file))
                     (start-position (first (alexandria:assoc-value definition :position))))
       (restart-case
           (handler-bind ((reader-error (lambda (c)
