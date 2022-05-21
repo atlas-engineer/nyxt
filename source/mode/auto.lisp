@@ -103,7 +103,8 @@ If the mode specifier is not known, it's omitted from the results."
 
 (-> matching-auto-mode-rule (quri:uri buffer) (or auto-mode-rule null))
 (defun matching-auto-mode-rule (url buffer)
-  (let ((rules (files:content (auto-mode-rules-file buffer))))
+  (sera:and-let* ((mode (find-submode 'auto-mode buffer))
+                  (rules (files:content (auto-mode-rules-file mode))))
     (flet ((priority (test1 test2)
              (let ((priority-list '(match-regex match-url match-host match-domain)))
                (< (or (position (first test1) priority-list) 4)
@@ -197,6 +198,10 @@ The rules are:
   "Remember the modes setup for given domain/host/URL and store it in an editable form.
 These modes will then be activated on every visit to this domain/host/URL."
   ((rememberable-p nil)
+   (auto-mode-rules-file
+    (make-instance 'auto-mode-rules-file)
+    :type auto-mode-rules-file
+    :documentation "The file where the auto-mode rules are saved.")
    (keymap-scheme
     (define-scheme "auto-mode"
       scheme:cua
@@ -400,7 +405,8 @@ Auto-mode is re-enabled once the page is reloaded."
     (values list &optional))
 (sera:export-always 'add-modes-to-auto-mode-rules)
 (defun add-modes-to-auto-mode-rules (test &key (append-p nil) exclude include (exact-p nil))
-  (let ((rules (files:content (auto-mode-rules-file (current-buffer)))))
+  (alex:when-let* ((mode (find-submode 'auto-mode))
+                   (rules (files:content (auto-mode-rules-file mode))))
     (let* ((rule (or (find test rules
                            :key #'test :test #'equal)
                      (make-instance 'auto-mode-rule :test test)))

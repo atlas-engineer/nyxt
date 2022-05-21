@@ -347,10 +347,6 @@ such as :lisp or :renderer.")
     :type history-file
     :documentation "
 The file where the system will create/save the global history.")
-   (auto-mode-rules-file
-    (make-instance 'auto-mode-rules-file)
-    :type auto-mode-rules-file
-    :documentation "The file where the auto-mode rules are saved.")
    (standard-output-file
     (make-instance 'standard-output-file)
     :type standard-output-file
