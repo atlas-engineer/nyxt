@@ -101,6 +101,56 @@ If the mode specifier is not known, it's omitted from the results."
   (print-unreadable-object (rule stream :type t :identity t)
     (format stream "~a" (second (test rule)))))
 
+(define-mode auto-mode ()
+  "Remember the modes setup for given domain/host/URL and store it in an editable form.
+These modes will then be activated on every visit to this domain/host/URL."
+  ((rememberable-p nil)
+   (auto-mode-rules-file
+    (make-instance 'auto-mode-rules-file)
+    :type auto-mode-rules-file
+    :documentation "The file where the auto-mode rules are saved.")
+   (keymap-scheme
+    (define-scheme "auto-mode"
+      scheme:cua
+      (list
+       "C-R" 'reload-with-modes)))
+   (prompt-on-mode-toggle
+    nil
+    :type boolean
+    :documentation "Whether the user is asked to confirm adding the rule
+corresponding to a mode toggle.")
+   (previous-url
+    nil
+    :type (or quri:uri null)
+    :documentation "The last URL for which `auto-mode-handler' was fired.  We
+need to know if the auto mode rule has been applied before to avoid re-applying
+a rule for a sequence of pages that match the same rule.
+
+We can'rely on the previous history entry because dead buffers and
+session-restored buffers may have a history with a previous URL matching the
+same rule while obviously the rule has never been applied for the new-born
+buffer.")
+   (last-active-modes-url
+    nil
+    :type (or quri:uri null)
+    :documentation "The last URL that the active modes were saved for.  We need
+to store this to not overwrite the `last-active-modes' for a given URL, if
+`auto-mode-handler' is fired more than once.")
+   (last-active-modes
+    '()
+    :type (or (cons mode-invocation *) null)
+    :documentation "The list of `mode-invocation's that were enabled on the last
+URL not covered by `auto-mode'.  This is useful when alternative between
+rule-less and ruled pages.  Example browse sequence:
+
+- https://example.org (no-script-mode no-image-mode) ; No rule.
+- https://nyxt.atlas.engineer (dark-mode) ; Rule
+- https://en.wikipedia.org (no-script-mode no-image-mode) ; No rule.
+
+In the above, when browsing from nyxt.atlas.engineer to en.wikipedia.org, the
+modes that were in place before the nyxt.atlas.engineer rule was applied are
+restored.")))
+
 (-> matching-auto-mode-rule (quri:uri buffer) (or auto-mode-rule null))
 (defun matching-auto-mode-rule (url buffer)
   (sera:and-let* ((mode (find-submode 'auto-mode buffer))
@@ -193,56 +243,6 @@ The rules are:
                                        :test #'equals)
                                 (remove invocation (last-active-modes auto-mode)
                                         :test #'equals))))))))
-
-(define-mode auto-mode ()
-  "Remember the modes setup for given domain/host/URL and store it in an editable form.
-These modes will then be activated on every visit to this domain/host/URL."
-  ((rememberable-p nil)
-   (auto-mode-rules-file
-    (make-instance 'auto-mode-rules-file)
-    :type auto-mode-rules-file
-    :documentation "The file where the auto-mode rules are saved.")
-   (keymap-scheme
-    (define-scheme "auto-mode"
-      scheme:cua
-      (list
-       "C-R" 'reload-with-modes)))
-   (prompt-on-mode-toggle
-    nil
-    :type boolean
-    :documentation "Whether the user is asked to confirm adding the rule
-corresponding to a mode toggle.")
-   (previous-url
-    nil
-    :type (or quri:uri null)
-    :documentation "The last URL for which `auto-mode-handler' was fired.  We
-need to know if the auto mode rule has been applied before to avoid re-applying
-a rule for a sequence of pages that match the same rule.
-
-We can'rely on the previous history entry because dead buffers and
-session-restored buffers may have a history with a previous URL matching the
-same rule while obviously the rule has never been applied for the new-born
-buffer.")
-   (last-active-modes-url
-    nil
-    :type (or quri:uri null)
-    :documentation "The last URL that the active modes were saved for.  We need
-to store this to not overwrite the `last-active-modes' for a given URL, if
-`auto-mode-handler' is fired more than once.")
-   (last-active-modes
-    '()
-    :type (or (cons mode-invocation *) null)
-    :documentation "The list of `mode-invocation's that were enabled on the last
-URL not covered by `auto-mode'.  This is useful when alternative between
-rule-less and ruled pages.  Example browse sequence:
-
-- https://example.org (no-script-mode no-image-mode) ; No rule.
-- https://nyxt.atlas.engineer (dark-mode) ; Rule
-- https://en.wikipedia.org (no-script-mode no-image-mode) ; No rule.
-
-In the above, when browsing from nyxt.atlas.engineer to en.wikipedia.org, the
-modes that were in place before the nyxt.atlas.engineer rule was applied are
-restored.")))
 
 (-> auto-mode-handler (request-data) request-data)
 (defun auto-mode-handler (request-data)
