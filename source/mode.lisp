@@ -257,10 +257,7 @@ Return NIL if none.
 The \"-mode\" suffix is automatically appended to MODE-KEYWORD if missing.
 This is convenience function for interactive use.
 For production code, see `find-submode' instead."
-  (let* ((mode-designator (string mode-designator))
-         (mode-designator (if (str:ends-with-p "-MODE" mode-designator)
-                              mode-designator
-                              (str:concat mode-designator "-MODE"))))
+  (let ((mode-designator (sera:ensure-suffix (string mode-designator) "-MODE")))
     (find-submode (resolve-symbol mode-designator :mode)
                   buffer)))
 
