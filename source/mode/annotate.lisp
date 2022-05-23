@@ -128,7 +128,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
 
 (define-internal-page-command-global show-annotations-for-current-url
     (&key (source-buffer (current-buffer)))
-    (buffer "*Annotations*" 'base-mode)
+    (buffer "*Annotations*")
   "Create a new buffer with the annotations of the current URL of BUFFER."
   (let ((annotations (files:content (annotations-file buffer))))
     (let ((filtered-annotations (remove-if-not (lambda (i)
@@ -162,7 +162,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-internal-page-command-global show-annotation ()
-    (buffer "*Annotations*" 'base-mode)
+    (buffer "*Annotations*")
   "Show an annotation(s)."
   (let ((selected-annotations
           (prompt
@@ -172,7 +172,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
     (render-annotations :annotations selected-annotations)))
 
 (define-internal-page-command-global show-annotations ()
-    (buffer "*Annotations*" 'base-mode)
+    (buffer "*Annotations*")
   "Show all annotations"
   (let ((annotations (files:content (annotations-file buffer))))
     (render-annotations :annotations annotations)))

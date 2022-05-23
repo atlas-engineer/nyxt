@@ -138,7 +138,7 @@ for matches."
 
 (define-internal-page-command-global describe-value
     (&key id)
-    (buffer "*Help-value*" 'base-mode)
+    (buffer "*Help-value*")
   "Inspect value under ID and show it in a help buffer."
   (sera:and-let* ((id id)
                   (value (inspected-value id)))
@@ -181,8 +181,7 @@ for matches."
            (prompt1
              :prompt "Describe package"
              :sources (make-instance 'package-source))))
-    (buffer (str:concat "*Help-" (package-name package) "*")
-            'base-mode)
+    (buffer (str:concat "*Help-" (package-name package) "*"))
   "Inspect a package and show it in a help buffer."
   (let ((total-symbols (package-defined-symbols nil (list package)))
         (external-symbols (package-defined-symbols (list package)))
@@ -216,8 +215,7 @@ for matches."
       (prompt1
         :prompt "Describe variable"
         :sources (make-instance 'variable-source :universal universal))))
-    (buffer (str:concat "*Help-" (symbol-name variable) "*")
-            'base-mode)
+    (buffer (str:concat "*Help-" (symbol-name variable) "*"))
   "Inspect a variable and show it in a help buffer."
   (let ((*print-case* :downcase))
     (spinneret:with-html-string
@@ -273,8 +271,7 @@ for matches."
      (function (prompt1
                  :prompt "Describe function"
                  :sources (make-instance 'function-source :universal universal))))
-    (buffer (str:concat "*Help-" (symbol-name function) "*")
-            'base-mode)
+    (buffer (str:concat "*Help-" (symbol-name function) "*"))
   "Inspect a function and show it in a help buffer.
 For generic functions, describe all the methods."
   (if function
@@ -353,8 +350,7 @@ For generic functions, describe all the methods."
     (&key (command (name (prompt1
                            :prompt "Describe command"
                            :sources (make-instance 'command-source)))))
-    (buffer (str:concat "*Help-" (symbol-name command) "*")
-            'base-mode)
+    (buffer (str:concat "*Help-" (symbol-name command) "*"))
   "Inspect a command and show it in a help buffer.
 A command is a special kind of function that can be called with
 `execute-command' and can be bound to a key."
@@ -394,8 +390,7 @@ A command is a special kind of function that can be called with
 
 (define-internal-page-command-global describe-slot
     (&key class name universal)
-    (buffer (str:concat "*Help-" (symbol-name name) "*")
-            'base-mode)
+    (buffer (str:concat "*Help-" (symbol-name name) "*"))
   "Inspect a slot and show it in a help buffer."
   (unless (and class name)
     (let ((slot (prompt1
@@ -453,8 +448,7 @@ A command is a special kind of function that can be called with
      (class (prompt1
               :prompt "Describe class"
               :sources (make-instance 'class-source :universal universal))))
-    (buffer (str:concat "*Help-" (symbol-name class) "*")
-            'base-mode)
+    (buffer (str:concat "*Help-" (symbol-name class) "*"))
   "Inspect a class and show it in a help buffer."
   (let* ((slots (class-public-slots class))
          (slot-descs (apply #'str:concat (mapcar (alex:rcurry #'describe-slot* class) slots)))
@@ -487,8 +481,7 @@ A command is a special kind of function that can be called with
 ;; Maybe have prompt-buffers have IDs so that we can identify those by IDs?
 ;; How do we actually identify prompt-buffers?
 (define-internal-page-command nyxt/prompt-buffer-mode::describe-prompt-buffer ()
-    (buffer (str:concat "*Help-" (prompter:prompt (current-prompt-buffer)) "-prompter*")
-            'base-mode)
+    (buffer (str:concat "*Help-" (prompter:prompt (current-prompt-buffer)) "-prompter*"))
   "Describe a prompt buffer instance."
   (let* ((prompt-buffer (current-prompt-buffer))
          (modes (modes prompt-buffer))
@@ -534,7 +527,7 @@ CLASS is a class symbol."
          (echo "Update slot ~s to ~s. You might need to restart to experience the change." slot input))))))
 
 (define-internal-page-command-global common-settings ()
-    (buffer "*Settings*" 'base-mode)
+    (buffer "*Settings*")
   "Configure a set of frequently used settings."
   (spinneret:with-html-string
     (:h1 "Common Settings")
@@ -626,7 +619,7 @@ CLASS is a class symbol."
              "Edit user files")))
 
 (define-internal-page-command-global describe-bindings ()
-    (buffer "*Help-bindings*" 'base-mode)
+    (buffer "*Help-bindings*")
   "Show a buffer with the list of all known bindings for the current buffer."
   (spinneret:with-html-string
     (:h1 "Bindings")
@@ -807,7 +800,7 @@ the channel, wrapped alongside the condition and its restarts."))
 ;; FIXME: Not for interactive use?
 (define-internal-page-command open-debugger (&key id)
     ;; TODO: Introduce debug-mode with keys invoking restarts and toggling backtrace.
-    (buffer (format nil "*Debug-~d*" id) 'base-mode)
+    (buffer (format nil "*Debug-~d*" id))
   "Open the debugger with the condition indexed by ID."
   (with-slots (condition-itself restarts channel)
       (gethash id *debug-conditions*)
@@ -862,7 +855,7 @@ The version number is stored in the clipboard."
         (buffer-delete buffer)))))
 
 (define-internal-page-command-global new ()
-    (buffer "*New buffer*" 'base-mode)
+    (buffer "*New buffer*")
   "Open up a buffer with useful links suitable for a `default-new-buffer-url'."
   (spinneret:with-html-string
     (:style (:raw (theme:themed-css (theme *browser*)
@@ -952,7 +945,7 @@ The version number is stored in the clipboard."
 
 (sera:eval-always ; To satisfy `fboundp' of `manual' at compile-time (e.g. CCL).
   (define-internal-page-command-global manual ()
-      (buffer "*Manual*" 'base-mode)
+      (buffer "*Manual*")
     "Show the manual."
     (spinneret:with-html-string (:style (style buffer))
       (:style (cl-css:css '(("body"
@@ -960,7 +953,7 @@ The version number is stored in the clipboard."
       (:raw (manual-content)))))
 
 (define-internal-page-command-global tutorial ()
-    (buffer "*Tutorial*" 'base-mode)
+    (buffer "*Tutorial*")
   "Show the tutorial."
   (spinneret:with-html-string
     (:style (style buffer))
@@ -1012,7 +1005,7 @@ the "
        (str:concat "Guix version: " (guix-information) +newline+)))))
 
 (define-internal-page-command-global show-system-information ()
-    (buffer "*System information*" 'base-mode)
+    (buffer "*System information*")
   "Show buffer with Lisp version, Lisp features, OS kernel, etc.
 System information is also saved into the clipboard."
   (let* ((*print-length* nil)
@@ -1026,7 +1019,7 @@ System information is also saved into the clipboard."
       (echo "System information copied to clipboard."))))
 
 (define-internal-page-command-global dashboard ()
-    (buffer "*Dashboard*" 'base-mode)
+    (buffer "*Dashboard*")
   "Print a dashboard."
   (flet ((list-bookmarks (&key (separator " → "))
            (spinneret:with-html-string

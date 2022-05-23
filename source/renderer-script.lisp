@@ -151,18 +151,20 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
                          ,@args)))
                  (,buffer-var (or (find-if (lambda (b)
                                              (and (string= (title b) ,title)
-                                                  (find-submode ,mode b)))
+                                                  (or (null ,mode)
+                                                      (find-submode ,mode b))))
                                            (buffer-list))
                                   (sera:lret ((buffer (make-instance 'web-buffer
                                                                      :title ,title :url ,url)))
-                                    (enable-modes ,mode buffer)))))
+                                    (when ,mode
+                                      (enable-modes ,mode buffer))))))
             (buffer-load ,url :buffer ,buffer-var)
             (set-current-buffer ,buffer-var)
             ,buffer-var))))))
 
 (export-always 'define-internal-page-command)
 (defmacro define-internal-page-command (name (&rest arglist)
-                                        (buffer-var title mode)
+                                        (buffer-var title &optional mode)
                                         &body body)
   "Define a command called NAME creating an internal interface page.
 
@@ -182,7 +184,7 @@ mapped to query parameters."
 
 (export-always 'define-internal-page-command-global)
 (defmacro define-internal-page-command-global (name (&rest arglist)
-                                               (buffer-var title mode)
+                                               (buffer-var title &optional mode)
                                                &body body)
   "Define a command called NAME creating an internal interface page.
 

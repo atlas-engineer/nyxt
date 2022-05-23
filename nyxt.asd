@@ -152,7 +152,6 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "prompt-buffer" :depends-on ("input-edit"))
                  (:file "file-manager")
                  (:file "buffer-listing")
-                 (:file "base" :depends-on ("buffer-listing" "file-manager"))
                  (:file "message")
                  (:file "passthrough")
                  (:file "history-tree")
@@ -168,6 +167,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "proxy")
                  (:file "download")
                  (:file "process")))
+               (:file "mode/base" :depends-on ("Core modes"))
                (:module "document-mode commands"
                 :pathname "mode"
                 :depends-on ("Core modes")

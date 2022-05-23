@@ -99,7 +99,7 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
 
 (export-always 'list-bookmarks)
 (define-internal-page-command-global list-bookmarks ()
-    (bookmarks-buffer "*Bookmarks*" 'base-mode)
+    (bookmarks-buffer "*Bookmarks*")
   "List all bookmarks in a new buffer."
   (let ((bookmarks (group-bookmarks bookmarks-buffer)))
     (spinneret:with-html-string

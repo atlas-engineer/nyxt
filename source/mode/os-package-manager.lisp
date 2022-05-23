@@ -140,7 +140,7 @@
     (&key (package-list-id (nyxt::ensure-inspected-id (prompt
                                                        :sources '(os-package-source)
                                                        :prompt "Describe OS package(s)"))))
-  (buffer "*OS package manager*" 'base-mode)
+  (buffer "*OS package manager*")
   "Show description of selected packages."
   (assert-package-manager)
   (flet ((format-inputs (inputs)

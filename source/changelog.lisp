@@ -12,7 +12,7 @@ particular revision.")
          (spinneret:with-html-string (:div (:h2 ,version-string) ,@body))))
 
 (define-internal-page-command-global changelog ()
-    (buffer "*Changelog*" 'base-mode)
+    (buffer "*Changelog*")
   "Show the changelog."
   (spinneret:with-html-string
     (:style (style buffer))

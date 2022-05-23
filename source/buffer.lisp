@@ -1212,7 +1212,7 @@ second latest buffer first."
                                :return-actions (list (lambda-mapped-command buffer-delete))))))
 
 (define-internal-page-command-global reduce-to-buffer (&key (delete t))
-    (reduced-buffer "*Reduced Buffers*" 'base-mode)
+    (reduced-buffer "*Reduced Buffers*")
   "Query the buffer(s) to \"reduce \" by copying their titles/URLs to a
 single buffer, optionally delete them. This function is useful for archiving a
 set of useful URLs or preparing a list to send to a someone else."

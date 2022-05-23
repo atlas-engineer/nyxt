@@ -283,7 +283,7 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
 (define-internal-page-command-global show-url-qrcode
     (&key (buffer-id (id (current-buffer)))
      (url (quri:render-uri (url (nyxt::buffers-get buffer-id)))))
-    (buffer (format nil "*Buffer ~a (~a) QRcode*" buffer-id url) 'base-mode)
+    (buffer (format nil "*Buffer ~a (~a) QRcode*" buffer-id url))
   "In a new buffer, show the QR code containing the URL for the current buffer."
   (let* ((stream (flexi-streams:make-in-memory-output-stream)))
     (cl-qrencode:encode-png-stream url stream)
@@ -295,7 +295,7 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
                 :alt url)))))
 
 (define-internal-page-command-global view-source (&key (url (render-url (url (current-buffer)))))
-  (source-buffer (format nil "*Source of ~a" url) 'base-mode)
+  (source-buffer (format nil "*Source of ~a" url))
   "View source of the URL (by default current page) in a separate buffer."
   (let ((buffer (or (find (quri:uri url) (buffer-list) :test #'quri:uri= :key #'url)
                     (make-background-buffer :url url))))
@@ -369,7 +369,7 @@ The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
   (setf (ffi-buffer-zoom-level buffer) (setf (current-zoom-ratio buffer) ratio)))
 
 (define-internal-page-command-global summarize-buffer (&key (summary-length 5) (id (id (current-buffer))))
-  (output (format nil "*Summary ~a*" (title (nyxt::buffers-get id))) 'base-mode)
+  (output (format nil "*Summary ~a*" (title (nyxt::buffers-get id))))
   "Summarize the current buffer by creating a new summary buffer."
   (let ((buffer (nyxt::buffers-get id)))
     (let ((contents
