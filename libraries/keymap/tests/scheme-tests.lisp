@@ -5,10 +5,10 @@
 
 (prove:plan nil)
 
-(prove:subtest "Make scheme"
+(keymap-test "Make scheme"
   (let* ((scheme (keymap:define-scheme "test"
-                     scheme:cua '("C-c" copy
-                                  "C-v" paste)))
+                   scheme:cua '("C-c" copy
+                                "C-v" paste)))
          (keymap (keymap:make-keymap "test-cua-map")))
     (keymap:define-key keymap "C-c" 'copy)
     (keymap:define-key keymap "C-v" 'paste)
@@ -18,7 +18,7 @@
     (prove:is (keymap:name (gethash scheme:cua scheme))
               (keymap:name keymap))))
 
-(prove:subtest "Make scheme with LIST"
+(keymap-test "Make scheme with LIST"
   (let* ((scheme (keymap:define-scheme "test"
                      scheme:cua (list "C-c" 'copy
                                       "C-v" 'paste)))
@@ -30,7 +30,7 @@
               (fset:convert 'fset:map (keymap:keymap->map keymap))
               :test #'fset:equal?)))
 
-(prove:subtest "Make scheme with multiple names"
+(keymap-test "Make scheme with multiple names"
   (let* ((scheme (keymap:define-scheme "test"
                      scheme:cua (list "C-c" 'copy
                                       "C-v" 'paste)
@@ -51,7 +51,7 @@
               (fset:convert 'fset:map (keymap:keymap->map emacs-keymap))
               :test #'fset:equal?)))
 
-(prove:subtest "Test inheritance"
+(keymap-test "Test inheritance"
   (let* ((scheme (keymap:define-scheme "test"
                      scheme:cua (list "C-c" 'copy
                                       "C-v" 'paste)
@@ -68,14 +68,12 @@
     (prove:is (list (gethash scheme:cua scheme))
               (keymap:parents (gethash scheme:emacs scheme)))))
 
-(prove:subtest "Get keymap"
+(keymap-test "Get keymap"
   (let* ((scheme (keymap:define-scheme "test"
                    scheme:cua (list "C-c" 'copy
                                     "C-v" 'paste)
                    scheme:emacs (list "M-w" 'copy
-                                      "M-y" 'paste)))
-         (cua-keymap (keymap:make-keymap "test-cua-map"))
-         (emacs-keymap (keymap:make-keymap "test-emacs-map")))
+                                      "M-y" 'paste))))
     (prove:ok (keymap:get-keymap scheme:emacs scheme))
     (prove:ok (keymap:get-keymap scheme:cua scheme))
     (prove:isnt (keymap:get-keymap scheme:cua scheme)
@@ -83,7 +81,7 @@
     (prove:is (keymap:get-keymap scheme:cua scheme)
               (keymap:get-keymap scheme:vi-normal scheme))))
 
-;; (prove:subtest "Make scheme with type errors" ; TODO: How do we test macro-expansion-time error?
+;; (keymap-test "Make scheme with type errors" ; TODO: How do we test macro-expansion-time error?
 ;;   (prove:is-error (keymap:define-scheme
 ;;                       scheme:cua (list "C-" 'copy))
 ;;                   'type-error))
