@@ -295,37 +295,32 @@ With MODE-SYMBOLS and GLOBAL-P, include global commands."
        *command-list*)
       *command-list*))
 
-(defun run (command &rest args)
+(defun run-command (command &optional args)
+  ;; Bind current buffer for the duration of the command.  This
+  ;; way, if the user switches buffer after running a command
+  ;; but before command termination, `current-buffer' will
+  ;; return the buffer from which the command was invoked.
+  (with-current-buffer (current-buffer)
+    (let ((*interactive-p* t))
+      (handler-case (apply #'funcall command args)
+        (nyxt-prompt-buffer-canceled ()
+          (log:debug "Prompt buffer interrupted")
+          nil)))))
+
+(defun run (command &optional args)
   "Run COMMAND over ARGS and return its result.
 This is blocking, see `run-async' for an asynchronous way to run commands."
   (let ((channel (make-channel 1)))
     (run-thread "run command"
-      (calispel:! channel
-               ;; Bind current buffer for the duration of the command.  This
-               ;; way, if the user switches buffer after running a command
-               ;; but before command termination, `current-buffer' will
-               ;; return the buffer from which the command was invoked.
-               (with-current-buffer (current-buffer)
-                 (handler-case (apply #'funcall command args)
-                   (nyxt-prompt-buffer-canceled ()
-                     (log:debug "Prompt buffer interrupted")
-                     nil)))))
+      (calispel:! channel (run-command command args)))
     (calispel:? channel)))
 
-(defun run-async (command &rest args)
+(defun run-async (command &optional args)
   "Run COMMAND over ARGS asynchronously.
 See `run' for a way to run commands in a synchronous fashion and return the
 result."
   (run-thread "run-async command"
-    ;; It's important to rebind `args' since it may otherwise be shared with the
-    ;; caller.
-    (let ((command command)
-          (args args))
-      (with-current-buffer (current-buffer) ; See `run' for why we bind current buffer.
-        (handler-case (apply #'funcall command args)
-          (nyxt-prompt-buffer-canceled ()
-            (log:debug "Prompt buffer interrupted")
-            nil))))))
+    (run-command command args)))
 
 (define-command forward-to-renderer (&key (window (current-window))
                                      (buffer (current-buffer)))

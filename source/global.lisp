@@ -58,6 +58,11 @@ A handler can be added with:
   "Hook run when the browser is started and ready for interaction.
 The handlers take no argument.")
 
+(defvar *interactive-p* nil
+  "When non-nil, allow prompt buffers in during BODY execution.
+This is useful to ensure that non-interactive code (for instance scripts) won't
+be blocked by prompt buffer prompts.")
+
 (export-always '*swank-port*)
 (defvar *swank-port* 4006
   "The port that Swank will open a new server on (default Emacs SLIME port

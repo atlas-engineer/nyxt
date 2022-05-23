@@ -481,6 +481,11 @@ Example use:
                                                  :constructor '(\"foo\" \"bar\"))))
 
 See the documentation of `prompt-buffer' to know more about the options."
+    (unless *interactive-p*
+      (restart-case
+          (error 'nyxt-prompt-buffer-non-interactively)
+        (prompt-anyway () nil)
+        (cancel () (error 'nyxt-prompt-buffer-canceled))))
     (alex:when-let ((prompt-text (getf args :prompt)))
       (when (str:ends-with-p ":" prompt-text)
         (log:warn "Prompt text ~s should not end with a ':'." prompt-text)

@@ -15,3 +15,10 @@
 
 (define-condition nyxt-prompt-buffer-canceled (error)
   ())
+(define-condition nyxt-prompt-buffer-non-interactively (nyxt-prompt-buffer-canceled)
+  ()
+  (:report (lambda (c stream)
+             (declare (ignore c))
+             (write-string "Tried to invoke the prompt buffer when non-interactive."
+                           stream)))
+  (:documentation "See `*interactive-p*'."))

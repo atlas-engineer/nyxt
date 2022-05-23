@@ -149,12 +149,12 @@ User input is evaluated Lisp."
                        (list (prompt-argument name type default))))
                     params)))
             (setf (last-access command) (local-time:now))
-            (apply #'run-async
-                   command
-                   (alex:mappend #'parse-args
-                                 (list (pairlis required-arguments required-types)
-                                       (pairlis optional-arguments optional-types)
-                                       (pairlis keyword-arguments (mapcar #'second keyword-types))))))))))))
+            (run-async
+             command
+             (alex:mappend #'parse-args
+                           (list (pairlis required-arguments required-types)
+                                 (pairlis optional-arguments optional-types)
+                                 (pairlis keyword-arguments (mapcar #'second keyword-types))))))))))))
 
 (defun get-hooks ()
   (flet ((list-hooks (object)
