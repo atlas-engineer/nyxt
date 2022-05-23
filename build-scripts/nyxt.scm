@@ -189,6 +189,15 @@
           webkitgtk                 ; Required when we use its typelib
           gobject-introspection
           pkg-config))
+   (propagated-inputs
+    ;; Useful for video playback in all-inclusive Guix profiles.
+    ;; For now upstream Guix does not include the GST plugins.
+    (list
+     gst-libav
+     gst-plugins-bad
+     gst-plugins-base
+     gst-plugins-good
+     gst-plugins-ugly))
    (synopsis "Extensible web browser in Common Lisp")
    (home-page "https://nyxt.atlas.engineer")
    (description "Nyxt is a keyboard-oriented, extensible web browser
