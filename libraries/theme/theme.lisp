@@ -47,22 +47,22 @@ Should contrast with the `background-color'.")
     "#555555"
     :type string
     :documentation "The main non-text/interface color.
-Should preferably contrast both `background-color' and `text-color'.")
+Should preferably contrast both with `background-color' and `text-color'.")
    (secondary-color
     "#737373"
     :type string
     :documentation "The secondary interface color.
-Should contrast with the `background-color'.")
+Should contrast with `background-color'.")
    (tertiary-color
     "#8C8C8C"
     :type string
     :documentation "The tertiary interface color.
-Should contrast with the `text-color'.")
+Should contrast with `text-color'.")
    (quaternary-color
     "#E6E6E6"
     :type string
     :documentation "The quaternary color.
-Should strongly contrast with the `text-color'.")
+Should strongly contrast with `text-color'.")
    (accent-color
     "#37a8e4"
     :type string
