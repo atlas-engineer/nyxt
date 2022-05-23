@@ -707,11 +707,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
        :outline "inherit")
       (.button
        :color theme:background
-       :text-decoration "none"
-       :padding-left "2px"
-       :padding-right "2px"
-       :margin-left "2px"
-       :margin-right "2px")
+       :text-decoration "none")
       (|.button:hover|
        :color theme:text))))
   (:export-class-name-p t)
