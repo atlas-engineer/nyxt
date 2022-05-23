@@ -31,7 +31,6 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-t" 'make-buffer-focus
        "M-c l" 'copy-url
        "M-c t" 'copy-title
-       "f1 f1" 'help
        "f1 t" 'tutorial
        "f1 r" 'manual
        "f1 v" 'describe-variable
@@ -67,8 +66,6 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-x C-b" 'nyxt/buffer-listing-mode::list-buffers
        "C-M-l" 'copy-url
        "C-M-t" 'copy-title
-       "C-h C-h" 'help
-       "C-h h" 'help
        "C-h t" 'tutorial
        "C-h r" 'manual
        "C-h v" 'describe-variable
