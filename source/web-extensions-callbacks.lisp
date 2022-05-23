@@ -395,21 +395,24 @@ there. `reply-user-mesage' takes care of sending the response back."
              ;; superfluous items.
              (declare (ignore ignore))
              (cons se1 se2))
-           (extension->cons (extension)
-             (cons (nyxt/web-extensions::name extension)
-                   (vector (id extension)
-                           (nyxt/web-extensions::manifest extension)
-                           (or (background-buffer-p (buffer extension))
-                               (nyxt::panel-buffer-p (buffer extension)))
-                           (nyxt/web-extensions::extension-files extension)
-                           (id (buffer extension))))))
+           ;;; Only used in "ready" message.
+           ;; (extension->cons (extension)
+           ;;   (cons (nyxt/web-extensions::name extension)
+           ;;         (vector (id extension)
+           ;;                 (nyxt/web-extensions::manifest extension)
+           ;;                 (or (background-buffer-p (buffer extension))
+           ;;                     (nyxt::panel-buffer-p (buffer extension)))
+           ;;                 (nyxt/web-extensions::extension-files extension)
+           ;;                 (id (buffer extension)))))
+           )
       (str:string-case message-name
-        ("ready"
-         (webkit:webkit-web-view-send-message-to-page
-          (nyxt::gtk-object buffer)
-          (webkit:webkit-user-message-new
-           "injectAPIs" (glib:g-variant-new-string
-                         (encode-json (mapcar #'extension->cons extensions))))))
+        ;;; Commented out due to CPU hogging when enabled.
+        ;; ("ready"
+        ;;  (webkit:webkit-web-view-send-message-to-page
+        ;;   (nyxt::gtk-object buffer)
+        ;;   (webkit:webkit-user-message-new
+        ;;    "injectAPIs" (glib:g-variant-new-string
+        ;;                  (encode-json (mapcar #'extension->cons extensions))))))
         ("management.getSelf"
          (wrap-in-channel
           (encode-json (extension->extension-info (find message-params extensions
