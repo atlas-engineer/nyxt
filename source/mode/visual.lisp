@@ -83,7 +83,7 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
 (defmethod enable ((mode visual-mode) &key)
   (make-page-editable)
   (block-page-keypresses)
-  (select-paragraph)
+  (select-paragraph mode)
   ;; imitating visual mode in vim
   (when (equal (keymap-scheme-name (buffer mode)) scheme:vi-normal)
     (setf (mark-set mode) t)))
@@ -136,12 +136,11 @@ marquee, multicol, nobr, s, spacer, strike, tt, u, wbr, code, cite, pre"
 (define-parenscript make-page-uneditable ()
   (setf (ps:@ document body content-editable) "false"))
 
-(define-command select-paragraph ()
+(define-command select-paragraph (&optional (mode (find-submode 'visual-mode)))
   "Add hints to text elements on the page and query them."
   (nyxt/hint-mode:query-hints "Set caret on element"
-               (lambda (results) (%follow-hint (first results)))
-               :selector (nyxt/hint-mode:hints-selector
-                          (find-submode 'visual-mode))))
+                              (lambda (results) (%follow-hint (first results)))
+                              :selector (nyxt/hint-mode:hints-selector mode)))
 
 (define-parenscript collapsed-p ()
   "Return T if mark's start and end are the same value, nil otherwise."
