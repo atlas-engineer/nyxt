@@ -41,6 +41,10 @@
 (deftype nyxt-keymap-value ()
   '(or keymap:keymap function-symbol command))
 
+;; TODO: This pins the `keymap' library exclusively to Nyxt uses.
+;; Can we make it more general?
+(setf keymap:*default-bound-type* 'nyxt-keymap-value)
+
 (-> make-keymap (string &rest keymap:keymap) keymap:keymap)
 (export-always 'make-keymap)
 (defun make-keymap (name &rest parents)
