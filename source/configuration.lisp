@@ -61,7 +61,7 @@
    (lambda (path)
      (when (not (uiop:file-exists-p path))
        (let ((nyxt-2-path (files:expand (make-instance 'config-file
-                                                       :base-path "init"))))
+                                                       :base-path #p"init"))))
          (when (uiop:file-exists-p nyxt-2-path)
            (log:warn "Found ~a, possibly a Nyxt 2 configuration.
 Consider porting your configuration to ~a."
