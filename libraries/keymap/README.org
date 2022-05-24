@@ -52,8 +52,3 @@ Non-goals:
 - Provide a self-insert function: the caller must handle it.
 - Global or local bindings: it's up to the calling application to manage the
   locality of their keymaps.
-
-To do:
-
-- Make it possible for applications to set a default binding type in a
-  non-globally polluting way (instead of =*default-bound-type*=).
