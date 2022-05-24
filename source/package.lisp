@@ -1,18 +1,11 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(in-package :cl-user)
-
 ;; Some compilers (e.g. SBCL) fail to reload the system with `defpackage' when
 ;; exports are spread around.  `uiop:define-package' does not have this problem.
+
 (uiop:define-package nyxt
   (:use #:common-lisp)
-  (:import-from #:trivia #:match #:multiple-value-match #:lambda-match #:guard)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:class-star #:define-class)
-  (:import-from #:serapeum
-                #:export-always
-                #:->)
   (:export #:use-nyxt-package-nicknames)
   (:documentation "The core package of Nyxt, the infinitely extensible browser.
 
@@ -20,18 +13,53 @@ This package should not be modified by the users.
 
 It's recommended to use the `nyxt-user' package instead to create new functions,
 modes, commands, etc."))
+
+(in-package :nyxt)
+(defvar *imports* '((:trivia :match :multiple-value-match :lambda-match :guard)
+                    (:keymap :define-key :define-scheme)
+                    (:class-star :define-class)
+                    (:serapeum :export-always :->)))
+
+(loop :for (package . symbols) in *imports*
+      :do (import (mapcar (lambda (symbol) (intern (symbol-name symbol) package))
+                          symbols)
+                  :nyxt))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria :nyxt)
-  (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum :nyxt)
-  (trivial-package-local-nicknames:add-package-local-nickname :lpara :lparallel :nyxt)
-  (trivial-package-local-nicknames:add-package-local-nickname :class* :hu.dwim.defclass-star :nyxt)
-  (trivial-package-local-nicknames:add-package-local-nickname :hooks :nhooks :nyxt)
-  (trivial-package-local-nicknames:add-package-local-nickname :files :nfiles :nyxt))
+  (loop :for (nickname package) in
+        '((:alex :alexandria)
+          (:sera :serapeum)
+          (:lpara :lparallel)
+          (:class* :hu.dwim.defclass-star)
+          (:hooks :nhooks)
+          (:files :nfiles))
+        :do (trivial-package-local-nicknames:add-package-local-nickname nickname package :nyxt)))
 
 (defmacro nyxt::use-nyxt-package-nicknames ()
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (dolist (package (trivial-package-local-nicknames:package-local-nicknames :nyxt))
        (trivial-package-local-nicknames:add-package-local-nickname (first package) (package-name (rest package))))))
+
+(serapeum:export-always 'define-and-set-package :nyxt)
+(defmacro define-and-set-package (name &rest options)
+  "A helper around `uiop:define-package'.
+`:common-lisp' and `:nyxt' are automatically used.
+`nyxt::*imports*' are automatically imported."
+  (let* ((uses (append (serapeum:keep :use options :key #'first)
+                       '((:use :common-lisp :nyxt))))
+         (imports (append (serapeum:keep :import-from options :key #'first)
+                          (mapcar (lambda (import) (cons :import-from import))
+                                  *imports*)))
+         (options (remove :use (remove :import-from options :key #'first)
+                          :key #'first)))
+    `(progn
+       (uiop:define-package ,name
+         ,@uses
+         ,@imports
+         ,@options)
+       (eval-when (:compile-toplevel :load-toplevel :execute)
+         (setq *package* (find-package ,name)))
+       (nyxt::use-nyxt-package-nicknames))))
 
 (uiop:define-package nyxt-user
   (:use #:common-lisp #:nyxt)
