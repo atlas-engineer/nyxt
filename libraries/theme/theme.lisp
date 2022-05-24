@@ -35,11 +35,11 @@
     nil
     :documentation "Whether the theme is dark.")
    (background-color
-    "#ffffff"
+    "white"
     :type string
     :documentation "The background color of the theme.")
    (text-color
-    "#000000"
+    "black"
     :type string
     :documentation "The main color of the text in the theme.
 Should contrast with the `background-color'.")
