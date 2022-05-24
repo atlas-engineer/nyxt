@@ -1,16 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/history-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:class-star #:define-class)
-  (:import-from #:serapeum
-                #:export-always
-                #:->)
+(nyxt:define-and-set-package :nyxt/history-mode
   (:documentation "Mode to store current buffer navigation into the global history."))
-(in-package :nyxt/history-mode)
-(use-nyxt-package-nicknames)
 
 (define-mode history-mode ()
   "Mode to manage navigation history."

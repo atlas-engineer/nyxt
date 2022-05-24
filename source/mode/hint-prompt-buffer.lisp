@@ -1,12 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/hint-prompt-buffer-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:keymap #:define-key #:define-scheme)
+(nyxt:define-and-set-package :nyxt/hint-prompt-buffer-mode
   (:documentation "Prompt-buffer mode for element hints."))
-(in-package :nyxt/hint-prompt-buffer-mode)
-(use-nyxt-package-nicknames)
 
 (define-command toggle-hints-transparency (&key (buffer (current-buffer)))
   "Toggle the on-screen element hints transparency."

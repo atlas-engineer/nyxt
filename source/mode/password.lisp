@@ -1,13 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/password-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:class-star #:define-class)
-  (:import-from #:serapeum #:->)
+(nyxt:define-and-set-package :nyxt/password-mode
   (:documentation "Interface with third-party password managers."))
-(in-package :nyxt/password-mode)
-(use-nyxt-package-nicknames)
 
 (define-mode password-mode ()
   "Enable interface with third-party password managers.

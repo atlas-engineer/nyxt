@@ -1,14 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/auto-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:class-star #:define-class)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:serapeum #:->)
+(nyxt:define-and-set-package :nyxt/auto-mode
   (:documentation "Mode for automatic URL-based mode toggling."))
-(in-package :nyxt/auto-mode)
-(use-nyxt-package-nicknames)
 
 (define-class auto-mode-rules-file (files:data-file nyxt-lisp-file)
   ((files:base-path #p"auto-mode-rules")

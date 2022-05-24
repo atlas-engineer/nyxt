@@ -1,15 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/annotate-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:class-star #:define-class)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:serapeum #:->)
+(nyxt:define-and-set-package :nyxt/annotate-mode
   (:documentation "Mode to annotate documents.
 Annotations are persisted to disk."))
-(in-package :nyxt/annotate-mode)
-(use-nyxt-package-nicknames)
 
 (define-mode annotate-mode ()
   "Annotate document with arbitrary comments.

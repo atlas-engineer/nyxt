@@ -1,11 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/certificate-exception-mode
-  (:use :common-lisp :nyxt)
+(nyxt:define-and-set-package :nyxt/certificate-exception-mode
   (:documentation "Certificate exception mode"))
-(in-package :nyxt/certificate-exception-mode)
-(use-nyxt-package-nicknames)
 
 (sera:export-always '*default-certificate-exceptions*)
 (defparameter *default-certificate-exceptions* '()

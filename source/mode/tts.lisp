@@ -1,12 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/tts-mode
-  (:use :common-lisp :nyxt)
+(nyxt:define-and-set-package :nyxt/tts-mode
   (:documentation "Mode for interacting with Text-to-Speech (TTS) software."))
-
-(in-package :nyxt/tts-mode)
-(use-nyxt-package-nicknames)
 
 (define-mode tts-mode ()
   "A mode for interacting with Text-to-Speech (TTS) software.

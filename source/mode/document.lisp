@@ -1,14 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/document-mode
-  (:use :common-lisp :nyxt)
+(nyxt:define-and-set-package :nyxt/document-mode
   (:shadow #:focus-first-input-field)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:class-star #:define-class)
-  (:import-from #:serapeum
-                #:export-always
-                #:->)
   (:documentation "Mode to interact with structured documents.
 This is typically for HTML pages, but other format may be supported at some point.
 It does not assume being online."))

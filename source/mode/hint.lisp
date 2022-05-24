@@ -1,16 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/hint-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:class-star #:define-class)
-  (:import-from #:serapeum
-                #:export-always
-                #:->)
+(nyxt:define-and-set-package :nyxt/hint-mode
   (:documentation "Mode for element hints."))
-(in-package :nyxt/hint-mode)
-(use-nyxt-package-nicknames)
 
 (define-mode hint-mode ()
   "Mode to interact with links using keyword only."

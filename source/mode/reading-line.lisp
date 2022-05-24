@@ -1,12 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/reading-line-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:documentation "Mode for reading lines."))
-(in-package :nyxt/reading-line-mode)
-(use-nyxt-package-nicknames)
+(nyxt:define-and-set-package :nyxt/reading-line-mode
+  (:documentation "Mode for drawing a line to keep track of the reading position."))
 
 (define-mode reading-line-mode ()
   "Mode for drawing a line on screen that you can use to keep track of

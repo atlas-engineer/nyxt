@@ -1,11 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/force-https-mode
-  (:use :common-lisp :nyxt)
+(nyxt:define-and-set-package :nyxt/force-https-mode
   (:documentation "Mode for enforcing HTTPS on any URL clicked/hinted/set by user."))
-(in-package :nyxt/force-https-mode)
-(use-nyxt-package-nicknames)
 
 ;; TODO: Add style to loop help page?
 (defun https->http-loop-help (buffer url) ; TODO: Factor with tls-help?

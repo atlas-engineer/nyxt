@@ -1,13 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/blocker-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:class-star #:define-class)
-  (:import-from #:serapeum #:->)
+(nyxt:define-and-set-package :nyxt/blocker-mode
   (:documentation "Block resource queries for listed hosts."))
-(in-package :nyxt/blocker-mode)
-(use-nyxt-package-nicknames)
 
 ;; TODO: Add convenient interface to block hosts depending on the current URL.
 

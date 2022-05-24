@@ -1,12 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/preview-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:class-star #:define-class)
+(nyxt:define-and-set-package :nyxt/preview-mode
   (:documentation "Refresh file when changed on disk."))
-(in-package :nyxt/preview-mode)
-(use-nyxt-package-nicknames)
 
 (defun updated-file-p (path-url mode)
   (when (quri:uri-file-p path-url)

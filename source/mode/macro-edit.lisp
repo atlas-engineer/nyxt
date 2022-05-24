@@ -1,11 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/macro-edit-mode
-  (:use :common-lisp :nyxt)
+(nyxt:define-and-set-package :nyxt/macro-edit-mode
   (:documentation "Mode for editing macros."))
-(in-package :nyxt/macro-edit-mode)
-(use-nyxt-package-nicknames)
 
 (define-mode macro-edit-mode ()
   "Mode for creating and editing macros."

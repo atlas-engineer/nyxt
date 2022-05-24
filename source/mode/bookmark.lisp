@@ -1,14 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/bookmark-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:class-star #:define-class)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:serapeum #:export-always #:->)
+(nyxt:define-and-set-package :nyxt/bookmark-mode
   (:documentation "Manage bookmarks."))
-(in-package :nyxt/bookmark-mode)
-(use-nyxt-package-nicknames)
 
 ;;; We don't use CL-prevalence to serialize / deserialize bookmarks for a couple for reasons:
 ;;; - It's too verbose, e.g. a list is
