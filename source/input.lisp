@@ -38,13 +38,6 @@
   (dolist (i fns)
     (command-information i)))
 
-(deftype nyxt-keymap-value ()
-  '(or keymap:keymap function-symbol command))
-
-;; TODO: This pins the `keymap' library exclusively to Nyxt uses.
-;; Can we make it more general?
-(setf keymap:*default-bound-type* 'nyxt-keymap-value)
-
 (-> make-keymap (string &rest keymap:keymap) keymap:keymap)
 (export-always 'make-keymap)
 (defun make-keymap (name &rest parents)
@@ -56,7 +49,7 @@ Example:
 \(defvar *my-keymap* (make-keymap \"my-map\")
   \"My keymap.\")"
   (let ((keymap (apply #'keymap:make-keymap name parents)))
-    (setf (keymap:bound-type keymap) 'nyxt-keymap-value)
+    (setf (keymap:bound-type keymap) 'scheme:nyxt-keymap-value)
     keymap))
 
 (export-always 'current-keymaps)
@@ -140,7 +133,7 @@ Return nil to forward to renderer or non-nil otherwise."
 
         (t
          (multiple-value-bind (bound-function matching-keymap translated-key)
-             (the nyxt-keymap-value
+             (the scheme:nyxt-keymap-value
                   (keymap:lookup-key key-stack (current-keymaps)))
            (declare (ignore matching-keymap))
            (cond

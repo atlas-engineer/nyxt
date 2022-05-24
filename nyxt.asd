@@ -101,7 +101,8 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                nyxt/prompter
                nyxt/theme)
   :pathname "source/"
-  :components ((:file "package")
+  :components ((:file "keymap")       ; TODO: Rename to scheme.
+               (:file "package" :depends-on ("keymap"))
                (:module "Utilities"
                 :pathname ""
                 :depends-on ("package")
