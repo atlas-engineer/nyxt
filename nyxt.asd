@@ -101,14 +101,14 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                nyxt/prompter
                nyxt/theme)
   :pathname "source/"
-  :components ((:file "scheme")
-               (:file "package" :depends-on ("scheme"))
+  :components ((:file "package")
                (:module "Utilities"
                 :pathname ""
                 :depends-on ("package")
                 :components
                 ((:file "time")
                  (:file "types")
+                 (:file "scheme" :depends-on ("types"))
                  (:file "conditions")
                  (:file "debug")
                  (:file "user-interface")))

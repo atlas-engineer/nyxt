@@ -3,12 +3,12 @@
 
 (uiop:define-package :nyxt/scheme
   (:use :common-lisp)
-  (:import-from #:class-star #:define-class)
   (:import-from #:serapeum
                 #:export-always
                 #:->)
-  (:documentation "Nyxt-specific DOM classes and functions operating on them."))
+  (:documentation "Nyxt type specialization for `keymap' bound values."))
 (in-package :nyxt/scheme)
+(trivial-package-local-nicknames:add-package-local-nickname :scheme :nyxt/scheme :nyxt)
 
 ;; Setting `keymap:keymap' bound-value type to something like `function-symbol'
 ;; is not practical because functions defined in the same file as the keymap are
@@ -20,7 +20,7 @@
 (export-always 'nyxt-keymap-value)
 #+nyxt-debug-keymap
 (deftype nyxt-keymap-value ()
-  '(or keymap:keymap nyxt::function-symbol nyxt::command))
+  '(or keymap:keymap nyxt:function-symbol nyxt::command))
 
 #-nyxt-debug-keymap
 (deftype nyxt-keymap-value ()
