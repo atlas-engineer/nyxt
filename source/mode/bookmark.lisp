@@ -96,38 +96,6 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
             (push bookmark (gethash tags bookmarks-table nil)))))
     bookmarks-table))
 
-(export-always 'list-bookmarks)
-(define-internal-page-command-global list-bookmarks ()
-    (bookmarks-buffer "*Bookmarks*")
-  "List all bookmarks in a new buffer."
-  (let ((bookmarks (group-bookmarks bookmarks-buffer)))
-    (spinneret:with-html-string
-      (:style (style (find-submode 'bookmark-mode (current-buffer)))) ; TODO: Make sure this is the right buffer
-      (:h1 "Bookmarks")
-      (cond
-        ((zerop (hash-table-count bookmarks))
-         (:p (format nil "No bookmarks in ~s." (files:expand (bookmarks-file bookmarks-buffer)))))
-        (t (maphash
-            (lambda (tag bookmarks)
-              (:details
-               (:summary (or tag "Unsorted"))
-               (dolist (bookmark bookmarks)
-                 (let ((uri-host (quri:uri-host (url bookmark)))
-                       (url-href (render-url (url bookmark))))
-                   (:dl
-                    (:dt (:button :onclick (ps:ps (delbkm (ps:lisp url-href))) "✕")
-                         (serapeum:ellipsize (title bookmark) 80))
-                    (:dd (:a :href url-href uri-host))
-                    (when (tags bookmark)
-                      (:dd (format nil " (~{~a~^, ~})" (tags bookmark)))))
-                   (:hr)))))
-            bookmarks)))
-      (:nscript
-       ;; Not exactly pretty, but saves a lot of space.
-       (ps:ps (defun delbkm (url)
-                (fetch (+ "lisp://" (escape (+ "(nyxt:delete-bookmark \"" url "\")/")))
-                       (ps:create :mode "no-cors"))))))))
-
 (define-class bookmarks-file (files:data-file nyxt-lisp-file)
   ((files:base-path #p"bookmarks")
    (files:name "bookmarks"))
@@ -350,6 +318,43 @@ rest in background buffers."
    :prompt "Open bookmark(s)"
    :sources (make-instance 'bookmark-source
                            :return-actions return-actions)))
+
+(export-always 'list-bookmarks)
+(define-internal-page-command-global list-bookmarks ()
+    (bookmarks-buffer "*Bookmarks*")
+  "List all bookmarks in a new buffer."
+  (let ((bookmarks (group-bookmarks bookmarks-buffer)))
+    (spinneret:with-html-string
+      (:style (style (find-submode 'bookmark-mode (current-buffer)))) ; TODO: Make sure this is the right buffer
+      (:h1 "Bookmarks")
+      (cond
+        ((zerop (hash-table-count bookmarks))
+         (:p (format nil "No bookmarks in ~s." (files:expand (bookmarks-file bookmarks-buffer)))))
+        (t (maphash
+            (lambda (tag bookmarks)
+              (:details
+               (:summary (or tag "Unsorted"))
+               (dolist (bookmark bookmarks)
+                 (let ((uri-host (quri:uri-host (url bookmark)))
+                       (url-href (render-url (url bookmark))))
+                   (:div :class "bookmark-entry"
+                         (:dl
+                          (:dt
+                           (:button :onclick
+                                    (ps:ps
+                                      (let ((section (ps:chain document active-element
+                                                               (closest ".bookmark-entry"))))
+                                        (ps:chain section parent-node (remove-child section)))
+                                      (nyxt/ps:lisp-eval
+                                       (:title "delbkm")
+                                       (nyxt/bookmark-mode:delete-bookmark url-href)))
+                                    "✕")
+                           (serapeum:ellipsize (title bookmark) 80))
+                          (:dd (:a :href url-href uri-host))
+                          (when (tags bookmark)
+                            (:dd (format nil " (~{~a~^, ~})" (tags bookmark)))))
+                         (:hr))))))
+            bookmarks))))))
 
 (defmethod serialize-object ((entry bookmark-entry) stream)
   (unless (url-empty-p (url entry))
