@@ -5,8 +5,8 @@
   (:use :common-lisp :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:documentation "Mode for editing HTML input areas."))
-
 (in-package :nyxt/input-edit-mode)
+(use-nyxt-package-nicknames)
 
 ;;;; commands for navigating/editing input fields on HTML pages
 

@@ -7,6 +7,7 @@
   (:import-from #:class-star #:define-class)
   (:documentation "Traverse a list of links."))
 (in-package :nyxt/expedition-mode)
+(use-nyxt-package-nicknames)
 
 (define-mode expedition-mode ()
   "Mode for traversing a set of URLs."

@@ -5,8 +5,8 @@
   (:use :common-lisp :nyxt)
   (:import-from #:keymap #:define-key #:define-scheme)
   (:documentation "Mode for reading lines."))
-
 (in-package :nyxt/reading-line-mode)
+(use-nyxt-package-nicknames)
 
 (define-mode reading-line-mode ()
   "Mode for drawing a line on screen that you can use to keep track of

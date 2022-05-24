@@ -7,6 +7,7 @@
   (:import-from #:class-star #:define-class)
   (:documentation "Mode to spell-check text in buffers."))
 (in-package :nyxt/spell-check-mode)
+(use-nyxt-package-nicknames)
 
 (define-mode spell-check-mode ()
   ""
