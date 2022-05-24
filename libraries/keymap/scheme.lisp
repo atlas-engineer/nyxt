@@ -134,8 +134,15 @@ The scheme keymaps are named \"my-mode-cua-map\" and \"my-mode-emacs-map\"."
     (loop :for (nil quoted-bindings . nil) :on name+bindings-pairs :by #'cddr
           :for bindings = (rest quoted-bindings)
           :do (check-type bindings list)
-          :do (loop :for (keyspecs nil . nil) :on bindings :by #'cddr
-                    :do (check-type keyspecs (or keyspecs-type list))))
+          :do (loop :for (keyspecs bound-value . nil) :on bindings :by #'cddr
+                    :do (check-type keyspecs (or keyspecs-type list))
+
+                    :when (and (symbolp bound-value)
+                               (not (typep (second bound-value) *default-bound-type*)))
+                      ;; TODO: `*default-bound-type*' API is not usable.
+                      :do (error "Bound value ~a is not of type ~a"
+                                 bound-value
+                                 *default-bound-type*)))
     `(progn
        (define-scheme* ,name-prefix ,imported-scheme ,name ,bindings ,@more-name+bindings-pairs))))
 
