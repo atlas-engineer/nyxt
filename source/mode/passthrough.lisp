@@ -1,13 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/passthrough-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:serapeum #:->)
+(nyxt:define-and-set-package :nyxt/passthrough-mode
   (:documentation "Forward all keybindings to the web view except those in the `override-map'."))
-(in-package :nyxt/passthrough-mode)
-(use-nyxt-package-nicknames)
 
 ;;; Moving modes out of the `modes' slot is a bad idea: too many parts rely on
 ;;; the presence of the `modes' slot. Instead, use a hook to temporarily override

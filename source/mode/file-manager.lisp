@@ -1,14 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/file-manager-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:class-star #:define-class)
-  (:import-from #:serapeum #:export-always #:->)
-  (:documentation "Mode for file choosing prompt buffer"))
-(in-package :nyxt/file-manager-mode)
-(use-nyxt-package-nicknames)
+(nyxt:define-and-set-package :nyxt/file-manager-mode
+  (:documentation "Mode for file management from the prompt buffer."))
 
 (nyxt/prompt-buffer-mode::define-command-prompt directory-up (prompt-buffer)
   "Remove one level of directory nesting from the current PROMPT-BUFFER file input."

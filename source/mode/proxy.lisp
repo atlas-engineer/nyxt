@@ -1,14 +1,12 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/proxy-mode
-  (:use :common-lisp :nyxt)
+(nyxt:define-and-set-package :nyxt/proxy-mode
   (:shadow #:proxy) ; Because of exported slot of the same below.
   (:documentation "Proxy mode can be used to do all the networking (optionally
 including downloads) via a proxy server.
 It can also be configured to forward all the networking through local services
 like Tor."))
-(in-package :nyxt/proxy-mode)
 
 (define-mode proxy-mode ()
   "Enable forwarding of all network requests to a specific host.

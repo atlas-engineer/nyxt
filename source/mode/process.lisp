@@ -1,12 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/process-mode
-    (:use :common-lisp :nyxt)
-  (:import-from #:class-star #:define-class)
+(nyxt:define-and-set-package :nyxt/process-mode
   (:documentation "Act on file/directory based on a certain condition."))
-(in-package :nyxt/process-mode)
-(use-nyxt-package-nicknames)
 
 (define-mode process-mode ()
   "Conditional execution a file/directory-related actions in a separate thread.

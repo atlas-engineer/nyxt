@@ -1,12 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/vi-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:keymap #:define-key #:define-scheme)
+(nyxt:define-and-set-package :nyxt/vi-mode
   (:documentation "VI-style bindings."))
-(in-package :nyxt/vi-mode)
-(use-nyxt-package-nicknames)
 
 (define-mode vi-normal-mode ()
   "Enable VI-style modal bindings (normal mode).

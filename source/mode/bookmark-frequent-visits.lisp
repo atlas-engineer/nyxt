@@ -1,11 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package  :nyxt/bookmark-frequent-visits
-  (:use :common-lisp :nyxt)
+(nyxt:define-and-set-package :nyxt/bookmark-frequent-visits
   (:documentation "Mode to bookmark frequently visited URLs."))
-(in-package :nyxt/bookmark-frequent-visits)
-(use-nyxt-package-nicknames)
 
 (define-mode bookmark-frequent-visits-mode ()
   "Mode to bookmark frequently visited URLs while navigating the web."

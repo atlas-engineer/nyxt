@@ -1,11 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/watch-mode
-    (:use :common-lisp :nyxt)
-  (:documentation "Mode for reloading buffers at regular time
-  intervals."))
-(in-package :nyxt/watch-mode)
+(nyxt:define-and-set-package :nyxt/watch-mode
+  (:documentation "Mode for reloading buffers at regular time intervals."))
 
 (defun seconds-from-user-input ()
   "Query the numerical time inputs and collate them into seconds."

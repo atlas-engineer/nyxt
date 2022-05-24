@@ -1,13 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/spell-check-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:class-star #:define-class)
+(nyxt:define-and-set-package :nyxt/spell-check-mode
   (:documentation "Mode to spell-check text in buffers."))
-(in-package :nyxt/spell-check-mode)
-(use-nyxt-package-nicknames)
 
 (define-mode spell-check-mode ()
   ""

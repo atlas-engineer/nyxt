@@ -1,14 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/record-input-field-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:class-star #:define-class)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:serapeum #:export-always #:->)
+(nyxt:define-and-set-package :nyxt/record-input-field-mode
   (:documentation "Record input fields to be refilled later."))
-(in-package :nyxt/record-input-field-mode)
-(use-nyxt-package-nicknames)
 
 (define-mode record-input-field-mode ()
   "Record input fields to be refilled later.

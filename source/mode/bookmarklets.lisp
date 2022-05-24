@@ -7,15 +7,9 @@
 ;;;; are released into the public domain, per the license available
 ;;;; here: https://www.squarefree.com/bookmarklets/copyright.html
 
-(uiop:define-package :nyxt/bookmarklets-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:class-star #:define-class)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:serapeum #:export-always #:->)
+(nyxt:define-and-set-package :nyxt/bookmarklets-mode
   (:documentation "Easily create 'bookmarklets' (JavaScript snippets) to alter
 the content of HTML pages."))
-(in-package :nyxt/bookmarklets-mode)
-(use-nyxt-package-nicknames)
 
 (define-mode bookmarklets-mode ()
   "Mode for 'bookmarklets' commands.

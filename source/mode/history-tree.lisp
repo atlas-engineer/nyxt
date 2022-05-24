@@ -1,10 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/history-tree-mode
-  (:use :common-lisp :nyxt)
+(nyxt:define-and-set-package :nyxt/history-tree-mode
   (:documentation "Mode for history-trees."))
-(in-package :nyxt/history-tree-mode)
 
 (define-mode history-tree-mode ()
   "Mode for history-tree listing."

@@ -1,13 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/expedition-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:class-star #:define-class)
+(nyxt:define-and-set-package :nyxt/expedition-mode
   (:documentation "Traverse a list of links."))
-(in-package :nyxt/expedition-mode)
-(use-nyxt-package-nicknames)
 
 (define-mode expedition-mode ()
   "Mode for traversing a set of URLs."
