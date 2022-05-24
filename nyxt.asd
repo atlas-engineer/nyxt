@@ -108,6 +108,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                 :components
                 ((:file "time")
                  (:file "types")
+                 (:file "scheme" :depends-on ("types"))
                  (:file "conditions")
                  (:file "debug")
                  (:file "user-interface")))
