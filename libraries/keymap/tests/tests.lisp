@@ -8,7 +8,7 @@
 (defun empty-keymap (&rest parents)
   (apply #'keymap:make-keymap "anonymous" parents))
 
-(keymap-test "Make key"
+(prove:subtest "Make key"
   (let* ((key (keymap:make-key :code 38 :value "a" :modifiers '("C")))
          (mod (first (fset:convert 'list (keymap:key-modifiers key)))))
     (prove:is (keymap:key-code key)
@@ -22,7 +22,7 @@
     (prove:isnt mod "M" :test #'keymap:modifier=)
     (prove:isnt mod "meta" :test #'keymap:modifier=)))
 
-(keymap-test "Make bad key"
+(prove:subtest "Make bad key"
   (prove:is-error (keymap:make-key :value "a" :status :dummy)
                   'type-error)
   (prove:is-error (keymap:make-key :value "a" :modifiers '("Z"))
@@ -30,7 +30,7 @@
   (prove:is-error (keymap:make-key :status :pressed)
                   'keymap:make-key-required-arg))
 
-(keymap-test "Make same key"
+(prove:subtest "Make same key"
   (prove:is (keymap:make-key :value "a" :modifiers '("C" "M"))
             (keymap:make-key :value "a" :modifiers '("M" "C"))
             :test #'keymap:key=)
@@ -38,17 +38,17 @@
             (keymap:make-key :value "a" :modifiers '("control"))
             :test #'keymap:key=))
 
-(keymap-test "Make key with duplicate modifiers (trigger warning)"
+(prove:subtest "Make key with duplicate modifiers (trigger warning)"
   (prove:is (keymap:make-key :value "a" :modifiers '("C" "control"))
             (keymap:make-key :value "a" :modifiers '("C"))
             :test #'keymap:key=))
 
-(keymap-test "Make different key"
+(prove:subtest "Make different key"
   (prove:isnt (keymap:make-key :value "a")
               (keymap:make-key :value "A")
               :test #'keymap:key=))
 
-(keymap-test "Keyspec->key"
+(prove:subtest "Keyspec->key"
   (prove:is (keymap::keyspec->key "a")
             (keymap:make-key :value "a")
             :test #'keymap:key=)
@@ -86,7 +86,7 @@
 (defun binding= (keys1 keys2)
   (not (position nil (mapcar #'keymap:key= keys1 keys2))))
 
-(keymap-test "Keyspecs->keys"
+(prove:subtest "Keyspecs->keys"
   (prove:is (keymap::keyspecs->keys "C-x C-f")
             (list (keymap:make-key :value "x" :modifiers '("C"))
                   (keymap:make-key :value "f" :modifiers '("C")))
@@ -96,7 +96,7 @@
                   (keymap:make-key :value "f" :modifiers '("C")))
             :test #'binding=))
 
-(keymap-test "define-key & lookup-key"
+(prove:subtest "define-key & lookup-key"
   (let ((keymap (empty-keymap)))
     (keymap:define-key keymap "C-x" 'foo)
     (prove:is (keymap:lookup-key "C-x" keymap)
@@ -111,7 +111,7 @@
     (prove:is (keymap:lookup-key "C-c C-h" keymap)
               'bar2)))
 
-(keymap-test "define-key type error"
+(prove:subtest "define-key type error"
   (let ((keymap (empty-keymap)))
     (setf (keymap:bound-type keymap) '(or keymap::keymap function))
     (prove:is (keymap:define-key keymap "C-x" #'format)
@@ -119,7 +119,7 @@
     (prove:is-error (keymap:define-key keymap "C-c" 'append)
                     'type-error)))
 
-(keymap-test "define-key & multiple bindings"
+(prove:subtest "define-key & multiple bindings"
   (let ((keymap (empty-keymap)))
     (keymap:define-key keymap
       "C-x" 'foo
@@ -129,7 +129,7 @@
     (prove:is (keymap:lookup-key "C-c" keymap)
               'bar)))
 
-(keymap-test "define-key & lookup-key with parents"
+(prove:subtest "define-key & lookup-key with parents"
   (let* ((parent1 (empty-keymap))
          (parent2 (empty-keymap))
          (keymap (empty-keymap parent1 parent2)))
@@ -144,7 +144,7 @@
     (prove:is (keymap:lookup-key "b" keymap)
               'parent2-b)))
 
-(keymap-test "define-key & lookup-key with prefix keymap"
+(prove:subtest "define-key & lookup-key with prefix keymap"
   (let ((keymap (empty-keymap))
         (prefix (empty-keymap)))
     (keymap:define-key keymap "C-c" prefix)
@@ -152,7 +152,7 @@
     (prove:is (keymap:lookup-key "C-c x" keymap)
               'prefix-sym)))
 
-(keymap-test "define-key & lookup-key with cycle"
+(prove:subtest "define-key & lookup-key with cycle"
   (let ((keymap (empty-keymap))
         (parent1 (empty-keymap))
         (parent2 (empty-keymap)))
@@ -162,7 +162,7 @@
     (prove:is (keymap:lookup-key "x" keymap)
               nil)))
 
-(keymap-test "Translator"
+(prove:subtest "Translator"
   (let ((keymap (empty-keymap)))
     (keymap:define-key keymap "A b" 'foo)
     (prove:is (keymap:lookup-key "shift-a shift-B" keymap)
@@ -183,7 +183,7 @@
     (prove:is (keymap:lookup-key "shift-return" keymap)
               'ret)))
 
-(keymap-test "Translator: Ensure other keymaps have priority over translations"
+(prove:subtest "Translator: Ensure other keymaps have priority over translations"
   (let ((keymap (empty-keymap))
         (keymap2 (empty-keymap)))
     (keymap:define-key keymap "g g" 'prefix-g)
@@ -191,7 +191,7 @@
     (prove:is (keymap:lookup-key "s-G" (list keymap keymap2))
               'up-g)))
 
-(keymap-test "keys->keyspecs"
+(prove:subtest "keys->keyspecs"
   (prove:is (keymap:keys->keyspecs (list (keymap:make-key :code 10 :value "a")))
             "#10")
   (prove:is (keymap:keys->keyspecs (list (keymap:make-key :value "a")
@@ -210,7 +210,7 @@
     (prove:is (keymap:keys->keyspecs (list (keymap:make-key :value "a" :modifiers '("C"))))
               "control-a")))
 
-(keymap-test "keymap->map"
+(prove:subtest "keymap->map"
   (let ((keymap (empty-keymap))
         (keymap2 (empty-keymap)))
     (keymap:define-key keymap "a" 'foo-a)
@@ -239,7 +239,7 @@
                         ("k c" 'bar-c))
               :test #'fset:equal?)))
 
-(keymap-test "keymap->map with cycles" ; TODO: Can we check warnings?
+(prove:subtest "keymap->map with cycles" ; TODO: Can we check warnings?
   (let ((keymap (empty-keymap))
         (keymap2 (empty-keymap)))
     (keymap:define-key keymap "k" keymap2)
@@ -257,7 +257,7 @@
               (fset:empty-map)
               :test #'fset:equal?)))
 
-(keymap-test "keymap-with-parents->map"
+(prove:subtest "keymap-with-parents->map"
   (let* ((grand-parent (empty-keymap))
          (parent1 (empty-keymap))
          (parent2 (empty-keymap grand-parent))
@@ -294,7 +294,7 @@
                         ("d" 'qux-d))
               :test #'fset:equal?)))
 
-(keymap-test "keymap-with-parents->map with cycles" ; TODO: Can we check warnings?
+(prove:subtest "keymap-with-parents->map with cycles" ; TODO: Can we check warnings?
   (let ((keymap1 (empty-keymap))
         (keymap2 (empty-keymap)))
     (push keymap1 (keymap:parents keymap2))
@@ -312,7 +312,7 @@
               (fset:empty-map)
               :test #'fset:equal?)))
 
-(keymap-test "compose-keymaps"
+(prove:subtest "compose-keymaps"
   (let* ((parent1 (empty-keymap))
          (keymap1 (keymap:make-keymap "1" parent1))
          (parent2 (empty-keymap))
@@ -337,7 +337,7 @@
       (prove:is (keymap:parents composition)
                 (list parent1 parent2)))))
 
-(keymap-test "compose: Altering source does not impact composition"
+(prove:subtest "compose: Altering source does not impact composition"
   (let* ((keymap1 (keymap:make-keymap "1"))
          (keymap2 nil))
     (keymap:define-key keymap1 "a" 'foo-a)
@@ -349,7 +349,7 @@
                ("a" 'foo-a))
               :test #'fset:equal?)))
 
-(keymap-test "binding-keys"
+(prove:subtest "binding-keys"
   (let* ((keymap1 (empty-keymap))
          (keymap2 (empty-keymap))
          (keymap3 (empty-keymap keymap1)))
@@ -408,7 +408,7 @@
               `(("C-c a")
                 (("C-c a" ,keymap1))))))
 
-(keymap-test "undefine"
+(prove:subtest "undefine"
   (let* ((keymap (empty-keymap)))
     (keymap:define-key keymap "a" 'foo-a)
     (keymap:define-key keymap "a" nil)
@@ -421,7 +421,7 @@
               (fset:empty-map)
               :test 'fset:equal?)))
 
-(keymap-test "remap"
+(prove:subtest "remap"
   (let* ((keymap (empty-keymap))
          (keymap2 (empty-keymap)))
     (keymap:define-key keymap "a" 'foo-a)
@@ -433,7 +433,7 @@
     (prove:is (keymap:lookup-key "b" keymap)
               'bar-2)))
 
-(keymap-test "retrieve translated key"
+(prove:subtest "retrieve translated key"
   (let* ((keymap (empty-keymap)))
     (keymap:define-key keymap "a" 'foo-a)
     (multiple-value-bind (hit km key)
@@ -442,7 +442,7 @@
       (prove:is km keymap)
       (prove:is (keymap:keys->keyspecs key) "a"))))
 
-(keymap-test "Don't shadow a prefix keymap"
+(prove:subtest "Don't shadow a prefix keymap"
   (let* ((parent (empty-keymap))
          (keymap (empty-keymap parent)))
     (keymap:define-key parent "C-x" 'parent-x)

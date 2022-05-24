@@ -5,7 +5,7 @@
 
 (prove:plan nil)
 
-(keymap-test "Make scheme"
+(prove:subtest "Make scheme"
   (let* ((scheme (keymap:define-scheme "test"
                    scheme:cua '("C-c" copy
                                 "C-v" paste)))
@@ -18,7 +18,7 @@
     (prove:is (keymap:name (gethash scheme:cua scheme))
               (keymap:name keymap))))
 
-(keymap-test "Make scheme with LIST"
+(prove:subtest "Make scheme with LIST"
   (let* ((scheme (keymap:define-scheme "test"
                      scheme:cua (list "C-c" 'copy
                                       "C-v" 'paste)))
@@ -30,7 +30,7 @@
               (fset:convert 'fset:map (keymap:keymap->map keymap))
               :test #'fset:equal?)))
 
-(keymap-test "Make scheme with multiple names"
+(prove:subtest "Make scheme with multiple names"
   (let* ((scheme (keymap:define-scheme "test"
                      scheme:cua (list "C-c" 'copy
                                       "C-v" 'paste)
@@ -51,7 +51,7 @@
               (fset:convert 'fset:map (keymap:keymap->map emacs-keymap))
               :test #'fset:equal?)))
 
-(keymap-test "Test inheritance"
+(prove:subtest "Test inheritance"
   (let* ((scheme (keymap:define-scheme "test"
                      scheme:cua (list "C-c" 'copy
                                       "C-v" 'paste)
@@ -68,7 +68,7 @@
     (prove:is (list (gethash scheme:cua scheme))
               (keymap:parents (gethash scheme:emacs scheme)))))
 
-(keymap-test "Get keymap"
+(prove:subtest "Get keymap"
   (let* ((scheme (keymap:define-scheme "test"
                    scheme:cua (list "C-c" 'copy
                                     "C-v" 'paste)
@@ -81,7 +81,7 @@
     (prove:is (keymap:get-keymap scheme:cua scheme)
               (keymap:get-keymap scheme:vi-normal scheme))))
 
-;; (keymap-test "Make scheme with type errors" ; TODO: How do we test macro-expansion-time error?
+;; (prove:subtest "Make scheme with type errors" ; TODO: How do we test macro-expansion-time error?
 ;;   (prove:is-error (keymap:define-scheme
 ;;                       scheme:cua (list "C-" 'copy))
 ;;                   'type-error))
