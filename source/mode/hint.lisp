@@ -54,8 +54,7 @@ define which elements are picked up by element hinting.")
        "C-J" 'follow-hint-new-buffer
        "C-M-j" 'follow-hint-nosave-buffer-focus
        "C-u C-M-j" 'follow-hint-nosave-buffer
-       "M-c h" 'copy-hint-url
-       "C-m g" 'bookmark-hint)
+       "M-c h" 'copy-hint-url)
       scheme:emacs
       (list
        "M-g M-g" 'follow-hint           ; Corresponds to Emacs' `goto-line'.
@@ -64,8 +63,7 @@ define which elements are picked up by element hinting.")
        "C-u M-g g" 'follow-hint-new-buffer
        "C-M-g C-M-g" 'follow-hint-nosave-buffer-focus
        "C-M-g g" 'follow-hint-nosave-buffer
-       "C-x C-w" 'copy-hint-url
-       "C-m g" 'bookmark-hint)
+       "C-x C-w" 'copy-hint-url)
 
       scheme:vi-normal
       (list
@@ -73,8 +71,7 @@ define which elements are picked up by element hinting.")
        "F" 'follow-hint-new-buffer-focus
        "; f" 'follow-hint-new-buffer
        "g f" 'follow-hint-nosave-buffer
-       "g F" 'follow-hint-nosave-buffer-focus
-       "m f" 'bookmark-hint)))))
+       "g F" 'follow-hint-nosave-buffer-focus)))))
 
 (define-parenscript add-stylesheet ()
   (unless (nyxt/ps:qs document "#nyxt-stylesheet")

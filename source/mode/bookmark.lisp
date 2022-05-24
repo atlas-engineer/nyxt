@@ -40,7 +40,8 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
        "C-m C-s" 'bookmark-buffer-url
        "C-m k" 'delete-bookmark
        "C-m l" 'bookmark-url
-       "C-b" 'list-bookmarks)
+       "C-b" 'list-bookmarks
+       "C-m g" 'bookmark-hint)
 
       scheme:emacs
       (list
@@ -48,7 +49,8 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
        "C-x r M" 'bookmark-current-url
        "C-x r m" 'bookmark-buffer-url
        "C-x r k" 'delete-bookmark
-       "C-x r l" 'bookmark-url)
+       "C-x r l" 'bookmark-url
+       "C-m g" 'bookmark-hint)
 
       scheme:vi-normal
       (list
@@ -57,7 +59,8 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
        "m o" 'set-url-from-bookmark
        "m m" 'bookmark-buffer-url
        "m M" 'bookmark-current-url
-       "m l" 'list-bookmarks))
+       "m l" 'list-bookmarks
+       "m f" 'bookmark-hint))
     :type keymap:scheme)
    (style (theme:themed-css (theme *browser*)
             ("summary"
