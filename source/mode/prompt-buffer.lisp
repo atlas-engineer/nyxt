@@ -1,6 +1,15 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
+(uiop:define-package nyxt/prompt-buffer-mode
+  (:use #:common-lisp #:nyxt)
+  (:import-from #:trivia #:match #:multiple-value-match #:lambda-match #:guard)
+  (:import-from #:keymap #:define-key #:define-scheme)
+  (:import-from #:class-star #:define-class)
+  (:import-from #:serapeum
+                #:export-always
+                #:->)
+  (:documentation "Mode for prompter buffer."))
 (in-package :nyxt/prompt-buffer-mode)
 (use-nyxt-package-nicknames)
 

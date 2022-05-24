@@ -59,17 +59,3 @@ and `serapeum:':
 
 (trivial-package-local-nicknames:add-package-local-nickname :hooks :nhooks :nyxt-user)
 (trivial-package-local-nicknames:add-package-local-nickname :files :nfiles :nyxt-user)
-
-;; Unlike other modes, nyxt/prompt-buffer-mode is declared here because
-;; certain files depend upon its existence being declared beforehand
-;; (for compilation).
-;; TODO: See if prompt-buffer-mode can be declared in prompt-buffer-mode.lisp.
-(uiop:define-package nyxt/prompt-buffer-mode
-  (:use #:common-lisp #:nyxt)
-  (:import-from #:trivia #:match #:multiple-value-match #:lambda-match #:guard)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:class-star #:define-class)
-  (:import-from #:serapeum
-                #:export-always
-                #:->)
-  (:documentation "Mode for prompter buffer."))
