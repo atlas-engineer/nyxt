@@ -26,8 +26,6 @@
    #:key-status
    #:key=
 
-   #:*default-bound-type*
-
    #:keymap
    #:make-keymap
    #:keymap-p

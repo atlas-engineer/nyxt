@@ -280,7 +280,7 @@ Ths parameter can be let-bound around `lookup-key' calls.")
 
 (defparameter *default-bound-type* '(or keymap t)
   "Default value for the `bound-type' slot of `keymap'.
-Changing this will only impact newly created keymaps.")
+Do not change this, instead create new `scheme-name's or subclass `keymap'.")
 
 (defclass keymap ()
   ((name :accessor name
@@ -305,7 +305,7 @@ symbol or a keymap.")
                :documentation
                "Type of the bound-value.
 The type is enforced in `define-key' at macro-expansion time.
-Type should allow keymaps, so it should probably be in the form
+Type should allow `keymap's, so it should probably be in the form
 \(or keymap NON-KEYMAP-BOUND-TYPE).")
    (parents :accessor parents
             :initarg :parents
