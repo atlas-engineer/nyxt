@@ -5,6 +5,7 @@
 
 ;; trivial-types:proper-list doesn't check its element type.
 
+(export-always 'function-symbol)
 (deftype function-symbol ()
   `(and symbol (satisfies fboundp)))
 
