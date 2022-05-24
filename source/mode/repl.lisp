@@ -5,8 +5,8 @@
   (:use #:common-lisp #:nyxt)
   (:import-from #:keymap #:define-scheme)
   (:export :repl-mode))
-
 (in-package :nyxt/repl-mode)
+(use-nyxt-package-nicknames)
 
 (define-mode repl-mode ()
   "Mode for interacting with the REPL."

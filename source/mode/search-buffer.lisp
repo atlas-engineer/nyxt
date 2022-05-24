@@ -10,6 +10,7 @@
                 #:->)
   (:documentation "Mode for element hints."))
 (in-package :nyxt/search-buffer-mode)
+(use-nyxt-package-nicknames)
 
 (define-mode search-buffer-mode (nyxt/hint-mode:hint-mode)
   "Mode for searching text withing."

@@ -7,6 +7,7 @@
   (:import-from #:class-star #:define-class)
   (:documentation "Mode for editors."))
 (in-package :nyxt/editor-mode)
+(use-nyxt-package-nicknames)
 
 (define-mode editor-mode ()
   "Mode for editor modes to extend. Importantly, it is required to implement the

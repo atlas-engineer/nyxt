@@ -6,6 +6,7 @@
   (:import-from #:keymap #:define-key #:define-scheme)
   (:documentation "Prompt-buffer mode for element hints."))
 (in-package :nyxt/hint-prompt-buffer-mode)
+(use-nyxt-package-nicknames)
 
 (define-command toggle-hints-transparency (&key (buffer (current-buffer)))
   "Toggle the on-screen element hints transparency."

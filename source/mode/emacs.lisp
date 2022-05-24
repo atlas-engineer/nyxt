@@ -6,6 +6,7 @@
   (:import-from #:keymap #:define-key #:define-scheme)
   (:documentation "Emacs-style bindings."))
 (in-package :nyxt/emacs-mode)
+(use-nyxt-package-nicknames)
 
 (define-mode emacs-mode ()
   "Enable Emacs-style bindings.
@@ -18,7 +19,8 @@ Example:
   ((default-modes (append '(emacs-mode) %slot-default%))))"
   ((glyph "ε")
    (rememberable-p nil)
-   (previous-keymap-scheme-name nil
+   (previous-keymap-scheme-name
+    nil
     :type (or keymap:scheme-name null)
     :documentation "The previous keymap scheme that will be used when ending
 this mode.")))
