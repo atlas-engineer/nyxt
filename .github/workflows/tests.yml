@@ -78,6 +78,11 @@ jobs:
       run: |
         ros -e '(asdf:load-system :nyxt/submodules)' -e '(load "build-scripts/report-warnings.lisp")' -e '(compilation-conditions "nyxt")' -e '(compilation-conditions "nyxt/gtk")'
 
+    - name: Keymap type checking
+      shell: bash
+      run: |
+        ros -e '(asdf:load-system :nyxt/submodules)'  -e '(asdf:load-system :nyxt)' -e '(push :nyxt-debug-keymap *features*)' -e '(handler-case (asdf:load-system :nyxt :force t) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17)))'
+
     - name: Manual dump
       shell: bash
       run: |
