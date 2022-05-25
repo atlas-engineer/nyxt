@@ -64,12 +64,19 @@ modes, commands, etc."))
          (setq *package* (find-package ,name)))
        (nyxt::use-nyxt-package-nicknames))))
 
+(deftype class-symbol ()
+  `(and symbol (satisfies find-class)))
+
 #+nyxt-debug-make-instance
-(defmacro make-instance (sym &rest args)
+(serapeum:-> make-instance (class-symbol &rest t) t)
+#+nyxt-debug-make-instance
+(defun make-instance (sym &rest args)
   "This wrapper of `make-instance' can be used from a test suite to check if all
-calls are made on valid classes."
-  (find-class (second sym))
-  `(cl:make-instance ,sym ,@args))
+calls are made on valid classes.
+
+The check seems to only work on CCL, but not even everywhere, for instance slot
+initforms may not be caught."
+  (apply #'cl:make-instance sym args))
 
 (uiop:define-package nyxt-user
   (:use #:common-lisp #:nyxt)
