@@ -78,6 +78,11 @@ jobs:
       run: |
         ros -e '(asdf:load-system :nyxt/submodules)' -e '(load "build-scripts/report-warnings.lisp")' -e '(compilation-conditions "nyxt")' -e '(compilation-conditions "nyxt/gtk")'
 
+    - name: Validate make-instance symbols
+      shell: bash
+      run: |
+        ros -e '(asdf:load-system :nyxt/submodules)' -e '(push :nyxt-debug-make-instance *features*)' -e '(handler-case (asdf:load-system :nyxt) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17)))'
+
     - name: Keymap type checking
       shell: bash
       run: |
