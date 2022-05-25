@@ -307,8 +307,12 @@ Return the short error message and the full error message as second value."
 
 (define-command load-config-file (&key (config-file (files:expand *config-file*)))
   "Load or reload the CONFIG-FILE."
-  (clean-configuration)
-  (load-lisp config-file :package (find-package :nyxt-user)))
+  (if (nfiles:nil-pathname-p config-file)
+      (echo "No config file.")
+      (progn
+        (clean-configuration)
+        (load-lisp config-file :package (find-package :nyxt-user))
+        (echo "~a loaded." config-file))))
 
 (defun eval-expr (expr)
   "Evaluate the form EXPR (string) and print the result of the last expresion."
