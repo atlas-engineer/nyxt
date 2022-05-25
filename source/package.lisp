@@ -18,7 +18,8 @@ modes, commands, etc."))
 (defvar *imports* '((:trivia :match :multiple-value-match :lambda-match :guard)
                     (:keymap :define-key :define-scheme)
                     (:class-star :define-class)
-                    (:serapeum :export-always :->)))
+                    (:serapeum :export-always :->))
+  "Default list of symbol imports used by `define-and-set-package'.")
 
 (loop :for (package . symbols) in *imports*
       :do (import (mapcar (lambda (symbol) (intern (symbol-name symbol) package))
