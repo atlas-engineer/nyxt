@@ -287,6 +287,8 @@ Clicking on a link navigates the history in the corresponding buffer."
                                             (cond
                                               ((eq node (htree:owner-node history current-buffer-id))
                                                (:i (:b title)))
+                                              ((eq node (htree:owner-node history (id buffer)))
+                                               (:i title))
                                               ((htree:owned-p (htree:owner history current-buffer-id) node)
                                                (:b title))
                                               (t title))))))))
