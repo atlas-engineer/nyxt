@@ -116,6 +116,7 @@ Annotations are persisted to disk, see the `annotations-file' mode slot."
 (defun render-annotations (&key annotations)
   "Show the ANNOTATIONS in a new buffer"
   (spinneret:with-html-string
+    (:h1 "Annotations")
     (loop for annotation in annotations
           collect (:div (:raw (render annotation))
                         (:hr)))))

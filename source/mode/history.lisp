@@ -287,6 +287,7 @@ Otherwise go forward to the only child."
       (when tree
         (spinneret:with-html-string
           (:style (style mode))
+          (:h1 "History")
           (:div (:raw tree)))))))
 
 ;; TODO: Factor this with `buffer-history-tree'.
