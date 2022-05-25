@@ -262,65 +262,52 @@ Otherwise go forward to the only child."
         (render-url (url history-entry))
         title)))
 
-(define-internal-page-command-global buffer-history-tree (&key (id (id (current-buffer))))
-  (output-buffer (format nil "*History-~a*" id)
-                 'nyxt/history-tree-mode:history-tree-mode)
-  "Open a new buffer displaying the whole history tree of a buffer."
-  (with-history (history (nyxt::buffers-get id))
-    (let ((mode (find-submode 'nyxt/history-tree-mode:history-tree-mode output-buffer))
-          (tree (spinneret:with-html-string
-                  (:ul (:raw (htree:map-owned-tree
-                              #'(lambda (node)
-                                  (spinneret:with-html-string
-                                    (:li
-                                     (:a :href (render-url (url (htree:data node)))
-                                         (let ((title (title-or-fallback (htree:data node))))
-                                           (if (eq node (htree:owner-node history id))
-                                               (:b title)
-                                               title))))))
-                              history
-                              (htree:owner history id)
-                              :include-root t
-                              :collect-function #'(lambda (a b) (str:concat a (when b
-                                                                                (spinneret:with-html-string
-                                                                                  (:ul (:raw (str:join "" b)))))))))))))
-      (when tree
-        (spinneret:with-html-string
-          (:style (style mode))
-          (:h1 "History")
-          (:div (:raw tree)))))))
+(defun render-buffer-history-tree (buffer)
+  "Return the HTML presentation of BUFFER history."
+  (with-history (history buffer)
+    (let ((current-buffer-id (id (current-buffer))))
+      (spinneret:with-html-string
+        (:ul (:raw (or (htree:map-owned-tree
+                        #'(lambda (node)
+                            (spinneret:with-html-string
+                              (:li
+                               (:a :href (render-url (url (htree:data node)))
+                                   (let ((title (title-or-fallback (htree:data node))))
+                                     (cond
+                                       ((eq node (htree:owner-node history current-buffer-id))
+                                        (:i (:b title)))
+                                       ((htree:owned-p (htree:owner history current-buffer-id) node)
+                                        (:b title))
+                                       (t title)))))))
+                        history
+                        (htree:owner history (id buffer))
+                        :include-root t
+                        :collect-function #'(lambda (a b) (str:concat a (when b
+                                                                          (spinneret:with-html-string
+                                                                            (:ul (:raw (str:join "" b))))))))
+                       "")))))))
 
-;; TODO: Factor this with `buffer-history-tree'.
-(define-internal-page-command-global history-tree (&key (current-buffer-id (id (current-buffer))))
-    (output-buffer "*History*"
+(define-internal-page-command-global buffer-history-tree (&key (id (id (current-buffer))))
+    (output-buffer (format nil "*History-~a*" id)
                    'nyxt/history-tree-mode:history-tree-mode)
-  "Open a new buffer displaying the whole history branch the current buffer is on."
-  (with-history (history (nyxt::buffers-get current-buffer-id))
-    (let ((mode (find-submode 'nyxt/history-tree-mode:history-tree-mode output-buffer))
-          (tree (spinneret:with-html-string
-                  (:ul (:raw (htree:map-tree
-                              #'(lambda (node)
-                                  (spinneret:with-html-string
-                                    (:li (:a :href (render-url (url (htree:data node)))
-                                             (let ((title (title-or-fallback (htree:data node))))
-                                               (cond
-                                                 ((eq node (htree:owner-node history current-buffer-id))
-                                                  (:i (:b title)))
-                                                 ((htree:owned-p (htree:owner history current-buffer-id) node)
-                                                  (:b title))
-                                                 (t title))))))) ; Color?  Smaller?
-                              history
-                              :owner (htree:owner history current-buffer-id)
-                              :include-root t
-                              :collect-function #'(lambda (a b) (str:concat a (when b
-                                                                                (spinneret:with-html-string
-                                                                                  (:ul (:raw (str:join "" b)))))))))))))
-      (when tree
-        (spinneret:with-html-string
-          (:body (:h1 "History")
-                 (:style (style output-buffer))
-                 (:style (:raw (style mode)))
-                 (:div (:raw tree))))))))
+  "Display the history tree of a buffer."
+  (let ((buffer (nyxt::buffers-get id))
+        (mode (find-submode 'nyxt/history-tree-mode:history-tree-mode output-buffer)))
+    (spinneret:with-html-string
+      (:style (style mode))
+      (:h1 (format nil "History of ~a" buffer))
+      (:div (:raw (with-current-buffer buffer (render-buffer-history-tree buffer)))))))
+
+(define-internal-page-command-global history-tree ()
+    (output-buffer "*History*" 'nyxt/history-tree-mode:history-tree-mode)
+  "Display the whole, global history tree."
+  (let ((mode (find-submode 'nyxt/history-tree-mode:history-tree-mode output-buffer)))
+    (spinneret:with-html-string
+      (:body (:h1 "History")
+             (:style (style output-buffer))
+             (:style (:raw (style mode)))
+             (dolist (buffer (buffer-list))
+               (:div (:raw (render-buffer-history-tree buffer))))))))
 
 (define-internal-page-command-global list-history (&key (limit 100))
   (buffer "*History list*" 'nyxt/list-history-mode:list-history-mode)
