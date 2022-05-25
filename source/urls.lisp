@@ -406,6 +406,7 @@ guarantee of the same result."
 (define-internal-scheme "lisp"
     (lambda (url buffer)
       (let ((url (quri:uri url)))
+        ;; TODO: Replace this condition with `(network-buffer-p buffer)`?
         (if (or (status-buffer-p buffer)
                 (panel-buffer-p buffer)
                 (prompt-buffer-p buffer)
@@ -415,7 +416,7 @@ guarantee of the same result."
                    ;; All URLs WebKitGTK gives us end with an unnecessary forward slash.
                    (code (sera:slice code-raw 0 -1)))
               (log:debug "Evaluate Lisp code from internal page: ~a" code)
-              (values (let ((result (first (evaluate code))))
+              (values (let ((result (first (evaluate code :interactive-p t))))
                         ;; Objects and other complex structures make cl-json choke.
                         ;; TODO: Maybe encode it to the format that `cl-json'
                         ;; supports, then we can override the encoding and

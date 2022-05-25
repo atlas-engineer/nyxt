@@ -699,24 +699,25 @@ file, see the "
         (input-skip-dispatcher (current-window)) #'skip-describe-dispatch)
   (echo "Press a key sequence to describe:"))
 
-(defun evaluate (string)
+(defun evaluate (string &key interactive-p)
   "Evaluate all expressions in STRING and return the last result as a list of values.
 The list of values is useful when the last result is multi-valued, e.g. (values 'a 'b).
 You need not wrap multiple values in a PROGN, all top-level expressions are
 evaluated in order."
   (let ((channel (make-channel 1)))
     (run-thread "evaluator"
-      (calispel:!
-       channel
-       (with-input-from-string (input string)
-         (first
-          (last
-           (loop for object = (read input nil :eof)
-                 until (eq object :eof)
-                 collect (multiple-value-list
-                          (handler-case
-                              (eval object)
-                            (error (c) (format nil "~a" c))))))))))
+      (let ((interactive-p interactive-p))
+        (calispel:!
+         channel
+         (with-input-from-string (input string)
+           (first
+            (last
+             (loop for object = (read input nil :eof)
+                   until (eq object :eof)
+                   collect (multiple-value-list
+                            (handler-case (let ((*interactive-p* interactive-p))
+                                            (eval object))
+                              (error (c) (format nil "~a" c)))))))))))
     (calispel:? channel)))
 
 (defun evaluate-async (string)
