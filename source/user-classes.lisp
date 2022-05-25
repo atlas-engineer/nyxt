@@ -38,7 +38,8 @@ Do not specialize the standard method in public code, prefer
 `initialize-instance :after' instead to initialize slots, and
 `customize-instance :after' for code that relies on finalized slot values."))
 
-(defmethod make-instance :around ((class user-class) &rest initargs &key &allow-other-keys)
+(defmethod #+nyxt-debug-make-instance cl:make-instance #-nyxt-debug-make-instance make-instance
+    :around ((class user-class) &rest initargs &key &allow-other-keys)
   (sera:lret ((initialized-object (call-next-method)))
     (mapcar (lambda (class)
               (hooks:run-hook (slot-value class 'customize-hook) initialized-object))
