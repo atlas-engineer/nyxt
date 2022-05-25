@@ -313,8 +313,15 @@ Clicking on a link navigates the history in the corresponding buffer."
       (:div (:raw (with-current-buffer buffer (render-buffer-history-tree buffer)))))))
 
 (define-internal-page-command-global history-tree ()
-    (output-buffer "*History*" 'nyxt/history-tree-mode:history-tree-mode)
-  "Display the whole, global history tree."
+  (output-buffer "*History*" 'nyxt/history-tree-mode:history-tree-mode)
+  "Display the whole, global history tree.
+It displays one branch per buffer.
+
+As such, when nodes are shared by multiple buffers, they are displayed multiple
+times.
+
+Thus it is not representative of how the Global History Tree deduplicates nodes
+internally, but this display is clearer and more navigable."
   (let ((mode (find-submode 'nyxt/history-tree-mode:history-tree-mode output-buffer)))
     (spinneret:with-html-string
       (:body (:h1 "History")
