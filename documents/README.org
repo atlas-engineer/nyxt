@@ -20,6 +20,7 @@
     - [[#gnulinux-freebsd-dependencies][GNU/Linux, FreeBSD dependencies]]
     - [[#macos-dependencies][macOS dependencies]]
   - [[#fetch-the-source-code][Fetch the source code]]
+    - [[#observation][Observation]]
   - [[#compile][Compile]]
     - [[#using-the-makefile][Using the Makefile]]
     - [[#using-lisp][Using Lisp]]
