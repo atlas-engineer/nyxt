@@ -6,6 +6,8 @@
 
 (uiop:define-package nyxt
   (:use #:common-lisp)
+  #+nyxt-debug-make-instance
+  (:shadow #:make-instance)
   (:export #:use-nyxt-package-nicknames)
   (:documentation "The core package of Nyxt, the infinitely extensible browser.
 
@@ -61,6 +63,13 @@ modes, commands, etc."))
        (eval-when (:compile-toplevel :load-toplevel :execute)
          (setq *package* (find-package ,name)))
        (nyxt::use-nyxt-package-nicknames))))
+
+#+nyxt-debug-make-instance
+(defmacro make-instance (sym &rest args)
+  "This wrapper of `make-instance' can be used from a test suite to check if all
+calls are made on valid classes."
+  (find-class (second sym))
+  `(cl:make-instance ,sym ,@args))
 
 (uiop:define-package nyxt-user
   (:use #:common-lisp #:nyxt)
