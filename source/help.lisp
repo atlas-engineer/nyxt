@@ -829,7 +829,7 @@ See `*debug-on-error*'."
     (echo "Nyxt-native debugging ~:[dis~;en~]abled." value)))
 
 (defun error-buffer (&optional (title "Unknown error") (text ""))
-  (sera:lret* ((error-buffer (make-instance 'web-buffer)))
+  (sera:lret* ((error-buffer (make-instance 'document-buffer)))
     (with-current-buffer error-buffer
       (html-set (error-help title text)
                 error-buffer))))
