@@ -129,11 +129,12 @@ Example: when passed command line option --with-file foo=bar,
   ((prompter:name "User files")
    (prompter:active-attributes-keys '("Path" "Exists?" "Type" "Name"))
    (prompter:constructor (let ((path-map (make-hash-table :test 'equal)))
-                           (dolist (file (files:all-files :nyxt)) ; TODO: Filter by subclasses instead?
+                           (dolist (file (files:all-files))
                              (sera:and-let* ((nyxt-file-p file)
                                              (editable? (editable-p file))
                                              (full-path (files:expand file)))
-                               (unless (uiop:directory-pathname-p full-path)
+                               (when (and (nyxt-subpackage-p (symbol-package (sera:class-name-of file)))
+                                          (not (uiop:directory-pathname-p full-path)))
                                  (setf (gethash full-path path-map) file))))
                            (alexandria:hash-table-values path-map)))))
 
