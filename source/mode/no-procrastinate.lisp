@@ -16,7 +16,7 @@
   "Mode to block access to hosts associated to procrastination."
   ((rememberable-p nil)
    (no-procrastinate-hosts-file
-    (make-instance 'no-procrastinate-hosts-file)
+    (make-instance 'no-procrastinate-hosts-file-DUMMY)
     :type no-procrastinate-hosts-file
     :documentation "The file where to save hosts associated to procrastination
 and that should be blocked.")
