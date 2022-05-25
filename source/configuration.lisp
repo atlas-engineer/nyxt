@@ -223,7 +223,7 @@ Return NIL if not a class form."
   "Holds the default value of the slot being configured when in `define-configuration'.")
 
 (export-always 'define-configuration)
-(defmacro define-configuration (classes (&body slots-and-values))
+(defmacro define-configuration (classes &body slots-and-values)
   `(progn
      ,@(loop
          for class in (uiop:ensure-list classes)
@@ -235,7 +235,7 @@ Return NIL if not a class form."
             'hooks:handler
             :fn (lambda (object)
                   (declare (ignorable object))
-                  ,@(loop for ((slot value)) on slots-and-values
+                  ,@(loop for ((slot value)) on (first slots-and-values)
                           when (find slot (mopu:slot-names class))
                             collect `(setf (slot-value object (quote ,slot))
                                            (let* ((%slot-value% (slot-value object (quote ,slot)))
