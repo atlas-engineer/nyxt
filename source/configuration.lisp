@@ -211,7 +211,8 @@ Return NIL if not a class form."
                       (setf (value slot-form) slot-value))
                     (setf (forms class-form) (delete-slot-form class-form slot)))
                 (alex:appendf (forms class-form) (list form)))))
-        (alex:appendf config (list form)))))
+        (alex:appendf config (list form))))
+  (echo "Updated configuration in ~s." (nfiles:expand *auto-config-file*)))
 
 (export-always '%slot-value%)
 (defvar %slot-value% nil
