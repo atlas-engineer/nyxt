@@ -264,22 +264,33 @@ Otherwise go forward to the only child."
         title)))
 
 (defun render-buffer-history-tree (buffer)
-  "Return the HTML presentation of BUFFER history."
+  "Return the HTML presentation of BUFFER history.
+Clicking on a link navigates the history in the corresponding buffer."
   (with-history (history buffer)
     (let ((current-buffer-id (id (current-buffer))))
       (spinneret:with-html-string
         (:ul (:raw (or (htree:map-owned-tree
                         #'(lambda (node)
-                            (spinneret:with-html-string
-                              (:li
-                               (:a :href (render-url (url (htree:data node)))
-                                   (let ((title (title-or-fallback (htree:data node))))
-                                     (cond
-                                       ((eq node (htree:owner-node history current-buffer-id))
-                                        (:i (:b title)))
-                                       ((htree:owned-p (htree:owner history current-buffer-id) node)
-                                        (:b title))
-                                       (t title)))))))
+                            (let ((node-id (nyxt::ensure-inspected-id node)))
+                              (spinneret:with-html-string
+                                (:li
+                                 (:button :class "button"
+                                          :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                           `(let ((buffer (nyxt::buffers-get ,(id buffer)))
+                                                                  (url (url (htree:data (nyxt::inspected-value ,node-id)))))
+                                                              (with-current-buffer buffer
+                                                                (with-history (history buffer)
+                                                                  (htree:visit-all history (id buffer)
+                                                                                   (nyxt::inspected-value ,node-id)))
+                                                                (load-history-url url))
+                                                              (switch-buffer :id (id buffer)))))
+                                          (let ((title (title-or-fallback (htree:data node))))
+                                            (cond
+                                              ((eq node (htree:owner-node history current-buffer-id))
+                                               (:i (:b title)))
+                                              ((htree:owned-p (htree:owner history current-buffer-id) node)
+                                               (:b title))
+                                              (t title))))))))
                         history
                         (htree:owner history (id buffer))
                         :include-root t
