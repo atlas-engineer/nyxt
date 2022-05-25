@@ -936,7 +936,7 @@ See `finalize-buffer'."
                                         :new-window-p is-new-window
                                         :mime-type mime-type
                                         :known-type-p is-known-type))))
-      (if request-data
+      (if (request-data-p request-data)
           (if (and (null (hooks:handlers (request-resource-hook buffer)))
                    (null (hooks:handlers (pre-request-hook buffer))))
               (progn
