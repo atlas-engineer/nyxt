@@ -199,7 +199,7 @@ deprecated and by what in the docstring."
                             download-manager
                             history-tree
                             keymap
-                            scheme
+                            keymap/scheme
                             password
                             analysis
                             text-buffer)))))
