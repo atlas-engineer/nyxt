@@ -33,7 +33,7 @@
       (run-thread "run set-url"
         ;; TODO: Test if thread returns.
         (nyxt:set-url)))
-    (nyxt:start :no-init t :no-auto-config t
+    (nyxt:start :no-config t :no-auto-config t
                 :socket "/tmp/nyxt-test.socket"
                 :profile "test")
     (prove:is (calispel:? url-channel 5) url)

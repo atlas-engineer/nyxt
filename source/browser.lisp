@@ -260,12 +260,12 @@ prevents otherwise.")
                                  message
                                  (files:expand *config-file*)))
            (new-command-line (append (uiop:raw-command-line-arguments)
-                                     `("--no-init"
+                                     `("--no-config"
                                        "--eval"
                                        ,(set-error-message message full-message)))))
       (log:warn "Restarting with ~s."
                 (append (uiop:raw-command-line-arguments)
-                        '("--no-init")))
+                        '("--no-config")))
       (uiop:launch-program new-command-line)
       (quit))))
 
@@ -291,7 +291,7 @@ prevents otherwise.")
        ;; Restart on init error, in case `*config-file*' broke the state.
        ;; We only `handler-case' when there is an init file, this way we avoid
        ;; looping indefinitely.
-       (if (or (getf *options* :no-init)
+       (if (or (getf *options* :no-config)
                (not (uiop:file-exists-p (files:expand *config-file*))))
            (startup browser urls)
            (catch 'startup-error
@@ -302,7 +302,7 @@ prevents otherwise.")
                                        (if *run-from-repl-p*
                                            (progn
                                              (quit)
-                                             (apply #'start (append *options* (list :urls urls :no-init t))))
+                                             (apply #'start (append *options* (list :urls urls :no-config t))))
                                            (restart-with-message c))))))
                (startup browser urls)))))))
   ;; Set `init-time' at the end of finalize to take the complete startup time

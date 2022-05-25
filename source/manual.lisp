@@ -369,7 +369,7 @@ core to finalize the instance.")
    (:h3 "Scripting")
    (:p "You can evaluate code from the command line with "
        (:code "--eval") " and " (:code "--load") ".  From a shell:")
-   (:pre (:code "$ nyxt --no-init --eval '+version+' \
+   (:pre (:code "$ nyxt --no-config --eval '+version+' \
   --load my-lib.lisp --eval '(format t \"Hello ~a!~&\" (my-lib:my-world))'"))
    (:p "You can evaluate multiple --eval and --load in a row, they are
 executed in the order they appear.")
