@@ -229,11 +229,17 @@
   :defsystem-depends-on ("nyxt-asdf")
   :class :nyxt-submodule-system)
 
+(defsystem "nyxt/tests/compilation"
+  :defsystem-depends-on ("nyxt-asdf")
+  :class :nyxt-compilation-test-system
+  :depends-on (nyxt)
+  :packages (:nyxt))
+
 ;; TODO: Test that Nyxt starts and that --help, --version work.
 (defsystem "nyxt/tests"
   :defsystem-depends-on ("nyxt-asdf")
   :class :nyxt-test-system
-  :depends-on (nyxt)
+  :depends-on (nyxt nyxt/tests/compilation)
   :targets (:package :nyxt/tests)
   :serial t
   :components ((:file "tests/package")
