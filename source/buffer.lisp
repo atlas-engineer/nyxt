@@ -297,7 +297,13 @@ distance scroll-left or scroll-right will scroll.")
     :type float
     :documentation "The ratio of the page to scroll.
 A value of 0.95 means that the bottom 5% will be the top 5% when scrolling
-down."))
+down.")
+   (lisp-url-callbacks
+    (sera:dict)
+    :type hash-table
+    :export nil
+    :documentation "The index of callbacks for `lisp://' URLs.
+They are populated by the `nyxt/ps:lisp-eval2' Parenscript macro."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -1292,7 +1298,9 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
       (cond
         ((equal "javascript" (quri:uri-scheme url))
          (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url))))
-        (t (ffi-buffer-load buffer url))))
+        (t
+         (clrhash (lisp-url-callbacks buffer)) ; REVIEW: Is it the only spot where to clear the Lisp URL callbacks?
+         (ffi-buffer-load buffer url))))
     buffer))
 
 (define-class global-history-source (prompter:source)
