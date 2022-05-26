@@ -432,6 +432,33 @@ guarantee of the same result."
   :cors-enabled-p t
   :error-callback (lambda (c) (log:debug "Error when evaluating lisp URL: ~a" c)))
 
+(define-internal-scheme "lisp2"
+    (lambda (url buffer)
+      (let ((url (quri:uri url)))
+        ;; TODO: Replace this condition with `(network-buffer-p buffer)`?
+        (if (or (status-buffer-p buffer)
+                (panel-buffer-p buffer)
+                (prompt-buffer-p buffer)
+                (internal-url-p (url buffer)))
+            (let* ((request-id (quri:uri-host url))
+                   (title (when url (subseq (quri:uri-path url) 1))))
+              (log:debug "Evaluate Lisp code from internal page: ~a" (or title "UNTITLED"))
+              (values (let ((result (nyxt/ps:funcall-ps-callback request-id)))
+                        ;; Objects and other complex structures make cl-json choke.
+                        ;; TODO: Maybe encode it to the format that `cl-json'
+                        ;; supports, then we can override the encoding and
+                        ;; decoding methods and allow arbitrary objects (like
+                        ;; buffers) in the nyxt:// URL arguments..
+                        (cl-json:encode-json-to-string
+                         (when (or (scalar-p result)
+                                   (and (sequence-p result)
+                                        (every #'scalar-p result)))
+                           result)))
+                      "application/json"))
+            (values "undefined" "application/json;charset=utf8"))))
+  :cors-enabled-p t
+  :error-callback (lambda (c) (log:debug "Error when evaluating lisp URL: ~a" c)))
+
 (-> path= (quri:uri quri:uri) boolean)
 (defun path= (url1 url2)
   "Return non-nil when URL1 and URL2 have the same path."
