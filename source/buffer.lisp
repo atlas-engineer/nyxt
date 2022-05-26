@@ -749,7 +749,7 @@ Return the created buffer."
   (unless no-history-p
     ;; Register buffer in global history:
     (files:with-file-content (history (history-file buffer)
-                               :default (make-history-tree buffer))
+                              :default (make-history-tree buffer))
       ;; Owner may already exist if history was just created with the above
       ;; default value.
       (unless (htree:owner history (id buffer))
@@ -765,18 +765,18 @@ Return the created buffer."
   (ffi-buffer-evaluate-javascript
    buffer
    (ps:ps
-    (defvar nyxt-identifier-counter 0)
-    (defun add-nyxt-identifiers (node)
-      (unless (ps:chain node (has-attribute "nyxt-identifier"))
-        (ps:chain node (set-attribute "nyxt-identifier" (ps:stringify nyxt-identifier-counter))))
-      (incf nyxt-identifier-counter)
-      (dolist (child (ps:chain node children))
-        (add-nyxt-identifiers child))
-      nyxt-identifier-counter)
-    (setf nyxt-identifier-counter (add-nyxt-identifiers (ps:chain document body)))))
+     (defvar nyxt-identifier-counter 0)
+     (defun add-nyxt-identifiers (node)
+       (unless (ps:chain node (has-attribute "nyxt-identifier"))
+         (ps:chain node (set-attribute "nyxt-identifier" (ps:stringify nyxt-identifier-counter))))
+       (incf nyxt-identifier-counter)
+       (dolist (child (ps:chain node children))
+         (add-nyxt-identifiers child))
+       nyxt-identifier-counter)
+     (setf nyxt-identifier-counter (add-nyxt-identifiers (ps:chain document body)))))
   (alex:when-let ((body-json (nyxt/dom::get-document-body-json)))
-                 (setf (document-model buffer)
-                       (nyxt/dom::named-json-parse body-json))))
+    (setf (document-model buffer)
+          (nyxt/dom::named-json-parse body-json))))
 
 (defun dead-buffer-p (buffer) ; TODO: Use this wherever needed.
   (str:empty? (id buffer)))
@@ -959,7 +959,7 @@ LOAD-URL-P controls whether to load URL right at buffer creation."
     buffer))
 
 (define-command make-nosave-buffer (&rest args
-                                          &key title modes url load-url-p)
+                                    &key title modes url load-url-p)
   "Create a new buffer that won't save anything to the filesystem.
 See `make-buffer' for a description of the arguments."
   (declare (ignorable title modes url load-url-p))
@@ -1125,8 +1125,8 @@ proceeding."
           (mapcar #'active-buffer (window-list)))
         (buffers (buffer-list)))
     (alex:when-let ((diff (set-difference buffers active-buffers)))
-                   ;; Display the most recent inactive buffer.
-                   (sort-by-time diff))))
+      ;; Display the most recent inactive buffer.
+      (sort-by-time diff))))
 
 (define-command copy-url ()
   "Save current URL to clipboard."
@@ -1506,10 +1506,10 @@ any.")
   "Prompt for a URL and set it in a new focused buffer."
   (let ((history (set-url-history *browser*))
         (return-actions (list (lambda-command new-buffer-load (suggestion-values)
-                                     "Load URL(s) in new buffer(s)"
-                                     (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
-                                           (rest suggestion-values))
-                                     (make-buffer-focus :url (url (first suggestion-values)))))))
+                                "Load URL(s) in new buffer(s)"
+                                (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
+                                      (rest suggestion-values))
+                                (make-buffer-focus :url (url (first suggestion-values)))))))
     (pushnew-url-history history (url (current-buffer)))
     (prompt
      :prompt "Open URL in new buffer"
@@ -1522,11 +1522,11 @@ any.")
   "Prompt for a URL and set it in a new focused nosave buffer."
   (let ((return-actions
           (list (lambda-command new-nosave-buffer-load (suggestion-values)
-                              "Load URL(s) in new nosave buffer(s)"
-                              (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion)))
-                                    (rest suggestion-values))
-                              (make-buffer-focus :url (url (first suggestion-values))
-                                                 :nosave-buffer-p t)))))
+                  "Load URL(s) in new nosave buffer(s)"
+                  (mapc (lambda (suggestion) (make-nosave-buffer :url (url suggestion)))
+                        (rest suggestion-values))
+                  (make-buffer-focus :url (url (first suggestion-values))
+                                     :nosave-buffer-p t)))))
     (prompt
      :prompt "Open URL in new nosave buffer"
      :input (if prefill-current-url-p
@@ -1551,7 +1551,7 @@ any.")
   (let ((history (buffer-history buffer)))
     (sera:and-let* ((owner (htree:owner history (id buffer)))
                     (parent-id (htree:creator-id owner)))
-                   (gethash parent-id (buffers *browser*)))))
+      (gethash parent-id (buffers *browser*)))))
 
 (defun buffers-with-history (history)
   "Return the list of buffers that have history HISTORY.
@@ -1600,20 +1600,20 @@ The tree is browsed in a depth-first fashion.
 When there is no previous buffer, go to the last one so as to cycle."
   (labels ((buffer-last-child (&optional (buffer (current-buffer)))
              (alex:if-let ((next-siblings (second (buffer-siblings buffer))))
-                          (buffer-last-child (alex:last-elt next-siblings))
-                          (alex:if-let ((children (buffer-children buffer)))
-                                       (buffer-last-child (alex:last-elt children))
-                                       buffer)))
+               (buffer-last-child (alex:last-elt next-siblings))
+               (alex:if-let ((children (buffer-children buffer)))
+                 (buffer-last-child (alex:last-elt children))
+                 buffer)))
            (buffer-sibling-previous (&optional (buffer (current-buffer)))
              (alex:when-let ((previous-siblings (first (buffer-siblings buffer))))
-                            (alex:last-elt previous-siblings))))
+               (alex:last-elt previous-siblings))))
     (alex:when-let ((previous (or (alex:when-let ((previous-sibling (buffer-sibling-previous buffer)))
-                                                 (alex:if-let ((children (buffer-children previous-sibling)))
-                                                              (buffer-last-child (first children))
-                                                              previous-sibling))
+                                    (alex:if-let ((children (buffer-children previous-sibling)))
+                                      (buffer-last-child (first children))
+                                      previous-sibling))
                                   (buffer-parent buffer)
                                   (buffer-last-child buffer))))
-                   (set-current-buffer previous))))
+      (set-current-buffer previous))))
 
 (define-command switch-buffer-next (&optional (buffer (current-buffer)))
   "Switch to the next buffer in the buffer tree.
@@ -1621,20 +1621,20 @@ The tree is browsed in a depth-first fashion.
 When there is no next buffer, go to the first one so as to cycle."
   (labels ((buffer-first-root (buffer)
              (alex:if-let ((parent (buffer-parent buffer)))
-                          (buffer-first-root parent)
-                          (first (first (buffer-siblings buffer)))))
+               (buffer-first-root parent)
+               (first (first (buffer-siblings buffer)))))
            (buffer-next-parent-sibling (buffer)
              (alex:when-let ((parent (buffer-parent buffer)))
-                            (alex:if-let ((next-siblings (second (buffer-siblings parent))))
-                                         (first next-siblings)
-                                         (buffer-next-parent-sibling parent))))
+               (alex:if-let ((next-siblings (second (buffer-siblings parent))))
+                 (first next-siblings)
+                 (buffer-next-parent-sibling parent))))
            (buffer-sibling-next (&optional (buffer (current-buffer)))
              (first (second (buffer-siblings buffer)))))
     (alex:when-let ((next (or (first (buffer-children buffer))
                               (buffer-sibling-next buffer)
                               (buffer-next-parent-sibling buffer)
                               (buffer-first-root buffer))))
-                   (set-current-buffer next))))
+      (set-current-buffer next))))
 
 (define-command switch-buffer-last ()
   "Switch to the last visited buffer.
