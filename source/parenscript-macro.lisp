@@ -129,22 +129,20 @@
                         (chain response (json)))))
               (then ,callback)))))
 
-(defvar *lisp-url-callbacks* (tg:make-weak-hash-table :test 'equal :weakness :value)
-  "Map between keys (strings) and callbacks.
-Implementation detail.
-See `funcall-ps-callback'.")
-
 (export-always 'funcall-ps-callback)
-(defun funcall-ps-callback (key)
-  "KEY refers to a callback in `*lisp-url-callbacks*'."
-  (unwind-protect (nyxt:funcall* (gethash key *lisp-url-callbacks*))
-    (remhash key *lisp-url-callbacks*)))
+(defun funcall-ps-callback (callback-index key)
+  "KEY refers to a callback in the CALLBACK-INDEX hash-table.
+See the `lisp-eval2' scheme."
+  (unwind-protect (nyxt:funcall* (gethash key callback-index))
+    (remhash key callback-index)))
 
 (export-always 'lisp-eval2)
-(defpsmacro lisp-eval2 ((&optional title callback) &body form)
-  "Request the lisp: URL and invoke callback when there's a successful result."
+(defpsmacro lisp-eval2 ((callback-index &optional title callback) &body form)
+  "Request the lisp: URL and invoke callback when there's a successful result.
+CALLBACK-INDEX is a hash-table which must exist
+TITLE is purely informative."
   `(let ((request (ps:lisp (let ((request-id (string (gensym ""))))
-                             (setf (gethash request-id *lisp-url-callbacks*)
+                             (setf (gethash request-id ,callback-index)
                                    (lambda () ,@form))
                              (let ((url-string (format nil "lisp2://~a" request-id)))
                                (when ,title
