@@ -7,6 +7,7 @@
   (:import-from #:serapeum #:export-always))
 
 (in-package :nyxt/parenscript)
+(nyxt:use-nyxt-package-nicknames)
 
 (export-always 'qs)
 (defpsmacro qs (context selector)
@@ -127,3 +128,33 @@
                       (when (@ response ok)
                         (chain response (json)))))
               (then ,callback)))))
+
+(defvar *lisp-url-callbacks* (tg:make-weak-hash-table :test 'equal :weakness :value)
+  "Map between keys (strings) and callbacks.
+Implementation detail.
+See `funcall-ps-callback'.")
+
+(export-always 'funcall-ps-callback)
+(defun funcall-ps-callback (key)
+  "KEY refers to a callback in `*lisp-url-callbacks*'."
+  (unwind-protect (nyxt:funcall* (gethash key *lisp-url-callbacks*))
+    (remhash key *lisp-url-callbacks*)))
+
+(export-always 'lisp-eval2)
+(defpsmacro lisp-eval2 ((&optional title callback) &body form)
+  "Request the lisp: URL and invoke callback when there's a successful result."
+  `(let ((request (ps:lisp (let ((request-id (string (gensym ""))))
+                             (setf (gethash request-id *lisp-url-callbacks*)
+                                   (lambda () ,@form))
+                             (let ((url-string (format nil "lisp2://~a" request-id)))
+                               (when ,title
+                                 (setf url-string (str:concat url-string "/" ,title)))
+                               url-string)))))
+     (let ((request (fetch request
+                           (create :mode "no-cors"))))
+       (when ,callback
+         (chain request
+                (then (lambda (response)
+                        (when (@ response ok)
+                          (chain response (json)))))
+                (then ,callback))))))
