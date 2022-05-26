@@ -321,7 +321,10 @@ For production code, see `find-submode' instead."
   "Enable MODES for BUFFERS.
 MODES should be a list of mode symbols.
 BUFFERS and MODES are automatically coerced into a list.
-ARGS are passed to the mode `enable' method."
+ARGS are passed to the mode `enable' method.
+
+If BUFFERS is a list, return it.
+If it's a single buffer, return it directly (not as a list)."
   ;; TODO: Report if mode is not found.
   (let* ((buffers (if buffers
                       (uiop:ensure-list buffers)
@@ -342,12 +345,16 @@ ARGS are passed to the mode `enable' method."
                                             (make-instance mode-sym :buffer buffer))
                                args))
                       modes))
-            buffers)))
+            buffers))
+  buffers)
 
 (define-command disable-modes (&optional modes buffers)
   "Disable MODES for BUFFERS.
 MODES should be a list of mode symbols.
-BUFFERS and MODES are automatically coerced into a list."
+BUFFERS and MODES are automatically coerced into a list.
+
+If BUFFERS is a list, return it.
+If it's a single buffer, return it directly (not as a list)."
   ;; TODO: Report if mode is not found.
   (let* ((buffers (if buffers
                       (uiop:ensure-list buffers)
@@ -365,7 +372,8 @@ BUFFERS and MODES are automatically coerced into a list."
     (mapcar (lambda (buffer)
               (mapcar #'disable (delete nil (mapcar (lambda (mode) (find mode (modes buffer) :key #'name))
                                                     (uiop:ensure-list modes)))))
-            buffers)))
+            buffers))
+  buffers)
 
 ;; TODO: Factor `toggle-mode' and `toggle-modes' somehow?
 ;; TODO: Shall we have a function that returns the focused buffer?
@@ -409,7 +417,8 @@ mode permanently for this buffer."
          (modes-to-disable (set-difference (all-mode-symbols) modes-to-enable
                                            :test #'string=)))
     (disable-modes (uiop:ensure-list modes-to-disable) buffer)
-    (enable-modes (uiop:ensure-list modes-to-enable) buffer)))
+    (enable-modes (uiop:ensure-list modes-to-enable) buffer))
+  buffer)
 
 (export-always 'find-buffer)
 (defun find-buffer (mode-symbol)

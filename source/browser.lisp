@@ -593,7 +593,8 @@ sometimes yields the wrong result."
 
 (export-always 'set-current-buffer)
 (defun set-current-buffer (buffer &key (focus t))
-  "Set the active buffer for the active window."
+  "Set the active BUFFER for the active window.
+Return BUFFER."
   (unless (eq 'prompt-buffer (sera:class-name-of buffer))
     (if (current-window)
         (window-set-buffer (current-window) buffer :focus focus)

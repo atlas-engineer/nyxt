@@ -1283,7 +1283,8 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
       (cond
         ((equal "javascript" (quri:uri-scheme url))
          (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url))))
-        (t (ffi-buffer-load buffer url))))))
+        (t (ffi-buffer-load buffer url))))
+    buffer))
 
 (define-class global-history-source (prompter:source)
   ((prompter:name "Global history")
@@ -1500,7 +1501,8 @@ any.")
      :input (if prefill-current-url-p
                 (render-url (url (current-buffer))) "")
      :history history
-     :sources (url-sources (current-buffer) return-actions))))
+     :sources (url-sources (current-buffer) return-actions))
+    (current-buffer)))
 
 (define-command set-url-new-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused buffer."
@@ -1516,7 +1518,8 @@ any.")
      :input (if prefill-current-url-p
                 (render-url (url (current-buffer))) "")
      :history history
-     :sources (url-sources (current-buffer) return-actions))))
+     :sources (url-sources (current-buffer) return-actions))
+    (current-buffer)))
 
 (define-command set-url-new-nosave-buffer (&key (prefill-current-url-p t))
   "Prompt for a URL and set it in a new focused nosave buffer."
@@ -1531,21 +1534,26 @@ any.")
      :prompt "Open URL in new nosave buffer"
      :input (if prefill-current-url-p
                 (render-url (url (current-buffer))) "")
-     :sources (url-sources (current-buffer) return-actions))))
+     :sources (url-sources (current-buffer) return-actions))
+    (current-buffer)))
 
 (define-command reload-current-buffer ()
-  "Reload current buffer."
-  (reload-buffers (list (current-buffer))))
+  "Reload current buffer.
+Return it."
+  (reload-buffers (list (current-buffer)))
+  (current-buffer))
 
 (define-command reload-buffers (&optional buffers)
-  "Prompt for BUFFERS to be reloaded."
+  "Prompt for BUFFERS to be reloaded.
+Return BUFFERS."
   (if buffers
       (mapcar (lambda (buffer) (buffer-load (url buffer) :buffer buffer)) buffers)
       (prompt
        :prompt "Reload buffer(s)"
        :sources (make-instance 'buffer-source
                                :multi-selection-p t
-                               :return-actions (list 'reload-buffers)))))
+                               :return-actions (list 'reload-buffers))))
+  buffers)
 
 (defun buffer-parent (&optional (buffer (current-buffer)))
   (let ((history (buffer-history buffer)))
@@ -1596,6 +1604,8 @@ HISTORY may be NIL for buffers without history."
 
 (define-command switch-buffer-previous (&optional (buffer (current-buffer)))
   "Switch to the previous buffer in the buffer tree.
+Return it.
+
 The tree is browsed in a depth-first fashion.
 When there is no previous buffer, go to the last one so as to cycle."
   (labels ((buffer-last-child (&optional (buffer (current-buffer)))
@@ -1617,6 +1627,8 @@ When there is no previous buffer, go to the last one so as to cycle."
 
 (define-command switch-buffer-next (&optional (buffer (current-buffer)))
   "Switch to the next buffer in the buffer tree.
+Return it.
+
 The tree is browsed in a depth-first fashion.
 When there is no next buffer, go to the first one so as to cycle."
   (labels ((buffer-first-root (buffer)
@@ -1638,11 +1650,14 @@ When there is no next buffer, go to the first one so as to cycle."
 
 (define-command switch-buffer-last ()
   "Switch to the last visited buffer.
-That is, the one with the most recent access time."
+That is, the one with the most recent access time.
+
+Return this last buffer."
   (let* ((buffers (sort-by-time (buffer-list))))
     (when (second buffers)
       (set-current-buffer (second buffers)))))
 
 (define-command open-inspector ()
   "Open the inspector, a graphical tool to inspect and change the buffer's content."
-  (ffi-inspector-show (current-buffer)))
+  (ffi-inspector-show (current-buffer))
+  (current-buffer))
