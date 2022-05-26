@@ -66,7 +66,7 @@ Example:
   (hooks:add-hook (request-resource-hook (buffer mode)) 'force-https-handler))
 
 (defmethod disable ((mode force-https-mode) &key)
-  (hooks:add-hook (request-resource-hook (buffer mode)) 'force-https-handler))
+  (hooks:remove-hook (request-resource-hook (buffer mode)) 'force-https-handler))
 
 (defmethod on-signal-load-finished ((mode force-https-mode) url)
   (declare (ignore url))
