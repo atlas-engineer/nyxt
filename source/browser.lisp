@@ -292,6 +292,7 @@ prevents otherwise.")
        ;; We only `handler-case' when there is an init file, this way we avoid
        ;; looping indefinitely.
        (if (or (getf *options* :no-config)
+               (getf *options* :no-init) ; TODO: Deprecated, remove in 4.0.
                (not (uiop:file-exists-p (files:expand *config-file*))))
            (startup browser urls)
            (catch 'startup-error
@@ -302,7 +303,9 @@ prevents otherwise.")
                                        (if *run-from-repl-p*
                                            (progn
                                              (quit)
-                                             (apply #'start (append *options* (list :urls urls :no-config t))))
+                                             (apply #'start (append *options* (list :urls urls
+                                                                                    :no-init t ; TODO: Deprecated, remove in 4.0.
+                                                                                    :no-config t))))
                                            (restart-with-message c))))))
                (startup browser urls)))))))
   ;; Set `init-time' at the end of finalize to take the complete startup time
