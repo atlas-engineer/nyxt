@@ -219,6 +219,7 @@
                  (:file "vi")
                  (:file "visual")
                  (:file "watch"))))
+  :around-compile "NYXT-ASDF:FAIL-ON-WARNINGS"
   :in-order-to ((test-op (test-op "nyxt/tests")
                          (test-op "nyxt/history-tree/tests")
                          (test-op "nyxt/class-star/tests")
@@ -305,6 +306,7 @@
                nyxt)
   :pathname #p"NYXT:source;"
   :serial t
+  :around-compile "NYXT-ASDF:FAIL-ON-WARNINGS"
   :components ((:file "web-extensions")
                (:file "web-extensions-callbacks")
                (:file "renderer/gtk-clipboard")
@@ -317,6 +319,7 @@
                cl-gobject-introspection
                nyxt/gtk)
   :pathname #p"NYXT:source;"
+  :around-compile "NYXT-ASDF:FAIL-ON-WARNINGS"
   :components ((:file "renderer/gi-gtk"))
   :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests"))))
 
@@ -337,6 +340,7 @@
                nyxt
                trivial-main-thread)
   :pathname #p"NYXT:source;"
+  :around-compile "NYXT-ASDF:FAIL-ON-WARNINGS"
   :components ((:file "renderer/qt")))
 
 ;; We should not set the build-pathname in systems that have a component.
