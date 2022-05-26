@@ -1,6 +1,8 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
+(in-package :nyxt/tests)
+
 (defun list-unbound-exports (package)
   (let ((result '()))
     (do-external-symbols (s (find-package package) result)
@@ -38,6 +40,13 @@ A sub-package has a name that starts with that of PACKAGE followed by a '/' sepa
                                        (list package exports))))
                                  (cons (find-package package) (list-subpackages package))))))
     (when report
-      (format t "~a~&Found unbound exported symbols in ~a packages."
-              report (length report))
-      (uiop:quit 20))))
+      (error "~a~&Found unbound exported symbols in ~a packages."
+             report (length report)))))
+
+(plan nil)
+
+(subtest "Unbound exports"
+  (prove:is (unbound-exports :nyxt)
+            nil))
+
+(finalize)

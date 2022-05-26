@@ -417,6 +417,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
   :depends-on (nyxt/gi-gtk prove)
   :components ((:file "tests/renderer-package"))
   :perform (test-op (op c)
+                    (nyxt-run-test c "tests/compilation/")
                     (nyxt-run-test c "tests/renderer-offline/")
                     (nyxt-run-test c "tests/renderer-online/" :network-needed-p t)))
 
