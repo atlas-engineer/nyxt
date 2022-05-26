@@ -296,44 +296,43 @@ For generic functions, describe all the methods."
                      (:h2 (format nil "Source ~a" file))
                      (:pre (function-lambda-string (symbol-function input))))))
                (method-desc (method)
-                 (let ((id (ensure-inspected-id method)))
-                   (spinneret:with-html-string
-                     (:details
-                      (:summary
-                          (:h3 :style "display: inline"
-                               (format nil "~s" input) " "
-                               (:raw (format
-                                      nil "(~{~a~^ ~})"
-                                      (mapcar (lambda (class)
-                                                (cond
-                                                  ((ignore-errors (mopu:subclassp class 'standard-object))
-                                                   (spinneret:with-html-string
-                                                     (:a :href (nyxt-url 'describe-class
-                                                                         :class (class-name class))
-                                                         (write-to-string (class-name class)))))
-                                                  ((ignore-errors (eq t (class-name class)))
-                                                   "t")
-                                                  (t (nyxt::escaped-literal-print class))))
-                                              (mopu:method-specializers method))))))
-                      (:button
-                       :class "button"
-                       :onclick (ps:ps (nyxt/ps:lisp-eval
-                                        `(progn
-                                           (remove-method (closer-mop:method-generic-function (inspected-value ,id))
-                                                          (inspected-value ,id))
-                                           (reload-current-buffer))))
-                       "Remove method")
-                      (:raw (resolve-backtick-quote-links (documentation method 't)
-                                                          (mopu:method-name method)))
-                      (:h4 "Argument list")
-                      (:p (:pre
-                           (let ((*package* (symbol-package input)))
-                             (format-arglist (closer-mop:method-lambda-list method)))))
-                      (alex:when-let* ((definition (swank:find-definition-for-thing method))
-                                       (not-error-p (null (getf definition :error)))
-                                       (file (rest (getf definition :location))))
-                        (:h2 (format nil "Source ~a" file))
-                        (:pre (function-lambda-string method))))))))
+                 (spinneret:with-html-string
+                   (:details
+                    (:summary
+                        (:h3 :style "display: inline"
+                             (format nil "~s" input) " "
+                             (:raw (format
+                                    nil "(~{~a~^ ~})"
+                                    (mapcar (lambda (class)
+                                              (cond
+                                                ((ignore-errors (mopu:subclassp class 'standard-object))
+                                                 (spinneret:with-html-string
+                                                   (:a :href (nyxt-url 'describe-class
+                                                                       :class (class-name class))
+                                                       (write-to-string (class-name class)))))
+                                                ((ignore-errors (eq t (class-name class)))
+                                                 "t")
+                                                (t (nyxt::escaped-literal-print class))))
+                                            (mopu:method-specializers method))))))
+                    (:button
+                     :class "button"
+                     :onclick (ps:ps (nyxt/ps:lisp-eval2 ("describe-function")
+
+                                                         (remove-method (closer-mop:method-generic-function method)
+                                                                        method)
+                                                         (reload-current-buffer)))
+                     "Remove method")
+                    (:raw (resolve-backtick-quote-links (documentation method 't)
+                                                        (mopu:method-name method)))
+                    (:h4 "Argument list")
+                    (:p (:pre
+                         (let ((*package* (symbol-package input)))
+                           (format-arglist (closer-mop:method-lambda-list method)))))
+                    (alex:when-let* ((definition (swank:find-definition-for-thing method))
+                                     (not-error-p (null (getf definition :error)))
+                                     (file (rest (getf definition :location))))
+                      (:h2 (format nil "Source ~a" file))
+                      (:pre (function-lambda-string method)))))))
           (if (typep (symbol-function input) 'generic-function)
               (spinneret:with-html-string
                 (:style (style buffer))
