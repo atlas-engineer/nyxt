@@ -196,6 +196,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "about")
                  (:file "tutorial")
                  (:file "changelog")
+                 (:file "migration")
                  (:file "manual")))
                (:module "Modes"
                 :pathname "mode"
