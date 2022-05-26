@@ -356,6 +356,16 @@ SLY install.")
    (:li "New " (:code "bookmark-frequent-visits") " mode.")
    (:li "New " (:code "repeat-key") " command repeating the provided key as many times as you like.")
    (:li (:code "application-mode") " is now " (:code "passthrough-mode") ".")
+   (:li (:code "web-mode") " is no more.  Instead much of its features has been  moved to the new "
+        (:code "document-mode") ".  The buffer history management is now handled in a separate mode, "
+        (:code "history-mode") ". " (:code "bookmarklets") " have they own mode too, " (:code "bookmarklets-mode") ".")
+   (:li "Internal pages are now also " (:code "web-buffer") "s.  Most of the buffer customizations can be done on the "
+        (:code "web-buffer") " class.")
+   (:li "The buffer hierarchy has been redesigned.  Now " (:code "buffer")
+        " is a minimal class and instantiating such a buffer is only useful if you need a dummy buffer. "
+        (:code "web-buffer") " inherits from a mix of specialized buffer subclasses, such as "
+        (:code "mode-buffer") " and " (:code "input-buffer") ".  For the full list, see the "
+        (:code "buffer") " class documentation and browse its subclasses.")
 
    (:h3 "Bindings")
    (:ul
