@@ -38,6 +38,26 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
     4 jobs: 2m51s
     8 jobs: 2m21s")
 
+(defun redefinition-p (condition)       ; From Slynk.
+  (and (typep condition 'style-warning)
+       (every #'char-equal "redefin" (princ-to-string condition))))
+
+#+ccl
+(defun osicat-warning-p (condition)
+  ;; Osicat triggers a warning on CCL because of some unimplemented chunk.
+  ;; See https://github.com/osicat/osicat/issues/37.
+  (and (typep condition 'style-warning)
+       (search "Undefined function OSICAT::MAKE-FD-STREAM" (princ-to-string condition))))
+
+(defun fail-on-warnings (thunk)         ; TODO: Is it possible to report the offending component?
+  (let ((conditions '()))
+    (handler-bind ((warning (lambda (c)
+                              (unless (or (redefinition-p c)
+                                          #+ccl
+                                          (osicat-warning-p c))
+                                (error c) ))))
+      (funcall thunk))))
+
 (defsystem "nyxt"
   :version "3"                          ; Development version.
   :author "Atlas Engineer LLC"
@@ -229,6 +249,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "tts")
                  (:file "record-input-field")
                  (:file "macro-edit"))))
+  :around-compile fail-on-warnings
   :in-order-to ((test-op (test-op "nyxt/tests")
                          (test-op "nyxt/download-manager/tests")
                          (test-op "nyxt/history-tree/tests")
@@ -377,6 +398,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                cl-webkit2)
   :pathname "source/"
   :serial t
+  :around-compile fail-on-warnings
   :components ((:file "web-extensions")
                (:file "web-extensions-callbacks")
                (:file "renderer/gtk-clipboard")
@@ -387,6 +409,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                cl-gobject-introspection
                bordeaux-threads)
   :pathname "source/"
+  :around-compile fail-on-warnings
   :components ((:file "renderer/gi-gtk"))
   :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests"))))
 
@@ -402,6 +425,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                cl-webengine
                trivial-main-thread)
   :pathname "source/"
+  :around-compile fail-on-warnings
   :components ((:file "renderer/qt")))
 
 ;; We should not set the build-pathname in systems that have a component.
