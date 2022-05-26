@@ -316,7 +316,7 @@ For generic functions, describe all the methods."
                                             (mopu:method-specializers method))))))
                     (:button
                      :class "button"
-                     :onclick (ps:ps (nyxt/ps:lisp-eval2 ("describe-function")
+                     :onclick (ps:ps (nyxt/ps:lisp-eval2 ((lisp-url-callbacks buffer) "describe-function")
 
                                                          (remove-method (closer-mop:method-generic-function method)
                                                                         method)

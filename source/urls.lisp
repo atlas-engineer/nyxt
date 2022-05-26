@@ -443,7 +443,7 @@ guarantee of the same result."
             (let* ((request-id (quri:uri-host url))
                    (title (when url (subseq (quri:uri-path url) 1))))
               (log:debug "Evaluate Lisp code from internal page: ~a" (or title "UNTITLED"))
-              (values (let ((result (nyxt/ps:funcall-ps-callback request-id)))
+              (values (let ((result (nyxt:funcall* (gethash request-id (lisp-url-callbacks buffer)))))
                         ;; Objects and other complex structures make cl-json choke.
                         ;; TODO: Maybe encode it to the format that `cl-json'
                         ;; supports, then we can override the encoding and
