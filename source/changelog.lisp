@@ -23,6 +23,7 @@ particular revision.")
      (:li "MAJOR when we make incompatible API changes.")
      (:li "MINOR when we add functionality in a backwards-compatible manner.")
      (:li "PATCH when we make backwards-compatible bug fixes."))
+    (:p "See also the " (:code "migration-guide") ".")
     (loop for version in (alex:hash-table-values +changelog+)
           collect (:raw version))))
 
