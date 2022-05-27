@@ -464,20 +464,25 @@ VISITED is used to detect cycles."
            nil)
           (t hit))))))
 
-(declaim (ftype (function (keymap
-                           list-of-keys
-                           list-of-keymaps)
-                          (or keymap t))
-                lookup-keys-in-keymap-and-parents))
-(defun lookup-keys-in-keymap-and-parents (keymap keys visited)
-  "Return the bound value or keymap associated to KEYS in KEYMAP.
-Return nil if there is none.
-Keymap parents are looked up one after the other.
-VISITED is used to detect cycles."
-  (or (lookup-keys-in-keymap keymap keys visited)
-      (some (lambda (map)
-              (lookup-key* map keys visited))
-            (parents keymap))))
+(defun keymap-tree->list (keymaps visited)
+  "Flatten the KEYMAPS into a list.
+It traverses KEYMAPS first, then traverses the each keymap `parent' layer after layer.
+
+Example:
+- keymap1 has parents (k1a k1b)
+- k1a has parents (k1ap)
+- keymap2 has parents (k2a)
+
+Return (keymap1 keymap2 k1a k1b k2a k1ap)."
+  (when keymaps
+    (append keymaps
+            (keymap-tree->list
+             (delete-if (lambda (keymap)
+                          (when (find keymap visited)
+                            (warn "Cycle detected in keymap ~a" keymap)
+                            t))
+                        (alex:mappend #'parents keymaps))
+             (append keymaps visited)))))
 
 (declaim (ftype (function ((or keymap list-of-keymaps)
                            list-of-keys
@@ -493,14 +498,14 @@ As a second value, return the matching keymap."
           (some (lambda (keymap)
                   (if (find keymap visited)
                       (warn "Cycle detected in keymap ~a" keymap)
-                      (let ((hit (lookup-keys-in-keymap-and-parents
+                      (let ((hit (lookup-keys-in-keymap
                                   keymap
                                   keys
                                   (cons keymap visited))))
                         (when hit
                           (setf matching-keymap keymap)
                           hit))))
-                (uiop:ensure-list keymap-or-keymaps))))
+                (keymap-tree->list (uiop:ensure-list keymap-or-keymaps) '()))))
     (values result matching-keymap)))
 
 (declaim (ftype (function ((or list-of-keys keyspecs-type)
@@ -516,7 +521,7 @@ As a third value, return the possibly translated KEYS.
 
 Return NIL if no value is found.
 
-First keymap parents are lookup up one after the other.
+First keymap parents are looked up one after the other.
 Then keys translation are looked up one after the other.
 The same is done for the successive keymaps if KEYMAP-OR-KEYMAPS is a list of
 keymaps."
