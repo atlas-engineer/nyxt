@@ -103,29 +103,64 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
     (spinneret:with-html-string
       (:style (style (find-submode 'bookmark-mode (current-buffer)))) ; TODO: Make sure this is the right buffer
       (:h1 "Bookmarks")
-      (cond
-        ((zerop (hash-table-count bookmarks))
-         (:p (format nil "No bookmarks in ~s." (files:expand (bookmarks-file bookmarks-buffer)))))
-        (t (maphash
-            (lambda (tag bookmarks)
-              (:details
-               (:summary (or tag "Unsorted"))
-               (dolist (bookmark bookmarks)
-                 (let ((uri-host (quri:uri-host (url bookmark)))
-                       (url-href (render-url (url bookmark))))
-                   (:dl
-                    (:dt (:button :onclick (ps:ps (delbkm (ps:lisp url-href))) "✕")
-                         (serapeum:ellipsize (title bookmark) 80))
-                    (:dd (:a :href url-href uri-host))
-                    (when (tags bookmark)
-                      (:dd (format nil " (~{~a~^, ~})" (tags bookmark)))))
-                   (:hr)))))
-            bookmarks)))
+      ;; (cond
+      ;;   ((zerop (hash-table-count bookmarks))
+      ;;    (:p (format nil "No bookmarks in ~s." (files:expand (bookmarks-file bookmarks-buffer)))))
+      ;;   (t (maphash
+      ;;       (lambda (tag bookmarks)
+      ;;         (:details
+      ;;          (:summary (or tag "Unsorted"))
+      ;;          (dolist (bookmark bookmarks)
+      ;;            (let ((uri-host (quri:uri-host (url bookmark)))
+      ;;                  (url-href (render-url (url bookmark))))
+      ;;              (:dl
+      ;;               (:dt (:button :onclick (ps:ps (delbkm (ps:lisp url-href))) "✕")
+      ;;                    (serapeum:ellipsize (title bookmark) 80))
+      ;;               (:dd (:a :href url-href uri-host))
+      ;;               (when (tags bookmark)
+      ;;                 (:dd (format nil " (~{~a~^, ~})" (tags bookmark)))))
+      ;;              (:hr)))))
+      ;;       bookmarks)))
       (:nscript
        ;; Not exactly pretty, but saves a lot of space.
        (ps:ps (defun delbkm (url)
                 (fetch (+ "lisp://" (escape (+ "(nyxt:delete-bookmark \"" url "\")/")))
                        (ps:create :mode "no-cors"))))))))
+
+(define-command list-bookmarks-populate ()
+  "Fix to insert the bookmarks in the  current buffer."
+  (let ((bookmarks (group-bookmarks (current-buffer))))
+    (ffi-buffer-load-html
+     (current-buffer)
+     (spinneret:with-html-string
+       (:style (style (find-submode 'bookmark-mode (current-buffer)))) ; TODO: Make sure this is the right buffer
+       (:h1 "Bookmarks")
+       (cond
+         ((zerop (hash-table-count bookmarks))
+          (:p (format nil "No bookmarks in ~s." (files:expand (bookmarks-file (current-buffer))))))
+         (t (maphash
+             (lambda (tag bookmarks)
+               (:details
+                (:summary (or tag "Unsorted"))
+                (dolist (bookmark bookmarks)
+                  (let ((uri-host (quri:uri-host (url bookmark)))
+                        (url-href (render-url (url bookmark))))
+                    (:dl
+                     (:dt (:button :onclick (ps:ps (delbkm (ps:lisp url-href))) "✕")
+                          (serapeum:ellipsize (title bookmark) 80))
+                     (:dd (:a :href url-href uri-host))
+                     (when (tags bookmark)
+                       (:dd (format nil " (~{~a~^, ~})" (tags bookmark)))))
+                    (:hr)))))
+             bookmarks)))
+       (:nscript
+         ;; Not exactly pretty, but saves a lot of space.
+         (ps:ps (defun delbkm (url)
+                  (fetch (+ "lisp://" (escape (+ "(nyxt:delete-bookmark \"" url "\")/")))
+                         (ps:create :mode "no-cors"))))))
+     (url (current-buffer)))))
+
+
 
 (define-class bookmarks-file (files:data-file nyxt-lisp-file)
   ((files:base-path #p"bookmarks")
