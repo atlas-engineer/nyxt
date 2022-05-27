@@ -222,9 +222,9 @@ all hosts being blocked, execute command " (:code "describe-variable") ", choose
 (:code "blocker-mode") " documentation.")
 
    (:h3 "Custom commands")
-   (:p "Creating your own invokable commands is similar to creating a Common
+   (:p "Creating your own invocable commands is similar to creating a Common
 Lisp function, except the form is " (:code "define-command") " instead of "
-(:code "defun") ". If you want this command to be invokable outside of
+(:code "defun") ". If you want this command to be invocable outside of
         the context of a mode, use " (:code "define-command-global") ".")
    (:p "Example:")
    (:pre (:code
