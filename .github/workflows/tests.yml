@@ -71,7 +71,7 @@ jobs:
       env:
        NYXT_TESTS_ERROR_ON_FAIL: yes
       run: |
-        ros -e '(asdf:load-system :nyxt/submodules)' -e '(handler-bind (#+asdf3.2 (asdf:bad-system-name (function MUFFLE-WARNING))) (handler-case (asdf:load-system :nyxt/tests) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17))))' -e '(asdf:test-system :nyxt)'
+        ros -e '(asdf:load-system :nyxt/submodules)' -e '(handler-bind (#+asdf3.2 (asdf:bad-system-name (function MUFFLE-WARNING))) (handler-case (asdf:load-system :nyxt/tests) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17))))' -e '(asdf:test-system :nyxt)'  -e '(asdf:test-system :nyxt/application/tests)'
 
     - name: Compilation warnings
       shell: bash
