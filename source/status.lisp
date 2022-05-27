@@ -8,7 +8,7 @@
 
 (export-always 'format-status-modes)
 (defun format-status-modes (buffer window)
-  "Format the modes for the status area.
+  "Format the modes for the status buffer.
 This leverages `mode-status' which can be specialized for individual modes."
   (if (modable-buffer-p buffer)
       (spinneret:with-html-string

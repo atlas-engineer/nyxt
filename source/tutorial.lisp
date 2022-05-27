@@ -92,8 +92,8 @@ upon return.  The suggestion under the cursor is not processed if not marked.")
 window) where Nyxt outputs messages back to you. To view the history of all
 messages, invoke the command " (:code "list-messages") ".")
 
-   (:h3 "Status area")
-   (:p "The status area is where information about the state of that buffer is
+   (:h3 "Status buffer")
+   (:p "The status buffer is where information about the state of that buffer is
 printed (typically at the bottom of a window). By default, this includes the
 active modes, the URL, and the title of the current buffer.")
 

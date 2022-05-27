@@ -133,7 +133,7 @@ particular revision.")
    (:li (:p "Don't forward printable characters in vi-normal-mode.")
         (:p "Concretely, pressing an unbound letter won't insert it in an HTML input."))
    (:li (:p "New VI status and prompt buffer indicator.  (Thanks to @edgar-vincent!)")
-        (:p "Both the status area and the prompt buffer now display a colored  indicator for "
+        (:p "Both the status buffer and the prompt buffer now display a colored  indicator for "
             (:code "vi-normal-mode") " and " (:code "vi-insert-mode") "."))
    (:li "New navigation commands: "
         (:code "go-previous") ", "
@@ -178,7 +178,7 @@ particular revision.")
    (:li (:p "Bind " (:code "C-M-space") " to " (:code "execute-extended-command") ".")
         (:p "It makes it easier for users to execute commands and supply parameters.")))
 
-  (:h3 "Status area")
+  (:h3 "Status buffer")
   (:ul
    (:li "Clicking on modes now describes them.")
    (:li "New '+' button to toggles modes.")
@@ -329,7 +329,7 @@ SLY install.")
 
 (define-version "3.0.0"
   (:ul
-   (:li "Revamp status area design.")
+   (:li "Revamp status buffer design.")
    (:li "New prompt-buffer fuzzy matching algorithm, hopefully offering more
   relevant results.  (Thanks to @BlueFlo0d!)")
    (:li "Add support for the Gopher and Gemini protocols.")

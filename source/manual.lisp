@@ -349,7 +349,7 @@ the " (:code "define-configuration") " macro.")
 
    (:h3 "Appearance")
    (:p "Much of the visual style can be configured by the user.  Search the
-class slots for 'style'.  To customize the status area, see
+class slots for 'style'.  To customize the status buffer, see
 the " (:code "status-formatter") " window slot.")
 
    (:h3 "Advanced configuration")
