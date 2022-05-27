@@ -549,7 +549,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:metaclass user-class)
   (:documentation "Like `web-buffer', but don't persist data to disk."))
 
-(define-class panel-buffer (context-buffer input-buffer modable-buffer document-buffer)
+(define-class panel-buffer (input-buffer modable-buffer document-buffer network-buffer)
   ((width 250 :documentation "The width in pixels.")
    (style (theme:themed-css (theme *browser*)
             (body
