@@ -187,56 +187,96 @@ deprecated and by what in the docstring."
      (setf (slot-value #',name 'visibility) :mode
            (slot-value #'name 'deprecated-p) t)))
 
-(defun nyxt-packages ()                 ; TODO: Export a customizable *nyxt-packages* instead?
-  "Return all package designators that start with 'nyxt' plus Nyxt own libraries."
-  (mapcar #'package-name
-          (append (delete-if
-                   (lambda (p)
-                     (not (str:starts-with-p "NYXT" (package-name p))))
-                   (list-all-packages))
-                  (mapcar #'find-package
-                          '(class-star
-                            download-manager
-                            history-tree
-                            keymap
-                            keymap/scheme
-                            password
-                            analysis
-                            text-buffer)))))
 
-(defun package-defined-symbols (&optional (external-package-designators (nyxt-packages))
-                                  (user-package-designators '(:nyxt-user)))
-  "Return the list of all external symbols interned in EXTERNAL-PACKAGE-DESIGNATORS
-and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
-  (let ((external-package-designators
-          ;; This is for the case external-package-designators are passed nil.
-          (or external-package-designators (nyxt-packages)))
-        (symbols))
-    (dolist (package (mapcar #'find-package external-package-designators))
+(-> subpackage-p (trivial-types:package-designator trivial-types:package-designator) boolean)
+(defun subpackage-p (subpackage package)
+  "Return non-nil if SUBPACKAGE is a subpackage of PACKAGE or is PACKAGE itself.
+A subpackage has a name that starts with that of PACKAGE followed by a '/' separator."
+  (or (eq (find-package subpackage) (find-package package))
+      (sera:string-prefix-p (uiop:strcat (package-name package) "/")
+                            (package-name subpackage))))
+
+(-> nyxt-subpackage-p (trivial-types:package-designator) boolean)
+(defun nyxt-subpackage-p (package)
+  "Return non-nil if PACKAGE is a sub-package of `nyxt'."
+  (subpackage-p package :nyxt))
+
+(-> nyxt-user-subpackage-p (trivial-types:package-designator) boolean)
+(defun nyxt-user-subpackage-p (package)
+  "Return non-nil if PACKAGE is a sub-package of `nyxt' or `nyxt-user'."
+  (subpackage-p package :nyxt-user))
+
+(defvar *nyxt-extra-packages* (mapcar #'find-package
+                                      '(class-star
+                                        download-manager
+                                        history-tree
+                                        keymap
+                                        keymap/scheme
+                                        password
+                                        analysis
+                                        text-buffer))
+  "Packages to append to the result of `nyxt-packages'.")
+
+(defun nyxt-packages ()
+  "Return the Nyxt package, all its subpackages plus what's in `*nyxt-extra-packages*'.
+See also `nyxt-user-packages'."
+  (cons
+   (find-package :nyxt)
+   (sera:filter #'nyxt-subpackage-p
+                (list-all-packages))))
+
+(defun nyxt-user-packages ()
+  "Return the Nyxt package, the `:nyxt-user', all their subpackages plus what's
+in `*nyxt-extra-packages*'.
+See also `nyxt-packages'."
+  (cons
+   (find-package :nyxt-user)
+   (sera:filter #'nyxt-user-subpackage-p
+                (list-all-packages))))
+
+(defun package-symbols (&optional (packages (nyxt-packages))
+                          (user-packages (nyxt-user-packages)))
+  "Return the list of all external symbols from PACKAGES
+and all (possibly unexported) symbols from USER-PACKAGES.
+
+If PACKAGES is NIL, return all external symbols in all packages."
+  (let* ((user-packages (mapcar #'find-package (alex:ensure-list user-packages)))
+         (packages (or (alex:ensure-list packages)
+                       (set-difference
+                        (list-all-packages)
+                        user-packages)))
+         (symbols))
+    (dolist (package (mapcar #'find-package packages))
       (do-external-symbols (s package symbols)
-        (pushnew s symbols)))
-    (dolist (package (mapcar #'find-package user-package-designators))
+        (push s symbols)))
+    (dolist (package user-packages)
       (do-symbols (s package symbols)
         (when (eq (symbol-package s) package)
-          (pushnew s symbols))))
-    symbols))
+          (push s symbols))))
+    (delete-duplicates symbols)))
 
-(defun package-variables (&optional packages)
-  "Return the list of variable symbols in Nyxt-related-packages."
-  (delete-if (complement #'boundp) (package-defined-symbols packages)))
+(defun package-variables (&optional (packages (nyxt-packages))
+                            (user-packages (nyxt-user-packages)))
+  "Return the list of variable symbols in PACKAGES and USER-PACKAGES.
+See `package-symbols' for details on the arguments."
+  (delete-if (complement #'boundp) (package-symbols packages user-packages)))
 
-(defun package-functions (&optional packages)
-  "Return the list of function symbols in Nyxt-related packages."
-  (delete-if (complement #'fboundp) (package-defined-symbols packages)))
+(defun package-functions (&optional (packages (nyxt-packages))
+                            (user-packages (nyxt-user-packages)))
+  "Return the list of function symbols in PACKAGES and USER-PACKAGES.
+See `package-symbols' for details on the arguments."
+  (delete-if (complement #'fboundp) (package-symbols packages user-packages)))
 
-(defun package-classes (&optional packages)
-  "Return the list of class symbols in Nyxt-related-packages."
+(defun package-classes (&optional (packages (nyxt-packages))
+                          (user-packages (nyxt-user-packages)))
+  "Return the list of class symbols in PACKAGES and USER-PACKAGES.
+See `package-symbols' for details on the arguments."
   (delete-if (lambda (sym)
                (not (and (find-class sym nil)
                          ;; Discard non-standard objects such as structures or
                          ;; conditions because they don't have public slots.
                          (mopu:subclassp (find-class sym) (find-class 'standard-object)))))
-             (package-defined-symbols packages)))
+             (package-symbols packages user-packages)))
 
 (define-class slot ()
   ((name nil
@@ -260,17 +300,22 @@ and all (possibly unexported) symbols in USER-PACKAGE-DESIGNATORS."
    (complement #'exported-p)
    (mopu:slot-names class-sym)))
 
-(defun package-slots (&optional packages)
-  "Return the list of all slot symbols in `:nyxt' and `:nyxt-user' or other PACKAGES."
+(defun package-slots (&optional (packages (nyxt-packages))
+                        (user-packages (nyxt-user-packages)))
+  "Return the list of all slot symbols in PACKAGES and USER-PACKAGES.
+See `package-symbols' for details on the arguments."
   (alex:mappend (lambda (class-sym)
                   (mapcar (lambda (slot) (make-instance 'slot
                                                         :name slot
                                                         :class-sym class-sym))
                           (class-public-slots class-sym)))
-                (package-classes packages)))
+                (package-classes packages user-packages)))
 
-(defun package-methods (&optional packages) ; TODO: Unused.  Remove?
-  (loop for sym in (package-defined-symbols packages)
+(defun package-methods (&optional (packages (nyxt-packages)) ; TODO: Unused.  Remove?
+                          (user-packages (nyxt-user-packages)))
+  "Return the list of all method symbols in PACKAGES and USER-PACKAGES.
+See `package-symbols' for details on the arguments."
+  (loop for sym in (package-symbols packages user-packages)
         append (ignore-errors
                 (closer-mop:generic-function-methods (symbol-function sym)))))
 

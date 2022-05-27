@@ -186,24 +186,12 @@ Return NIL if it's not a mode."
     (when (mopu:subclassp class (find-class 'mode))
       class)))
 
-(defun package-modes (&optional packages)
-  "Return the list of mode symbols in Nyxt-related-packages."
+(defun package-modes (&optional (packages (nyxt-packages))
+                        (user-packages (nyxt-user-packages)))
+  "Return the list of mode symbols in PACKAGES and USER-PACKAGES.
+See `package-symbols' for details on the arguments."
   (delete-if (complement #'mode-class)
-             (package-defined-symbols packages)))
-
-(-> subpackage-p (trivial-types:package-designator trivial-types:package-designator) boolean)
-(defun subpackage-p (subpackage package)
-  "Return non-nil if SUBPACKAGE is a subpackage of PACKAGE or is PACKAGE itself.
-A subpackage has a name that starts with that of PACKAGE followed by a '/' separator."
-  (or (eq (find-package subpackage) (find-package package))
-      (sera:string-prefix-p (uiop:strcat (package-name package) "/")
-                            (package-name subpackage))))
-
-(-> nyxt-subpackage-p (trivial-types:package-designator) boolean)
-(defun nyxt-subpackage-p (package)
-  "Return non-nil if PACKAGE is a sub-package of `nyxt' or `nyxt-user'."
-  (or (subpackage-p package :nyxt)
-      (subpackage-p package :nyxt-user)))
+             (package-symbols packages user-packages)))
 
 ;; TODO: Should allow search all packages, e.g. when PACKAGES is NIL.
 (-> resolve-symbol ((or keyword string) (member :function :variable :class :mode :slot :command) &optional (cons *)) symbol)

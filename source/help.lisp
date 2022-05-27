@@ -183,8 +183,8 @@ for matches."
              :sources (make-instance 'package-source))))
     (buffer (str:concat "*Help-" (package-name package) "*"))
   "Inspect a package and show it in a help buffer."
-  (let ((total-symbols (package-defined-symbols nil (list package)))
-        (external-symbols (package-defined-symbols (list package)))
+  (let ((total-symbols (package-symbols nil (list package)))
+        (external-symbols (package-symbols (list package) nil))
         (*print-case* :downcase))
     (flet ((package-markup (package)
              (spinneret:with-html
