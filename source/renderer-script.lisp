@@ -107,6 +107,11 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
                       (|insertAdjacentHTML| "afterbegin"
                                             (ps:lisp style)))))))
 
+(sera:eval-always
+  (defvar *nyxt-url-commands* (make-hash-table) ; TODO: Rename to `*internal-pages*'.
+    "A map from allowed nyxt: URLs symbols to the functions that generate code of
+  the pages related to these commands."))
+
 (defun internal-page-symbol-p (sym)
   (gethash sym *nyxt-url-commands*))
 
