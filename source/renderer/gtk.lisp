@@ -1465,7 +1465,7 @@ See `finalize-buffer'."
           (url (webkit:webkit-uri-request-uri
                 (webkit:webkit-navigation-action-get-request
                  (gobject:pointer navigation-action)))))
-      (ffi-buffer-load new-buffer (quri:uri url))
+      (buffer-load (quri:uri url) :buffer new-buffer)
       (window-set-buffer (current-window) new-buffer)
       (gtk-object new-buffer)))
   ;; Remove "download to disk" from the right click context menu because it
