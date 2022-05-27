@@ -454,7 +454,7 @@ Otherwise bind socket and return the listening thread."
         (uiop:quit))))
 
 (defun indent (s space-count)
-  "Return s with all lines but the first indented by SPACE-COUNT."
+  "Return S with all lines but the first indented by SPACE-COUNT."
   (let* ((lines (sera:lines s))
          (indent (make-string space-count :initial-element #\space)))
     (str:join +newline+
