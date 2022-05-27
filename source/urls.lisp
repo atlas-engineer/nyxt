@@ -303,11 +303,6 @@ Authority is compared case-insensitively (RFC 3986)."
                       (lambda (url1 url2) (equalp (quri:uri-authority url1)
                                                   (quri:uri-authority url2)))))))
 
-(sera:eval-always
-  (defvar *nyxt-url-commands* (make-hash-table) ; TODO: Rename to `*internal-pages*'.
-    "A map from allowed nyxt: URLs symbols to the functions that generate code of
-  the pages related to these commands."))
-
 (export-always 'nyxt-url)
 (-> nyxt-url (t &rest t &key &allow-other-keys) string)
 (defun nyxt-url (function-name &rest args &key &allow-other-keys)
