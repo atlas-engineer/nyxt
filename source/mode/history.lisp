@@ -317,6 +317,7 @@ Otherwise go forward to the only child."
     (:style (style buffer))
     (:style (style (find-submode 'nyxt/list-history-mode:list-history-mode buffer)))
     (:h1 "History")
+    (:p (format nil "The last ~a history entries:" limit))
     (:ul (:raw (nyxt::history-html-list :limit limit)))))
 
 (defun add-url-to-history (url buffer mode)
