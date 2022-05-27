@@ -25,6 +25,7 @@
     (defmethod ffi-initialize ((browser gtk-browser) urls startup-timestamp)
       "On GNU/Linux we can create a separate thread to launch the GTK
 interface. On Darwin, we must run the GTK thread on the main thread."
+      (declare (ignore urls startup-timestamp))
       (log:debug "Initializing GI-GTK Interface")
       (setf (uiop:getenv "WEBKIT_FORCE_SANDBOX") "0")
       (setf gtk-running-p t)
