@@ -548,6 +548,7 @@ Examples:
                (list-profile-classes)))
 
       (script
+       (setf *run-from-repl-p* t)       ; To report errors.
        (flet ((run-script (stream)
                 (maybe-skip-shebang-line stream)
                 (load-lisp stream :package (find-package :nyxt-user))))
