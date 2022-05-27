@@ -132,10 +132,10 @@ Return-actions can be listed and run with `return-selection-over-action' (bound 
   (:toggler-command-p nil))
 
 (defmacro define-command-prompt (name (prompt-buffer &rest arglist) &body body)
-  "Like `define-command' but the first argument is special:
+  "Like `define-command', but the first argument is special:
 - it is considered a keyword argument if `&keyword' is in arglist, `&optional' otherwise,
-- it is bound to `(current-prompt-buffer)` if unspecified,
-- the body is skipped and a warning is emitted when it's nil."
+- it is bound to `current-prompt-buffer' if unspecified,
+- the body is skipped and a warning is emitted unless non-nil."
   (multiple-value-bind (forms declares documentation)
       (alex:parse-body body :documentation t)
     (multiple-value-bind (required optional rest keywords aok? aux key?)
