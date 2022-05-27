@@ -377,7 +377,12 @@ executed in the order they appear.")
 the " (command-markup 'load-file) " command.  For
 convenience, " (command-markup 'load-config-file) " (re)loads your initialization file.")
    (:p "You can even make scripts.  Here is an example foo.lisp:")
-   (:pre (:code "#!nyxt --script
+   (:pre (:code "#!/bin/sh
+#|
+exec nyxt --script \"$0\"
+|#
+
+;; Your code follows:
 \(format t \"~a~&\" +version+)"))
    (:p "--eval and --load can be commanded to operate over an
 existing instance instead of a separate instance that exits immediately.")
