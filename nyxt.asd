@@ -431,6 +431,13 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
   :build-pathname "nyxt-qt"
   :entry-point "nyxt:entry-point")
 
+(defsystem "nyxt/application/tests"
+  :depends-on (#.(format nil "nyxt/~a-application" *nyxt-renderer*)
+                 prove)
+  :components ((:file "tests/package"))
+  :perform (test-op (op c)
+                    (nyxt-run-test c "tests/executable/")))
+
 #+sb-core-compression
 (handler-bind ((warning #'muffle-warning))
   (defmethod perform ((o image-op) (c system))
