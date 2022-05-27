@@ -76,11 +76,11 @@
   (is (nyxt::url-equal (quri:uri "http://example.org")
                        (quri:uri "https://example.org/"))
       t
-      "same schemeless URIs")
+      "same schemeless URLs")
   (is (nyxt::url-equal (quri:uri "https://example.org")
                        (quri:uri "https://example.org/foo"))
       nil
-      "different schemeless URIs")
+      "different schemeless URLs")
   (is (nyxt::schemeless-url (quri:uri "http://example.org/foo/bar?query=baz#qux"))
       "example.org/foo/bar?query=baz#qux"
       "schemeless URL")

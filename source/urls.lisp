@@ -280,7 +280,7 @@ If it cannot be derived, return an empty `quri:uri'."
 (-> url< (quri:uri quri:uri) (or null fixnum))
 (defun url< (url1 url2)
   "Like `string<' but ignore the URL scheme.
-This way, HTTPS and HTTP is ignored when comparing URIs."
+This way, HTTPS and HTTP is ignored when comparing URLs."
   (string< (schemeless-url url1)
            (schemeless-url url2)))
 
