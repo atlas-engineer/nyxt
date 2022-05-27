@@ -550,7 +550,7 @@ Examples:
       (script
        (flet ((run-script (stream)
                 (maybe-skip-shebang-line stream)
-                (load-lisp stream)))
+                (load-lisp stream :package (find-package :nyxt-user))))
          (match (getf options :script)
            ("-" (run-script *standard-input*))
            (file (with-open-file (f file :element-type :default)
