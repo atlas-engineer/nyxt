@@ -209,6 +209,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "emacs")
                  (:file "expedition")
                  (:file "force-https")
+                 (:file "help")
                  (:file "macro-edit")
                  (:file "no-image")
                  (:file "no-procrastinate" :depends-on ("blocker"))

@@ -1,0 +1,22 @@
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
+(nyxt:define-package :nyxt/help-mode
+    (:documentation "Mode to enhance navigation on internal documentation pages."))
+(in-package :nyxt/help-mode)
+
+(define-mode help-mode ()
+  "Mode for help and documentation pages."
+  ((rememberable-p nil)
+   (keymap-scheme
+    (define-scheme "help-mode"
+      scheme:cua
+      (list
+       "q" 'nyxt::delete-current-buffer
+       "n" 'nyxt/document-mode::next-heading
+       "p" 'nyxt/document-mode::previous-heading
+       "m" 'nyxt/document-mode::jump-to-heading
+       "s" 'nyxt/search-buffer-mode::search-buffer
+       "t" 'nyxt/document-mode::headings-panel
+       "?" 'nyxt::describe-bindings))))
+  (:toggler-command-p nil))
