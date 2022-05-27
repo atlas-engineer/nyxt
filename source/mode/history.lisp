@@ -311,7 +311,7 @@ Otherwise go forward to the only child."
                (:div (:raw (render-buffer-history-tree buffer))))))))
 
 (define-internal-page-command-global list-history (&key (limit 100))
-  (buffer "*History list*" 'nyxt/list-history-mode:list-history-mode)
+  (buffer "*History list*" 'nyxt/list-history-mode:list-history-mode) ; TODO: Remove list-history-mode if we add a style slot to `internal-page'.
   "Print the user history as a list."
   (spinneret:with-html-string
     (:style (style buffer))
