@@ -108,6 +108,10 @@ Setf-able."))
 (define-ffi-generic ffi-buffer-load (buffer url)
   (:documentation "Load URL into BUFFER through the renderer."))
 
+(define-ffi-generic ffi-buffer-load-html (buffer html-content url)
+  (:documentation "Load HTML into BUFFER through the renderer.
+If URL is not nil, relative URLs are resolved against it."))
+
 (define-ffi-generic ffi-buffer-evaluate-javascript (buffer javascript &optional world-name)
   (:documentation "Evaluate JAVASCRIPT in the BUFFER web view.
 See also `ffi-buffer-evaluate-javascript-async'."))

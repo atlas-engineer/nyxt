@@ -1508,6 +1508,14 @@ local anyways, and it's better to refresh it if a load was queried."
           (load-webkit-history-entry buffer entry))
         (webkit:webkit-web-view-load-uri (gtk-object buffer) (quri:render-uri url)))))
 
+(define-ffi-method ffi-buffer-load-html ((buffer gtk-buffer) html-content url)
+  (declare (type quri:uri url))
+  (webkit:webkit-web-view-load-html (gtk-object buffer)
+                                    html-content
+                                    (if (url-empty-p url)
+                                        "about:blank"
+                                        (render-url url))))
+
 (defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript &optional world-name)
   (%within-renderer-thread
    (lambda (&optional channel)
