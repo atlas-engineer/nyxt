@@ -1300,7 +1300,7 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
         (t
          (clrhash (lisp-url-callbacks buffer)) ; REVIEW: Is it the only spot where to clear the Lisp URL callbacks?
          (alex:when-let ((page (find-url-internal-page url)))
-           (disable-modes (mode page) buffer))
+           (disable-modes (page-mode page) buffer))
          (ffi-buffer-load buffer url))))
     buffer))
 

@@ -131,10 +131,13 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
     :type (or string function)
     :documentation "If a function, it is called with the internal page arguments
 and must return a string.")
-   (mode
+   (page-mode
     nil
     :export t
-    :type symbol)
+    :type symbol
+    :documentation "The mode that's specific to a nyxt:// page.
+It's automatically enabled when the page is loaded and disabled when another URL
+is loaded.")
    (form
     nil
     :type (maybe function)
@@ -216,7 +219,7 @@ With GLOBAL-P, make this command globally accessible."
                (make-instance
                 'internal-page
                 :name ',name
-                :mode ,mode
+                :page-mode ,mode
                 :title ,(if (stringp title)
                             title
                             `(lambda (,@arglist)
