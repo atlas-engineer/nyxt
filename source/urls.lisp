@@ -371,7 +371,8 @@ guarantee of the same result."
   (let* ((url (url url))
          (symbol (quri:uri-path url))
          (params (quri:uri-query-params url))
-         (internal-page-name (read-from-string (str:upcase symbol))))
+         (internal-page-name (let ((*package* (find-package :nyxt)))
+                               (read-from-string (str:upcase symbol)))))
     (if (gethash internal-page-name *nyxt-url-commands*)
         (values internal-page-name
                 (alex:mappend (lambda (pair)
