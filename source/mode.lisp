@@ -320,7 +320,8 @@ For production code, see `find-submode' instead."
   (:export-class-name-p t)
   (:metaclass user-class))
 
-(define-command enable-modes (&optional modes buffers args)
+(define-command enable-modes (&optional (modes nil explicit-modes-p)
+                              (buffers nil explicit-buffers-p) args)
   "Enable MODES for BUFFERS.
 MODES should be a list of mode symbols.
 BUFFERS and MODES are automatically coerced into a list.
@@ -331,17 +332,19 @@ If it's a single buffer, return it directly (not as a list)."
   ;; TODO: Report if mode is not found.
   (let* ((buffers (if buffers
                       (uiop:ensure-list buffers)
-                      (prompt
-                       :prompt "Enable mode(s) for buffer(s)"
-                       :sources (make-instance 'buffer-source
-                                               :multi-selection-p t
-                                               :return-actions '()))))
+                      (unless explicit-buffers-p
+                        (prompt
+                         :prompt "Enable mode(s) for buffer(s)"
+                         :sources (make-instance 'buffer-source
+                                                 :multi-selection-p t
+                                                 :return-actions '())))))
          (modes (if modes
                     (uiop:ensure-list modes)
-                    (prompt
-                     :prompt "Enable mode(s)"
-                     :sources (make-instance 'inactive-mode-source
-                                             :buffers buffers)))))
+                    (unless explicit-modes-p
+                      (prompt
+                       :prompt "Enable mode(s)"
+                       :sources (make-instance 'inactive-mode-source
+                                               :buffers buffers))))))
     (mapcar (lambda (buffer)
               (mapcar (lambda (mode-sym)
                         (apply #'enable (or (find mode-sym (modes buffer) :key #'name)
@@ -351,7 +354,8 @@ If it's a single buffer, return it directly (not as a list)."
             (sera:filter #'modable-buffer-p buffers)))
   buffers)
 
-(define-command disable-modes (&optional modes buffers)
+(define-command disable-modes (&optional (modes nil explicit-modes-p)
+                               (buffers nil explicit-buffers-p))
   "Disable MODES for BUFFERS.
 MODES should be a list of mode symbols.
 BUFFERS and MODES are automatically coerced into a list.
@@ -361,17 +365,19 @@ If it's a single buffer, return it directly (not as a list)."
   ;; TODO: Report if mode is not found.
   (let* ((buffers (if buffers
                       (uiop:ensure-list buffers)
-                      (prompt
-                       :prompt "Enable mode(s) for buffer(s)"
-                       :sources (make-instance 'buffer-source
-                                               :multi-selection-p t
-                                               :return-actions '()))))
+                      (unless explicit-buffers-p
+                        (prompt
+                         :prompt "Enable mode(s) for buffer(s)"
+                         :sources (make-instance 'buffer-source
+                                                 :multi-selection-p t
+                                                 :return-actions '())))))
          (modes (if modes
                     (uiop:ensure-list modes)
-                    (prompt
-                     :prompt "Enable mode(s)"
-                     :sources (make-instance 'inactive-mode-source
-                                             :buffers buffers)))))
+                    (unless explicit-modes-p
+                      (prompt
+                       :prompt "Enable mode(s)"
+                       :sources (make-instance 'inactive-mode-source
+                                               :buffers buffers))))))
     (mapcar (lambda (buffer)
               (mapcar #'disable (delete nil (mapcar (lambda (mode) (find mode (modes buffer) :key #'name))
                                                     (uiop:ensure-list modes)))))
