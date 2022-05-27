@@ -1296,11 +1296,19 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
       ;; TODO: This condition can be a source of inefficiency.  Besides, it
       ;; partly duplicates the code in `preprocess-request'.  Can we factor this
       ;; out?
+
+      ;; We could have `on-url-load' and `on-url-unload' methods instead.
+      ;; `on-url-unload' could be used to perform some clean up, while
+      ;; `on-url-load' would perform the actual loading.
+      ;; Then subclass `quri:uri' with uri-js, uri-nyxt, uri-lisp, etc.
+      ;; Finally, specialize against these URLs.
       (cond
         ((equal "javascript" (quri:uri-scheme url))
          (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url))))
         (t
          (clrhash (lisp-url-callbacks buffer)) ; REVIEW: Is it the only spot where to clear the Lisp URL callbacks?
+         (alex:when-let ((page (find-url-internal-page url)))
+           (disable-modes (mode page) buffer))
          (ffi-buffer-load buffer url))))
     buffer))
 
