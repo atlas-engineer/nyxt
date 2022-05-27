@@ -7,7 +7,8 @@
 
 (define-mode list-history-mode ()
   "Mode for listing history."
-  ((rememberable-p nil)
+  ((visible-in-status-p nil)
+   (rememberable-p nil)
    (style
     (theme:themed-css (theme *browser*)
       (a

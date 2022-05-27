@@ -7,7 +7,8 @@
 
 (define-mode help-mode ()
   "Mode for help and documentation pages."
-  ((rememberable-p nil)
+  ((visible-in-status-p nil)
+   (rememberable-p nil)
    (keymap-scheme
     (define-scheme "help-mode"
       scheme:cua

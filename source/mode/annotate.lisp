@@ -9,7 +9,8 @@ Annotations are persisted to disk."))
 (define-mode annotate-mode ()
   "Annotate document with arbitrary comments.
 Annotations are persisted to disk, see the `annotations-file' mode slot."
-  ((annotations-file
+  ((visible-in-status-p nil)
+   (annotations-file
     (make-instance 'annotations-file)
     :type annotations-file
     :documentation "The file where to save annotations.")))

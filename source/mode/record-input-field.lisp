@@ -8,7 +8,8 @@
 (define-mode record-input-field-mode ()
   "Record input fields to be refilled later.
 See `save-input-data' and `set-input-data-from-saved'."
-  ((inputs-file
+  ((visible-in-status-p nil)
+   (inputs-file
     (make-instance 'inputs-file)
     :type inputs-file
     :documentation "The file where the system will create/save the input data.")))
@@ -33,9 +34,9 @@ See `save-input-data' and `set-input-data-from-saved'."
       (unless (equal (ps:chain (aref inputs i) id) "")
         (setf output (+ output "~" ":id" "~" (ps:chain  (aref inputs i) id) "~")))
       (unless (equal (ps:chain (aref inputs i) name) "")
-        (setf output (+ output "~" ":name" "~" (ps:chain  (aref inputs i) name) "~"))) 
+        (setf output (+ output "~" ":name" "~" (ps:chain  (aref inputs i) name) "~")))
       (unless (equal (ps:chain (aref inputs i) value) "")
-        (setf output (+ output "~" ":value" "~" (ps:chain  (aref inputs i) value) "~"))) 
+        (setf output (+ output "~" ":value" "~" (ps:chain  (aref inputs i) value) "~")))
       (unless (equal (ps:chain (aref inputs i) type) "")
         (setf output (+ output "~" ":type" "~" (ps:chain  (aref inputs i) type) "~"))))
     (dotimes (i len-text-areas)
@@ -43,14 +44,14 @@ See `save-input-data' and `set-input-data-from-saved'."
       (unless (equal (ps:chain (aref text-areas i) id) "")
         (setf output (+ output "~" ":id" "~" (ps:chain  (aref text-areas i) id) "~")))
       (unless (equal (ps:chain (aref text-areas i) name) "")
-        (setf output (+ output "~" ":name" "~" (ps:chain  (aref text-areas i) name) "~"))) 
+        (setf output (+ output "~" ":name" "~" (ps:chain  (aref text-areas i) name) "~")))
       (unless (equal (ps:chain (aref text-areas i) value) "")
-        (setf output (+ output "~" ":value" "~" (ps:chain  (aref text-areas i) value) "~"))) 
+        (setf output (+ output "~" ":value" "~" (ps:chain  (aref text-areas i) value) "~")))
       (unless (equal (ps:chain (aref text-areas i) placeholder) "")
         (setf output (+ output "~" ":placeholder" "~" (ps:chain  (aref text-areas i) type) "~"))))
     output))
 
-(define-class input-entry ()            
+(define-class input-entry ()
   ((url (quri:uri ""))
    (title "")
    (date (local-time:now))
@@ -77,7 +78,7 @@ See `save-input-data' and `set-input-data-from-saved'."
                    collect (loop for (key value) on list by #'cddr
                                  collect (convert-string-to-keyword key)
                                  collect value)))
-           (input-field-add (input-field) 
+           (input-field-add (input-field)
              (files:with-file-content (input-fields (inputs-file (current-buffer)))
                (push (make-instance 'input-entry :url (url (current-buffer))
                                                  :title (title (current-buffer))

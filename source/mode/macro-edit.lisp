@@ -7,7 +7,8 @@
 
 (define-mode macro-edit-mode ()
   "Mode for creating and editing macros."
-  ((name
+  ((visible-in-status-p nil)
+   (name
     ""
     :accessor nil
     :documentation "The name used for the macro.")
@@ -100,7 +101,7 @@
 
 (define-command add-command (&optional (macro-editor (find-submode 'macro-edit-mode)))
   "Add a command to the macro."
-  (let ((command 
+  (let ((command
           (first
            (prompt
             :prompt "Add command"

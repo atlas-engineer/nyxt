@@ -21,7 +21,8 @@
 (define-mode bookmark-mode ()
   "Manage bookmarks.
 Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
-  ((bookmarks-file
+  ((visible-in-status-p nil)
+   (bookmarks-file
     (make-instance 'bookmarks-file)
     :type bookmarks-file
     :documentation "The file where the system will create/save the bookmarks.")

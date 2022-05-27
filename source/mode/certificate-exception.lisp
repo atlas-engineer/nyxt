@@ -14,7 +14,8 @@ See the `add-domain-to-certificate-exceptions' command.")
   "Enable ignoring of certificate errors.
 This can apply to specific buffers.
 See the `add-domain-to-certificate-exceptions' command."
-  ((certificate-exceptions *default-certificate-exceptions*
+  ((visible-in-status-p nil)
+   (certificate-exceptions *default-certificate-exceptions*
                            :type list-of-strings)))
 
 (defmethod enable ((mode certificate-exception-mode) &key)

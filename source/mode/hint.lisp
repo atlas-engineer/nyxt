@@ -7,7 +7,8 @@
 
 (define-mode hint-mode ()
   "Mode to interact with links using keyword only."
-  ((rememberable-p nil)
+  ((visible-in-status-p nil)
+   (rememberable-p nil)
    (auto-follow-hints-p
     nil
     :type boolean

@@ -14,7 +14,8 @@ the content of HTML pages."))
 
 (define-mode bookmarklets-mode ()
   "Mode for 'bookmarklets' commands.
-By default, this mode does nothing but expose the default bookmarklets.")
+By default, this mode does nothing but expose the default bookmarklets."
+  ((visible-in-status-p nil)))
 
 (defmacro nyxt::define-bookmarklet-command (name documentation source) ; TODO: Should it really belong to the `nyxt' package?
   "Define a bookmarklet command, the source can either be a JavaScript string to

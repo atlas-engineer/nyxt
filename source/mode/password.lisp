@@ -10,7 +10,8 @@
 You can customize the default interface with the mode slot `password-interface'.
 To interact with the password manager, see commands like `copy-password' or
 `save-new-password'."
-  ((password-interface
+  ((visible-in-status-p nil)
+   (password-interface
     (make-password-interface)
     :type (or null password::password-interface)
     :documentation "The current password interface.

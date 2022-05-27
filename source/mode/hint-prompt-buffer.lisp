@@ -21,7 +21,8 @@
 
 (define-mode hint-prompt-buffer-mode (nyxt/prompt-buffer-mode:prompt-buffer-mode)
   "Prompt buffer mode for element hinting."
-  ((keymap-scheme
+  ((visible-in-status-p nil)
+   (keymap-scheme
     (define-scheme "hint"
       scheme:cua
       (list

@@ -189,7 +189,8 @@ https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.
 
 (define-mode extension ()
   "The base mode for any extension to inherit from."
-  ((name (error "Extension should have a name")
+  ((visible-in-status-p nil)
+   (name (error "Extension should have a name")
          :type string)
    (version (error "Extension should have a version")
             :type string)

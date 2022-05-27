@@ -7,7 +7,8 @@
 
 (define-mode buffer-listing-mode ()
   "Mode for buffer-listing."
-  ((rememberable-p nil))
+  ((visible-in-status-p nil)
+   (rememberable-p nil))
   (:toggler-command-p nil))
 
 (define-internal-page-command-global list-buffers (&key (cluster nil)

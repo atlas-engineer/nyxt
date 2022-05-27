@@ -7,7 +7,8 @@
 
 (define-mode spell-check-mode ()
   ""
-  ((rememberable-p t)
+  ((visible-in-status-p nil)
+   (rememberable-p t)
    (spell-check-language
     "en_US"
     :documentation "Spell check language used by Nyxt. For

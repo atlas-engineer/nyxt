@@ -7,7 +7,8 @@
 
 (define-mode bookmark-frequent-visits-mode ()
   "Mode to bookmark frequently visited URLs while navigating the web."
-  ((threshold 20)))
+  ((visible-in-status-p nil)
+   (threshold 20)))
 
 (defmethod enable ((mode bookmark-frequent-visits-mode) &key)
   (nyxt:on-signal-load-finished mode (url (current-buffer))))

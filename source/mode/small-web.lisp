@@ -46,7 +46,8 @@ loading, you'd need to override `line->html' in the following way:
 
 Gemini support is a bit more chaotic, but you can override `line->html' for
 `phos/gemtext' elements too."
-  ((rememberable-p nil)
+  ((visible-in-status-p nil)
+   (rememberable-p nil)
    (url :documentation "The URL being opened.")
    (model :documentation "The contents of the current page.")
    (redirections nil :documentation "The list of redirection Gemini URLs.")

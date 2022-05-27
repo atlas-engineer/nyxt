@@ -7,7 +7,8 @@
 
 (define-mode search-buffer-mode (nyxt/hint-mode:hint-mode)
   "Mode for searching text withing."
-  ((rememberable-p nil)
+  ((visible-in-status-p nil)
+   (rememberable-p nil)
    (keymap-scheme
     (define-scheme "web"
       scheme:cua

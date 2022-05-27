@@ -7,7 +7,8 @@
 
 (define-mode message-mode ()
   "Mode for log and message listing."
-  ((rememberable-p nil))
+  ((visible-in-status-p nil)
+   (rememberable-p nil))
   (:toggler-command-p nil))
 
 (define-command clear-messages ()

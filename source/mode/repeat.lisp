@@ -7,7 +7,8 @@
 
 (define-mode repeat-mode (nyxt/process-mode:process-mode)
   "Mode to repeat a simple action/function repetitively until stopped."
-  ((rememberable-p nil)
+  ((visible-in-status-p nil)
+   (rememberable-p nil)
    (nyxt/process-mode:firing-condition
     #'(lambda (path-url mode)
         (declare (ignore path-url))

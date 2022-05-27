@@ -11,7 +11,8 @@
 
 (define-mode autofill-mode ()
   "Mode to fill forms more rapidly."
-  ((rememberable-p t)
+  ((visible-in-status-p nil)
+   (rememberable-p t)
    (autofills
     (list (make-autofill :name "Name" :fill "My Name")
           (make-autofill :name "Hello Printer"

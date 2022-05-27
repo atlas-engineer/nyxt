@@ -7,7 +7,8 @@
 
 (define-mode history-tree-mode ()
   "Mode for history-tree listing."
-  ((rememberable-p nil)
+  ((visible-in-status-p nil)
+   (rememberable-p nil)
    (style
     (theme:themed-css (theme *browser*)
       (body

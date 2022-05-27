@@ -16,7 +16,8 @@ It does not assume being online."))
 
 (define-mode document-mode ()
   "Base mode for interacting with documents."
-  ((rememberable-p nil)
+  ((visible-in-status-p nil)
+   (rememberable-p nil)
    (keymap-scheme
     (define-scheme "web"
       scheme:cua

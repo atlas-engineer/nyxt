@@ -5,7 +5,8 @@
 
 (define-mode plaintext-editor-mode (editor-mode)
   "Mode for basic plaintext editing."
-  ((rememberable-p nil)
+  ((visible-in-status-p nil)
+   (rememberable-p nil)
    (style (theme:themed-css (theme *browser*)
             ("body"
              :margin 0)

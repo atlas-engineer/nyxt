@@ -12,7 +12,8 @@
 
 (define-mode os-package-manager-mode ()
   "Mode for package management."
-  ((current-process-info nil
+  ((visible-in-status-p nil)
+   (current-process-info nil
                          :type (or null uiop/launch-program::process-info))
    (keymap-scheme
     (define-scheme "web"

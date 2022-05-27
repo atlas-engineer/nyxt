@@ -19,7 +19,8 @@ Example:
 \(define-configuration nyxt/tts-mode:tts-mode
    ((nyxt/tts-mode:executable \"espeak\")
     (nyxt/tts-mode:selector \"p, h1, h2, h3, h4, h5, h6\")))"
-  ((executable nil
+  ((visible-in-status-p nil)
+   (executable nil
                :type (or string null)
                :documentation "The executable command to run.")
    (selector "p, h1, h2, h3, h4, h5, h6"

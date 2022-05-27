@@ -14,7 +14,8 @@
 (define-mode style-mode ()
   "A mode for styling documents.
 Style can be set by one of the `style', `style-file' or `style-url' slots."
-  ((css-cache-directory (make-instance 'css-cache-directory))
+  ((visible-in-status-p nil)
+   (css-cache-directory (make-instance 'css-cache-directory))
    (style-url nil
               :type (or null string quri:uri)
               :documentation "Remote CSS file.  If supplied, set `style' to the
@@ -74,7 +75,8 @@ If nil, look for CSS in `style-file' or `style-url'.")))
 (define-mode dark-mode (style-mode)
   "A mode for styling documents with a dark background. Unlike other modes, to
 effectively disable `dark-mode' you must also reload the buffer."
-  ((css-cache-directory (make-instance 'css-cache-directory
+  ((visible-in-status-p nil)
+   (css-cache-directory (make-instance 'css-cache-directory
                                        :base-path #p"style-mode-css-cache/"))))
 
 (defmethod apply-style ((mode dark-mode))
