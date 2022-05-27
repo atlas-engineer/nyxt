@@ -21,7 +21,7 @@ modes, commands, etc."))
                     (:keymap :define-key :define-scheme)
                     (:class-star :define-class)
                     (:serapeum :export-always :->))
-  "Default list of symbol imports used by `define-and-set-package'.")
+  "Default list of symbol imports used by `nyxt:define-package'.")
 
 (loop :for (package . symbols) in *imports*
       :do (import (mapcar (lambda (symbol) (intern (symbol-name symbol) package))
@@ -38,13 +38,14 @@ modes, commands, etc."))
           (:files :nfiles))
         :do (trivial-package-local-nicknames:add-package-local-nickname nickname package :nyxt)))
 
-(defmacro nyxt::use-nyxt-package-nicknames ()
+(defmacro nyxt::use-nyxt-package-nicknames (&optional (package *package*))
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (dolist (package (trivial-package-local-nicknames:package-local-nicknames :nyxt))
-       (trivial-package-local-nicknames:add-package-local-nickname (first package) (package-name (rest package))))))
+       (trivial-package-local-nicknames:add-package-local-nickname (first package) (package-name (rest package))
+                                                                   (find-package ,package)))))
 
-(serapeum:export-always 'define-and-set-package :nyxt)
-(defmacro define-and-set-package (name &rest options)
+(serapeum:export-always 'define-package :nyxt)
+(defmacro define-package (name &rest options)
   "A helper around `uiop:define-package'.
 `:common-lisp' and `:nyxt' are automatically used.
 `nyxt::*imports*' are automatically imported."
@@ -60,9 +61,7 @@ modes, commands, etc."))
          ,@uses
          ,@imports
          ,@options)
-       (eval-when (:compile-toplevel :load-toplevel :execute)
-         (setq *package* (find-package ,name)))
-       (nyxt::use-nyxt-package-nicknames))))
+       (nyxt::use-nyxt-package-nicknames ',name))))
 
 (deftype class-symbol ()
   `(and symbol (satisfies find-class)))
