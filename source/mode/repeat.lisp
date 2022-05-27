@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/repeat-mode
-  (:documentation "Mode to infinitely repeat commands."))
+(nyxt:define-package :nyxt/repeat-mode
+    (:documentation "Mode to infinitely repeat commands."))
+(in-package :nyxt/repeat-mode)
 
 (define-mode repeat-mode (nyxt/process-mode:process-mode)
   "Mode to repeat a simple action/function repetitively until stopped."

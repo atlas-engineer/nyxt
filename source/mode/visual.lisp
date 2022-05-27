@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/visual-mode
+(nyxt:define-package :nyxt/visual-mode
   (:documentation "Visual mode."))
+(in-package :nyxt/visual-mode)
 
 (define-mode visual-mode (nyxt/hint-mode:hint-mode)
   "Visual mode. For documentation on commands and keybindings, see the manual."

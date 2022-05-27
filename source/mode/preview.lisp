@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/preview-mode
-  (:documentation "Refresh file when changed on disk."))
+(nyxt:define-package :nyxt/preview-mode
+    (:documentation "Refresh file when changed on disk."))
+(in-package :nyxt/preview-mode)
 
 (defun updated-file-p (path-url mode)
   (when (quri:uri-file-p path-url)

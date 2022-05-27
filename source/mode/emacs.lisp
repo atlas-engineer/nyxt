@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/emacs-mode
-  (:documentation "Emacs-style bindings."))
+(nyxt:define-package :nyxt/emacs-mode
+    (:documentation "Emacs-style bindings."))
+(in-package :nyxt/emacs-mode)
 
 (define-mode emacs-mode (nyxt/keymap-scheme-mode:keymap-scheme-mode)
   "Enable Emacs-style bindings.

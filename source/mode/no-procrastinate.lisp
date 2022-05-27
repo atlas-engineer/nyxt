@@ -1,9 +1,10 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/no-procrastinate-mode
+(nyxt:define-package :nyxt/no-procrastinate-mode
   (:use :nyxt/blocker-mode)
   (:documentation "Block resource queries for listed hosts."))
+(in-package :nyxt/no-procrastinate-mode)
 
 (sera:export-always '*default-hostlist-no-procrastinate*)
 (defparameter *default-hostlist-no-procrastinate*

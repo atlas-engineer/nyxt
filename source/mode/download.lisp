@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/download-mode
-  (:documentation "Mode to manage downloads and the download listing page."))
+(nyxt:define-package :nyxt/download-mode
+    (:documentation "Mode to manage downloads and the download listing page."))
+(in-package :nyxt/download-mode)
 
 (export-always 'renderer-download)
 (defclass renderer-download ()

@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/vi-mode
+(nyxt:define-package :nyxt/vi-mode
   (:documentation "VI-style bindings."))
+(in-package :nyxt/vi-mode)
 
 (define-mode vi-normal-mode (nyxt/keymap-scheme-mode:keymap-scheme-mode)
   "Enable VI-style modal bindings (normal mode).
@@ -26,8 +27,8 @@ See also `vi-insert-mode'."
     (define-scheme "vi"
       scheme:vi-normal
       (list
-        "i" 'vi-insert-mode
-        "button1" 'vi-button1)))))
+       "i" 'vi-insert-mode
+       "button1" 'vi-button1)))))
 
 
 ;; TODO: Move ESCAPE binding to the override map?

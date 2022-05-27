@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/input-edit-mode
-  (:documentation "Mode for editing HTML input areas."))
+(nyxt:define-package :nyxt/input-edit-mode
+    (:documentation "Mode for editing HTML input areas."))
+(in-package :nyxt/input-edit-mode)
 
 ;;;; commands for navigating/editing input fields on HTML pages
 

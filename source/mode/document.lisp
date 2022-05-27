@@ -1,13 +1,12 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/document-mode
+(nyxt:define-package :nyxt/document-mode
   (:shadow #:focus-first-input-field)
   (:documentation "Mode to interact with structured documents.
 This is typically for HTML pages, but other format may be supported at some point.
 It does not assume being online."))
 (in-package :nyxt/document-mode)
-(use-nyxt-package-nicknames)
 
 ;; TODO: Remove document-mode from special buffers (e.g. help).
 ;; This is required because special buffers cannot be part of a history (and it breaks it).

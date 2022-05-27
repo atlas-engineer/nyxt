@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/hint-mode
-  (:documentation "Mode for element hints."))
+(nyxt:define-package :nyxt/hint-mode
+    (:documentation "Mode for element hints."))
+(in-package :nyxt/hint-mode)
 
 (define-mode hint-mode ()
   "Mode to interact with links using keyword only."

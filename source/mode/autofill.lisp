@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/autofill-mode
-  (:documentation "Mode to fill forms more rapidly."))
+(nyxt:define-package :nyxt/autofill-mode
+    (:documentation "Mode to fill forms more rapidly."))
+(in-package :nyxt/autofill-mode)
 
 (export-always 'make-autofill)
 (defun make-autofill (&rest args)

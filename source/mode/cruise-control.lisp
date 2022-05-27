@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/cruise-control-mode
-  (:documentation "Mode for scrolling continuously at a pre-defined speed."))
+(nyxt:define-package :nyxt/cruise-control-mode
+    (:documentation "Mode for scrolling continuously at a pre-defined speed."))
+(in-package :nyxt/cruise-control-mode)
 
 (define-mode cruise-control-mode (nyxt/repeat-mode:repeat-mode)
   "Mode for automatically scrolling up and down the page."

@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/blocker-mode
-  (:documentation "Block resource queries for listed hosts."))
+(nyxt:define-package :nyxt/blocker-mode
+    (:documentation "Block resource queries for listed hosts."))
+(in-package :nyxt/blocker-mode)
 
 ;; TODO: Add convenient interface to block hosts depending on the current URL.
 

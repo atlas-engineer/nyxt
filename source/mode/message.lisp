@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/message-mode
-  (:documentation "Mode for messages and logs"))
+(nyxt:define-package :nyxt/message-mode
+    (:documentation "Mode for messages and logs"))
+(in-package :nyxt/message-mode)
 
 (define-mode message-mode ()
   "Mode for log and message listing."

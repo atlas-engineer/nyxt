@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/tts-mode
-  (:documentation "Mode for interacting with Text-to-Speech (TTS) software."))
+(nyxt:define-package :nyxt/tts-mode
+    (:documentation "Mode for interacting with Text-to-Speech (TTS) software."))
+(in-package :nyxt/tts-mode)
 
 (define-mode tts-mode ()
   "A mode for interacting with Text-to-Speech (TTS) software.
@@ -23,7 +24,7 @@ Example:
                :documentation "The executable command to run.")
    (selector "p, h1, h2, h3, h4, h5, h6"
        :type string
-       :documentation "CSS selector that describes which elements' text to speak.")
+     :documentation "CSS selector that describes which elements' text to speak.")
    (executable-process-info nil
                             :type (or uiop/launch-program::process-info null)
                             :documentation "Holds the process-info object of the running process")))

@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/prompt-buffer-mode
-  (:documentation "Mode for prompter buffer."))
+(nyxt:define-package :nyxt/prompt-buffer-mode
+    (:documentation "Mode for prompter buffer."))
+(in-package :nyxt/prompt-buffer-mode)
 
 (define-mode prompt-buffer-mode ()
   "The prompt buffer is the where all the interactions between Nyxt and the user happen.

@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/buffer-listing-mode
-  (:documentation "Mode for buffer-listings"))
+(nyxt:define-package :nyxt/buffer-listing-mode
+    (:documentation "Mode for buffer-listings"))
+(in-package :nyxt/buffer-listing-mode)
 
 (define-mode buffer-listing-mode ()
   "Mode for buffer-listing."

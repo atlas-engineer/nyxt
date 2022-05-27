@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/reduce-bandwidth-mode
-  (:documentation "Reduce bandwidth."))
+(nyxt:define-package :nyxt/reduce-bandwidth-mode
+    (:documentation "Reduce bandwidth."))
+(in-package :nyxt/reduce-bandwidth-mode)
 
 (define-mode reduce-bandwidth-mode ()
   "Reduce bandwidth enabling `no-image-mode', `no-script-mode', and

@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/os-package-manager-mode
-  (:documentation "Universal interface to various operating system package managers."))
+(nyxt:define-package :nyxt/os-package-manager-mode
+    (:documentation "Universal interface to various operating system package managers."))
+(in-package :nyxt/os-package-manager-mode)
 
 ;; TODO: Prompt for password?  Use this:
 ;; (with-input-from-string (i "password")

@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/password-mode
-  (:documentation "Interface with third-party password managers."))
+(nyxt:define-package :nyxt/password-mode
+    (:documentation "Interface with third-party password managers."))
+(in-package :nyxt/password-mode)
 
 (define-mode password-mode ()
   "Enable interface with third-party password managers.

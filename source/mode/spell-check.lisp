@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/spell-check-mode
-  (:documentation "Mode to spell-check text in buffers."))
+(nyxt:define-package :nyxt/spell-check-mode
+    (:documentation "Mode to spell-check text in buffers."))
+(in-package :nyxt/spell-check-mode)
 
 (define-mode spell-check-mode ()
   ""

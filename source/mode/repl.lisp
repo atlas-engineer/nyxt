@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/repl-mode
-  (:documentation "Mode for programming in Common Lisp."))
+(nyxt:define-package :nyxt/repl-mode
+    (:documentation "Mode for programming in Common Lisp."))
+(in-package :nyxt/repl-mode)
 
 (define-mode repl-mode ()
   "Mode for interacting with the REPL."

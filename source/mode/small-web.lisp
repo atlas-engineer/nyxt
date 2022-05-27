@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/small-web-mode
-  (:documentation "Mode for Gopher/Gemini page interaction."))
+(nyxt:define-package :nyxt/small-web-mode
+    (:documentation "Mode for Gopher/Gemini page interaction."))
+(in-package :nyxt/small-web-mode)
 
 (defun update (mode)
   (let ((url (url (buffer mode))))

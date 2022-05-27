@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/editor-mode
-  (:documentation "Mode for editors."))
+(nyxt:define-package :nyxt/editor-mode
+    (:documentation "Mode for editors."))
+(in-package :nyxt/editor-mode)
 
 (define-mode editor-mode ()
   "Mode for editor modes to extend. Importantly, it is required to implement the

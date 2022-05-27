@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/file-manager-mode
-  (:documentation "Mode for file management from the prompt buffer."))
+(nyxt:define-package :nyxt/file-manager-mode
+    (:documentation "Mode for file management from the prompt buffer."))
+(in-package :nyxt/file-manager-mode)
 
 (nyxt/prompt-buffer-mode::define-command-prompt directory-up (prompt-buffer)
   "Remove one level of directory nesting from the current PROMPT-BUFFER file input."

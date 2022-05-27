@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/force-https-mode
-  (:documentation "Mode for enforcing HTTPS on any URL clicked/hinted/set by user."))
+(nyxt:define-package :nyxt/force-https-mode
+    (:documentation "Mode for enforcing HTTPS on any URL clicked/hinted/set by user."))
+(in-package :nyxt/force-https-mode)
 
 ;; TODO: Add style to loop help page?
 (defun https->http-loop-help (buffer url) ; TODO: Factor with tls-help?
@@ -11,17 +12,17 @@ help on how to proceed."
   (setf (slot-value buffer 'nyxt::status) :failed)
   (nyxt::html-set
    (spinneret:with-html-string
-    (:h1 (format nil "HTTPS → HTTP loop: ~a" (render-url url)))
-    (:p "The HTTPS address you are trying to visit redirects to HTTP while the "
-        (:code "force-https-mode") " is on.")
-    (:p "Since HTTP connections are not secure,"
-        " it's not recommended to proceed if you don't trust the target host.")
-    (:p " If you really want to proceed, you can either:"
-        (:ul
-         (:li "disable "
-              (:code "force-https-mode") " temporarily;")
-         (:li "or disable it dynamically with " (:code "auto-mode") "'s "
-              (:code "save-exact-modes-for-future-visits") "."))))
+     (:h1 (format nil "HTTPS → HTTP loop: ~a" (render-url url)))
+     (:p "The HTTPS address you are trying to visit redirects to HTTP while the "
+         (:code "force-https-mode") " is on.")
+     (:p "Since HTTP connections are not secure,"
+         " it's not recommended to proceed if you don't trust the target host.")
+     (:p " If you really want to proceed, you can either:"
+         (:ul
+          (:li "disable "
+               (:code "force-https-mode") " temporarily;")
+          (:li "or disable it dynamically with " (:code "auto-mode") "'s "
+               (:code "save-exact-modes-for-future-visits") "."))))
    buffer))
 
 (define-mode force-https-mode ()

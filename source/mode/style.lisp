@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/style-mode
-  (:documentation "Mode for styling documents."))
+(nyxt:define-package :nyxt/style-mode
+    (:documentation "Mode for styling documents."))
+(in-package :nyxt/style-mode)
 
 (define-class css-cache-directory (files:data-file nyxt-file)
   ((files:base-path #p"style-mode-css-cache/")

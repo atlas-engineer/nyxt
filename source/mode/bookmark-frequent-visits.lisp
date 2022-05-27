@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/bookmark-frequent-visits
-  (:documentation "Mode to bookmark frequently visited URLs."))
+(nyxt:define-package :nyxt/bookmark-frequent-visits
+    (:documentation "Mode to bookmark frequently visited URLs."))
+(in-package :nyxt/bookmark-frequent-visits)
 
 (define-mode bookmark-frequent-visits-mode ()
   "Mode to bookmark frequently visited URLs while navigating the web."

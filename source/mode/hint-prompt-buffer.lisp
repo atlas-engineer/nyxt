@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/hint-prompt-buffer-mode
-  (:documentation "Prompt-buffer mode for element hints."))
+(nyxt:define-package :nyxt/hint-prompt-buffer-mode
+    (:documentation "Prompt-buffer mode for element hints."))
+(in-package :nyxt/hint-prompt-buffer-mode)
 
 (define-command toggle-hints-transparency (&key (buffer (current-buffer)))
   "Toggle the on-screen element hints transparency."

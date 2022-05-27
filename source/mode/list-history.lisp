@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/list-history-mode
-  (:documentation "Mode for listing history."))
+(nyxt:define-package :nyxt/list-history-mode
+    (:documentation "Mode for listing history."))
+(in-package :nyxt/list-history-mode)
 
 (define-mode list-history-mode ()
   "Mode for listing history."

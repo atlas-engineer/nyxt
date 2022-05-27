@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/history-mode
-  (:documentation "Mode to store current buffer navigation into the global history."))
+(nyxt:define-package :nyxt/history-mode
+    (:documentation "Mode to store current buffer navigation into the global history."))
+(in-package :nyxt/history-mode)
 
 (define-mode history-mode ()
   "Mode to manage navigation history."

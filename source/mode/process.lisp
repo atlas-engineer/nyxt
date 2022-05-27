@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/process-mode
-  (:documentation "Act on file/directory based on a certain condition."))
+(nyxt:define-package :nyxt/process-mode
+    (:documentation "Act on file/directory based on a certain condition."))
+(in-package :nyxt/process-mode)
 
 (define-mode process-mode ()
   "Conditional execution a file/directory-related actions in a separate thread.

@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/record-input-field-mode
-  (:documentation "Record input fields to be refilled later."))
+(nyxt:define-package :nyxt/record-input-field-mode
+    (:documentation "Record input fields to be refilled later."))
+(in-package :nyxt/record-input-field-mode)
 
 (define-mode record-input-field-mode ()
   "Record input fields to be refilled later.

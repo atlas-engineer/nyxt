@@ -1,9 +1,10 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/keymap-scheme-mode
+(nyxt:define-package :nyxt/keymap-scheme-mode
   (:documentation "Mode from which all modes setting the buffer `keymap-scheme-name' should inherit.
 This is used so that only one mode at a time may be enabled."))
+(in-package :nyxt/keymap-scheme-mode)
 
 (define-mode keymap-scheme-mode ()
   "Mode from which all modes setting the buffer `keymap-scheme-name' should inherit.

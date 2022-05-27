@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/no-image-mode
-  (:documentation "Mode to disable image display in buffer."))
+(nyxt:define-package :nyxt/no-image-mode
+    (:documentation "Mode to disable image display in buffer."))
+(in-package :nyxt/no-image-mode)
 
 (define-mode no-image-mode ()
   "Disable images in current buffer.")

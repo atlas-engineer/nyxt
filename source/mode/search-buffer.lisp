@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/search-buffer-mode
-  (:documentation "Mode for element hints."))
+(nyxt:define-package :nyxt/search-buffer-mode
+    (:documentation "Mode for element hints."))
+(in-package :nyxt/search-buffer-mode)
 
 (define-mode search-buffer-mode (nyxt/hint-mode:hint-mode)
   "Mode for searching text withing."

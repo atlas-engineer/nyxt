@@ -1,8 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(nyxt:define-and-set-package :nyxt/diff-mode
-  (:documentation "Mode for viewing diffs between two buffers."))
+(nyxt:define-package :nyxt/diff-mode
+    (:documentation "Mode for viewing diffs between two buffers."))
+(in-package :nyxt/diff-mode)
 
 (export-always 'diff-mode)
 (define-mode diff-mode ()
