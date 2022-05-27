@@ -314,6 +314,10 @@ Type should allow `keymap's, so it should probably be in the form
             :documentation "List of parent keymaps.
 Parents are ordered by priority, the first parent has highest priority.")))
 
+(defmethod print-object ((keymap keymap) stream)
+  (print-unreadable-object (keymap stream :type t :identity t)
+    (format stream "~a" (name keymap))))
+
 (declaim (ftype (function (string &rest keymap)
                           (values keymap &optional))
                 make-keymap))
