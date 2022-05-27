@@ -81,6 +81,17 @@
     (prove:is (keymap:get-keymap keymap/scheme:cua scheme)
               (keymap:get-keymap keymap/scheme:vi-normal scheme))))
 
+(prove:subtest "Prioritize scheme over parent."
+  (let* ((scheme1 (keymap:define-scheme "test1"
+                    keymap/scheme:cua (list "C-c" 'do-not-hit-me)
+                    keymap/scheme:emacs (list "M-w" 'copy)))
+         (scheme2 (keymap:define-scheme "test2"
+                    keymap/scheme:emacs (list "C-c" 'hit-me))))
+    (let ((keymaps (mapcar (lambda (scheme) (keymap:get-keymap keymap/scheme:emacs  scheme))
+                           (list scheme1 scheme2))                   ))
+      (prove:is (keymap:lookup-key  "C-c" keymaps)
+                'hit-me))))
+
 ;; (prove:subtest "Make scheme with type errors" ; TODO: How do we test macro-expansion-time error?
 ;;   (prove:is-error (keymap:define-scheme
 ;;                       keymap/scheme:cua (list "C-" 'copy))
