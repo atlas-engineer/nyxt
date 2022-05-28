@@ -440,9 +440,16 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                                (parse-integer (getenv "NYXT_COMPRESS"))))))
 
 (defmethod perform :before ((o image-op) (c system))
-  "Register immutable systems to prevent compiled images of Nyxt from
+  "Perform some last minute tweaks to the final image.
+
+- Register immutable systems to prevent compiled images of Nyxt from
 trying to recompile dependencies.
-See `asdf::*immutable-systems*'."
+See `asdf::*immutable-systems*'.
+
+- If on SBCL, include `sb-sprof', the statistical profiler, since it's one of
+the few modules that's not automatically included in the image."
+  #+sbcl
+  (require :sb-sprof)
   (map () 'register-immutable-system (already-loaded-systems)))
 
 (defsystem "nyxt/install"
