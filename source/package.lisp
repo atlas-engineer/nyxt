@@ -30,7 +30,7 @@ modes, commands, etc."))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (loop :for (nickname package) in
-        '((:alex :alexandria)
+        '((:alex :alexandria-2)
           (:sera :serapeum)
           (:lpara :lparallel)
           (:class* :hu.dwim.defclass-star)
@@ -98,7 +98,7 @@ prefix.
 For instance, to be able to use `alex:' and `sera:' in place of `alexandria:'
 and `serapeum:':
 
-  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria :nyxt-user)
+  (trivial-package-local-nicknames:add-package-local-nickname :alex :alexandria-2 :nyxt-user)
   (trivial-package-local-nicknames:add-package-local-nickname :sera :serapeum :nyxt-user)"))
 
 (trivial-package-local-nicknames:add-package-local-nickname :hooks :nhooks :nyxt-user)
