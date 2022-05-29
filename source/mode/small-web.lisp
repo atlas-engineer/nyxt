@@ -41,7 +41,7 @@ loading, you'd need to override `line->html' in the following way:
         (cl-gopher:display-string line))))
 
 \(defmethod line->html ((line cl-gopher:image)) (image->link line))
-\(defmethod line->html ((line cl-gopher:gif)) (image->html line))
+\(defmethod line->html ((line cl-gopher:gif)) (image->link line))
 \(defmethod line->html ((line cl-gopher:png)) (image->link line))
 
 Gemini support is a bit more chaotic, but you can override `line->html' for
@@ -99,7 +99,7 @@ Gemini support is a bit more chaotic, but you can override `line->html' for
 
 (export-always 'line->html)
 (defgeneric line->html (line)
-  (:documentation "Transform a gopher line to a reasonable HTML representation."))
+  (:documentation "Transform a Gopher or Gemini line to a reasonable HTML representation."))
 
 (export-always 'gopher-render)
 (defgeneric gopher-render (line)
@@ -118,11 +118,12 @@ Second return value should be the MIME-type of the content."))
           "Error: " (cl-gopher:display-string line))))
 
 (defmethod line->html ((line cl-gopher:info-message))
-  (spinneret:with-html-string
-    (if (or (str:emptyp (cl-gopher:display-string line))
-            (every #'sera:whitespacep (cl-gopher:display-string line)))
-        (:br)
-        (:pre (cl-gopher:display-string line)))))
+  (let ((line (cl-gopher:display-string line)))
+    (spinneret:with-html-string
+      (if (or (str:emptyp line)
+              (every #'sera:whitespacep line))
+          (:br)
+          (:pre line)))))
 
 (defmethod line->html ((line cl-gopher:submenu))
   (spinneret:with-html-string
@@ -130,10 +131,11 @@ Second return value should be the MIME-type of the content."))
         (cl-gopher:display-string line))))
 
 (defun image->html (line)
-  (spinneret:with-html-string
-    (:a :href (cl-gopher:uri-for-gopher-line line)
-        (:img :src (cl-gopher:uri-for-gopher-line line)
-              :alt (cl-gopher:display-string line)))))
+  (let ((uri (cl-gopher:uri-for-gopher-line line)))
+    (spinneret:with-html-string
+      (:a :href uri
+          (:img :src uri
+                :alt (cl-gopher:display-string line))))))
 
 (defmethod line->html ((line cl-gopher:image)) (image->html line))
 (defmethod line->html ((line cl-gopher:gif)) (image->html line))
@@ -152,18 +154,20 @@ Second return value should be the MIME-type of the content."))
         (:b "[SEARCH] ") (cl-gopher:display-string line))))
 
 (defmethod line->html ((line cl-gopher:html-file))
-  (spinneret:with-html-string
-    (:a :class "button"
-        :href (when (str:starts-with-p "URL:" (cl-gopher:selector line))
-                (sera:slice (cl-gopher:selector line) 4))
-        (cl-gopher:display-string line))
-    (:br)))
+  (let ((selector (cl-gopher:selector line)))
+    (spinneret:with-html-string
+      (:a :class "button"
+          :href (if (str:starts-with-p "URL:" selector)
+                    (sera:slice selector 4)
+                    selector)
+          (cl-gopher:display-string line))
+      (:br))))
 
 (defmethod line->html ((line cl-gopher:text-file))
   (spinneret:with-html-string
     (:a :class "button"
-       :href (cl-gopher:uri-for-gopher-line line)
-       (cl-gopher:display-string line))
+        :href (cl-gopher:uri-for-gopher-line line)
+        (cl-gopher:display-string line))
     (:br)))
 
 (defun file-link->html (line)
@@ -185,8 +189,8 @@ Second return value should be the MIME-type of the content."))
         (spinneret:*html-style* :tree))
     (values (spinneret:with-html-string
               (:style (style (current-buffer)))
-              (:style (when (find-submode 'small-web-mode)
-                        (style (find-submode 'small-web-mode))))
+              (:style (alex:when-let (submode (find-submode 'small-web-mode))
+                        (style submode)))
               (loop for line in (cl-gopher:lines contents)
                     collect (:raw (line->html line))))
             "text/html;charset=utf8")))
@@ -310,8 +314,8 @@ Please, check URL correctness and try again.")))
                (let ((text (quri:url-encode
                             (handler-case
                                 (prompt1 :prompt meta
-                                  :sources (list (make-instance 'prompter:raw-source))
-                                  :invisible-input-p (eq status :sensitive-input))
+                                         :sources (list (make-instance 'prompter:raw-source))
+                                         :invisible-input-p (eq status :sensitive-input))
                               (nyxt::nyxt-prompt-buffer-canceled () "")))))
                  (buffer-load (str:concat url "?" text) :buffer buffer)))
               (:success
