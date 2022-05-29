@@ -16,10 +16,6 @@
       (* :margin 0
          :padding 0
          :list-style "none")
-      (a
-       :color theme:text)
-      ("a:hover"
-       :color theme:primary)
       (".current-buffer a"
        :color theme:text)
       (".current-buffer a:hover"

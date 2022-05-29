@@ -64,6 +64,13 @@ various parts, such as the path of all data files.")
        :border-radius "2px"
        :padding "6px"
        :margin "2px")
+      (.link
+       :all "unset"
+       :text-decoration "underline"
+       :display "inline"
+       :color theme:primary)
+      (".link:hover"
+       :color theme:text)
       (.accent
        :background-color theme:accent)
       (|.button:hover|

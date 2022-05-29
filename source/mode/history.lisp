@@ -273,7 +273,7 @@ Clicking on a link navigates the history in the corresponding buffer."
                             (let ((node-id (nyxt::ensure-inspected-id node)))
                               (spinneret:with-html-string
                                 (:li
-                                 (:button :class "button"
+                                 (:button :class "link"
                                           :onclick (ps:ps (nyxt/ps:lisp-eval
                                                            `(let ((buffer (nyxt::buffers-get ,(id buffer)))
                                                                   (url (url (htree:data (nyxt::inspected-value ,node-id)))))
