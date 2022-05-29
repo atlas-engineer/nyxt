@@ -977,6 +977,7 @@ the "
         (:code (command-markup 'manual)) ".")
     (:raw (tutorial-content))))
 
+(export-always 'system-information)
 (defun system-information ()            ; TODO: Rename report-system-information?
   "Return a system information report as a string."
   (labels ((->string (obj) (princ-to-string obj))
