@@ -19,7 +19,7 @@
 
 (defmacro define-element-classes (&body names)
   (loop for name in names
-        collect (let* ((class-name (if (listp name) (first name) name))
+        collect (let* ((class-name (alex:ensure-car name))
                        (tag (str:replace-all "-element"  "" (str:downcase (symbol-name class-name))))
                        (additional-superclasses (when (listp name) (rest name))))
                   `(progn
