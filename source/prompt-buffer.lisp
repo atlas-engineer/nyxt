@@ -493,9 +493,11 @@ See the documentation of `prompt-buffer' to know more about the options."
         (wait-on-prompt-buffer new-prompt)))))
 
 (export-always 'prompt1)
-(defun prompt1 (&rest keys &key &allow-other-keys)
-  "Return the first result of a prompt."
-  (first (apply #'prompt keys)))
+(sera:eval-always
+  (defun prompt1 #.(append '(&rest args) `(&key ,@%prompt-args))
+    "Return the first result of a prompt."
+    (declare #.(cons 'ignorable %prompt-args))
+    (first (apply #'prompt args))))
 
 (defmethod prompter:object-attributes ((prompt-buffer prompt-buffer))
   `(("Prompt" ,(prompter:prompt prompt-buffer))
