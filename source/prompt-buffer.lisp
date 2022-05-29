@@ -493,9 +493,9 @@ See the documentation of `prompt-buffer' to know more about the options."
         (wait-on-prompt-buffer new-prompt)))))
 
 (export-always 'prompt1)
-(defmacro prompt1 (&body body)
+(defun prompt1 (&rest keys &key &allow-other-keys)
   "Return the first result of a prompt."
-  `(first (prompt ,@body)))
+  (first (apply #'prompt keys)))
 
 (defmethod prompter:object-attributes ((prompt-buffer prompt-buffer))
   `(("Prompt" ,(prompter:prompt prompt-buffer))
