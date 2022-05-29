@@ -934,6 +934,9 @@ See `finalize-buffer'."
                                                        :modifiers modifiers)))
                                         :event-type event-type
                                         :new-window-p is-new-window
+                                        :toplevel-p (quri:uri=
+                                                     url (quri:uri (webkit:webkit-web-view-uri
+                                                                    (gtk-object buffer))))
                                         :mime-type mime-type
                                         :known-type-p is-known-type))))
       (if (request-data-p request-data)

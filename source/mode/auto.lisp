@@ -248,7 +248,7 @@ The rules are:
     (when (and rule previous-url (not previous-rule))
       (save-last-active-modes auto-mode previous-url))
     (cond
-      ((and (not rule) (new-page-request-p request-data))
+      ((and (not rule) (toplevel-p request-data))
        (reapply-last-active-modes auto-mode))
       ((and rule (not (eq rule previous-rule)))
        (enable-matching-modes (url request-data) (buffer request-data))))

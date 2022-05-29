@@ -79,7 +79,7 @@ Gemini support is a bit more chaotic, but you can override `line->html' for
    (make-instance
     'hooks:handler
     :fn (lambda (request-data)
-          (when (new-page-request-p request-data)
+          (when (toplevel-p request-data)
             (if (str:s-member '("gopher" "gemini")
                               (quri:uri-scheme (url request-data)))
                 (update mode)

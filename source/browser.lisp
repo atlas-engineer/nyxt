@@ -433,6 +433,9 @@ If none is found, fall back to `scheme:cua'."
     nil
     :documentation "Whether the request takes place in a
 new window.")
+   (toplevel-p
+    nil
+    :documentation "Whether the request happens in a toplevel frame.")
    (mime-type
     nil
     :documentation "The MIME type of the resource at the other end of the request.")
@@ -447,17 +450,6 @@ view.")
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
-
-(export-always 'new-page-request-p)
-(-> new-page-request-p (request-data) (values boolean &optional))
-(defun new-page-request-p (request-data)
-  "Whether the REQUEST-DATA is a request for a new page load.
-Resource/font/ads/anchor loads are safely ignored.
-
-It relies on the fact that, due to the WebKit limitations, we store the loaded
-URL in the buffer slot when we need to load a new page, while, for
-non-new-page requests, buffer URL is not altered."
-  (quri:uri= (url request-data) (url (buffer request-data))))
 
 (defun preprocess-request (request-data)
   "Deal with REQUEST-DATA with the following rules:
@@ -482,7 +474,7 @@ non-new-page requests, buffer URL is not altered."
          (open-urls (list url))
          nil)
         ((and (not (known-type-p request-data))
-              (new-page-request-p request-data))
+              (toplevel-p request-data))
          (log:debug "Buffer ~a initiated download of ~s." (id buffer) (render-url url))
          (funcall (resolve-symbol :download :function)
                   buffer url
