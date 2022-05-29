@@ -463,13 +463,14 @@ Otherwise bind socket and return the listening thread."
                               (str:concat indent s))
                             (rest lines))))))
 
+(sera:eval-always
+  (defvar %start-args (mapcar (alex:compose #'intern
+                                            #'symbol-name
+                                            #'opts::name)
+                              opts::*options*)))
 (export-always 'start)
-(define-function start `(&rest options &key urls
-                               ,@(mapcar (alex:compose #'intern
-                                                       #'symbol-name
-                                                       #'opts::name)
-                                         opts::*options*))
-    (format nil "Parse command line or REPL options then start the browser.
+(defun start #.(append '(&rest options &key urls) %start-args)
+  #.(format nil "Parse command line or REPL options then start the browser.
 Load URLS if any (a list of strings).
 
 This functions focuses on OPTIONS parsing, see `start-browser' for the actual
@@ -489,9 +490,10 @@ Examples:
   (nyxt:start :urls '(\"https://nyxt.atlas.engineer\" \"https://en.wikipedia.org\")
               :verbose t
               :with-file '(\"history\" \"/tmp/nyxt/history.lisp\"))"
-            (with-output-to-string (s) (opts:describe :stream s)))
+    (with-output-to-string (s) (opts:describe :stream s)))
   ;; Extensions should be made accessible straight from the beginning,
   ;; e.g. before a script is run.
+  (declare #.(cons 'ignorable %start-args))
   (unless +renderer+
     (log:warn "No renderer set, Nyxt will not be able to render pages.  Try:
 
