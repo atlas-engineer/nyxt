@@ -3,19 +3,6 @@
 
 (in-package :nyxt)
 
-(defmacro define-function (name args docstring &body body)
-  "Eval ARGS and DOCSTRING then define function over the resulting lambda list
-and string.
-All ARGS are declared as `ignorable'."
-  (let ((evaluated-args (eval args))
-        (evaluated-docstring (eval docstring)))
-    `(defun ,name ,evaluated-args
-       ,evaluated-docstring
-       (declare (ignorable ,@(set-difference (mapcar (lambda (arg) (if (listp arg) (first arg) arg))
-                                                     evaluated-args)
-                                             lambda-list-keywords)))
-       ,@body)))
-
 (sera:eval-always
   (define-class prompt-buffer (network-buffer input-buffer modable-buffer prompter:prompter)
     ((window nil
@@ -459,17 +446,17 @@ See `update-prompt-input' to update the changes visually."
        (hide-prompt-buffer prompt-buffer)
        (error 'nyxt-prompt-buffer-canceled)))))
 
+(sera:eval-always
+  (defvar %prompt-args (delete-duplicates
+                        (append
+                         (public-initargs 'prompt-buffer)
+                         (public-initargs 'prompter:prompter)
+                         ;; `customize-instance' `:after' arguments:
+                         '(extra-modes)))))
 (export-always 'prompt)
 (sera:eval-always
-  (define-function prompt (append
-                           '(&rest args)
-                           `(&key ,@(delete-duplicates
-                                     (append
-                                      (public-initargs 'prompt-buffer)
-                                      (public-initargs 'prompter:prompter)
-                                      ;; `customize-instance' `:after' arguments:
-                                      '(extra-modes)))))
-      "Open the prompt buffer, ready for user input.
+  (defun prompt #.(append '(&rest args) `(&key ,@%prompt-args))
+    "Open the prompt buffer, ready for user input.
 PROMPTER and PROMPT-BUFFER are plists of keyword arguments passed to the
 prompt-buffer constructor.
 
@@ -481,6 +468,7 @@ Example use:
                                                  :constructor '(\"foo\" \"bar\"))))
 
 See the documentation of `prompt-buffer' to know more about the options."
+    (declare #.(cons 'ignorable %prompt-args))
     (unless *interactive-p*
       (restart-case
           (error 'nyxt-prompt-buffer-non-interactively)
