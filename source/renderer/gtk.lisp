@@ -1462,16 +1462,19 @@ See `finalize-buffer'."
     (declare (ignore web-view event hit-test-result))
     (let ((length (webkit:webkit-context-menu-get-n-items context-menu)))
       (dotimes (i length)
-        (let ((item (webkit:webkit-context-menu-get-item-at-position context-menu i)))
-          (match (webkit:webkit-context-menu-item-get-stock-action item)
-            (:webkit-context-menu-action-open-link-in-new-window
-             (webkit:webkit-context-menu-remove context-menu item)
-             (webkit:webkit-context-menu-insert
-              context-menu
-              (webkit:webkit-context-menu-item-new-from-stock-action-with-label
-               :webkit-context-menu-action-open-link-in-new-window
-               "Open Link in New Buffer")
-              i))))))
+        (if (status-buffer-p buffer)
+            (webkit:webkit-context-menu-remove
+             context-menu (webkit:webkit-context-menu-get-item-at-position context-menu i))
+            (let ((item (webkit:webkit-context-menu-get-item-at-position context-menu i)))
+              (match (webkit:webkit-context-menu-item-get-stock-action item)
+                (:webkit-context-menu-action-open-link-in-new-window
+                 (webkit:webkit-context-menu-remove context-menu item)
+                 (webkit:webkit-context-menu-insert
+                  context-menu
+                  (webkit:webkit-context-menu-item-new-from-stock-action-with-label
+                   :webkit-context-menu-action-open-link-in-new-window
+                   "Open Link in New Buffer")
+                  i)))))))
     nil)
   (connect-signal buffer "enter-fullscreen" nil (web-view)
     (declare (ignore web-view))
