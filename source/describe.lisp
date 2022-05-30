@@ -150,7 +150,10 @@ for matches."
       (:h1 (:raw (escaped-literal-print value)))
       (:p (:raw (value->html value))))))
 
+(export-always 'resolve-backtick-quote-links)
 (defun resolve-backtick-quote-links (string parent-symbol)
+  "Return the STRING documentation with symbols surrounded by the (` ') pair
+turned into links to their respective description page."
   (flet ((resolve-regex (target-string start end match-start match-end reg-starts reg-ends)
            (declare (ignore start end reg-starts reg-ends))
            ;; Excluding backtick & quote.
