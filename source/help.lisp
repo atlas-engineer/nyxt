@@ -757,13 +757,13 @@ the channel, wrapped alongside the condition and its restarts."))
   "The debugger to fall back to in case Nyxt debugger fails.")
 
 (defvar *debug-conditions* (make-hash-table)
-  "A hash-table from numeric condition ID to the `condition-handler' lists.")
+  "A hash-table from condition ID (as per `new-id') to the `condition-handler' lists.")
 
 (defun debugger-hook (condition hook)
   (declare (ignore hook))
   (when *debug-on-error*
     (let* ((*debugger-hook* *old-debugger-hook*)
-           (id (parse-integer (symbol-name (new-id))))
+           (id (new-id))
            (restarts (compute-restarts condition))
            (channel (make-channel 1))
            (handler (make-instance 'condition-handler
