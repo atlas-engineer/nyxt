@@ -1685,9 +1685,10 @@ local anyways, and it's better to refresh it if a load was queried."
       (setf (nyxt/download-mode:completion-percentage download)
             (* 100 (webkit:webkit-download-estimated-progress webkit-download))))
     (connect-signal download "decide-destination" nil (webkit-download suggested-file-name)
-      (alex:when-let* ((download-dir (or (download-directory
-                                          (find (webkit:webkit-download-get-web-view webkit-download)
-                                                (buffer-list) :key #'gtk-object))
+      (alex:when-let* ((download-dir (or (ignore-errors
+                                          (download-directory
+                                           (find (webkit:webkit-download-get-web-view webkit-download)
+                                                 (buffer-list) :key #'gtk-object)))
                                          (make-instance 'download-directory)))
                        (download-directory (files:expand download-dir))
                        (native-download-directory (unless (files:nil-pathname-p download-directory)
