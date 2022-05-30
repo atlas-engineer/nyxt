@@ -5,6 +5,24 @@
 ;; TODO: which-key: List all bindings with some prefix.
 ;; TODO: Make sure it's easy enough to set global bindings.
 
+(-> binding-keys (function-symbol &key (:modes list)) *)
+(defun binding-keys (fn &key (modes (if (current-buffer)
+                                        (modes (current-buffer))
+                                        (mapcar #'make-instance %default-modes))))
+  ;; We can't use `(modes (make-instance 'buffer))' because modes are only
+  ;; instantiated after the buffer web view, which is not possible if there is
+  ;; no *browser*.
+  (let* ((current-buffer (current-buffer))
+         (buffer (or (current-buffer)
+                     (make-instance 'input-buffer)))
+         (keymaps (cons (override-map buffer)
+                        (delete nil (mapcar #'keymap modes)))))
+    (unwind-protect
+         (or (first (keymap:binding-keys fn keymaps))
+             "UNBOUND")
+      (unless current-buffer
+        (buffer-delete buffer)))))
+
 (defmacro command-markup (fn &key (modes nil explicit-modes-p))
   "Print FN in HTML followed its bindings in parentheses."
   `(let ((spinneret:*suppress-inserted-spaces* t))
