@@ -12,26 +12,27 @@
   (:documentation "Render MODE `mode' for the STATUS `status-buffer'."))
 
 (export-always 'format-status-modes)
-(defun format-status-modes (buffer window)
+(defmethod format-status-modes ((status status-buffer))
   "Format the modes for the status buffer.
 This leverages `mode-status' which can be specialized for individual modes."
-  (if (modable-buffer-p buffer)
-      (spinneret:with-html-string
-        (when (nosave-buffer-p buffer) (:span "⚠ nosave"))
-        (:button :type "button" :class "button"
-                 :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:toggle-modes)))
-                 :title (str:concat "Enabled modes: " (modes-string buffer)) "✚")
-        (loop for mode in (sera:filter (alex:conjoin #'enabled-p #'visible-in-status-p)
-                                       (modes buffer))
-              collect (let* ((formatted-mode (mode-status (status-buffer window) mode)))
-                        (if (html-string-p formatted-mode)
-                            (:raw formatted-mode)
-                            (:button :class "button"
-                                     :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                      `(describe-class :class (quote ,(name mode)))))
-                                     :title (format nil "Describe ~a" mode)
-                                     formatted-mode)))))
-      ""))
+  (let ((buffer (current-buffer (window status))))
+    (if (modable-buffer-p buffer)
+        (spinneret:with-html-string
+          (when (nosave-buffer-p buffer) (:span "⚠ nosave"))
+          (:button :type "button" :class "button"
+                   :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:toggle-modes)))
+                   :title (str:concat "Enabled modes: " (modes-string buffer)) "✚")
+          (loop for mode in (sera:filter (alex:conjoin #'enabled-p #'visible-in-status-p)
+                                         (modes buffer))
+                collect (let* ((formatted-mode (mode-status status mode)))
+                          (if (html-string-p formatted-mode)
+                              (:raw formatted-mode)
+                              (:button :class "button"
+                                       :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                        `(describe-class :class (quote ,(name mode)))))
+                                       :title (format nil "Describe ~a" mode)
+                                       formatted-mode)))))
+        "")))
 
 (defun modes-string (buffer)
   (when (modable-buffer-p buffer)
@@ -39,7 +40,9 @@ This leverages `mode-status' which can be specialized for individual modes."
                                     (sera:filter #'enabled-p (modes buffer))))))
 
 (export-always 'format-status-buttons)
-(defun format-status-buttons ()
+(defmethod format-status-buttons ((status status-buffer))
+  "Render buttons for interactivity, like history backwards/forwards and the `execute-command' menu."
+  (declare (ignore status))
   (spinneret:with-html-string
     (:button :type "button" :class "button"
              :title "Backwards"
@@ -54,7 +57,7 @@ This leverages `mode-status' which can be specialized for individual modes."
              :title "Execute"
              :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:execute-command))) "≡")))
 
-(defun format-status-vi-mode (&optional (buffer (current-buffer)))
+(defun format-status-vi-mode (&optional (buffer (current-buffer))) ; TODO: List scheme-modes first instead, then remove this.
   (spinneret:with-html-string
     (cond ((find-submode 'nyxt/vi-mode:vi-normal-mode buffer)
            (:div
@@ -69,23 +72,26 @@ This leverages `mode-status' which can be specialized for individual modes."
           (t (:span "")))))
 
 (export-always 'format-status-load-status)
-(defun format-status-load-status (buffer)
-  (spinneret:with-html-string
-    (:div :class (if (and (web-buffer-p buffer)
-                          (eq (slot-value buffer 'status) :loading))
-                     "loader" ""))))
+(defmethod format-status-load-status ((status status-buffer))
+  (let ((buffer (current-buffer (window status))))
+    (spinneret:with-html-string
+      (:div :class (if (and (web-buffer-p buffer)
+                            (eq (slot-value buffer 'status) :loading))
+                       "loader" "")))))
 
 (export-always 'format-status-url)
-(defun format-status-url (buffer)
-  (spinneret:with-html-string
-    (:button :type "button" :class "button"
-             :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:set-url)))
-             (format nil " ~a — ~a"
-                     (render-url (url buffer))
-                     (title buffer)))))
+(defmethod format-status-url ((status status-buffer))
+  (let ((buffer (current-buffer (window status))))
+    (spinneret:with-html-string
+      (:button :type "button" :class "button"
+               :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:set-url)))
+               (format nil " ~a — ~a"
+                       (render-url (url buffer))
+                       (title buffer))))))
 
 (export-always 'format-status-tabs)
-(defun format-status-tabs ()
+(defmethod format-status-tabs ((status status-buffer))
+  (declare (ignore status))
   (spinneret:with-html-string
     (loop for domain in (remove-duplicates
                          (sera:filter-map #'quri:uri-domain
@@ -96,8 +102,9 @@ This leverages `mode-status' which can be specialized for individual modes."
                                             `(nyxt::switch-buffer-or-query-domain ,domain)))
                            domain))))
 
-(defun format-status (window)
-  (let* ((buffer (current-buffer window))
+(export-always 'format-status)
+(defmethod format-status ((status status-buffer))
+  (let* ((buffer (current-buffer (window status)))
          (vi-class (cond ((find-submode 'nyxt/vi-mode:vi-normal-mode buffer)
                           "vi-normal-mode")
                          ((find-submode 'nyxt/vi-mode:vi-insert-mode buffer)
@@ -105,18 +112,18 @@ This leverages `mode-status' which can be specialized for individual modes."
     (spinneret:with-html-string
       (:div :id (if vi-class "container-vi" "container")
             (:div :id "controls" :class "arrow-right"
-                  (:raw (format-status-buttons)))
+                  (:raw (format-status-buttons status)))
             (when vi-class
               (:div :id "vi-mode" :class (str:concat vi-class " arrow-right")
                     (:raw (format-status-vi-mode buffer))))
             (:div :id "url" :class "arrow-right"
                   (:raw
-                   (format-status-load-status buffer)
-                   (format-status-url buffer)))
+                   (format-status-load-status status)
+                   (format-status-url status)))
             (:div :id "tabs"
                   (:raw
-                   (format-status-tabs)))
+                   (format-status-tabs status)))
             (:div :id "modes" :class "arrow-left"
                   :title (modes-string buffer)
                   (:raw
-                   (format-status-modes buffer window)))))))
+                   (format-status-modes status)))))))

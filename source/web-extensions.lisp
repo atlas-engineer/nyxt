@@ -297,7 +297,7 @@ slash. WebExtensions require this :/"
   (uiop:merge-pathnames* (string-left-trim "/" (namestring path))
                          (extension-directory extension)))
 
-(defmethod nyxt:mode-status ((extension extension))
+(defmethod nyxt:mode-status ((status status-buffer) (extension extension))
   (spinneret:with-html-string
     (:button :class "button"
              :onclick (ps:ps (nyxt/ps:lisp-eval `(toggle-extension-popup ',(sera:class-name-of extension))))
