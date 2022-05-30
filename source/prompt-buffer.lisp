@@ -21,7 +21,7 @@ new history for each new prompt buffer.  Here we set the history to be shared gl
      ;; TODO: Need a changed-callback?  Probably not, see `search-buffer'.  But
      ;; can we run the postprocessor without running the filter?
      (invisible-input-p nil
-                        :documentation "If non-nil, input is replaced by a
+                        :documentation "Whether to replace input by a
 placeholder character.  This is useful to conceal passwords.")
      (hide-suggestion-count-p nil
                               :documentation "Whether to show the number of
