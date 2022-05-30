@@ -111,6 +111,10 @@ Setf-able."))
 (define-ffi-generic ffi-buffer-load-html (buffer html-content url)
   (:documentation "Load HTML-CONTENT into BUFFER through the renderer.
 If URL is not nil, relative URLs are resolved against it."))
+(define-ffi-generic ffi-buffer-load-alternate-html (buffer html-content content-url url)
+  (:documentation "Load HTML-CONTENT for CONTENT-URL into BUFFER through the renderer.
+This is like `ffi-buffer-load-html' except that it's meant to display
+page-loading errors and it should try to maintain the history consistent."))
 
 (define-ffi-generic ffi-buffer-evaluate-javascript (buffer javascript &optional world-name)
   (:documentation "Evaluate JAVASCRIPT in the BUFFER web view.

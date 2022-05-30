@@ -1519,6 +1519,15 @@ local anyways, and it's better to refresh it if a load was queried."
                                         "about:blank"
                                         (render-url url))))
 
+(define-ffi-method ffi-buffer-load-alternate-html ((buffer gtk-buffer) html-content content-url url)
+  (declare (type quri:uri url))
+  (webkit:webkit-web-view-load-alternate-html (gtk-object buffer)
+                                              html-content
+                                              content-url
+                                              (if (url-empty-p url)
+                                                  "about:blank"
+                                                  (render-url url))))
+
 (defmethod ffi-buffer-evaluate-javascript ((buffer gtk-buffer) javascript &optional world-name)
   (%within-renderer-thread
    (lambda (&optional channel)
