@@ -17,7 +17,7 @@ the content of HTML pages."))
 By default, this mode does nothing but expose the default bookmarklets."
   ((visible-in-status-p nil)))
 
-(defmacro nyxt::define-bookmarklet-command (name documentation source) ; TODO: Should it really belong to the `nyxt' package?
+(defmacro define-bookmarklet-command (name documentation source) ; TODO: Should it really belong to the `nyxt' package?
   "Define a bookmarklet command, the source can either be a JavaScript string to
 evaluate, or a `cl:pathname' to a JavaScript source file."
   `(define-command ,name (&optional (buffer (current-buffer)))
@@ -27,7 +27,7 @@ evaluate, or a `cl:pathname' to a JavaScript source file."
                       (pathname (nfiles:content (make-instance 'nfiles:file :base-path source)))
                       (string source))))
        (ffi-buffer-evaluate-javascript-async buffer source))))
-(sera:export-always 'nyxt::define-bookmarklet-command :nyxt)
+(sera:export-always 'define-bookmarklet-command)
 
 (define-bookmarklet-command color-internal-external-links
   "Color internal links red, external links blue, and in-page links orange."
