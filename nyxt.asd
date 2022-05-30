@@ -161,7 +161,6 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "history" :depends-on ("history-tree" "list-history"))
                  (:file "certificate-exception")
                  (:file "keymap-scheme")
-                 (:file "vi") ; TODO: Move to non-core modes when `status' no longer depends on it.
                  (:file "proxy")
                  (:file "download")
                  (:file "process")))
@@ -228,6 +227,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "small-web")
                  (:file "style" :depends-on ("bookmarklets"))
                  (:file "tts")
+                 (:file "vi")
                  (:file "visual")
                  (:file "watch"))))
   :in-order-to ((test-op (test-op "nyxt/tests")
