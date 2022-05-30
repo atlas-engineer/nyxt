@@ -486,6 +486,36 @@ A command is a special kind of function that can be called with
   "Inspect a Nyxt-accessible class and show it in a help buffer."
   (describe-class :universal t))
 
+;; FIXME: Arglist used to have prompt-buffer, but it's not URL-serializable.
+;; Maybe have prompt-buffers have IDs so that we can identify those by IDs?
+;; How do we actually identify prompt-buffers?
+(define-internal-page-command nyxt/prompt-buffer-mode::describe-prompt-buffer ()
+    (buffer (str:concat "*Help-" (prompter:prompt (current-prompt-buffer)) "-prompter*"))
+  "Describe a prompt buffer instance."
+  (let* ((prompt-buffer (current-prompt-buffer))
+         (modes (modes prompt-buffer))
+         (sources (prompter:sources prompt-buffer)))
+    (spinneret:with-html-string
+      (:style (style buffer))
+      (:h1 (prompter:prompt prompt-buffer))
+      (:p (:raw (resolve-backtick-quote-links (documentation 'prompt-buffer 'type) 'prompt-buffer)))
+      (:h2 "Modes:")
+      (:ul
+       (loop for mode in modes
+             collect (:li (:a :href
+                              (nyxt-url
+                               'describe-class
+                               :class (sera:class-name-of mode))
+                              (string (sera:class-name-of mode))))))
+      (:h2 "Sources:")
+      (:ul
+       (loop for source in sources
+             collect (:li (:a :href
+                              (nyxt-url
+                               'describe-class
+                               :class (sera:class-name-of source))
+                              (string (sera:class-name-of source)))))))))
+
 (defun configure-slot (slot class &key
                                     (type (getf (mopu:slot-properties (find-class class) slot)
                                                 :type)))
@@ -816,6 +846,24 @@ See `*debug-on-error*'."
 The version number is stored in the clipboard."
   (trivial-clipboard:text +version+)
   (echo "Version ~a" +version+))
+
+(-> binding-keys (function-symbol &key (:modes list)) *)
+(defun binding-keys (fn &key (modes (if (current-buffer)
+                                        (modes (current-buffer))
+                                        (mapcar #'make-instance %default-modes))))
+  ;; We can't use `(modes (make-instance 'buffer))' because modes are only
+  ;; instantiated after the buffer web view, which is not possible if there is
+  ;; no *browser*.
+  (let* ((current-buffer (current-buffer))
+         (buffer (or (current-buffer)
+                     (make-instance 'input-buffer)))
+         (keymaps (cons (override-map buffer)
+                        (delete nil (mapcar #'keymap modes)))))
+    (unwind-protect
+         (or (first (keymap:binding-keys fn keymaps))
+             "UNBOUND")
+      (unless current-buffer
+        (buffer-delete buffer)))))
 
 (define-internal-page-command-global new ()
     (buffer "*New buffer*")

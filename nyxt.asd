@@ -161,7 +161,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "history" :depends-on ("history-tree" "list-history"))
                  (:file "bookmarklets")
                  (:file "style" :depends-on ("bookmarklets"))
-                 (:file "certificate-exception" :depends-on ("history"))
+                 (:file "certificate-exception")
                  (:file "keymap-scheme")
                  (:file "emacs" :depends-on ("keymap-scheme"))
                  (:file "vi" :depends-on ("keymap-scheme"))

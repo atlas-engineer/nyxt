@@ -15,8 +15,6 @@ This package should not be modified by the users.
 
 It's recommended to use the `nyxt-user' package instead to create new functions,
 modes, commands, etc."))
-#+sb-package-locks
-(sb-ext:lock-package :nyxt)
 
 (in-package :nyxt)
 (defvar *imports* '((:trivia :match :multiple-value-match :lambda-match :guard)
@@ -42,27 +40,9 @@ modes, commands, etc."))
 
 (defmacro nyxt::use-nyxt-package-nicknames (&optional (package *package*))
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (dolist (pkgs (trivial-package-local-nicknames:package-local-nicknames :nyxt))
-       (trivial-package-local-nicknames:add-package-local-nickname (first pkgs) (package-name (rest pkgs))
+     (dolist (package (trivial-package-local-nicknames:package-local-nicknames :nyxt))
+       (trivial-package-local-nicknames:add-package-local-nickname (first package) (package-name (rest package))
                                                                    (find-package ,package)))))
-
-(serapeum:-> subpackage-p (trivial-types:package-designator trivial-types:package-designator) boolean)
-(defun subpackage-p (subpackage package)
-  "Return non-nil if SUBPACKAGE is a subpackage of PACKAGE or is PACKAGE itself.
-A subpackage has a name that starts with that of PACKAGE followed by a '/' separator."
-  (or (eq (find-package subpackage) (find-package package))
-      (sera:string-prefix-p (uiop:strcat (package-name package) "/")
-                            (package-name subpackage))))
-
-(serapeum:-> nyxt-subpackage-p (trivial-types:package-designator) boolean)
-(defun nyxt-subpackage-p (package)
-  "Return non-nil if PACKAGE is a sub-package of `nyxt'."
-  (subpackage-p package :nyxt))
-
-(serapeum:-> nyxt-user-subpackage-p (trivial-types:package-designator) boolean)
-(defun nyxt-user-subpackage-p (package)
-  "Return non-nil if PACKAGE is a sub-package of `nyxt' or `nyxt-user'."
-  (subpackage-p package :nyxt-user))
 
 (serapeum:export-always 'define-package :nyxt)
 (defmacro define-package (name &rest options)
@@ -81,14 +61,7 @@ A subpackage has a name that starts with that of PACKAGE followed by a '/' separ
          ,@uses
          ,@imports
          ,@options)
-       (nyxt::use-nyxt-package-nicknames ',name)
-       #+sb-package-locks
-       (progn
-         (sb-ext:lock-package ,name)
-         ;; (serapeum:eval-always
-         ;;   (when (nyxt-subpackage-p ,name)
-         ;;     (sb-ext:add-implementation-package ,name :nyxt)))
-         ) )))
+       (nyxt::use-nyxt-package-nicknames ',name))))
 
 (deftype class-symbol ()
   `(and symbol (satisfies find-class)))

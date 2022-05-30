@@ -150,7 +150,7 @@ The handlers take the window as argument."))
                       buffer-var title side
                       body)
   (let ((args (alex:mappend #'first (nth-value 3 (alex:parse-ordinary-lambda-list arglist))))
-        (name-panel (intern (format nil "~:@(~a-panel~)" (symbol-name name)))))
+        (name-panel (intern (format nil "~:@(~a-panel~)" (symbol-name name)) :nyxt)))
     (multiple-value-bind (body declarations documentation)
         (alex:parse-body body :documentation t)
       `(progn

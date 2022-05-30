@@ -481,33 +481,3 @@ Only available if `prompter:multi-selection-p' is non-nil."
   ;; TODO: `prompt-buffer' should not be a web-buffer.
   (set-difference (call-next-method) (list (resolve-symbol :document-mode :mode)
                                            (resolve-symbol :base-mode :mode))))
-
-;; FIXME: Arglist used to have prompt-buffer, but it's not URL-serializable.
-;; Maybe have prompt-buffers have IDs so that we can identify those by IDs?
-;; How do we actually identify prompt-buffers?
-(define-internal-page-command describe-prompt-buffer ()
-    (buffer (str:concat "*Help-" (prompter:prompt (current-prompt-buffer)) "-prompter*"))
-  "Describe a prompt buffer instance."
-  (let* ((prompt-buffer (current-prompt-buffer))
-         (modes (modes prompt-buffer))
-         (sources (prompter:sources prompt-buffer)))
-    (spinneret:with-html-string
-      (:style (style buffer))
-      (:h1 (prompter:prompt prompt-buffer))
-      (:p (:raw (resolve-backtick-quote-links (documentation 'prompt-buffer 'type) 'prompt-buffer)))
-      (:h2 "Modes:")
-      (:ul
-       (loop for mode in modes
-             collect (:li (:a :href
-                              (nyxt-url
-                               'describe-class
-                               :class (sera:class-name-of mode))
-                              (string (sera:class-name-of mode))))))
-      (:h2 "Sources:")
-      (:ul
-       (loop for source in sources
-             collect (:li (:a :href
-                              (nyxt-url
-                               'describe-class
-                               :class (sera:class-name-of source))
-                              (string (sera:class-name-of source)))))))))
