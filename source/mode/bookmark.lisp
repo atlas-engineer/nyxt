@@ -448,7 +448,7 @@ rest in background buffers."
                               (make-instance 'prompter:word-source
                                              :name "New tags"
                                              :multi-selection-p t)
-                              (make-instance 'nyxt::tag-source
+                              (make-instance 'tag-source
                                              :marks (nyxt/bookmark-mode:url-bookmark-tags url))))))
          (nyxt/bookmark-mode:bookmark-add url :tags tags :title (fetch-url-title url)))))
    :selector "a, img"))
