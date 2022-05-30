@@ -97,8 +97,7 @@ See also `vi-normal-mode' and `vi-insert-mode'."
       (enable-modes '(nyxt/passthrough-mode:passthrough-mode)
                     buffer))))
 
-(define-command vi-button1 (&optional (buffer (or (current-prompt-buffer)
-                                                  (current-buffer))))
+(define-command vi-button1 (&optional (buffer (focused-buffer)))
   "Enable VI insert mode when focus is on an input element on the web page.
 See also `vi-normal-mode' and `vi-insert-mode'."
   ;; First we generate a button1 event so that the web view element is clicked
