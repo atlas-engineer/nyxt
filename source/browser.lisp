@@ -452,45 +452,6 @@ view.")
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defun preprocess-request (request-data)
-  "Deal with REQUEST-DATA with the following rules:
-- If a binding matches KEYS in `request-resource-scheme', run the bound function.
-- If `new-window-p' is non-nil, load in new buffer.
-- If `known-type-p' is nil, download the file.
-- Otherwise let the renderer load the request."
-  (with-slots (url buffer keys) request-data
-    (let* ((keymap (scheme-keymap buffer (request-resource-scheme buffer)))
-           (bound-function (the (or symbol keymap:keymap null)
-                                (keymap:lookup-key keys keymap))))
-      (declare (type quri:uri url))
-      (cond
-        ((not (valid-scheme-p (quri:uri-scheme url)))
-         (uiop:launch-program (list *open-program* (quri:render-uri url))))
-        (bound-function
-         (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode keys))
-         (funcall bound-function :url url :buffer buffer)
-         nil)
-        ((new-window-p request-data)
-         (log:debug "Load URL in new buffer: ~a" (render-url url))
-         (open-urls (list url))
-         nil)
-        ((and (not (known-type-p request-data))
-              (toplevel-p request-data))
-         (log:debug "Buffer ~a initiated download of ~s." (id buffer) (render-url url))
-         (funcall (resolve-symbol :download :function)
-                  buffer url
-                  :proxy-url (proxy-url buffer :downloads-only t)
-                  :cookies "")
-         ;; TODO: WebKitGTK emits "load-failed" if we call
-         ;; webkit-policy-decision-ignore on a download requestion.
-         ;; To work around this, we set the `status' to a value other than
-         ;; `:loading'.
-         (setf (slot-value buffer 'status) :finished)
-         nil)
-        (t
-         (log:debug "Forwarding ~a for buffer ~s" (render-url url) buffer)
-         request-data)))))
-
 (export-always 'url-dispatching-handler)
 (-> url-dispatching-handler
     (symbol
