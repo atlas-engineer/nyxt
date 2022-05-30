@@ -120,8 +120,7 @@ Second return value should be the MIME-type of the content."))
 (defmethod line->html ((line cl-gopher:info-message))
   (let ((line (cl-gopher:display-string line)))
     (spinneret:with-html-string
-      (if (or (str:emptyp line)
-              (every #'sera:whitespacep line))
+      (if (str:blankp line)
           (:br)
           (:pre line)))))
 
@@ -313,9 +312,10 @@ Please, check URL correctness and try again.")))
               ((:input :sensitive-input)
                (let ((text (quri:url-encode
                             (handler-case
-                                (prompt1 :prompt meta
-                                         :sources (list (make-instance 'prompter:raw-source))
-                                         :invisible-input-p (eq status :sensitive-input))
+                                (prompt1
+                                  :prompt meta
+                                  :sources (list (make-instance 'prompter:raw-source))
+                                  :invisible-input-p (eq status :sensitive-input))
                               (nyxt::nyxt-prompt-buffer-canceled () "")))))
                  (buffer-load (str:concat url "?" text) :buffer buffer)))
               (:success
