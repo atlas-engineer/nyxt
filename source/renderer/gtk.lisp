@@ -799,10 +799,19 @@ See `gtk-browser's `modifier-translator' slot."
       (gobject:g-signal-connect
        context "initialize-web-extensions"
        (lambda (context)
-         (with-protect ("Error in signal thread: ~a" :condition)
+         (with-protect ("Error in \"initialize-web-extensions\" signal thread: ~a" :condition)
            (webkit:webkit-web-context-set-web-extensions-directory
             context
             (uiop:native-namestring gtk-extensions-path))))))
+    (gobject:g-signal-connect
+     context "download-started"
+     (lambda (context download)
+       (declare (ignore context))
+       (with-protect ("Error in \"download-started\" signal thread: ~a" :condition)
+         ;; FIXME: Right now we cancel the download and start a new one from
+         ;; the Lisp side. We should rather wrap the DOWNLOAD into the
+         ;; Lisp-side structure.
+         (wrap-download download))))
     (maphash
      (lambda (scheme scheme-object)
        (webkit:webkit-web-context-register-uri-scheme-callback
@@ -924,65 +933,76 @@ See `finalize-buffer'."
       (setf modifiers (funcall (modifier-translator *browser*)
                                (webkit:webkit-navigation-action-get-modifiers navigation-action))))
     (setf url (quri:uri (webkit:webkit-uri-request-uri request)))
-    (let ((request-data (preprocess-request
-                         (make-instance 'request-data
-                                        :buffer buffer
-                                        :url (quri:copy-uri url)
-                                        :keys (unless (uiop:emptyp mouse-button)
-                                                (list (keymap:make-key
-                                                       :value mouse-button
-                                                       :modifiers modifiers)))
-                                        :event-type event-type
-                                        :new-window-p is-new-window
-                                        :toplevel-p (quri:uri=
-                                                     url (quri:uri (webkit:webkit-web-view-uri
-                                                                    (gtk-object buffer))))
-                                        :mime-type mime-type
-                                        :known-type-p is-known-type))))
-      (if (request-data-p request-data)
-          (if (and (null (hooks:handlers (request-resource-hook buffer)))
-                   (null (hooks:handlers (pre-request-hook buffer))))
-              (progn
-                (log:debug "Forward to ~s's renderer (no pre-request-hook nor request-resource-hook handlers)."
-                           buffer)
-                (webkit:webkit-policy-decision-use response-policy-decision))
-              (let ((request-data
-                      (hooks:run-hook
-                       (request-resource-hook buffer)
-                       (hooks:run-hook (pre-request-hook buffer)
-                                       request-data))))
-                (cond
-                  ((not (typep request-data 'request-data))
-                   (log:debug "Don't forward to ~s's renderer (non request data)."
-                              buffer)
-                   (webkit:webkit-policy-decision-ignore response-policy-decision))
-                  ((quri:uri= url (url request-data))
-                   (log:debug "Forward to ~s's renderer (unchanged URL)."
-                              buffer)
-                   (webkit:webkit-policy-decision-use response-policy-decision))
-                  ((and (quri:uri= (url buffer) (quri:uri (webkit:webkit-uri-request-uri request)))
-                        (not (quri:uri= (quri:uri (webkit:webkit-uri-request-uri request))
-                                        (url request-data))))
-                   ;; Low-level URL string, we must not render the puni codes so use
-                   ;; `quri:render-uri'.
-                   (setf (webkit:webkit-uri-request-uri request) (quri:render-uri (url request-data)))
-                   (log:debug "Don't forward to ~s's renderer (resource request replaced with ~s)."
-                              buffer
-                              (render-url (url request-data)))
-                   ;; Warning: We must ignore the policy decision _before_ we
-                   ;; start the new load request, or else WebKit will be
-                   ;; confused about which URL to load.
-                   (webkit:webkit-policy-decision-ignore response-policy-decision)
-                   (webkit:webkit-web-view-load-request (gtk-object buffer) request))
-                  (t
-                   (log:info "Cannot redirect to ~a in an iframe, forwarding to the original URL (~a)."
-                             (render-url (url request-data))
-                             (webkit:webkit-uri-request-uri request))
-                   (webkit:webkit-policy-decision-use response-policy-decision)))))
-          (progn
-            (log:debug "Don't forward to ~s's renderer (non request data)."
-                       buffer)
-            (webkit:webkit-policy-decision-ignore response-policy-decision))))))
+    (if (and (null (hooks:handlers (request-resource-hook buffer)))
+             (null (hooks:handlers (pre-request-hook buffer))))
+        (progn
+          (log:debug "Forward to ~s's renderer (no pre-request-hook nor request-resource-hook handlers)."
+                     buffer)
+          (webkit:webkit-policy-decision-use response-policy-decision))
+        (let* ((request-data
+                 (hooks:run-hook
+                  (request-resource-hook buffer)
+                  (hooks:run-hook (pre-request-hook buffer)
+                                  (make-instance 'request-data
+                                                 :buffer buffer
+                                                 :url (quri:copy-uri url)
+                                                 :keys (unless (uiop:emptyp mouse-button)
+                                                         (list (keymap:make-key
+                                                                :value mouse-button
+                                                                :modifiers modifiers)))
+                                                 :event-type event-type
+                                                 :new-window-p is-new-window
+                                                 :toplevel-p (quri:uri=
+                                                              url (quri:uri (webkit:webkit-web-view-uri
+                                                                             (gtk-object buffer))))
+                                                 :mime-type mime-type
+                                                 :known-type-p is-known-type))))
+               (keymap (scheme-keymap (buffer request-data) (request-resource-scheme (buffer request-data))))
+               (bound-function (the (or symbol keymap:keymap null)
+                                    (keymap:lookup-key (keys request-data) keymap))))
+          (cond
+            ((not (typep request-data 'request-data))
+             (log:debug "Don't forward to ~s's renderer (non request data)."
+                        buffer)
+             (webkit:webkit-policy-decision-ignore response-policy-decision))
+            ;; FIXME: Do we ever use it? Do we actually need it?
+            (bound-function
+             (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode (keys request-data)))
+             (funcall bound-function :url url :buffer buffer)
+             (webkit:webkit-policy-decision-ignore response-policy-decision))
+            ((new-window-p request-data)
+             (log:debug "Load URL in new buffer: ~a" (render-url (url request-data)))
+             (open-urls (list (url request-data)))
+             (webkit:webkit-policy-decision-ignore response-policy-decision))
+            ((not (valid-scheme-p (quri:uri-scheme (url request-data))))
+             (uiop:launch-program (list *open-program* (quri:render-uri (url request-data)))))
+            ((and (not (known-type-p request-data))
+                  (toplevel-p request-data))
+             (log:debug "Initiate download of ~s." (render-url (url request-data)))
+             (webkit:webkit-policy-decision-download response-policy-decision))
+            ((quri:uri= url (url request-data))
+             (log:debug "Forward to ~s's renderer (unchanged URL)."
+                        buffer)
+             (webkit:webkit-policy-decision-use response-policy-decision))
+            ((and (quri:uri= (url buffer) (quri:uri (webkit:webkit-uri-request-uri request)))
+                  (not (quri:uri= (quri:uri (webkit:webkit-uri-request-uri request))
+                                  (url request-data))))
+             ;; Low-level URL string, we must not render the puni codes so use
+             ;; `quri:render-uri'.
+             (setf (webkit:webkit-uri-request-uri request) (quri:render-uri (url request-data)))
+             (log:debug "Don't forward to ~s's renderer (resource request replaced with ~s)."
+                        buffer
+                        (render-url (url request-data)))
+             ;; Warning: We must ignore the policy decision _before_ we
+             ;; start the new load request, or else WebKit will be
+             ;; confused about which URL to load.
+             (webkit:webkit-policy-decision-ignore response-policy-decision)
+             (webkit:webkit-web-view-load-request (gtk-object buffer) request))
+            (t
+             (log:info "Cannot redirect to ~a in an iframe, forwarding to the original URL (~a)."
+                       (render-url (url request-data))
+                       (webkit:webkit-uri-request-uri request))
+             (webkit:webkit-policy-decision-use response-policy-decision)))))))
 
 ;; See https://webkitgtk.org/reference/webkit2gtk/stable/WebKitWebView.html#WebKitLoadEvent
 (defmethod on-signal-load-changed ((buffer gtk-buffer) load-event)
@@ -1651,12 +1671,11 @@ local anyways, and it's better to refresh it if a load was queried."
    buffer (alex:alist-hash-table `(("audible" . ,value))))
   (webkit:webkit-web-view-set-is-muted (gtk-object buffer) (not value)))
 
-(defmethod ffi-buffer-download ((buffer gtk-buffer) url)
-  (let* ((webkit-download (webkit:webkit-web-view-download-uri (gtk-object buffer) url))
-         (download (make-instance 'nyxt/download-mode:download
-                                  :url url
-                                  :gtk-object webkit-download)))
-    (hooks:run-hook (before-download-hook *browser*) url)
+(defun wrap-download (webkit-download)
+  (sera:lret ((download (make-instance 'nyxt/download-mode:download
+                                       :url (webkit:webkit-uri-request-uri
+                                             (webkit:webkit-download-get-request webkit-download))
+                                       :gtk-object webkit-download)))
     (setf (nyxt/download-mode::cancel-function download)
           #'(lambda ()
               (setf (nyxt/download-mode:status download) :canceled)
@@ -1669,7 +1688,10 @@ local anyways, and it's better to refresh it if a load was queried."
       (setf (nyxt/download-mode:completion-percentage download)
             (* 100 (webkit:webkit-download-estimated-progress webkit-download))))
     (connect-signal download "decide-destination" nil (webkit-download suggested-file-name)
-      (alex:when-let* ((download-dir (download-directory buffer))
+      (alex:when-let* ((download-dir (or (download-directory
+                                          (find (webkit:webkit-download-get-web-view webkit-download)
+                                                (buffer-list) :key #'gtk-object))
+                                         (make-instance 'download-directory)))
                        (download-directory (files:expand download-dir))
                        (native-download-directory (unless (files:nil-pathname-p download-directory)
                                                     (uiop:native-namestring download-directory)))
@@ -1702,7 +1724,15 @@ local anyways, and it's better to refresh it if a load was queried."
         (setf (nyxt/download-mode:status download) :finished)
         ;; If download was too small, it may not have been updated.
         (setf (nyxt/download-mode:completion-percentage download) 100)
-        (hooks:run-hook (after-download-hook *browser*) download)))
+        (hooks:run-hook (after-download-hook *browser*) download)))))
+
+(defmethod ffi-buffer-download ((buffer gtk-buffer) url)
+  (let* ((webkit-download (webkit:webkit-web-view-download-uri (gtk-object buffer) url))
+         (download (make-instance 'nyxt/download-mode:download
+                                  :url url
+                                  :gtk-object webkit-download)))
+    (hooks:run-hook (before-download-hook *browser*) url)
+    (wrap-download webkit-download)
     download))
 
 (define-ffi-method ffi-buffer-user-agent ((buffer gtk-buffer))
