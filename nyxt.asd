@@ -141,6 +141,8 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "input")
                  (:file "prompt-buffer")
                  (:file "command-commands")
+                 (:file "describe")
+                 (:file "debugger")
                  (:file "recent-buffers")
                  (:file "history")
                  (:file "external-editor")))

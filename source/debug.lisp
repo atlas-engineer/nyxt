@@ -1,7 +1,7 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/debug
+(uiop:define-package :nyxt/debug ; TODO: Rename to `nyxt/develop' to avoid confusiong with `debugger'?
   (:use :common-lisp :nyxt)
   (:import-from #:class-star #:define-class)
   (:import-from #:serapeum #:export-always #:->)
