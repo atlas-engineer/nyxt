@@ -2,12 +2,12 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (uiop:define-package :nyxt/debug ; TODO: Rename to `nyxt/develop' to avoid confusiong with `debugger'?
-  (:use :common-lisp :nyxt)
+  (:use :common-lisp)
   (:import-from #:class-star #:define-class)
   (:import-from #:serapeum #:export-always #:->)
   (:documentation "Development helpers"))
 (in-package :nyxt/debug)
-(use-nyxt-package-nicknames)
+(nyxt:use-nyxt-package-nicknames)
 
 (defvar *all-nyxt-objects* '()
   "Weak list of all Nyxt objects.
