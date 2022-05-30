@@ -79,3 +79,32 @@ what you are doing!"
       (with-protect ("Error on separate thread: ~a" :condition)
         ,@body))
     :name ,(str:concat "Nyxt " name)))
+
+(defun evaluate (string &key interactive-p)
+  "Evaluate all expressions in STRING and return the last result as a list of values.
+The list of values is useful when the last result is multi-valued, e.g. (values 'a 'b).
+You need not wrap multiple values in a PROGN, all top-level expressions are
+evaluated in order."
+  (let ((channel (make-channel 1)))
+    (run-thread "evaluator"
+      (let ((interactive-p interactive-p))
+        (calispel:!
+         channel
+         (with-input-from-string (input string)
+           (first
+            (last
+             (loop for object = (read input nil :eof)
+                   until (eq object :eof)
+                   collect (multiple-value-list
+                            (handler-case (let ((*interactive-p* interactive-p))
+                                            (eval object))
+                              (error (c) (format nil "~a" c)))))))))))
+    (calispel:? channel)))
+
+(defun evaluate-async (string)
+  "Like `evaluate' but does not block and does not return the result."
+  (run-thread "async evaluator"
+    (with-input-from-string (input string)
+      (loop for object = (read input nil :eof)
+            until (eq object :eof)
+            collect (funcall (lambda () (eval object)))))))
