@@ -1,3 +1,6 @@
+;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
+;;;; SPDX-License-Identifier: BSD-3-Clause
+
 (in-package :nyxt/web-extensions)
 
 (-> extension->extension-info ((or null nyxt/web-extensions:extension)) (values list &optional))
