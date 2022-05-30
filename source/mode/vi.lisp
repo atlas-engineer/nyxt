@@ -47,8 +47,7 @@ See `vi-normal-mode'."
       scheme:vi-insert
       (list
        "C-z" 'nyxt/passthrough-mode:passthrough-mode
-       "escape" 'switch-to-vi-normal-mode
-       "button1" 'vi-button1)))
+       "escape" 'switch-to-vi-normal-mode)))
    (passthrough-mode-p nil
                        :type boolean
                        :documentation "Whether to default to `passthrough-mode'
@@ -106,13 +105,9 @@ See also `vi-normal-mode' and `vi-insert-mode'."
   ;; (e.g. a text field gets focus).
   (forward-to-renderer :window (current-window) :buffer buffer)
   (let ((response (nyxt/document-mode:%clicked-in-input? buffer)))
-    (cond
-      ((and (nyxt/document-mode:input-tag-p response)
-            (find-submode 'vi-normal-mode buffer))
-       (enable-modes '(vi-insert-mode) buffer))
-      ((and (not (nyxt/document-mode:input-tag-p response))
-            (find-submode 'nyxt/vi-mode:vi-insert-mode buffer))
-       (enable-modes '(vi-normal-mode) buffer)))))
+    (when (and (nyxt/document-mode:input-tag-p response)
+               (find-submode 'vi-normal-mode buffer))
+      (enable-modes '(vi-insert-mode) buffer))))
 
 (defmethod on-signal-load-finished ((mode vi-insert-mode) url)
   (declare (ignore url))
