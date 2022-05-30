@@ -639,11 +639,6 @@ store them somewhere and `ffi-buffer-delete' them once done."))
        ;; Columns: controls, url, tabs, modes
        :grid-template-columns "90px minmax(auto, 30ch) 1fr 220px"
        :overflow-y "hidden")
-      ("#container-vi"
-       :display "grid"
-       ;; Columns: controls, vi-status, url, tabs, modes
-       :grid-template-columns "90px 30px minmax(auto, 30ch) 1fr 220px"
-       :overflow-y "hidden")
       ("#controls"
        :font-size "16px"
        :font-weight "700"
@@ -653,17 +648,11 @@ store them somewhere and `ffi-buffer-delete' them once done."))
        :overflow "hidden"
        :white-space "nowrap"
        :z-index "4")
-      ("#vi-mode"
+      ("#scheme-mode"
        :padding-right "10px"
        :padding-left "10px"
        :text-align "center"
        :z-index "3")
-      (".vi-normal-mode"
-       :color theme:background
-       :background-color theme:secondary)
-      (".vi-insert-mode"
-       :color theme:background
-       :background-color theme:accent)
       ("#url"
        :color theme:background
        :background-color theme:secondary

@@ -52,12 +52,6 @@ chosen suggestions inside brackets.")
                :grid-template-columns "auto auto 1fr auto"
                :width "100%"
                :color theme:background)
-              ("#prompt-area-vi"
-               :background-color theme:tertiary
-               :display "grid"
-               :grid-template-columns "auto auto 1em 1fr auto"
-               :width "100%"
-               :color theme:background)
               ("#prompt"
                :padding-left "10px"
                :line-height "26px")
@@ -68,13 +62,6 @@ chosen suggestions inside brackets.")
                :line-height "26px"
                :padding-left "3px"
                :padding-right "3px")
-              ("#vi-mode"
-               :margin "2px"
-               :padding "1px")
-              (".vi-normal-mode"
-               :background-color theme:primary)
-              (".vi-insert-mode"
-               :background-color theme:accent)
               ("#input"
                :border "none"
                :outline "none"
@@ -242,14 +229,7 @@ See also `show-prompt-buffer'."
 (defun prompt-render-prompt (prompt-buffer)
   (let* ((suggestions (prompter:all-suggestions prompt-buffer))
          (marks (prompter:all-marks prompt-buffer))
-         ;; TODO: Should make this part mode-extensible instead of hard-coding VI behaviour.
-         (vi-class (cond ((find-submode (resolve-symbol :vi-normal-mode :mode) prompt-buffer)
-                          "vi-normal-mode")
-                         ((find-submode (resolve-symbol :vi-insert-mode :mode) prompt-buffer)
-                          "vi-insert-mode")))
-         (vi-letter (match vi-class
-                      ("vi-normal-mode" "N")
-                      ("vi-insert-mode" "I"))))
+         (status-buffer (status-buffer (current-window))))
     (ffi-buffer-evaluate-javascript-async
      prompt-buffer
      (ps:ps
@@ -260,16 +240,8 @@ See also `show-prompt-buffer'."
                :pad-p t
                :multi-selection-p (some #'prompter:multi-selection-p
                                         (prompter:sources prompt-buffer)))))
-       (when (ps:lisp vi-class)
-         (let ((vi-indicator (ps:chain document (get-element-by-id "vi-mode"))))
-           (setf (ps:chain vi-indicator |innerHTML|) (ps:lisp vi-letter))
-           (setf (ps:chain vi-indicator class-name) (ps:lisp vi-class))))
        (setf (ps:chain document (get-element-by-id "prompt-modes") |innerHTML|)
-             (ps:lisp
-              (format nil "~{~a~^ ~}" (delete "prompt-buffer-mode"
-                                              (mapcar #'princ-to-string
-                                                      (modes prompt-buffer))
-                                              :test #'string=))))))))
+             (ps:lisp (format-status-modes status-buffer)))))))
 
 (export 'prompt-render-suggestions)
 (defmethod prompt-render-suggestions ((prompt-buffer prompt-buffer))
@@ -356,28 +328,23 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
 
 (defun prompt-render-skeleton (prompt-buffer)
   (erase-document prompt-buffer)
-  ;; TODO: Should make this part mode-extensible instead of hard-coding VI behaviour.
-  (let ((vi-mode? (or (find-submode (resolve-symbol :vi-normal-mode :mode) prompt-buffer)
-                      (find-submode (resolve-symbol :vi-insert-mode :mode) prompt-buffer))))
-    (html-set (spinneret:with-html-string
-                (:head (:style (style prompt-buffer)))
-                (:body
-                 (:div :id (if vi-mode? "prompt-area-vi" "prompt-area")
-                       (:div :id "prompt" (:mayberaw (prompter:prompt prompt-buffer)))
-                       (:div :id "prompt-extra" "[?/?]")
-                       (when vi-mode?
-                         (:div :id "vi-mode" ""))
-                       (:div (:input :type (if (invisible-input-p prompt-buffer)
-                                               "password"
-                                               "text")
-                                     :id "input"
-                                     :value (prompter:input prompt-buffer)))
-                       (:div :id "prompt-modes" ""))
-                 (:div :id "suggestions"
-                       :style (if (invisible-input-p prompt-buffer)
-                                  "visibility:hidden;"
-                                  "visibility:visible;"))))
-              prompt-buffer)))
+  (html-set (spinneret:with-html-string
+              (:head (:style (style prompt-buffer)))
+              (:body
+               (:div :id "prompt-area"
+                     (:div :id "prompt" (:mayberaw (prompter:prompt prompt-buffer)))
+                     (:div :id "prompt-extra" "[?/?]")
+                     (:div (:input :type (if (invisible-input-p prompt-buffer)
+                                             "password"
+                                             "text")
+                                   :id "input"
+                                   :value (prompter:input prompt-buffer)))
+                     (:div :id "prompt-modes" ""))
+               (:div :id "suggestions"
+                     :style (if (invisible-input-p prompt-buffer)
+                                "visibility:hidden;"
+                                "visibility:visible;"))))
+            prompt-buffer))
 
 (defun prompt-render-focus (prompt-buffer)
   (ffi-buffer-evaluate-javascript-async
