@@ -1463,15 +1463,15 @@ See `finalize-buffer'."
     (let ((length (webkit:webkit-context-menu-get-n-items context-menu)))
       (dotimes (i length)
         (let ((item (webkit:webkit-context-menu-get-item-at-position context-menu i)))
-          (when (eq (webkit:webkit-context-menu-item-get-stock-action item)
-                    :webkit-context-menu-action-open-link-in-new-window)
-            (webkit:webkit-context-menu-remove context-menu item)
-            (webkit:webkit-context-menu-insert
-             context-menu
-             (webkit:webkit-context-menu-item-new-from-stock-action-with-label
-              :webkit-context-menu-action-open-link-in-new-window
-              "Open Link in New Buffer")
-             i)))))
+          (match (webkit:webkit-context-menu-item-get-stock-action item)
+            (:webkit-context-menu-action-open-link-in-new-window
+             (webkit:webkit-context-menu-remove context-menu item)
+             (webkit:webkit-context-menu-insert
+              context-menu
+              (webkit:webkit-context-menu-item-new-from-stock-action-with-label
+               :webkit-context-menu-action-open-link-in-new-window
+               "Open Link in New Buffer")
+              i))))))
     nil)
   (connect-signal buffer "enter-fullscreen" nil (web-view)
     (declare (ignore web-view))
