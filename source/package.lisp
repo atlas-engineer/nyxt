@@ -4,6 +4,11 @@
 ;; Some compilers (e.g. SBCL) fail to reload the system with `defpackage' when
 ;; exports are spread around.  `uiop:define-package' does not have this problem.
 
+#+sb-package-locks
+(serapeum:eval-always
+  (when (find-package :nyxt)
+    (sb-ext:unlock-package :nyxt)))
+
 (uiop:define-package nyxt
   (:use #:common-lisp)
   #+nyxt-debug-make-instance
@@ -15,6 +20,8 @@ This package should not be modified by the users.
 
 It's recommended to use the `nyxt-user' package instead to create new functions,
 modes, commands, etc."))
+#+sb-package-locks
+(sb-ext:lock-package :nyxt)
 
 (in-package :nyxt)
 (defvar *imports* '((:trivia :match :multiple-value-match :lambda-match :guard)
@@ -40,9 +47,10 @@ modes, commands, etc."))
 
 (defmacro nyxt::use-nyxt-package-nicknames (&optional (package *package*))
   `(eval-when (:compile-toplevel :load-toplevel :execute)
-     (dolist (package (trivial-package-local-nicknames:package-local-nicknames :nyxt))
-       (trivial-package-local-nicknames:add-package-local-nickname (first package) (package-name (rest package))
-                                                                   (find-package ,package)))))
+     (let ((*package* (find-package ,package)))
+       (dolist (pkgs (trivial-package-local-nicknames:package-local-nicknames :nyxt))
+         (trivial-package-local-nicknames:add-package-local-nickname (first pkgs) (package-name (rest pkgs))
+                                                                     (find-package ,package))))))
 
 (serapeum:export-always 'define-package :nyxt)
 (defmacro define-package (name &rest options)
@@ -57,11 +65,15 @@ modes, commands, etc."))
          (options (remove :use (remove :import-from options :key #'first)
                           :key #'first)))
     `(progn
-       (uiop:define-package ,name
-         ,@uses
-         ,@imports
-         ,@options)
-       (nyxt::use-nyxt-package-nicknames ',name))))
+       (serapeum:eval-always
+         (sb-ext:without-package-locks
+           (uiop:define-package ,name
+             ,@uses
+             ,@imports
+             ,@options)))
+       (nyxt::use-nyxt-package-nicknames ',name)
+       #+sb-package-locks
+       (sb-ext:lock-package ,name))))
 
 (deftype class-symbol ()
   `(and symbol (satisfies find-class)))
