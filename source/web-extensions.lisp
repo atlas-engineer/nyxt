@@ -298,14 +298,12 @@ slash. WebExtensions require this :/"
   (uiop:merge-pathnames* (string-left-trim "/" (namestring path))
                          (extension-directory extension)))
 
-;; TODO: This is not the right point where to hook into the status bar, since it
-;; won't work if glyphs are on.
-(defmethod nyxt::mode-status ((extension extension))
+(defmethod nyxt:mode-status ((extension extension))
   (spinneret:with-html-string
     (:button :class "button"
              :onclick (ps:ps (nyxt/ps:lisp-eval `(toggle-extension-popup ',(sera:class-name-of extension))))
              :title (format nil "Open the browser action of ~a" extension)
-             (name extension))))
+             (call-next-method))))
 
 (define-command-global toggle-extension-popup (&optional extension-class (buffer (current-buffer)))
   "Open the popup of the extension of EXTENSION-CLASS.
