@@ -1103,7 +1103,7 @@ proceeding."
   ;; switched inside a `with-current-buffer':
   (setf %buffer nil)
   (set-window-title window)
-  (print-status nil window)
+  (print-status window)
   (when (and (network-buffer-p buffer)
              (eq (slot-value buffer 'status) :unloaded))
     (reload-buffers (list buffer))))
