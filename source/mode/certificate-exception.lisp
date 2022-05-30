@@ -39,7 +39,7 @@ To make this change permanent, you can customize
                      :sources (list
                                (make-instance 'prompter:raw-source
                                               :name "URL")
-                               (make-instance 'nyxt/document-mode::history-all-source
+                               (make-instance 'nyxt/history-mode:history-all-source
                                               :buffer buffer)))))
         (sera:and-let* ((url (if (stringp input)
                                  (quri:uri input)
