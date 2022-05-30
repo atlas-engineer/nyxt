@@ -1,14 +1,17 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
+;; We use `uiop:define-package' instead of `nyxt:define-package' since this does
+;; not depend on Nyxt at all.
 (uiop:define-package :nyxt/scheme
   (:use :common-lisp)
   (:import-from #:serapeum
                 #:export-always
                 #:->)
   (:documentation "Nyxt type specialization for `keymap' bound values."))
-(in-package :nyxt/scheme)
+(in-package :nyxt) ; In case the package is locked.
 (trivial-package-local-nicknames:add-package-local-nickname :scheme :nyxt/scheme :nyxt)
+(in-package :nyxt/scheme)
 
 ;; Setting `keymap:keymap' bound-value type to something like `function-symbol'
 ;; is not practical because functions defined in the same file as the keymap are
