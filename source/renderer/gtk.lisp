@@ -466,7 +466,6 @@ response.  The BODY is wrapped with `with-protect'."
          (setf (gtk:gtk-widget-size-request message-container)
                (list -1 (message-buffer-height window)))
 
-         (setf status-buffer (make-instance 'status-buffer))
          (gtk:gtk-box-pack-end root-box-layout status-container :expand nil)
          (gtk:gtk-box-pack-start status-container (gtk-object status-buffer) :expand t)
          (setf (gtk:gtk-widget-size-request status-container)

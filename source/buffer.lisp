@@ -594,7 +594,10 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:metaclass user-class))
 
 (define-class status-buffer (buffer)
-  ((height
+  ((window nil
+    :type (maybe window)
+    :documentation "The `window' to which the status buffer is attached.")
+   (height
     24
     :type integer
     :documentation "The height of the status buffer in pixels.")

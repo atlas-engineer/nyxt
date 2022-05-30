@@ -51,7 +51,13 @@ The channel is popped when a prompt buffer is hidden.")
     :documentation "Whether the window is displayed in fullscreen.")
    ;; TODO: each frame should have a status buffer, not each window
    (status-buffer
-    :export nil)
+    (make-instance 'status-buffer)
+    :type status-buffer
+    :documentation "The `status-buffer' instance for this window.
+
+To modify the status buffer appearance and behaviour, subclass it and specialize
+the generic functions on `status-buffer'.  Finally set the `window'
+`status-buffer' slot to an instance of this subclass.")
    (message-buffer-height
     16
     :documentation "The height of the message buffer in pixels.")
@@ -89,12 +95,6 @@ The only argument is a string representation of the pressed key.")
     :type hook-window-buffer
     :documentation "Hook run before `window-set-buffer' takes effect.
 The handlers take the window and the buffer as argument.")
-   (status-formatter
-    #'format-status
-    :type (function (window) string)
-    :documentation "Function of a window argument that returns
-a string to be printed in the status view.
-Cannot be null.")
    (window-delete-hook
     (make-instance 'hook-window)
     :type hook-window
@@ -108,7 +108,8 @@ The handlers take the window as argument."))
 
 (defmethod initialize-instance :after ((window window) &key (browser *browser*)
                                        &allow-other-keys)
-  "Set ID."
+  "Initialize some required slots like ID and status-buffer."
+  (setf (window (status-buffer window)) window)
   (when browser
     (setf (id window) (new-id))
     (setf (slot-value browser 'last-active-window) window))
@@ -221,13 +222,13 @@ See `define-panel' for the description of the arguments."
   (setf (slot-value window 'active-buffer) buffer)
   (print-status))
 
-(defun print-status (&optional status window)
+(defun print-status (&optional status window) ; TODO: STATUS argument is never used.
   (let ((window (or window (current-window))))
     (when (and window (status-buffer window))
       (ffi-print-status
        window
        (or status
-           (funcall (status-formatter window) window))))))
+           (funcall (format-status window)))))))
 
 (hooks:define-hook-type window (function (window)))
 
