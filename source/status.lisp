@@ -3,8 +3,13 @@
 
 (in-package :nyxt)
 
-(defmethod mode-status ((mode mode))
-  (princ-to-string mode))
+(export-always 'mode-status)
+(defgeneric mode-status (status mode)
+  (:method ((status status-buffer) (mode mode))
+    (if (glyph-mode-presentation-p status)
+        (glyph mode)
+        (princ-to-string mode)))
+  (:documentation "Render MODE `mode' for the STATUS `status-buffer'."))
 
 (export-always 'format-status-modes)
 (defun format-status-modes (buffer window)
@@ -18,9 +23,7 @@ This leverages `mode-status' which can be specialized for individual modes."
                  :title (str:concat "Enabled modes: " (modes-string buffer)) "✚")
         (loop for mode in (sera:filter (alex:conjoin #'enabled-p #'visible-in-status-p)
                                        (modes buffer))
-              collect (let* ((formatted-mode (if (glyph-mode-presentation-p (status-buffer window))
-                                                 (glyph mode)
-                                                 (mode-status mode))))
+              collect (let* ((formatted-mode (mode-status (status-buffer window) mode)))
                         (if (html-string-p formatted-mode)
                             (:raw formatted-mode)
                             (:button :class "button"
