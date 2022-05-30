@@ -120,3 +120,18 @@ See also `vi-normal-mode' and `vi-insert-mode'."
 
 (defmethod nyxt/document-mode:element-focused ((mode vi-normal-mode))
   (enable-modes '(vi-insert-mode)))
+
+(defmethod nyxt:mode-status ((status status-buffer) (vi-mode vi-normal-mode))
+  (let ((buffer (current-buffer (window status))))
+    (spinneret:with-html-string
+      (cond ((find-submode 'nyxt/vi-mode:vi-normal-mode buffer)
+             (:div
+              (:button :type "button"
+                       :title "vi-normal-mode"
+                       :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/vi-mode:vi-insert-mode))) "N")))
+            ((find-submode 'nyxt/vi-mode:vi-insert-mode buffer)
+             (:div
+              (:button :type "button"
+                       :title "vi-insert-mode"
+                       :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/vi-mode:vi-normal-mode))) "I")))
+            (t (:span ""))))))

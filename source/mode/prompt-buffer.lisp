@@ -20,7 +20,8 @@ A same source can be used by different prompt buffers.
 Each source offers a set of 'return-actions' for its selection(s).
 Return-actions can be listed and run with `return-selection-over-action' (bound to
 \"M-return\" by default)."
-  ((keymap-scheme
+  ((visible-in-status-p nil)
+   (keymap-scheme
     (define-scheme "prompt-buffer"
       scheme:cua
       (list
