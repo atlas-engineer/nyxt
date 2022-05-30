@@ -1,16 +1,15 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/web-extensions
-  (:use :common-lisp :nyxt)
-  (:import-from #:class-star #:define-class)
-  (:import-from #:serapeum
-                #:export-always
-                #:->)
-  (:documentation "WebExtensions API conformance code."))
+(nyxt:define-package :nyxt/web-extensions
+    (:documentation "WebExtensions API conformance code."))
 (in-package :nyxt/web-extensions)
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (use-nyxt-package-nicknames))
+
+;; TODO: We need to allow modifying :nyxt form here, for instance because we
+;; create a `background-buffer' accessor on what is just a class in `nyxt'.
+#+sb-package-locks
+(sera:eval-always
+  (sb-ext:add-implementation-package :nyxt/web-extensions :nyxt))
 
 (define-class content-script ()
   ((match-patterns (error "Match pattern is required.")
@@ -201,6 +200,7 @@ https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.
        :documentation "A unique ID of the extension.
 Is shared between all the instances of the same extension.")
    (background-buffer nil
+                      :export nil
                       :documentation "The buffer to host background page of the extension in.
 Is shared between all the instances of the same extension.")
    (popup-buffer nil
@@ -358,6 +358,7 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
           (id (or (symbol-name (gensym ,name)))
               :allocation :class)
           (background-buffer nil
+                             :export nil
                              :allocation :class)
           (popup-buffer nil
                         :allocation :class)
