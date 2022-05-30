@@ -159,7 +159,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "list-history")
                  (:file "document")
                  (:file "history" :depends-on ("history-tree" "list-history"))
-                 (:file "certificate-exception")
+                 (:file "certificate-exception" :depends-on ("history"))
                  (:file "keymap-scheme")
                  (:file "vi") ; TODO: Move to non-core modes when `status' no longer depends on it.
                  (:file "proxy")
