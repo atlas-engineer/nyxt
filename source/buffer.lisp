@@ -593,7 +593,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
-(define-class status-buffer (buffer)
+(define-class status-buffer (input-buffer)
   ((window nil
     :type (maybe window)
     :documentation "The `window' to which the status buffer is attached.")

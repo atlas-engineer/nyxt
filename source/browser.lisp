@@ -566,6 +566,15 @@ Return BUFFER."
   "Return the current prompt-buffer."
   (first (active-prompt-buffers (current-window))))
 
+(export-always 'focused-buffer)
+(defun focused-buffer (&optional (window (current-window)) )
+  "Return the current prompt-buffer."
+  ;; TODO: Add message-buffer when we have the slot in `window'.
+  (find-if #'ffi-focused-p
+           (list (first (active-prompt-buffers window))
+                 (active-buffer window)
+                 (status-buffer window))))
+
 (defmethod write-output-to-log ((browser browser))
   "Set the *standard-output* and *error-output* to write to a log file."
   (let ((buffer (current-buffer)))
