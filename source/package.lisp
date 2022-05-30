@@ -52,6 +52,13 @@ modes, commands, etc."))
          (trivial-package-local-nicknames:add-package-local-nickname (first pkgs) (package-name (rest pkgs))
                                                                      (find-package ,package))))))
 
+(defmacro without-package-locks (&body body)
+  #+sb-package-locks
+  `(sb-ext:without-package-locks
+     ,@body)
+  #-sb-package-locks
+  `(progn ,@body))
+
 (serapeum:export-always 'define-package :nyxt)
 (defmacro define-package (name &rest options)
   "A helper around `uiop:define-package'.
@@ -66,7 +73,7 @@ modes, commands, etc."))
                           :key #'first)))
     `(progn
        (serapeum:eval-always
-         (sb-ext:without-package-locks
+         (without-package-locks
            (uiop:define-package ,name
              ,@uses
              ,@imports
