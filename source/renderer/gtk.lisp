@@ -311,9 +311,17 @@ By default it is found in the source directory."))
     :documentation "See `gtk-buffer' slot of the same name."))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defclass nyxt/download-mode:renderer-download (gtk-download)
-  ()
-  (:metaclass mixin-class))
+(macrolet ((without-package-locks (&body body)
+             #+sb-package-locks
+             `(sb-ext:without-package-locks
+                ,@body)
+             #-sb-package-locks
+             `(progn
+                ,@body)))
+  (without-package-locks                ; TODO: Is there a cleaner way to update the mode class?  Maybe move it to the core?
+    `(defclass nyxt/download-mode:renderer-download (gtk-download)
+       ()
+       (:metaclass mixin-class))))
 
 (defclass webkit-web-view-ephemeral (webkit:webkit-web-view) ()
   (:metaclass gobject:gobject-class))
