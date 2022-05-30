@@ -997,7 +997,7 @@ See `finalize-buffer'."
              (setf (slot-value buffer 'status) :loading)
              (nyxt/web-extensions::tabs-on-updated buffer '(("status" . "loading")))
              (nyxt/web-extensions::tabs-on-updated buffer `(("url" . ,(render-url url))))
-             (print-status nil (get-containing-window-for-buffer buffer *browser*))
+             (print-status (get-containing-window-for-buffer buffer *browser*))
              (on-signal-load-started buffer url)
              (unless (internal-url-p url)
                (echo "Loading ~s." (render-url url))))
@@ -1017,7 +1017,7 @@ See `finalize-buffer'."
              (nyxt/web-extensions::tabs-on-updated buffer '(("status" . "complete")))
              (nyxt/web-extensions::tabs-on-updated buffer `(("url" . ,(render-url url))))
              (on-signal-load-finished buffer url)
-             (print-status nil (get-containing-window-for-buffer buffer *browser*))
+             (print-status (get-containing-window-for-buffer buffer *browser*))
              (unless (internal-url-p url)
                (echo "Finished loading ~s." (render-url url))))))))
 

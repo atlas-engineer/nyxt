@@ -222,13 +222,11 @@ See `define-panel' for the description of the arguments."
   (setf (slot-value window 'active-buffer) buffer)
   (print-status))
 
-(defun print-status (&optional status window) ; TODO: STATUS argument is never used.
-  (let ((window (or window (current-window))))
-    (when (and window (status-buffer window))
-      (ffi-print-status
-       window
-       (or status
-           (funcall (format-status window)))))))
+(defun print-status (&optional (window (current-window)))
+  (when (and window (status-buffer window))
+    (ffi-print-status
+     window
+     (format-status (status-buffer window)))))
 
 (hooks:define-hook-type window (function (window)))
 
