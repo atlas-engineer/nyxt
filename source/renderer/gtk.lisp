@@ -808,9 +808,6 @@ See `gtk-browser's `modifier-translator' slot."
      (lambda (context download)
        (declare (ignore context))
        (with-protect ("Error in \"download-started\" signal thread: ~a" :condition)
-         ;; FIXME: Right now we cancel the download and start a new one from
-         ;; the Lisp side. We should rather wrap the DOWNLOAD into the
-         ;; Lisp-side structure.
          (wrap-download download))))
     (maphash
      (lambda (scheme scheme-object)
