@@ -32,16 +32,20 @@
              :left "0")
             (.chat
              :display "flex"
-             :flex-direction "column-reverse")
+             :flex-direction "column-reverse"
+             :min-width "100%")
             (.incoming
              :background-color theme:text
              :color theme:background
-             :align-self "flex-start")
+             :align-self "flex-start"
+             :margin "0.5em"
+             :padding "0.5em")
             (.outbound
              :background-color theme:quaternary
              :color theme:text
-             :text-align "right"
-             :align-self "flex-end")))
+             :align-self "flex-end"
+             :margin "0.5em"
+             :padding "0.5em")))
    (connection
     nil
     :type (maybe xmpp:connection)
