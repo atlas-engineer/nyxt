@@ -1,14 +1,9 @@
 ;;;; SPDX-FileCopyrightText: Atlas Engineer LLC
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
-(uiop:define-package :nyxt/xmpp-mode
-  (:use :common-lisp :nyxt)
-  (:import-from #:class-star #:define-class)
-  (:import-from #:keymap #:define-key #:define-scheme)
-  (:import-from #:serapeum #:->)
-  (:documentation "Mode for XMPP chats."))
+(nyxt:define-package :nyxt/xmpp-mode
+  (:documentation "Visual mode."))
 (in-package :nyxt/xmpp-mode)
-(use-nyxt-package-nicknames)
 
 (define-mode xmpp-mode ()
   "A mode for XMPP chats management."
