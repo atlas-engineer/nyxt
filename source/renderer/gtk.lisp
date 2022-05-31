@@ -808,14 +808,15 @@ See `gtk-browser's `modifier-translator' slot."
        (webkit:webkit-web-context-register-uri-scheme-callback
         context scheme
         (lambda (request)
-          (funcall* (callback scheme-object)
-                    (webkit:webkit-uri-scheme-request-get-uri request)
-                    (find (webkit:webkit-uri-scheme-request-get-web-view request)
-                          (delete nil
-                                  (append (list (status-buffer (current-window)))
-                                          (active-prompt-buffers (current-window))
-                                          (panel-buffers (current-window))
-                                          (buffer-list))) :key #'gtk-object)))
+          (let ((*interactive-p* t))
+            (funcall* (callback scheme-object)
+                      (webkit:webkit-uri-scheme-request-get-uri request)
+                      (find (webkit:webkit-uri-scheme-request-get-web-view request)
+                            (delete nil
+                                    (append (list (status-buffer (current-window)))
+                                            (active-prompt-buffers (current-window))
+                                            (panel-buffers (current-window))
+                                            (buffer-list))) :key #'gtk-object))))
         (or (error-callback scheme-object)
             (lambda (condition)
               (echo-warning "Error while routing ~s resource: ~a" scheme condition))))
