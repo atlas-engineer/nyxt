@@ -931,76 +931,70 @@ See `finalize-buffer'."
       (setf modifiers (funcall (modifier-translator *browser*)
                                (webkit:webkit-navigation-action-get-modifiers navigation-action))))
     (setf url (quri:uri (webkit:webkit-uri-request-uri request)))
-    (if (and (null (hooks:handlers (request-resource-hook buffer)))
-             (null (hooks:handlers (pre-request-hook buffer))))
-        (progn
-          (log:debug "Forward to ~s's renderer (no pre-request-hook nor request-resource-hook handlers)."
-                     buffer)
-          (webkit:webkit-policy-decision-use response-policy-decision))
-        (let* ((request-data
-                 (hooks:run-hook
-                  (request-resource-hook buffer)
-                  (hooks:run-hook (pre-request-hook buffer)
-                                  (make-instance 'request-data
-                                                 :buffer buffer
-                                                 :url (quri:copy-uri url)
-                                                 :keys (unless (uiop:emptyp mouse-button)
-                                                         (list (keymap:make-key
-                                                                :value mouse-button
-                                                                :modifiers modifiers)))
-                                                 :event-type event-type
-                                                 :new-window-p is-new-window
-                                                 :toplevel-p (quri:uri=
-                                                              url (quri:uri (webkit:webkit-web-view-uri
-                                                                             (gtk-object buffer))))
-                                                 :mime-type mime-type
-                                                 :known-type-p is-known-type))))
-               (keymap (scheme-keymap (buffer request-data) (request-resource-scheme (buffer request-data))))
-               (bound-function (the (or symbol keymap:keymap null)
-                                    (keymap:lookup-key (keys request-data) keymap))))
-          (cond
-            ((not (typep request-data 'request-data))
-             (log:debug "Don't forward to ~s's renderer (non request data)."
-                        buffer)
-             (webkit:webkit-policy-decision-ignore response-policy-decision))
-            ;; FIXME: Do we ever use it? Do we actually need it?
-            (bound-function
-             (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode (keys request-data)))
-             (funcall bound-function :url url :buffer buffer)
-             (webkit:webkit-policy-decision-ignore response-policy-decision))
-            ((new-window-p request-data)
-             (log:debug "Load URL in new buffer: ~a" (render-url (url request-data)))
-             (open-urls (list (url request-data)))
-             (webkit:webkit-policy-decision-ignore response-policy-decision))
-            ((not (valid-scheme-p (quri:uri-scheme (url request-data))))
-             (uiop:launch-program (list *open-program* (quri:render-uri (url request-data)))))
-            ((and (not (known-type-p request-data))
-                  (toplevel-p request-data))
-             (log:debug "Initiate download of ~s." (render-url (url request-data)))
-             (webkit:webkit-policy-decision-download response-policy-decision))
-            ((quri:uri= url (url request-data))
-             (log:debug "Forward to ~s's renderer (unchanged URL)."
-                        buffer)
-             (webkit:webkit-policy-decision-use response-policy-decision))
-            ((and (quri:uri= (url buffer) (quri:uri (webkit:webkit-uri-request-uri request)))
-                  (not (quri:uri= (quri:uri (webkit:webkit-uri-request-uri request))
-                                  (url request-data))))
-             ;; Low-level URL string, we must not render the puni codes so use
-             ;; `quri:render-uri'.
-             (setf (webkit:webkit-uri-request-uri request) (quri:render-uri (url request-data)))
-             (log:debug "Don't forward to ~s's renderer (resource request replaced with ~s)."
-                        buffer
-                        (render-url (url request-data)))
-             ;; Warning: We must ignore the policy decision _before_ we
-             ;; start the new load request, or else WebKit will be
-             ;; confused about which URL to load.
-             (webkit:webkit-policy-decision-ignore response-policy-decision)
-             (webkit:webkit-web-view-load-request (gtk-object buffer) request))
-            (t
-             (log:info "Cannot redirect to ~a in an iframe, forwarding to the original URL (~a)."
-                       (render-url (url request-data))
-                       (webkit:webkit-uri-request-uri request))
-             (webkit:webkit-policy-decision-use response-policy-decision)))))))
+    (let* ((request-data
+            (hooks:run-hook
+             (request-resource-hook buffer)
+             (hooks:run-hook (pre-request-hook buffer)
+                             (make-instance 'request-data
+                                            :buffer buffer
+                                            :url (quri:copy-uri url)
+                                            :keys (unless (uiop:emptyp mouse-button)
+                                                    (list (keymap:make-key
+                                                           :value mouse-button
+                                                           :modifiers modifiers)))
+                                            :event-type event-type
+                                            :new-window-p is-new-window
+                                            :toplevel-p (quri:uri=
+                                                         url (quri:uri (webkit:webkit-web-view-uri
+                                                                        (gtk-object buffer))))
+                                            :mime-type mime-type
+                                            :known-type-p is-known-type))))
+           (keymap (scheme-keymap (buffer request-data) (request-resource-scheme (buffer request-data))))
+           (bound-function (the (or symbol keymap:keymap null)
+                                (keymap:lookup-key (keys request-data) keymap))))
+      (cond
+       ((not (typep request-data 'request-data))
+        (log:debug "Don't forward to ~s's renderer (non request data)."
+                   buffer)
+        (webkit:webkit-policy-decision-ignore response-policy-decision))
+       ;; FIXME: Do we ever use it? Do we actually need it?
+       (bound-function
+        (log:debug "Resource request key sequence ~a" (keyspecs-with-optional-keycode (keys request-data)))
+        (funcall bound-function :url url :buffer buffer)
+        (webkit:webkit-policy-decision-ignore response-policy-decision))
+       ((new-window-p request-data)
+        (log:debug "Load URL in new buffer: ~a" (render-url (url request-data)))
+        (open-urls (list (url request-data)))
+        (webkit:webkit-policy-decision-ignore response-policy-decision))
+       ((not (valid-scheme-p (quri:uri-scheme (url request-data))))
+        (uiop:launch-program (list *open-program* (quri:render-uri (url request-data)))))
+       ((and (not (known-type-p request-data))
+             (toplevel-p request-data))
+        (log:debug "Initiate download of ~s." (render-url (url request-data)))
+        (webkit:webkit-policy-decision-download response-policy-decision))
+       ((quri:uri= url (url request-data))
+        (log:debug "Forward to ~s's renderer (unchanged URL)."
+                   buffer)
+        (webkit:webkit-policy-decision-use response-policy-decision))
+       ((and (quri:uri= (url buffer) (quri:uri (webkit:webkit-uri-request-uri request)))
+             (not (quri:uri= (quri:uri (webkit:webkit-uri-request-uri request))
+                             (url request-data))))
+        ;; Low-level URL string, we must not render the puni codes so use
+        ;; `quri:render-uri'.
+        (setf (webkit:webkit-uri-request-uri request) (quri:render-uri (url request-data)))
+        (log:debug "Don't forward to ~s's renderer (resource request replaced with ~s)."
+                   buffer
+                   (render-url (url request-data)))
+        ;; Warning: We must ignore the policy decision _before_ we
+        ;; start the new load request, or else WebKit will be
+        ;; confused about which URL to load.
+        (webkit:webkit-policy-decision-ignore response-policy-decision)
+        (webkit:webkit-web-view-load-request (gtk-object buffer) request))
+       (t
+        (log:info "Cannot redirect to ~a in an iframe, forwarding to the original URL (~a)."
+                  (render-url (url request-data))
+                  (webkit:webkit-uri-request-uri request))
+        (webkit:webkit-policy-decision-use response-policy-decision))))))
 
 ;; See https://webkitgtk.org/reference/webkit2gtk/stable/WebKitWebView.html#WebKitLoadEvent
 (defmethod on-signal-load-changed ((buffer gtk-buffer) load-event)
