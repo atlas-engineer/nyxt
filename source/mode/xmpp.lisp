@@ -66,8 +66,14 @@
 (define-command send-message ()
   "Send the inputted message to the person the chat happens with."
   (let ((mode (find-submode 'xmpp-mode))
-        (message-body (peval (ps:@ (nyxt/ps:qs document "input") value))))
-    (xmpp:message (connection mode) (recipient mode) message-body)))
+        (message-body (peval (ps:@ (nyxt/ps:qs document "#new") value))))
+    (xmpp:message (connection mode) (recipient mode) message-body)
+    (push (make-instance 'xmpp:message
+                         :to (recipient mode)
+                         :from (xmpp:username (connection mode))
+                         :body message-body)
+          (messages mode))
+    (reload-buffers (list (buffer mode)))))
 
 (define-command xmpp-connect (&optional (mode (find-submode 'xmpp-mode)))
   "Connect to the chosen XMPP server."
@@ -126,5 +132,7 @@
                                 "outbound"
                                 "incoming")
                      (xmpp:body message))))
-            (:textarea :placeholder (format nil "Put your message to ~a here" (recipient mode)))))
+            (:textarea
+             :id "new"
+             :placeholder (format nil "Put your message to ~a here" (recipient mode)))))
          "text/html;charset=utf8"))))
