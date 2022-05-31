@@ -34,18 +34,17 @@
              :display "flex"
              :flex-direction "column-reverse"
              :min-width "100%")
+            (.message
+             :margin "0.5em"
+             :padding "0.5em")
             (.incoming
              :background-color theme:text
              :color theme:background
-             :align-self "flex-start"
-             :margin "0.5em"
-             :padding "0.5em")
+             :align-self "flex-start")
             (.outbound
              :background-color theme:quaternary
              :color theme:text
-             :align-self "flex-end"
-             :margin "0.5em"
-             :padding "0.5em")))
+             :align-self "flex-end")))
    (connection
     nil
     :type (maybe xmpp:connection)
