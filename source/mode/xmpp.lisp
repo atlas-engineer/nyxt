@@ -37,6 +37,9 @@
             (.message
              :margin "0.5em"
              :padding "0.5em")
+            (.presence
+             :margin "0.5em"
+             :padding "0.2em")
             (.incoming
              :background-color theme:text
              :color theme:background
@@ -71,6 +74,16 @@
                          :to (recipient mode)
                          :from (xmpp:username (connection mode))
                          :body message-body)
+          (messages mode))
+    (reload-buffers (list (buffer mode)))))
+
+(define-command send-presence ()
+  "Send the presence signal to the person chat happens with."
+  (let ((mode (find-submode 'xmpp-mode)))
+    (xmpp:presence (connection mode) :to (recipient mode))
+    (push (make-instance 'xmpp:presence
+                         :to (recipient mode)
+                         :from (xmpp:username (connection mode)))
           (messages mode))
     (reload-buffers (list (buffer mode)))))
 
@@ -127,10 +140,17 @@
             (:div
              :class "chat"
              (dolist (message (messages mode))
-               (:div :class (if (string= (xmpp:from message) (xmpp:username (connection mode)))
-                                "outbound"
-                                "incoming")
-                     (xmpp:body message))))
+               (typecase message
+                 (xmpp:presence
+                  (:span :class (if (string= (xmpp:from message) (xmpp:username (connection mode)))
+                                    "presence outbound"
+                                    "presence incoming")
+                         (:i "present")))
+                 (xmpp:message
+                  (:div :class (if (string= (xmpp:from message) (xmpp:username (connection mode)))
+                                   "message outbound"
+                                   "message incoming")
+                        (xmpp:body message))))))
             (:textarea
              :id "new"
              :placeholder (format nil "Put your message to ~a here" (recipient mode)))))
