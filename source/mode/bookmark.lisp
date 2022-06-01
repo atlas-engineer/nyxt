@@ -61,7 +61,7 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
    (style (theme:themed-css (theme *browser*)
             ("summary"
              :background-color theme:secondary
-             :color theme:background
+             :color theme:on-secondary
              :font-size "14px"
              :padding "12px"
              :margin "6px"
@@ -73,9 +73,9 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
              :margin-left "8px")
             ;; Taken from buffer.lisp to save space for big bookmark lists.
             (button
-             :display "inline-block"
              :background-color theme:secondary
-             :color theme:background
+             :color theme:on-secondary
+             :display "inline-block"
              :text-decoration "none"
              :border-radius "2px"
              :padding "6px"

@@ -35,23 +35,21 @@ chosen suggestions inside brackets.")
      ;; You will want edit this to match the changes done to `style'.")
      (hide-single-source-header-p nil
                                   :documentation "Hide source header when there is only one.")
-     (style (theme:themed-css
-                (theme *browser*)
-              (* :font-family "monospace,monospace"
-                 :font-size "14px"
-                 :line-height "18px")
+     (style (theme:themed-css (theme *browser*)
+              (*
+               :font-family "monospace,monospace"
+               :font-size "14px"
+               :line-height "18px")
               (body
-               :color theme:text
-               :background theme:background
                :overflow "hidden"
                :margin "0"
                :padding "0")
               ("#prompt-area"
-               :background-color theme:secondary
+               :background-color theme:accent
+               :color theme:on-accent
                :display "grid"
                :grid-template-columns "auto auto 1fr auto"
-               :width "100%"
-               :color theme:background)
+               :width "100%")
               ("#prompt"
                :padding-left "10px"
                :line-height "26px")
@@ -63,11 +61,12 @@ chosen suggestions inside brackets.")
                :padding-left "3px"
                :padding-right "3px")
               ("#input"
+               :background-color theme:background
+               :color theme:on-background
+               :opacity 0.9
                :border "none"
                :outline "none"
                :padding "3px"
-               :color theme:text
-               :background-color theme:quaternary
                :width "100%"
                :autofocus "true")
               (".source"
@@ -76,21 +75,21 @@ chosen suggestions inside brackets.")
               (".source-glyph"
                :margin-right "3px")
               (".source-name"
-               :color theme:background
+               :background-color theme:secondary
+               :color theme:on-secondary
                :padding-left "5px"
-               :line-height "24px"
-               :background-color theme:secondary)
+               :line-height "24px")
               ("#suggestions"
-               :color theme:text
                :background-color theme:background
+               :color theme:on-background
                :overflow-y "hidden"
                :overflow-x "hidden"
                :height "100%"
                :width "100%")
               (".source-content"
-               :margin-left "16px"
                :background-color theme:background
-               :color theme:text
+               :color theme:on-background
+               :margin-left "16px"
                :width "100%"
                :table-layout "fixed")
               (".source-content td"
@@ -98,21 +97,23 @@ chosen suggestions inside brackets.")
                :height "20px"
                :overflow "auto")
               (".source-content th"
+               :background-color theme:primary
+               :color theme:on-primary
                :font-weight "normal"
                :padding-left "3px"
-               :text-align "left"
-               :color theme:text
-               :background-color theme:quaternary)
+               :text-align "left")
               (".source-content td::-webkit-scrollbar"
                :display "none")
               ("#selection"
+               :background-color theme:secondary
+               :color theme:on-secondary)
+              (.marked
                :background-color theme:accent
-               :color theme:background)
-              (.marked :background-color theme:tertiary
-                       :font-weight "bold"
-                       :color theme:background)
-              (.selected :background-color theme:primary
-                         :color theme:background))
+               :color theme:on-accent
+               :font-weight "bold")
+              (.selected
+               :background-color theme:primary
+               :color theme:on-primary))
             :documentation "The CSS applied to a prompt-buffer when it is set-up.")
      (override-map (make-keymap "override-map")
                    :type keymap:keymap

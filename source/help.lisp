@@ -64,8 +64,8 @@ CLASS is a class symbol."
              (spinneret:with-html-string
                (:p (:button :class "button"
                             :style (format nil "background-color: ~a; color: ~a"
-                                           (theme:primary-color (symbol-value theme-symbol))
-                                           (theme:background-color (symbol-value theme-symbol)))
+                                           (theme:accent-color (symbol-value theme-symbol))
+                                           (theme:on-accent-color (symbol-value theme-symbol)))
                             :onclick (ps:ps (nyxt/ps:lisp-eval
                                              (:title "set-theme")
                                              (nyxt::auto-configure
@@ -75,13 +75,10 @@ CLASS is a class symbol."
                             text))
                (:p "Colors:")
                (:dl
-                (loop for (name color text-color) in '(("Text" theme:text-color theme:background-color)
-                                                       ("Accent" theme:accent-color theme:background-color)
-                                                       ("Primary" theme:primary-color theme:background-color)
-                                                       ("Secondary" theme:secondary-color theme:background-color)
-                                                       ("Tertiary" theme:tertiary-color theme:text-color)
-                                                       ("Quaternary" theme:quaternary-color theme:text-color)
-                                                       ("Background" theme:background-color theme:text-color))
+                (loop for (name color text-color) in '(("Background" theme:background-color theme:on-background-color)
+                                                       ("Accent" theme:accent-color theme:on-accent-color)
+                                                       ("Primary" theme:primary-color theme:on-primary-color)
+                                                       ("Secondary" theme:secondary-color theme:on-secondary-color))
                       collect (:dt name ": ")
                       collect (:dd (:span :style (format nil "background-color: ~a; color: ~a; border-radius: 0.2em"
                                                          (slot-value (symbol-value theme-symbol) color)
@@ -123,14 +120,16 @@ disabling compositing, you will need to restart Nyxt."))
 (define-command print-bindings-cheatsheet ()
   "Print the buffer with the list of all known bindings for the current buffer
 optimizing the use of space."
-  (nyxt::html-set-style
-   (theme:themed-css (theme *browser*)
-     (h3 :font-size "10px"
-         :font-family theme:font-family
-         :font-weight 500)
-     (tr :font-size "7px")
-     (div :display inline-block))
-   (describe-bindings))
+  (nyxt::html-set-style (theme:themed-css (theme *browser*)
+                          (h3
+                           :font-size "10px"
+                           :font-family theme:font-family
+                           :font-weight 500)
+                          (tr
+                           :font-size "7px")
+                          (div
+                           :display inline-block))
+                        (describe-bindings))
   (nyxt/document-mode:print-buffer))
 
 (defun tls-help (buffer url)
@@ -242,9 +241,9 @@ The version number is stored in the clipboard."
            :title "Chat with developers and other Nyxt users."
            "Chat")))
      (:main
-      (:h1 "Nyxt")
+      (:h1 :class "accent" "Nyxt")
       (:i "The Internet on your terms.")
-      (:p (:button :class "button accent"
+      (:p (:button :class "button"
                    :type "submit"
                    :onclick (ps:ps (nyxt/ps:lisp-eval
                                     (:title "search")
@@ -306,14 +305,14 @@ System information is also saved into the clipboard."
                  (:p (format nil "No bookmarks in ~s." (files:expand (nyxt/bookmark-mode:bookmarks-file mode)))))))))
     (let ((dashboard-style (theme:themed-css (theme *browser*)
                              (body
-                              :color theme:text
                               :background-color theme:background
+                              :color theme:on-background
                               :margin-top 0
                               :margin-bottom 0)
                              ("#title"
                               :font-size "400%")
                              ("#subtitle"
-                              :color theme:tertiary)
+                              :color theme:secondary)
                              (.section
                               :border-style "solid none none none"
                               :border-color theme:secondary
@@ -321,7 +320,7 @@ System information is also saved into the clipboard."
                               :overflow "scroll"
                               :min-height "150px")
                              ("h3"
-                              :color theme:tertiary)
+                              :color theme:secondary)
                              ("ul"
                               :list-style-type "circle"))))
       (spinneret:with-html-string

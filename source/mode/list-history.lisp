@@ -9,10 +9,9 @@
   "Mode for listing history."
   ((visible-in-status-p nil)
    (rememberable-p nil)
-   (style
-    (theme:themed-css (theme *browser*)
-      (a
-       :color theme:text)
-      ("a:hover"
-       :color theme:primary))))
+   (style (theme:themed-css (theme *browser*)
+            (a
+             :color theme:on-background)
+            ("a:hover"
+             :opacity 0.5))))
   (:toggler-command-p nil))

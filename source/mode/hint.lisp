@@ -16,8 +16,8 @@
    (box-style (theme:themed-css (theme *browser*)
                 (".nyxt-hint"
                  :background-color theme:primary
+                 :color theme:on-primary
                  :opacity 0.8
-                 :color theme:background
                  :font-weight "bold"
                  :padding "0px 3px 0px 3px"
                  :border-radius "2px"
@@ -26,7 +26,7 @@
    (highlighted-box-style (theme:themed-css (theme *browser*)
                             (".nyxt-hint.nyxt-highlight-hint"
                              :background-color theme:accent
-                             :color theme:background))
+                             :color theme:on-accent))
                           :documentation "The style of highlighted boxes, e.g. link hints.")
 
    (hints-alphabet "ABCDEFGHIJKLMNOPQRSTUVWXYZ"

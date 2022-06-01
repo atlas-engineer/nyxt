@@ -11,17 +11,17 @@
   ((rememberable-p nil)
    (style (theme:themed-css (theme *browser*)
             (".nyxt-diff-insert"
-             :text-decoration "none"
-             :background-color "#bbeabb")
+             :background-color "#bbeabb"
+             :text-decoration "none")
             ("ins.nyxt-diff-replace"
-             :text-decoration "none"
-             :background-color "#bbeabb")
+             :background-color "#bbeabb"
+             :text-decoration "none")
             (".nyxt-diff-delete"
-             :text-decoration "none"
-             :background-color "#efcbcf")
+             :background-color "#efcbcf"
+             :text-decoration "none")
             ("del.nyxt-diff-replace"
-             :text-decoration "none"
-             :background-color "#efcbcf"))
+             :background-color "#efcbcf"
+             :text-decoration "none"))
           :documentation "Diff colours for its visual representation.
 They're based on the modus-operandi theme by Protesilaos Stavrou, which follows
 the highest standard on accessibility."))

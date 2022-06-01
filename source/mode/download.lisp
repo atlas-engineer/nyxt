@@ -125,33 +125,32 @@ appearance in the buffer when they are setf'd."
 (define-mode download-mode ()
   "Display list of downloads."
   ((rememberable-p nil)
-   (style
-       (theme:themed-css (theme *browser*)
-         (".download"
-          :margin-top "10px"
-          :padding-left "5px"
-          :background-color theme:background
-          :color theme:text
-          :brightness "80%"
-          :border-radius "3px")
-         (".download-url"
-          :overflow "auto"
-          :white-space "nowrap")
-         (".download-url a"
-          :font-size "small"
-          :color theme:text)
-         (".status p"
-          :display "inline-block"
-          :margin-right "10px")
-         (".progress-bar-container"
-          :height "20px"
-          :width "100%")
-         (".progress-bar-base"
-          :height "100%"
-          :background-color theme:secondary)
-         (".progress-bar-fill"
-          :height "100%"
-          :background-color theme:tertiary))))
+   (style (theme:themed-css (theme *browser*)
+            (".download"
+             :background-color theme:background
+             :color theme:on-background
+             :margin-top "10px"
+             :padding-left "5px"
+             :brightness "80%"
+             :border-radius "3px")
+            (".download-url"
+             :overflow "auto"
+             :white-space "nowrap")
+            (".download-url a"
+             :color theme:on-background
+             :font-size "small")
+            (".status p"
+             :display "inline-block"
+             :margin-right "10px")
+            (".progress-bar-container"
+             :height "20px"
+             :width "100%")
+            (".progress-bar-base"
+             :background-color theme:secondary
+             :height "100%")
+            (".progress-bar-fill"
+             :background-color theme:secondary
+             :height "100%"))))
   (:toggler-command-p nil))
 
 
