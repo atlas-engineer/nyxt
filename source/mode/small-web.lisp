@@ -58,7 +58,7 @@ Gemini support is a bit more chaotic, but you can override `line->html' for
             (body
              :background-color theme:background)
             (pre
-             :background-color theme:quaternary
+             :background-color theme:secondary
              :padding "2px"
              :margin "0"
              :border-radius 0)
@@ -66,10 +66,11 @@ Gemini support is a bit more chaotic, but you can override `line->html' for
              :margin "0 3px 3px 0"
              :font-size "15px")
             (.search
-             :background-color theme:accent)
+             :background-color theme:accent
+             :color theme:on-accent)
             (.error
              :background-color theme:accent
-             :color theme:background
+             :color theme:on-accent
              :padding "1em 0"))))
   (:toggler-command-p nil))
 

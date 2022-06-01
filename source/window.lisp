@@ -64,8 +64,8 @@ the generic functions on `status-buffer'.  Finally set the `window'
    (message-buffer-style
     (theme:themed-css (theme *browser*)
       (body
-       :color theme:text
        :background-color theme:background
+       :color theme:on-background
        :font-size "12px"
        :padding 0
        :padding-left "4px"

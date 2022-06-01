@@ -65,34 +65,37 @@
        "d b" 'nyxt/input-edit-mode:delete-backwards-word
        "d w" 'nyxt/input-edit-mode:delete-forwards-word)))
    (style (theme:themed-css (theme *browser*)
-            (* :font-family "monospace,monospace")
-            (body :margin-right "0")
-            ("#container" :display "flex"
-                          :flex-flow "column"
-                          :height "100%"
-                          :color theme:text
-                          :background-color theme:background)
-            (.input :display "grid"
-                    :grid-template-columns "auto 1fr"
-                    :width "100%"
-                    :padding 0
-                    :margin 0
-                    :background-color theme:tertiary)
-            (.input-buffer :width "100%"
-                           :border "none"
-                           :outline "none"
-                           :padding "3px"
-                           :background-color theme:quaternary
-                           :autofocus "true")
+            (*
+             :font-family "monospace,monospace")
+            ("#container"
+             :display "flex"
+             :flex-flow "column"
+             :height "100%")
+            (.input
+             :background-color theme:accent
+             :display "grid"
+             :grid-template-columns "auto 1fr"
+             :width "100%"
+             :padding 0
+             :margin 0)
+            (.prompt
+             :color theme:on-accent
+             :padding-right "4px"
+             :padding-left "4px"
+             :line-height "30px")
+            (.input-buffer
+             :color theme:on-accent
+             :opacity "0.9"
+             :border "none"
+             :outline "none"
+             :padding "3px"
+             :autofocus "true"
+             :width "100%")
             ("#evaluations"
              :font-size "12px"
              :flex-grow "1"
              :overflow-y "auto"
-             :overflow-x "auto")
-            (.prompt :padding-right "4px"
-                     :padding-left "4px"
-                     :line-height "30px"
-                     :color theme:background))
+             :overflow-x "auto"))
           :documentation "The CSS applied to a REPL when it is set-up.")
    (evaluations
     (list)
@@ -309,7 +312,7 @@
                    (:div :class "input"
                          (:span :class "prompt" ">")
                          (:textarea :class "input-buffer"
-                                 :id "input-buffer"
-                                 :data-repl-id ""
-                                 :placeholder (format nil "Press ~a to evaluate the Lisp expression"
-                                                      evaluate-binding)))))))))
+                                    :id "input-buffer"
+                                    :data-repl-id ""
+                                    :placeholder (format nil "Press ~a to evaluate the Lisp expression"
+                                                         evaluate-binding)))))))))

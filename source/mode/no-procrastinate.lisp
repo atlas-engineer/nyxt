@@ -24,7 +24,7 @@ and that should be blocked.")
    (style (theme:themed-css (theme *browser*)
             ("summary"
              :background-color theme:secondary
-             :color            theme:background
+             :color            theme:on-secondary
              :font-size        "14px"
              :padding          "16px"
              :margin           "6px"
