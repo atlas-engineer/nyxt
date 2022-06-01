@@ -9,8 +9,7 @@ This is used so that only one mode at a time may be enabled."))
 (define-mode keymap-scheme-mode ()
   "Mode from which all modes setting the buffer `keymap-scheme-name' should inherit.
 This is used so that only one mode at a time may be enabled."
-  ((visible-in-status-p nil)
-   (rememberable-p nil)
+  ((rememberable-p nil)
    (scheme-name
     scheme:cua
     :documentation "The scheme to enable.")
