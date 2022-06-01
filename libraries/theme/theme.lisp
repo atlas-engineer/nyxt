@@ -3,32 +3,9 @@
 
 (in-package :theme)
 
-(defvar theme nil
-  "A dynamic variable to bind to current `theme' in `themed-css'.")
-
-(defvar background nil
-  "A dynamic variable to bind to `background-color' of the current `theme' in `themed-css'.")
-
-(defvar text nil
-  "A dynamic variable to bind to `text-color' of the current `theme' in `themed-css'.")
-
-(defvar primary nil
-  "A dynamic variable to bind to `primary-color' of the current `theme' in `themed-css'.")
-
-(defvar secondary nil
-  "A dynamic variable to bind to `secondary-color' of the current `theme' in `themed-css'.")
-
-(defvar tertiary nil
-  "A dynamic variable to bind to `tertiary-color' of the current `theme' in `themed-css'.")
-
-(defvar quaternary nil
-  "A dynamic variable to bind to `quaternary-color' of the current `theme' in `themed-css'.")
-
-(defvar accent nil
-  "A dynamic variable to bind to `accent-color' of the current `theme' in `themed-css'.")
-
-(defvar font-family nil
-  "A dynamic variable to bind to `font-family' of the current `theme' in `themed-css'.")
+;; TODO It would be possible to set all of the "on-" colors based on their
+;; counterparts by computing the contrast ratio.
+;; See https://www.w3.org/TR/WCAG20-TECHS/G18.html.
 
 (define-class theme ()
   ((dark-p
@@ -38,36 +15,42 @@
     "white"
     :type string
     :documentation "The background color of the theme.")
-   (text-color
+   (on-background-color
     "black"
     :type string
-    :documentation "The main color of the text in the theme.
-Should contrast with the `background-color'.")
+    :documentation "The color applied to elements appearing in front of
+`background-color'.  Must contrast with `background-color'.")
    (primary-color
     "#555555"
     :type string
-    :documentation "The main non-text/interface color.
-Should preferably contrast both with `background-color' and `text-color'.")
+    :documentation "One of the colors applied to surfaces.  Should preferably be
+neutral.")
+   (on-primary-color
+    "white"
+    :type string
+    :documentation "The color applied to elements appearing in front of
+`primary-color'.  Must contrast with `primary'.")
    (secondary-color
-    "#737373"
+    "#A6A6A6"
     :type string
-    :documentation "The secondary interface color.
-Should contrast with `background-color'.")
-   (tertiary-color
-    "#8C8C8C"
+    :documentation "One of the colors applied to surfaces.  Should preferably be
+neutral.  Must be chosen such that `on-secondary-color' and `on-primary-color'
+are not the same.")
+   (on-secondary-color
+    "black"
     :type string
-    :documentation "The tertiary interface color.
-Should contrast with `text-color'.")
-   (quaternary-color
-    "#E6E6E6"
-    :type string
-    :documentation "The quaternary color.
-Should strongly contrast with `text-color'.")
+    :documentation "The color applied to elements appearing in front of
+`secondary-color'.  Must contrast with `secondary'.")
    (accent-color
-    "#37a8e4"
+    "#37A8E4"
     :type string
-    :documentation "The color of the highlighted elements that need attention.
-Should contrast with every other color in the theme.")
+    :documentation "The color applied to distinguished elements.  Should stand
+out from all of the other theme colors.")
+   (on-accent-color
+    "black"
+    :type string
+    :documentation "The color applied to elements appearing in front of `accent'.
+Must contrast with `accent'.")
    (font-family
     "Helvetica Neue, Helvetica"
     :type string
@@ -81,16 +64,51 @@ Should contrast with every other color in the theme.")
   (make-instance 'theme))
 
 (defvar +dark-theme+
-  (make-instance
-           'theme
-           :dark-p t
-           :background-color "black"
-           :text-color "white"
-           :accent-color "#FCBA04"
-           :primary-color "#AD693E"
-           :secondary-color "#DB9665"
-           :tertiary-color "#A45C30"
-           :quaternary-color "#7D3509"))
+  (make-instance 'theme
+                 :dark-p t
+                 :background-color "black"
+                 :on-background-color "white"
+                 :primary-color "#753C17"
+                 :on-primary-color "white"
+                 :secondary-color "#D88A52"
+                 :on-secondary-color "black"
+                 :accent-color "#C69203"
+                 :on-accent-color "black"))
+
+(defvar theme nil
+  "Dynamic variable that binds `theme' in `themed-css'.")
+(defvar background nil
+  "Dynamic variable that binds `background-color' of `theme' in `themed-css'.")
+(defvar on-background nil
+  "Dynamic variable that binds `on-background-color' of `theme' in `themed-css'.")
+(defvar primary nil
+  "Dynamic variable that binds `primary-color' of `theme' in `themed-css'.")
+(defvar on-primary nil
+  "Dynamic variable that binds `on-primary-color' of `theme' in `themed-css'.")
+(defvar secondary nil
+  "Dynamic variable that binds `secondary-color' of `theme' in `themed-css'.")
+(defvar on-secondary nil
+  "Dynamic variable that binds `on-secondary-color' of `theme' in `themed-css'.")
+(defvar accent nil
+  "Dynamic variable that binds `accent-color' of `theme' in `themed-css'.")
+(defvar on-accent nil
+  "Dynamic variable that binds `on-accent-color' of `theme' in `themed-css'.")
+(defvar font-family nil
+  "Dynamic variable that binds `font-family' of `theme' in `themed-css'.")
+
+(defmacro with-theme (theme &body body)
+  "Evaluate body with the theme bindings available."
+  `(let* ((theme:theme ,theme)
+          (theme:background (background-color theme:theme))
+          (theme:on-background (on-background-color theme:theme))
+          (theme:primary (primary-color theme:theme))
+          (theme:on-primary (on-primary-color theme:theme))
+          (theme:secondary (secondary-color theme:theme))
+          (theme:on-secondary (on-secondary-color theme:theme))
+          (theme:accent (accent-color theme:theme))
+          (theme:on-accent (on-accent-color theme:theme))
+          (theme:font-family (font-family theme:theme)))
+     ,@body))
 
 (defun plist-p (object)
   "Return non-nil if OBJECT is a plist."
@@ -114,29 +132,6 @@ Should contrast with every other color in the theme.")
                           rule))
       (cons 'list (mapcar (lambda (x) `(quote ,x)) rule))))
 
-(defmacro with-theme (theme &body body)
-  "Evaluate body with the theme bindings available.
-
-The bindings are:
-- `theme:theme' -- THEME itself.
-- `theme:background' -- background color of the THEME.
-- `theme:text' -- text color of the THEME.
-- `theme:primary' -- primary color of the THEME.
-- `theme:secondary' -- secondary color of the THEME.
-- `theme:tertiary' -- tertiary color of the THEME.
-- `theme:accent' -- accent color of the THEME.
-- `theme:font' -- font family of the theme."
-  `(let* ((theme:theme ,theme)
-          (theme:background (background-color theme:theme))
-          (theme:text (text-color theme:theme))
-          (theme:primary (primary-color theme:theme))
-          (theme:secondary (secondary-color theme:theme))
-          (theme:tertiary (tertiary-color theme:theme))
-          (theme:quaternary (quaternary-color theme:theme))
-          (theme:accent (accent-color theme:theme))
-          (theme:font-family (font-family theme:theme)))
-     ,@body))
-
 (defmacro themed-css (theme &body rules)
   "Generate a CSS styled according to the THEME.
 
@@ -150,19 +145,19 @@ property values.
 
 Example: color all the paragraph text in accent color if the theme is dark, and
 in secondary color otherwise. Use the text color as background color. Make
-headings have border of tertiary color.
+headings have border of secondary color.
 
 \(themed-css (make-instance 'theme
                             :dark-p t
-                            :text-color \"red\"
+                            :on-background-color \"red\"
                             :accent-color \"blue\")
            (|h1,h2,h3,h4,h5,h6|
             :border-style \"solid\"
             :border-width \"1px\"
-            :border-color theme:tertiary)
+            :border-color theme:secondary)
            (p
             :color (if (theme:dark-p theme:theme) theme:accent theme:secondary)
-            :background-color theme:text))"
+            :background-color theme:background))"
   `(with-theme ,theme
     (cl-css:css
      (list ,@(mapcar #'requote-rule rules)))))
