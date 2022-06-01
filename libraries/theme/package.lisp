@@ -14,12 +14,13 @@
    #:+light-theme+
    #:+dark-theme+
    #:background
-   #:text
+   #:on-background
    #:primary
+   #:on-primary
    #:secondary
-   #:tertiary
-   #:quaternary
+   #:on-secondary
    #:accent
+   #:on-accent
    #:font-family
    #:with-theme
    #:themed-css))
