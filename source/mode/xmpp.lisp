@@ -137,6 +137,9 @@
       (xmpp:auth (connection mode) username password "" :mechanism auth-type))))
 
 (defgeneric event->html (event mode)
+  (:method (event (mode xmpp-mode))
+    (echo-warning "event->html not implemented for ~a ~a"
+                  (class-of event) event))
   (:method ((event xmpp:presence) (mode xmpp-mode))
     (spinneret:with-html-string
       (:span :class (if (string= (xmpp:from event) (xmpp:username (connection mode)))
