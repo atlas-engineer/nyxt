@@ -109,11 +109,24 @@
           (messages mode))
     (reload-buffers (list (buffer mode)))))
 
+(define-class jabber-servers-source (prompter:source)
+  ((prompter:name "Jabber servers (from Jabberes.org)")
+   (prompter:constructor
+    (delete
+     nil
+     (mapcar (lambda (raw-server)
+               (let ((server (rest (car raw-server))))
+                 (when (equal (getf server :|offline|) "no")
+                   (getf server :|jid|))))
+             (rest (s-xml:parse-xml-string
+                    (dex:get "https://www.jabberes.org/servers/servers.xml"))))))))
+
 (define-command xmpp-connect (&optional (mode (find-submode 'xmpp-mode)))
   "Connect to the chosen XMPP server."
   (let* ((hostname (prompt1
-                     :prompt "XMPP server hostname"
-                     :sources (list (make-instance 'prompter:raw-source))))
+                    :prompt "XMPP server hostname"
+                    :sources (list (make-instance 'prompter:raw-source)
+                                   (make-instance 'jabber-servers-source))))
          (jid (if-confirm ("Does the server have matching hostname and JID part?")
                           hostname
                           (prompt1
