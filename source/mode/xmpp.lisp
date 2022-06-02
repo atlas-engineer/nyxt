@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/xmpp-mode
-  (:documentation "Visual mode."))
+    (:documentation "XMPP support mode with a configurable chat-like communication."))
 (in-package :nyxt/xmpp-mode)
 
 (define-mode xmpp-mode ()
