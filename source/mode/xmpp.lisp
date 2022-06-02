@@ -136,15 +136,20 @@
                                         :constructor (list :plain :sasl-plain :digest-md5 :sasl-digest-md5))))))
       (xmpp:auth (connection mode) username password "" :mechanism auth-type))))
 
-(defmethod xmpp:handle ((connection xmpp:connection) (message xmpp:message))
-  (let ((mode (find-submode 'xmpp-mode)))
-    (push message (messages mode))
-    (reload-buffers (list (buffer mode))))
-  message)
-
-(defmethod xmpp:handle ((connection xmpp:connection) object)
-  (echo "Got ~a of type ~a." object (type-of object))
-  object)
+(defgeneric event->html (event mode)
+  (:method ((event xmpp:presence) (mode xmpp-mode))
+    (spinneret:with-html-string
+      (:span :class (if (string= (xmpp:from event) (xmpp:username (connection mode)))
+                        "presence outbound"
+                        "presence incoming")
+             (:i (xmpp:from event) " present"))))
+  (:method ((event xmpp:message) (mode xmpp-mode))
+    (spinneret:with-html-string
+      (:div :class (if (string= (xmpp:from event) (xmpp:username (connection mode)))
+                       "message outbound"
+                       "message incoming")
+            (xmpp:body event))))
+  (:documentation "Translate the EVENT into the HTML string properly rendering it."))
 
 (define-internal-scheme "xmpp"
     (lambda (url buffer)
@@ -162,17 +167,7 @@
             (:div
              :class "chat"
              (dolist (message (messages mode))
-               (typecase message
-                 (xmpp:presence
-                  (:span :class (if (string= (xmpp:from message) (xmpp:username (connection mode)))
-                                    "presence outbound"
-                                    "presence incoming")
-                         (:i "present")))
-                 (xmpp:message
-                  (:div :class (if (string= (xmpp:from message) (xmpp:username (connection mode)))
-                                   "message outbound"
-                                   "message incoming")
-                        (xmpp:body message))))))
+               (:raw (event->html message mode))))
             (:textarea
              :id "new"
              :placeholder (format nil "Put your message to ~a here" (recipient mode)))))
