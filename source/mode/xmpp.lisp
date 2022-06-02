@@ -117,23 +117,23 @@
          (jid (if-confirm ("Does the server have matching hostname and JID part?")
                           hostname
                           (prompt1
-                            :prompt "XMPP server JID pard"
-                            :sources (list (make-instance 'prompter:raw-source)))))
+                           :prompt "XMPP server JID pard"
+                           :sources (list (make-instance 'prompter:raw-source)))))
          (connection (xmpp:connect-tls :hostname hostname :jid-domain-part jid)))
     (setf (connection mode) connection)
     (let* ((username (prompt1
-                       :prompt (format nil "Your username at ~a" hostname)
-                       :sources (list (make-instance 'prompter:raw-source))))
+                      :prompt (format nil "Your username at ~a" hostname)
+                      :sources (list (make-instance 'prompter:raw-source))))
            (password (prompt1
-                       :prompt "Password"
-                       :invisible-input-p t
-                       :sources (list (make-instance 'prompter:raw-source))))
+                      :prompt "Password"
+                      :invisible-input-p t
+                      :sources (list (make-instance 'prompter:raw-source))))
            (auth-type (prompt1
-                        :prompt "Authorization type"
-                        :sources (list (make-instance
-                                        'prompter:source
-                                        :name "Auth types"
-                                        :constructor (list :plain :sasl-plain :digest-md5 :sasl-digest-md5))))))
+                       :prompt "Authorization type"
+                       :sources (list (make-instance
+                                       'prompter:source
+                                       :name "Auth types"
+                                       :constructor (list :plain :sasl-plain :digest-md5 :sasl-digest-md5))))))
       (xmpp:auth (connection mode) username password "" :mechanism auth-type))))
 
 (defgeneric event->html (event mode)
