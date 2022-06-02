@@ -51,11 +51,14 @@
    (connection
     nil
     :type (maybe xmpp:connection)
-    ;; FIXME: Do we allow multiple accounts?
-    ;; Should it be configured per buffer instead?
-    ;; XMPP authentication is a pain, though...
-    :allocation :class
+    :reader nil
+    :writer t
     :documentation "The currently established XMPP connection.")
+   (receive-thread
+    nil
+    :type (maybe bt:thread)
+    :export nil
+    :documentation "Thread to receive XMPP messages on.")
    (recipient
     :type string
     :documentation "The JID of the person the current chat happens with.")
@@ -64,6 +67,25 @@
     :type list
     :documentation "The history of all the incoming and outbound messages associated with the current `connection'."))
   (:toggler-command-p nil))
+
+(defmethod enable ((mode xmpp-mode) &key &allow-other-keys)
+  (setf (receive-thread mode)
+        (run-thread "XMPP receiver thread"
+          (xmpp:receive-stanza-loop
+           (connection mode)
+           :stanza-callback (lambda (stanza connection &key dom-repr)
+                              (declare (ignore dom-repr))
+                              (let ((events (cl-xmpp::dom-to-event connection (cl-xmpp::parse-result connection stanza))))
+                                (dolist (event (alex:ensure-list events))
+                                  (push event (messages mode)))
+                                (reload-buffers (list (buffer mode)))
+                                events))))))
+
+(defmethod connection ((mode xmpp-mode))
+  (or (slot-value mode 'connection)
+      (progn
+        (xmpp-connect mode)
+        (connection mode))))
 
 (define-command send-message ()
   "Send the inputted message to the person the chat happens with."
