@@ -434,6 +434,9 @@ If none is found, fall back to `scheme:cua'."
     nil
     :documentation "Whether the request takes place in a
 new window.")
+   (http-method
+    nil
+    :documentation "The HTTP method (GET, POST and friends) of the request.")
    (toplevel-p
     nil
     :documentation "Whether the request happens in a toplevel frame.")

@@ -898,7 +898,8 @@ See `finalize-buffer'."
         (navigation-action nil) (navigation-type nil)
         (mouse-button nil) (modifiers ())
         (url nil) (request nil)
-        mime-type)
+        (mime-type nil)
+        (method nil))
     (match policy-decision-type-response
       (:webkit-policy-decision-type-navigation-action
        (setf navigation-type (webkit:webkit-navigation-policy-decision-navigation-type response-policy-decision)))
@@ -910,7 +911,8 @@ See `finalize-buffer'."
        (setf is-known-type
              (webkit:webkit-response-policy-decision-is-mime-type-supported
               response-policy-decision))
-       (setf mime-type (webkit:webkit-uri-response-mime-type (webkit:webkit-response-policy-decision-response response-policy-decision)))))
+       (setf mime-type (webkit:webkit-uri-response-mime-type (webkit:webkit-response-policy-decision-response response-policy-decision)))
+       (setf method (webkit:webkit-uri-request-get-http-method request))))
     ;; Set Event-Type
     (setf event-type
           (match navigation-type
@@ -944,6 +946,7 @@ See `finalize-buffer'."
                                                            :modifiers modifiers)))
                                             :event-type event-type
                                             :new-window-p is-new-window
+                                            :http-method method
                                             :toplevel-p (quri:uri=
                                                          url (quri:uri (webkit:webkit-web-view-uri
                                                                         (gtk-object buffer))))
