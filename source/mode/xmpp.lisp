@@ -48,6 +48,20 @@
              :background-color theme:quaternary
              :color theme:text
              :align-self "flex-end")))
+   (host
+    nil
+    :documentation "The hostname of the XMPP server.")
+   (jid-part
+    nil
+    :documentation "The JID part of the username corresponding to the `host'.")
+   (username
+    nil
+    :documentation "The username part of the JID.")
+   (password nil)
+   (auth-type
+    nil
+    :documentation "Auth type.
+One of :PLAIN, :SASL-PLAIN, :DIGEST-MD5, :SASL-DIGEST-MD5.")
    (connection
     nil
     :type (maybe xmpp:connection)
@@ -121,33 +135,61 @@
              (rest (s-xml:parse-xml-string
                     (dex:get "https://www.jabberes.org/servers/servers.xml"))))))))
 
-(define-command xmpp-connect (&optional (mode (find-submode 'xmpp-mode)))
+(define-command xmpp-connect (&optional (mode (find-submode 'xmpp-mode))
+                              (hostname (prompt1
+                                         :prompt "XMPP server hostname"
+                                         :sources (list (make-instance 'prompter:raw-source)
+                                                        (make-instance 'jabber-servers-source))))
+                              (jid-part (if-confirm ("Does the server have matching hostname and JID part?")
+                                                    hostname
+                                                    (prompt1
+                                                     :prompt "XMPP server JID pard"
+                                                     :sources (list (make-instance 'prompter:raw-source)))))
+                              ;; FIXME: This should better have a default value
+                              ;; of prompt, but we need to connect to the server
+                              ;; first.
+                              username password auth-type)
   "Connect to the chosen XMPP server."
-  (let* ((hostname (prompt1
-                    :prompt "XMPP server hostname"
-                    :sources (list (make-instance 'prompter:raw-source)
-                                   (make-instance 'jabber-servers-source))))
-         (jid (if-confirm ("Does the server have matching hostname and JID part?")
-                          hostname
-                          (prompt1
-                           :prompt "XMPP server JID pard"
-                           :sources (list (make-instance 'prompter:raw-source)))))
-         (connection (xmpp:connect-tls :hostname hostname :jid-domain-part jid)))
+  (let* ((connection (xmpp:connect-tls :hostname hostname :jid-domain-part jid-part)))
     (setf (connection mode) connection)
-    (let* ((username (prompt1
-                      :prompt (format nil "Your username at ~a" hostname)
-                      :sources (list (make-instance 'prompter:raw-source))))
-           (password (prompt1
-                      :prompt "Password"
-                      :invisible-input-p t
-                      :sources (list (make-instance 'prompter:raw-source))))
-           (auth-type (prompt1
-                       :prompt "Authorization type"
-                       :sources (list (make-instance
-                                       'prompter:source
-                                       :name "Auth types"
-                                       :constructor (list :plain :sasl-plain :digest-md5 :sasl-digest-md5))))))
-      (xmpp:auth (connection mode) username password "" :mechanism auth-type))))
+    (let* ((username (or username
+                         (prompt1
+                          :prompt (format nil "Your username at ~a" hostname)
+                          :sources (list (make-instance 'prompter:raw-source)))))
+           (password (or password
+                         (prompt1
+                          :prompt "Password"
+                          :invisible-input-p t
+                          :sources (list (make-instance 'prompter:raw-source)))))
+           (auth-type (or auth-type
+                          (prompt1
+                           :prompt "Authorization type"
+                           :sources (list (make-instance
+                                           'prompter:source
+                                           :name "Auth types"
+                                           :constructor (list :plain :sasl-plain :digest-md5 :sasl-digest-md5)))))))
+      (prog1
+          (xmpp:auth (connection mode) username password "" :mechanism auth-type)
+        (setf (host mode) hostname
+              (jid-part mode) jid-part
+              (username mode) username
+              (password mode) password
+              (auth-type mode) auth-type)))))
+
+(define-command xmpp-disconnect (&optional (mode (find-submode 'xmpp-mode)))
+  "Disconnect the MODE from the current server.
+
+Leaves any other MODE state (`host', `username' etc.) intact to allow
+`xmpp-reconnect'."
+  (xmpp:disconnect (connection mode))
+  (setf (connection mode) nil))
+
+(define-command xmpp-reconnect (&optional (mode (find-submode 'xmpp-mode)))
+  "Reconnect the MODE to the current server."
+  (xmpp-disconnect mode)
+  (xmpp-connect
+   mode (host mode) (jid-part mode)
+   (username mode) (password mode) (auth-type mode)))
 
 (defgeneric event->html (event mode)
   (:method (event (mode xmpp-mode))
