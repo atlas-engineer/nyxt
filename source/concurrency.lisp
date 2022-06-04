@@ -78,4 +78,4 @@ what you are doing!"
     (lambda ()
       (with-protect ("Error on separate thread: ~a" :condition)
         ,@body))
-    :name ,(str:concat "Nyxt " name)))
+    :name (str:concat "Nyxt " ,name)))
