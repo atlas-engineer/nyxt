@@ -8,8 +8,8 @@
    (prompter:name "Functions")
    (prompter:constructor (lambda (source)
                            (apply #'package-functions
-                            (when (universal source)
-                              (list-all-packages))))))
+                                  (when (universal source)
+                                    (list (list-all-packages)))))))
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
@@ -50,8 +50,8 @@
    (prompter:name "Classes")
    (prompter:constructor (lambda (source)
                            (apply #'package-classes
-                            (when (universal source)
-                              (list-all-packages))))))
+                                  (when (universal source)
+                                    (list (list-all-packages)))))))
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
@@ -60,8 +60,8 @@
    (prompter:name "Slots")
    (prompter:constructor (lambda (source)
                            (apply #'package-slots
-                            (when (universal source)
-                              (list-all-packages))))))
+                                  (when (universal source)
+                                    (list (list-all-packages)))))))
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
@@ -70,8 +70,8 @@
    (prompter:name "Variables")
    (prompter:constructor (lambda (source)
                            (apply #'package-variables
-                            (when (universal source)
-                              (list-all-packages))))))
+                                  (when (universal source)
+                                    (list (list-all-packages)))))))
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
