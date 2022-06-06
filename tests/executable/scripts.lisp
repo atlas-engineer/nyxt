@@ -9,6 +9,12 @@
 (defvar *executable* (asdf:system-relative-pathname :nyxt "nyxt"))
 
 (subtest "Scripts"
+  (prove:is (uiop:run-program (list *executable*
+                                    "--script" (uiop:native-namestring
+                                                (asdf:system-relative-pathname :nyxt "tests/script-failure.lisp")))
+                              :error-output t
+                              :output t)
+            nil)
   (dolist (script (uiop:directory-files (asdf:system-relative-pathname :nyxt "examples/scripts")))
     (prove:is (uiop:run-program (list *executable* "--script" (uiop:native-namestring script))
                                 :error-output t
