@@ -292,7 +292,7 @@ the description of the mechanism that sends the results back."
       (ffi-buffer-add-user-script
        buffer-to-insert
        (make-instance
-        'nyxt/web-mode:user-script
+        'nyxt/user-script-mode:user-script
         :code (if file
                   (uiop:read-file-string
                    (nyxt/web-extensions:merge-extension-path extension file))

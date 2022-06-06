@@ -1637,31 +1637,32 @@ local anyways, and it's better to refresh it if a load was queried."
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defclass nyxt/web-mode:renderer-user-script (gtk-user-script)
-  ()
-  (:metaclass mixin-class))
+
+(without-package-locks ; TODO: Is there a cleaner way to update the mode class?  Maybe move it to the core?
+  `(defclass nyxt/user-script-mode:renderer-user-script (gtk-user-script)
+     ()
+     (:metaclass mixin-class)))
 
 (define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) (script gtk-user-script))
   (alex:if-let ((code (nfiles:content script)))
     (let* ((content-manager
              (webkit:webkit-web-view-get-user-content-manager
               (gtk-object buffer)))
-           (frames (if (nyxt/web-mode:all-frames-p script)
+           (frames (if (nyxt/user-script-mode:all-frames-p script)
                        :webkit-user-content-inject-all-frames
                        :webkit-user-content-inject-top-frame))
-           (inject-time (if (eq :document-start (nyxt/web-mode:run-at script))
+           (inject-time (if (eq :document-start (nyxt/user-script-mode:run-at script))
                             :webkit-user-script-inject-at-document-start
                             :webkit-user-script-inject-at-document-end))
            (allow-list (list-of-string-to-foreign
-                        (or (nyxt/web-mode:include script)
+                        (or (nyxt/user-script-mode:include script)
                             '("http://*/*" "https://*/*"))))
            (block-list (list-of-string-to-foreign
-                        (when (nyxt/web-mode:exclude script)
-                          (nyxt/web-mode:exclude script))))
-           (user-script (if (nyxt/web-mode:world-name script)
+                        (nyxt/user-script-mode:exclude script)))
+           (user-script (if (nyxt/user-script-mode:world-name script)
                             (webkit:webkit-user-script-new-for-world
                              code frames inject-time
-                             (nyxt/web-mode:world-name script) allow-list block-list)
+                             (nyxt/user-script-mode:world-name script) allow-list block-list)
                             (webkit:webkit-user-script-new
                              code frames inject-time allow-list block-list))))
       (setf (gtk-object script) user-script)

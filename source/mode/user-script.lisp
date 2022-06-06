@@ -25,17 +25,17 @@
     :type list
     :documentation "List of `user-style'-s to attach via renderer-specific mechanisms.")))
 
-(defmethod enable ((mode web-mode) &key)
+(defmethod enable ((mode user-script-mode) &key)
   (inject-user-scripts (user-scripts mode) (buffer mode))
   (inject-user-styles (user-scripts mode) (buffer mode)))
 
 (export-always 'user-scripts)
-(defmethod (setf user-scripts) (new-value (mode web-mode))
+(defmethod (setf user-scripts) (new-value (mode user-script-mode))
   (inject-user-scripts new-value (buffer mode))
   (setf (slot-value mode 'user-scripts) new-value))
 
 (export-always 'user-styles)
-(defmethod (setf user-styles) (new-value (mode web-mode))
+(defmethod (setf user-styles) (new-value (mode user-script-mode))
   (inject-user-styles new-value (buffer mode))
   (setf (slot-value mode 'user-styles) new-value))
 

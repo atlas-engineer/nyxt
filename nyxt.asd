@@ -171,7 +171,8 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "vi") ; TODO: Move to non-core modes when `status' no longer depends on it.
                  (:file "proxy")
                  (:file "download" :depends-on ("file-manager"))
-                 (:file "process")))
+                 (:file "process")
+                 (:file "user-script")))
                (:file "mode/base" :depends-on ("Core modes"))
                #+quicklisp
                (:file "lisp-system" :depends-on ("Core modes"))
@@ -226,7 +227,6 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  (:file "small-web")
                  (:file "style" :depends-on ("bookmarklets"))
                  (:file "tts")
-                 (:file "user-script")
                  (:file "visual")
                  (:file "watch"))))
   :in-order-to ((test-op (test-op "nyxt/tests")
