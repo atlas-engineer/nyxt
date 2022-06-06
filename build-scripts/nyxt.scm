@@ -158,7 +158,7 @@
           cl-named-readtables
           cl-nfiles
           cl-nhooks
-          ;; cl-osicat ; Not needed for SBCL.
+          cl-osicat ; Not needed for SBCL, remove it in Guix upstream package.
           cl-parenscript
           cl-phos
           cl-plump
