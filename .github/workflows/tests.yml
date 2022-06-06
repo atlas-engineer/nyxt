@@ -75,7 +75,7 @@ jobs:
       shell: bash
       run: |
         rm -f nyxt
-        make all LISP=ros
+        make all LISP=ros LISP_FLAGS="run -- --no-userinit --non-interactive"
 
     - name: Run tests
       shell: bash
