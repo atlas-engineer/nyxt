@@ -74,6 +74,7 @@ jobs:
     - name: Build Nyxt executable
       shell: bash
       run: |
+        rm -f nyxt
         make all LISP=ros
 
     - name: Run tests
