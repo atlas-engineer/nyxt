@@ -436,7 +436,9 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                  prove)
   :components ((:file "tests/package"))
   :perform (test-op (op c)
-                    (nyxt-run-test c "tests/executable/")))
+                    (if (file-exists-p (system-relative-pathname :nyxt "nyxt"))
+                        (nyxt-run-test c "tests/executable/")
+                        (warn "`nyxt' executable missing, skipping tests."))))
 
 #+sb-core-compression
 (handler-bind ((warning #'muffle-warning))
