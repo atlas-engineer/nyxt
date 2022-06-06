@@ -294,7 +294,10 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                (suggestion-and-mark-count prompt-buffer
                                                           (prompter:suggestions source)
                                                           (prompter:marks source)
-                                                          :multi-selection-p (prompter:multi-selection-p source))))
+                                                          :multi-selection-p (prompter:multi-selection-p source)))
+                           (if (prompter:ready-p source)
+                               ""
+                               "(In progress...)"))
                      (when (prompter:suggestions source)
                        (:table :class "source-content"
                                (:tr :style (if (or (eq (prompter:hide-attribute-header-p source) :always)
