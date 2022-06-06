@@ -132,6 +132,7 @@ Return-actions can be listed and run with `return-selection-over-action' (bound 
        "C-b" 'select-previous-page))))
   (:toggler-command-p nil))
 
+(export-always 'define-command-prompt)
 (defmacro define-command-prompt (name (prompt-buffer &rest arglist) &body body)
   "Like `define-command', but the first argument is special:
 - it is considered a keyword argument if `&keyword' is in arglist, `&optional' otherwise,
@@ -488,7 +489,8 @@ Only available if `prompter:multi-selection-p' is non-nil."
 ;; How do we actually identify prompt-buffers?
 (define-internal-page-command describe-prompt-buffer ()
     (buffer (str:concat "*Help-" (prompter:prompt (current-prompt-buffer)) "-prompter*")
-            'nyxt/help-mode:help-mode)
+            ;; TODO: Can we somehow fix the load order in the .asd?
+            (resolve-symbol :help-mode :mode))
   "Describe a prompt buffer instance."
   (let* ((prompt-buffer (current-prompt-buffer))
          (modes (modes prompt-buffer))

@@ -13,11 +13,11 @@
     (define-scheme "help-mode"
       scheme:cua
       (list
-       "q" 'nyxt::delete-current-buffer
-       "n" 'nyxt/document-mode::next-heading
-       "p" 'nyxt/document-mode::previous-heading
-       "m" 'nyxt/document-mode::jump-to-heading
-       "s" 'nyxt/search-buffer-mode::search-buffer
-       "t" 'nyxt/document-mode::headings-panel
-       "?" 'nyxt::describe-bindings))))
+       "q" 'delete-current-buffer
+       "n" 'nyxt/document-mode:next-heading
+       "p" 'nyxt/document-mode:previous-heading
+       "m" 'nyxt/document-mode:jump-to-heading
+       "s" 'nyxt/search-buffer-mode:search-buffer
+       "t" 'nyxt/document-mode:headings-panel
+       "?" 'describe-bindings))))
   (:toggler-command-p nil))
