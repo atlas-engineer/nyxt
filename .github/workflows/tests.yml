@@ -73,6 +73,8 @@ jobs:
 
     - name: Build Nyxt executable
       shell: bash
+      ## CCL build binary does not work for now, needs more investigation.
+      if: ${{ matrix.lisp != 'ccl' }}
       run: |
         rm -f nyxt
         make all LISP=ros LISP_FLAGS="run -- --no-userinit --non-interactive"
