@@ -40,6 +40,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "f1 s" 'describe-slot
        "f1 k" 'describe-key
        "f1 b" 'describe-bindings
+       "f1 p" 'describe-package
        "f11" 'toggle-fullscreen
        "C-O" 'load-file
        "C-j" 'nyxt/download-mode:list-downloads
@@ -79,6 +80,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-h u s" 'universal-describe-slot
        "C-h k" 'describe-key
        "C-h b" 'describe-bindings
+       "C-h p" 'describe-package
        "C-d" 'nyxt/download-mode:list-downloads
        "M-x" 'execute-command
        "C-M-x" 'execute-extended-command
