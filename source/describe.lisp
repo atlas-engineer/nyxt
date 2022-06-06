@@ -7,7 +7,7 @@
   ((universal nil)
    (prompter:name "Functions")
    (prompter:constructor (lambda (source)
-                           (package-functions
+                           (apply #'package-functions
                             (when (universal source)
                               (list-all-packages))))))
   (:export-accessor-names-p t)
@@ -49,7 +49,7 @@
   ((universal nil)
    (prompter:name "Classes")
    (prompter:constructor (lambda (source)
-                           (package-classes
+                           (apply #'package-classes
                             (when (universal source)
                               (list-all-packages))))))
   (:export-accessor-names-p t)
@@ -59,7 +59,7 @@
   ((universal nil)
    (prompter:name "Slots")
    (prompter:constructor (lambda (source)
-                           (package-slots
+                           (apply #'package-slots
                             (when (universal source)
                               (list-all-packages))))))
   (:export-accessor-names-p t)
@@ -69,7 +69,7 @@
   ((universal nil)
    (prompter:name "Variables")
    (prompter:constructor (lambda (source)
-                           (package-variables
+                           (apply #'package-variables
                             (when (universal source)
                               (list-all-packages))))))
   (:export-accessor-names-p t)
