@@ -42,12 +42,10 @@ to use your local install of Quicklisp.  For example:
 But in this case, you don't have to use `make' at all.  Instead, you could build
 Nyxt with an invocation along these lines:
 
-    sbcl --eval '(asdf:load-asd "'$(pwd)'/nyxt.asd")' --eval '(ql:quickload :nyxt/gi-gtk-application)' --quit
+    sbcl --non-interactive --no-userinit --eval '(require "asdf")' --eval '(asdf:make :nyxt/gi-gtk-application)' --quit
 
-or, even shorter if Nyxt is checked out in a directory traversed by ASDF (like
-~/common-lisp):
-
-    sbcl --eval '(ql:quickload :nyxt/gi-gtk-application)' --quit
+(Assuming Nyxt is checked out in a directory traversed by ASDF, like
+~/common-lisp.)
 
 WARNING: Make sure your Quicklisp distribution is up-to-date when using
 NYXT_SUBMODULES=false.  Also check the .gitmodules file for Common Lisp
