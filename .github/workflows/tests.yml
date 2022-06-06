@@ -66,10 +66,15 @@ jobs:
         mkdir -p ~/.config/common-lisp/source-registry.conf.d/
         echo "(:tree \"$PWD/_build/submodules\")" > ~/.config/common-lisp/source-registry.conf.d/asdf.conf
 
+    - name: Load Nyxt
+      shell: bash
+      run: |
+        ros -e '(asdf:load-system :nyxt/submodules)' -e '(handler-case (asdf:load-system :nyxt/${{matrix.renderer}}-application) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17)))'
+
     - name: Build Nyxt executable
       shell: bash
       run: |
-        ros -e '(asdf:load-system :nyxt/submodules)' -e '(handler-case (asdf:make :nyxt/${{matrix.renderer}}-application) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17)))'
+        make all
 
     - name: Run tests
       shell: bash
