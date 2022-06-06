@@ -342,6 +342,14 @@ poll `suggestion's for changes.")
                        :documentation "Time in seconds after which to notify
 `update-notifier' if `suggestions' was modified.")
 
+   (ready-p
+    nil
+    :type boolean
+    :export t
+    :initarg nil
+    :documentation "Whether the source is done computing its suggestions.
+See also `next-ready-p' and `all-ready-p' to wait until ready.")
+
    (ready-channel nil
                   :type (or null calispel:channel)
                   :export nil
@@ -753,6 +761,7 @@ feedback to the user while the list of suggestions is being computed."
                                            input))))))
             (unwind-protect
                  (progn
+                   (setf (ready-p source) nil)
                    (wait-for-initial-suggestions)
                    (setf (last-input-downcase-p source) (current-input-downcase-p source))
                    (setf (current-input-downcase-p source) (str:downcasep input))
@@ -762,5 +771,6 @@ feedback to the user while the list of suggestions is being computed."
                      ;; preprocessor cannot modify them.
                      (mapcar #'copy-object (initial-suggestions source))))
                    (postprocess!))
+              (setf (ready-p source) t)
               ;; Signal this source is done:
               (calispel:! new-ready-channel source))))))
