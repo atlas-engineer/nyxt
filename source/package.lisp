@@ -80,7 +80,7 @@ modes, commands, etc."))
              ,@options)))
        (nyxt::use-nyxt-package-nicknames ',name)
        #+sb-package-locks
-       (sb-ext:lock-package ,name))))
+       (sb-ext:lock-package ',name))))
 
 (deftype class-symbol ()
   `(and symbol (satisfies find-class)))
