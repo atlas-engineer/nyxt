@@ -283,13 +283,13 @@
                                            :onclick (ps:ps (nyxt/ps:lisp-eval `(move-cell-down :id ,order)))
                                            :title "Move this cell down."
                                            "↓"))
-                                   (:input :class "input-buffer" :data-repl-id order :type "text"
-                                           :onfocus
-                                           (ps:ps (nyxt/ps:lisp-eval
-                                                   `(setf (slot-value (nyxt:current-mode :repl)
-                                                                      'current-evaluation)
-                                                          ,order)))
-                                           :value (input evaluation)))
+                                   (:textarea :class "input-buffer" :data-repl-id order
+                                              :onfocus
+                                              (ps:ps (nyxt/ps:lisp-eval
+                                                      `(setf (slot-value (nyxt:current-mode :repl)
+                                                                         'current-evaluation)
+                                                             ,order)))
+                                              (input evaluation)))
                      collect (loop
                                for result in (results evaluation)
                                for sub-order from 0
@@ -303,9 +303,8 @@
                                collect (:br)))
                    (:div :class "input"
                          (:span :class "prompt" ">")
-                         (:input :class "input-buffer"
+                         (:textarea :class "input-buffer"
                                  :id "input-buffer"
                                  :data-repl-id ""
-                                 :type "text" :value ""
                                  :placeholder (format nil "Press ~a to evaluate the Lisp expression"
                                                       evaluate-binding)))))))))
