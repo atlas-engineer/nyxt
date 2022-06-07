@@ -138,6 +138,11 @@
 (define-parenscript focus (selector)
   (ps:chain (nyxt/ps:qs document (ps:lisp selector)) (focus)))
 
+(defmethod ensure-focus (&optional (repl (find-submode 'repl-mode)))
+  (declare (ignore repl))
+  (unless (string= "input-buffer" (peval (ps:@  document active-element class-name)))
+    (focus ".input-buffer[data-repl-id=\"\"]")))
+
 (defmethod (setf current-evaluation) (new-index (mode repl-mode))
   (if new-index
       (focus (format nil ".input-buffer[data-repl-id=\"~a\"]" new-index))
@@ -208,6 +213,7 @@
 (define-command paren (&optional (repl (find-submode 'repl-mode)))
   ;; FIXME: Not an intuitive behavior? What does Emacs do?
   "Inserts the closing paren after the opening one is inputted."
+  (ensure-focus)
   (let ((input (input repl))
         (cursor (cursor repl)))
     (setf (input repl) (str:insert "()" cursor input)
@@ -215,6 +221,7 @@
 
 (define-command closing-paren (&optional (repl (find-submode 'repl-mode)))
   "Automatically closes all the open parens before the cursor."
+  (ensure-focus)
   (let* ((input (input repl))
          (cursor (cursor repl))
          (parens-to-complete (- (count #\( input :end cursor)
@@ -226,6 +233,7 @@
 
 (define-command tab-complete-symbol (&optional (repl (find-submode 'repl-mode)))
   "Complete the current symbol and insert the completion into the current input area."
+  (ensure-focus)
   (let* ((input (input repl))
          (cursor (cursor repl))
          (previous-delimiter (unless (= cursor 0)
