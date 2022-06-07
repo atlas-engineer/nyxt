@@ -291,6 +291,7 @@
                    (:div :class "input"
                          (:span :class "prompt" ">")
                          (:input :class "input-buffer"
+                                 :id "input-buffer"
                                  :data-repl-id ""
                                  :type "text" :value ""
                                  :placeholder (format nil "Press ~a to evaluate the Lisp expression"
