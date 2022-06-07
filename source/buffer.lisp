@@ -720,7 +720,30 @@ store them somewhere and `ffi-buffer-delete' them once done."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
-;; TODO: Split this function to a specialization against `context-buffer'?
+;; TODO: Existence check:
+;; (find-method #'(setf modes) '(:around) (list t (find-class 'modable-buffer)))
+
+;; TODO: Multiple status buffer support.
+;; TODO: Uninstall on destroy?
+
+(defmethod customize-instance :after ((status-buffer status-buffer) &key)
+  "XXX:?"
+  (defmethod (setf modes) :after (value (buffer modable-buffer))
+    (when (window status-buffer)
+      (when (eq buffer (active-buffer (window status-buffer)))
+        (print-status (window status-buffer)))))
+  (defmethod (setf url) :after (value (buffer document-buffer))
+    (when (window status-buffer)
+      (when (eq buffer (active-buffer (window status-buffer)))
+        (print-status (window status-buffer)))))
+  (defmethod (setf title) :after (value (buffer document-buffer))
+    (when (window status-buffer)
+      (when (eq buffer (active-buffer (window status-buffer)))
+        (print-status (window status-buffer)))))
+  (defmethod (setf active-buffer) :after (value (window window))
+    (when (eq window (window status-buffer))
+      (print-status (window status-buffer)))))
+
 (defmethod customize-instance :after ((buffer buffer)
                                       &key (browser *browser*)
                                         no-hook-p
@@ -1052,12 +1075,14 @@ associated to the buffer is already killed."
 
 (defun buffers-set (id buffer)
   (when *browser*
-    (setf (gethash id (slot-value *browser* 'buffers)) buffer))
-  (print-status))
+    (setf (gethash id (slot-value *browser* 'buffers)) buffer)
+    ;; Force setf call so that slot is seen as changed, e.g. by status buffer watcher.
+    (setf (slot-value *browser* 'buffers) (slot-value *browser* 'buffers))))
 
 (defun buffers-delete (id)
   (remhash id (slot-value *browser* 'buffers))
-  (print-status))
+  ;; Force setf call so that slot is seen as changed, e.g. by status buffer watcher.
+  (setf (slot-value *browser* 'buffers) (slot-value *browser* 'buffers)))
 
 (export-always 'window-list)
 (defun window-list ()
@@ -1111,7 +1136,6 @@ proceeding."
   ;; switched inside a `with-current-buffer':
   (setf %buffer nil)
   (set-window-title window)
-  (print-status window)
   (when (and (network-buffer-p buffer)
              (eq (slot-value buffer 'status) :unloaded))
     (reload-buffers (list buffer))))

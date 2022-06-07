@@ -219,8 +219,7 @@ See `define-panel' for the description of the arguments."
   (%define-panel t name arglist buffer-var title side body))
 
 (defmethod (setf active-buffer) (buffer (window window))
-  (setf (slot-value window 'active-buffer) buffer)
-  (print-status))
+  (setf (slot-value window 'active-buffer) buffer))
 
 (defun print-status (&optional (window (current-window)))
   (when (and window (status-buffer window))
