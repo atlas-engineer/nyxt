@@ -155,20 +155,21 @@
     (with-current-buffer (buffer mode)
       (ignore-errors (parse-integer (get-id))))))
 
-(define-command evaluate-cell (&optional (repl (find-submode 'repl-mode)))
-  "Evaluate the currently focused input cell."
-  (let* ((input (input repl))
-         (id (current-cell-id repl))
-         (evaluation (make-instance 'evaluation
-                                    :input input
-                                    :results (nyxt::evaluate input))))
-    (unless (uiop:emptyp input)
-      (if id
-          (setf (elt (evaluations repl) id) evaluation
-                (current-evaluation repl) id)
-          (setf (current-evaluation repl) (length (evaluations repl))
-                (evaluations repl) (append (evaluations repl) (list evaluation))))
-      (reload-buffers (list (buffer repl))))))
+(sera:eval-always
+  (define-command evaluate-cell (&optional (repl (find-submode 'repl-mode)))
+    "Evaluate the currently focused input cell."
+    (let* ((input (input repl))
+           (id (current-cell-id repl))
+           (evaluation (make-instance 'evaluation
+                                      :input input
+                                      :results (nyxt::evaluate input))))
+      (unless (uiop:emptyp input)
+        (if id
+            (setf (elt (evaluations repl) id) evaluation
+                  (current-evaluation repl) id)
+            (setf (current-evaluation repl) (length (evaluations repl))
+                  (evaluations repl) (append (evaluations repl) (list evaluation))))
+        (reload-buffers (list (buffer repl)))))))
 
 (define-command previous-cell (&optional (repl (find-submode 'repl-mode)))
   "Move to the previous input cell."
