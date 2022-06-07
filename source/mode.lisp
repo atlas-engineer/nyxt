@@ -56,8 +56,7 @@ be dynamically calculated as the first letters of the mode name.")
     :documentation "Whether this mode is visible to `auto-mode'.")
    (enabled-p
     nil
-    :accessor nil
-    :reader t
+    :accessor t
     :documentation "Whether the mode is enabled in `buffer'.")
    (enable-hook
     (make-instance 'hook-mode)
@@ -96,7 +95,7 @@ It is run before the destructor.")
 The pre-defined `:after' method handles further setup."))
 
 (defmethod enable :after ((mode mode) &key)
-  (setf (slot-value mode 'enabled-p) t)
+  (setf (enabled-p mode) t)
   (hooks:run-hook (enable-hook mode) mode)
   (let ((buffer (buffer mode)))
     ;; TODO: Should we move mode to the front when it already exists?
@@ -117,7 +116,7 @@ The pre-defined `:after' method handles further setup."))
 The pre-defined `:after' method handles further cleanup."))
 
 (defmethod disable :after ((mode mode) &key)
-  (setf (slot-value mode 'enabled-p) nil)
+  (setf (enabled-p mode) nil)
   (hooks:run-hook (disable-hook mode) mode)
   (let ((buffer (buffer mode)))
     (hooks:run-hook (disable-mode-hook (buffer mode)) mode)
