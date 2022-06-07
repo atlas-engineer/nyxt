@@ -1869,7 +1869,8 @@ custom (the specified proxy) and none."
 
 ;; This method does not need a renderer, so no need to use `define-ffi-method'
 ;; which is prone to race conditions.
-(defmethod ffi-display-url (text)
+(defmethod ffi-display-url ((browser gtk-browser) text)
+  (declare (ignore browser))
   (webkit:webkit-uri-for-display text))
 
 (defmethod ffi-buffer-cookie-policy ((buffer gtk-buffer))

@@ -246,7 +246,7 @@ When done, call `call-next-method' to finalize the startup."))
 (define-ffi-generic ffi-print-message (window message)
   (:documentation "Print MESSAGE (an HTML string) in the WINDOW message buffer."))
 
-(define-ffi-generic ffi-display-url (url)
+(define-ffi-generic ffi-display-url (browser url)
   (:documentation "Return URL as a human-readable string.
 In particular, this should understand Punycode."))
 
