@@ -12,6 +12,14 @@
   (:documentation "Return a MODE `mode' string description for the STATUS `status-buffer'.
 Upon returning NIL, the mode is not displayed."))
 
+(defun sort-modes-for-status (modes)
+  "Return visible modes in MODES, with `nyxt/keymap-scheme-mode:scheme-mode' placed first."
+  (multiple-value-bind (scheme-mode other-modes)
+      (sera:partition #'nyxt/keymap-scheme-mode::keymap-scheme-mode-p
+                      (sera:filter (alex:conjoin #'enabled-p #'visible-in-status-p)
+                                   modes))
+    (append scheme-mode other-modes)))
+
 (export-always 'format-status-modes)
 (defmethod format-status-modes ((status status-buffer))
   "Render the enabled modes.
@@ -20,11 +28,7 @@ Any `nyxt/keymap-scheme-mode:keymap-scheme-mode' is placed first.
 This leverages `mode-status' which can be specialized for individual modes."
   (let ((buffer (current-buffer (window status))))
     (if (modable-buffer-p buffer)
-        (let ((sorted-modes (multiple-value-bind (scheme-mode other-modes)
-                                (sera:partition #'nyxt/keymap-scheme-mode::keymap-scheme-mode-p
-                                                (sera:filter (alex:conjoin #'enabled-p #'visible-in-status-p)
-                                                             (modes buffer)))
-                              (append scheme-mode other-modes))))
+        (let ((sorted-modes (sort-modes-for-status (modes buffer))))
           (spinneret:with-html-string
             (when (nosave-buffer-p buffer) (:span "⚠ nosave"))
             (:button :type "button" :class "button"

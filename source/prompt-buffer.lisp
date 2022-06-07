@@ -229,6 +229,8 @@ See also `show-prompt-buffer'."
 (defun prompt-render-prompt (prompt-buffer)
   (let* ((suggestions (prompter:all-suggestions prompt-buffer))
          (marks (prompter:all-marks prompt-buffer))
+         ;; TODO: Should prompt-buffer be a status-buffer?
+         ;; Then no need to depend on the current status buffer.
          (status-buffer (status-buffer (current-window))))
     (ffi-buffer-evaluate-javascript-async
      prompt-buffer
@@ -241,7 +243,9 @@ See also `show-prompt-buffer'."
                :multi-selection-p (some #'prompter:multi-selection-p
                                         (prompter:sources prompt-buffer)))))
        (setf (ps:chain document (get-element-by-id "prompt-modes") |innerHTML|)
-             (ps:lisp (format-status-modes status-buffer)))))))
+             (ps:lisp (str:join " "
+                                (mapcar (alex:curry #'mode-status status-buffer)
+                                        (sort-modes-for-status (modes prompt-buffer))))))))))
 
 (export 'prompt-render-suggestions)
 (defmethod prompt-render-suggestions ((prompt-buffer prompt-buffer))
