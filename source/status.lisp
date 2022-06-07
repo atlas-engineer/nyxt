@@ -116,26 +116,61 @@ This leverages `mode-status' which can be specialized for individual modes."
                   (:raw
                    (format-status-modes status)))))))
 
-;; TODO: Existence check:
-;; (find-method #'(setf modes) '(:around) (list t (find-class 'modable-buffer)))
+(defvar *setf-handlers* (sera:dict)
+  "A hash-table mapping (CLASS SLOT) pairs to hash-tables mapping OBJECT to HANDLER.
+OBJECT may be any value.
+HANDLER is a function of argument the CLASS instance.
 
-;; TODO: Multiple status buffer support.
-;; TODO: Uninstall on destroy?
+See `define-setf-handler'.")
 
+(export-always 'define-setf-handler)
+(defmacro define-setf-handler (class-name slot bound-object handler) ; TODO: SLOT or WRITER?
+  "When (setf (SLOT-WRITER CLASS-INSTANCE) VALUE) is called,
+all handlers corresponding to (CLASS SLOT) are evaluated with CLASS-INSTANCE as
+argument.
+
+There is a unique HANDLER per BOUND-OBJECT.
+When BOUND-OBJECT is garbage-collected, the corresponding handler is automatically removed."
+  (alex:with-gensyms (key)
+    (alex:once-only (bound-object)
+      `(progn
+         (let ((,key (list (find-class ',class-name) ',slot)))
+           (setf (gethash
+                  ,bound-object
+                  (alex:ensure-gethash ,key *setf-handlers*
+                                       (tg:make-weak-hash-table :test 'equal :weakness :key)))
+                 ,handler)
+
+           (defmethod (setf ,slot) :after (value (,class-name ,class-name))
+             (declare (ignorable value))
+             (dolist (handler (alex:hash-table-values (gethash ,key *setf-handlers*)))
+               (funcall* handler ,class-name))))))))
+
+;; TODO: Mode disabling does not work.
 (defmethod customize-instance :after ((status-buffer status-buffer) &key)
-  "XXX:?"
-  (defmethod (setf modes) :after (value (buffer modable-buffer))
-    (when (window status-buffer)
-      (when (eq buffer (active-buffer (window status-buffer)))
-        (print-status (window status-buffer)))))
-  (defmethod (setf url) :after (value (buffer document-buffer))
-    (when (window status-buffer)
-      (when (eq buffer (active-buffer (window status-buffer)))
-        (print-status (window status-buffer)))))
-  (defmethod (setf title) :after (value (buffer document-buffer))
-    (when (window status-buffer)
-      (when (eq buffer (active-buffer (window status-buffer)))
-        (print-status (window status-buffer)))))
-  (defmethod (setf active-buffer) :after (value (window window))
-    (when (eq window (window status-buffer))
-      (print-status (window status-buffer)))))
+  "Add setf-handlers calling `print-status' on:
+- `buffer' `modes',
+- `document-buffer' `url',
+- `document-buffer' `title',
+- `window' `active-buffer'.
+
+See also `define-setf-handler'."
+  (define-setf-handler modable-buffer modes status-buffer
+    (lambda (buffer)
+      (when (window status-buffer)
+        (when (eq buffer (active-buffer (window status-buffer)))
+          (print-status (window status-buffer))))))
+  (define-setf-handler document-buffer url status-buffer
+    (lambda (buffer)
+      (when (window status-buffer)
+        (when (eq buffer (active-buffer (window status-buffer)))
+          (print-status (window status-buffer))))))
+  (define-setf-handler document-buffer title status-buffer
+    (lambda (buffer)
+      (when (window status-buffer)
+        (when (eq buffer (active-buffer (window status-buffer)))
+          (print-status (window status-buffer))))))
+  (define-setf-handler window active-buffer status-buffer
+    (lambda (window)
+      (when (eq window (window status-buffer))
+        (print-status (window status-buffer))))))
