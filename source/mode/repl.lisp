@@ -243,7 +243,7 @@
          (cursor (cursor repl))
          (previous-delimiter (unless (= cursor 0)
                                (position-if (lambda (c) (find c +delimiters+)) input
-                                            :end (1- cursor) :from-end t)))
+                                            :end cursor :from-end t)))
          (previous-delimiter (if previous-delimiter (1+ previous-delimiter) 0))
          (symbol-to-complete (subseq input previous-delimiter cursor))
          (completion (handler-case
