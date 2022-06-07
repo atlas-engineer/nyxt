@@ -115,3 +115,27 @@ This leverages `mode-status' which can be specialized for individual modes."
                   :title (modes-string buffer)
                   (:raw
                    (format-status-modes status)))))))
+
+;; TODO: Existence check:
+;; (find-method #'(setf modes) '(:around) (list t (find-class 'modable-buffer)))
+
+;; TODO: Multiple status buffer support.
+;; TODO: Uninstall on destroy?
+
+(defmethod customize-instance :after ((status-buffer status-buffer) &key)
+  "XXX:?"
+  (defmethod (setf modes) :after (value (buffer modable-buffer))
+    (when (window status-buffer)
+      (when (eq buffer (active-buffer (window status-buffer)))
+        (print-status (window status-buffer)))))
+  (defmethod (setf url) :after (value (buffer document-buffer))
+    (when (window status-buffer)
+      (when (eq buffer (active-buffer (window status-buffer)))
+        (print-status (window status-buffer)))))
+  (defmethod (setf title) :after (value (buffer document-buffer))
+    (when (window status-buffer)
+      (when (eq buffer (active-buffer (window status-buffer)))
+        (print-status (window status-buffer)))))
+  (defmethod (setf active-buffer) :after (value (window window))
+    (when (eq window (window status-buffer))
+      (print-status (window status-buffer)))))
