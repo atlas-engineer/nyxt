@@ -146,7 +146,8 @@ When BOUND-OBJECT is garbage-collected, the corresponding handler is automatical
              (dolist (handler (alex:hash-table-values (gethash ,key *setf-handlers*)))
                (funcall* handler ,class-name))))))))
 
-;; TODO: Mode disabling does not work.
+;; TODO: Each time a `status-buffer' is created the defmethods are redefined,
+;; which triggers warnings.
 (defmethod customize-instance :after ((status-buffer status-buffer) &key)
   "Add setf-handlers calling `print-status' on:
 - `buffer' `modes',
@@ -155,10 +156,10 @@ When BOUND-OBJECT is garbage-collected, the corresponding handler is automatical
 - `window' `active-buffer'.
 
 See also `define-setf-handler'."
-  (define-setf-handler modable-buffer modes status-buffer
-    (lambda (buffer)
+  (define-setf-handler mode enabled-p status-buffer
+    (lambda (mode)
       (when (window status-buffer)
-        (when (eq buffer (active-buffer (window status-buffer)))
+        (when (eq (buffer mode) (active-buffer (window status-buffer)))
           (print-status (window status-buffer))))))
   (define-setf-handler document-buffer url status-buffer
     (lambda (buffer)

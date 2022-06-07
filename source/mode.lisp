@@ -55,8 +55,7 @@
     :documentation "Whether this mode is visible to `auto-mode'.")
    (enabled-p
     nil
-    :accessor nil
-    :reader t
+    :accessor t
     :documentation "Whether the mode is enabled in `buffer'.")
    (enable-hook
     (make-instance 'hook-mode)
@@ -108,7 +107,7 @@ See also `disable'."))
     (disable existing-instance)))
 
 (defmethod enable :after ((mode mode) &key)
-  (setf (slot-value mode 'enabled-p) t)
+  (setf (enabled-p mode) t)
   (hooks:run-hook (enable-hook mode) mode)
   (let ((buffer (buffer mode)))
     ;; TODO: Should we move mode to the front on re-enable?
@@ -131,7 +130,7 @@ It is not meant to be called directly, see `disable-modes' instead.
 See also `enable'."))
 
 (defmethod disable :after ((mode mode) &key)
-  (setf (slot-value mode 'enabled-p) nil)
+  (setf (enabled-p mode) nil)
   (hooks:run-hook (disable-hook mode) mode)
   (let ((buffer (buffer mode)))
     (hooks:run-hook (disable-mode-hook (buffer mode)) mode)
