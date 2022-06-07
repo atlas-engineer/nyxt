@@ -387,9 +387,11 @@ the buffer (which gives us more flexibility)."))
     (format stream "~a" (id buffer))))
 
 (defmethod (setf url) :around (value (buffer document-buffer))
+  (declare (ignore value))
   (call-next-method)
   (set-window-title))
 (defmethod (setf title) :around (value (buffer document-buffer))
+  (declare (ignore value))
   (call-next-method)
   (set-window-title))
 
