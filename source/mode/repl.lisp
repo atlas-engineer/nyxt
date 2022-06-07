@@ -250,7 +250,8 @@
 (define-internal-page-command-global lisp-repl ()
     (repl-buffer "*Lisp REPL*" 'repl-mode)
   "Show Lisp REPL."
-  (let ((repl-mode (find-submode 'nyxt/repl-mode:repl-mode repl-buffer)))
+  (let* ((repl-mode (find-submode 'nyxt/repl-mode:repl-mode repl-buffer))
+         (evaluate-binding (nyxt::binding-keys 'evaluate-cell :modes (list repl-mode))))
     (spinneret:with-html-string
       (:head (:style (style repl-mode)))
       (:body
@@ -292,4 +293,5 @@
                          (:input :class "input-buffer"
                                  :data-repl-id ""
                                  :type "text" :value ""
-                                 :placeholder "Input some Lisp expression here"))))))))
+                                 :placeholder (format nil "Press ~a to evaluate the Lisp expression"
+                                                      evaluate-binding)))))))))
