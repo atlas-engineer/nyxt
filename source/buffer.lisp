@@ -386,6 +386,13 @@ the buffer (which gives us more flexibility)."))
   (print-unreadable-object (buffer stream :type t :identity t)
     (format stream "~a" (id buffer))))
 
+(defmethod (setf url) :around (value (buffer document-buffer))
+  (call-next-method)
+  (set-window-title))
+(defmethod (setf title) :around (value (buffer document-buffer))
+  (call-next-method)
+  (set-window-title))
+
 (defvar %default-modes '(base-mode)
   "The default modes for unspecialized buffers.
 This is useful when there is no current buffer.")
@@ -1111,7 +1118,6 @@ proceeding."
   ;; So that `current-buffer' returns the new value if buffer was
   ;; switched inside a `with-current-buffer':
   (setf %buffer nil)
-  (set-window-title window)
   (when (and (network-buffer-p buffer)
              (eq (slot-value buffer 'status) :unloaded))
     (reload-buffers (list buffer))))

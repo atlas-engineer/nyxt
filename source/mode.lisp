@@ -441,7 +441,6 @@ If there is no corresponding keymap, return nil."
                      (keymap-scheme mode)))
 
 (defmethod on-signal-notify-uri ((mode mode) url)
-  (set-window-title)
   url)
 
 (defmethod on-signal-notify-title ((mode mode) title)
