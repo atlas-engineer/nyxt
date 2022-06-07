@@ -231,14 +231,19 @@
     (alexandria:when-let ((cursor (ignore-errors (1+ (position #\) (input repl) :start cursor)))))
       (setf (cursor repl) cursor))))
 
+(defparameter +delimiters+
+  (uiop:strcat "()"
+          sera:whitespace)
+  "Non-symbol Lisp delimiters.")
+
 (define-command tab-complete-symbol (&optional (repl (find-submode 'repl-mode)))
   "Complete the current symbol and insert the completion into the current input area."
   (ensure-focus)
   (let* ((input (input repl))
          (cursor (cursor repl))
          (previous-delimiter (unless (= cursor 0)
-                               (position-if (lambda (c) (member c '(#\( #\) #\space))) input
-                                           :end (1- cursor) :from-end t)))
+                               (position-if (lambda (c) (find c +delimiters+)) input
+                                            :end (1- cursor) :from-end t)))
          (previous-delimiter (if previous-delimiter (1+ previous-delimiter) 0))
          (symbol-to-complete (subseq input previous-delimiter cursor))
          (completion (handler-case
