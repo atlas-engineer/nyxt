@@ -58,9 +58,9 @@ Example:
        (log:info "HTTPS enforced on '~a'" (render-url url))
        ;; FIXME: http-only websites are displayed as "https://foo.bar"
        ;; FIXME: some websites (e.g., go.com) simply time-out
-       (setf (quri:uri-scheme url) "https"
-             (quri:uri-port url) (quri.port:scheme-default-port "https")
-             (url request-data) url)
+       (setf (url request-data)
+             (quri:copy-uri url :scheme "https"
+                                :port (quri.port:scheme-default-port "https")))
        request-data))))
 
 (defmethod enable ((mode force-https-mode) &key)
