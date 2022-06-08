@@ -201,8 +201,8 @@ not return."
 (defmacro define-ffi-method (name args &body body)
   "Define an FFI method to run in the renderer thread.
 
-Always returns a value retrieved from the renderer thread, using Calispel
-channels if the current thread is not the renderer one.
+Return the value or forward the condition retrieved from the renderer thread,
+using a channel if the current thread is not the renderer one.
 
 It's a `defmethod' wrapper. If you don't need the body of the method to execute in
 the renderer thread, use `defmethod' instead."
@@ -212,15 +212,22 @@ the renderer thread, use `defmethod' instead."
        ,@(sera:unsplice docstring)
        ,@declares
        (if (renderer-thread-p)
-           (progn
-             ,@forms)
-           (let ((channel (make-channel 1)))
+           (progn ,@forms)
+           (let ((channel (make-channel 1))
+                 (error-channel (make-channel 1)))
              (within-gtk-thread
-               (calispel:!
-                channel
-                (progn
-                  ,@forms)))
-             (calispel:? channel))))))
+               (if (or *run-from-repl-p* *debug-on-error*)
+                   (calispel:! channel (progn ,@forms))
+                   (progn
+                     (handler-case (calispel:! channel (progn ,@forms))
+                       (condition (c)
+                         (calispel:! error-channel c))))))
+             (calispel:fair-alt
+               ((calispel:? channel result)
+                result)
+               ((calispel:? error-channel condition)
+                (with-protect ("Error in FFI method: ~a" :condition)
+                  (error condition)))))))))
 
 (defmethod ffi-initialize ((browser gtk-browser) urls startup-timestamp)
   "gtk:within-main-loop handles all the GTK initialization. On
