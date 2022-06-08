@@ -46,8 +46,7 @@
     nil
     :type (maybe string)
     :accessor nil
-    :documentation "A glyph used to represent this mode, if unset, it will
-be dynamically calculated as the first letters of the mode name.")
+    :documentation "A glyph used to represent this mode.")
    (visible-in-status-p
     t
     :documentation "Whether the mode is visible in the status line.")
@@ -164,7 +163,8 @@ The `mode' superclass is automatically added if not present."
 
 (export-always 'glyph)
 (defmethod glyph ((mode mode))
-  "Return the glyph for a mode, or if unset, return a standard formatted mode."
+  "Return the glyph for a mode.
+When unset, it corresponds to the mode name."
   (or (slot-value mode 'glyph)
       (princ-to-string mode)))
 
