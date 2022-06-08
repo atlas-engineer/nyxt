@@ -316,7 +316,11 @@ prevents otherwise.")
                                             :condition c
                                             :backtrace (with-output-to-string (stream)
                                                          (uiop:print-backtrace :stream stream :condition c))))))))
-               (startup browser urls)))))))
+               ;; Set `*debug-on-startup*' globally instead of let-binding it so
+               ;; that it visible from all threads.
+               (unwind-protect (progn (setf *debug-on-startup* t)
+                                      (startup browser urls))
+                 (setf *debug-on-startup* nil))))))))
   ;; Set `init-time' at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)

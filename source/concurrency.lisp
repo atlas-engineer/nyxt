@@ -17,7 +17,7 @@ FORMAT-STRING and ARGS.
 As a special case, the first `:condition' keyword in ARGS is replaced with the
 raised condition."
   (alex:with-gensyms (c sub-c)
-    `(if (or *run-from-repl-p* *debug-on-error*)
+    `(if (or *run-from-repl-p* *debug-on-error* *debug-on-startup*)
          (handler-case (progn ,@body)
            (nyxt-prompt-buffer-canceled ()
              (log:debug "Prompt buffer interrupted")))
