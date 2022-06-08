@@ -242,7 +242,7 @@ prevents otherwise.")
   "Get the window containing a buffer."
   (find buffer (alex:hash-table-values (windows browser)) :key #'active-buffer))
 
-(defun restart-with-message (&optional condition)
+(defun restart-with-message (&key condition backtrace)
   (flet ((set-error-message (message full-message)
            (let ((*package* (find-package :cl))) ; Switch package to use non-nicknamed packages.
              (write-to-string
@@ -253,13 +253,18 @@ prevents otherwise.")
                  :fn (lambda ()
                        (setf (nyxt::startup-error-reporter-function *browser*)
                              (lambda ()
-                               (nyxt:echo-warning "Restarted without init file due to error: ~a." ,message)
-                               (nyxt::error-in-new-window "*Initialization error*" ,full-message))))
+                               (nyxt:echo-warning "Restarted without configuration file due to error: ~a." ,message)
+                               (nyxt::error-in-new-window "Initialization error" ,full-message))))
                  :name 'error-reporter))))))
     (let* ((message (princ-to-string condition))
-           (full-message (format nil "Startup error: ~a.~%~&Restarted Nyxt without init file ~s."
+           (full-message (format nil
+                                 "Restarted without configuration file ~s~&due to following startup error:~%~%~a~a"
+                                 (files:expand *config-file*)
                                  message
-                                 (files:expand *config-file*)))
+                                 (if backtrace
+                                     (format nil "~%~%----~%~%~a"
+                                             backtrace)
+                                     "")))
            (new-command-line (append (uiop:raw-command-line-arguments)
                                      `("--no-config"
                                        "--eval"
@@ -307,7 +312,10 @@ prevents otherwise.")
                                              (apply #'start (append *options* (list :urls urls
                                                                                     :no-init t ; TODO: Deprecated, remove in 4.0.
                                                                                     :no-config t))))
-                                           (restart-with-message c))))))
+                                           (restart-with-message
+                                            :condition c
+                                            :backtrace (with-output-to-string (stream)
+                                                         (uiop:print-backtrace :stream stream :condition c))))))))
                (startup browser urls)))))))
   ;; Set `init-time' at the end of finalize to take the complete startup time
   ;; into account.
