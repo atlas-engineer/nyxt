@@ -22,6 +22,7 @@
                                      (ps:lisp selection-start)
                                      (ps:lisp selection-end))))
 
+(export-always 'with-text-buffer)
 (defmacro with-text-buffer ((buffer-name cursor-name
                              &optional initial-contents
                                        initial-cursor-position)
@@ -35,6 +36,7 @@
        (setf (cluffer:cursor-position ,cursor-name) (truncate ,initial-cursor-position)))
      ,@body))
 
+(export-always 'with-input-area)
 (defmacro with-input-area ((contents cursor-position) &body body)
   (let ((unprocessed-cursor (gensym)))
     `(let* ((,contents (active-input-area-content))
@@ -42,7 +44,7 @@
             (,cursor-position (when (numberp ,unprocessed-cursor)
                                 (truncate (active-input-area-cursor)))))
        (declare (ignorable ,contents ,cursor-position))
-       (if cursor-position
+       (if ,cursor-position
            ,@body
            (echo-warning "Cannot get cursor position. Are you in an input field?")))))
 
