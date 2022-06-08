@@ -9,6 +9,13 @@ the amount of CPU cores."
   (unless lpara:*kernel*
     (setf lpara:*kernel* (lpara:make-kernel worker-count))))
 
+(defun restart-browser (c)
+  "Restart browser reporting condition C."
+  (restart-with-message
+   :condition c
+   :backtrace (with-output-to-string (stream)
+                (uiop:print-backtrace :stream stream :condition c))))
+
 (export-always 'with-protect)
 (defmacro with-protect ((format-string &rest args) &body body)
   "Run body with muffled conditions when `*run-from-repl-p*' is nil, run normally otherwise.
