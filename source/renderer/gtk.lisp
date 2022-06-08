@@ -213,12 +213,20 @@ the renderer thread, use `defmethod' instead."
            (let ((channel (make-channel 1))
                  (error-channel (make-channel 1)))
              (within-gtk-thread
-               (if (or *run-from-repl-p* *debug-on-error*)
-                   (calispel:! channel (progn ,@forms))
-                   (progn
-                     (handler-case (calispel:! channel (progn ,@forms))
-                       (condition (c)
-                         (calispel:! error-channel c))))))
+               ;; We do not include `*debug-on-error*' for now, since we need to
+               ;; first improve the debugger to properly handle the GTK thread.
+               ;; TODO: Abstract this into `with-protect-from-thread'?
+               (if (or *run-from-repl-p* *restart-on-error*)
+                   (let ((current-condition nil))
+                     (restart-case
+                         (handler-bind ((condition (lambda (c) (setf current-condition c))))
+                           (calispel:! channel (progn ,@forms)))
+                       (abort-ffi-method ()
+                         :report "Pass condition to calling thread."
+                         (calispel:! error-channel current-condition))))
+                   (handler-case (calispel:! channel (progn ,@forms))
+                     (condition (c)
+                       (calispel:! error-channel c)))))
              (calispel:fair-alt
                ((calispel:? channel result)
                 result)

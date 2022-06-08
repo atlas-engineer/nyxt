@@ -275,6 +275,22 @@ prevents otherwise.")
       (uiop:launch-program new-command-line)
       (quit))))
 
+(defun restart-browser (c)              ; TODO: Move to concurrency.lisp.
+  "Restart browser reporting condition C."
+  (log:error "Startup failed (probably due to a mistake in ~s):~&~a"
+             (files:expand *config-file*) c)
+  (throw 'startup-error                 ; TODO: Remove this throw.
+    (if *run-from-repl-p*
+        (progn                          ; TODO: Useless branch?
+          (quit)
+          (apply #'start (append *options* (list :urls urls
+                                                 :no-init t ; TODO: Deprecated, remove in 4.0.
+                                                 :no-config t))))
+        (restart-with-message
+         :condition c
+         :backtrace (with-output-to-string (stream)
+                      (uiop:print-backtrace :stream stream :condition c))))))
+
 (defmethod finalize ((browser browser) urls startup-timestamp)
   "Run `*after-init-hook*' then BROWSER's `startup'."
   ;; `messages-appender' requires `*browser*' to be initialized.
@@ -302,25 +318,14 @@ prevents otherwise.")
                (not (uiop:file-exists-p (files:expand *config-file*))))
            (startup browser urls)
            (catch 'startup-error
-             (handler-bind ((error (lambda (c)
-                                     (log:error "Startup failed (probably due to a mistake in ~s):~&~a"
-                                                (files:expand *config-file*) c)
-                                     (throw 'startup-error
-                                       (if *run-from-repl-p*
-                                           (progn
-                                             (quit)
-                                             (apply #'start (append *options* (list :urls urls
-                                                                                    :no-init t ; TODO: Deprecated, remove in 4.0.
-                                                                                    :no-config t))))
-                                           (restart-with-message
-                                            :condition c
-                                            :backtrace (with-output-to-string (stream)
-                                                         (uiop:print-backtrace :stream stream :condition c))))))))
-               ;; Set `*debug-on-startup*' globally instead of let-binding it so
+             ;; TODO: No need for the `handler-bind` since `with-protect' should handle everything.
+             ;; Then we can move the `if' inside the unwind-protect?
+             (handler-bind ((error #'restart-browser))
+               ;; Set `*restart-on-error*' globally instead of let-binding it so
                ;; that it visible from all threads.
-               (unwind-protect (progn (setf *debug-on-startup* t)
+               (unwind-protect (progn (setf *restart-on-error* t)
                                       (startup browser urls))
-                 (setf *debug-on-startup* nil))))))))
+                 (setf *restart-on-error* nil))))))))
   ;; Set `init-time' at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)

@@ -17,7 +17,7 @@ FORMAT-STRING and ARGS.
 As a special case, the first `:condition' keyword in ARGS is replaced with the
 raised condition."
   (alex:with-gensyms (c sub-c)
-    `(if (or *run-from-repl-p* *debug-on-error* *debug-on-startup*)
+    `(if (or *run-from-repl-p* *debug-on-error*)
          (handler-case (progn ,@body)
            (nyxt-prompt-buffer-canceled ()
              (log:debug "Prompt buffer interrupted")))
@@ -26,20 +26,22 @@ raised condition."
               ((error
                  (lambda (,c)
                    (declare (ignorable ,c))
-                   ,(let ((condition-index (position :condition args)))
-                      (flet ((new-args (condition condition-index &optional escaped-p)
-                               (if condition-index
-                                   (append (subseq args 0 condition-index)
-                                           (list (if escaped-p
-                                                     `(plump:encode-entities (princ-to-string ,condition))
-                                                     `,condition))
-                                           (subseq args (1+ condition-index)))
-                                   'args)))
-                        `(handler-bind ((t (lambda (,sub-c)
-                                             (declare (ignore ,sub-c))
-                                             (log:error ,format-string ,@(new-args c condition-index))
-                                             (invoke-restart 'continue))))
-                           (echo-warning ,format-string ,@(new-args c condition-index :escaped-p))))))))
+                   (if *restart-on-error*
+                       (restart-browser ,c)
+                       ,(let ((condition-index (position :condition args)))
+                          (flet ((new-args (condition condition-index &optional escaped-p)
+                                   (if condition-index
+                                       (append (subseq args 0 condition-index)
+                                               (list (if escaped-p
+                                                         `(plump:encode-entities (princ-to-string ,condition))
+                                                         `,condition))
+                                               (subseq args (1+ condition-index)))
+                                       'args)))
+                            `(handler-bind ((t (lambda (,sub-c)
+                                                 (declare (ignore ,sub-c))
+                                                 (log:error ,format-string ,@(new-args c condition-index))
+                                                 (invoke-restart 'continue))))
+                               (echo-warning ,format-string ,@(new-args c condition-index :escaped-p)))))))))
             ,@body)))))
 
 (defun make-channel (&optional size)
