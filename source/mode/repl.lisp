@@ -138,10 +138,9 @@
 (define-parenscript focus (selector)
   (ps:chain (nyxt/ps:qs document (ps:lisp selector)) (focus)))
 
-(defmethod ensure-focus (&optional (repl (find-submode 'repl-mode)))
+(defmethod input-focus-p (&optional (repl (find-submode 'repl-mode)))
   (declare (ignore repl))
-  (unless (string= "input-buffer" (peval (ps:@  document active-element class-name)))
-    (focus ".input-buffer[data-repl-id=\"\"]")))
+  (string= "input-buffer" (peval (ps:@ document active-element class-name))))
 
 (defmethod (setf current-evaluation) (new-index (mode repl-mode))
   (if new-index
@@ -214,23 +213,23 @@
 (define-command paren (&optional (repl (find-submode 'repl-mode)))
   ;; FIXME: Not an intuitive behavior? What does Emacs do?
   "Inserts the closing paren after the opening one is inputted."
-  (ensure-focus)
-  (let ((input (input repl))
-        (cursor (cursor repl)))
-    (setf (input repl) (str:insert "()" cursor input)
-          (cursor repl) (1+ cursor))))
+  (when (input-focus-p repl)
+    (let ((input (input repl))
+          (cursor (cursor repl)))
+      (setf (input repl) (str:insert "()" cursor input)
+            (cursor repl) (1+ cursor)))))
 
 (define-command closing-paren (&optional (repl (find-submode 'repl-mode)))
   "Automatically closes all the open parens before the cursor."
-  (ensure-focus)
-  (let* ((input (input repl))
-         (cursor (cursor repl))
-         (parens-to-complete (- (count #\( input :end cursor)
-                                (count #\) input))))
-    (when (plusp parens-to-complete)
-      (setf (input repl) (str:concat input (make-string parens-to-complete :initial-element #\)))))
-    (alexandria:when-let ((cursor (ignore-errors (1+ (position #\) (input repl) :start cursor)))))
-      (setf (cursor repl) cursor))))
+  (when (input-focus-p repl)
+    (let* ((input (input repl))
+           (cursor (cursor repl))
+           (parens-to-complete (- (count #\( input :end cursor)
+                                  (count #\) input))))
+      (when (plusp parens-to-complete)
+        (setf (input repl) (str:concat input (make-string parens-to-complete :initial-element #\)))))
+      (alexandria:when-let ((cursor (ignore-errors (1+ (position #\) (input repl) :start cursor)))))
+        (setf (cursor repl) cursor)))))
 
 (defparameter +delimiters+
   (uiop:strcat "()"
@@ -239,27 +238,27 @@
 
 (define-command tab-complete-symbol (&optional (repl (find-submode 'repl-mode)))
   "Complete the current symbol and insert the completion into the current input area."
-  (ensure-focus)
-  (let* ((input (input repl))
-         (cursor (cursor repl))
-         (previous-delimiter (unless (= cursor 0)
-                               (position-if (lambda (c) (find c +delimiters+)) input
-                                            :end cursor :from-end t)))
-         (previous-delimiter (if previous-delimiter (1+ previous-delimiter) 0))
-         (symbol-to-complete (subseq input previous-delimiter cursor))
-         (completion (handler-case
-                         (prompt1 :prompt "Symbol to complete"
-                           :input symbol-to-complete
-                           :sources (list (make-instance
-                                           'prompter:source
-                                           :name "Completions"
-                                           :constructor (first (swank:simple-completions
-                                                                symbol-to-complete *package*)))))
-                       (nyxt::nyxt-prompt-buffer-canceled () nil))))
-    (when completion
-      (setf (input repl) (str:concat (subseq input 0 previous-delimiter)
-                                     completion (subseq input cursor))
-            (cursor repl) (+ cursor (- (length completion) (- cursor previous-delimiter)))))))
+  (when (input-focus-p repl)
+    (let* ((input (input repl))
+           (cursor (cursor repl))
+           (previous-delimiter (unless (= cursor 0)
+                                 (position-if (lambda (c) (find c +delimiters+)) input
+                                              :end cursor :from-end t)))
+           (previous-delimiter (if previous-delimiter (1+ previous-delimiter) 0))
+           (symbol-to-complete (subseq input previous-delimiter cursor))
+           (completion (handler-case
+                           (prompt1 :prompt "Symbol to complete"
+                             :input symbol-to-complete
+                             :sources (list (make-instance
+                                             'prompter:source
+                                             :name "Completions"
+                                             :constructor (first (swank:simple-completions
+                                                                  symbol-to-complete *package*)))))
+                         (nyxt::nyxt-prompt-buffer-canceled () nil))))
+      (when completion
+        (setf (input repl) (str:concat (subseq input 0 previous-delimiter)
+                                       completion (subseq input cursor))
+              (cursor repl) (+ cursor (- (length completion) (- cursor previous-delimiter))))))))
 
 (define-internal-page-command-global lisp-repl ()
     (repl-buffer "*Lisp REPL*" 'repl-mode)
