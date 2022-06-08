@@ -135,19 +135,19 @@ When BOUND-OBJECT is garbage-collected, the corresponding handler is automatical
     (alex:once-only (bound-object)
       `(progn
          (let ((,key (list (find-class ',class-name) ',slot)))
-           (setf (gethash
-                  ,bound-object
-                  (alex:ensure-gethash ,key *setf-handlers*
-                                       (tg:make-weak-hash-table :test 'equal :weakness :key)))
-                 ,handler)
+           (handler-bind ((warning (if (gethash ,key *setf-handlers*)
+                                       #'muffle-warning ; To avoid warning on redefinition.
+                                       #'identity)))
+             (setf (gethash
+                    ,bound-object
+                    (alex:ensure-gethash ,key *setf-handlers*
+                                         (tg:make-weak-hash-table :test 'equal :weakness :key)))
+                   ,handler)
+             (defmethod (setf ,slot) :after (value (,class-name ,class-name))
+               (declare (ignorable value))
+               (dolist (handler (alex:hash-table-values (gethash ,key *setf-handlers*)))
+                 (funcall* handler ,class-name)))))))))
 
-           (defmethod (setf ,slot) :after (value (,class-name ,class-name))
-             (declare (ignorable value))
-             (dolist (handler (alex:hash-table-values (gethash ,key *setf-handlers*)))
-               (funcall* handler ,class-name))))))))
-
-;; TODO: Each time a `status-buffer' is created the defmethods are redefined,
-;; which triggers warnings.
 (defmethod customize-instance :after ((status-buffer status-buffer) &key)
   "Add setf-handlers calling `print-status' on:
 - `buffer' `modes',
