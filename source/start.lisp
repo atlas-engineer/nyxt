@@ -611,7 +611,7 @@ Finally, run the browser, load URL-STRINGS if any, then run
          (setf startup-error-reporter
                (lambda ()
                  (echo-warning "~a." message)
-                 (error-in-new-window "*Config file errors*" full-message)))))
+                 (error-in-new-window "Configuration file errors" full-message)))))
       (load-or-eval :remote nil)
       (setf *browser* (make-instance 'browser
                                      :startup-error-reporter-function startup-error-reporter
