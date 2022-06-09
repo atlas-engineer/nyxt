@@ -105,9 +105,7 @@ The pre-defined `:after' method handles further setup."))
              (eq (first (active-prompt-buffers (window buffer)))
                  buffer))
         (prompt-render-prompt buffer)
-        (print-status))
-    (unless (prompt-buffer-p buffer) (echo "~@(~a~) mode enabled." mode)))
-  (log:debug "~@(~a~) mode enabled." mode))
+        (print-status))))
 
 (export-always 'disable)
 (defgeneric disable (mode &key &allow-other-keys)
@@ -127,9 +125,7 @@ The pre-defined `:after' method handles further cleanup."))
              (eq (first (active-prompt-buffers (window buffer)))
                  buffer))
         (prompt-render-prompt buffer)
-        (print-status))
-    (unless (prompt-buffer-p buffer) (echo "~@(~a~) mode disabled." mode)))
-  (log:debug "~@(~a~) mode disabled." mode))
+        (print-status))))
 
 (export-always 'define-mode)
 (defmacro define-mode (name direct-superclasses &body body)
@@ -383,12 +379,15 @@ If it's a single buffer, return it directly (not as a list)."
       (if activate
           ;; TODO: Shall we pass args to `make-instance' or `enable'?
           ;; Have 2 args parameters?
-          (enable (or existing-instance
-                      (apply #'make-instance mode-sym
-                             :buffer buffer
-                             args)))
+          (let ((mode (or existing-instance
+                          (apply #'make-instance mode-sym
+                                 :buffer buffer
+                                 args))))
+            (enable mode)
+            (echo "~@(~a~) mode enabled." mode))
           (when existing-instance
-            (disable existing-instance))))))
+            (disable existing-instance)
+            (echo "~@(~a~) mode disabled." existing-instance))))))
 
 (define-command toggle-modes (&key (buffer (current-buffer)))
   "Enable marked modes, disable unmarked modes for BUFFER."
