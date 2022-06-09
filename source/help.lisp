@@ -291,12 +291,12 @@ System information is also saved into the clipboard."
   (flet ((list-bookmarks (&key (limit 50) (separator " → "))
            (spinneret:with-html-string
              (let ((mode (make-instance 'nyxt/bookmark-mode:bookmark-mode)))
-               (or (let ((bookmarks (files:content (nyxt/bookmark-mode:bookmarks-file mode))))
-                     (dolist (bookmark (sera:take limit (the list (sort-by-time bookmarks :key #'nyxt/bookmark-mode:date))))
-                       (:li (title bookmark) separator
-                            (:a :href (render-url (url bookmark))
-                                (render-url (url bookmark))))))
-                   (:p (format nil "No bookmarks in ~s." (files:expand (nyxt/bookmark-mode:bookmarks-file mode)))))))))
+               (alex:if-let ((bookmarks (files:content (nyxt/bookmark-mode:bookmarks-file mode))))
+                 (dolist (bookmark (sera:take limit (the list (sort-by-time bookmarks :key #'nyxt/bookmark-mode:date))))
+                   (:li (title bookmark) separator
+                        (:a :href (render-url (url bookmark))
+                            (render-url (url bookmark)))))
+                 (:p (format nil "No bookmarks in ~s." (files:expand (nyxt/bookmark-mode:bookmarks-file mode)))))))))
     (let ((dashboard-style (theme:themed-css (theme *browser*)
                              (body
                               :color theme:text
