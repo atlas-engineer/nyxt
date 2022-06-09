@@ -335,7 +335,7 @@ If it's a single buffer, return it directly (not as a list)."
                                             (make-instance mode-sym :buffer buffer))
                                args))
                       modes))
-            buffers))
+            (sera:filter #'modable-buffer-p buffers)))
   buffers)
 
 (define-command disable-modes (&optional modes buffers)
@@ -375,19 +375,20 @@ If it's a single buffer, return it directly (not as a list)."
                       (activate t explicit?)
                     &allow-other-keys)
   "Enable MODE-SYM if not already enabled, disable it otherwise."
-  (let ((existing-instance (find mode-sym (modes buffer) :key #'sera:class-name-of)))
-    (unless explicit?
-      (setf activate (or (not existing-instance)
-                         (not (enabled-p existing-instance)))))
-    (if activate
-        ;; TODO: Shall we pass args to `make-instance' or `enable'?
-        ;; Have 2 args parameters?
-        (enable (or existing-instance
-                    (apply #'make-instance mode-sym
-                           :buffer buffer
-                           args)))
-        (when existing-instance
-          (disable existing-instance)))))
+  (when (modable-buffer-p buffer)
+    (let ((existing-instance (find mode-sym (modes buffer) :key #'sera:class-name-of)))
+      (unless explicit?
+        (setf activate (or (not existing-instance)
+                           (not (enabled-p existing-instance)))))
+      (if activate
+          ;; TODO: Shall we pass args to `make-instance' or `enable'?
+          ;; Have 2 args parameters?
+          (enable (or existing-instance
+                      (apply #'make-instance mode-sym
+                             :buffer buffer
+                             args)))
+          (when existing-instance
+            (disable existing-instance))))))
 
 (define-command toggle-modes (&key (buffer (current-buffer)))
   "Enable marked modes, disable unmarked modes for BUFFER."
