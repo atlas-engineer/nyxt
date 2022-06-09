@@ -288,14 +288,14 @@ System information is also saved into the clipboard."
 (define-internal-page-command-global dashboard ()
     (buffer "*Dashboard*")
   "Print a dashboard."
-  (flet ((list-bookmarks (&key (separator " → "))
+  (flet ((list-bookmarks (&key (limit 50) (separator " → "))
            (spinneret:with-html-string
              (let ((mode (make-instance 'nyxt/bookmark-mode:bookmark-mode)))
                (or (let ((bookmarks (files:content (nyxt/bookmark-mode:bookmarks-file mode))))
-                     (loop for bookmark in bookmarks
-                           collect (:li (title bookmark) separator
-                                        (:a :href (render-url (url bookmark))
-                                            (render-url (url bookmark))))))
+                     (dolist (bookmark (sera:take limit (the list (sort-by-time bookmarks :key #'nyxt/bookmark-mode:date))))
+                       (:li (title bookmark) separator
+                            (:a :href (render-url (url bookmark))
+                                (render-url (url bookmark))))))
                    (:p (format nil "No bookmarks in ~s." (files:expand (nyxt/bookmark-mode:bookmarks-file mode)))))))))
     (let ((dashboard-style (theme:themed-css (theme *browser*)
                              (body
@@ -324,13 +324,13 @@ System information is also saved into the clipboard."
          (:h3 (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+))
          (:button :class "button" :onclick (ps:ps (nyxt/ps:lisp-eval
                                                    `(nyxt::restore-history-by-name)))
-                  "🗁 Restore Session")
+                  "📁🗁🗀 Restore Session")
          (:a :class "button" :href (nyxt-url 'manual) "🕮 Manual")
          (:button :class "button"
                   :onclick (ps:ps (nyxt/ps:lisp-eval `(nyxt::execute-command)))
                   "≡ Execute Command")
          (:a :class "button" :href "https://nyxt.atlas.engineer/download" "⇡ Update"))
-        (:h3 (:b "Bookmarks"))
-        (:ul (:raw (list-bookmarks)))
         (:h3 (:b "Recent URLs"))
-        (:ul (:raw (history-html-list)))))))
+        (:ul (:raw (history-html-list :limit 50)))
+        (:h3 (:b "Recent bookmarks"))
+        (:ul (:raw (list-bookmarks :limit 50)))))))
