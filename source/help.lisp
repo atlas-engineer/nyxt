@@ -324,7 +324,7 @@ System information is also saved into the clipboard."
          (:h3 (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+))
          (:button :class "button" :onclick (ps:ps (nyxt/ps:lisp-eval
                                                    `(nyxt::restore-history-by-name)))
-                  "📁🗁🗀 Restore Session")
+                  "🗁 Restore Session")
          (:a :class "button" :href (nyxt-url 'manual) "🕮 Manual")
          (:button :class "button"
                   :onclick (ps:ps (nyxt/ps:lisp-eval `(nyxt::execute-command)))
