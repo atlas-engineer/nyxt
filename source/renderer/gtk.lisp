@@ -312,9 +312,9 @@ By default it is found in the source directory."))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (without-package-locks ; TODO: Is there a cleaner way to update the mode class?  Maybe move it to the core?
-  `(defclass nyxt/download-mode:renderer-download (gtk-download)
-     ()
-     (:metaclass mixin-class)))
+  (defclass nyxt/download-mode:renderer-download (gtk-download)
+    ()
+    (:metaclass mixin-class)))
 
 (defclass webkit-web-view-ephemeral (webkit:webkit-web-view) ()
   (:metaclass gobject:gobject-class))
@@ -1638,9 +1638,9 @@ local anyways, and it's better to refresh it if a load was queried."
 
 
 (without-package-locks ; TODO: Is there a cleaner way to update the mode class?  Maybe move it to the core?
-  `(defclass nyxt/user-script-mode:renderer-user-script (gtk-user-script)
-     ()
-     (:metaclass mixin-class)))
+  (defclass nyxt/user-script-mode:renderer-user-script (gtk-user-script)
+    ()
+    (:metaclass mixin-class)))
 
 (define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) (script gtk-user-script))
   (alex:if-let ((code (nfiles:content script)))
