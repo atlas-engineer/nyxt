@@ -48,6 +48,7 @@
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system glib-or-gtk)
   #:use-module (gnu packages)
+  #:use-module (gnu packages aspell)
   #:use-module (gnu packages base)
   #:use-module (gnu packages commencement)
   #:use-module (gnu packages glib)
@@ -190,14 +191,17 @@
           gobject-introspection
           pkg-config))
    (propagated-inputs
-    ;; Useful for video playback in all-inclusive Guix profiles.
-    ;; For now upstream Guix does not include the GST plugins.
     (list
+     ;; Useful for video playback in all-inclusive Guix profiles.
+     ;; For now upstream Guix does not include the GST plugins.
      gst-libav
      gst-plugins-bad
      gst-plugins-base
      gst-plugins-good
-     gst-plugins-ugly))
+     gst-plugins-ugly
+     ;; For spell-checking.  Same, upstream Guix does not include it in the package.
+     aspell
+     aspell-dict-en))
    (synopsis "Extensible web browser in Common Lisp")
    (home-page "https://nyxt.atlas.engineer")
    (description "Nyxt is a keyboard-oriented, extensible web browser
