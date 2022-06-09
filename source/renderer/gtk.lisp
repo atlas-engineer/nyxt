@@ -47,9 +47,10 @@ See also the `web-contexts' slot."))
   (:accessor-name-transformer (class*:make-name-transformer name))
   (:metaclass user-class))
 
-(defclass renderer-browser (gtk-browser)
-  ()
-  (:metaclass mixin-class))
+(handler-bind ((warning #'muffle-warning))
+  (defclass renderer-browser (gtk-browser)
+    ()
+    (:metaclass mixin-class)))
 
 (alex:define-constant +internal+ "internal" :test 'equal)
 (alex:define-constant +default+ "default" :test 'equal)
@@ -83,9 +84,10 @@ See also the `web-contexts' slot."))
   (:export-accessor-names-p t)          ; TODO: Unexport?
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defclass renderer-window (gtk-window)
-  ()
-  (:metaclass mixin-class))
+(handler-bind ((warning #'muffle-warning))
+  (defclass renderer-window (gtk-window)
+    ()
+    (:metaclass mixin-class)))
 
 (define-class gtk-buffer ()
   ((gtk-object)
@@ -112,9 +114,10 @@ failures."))
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defclass renderer-buffer (gtk-buffer)
-  ()
-  (:metaclass mixin-class))
+(handler-bind ((warning #'muffle-warning))
+  (defclass renderer-buffer (gtk-buffer)
+    ()
+    (:metaclass mixin-class)))
 
 (defclass webkit-web-context (webkit:webkit-web-context) ()
   (:metaclass gobject:gobject-class))
@@ -312,9 +315,10 @@ By default it is found in the source directory."))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (without-package-locks ; TODO: Is there a cleaner way to update the mode class?  Maybe move it to the core?
-  (defclass nyxt/download-mode:renderer-download (gtk-download)
-    ()
-    (:metaclass mixin-class)))
+  (handler-bind ((warning #'muffle-warning))
+    (defclass nyxt/download-mode:renderer-download (gtk-download)
+      ()
+      (:metaclass mixin-class))))
 
 (defclass webkit-web-view-ephemeral (webkit:webkit-web-view) ()
   (:metaclass gobject:gobject-class))
@@ -768,9 +772,10 @@ See `gtk-browser's `modifier-translator' slot."
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defclass renderer-scheme (gtk-scheme)
-  ()
-  (:metaclass mixin-class))
+(handler-bind ((warning #'muffle-warning))
+  (defclass renderer-scheme (gtk-scheme)
+    ()
+    (:metaclass mixin-class)))
 
 (defun make-context (name &key ephemeral-p)
   (let* ((context
@@ -1638,9 +1643,10 @@ local anyways, and it's better to refresh it if a load was queried."
 
 
 (without-package-locks ; TODO: Is there a cleaner way to update the mode class?  Maybe move it to the core?
-  (defclass nyxt/user-script-mode:renderer-user-script (gtk-user-script)
-    ()
-    (:metaclass mixin-class)))
+  (handler-bind ((warning #'muffle-warning))
+    (defclass nyxt/user-script-mode:renderer-user-script (gtk-user-script)
+      ()
+      (:metaclass mixin-class))))
 
 (define-ffi-method ffi-buffer-add-user-script ((buffer gtk-buffer) (script gtk-user-script))
   (alex:if-let ((code (nfiles:content script)))
