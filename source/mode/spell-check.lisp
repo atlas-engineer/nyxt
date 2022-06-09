@@ -29,7 +29,7 @@ a list of more languages available, see `spell-check-list-languages'.")
                                   (find-submode 'spell-check-mode)))
      ,@body))
 
-(defun spell-dict-check (word)
+(defun spell-dict-check-p (word)
   "Spell check `word' and return if correct or not."
   (with-spell-check (lang)
     (enchant:dict-check lang word)))
@@ -40,7 +40,7 @@ a list of more languages available, see `spell-check-list-languages'.")
                   (prompt1
                    :prompt "Spell check word"
                    :sources (make-instance 'prompter:raw-source)))))
-    (if (spell-dict-check word)
+    (if (spell-dict-check-p word)
         (echo "~s is spelled correctly." word)
         (echo "~s is NOT correctly spelled." word))))
 
@@ -55,7 +55,7 @@ pull up a prompt of suggestions."
 (defun spell-check-prompt (word)
   "Spell check `word', if incorrectly spelled, prompt the user with
 suggestions."
-  (if (spell-dict-check word)
+  (if (spell-dict-check-p word)
       (echo "Word ~s spelled correctly." word)
       (progn
         (echo "Word ~s spelled incorrectly." word)
