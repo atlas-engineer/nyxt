@@ -275,7 +275,7 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
   url)
 
 (define-internal-page show-url-qrcode (&key url)
-    (buffer "*Buffer URL QR code*")
+    (:title "*Buffer URL QR code*")
   "Display the QR code containing URL."
   (let* ((stream (flexi-streams:make-in-memory-output-stream)))
     (cl-qrencode:encode-png-stream url stream)
