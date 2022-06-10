@@ -230,7 +230,7 @@ If STEPS is negative, go to next pages instead."
   (select-next-page :prompt-buffer prompt-buffer :steps (- steps)))
 
 (define-command-prompt return-selection (prompt-buffer)
-  "Have the PROMT-BUFFER return the selection, then quit."
+  "Have the PROMPT-BUFFER return the selection, then quit."
   (prompter:return-selection prompt-buffer))
 
 (defun make-attribute-suggestion (attribute &optional source input)
