@@ -130,12 +130,13 @@
               (then ,callback)))))
 
 (export-always 'lisp-eval2)
-(defpsmacro lisp-eval2 ((callback-index &optional title callback) &body form)
-  "Request the lisp: URL and invoke callback when there's a successful result.
-CALLBACK-INDEX is a hash-table which must exist
+(ps:defpsmacro lisp-eval2 ((&key (buffer (nyxt:current-buffer)) title callback) &body form)
+  "Request the lisp: URL and invoke CALLBACK when there's a successful result.
+BUFFER must be a `document-buffer'.
 TITLE is purely informative."
+  ;; We define it here and not in parenscript-macro because we
   `(let ((request (ps:lisp (let ((request-id (string (gensym ""))))
-                             (setf (gethash request-id ,callback-index)
+                             (setf (gethash request-id (nyxt::lisp-url-callbacks ,buffer))
                                    (lambda () ,@form))
                              (let ((url-string (format nil "lisp2://~a" request-id)))
                                (when ,title
