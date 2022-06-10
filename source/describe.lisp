@@ -271,14 +271,14 @@ turned into links to their respective description page."
 (define-internal-page-command-global describe-function
     (&key
      universal
-     (function (prompt1
-                 :prompt "Describe function"
-                 :sources (make-instance 'function-source :universal universal))))
-    (buffer (str:concat "*Help-" (symbol-name function) "*") (resolve-symbol :help-mode :mode))
+     (fn (prompt1
+           :prompt "Describe function"
+           :sources (make-instance 'function-source :universal universal))))
+    (buffer (str:concat "*Help-" (symbol-name fn) "*") (resolve-symbol :help-mode :mode))
   "Inspect a function and show it in a help buffer.
 For generic functions, describe all the methods."
-  (if function
-      (let ((input function)
+  (if fn
+      (let ((input fn)
             (*print-case* :downcase))
         (flet ((fun-desc (input)
                  (spinneret:with-html-string
