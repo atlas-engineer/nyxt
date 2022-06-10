@@ -108,7 +108,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
                                             (ps:lisp style)))))))
 
 (sera:eval-always
-  (defvar *nyxt-url-commands* (make-hash-table) ; TODO: Rename to `*internal-pages*'.
+  (defvar *nyxt-url-commands* (make-hash-table) ; TODO: Rename to `*internal-pages-command-list*'.
     "A map from allowed nyxt: URLs symbols to the functions that generate code of
   the pages related to these commands."))
 
@@ -118,13 +118,8 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
 (deftype internal-page-symbol ()
   `(and symbol (satisfies internal-page-symbol-p)))
 
-(define-class internal-page ()
-  ((name
-    nil
-    :type symbol
-    :export t
-    :documentation "The key of the internal-page in `*nyxt-url-commands*'.")
-   (dynamic-title ; Not `title' so that it does not clash with other `title' methods.
+(define-class internal-page (command)
+  ((dynamic-title ; Not `title' so that it does not clash with other `title' methods.
     ""
     :initarg :title
     :accessor nil
@@ -140,18 +135,79 @@ It's automatically enabled when the page is loaded and disabled when another URL
 is loaded.")
    (form
     nil
+    :initarg nil
     :type (maybe function)
     :documentation "Function that returns HTML content when a nyxt:// URL is
 invoked.
 The nyxt:// URL query arguments are passed to this function as keyword arguments."))
+  (:metaclass closer-mop:funcallable-standard-class)
   (:accessor-name-transformer (class*:make-name-transformer name))
+  (:export-class-name-p t)
+  (:export-accessor-names-p t)
   (:documentation "Each instance is a unique internal page generator for the
 nyxt:// URL scheme.
 
-See `find-internal-page-buffer' and `define-internal-page'."))
+Register a new nyxt:// URL under NAME.
+When loaded, BODY is run to populate the page content.
 
-;; (defmethod initialize-instance :after ((page internal-page) &key)
-;;   ())
+WARNING: Don't run anything sensitive in the BODY as any third-party page can
+load nyxt:// URLs.
+
+BODY should end with a form returning the HTML body as a string.
+
+ARGLIST is arguments for the underlying page-generating
+function. Any argument from it is safe to use in the body of this macro.
+Beware: the ARGLIST should have nothing but keyword arguments because it's
+mapped to the URL query parameters.
+Only Lisp values that can be converted to JavaScript with
+`webkit:lisp-to-jsc-value' are accepted.
+
+See `find-internal-page-buffer'."))
+
+(defmethod (setf form) (lambda-expression (page internal-page))
+  (let ((arglist (second lambda-expression)))
+    (multiple-value-bind (required optional rest keyword allow-other-keys-p aux key-p)
+        (alex:parse-ordinary-lambda-list arglist)
+      (declare (ignore allow-other-keys-p key-p))
+      (when (or required optional rest aux)
+        (error "Only keyword parameters are allowed in an internal-page definition."))
+      (let* ((keyargs keyword))
+        (setf (slot-value page 'form)
+              (lambda (&rest args)
+                (declare (ignorable args))
+                (let ((*print-pretty* nil))
+                  (values (spinneret:with-html-string
+                            (:head
+                             (:title (dynamic-title (gethash (name page) *nyxt-url-commands*)
+                                                    keyargs))
+                             (:style (style (current-buffer))))
+                            (:body
+                             (:raw (funcall (compile nil lambda-expression) args))))
+                          "text/html;charset=utf8"))))))))
+
+(defmethod set-internal-page-method ((page internal-page) form)
+  (when form
+    (let* ((arglist (second form))
+           (keywords (nth-value 3 (alex:parse-ordinary-lambda-list arglist)))
+           (body (cddr form))
+           (documentation (nth-value 2 (alex:parse-body body :documentation t))))
+      (closer-mop:ensure-method
+       page
+       `(lambda (&rest args ,@arglist)
+          ,@(when documentation (list documentation))
+          (declare (ignorable ,@(alex:mappend #'cdar keywords)))
+          (set-current-buffer
+           (buffer-load (apply #'nyxt-url (name ,page) args)
+                        :buffer (ensure-internal-page-buffer (name ,page)))))))))
+
+(defmethod initialize-instance :after ((page internal-page)
+                                       &key form
+                                       &allow-other-keys)
+  "Register PAGE into the globally known nyxt:// URLs."
+  (when form
+    (set-internal-page-method page form)
+    (setf (form page) form))
+  (setf (gethash (name page) *nyxt-url-commands*) page))
 
 (defmethod dynamic-title ((page internal-page) &rest args)
   (with-slots ((title dynamic-title)) page
@@ -182,92 +238,55 @@ See `find-internal-page-buffer' and `define-internal-page'."))
       (make-instance 'web-buffer)))
 
 (export-always 'define-internal-page)
-(defmacro define-internal-page (name (&rest arglist)
-                                ;; TODO: Move `buffer-var' (and `title'?) to a keyword arg.
-                                (buffer-var title &key mode command-p global-p)
-                                &body body)
-  "Register a new nyxt:// URL under NAME.
-When loaded, BODY is run to populate the page content.
-
-WARNING: Don't run anything sensitive in the BODY as any third-party page can
-load nyxt:// URLs.
-
-BODY should end with a form returning the HTML body as a string.
-
-ARGLIST is arguments for the underlying page-generating
-function. Any argument from it is safe to use in the body of this macro.
-Beware: the ARGLIST should have nothing but keyword arguments because it's
-mapped to the URL query parameters.
-Only Lisp values that can be converted to JavaScript with
-`webkit:lisp-to-jsc-value' are accepted.
-
-With COMMAND-P, define a trivial command which creates and switches to the
-internal page buffer.  The command takes ARGLIST parameters.
-With GLOBAL-P, make this command globally accessible."
-  (multiple-value-bind (required optional rest keyword allow-other-keys-p aux key-p )
-      (alex:parse-ordinary-lambda-list arglist)
-    (declare (ignore allow-other-keys-p key-p keyword))
-    (when (or required optional rest aux)
-      (error "Only keyword parameters are allow in an internal-page definition.")))
-  (multiple-value-bind (body declarations documentation)
-      (alex:parse-body body :documentation t)
-    (let* ((keyargs (nth-value 3 (alex:parse-ordinary-lambda-list arglist)))
-           (argnames (alex:mappend #'cdar keyargs))
-           (keyargs-normal (alex:mappend #'first keyargs)))
-      `(progn
-         (setf (gethash ',name *nyxt-url-commands*)
-               (make-instance
-                'internal-page
-                :name ',name
-                :page-mode ,mode
-                :title ,(if (stringp title)
-                            title
-                            `(lambda (,@arglist)
-                               (declare (ignorable ,@argnames))
-                               ,title))
-                :form
-                (lambda (,@arglist)
-                  ,@(when documentation (list documentation))
-                  ,@declarations
-                  (let ((,buffer-var (current-buffer))
-                        (*print-pretty* nil))
-                    (values (spinneret:with-html-string
-                              (:head
-                               (:title (dynamic-title (gethash ',name *nyxt-url-commands*)
-                                                      ,@keyargs-normal))
-                               (:style (style ,buffer-var)))
-                              (:body
-                               (:raw (progn ,@body))))
-                            "text/html;charset=utf8")))))
-         ,(when command-p
-            (alex:with-gensyms (rest-arg)
-              `(,(if global-p 'define-command-global 'define-command) ,name (&rest ,rest-arg ,@arglist)
-                ,@(when documentation (list documentation))
-                (declare (ignorable ,@argnames))
-                (set-current-buffer (buffer-load (apply #'nyxt-url ',name ,rest-arg)
-                                                 :buffer (ensure-internal-page-buffer ',name))))))))))
+(defmacro define-internal-page (name (&rest form-args) (&rest initargs) &body body)
+  "Define an `internal-page'."
+  `(apply #'make-instance 'internal-page
+          :name ',name
+          :lambda-lits (append '(&rest rest-args) ',form-args)
+          :form (quote (lambda (,@form-args) ,@body))
+          ',initargs))
 
 (export-always 'define-internal-page-command)
 (defmacro define-internal-page-command (name (&rest arglist)
                                         (buffer-var title &optional mode)
                                         &body body)
-  "Define a command called NAME creating an internal interface page.
+  "Define a command called NAME creating an `internal-page'.
 
-See `define-internal-page' for the descriptiion of the parameters."
-  `(define-internal-page ,name ,arglist
-       (,buffer-var ,title :mode ,mode :command-p t)
-       ,@body))
+Only keyword arguments are accepted."
+  (multiple-value-bind (stripped-body declarations documentation)
+      (alex:parse-body body :documentation t)
+    `(progn
+       (export-always ',name (symbol-package ',name))
+       (sera:lret ((gf (defgeneric ,name (,@(append '(&rest rest-args) (generalize-lambda-list arglist)))
+                         (:documentation ,documentation)
+                         (:generic-function-class internal-page))))
+         (let ((form  '(lambda (,@arglist)
+                        ,@(when documentation (list documentation))
+                        ,@declarations
+                        (let ((,buffer-var (current-buffer)))
+                          ,@stripped-body))))
+           (set-internal-page-method gf form)
+           (setf (slot-value #',name 'visibility) :mode)
+           (setf (slot-value #',name 'page-mode) ,mode)
+           (setf (slot-value #',name 'dynamic-title)
+                 ,(if (stringp title)
+                      title
+                      (let ((keywords (nth-value 3 (alex:parse-ordinary-lambda-list arglist))))
+                        `(lambda (,@arglist)
+                           (declare (ignorable ,@(alex:mappend #'cdar keywords)))
+                           ,title))))
+           (setf (form #',name) form))))))
 
 (export-always 'define-internal-page-command-global)
 (defmacro define-internal-page-command-global (name (&rest arglist)
+                                               ;; TODO: Move `buffer-var' (and `title'?) to a keyword arg.
                                                (buffer-var title &optional mode)
                                                &body body)
-  "Define a global command called NAME creating an internal interface page.
+  "Define a global command called NAME creating an `internal-page'.
 
-See `define-internal-page-command' for the explanation of arguments."
-  `(define-internal-page ,name (,@arglist)
-       (,buffer-var ,title :mode ,mode :command-p t :global-p t)
-       ,@body))
+Only keyword arguments are accepted."
+  `(prog1 (define-internal-page-command ,name (,@arglist) (,buffer-var ,title ,mode) ,@body)
+     (setf (slot-value #',name 'visibility) :global)))
 
 (defvar *json-object-accumulator* (make-hash-table :test 'equal)
   "Our own object accumulator to override the default `cl-json:decode-json' object->alist behavior.
