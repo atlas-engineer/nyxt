@@ -7,7 +7,7 @@
   "The list of known commands, for internal use only.")
 
 (define-class command (standard-generic-function)
-  ((visibility :mode
+  ((visibility :mode                    ; So that `define-command' registers into `*command-list*'.
                :type (member :global :mode :anonymous)
                :reader t
                :writer nil
@@ -64,15 +64,28 @@ These specializations are reserved to the user."))
   `(echo-warning "~a is deprecated." ,(name command))
   (call-next-method))
 
-(defmethod initialize-instance :after ((command command) &key)
-  (when (and (uiop:emptyp (documentation command 'function))
-             (not (eq :anonymous (visibility command))))
-    (error "Commands require documentation."))
+(defun initialize-command (command lambda-expression)
+  (when (uiop:emptyp (closer-mop:generic-function-name command))
+    (alex:required-argument 'name))
+  (when lambda-expression
+    (closer-mop:ensure-method command lambda-expression))
+  (when (uiop:emptyp (documentation command t))
+    (let ((doc (nth-value 2 (alex:parse-body (rest (rest lambda-expression)) :documentation t))))
+      (if (and (uiop:emptyp doc)
+               (not (eq :anonymous (visibility command))))
+          (error "Command ~a requires documentation." (name command))
+          (setf (documentation command 'function) doc))))
   (unless (or (eq :anonymous (visibility command))
               (deprecated-p command))
     ;; Overwrite previous command:
-    (setf *command-list* (delete (closer-mop:generic-function-name command) *command-list* :key #'closer-mop:generic-function-name))
+    (setf *command-list* (delete (closer-mop:generic-function-name command) *command-list*
+                                 :key #'closer-mop:generic-function-name))
     (push command *command-list*)))
+
+(defmethod initialize-instance :after ((command command) &key lambda-expression &allow-other-keys)
+  (initialize-command command lambda-expression))
+(defmethod reinitialize-instance :after ((command command) &key lambda-expression &allow-other-keys)
+  (initialize-command command lambda-expression))
 
 (defun find-command (name)
   (find name *command-list* :key #'name))
@@ -81,15 +94,9 @@ These specializations are reserved to the user."))
 (export-always 'make-command)
 (defun make-command (name lambda-expression &optional (visibility :anonymous))
   "Return an non-globally defined command named NAME."
-  (let ((arglist (second lambda-expression))
-        (doc (nth-value 2 (alex:parse-body (rest (rest lambda-expression)) :documentation t))))
-    (sera:lret ((command (make-instance
-                          'command
-                          :name name
-                          :lambda-list (generalize-lambda-list arglist)
-                          :documentation doc
-                          :visibility visibility)))
-      (closer-mop:ensure-method command lambda-expression))))
+  (make-instance 'command :name name
+                          :lambda-expression lambda-expression
+                          :visibility visibility))
 
 (export-always 'lambda-command)
 (defmacro lambda-command (name args &body body)
