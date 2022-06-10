@@ -92,13 +92,26 @@ It is run before the destructor.")
   (:method ((mode mode) &key)
     nil)
   (:documentation "Run when enabling a mode.
-The pre-defined `:after' method handles further setup."))
+The pre-defined `:after' method handles further setup.
+This method is meant to be specialized for every mode.
+It is not meant to be called directly, see `enable-modes' instead.
+
+See also `disable'."))
+
+(defmethod enable :before ((mode mode) &key)
+  (sera:and-let* ((buffer (buffer mode))
+                  (existing-instance (find (sera:class-name-of mode)
+                                           (remove-if (sera:eqs mode) (slot-value buffer 'modes))
+                                           :key #'sera:class-name-of)))
+    (log:warn "Disabling other ~a instance is already in buffer ~a" existing-instance buffer)
+    ;; TODO: Remove it?
+    (disable existing-instance)))
 
 (defmethod enable :after ((mode mode) &key)
   (setf (slot-value mode 'enabled-p) t)
   (hooks:run-hook (enable-hook mode) mode)
   (let ((buffer (buffer mode)))
-    ;; TODO: Should we move mode to the front when it already exists?
+    ;; TODO: Should we move mode to the front on re-enable?
     (pushnew mode (slot-value (buffer mode) 'modes))
     (hooks:run-hook (enable-mode-hook buffer) mode)
     (if (and (prompt-buffer-p buffer)
@@ -112,7 +125,11 @@ The pre-defined `:after' method handles further setup."))
   (:method ((mode mode) &key)
     nil)
   (:documentation "Run when disabling a mode.
-The pre-defined `:after' method handles further cleanup."))
+The pre-defined `:after' method handles further cleanup.
+This method is meant to be specialized for every mode.
+It is not meant to be called directly, see `disable-modes' instead.
+
+See also `enable'."))
 
 (defmethod disable :after ((mode mode) &key)
   (setf (slot-value mode 'enabled-p) nil)
