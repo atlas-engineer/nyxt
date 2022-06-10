@@ -2,7 +2,7 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/certificate-exception-mode
-    (:documentation "Certificate exception mode"))
+    (:documentation "Control which invalid certificates to accept or reject."))
 (in-package :nyxt/certificate-exception-mode)
 
 (sera:export-always '*default-certificate-exceptions*)
@@ -11,7 +11,7 @@
 See the `add-domain-to-certificate-exceptions' command.")
 
 (define-mode certificate-exception-mode ()
-  "Enable ignoring of certificate errors.
+  "Control which invalid certificates to accept or reject.
 This can apply to specific buffers.
 See the `add-domain-to-certificate-exceptions' command."
   ((visible-in-status-p nil)
