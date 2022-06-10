@@ -433,6 +433,28 @@ guarantee of the same result."
   :cors-enabled-p t
   :error-callback (lambda (c) (log:debug "Error when evaluating lisp URL: ~a" c)))
 
+(ps:defpsmacro nyxt/ps::lisp-eval2 ((&key (buffer (nyxt:current-buffer)) title callback) &body form)
+  "Request the lisp: URL and invoke CALLBACK when there's a successful result.
+BUFFER must be a `document-buffer'.
+TITLE is purely informative."
+  ;; We define it here and not in parenscript-macro because we
+  `(let ((request (ps:lisp (let ((request-id (string (gensym ""))))
+                             (setf (gethash request-id (nyxt::lisp-url-callbacks ,buffer))
+                                   (lambda () ,@form))
+                             (let ((url-string (format nil "lisp2://~a" request-id)))
+                               (when ,title
+                                 (setf url-string (str:concat url-string "/" ,title)))
+                               url-string)))))
+     (let ((request (fetch request
+                           (create :mode "no-cors"))))
+       (when ,callback
+         (chain request
+                (then (lambda (response)
+                        (when (@ response ok)
+                          (chain response (json)))))
+                (then ,callback))))))
+(export-always 'nyxt/ps::lisp-eval2 :nyxt/ps)
+
 (define-internal-scheme "lisp2"
     (lambda (url buffer)
       (let ((url (quri:uri url)))
