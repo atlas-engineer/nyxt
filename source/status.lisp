@@ -16,8 +16,7 @@ Upon returning NIL, the mode is not displayed."))
   "Return visible modes in MODES, with `nyxt/keymap-scheme-mode:scheme-mode' placed first."
   (multiple-value-bind (scheme-mode other-modes)
       (sera:partition #'nyxt/keymap-scheme-mode::keymap-scheme-mode-p
-                      (sera:filter (alex:conjoin #'enabled-p #'visible-in-status-p)
-                                   modes))
+                      (sera:filter #'visible-in-status-p modes))
     (append scheme-mode other-modes)))
 
 (export-always 'format-status-modes)
@@ -47,8 +46,7 @@ This leverages `mode-status' which can be specialized for individual modes."
 
 (defun modes-string (buffer)
   (when (modable-buffer-p buffer)
-    (format nil "~{~a~^ ~}" (mapcar #'princ-to-string
-                                    (sera:filter #'enabled-p (modes buffer))))))
+    (format nil "~{~a~^ ~}" (mapcar #'princ-to-string (modes buffer)))))
 
 (export-always 'format-status-buttons)
 (defmethod format-status-buttons ((status status-buffer))

@@ -99,7 +99,7 @@ The pre-defined `:after' method handles further setup."))
   (hooks:run-hook (enable-hook mode) mode)
   (let ((buffer (buffer mode)))
     ;; TODO: Should we move mode to the front when it already exists?
-    (pushnew mode (modes (buffer mode)))
+    (pushnew mode (slot-value (buffer mode) 'modes))
     (hooks:run-hook (enable-mode-hook buffer) mode)
     (if (and (prompt-buffer-p buffer)
              (eq (first (active-prompt-buffers (window buffer)))
@@ -372,7 +372,7 @@ If it's a single buffer, return it directly (not as a list)."
                     &allow-other-keys)
   "Enable MODE-SYM if not already enabled, disable it otherwise."
   (when (modable-buffer-p buffer)
-    (let ((existing-instance (find mode-sym (modes buffer) :key #'sera:class-name-of)))
+    (let ((existing-instance (find mode-sym (slot-value buffer 'modes) :key #'sera:class-name-of)))
       (unless explicit?
         (setf activate (or (not existing-instance)
                            (not (enabled-p existing-instance)))))
@@ -401,7 +401,7 @@ If it's a single buffer, return it directly (not as a list)."
                                               "Return selection but force disabling auto-mode.
 This is convenient when you use auto-mode by default and you want to toggle a
 mode permanently for this buffer."
-                                              (delete (read-from-string "nyxt/auto-mode:auto-mode" )
+                                              (delete (read-from-string "nyxt/auto-mode:auto-mode")
                                                       modes)))
                       :marks (mapcar #'sera:class-name-of (modes buffer)))))
          (modes-to-disable (set-difference (all-mode-symbols) modes-to-enable

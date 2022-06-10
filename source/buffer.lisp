@@ -128,6 +128,9 @@ Nothing to do for the simplest `buffer' type."
 (define-class modable-buffer (buffer)
   ((modes
     '()
+    :writer t
+    :export t
+    :reader nil
     :documentation "The list of mode instances.
 Modes are instantiated over the result of the `default-modes' method, with
 `finalize-buffer' and not in the initform so that the instantiation form can
@@ -170,6 +173,11 @@ of BUFFER."
 This specialization is useful to be able to call the method regardless of the
 buffer, with a meaningful result."
   '())
+
+(defmethod modes ((buffer modable-buffer))
+  "Only return enabled modes.
+To access all modes, including disabled ones, use `slot-value'."
+  (sera:filter #'enabled-p (slot-value buffer 'modes)))
 
 (define-class input-buffer (buffer)
   ((keymap-scheme-name
