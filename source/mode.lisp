@@ -277,7 +277,7 @@ For production code, see `find-submode' instead."
 
 (define-class active-mode-source (prompter:source)
   ((prompter:name "Active modes")
-   (buffers :initarg :buffers :accessor buffers :initform nil)
+   (buffers '())
    (prompter:multi-selection-p t)
    (prompter:constructor (lambda (source)
                            (delete-duplicates
@@ -291,7 +291,7 @@ For production code, see `find-submode' instead."
 
 (define-class inactive-mode-source (prompter:source)
   ((prompter:name "Inactive modes")
-   (buffers :initarg :buffers :accessor buffers :initform nil)
+   (buffers '())
    (prompter:multi-selection-p t)
    (prompter:constructor (lambda (source)
                            (let ((common-modes
