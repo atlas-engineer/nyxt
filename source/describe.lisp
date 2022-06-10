@@ -96,7 +96,7 @@ for matches."
                  (make-instance
                   'function-source
                   :return-actions (list (lambda-command describe-function* (functions)
-                                          (describe-function :function (first functions))))
+                                          (describe-function :fn (first functions))))
                   :filter-preprocessor preprocessor
                   :universal universal)
                  (make-instance
@@ -481,7 +481,7 @@ A command is a special kind of function that can be called with
       (:ul (loop for method in (remove-if
                                 #'listp (mapcar #'mopu:generic-function-name
                                                 (mopu:generic-functions class)))
-                 collect (:li (:a :href (nyxt-url 'describe-function :function method) method)))))))
+                 collect (:li (:a :href (nyxt-url 'describe-function :fn method) method)))))))
 
 (define-command-global universal-describe-class ()
   "Inspect a Nyxt-accessible class and show it in a help buffer."
