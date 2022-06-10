@@ -129,13 +129,6 @@
                         (chain response (json)))))
               (then ,callback)))))
 
-(export-always 'funcall-ps-callback)
-(defun funcall-ps-callback (callback-index key)
-  "KEY refers to a callback in the CALLBACK-INDEX hash-table.
-See the `lisp-eval2' scheme."
-  (unwind-protect (nyxt:funcall* (gethash key callback-index))
-    (remhash key callback-index)))
-
 (export-always 'lisp-eval2)
 (defpsmacro lisp-eval2 ((callback-index &optional title callback) &body form)
   "Request the lisp: URL and invoke callback when there's a successful result.
