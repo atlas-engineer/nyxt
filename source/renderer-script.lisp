@@ -136,6 +136,8 @@ is loaded.")
    (form
     nil
     :initarg nil
+    :writer nil
+    :reader t
     :type (maybe function)
     :documentation "Function that returns HTML content when a nyxt:// URL is
 invoked.
