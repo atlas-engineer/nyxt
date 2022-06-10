@@ -400,28 +400,27 @@ Auto-mode is re-enabled once the page is reloaded."
     (values list &optional))
 (sera:export-always 'add-modes-to-auto-mode-rules)
 (defun add-modes-to-auto-mode-rules (test &key (append-p nil) exclude include (exact-p nil))
-  (alex:when-let* ((mode (find-submode 'auto-mode))
-                   (rules (files:content (auto-mode-rules-file mode))))
-    (let* ((rule (or (find test rules
-                           :key #'test :test #'equal)
-                     (make-instance 'auto-mode-rule :test test)))
-           (include (rememberable-of include))
-           (exclude (rememberable-of exclude)))
-      (setf (exact-p rule) exact-p
-            (included rule) (union include
-                                   (when append-p
-                                     (set-difference (included rule) exclude
-                                                     :test #'equals)))
-            (excluded rule) (union exclude
-                                   (when append-p
-                                     (set-difference (excluded rule) include
-                                                     :test #'equals)))
-            rules (delete-duplicates
-                   (append (when (or (included rule) (excluded rule))
-                             (list rule))
-                           rules)
-                   :key #'test :test #'equal)))
-    rules))
+  (alex:when-let ((mode (find-submode 'auto-mode)))
+    (nfiles:with-file-content (rules (auto-mode-rules-file mode))
+      (let* ((rule (or (find test rules
+                             :key #'test :test #'equal)
+                       (make-instance 'auto-mode-rule :test test)))
+             (include (rememberable-of include))
+             (exclude (rememberable-of exclude)))
+        (setf (exact-p rule) exact-p
+              (included rule) (union include
+                                     (when append-p
+                                       (set-difference (included rule) exclude
+                                                       :test #'equals)))
+              (excluded rule) (union exclude
+                                     (when append-p
+                                       (set-difference (excluded rule) include
+                                                       :test #'equals)))
+              rules (delete-duplicates
+                     (append (when (or (included rule) (excluded rule))
+                               (list rule))
+                             rules)
+                     :key #'test :test #'equal))))))
 
 (defun serialize-object (rule &optional (stream *standard-output*))
   (flet ((write-if-present (slot &key modes-p)
