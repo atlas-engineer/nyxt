@@ -81,11 +81,12 @@ Gemini support is a bit more chaotic, but you can override `line->html' for
     'hooks:handler
     :fn (lambda (request-data)
           (when (toplevel-p request-data)
-            (if (or (str:s-member '("gopher" "gemini")
-                                  (quri:uri-scheme (url request-data)))
-                    (str:starts-with-p "text/gemini" (mime-type request-data)))
-                (update mode)
-                (disable-modes '(small-web-mode) (buffer mode))))
+            (cond
+              ((str:s-member '("gopher" "gemini") (quri:uri-scheme (url request-data)))
+               (update mode))
+              ((str:starts-with-p "text/gemini" (mime-type request-data))
+               nil)
+              (t (disable-modes 'small-web-mode (buffer mode)))))
           request-data)
     :name 'small-web-mode-disable)))
 
