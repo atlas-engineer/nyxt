@@ -984,7 +984,7 @@ See `finalize-buffer'."
         (log:debug "Forward to ~s's renderer (unchanged URL)."
                    buffer)
         (webkit:webkit-policy-decision-use response-policy-decision))
-       ((and (quri:uri= (url buffer) (quri:uri (webkit:webkit-uri-request-uri request)))
+       ((and (toplevel-p request-data)
              (not (quri:uri= (quri:uri (webkit:webkit-uri-request-uri request))
                              (url request-data))))
         ;; Low-level URL string, we must not render the puni codes so use
