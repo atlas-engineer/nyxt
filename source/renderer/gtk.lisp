@@ -980,6 +980,14 @@ See `finalize-buffer'."
              (toplevel-p request-data))
         (log:debug "Initiate download of ~s." (render-url (url request-data)))
         (webkit:webkit-policy-decision-download response-policy-decision))
+       ((and (quri:uri= url (url request-data))
+             (str:starts-with-p "text/gemini" (mime-type request-data)))
+        (log:debug "Processing gemtext from ~a." (render-url url))
+        (enable-modes '(nyxt/small-web-mode:small-web-mode))
+        (webkit:webkit-policy-decision-ignore response-policy-decision)
+        (ffi-buffer-load-html
+         buffer (nyxt/small-web-mode:gemtext-render (or (ignore-errors (dex:get (quri:render-uri url))) "") buffer)
+         url))
        ((quri:uri= url (url request-data))
         (log:debug "Forward to ~s's renderer (unchanged URL)."
                    buffer)

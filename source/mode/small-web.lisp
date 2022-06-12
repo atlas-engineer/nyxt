@@ -81,8 +81,9 @@ Gemini support is a bit more chaotic, but you can override `line->html' for
     'hooks:handler
     :fn (lambda (request-data)
           (when (toplevel-p request-data)
-            (if (str:s-member '("gopher" "gemini")
-                              (quri:uri-scheme (url request-data)))
+            (if (or (str:s-member '("gopher" "gemini")
+                                  (quri:uri-scheme (url request-data)))
+                    (str:starts-with-p "text/gemini" (mime-type request-data)))
                 (update mode)
                 (disable-modes '(small-web-mode) (buffer mode))))
           request-data)
@@ -300,6 +301,22 @@ Please, check URL correctness and try again.")))
         (t (:a :class "button" :href url text))))
     (:br)))
 
+(export-always 'gemtext-render)
+(defun gemtext-render (gemtext buffer)
+  "Renders the Gemtext (Gemini markup format) to HTML.
+
+Implies that `small-web-mode' is enabled."
+  (let ((mode (find-submode 'small-web-mode buffer))
+        (elements (phos/gemtext:parse-string gemtext))
+        (spinneret::*html-style* :tree))
+    (values (spinneret:with-html-string
+              (:style (style buffer))
+              (when mode
+                (:style (style mode)))
+              (loop for element in elements
+                    collect (:raw (nyxt/small-web-mode:line->html element))))
+            "text/html;charset=utf8")))
+
 ;; TODO: :secure-p t? Gemini is encrypted, so it can be considered secure.
 (define-internal-scheme "gemini"
     (lambda (url buffer)
@@ -321,15 +338,7 @@ Please, check URL correctness and try again.")))
                  (buffer-load (str:concat url "?" text) :buffer buffer)))
               (:success
                (if (str:starts-with-p "text/gemini" meta)
-                   (let ((mode (find-submode 'small-web-mode))
-                         (elements (phos/gemtext:parse-string body))
-                         (spinneret::*html-style* :tree))
-                     (values (spinneret:with-html-string
-                               (:style (style buffer))
-                               (:style (style mode))
-                               (loop for element in elements
-                                     collect (:raw (nyxt/small-web-mode:line->html element))))
-                             "text/html;charset=utf8"))
+                   (gemtext-render body buffer)
                    (values body meta)))
               ((:redirect :permanent-redirect)
                (push url (nyxt/small-web-mode:redirections (find-submode 'small-web-mode)))
