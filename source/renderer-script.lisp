@@ -184,7 +184,7 @@ See `find-internal-page-buffer'."))
                                                     keyargs))
                              (:style (style (current-buffer))))
                             (:body
-                             (:raw (funcall (compile nil lambda-expression) args))))
+                             (:raw (apply (compile nil lambda-expression) args))))
                           "text/html;charset=utf8"))))))))
 
 (defmethod set-internal-page-method ((page internal-page) form)
@@ -244,7 +244,7 @@ See `find-internal-page-buffer'."))
   "Define an `internal-page'."
   `(apply #'make-instance 'internal-page
           :name ',name
-          :lambda-lits (append '(&rest rest-args) ',form-args)
+          :lambda-list (append '(&rest rest-args) ',form-args)
           :form (quote (lambda (,@form-args) ,@body))
           ',initargs))
 
@@ -262,12 +262,13 @@ Only keyword arguments are accepted."
        (sera:lret ((gf (defgeneric ,name (,@(append '(&rest rest-args) (generalize-lambda-list arglist)))
                          (:documentation ,documentation)
                          (:generic-function-class internal-page))))
-         (let ((form  '(lambda (,@arglist)
-                        ,@(when documentation (list documentation))
-                        ,@declarations
-                        (let ((,buffer-var (current-buffer)))
-                          ,@stripped-body))))
-           (set-internal-page-method gf form)
+         (let ((wrapped-body '(lambda (,@arglist)
+                               ,@(when documentation (list documentation))
+                               ,@declarations
+                               (let ((,buffer-var (current-buffer)))
+                                 (declare (ignorable ,buffer-var))
+                                 ,@stripped-body))))
+           (set-internal-page-method gf wrapped-body)
            (setf (slot-value #',name 'visibility) :mode)
            (setf (slot-value #',name 'page-mode) ,mode)
            (setf (slot-value #',name 'dynamic-title)
@@ -277,7 +278,7 @@ Only keyword arguments are accepted."
                         `(lambda (,@arglist)
                            (declare (ignorable ,@(alex:mappend #'cdar keywords)))
                            ,title))))
-           (setf (form #',name) form))))))
+           (setf (form gf) wrapped-body))))))
 
 (export-always 'define-internal-page-command-global)
 (defmacro define-internal-page-command-global (name (&rest arglist)
