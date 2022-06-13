@@ -272,6 +272,8 @@ Setf-able, where the languages value is a list of strings like '(\"en_US\"
 Setf-able."))
 
 (define-ffi-generic ffi-buffer-copy (buffer)
+  (:method :after ((buffer t))
+    (ring-insert-clipboard (clipboard-ring *browser*)))
   (:method ((buffer t))
     (with-current-buffer buffer
       ;; On some systems like Xorg, clipboard pasting happens just-in-time.  So if we
@@ -289,12 +291,18 @@ Setf-able."))
   (:documentation "Copy selected text in BUFFER to the system clipboard."))
 
 (define-ffi-generic ffi-buffer-paste (buffer)
+  ;; While it may sound unintuitive, it helps keeping track of system clipboard,
+  ;; both in Nyxt->OS and OS->Nyxt directions.
+  (:method :after ((buffer t))
+    (ring-insert-clipboard (clipboard-ring *browser*)))
   (:method ((buffer t))
     (with-current-buffer buffer
       (%paste)))
   (:documentation "Paste the last clipboard entry into BUFFER."))
 
 (define-ffi-generic ffi-buffer-cut (buffer)
+  (:method :after ((buffer t))
+    (ring-insert-clipboard (clipboard-ring *browser*)))
   (:method ((buffer t))
     (with-current-buffer buffer
       (let ((input (%cut)))
