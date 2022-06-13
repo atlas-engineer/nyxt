@@ -102,7 +102,7 @@ values in help buffers, REPL and elsewhere."))
               (:dt "closure-p")
               (:dd (:raw (value->html closure-p))))))
         (name
-         (:a :href (nyxt-url 'describe-function :function name)
+         (:a :href (nyxt-url 'describe-function :fn name)
              (:raw (escaped-literal-print value))))
         (t (:raw (escaped-literal-print value)))))))
 
