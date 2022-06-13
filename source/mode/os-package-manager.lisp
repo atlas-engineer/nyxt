@@ -133,12 +133,11 @@
       (echo message)
       (error message))))
 
-(define-internal-page-command-global describe-os-package
-    (&key (packages (prompt
-                     :sources '(os-package-source)
-                     :prompt "Describe OS package(s)")))
-  (buffer "*OS package manager*")
-  "Show description of selected packages."
+(define-internal-page describe-os-package
+    (&key packages)
+    (:title "*OS package manager*")
+  "Show description of PACKAGES.
+PACKAGES is a list of `ospm:package' IDs created by `nyxt::ensure-inspected-id'."
   (assert-package-manager)
   (flet ((format-inputs (inputs)
            (spinneret:with-html
@@ -146,6 +145,7 @@
                (:button :onclick (ps:ps (nyxt/ps:lisp-eval
                                          (:title "describe-os-package")
                                          (describe-os-package
+                                          :packages
                                           (ospm:find-os-packages input))))
                         input))))
          (format-outputs (outputs)
@@ -166,9 +166,9 @@
                 (:li "Total size: " (sera:format-file-size-human-readable
                                      nil
                                      (reduce #'+ (mapcar #'ospm:size outputs)))))))))
-    (let ((packages (inspected-value package-list-id)))
+    (let ((packages (inspected-value packages)))
       (spinneret:with-html-string
-        (:style (style buffer))
+        (:style (style (current-buffer)))
         (:h1 "Packages")
         (:ul (dolist (package packages)
                (:li (ospm:name package) " " (ospm:version package)
@@ -195,6 +195,15 @@
                      (:li "Synopsis: " (ospm:synopsis package))
                      (when (typep package 'ospm:guix-package)
                        (:li "Description: " (ospm:description package)))))))))))
+
+(define-command-global describe-os-package (&key (packages (prompt
+                                                            :sources '(os-package-source)
+                                                            :prompt "Describe OS package(s)")))
+  "Show description of PACKAGES."
+  (set-current-buffer
+   (buffer-load (nyxt-url 'describe-os-package
+                          :packages (nyxt::ensure-inspected-id (alex:ensure-list packages)))
+                :buffer (ensure-internal-page-buffer 'describe-os-package))))
 
 (defun viewable-file-type-p (path)
   (let ((path-suffix (string-downcase (uiop:native-namestring path))))
@@ -356,7 +365,7 @@ OBJECTS can be a list of packages, a generation, etc."
             (:li (:button :class "button"
                           :onclick (ps:ps (nyxt/ps:lisp-eval
                                            (:title "describe-os-package")
-                                           (describe-os-package package)))
+                                           (describe-os-package :packages (list package))))
                           (prompter:attributes-default package-output))
                  " " (ospm:version package))))))
      buffer)
