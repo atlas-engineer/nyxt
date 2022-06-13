@@ -247,7 +247,15 @@ See `find-internal-page-buffer'."))
 
 (export-always 'define-internal-page)
 (defmacro define-internal-page (name (&rest form-args) (&rest initargs) &body body)
-  "Define an `internal-page'."
+  "Define an `internal-page'.
+FORM-ARGS or the `internal-page' `form' keyword arguments.
+`INITARGS' are passed to the `internal-page' initialization arguments
+
+Example:
+
+\(define-internal-page my-page (&key arg1 arg2)
+  (:title \"My beautiful page\")
+  ...)"
   `(apply #'make-instance 'internal-page
           :name ',name
           :visibility :anonymous
