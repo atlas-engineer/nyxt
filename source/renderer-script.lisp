@@ -250,6 +250,7 @@ See `find-internal-page-buffer'."))
   "Define an `internal-page'."
   `(apply #'make-instance 'internal-page
           :name ',name
+          :visibility :anonymous
           :lambda-list ',form-args
           :form (quote (lambda (,@form-args) ,@body))
           ',initargs))
