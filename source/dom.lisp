@@ -177,13 +177,17 @@ Relies (in the order of importance) on:
 - ID.
 - Tag name.
 - CSS Classes.
-- Parent node selectors (recursively).
+- Attributes.
+- Parent and sibling node selectors (recursively).
 
 FIXME: If none of those provides the unique selector, returns the most specific
 selector calculated."
   (let* ((tag-name (plump:tag-name element))
          (identifier (plump:get-attribute element "id"))
          (raw-classes (plump:get-attribute element "class"))
+         ;; TODO: Remove other attributes, unreliable ones? For example, href
+         ;; and type are reliable and are unlikely to change, while data-*
+         ;; attributes are unreliable and can change any moment.
          (attributes (remove-if (alex:rcurry #'member '("class" "id") :test #'string=)
                                 (alex:hash-table-keys (plump:attributes element))))
          (classes (when raw-classes (remove-if #'str:blankp (str:split " " raw-classes))))
