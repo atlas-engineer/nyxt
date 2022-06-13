@@ -282,7 +282,7 @@ Clicking on a link navigates the history in the corresponding buffer."
                                                              (with-history (history buffer)
                                                                (htree:visit-all history (id buffer) node))
                                                              (load-history-url url))
-                                                           (switch-buffer :id (id buffer)))))
+                                                           (switch-buffer :buffer buffer))))
                                         (let ((title (title-or-fallback (htree:data node))))
                                           (cond
                                             ((eq node (htree:owner-node history current-buffer-id))
