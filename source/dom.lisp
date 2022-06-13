@@ -184,39 +184,69 @@ selector calculated."
   (let* ((tag-name (plump:tag-name element))
          (identifier (plump:get-attribute element "id"))
          (raw-classes (plump:get-attribute element "class"))
-         (classes (when raw-classes (str:split " " raw-classes)))
+         (attributes (remove-if (alex:rcurry #'member '("class" "id") :test #'string=)
+                                (alex:hash-table-keys (plump:attributes element))))
+         (classes (when raw-classes (remove-if #'str:blankp (str:split " " raw-classes))))
          (parents (parents element))
+         (family (plump:family element))
+         (previous (ignore-errors (plump:previous-element element)))
          ;; Is it guaranteed that the topmost ancestor of a node is
          ;; `plump:root'? Anyway, it should work even if there's a single
          ;; `plump:element' as a root.
          (root (alex:lastcar parents))
          (selector ""))
-    (flet ((selconcat (&rest strings)
-             (setf selector (apply #'str:concat (subst selector :sel strings))))
-           (selreturn ()
-             (return-from get-unique-selector selector)))
-      ;; Id should be globally unique, so we check it first.
+    (labels ((selconcat (&rest strings)
+               (setf selector (apply #'str:concat (subst selector :sel strings))))
+             (unique-p (selector)
+               (sera:single (clss:select selector root)))
+             (selreturn ()
+               (return-from get-unique-selector (values selector (unique-p selector)))))
+      ;; ID should be globally unique, so we check it first.
       (when (and identifier (sera:single (clss:select (selconcat :sel "#" identifier)  root)))
         (selreturn))
       ;; selconcat hack doesn't look nice here, but should work for cases of
       ;; both empty selector and ID selector.
-      (when (sera:single (clss:select (selconcat tag-name :sel) root))
+      (when (unique-p (selconcat tag-name :sel))
         (selreturn))
       (when classes
-        (some (lambda (class)
-                (when (sera:single (clss:select (selconcat :sel "." class) root))
+        (mapc (lambda (class)
+                (when (unique-p (selconcat :sel "." class))
                   (selreturn)))
               classes))
-      (when (and parents
-                 (sera:single
-                  (clss:select
-                      (selconcat (get-unique-selector (first parents)) " > " :sel) root)))
-        (selreturn))
-      ;; FIXME: What if the parents are globally unique and the node is not
-      ;; unique at all?
+      (when attributes
+        (mapc (lambda (attribute)
+                (when (unique-p (selconcat :sel "[" attribute "=\""
+                                            (plump:attribute element attribute) "\"]"))
+                  (selreturn)))
+              attributes))
+      ;; Check for short and nice parent-child relations, like :only-child,
+      ;; :last-child etc.
       ;;
-      ;; TODO: Need to check the siblings, attributes and children of the node.
-      (selreturn))))
+      ;; FIXME: :nth-child would be extremely useful there, but it seems to by
+      ;; unpredictable in CLSS (or CSS?).
+      (when (and parents
+                 (sera:single family)
+                 (unique-p (selconcat :sel ":only-child")))
+        (selreturn))
+      (when (and parents
+                 (not (sera:single family))
+                 (eq element (elt family 0))
+                 (unique-p (selconcat :sel ":first-child")))
+        (selreturn))
+      (when (and parents
+                 (not (sera:single family))
+                 (eq element (elt family (1- (length family))))
+                 (unique-p (selconcat :sel ":last-child")))
+        (selreturn))
+      ;; Then check for previous siblings.
+      (when (and previous
+                 (unique-p (selconcat (get-unique-selector previous)  " ~ " :sel)))
+        (selreturn))
+      ;; Finally, go up the hierarchy.
+      (when (and parents
+                 (unique-p (selconcat (get-unique-selector (first parents)) " > " :sel)))
+        (selreturn))
+      (error "There's no unique selector for ~a, the best quess is ~s" element selector))))
 
 (defmethod url :around ((element plump:element))
   (alex:when-let* ((result (call-next-method))
