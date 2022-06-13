@@ -438,15 +438,15 @@ guarantee of the same result."
 BUFFER must be a `document-buffer'.
 TITLE is purely informative."
   ;; We define it here and not in parenscript-macro because we
-  `(let ((request (ps:lisp (let ((request-id (string (gensym ""))))
+  `(let ((url (ps:lisp (let ((request-id (string (gensym ""))))
                              (setf (gethash request-id (nyxt::lisp-url-callbacks ,buffer))
                                    (lambda () ,@form))
                              (let ((url-string (format nil "lisp2://~a" request-id)))
                                (when ,title
                                  (setf url-string (str:concat url-string "/" ,title)))
                                url-string)))))
-     (let ((request (fetch request
-                           (create :mode "no-cors"))))
+     (let ((request (fetch url
+                           (ps:create :mode "no-cors"))))
        (when ,callback
          (chain request
                 (then (lambda (response)
@@ -458,7 +458,7 @@ TITLE is purely informative."
 (define-internal-scheme "lisp2"
     (lambda (url buffer)
       (let ((url (quri:uri url)))
-        ;; TODO: Replace this condition with `(network-buffer-p buffer)`?
+        ;; TODO: Replace this condition with `(not (network-buffer-p buffer))`?
         (if (or (status-buffer-p buffer)
                 (panel-buffer-p buffer)
                 (prompt-buffer-p buffer)
