@@ -1531,7 +1531,7 @@ Return it."
   "Prompt for BUFFERS to be reloaded.
 Return BUFFERS."
   (if buffers
-      (mapcar (lambda (buffer) (buffer-load (url buffer) :buffer buffer)) buffers)
+      (mapcar (lambda (buffer) (buffer-load (url buffer) :buffer buffer)) (alex:ensure-list buffers))
       (prompt
        :prompt "Reload buffer(s)"
        :sources (make-instance 'buffer-source
