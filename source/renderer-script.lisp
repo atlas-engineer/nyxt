@@ -261,7 +261,7 @@ Example:
           :visibility :anonymous
           :lambda-list ',form-args
           :form (quote (lambda (,@form-args) ,@body))
-          ',initargs))
+          (list ,@initargs)))
 
 (export-always 'define-internal-page-command)
 (defmacro define-internal-page-command (name (&rest arglist)
