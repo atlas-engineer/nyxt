@@ -41,11 +41,13 @@ With LINEAR-VIEW-P, list buffers linearly instead."
              (let ((*print-pretty* nil))
                (spinneret:with-html
                  (:p (:button :class "button"
-                              :onclick (ps:ps (nyxt/ps:lisp-eval
-                                               `(nyxt::delete-buffer :id ,(id buffer)))) "✕")
+                              :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                               (:title "delete-buffer")
+                                               (nyxt::delete-buffer :id (id buffer)))) "✕")
                      (:button :class "button"
-                              :onclick (ps:ps (nyxt/ps:lisp-eval
-                                               `(nyxt::switch-buffer :id ,(id buffer)))) "→")
+                              :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                               (:title "switch-buffer")
+                                               (nyxt::switch-buffer :id (id buffer)))) "→")
                      (:span (title buffer) "  "
                             (:u (render-url (url buffer))))))))
            (buffer-tree->html (root-buffer)
@@ -65,11 +67,12 @@ With LINEAR-VIEW-P, list buffers linearly instead."
       (:style (style buffer))
       (:h1 "Buffers")
       (:button :class "button"
-               :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/buffer-listing-mode::list-buffers)))
+               :onclick (ps:ps (nyxt/ps:lisp-eval2 (:title "tree-display") (nyxt/buffer-listing-mode::list-buffers)))
                "Tree display")
       (:button :class "button"
-               :onclick (ps:ps (nyxt/ps:lisp-eval
-                                '(nyxt/buffer-listing-mode::list-buffers :linear-view-p t)))
+               :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                (:title "linear-display")
+                                (nyxt/buffer-listing-mode::list-buffers :linear-view-p t)))
                "Linear display")
       (:br "")
       (:div
@@ -90,8 +93,9 @@ With LINEAR-VIEW-P, list buffers linearly instead."
            "Create the presentation for a buffer."
            (spinneret:with-html
              (:p (:button :class "button"
-                          :onclick (ps:ps (nyxt/ps:lisp-eval
-                                           `(nyxt::switch-buffer :id ,(id buffer))))
+                          :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                           (:title "switch-buffer")
+                                           (nyxt::switch-buffer :id (id buffer))))
                           (:span :title (title buffer) :class "title" (title buffer)))))))
     (spinneret:with-html-string
       (:style (cl-css:css
@@ -103,15 +107,16 @@ With LINEAR-VIEW-P, list buffers linearly instead."
       (:body
        (:h1 "Buffers")
        (:button :class "button"
-                :onclick (ps:ps (nyxt/ps:lisp-eval
-                                 `(reload-buffers
-                                   (list
-                                    (find
-                                     ,(render-url (url panel-buffer))
-                                     (panel-buffers (current-window))
-                                     :test #'string=
-                                     :key (alexandria:compose
-                                           #'render-url #'url))))))
+                :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                 (:title "reload-buffer")
+                                 (reload-buffers
+                                  (list
+                                   (find
+                                    (render-url (url panel-buffer))
+                                    (panel-buffers (current-window))
+                                    :test #'string=
+                                    :key (alexandria:compose
+                                          #'render-url #'url))))))
                 "Update ↺")
        (loop for buffer in (buffer-list)
              collect (buffer-markup buffer))))))

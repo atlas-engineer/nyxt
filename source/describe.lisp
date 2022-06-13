@@ -161,7 +161,9 @@ turned into links to their respective description page."
                   (symbol (let ((*package* (symbol-package parent-symbol)))
                             (ignore-errors (read-from-string name nil))))
                   (url (when symbol
-                         (ps:ps (nyxt/ps:lisp-eval `(nyxt::describe-any ,(princ-to-string symbol)))))))
+                         (ps:ps (nyxt/ps:lisp-eval2
+                                 (:title "describe-any")
+                                 (nyxt::describe-any (princ-to-string symbol)))))))
              (let ((*print-pretty* nil))
                ;; Disable pretty-printing to avoid spurious space insertion within links:
                ;; https://github.com/ruricolist/spinneret/issues/37#issuecomment-884740046
@@ -228,15 +230,16 @@ turned into links to their respective description page."
       (:h2 "Current Value:")
       (:button
        :class "button"
-       :onclick (ps:ps (nyxt/ps:lisp-eval
-                        `(handler-case
-                             (setf ,variable
-                                   (first
-                                    (evaluate
-                                     (prompt1
-                                       :prompt (format nil "Set ~a to" (quote ,variable))
-                                       :sources (make-instance 'prompter:raw-source)))))
-                           (nyxt-prompt-buffer-canceled nil))))
+       :onclick (ps:ps (nyxt/ps:lisp-eval2
+                        (:title "change-value")
+                        (handler-case
+                            (setf variable
+                                  (first
+                                   (evaluate
+                                    (prompt1
+                                      :prompt (format nil "Set ~a to" variable)
+                                      :sources (make-instance 'prompter:raw-source)))))
+                          (nyxt-prompt-buffer-canceled nil))))
        "Change value")
       (:p (:raw (value->html (symbol-value variable)))))))
 
@@ -448,8 +451,9 @@ A command is a special kind of function that can be called with
                                         (getf props :documentation) slot))))
         (when (user-class-p class)
           (:li (:button :class "button"
-                        :onclick (ps:ps (nyxt/ps:lisp-eval
-                                         `(nyxt::configure-slot ',slot ',class :type ',(getf props :type))))
+                        :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                         (:title "configure-slot")
+                                         (nyxt::configure-slot slot class :type (getf props :type))))
                         "Configure"))))))))
 
 (define-internal-page-command-global describe-class

@@ -249,17 +249,16 @@ values in help buffers, REPL and elsewhere."))
              (:dd (:raw (value->html (slot-value value slot-name) t))
                   (:button
                    :class "button"
-                   :onclick (ps:ps (nyxt/ps:lisp-eval
-                                    `(handler-case
-                                         (setf (slot-value (inspected-value
-                                                            ,(ensure-inspected-id value))
-                                                           (quote ,slot-name))
-                                               (first
-                                                (evaluate
-                                                 (prompt1
-                                                   :prompt (format nil "Set ~a to" (quote ,slot-name))
-                                                   :sources (make-instance 'prompter:raw-source)))))
-                                       (nyxt-prompt-buffer-canceled nil))))
+                   :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                    (:title "change value")
+                                    (handler-case
+                                        (setf (slot-value value slot-name)
+                                              (first
+                                               (evaluate
+                                                (prompt1
+                                                  :prompt (format nil "Set ~a to" slot-name)
+                                                  :sources (make-instance 'prompter:raw-source)))))
+                                      (nyxt-prompt-buffer-canceled nil))))
                    "change "))))
           (:raw (escaped-literal-print value))))))
 

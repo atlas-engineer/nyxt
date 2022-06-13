@@ -31,34 +31,34 @@ CLASS is a class symbol."
         "Changes only apply to newly created buffers.")
     (:h2 "Keybinding style")
     (:p (:button :class "button"
-                 :onclick (ps:ps (nyxt/ps:lisp-eval
-                                  `(progn
-                                     (nyxt::auto-configure
-                                      :class-name 'input-buffer
-                                      :form '(nyxt/emacs-mode:emacs-mode :activate nil :buffer input-buffer))
-                                     (nyxt::auto-configure
-                                      :class-name 'input-buffer
-                                      :form '(nyxt/vi-mode:vi-normal-mode :activate nil :buffer input-buffer)))))
+                 :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                  (:title "set-cua-scheme")
+                                  (nyxt::auto-configure
+                                   :class-name 'input-buffer
+                                   :form '(nyxt/emacs-mode:emacs-mode :activate nil :buffer input-buffer))
+                                  (nyxt::auto-configure
+                                   :class-name 'input-buffer
+                                   :form '(nyxt/vi-mode:vi-normal-mode :activate nil :buffer input-buffer))))
                  "Use default (CUA)"))
     (:p (:button :class "button"
-                 :onclick (ps:ps (nyxt/ps:lisp-eval
-                                  `(progn
-                                     (nyxt::auto-configure
-                                      :class-name 'input-buffer
-                                      :form '(nyxt/vi-mode:vi-normal-mode :activate nil :buffer input-buffer))
-                                     (nyxt::auto-configure
-                                      :class-name 'input-buffer
-                                      :form '(nyxt/emacs-mode:emacs-mode :activate t :buffer input-buffer)))))
+                 :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                  (:title "set-emacs-scheme")
+                                  (nyxt::auto-configure
+                                   :class-name 'input-buffer
+                                   :form '(nyxt/vi-mode:vi-normal-mode :activate nil :buffer input-buffer))
+                                  (nyxt::auto-configure
+                                   :class-name 'input-buffer
+                                   :form '(nyxt/emacs-mode:emacs-mode :activate t :buffer input-buffer))))
                  "Use Emacs"))
     (:p (:button :class "button"
-                 :onclick (ps:ps (nyxt/ps:lisp-eval
-                                  `(progn
-                                     (nyxt::auto-configure
-                                      :class-name 'input-buffer
-                                      :form '(nyxt/emacs-mode:emacs-mode :activate nil :buffer input-buffer))
-                                     (nyxt::auto-configure
-                                      :class-name 'input-buffer
-                                      :form '(nyxt/vi-mode:vi-normal-mode :activate t :buffer input-buffer)))))
+                 :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                  (:title "set-vi-scheme")
+                                  (nyxt::auto-configure
+                                   :class-name 'input-buffer
+                                   :form '(nyxt/emacs-mode:emacs-mode :activate nil :buffer input-buffer))
+                                  (nyxt::auto-configure
+                                   :class-name 'input-buffer
+                                   :form '(nyxt/vi-mode:vi-normal-mode :activate t :buffer input-buffer))))
                  "Use vi"))
     (flet ((generate-colors (theme-symbol text)
              (spinneret:with-html-string
@@ -66,11 +66,12 @@ CLASS is a class symbol."
                             :style (format nil "background-color: ~a; color: ~a"
                                            (theme:primary-color (symbol-value theme-symbol))
                                            (theme:background-color (symbol-value theme-symbol)))
-                            :onclick (ps:ps (nyxt/ps:lisp-eval
-                                             `(nyxt::auto-configure
+                            :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                             (:title "set-theme")
+                                             (nyxt::auto-configure
                                                :class-name 'browser
                                                :slot 'theme
-                                               :slot-value ',theme-symbol)))
+                                               :slot-value theme-symbol)))
                             text))
                (:p "Colors:")
                (:dl
@@ -93,24 +94,28 @@ CLASS is a class symbol."
     (:h2 "Miscellaneous")
     (:ul
      (:li (:button :class "button"
-                   :onclick (ps:ps (nyxt/ps:lisp-eval
-                                    `(nyxt::configure-slot 'default-new-buffer-url 'browser :type 'string)))
+                   :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                    (:title "default-new-buffer-url")
+                                    (nyxt::configure-slot 'default-new-buffer-url 'browser :type 'string)))
                    "Set default new buffer URL"))
      (:li (:button :class "button"
-                   :onclick (ps:ps (nyxt/ps:lisp-eval
-                                    `(nyxt::configure-slot 'current-zoom-ratio 'document-buffer)))
+                   :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                    (:title "set-zoom-ration")
+                                    (nyxt::configure-slot 'current-zoom-ratio 'document-buffer)))
                    "Set default zoom ratio"))
      (:li (:button :class "button"
-                   :onclick (ps:ps (nyxt/ps:lisp-eval
-                                    `(nyxt::auto-configure
-                                      :form '(setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1"))))
+                   :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                    (:title "disable-compositing")
+                                    (nyxt::auto-configure
+                                     :form '(setf (uiop:getenv "WEBKIT_DISABLE_COMPOSITING_MODE") "1"))))
                    "Disable compositing")
           (:p "On some systems, compositing can cause issues with rendering. If
 you are experiencing blank web-views, you can try to disable compositing. After
 disabling compositing, you will need to restart Nyxt."))
 
      (:li (:button :class "button"
-                   :onclick (ps:ps (nyxt/ps:lisp-eval
+                   :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                    (:title "edit-user-file")
                                     '(nyxt::edit-user-file-with-external-editor)))
                    "Edit user files")
           (:p "Edit user configuration and other files in external text editor.")))))
@@ -241,7 +246,9 @@ The version number is stored in the clipboard."
       (:i "The Internet on your terms.")
       (:p (:button :class "button accent"
                    :type "submit"
-                   :onclick (ps:ps (nyxt/ps:lisp-eval '(set-url :prefill-current-url-p nil)))
+                   :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                    (:title "search")
+                                    (set-url :prefill-current-url-p nil)))
                    "Start searching!")))
      (:p :class "copyright"
          (format nil "Nyxt/~a ~a" +renderer+ +version+)
@@ -322,12 +329,15 @@ System information is also saved into the clipboard."
         (:div
          (:h1 :id "title" "Nyxt " (:span :id "subtitle" "browser ☺"))
          (:h3 (local-time:format-timestring nil (local-time:now) :format local-time:+rfc-1123-format+))
-         (:button :class "button" :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                   `(nyxt::restore-history-by-name)))
+         (:button :class "button" :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                                   (:title "restore-session")
+                                                   (nyxt::restore-history-by-name)))
                   "🗁 Restore Session")
          (:a :class "button" :href (nyxt-url 'manual) "🕮 Manual")
          (:button :class "button"
-                  :onclick (ps:ps (nyxt/ps:lisp-eval `(nyxt::execute-command)))
+                  :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                   (:title "execute-command")
+                                   (nyxt::execute-command)))
                   "≡ Execute Command")
          (:a :class "button" :href "https://nyxt.atlas.engineer/download" "⇡ Update"))
         (:h3 (:b "Recent URLs"))

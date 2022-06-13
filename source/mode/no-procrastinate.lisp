@@ -86,8 +86,9 @@ and that should be blocked.")
                                         (let ((section (ps:chain document active-element
                                                                  (closest ".host-entry"))))
                                           (ps:chain section parent-node (remove-child section))
-                                          (nyxt/ps:lisp-eval
-                                           `(delete-no-procrastinate-host ,url-href))))
+                                          (nyxt/ps:lisp-eval2
+                                           (:title "delete-host")
+                                           (delete-no-procrastinate-host url-href))))
                                       "Delete"))
                          (:hr ""))))))
             no-procrastinate-hosts))))))

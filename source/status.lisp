@@ -31,15 +31,16 @@ This leverages `mode-status' which can be specialized for individual modes."
           (spinneret:with-html-string
             (when (nosave-buffer-p buffer) (:span "⚠ nosave"))
             (:button :type "button" :class "button"
-                     :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:toggle-modes)))
+                     :onclick (ps:ps (nyxt/ps:lisp-eval2 (:title "toggle-modes") (nyxt:toggle-modes)))
                      :title (str:concat "Enabled modes: " (modes-string buffer)) "✚")
             (loop for mode in sorted-modes
                   collect (alex:when-let ((formatted-mode (mode-status status mode)))
                             (if (html-string-p formatted-mode)
                                 (:raw formatted-mode)
                                 (:button :class "button"
-                                         :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                          `(describe-class :class ',(name mode))))
+                                         :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                                          (:title "describe-class")
+                                                          (describe-class :class (name mode))))
                                          :title (format nil "Describe ~a" mode)
                                          formatted-mode))))))
         "")))
@@ -55,16 +56,16 @@ This leverages `mode-status' which can be specialized for individual modes."
   (spinneret:with-html-string
     (:button :type "button" :class "button"
              :title "Backwards"
-             :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/history-mode:history-backwards))) "«")
+             :onclick (ps:ps (nyxt/ps:lisp-eval2 (:title "history-backwards") (nyxt/history-mode:history-backwards))) "«")
     (:button :type "button" :class "button"
              :title "Reload"
-             :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:reload-current-buffer))) "↺")
+             :onclick (ps:ps (nyxt/ps:lisp-eval2 (:title "reload") (nyxt:reload-current-buffer))) "↺")
     (:button :type "button" :class "button"
              :title "Forwards"
-             :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/history-mode:history-forwards))) "»")
+             :onclick (ps:ps (nyxt/ps:lisp-eval2 (:title "history-forwards") (nyxt/history-mode:history-forwards))) "»")
     (:button :type "button" :class "button"
              :title "Execute"
-             :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:execute-command))) "≡")))
+             :onclick (ps:ps (nyxt/ps:lisp-eval2 (:title "execute-command") (nyxt:execute-command))) "≡")))
 
 (export-always 'format-status-load-status)
 (defmethod format-status-load-status ((status status-buffer))
@@ -79,7 +80,7 @@ This leverages `mode-status' which can be specialized for individual modes."
   (let ((buffer (current-buffer (window status))))
     (spinneret:with-html-string
       (:button :type "button" :class "button"
-               :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt:set-url)))
+               :onclick (ps:ps (nyxt/ps:lisp-eval2 (:title "set-url") (nyxt:set-url)))
                (format nil " ~a — ~a"
                        (render-url (url buffer))
                        (title buffer))))))
@@ -93,8 +94,9 @@ This leverages `mode-status' which can be specialized for individual modes."
                                           (mapcar #'url (sort-by-time (buffer-list))))
                          :test #'equal)
           collect (:button :type "tab" :class "button"
-                           :onclick (ps:ps (nyxt/ps:lisp-eval
-                                            `(nyxt::switch-buffer-or-query-domain ,domain)))
+                           :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                            (:title "switch-buffer-or-query-domain")
+                                            (nyxt::switch-buffer-or-query-domain domain)))
                            domain))))
 
 (export-always 'format-status)
