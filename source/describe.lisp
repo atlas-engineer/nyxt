@@ -140,9 +140,9 @@ for matches."
   "Inspect anything from any package and show it in a help buffer."
   (describe-any nil t))
 
-(define-internal-page-command-global describe-value
+(define-internal-page describe-value
     (&key id)
-    (buffer "*Help-value*" (resolve-symbol :help-mode :mode))
+    (:title "*Help-value*" :page-mode (resolve-symbol :help-mode :mode))
   "Inspect value under ID and show it in a help buffer."
   (sera:and-let* ((id id)
                   (value (inspected-value id)))
