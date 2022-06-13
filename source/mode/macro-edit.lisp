@@ -27,16 +27,16 @@
     (:input :type "text" :id "macro-name")
     (:p "Commands")
     (:p (:button :class "button"
-                 :onclick (ps:ps (nyxt/ps:lisp-eval2 (:title "add-command") (nyxt/macro-edit-mode::add-command)))
+                 :onclick (ps:ps (nyxt/ps:lisp-eval (:title "add-command") (nyxt/macro-edit-mode::add-command)))
                  "+ Add command"))
     (:div :id "commands" "")
     (:br)
     (:hr)
     (:button :class "button"
-             :onclick (ps:ps (nyxt/ps:lisp-eval2 (:title "save-macro") (nyxt/macro-edit-mode::save-macro)))
+             :onclick (ps:ps (nyxt/ps:lisp-eval (:title "save-macro") (nyxt/macro-edit-mode::save-macro)))
              "Save macro")
     (:button :class "button"
-             :onclick (ps:ps (nyxt/ps:lisp-eval2 (:title "evaluate-macro") (nyxt/macro-edit-mode::evaluate-macro)))
+             :onclick (ps:ps (nyxt/ps:lisp-eval (:title "evaluate-macro") (nyxt/macro-edit-mode::evaluate-macro)))
              "Compile macro")))
 
 (defmethod render-functions ((macro-editor macro-edit-mode))
@@ -46,14 +46,14 @@
               (loop for function in (functions macro-editor)
                     for index from 0
                     collect (:tr (:td (:button :class "button"
-                                               :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                               :onclick (ps:ps (nyxt/ps:lisp-eval
                                                                 (:title "remove-function")
                                                                 (nyxt/macro-edit-mode::remove-function
                                                                  (find-submode 'macro-edit-mode)
                                                                  index)))
                                                "✕"))
                                  (:td (:button :class "button"
-                                               :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                               :onclick (ps:ps (nyxt/ps:lisp-eval
                                                                 (:title "command-help")
                                                                 (nyxt/macro-edit-mode::command-help
                                                                  (find-submode 'macro-edit-mode)

@@ -276,20 +276,20 @@
                      collect (:div :class "input"
                                    (:span :class "prompt"
                                           (:button
-                                           :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                           :onclick (ps:ps (nyxt/ps:lisp-eval
                                                             (:title "move-cell-up")
                                                             (move-cell-up :id order)))
                                            :title "Move this cell up."
                                            "↑")
                                           (:button
-                                           :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                           :onclick (ps:ps (nyxt/ps:lisp-eval
                                                             (:title "move-cell-down")
                                                             (move-cell-down :id order)))
                                            :title "Move this cell down."
                                            "↓"))
                                    (:textarea :class "input-buffer" :data-repl-id order
                                               :onfocus
-                                              (ps:ps (nyxt/ps:lisp-eval2
+                                              (ps:ps (nyxt/ps:lisp-eval
                                                       (:title "set-current-evaluation")
                                                       (setf (slot-value (nyxt:current-mode :repl)
                                                                         'current-evaluation)

@@ -298,7 +298,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                    "marked")
                                           :onmouseover (ps:ps
                                                          ;; FIXME: A better way to set selection?
-                                                         (nyxt/ps:lisp-eval2
+                                                         (nyxt/ps:lisp-eval
                                                           (:title "set-selection")
                                                           ;; TODO: Export?
                                                           (prompter::select
@@ -307,7 +307,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                           (prompt-render-suggestions
                                                            (current-prompt-buffer))))
                                           :onmousedown (ps:ps
-                                                         (nyxt/ps:lisp-eval2
+                                                         (nyxt/ps:lisp-eval
                                                           (:title "return-selection")
                                                           (prompter:return-selection
                                                            (nyxt::current-prompt-buffer))))

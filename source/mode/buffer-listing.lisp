@@ -41,11 +41,11 @@ With LINEAR-VIEW-P, list buffers linearly instead."
              (let ((*print-pretty* nil))
                (spinneret:with-html
                  (:p (:button :class "button"
-                              :onclick (ps:ps (nyxt/ps:lisp-eval2
+                              :onclick (ps:ps (nyxt/ps:lisp-eval
                                                (:title "delete-buffer")
                                                (nyxt::delete-buffer :id (id buffer)))) "✕")
                      (:button :class "button"
-                              :onclick (ps:ps (nyxt/ps:lisp-eval2
+                              :onclick (ps:ps (nyxt/ps:lisp-eval
                                                (:title "switch-buffer")
                                                (nyxt::switch-buffer :id (id buffer)))) "→")
                      (:span (title buffer) "  "
@@ -67,10 +67,10 @@ With LINEAR-VIEW-P, list buffers linearly instead."
       (:style (style buffer))
       (:h1 "Buffers")
       (:button :class "button"
-               :onclick (ps:ps (nyxt/ps:lisp-eval2 (:title "tree-display") (nyxt/buffer-listing-mode::list-buffers)))
+               :onclick (ps:ps (nyxt/ps:lisp-eval (:title "tree-display") (nyxt/buffer-listing-mode::list-buffers)))
                "Tree display")
       (:button :class "button"
-               :onclick (ps:ps (nyxt/ps:lisp-eval2
+               :onclick (ps:ps (nyxt/ps:lisp-eval
                                 (:title "linear-display")
                                 (nyxt/buffer-listing-mode::list-buffers :linear-view-p t)))
                "Linear display")
@@ -93,7 +93,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
            "Create the presentation for a buffer."
            (spinneret:with-html
              (:p (:button :class "button"
-                          :onclick (ps:ps (nyxt/ps:lisp-eval2
+                          :onclick (ps:ps (nyxt/ps:lisp-eval
                                            (:title "switch-buffer")
                                            (nyxt::switch-buffer :id (id buffer))))
                           (:span :title (title buffer) :class "title" (title buffer)))))))
@@ -107,7 +107,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
       (:body
        (:h1 "Buffers")
        (:button :class "button"
-                :onclick (ps:ps (nyxt/ps:lisp-eval2
+                :onclick (ps:ps (nyxt/ps:lisp-eval
                                  (:title "reload-buffer")
                                  (reload-buffers
                                   (list
