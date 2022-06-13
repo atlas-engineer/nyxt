@@ -40,17 +40,16 @@ similar programming language.")
         ", and the parent folders if necessary. You can also press the button
 below to create said file, if it's not created yet.")
     (let ((config-file-path (files:expand *config-file*)))
-      (:p (if (uiop:file-exists-p config-file-path)
-              (:a :class "button"
-                  :href (ps:ps (nyxt/ps:lisp-eval `(echo "Configuration file exists")))
-                  "Configuration file exists")
-              (:a :class "button"
-                  :href (ps:ps (nyxt/ps:lisp-eval
-                                `(progn (ensure-directories-exist ,config-file-path)
-                                        (ensure-file-exists ,config-file-path)
-                                        (echo "Configuration file created at ~a."
-                                              ,config-file-path))))
-                  "Create init file"))))
+      (:p (:a :class "button"
+              :href (ps:ps (nyxt/ps:lisp-eval2
+                            (:title "maybe-create-config-file")
+                            (if (uiop:file-exists-p config-file-path)
+                                (echo "Configuration file exists")
+                                (progn (ensure-directories-exist config-file-path)
+                                       (ensure-file-exists config-file-path)
+                                       (echo "Configuration file created at ~s."
+                                             config-file-path)))))
+              "Create configuration file")))
     (:p "Example:")
     (:pre (:code "
 \(define-configuration buffer

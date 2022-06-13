@@ -298,18 +298,19 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                                    "marked")
                                           :onmouseover (ps:ps
                                                          ;; FIXME: A better way to set selection?
-                                                         (nyxt/ps:lisp-eval
+                                                         (nyxt/ps:lisp-eval2
+                                                          (:title "set-selection")
                                                           ;; TODO: Export?
-                                                          `(progn
-                                                             (prompter::select
-                                                                 (current-prompt-buffer)
-                                                               ,(- suggestion-index cursor-index))
-                                                             (prompt-render-suggestions
-                                                              (current-prompt-buffer)))))
+                                                          (prompter::select
+                                                              (current-prompt-buffer)
+                                                            (- suggestion-index cursor-index))
+                                                          (prompt-render-suggestions
+                                                           (current-prompt-buffer))))
                                           :onmousedown (ps:ps
-                                                         (nyxt/ps:lisp-eval
-                                                          '(prompter:return-selection
-                                                            (nyxt::current-prompt-buffer))))
+                                                         (nyxt/ps:lisp-eval2
+                                                          (:title "return-selection")
+                                                          (prompter:return-selection
+                                                           (nyxt::current-prompt-buffer))))
                                           (loop for (nil attribute) in (prompter:active-attributes suggestion :source source)
                                                 collect (:td (:mayberaw attribute)))))))))))
       (ffi-buffer-evaluate-javascript

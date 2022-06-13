@@ -262,19 +262,24 @@
                      collect (:div :class "input"
                                    (:span :class "prompt"
                                           (:button
-                                           :onclick (ps:ps (nyxt/ps:lisp-eval `(move-cell-up :id ,order)))
+                                           :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                                            (:title "move-cell-up")
+                                                            (move-cell-up :id order)))
                                            :title "Move this cell up."
                                            "↑")
                                           (:button
-                                           :onclick (ps:ps (nyxt/ps:lisp-eval `(move-cell-down :id ,order)))
+                                           :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                                            (:title "move-cell-down")
+                                                            (move-cell-down :id order)))
                                            :title "Move this cell down."
                                            "↓"))
                                    (:input :class "input-buffer" :data-repl-id order :type "text"
                                            :onfocus
-                                           (ps:ps (nyxt/ps:lisp-eval
-                                                   `(setf (slot-value (nyxt:current-mode :repl)
-                                                                      'current-evaluation)
-                                                          ,order)))
+                                           (ps:ps (nyxt/ps:lisp-eval2
+                                                   (:title "set-current-evaluation")
+                                                   (setf (slot-value (nyxt:current-mode :repl)
+                                                                     'current-evaluation)
+                                                         order)))
                                            :value (input evaluation)))
                      collect (loop
                                for result in (results evaluation)

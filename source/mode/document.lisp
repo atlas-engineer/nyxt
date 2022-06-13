@@ -511,11 +511,11 @@ of buffers."
                 (dolist (group groups)
                   (let ((heading (first group)))
                     (:li (:a :onclick
-                             (ps:ps (nyxt/ps:lisp-eval
-                                     `(progn
-                                        (switch-buffer :id ,(id (buffer heading)))
-                                        (scroll-to-element :nyxt-identifier
-                                                           ,(get-nyxt-id (element heading))))))
+                             (ps:ps (nyxt/ps:lisp-eval2
+                                     (:title "switch-buffer-scroll")
+                                     (switch-buffer :id (id (buffer heading)))
+                                     (scroll-to-element :nyxt-identifier
+                                                        (get-nyxt-id (element heading)))))
                              (title heading)))
                     (when (rest group)
                       (:raw (sera:mapconcat #'headings->html (list (group-headings (rest group))) "")))))))))

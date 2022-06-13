@@ -119,13 +119,13 @@ See also `vi-normal-mode' and `vi-insert-mode'."
   (spinneret:with-html-string
     (:button :type "button"
              :title "vi-normal-mode"
-             :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/vi-mode:vi-insert-mode)))
+             :onclick (ps:ps (nyxt/ps:lisp-eval2 (:title "vi-insert-mode") (nyxt/vi-mode:vi-insert-mode)))
              (:code "N"))))
 
 (defmethod nyxt:mode-status ((status status-buffer) (vi-normal vi-insert-mode))
   (spinneret:with-html-string
     (:button :type "button"
              :title "vi-insert-mode"
-             :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/vi-mode:vi-normal-mode)))
+             :onclick (ps:ps (nyxt/ps:lisp-eval2 (:title "vi-normal-mode") (nyxt/vi-mode:vi-normal-mode)))
              ;; Note: We use :code to make it monospaced, so that it's more clickable.
              (:code "I"))))
