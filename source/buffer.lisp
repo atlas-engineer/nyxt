@@ -225,7 +225,16 @@ forwarded when no binding is found.")
     :type t
     :export nil
     ;; TODO: Store multiple events?  Maybe when implementing keyboard macros.
-    :documentation "The last event received in the current buffer."))
+    :documentation "The last event received in the current buffer.")
+   (lisp-url-callbacks
+    (sera:dict)
+    :type hash-table
+    :export nil
+    :documentation "The index of callbacks for `lisp://' URLs.
+They are populated by the `nyxt/ps:lisp-eval' Parenscript macro.
+
+It's part of `input-buffer' since any (even offline) buffer that can be clicked
+on may want to have dynamic interactions."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -297,13 +306,7 @@ distance scroll-left or scroll-right will scroll.")
     :type float
     :documentation "The ratio of the page to scroll.
 A value of 0.95 means that the bottom 5% will be the top 5% when scrolling
-down.")
-   (lisp-url-callbacks
-    (sera:dict)
-    :type hash-table
-    :export nil
-    :documentation "The index of callbacks for `lisp://' URLs.
-They are populated by the `nyxt/ps:lisp-eval2' Parenscript macro."))
+down."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
