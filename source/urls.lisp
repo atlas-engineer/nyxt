@@ -464,7 +464,7 @@ TITLE is purely informative."
                 (prompt-buffer-p buffer)
                 (internal-url-p (url buffer)))
             (let* ((request-id (quri:uri-host url))
-                   (title (when url (subseq (quri:uri-path url) 1))))
+                   (title (when (and url (quri:uri-path url)) (sera:drop-prefix "/" (quri:uri-path url)))))
               (log:debug "Evaluate Lisp code from internal page: ~a" (or title "UNTITLED"))
               (values (let ((result (nyxt:funcall* (gethash request-id (lisp-url-callbacks buffer)))))
                         ;; Objects and other complex structures make cl-json choke.
