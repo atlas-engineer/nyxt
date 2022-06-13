@@ -511,7 +511,7 @@ of buffers."
                 (dolist (group groups)
                   (let ((heading (first group)))
                     (:li (:a :onclick
-                             (ps:ps (nyxt/ps:lisp-eval2
+                             (ps:ps (nyxt/ps:lisp-eval
                                      (:title "switch-buffer-scroll")
                                      (switch-buffer :id (id (buffer heading)))
                                      (scroll-to-element :nyxt-identifier

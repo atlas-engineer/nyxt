@@ -143,7 +143,7 @@
   (flet ((format-inputs (inputs)
            (spinneret:with-html
              (dolist (input inputs)
-               (:button :onclick (ps:ps (nyxt/ps:lisp-eval2
+               (:button :onclick (ps:ps (nyxt/ps:lisp-eval
                                          (:title "describe-os-package")
                                          (describe-os-package
                                           (ospm:find-os-packages input))))
@@ -177,7 +177,7 @@
                        (:li "Outputs: "
                             (unless (ospm:expanded-outputs-p package)
                               (:button :class "button"
-                                       :onclick (ps:ps (nyxt/ps:lisp-eval2
+                                       :onclick (ps:ps (nyxt/ps:lisp-eval
                                                         (:title "compute-path-size")
                                                         (echo "Computing path & size...")
                                                         (ospm:expand-outputs package)
@@ -260,7 +260,7 @@ OBJECTS can be a list of packages, a generation, etc."
                  (:h1 title)
                  (:p
                   (:button :class "button"
-                           :onclick (ps:ps (nyxt/ps:lisp-eval2
+                           :onclick (ps:ps (nyxt/ps:lisp-eval
                                             (:title "cancel-package-operation")
                                             (nyxt/os-package-manager-mode:cancel-package-operation)))
                            "Cancel")))
@@ -354,7 +354,7 @@ OBJECTS can be a list of packages, a generation, etc."
         (dolist (package-output (ospm:list-packages (ospm:path generation)))
           (let ((package (ospm:parent-package package-output)))
             (:li (:button :class "button"
-                          :onclick (ps:ps (nyxt/ps:lisp-eval2
+                          :onclick (ps:ps (nyxt/ps:lisp-eval
                                            (:title "describe-os-package")
                                            (describe-os-package package)))
                           (prompter:attributes-default package-output))

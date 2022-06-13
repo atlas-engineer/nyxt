@@ -41,7 +41,7 @@ similar programming language.")
 below to create said file, if it's not created yet.")
     (let ((config-file-path (files:expand *config-file*)))
       (:p (:a :class "button"
-              :href (ps:ps (nyxt/ps:lisp-eval2
+              :href (ps:ps (nyxt/ps:lisp-eval
                             (:title "maybe-create-config-file")
                             (if (uiop:file-exists-p config-file-path)
                                 (echo "Configuration file exists")

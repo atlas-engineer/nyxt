@@ -161,7 +161,7 @@ turned into links to their respective description page."
                   (symbol (let ((*package* (symbol-package parent-symbol)))
                             (ignore-errors (read-from-string name nil))))
                   (url (when symbol
-                         (ps:ps (nyxt/ps:lisp-eval2
+                         (ps:ps (nyxt/ps:lisp-eval
                                  (:title "describe-any")
                                  (nyxt::describe-any (princ-to-string symbol)))))))
              (let ((*print-pretty* nil))
@@ -230,7 +230,7 @@ turned into links to their respective description page."
       (:h2 "Current Value:")
       (:button
        :class "button"
-       :onclick (ps:ps (nyxt/ps:lisp-eval2
+       :onclick (ps:ps (nyxt/ps:lisp-eval
                         (:title "change-value")
                         (handler-case
                             (setf variable
@@ -319,7 +319,7 @@ For generic functions, describe all the methods."
                                             (mopu:method-specializers method))))))
                     (:button
                      :class "button"
-                     :onclick (ps:ps (nyxt/ps:lisp-eval2 (:buffer buffer :title "describe-function")
+                     :onclick (ps:ps (nyxt/ps:lisp-eval (:buffer buffer :title "describe-function")
                                                          (remove-method (closer-mop:method-generic-function method)
                                                                         method)
                                                          (reload-current-buffer)))
@@ -451,7 +451,7 @@ A command is a special kind of function that can be called with
                                         (getf props :documentation) slot))))
         (when (user-class-p class)
           (:li (:button :class "button"
-                        :onclick (ps:ps (nyxt/ps:lisp-eval2
+                        :onclick (ps:ps (nyxt/ps:lisp-eval
                                          (:title "configure-slot")
                                          (nyxt::configure-slot slot class :type (getf props :type))))
                         "Configure"))))))))

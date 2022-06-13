@@ -249,7 +249,7 @@ values in help buffers, REPL and elsewhere."))
              (:dd (:raw (value->html (slot-value value slot-name) t))
                   (:button
                    :class "button"
-                   :onclick (ps:ps (nyxt/ps:lisp-eval2
+                   :onclick (ps:ps (nyxt/ps:lisp-eval
                                     (:title "change value")
                                     (handler-case
                                         (setf (slot-value value slot-name)

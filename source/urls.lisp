@@ -404,36 +404,7 @@ guarantee of the same result."
                     (t (error "Cannot display evaluation result"))))))))))
   :local-p t)
 
-(define-internal-scheme "lisp"
-    (lambda (url buffer)
-      (let ((url (quri:uri url)))
-        ;; TODO: Replace this condition with `(network-buffer-p buffer)`?
-        (if (or (status-buffer-p buffer)
-                (panel-buffer-p buffer)
-                (prompt-buffer-p buffer)
-                (internal-url-p (url buffer)))
-            (let* ((schemeless-url (schemeless-url url))
-                   (code-raw (quri:url-decode schemeless-url :lenient t))
-                   ;; All URLs WebKitGTK gives us end with an unnecessary forward slash.
-                   (code (sera:slice code-raw 0 -1)))
-              (log:debug "Evaluate Lisp code from internal page: ~a" code)
-              (values (let ((result (first (evaluate code :interactive-p t))))
-                        ;; Objects and other complex structures make cl-json choke.
-                        ;; TODO: Maybe encode it to the format that `cl-json'
-                        ;; supports, then we can override the encoding and
-                        ;; decoding methods and allow arbitrary objects (like
-                        ;; buffers) in the nyxt:// URL arguments..
-                        (cl-json:encode-json-to-string
-                         (when (or (scalar-p result)
-                                   (and (sequence-p result)
-                                        (every #'scalar-p result)))
-                           result)))
-                      "application/json"))
-            (values "undefined" "application/json;charset=utf8"))))
-  :cors-enabled-p t
-  :error-callback (lambda (c) (log:debug "Error when evaluating lisp URL: ~a" c)))
-
-(ps:defpsmacro nyxt/ps::lisp-eval2 ((&key (buffer '(nyxt:current-buffer)) title callback) &body form)
+(ps:defpsmacro nyxt/ps::lisp-eval ((&key (buffer '(nyxt:current-buffer)) title callback) &body form)
   "Request the lisp: URL and invoke CALLBACK when there's a successful result.
 BUFFER must be a `document-buffer'.
 TITLE is purely informative."
@@ -441,7 +412,7 @@ TITLE is purely informative."
   `(let ((url (ps:lisp (let ((request-id (string (gensym ""))))
                              (setf (gethash request-id (nyxt::lisp-url-callbacks ,buffer))
                                    (lambda () ,@form))
-                             (let ((url-string (format nil "lisp2://~a" request-id)))
+                             (let ((url-string (format nil "lisp://~a" request-id)))
                                (when ,title
                                  (setf url-string (str:concat url-string "/" ,title)))
                                url-string)))))
@@ -453,9 +424,9 @@ TITLE is purely informative."
                         (when (@ response ok)
                           (chain response (json)))))
                 (then ,callback))))))
-(export-always 'nyxt/ps::lisp-eval2 :nyxt/ps)
+(export-always 'nyxt/ps::lisp-eval :nyxt/ps)
 
-(define-internal-scheme "lisp2"
+(define-internal-scheme "lisp"
     (lambda (url buffer)
       (let ((url (quri:uri url)))
         ;; TODO: Replace this condition with `(not (network-buffer-p buffer))`?
