@@ -433,7 +433,7 @@ guarantee of the same result."
   :cors-enabled-p t
   :error-callback (lambda (c) (log:debug "Error when evaluating lisp URL: ~a" c)))
 
-(ps:defpsmacro nyxt/ps::lisp-eval2 ((&key (buffer (nyxt:current-buffer)) title callback) &body form)
+(ps:defpsmacro nyxt/ps::lisp-eval2 ((&key (buffer '(nyxt:current-buffer)) title callback) &body form)
   "Request the lisp: URL and invoke CALLBACK when there's a successful result.
 BUFFER must be a `document-buffer'.
 TITLE is purely informative."
