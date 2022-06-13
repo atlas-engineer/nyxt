@@ -163,6 +163,9 @@ Example:
   (let ((doc (or (nth-value 2 (alex:parse-body body :documentation t)) "")))
     `(progn
        (export-always ',name (symbol-package ',name))
+       ;; Warning: We use `defgeneric' instead of `make-instance' (or even
+       ;; `ensure-generic-function') so that the compiler stores source location
+       ;; information (for "go to definition" to work.
        (prog1 (defgeneric ,name (,@(generalize-lambda-list arglist))
                 (:documentation ,doc)
                 (:method (,@arglist) ,@body)
