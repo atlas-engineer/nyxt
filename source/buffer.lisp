@@ -1177,18 +1177,20 @@ proceeding."
   (:export-class-name-p t)
   (:metaclass user-class))
 
-(define-command switch-buffer (&key id (current-is-last-p nil))
+(define-command switch-buffer
+    (&key
+     (current-is-last-p nil)
+     (buffer (prompt1
+              :prompt "Switch to buffer"
+              :sources (list (make-instance 'buffer-source
+                                            :constructor (buffer-initial-suggestions
+                                                          :current-is-last-p current-is-last-p))))))
   "Switch buffer using fuzzy completion.
 Buffers are ordered by last access.
 With CURRENT-IS-LAST-P, the current buffer is listed last so as to list the
 second latest buffer first."
-  (if id
-      (set-current-buffer (buffers-get id))
-      (prompt
-       :prompt "Switch to buffer"
-       :sources (list (make-instance 'buffer-source
-                                     :constructor (buffer-initial-suggestions
-                                                   :current-is-last-p current-is-last-p))))))
+  (unless (eq (current-buffer) buffer)
+    (set-current-buffer buffer)))
 
 (define-command switch-buffer-domain (&key domain (buffer (current-buffer)))
   "Switch the active buffer in the current window from the current domain."
@@ -1207,15 +1209,14 @@ second latest buffer first."
         (set-current-buffer (first matching-buffers))
         (switch-buffer-domain :domain domain))))
 
-(define-command delete-buffer (&key id)
+(define-command delete-buffer
+    (&key (buffer (prompt
+                   :prompt "Delete buffer(s)"
+                   :sources (make-instance 'buffer-source
+                                           :multi-selection-p t
+                                           :return-actions (list (lambda-mapped-command buffer-delete))))))
   "Query the buffer(s) to delete."
-  (if id
-      (buffer-delete (gethash id (slot-value *browser* 'buffers)))
-      (prompt
-       :prompt "Delete buffer(s)"
-       :sources (make-instance 'buffer-source
-                               :multi-selection-p t
-                               :return-actions (list (lambda-mapped-command buffer-delete))))))
+  (buffer-delete buffer))
 
 (define-command delete-all-buffers (&key (confirmation-p t))
   "Delete all buffers, with confirmation."

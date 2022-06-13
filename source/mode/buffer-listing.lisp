@@ -43,11 +43,11 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                  (:p (:button :class "button"
                               :onclick (ps:ps (nyxt/ps:lisp-eval
                                                (:title "delete-buffer")
-                                               (nyxt::delete-buffer :id (id buffer)))) "✕")
+                                               (nyxt::delete-buffer :buffer buffer))) "✕")
                      (:button :class "button"
                               :onclick (ps:ps (nyxt/ps:lisp-eval
                                                (:title "switch-buffer")
-                                               (nyxt::switch-buffer :id (id buffer)))) "→")
+                                               (nyxt::switch-buffer :buffer buffer))) "→")
                      (:span (title buffer) "  "
                             (:u (render-url (url buffer))))))))
            (buffer-tree->html (root-buffer)
@@ -95,7 +95,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
              (:p (:button :class "button"
                           :onclick (ps:ps (nyxt/ps:lisp-eval
                                            (:title "switch-buffer")
-                                           (nyxt::switch-buffer :id (id buffer))))
+                                           (nyxt::switch-buffer :buffer buffer)))
                           (:span :title (title buffer) :class "title" (title buffer)))))))
     (spinneret:with-html-string
       (:style (cl-css:css

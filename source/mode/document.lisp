@@ -514,7 +514,7 @@ of buffers."
                     (:li (:a :onclick
                              (ps:ps (nyxt/ps:lisp-eval
                                      (:title "switch-buffer-scroll")
-                                     (switch-buffer :id (id (buffer heading)))
+                                     (switch-buffer :buffer (buffer heading))
                                      (scroll-to-element :nyxt-identifier
                                                         (get-nyxt-id (element heading)))))
                              (title heading)))
