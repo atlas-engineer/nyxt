@@ -170,22 +170,22 @@ See `find-internal-page-buffer'."))
   (let ((arglist (second lambda-expression)))
     (multiple-value-bind (required optional rest keyword allow-other-keys-p aux key-p)
         (alex:parse-ordinary-lambda-list arglist)
-      (declare (ignore allow-other-keys-p key-p))
+      (declare (ignore keyword allow-other-keys-p key-p))
       (when (or required optional rest aux)
         (error "Only keyword parameters are allowed in an internal-page definition."))
-      (let* ((keyargs keyword))
-        (setf (slot-value page 'form)
-              (lambda (&rest args)
-                (declare (ignorable args))
-                (let ((*print-pretty* nil))
-                  (values (spinneret:with-html-string
-                            (:head
-                             (:title (dynamic-title (gethash (name page) *nyxt-url-commands*)
-                                                    keyargs))
-                             (:style (style (current-buffer))))
-                            (:body
-                             (:raw (apply (compile nil lambda-expression) args))))
-                          "text/html;charset=utf8"))))))))
+      (setf (slot-value page 'form)
+            (lambda (&rest args)
+              (declare (ignorable args))
+              (let ((*print-pretty* nil))
+                (values (spinneret:with-html-string
+                          (:head
+                           (:title (progn
+                                     (apply #'dynamic-title (gethash (name page) *nyxt-url-commands*)
+                                            args)))
+                           (:style (style (current-buffer))))
+                          (:body
+                           (:raw (apply (compile nil lambda-expression) args))))
+                        "text/html;charset=utf8")))))))
 
 (defmethod set-internal-page-method ((page internal-page) form)
   (when form
@@ -195,11 +195,12 @@ See `find-internal-page-buffer'."))
            (documentation (nth-value 2 (alex:parse-body body :documentation t))))
       (closer-mop:ensure-method
        page
-       `(lambda (&rest args ,@arglist)
+       `(lambda (,@arglist)
           ,@(when documentation (list documentation))
           (declare (ignorable ,@(alex:mappend #'cdar keywords)))
+          ;; (log:warn "method"  args)
           (set-current-buffer
-           (buffer-load (apply #'nyxt-url (name ,page) args)
+           (buffer-load (nyxt-url (name ,page) ,@(alex:mappend #'first keywords))
                         :buffer (ensure-internal-page-buffer (name ,page)))))))))
 
 (defmethod initialize-instance :after ((page internal-page) &key form &allow-other-keys)
@@ -222,7 +223,7 @@ See `find-internal-page-buffer'."))
       ((stringp title)
        title)
       ((functionp title)
-       (funcall title args))
+       (apply title args))
       (t
        (format nil "*~a*" (string-downcase (name page)))))))
 
@@ -249,7 +250,7 @@ See `find-internal-page-buffer'."))
   "Define an `internal-page'."
   `(apply #'make-instance 'internal-page
           :name ',name
-          :lambda-list (append '(&rest rest-args) ',form-args)
+          :lambda-list ',form-args
           :form (quote (lambda (,@form-args) ,@body))
           ',initargs))
 
@@ -264,7 +265,7 @@ Only keyword arguments are accepted."
       (alex:parse-body body :documentation t)
     `(progn
        (export-always ',name (symbol-package ',name))
-       (sera:lret ((gf (defgeneric ,name (,@(append '(&rest rest-args) (generalize-lambda-list arglist)))
+       (sera:lret ((gf (defgeneric ,name (,@(generalize-lambda-list arglist))
                          (:documentation ,documentation)
                          (:generic-function-class internal-page))))
          (let ((wrapped-body '(lambda (,@arglist)
