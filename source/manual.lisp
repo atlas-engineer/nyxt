@@ -35,21 +35,24 @@ existing object instances.")
         (:code (files:expand *config-file*)) ".")
     (:p "The following section assumes knowledge of basic Common Lisp or a
 similar programming language.")
-    (:p "The user needs to manually create the Nyxt configuration file "
-        (:code (files:expand *config-file*))
-        ", and the parent folders if necessary. You can also press the button
-below to create said file, if it's not created yet.")
-    (let ((config-file-path (files:expand *config-file*)))
-      (:p (:a :class "button"
-              :href (ps:ps (nyxt/ps:lisp-eval
-                            (:title "maybe-create-config-file")
-                            (if (uiop:file-exists-p config-file-path)
-                                (echo "Configuration file exists")
-                                (progn (ensure-directories-exist config-file-path)
-                                       (ensure-file-exists config-file-path)
-                                       (echo "Configuration file created at ~s."
-                                             config-file-path)))))
-              "Create configuration file")))
+    (:p "The user needs to manually create the Nyxt configuration file, and the parent folders if necessary."
+        (when (and (current-buffer)     ; In case manual is dumped.
+                   (not (files:nil-pathname-p (files:expand *config-file*))))
+          (:p
+           "You can also press the button below to create said file, if it's not
+created yet."
+           (let ((config-file-path (files:expand *config-file*)))
+             (:p (:a :class "button"
+                     :href (ps:ps (nyxt/ps:lisp-eval
+                                   (:title "maybe-create-config-file")
+                                   (if (uiop:file-exists-p config-file-path)
+                                       (echo "Configuration file exists")
+                                       (progn (ensure-directories-exist config-file-path)
+                                              (ensure-file-exists config-file-path)
+                                              (echo "Configuration file created at ~s."
+                                                    config-file-path)))))
+                     "Create configuration file"))))))
+
     (:p "Example:")
     (:pre (:code "
 \(define-configuration buffer
