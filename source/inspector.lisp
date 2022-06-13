@@ -247,8 +247,8 @@ values in help buffers, REPL and elsewhere."))
                                           (closer-mop:class-slots (class-of value)))))
           (:dl
            (dolist (slot-name slot-names)
-             (:dt (prin1-to-string slot-name))
-             (:dd (:raw (value->html (slot-value value slot-name) t))
+             (:dt (prin1-to-string slot-name)
+                  " "
                   (:button
                    :class "button"
                    :onclick (ps:ps (nyxt/ps:lisp-eval
@@ -261,7 +261,8 @@ values in help buffers, REPL and elsewhere."))
                                                   :prompt (format nil "Set ~a to" slot-name)
                                                   :sources (make-instance 'prompter:raw-source)))))
                                       (nyxt-prompt-buffer-canceled nil))))
-                   "change "))))
+                   "change "))
+             (:dd (:raw (value->html (slot-value value slot-name) t)))))
           (:raw (escaped-literal-print value))))))
 
 (defmethod value->html ((value standard-object) &optional compact-p)
