@@ -448,6 +448,9 @@ new window.")
     :documentation "Whether the request is for content with
 supported MIME-type, such as a picture that can be displayed in the web
 view.")
+   (file-name
+    nil
+    :documentation "The name this file will be saved on disk with, if downloaded.")
    (keys
     '()
     :documentation "The key sequence that generated the request."))
