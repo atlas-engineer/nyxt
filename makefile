@@ -66,7 +66,7 @@ endif
 ifeq ($(UNAME), Darwin)
 install: install-app-bundle
 else
-install:
+install: all
 	$(lisp_eval) '(asdf:load-system :nyxt/$(NYXT_RENDERER)-application)' \
 		--eval '(asdf:make :nyxt/install)' $(lisp_quit)
 endif
