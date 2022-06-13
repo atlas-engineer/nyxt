@@ -392,7 +392,7 @@ guarantee of the same result."
             (when (and internal-page-name)
               (alex:when-let ((internal-page (gethash internal-page-name *nyxt-url-commands*)))
                 (enable-modes (page-mode internal-page) :buffer buffer)
-                (setf (title buffer) (dynamic-title internal-page args))
+                (setf (title buffer) (apply #'dynamic-title internal-page args))
                 (multiple-value-bind (content encoding)
                     (apply (form internal-page) args)
                   (cond
