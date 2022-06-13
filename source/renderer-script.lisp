@@ -202,9 +202,14 @@ See `find-internal-page-buffer'."))
            (buffer-load (apply #'nyxt-url (name ,page) args)
                         :buffer (ensure-internal-page-buffer (name ,page)))))))))
 
-(defmethod initialize-instance :after ((page internal-page)
-                                       &key form
-                                       &allow-other-keys)
+(defmethod initialize-instance :after ((page internal-page) &key form &allow-other-keys)
+  "Register PAGE into the globally known nyxt:// URLs."
+  (when form
+    (set-internal-page-method page form)
+    (setf (form page) form))
+  (setf (gethash (name page) *nyxt-url-commands*) page))
+
+(defmethod reinitialize-instance :after ((page internal-page) &key form &allow-other-keys)
   "Register PAGE into the globally known nyxt:// URLs."
   (when form
     (set-internal-page-method page form)
