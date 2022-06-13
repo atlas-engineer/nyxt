@@ -119,13 +119,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
   `(and symbol (satisfies internal-page-symbol-p)))
 
 (define-class internal-page (command)
-  ((visibility
-    :anonymous
-    :type (member :global :mode :anonymous)
-    :reader t
-    :writer nil
-    :documentation "See `command'.")
-   (dynamic-title ; Not `title' so that it does not clash with other `title' methods.
+  ((dynamic-title ; Not `title' so that it does not clash with other `title' methods.
     ""
     :initarg :title
     :accessor nil
@@ -256,6 +250,7 @@ See `find-internal-page-buffer'."))
   "Define an `internal-page'."
   `(apply #'make-instance 'internal-page
           :name ',name
+          :visibility :anonymous
           :lambda-list ',form-args
           :form (quote (lambda (,@form-args) ,@body))
           ',initargs))
