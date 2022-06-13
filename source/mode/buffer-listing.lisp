@@ -113,7 +113,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                                   (list
                                    (find
                                     (render-url (url panel-buffer))
-                                    (panel-buffers (current-window))
+                                    (nyxt::panel-buffers (current-window))
                                     :test #'string=
                                     :key (alexandria:compose
                                           #'render-url #'url))))))
