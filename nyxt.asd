@@ -490,8 +490,10 @@ the few modules that's not automatically included in the image."
                 (copy-file (system-relative-pathname c "nyxt") binary-file)
                 ;; TODO: Use iolib/os:file-permissions instead of chmod?  Too verbose?
                 (run-program (list "chmod" "+x" (native-namestring binary-file))))
-              (flet ((copy-directory (source destination)
+              (flet ((copy-directory (source destination &key verbose-p)
                        "Copy the content (the file tree) of SOURCE to DESTINATION."
+                       (when verbose-p
+                         (format *error-output* "~&;; Copy ~s/* inside ~s.~%" source destination))
                        (collect-sub*directories
                         (ensure-directory-pathname source)
                         (constantly t)
@@ -508,6 +510,7 @@ the few modules that's not automatically included in the image."
                                 (directory-files subdirectory))))))
                 (handler-case
                     (progn
+                      (format *error-output* "~&;; Copying Git files to ~s.~%" *dest-source-dir*)
                       (dolist (file (cons
                                      ;; Find `libnyxt' file regardless of its extension:
                                      (subpathp (first (delete-if
@@ -528,10 +531,13 @@ the few modules that's not automatically included in the image."
                           (ensure-parent-exists dest)
                           (copy-file (system-relative-pathname :nyxt file)
                                      dest))))
-                  (t ()
+                  (condition (c)
+                    (format *error-output* "~&;; Git copy error: ~a" c)
+                    (format *error-output* "~&;; Fallback to copying whole directories instead.~%")
                     (dolist (dir '("source" "libraries"))
                       (copy-directory (system-relative-pathname :nyxt dir)
-                                      (merge-pathnames* dir *dest-source-dir*)))))
+                                      (merge-pathnames* dir *dest-source-dir*)
+                                      :verbose-p t))))
                 (copy-file (system-source-file :nyxt) (merge-pathnames* "nyxt.asd" *dest-source-dir*))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
