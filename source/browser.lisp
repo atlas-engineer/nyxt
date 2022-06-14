@@ -273,7 +273,7 @@ prevents otherwise.")
                 (append (uiop:raw-command-line-arguments)
                         '("--no-config")))
       (uiop:launch-program new-command-line)
-      (quit))))
+      (quit 1))))
 
 (defmethod finalize ((browser browser) urls startup-timestamp)
   "Run `*after-init-hook*' then BROWSER's `startup'."

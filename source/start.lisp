@@ -167,7 +167,7 @@ Example: --with-file bookmarks=/path/to/bookmarks
 ;; `opts::*options*' in `start'.
 (sera:eval-always (define-opts))
 
-(define-command quit ()
+(define-command quit (&optional (code 0))
   "Quit Nyxt."
   (hooks:run-hook (before-exit-hook *browser*))
   (loop for window in (window-list)
@@ -183,7 +183,7 @@ Example: --with-file bookmarks=/path/to/bookmarks
         (log:info "Deleting socket ~s." socket)
         (uiop:delete-file-if-exists socket))))
   (unless *run-from-repl-p*
-    (uiop:quit 0 nil))
+    (uiop:quit code nil))
   (mapc #'destroy-thread* (non-terminating-threads *browser*)))
 
 (define-command quit-after-clearing-session (&key confirmation-p) ; TODO: Rename?
