@@ -321,18 +321,24 @@ Return the short error message and the full error message as second value."
         (load-lisp config-file :package (find-package :nyxt-user))
         (echo "~a loaded." config-file))))
 
+(defun read-from-stream (stream)
+  "Return a list of all s-expressions read in STREAM."
+  (loop :for value := (read stream nil stream)
+        :until (eq value stream)
+        :collect value))
+
 (defun eval-expr (expr)
   "Evaluate the form EXPR (string) and print the result of the last expresion."
-  (handler-case
-      (with-input-from-string (input expr)
-        (format t "~a~&"
-                (loop with result = nil
-                      for object = (read input nil :eof)
-                      until (eq object :eof)
-                      do (setf result (eval object))
-                      finally (return result))))
-    (error (c)
-      (log:error "Evaluation error:~&~a" c))))
+  (with-input-from-string (input expr)
+    (let ((*package* (find-package :nyxt-user)))
+      (flet ((eval-protect (s-exp)
+               (with-protect ("Error in s-exp evaluation: ~a" :condition)
+                 (eval s-exp))))
+        (let* ((sexps (read-from-stream input))
+               (but-last (butlast sexps))
+               (last (alex:last-elt sexps)))
+          (mapc #'eval-protect but-last)
+          (format t "~&~a~&" (eval-protect last)))))))
 
 (defun parse-urls (expr)
   "Do _not_ evaluate EXPR and try to open URLs that were send to it.
