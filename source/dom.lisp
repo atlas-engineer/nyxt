@@ -173,15 +173,19 @@ The closest parent goes first, the furthest one goes last."))
 (export-always 'get-unique-selector)
 (defmethod get-unique-selector ((element plump:element))
   "Find the shortest selector that uniquely identifies the element on a page.
-Relies (in the order of importance) on:
+Rely (in the order of importance) on:
 - ID.
 - Tag name.
 - CSS Classes.
 - Attributes.
 - Parent and sibling node selectors (recursively).
 
-FIXME: If none of those provides the unique selector, returns the most specific
-selector calculated."
+If none of those provides the unique selector, return the most specific selector
+calculated.
+
+Return two values:
+- The selector for the value.
+- A boolean for whether this selector is unique (no other nodes matching it)."
   (let* ((tag-name (plump:tag-name element))
          (identifier (plump:get-attribute element "id"))
          (raw-classes (plump:get-attribute element "class"))
