@@ -102,18 +102,18 @@ evaluated in order."
          (with-input-from-string (input string)
            (first
             (last
-             (loop for object = (read input nil :eof)
-                   until (eq object :eof)
-                   collect (multiple-value-list
-                            (handler-case (let ((*interactive-p* interactive-p))
-                                            (eval object))
-                              (error (c) (format nil "~a" c)))))))))))
+             (mapcar (lambda (s-exp)
+                       (multiple-value-list
+                        (let ((*interactive-p* interactive-p))
+                          (with-protect ("Error in s-exp evaluation: ~a" :condition)
+                            (eval s-exp)))))
+                     (read-from-stream input))))))))
     (calispel:? channel)))
 
 (defun evaluate-async (string)
   "Like `evaluate' but does not block and does not return the result."
   (run-thread "async evaluator"
     (with-input-from-string (input string)
-      (loop for object = (read input nil :eof)
-            until (eq object :eof)
-            collect (funcall (lambda () (eval object)))))))
+      (dolist (s-exp (read-from-stream input))
+        (funcall (lambda () (with-protect ("Error in s-exp evaluation: ~a" :condition)
+                              (eval s-exp))))))))
