@@ -297,7 +297,7 @@
                                                       (setf (slot-value (nyxt:current-mode :repl)
                                                                         'current-evaluation)
                                                             order)))
-                                              :value (input evaluation)))
+                                              (input evaluation)))
                      collect (loop
                                for result in (results evaluation)
                                for sub-order from 0
