@@ -809,7 +809,11 @@ See `gtk-browser's `modifier-translator' slot."
        (webkit:webkit-web-context-register-uri-scheme-callback
         context scheme
         (lambda (request)
-          (let ((*interactive-p* t))
+          (let ((*interactive-p* t)
+                ;; Look up the scheme-object again so that we can live-update
+                ;; the callback without having to create a new view with a new
+                ;; context.
+                (scheme-object (gethash scheme nyxt::*schemes*)))
             (funcall* (callback scheme-object)
                       (webkit:webkit-uri-scheme-request-get-uri request)
                       (find (webkit:webkit-uri-scheme-request-get-web-view request)
