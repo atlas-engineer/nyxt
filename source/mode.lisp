@@ -326,7 +326,8 @@ ARGS are passed to the mode `enable' method.
 
 If BUFFERS is a list, return it.
 If it's a single buffer, return it directly (not as a list)."
-  ;; TODO: Report if mode is not found.
+  ;; We allow NIL values for MODES and BUFFERS in case they are forms, in which
+  ;; case it's handy that this function does not error, it simply does nothing.
   (let* ((buffers (if buffers
                       (uiop:ensure-list buffers)
                       (unless explicit-buffers-p
@@ -342,6 +343,10 @@ If it's a single buffer, return it directly (not as a list)."
                        :prompt "Enable mode(s)"
                        :sources (make-instance 'inactive-mode-source
                                                :buffers buffers))))))
+    (dolist (mode modes)
+      (check-type mode mode-symbol))
+    (dolist (buffer buffers)
+      (check-type buffer buffer))
     (mapcar (lambda (buffer)
               (mapcar (lambda (mode-sym)
                         (apply #'enable (or (find mode-sym (modes buffer) :key #'name)
@@ -359,7 +364,6 @@ BUFFERS and MODES are automatically coerced into a list.
 
 If BUFFERS is a list, return it.
 If it's a single buffer, return it directly (not as a list)."
-  ;; TODO: Report if mode is not found.
   (let* ((buffers (if buffers
                       (uiop:ensure-list buffers)
                       (unless explicit-buffers-p
@@ -375,6 +379,10 @@ If it's a single buffer, return it directly (not as a list)."
                        :prompt "Enable mode(s)"
                        :sources (make-instance 'inactive-mode-source
                                                :buffers buffers))))))
+    (dolist (mode modes)
+      (check-type mode mode-symbol))
+    (dolist (buffer buffers)
+      (check-type buffer buffer))
     (mapcar (lambda (buffer)
               (mapcar #'disable (delete nil (mapcar (lambda (mode) (find mode (modes buffer) :key #'name))
                                                     (uiop:ensure-list modes)))))
