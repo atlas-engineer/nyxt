@@ -171,7 +171,8 @@ JSON should have the format like what `get-document-body-json' produces:
 The closest parent goes first, the furthest one goes last."))
 
 (export-always 'get-unique-selector)
-(defmethod get-unique-selector ((element plump:element))
+(-> get-unique-selector (plump:element) t)
+(defmemo get-unique-selector (element)
   "Find the shortest selector that uniquely identifies the element on a page.
 Rely (in the order of importance) on:
 - ID.
