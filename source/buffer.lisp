@@ -1175,20 +1175,18 @@ proceeding."
   (:export-class-name-p t)
   (:metaclass user-class))
 
-(define-command switch-buffer
-    (&key
-     (current-is-last-p nil)
-     (buffer (prompt1
-              :prompt "Switch to buffer"
-              :sources (list (make-instance 'buffer-source
-                                            :constructor (buffer-initial-suggestions
-                                                          :current-is-last-p current-is-last-p))))))
+(define-command switch-buffer (&key buffer (current-is-last-p nil))
   "Switch buffer using fuzzy completion.
 Buffers are ordered by last access.
 With CURRENT-IS-LAST-P, the current buffer is listed last so as to list the
 second latest buffer first."
-  (unless (eq (current-buffer) buffer)
-    (set-current-buffer buffer)))
+  (if buffer
+      (set-current-buffer buffer)
+      (prompt
+       :prompt "Switch to buffer"
+       :sources (list (make-instance 'buffer-source
+                                     :constructor (buffer-initial-suggestions
+                                                   :current-is-last-p current-is-last-p))))))
 
 (define-command switch-buffer-domain (&key domain (buffer (current-buffer)))
   "Switch the active buffer in the current window from the current domain."
