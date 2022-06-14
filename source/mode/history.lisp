@@ -272,28 +272,26 @@ Clicking on a link navigates the history in the corresponding buffer."
       (spinneret:with-html-string
         (:ul (:raw (or (htree:map-owned-tree
                         #'(lambda (node)
-                            (let ((node-id (nyxt::ensure-inspected-id node)))
-                              (spinneret:with-html-string
-                                (:li
-                                 (:button :class "link"
-                                          :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                           `(let ((buffer (nyxt::buffers-get ,(id buffer)))
-                                                                  (url (url (htree:data (nyxt::inspected-value ,node-id)))))
-                                                              (with-current-buffer buffer
-                                                                (with-history (history buffer)
-                                                                  (htree:visit-all history (id buffer)
-                                                                                   (nyxt::inspected-value ,node-id)))
-                                                                (load-history-url url))
-                                                              (switch-buffer :id (id buffer)))))
-                                          (let ((title (title-or-fallback (htree:data node))))
-                                            (cond
-                                              ((eq node (htree:owner-node history current-buffer-id))
-                                               (:i (:b title)))
-                                              ((eq node (htree:owner-node history (id buffer)))
-                                               (:i title))
-                                              ((htree:owned-p (htree:owner history current-buffer-id) node)
-                                               (:b title))
-                                              (t title))))))))
+                            (spinneret:with-html-string
+                              (:li
+                               (:button :class "link"
+                                        :onclick (ps:ps (nyxt/ps:lisp-eval
+                                                         (:title "visit-history-for-buffer")
+                                                         (let ((url (url (htree:data node))))
+                                                           (with-current-buffer buffer
+                                                             (with-history (history buffer)
+                                                               (htree:visit-all history (id buffer) node))
+                                                             (load-history-url url))
+                                                           (switch-buffer :buffer buffer))))
+                                        (let ((title (title-or-fallback (htree:data node))))
+                                          (cond
+                                            ((eq node (htree:owner-node history current-buffer-id))
+                                             (:i (:b title)))
+                                            ((eq node (htree:owner-node history (id buffer)))
+                                             (:i title))
+                                            ((htree:owned-p (htree:owner history current-buffer-id) node)
+                                             (:b title))
+                                            (t title)))))))
                         history
                         (htree:owner history (id buffer))
                         :include-root t

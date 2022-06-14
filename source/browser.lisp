@@ -594,3 +594,37 @@ Return BUFFER."
                    :direction :output
                    :if-does-not-exist :create
                    :if-exists :append))))))
+
+(define-internal-page-command-global reduce-to-buffer (&key (delete t))
+    (reduced-buffer "*Reduced Buffers*")
+  "Query the buffer(s) to \"reduce \" by copying their titles/URLs to a
+single buffer, optionally delete them. This function is useful for archiving a
+set of useful URLs or preparing a list to send to a someone else."
+  (let ((buffers (prompt
+                  :prompt "Reduce buffer(s)"
+                  :sources (make-instance 'buffer-source
+                                          :constructor (remove-if #'internal-url-p (buffer-list)
+                                                                  :key #'url)
+                                          :return-actions '(identity)
+                                          :multi-selection-p t))))
+    (unwind-protect
+         (spinneret:with-html-string
+           (:style (style reduced-buffer))
+           (:h1 "Reduced Buffers:")
+           (:div
+            (if buffers
+                (loop for buffer in buffers
+                      collect
+                      (with-current-buffer buffer
+                        (:div
+                         (:p (:b "Title: ") (title buffer))
+                         (:p (:b "URL: ") (:a :href (render-url (url buffer))
+                                              (render-url (url buffer))))
+                         (:p (:b "Automatically generated summary: ")
+                             (:ul
+                              (loop for summary-bullet in (analysis:summarize-text
+                                                           (document-get-paragraph-contents :limit 10000))
+                                    collect (:li (str:collapse-whitespaces summary-bullet)))))
+                         (:hr ""))))
+                (:p "None chosen."))))
+      (when delete (mapcar #'buffer-delete buffers)))))

@@ -21,7 +21,7 @@
               (:p "Size: " size)
               (:p "Requires: " dependencies)
               (:p (:button :class "button"
-                           :onclick (ps:ps (nyxt/ps:lisp-eval `(ql:quickload ,name))) "Load"))
+                           :onclick (ps:ps (nyxt/ps:lisp-eval (:title "quickload") (ql:quickload name))) "Load"))
               (:hr)))))))
 
 (define-class quicklisp-source (prompter:source)

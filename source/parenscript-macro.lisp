@@ -7,6 +7,7 @@
   (:import-from #:serapeum #:export-always))
 
 (in-package :nyxt/parenscript)
+(nyxt:use-nyxt-package-nicknames)
 
 (export-always 'qs)
 (defpsmacro qs (context selector)
@@ -114,16 +115,3 @@
               (<= (chain rect right) (chain window inner-width))
               (<= (chain rect bottom) (chain window inner-height)))
          t nil)))
-
-(export-always 'lisp-eval)
-(defpsmacro lisp-eval (form &optional callback)
-  "Request the lisp: URL and invoke callback when there's a successful result."
-  `(let ((request (fetch (lisp (str:concat
-                                "lisp://" (quri:url-encode (write-to-string ,form))))
-                         (create :mode "no-cors"))))
-     (when ,callback
-       (chain request
-              (then (lambda (response)
-                      (when (@ response ok)
-                        (chain response (json)))))
-              (then ,callback)))))

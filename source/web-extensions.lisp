@@ -301,7 +301,9 @@ slash. WebExtensions require this :/"
 (defmethod nyxt:mode-status ((status status-buffer) (extension extension))
   (spinneret:with-html-string
     (:button :class "button"
-             :onclick (ps:ps (nyxt/ps:lisp-eval `(toggle-extension-popup ',(sera:class-name-of extension))))
+             :onclick (ps:ps (nyxt/ps:lisp-eval
+                              (:title "toggle-extension-popup")
+                              (toggle-extension-popup (sera:class-name-of extension))))
              :title (format nil "Open the browser action of ~a" extension)
              (call-next-method))))
 
@@ -376,7 +378,8 @@ DIRECTORY should be the one containing manifest.json file for the extension in q
                (spinneret:with-html-string
                  (:button :class "button"
                           :onclick (ps:ps (nyxt/ps:lisp-eval
-                                           `(toggle-extension-popup ',(sera:class-name-of extension))))
+                                           (:title "toggle-extension-popup")
+                                           (toggle-extension-popup (sera:class-name-of extension))))
                           :title (format nil "Open the browser action of ~a" (name extension))
                           (:raw (setf (default-icon (browser-action extension))
                                       (encode-browser-action-icon (quote ,json) ,directory))))))))))

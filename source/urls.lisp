@@ -303,10 +303,6 @@ Authority is compared case-insensitively (RFC 3986)."
                       (lambda (url1 url2) (equalp (quri:uri-authority url1)
                                                   (quri:uri-authority url2)))))))
 
-(defvar *nyxt-url-commands* (make-hash-table)
-  "A map from allowed nyxt: URLs symbols to the functions that generate code of
-  the pages related to these commands.")
-
 (export-always 'nyxt-url)
 (-> nyxt-url (t &rest t &key &allow-other-keys) string)
 (defun nyxt-url (function-name &rest args &key &allow-other-keys)
@@ -360,7 +356,9 @@ Example:
 (export-always 'parse-nyxt-url)
 (-> parse-nyxt-url ((or string quri:uri)) (values symbol list &optional))
 (defun parse-nyxt-url (url)
-  "Return (1) the name of the function and (2) the arguments to it, parsed from nyxt: URL.
+  "Return two values parsed from the nyxt: URL:
+- the name of the `internal-page',
+- the arguments to it.
 
 Error out if some of the params are not constants. Thanks to this,
 `parse-nyxt-url' can be repeatedly called on the same nyxt: URL, with the
@@ -368,9 +366,10 @@ guarantee of the same result."
   (let* ((url (url url))
          (symbol (quri:uri-path url))
          (params (quri:uri-query-params url))
-         (function (read-from-string (str:upcase symbol))))
-    (if (gethash function *nyxt-url-commands*)
-        (values function
+         (internal-page-name (let ((*package* (find-package :nyxt)))
+                               (read-from-string (str:upcase symbol)))))
+    (if (gethash internal-page-name *nyxt-url-commands*)
+        (values internal-page-name
                 (alex:mappend (lambda (pair)
                                 (let ((key (intern (str:upcase (first pair)) :keyword))
                                       (value (if (str:starts-with-p +escape+ (rest pair))
@@ -382,41 +381,63 @@ guarantee of the same result."
                                       (list key value)
                                       (error "A non-constant value passed in URL params: ~a" value))))
                               params))
-        (error "There's no nyxt:~a page defined" symbol))))
+        (error "There's no nyxt:~a internal-page defined" symbol))))
 
 (define-internal-scheme "nyxt"
     (lambda (url buffer)
-      (declare (ignore buffer))
       (with-protect ("Error while processing the \"nyxt:\" URL: ~a" :condition)
-        (sera:and-let* ((url (quri:uri url))
-                        (function-name (parse-nyxt-url url))
-                        (page-generating-function (gethash function-name *nyxt-url-commands*)))
-          (let ((result (multiple-value-list (apply page-generating-function
-                                                    (nth-value 1 (parse-nyxt-url url))))))
-            (cond
-              ((and (alex:length= result 2)
-                    (arrayp (first result))
-                    (stringp (second result)))
-               (values (first result) (second result)))
-              ((arrayp (first result))
-               (first result))
-              (t (error "Cannot display evaluation result")))))))
+        (let ((url (quri:uri url)))
+          (log:debug "Internal page ~a requested." url)
+          (multiple-value-bind (internal-page-name args) (parse-nyxt-url url)
+            (when (and internal-page-name)
+              (alex:when-let ((internal-page (gethash internal-page-name *nyxt-url-commands*)))
+                (enable-modes (page-mode internal-page) :buffer buffer)
+                (setf (title buffer) (apply #'dynamic-title internal-page args))
+                (multiple-value-bind (content encoding)
+                    (apply (form internal-page) args)
+                  (cond
+                    ((and (arrayp content)
+                          (stringp encoding))
+                     (values content encoding))
+                    ((arrayp content)
+                     content)
+                    (t (error "Cannot display evaluation result"))))))))))
   :local-p t)
+
+(ps:defpsmacro nyxt/ps::lisp-eval ((&key (buffer '(nyxt:current-buffer)) title callback) &body form)
+  "Request the lisp: URL and invoke CALLBACK when there's a successful result.
+BUFFER must be a `document-buffer'.
+TITLE is purely informative."
+  ;; We define it here and not in parenscript-macro because we
+  `(let ((url (ps:lisp (let ((request-id (string (gensym ""))))
+                             (setf (gethash request-id (nyxt::lisp-url-callbacks ,buffer))
+                                   (lambda () ,@form))
+                             (let ((url-string (format nil "lisp://~a" request-id)))
+                               (when ,title
+                                 (setf url-string (str:concat url-string "/" ,title)))
+                               url-string)))))
+     (let ((request (fetch url
+                           (ps:create :mode "no-cors"))))
+       (when ,callback
+         (chain request
+                (then (lambda (response)
+                        (when (@ response ok)
+                          (chain response (json)))))
+                (then ,callback))))))
+(export-always 'nyxt/ps::lisp-eval :nyxt/ps)
 
 (define-internal-scheme "lisp"
     (lambda (url buffer)
       (let ((url (quri:uri url)))
-        ;; TODO: Replace this condition with `(network-buffer-p buffer)`?
+        ;; TODO: Replace this condition with `(not (network-buffer-p buffer))`?
         (if (or (status-buffer-p buffer)
                 (panel-buffer-p buffer)
                 (prompt-buffer-p buffer)
                 (internal-url-p (url buffer)))
-            (let* ((schemeless-url (schemeless-url url))
-                   (code-raw (quri:url-decode schemeless-url :lenient t))
-                   ;; All URLs WebKitGTK gives us end with an unnecessary forward slash.
-                   (code (sera:slice code-raw 0 -1)))
-              (log:debug "Evaluate Lisp code from internal page: ~a" code)
-              (values (let ((result (first (evaluate code :interactive-p t))))
+            (let* ((request-id (quri:uri-host url))
+                   (title (when (and url (quri:uri-path url)) (sera:drop-prefix "/" (quri:uri-path url)))))
+              (log:debug "Evaluate Lisp code from internal page: ~a" (or title "UNTITLED"))
+              (values (let ((result (nyxt:funcall* (gethash request-id (lisp-url-callbacks buffer)))))
                         ;; Objects and other complex structures make cl-json choke.
                         ;; TODO: Maybe encode it to the format that `cl-json'
                         ;; supports, then we can override the encoding and

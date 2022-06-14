@@ -42,10 +42,12 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                (spinneret:with-html
                  (:p (:button :class "button"
                               :onclick (ps:ps (nyxt/ps:lisp-eval
-                                               `(nyxt::delete-buffer :id ,(id buffer)))) "✕")
+                                               (:title "delete-buffer")
+                                               (nyxt::delete-buffer :buffer buffer))) "✕")
                      (:button :class "button"
                               :onclick (ps:ps (nyxt/ps:lisp-eval
-                                               `(nyxt::switch-buffer :id ,(id buffer)))) "→")
+                                               (:title "switch-buffer")
+                                               (nyxt::switch-buffer :buffer buffer))) "→")
                      (:span (title buffer) "  "
                             (:u (render-url (url buffer))))))))
            (buffer-tree->html (root-buffer)
@@ -65,11 +67,12 @@ With LINEAR-VIEW-P, list buffers linearly instead."
       (:style (style buffer))
       (:h1 "Buffers")
       (:button :class "button"
-               :onclick (ps:ps (nyxt/ps:lisp-eval '(nyxt/buffer-listing-mode::list-buffers)))
+               :onclick (ps:ps (nyxt/ps:lisp-eval (:title "tree-display") (nyxt/buffer-listing-mode::list-buffers)))
                "Tree display")
       (:button :class "button"
                :onclick (ps:ps (nyxt/ps:lisp-eval
-                                '(nyxt/buffer-listing-mode::list-buffers :linear-view-p t)))
+                                (:title "linear-display")
+                                (nyxt/buffer-listing-mode::list-buffers :linear-view-p t)))
                "Linear display")
       (:br "")
       (:div
@@ -91,7 +94,8 @@ With LINEAR-VIEW-P, list buffers linearly instead."
            (spinneret:with-html
              (:p (:button :class "button"
                           :onclick (ps:ps (nyxt/ps:lisp-eval
-                                           `(nyxt::switch-buffer :id ,(id buffer))))
+                                           (:title "switch-buffer")
+                                           (nyxt::switch-buffer :buffer buffer)))
                           (:span :title (title buffer) :class "title" (title buffer)))))))
     (spinneret:with-html-string
       (:style (cl-css:css
@@ -104,14 +108,15 @@ With LINEAR-VIEW-P, list buffers linearly instead."
        (:h1 "Buffers")
        (:button :class "button"
                 :onclick (ps:ps (nyxt/ps:lisp-eval
-                                 `(reload-buffers
-                                   (list
-                                    (find
-                                     ,(render-url (url panel-buffer))
-                                     (panel-buffers (current-window))
-                                     :test #'string=
-                                     :key (alexandria:compose
-                                           #'render-url #'url))))))
+                                 (:title "reload-buffer")
+                                 (reload-buffers
+                                  (list
+                                   (find
+                                    (render-url (url panel-buffer))
+                                    (nyxt::panel-buffers (current-window))
+                                    :test #'string=
+                                    :key (alexandria:compose
+                                          #'render-url #'url))))))
                 "Update ↺")
        (loop for buffer in (buffer-list)
              collect (buffer-markup buffer))))))

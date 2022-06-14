@@ -225,7 +225,16 @@ forwarded when no binding is found.")
     :type t
     :export nil
     ;; TODO: Store multiple events?  Maybe when implementing keyboard macros.
-    :documentation "The last event received in the current buffer."))
+    :documentation "The last event received in the current buffer.")
+   (lisp-url-callbacks
+    (sera:dict)
+    :type hash-table
+    :export nil
+    :documentation "The index of callbacks for `lisp://' URLs.
+They are populated by the `nyxt/ps:lisp-eval' Parenscript macro.
+
+It's part of `input-buffer' since any (even offline) buffer that can be clicked
+on may want to have dynamic interactions."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -1176,18 +1185,20 @@ proceeding."
   (:export-class-name-p t)
   (:metaclass user-class))
 
-(define-command switch-buffer (&key id (current-is-last-p nil))
+(define-command switch-buffer
+    (&key
+     (current-is-last-p nil)
+     (buffer (prompt1
+              :prompt "Switch to buffer"
+              :sources (list (make-instance 'buffer-source
+                                            :constructor (buffer-initial-suggestions
+                                                          :current-is-last-p current-is-last-p))))))
   "Switch buffer using fuzzy completion.
 Buffers are ordered by last access.
 With CURRENT-IS-LAST-P, the current buffer is listed last so as to list the
 second latest buffer first."
-  (if id
-      (set-current-buffer (buffers-get id))
-      (prompt
-       :prompt "Switch to buffer"
-       :sources (list (make-instance 'buffer-source
-                                     :constructor (buffer-initial-suggestions
-                                                   :current-is-last-p current-is-last-p))))))
+  (unless (eq (current-buffer) buffer)
+    (set-current-buffer buffer)))
 
 (define-command switch-buffer-domain (&key domain (buffer (current-buffer)))
   "Switch the active buffer in the current window from the current domain."
@@ -1206,49 +1217,14 @@ second latest buffer first."
         (set-current-buffer (first matching-buffers))
         (switch-buffer-domain :domain domain))))
 
-(define-command delete-buffer (&key id)
+(define-command delete-buffer
+    (&key (buffer (prompt
+                   :prompt "Delete buffer(s)"
+                   :sources (make-instance 'buffer-source
+                                           :multi-selection-p t
+                                           :return-actions (list (lambda-mapped-command buffer-delete))))))
   "Query the buffer(s) to delete."
-  (if id
-      (buffer-delete (gethash id (slot-value *browser* 'buffers)))
-      (prompt
-       :prompt "Delete buffer(s)"
-       :sources (make-instance 'buffer-source
-                               :multi-selection-p t
-                               :return-actions (list (lambda-mapped-command buffer-delete))))))
-
-(define-internal-page-command-global reduce-to-buffer (&key (delete t))
-    (reduced-buffer "*Reduced Buffers*")
-  "Query the buffer(s) to \"reduce \" by copying their titles/URLs to a
-single buffer, optionally delete them. This function is useful for archiving a
-set of useful URLs or preparing a list to send to a someone else."
-  (let ((buffers (prompt
-                  :prompt "Reduce buffer(s)"
-                  :sources (make-instance 'buffer-source
-                                          :constructor (remove-if #'internal-url-p (buffer-list)
-                                                                  :key #'url)
-                                          :return-actions '(identity)
-                                          :multi-selection-p t))))
-    (unwind-protect
-         (spinneret:with-html-string
-           (:style (style reduced-buffer))
-           (:h1 "Reduced Buffers:")
-           (:div
-            (if buffers
-                (loop for buffer in buffers
-                      collect
-                      (with-current-buffer buffer
-                        (:div
-                         (:p (:b "Title: ") (title buffer))
-                         (:p (:b "URL: ") (:a :href (render-url (url buffer))
-                                              (render-url (url buffer))))
-                         (:p (:b "Automatically generated summary: ")
-                             (:ul
-                              (loop for summary-bullet in (analysis:summarize-text
-                                                           (document-get-paragraph-contents :limit 10000))
-                                    collect (:li (str:collapse-whitespaces summary-bullet)))))
-                         (:hr ""))))
-                (:p "None chosen."))))
-      (when delete (mapcar #'buffer-delete buffers)))))
+  (buffer-delete buffer))
 
 (define-command delete-all-buffers (&key (confirmation-p t))
   "Delete all buffers, with confirmation."
@@ -1278,6 +1254,7 @@ When BUFFER is omitted, it defaults to the current one."
 (defun buffer-load (url-designator &key (buffer (current-buffer)))
   "Load INPUT-URL in BUFFER.
 URL is then transformed by BUFFER's `buffer-load-hook'."
+  ;; TODO: Move all most of this code to `ffi-buffer-load :around'?
   (let* ((url (url url-designator))
          (new-url
            (ignore-errors
@@ -1289,10 +1266,20 @@ URL is then transformed by BUFFER's `buffer-load-hook'."
       ;; TODO: This condition can be a source of inefficiency.  Besides, it
       ;; partly duplicates the code in `preprocess-request'.  Can we factor this
       ;; out?
+
+      ;; We could have `on-url-load' and `on-url-unload' methods instead.
+      ;; `on-url-unload' could be used to perform some clean up, while
+      ;; `on-url-load' would perform the actual loading.
+      ;; Then subclass `quri:uri' with uri-js, uri-nyxt, uri-lisp, etc.
+      ;; Finally, specialize against these URLs.
       (cond
         ((equal "javascript" (quri:uri-scheme url))
          (ffi-buffer-evaluate-javascript buffer (quri:url-decode (quri:uri-path url))))
-        (t (ffi-buffer-load buffer url))))
+        (t
+         (clrhash (lisp-url-callbacks buffer)) ; REVIEW: Is it the only spot where to clear the Lisp URL callbacks?
+         (alex:when-let ((page (find-url-internal-page url)))
+           (disable-modes (page-mode page) buffer))
+         (ffi-buffer-load buffer url))))
     buffer))
 
 (define-class global-history-source (prompter:source)
@@ -1556,7 +1543,7 @@ Return it."
   "Prompt for BUFFERS to be reloaded.
 Return BUFFERS."
   (if buffers
-      (mapcar (lambda (buffer) (buffer-load (url buffer) :buffer buffer)) buffers)
+      (mapcar (lambda (buffer) (buffer-load (url buffer) :buffer buffer)) (alex:ensure-list buffers))
       (prompt
        :prompt "Reload buffer(s)"
        :sources (make-instance 'buffer-source

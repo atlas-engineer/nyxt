@@ -38,7 +38,9 @@
      (when (equal value object)
        (return-from ensure-inspected-id id)))
    *inspected-values*)
-  (sera:lret ((id (new-id)))
+  ;; We cannot use `new-id' directly because it would force the call to
+  ;; `inspected-value' to be within the scope of `ensure-inspected-id'.
+  (sera:lret ((id (intern (symbol-name (new-id)))))
     (setf (inspected-value id) value)))
 
 
@@ -100,7 +102,7 @@ values in help buffers, REPL and elsewhere."))
               (:dt "closure-p")
               (:dd (:raw (value->html closure-p))))))
         (name
-         (:a :href (nyxt-url 'describe-function :function name)
+         (:a :href (nyxt-url 'describe-function :fn name)
              (:raw (escaped-literal-print value))))
         (t (:raw (escaped-literal-print value)))))))
 
@@ -245,22 +247,22 @@ values in help buffers, REPL and elsewhere."))
                                           (closer-mop:class-slots (class-of value)))))
           (:dl
            (dolist (slot-name slot-names)
-             (:dt (prin1-to-string slot-name))
-             (:dd (:raw (value->html (slot-value value slot-name) t))
+             (:dt (prin1-to-string slot-name)
+                  " "
                   (:button
                    :class "button"
                    :onclick (ps:ps (nyxt/ps:lisp-eval
-                                    `(handler-case
-                                         (setf (slot-value (inspected-value
-                                                            ,(ensure-inspected-id value))
-                                                           (quote ,slot-name))
-                                               (first
-                                                (evaluate
-                                                 (prompt1
-                                                   :prompt (format nil "Set ~a to" (quote ,slot-name))
-                                                   :sources (make-instance 'prompter:raw-source)))))
-                                       (nyxt-prompt-buffer-canceled nil))))
-                   "change "))))
+                                    (:title "change value")
+                                    (handler-case
+                                        (setf (slot-value value slot-name)
+                                              (first
+                                               (evaluate
+                                                (prompt1
+                                                  :prompt (format nil "Set ~a to" slot-name)
+                                                  :sources (make-instance 'prompter:raw-source)))))
+                                      (nyxt-prompt-buffer-canceled nil))))
+                   "change "))
+             (:dd (:raw (value->html (slot-value value slot-name) t)))))
           (:raw (escaped-literal-print value))))))
 
 (defmethod value->html ((value standard-object) &optional compact-p)

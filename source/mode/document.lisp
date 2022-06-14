@@ -274,11 +274,10 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
                    :ratio (current-zoom-ratio (buffer mode)))
   url)
 
-(define-internal-page-command-global show-url-qrcode
-    (&key (buffer-id (id (current-buffer)))
-     (url (quri:render-uri (url (nyxt::buffers-get buffer-id)))))
-    (buffer (format nil "*Buffer ~a (~a) QRcode*" buffer-id url))
-  "In a new buffer, show the QR code containing the URL for the current buffer."
+(define-internal-page show-url-qrcode (&key url)
+    (:title "*Buffer URL QR code*")
+  "Display the QR code containing URL.
+Warning: URL is a string."
   (let* ((stream (flexi-streams:make-in-memory-output-stream)))
     (cl-qrencode:encode-png-stream url stream)
     (spinneret:with-html-string
@@ -287,6 +286,12 @@ ELEMENT-SCRIPT is a Parenscript script that is passed to `ps:ps'."
                                  (cl-base64:usb8-array-to-base64-string
                                   (flexi-streams:get-output-stream-sequence stream)))
                 :alt url)))))
+
+(define-command-global show-url-qrcode (&key (buffer (current-buffer)))
+  "Display the QR code containing the URL of BUFFER in a new page."
+  (set-current-buffer
+   (buffer-load (nyxt-url 'show-url-qrcode :url (quri:render-uri (url buffer)))
+                :buffer (ensure-internal-page-buffer 'show-url-qrcode))))
 
 (define-internal-page-command-global view-source (&key (url (render-url (url (current-buffer)))))
   (source-buffer (format nil "*Source of ~a" url))
@@ -508,10 +513,10 @@ of buffers."
                   (let ((heading (first group)))
                     (:li (:a :onclick
                              (ps:ps (nyxt/ps:lisp-eval
-                                     `(progn
-                                        (switch-buffer :id ,(id (buffer heading)))
-                                        (scroll-to-element :nyxt-identifier
-                                                           ,(get-nyxt-id (element heading))))))
+                                     (:title "switch-buffer-scroll")
+                                     (switch-buffer :buffer (buffer heading))
+                                     (scroll-to-element :nyxt-identifier
+                                                        (get-nyxt-id (element heading)))))
                              (title heading)))
                     (when (rest group)
                       (:raw (sera:mapconcat #'headings->html (list (group-headings (rest group))) "")))))))))

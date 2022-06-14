@@ -53,14 +53,14 @@ disk.")
 cancelling a download. This can be set by the download engine.")
    (cancel-button (make-instance 'user-interface:button
                                  :text "✕"
-                                 :action (ps:ps (nyxt/ps:lisp-eval '(echo "Can't cancel download."))))
+                                 :action (ps:ps (nyxt/ps:lisp-eval () (echo "Can't cancel download."))))
                   :export nil
                   :documentation "The download is referenced by its
 URL. The URL for this button is therefore encoded as a funcall to
 cancel-download with an argument of the URL to cancel.")
    (open-button (make-instance 'user-interface:button
                                :text "🗁"
-                               :action (ps:ps (nyxt/ps:lisp-eval '(echo "Can't open file, file path unknown."))))
+                               :action (ps:ps (nyxt/ps:lisp-eval () (echo "Can't open file, file path unknown."))))
                 :export nil
                 :documentation "The file name to open is encoded
 within the button's URL when the destinaton path is set.")
@@ -86,7 +86,7 @@ finds it, it will invoke its cancel-function."
 (defmethod (setf cancel-function) (cancel-function (download download))
   (setf (slot-value download 'cancel-function) cancel-function)
   (setf (user-interface:action (cancel-button download))
-        (ps:ps (nyxt/ps:lisp-eval `(cancel-download ,(url download))))))
+        (ps:ps (nyxt/ps:lisp-eval (:title "cancel-download") (cancel-download (url download))))))
 
 (defmethod (setf status) (value (download download))
   (setf (slot-value download 'status) value)
@@ -108,7 +108,7 @@ finds it, it will invoke its cancel-function."
 (defmethod (setf destination-path) (path (download download))
   (setf (slot-value download 'destination-path) path)
   (setf (user-interface:action (open-button download))
-        (ps:ps (nyxt/ps:lisp-eval `(nyxt/file-manager-mode:default-open-file-function ,path)))))
+        (ps:ps (nyxt/ps:lisp-eval (:title "open-file") (nyxt/file-manager-mode:default-open-file-function path)))))
 
 (defmethod connect ((download download) buffer)
   "Connect the user-interface objects within the download to the

@@ -96,7 +96,7 @@ for matches."
                  (make-instance
                   'function-source
                   :return-actions (list (lambda-command describe-function* (functions)
-                                          (describe-function :function (first functions))))
+                                          (describe-function :fn (first functions))))
                   :filter-preprocessor preprocessor
                   :universal universal)
                  (make-instance
@@ -140,9 +140,9 @@ for matches."
   "Inspect anything from any package and show it in a help buffer."
   (describe-any nil t))
 
-(define-internal-page-command-global describe-value
+(define-internal-page describe-value
     (&key id)
-    (buffer "*Help-value*" (resolve-symbol :help-mode :mode))
+    (:title "*Help-value*" :page-mode (resolve-symbol :help-mode :mode))
   "Inspect value under ID and show it in a help buffer."
   (sera:and-let* ((id id)
                   (value (inspected-value id)))
@@ -161,7 +161,9 @@ turned into links to their respective description page."
                   (symbol (let ((*package* (symbol-package parent-symbol)))
                             (ignore-errors (read-from-string name nil))))
                   (url (when symbol
-                         (ps:ps (nyxt/ps:lisp-eval `(nyxt::describe-any ,(princ-to-string symbol)))))))
+                         (ps:ps (nyxt/ps:lisp-eval
+                                 (:title "describe-any")
+                                 (nyxt::describe-any (princ-to-string symbol)))))))
              (let ((*print-pretty* nil))
                ;; Disable pretty-printing to avoid spurious space insertion within links:
                ;; https://github.com/ruricolist/spinneret/issues/37#issuecomment-884740046
@@ -229,14 +231,15 @@ turned into links to their respective description page."
       (:button
        :class "button"
        :onclick (ps:ps (nyxt/ps:lisp-eval
-                        `(handler-case
-                             (setf ,variable
-                                   (first
-                                    (evaluate
-                                     (prompt1
-                                       :prompt (format nil "Set ~a to" (quote ,variable))
-                                       :sources (make-instance 'prompter:raw-source)))))
-                           (nyxt-prompt-buffer-canceled nil))))
+                        (:title "change-value")
+                        (handler-case
+                            (setf variable
+                                  (first
+                                   (evaluate
+                                    (prompt1
+                                      :prompt (format nil "Set ~a to" variable)
+                                      :sources (make-instance 'prompter:raw-source)))))
+                          (nyxt-prompt-buffer-canceled nil))))
        "Change value")
       (:p (:raw (value->html (symbol-value variable)))))))
 
@@ -271,14 +274,14 @@ turned into links to their respective description page."
 (define-internal-page-command-global describe-function
     (&key
      universal
-     (function (prompt1
-                 :prompt "Describe function"
-                 :sources (make-instance 'function-source :universal universal))))
-    (buffer (str:concat "*Help-" (symbol-name function) "*") (resolve-symbol :help-mode :mode))
+     (fn (prompt1
+           :prompt "Describe function"
+           :sources (make-instance 'function-source :universal universal))))
+    (buffer (str:concat "*Help-" (symbol-name fn) "*") (resolve-symbol :help-mode :mode))
   "Inspect a function and show it in a help buffer.
 For generic functions, describe all the methods."
-  (if function
-      (let ((input function)
+  (if fn
+      (let ((input fn)
             (*print-case* :downcase))
         (flet ((fun-desc (input)
                  (spinneret:with-html-string
@@ -296,44 +299,42 @@ For generic functions, describe all the methods."
                      (:h2 (format nil "Source ~a" file))
                      (:pre (function-lambda-string (symbol-function input))))))
                (method-desc (method)
-                 (let ((id (ensure-inspected-id method)))
-                   (spinneret:with-html-string
-                     (:details
-                      (:summary
-                          (:h3 :style "display: inline"
-                               (format nil "~s" input) " "
-                               (:raw (format
-                                      nil "(~{~a~^ ~})"
-                                      (mapcar (lambda (class)
-                                                (cond
-                                                  ((ignore-errors (mopu:subclassp class 'standard-object))
-                                                   (spinneret:with-html-string
-                                                     (:a :href (nyxt-url 'describe-class
-                                                                         :class (class-name class))
-                                                         (write-to-string (class-name class)))))
-                                                  ((ignore-errors (eq t (class-name class)))
-                                                   "t")
-                                                  (t (nyxt::escaped-literal-print class))))
-                                              (mopu:method-specializers method))))))
-                      (:button
-                       :class "button"
-                       :onclick (ps:ps (nyxt/ps:lisp-eval
-                                        `(progn
-                                           (remove-method (closer-mop:method-generic-function (inspected-value ,id))
-                                                          (inspected-value ,id))
-                                           (reload-current-buffer))))
-                       "Remove method")
-                      (:raw (resolve-backtick-quote-links (documentation method 't)
-                                                          (mopu:method-name method)))
-                      (:h4 "Argument list")
-                      (:p (:pre
-                           (let ((*package* (symbol-package input)))
-                             (format-arglist (closer-mop:method-lambda-list method)))))
-                      (alex:when-let* ((definition (swank:find-definition-for-thing method))
-                                       (not-error-p (null (getf definition :error)))
-                                       (file (rest (getf definition :location))))
-                        (:h2 (format nil "Source ~a" file))
-                        (:pre (function-lambda-string method))))))))
+                 (spinneret:with-html-string
+                   (:details
+                    (:summary
+                        (:h3 :style "display: inline"
+                             (format nil "~s" input) " "
+                             (:raw (format
+                                    nil "(~{~a~^ ~})"
+                                    (mapcar (lambda (class)
+                                              (cond
+                                                ((ignore-errors (mopu:subclassp class 'standard-object))
+                                                 (spinneret:with-html-string
+                                                   (:a :href (nyxt-url 'describe-class
+                                                                       :class (class-name class))
+                                                       (write-to-string (class-name class)))))
+                                                ((ignore-errors (eq t (class-name class)))
+                                                 "t")
+                                                (t (nyxt::escaped-literal-print class))))
+                                            (mopu:method-specializers method))))))
+                    (:button
+                     :class "button"
+                     :onclick (ps:ps (nyxt/ps:lisp-eval (:buffer buffer :title "describe-function")
+                                                         (remove-method (closer-mop:method-generic-function method)
+                                                                        method)
+                                                         (reload-current-buffer)))
+                     "Remove method")
+                    (:raw (resolve-backtick-quote-links (documentation method 't)
+                                                        (mopu:method-name method)))
+                    (:h4 "Argument list")
+                    (:p (:pre
+                         (let ((*package* (symbol-package input)))
+                           (format-arglist (closer-mop:method-lambda-list method)))))
+                    (alex:when-let* ((definition (swank:find-definition-for-thing method))
+                                     (not-error-p (null (getf definition :error)))
+                                     (file (rest (getf definition :location))))
+                      (:h2 (format nil "Source ~a" file))
+                      (:pre (function-lambda-string method)))))))
           (if (typep (symbol-function input) 'generic-function)
               (spinneret:with-html-string
                 (:style (style buffer))
@@ -451,7 +452,8 @@ A command is a special kind of function that can be called with
         (when (user-class-p class)
           (:li (:button :class "button"
                         :onclick (ps:ps (nyxt/ps:lisp-eval
-                                         `(nyxt::configure-slot ',slot ',class :type ',(getf props :type))))
+                                         (:title "configure-slot")
+                                         (nyxt::configure-slot slot class :type (getf props :type))))
                         "Configure"))))))))
 
 (define-internal-page-command-global describe-class
@@ -483,7 +485,7 @@ A command is a special kind of function that can be called with
       (:ul (loop for method in (remove-if
                                 #'listp (mapcar #'mopu:generic-function-name
                                                 (mopu:generic-functions class)))
-                 collect (:li (:a :href (nyxt-url 'describe-function :function method) method)))))))
+                 collect (:li (:a :href (nyxt-url 'describe-function :fn method) method)))))))
 
 (define-command-global universal-describe-class ()
   "Inspect a Nyxt-accessible class and show it in a help buffer."

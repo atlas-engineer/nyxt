@@ -133,19 +133,20 @@
       (echo message)
       (error message))))
 
-(define-internal-page-command-global describe-os-package
-    (&key (package-list-id (nyxt::ensure-inspected-id (prompt
-                                                       :sources '(os-package-source)
-                                                       :prompt "Describe OS package(s)"))))
-  (buffer "*OS package manager*")
-  "Show description of selected packages."
+(define-internal-page describe-os-package
+    (&key packages)
+    (:title "*OS package manager*")
+  "Show description of PACKAGES.
+PACKAGES is a list of `ospm:package' IDs created by `nyxt::ensure-inspected-id'."
   (assert-package-manager)
   (flet ((format-inputs (inputs)
            (spinneret:with-html
              (dolist (input inputs)
                (:button :onclick (ps:ps (nyxt/ps:lisp-eval
-                                         `(describe-os-package
-                                           (ospm:find-os-packages ,input))))
+                                         (:title "describe-os-package")
+                                         (describe-os-package
+                                          :packages
+                                          (ospm:find-os-packages input))))
                         input))))
          (format-outputs (outputs)
            (spinneret:with-html
@@ -165,9 +166,9 @@
                 (:li "Total size: " (sera:format-file-size-human-readable
                                      nil
                                      (reduce #'+ (mapcar #'ospm:size outputs)))))))))
-    (let ((packages (inspected-value package-list-id)))
+    (let ((packages (inspected-value packages)))
       (spinneret:with-html-string
-        (:style (style buffer))
+        (:style (style (current-buffer)))
         (:h1 "Packages")
         (:ul (dolist (package packages)
                (:li (ospm:name package) " " (ospm:version package)
@@ -177,13 +178,10 @@
                             (unless (ospm:expanded-outputs-p package)
                               (:button :class "button"
                                        :onclick (ps:ps (nyxt/ps:lisp-eval
-                                                        `(progn (echo "Computing path & size...")
-                                                                (ospm:expand-outputs (first (ospm:find-os-packages
-                                                                                             ,(ospm:name package)
-                                                                                             :version ,(ospm:version package))))
-                                                                (describe-os-package
-                                                                 (ospm:find-os-packages ,(ospm:name package)
-                                                                                        :version ,(ospm:version package))))))
+                                                        (:title "compute-path-size")
+                                                        (echo "Computing path & size...")
+                                                        (ospm:expand-outputs package)
+                                                        (describe-os-package :packages (list package))))
                                        "Compute path & size"))
                             (format-outputs (ospm:outputs package)))
                        (:li "Supported systems: " (str:join " " (ospm:supported-systems package)))
@@ -197,6 +195,15 @@
                      (:li "Synopsis: " (ospm:synopsis package))
                      (when (typep package 'ospm:guix-package)
                        (:li "Description: " (ospm:description package)))))))))))
+
+(define-command-global describe-os-package (&key (packages (prompt
+                                                            :sources '(os-package-source)
+                                                            :prompt "Describe OS package(s)")))
+  "Show description of PACKAGES."
+  (set-current-buffer
+   (buffer-load (nyxt-url 'describe-os-package
+                          :packages (nyxt::ensure-inspected-id (alex:ensure-list packages)))
+                :buffer (ensure-internal-page-buffer 'describe-os-package))))
 
 (defun viewable-file-type-p (path)
   (let ((path-suffix (string-downcase (uiop:native-namestring path))))
@@ -263,7 +270,8 @@ OBJECTS can be a list of packages, a generation, etc."
                  (:p
                   (:button :class "button"
                            :onclick (ps:ps (nyxt/ps:lisp-eval
-                                            '(nyxt/os-package-manager-mode:cancel-package-operation)))
+                                            (:title "cancel-package-operation")
+                                            (nyxt/os-package-manager-mode:cancel-package-operation)))
                            "Cancel")))
                buffer)
               (format-command-stream
@@ -356,12 +364,8 @@ OBJECTS can be a list of packages, a generation, etc."
           (let ((package (ospm:parent-package package-output)))
             (:li (:button :class "button"
                           :onclick (ps:ps (nyxt/ps:lisp-eval
-                                           `(describe-os-package
-                                             (or (ospm:find-os-packages
-                                                  ,(ospm:name package)
-                                                  :version ,(ospm:version package))
-                                                 (ospm:find-os-packages
-                                                  ,(ospm:name package))))))
+                                           (:title "describe-os-package")
+                                           (describe-os-package :packages (list package))))
                           (prompter:attributes-default package-output))
                  " " (ospm:version package))))))
      buffer)
