@@ -102,7 +102,7 @@ See also `disable'."))
                   (existing-instance (find (sera:class-name-of mode)
                                            (remove-if (sera:eqs mode) (slot-value buffer 'modes))
                                            :key #'sera:class-name-of)))
-    (log:warn "Disabling other ~a instance is already in buffer ~a" existing-instance buffer)
+    (log:warn "Disabling other ~a instance already in buffer ~a" existing-instance buffer)
     ;; TODO: Remove it?
     (disable existing-instance)))
 
