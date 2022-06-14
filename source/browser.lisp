@@ -363,7 +363,7 @@ restored."
     (error "There is no current *browser*. Is Nyxt started?")))
 
 (defun new-id ()
-  (gensym ""))
+  (parse-integer (symbol-name (gensym ""))))
 
 (-> set-window-title (&optional window buffer) *)
 (export-always 'set-window-title)

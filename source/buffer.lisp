@@ -16,7 +16,7 @@
 (define-class buffer (renderer-buffer)
   ((id
     (new-id)
-    :type symbol
+    :type unsigned-byte
     :documentation "Unique identifier for a buffer.")
    ;; TODO: Or maybe a dead-buffer should just be a buffer history?
    (profile
@@ -1061,7 +1061,8 @@ associated to the buffer is already killed."
   "Order is stable."
   (sort
    (alex:hash-table-values (buffers *browser*))
-   #'string>
+   #'>
+   ;; TODO: Sort by creation time instead?
    :key #'id))
 
 (defun buffers-get (id)
@@ -1593,7 +1594,7 @@ HISTORY may be NIL for buffers without history."
                        (alex:when-let ((owner (htree:owner history (id b))))
                          (existing-creator-id owner)))))
              (common-parent-buffers
-               (sort common-parent-buffers #'string< :key #'id)))
+               (sort common-parent-buffers #'< :key #'id)))
         (sera:split-sequence-if (sera:eqs (id buffer))
                                 common-parent-buffers
                                 :key #'id)))))

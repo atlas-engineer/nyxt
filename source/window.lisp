@@ -13,7 +13,7 @@
 (define-class window (renderer-window)
   ((id
     (new-id)
-    :type symbol
+    :type unsigned-byte
     :documentation "Unique identifier for a window.")
    (titler
     'window-default-title

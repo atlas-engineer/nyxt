@@ -38,9 +38,7 @@
      (when (equal value object)
        (return-from ensure-inspected-id id)))
    *inspected-values*)
-  ;; We cannot use `new-id' directly because it would force the call to
-  ;; `inspected-value' to be within the scope of `ensure-inspected-id'.
-  (sera:lret ((id (intern (symbol-name (new-id)))))
+  (sera:lret ((id (new-id)))
     (setf (inspected-value id) value)))
 
 
