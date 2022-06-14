@@ -367,9 +367,10 @@ The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
   "Reset the page zoom to the zoom-ratio-default."
   (setf (ffi-buffer-zoom-level buffer) (setf (current-zoom-ratio buffer) ratio)))
 
-(define-internal-page-command-global summarize-buffer (&key (summary-length 5) (id (id (current-buffer))))
-  (output (format nil "*Summary ~a*" (title (nyxt::buffers-get id))))
-  "Summarize the current buffer by creating a new summary buffer."
+(define-internal-page summarize-buffer (&key (summary-length 5) (id (id (current-buffer))))
+    (:title "*Summary*")
+  "Summarize the current buffer by creating a new summary buffer.
+ID is a buffer `id'."
   (let ((buffer (nyxt::buffers-get id)))
     (let ((contents
             (serapeum:string-join
@@ -377,12 +378,17 @@ The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
                   (clss:select "p" (document-model buffer)))
              " ")))
       (spinneret:with-html-string
-        (:style (style output))
+        (:style (style (current-buffer)))
         (:h1 "Summary for: " (title buffer))
         (:ul
          (loop for point in (analysis:summarize-text contents :summary-length summary-length)
                collect (:li point)))))))
 
+(define-command-global summarize-buffer (&key (summary-length 5) (buffer (current-buffer)))
+  "Summarize the current buffer by creating a new summary buffer."
+  (set-current-buffer
+   (buffer-load (nyxt-url 'summarize-buffer :summary-length summary-length :id (id buffer))
+                :buffer (ensure-internal-page-buffer 'summarize-buffer))))
 
 (define-class heading ()
   ((inner-text "" :documentation "The inner text of the heading within the document.")
