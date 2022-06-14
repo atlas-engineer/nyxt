@@ -453,3 +453,30 @@ Return the lambda s-expression as a second value, if possible."
                         expression))))
         (use-value (arg)
           arg)))))
+
+(export-always 'defmemo)
+(defmacro defmemo (name params &body body) ; TODO: Replace with https://github.com/AccelerationNet/function-cache?
+  (multiple-value-bind (required optional rest keyword)
+      (alex:parse-ordinary-lambda-list params)
+    (alex:with-gensyms (memo-table args result result?)
+      `(let ((,memo-table (make-hash-table :test 'equal)))
+         (defun ,name (,@params)
+           (let ((,args (append (list ,@required)
+                                (list ,@optional)
+                                ,rest
+                                (list ,@(alex:mappend #'first keyword)))))
+             (multiple-value-bind (,result ,result?)
+                 (gethash ,args ,memo-table)
+               (if ,result?
+                   (progn
+                     (log:info t "Got a cache match!")
+                     ,result)
+                   (setf (gethash ,args ,memo-table)
+                         (apply (lambda ,params
+                                  ;; This block is here to catch the return-from
+                                  ;; FUNCTION-NAME and cache it too.
+                                  ;;
+                                  ;; TODO: Better way? Maybe use methods and
+                                  ;; :around qualifiers?
+                                  (block ,name ,@body))
+                                ,args))))))))))

@@ -67,19 +67,6 @@ bottleneck."
          (title (plump:text (aref (clss:select "title" html-parsed) 0))))
     title))
 
-(defmacro defmemo (name params &body body) ; TODO: Replace with https://github.com/AccelerationNet/function-cache?
-  (alex:with-gensyms (memo-table args result result?)
-    `(let ((,memo-table (make-hash-table :test 'equal)))
-       (defun ,name (&rest ,args)
-         (multiple-value-bind (,result ,result?)
-             (gethash ,args ,memo-table)
-           (if ,result?
-               ,result
-               (setf (gethash ,args ,memo-table)
-                     (apply (lambda ,params
-                              ,@body)
-                            ,args))))))))
-
 (export-always 'error-help)
 (defun error-help (&optional (title "Unknown error") (text ""))
   "A helper to print error messages as displayable HTML."
