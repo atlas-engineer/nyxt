@@ -60,12 +60,9 @@ If the URL contains hexadecimal-encoded characters, return their unicode counter
 
 (export-always 'fetch-url-title)
 (defun fetch-url-title (url)
-  "Return page's title. The URL is fetched, which could explain a possible
-bottleneck."
-  (let* ((html-source (dex:get url))
-         (html-parsed (plump:parse html-source))
-         (title (plump:text (aref (clss:select "title" html-parsed) 0))))
-    title))
+  "Return URL's title.
+The URL is fetched, which explains possible bottlenecks."
+  (plump:text (aref (clss:select "title" (plump:parse (dex:get url))) 0)))
 
 (export-always 'error-help)
 (defun error-help (&optional (title "Unknown error") (text ""))
