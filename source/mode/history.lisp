@@ -300,16 +300,22 @@ Clicking on a link navigates the history in the corresponding buffer."
                                                                             (:ul (:raw (str:join "" b))))))))
                        "")))))))
 
-(define-internal-page-command-global buffer-history-tree (&key (id (id (current-buffer))))
-    (output-buffer (format nil "*History-~a*" id)
-                   'nyxt/history-tree-mode:history-tree-mode)
-  "Display the history tree of a buffer."
+(define-internal-page buffer-history-tree (&key (id (id (current-buffer))))
+    (:title "*History Tree*" :page-mode 'nyxt/history-tree-mode:history-tree-mode)
+  "Display the history tree of a buffer.
+ID is a buffer `id'."
   (let ((buffer (nyxt::buffers-get id))
-        (mode (find-submode 'nyxt/history-tree-mode:history-tree-mode output-buffer)))
+        (mode (find-submode 'nyxt/history-tree-mode:history-tree-mode)))
     (spinneret:with-html-string
       (:style (style mode))
       (:h1 (format nil "History of ~a" buffer))
       (:div (:raw (with-current-buffer buffer (render-buffer-history-tree buffer)))))))
+
+(define-command-global buffer-history-tree (&key (buffer (current-buffer)))
+  "Display the history tree of a buffer."
+  (set-current-buffer
+   (buffer-load (nyxt-url 'buffer-history-tree :id (id buffer))
+                :buffer (ensure-internal-page-buffer 'buffer-history-tree))))
 
 (define-internal-page-command-global history-tree ()
   (output-buffer "*History*" 'nyxt/history-tree-mode:history-tree-mode)
