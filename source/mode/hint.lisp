@@ -17,7 +17,6 @@
                 (".nyxt-hint"
                  :background-color theme:primary
                  :color theme:on-primary
-                 :opacity 0.8
                  :font-weight "bold"
                  :padding "0px 3px 0px 3px"
                  :border-radius "2px"
