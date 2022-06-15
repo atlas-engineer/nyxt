@@ -494,15 +494,17 @@ See https://nyxt.atlas.engineer/learn-lisp for a few recommendations.
 
 ** Contributing
 
-To contribute, please find a task [[https://github.com/atlas-engineer/nyxt/issues?q=is%3Aissue+is%3Aopen+label%3Agood-first-issue][on our issue tracker]] or within [[file:CHANGELOG.org][CHANGELOG.org]]
-document that has a TASK label affixed.  Upon finding a task that you'd like to
-work on, ideally, ensure that it is not already being worked on.
+Nyxt is a joint effort and we need you to make it succeed!  You can find various
+small projects [[https://github.com/atlas-engineer/nyxt/issues?q=is%3Aissue+is%3Aopen+label%3Agood-first-issue][on our issue tracker]] to suit your interests and skills.  Feel
+free to contact us at any point if you need guidance.
 
-After you have found a TASK item that is available:
+When ready to start working please fork the repository, add your changes and
+open a pull request on GitHub.  Refer to the [[*Branch management][branch management section]] for more
+detailed information.
 
-- make a fork of the repository,
-- add your changes,
-- make a pull request.
+You can contribute to Nyxt without commit access.  However, if you're a frequent
+contributor, you may request it.  Remember that with great power comes great
+responsibility.
 
 ** Branch management
 
