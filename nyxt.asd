@@ -465,7 +465,9 @@ See `asdf::*immutable-systems*'.
 the few modules that's not automatically included in the image."
   #+sbcl
   (require :sb-sprof)
-  (map () 'register-immutable-system (already-loaded-systems)))
+  (map () 'register-immutable-system
+       (remove-if (lambda (system) (uiop:string-prefix-p "nyxt" system))
+                  (asdf:already-loaded-systems))))
 
 (defsystem "nyxt/install"
   :depends-on (alexandria
