@@ -1,5 +1,7 @@
 #+TITLE: Nyxt Developer's Manual
 
+# Please install org-make-toc so the the TOC below will be automatically
+# generated.
 * Table of contents                                                     :TOC:
 :PROPERTIES:
 :TOC:      :include all :ignore this
@@ -533,7 +535,3 @@ dangling branches.
 ** IRC Channel
 
 #+html: You can find Nyxt on Libera IRC: <a href="https://kiwiirc.com/nextclient/irc.libera.chat/nyxt">#nyxt</a>
-
-# Local Variables:
-# before-save-hook: (lambda () (if (fboundp 'org-make-toc) (org-make-toc) (message "Please install org-make-toc.")))
-# End:
