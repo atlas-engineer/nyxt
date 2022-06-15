@@ -424,7 +424,7 @@ TITLE is purely informative."
             (let* ((request-id (quri:uri-host url))
                    (title (when (and url (quri:uri-path url)) (sera:drop-prefix "/" (quri:uri-path url)))))
               (log:debug "Evaluate Lisp code from internal page: ~a" (or title "UNTITLED"))
-              (values (let ((result (nyxt:funcall* (gethash request-id (lisp-url-callbacks buffer)))))
+              (values (let ((result (run (gethash request-id (lisp-url-callbacks buffer)))))
                         ;; Objects and other complex structures make cl-json choke.
                         ;; TODO: Maybe encode it to the format that `cl-json'
                         ;; supports, then we can override the encoding and

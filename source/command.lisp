@@ -365,10 +365,18 @@ With MODE-SYMBOLS and GLOBAL-P, include global commands."
 (defun run (command &optional args)
   "Run COMMAND over ARGS and return its result.
 This is blocking, see `run-async' for an asynchronous way to run commands."
-  (let ((channel (make-channel 1)))
+  (let ((channel (make-channel 1))
+        (error-channel (make-channel 1)))
     (run-thread "run command"
-      (calispel:! channel (run-command command args)))
-    (calispel:? channel)))
+      ;; TODO: This `handler-case' overlaps with `with-protect' from `run-thread'.  Factor them!
+      (handler-case (calispel:! channel (run-command command args))
+        (condition (c)
+          (calispel:! error-channel c))))
+    (calispel:fair-alt
+      ((calispel:? channel result)
+       result)
+      ((calispel:? error-channel c)
+       (echo-warning "Error when running ~a: ~a" command c)))))
 
 (defun run-async (command &optional args)
   "Run COMMAND over ARGS asynchronously.
