@@ -289,6 +289,10 @@ Return two values:
   (when (plump:has-attribute img "src")
     (quri:uri (plump:get-attribute img "src"))))
 
+(let ((text-memo-table (tg:make-weak-hash-table :weakness :key)))
+  (defmethod plump:text :around ((node plump:nesting-node))
+    (alex:ensure-gethash node text-memo-table (call-next-method))))
+
 ;; REVIEW: Export to :nyxt? We are forced to use it with nyxt/dom: prefix.
 (export-always 'body)
 (defmethod body ((element plump:element))
