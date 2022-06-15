@@ -518,6 +518,7 @@ Examples:
 "))
   (pushnew 'nyxt-source-registry asdf:*default-source-registries*)
   (asdf:clear-configuration)
+  (set-nyxt-source-location (asdf:system-source-directory :nyxt))
 
   ;; Initialize the lparallel kernel
   (initialize-lparallel-kernel)
