@@ -660,8 +660,8 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :grid-template-columns "90px minmax(auto, 30ch) 1fr 220px"
              :overflow-y "hidden")
             ("#controls"
-             :background-color theme:primary
-             :color theme:on-primary
+             :background-color theme:secondary
+             :color theme:on-secondary
              ;; :font-size "16px"
              :font-weight "700"
              :padding-left "5px"
@@ -670,8 +670,8 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :z-index "3"
              )
             ("#url"
-             :background-color theme:secondary
-             :color theme:on-secondary
+             :background-color theme:primary
+             :color theme:on-primary
              :min-width "100px"
              :text-overflow "ellipsis"
              :overflow-x "hidden"
@@ -681,8 +681,8 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :z-index "2"
              )
             ("#tabs"
-             :background-color theme:primary
-             :color theme:on-primary
+             :background-color theme:secondary
+             :color theme:on-secondary
              :min-width "100px"
              :white-space "nowrap"
              :overflow-x "scroll"
@@ -700,10 +700,10 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :padding-left "5px"
              :padding-right "5px")
             (".tab:hover"
-             :opacity 0.5)
+             :opacity 0.8)
             ("#modes"
-             :background-color theme:secondary
-             :color theme:on-secondary
+             :background-color theme:primary
+             :color theme:on-primary
              :text-align "right"
              :padding-left "10px"
              :padding-right "5px"
