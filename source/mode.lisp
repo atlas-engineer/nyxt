@@ -349,7 +349,7 @@ If it's a single buffer, return it directly (not as a list)."
       (check-type buffer buffer))
     (mapcar (lambda (buffer)
               (mapcar (lambda (mode-sym)
-                        (apply #'enable (or (find mode-sym (modes buffer) :key #'name)
+                        (apply #'enable (or (find mode-sym (slot-value buffer 'modes) :key #'name)
                                             (make-instance mode-sym :buffer buffer))
                                args))
                       modes))
