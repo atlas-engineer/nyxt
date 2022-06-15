@@ -66,11 +66,11 @@ various parts, such as the path of all data files.")
              :display "inline"
              :color theme:primary)
             (".link:hover"
-             :opacity 0.5)
+             :opacity 0.8)
             (.accent
              :color theme:accent)
             (|.button:hover|
-             :opacity 0.5)
+             :opacity 0.8)
             (|.button:visited|
              :color theme:background)
             (|.button:active|
@@ -604,7 +604,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :padding "6px"
              :margin "2px")
             (|.button:hover|
-             :opacity 0.5)
+             :opacity 0.8)
             (|.button:visited|
              :color theme:background)
             (|.button:active|
@@ -720,7 +720,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
              :font "inherit"
              :outline "inherit")
             (|.button:hover|
-             :opacity 0.5))))
+             :opacity 0.8))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
