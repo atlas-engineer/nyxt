@@ -166,11 +166,11 @@ Example:
        ;; Warning: We use `defgeneric' instead of `make-instance' (or even
        ;; `ensure-generic-function') so that the compiler stores source location
        ;; information (for "go to definition" to work.
-       (prog1 (defgeneric ,name (,@(generalize-lambda-list arglist))
+       (sera:lret ((gf (defgeneric ,name (,@(generalize-lambda-list arglist))
                 (:documentation ,doc)
                 (:method (,@arglist) ,@body)
-                (:generic-function-class command))
-         (setf (slot-value #',name 'visibility) :mode)))))
+                (:generic-function-class command))))
+         (setf (slot-value gf 'visibility) :mode)))))
 
 (export-always 'define-command-global)
 (defmacro define-command-global (name (&rest arglist) &body body)
@@ -178,8 +178,8 @@ Example:
 This means it will be listed in `command-source' when the global option is on.
 This is mostly useful for third-party packages to define globally-accessible
 commands without polluting Nyxt packages."
-  `(prog1 (define-command ,name (,@arglist) ,@body)
-     (setf (slot-value #',name 'visibility) :global)))
+  `(sera:lret ((cmd (define-command ,name (,@arglist) ,@body)))
+     (setf (slot-value cmd 'visibility) :global)))
 
 (export-always 'delete-command)
 (defun delete-command (name)
