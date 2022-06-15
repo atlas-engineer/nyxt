@@ -293,6 +293,18 @@ Return two values:
   (defmethod plump:text :around ((node plump:nesting-node))
     (alex:ensure-gethash node text-memo-table (call-next-method))))
 
+(defmethod find-text ((text string) (element plump:nesting-node)
+                      &key (test #'search))
+  "Find all the matches for the TEXT in ELEMENT and its children.
+
+TEST should be a function of two arguments comparing TEXT with element's
+`plump:text' and returning a boolean for whether there's a match."
+  (flet ((matches (elem)
+           (find-text text elem :test test)))
+    (when (funcall test text (plump:text element))
+      (or (alex:mappend #'matches (coerce (plump:child-elements element) 'list))
+          (list element)))))
+
 ;; REVIEW: Export to :nyxt? We are forced to use it with nyxt/dom: prefix.
 (export-always 'body)
 (defmethod body ((element plump:element))
