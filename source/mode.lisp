@@ -97,14 +97,14 @@ It is not meant to be called directly, see `enable-modes' instead.
 
 See also `disable'."))
 
-(defmethod enable :before ((mode mode) &key)
-  (sera:and-let* ((buffer (buffer mode))
-                  (existing-instance (find (sera:class-name-of mode)
-                                           (remove-if (sera:eqs mode) (slot-value buffer 'modes))
-                                           :key #'sera:class-name-of)))
-    (log:warn "Disabling other ~a instance already in buffer ~a" existing-instance buffer)
-    ;; TODO: Remove it?
-    (disable existing-instance)))
+(defmethod enable :around ((mode mode) &key)
+  (let* ((buffer (buffer mode))
+         (existing-instance (find (sera:class-name-of mode)
+                                  (remove-if (sera:eqs mode) (slot-value buffer 'modes))
+                                  :key #'sera:class-name-of)))
+    (if existing-instance
+        (log:debug "Not enabling ~s since other ~s instance is already in buffer ~a" mode existing-instance buffer)
+        (call-next-method))))
 
 (defmethod enable :after ((mode mode) &key)
   (setf (enabled-p mode) t)
