@@ -105,11 +105,11 @@ chosen suggestions inside brackets.")
               (".source-content td::-webkit-scrollbar"
                :display "none")
               ("#selection"
-               :background-color theme:secondary
-               :color theme:on-secondary)
-              (.marked
                :background-color theme:accent
-               :color theme:on-accent
+               :color theme:on-accent)
+              (.marked
+               :background-color theme:secondary
+               :color theme:on-secondary
                :font-weight "bold")
               (.selected
                :background-color theme:primary
