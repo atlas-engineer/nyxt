@@ -1214,7 +1214,7 @@ second latest buffer first."
                                            :multi-selection-p t
                                            :return-actions (list (lambda-mapped-command buffer-delete))))))
   "Query the buffer(s) to delete."
-  (buffer-delete buffer))
+  (mapcar #'buffer-delete buffer))
 
 (define-command delete-all-buffers (&key (confirmation-p t))
   "Delete all buffers, with confirmation."
