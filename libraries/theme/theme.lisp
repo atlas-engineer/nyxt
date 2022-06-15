@@ -19,28 +19,29 @@
     "black"
     :type string
     :documentation "The color applied to elements appearing in front of
-`background-color'.  Must contrast with `background-color'.")
+`background-color'.  Must strongly contrast with `background-color'.")
    (primary-color
     "#555555"
     :type string
-    :documentation "One of the colors applied to surfaces.  Should preferably be
-neutral.")
+    :documentation "One of the colors applied to surfaces.  Choose it such that
+`on-primary-color' is white (black) on a light (dark) theme.  Preferably, it
+should be neutral.")
    (on-primary-color
     "white"
     :type string
     :documentation "The color applied to elements appearing in front of
-`primary-color'.  Must contrast with `primary'.")
+`primary-color'.  Must strongly contrast with `primary'.")
    (secondary-color
     "#A6A6A6"
     :type string
-    :documentation "One of the colors applied to surfaces.  Should preferably be
-neutral.  Must be chosen such that `on-secondary-color' and `on-primary-color'
-are not the same.")
+    :documentation "One of the colors applied to surfaces.  Choose it such that
+`on-secondary-color' is black (white) on a light (dark) theme.  Preferably, it
+should be neutral.")
    (on-secondary-color
     "black"
     :type string
     :documentation "The color applied to elements appearing in front of
-`secondary-color'.  Must contrast with `secondary'.")
+`secondary-color'.  Must strongly contrast with `secondary'.")
    (accent-color
     "#37A8E4"
     :type string
@@ -50,7 +51,7 @@ out from all of the other theme colors.")
     "black"
     :type string
     :documentation "The color applied to elements appearing in front of `accent'.
-Must contrast with `accent'.")
+Must strongly contrast with `accent'.")
    (font-family
     "Helvetica Neue, Helvetica"
     :type string
@@ -68,11 +69,11 @@ Must contrast with `accent'.")
                  :dark-p t
                  :background-color "black"
                  :on-background-color "white"
-                 :primary-color "#753C17"
-                 :on-primary-color "white"
-                 :secondary-color "#D88A52"
-                 :on-secondary-color "black"
-                 :accent-color "#C69203"
+                 :primary-color "#D88A52"
+                 :on-primary-color "black"
+                 :secondary-color "#753C17"
+                 :on-secondary-color "white"
+                 :accent-color "#FCBA04"
                  :on-accent-color "black"))
 
 (defvar theme nil
