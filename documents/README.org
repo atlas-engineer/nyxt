@@ -37,6 +37,7 @@
   - [[#issue-tracker][Issue tracker]]
   - [[#learning-common-lisp][Learning Common Lisp]]
   - [[#contributing][Contributing]]
+  - [[#branch-management][Branch management]]
   - [[#irc-channel][IRC Channel]]
 :END:
 * Developer's installation with Guix
@@ -502,6 +503,36 @@ After you have found a TASK item that is available:
 - make a fork of the repository,
 - add your changes,
 - make a pull request.
+
+** Branch management
+
+Nyxt uses the following branches:
+
+- =master= for development.
+- =2-series= to backport commits for Nyxt 2.*.
+- And so on for all following major versions.
+
+Contributors with commit access may push trivial commits on =master= directly.
+Non-trivial changes should go through a review process ("pull request") through
+their own branch.
+
+It's recommended to always branch off from =master= to keep the history as clear
+as possible.
+
+Before merging a branch, we rebase against master to reduce complexity in the
+diff.
+
+Unless the change is trivial and all commits are atomic (that is, leaving Nyxt
+functional on each commit), merges should be done with a merge commit.  Since we
+ask to rebase against master, the =no-ff= (no fast-forward) merge option should
+be used, otherwise the merge commit is skipped.
+
+Optional: You can reword the merge commit if need be.
+
+The names of branches really matters since the merge commit references them.
+so please take that into account!
+
+Do not forget to delete obsolete, dangling branches.
 
 ** IRC Channel
 
