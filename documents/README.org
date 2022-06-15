@@ -510,31 +510,25 @@ responsibility.
 
 Nyxt uses the following branches:
 
-- =master= for development.
-- =2-series= to backport commits for Nyxt 2.*.
-- And so on for all following major versions.
+- =master= for development;
+- =<feature-branches>= for very particular situations;
+- =<2,3,...>-series= to backport commits corresponding to specific major
+  versions.
 
-Contributors with commit access may push trivial commits on =master= directly.
-Non-trivial changes should go through a review process ("pull request") through
-their own branch.
+It's recommended to branch off from the target branch and to rebase onto it
+right before merging.  Both of these practices keep the history as clear as
+possible and avoid merge conflicts.
 
-It's recommended to always branch off from =master= to keep the history as clear
-as possible.
+Unless the changes are trivial and each commit is atomic (that is, leaving Nyxt
+fully functional), they should be followed by a merge commit.  That is
+guaranteed by using the merge option =no-ff= (no fast-forward).  If required,
+the merge commit can be reworded.
 
-Before merging a branch, we rebase against master to reduce complexity in the
-diff.
-
-Unless the change is trivial and all commits are atomic (that is, leaving Nyxt
-functional on each commit), merges should be done with a merge commit.  Since we
-ask to rebase against master, the =no-ff= (no fast-forward) merge option should
-be used, otherwise the merge commit is skipped.
-
-Optional: You can reword the merge commit if need be.
-
-The names of branches really matters since the merge commit references them.
+The names of the branches really matter since the merge commit references them,
 so please take that into account!
 
-Do not forget to delete obsolete, dangling branches.
+After the changed are merged, please do not forget to delete obsolete or
+dangling branches.
 
 ** IRC Channel
 
