@@ -48,8 +48,7 @@ With LINEAR-VIEW-P, list buffers linearly instead."
                               :onclick (ps:ps (nyxt/ps:lisp-eval
                                                (:title "switch-buffer")
                                                (nyxt::switch-buffer :buffer buffer))) "→")
-                     (:span (title buffer) "  "
-                            (:u (render-url (url buffer))))))))
+                     (:a :href (render-url (url buffer)) (title buffer))))))
            (buffer-tree->html (root-buffer)
              "Present a single buffer tree in HTML."
              (spinneret:with-html

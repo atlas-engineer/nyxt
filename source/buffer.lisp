@@ -77,6 +77,8 @@ various parts, such as the path of all data files.")
              :color theme:background)
             (a
              :color theme:primary)
+            ("a:hover"
+             :opacity 0.8)
             (pre
              :overflow "auto"
              :color theme:on-background
