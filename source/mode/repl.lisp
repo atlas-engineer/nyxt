@@ -17,6 +17,9 @@
    (results
     nil
     :documentation "The results (as a list) of `input' evaluation.")
+   (ready-p
+    nil
+    :documentation "The evaluation is terminated.")
    (raised-condition
     nil
     :type (maybe condition)
@@ -24,6 +27,11 @@
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(defmethod initialize-instance :after ((evaluation evaluation) &key)
+  (run-thread "repl cell evaluation"
+    (setf (results evaluation) (nyxt::evaluate (input evaluation)))
+    (setf (ready-p evaluation) t)))
 
 (define-mode repl-mode ()
   "Mode for interacting with the REPL."
@@ -162,9 +170,7 @@
     "Evaluate the currently focused input cell."
     (let* ((input (input repl))
            (id (current-cell-id repl))
-           (evaluation (make-instance 'evaluation
-                                      :input input
-                                      :results (nyxt::evaluate input))))
+           (evaluation (make-instance 'evaluation :input input)))
       (unless (uiop:emptyp input)
         (if id
             (setf (elt (evaluations repl) id) evaluation
@@ -298,17 +304,19 @@
                                                                         'current-evaluation)
                                                             order)))
                                               (input evaluation)))
-                     collect (loop
-                               for result in (results evaluation)
-                               for sub-order from 0
-                               for name = (if (serapeum:single (results evaluation))
-                                              (intern (format nil "V~d" order))
-                                              (intern (format nil "V~d.~d" order sub-order)))
-                               do (setf (symbol-value name) result)
-                               collect (:span (format nil "~(~a~) = " name)
-                                              (:raw (value->html result (or (typep result 'standard-object)
-                                                                            (typep result 'structure-object)))))
-                               collect (:br)))
+                     collect (if (ready-p evaluation)
+                                 (loop
+                                   for result in (results evaluation)
+                                   for sub-order from 0
+                                   for name = (if (serapeum:single (results evaluation))
+                                                  (intern (format nil "V~d" order))
+                                                  (intern (format nil "V~d.~d" order sub-order)))
+                                   do (setf (symbol-value name) result)
+                                   collect (:span (format nil "~(~a~) = " name)
+                                                  (:raw (value->html result (or (typep result 'standard-object)
+                                                                                (typep result 'structure-object)))))
+                                   collect (:br))
+                                 (:span "Calculating...")))
                    (:div :class "input"
                          (:span :class "prompt" ">")
                          (:textarea :class "input-buffer"
