@@ -112,6 +112,29 @@ This is set globally so that extensions can be loaded even if there is no
     (:tree ,(files:expand *source-directory*))
     :inherit-configuration))
 
+(defun set-nyxt-source-location (pathname) ; From `sb-ext:set-sbcl-source-location'.
+  "Initialize the NYXT logical host based on PATHNAME, which should be the
+top-level directory of the Nyxt sources. This will replace any existing
+translations for \"NYXT:source;\" and \"NYXT:libraries;\". Other \"NYXT:\"
+translations are preserved."
+  (let ((truename (truename pathname))
+        (current-translations
+         (remove-if (lambda (translation)
+                      (or (pathname-match-p "NYXT:source;" translation)
+                          (pathname-match-p "NYXT:libraries;" translation)))
+                    (logical-pathname-translations "NYXT")
+                    :key #'first)))
+    (flet ((physical-target (component)
+             (merge-pathnames
+              (make-pathname :directory (list :relative component
+                                              :wild-inferiors)
+                             :name :wild
+                             :type :wild)
+              truename)))
+      (setf (logical-pathname-translations "NYXT")
+            `(("NYXT:source;**;*.*.*" ,(physical-target "source"))
+              ("NYXT:libraries;**;*.*.*" ,(physical-target "libraries"))
+              ,@current-translations)))))
 
 
 (defun read-init-form-slot (class-name sexp)
