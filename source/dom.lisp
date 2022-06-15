@@ -293,6 +293,7 @@ Return two values:
   (defmethod plump:text :around ((node plump:nesting-node))
     (alex:ensure-gethash node text-memo-table (call-next-method))))
 
+(export-always 'find-text)
 (defmethod find-text ((text string) (element plump:nesting-node)
                       &key (test #'search))
   "Find all the matches for the TEXT in ELEMENT and its children.
