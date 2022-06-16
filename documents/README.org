@@ -2,6 +2,7 @@
 
 # Please install org-make-toc so the the TOC below will be automatically
 # generated.
+# https://github.com/alphapapa/org-make-toc
 * Table of contents                                                     :TOC:
 :PROPERTIES:
 :TOC:      :include all :ignore this
