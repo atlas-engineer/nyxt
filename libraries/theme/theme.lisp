@@ -23,25 +23,23 @@
    (primary-color
     "#555555"
     :type string
-    :documentation "One of the colors applied to surfaces.  Choose it such that
-`on-primary-color' is white (black) on a light (dark) theme.  Preferably, it
-should be neutral.")
+    :documentation "One of the colors applied to surfaces.  Should contrast with
+`background-color' and, preferably, be neutral.")
    (on-primary-color
     "white"
     :type string
     :documentation "The color applied to elements appearing in front of
-`primary-color'.  Must strongly contrast with `primary'.")
+`primary-color'.  Must strongly contrast with `primary-color'.")
    (secondary-color
     "#A6A6A6"
     :type string
-    :documentation "One of the colors applied to surfaces.  Choose it such that
-`on-secondary-color' is black (white) on a light (dark) theme.  Preferably, it
-should be neutral.")
+    :documentation "One of the colors applied to surfaces.  Should contrast with
+`on-background-color' and, preferably, be neutral.")
    (on-secondary-color
     "black"
     :type string
     :documentation "The color applied to elements appearing in front of
-`secondary-color'.  Must strongly contrast with `secondary'.")
+`secondary-color'.  Must strongly contrast with `secondary-color'.")
    (accent-color
     "#37A8E4"
     :type string
@@ -50,8 +48,8 @@ out from all of the other theme colors.")
    (on-accent-color
     "black"
     :type string
-    :documentation "The color applied to elements appearing in front of `accent'.
-Must strongly contrast with `accent'.")
+    :documentation "The color applied to elements appearing in front of
+`accent-color'.  Must strongly contrast with `accent-color'.")
    (font-family
     "Helvetica Neue, Helvetica"
     :type string
