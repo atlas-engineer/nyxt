@@ -496,9 +496,9 @@ See https://nyxt.atlas.engineer/learn-lisp for a few recommendations.
 
 ** Contributing
 
-Nyxt is a joint effort and we need you to make it succeed!  You can find various
-small projects [[https://github.com/atlas-engineer/nyxt/issues?q=is%3Aissue+is%3Aopen+label%3Agood-first-issue][on our issue tracker]] to suit your interests and skills.  Feel
-free to contact us at any point if you need guidance.
+Nyxt is a joint effort and we need you to make it succeed!  You can find ideas
+[[https://github.com/atlas-engineer/nyxt/issues?q=is%3Aissue+is%3Aopen+label%3Agood-first-issue][on our issue tracker]] to suit your interests and skills.  Feel free to contact us
+at any point if you need guidance.
 
 When ready to start working please fork the repository, add your changes and
 open a pull request on GitHub.  Refer to the [[*Branch management][branch management section]] for more
