@@ -990,8 +990,7 @@ See `finalize-buffer'."
         (ffi-buffer-load-html
          buffer (nyxt/small-web-mode:gemtext-render (or (ignore-errors (dex:get (quri:render-uri url))) "") buffer)
          url))
-       ((and (not (known-type-p request-data))
-             (toplevel-p request-data))
+       ((not (known-type-p request-data))
         (log:debug "Initiate download of ~s." (render-url (url request-data)))
         (webkit:webkit-policy-decision-download response-policy-decision))
        ((quri:uri= url (url request-data))
