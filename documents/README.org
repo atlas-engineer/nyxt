@@ -536,3 +536,12 @@ dangling branches.
 ** IRC Channel
 
 #+html: You can find Nyxt on Libera IRC: <a href="https://kiwiirc.com/nextclient/irc.libera.chat/nyxt">#nyxt</a>
+
+# Local Variables:
+# eval: (add-hook 'before-save-hook
+#                 (lambda nil (if (fboundp 'org-make-toc)
+#                                 (org-make-toc)
+#                                 (message-box "Please install org-make-toc.")))
+#                 nil
+#                 t)
+# End:
