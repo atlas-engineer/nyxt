@@ -202,7 +202,7 @@ Notes:
    `webkit2-gtk(-devel)` instead of `webkit-gtk3` via your favorite package
    manager. If you are on a legacy version of macOS which is not supported by
    HomeBrew, you may want to try install these via MacPorts.
-  
+
 ** Qt dependencies
 
 Qt is only required if you want to build Nyxt over the WebEngine renderer.
@@ -272,7 +272,7 @@ application bundle which you can copy into your =/Applications= folder.
   #+begin_src sh
   gmake all
   #+end_src
-  
+
 - macOS:
   #+begin_src sh
   make all
@@ -403,7 +403,7 @@ be configured in the respective configuration files.
 #+begin_src lisp
 (define-command-global start-slynk (&optional (slynk-port *swank-port*))
   "Start a Slynk server.
-   
+
 Waits for incoming connections, e.g. from SLY.
 
     Warning: This allows Nyxt to be controlled remotely, that is, to execute
@@ -459,7 +459,7 @@ server with the following steps.
 #+begin_src lisp
 (define-command-global start-slynk (&optional (slynk-port *swank-port*))
   "Start a Slynk server.
-   
+
 Waits for incoming connections, e.g. from SLY.
 
     Warning: This allows Nyxt to be controlled remotely, that is, to execute
