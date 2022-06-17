@@ -95,7 +95,10 @@ various parts, such as the path of all data files.")
             (th
              :background-color theme:primary
              :color theme:on-primary
-             :text-align "left")))
+             :text-align "left")
+            ("::selection"
+             :color theme:on-accent
+             :background-color theme:accent)))
    (buffer-delete-hook                  ; TODO: Should we move this to `context-buffer'?
     (make-instance 'hook-buffer)
     :type hook-buffer
