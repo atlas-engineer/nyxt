@@ -199,26 +199,24 @@ Public Suffix list, T otherwise."
 The domain name existence is verified only if CHECK-DNS-P is T. Domain
 name validation may take significant time since it looks up the DNS."
   (let ((url (ignore-errors (quri:uri url))))
-    (flet ((http-p (scheme)
-             (find scheme '("http" "https") :test #'string=)))
-      (and url
-           (quri:uri-p url)
-           (valid-scheme-p (quri:uri-scheme url))
-           ;; `new-url-query' automatically falls back to HTTPS if it makes for
-           ;; a valid URL:
-           (or (not (http-p (quri:uri-scheme url)))
-               (and
-                ;; "http:/https://www.iana.org/assignments/special-use-domain-names/special-use-domain-names.xml/" does not have a host.
-                ;; A valid URL may have an empty domain, e.g. http://192.168.1.1.
-                (quri:uri-host url)
-                (or
-                 (not check-dns-p)
-                 (valid-tld-p (quri:uri-host url))
-                 ;; "http://algo" has the "algo" hostname but it's probably invalid
-                 ;; unless it's found on the local network.  We also need to
-                 ;; support "localhost" and the current system hostname.
-                 (or (quri:ip-addr-p (quri:uri-host url))
-                     (lookup-hostname (quri:uri-host url))))))))))
+    (and url
+         (quri:uri-p url)
+         (valid-scheme-p (quri:uri-scheme url))
+         ;; `new-url-query' automatically falls back to HTTPS if it makes for
+         ;; a valid URL:
+         (or (not (quri:uri-http-p url))
+             (and
+              ;; "http:/https://www.iana.org/assignments/special-use-domain-names/special-use-domain-names.xml/" does not have a host.
+              ;; A valid URL may have an empty domain, e.g. http://192.168.1.1.
+              (quri:uri-host url)
+              (or
+               (not check-dns-p)
+               (valid-tld-p (quri:uri-host url))
+               ;; "http://algo" has the "algo" hostname but it's probably invalid
+               ;; unless it's found on the local network.  We also need to
+               ;; support "localhost" and the current system hostname.
+               (or (quri:ip-addr-p (quri:uri-host url))
+                   (lookup-hostname (quri:uri-host url)))))))))
 
 (-> ensure-url (t) quri:uri)
 (defun ensure-url (thing)
