@@ -9,8 +9,16 @@
   "Mode for searching text withing."
   ((visible-in-status-p nil)
    (rememberable-p nil)
+   (test-function
+    (lambda (sub string)
+      (search sub string :test #'equalp))
+    :documentation "The function to match text with the text on the page while searching.
+
+You can redefine it to enable regex-based search, for example:
+\(define-configuration nyxt/search-buffer-mode:search-buffer-mode
+  ((nyxt/search-buffer-mode:test-function #'cl-ppcre:scan)))")
    (keyscheme-map
-    (define-keyscheme-map "web" ()
+    (define-keyscheme-map "search" ()
       keyscheme:cua
       (list
        "C-f" 'search-buffer
@@ -25,112 +33,21 @@
        "/" 'search-buffer
        "?" 'remove-search-hints)))))
 
-(define-parenscript query-buffer (&key query (case-sensitive-p nil))
-  (defvar *identifier* 0)
-  (defvar *matches* (array))
-  (defvar *nodes* (ps:new (-Object)))
-  (defvar *node-replacements* (array))
-
-  (defun add-stylesheet ()
-    (unless (nyxt/ps:qs document "#nyxt-stylesheet")
-      (ps:try
-       (ps:let* ((style-element (ps:chain document (create-element "style")))
-                 (box-style (ps:lisp (nyxt/hint-mode:box-style (find-submode 'search-buffer-mode))))
-                 (highlighted-style (ps:lisp (nyxt/hint-mode:highlighted-box-style (find-submode 'search-buffer-mode)))))
-         (setf (ps:@ style-element id) "nyxt-stylesheet")
-         (ps:chain document head (append-child style-element))
-         (ps:chain style-element sheet (insert-rule box-style 0))
-         (ps:chain style-element sheet (insert-rule highlighted-style 1)))
-       (:catch (error)))))
-
-  (defun create-match-object (body identifier)
-    (ps:create "type" "match" "identifier" identifier "body" body))
-
-  (defun create-match-span (body identifier)
-    (ps:let* ((el (ps:chain document (create-element "span"))))
-      (setf (ps:@ el class-name) "nyxt-hint")
-      (setf (ps:@ el text-content) body)
-      (setf (ps:@ el id) (+ "nyxt-hint-" identifier))
-      el))
-
-  (defun get-substring (string query index)
-    "Return the substring and preceding/trailing text for a given
-     index."
-    (let* ((character-preview-count 40))
-      (ps:chain string
-                (substring (- index character-preview-count)
-                           (+ index (length query) character-preview-count)))))
-
-  (defun get-substring-indices (query string)
-    "Get the indices of all matching substrings."
-    (let ((query (if (ps:lisp case-sensitive-p)
-                     query
-                     (ps:chain query (to-lower-case))))
-          (string (if (ps:lisp case-sensitive-p)
-                      string
-                      (ps:chain string (to-lower-case))))
-          (index (- (length query))))
-      (loop with subindex = 0
-            until (= subindex -1)
-            do (setf subindex (ps:chain string (index-of query)))
-               (setf string (ps:chain string (substring (+ subindex (length query)))))
-               (setf index (+ index subindex (length query)))
-            when (not (= subindex -1))
-              collect index)))
-
-  (defun matches-from-node (node query)
-    "Return all of substrings that match the search-string."
-    (when (= (ps:chain (typeof (ps:@ node node-value))) "string")
-      (let* ((node-text (ps:@ node text-content))
-             (substring-indices (get-substring-indices query node-text))
-             (node-identifier (incf (ps:chain *nodes* identifier)))
-             (new-node (ps:chain document (create-element "span"))))
-        (setf (ps:@ new-node class-name) "nyxt-search-node")
-        (setf (ps:@ new-node id) node-identifier)
-        (setf (aref *nodes* node-identifier) node)
-        (when (> (length substring-indices) 0)
-          (loop for index in substring-indices
-                with last-index = 0
-                do (incf *identifier*)
-                   (ps:chain new-node (append-child (ps:chain document (create-text-node (ps:chain node-text (substring last-index index))))))
-                   (ps:chain new-node (append-child (create-match-span (ps:chain node-text (substring index (+ index (length query)))) *identifier*)))
-                   (setf last-index (+ (length query) index))
-                   (ps:chain *matches* (push (create-match-object (get-substring node-text query index) *identifier*)))
-                finally (progn
-                          (ps:chain new-node (append-child (ps:chain document (create-text-node (ps:chain node-text (substring (+ (length query) index)))))))
-                          (ps:chain *node-replacements*
-                                    (push (list node new-node)))))))))
-
-  (defun replace-original-nodes ()
-    "Replace original nodes with recreated search nodes"
-    (loop for node-pair in *node-replacements*
-          do (ps:chain (elt node-pair 0) (replace-with (elt node-pair 1)))))
-
-  (defun walk-document (node process-node)
-    (when (and node (not (ps:chain node first-child)))
-      (funcall process-node node (ps:lisp query)))
-    (setf node (ps:chain node first-child))
-    (loop while node
-          do (walk-document node process-node)
-          do (setf node (ps:chain node next-sibling))))
-
-  (defun remove-search-nodes ()
-    "Removes all the search elements"
-    (ps:dolist (node (nyxt/ps:qsa document ".nyxt-search-node"))
-      (ps:chain node (replace-with (aref *nodes* (ps:@ node id))))))
-
-  (let ((*matches* (array))
-        (*node-replacements* (array))
-        (*identifier* 0))
-    (add-stylesheet)
-    (remove-search-nodes)
-    (setf (ps:chain *nodes* identifier) 0)
-    (walk-document (ps:chain document body) matches-from-node)
-    (replace-original-nodes)
-    *matches*))
+(define-parenscript add-stylesheet ()
+  (unless (nyxt/ps:qs document "#nyxt-stylesheet")
+    (ps:try
+     (ps:let* ((style-element (ps:chain document (create-element "style")))
+               (box-style (ps:lisp (nyxt/hint-mode:box-style (find-submode 'search-buffer-mode))))
+               (highlighted-style (ps:lisp (nyxt/hint-mode:highlighted-box-style (find-submode 'search-buffer-mode)))))
+       (setf (ps:@ style-element id) "nyxt-stylesheet")
+       (ps:chain document head (append-child style-element))
+       (ps:chain style-element sheet (insert-rule box-style 0))
+       (ps:chain style-element sheet (insert-rule highlighted-style 1)))
+     (:catch (error)))))
 
 (define-class search-match ()
   ((identifier)
+   (element)
    (body)
    (buffer))
   (:accessor-name-transformer (class*:make-name-transformer name)))
@@ -144,42 +61,63 @@
     ("Buffer ID" ,(princ-to-string (id (buffer match))))
     ("Buffer title" ,(title (buffer match)))))
 
-(defun matches-from-js (matches-js-array &optional (buffer (current-buffer)))
-  (loop for element in matches-js-array
-        collect (make-instance 'search-match
-                               :identifier (gethash "identifier" element)
-                               :body (gethash "body" element)
-                               :buffer buffer)))
-
-(define-command remove-search-hints ()
-  "Remove all search hints."
-  (peval (ps:dolist (node (nyxt/ps:qsa document ".nyxt-search-node"))
-             (ps:chain node (replace-with (aref *nodes* (ps:@ node id)))))))
+(define-parenscript hint-elements (selectors)
+  (defun create-marks (identifier)
+    (ps:let* ((element (nyxt/ps:qs document identifier))
+              (mark (ps:chain document (create-element "mark"))))
+      (setf (ps:@ mark class-name) "nyxt-hint")
+      (ps:chain element (replace-with mark))
+      (ps:chain mark (append-child element))))
+  (dolist (selector (ps:lisp selectors))
+    (create-marks selector)))
 
 (defun prompt-buffer-selection-highlight-hint (&key suggestions scroll follow
                                                  (prompt-buffer (current-prompt-buffer))
                                                  (buffer (current-buffer)))
-  (let ((hint (flet ((hintp (hint-suggestion)
-                       (if (typep hint-suggestion '(or plump:element search-match))
-                           hint-suggestion
-                           nil)))
-                (if suggestions
-                    (hintp (prompter:value (first suggestions)))
-                    (when prompt-buffer
-                      (hintp (current-suggestion-value)))))))
-    (when hint
-      (when (and follow
-                 (slot-exists-p hint 'buffer)
-                 (not (equal (buffer hint) buffer)))
-        (set-current-buffer (buffer hint))
-        (setf buffer (buffer hint)))
-      (if (or
-           (not (slot-exists-p hint 'buffer))
-           (and (slot-exists-p hint 'buffer)
-                (equal (buffer hint) buffer)))
-          (with-current-buffer buffer
-            (nyxt/hint-mode::highlight-selected-hint :element hint :scroll scroll))
-          (nyxt/hint-mode:remove-focus)))))
+  (alex:when-let ((hint (flet ((hintp (hint-suggestion)
+                                 (if (typep hint-suggestion '(or plump:element search-match))
+                                     hint-suggestion
+                                     nil)))
+                          (if suggestions
+                              (hintp (prompter:value (first suggestions)))
+                              (when prompt-buffer
+                                (hintp (current-suggestion-value)))))))
+    (when (and follow
+               (slot-exists-p hint 'buffer)
+               (not (equal (buffer hint) buffer)))
+      (set-current-buffer (buffer hint))
+      (setf buffer (buffer hint)))
+    (if (or (not (slot-exists-p hint 'buffer))
+            (and (slot-exists-p hint 'buffer)
+                 (equal (buffer hint) buffer)))
+        (with-current-buffer buffer
+          (nyxt/hint-mode::highlight-selected-hint :element hint :scroll scroll))
+        (nyxt/hint-mode:remove-focus))))
+
+(defun add-search-hints (input buffer)
+  (let* ((input (str:replace-all " " " " input))
+         (test (test-function (find-submode 'search-buffer-mode buffer)))
+         (elements (nyxt/dom:find-text
+                    input (elt (clss:select "body" (document-model buffer)) 0)
+                    :test test))
+         (search-matches (mapcar (lambda (element)
+                                   (make-instance 'search-match
+                                                  :identifier (nyxt/dom:get-unique-selector element)
+                                                  :element element
+                                                  :body (plump:text element)
+                                                  :buffer buffer))
+                                 elements)))
+    (with-current-buffer buffer
+      (run-thread "stylesheet adder"
+        (add-stylesheet))
+      (run-thread "search hint drawing"
+        (hint-elements (coerce (mapcar #'identifier search-matches) 'vector)))
+      search-matches)))
+
+(define-command remove-search-hints ()
+  "Remove all search hints."
+  (peval (ps:dolist (node (nyxt/ps:qsa document "mark.nyxt-hint"))
+           (ps:chain node (replace-with (ps:chain node first-child))))))
 
 (define-class search-buffer-source (prompter:source)
   ((case-sensitive-p nil)
@@ -192,14 +130,7 @@
     (lambda (preprocessed-suggestions source input)
       (declare (ignore preprocessed-suggestions))
       (if (>= (length input) (minimum-search-length source))
-          (let ((input (str:replace-all " " " " input))
-                (buffer (buffer source)))
-            (with-current-buffer buffer
-              (matches-from-js
-               (query-buffer
-                :query input
-                :case-sensitive-p (case-sensitive-p source))
-               buffer)))
+          (add-search-hints input (buffer source))
           (progn
             (remove-search-hints)
             '()))))
