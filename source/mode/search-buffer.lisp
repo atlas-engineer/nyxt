@@ -14,6 +14,8 @@
       (search sub string :test #'equalp))
     :documentation "The function to match text with the text on the page while searching.
 
+Takes two string arguments: search input and the page element text.
+
 You can redefine it to enable regex-based search, for example:
 \(define-configuration nyxt/search-buffer-mode:search-buffer-mode
   ((nyxt/search-buffer-mode:test-function #'cl-ppcre:scan)))")
