@@ -45,8 +45,8 @@ chosen suggestions inside brackets.")
                :margin "0"
                :padding "0")
               ("#prompt-area"
-               :background-color theme:accent
-               :color theme:on-accent
+               :background-color theme:primary
+               :color theme:on-primary
                :display "grid"
                :grid-template-columns "auto auto 1fr auto"
                :width "100%")
