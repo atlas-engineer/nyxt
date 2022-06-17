@@ -42,6 +42,7 @@ to use your local install of Quicklisp.  For example:
 But in this case, you don't have to use `make' at all.  Instead, you could build
 Nyxt with an invocation along these lines:
 
+    export NYXT_LOGICAL_PATH=true # Dynamic relocation of the source code
     sbcl --non-interactive --no-userinit --eval '(require "asdf")' --eval '(asdf:make :nyxt/gi-gtk-application)' --quit
 
 (Assuming Nyxt is checked out in a directory traversed by ASDF, like
