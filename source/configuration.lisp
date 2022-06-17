@@ -36,7 +36,7 @@
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (define-class auto-config-file (config-directory-file nyxt-lisp-file)
-  ((files:base-path #p"auto-config")
+  ((files:base-path (files:join #p"auto-config." (princ-to-string (first (version)))))
    (command-line-option :auto-config
                         :accessor nil
                         :type keyword))
