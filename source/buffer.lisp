@@ -657,7 +657,7 @@ store them somewhere and `ffi-buffer-delete' them once done."))
             ("#container"
              :display "grid"
              ;; Columns: controls, url, tabs, modes
-             :grid-template-columns "90px minmax(auto, 30ch) 1fr 220px"
+             :grid-template-columns "90px minmax(auto, 30ch) 1fr 45px"
              :overflow-y "hidden")
             ("#controls"
              :background-color theme:secondary
