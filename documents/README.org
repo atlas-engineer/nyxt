@@ -502,8 +502,8 @@ Nyxt is a joint effort and we need you to make it succeed!  You can find ideas
 at any point if you need guidance.
 
 When ready to start working please fork the repository, add your changes and
-open a pull request on GitHub.  Refer to the [[*Branch management][branch management section]] for more
-detailed information.
+open a pull request on GitHub to pass the review process.  Refer to the [[*Branch management][branch
+management section]] for more detailed information.
 
 You can contribute to Nyxt without commit access.  However, if you're a frequent
 contributor, you may request it.  Remember that with great power comes great
@@ -532,6 +532,10 @@ so please take that into account!
 
 After the changed are merged, please do not forget to delete obsolete or
 dangling branches.
+
+Note to core contributors: since you have commit access, you can push trivial
+changes directly to the target branch (skipping the review process).  The merge
+commit is required when at least one commit isn't atomic.
 
 ** IRC Channel
 
