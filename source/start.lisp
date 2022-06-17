@@ -167,24 +167,33 @@ Example: --with-file bookmarks=/path/to/bookmarks
 ;; `opts::*options*' in `start'.
 (sera:eval-always (define-opts))
 
-(define-command quit ()
+(define-command quit (&optional (code 0))
   "Quit Nyxt."
-  (hooks:run-hook (before-exit-hook *browser*))
-  (loop for window in (window-list)
-        do (ffi-window-delete window))
-  (ffi-kill-browser *browser*)
-  (setf (slot-value *browser* 'ready-p) nil)
-  (when (socket-thread *browser*)
-    (destroy-thread* (socket-thread *browser*))
-    ;; Warning: Don't attempt to remove socket-path if socket-thread was not
-    ;; running or we risk remove an unrelated file.
-    (let ((socket (files:expand *socket-file*)))
-      (when (uiop:file-exists-p socket)
-        (log:info "Deleting socket ~s." socket)
-        (uiop:delete-file-if-exists socket))))
-  (unless *run-from-repl-p*
-    (uiop:quit 0 nil))
-  (mapc #'destroy-thread* (non-terminating-threads *browser*)))
+  (if (slot-value *browser* 'ready-p)
+      (progn
+        (hooks:run-hook (before-exit-hook *browser*))
+        ;; Unready browser:
+        ;; - after the hook, so that on hook error the browser is still ready;
+        ;; - before the rest, so to avoid nested `quit' calls.
+        (setf (slot-value *browser* 'ready-p) nil)
+        (setf (slot-value *browser* 'exit-code) code)
+        (dolist (window (window-list))
+          (window-delete window :force-p (/= 0 code)))
+        (when (socket-thread *browser*)
+          (destroy-thread* (socket-thread *browser*))
+          ;; Warning: Don't attempt to remove socket-path if socket-thread was not
+          ;; running or we risk remove an unrelated file.
+          (let ((socket (files:expand *socket-file*)))
+            (when (uiop:file-exists-p socket)
+              (log:info "Deleting socket ~s." socket)
+              (uiop:delete-file-if-exists socket))))
+        (mapc #'destroy-thread* (non-terminating-threads *browser*))
+        (ffi-kill-browser *browser*)
+        (unless *run-from-repl-p*
+          (sleep 1)
+          ;; Force-quit in case `ffi-kill-browser' hangs.
+          (uiop:quit code nil)))
+      (log:warn "Cannot quit browser ~a that is not ready." *browser*)))
 
 (define-command quit-after-clearing-session (&key confirmation-p) ; TODO: Rename?
   "Close all buffers then quit Nyxt."
@@ -321,18 +330,24 @@ Return the short error message and the full error message as second value."
         (load-lisp config-file :package (find-package :nyxt-user))
         (echo "~a loaded." config-file))))
 
+(defun read-from-stream (stream)
+  "Return a list of all s-expressions read in STREAM."
+  (loop :for value := (read stream nil stream)
+        :until (eq value stream)
+        :collect value))
+
 (defun eval-expr (expr)
   "Evaluate the form EXPR (string) and print the result of the last expresion."
-  (handler-case
-      (with-input-from-string (input expr)
-        (format t "~a~&"
-                (loop with result = nil
-                      for object = (read input nil :eof)
-                      until (eq object :eof)
-                      do (setf result (eval object))
-                      finally (return result))))
-    (error (c)
-      (log:error "Evaluation error:~&~a" c))))
+  (with-input-from-string (input expr)
+    (let ((*package* (find-package :nyxt-user)))
+      (flet ((eval-protect (s-exp)
+               (with-protect ("Error in s-exp evaluation: ~a" :condition)
+                 (eval s-exp))))
+        (let* ((sexps (read-from-stream input))
+               (but-last (butlast sexps))
+               (last (alex:last-elt sexps)))
+          (mapc #'eval-protect but-last)
+          (format t "~&~a~&" (eval-protect last)))))))
 
 (defun parse-urls (expr)
   "Do _not_ evaluate EXPR and try to open URLs that were send to it.
@@ -611,7 +626,7 @@ Finally, run the browser, load URL-STRINGS if any, then run
          (setf startup-error-reporter
                (lambda ()
                  (echo-warning "~a." message)
-                 (error-in-new-window "*Config file errors*" full-message)))))
+                 (error-in-new-window "Configuration file errors" full-message)))))
       (load-or-eval :remote nil)
       (setf *browser* (make-instance 'browser
                                      :startup-error-reporter-function startup-error-reporter

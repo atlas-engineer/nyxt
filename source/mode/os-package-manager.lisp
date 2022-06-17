@@ -245,8 +245,9 @@ PACKAGES is a list of `ospm:package' IDs created by `nyxt::ensure-inspected-id'.
     buffer))
 
 (defun format-command-stream (process-info callback)
-  (loop for object = (read-line (uiop:process-info-output process-info) nil :eof)
-        until (eq object :eof)
+  (loop with stream = (uiop:process-info-output process-info)
+        for object = (read-line stream nil stream)
+        until (eq object stream)
         do (funcall callback object)))
 
 (defun operate-os-package (title command profile objects)

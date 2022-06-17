@@ -222,8 +222,8 @@ lot."
 (defun history-deserialize-sexp (stream &optional (serialization-state (s-serialization::make-serialization-state)))
   "Read and return an s-expression serialized version of a lisp object from stream, optionally reusing a serialization state"
   (s-serialization::reset serialization-state)
-  (let ((sexp (read stream nil :eof)))
-    (if (eq sexp :eof)
+  (let ((sexp (read stream nil stream)))
+    (if (eq sexp stream)
         nil
         (history-deserialize-sexp-internal sexp (s-serialization::get-hashtable serialization-state)))))
 

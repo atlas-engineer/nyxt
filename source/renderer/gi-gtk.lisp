@@ -28,9 +28,9 @@ interface. On Darwin, we must run the GTK thread on the main thread."
       (declare (ignore urls startup-timestamp))
       (log:debug "Initializing GI-GTK Interface")
       (setf (uiop:getenv "WEBKIT_FORCE_SANDBOX") "0")
-      (setf gtk-running-p t)
+      (setf gtk-running-p t)            ; TODO: Do not run the GTK loop again when T?
       (flet ((main-func ()
-               (with-protect ("Error on GTK thread: ~a" :condition)
+               (with-protect ("Error on GI-GTK thread: ~a" :condition)
                  (glib:g-set-prgname "nyxt")
                  #+GTK-3-4
                  (gdk:gdk-set-program-class "Nyxt")
@@ -39,7 +39,8 @@ interface. On Darwin, we must run the GTK thread on the main thread."
         #-darwin
         (let ((main-thread (bt:make-thread #'main-func :name renderer-thread-name)))
           (unless *run-from-repl-p*
-            (bt:join-thread main-thread)))
+            (bt:join-thread main-thread)
+            (uiop:quit (slot-value browser 'exit-code))))
         #+darwin
         (main-func)))
 

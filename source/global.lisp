@@ -18,6 +18,11 @@ close the connection.")
   "Whether the Nyxt-internal debugger pops up when an error happens.
 Allows the user to fix immediate errors in runtime, given enough understanding.")
 
+(defvar *restart-on-error* nil
+  "Control variable to enable accurate error reporting during startup.
+Implementation detail.
+For user-facing controls, see `*run-from-repl-p*' and `*debug-on-error*'.")
+
 (export-always '*open-program*)
 (declaim (type (or string null) *open-program*))
 (defvar *open-program*

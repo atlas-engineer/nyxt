@@ -55,6 +55,14 @@ Without handler, return ARG.  This is an acceptable `combination' for
 understand the risks before enabling this: a privileged user with access to your
 system can then take control of the browser and execute arbitrary code under
 your user profile.")
+   (exit-code
+    0
+    :type alex:non-negative-integer
+    :export nil
+    :accessor nil
+    :documentation "The exit code return to the operating system.
+0 means success.
+Non-zero means failure.")
    (socket-thread
     nil
     :type t
@@ -242,7 +250,7 @@ prevents otherwise.")
   "Get the window containing a buffer."
   (find buffer (alex:hash-table-values (windows browser)) :key #'active-buffer))
 
-(defun restart-with-message (&optional condition)
+(defun restart-with-message (&key condition backtrace)
   (flet ((set-error-message (message full-message)
            (let ((*package* (find-package :cl))) ; Switch package to use non-nicknamed packages.
              (write-to-string
@@ -253,13 +261,18 @@ prevents otherwise.")
                  :fn (lambda ()
                        (setf (nyxt::startup-error-reporter-function *browser*)
                              (lambda ()
-                               (nyxt:echo-warning "Restarted without init file due to error: ~a." ,message)
-                               (nyxt::error-in-new-window "*Initialization error*" ,full-message))))
+                               (nyxt:echo-warning "Restarted without configuration file due to error: ~a" ,message)
+                               (nyxt::error-in-new-window "Initialization error" ,full-message))))
                  :name 'error-reporter))))))
     (let* ((message (princ-to-string condition))
-           (full-message (format nil "Startup error: ~a.~%~&Restarted Nyxt without init file ~s."
+           (full-message (format nil
+                                 "Restarted without configuration file ~s~&due to following startup error:~%~%~a~a"
+                                 (files:expand *config-file*)
                                  message
-                                 (files:expand *config-file*)))
+                                 (if backtrace
+                                     (format nil "~%~%----~%~%~a"
+                                             backtrace)
+                                     "")))
            (new-command-line (append (uiop:raw-command-line-arguments)
                                      `("--no-config"
                                        "--eval"
@@ -268,7 +281,7 @@ prevents otherwise.")
                 (append (uiop:raw-command-line-arguments)
                         '("--no-config")))
       (uiop:launch-program new-command-line)
-      (quit))))
+      (quit 1))))
 
 (defmethod finalize ((browser browser) urls startup-timestamp)
   "Run `*after-init-hook*' then BROWSER's `startup'."
@@ -292,23 +305,14 @@ prevents otherwise.")
        ;; Restart on init error, in case `*config-file*' broke the state.
        ;; We only `handler-case' when there is an init file, this way we avoid
        ;; looping indefinitely.
-       (if (or (getf *options* :no-config)
-               (getf *options* :no-init) ; TODO: Deprecated, remove in 4.0.
-               (not (uiop:file-exists-p (files:expand *config-file*))))
-           (startup browser urls)
-           (catch 'startup-error
-             (handler-bind ((error (lambda (c)
-                                     (log:error "Startup failed (probably due to a mistake in ~s):~&~a"
-                                                (files:expand *config-file*) c)
-                                     (throw 'startup-error
-                                       (if *run-from-repl-p*
-                                           (progn
-                                             (quit)
-                                             (apply #'start (append *options* (list :urls urls
-                                                                                    :no-init t ; TODO: Deprecated, remove in 4.0.
-                                                                                    :no-config t))))
-                                           (restart-with-message c))))))
-               (startup browser urls)))))))
+       (let ((restart-on-error? (not (or (getf *options* :no-config)
+                                         (getf *options* :no-init) ; TODO: Deprecated, remove in 4.0.
+                                         (not (uiop:file-exists-p (files:expand *config-file*)))))))
+         ;; Set `*restart-on-error*' globally instead of let-binding it to
+         ;; make it visible from all threads.
+         (unwind-protect (progn (setf *restart-on-error* restart-on-error?)
+                                (startup browser urls))
+           (setf *restart-on-error* nil))))))
   ;; Set `init-time' at the end of finalize to take the complete startup time
   ;; into account.
   (setf (slot-value *browser* 'init-time)

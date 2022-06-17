@@ -9,6 +9,13 @@ the amount of CPU cores."
   (unless lpara:*kernel*
     (setf lpara:*kernel* (lpara:make-kernel worker-count))))
 
+(defun restart-browser (c)
+  "Restart browser reporting condition C."
+  (restart-with-message
+   :condition c
+   :backtrace (with-output-to-string (stream)
+                (uiop:print-backtrace :stream stream :condition c))))
+
 (export-always 'with-protect)
 (defmacro with-protect ((format-string &rest args) &body body)
   "Run body with muffled conditions when `*run-from-repl-p*' is nil, run normally otherwise.
@@ -26,20 +33,22 @@ raised condition."
               ((error
                  (lambda (,c)
                    (declare (ignorable ,c))
-                   ,(let ((condition-index (position :condition args)))
-                      (flet ((new-args (condition condition-index &optional escaped-p)
-                               (if condition-index
-                                   (append (subseq args 0 condition-index)
-                                           (list (if escaped-p
-                                                     `(plump:encode-entities (princ-to-string ,condition))
-                                                     `,condition))
-                                           (subseq args (1+ condition-index)))
-                                   'args)))
-                        `(handler-bind ((t (lambda (,sub-c)
-                                             (declare (ignore ,sub-c))
-                                             (log:error ,format-string ,@(new-args c condition-index))
-                                             (invoke-restart 'continue))))
-                           (echo-warning ,format-string ,@(new-args c condition-index :escaped-p))))))))
+                   (if *restart-on-error*
+                       (restart-browser ,c)
+                       ,(let ((condition-index (position :condition args)))
+                          (flet ((new-args (condition condition-index &optional escaped-p)
+                                   (if condition-index
+                                       (append (subseq args 0 condition-index)
+                                               (list (if escaped-p
+                                                         `(plump:encode-entities (princ-to-string ,condition))
+                                                         `,condition))
+                                               (subseq args (1+ condition-index)))
+                                       'args)))
+                            `(handler-bind ((t (lambda (,sub-c)
+                                                 (declare (ignore ,sub-c))
+                                                 (log:error ,format-string ,@(new-args c condition-index))
+                                                 (invoke-restart 'continue))))
+                               (echo-warning ,format-string ,@(new-args c condition-index :escaped-p)))))))))
             ,@body)))))
 
 (defun make-channel (&optional size)
@@ -93,18 +102,18 @@ evaluated in order."
          (with-input-from-string (input string)
            (first
             (last
-             (loop for object = (read input nil :eof)
-                   until (eq object :eof)
-                   collect (multiple-value-list
-                            (handler-case (let ((*interactive-p* interactive-p))
-                                            (eval object))
-                              (error (c) (format nil "~a" c)))))))))))
+             (mapcar (lambda (s-exp)
+                       (multiple-value-list
+                        (let ((*interactive-p* interactive-p))
+                          (with-protect ("Error in s-exp evaluation: ~a" :condition)
+                            (eval s-exp)))))
+                     (read-from-stream input))))))))
     (calispel:? channel)))
 
 (defun evaluate-async (string)
   "Like `evaluate' but does not block and does not return the result."
   (run-thread "async evaluator"
     (with-input-from-string (input string)
-      (loop for object = (read input nil :eof)
-            until (eq object :eof)
-            collect (funcall (lambda () (eval object)))))))
+      (dolist (s-exp (read-from-stream input))
+        (funcall (lambda () (with-protect ("Error in s-exp evaluation: ~a" :condition)
+                              (eval s-exp))))))))
