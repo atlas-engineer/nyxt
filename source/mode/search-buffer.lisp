@@ -96,6 +96,11 @@ You can redefine it to enable regex-based search, for example:
           (nyxt/hint-mode::highlight-selected-hint :element hint :scroll scroll))
         (nyxt/hint-mode:remove-focus))))
 
+(define-command remove-search-hints ()
+  "Remove all search hints."
+  (peval (ps:dolist (node (nyxt/ps:qsa document "mark.nyxt-hint"))
+           (ps:chain node (replace-with (ps:chain node first-child))))))
+
 (defun add-search-hints (input buffer)
   (let* ((input (str:replace-all " " " " input))
          (test (test-function (find-submode 'search-buffer-mode buffer)))
@@ -109,17 +114,13 @@ You can redefine it to enable regex-based search, for example:
                                                   :body (plump:text element)
                                                   :buffer buffer))
                                  elements)))
+    (remove-search-hints)
     (with-current-buffer buffer
       (run-thread "stylesheet adder"
         (add-stylesheet))
       (run-thread "search hint drawing"
         (hint-elements (coerce (mapcar #'identifier search-matches) 'vector)))
       search-matches)))
-
-(define-command remove-search-hints ()
-  "Remove all search hints."
-  (peval (ps:dolist (node (nyxt/ps:qsa document "mark.nyxt-hint"))
-           (ps:chain node (replace-with (ps:chain node first-child))))))
 
 (define-class search-buffer-source (prompter:source)
   ((case-sensitive-p nil)
