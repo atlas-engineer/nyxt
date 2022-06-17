@@ -519,8 +519,8 @@ Nyxt uses the following branches:
   versions.
 
 It's recommended to branch off from the target branch and to rebase onto it
-right before merging.  Both of these practices keep the history as clear as
-possible and avoid merge conflicts.
+right before merging.  This keeps the history as clear as possible and reduces
+the complexity of the diff.
 
 Unless the changes are trivial and each commit is atomic (that is, leaving Nyxt
 fully functional), they should be followed by a merge commit.  That is
