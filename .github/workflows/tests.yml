@@ -85,7 +85,7 @@ jobs:
       env:
        NYXT_TESTS_ERROR_ON_FAIL: yes
       run: |
-        ros -e '(asdf:load-system :nyxt/submodules)' -e '(handler-case (asdf:load-system :nyxt/tests) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17)))' -e '(asdf:test-system :nyxt)'  -e '(asdf:test-system :nyxt/application/tests)'
+        ros -e '(asdf:load-system :nyxt/submodules)' -e '(handler-case (asdf:load-system :nyxt/tests) (error (a) (format t "caught error ~s~%~a~%" a a) (uiop:quit 17)))' -e '(asdf:test-system :nyxt)'
 
     - name: Compilation warnings
       shell: bash
