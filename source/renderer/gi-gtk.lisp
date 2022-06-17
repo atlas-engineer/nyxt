@@ -39,7 +39,8 @@ interface. On Darwin, we must run the GTK thread on the main thread."
         #-darwin
         (let ((main-thread (bt:make-thread #'main-func :name renderer-thread-name)))
           (unless *run-from-repl-p*
-            (bt:join-thread main-thread)))
+            (bt:join-thread main-thread)
+            (uiop:quit (slot-value browser 'exit-code))))
         #+darwin
         (main-func)))
 

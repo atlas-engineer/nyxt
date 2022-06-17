@@ -176,6 +176,7 @@ Example: --with-file bookmarks=/path/to/bookmarks
         ;; - after the hook, so that on hook error the browser is still ready;
         ;; - before the rest, so to avoid nested `quit' calls.
         (setf (slot-value *browser* 'ready-p) nil)
+        (setf (slot-value *browser* 'exit-code) code)
         (dolist (window (window-list))
           (window-delete window :force-p (/= 0 code)))
         (when (socket-thread *browser*)
@@ -186,12 +187,12 @@ Example: --with-file bookmarks=/path/to/bookmarks
             (when (uiop:file-exists-p socket)
               (log:info "Deleting socket ~s." socket)
               (uiop:delete-file-if-exists socket))))
+        (mapc #'destroy-thread* (non-terminating-threads *browser*))
+        (ffi-kill-browser *browser*)
         (unless *run-from-repl-p*
-          ;; TODO: Call `ffi-kill-browser' and store the code as a browser slot so
-          ;; that ffi-initialize can return it?
-          ;; Is it useful though?
-          (uiop:quit code nil))
-        (mapc #'destroy-thread* (non-terminating-threads *browser*)))
+          (sleep 1)
+          ;; Force-quit in case `ffi-kill-browser' hangs.
+          (uiop:quit code nil)))
       (log:warn "Cannot quit browser ~a that is not ready." *browser*)))
 
 (define-command quit-after-clearing-session (&key confirmation-p) ; TODO: Rename?

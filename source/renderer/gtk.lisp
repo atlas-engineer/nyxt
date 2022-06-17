@@ -258,7 +258,8 @@ the renderer thread, use `defmethod' instead."
           (with-protect ("Error on GTK thread: ~a" :condition)
             (finalize browser urls startup-timestamp)))
         (unless *run-from-repl-p*
-          (gtk:join-gtk-main)))
+          (gtk:join-gtk-main)
+          (uiop:quit (slot-value browser 'exit-code))))
       #+darwin
       (progn
         (setf gtk-running-p t)
