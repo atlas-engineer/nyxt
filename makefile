@@ -15,6 +15,7 @@ LISP_FLAGS ?= $(SBCL_FLAGS) --no-userinit --non-interactive
 
 NYXT_SUBMODULES=true
 NYXT_RENDERER=gi-gtk
+NYXT_LOGICAL_PATH=true
 
 .PHONY: help
 help:
