@@ -124,8 +124,8 @@ Don't set this, it would lose its meaning.")
       (asdf/component:component-version (asdf:find-system :nyxt)))
   :test #'equal)
 
-(flet ((push-feature (string)
-         (pushnew (intern string "KEYWORD") *features*)))
+(defun version ()
+  "Return (MAJOR MINOR PATCH COMMIT)."
   (destructuring-bind (version &optional commits commit)
       (str:split "-" +version+)
     (let* ((commits (and commits (parse-integer commits)))
@@ -133,13 +133,22 @@ Don't set this, it would lose its meaning.")
            (major (first parsed-version))
            (minor (second parsed-version))
            (patch (third parsed-version)))
+      (values (list major minor patch commit)
+              commits))))
+
+(multiple-value-bind (version commits)
+    (version)
+  (destructuring-bind (major minor patch commit)
+      version
+    (flet ((push-feature (string)
+             (pushnew (intern (uiop:strcat "NYXT-" (princ-to-string string)) "KEYWORD") *features*)))
       (when major
-        (push-feature (format nil "NYXT-~a" major)))
+        (push-feature major))
       (when minor
-        (push-feature (format nil "NYXT-~a.~a" major minor)))
+        (push-feature (format nil "~a.~a" major minor)))
       (when patch
-        (push-feature (format nil "NYXT-~a.~a.~a" major minor patch)))
+        (push-feature (format nil "~a.~a.~a" major minor patch)))
       (when commit
-        (push-feature (format nil "NYXT-~:@(~a~)" commit)))
+        (push-feature (string-upcase commit)))
       (when (and commits (not (zerop commits)))
-        (push-feature "NYXT-UNSTABLE")))))
+        (push-feature "UNSTABLE")))))
