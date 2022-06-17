@@ -87,7 +87,8 @@ You can redefine it to enable regex-based search, for example:
 (define-command remove-search-hints ()
   "Remove all search hints."
   (peval (ps:dolist (node (nyxt/ps:qsa document "mark.nyxt-hint"))
-           (ps:chain node (replace-with (ps:chain node first-child))))))
+           (let ((original (ps:chain node first-child)))
+             (ps:chain node (replace-with original))))))
 
 (defun add-search-hints (input buffer)
   (let* ((input (str:replace-all " " " " input))
