@@ -6,7 +6,7 @@
 (in-package :nyxt/search-buffer-mode)
 
 (define-mode search-buffer-mode (nyxt/hint-mode:hint-mode)
-  "Mode for searching text withing."
+  "Mode for searching text within the buffer."
   ((visible-in-status-p nil)
    (rememberable-p nil)
    (test-function
