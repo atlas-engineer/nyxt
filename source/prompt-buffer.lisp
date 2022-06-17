@@ -264,7 +264,7 @@ This does not redraw the whole prompt buffer, unlike `prompt-render'."
                                            (sera:single sources))
                                       "display:none;"
                                       "display:revert")
-                           (:span :class "source-glyph" "⛯")
+                           (:span :class "source-glyph" "☼")
                            (prompter:name source)
                            (if (prompter:hide-suggestion-count-p source)
                                ""
