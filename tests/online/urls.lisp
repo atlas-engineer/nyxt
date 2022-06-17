@@ -100,13 +100,13 @@
                   (quri:uri "http://example.org/"))
       nil
       "comparing same URL but for scheme and trailing slash")
-  (is (null (nyxt::url< (quri:uri "https://example.org/a")
-                        (quri:uri "http://example.org/b")))
-      nil
+  (isnt (nyxt::url< (quri:uri "https://example.org/a")
+                    (quri:uri "http://example.org/b"))
+        t
       "comparing different URLs (HTTPS first)")
-  (is (null (nyxt::url< (quri:uri "http://example.org/a")
-                        (quri:uri "https://example.org/b")))
-      nil
+  (isnt (nyxt::url< (quri:uri "http://example.org/a")
+                    (quri:uri "https://example.org/b"))
+        t
       "comparing different URLs (HTTP first)"))
 
 (finalize)
