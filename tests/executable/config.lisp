@@ -45,6 +45,7 @@
 
 (defun eval-on-startup (&rest args)
   (list
+   "--headless"
    "--eval"
    (write-to-string
     `(nyxt:once-on nyxt:*after-startup-hook* ()
