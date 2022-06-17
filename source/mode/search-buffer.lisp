@@ -35,18 +35,6 @@ You can redefine it to enable regex-based search, for example:
        "/" 'search-buffer
        "?" 'remove-search-hints)))))
 
-(define-parenscript add-stylesheet ()
-  (unless (nyxt/ps:qs document "#nyxt-stylesheet")
-    (ps:try
-     (ps:let* ((style-element (ps:chain document (create-element "style")))
-               (box-style (ps:lisp (nyxt/hint-mode:box-style (find-submode 'search-buffer-mode))))
-               (highlighted-style (ps:lisp (nyxt/hint-mode:highlighted-box-style (find-submode 'search-buffer-mode)))))
-       (setf (ps:@ style-element id) "nyxt-stylesheet")
-       (ps:chain document head (append-child style-element))
-       (ps:chain style-element sheet (insert-rule box-style 0))
-       (ps:chain style-element sheet (insert-rule highlighted-style 1)))
-     (:catch (error)))))
-
 (define-class search-match ()
   ((identifier)
    (element)
@@ -117,7 +105,7 @@ You can redefine it to enable regex-based search, for example:
     (remove-search-hints)
     (with-current-buffer buffer
       (run-thread "stylesheet adder"
-        (add-stylesheet))
+        (nyxt/hint-mode::add-stylesheet))
       (run-thread "search hint drawing"
         (hint-elements (coerce (mapcar #'identifier search-matches) 'vector)))
       search-matches)))
