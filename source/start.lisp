@@ -169,22 +169,30 @@ Example: --with-file bookmarks=/path/to/bookmarks
 
 (define-command quit (&optional (code 0))
   "Quit Nyxt."
-  (hooks:run-hook (before-exit-hook *browser*))
-  (loop for window in (window-list)
-        do (ffi-window-delete window))
-  (ffi-kill-browser *browser*)
-  (setf (slot-value *browser* 'ready-p) nil)
-  (when (socket-thread *browser*)
-    (destroy-thread* (socket-thread *browser*))
-    ;; Warning: Don't attempt to remove socket-path if socket-thread was not
-    ;; running or we risk remove an unrelated file.
-    (let ((socket (files:expand *socket-file*)))
-      (when (uiop:file-exists-p socket)
-        (log:info "Deleting socket ~s." socket)
-        (uiop:delete-file-if-exists socket))))
-  (unless *run-from-repl-p*
-    (uiop:quit code nil))
-  (mapc #'destroy-thread* (non-terminating-threads *browser*)))
+  (if (slot-value *browser* 'ready-p)
+      (progn
+        (hooks:run-hook (before-exit-hook *browser*))
+        ;; Unready browser:
+        ;; - after the hook, so that on hook error the browser is still ready;
+        ;; - before the rest, so to avoid nested `quit' calls.
+        (setf (slot-value *browser* 'ready-p) nil)
+        (dolist (window (window-list))
+          (window-delete window :force-p (/= 0 code)))
+        (when (socket-thread *browser*)
+          (destroy-thread* (socket-thread *browser*))
+          ;; Warning: Don't attempt to remove socket-path if socket-thread was not
+          ;; running or we risk remove an unrelated file.
+          (let ((socket (files:expand *socket-file*)))
+            (when (uiop:file-exists-p socket)
+              (log:info "Deleting socket ~s." socket)
+              (uiop:delete-file-if-exists socket))))
+        (unless *run-from-repl-p*
+          ;; TODO: Call `ffi-kill-browser' and store the code as a browser slot so
+          ;; that ffi-initialize can return it?
+          ;; Is it useful though?
+          (uiop:quit code nil))
+        (mapc #'destroy-thread* (non-terminating-threads *browser*)))
+      (log:warn "Cannot quit browser ~a that is not ready." *browser*)))
 
 (define-command quit-after-clearing-session (&key confirmation-p) ; TODO: Rename?
   "Close all buffers then quit Nyxt."

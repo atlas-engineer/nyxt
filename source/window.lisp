@@ -239,14 +239,25 @@ See `define-panel' for the description of the arguments."
     (hooks:run-hook (window-make-hook browser) window)
     window))
 
-(-> window-delete (window) *)
-(defun window-delete (window)
-  "This function must be called by the renderer when a window is deleted."
-  (ffi-window-delete window)
-  (hooks:run-hook (window-delete-hook window) window)
-  (remhash (id window) (windows *browser*))
-  (when (zerop (hash-table-count (windows *browser*)))
-    (quit)))
+(-> window-delete (window &key (:force-p boolean)) *)
+(defun window-delete (window &key force-p)
+  "Remove WINDOW from list of known windows.
+Quit the browser if it's the last window.
+
+This function must be called by the renderer when a window is deleted.
+
+With FORCE-P, only destroy the WINDOW widget and remove from known windows; do
+not try to quit the browser."
+  (when (gethash (id window) (windows *browser*)) ;; To avoid nested `window-delete' calls.
+    (unless force-p
+      (hooks:run-hook (window-delete-hook window) window))
+    ;; Remove window from list after the hook, so that the window remains
+    ;; enlisted on hook error.
+    (remhash (id window) (windows *browser*))
+    (ffi-window-delete window)
+    (when (and (not force-p)
+               (zerop (hash-table-count (windows *browser*))))
+      (quit))))
 
 (defmethod prompter:object-attributes ((window window))
   `(("ID" ,(id window))
