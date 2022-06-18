@@ -403,20 +403,6 @@ ID is a buffer `id'."
 (defmethod title ((heading heading))
   (subseq (inner-text heading) 0 (position #\[ (inner-text heading))))
 
-(defmethod prompter:object-attributes ((heading heading))
-  `(("Title" ,(format nil "~a ~a"
-                      (make-string (typecase (element heading)
-                                     (nyxt/dom:h1-element 1)
-                                     (nyxt/dom:h2-element 2)
-                                     (nyxt/dom:h3-element 3)
-                                     (nyxt/dom:h4-element 4)
-                                     (nyxt/dom:h5-element 5)
-                                     (nyxt/dom:h6-element 6)
-                                     (t 0))
-                                   :initial-element #\*)
-                      (title heading)))
-    ("Keywords" ,(format nil "~:{~a~^ ~}" (keywords heading)))))
-
 (defun get-headings (&key (buffer (current-buffer)))
   (pflet ((heading-scroll-position
            (element)
@@ -473,6 +459,21 @@ ID is a buffer `id'."
    (prompter:constructor (lambda (source)
                            (get-headings :buffer (buffer source))))
    (prompter:return-actions (list (lambda-unmapped-command scroll-page-to-heading)))))
+
+(defmethod prompter:object-attributes ((heading heading) (source heading-source))
+  (declare (ignore source))
+  `(("Title" ,(format nil "~a ~a"
+                      (make-string (typecase (element heading)
+                                     (nyxt/dom:h1-element 1)
+                                     (nyxt/dom:h2-element 2)
+                                     (nyxt/dom:h3-element 3)
+                                     (nyxt/dom:h4-element 4)
+                                     (nyxt/dom:h5-element 5)
+                                     (nyxt/dom:h6-element 6)
+                                     (t 0))
+                                   :initial-element #\*)
+                      (title heading)))
+    ("Keywords" ,(format nil "~:{~a~^ ~}" (keywords heading)))))
 
 (define-command jump-to-heading (&key (buffer (current-buffer)))
   "Jump to a particular heading, of type h1, h2, h3, h4, h5, or h6."

@@ -295,10 +295,6 @@ See `package-symbols' for details on the arguments."
               :type (or symbol null)))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod prompter:object-attributes ((slot slot))
-  `(("Name" ,(string (name slot)))
-    ("Class" ,(string (class-sym slot)))))
-
 (defun exported-p (sym)
   (eq :external
       (nth-value 1 (find-symbol (string sym)
@@ -309,6 +305,11 @@ See `package-symbols' for details on the arguments."
   (delete-if
    (complement #'exported-p)
    (mopu:slot-names class-sym)))
+
+(defmethod prompter:object-attributes ((slot slot) (source t))
+  (declare (ignore source))
+  `(("Name" ,(string (name slot)))
+    ("Class" ,(string (class-sym slot)))))
 
 (defun package-slots (&optional (packages (nyxt-packages))
                         (user-packages (nyxt-user-packages)))

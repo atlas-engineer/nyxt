@@ -26,9 +26,9 @@
   `(("Default" ,(princ-to-string object))))
 
 (export-always 'object-attributes)
-(defmethod object-attributes ((object t))
+(defmethod object-attributes ((object t) (source t))
   "Return an alist of non-dotted pairs (ATTRIBUTE-KEY ATTRIBUTE-VALUE) for OBJECT.
-Attributes are meant to describe the OBJECT structurally.
+Attributes are meant to describe the OBJECT in the context of the SOURCE.
 Both attribute-keys and attribute-values are strings.
 
 For structure and class instances, the alist is made of the exported slots: the
@@ -40,6 +40,7 @@ It's used in `make-suggestion' which can be used as a `suggestion-maker' for `so
 It's useful to separate concerns and compose between different object attributes
 and different sources (for instance, the same `object-attributes' method can be
 inherited or used across different sources)."
+  (declare (ignorable source))
   (cond
     ((hash-table-p object)
      (let ((result))
@@ -183,10 +184,10 @@ If unset, set it to the return value of `format-attributes'."
 (defmethod make-suggestion ((value t) &optional source input)
   "Return a `suggestion' wrapping around VALUE.
 Attributes are set with `object-attributes'."
-  (declare (ignore source input))
+  (declare (ignore input))
   (make-instance 'suggestion
                  :value value
-                 :attributes (object-attributes value)))
+                 :attributes (object-attributes value source)))
 
 (define-class source ()
   ((name (error "Source must have a name")
@@ -567,7 +568,7 @@ This is a \"safe\" wrapper around `bt:make-thread'."
   "Return OBJECT default attribute value.
 Since the OBJECT is taken outside of a source context, attributes are derived
 from `object-attributes'."
-  (second (first (object-attributes object))))
+  (second (first (object-attributes object nil))))
 
 (export-always 'attributes-non-default)
 (defmethod attributes-non-default ((suggestion suggestion))

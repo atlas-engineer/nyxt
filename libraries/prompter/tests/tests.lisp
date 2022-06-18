@@ -89,7 +89,8 @@
    (title ""))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod prompter:object-attributes ((url url))
+(defmethod prompter:object-attributes ((url url) (source t))
+  (declare (ignore source))
   `(("URL" ,(url url))
     ("Title" ,(title url))))
 
@@ -441,7 +442,8 @@
    (keywords '("foo" "bar")))
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod prompter:object-attributes ((buffer buffer))
+(defmethod prompter:object-attributes ((buffer buffer) (source t))
+  (declare (ignore source))
   `(("Title" ,(title buffer))
     ("Keywords" ,(lambda (buffer) (sleep 1) (write-to-string (keywords buffer))))))
 

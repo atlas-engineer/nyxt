@@ -45,10 +45,6 @@ It's a list of a form (Y &OPTIONAL X)."))
 Entry for the global history.
 The total number of visit for a given URL is (+ explicit-visits implicit-visits)."))
 
-(defmethod prompter:object-attributes ((entry history-entry))
-  `(("URL" ,(render-url (url entry)))
-    ("Title" ,(title entry))))
-
 (export-always 'equals)
 (defmethod equals ((e1 history-entry) (e2 history-entry))
   (quri:uri= (url e1) (url e2)))
@@ -186,6 +182,11 @@ lot."
                             (> (score-history-entry x)
                                (score-history-entry y))))))))
         owner-less-history-entries)))))
+
+(defmethod prompter:object-attributes ((entry history-entry) (source history-disowned-source))
+  (declare (ignore source))
+  `(("URL" ,(render-url (url entry)))
+    ("Title" ,(title entry))))
 
 (defun history-html-list (&key (limit 100) (separator " → "))
   (let* ((history (buffer-history))

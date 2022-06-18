@@ -72,7 +72,8 @@ Example (Tor-proxied completion function for Wikipedia):
                       (cons (format nil base-url (quri:url-encode input))
                             request-args)))))
 
-(defmethod prompter:object-attributes ((engine search-engine))
+(defmethod prompter:object-attributes ((engine search-engine) (source t))
+  (declare (ignore source))
   `(("Shortcut" ,(shortcut engine))
     ("Search URL" ,(search-url engine))))
 

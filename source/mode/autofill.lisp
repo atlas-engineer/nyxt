@@ -52,13 +52,6 @@ it will be in conflict with common-lisp:fill."))
   (:export-predicate-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod prompter:object-attributes ((autofill autofill))
-  `(("Name" ,(autofill-name autofill))
-    ("Fill" ,(let ((f (autofill-fill autofill)))
-               (typecase f
-                 (string (write-to-string f))
-                 (t "function"))))))
-
 (define-class autofill-source (prompter:source)
   ((prompter:name "Autofills")
    (prompter:constructor (autofills (find-submode 'autofill-mode)))
@@ -71,6 +64,14 @@ it will be in conflict with common-lisp:fill."))
                      (%paste :input-text (funcall (autofill-fill selected-fill))))))))))
   (:export-class-name-p t)
   (:metaclass user-class))
+
+(defmethod prompter:object-attributes ((autofill autofill) (source t))
+  (declare (ignore source))
+  `(("Name" ,(autofill-name autofill))
+    ("Fill" ,(let ((f (autofill-fill autofill)))
+               (typecase f
+                 (string (write-to-string f))
+                 (t "function"))))))
 
 (define-command autofill ()
   "Fill in a field with a value from a saved list."
