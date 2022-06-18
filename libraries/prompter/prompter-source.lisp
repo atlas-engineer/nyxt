@@ -26,7 +26,7 @@
   `(("Default" ,(princ-to-string object))))
 
 (export-always 'object-attributes)
-(defmethod object-attributes ((object t) (source t))
+(defmethod object-attributes ((object t) (source prompter:source))
   "Return an alist of non-dotted pairs (ATTRIBUTE-KEY ATTRIBUTE-VALUE) for OBJECT.
 Attributes are meant to describe the OBJECT in the context of the SOURCE.
 Both attribute-keys and attribute-values are strings.

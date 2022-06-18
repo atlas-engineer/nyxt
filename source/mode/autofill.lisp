@@ -65,7 +65,7 @@ it will be in conflict with common-lisp:fill."))
   (:export-class-name-p t)
   (:metaclass user-class))
 
-(defmethod prompter:object-attributes ((autofill autofill) (source t))
+(defmethod prompter:object-attributes ((autofill autofill) (source prompter:source))
   (declare (ignore source))
   `(("Name" ,(autofill-name autofill))
     ("Fill" ,(let ((f (autofill-fill autofill)))

@@ -286,7 +286,7 @@ For production code, see `find-submode' instead."
   (:export-class-name-p t)
   (:metaclass user-class))
 
-(defmethod prompter:object-attributes ((mode mode) (source t))
+(defmethod prompter:object-attributes ((mode mode) (source prompter:source))
   (declare (ignore source))
   `(("Name" ,(princ-to-string mode))))
 

@@ -482,7 +482,7 @@ See the documentation of `prompt-buffer' to know more about the options."
    ;; TODO: History?
    ))
 
-(defmethod prompter:object-attributes ((prompt-buffer prompt-buffer) (source t))
+(defmethod prompter:object-attributes ((prompt-buffer prompt-buffer) (source prompter:source))
   (declare (ignore source))
   `(("Prompt" ,(prompter:prompt prompt-buffer))
     ("Input" ,(prompter:input prompt-buffer))))

@@ -306,7 +306,7 @@ See `package-symbols' for details on the arguments."
    (complement #'exported-p)
    (mopu:slot-names class-sym)))
 
-(defmethod prompter:object-attributes ((slot slot) (source t))
+(defmethod prompter:object-attributes ((slot slot) (source prompter:source))
   (declare (ignore source))
   `(("Name" ,(string (name slot)))
     ("Class" ,(string (class-sym slot)))))

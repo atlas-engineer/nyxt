@@ -1171,7 +1171,7 @@ proceeding."
   (:export-class-name-p t)
   (:metaclass user-class))
 
-(defmethod prompter:object-attributes ((buffer buffer) (source t))
+(defmethod prompter:object-attributes ((buffer buffer) (source prompter:source))
   (declare (ignore source))
   `(("URL" ,(render-url (url buffer)))
     ("Title" ,(title buffer))))

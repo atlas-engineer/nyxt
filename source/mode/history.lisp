@@ -131,7 +131,7 @@ This saves the history to disk when BODY exits."
   (:export-class-name-p t)
   (:metaclass user-class))
 
-(defmethod prompter:object-attributes ((node history-tree:node) (source t))
+(defmethod prompter:object-attributes ((node history-tree:node) (source prompter:source))
   (declare (ignore source))
   (let ((entry (htree:data (history-tree:entry node))))
     `(("URL" ,(render-url (url entry)))

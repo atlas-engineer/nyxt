@@ -39,13 +39,13 @@
                       (write (ps:lisp (spinneret:with-html-string
                                         (:p "Operation cancelled.")))))))))
 
-(defmethod prompter:object-attributes ((pkg ospm:os-package) (source t))
+(defmethod prompter:object-attributes ((pkg ospm:os-package) (source prompter:source))
   (declare (ignore source))
   `(("Name" ,(ospm:name pkg))
     ("Version" ,(ospm:version pkg))
     ("Synopsis" ,(ospm:synopsis pkg))))
 
-(defmethod prompter:object-attributes ((output ospm:os-package-output) (source t))
+(defmethod prompter:object-attributes ((output ospm:os-package-output) (source prompter:source))
   (declare (ignore source))
   (let* ((pkg (ospm:parent-package output))
          (name (format nil "~a~a"
@@ -58,7 +58,7 @@
       ("Version" ,(ospm:version pkg))
       ("Synopsis" ,(ospm:synopsis pkg)))))
 
-(defmethod prompter:object-attributes ((gen ospm:os-generation) (source t))
+(defmethod prompter:object-attributes ((gen ospm:os-generation) (source prompter:source))
   (declare (ignore source))
   `(("ID" ,(princ-to-string (ospm:id gen)))
     ("Date" ,(local-time:format-timestring nil (ospm:date gen)
@@ -66,7 +66,7 @@
     ("Package count" ,(princ-to-string (ospm:package-count gen)))
     ("Current?" ,(if (ospm:current? gen) "yes" ""))))
 
-(defmethod prompter:object-attributes ((pkg ospm:guix-package) (source t))
+(defmethod prompter:object-attributes ((pkg ospm:guix-package) (source prompter:source))
   (declare (ignore source))
   ;; We could have called `call-next-method', then modify the result, but it's
   ;; too costly for thousands of packages.

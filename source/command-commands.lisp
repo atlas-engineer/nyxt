@@ -49,7 +49,7 @@ While disabled-mode commands are not listed, it's still possible to call them
 from a key binding.")
   (:metaclass user-class))
 
-(defmethod prompter:object-attributes ((command command) (source t))
+(defmethod prompter:object-attributes ((command command) (source prompter:source))
   (declare (ignore source))
   (command-attributes command))
 

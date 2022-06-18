@@ -114,7 +114,7 @@ Bookmarks can be persisted to disk, see the `bookmarks-file' mode slot."
   (:export-accessor-names-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod prompter:object-attributes ((entry bookmark-entry) (source t))
+(defmethod prompter:object-attributes ((entry bookmark-entry) (source prompter:source))
   (declare (ignore source))
   `(("URL" ,(render-url (url entry)))
     ("Title" ,(title entry))
