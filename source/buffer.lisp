@@ -1211,13 +1211,16 @@ second latest buffer first."
         (switch-buffer-domain :domain domain))))
 
 (define-command delete-buffer
-    (&key (buffer (prompt
-                   :prompt "Delete buffer(s)"
-                   :sources (make-instance 'buffer-source
-                                           :multi-selection-p t
-                                           :return-actions (list (lambda-mapped-command buffer-delete))))))
-  "Query the buffer(s) to delete."
-  (mapcar #'buffer-delete buffer))
+    (&key (buffers
+           (prompt
+            :prompt "Delete buffer(s)"
+            :sources (make-instance 'buffer-source
+                                    :multi-selection-p t
+                                    :return-actions (list 'identity)))))
+  "Query the buffer(s) to delete.
+
+BUFFERS should be a list of `buffer's."
+  (mapcar #'buffer-delete buffers))
 
 (define-command delete-all-buffers (&key (confirmation-p t))
   "Delete all buffers, with confirmation."
