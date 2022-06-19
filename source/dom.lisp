@@ -187,6 +187,20 @@ JSON should have the format like what `get-document-body-json' produces:
   (:documentation "Get the recursive parents of the NODE.
 The closest parent goes first, the furthest one goes last."))
 
+(export-always 'ordered-select)
+(defmethod ordered-select (selector (root plump:nesting-node))
+  "A re-implementation of `clss:select' with the goal of preserving elements order.
+
+SELECTOR is any selector acceptable to `clss', including the compiled one and
+string one."
+  (let ((matched-nodes '()))
+    (labels ((collect-if-match (element)
+               (when (clss:node-matches-p selector element)
+                 (push element matched-nodes))
+               (map nil #'collect-if-match (plump:child-elements element))))
+      (collect-if-match root)
+      (coerce (nreverse matched-nodes) 'vector))))
+
 (export-always 'get-unique-selector)
 (-> get-unique-selector (plump:element) t)
 (defmemo get-unique-selector (element)
