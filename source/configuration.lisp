@@ -25,22 +25,6 @@
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class slot-form ()
-  ((name nil
-         :type symbol)
-   (value nil
-         :type t))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-
-(define-class class-form ()
-  ((class-name nil
-               :type symbol)
-   (forms '()
-          :type (maybe (cons (or cons slot-form) *))))
-  (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
-
 (define-class auto-config-file (config-special-file nyxt-lisp-file)
   ((files:base-path (files:join #p"auto-config." (princ-to-string (first (version)))))
    (command-line-option :auto-config
@@ -119,6 +103,21 @@ This is set globally so that extensions can be loaded even if there is no
     :inherit-configuration))
 
 
+(define-class slot-form ()
+  ((name nil
+         :type symbol)
+   (value nil
+          :type t))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(define-class class-form ()
+  ((class-name nil
+               :type symbol)
+   (forms '()
+          :type (maybe (cons (or cons slot-form) *))))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
 
 (defun read-init-form-slot (class-name sexp)
   "Return 2 values:
