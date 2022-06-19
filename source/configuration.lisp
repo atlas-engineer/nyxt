@@ -4,14 +4,20 @@
 (in-package :nyxt)
 
 (define-class config-directory-file (files:config-file nyxt-file)
+  ((files:base-path #p""))
+  (:export-class-name-p t)
+  (:accessor-name-transformer (class*:make-name-transformer name)))
+
+(define-class config-special-file (config-directory-file)
   ((files:base-path #p"")
    (command-line-option :config
                         :accessor nil
                         :type keyword))
   (:export-class-name-p t)
-  (:accessor-name-transformer (class*:make-name-transformer name)))
+  (:accessor-name-transformer (class*:make-name-transformer name))
+  (:documentation "Like `config-directory-file' but can be controlled from command line options."))
 
-(define-class config-file (config-directory-file files:virtual-file nyxt-lisp-file)
+(define-class config-file (config-special-file files:virtual-file nyxt-lisp-file)
   ((files:base-path #p"config")
    (command-line-option :config
                         :accessor nil
@@ -35,7 +41,7 @@
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(define-class auto-config-file (config-directory-file nyxt-lisp-file)
+(define-class auto-config-file (config-special-file nyxt-lisp-file)
   ((files:base-path (files:join #p"auto-config." (princ-to-string (first (version)))))
    (command-line-option :auto-config
                         :accessor nil
@@ -43,7 +49,7 @@
   (:export-class-name-p t)
   (:accessor-name-transformer (class*:make-name-transformer name)))
 
-(defmethod files:resolve ((profile nyxt-profile) (config-file config-directory-file))
+(defmethod files:resolve ((profile nyxt-profile) (config-file config-special-file))
   (let* ((option (slot-value config-file 'command-line-option))
          (no-option (alex:make-keyword
                      (uiop:strcat "NO-" (symbol-name option)))))

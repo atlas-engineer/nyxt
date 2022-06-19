@@ -47,7 +47,7 @@ For instance, if we want to load some Slynk configuration code that lives in
 
   (load-after-system :slynk (nyxt-config-file \"my-slink\"))"
   (if subpath
-      (files:expand (make-instance 'config-file :base-path subpath))
+      (files:expand (make-instance 'config-directory-file :base-path subpath))
       (files:expand *config-file*)))
 
 (defun handle-malformed-cli-arg (condition)
