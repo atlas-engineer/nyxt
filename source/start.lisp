@@ -503,7 +503,9 @@ Examples:
 "))
   (pushnew 'nyxt-source-registry asdf:*default-source-registries*)
   (asdf:clear-configuration)
-  (set-nyxt-source-location (asdf:system-source-directory :nyxt))
+  (if (uiop:directory-exists-p (asdf:system-source-directory :nyxt))
+      (set-nyxt-source-location (asdf:system-source-directory :nyxt))
+      (log:debug "Nyxt source directory not found."))
 
   ;; Initialize the lparallel kernel
   (initialize-lparallel-kernel)
