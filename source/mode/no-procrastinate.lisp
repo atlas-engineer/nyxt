@@ -186,8 +186,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
                               (make-instance 'tag-source
                                              :marks (url-no-procrastinate-host-tags (url buffer))))))
              (homepage-url-string (render-host-and-scheme (url buffer)))
-             (homepage-title (plump:text (aref (clss:select "title" (plump:parse (dex:get homepage-url-string)))
-                                               0)))
+             (homepage-title (fetch-url-title (url buffer)))
              (homepage-url-object (quri:uri homepage-url-string))
              (hostname (quri:uri-host homepage-url-object)))
         (no-procrastinate-add homepage-url-object
@@ -218,8 +217,7 @@ page(s) in the active buffer."
                                (make-instance 'prompter:raw-source
                                               :name "New URL")))))))
          (homepage-url-string (render-host-and-scheme url))
-         (homepage-title (plump:text (aref (clss:select "title" (plump:parse (dex:get homepage-url-string)))
-                                           0)))
+         (homepage-title (fetch-url-title (url buffer)))
          (homepage-url-object (quri:uri homepage-url-string))
          (hostname (quri:uri-host homepage-url-object)))
     (if (not (valid-url-p url))
