@@ -102,6 +102,29 @@ This is set globally so that extensions can be loaded even if there is no
     (:tree ,(files:expand *source-directory*))
     :inherit-configuration))
 
+(defun set-nyxt-source-location (pathname) ; From `sb-ext:set-sbcl-source-location'.
+  "Initialize the NYXT logical host based on PATHNAME, which should be the
+top-level directory of the Nyxt sources. This will replace any existing
+translations for \"NYXT:source;\" and \"NYXT:libraries;\". Other \"NYXT:\"
+translations are preserved."
+  (let ((truename (truename pathname))
+        (current-translations
+         (remove-if (lambda (translation)
+                      (or (pathname-match-p "NYXT:source;" translation)
+                          (pathname-match-p "NYXT:libraries;" translation)))
+                    (logical-pathname-translations "NYXT")
+                    :key #'first)))
+    (flet ((physical-target (component)
+             (merge-pathnames
+              (make-pathname :directory (list :relative component
+                                              :wild-inferiors)
+                             :name :wild
+                             :type :wild)
+              truename)))
+      (setf (logical-pathname-translations "NYXT")
+            `(("NYXT:source;**;*.*.*" ,(physical-target "source"))
+              ("NYXT:libraries;**;*.*.*" ,(physical-target "libraries"))
+              ,@current-translations)))))
 
 (define-class slot-form ()
   ((name nil
@@ -431,33 +454,36 @@ Return the lambda s-expression as a second value, if possible."
                   (*print-pretty* t))
               (write-to-string expression))
             expression)
-    (sera:and-let* ((definition (rest (swank:find-definition-for-thing fun)))
-                    (*package* (symbol-package (swank-backend:function-name
-                                                (if (functionp fun)
-                                                    fun
-                                                    (closer-mop:method-generic-function fun)))))
-                    (file (first (alexandria:assoc-value definition :file)))
-                    (file-content (alexandria:read-file-into-string
-                                   file
-                                   :external-format (guess-external-format file)))
-                    (start-position (first (alexandria:assoc-value definition :position))))
-      (restart-case
-          (handler-bind ((reader-error (lambda (c)
-                                         (declare (ignore c))
-                                         (invoke-restart 'use-value
-                                                         (str:trim-right
-                                                          (subseq file-content
-                                                                  (1- start-position)
-                                                                  (search (uiop:strcat +newline+ "(") file-content :start2 start-position)))))))
-            (let ((*read-eval* nil))
-              (let ((expression (read-from-string file-content t nil
-                                                  :start (1- start-position))))
-                (values (let ((*print-case* :downcase)
-                              (*print-pretty* t))
-                          (write-to-string expression))
-                        expression))))
-        (use-value (arg)
-          arg)))))
+    (or (alex:when-let* ((full-definition (swank:find-definition-for-thing fun))
+                         (definition (and (not (eq :error (first full-definition)))
+                                          (rest full-definition)))
+                         (*package* (symbol-package (swank-backend:function-name
+                                                     (if (functionp fun)
+                                                         fun
+                                                         (closer-mop:method-generic-function fun)))))
+                         (file (uiop:file-exists-p (first (alexandria:assoc-value definition :file))))
+                         (file-content (alexandria:read-file-into-string
+                                        file
+                                        :external-format (guess-external-format file)))
+                         (start-position (first (alexandria:assoc-value definition :position))))
+          (restart-case
+              (handler-bind ((reader-error (lambda (c)
+                                             (declare (ignore c))
+                                             (invoke-restart 'use-value
+                                                             (str:trim-right
+                                                              (subseq file-content
+                                                                      (max 0 (1- start-position))
+                                                                      (search (uiop:strcat +newline+ "(") file-content :start2 start-position)))))))
+                (let ((*read-eval* nil))
+                  (let ((expression (read-from-string file-content t nil
+                                                      :start (1- start-position))))
+                    (values (let ((*print-case* :downcase)
+                                  (*print-pretty* t))
+                              (write-to-string expression))
+                            expression))))
+            (use-value (arg)
+              arg)))
+        "")))
 
 (export-always 'defmemo)
 (defmacro defmemo (name params &body body) ; TODO: Replace with https://github.com/AccelerationNet/function-cache?

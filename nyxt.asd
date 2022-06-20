@@ -6,6 +6,32 @@
   (sb-ext:assert-version->= 2 0 0)
   (require 'sb-bsd-sockets))
 
+;; REVIEW: Use `*load-pathname*' or `*load-truename*' instead of `*default-pathname-defaults*'?
+;; We could also use (asdf:system-source-directory :nyxt)), but only after the definition of the system.
+(setf (logical-pathname-translations "NYXT")
+      `(("NYXT:source;**;*.fasl.*"
+         ,(uiop:ensure-pathname (asdf:apply-output-translations *default-pathname-defaults*)
+                                :wilden t))
+        ("NYXT:source;**;*.*.*"
+         ,(uiop:ensure-pathname (uiop:subpathname* *default-pathname-defaults* "source/") :wilden t))
+        ("NYXT:libraries;**;*.fasl.*"
+         ,(uiop:ensure-pathname (asdf:apply-output-translations *default-pathname-defaults*)
+                                :wilden t))
+        ("NYXT:libraries;**;*.*.*"
+         ,(uiop:ensure-pathname (uiop:subpathname* *default-pathname-defaults* "libraries/") :wilden t))))
+
+(defun npath (path)
+  "If NYXT_LOGICAL_PATH environment variable is set, use logical path source
+location, otherwise use the translated path.
+
+Tools such as Emacs (SLIME and SLY) may fail to make use of logical paths, say,
+to go to the compilation error location."
+  ;; REVIEW: Would not be necessary if https://github.com/slime/slime/issues/727
+  ;; and https://github.com/atlas-engineer/nyxt/pull/2371 were fixed.
+  (if (uiop:getenv "NYXT_LOGICAL_PATH")
+      (translate-logical-pathname path)
+      path))
+
 (defvar *prefix* (merge-pathnames* (if (getenv "PREFIX")
                                        (relativize-pathname-directory (ensure-directory-pathname (getenv "PREFIX")))
                                        #p"usr/local/")
@@ -100,7 +126,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                nyxt/ospm
                nyxt/prompter
                nyxt/theme)
-  :pathname "source/"
+  :pathname #.(npath #p"NYXT:source;")
   :components ((:file "package")
                (:module "Utilities"
                 :pathname ""
@@ -375,7 +401,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
   :depends-on (nyxt
                cl-cffi-gtk
                cl-webkit2)
-  :pathname "source/"
+  :pathname #.(npath #p"NYXT:source;")
   :serial t
   :components ((:file "web-extensions")
                (:file "web-extensions-callbacks")
@@ -386,7 +412,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
   :depends-on (nyxt/gtk
                cl-gobject-introspection
                bordeaux-threads)
-  :pathname "source/"
+  :pathname #.(npath #p"NYXT:source;")
   :components ((:file "renderer/gi-gtk"))
   :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests"))))
 
@@ -401,7 +427,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
   :depends-on (nyxt
                cl-webengine
                trivial-main-thread)
-  :pathname "source/"
+  :pathname #.(npath #p"NYXT:source;")
   :components ((:file "renderer/qt")))
 
 ;; We should not set the build-pathname in systems that have a component.
@@ -459,7 +485,9 @@ See `asdf::*immutable-systems*'.
 the few modules that's not automatically included in the image."
   #+sbcl
   (require :sb-sprof)
-  (map () 'register-immutable-system (already-loaded-systems)))
+  (map () 'register-immutable-system
+       (remove-if (lambda (system) (uiop:string-prefix-p "nyxt" system))
+                  (asdf:already-loaded-systems))))
 
 (defsystem "nyxt/install"
   :depends-on (alexandria
@@ -550,7 +578,7 @@ the few modules that's not automatically included in the image."
                log4cl
                quri
                str)
-  :pathname "libraries/download-manager/"
+  :pathname #.(npath #p"NYXT:libraries;download-manager;")
   :components ((:file "package")
                (:file "engine")
                (:file "native"))
@@ -567,7 +595,7 @@ the few modules that's not automatically included in the image."
                serapeum
                alexandria
                cl-ppcre)
-  :pathname "libraries/analysis/"
+  :pathname #.(npath #p"NYXT:libraries;analysis;")
   :components ((:file "package")
                (:file "data")
                (:file "stem")
@@ -580,13 +608,13 @@ the few modules that's not automatically included in the image."
 
 (defsystem "nyxt/user-interface"
   :depends-on (spinneret)
-  :pathname "libraries/user-interface/"
+  :pathname #.(npath #p"NYXT:libraries;user-interface;")
   :components ((:file "package")
                (:file "user-interface")))
 
 (defsystem "nyxt/text-buffer"
   :depends-on (cluffer)
-  :pathname "libraries/text-buffer/"
+  :pathname #.(npath #p"NYXT:libraries;text-buffer;")
   :components ((:file "package")
                (:file "text-buffer")))
 
@@ -596,7 +624,7 @@ the few modules that's not automatically included in the image."
                local-time
                nyxt/class-star
                trivial-package-local-nicknames)
-  :pathname "libraries/history-tree/"
+  :pathname #.(npath #p"NYXT:libraries;history-tree;")
   :components ((:file "package")
                (:file "history-tree"))
   :in-order-to ((test-op (test-op "nyxt/history-tree/tests"))))
@@ -614,7 +642,7 @@ the few modules that's not automatically included in the image."
                uiop
                nyxt/class-star
                serapeum)
-  :pathname "libraries/password-manager/"
+  :pathname #.(npath #p"NYXT:libraries;password-manager;")
   :components ((:file "package")
                (:file "password")
                (:file "password-keepassxc")
@@ -624,7 +652,7 @@ the few modules that's not automatically included in the image."
 
 (defsystem "nyxt/keymap"
   :depends-on (alexandria fset str)
-  :pathname "libraries/keymap/"
+  :pathname #.(npath #p"NYXT:libraries;keymap;")
   :components ((:file "package")
                (:file "types")
                (:file "conditions")
@@ -641,7 +669,7 @@ the few modules that's not automatically included in the image."
 
 (defsystem "nyxt/class-star"
   :depends-on (hu.dwim.defclass-star moptilities alexandria)
-  :pathname "libraries/class-star/"
+  :pathname #.(npath #p"NYXT:libraries;class-star;")
   :components ((:file "package")
                (:file "patch")
                (:file "class-star"))
@@ -664,7 +692,7 @@ the few modules that's not automatically included in the image."
                str
                trivia
                nyxt/class-star)
-  :pathname "libraries/ospm/"
+  :pathname #.(npath #p"NYXT:libraries;ospm;")
   :components ((:file "package")
                (:file "scheme-syntax")
                (:file "guix-backend")
@@ -689,7 +717,7 @@ the few modules that's not automatically included in the image."
                str
                trivial-package-local-nicknames
                nyxt/class-star)
-  :pathname "libraries/prompter/"
+  :pathname #.(npath #p"NYXT:libraries;prompter;")
   :components ((:file "package")
                (:file "filter-preprocessor")
                (:file "filter")
@@ -708,7 +736,7 @@ the few modules that's not automatically included in the image."
                serapeum
                nyxt/class-star
                cl-css)
-  :pathname "libraries/theme/"
+  :pathname #.(npath #p"NYXT:libraries;theme;")
   :components ((:file "package")
                (:file "theme"))
   :in-order-to ((test-op (test-op "nyxt/theme/tests"))))
