@@ -217,7 +217,7 @@ page(s) in the active buffer."
                                (make-instance 'prompter:raw-source
                                               :name "New URL")))))))
          (homepage-url-string (render-host-and-scheme url))
-         (homepage-title (fetch-url-title (url buffer)))
+         (homepage-title (fetch-url-title url))
          (homepage-url-object (quri:uri homepage-url-string))
          (hostname (quri:uri-host homepage-url-object)))
     (if (not (valid-url-p url))
