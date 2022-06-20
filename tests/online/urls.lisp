@@ -107,6 +107,50 @@
   (isnt (nyxt::url< (quri:uri "http://example.org/a")
                     (quri:uri "https://example.org/b"))
         t
-      "comparing different URLs (HTTP first)"))
+        "comparing different URLs (HTTP first)")
+  (is (nyxt::uri-link-equivalence (quri:uri "http://a.test/path/")
+                                  (quri:uri "http://a.test/path"))
+      t
+      "Link equality: differ by meaningless \"/\"")
+  (is (nyxt::uri-link-equivalence (quri.uri.http:make-uri-http :path "")
+                                  (quri:uri "http://"))
+      t
+      "Link equality: differ by empty string and NIL path")
+  (is (nyxt::uri-link-equivalence (quri.uri.http:make-uri-http :path "")
+                                  (quri:uri "http:///"))
+      t
+      "Link equality: differ by empty string and "/" path")
+  (is (nyxt::uri-link-equivalence (quri:uri "http://a.test/path/")
+                                  (quri:uri "http://a.test/path/#a"))
+      t
+      "Link equality: differ by fragment")
+  (is (nyxt::uri-link-equivalence (quri:uri "http://a.test/path1/")
+                                  (quri:uri "http://a.test/path2/#a"))
+      nil
+      "Link equality: differ by path and fragment")
+  (is (nyxt::uri-link-equivalence (quri:uri "http://a.test/path/")
+                                  (quri:uri "http://a.test/path/?a"))
+      nil
+      "Link equality: differ by query")
+  (is (nyxt::uri-link-equivalence (quri:uri "http://a.test/path1/")
+                                  (quri:uri "http://a.test/path2/?a"))
+      nil
+      "Link equality: differ by path and query")
+  (is (nyxt::uri-link-equivalence (quri:uri "http://a.test/path/#a")
+                                  (quri:uri "http://a.test/path/#b"))
+      t
+      "Link equality: both differ by fragment")
+  (is (nyxt::uri-link-equivalence (quri:uri "http://a.test/path1/#a")
+                                  (quri:uri "http://a.test/path2/#b"))
+      nil
+      "Link equality: both differ by path and fragment")
+  (is (nyxt::uri-link-equivalence (quri:uri "http://a.test/path/?a")
+                                  (quri:uri "http://a.test/path/?b"))
+      nil
+      "Link equality: both differ by query")
+  (is (nyxt::uri-link-equivalence (quri:uri "http://a.test/path1/?a")
+                                  (quri:uri "http://a.test/path2/?b"))
+      nil
+      "Link equality: both differ by path and query"))
 
 (finalize)
