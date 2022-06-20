@@ -9,16 +9,17 @@
 ;; REVIEW: Use `*load-pathname*' or `*load-truename*' instead of `*default-pathname-defaults*'?
 ;; We could also use (asdf:system-source-directory :nyxt)), but only after the definition of the system.
 (setf (logical-pathname-translations "NYXT")
-      `(("NYXT:source;**;*.fasl.*"
-         ,(uiop:ensure-pathname (asdf:apply-output-translations *default-pathname-defaults*)
-                                :wilden t))
-        ("NYXT:source;**;*.*.*"
-         ,(uiop:ensure-pathname (uiop:subpathname* *default-pathname-defaults* "source/") :wilden t))
-        ("NYXT:libraries;**;*.fasl.*"
-         ,(uiop:ensure-pathname (asdf:apply-output-translations *default-pathname-defaults*)
-                                :wilden t))
-        ("NYXT:libraries;**;*.*.*"
-         ,(uiop:ensure-pathname (uiop:subpathname* *default-pathname-defaults* "libraries/") :wilden t))))
+      (append (ignore-errors (logical-pathname-translations "NYXT"))
+              `(("NYXT:source;**;*.fasl.*"
+                 ,(uiop:ensure-pathname (asdf:apply-output-translations *default-pathname-defaults*)
+                                        :wilden t))
+                ("NYXT:source;**;*.*.*"
+                 ,(uiop:ensure-pathname (uiop:subpathname* *default-pathname-defaults* "source/") :wilden t))
+                ("NYXT:libraries;**;*.fasl.*"
+                 ,(uiop:ensure-pathname (asdf:apply-output-translations *default-pathname-defaults*)
+                                        :wilden t))
+                ("NYXT:libraries;**;*.*.*"
+                 ,(uiop:ensure-pathname (uiop:subpathname* *default-pathname-defaults* "libraries/") :wilden t)))))
 
 (defun npath (path)
   "If NYXT_LOGICAL_PATH environment variable is 'true', use logical path source
@@ -32,42 +33,6 @@ to go to the compilation error location."
   (if (string-equal (uiop:getenv "NYXT_LOGICAL_PATH") "true")
       path
       (translate-logical-pathname path)))
-
-(defvar *prefix* (merge-pathnames* (if (getenv "PREFIX")
-                                       (relativize-pathname-directory (ensure-directory-pathname (getenv "PREFIX")))
-                                       #p"usr/local/")
-                                   (if (getenv "DESTDIR")
-                                       (ensure-directory-pathname (getenv "DESTDIR"))
-                                       #p"/")))
-(defvar *datadir* (if (getenv "DATADIR")
-                      (ensure-directory-pathname (getenv "DATADIR"))
-                      (merge-pathnames* "share/" *prefix*)))
-(defvar *bindir* (if (getenv "BINDIR")
-                     (ensure-directory-pathname (getenv "BINDIR"))
-                     (merge-pathnames* "bin/" *prefix*)))
-(defvar *libdir* (if (getenv "LIBDIR")
-                     (ensure-directory-pathname (getenv "LIBDIR"))
-                     (merge-pathnames* "lib/" *prefix*)))
-(defvar *nyxt-libdir* (merge-pathnames* "nyxt/" *libdir*))
-(defvar *dest-source-dir* (if (getenv "NYXT_SOURCE_PATH")
-                              (ensure-directory-pathname (getenv "NYXT_SOURCE_PATH"))
-                              (merge-pathnames* "nyxt/" *datadir*)))
-
-(defvar *nyxt-renderer* (or (getenv "NYXT_RENDERER")
-                            "gi-gtk"))
-
-(defvar *submodules-dir* (or (getenv "NYXT_SUBMODULES_DIR")
-                             "_build"))
-
-(defvar *submodules-jobs* (or (getenv "NYXT_SUBMODULES_JOBS")
-                              4)
-  "Number of parallel 'git clone' jobs to fetch the Git submodules.
-A naive benchmark on a 16 Mpbs bandwidth gives us
-
-    1 job:  5m17s
-    2 jobs: 3m38s
-    4 jobs: 2m51s
-    8 jobs: 2m21s")
 
 (defsystem "nyxt"
   :version "3"                          ; Development version.
@@ -131,7 +96,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                nyxt/ospm
                nyxt/prompter
                nyxt/theme)
-  :pathname #.(npath #p"NYXT:source;")
+  :pathname #.(npath #p"NYXT:source;")  ; TODO: Specialize `asdf:system-source-file' instead.
   :components ((:file "utilities")
                (:file "package")
                (:module "Utilities"
@@ -270,45 +235,9 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                          (test-op "nyxt/ospm/tests")
                          (test-op "nyxt/prompter/tests"))))
 
-(defun register-submodules (component)
-  ;; Ideally we should avoid writing global, stateful files to the user file
-  ;; system.  So instead of writing to the ASDF config file, we register the
-  ;; sudmodule directory with CL_SOURCE_REGISTRY.  This locally overrides
-  ;; CL_SOURCE_REGISTRY, but it's fine since submodules are only meant for
-  ;; non-developers (who probably don't set CL_SOURCE_REGISTRY).
-  ;;
-  ;; We must set this globally because the information would be lost within a
-  ;; Lisp compiler subprocess (e.g. as used by linux-packaging).
-  (flet ((ensure-absolute-path (path component)
-           (if (absolute-pathname-p path)
-               path
-               (system-relative-pathname component path))))
-    (setf (getenv "CL_SOURCE_REGISTRY")
-          (strcat
-           (native-namestring
-            (ensure-directory-pathname
-             (ensure-absolute-path *submodules-dir* component)))
-           ;; Double-slash tells ASDF to traverse the tree recursively.
-           "/"
-           ;; Register this directory so that nyxt.asd is included, just in case.
-           (inter-directory-separator)
-           (native-namestring (system-source-directory component))
-           (if (getenv "CL_SOURCE_REGISTRY")
-               (strcat (inter-directory-separator) (getenv "CL_SOURCE_REGISTRY"))
-               ;; End with an empty string to tell ASDF to inherit configuration.
-               (inter-directory-separator)))))
-  (clear-configuration)
-  (format t "; CL_SOURCE_REGISTRY: ~s~%" (getenv "CL_SOURCE_REGISTRY")))
-
 (defsystem "nyxt/submodules"
-  :perform (compile-op (o c)
-                       (run-program `("git"
-                                      "-C" ,(namestring (system-relative-pathname c ""))
-                                      "submodule" "update" "--init" "--force"
-                                      "--jobs" ,(write-to-string *submodules-jobs*))
-                                    :ignore-error-status t
-                                    :output t)
-                       (register-submodules c)))
+  :perform (compile-op (o c)            ; TODO: Subclass compile-op instead.
+                       (symbol-call :nyxt-asdf :fetch-submodules c)))
 
 (defun nyxt-run-test (c path &key network-needed-p)
   (and (or (not network-needed-p)
@@ -320,37 +249,15 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
 
 ;; TODO: Test that Nyxt starts and that --help, --version work.
 (defsystem "nyxt/tests"
+  :defsystem-depends-on (nyxt-asdf)
   :depends-on (nyxt prove)
   :components ((:file "tests/package"))
-  :perform (test-op (op c)
-                    (nyxt-run-test c "tests/offline/")
-                    (nyxt-run-test c "tests/online/" :network-needed-p t)))
-
-(defun print-benchmark (benchmark-results)
-  (labels ((rat->float (num)
-             (if (integerp num) num (float num)))
-           (print-times (entry)
-             (let ((title (first entry))
-                   (attr (rest entry)))
-               (unless (or (member (symbol-name title) '("RUN-TIME" "SYSTEM-RUN-TIME")) ; Not so interesting.
-                           (and (member (symbol-name title) '("PAGE-FAULTS" "EVAL-CALLS")
-                                        :test #'string=)
-                                (zerop (getf attr :average))))
-                 (format t " ~a: ~,9t~a" (string-downcase title) (rat->float (getf attr :average)))
-                 (format t "~32,8t[~a, ~a]"
-                         (rat->float (getf attr :minimum))
-                         (rat->float (getf attr :maximum)))
-                 (format t "~56,8t(median ~a, deviation ~a, total ~a)"
-                         (rat->float (getf attr :median))
-                         (rat->float (getf attr :deviation))
-                         (rat->float (getf attr :total)))
-                 (format t "~%")))))
-    (dolist (mark benchmark-results)
-      (format t "~a (~a sample~:p):~%" (first mark)
-              (getf (rest (second mark)) :samples))
-      (mapc #'print-times (rest mark)))))
+  :perform (test-op (op c) ; TODO: Subclass test-op instead.
+                    (symbol-call :nyxt-asdf :nyxt-run-test c "tests/offline/")
+                    (symbol-call :nyxt-asdf :nyxt-run-test c "tests/online/" :network-needed-p t)))
 
 (defsystem "nyxt/benchmark"
+  :defsystem-depends-on (nyxt-asdf)
   :depends-on (alexandria
                nyxt
                trivial-benchmark)
@@ -363,7 +270,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                                      (funcall (read-from-string "benchmark:run-package-benchmarks")
                                               :package :nyxt/benchmark
                                               :verbose t))))
-                      (print-benchmark results))))
+                      (symbol-call :nyxt-asdf :print-benchmark results))))
 
 (defsystem "nyxt/clean-fasls"
   :depends-on (swank)
@@ -371,8 +278,8 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                        (load (merge-pathnames
                               "contrib/swank-asdf.lisp"
                               (symbol-value
-                               (read-from-string "swank-loader:*source-directory*"))))
-                       (funcall (read-from-string "swank:delete-system-fasls") "nyxt")))
+                               (find-symbol* :*source-directory* :swank-loader))))
+                       (symbol-call :swank :delete-system-fasls "nyxt")))
 
 ;; We use a temporary "version" file to generate the final nyxt.desktop with the
 ;; right version number.  Since "version" is a file target, third-party
@@ -387,7 +294,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                        (with-open-file (out (output-file o c)
                                             :direction :output
                                             :if-exists :supersede)
-                         (princ (symbol-value (read-from-string "nyxt:+version+"))
+                         (princ (symbol-value (find-symbol* :+version+ :nyxt))
                                 out))))
 
 (defsystem "nyxt/documentation"         ; TODO: Only rebuild if input changed.
@@ -399,8 +306,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
                        (with-open-file (out (output-file o c)
                                             :direction :output
                                             :if-exists :supersede)
-                         (write-string (funcall (read-from-string "nyxt::manual-content"
-                                                                  (find-package 'nyxt)))
+                         (write-string (symbol-call :nyxt :manual-content)
                                        out))
                        (format *error-output* "Manual dumped to ~s.~&" (output-file o c))))
 
@@ -465,7 +371,7 @@ A naive benchmark on a 16 Mpbs bandwidth gives us
   :entry-point "nyxt:entry-point")
 
 (defsystem "nyxt/application/tests"
-  :depends-on (#.(format nil "nyxt/~a-application" *nyxt-renderer*)
+  :depends-on (#.(format nil "nyxt/~a-application" *nyxt-renderer*) ; TODO: Specialize `component-depends-on'?
                  prove)
   :components ((:file "tests/package"))
   :perform (test-op (op c)
@@ -496,83 +402,50 @@ the few modules that's not automatically included in the image."
        (remove-if (lambda (system) (uiop:string-prefix-p "nyxt" system))
                   (asdf:already-loaded-systems))))
 
-(defun make-executable (file)
-  ;; TODO: Use iolib/os:file-permissions instead of chmod?  Too verbose?
-  (run-program (list "chmod" "+x" (native-namestring file))))
-
 (defsystem "nyxt/install"
   :depends-on (alexandria
                str
                #.(format nil "nyxt/~a-application" *nyxt-renderer*)
                nyxt/version)
-  :perform (compile-op
-            (o c)
-            (labels ((ensure-parent-exists (file)
-                     (ensure-all-directories-exist
-                      (list (directory-namestring file))))
-                     (install-file (file dest)
-                       (ensure-parent-exists dest)
-                       (copy-file file dest)))
-              (let ((desktop-file (merge-pathnames* "applications/nyxt.desktop" *datadir*)))
-                (install-file (system-relative-pathname c "assets/nyxt.desktop")
-                              desktop-file))
-              (mapc (lambda (icon-size)
-                      (let ((icon-file (format nil "~a/icons/hicolor/~ax~a/apps/nyxt.png"
-                                               *datadir* icon-size icon-size)))
-                        (install-file (system-relative-pathname
-                                       c
-                                       (format nil "assets/nyxt_~ax~a.png"
-                                               icon-size icon-size))
-                                      icon-file)))
-                    '(16 32 128 256 512))
-              (let ((binary-file (merge-pathnames* "nyxt" *bindir*)))
-                (install-file (system-relative-pathname c "nyxt") binary-file)
-                (make-executable binary-file))
-              (flet ((copy-directory (source destination &key verbose-p)
-                       "Copy the content (the file tree) of SOURCE to DESTINATION."
-                       (when verbose-p
-                         (format *error-output* "~&;; Copy ~s/* inside ~s.~%" source destination))
-                       (collect-sub*directories
-                        (ensure-directory-pathname source)
-                        (constantly t)
-                        t
-                        (lambda (subdirectory)
-                          (mapc (lambda (file)
-                                  (unless (member (pathname-type file) '("o" "fasl") :test 'equalp)
-                                    (let ((destination-file
-                                            (merge-pathnames*
-                                             (subpathp file (ensure-directory-pathname source))
-                                             (ensure-pathname destination :truenamize t :ensure-directory t))))
-                                      (install-file file destination-file))))
-                                (directory-files subdirectory))))))
-                (handler-case
-                    (progn
-                      (format *error-output* "~&;; Copying Git files to ~s.~%" *dest-source-dir*)
-                      (dolist (file (mapcan (lambda (dir)
-                                              (split-string
-                                               (run-program `("git" "-C" ,(native-namestring
-                                                                           (system-source-directory :nyxt))
-                                                                    "ls-files" ,dir
-                                                                    ;; Do not install this non-Lisp source:
-                                                                    "--" ":!:libraries/web-extensions/*")
-                                                            :output '(:string :stripped t))
-                                               :separator '(#\newline #\return #\linefeed)))
-                                            '("source" "libraries")))
-                        (let ((dest (merge-pathnames* file *dest-source-dir*)))
-                          (install-file (system-relative-pathname :nyxt file)
-                                        dest))))
-                  (condition (c)
-                    (format *error-output* "~&;; Git copy error: ~a" c)
-                    (format *error-output* "~&;; Fallback to copying whole directories instead.~%")
-                    (dolist (dir '("source" "libraries"))
-                      (copy-directory (system-relative-pathname :nyxt dir)
-                                      (merge-pathnames* dir *dest-source-dir*)
-                                      :verbose-p t))))
-                (let ((libnyxt-dest (merge-pathnames* "libnyxt.so" *nyxt-libdir*)))
-                  (install-file (system-relative-pathname :nyxt "libraries/web-extensions/libnyxt.so")
-                                libnyxt-dest)
-                  (make-executable libnyxt-dest))
-                (install-file (system-source-file :nyxt) (merge-pathnames* "nyxt.asd" *dest-source-dir*))))))
+  :perform (compile-op (o c)            ; TODO: Specialize.
+                       (let ((desktop-file (merge-pathnames* "applications/nyxt.desktop" *datadir*)))
+                         (install-file (system-relative-pathname c "assets/nyxt.desktop")
+                                       desktop-file))
+                       (mapc (lambda (icon-size)
+                               (let ((icon-file (format nil "~a/icons/hicolor/~ax~a/apps/nyxt.png"
+                                                        *datadir* icon-size icon-size)))
+                                 (install-file (system-relative-pathname
+                                                c
+                                                (format nil "assets/nyxt_~ax~a.png"
+                                                        icon-size icon-size))
+                                               icon-file)))
+                             '(16 32 128 256 512))
+                       (let ((binary-file (merge-pathnames* "nyxt" *bindir*)))
+                         (install-file (system-relative-pathname c "nyxt") binary-file)
+                         (make-executable binary-file))
+                       (handler-case
+                           (progn
+                             (format *error-output* "~&;; Copying Git files to ~s.~%" *dest-source-dir*)
+                             (dolist (file (mapcan (lambda (dir)
+                                                     (split-string
+                                                      (run-program (list *git-program* "-C"
+                                                                         (native-namestring (system-source-directory :nyxt))
+                                                                         "ls-files" dir
+                                                                         ;; Do not install this non-Lisp source:
+                                                                         "--" ":!:libraries/web-extensions/*")
+                                                                   :output '(:string :stripped t))
+                                                      :separator '(#\newline #\return #\linefeed)))
+                                                   '("source" "libraries" "nyxt-asdf")))
+                               (let ((dest (merge-pathnames* file *dest-source-dir*)))
+                                 (install-file (system-relative-pathname :nyxt file)
+                                               dest))))
+                         (condition (c)
+                           (format *error-output* "~&;; Git copy error: ~a" c)
+                           (format *error-output* "~&;; Fallback to copying whole directories instead.~%")
+                           (dolist (dir '("source" "libraries"))
+                             (copy-directory (system-relative-pathname :nyxt dir)
+                                             (merge-pathnames* dir *dest-source-dir*)
+                                             :verbose-p t))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Library subsystems:
