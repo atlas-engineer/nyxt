@@ -1,5 +1,8 @@
 #+TITLE: Nyxt Developer's Manual
 
+# Please install org-make-toc so the the TOC below will be automatically
+# generated.
+# https://github.com/alphapapa/org-make-toc
 * Table of contents                                                     :TOC:
 :PROPERTIES:
 :TOC:      :include all :ignore this
@@ -37,6 +40,7 @@
   - [[#issue-tracker][Issue tracker]]
   - [[#learning-common-lisp][Learning Common Lisp]]
   - [[#contributing][Contributing]]
+  - [[#branch-management][Branch management]]
   - [[#irc-channel][IRC Channel]]
 :END:
 * Developer's installation with Guix
@@ -198,7 +202,7 @@ Notes:
    `webkit2-gtk(-devel)` instead of `webkit-gtk3` via your favorite package
    manager. If you are on a legacy version of macOS which is not supported by
    HomeBrew, you may want to try install these via MacPorts.
-  
+
 ** Qt dependencies
 
 Qt is only required if you want to build Nyxt over the WebEngine renderer.
@@ -268,7 +272,7 @@ application bundle which you can copy into your =/Applications= folder.
   #+begin_src sh
   gmake all
   #+end_src
-  
+
 - macOS:
   #+begin_src sh
   make all
@@ -399,7 +403,7 @@ be configured in the respective configuration files.
 #+begin_src lisp
 (define-command-global start-slynk (&optional (slynk-port *swank-port*))
   "Start a Slynk server.
-   
+
 Waits for incoming connections, e.g. from SLY.
 
     Warning: This allows Nyxt to be controlled remotely, that is, to execute
@@ -455,7 +459,7 @@ server with the following steps.
 #+begin_src lisp
 (define-command-global start-slynk (&optional (slynk-port *swank-port*))
   "Start a Slynk server.
-   
+
 Waits for incoming connections, e.g. from SLY.
 
     Warning: This allows Nyxt to be controlled remotely, that is, to execute
@@ -493,20 +497,55 @@ See https://nyxt.atlas.engineer/learn-lisp for a few recommendations.
 
 ** Contributing
 
-To contribute, please find a task [[https://github.com/atlas-engineer/nyxt/issues?q=is%3Aissue+is%3Aopen+label%3Agood-first-issue][on our issue tracker]] or within [[file:CHANGELOG.org][CHANGELOG.org]]
-document that has a TASK label affixed.  Upon finding a task that you'd like to
-work on, ideally, ensure that it is not already being worked on.
+Nyxt is a joint effort and we need you to make it succeed!  You can find ideas
+[[https://github.com/atlas-engineer/nyxt/issues?q=is%3Aissue+is%3Aopen+label%3Agood-first-issue][on our issue tracker]] to suit your interests and skills.  Feel free to contact us
+at any point if you need guidance.
 
-After you have found a TASK item that is available:
+When ready to start working please fork the repository, add your changes and
+open a pull request on GitHub to pass the review process.  Refer to the [[*Branch management][branch
+management section]] for more detailed information.
 
-- make a fork of the repository,
-- add your changes,
-- make a pull request.
+You can contribute to Nyxt without commit access.  However, if you're a frequent
+contributor, you may request it.  Remember that with great power comes great
+responsibility.
+
+** Branch management
+
+Nyxt uses the following branches:
+
+- =master= for development;
+- =<feature-branches>= for very particular situations;
+- =<2,3,...>-series= to backport commits corresponding to specific major
+  versions.
+
+It's recommended to branch off from the target branch and to rebase onto it
+right before merging.  This keeps the history as clear as possible and reduces
+the complexity of the diff.
+
+Unless the changes are trivial and each commit is atomic (that is, leaving Nyxt
+fully functional), they should be followed by a merge commit.  That is
+guaranteed by using the merge option =no-ff= (no fast-forward).  If required,
+the merge commit can be reworded.
+
+The names of the branches really matter since the merge commit references them,
+so please take that into account!
+
+After the changed are merged, please do not forget to delete obsolete or
+dangling branches.
+
+Note to core contributors: since you have commit access, you can push trivial
+changes directly to the target branch (skipping the review process).  The merge
+commit is required when at least one commit isn't atomic.
 
 ** IRC Channel
 
 #+html: You can find Nyxt on Libera IRC: <a href="https://kiwiirc.com/nextclient/irc.libera.chat/nyxt">#nyxt</a>
 
 # Local Variables:
-# before-save-hook: (lambda () (if (fboundp 'org-make-toc) (org-make-toc) (message "Please install org-make-toc.")))
+# eval: (add-hook 'before-save-hook
+#                 (lambda nil (if (fboundp 'org-make-toc)
+#                                 (org-make-toc)
+#                                 (message-box "Please install org-make-toc.")))
+#                 nil
+#                 t)
 # End:
