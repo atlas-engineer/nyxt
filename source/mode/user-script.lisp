@@ -45,7 +45,9 @@
   (:metaclass interface-class))
 
 (define-class user-script (renderer-user-script nfiles:data-file nyxt-remote-file)
-  ((code "" :type string)
+  ((code
+    nil
+    :type (maybe string))
    (version "")
    (description "")
    (namespace "")
@@ -140,11 +142,8 @@ Return:
   (unless (uiop:emptyp (nfiles:url-content script))
     (alex:write-string-into-file (nfiles:url-content script) destination :if-exists :supersede)))
 
-(defmethod nfiles:deserialize ((profile nyxt-profile) (script user-script) raw-content &key)
-  "If the script is not in the UserScript format, the raw content is used as is
-and only the `code' slot is set."
-  ;; TODO: Parse the stream directly?
-  (let ((code  (alex:read-stream-content-into-string raw-content)))
+(defmethod parse-user-script ((script user-script))
+  (let ((code (files:content script)))
     (or
      (sera:and-let* ((start-position (search "// ==UserScript==" code))
                      (end-position (search "// ==/UserScript==" code))
@@ -185,3 +184,15 @@ and only the `code' slot is set."
                               (otherwise :document-end)))
            code-with-requires)))
      (setf (code script) code))))
+
+(defmethod code :around ((script user-script))
+  (or (call-next-method)
+      (setf (code script)
+            (parse-user-script script))))
+
+(defmethod nfiles:deserialize ((profile nyxt-profile) (script user-script) raw-content &key)
+  "If the script is not in the UserScript format, the raw content is used as is
+and only the `code' slot is set."
+  (declare (ignorable profile))
+  (setf (files:content script) (alex:read-stream-content-into-string raw-content))
+  (parse-user-script script))
