@@ -44,6 +44,10 @@ to go to the compilation error location."
 (defvar *bindir* (if (getenv "BINDIR")
                      (ensure-directory-pathname (getenv "BINDIR"))
                      (merge-pathnames* "bin/" *prefix*)))
+(defvar *libdir* (if (getenv "LIBDIR")
+                     (ensure-directory-pathname (getenv "LIBDIR"))
+                     (merge-pathnames* "lib/" *prefix*)))
+(defvar *nyxt-libdir* (merge-pathnames* "nyxt/" *libdir*))
 (defvar *dest-source-dir* (if (getenv "NYXT_SOURCE_PATH")
                               (ensure-directory-pathname (getenv "NYXT_SOURCE_PATH"))
                               (merge-pathnames* "nyxt/" *datadir*)))
@@ -489,6 +493,10 @@ the few modules that's not automatically included in the image."
        (remove-if (lambda (system) (uiop:string-prefix-p "nyxt" system))
                   (asdf:already-loaded-systems))))
 
+(defun make-executable (file)
+  ;; TODO: Use iolib/os:file-permissions instead of chmod?  Too verbose?
+  (run-program (list "chmod" "+x" (native-namestring file))))
+
 (defsystem "nyxt/install"
   :depends-on (alexandria
                str
@@ -496,28 +504,27 @@ the few modules that's not automatically included in the image."
                nyxt/version)
   :perform (compile-op
             (o c)
-            (flet ((ensure-parent-exists (file)
+            (labels ((ensure-parent-exists (file)
                      (ensure-all-directories-exist
-                      (list (directory-namestring file)))))
+                      (list (directory-namestring file))))
+                     (install-file (file dest)
+                       (ensure-parent-exists dest)
+                       (copy-file file dest)))
               (let ((desktop-file (merge-pathnames* "applications/nyxt.desktop" *datadir*)))
-                (ensure-parent-exists desktop-file)
-                (copy-file (system-relative-pathname c "assets/nyxt.desktop")
-                                desktop-file))
+                (install-file (system-relative-pathname c "assets/nyxt.desktop")
+                              desktop-file))
               (mapc (lambda (icon-size)
                       (let ((icon-file (format nil "~a/icons/hicolor/~ax~a/apps/nyxt.png"
                                                *datadir* icon-size icon-size)))
-                        (ensure-parent-exists icon-file)
-                        (copy-file (system-relative-pathname
-                                         c
-                                         (format nil "assets/nyxt_~ax~a.png"
-                                                 icon-size icon-size))
-                                        icon-file)))
+                        (install-file (system-relative-pathname
+                                       c
+                                       (format nil "assets/nyxt_~ax~a.png"
+                                               icon-size icon-size))
+                                      icon-file)))
                     '(16 32 128 256 512))
               (let ((binary-file (merge-pathnames* "nyxt" *bindir*)))
-                (ensure-parent-exists binary-file)
-                (copy-file (system-relative-pathname c "nyxt") binary-file)
-                ;; TODO: Use iolib/os:file-permissions instead of chmod?  Too verbose?
-                (run-program (list "chmod" "+x" (native-namestring binary-file))))
+                (install-file (system-relative-pathname c "nyxt") binary-file)
+                (make-executable binary-file))
               (flet ((copy-directory (source destination &key verbose-p)
                        "Copy the content (the file tree) of SOURCE to DESTINATION."
                        (when verbose-p
@@ -533,32 +540,24 @@ the few modules that's not automatically included in the image."
                                             (merge-pathnames*
                                              (subpathp file (ensure-directory-pathname source))
                                              (ensure-pathname destination :truenamize t :ensure-directory t))))
-                                      (ensure-parent-exists destination-file)
-                                      (copy-file file destination-file))))
+                                      (install-file file destination-file))))
                                 (directory-files subdirectory))))))
                 (handler-case
                     (progn
                       (format *error-output* "~&;; Copying Git files to ~s.~%" *dest-source-dir*)
-                      (dolist (file (cons
-                                     ;; Find `libnyxt' file regardless of its extension:
-                                     (subpathp (first (delete-if
-                                                       (complement (lambda (file)
-                                                                     (string-prefix-p "libnyxt" (pathname-name file))))
-                                                       (directory-files (system-relative-pathname
-                                                                         :nyxt "libraries/web-extensions"))))
-                                               (system-source-directory :nyxt))
-                                     (mapcan (lambda (dir)
-                                               (split-string
-                                                (run-program `("git" "-C" ,(native-namestring
-                                                                            (system-source-directory :nyxt))
-                                                                     "ls-files" ,dir)
-                                                             :output '(:string :stripped t))
-                                                :separator '(#\newline #\return #\linefeed)))
-                                             '("source" "libraries"))))
+                      (dolist (file (mapcan (lambda (dir)
+                                              (split-string
+                                               (run-program `("git" "-C" ,(native-namestring
+                                                                           (system-source-directory :nyxt))
+                                                                    "ls-files" ,dir
+                                                                    ;; Do not install this non-Lisp source:
+                                                                    "--" ":!:libraries/web-extensions/*")
+                                                            :output '(:string :stripped t))
+                                               :separator '(#\newline #\return #\linefeed)))
+                                            '("source" "libraries")))
                         (let ((dest (merge-pathnames* file *dest-source-dir*)))
-                          (ensure-parent-exists dest)
-                          (copy-file (system-relative-pathname :nyxt file)
-                                     dest))))
+                          (install-file (system-relative-pathname :nyxt file)
+                                        dest))))
                   (condition (c)
                     (format *error-output* "~&;; Git copy error: ~a" c)
                     (format *error-output* "~&;; Fallback to copying whole directories instead.~%")
@@ -566,7 +565,11 @@ the few modules that's not automatically included in the image."
                       (copy-directory (system-relative-pathname :nyxt dir)
                                       (merge-pathnames* dir *dest-source-dir*)
                                       :verbose-p t))))
-                (copy-file (system-source-file :nyxt) (merge-pathnames* "nyxt.asd" *dest-source-dir*))))))
+                (let ((libnyxt-dest (merge-pathnames* "libnyxt.so" *nyxt-libdir*)))
+                  (install-file (system-relative-pathname :nyxt "libraries/web-extensions/libnyxt.so")
+                                libnyxt-dest)
+                  (make-executable libnyxt-dest))
+                (install-file (system-source-file :nyxt) (merge-pathnames* "nyxt.asd" *dest-source-dir*))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Library subsystems:
