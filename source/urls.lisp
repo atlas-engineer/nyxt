@@ -3,6 +3,10 @@
 
 (in-package :nyxt)
 
+;; A URI is defined by the following components:
+;; URI = scheme ":" ["//" authority] path ["?" query] ["#" fragment]
+;; authority = [userinfo "@"] host [":" port]
+
 (defparameter +extensions-without-links+
   '(".mp3" ".png" ".jpg" ".jpeg" ".pdf")
   "TODO")
